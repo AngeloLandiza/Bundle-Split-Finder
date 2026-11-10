@@ -9,7 +9,7 @@ import { appendLedger } from '../lib/ledger';
 import type { Request, StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
 import { isOwnPage } from '../lib/sender';
-import { createPageReader, type ReaderEnv } from '../lib/hdReader';
+import { createPageReader, doorwayLoaded, type ReaderEnv } from '../lib/hdReader';
 import { createWorker } from '../lib/worker';
 
 declare const __SPLIT_FINDER_BASE_URL__: string | undefined;
@@ -18,20 +18,11 @@ declare const __SPLIT_FINDER_DEBUG__: boolean;
 
 const DOORWAY_KEY = 'hdReaderTab';
 
-/** The reader's Chrome calls. Neither way of opening a tab needs a permission. */
+/** The reader's Chrome calls. Opening a background tab needs no permission. */
 function chromeReaderEnv(): ReaderEnv {
   return {
     origin: __SPLIT_FINDER_HD_ORIGIN__,
     async openTab(url) {
-      try {
-        const win = await browser.windows.create({ url, focused: false, state: 'minimized' });
-        const id = win?.tabs?.[0]?.id;
-        if (typeof id === 'number') return id;
-        // A window without a tab id: close it, then use a plain background tab.
-        if (win?.id !== undefined) await browser.windows.remove(win.id).catch(() => {});
-      } catch {
-        // Fall through to a tab.
-      }
       const tab = await browser.tabs.create({ url, active: false });
       if (typeof tab.id !== 'number') throw new Error('Chrome opened no tab.');
       return tab.id;
@@ -47,15 +38,15 @@ function chromeReaderEnv(): ReaderEnv {
           if (fail) reject(fail);
           else resolve();
         };
-        const onUpdated = (id: number, info: { status?: string }) => {
-          if (id === tabId && info.status === 'complete') finish();
+        const onUpdated = (id: number, _info: unknown, tab: { status?: string; url?: string }) => {
+          if (id === tabId && doorwayLoaded(tab, __SPLIT_FINDER_HD_ORIGIN__)) finish();
         };
         const timer = setTimeout(() => finish(new Error('timeout')), timeoutMs);
         browser.tabs.onUpdated.addListener(onUpdated);
         // It may have finished before the listener was added.
         browser.tabs.get(tabId).then(
           (tab) => {
-            if (tab.status === 'complete') finish();
+            if (doorwayLoaded(tab, __SPLIT_FINDER_HD_ORIGIN__)) finish();
           },
           (err) => finish(err instanceof Error ? err : new Error(String(err))),
         );

@@ -23,6 +23,11 @@ export interface ReaderEnv {
 
 export interface InTabResult { itemId: string; status: number; text: string | null }
 
+/** True once the doorway tab has finished loading a page on `origin`, never on its blank start page. */
+export function doorwayLoaded(tab: { status?: string; url?: string }, origin: string): boolean {
+  return tab.status === 'complete' && typeof tab.url === 'string' && tab.url.startsWith(`${origin}/`);
+}
+
 /**
  * Runs inside the tab. Self-contained: no imports, no outside variables, no nested named
  * functions (it is serialised by its source). Fetches `/p/<id>` same-origin, `concurrency` at a

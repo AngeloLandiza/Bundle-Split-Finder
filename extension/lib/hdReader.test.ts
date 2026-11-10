@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createPageReader, fetchPagesInTab, type InTabResult, type ReaderEnv } from './hdReader';
+import { createPageReader, doorwayLoaded, fetchPagesInTab, type InTabResult, type ReaderEnv } from './hdReader';
 
 const pages = (JSON.parse(readFileSync('fixtures/homedepot-pages/pages-2026-11-10.json', 'utf8')) as {
   pages: InTabResult[];
@@ -200,5 +200,18 @@ describe('fetchPagesInTab', () => {
     // The throw on 'c' stops reading, so 'd' and 'e' are never fetched.
     expect(out[3]).toEqual({ itemId: 'd', status: -1, text: null });
     expect(out[4]).toEqual({ itemId: 'e', status: -1, text: null });
+  });
+});
+
+describe('doorwayLoaded', () => {
+  const origin = 'https://www.homedepot.com';
+
+  it('is true only for a complete tab on a page of the Home Depot origin', () => {
+    expect(doorwayLoaded({ status: 'complete', url: '' }, origin)).toBe(false);
+    expect(doorwayLoaded({ status: 'complete', url: 'about:blank' }, origin)).toBe(false);
+    expect(doorwayLoaded({ status: 'complete' }, origin)).toBe(false);
+    expect(doorwayLoaded({ status: 'loading', url: 'https://www.homedepot.com/p/1' }, origin)).toBe(false);
+    expect(doorwayLoaded({ status: 'complete', url: 'https://www.homedepot.com.example.test/p/1' }, origin)).toBe(false);
+    expect(doorwayLoaded({ status: 'complete', url: 'https://www.homedepot.com/p/RYOBI-x/328814689' }, origin)).toBe(true);
   });
 });
