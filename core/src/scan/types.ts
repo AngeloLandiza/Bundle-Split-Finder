@@ -247,7 +247,10 @@ export interface ScanJob {
   finishedAt: number | null;
   status: 'running' | 'done' | 'stopped';
   stopReason: StopReason | null;
-  /** The error text when stopReason is "error" or "rate_limited". */
+  /**
+   * The error text when stopReason is "error" or "rate_limited". Also set, with stopReason
+   * left as it was, when a step failed and was set aside while the scan went on.
+   */
   stopMessage: string | null;
   /** listing: Amazon catalog pages, then retailer pages. parts: lookups then refreshes. finish: nothing paid is left. */
   phase: 'listing' | 'parts' | 'finish';
