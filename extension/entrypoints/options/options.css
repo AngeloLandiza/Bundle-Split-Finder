@@ -153,6 +153,18 @@ legend,
   font-size: 14px;
   font-weight: 600;
 }
+/* A sized field is as wide as its label; the input keeps its own width and an error wraps inside the column. */
+.field--sized {
+  width: max-content;
+  max-width: 100%;
+}
+.field--sized label {
+  white-space: nowrap;
+}
+.field--sized .field-error {
+  width: 0;
+  min-width: 100%;
+}
 .input {
   height: 40px;
   padding: 0 12px;

@@ -97,7 +97,7 @@ export function NumberField(p: NumberFieldProps) {
   );
   if (p.inline) return input;
   return (
-    <div className="field" style={p.width && !p.after ? { width: p.width } : undefined}>
+    <div className={`field${p.width && !p.after ? ' field--sized' : ''}`}>
       <label htmlFor={p.id}>{p.label}</label>
       {p.after ? (
         <div className="field-line">
