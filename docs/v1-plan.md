@@ -82,14 +82,15 @@ Home Depot is a single-page app, so the script re-reads on URL change.
 
 ## Matching policy with search-only data
 
-An Amazon search result carries ASIN, title, price and review count, but no barcode, part
-number or brand field. So:
+An Amazon search result carries ASIN, title, price, review count and, on most rows, a brand
+field. It carries no barcode or part number, and its title usually does not start with the
+brand (recorded responses, 2026-11-09). So:
 
 | Grade | Evidence | Treatment |
 | --- | --- | --- |
 | exact | Barcode from the listing's detail page equals the part's barcode | Used. Shown as "Barcode verified". |
 | strong | Part number from the detail page equals the model number | Used. Shown as "Verified". |
-| probable | Title starts with the brand and contains the model number as a whole word; not renewed, aftermarket, a kit, or a multipack | Used. Shown as "Title match" with a "Verify · 1 search" button. |
+| probable | Brand confirmed, by the result's brand field or by a title that starts with the brand, and the title contains the model number as a whole word; not renewed, aftermarket, a kit, or a multipack | Used. Shown as "Title match" with a "Verify · 1 search" button. |
 | review | Model number in the title, brand not confirmed | Review queue |
 | reject | Everything else | Hidden |
 

@@ -22,7 +22,7 @@ What one search buys:
 | --- | --- | --- |
 | `home_depot` | 24 products with model number, price, was-price | Today's bundles |
 | `home_depot_product` | One product with UPC | Only when a barcode is needed |
-| `amazon` | A page of results: ASIN, title, price, review count | Find a part's listing and price |
+| `amazon` | A page of results: ASIN, title, brand, price, review count | Find a part's listing and price |
 | `amazon_product` | One listing with UPC and brand | Upgrade a "title match" to "verified" |
 
 Reading a Home Depot page the user has open costs nothing: the extension parses the page.
