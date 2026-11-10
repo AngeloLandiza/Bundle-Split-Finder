@@ -48,6 +48,7 @@ interface ScanOptions {
   fetchFn?: typeof fetch;
   /** Default: the world's store. */
   store?: ScanStore;
+  shouldStop?: () => boolean;
 }
 
 function scan(w: World, opts: ScanOptions = {}) {
@@ -62,7 +63,7 @@ function scan(w: World, opts: ScanOptions = {}) {
       w.ledger.push(entry.label);
     },
   });
-  return runScan({ client, budget, store: opts.store ?? w.store, settings: opts.settings ?? RATCHET, now: () => w.clock });
+  return runScan({ client, budget, store: opts.store ?? w.store, settings: opts.settings ?? RATCHET, now: () => w.clock, shouldStop: opts.shouldStop });
 }
 
 /**
@@ -262,6 +263,7 @@ describe('runScan: an interruption is continued without paying twice (test E)', 
   it('stops, not "running", when a search fails in an unexpected way (test E2)', async () => {
     const w = world();
     // HTTP 200 with a body that is not JSON: the client's res.json() throws a SyntaxError.
+    // The first lookup that fails is set aside; the second in a row stops the scan (step 3 rule 2).
     const amazon = failing(w, 'engine=amazon', 200, 'not json');
     const job = await scan(w, { fetchFn: amazon.fetchFn });
     expect(job).toMatchObject({ status: 'stopped', stopReason: 'error', phase: 'finish', searchesUsed: 1, queue: [] });
@@ -271,7 +273,7 @@ describe('runScan: an interruption is continued without paying twice (test E)', 
       ['RYOBI:PBLRC01B', 'waiting'],
       ['RYOBI:PBLRC25B', 'waiting'],
     ]);
-    expect(amazon.failed).toHaveLength(1);
+    expect(amazon.failed).toHaveLength(2);
 
     // The next run starts a new job (ids are the start time, so the clock moves on).
     w.clock = T0 + MINUTE;
@@ -353,17 +355,34 @@ function failing(w: World, match: string, status: number, body = JSON.stringify(
   return { fetchFn, failed };
 }
 
+/**
+ * The replay, except that a request whose decoded `k` is a key of `statuses` gets that HTTP
+ * status. Logs every `k` sent, brand pages included.
+ */
+function failingParts(w: World, statuses: Record<string, number>) {
+  const sent: string[] = [];
+  const fetchFn = (async (input: string | URL | Request) => {
+    const k = new URL(String(input instanceof Request ? input.url : input)).searchParams.get('k');
+    if (k !== null) sent.push(k);
+    if (k !== null && Object.hasOwn(statuses, k)) return new Response(JSON.stringify({ error: 'refused' }), { status: statuses[k] });
+    return w.replay.fetchFn(input);
+  }) as typeof fetch;
+  return { fetchFn, sent };
+}
+
 describe('runScan: stopping on errors (test H)', () => {
+  // Step 3 rule 2: an HTTP 500 sets the first lookup aside and stops the scan at the second
+  // in a row. A 429 stops it at once.
   it.each([
-    [500, 'error', /HTTP 500/],
-    [429, 'rate_limited', /hourly limit reached or no searches left/],
-  ] as const)('an Amazon HTTP %i stops the scan after one request and keeps both parts waiting', async (status, reason, message) => {
+    [500, 2, 'error', /HTTP 500/],
+    [429, 1, 'rate_limited', /hourly limit reached or no searches left/],
+  ] as const)('an Amazon HTTP %i stops the scan after %i request(s) and keeps both parts waiting', async (status, requests, reason, message) => {
     const w = world();
     const amazon = failing(w, 'engine=amazon', status);
     const job = await scan(w, { fetchFn: amazon.fetchFn });
     expect(job).toMatchObject({ status: 'stopped', stopReason: reason, phase: 'finish', searchesUsed: 1, queue: [] });
     expect(job.stopMessage).toMatch(message);
-    expect(amazon.failed).toHaveLength(1);
+    expect(amazon.failed).toHaveLength(requests);
     expect(job.deferred).toEqual([
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' },
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' },
@@ -525,59 +544,57 @@ describe('runScan: brands, the user\'s decision, a listing that disappeared (tes
 });
 
 describe('runScan: a part that always fails does not block the others (test M)', () => {
-  /** The replay, except that a request whose decoded `k` is RYOBI PBLRC01B gets HTTP 500. Logs every `k` sent. */
-  function failing01B(w: World) {
-    const sent: string[] = [];
-    const fetchFn = (async (input: string | URL | Request) => {
-      const k = new URL(String(input instanceof Request ? input.url : input)).searchParams.get('k');
-      if (k !== null) sent.push(k);
-      if (k === 'RYOBI PBLRC01B') return new Response(JSON.stringify({ error: 'refused' }), { status: 500 });
-      return w.replay.fetchFn(input);
-    }) as typeof fetch;
-    return { fetchFn, sent };
-  }
-
-  async function secondScan(w: World, fetchFn: typeof fetch) {
-    w.clock = T0 + 10 * MINUTE;
-    const job = await scan(w, { fetchFn });
-    expect(job).toMatchObject({ status: 'stopped', stopReason: 'error', searchesUsed: 1 });
-    expect(job.stopMessage).toMatch(/HTTP 500/);
-    expect(job.deferred).toEqual([{ kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' }]);
-    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', waitingSince: null });
-    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting', waitingSince: T0 });
-    return job;
-  }
-
-  it('tries the part that failed last time after the others', async () => {
+  // Step 3 rule 2: a lookup that fails is set aside and the scan goes on, so the other part is
+  // matched in the same scan. Nothing is reordered for the next scan (step 3 rule 4).
+  it('matches the other part in the same scan; the next scan matches the failing part from a listing the other saved', async () => {
     const w = world();
-    const amazon = failing01B(w);
+    const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500 });
     const first = await scan(w, { fetchFn: amazon.fetchFn });
-    expect(first).toMatchObject({ status: 'stopped', stopReason: 'error' });
-    expect(first.deferred[0]).toEqual({ kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' });
+    expect(first).toMatchObject({ status: 'stopped', stopReason: null, searchesUsed: 2, queue: [] });
+    expect(first.stopMessage).toMatch(/HTTP 500/);
+    expect(first.deferred).toEqual([{ kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' }]);
     expect((await w.store.listMatches()).map((m) => [m.key, m.status])).toEqual([
       ['RYOBI:PBLRC01B', 'waiting'],
-      ['RYOBI:PBLRC25B', 'waiting'],
+      ['RYOBI:PBLRC25B', 'matched'],
     ]);
 
-    await secondScan(w, amazon.fetchFn);
-    // PBLRC25B first in the second scan; PBLRC01B twice in all, PBLRC25B once.
-    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC25B', 'RYOBI PBLRC01B']);
+    // Ten minutes on, with the same failure: the PBLRC25B response saved B0B6Z2ZGVK, whose
+    // title carries PBLRC01B, so the waiting part is matched from it (2c rule 5) with no search.
+    w.clock = T0 + 10 * MINUTE;
+    const second = await scan(w, { fetchFn: amazon.fetchFn });
+    expect(second).toMatchObject({ status: 'done', stopReason: null, stopMessage: null, searchesUsed: 0, queue: [], deferred: [] });
+    expect(second.counts).toMatchObject({ lookupsDone: 0, partsFromCatalog: 1, partsMatched: 1 });
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'matched', asin: 'B0B6Z2ZGVK', waitingSince: null });
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', waitingSince: null });
+    // One request for each part across both scans; the listing page came from the cache.
+    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_25B]);
   });
 
-  it('knows the failed step when other work was already deferred by the budget', async () => {
+  it('sets the failed part aside ahead of the work the budget deferred, and tries it again first next scan', async () => {
     const w = world();
-    const amazon = failing01B(w);
+    const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500 });
     // Room for the page and one lookup: PBLRC25B is deferred by the run cap, then PBLRC01B fails.
     const first = await scan(w, { fetchFn: amazon.fetchFn, policy: { reserve: 0, maxPerRun: 2 } });
-    expect(first).toMatchObject({ status: 'stopped', stopReason: 'error' });
+    // One failure does not stop the scan: the stop reason is still the limit that deferred PBLRC25B.
+    expect(first).toMatchObject({ status: 'stopped', stopReason: 'run_cap', searchesUsed: 1, queue: [] });
+    expect(first.stopMessage).toMatch(/HTTP 500/);
     expect(first.deferred).toEqual([
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' },
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' },
     ]);
 
-    await secondScan(w, amazon.fetchFn);
-    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC25B', 'RYOBI PBLRC01B']);
+    // Ten minutes on, no saved listing names either part. Both have waited since T0, so they go
+    // in saving order: PBLRC01B first, as in test A. It fails again and is set aside; PBLRC25B is matched.
+    w.clock = T0 + 10 * MINUTE;
+    const second = await scan(w, { fetchFn: amazon.fetchFn });
+    expect(second).toMatchObject({ status: 'stopped', stopReason: null, searchesUsed: 1, queue: [] });
+    expect(second.stopMessage).toMatch(/HTTP 500/);
+    expect(second.deferred).toEqual([{ kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' }]);
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', waitingSince: null });
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting', waitingSince: T0 });
+    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
+    expect(w.replay.calls).toEqual([LISTING, LOOKUP_25B]);
   });
 });
 
@@ -1034,5 +1051,142 @@ describe('runScan: matching from saved listings after the listing phase stopped 
     expect(w.replay.calls).toEqual([DEWALT_PAGE, DEWALT_COMBO]);
     expect(job.counts).toMatchObject({ catalogPages: 1, bundlesResolved: 1, lookupsDone: 0, partsFromCatalog: 2, partsMatched: 2 });
     expect(await w.store.getMatch('DEWALT:DCS334B')).toMatchObject({ status: 'matched', asin: 'B07JPFHQKG' });
+  });
+});
+
+// ---------------------------------------------------------------- step 3: stop on request, and a failed lookup set aside
+
+const LOOKUP_01B_STEP = { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' } as const;
+const LOOKUP_25B_STEP = { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' } as const;
+
+describe('runScan: stop on request (step 3 rule 1)', () => {
+  /** A shouldStop that is true once `request` was sent, and logs how many requests had been sent each time it was asked. */
+  function stopAfter(w: World, request: string) {
+    const asked: number[] = [];
+    const shouldStop = () => {
+      asked.push(w.replay.calls.length);
+      return w.replay.calls.includes(request);
+    };
+    return { shouldStop, asked };
+  }
+
+  it('stops before the first lookup when asked after the listing page: nothing is sent to Amazon, both parts wait (a)', async () => {
+    const w = world();
+    const stop = stopAfter(w, LISTING);
+    const job = await scan(w, { shouldStop: stop.shouldStop });
+    expect(job).toMatchObject({ status: 'stopped', stopReason: 'user', stopMessage: null, phase: 'finish', searchesUsed: 1, queue: [] });
+    expect(job.deferred).toEqual([LOOKUP_01B_STEP, LOOKUP_25B_STEP]);
+    // Asked before the listing page and before the first lookup, and never again.
+    expect(stop.asked).toEqual([0, 1]);
+    expect(w.replay.calls).toEqual([LISTING]);
+    expect(job.counts).toMatchObject({ pagesFetched: 1, bundlesResolved: 2, lookupsDone: 0, partsMatched: 0, listingsSaved: 0 });
+    expect((await w.store.listMatches()).map((m) => [m.key, m.status, m.waitingSince])).toEqual([
+      ['RYOBI:PBLRC01B', 'waiting', T0],
+      ['RYOBI:PBLRC25B', 'waiting', T0],
+    ]);
+    expect((await w.store.listScans())[0]!.status).toBe('stopped');
+  });
+
+  it('asked before a brand page and a listing page too; a stop in the listing phase still splits and plans, with nothing to spend', async () => {
+    const w = world();
+    const stop = stopAfter(w, LISTING);
+    const settings = { ...RATCHET, queries: [{ q: 'ryobi extended reach ratchet' }, { q: 'dewalt 20v combo kit' }], catalogPagesPerScan: 1 };
+    const job = await scan(w, { settings, shouldStop: stop.shouldStop });
+    // Asked before the DEWALT brand page, the ratchet page, and the DEWALT page, where it stops.
+    expect(stop.asked).toEqual([0, 1, 2]);
+    expect(w.replay.calls).toEqual([DEWALT_PAGE, LISTING]);
+    expect(job).toMatchObject({ status: 'stopped', stopReason: 'user', stopMessage: null, searchesUsed: 2, queue: [] });
+    expect(job.deferred).toEqual([
+      { kind: 'listing', q: 'dewalt 20v combo kit', page: 1, filterTokens: null, bundlesOnly: false },
+      LOOKUP_01B_STEP,
+      LOOKUP_25B_STEP,
+    ]);
+    expect(job.counts).toMatchObject({ catalogPages: 1, pagesFetched: 1, bundlesResolved: 2, lookupsDone: 0 });
+    expect((await w.store.listMatches()).map((m) => [m.key, m.status])).toEqual([
+      ['RYOBI:PBLRC01B', 'waiting'],
+      ['RYOBI:PBLRC25B', 'waiting'],
+    ]);
+  });
+});
+
+describe('runScan: a failed lookup or refresh is set aside (step 3 rule 2)', () => {
+  it('sets aside the lookup that fails, matches the other part, and ends stopped with the failure\'s message (b)', async () => {
+    const w = world();
+    const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500 });
+    const job = await scan(w, { fetchFn: amazon.fetchFn });
+    expect(job).toMatchObject({ status: 'stopped', stopReason: null, phase: 'finish', searchesUsed: 2, queue: [], deferred: [LOOKUP_01B_STEP] });
+    expect(job.stopMessage).toMatch(/HTTP 500/);
+    expect(job.stopMessage).toBe('SerpApi returned HTTP 500.');
+    // Exactly one request for each part.
+    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
+    expect(w.replay.calls).toEqual([LISTING, LOOKUP_25B]);
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', grade: 'probable' });
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting', asin: null, waitingSince: T0, decidedBy: 'auto' });
+    expect(job.counts).toMatchObject({ lookupsDone: 1, partsMatched: 1, listingsSaved: 9 });
+    expect((await w.store.listScans())[0]!.status).toBe('stopped');
+  });
+
+  it('stops at the second failure in a row, with that failure\'s message', async () => {
+    const w = world();
+    const amazon = failingParts(w, { 'RYOBI PBLRC01B': 503, 'RYOBI PBLRC25B': 500 });
+    const job = await scan(w, { fetchFn: amazon.fetchFn });
+    expect(job).toMatchObject({ status: 'stopped', stopReason: 'error', stopMessage: 'SerpApi returned HTTP 500.', searchesUsed: 1, queue: [] });
+    // The step set aside first, then the step that stopped the scan.
+    expect(job.deferred).toEqual([LOOKUP_01B_STEP, LOOKUP_25B_STEP]);
+    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
+  });
+
+  it('a successful step between two failures resets the count, and the first failure\'s message is kept', async () => {
+    const w = world();
+    // The command line's fixture run: two brand pages, three Home Depot pages, and lookups for
+    // PBLRC01B, PBLRC25B and PCL1201K2, in that order. The first and the last fail.
+    const settings: ScanSettings = {
+      ...DEFAULT_SCAN_SETTINGS, catalogPagesPerScan: 2,
+      queries: [{ q: 'ryobi 18v combo kit' }, { q: 'dewalt 20v combo kit' }, { q: 'ryobi extended reach ratchet' }],
+    };
+    const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500, 'RYOBI PCL1201K2': 503 });
+    const job = await scan(w, { settings, fetchFn: amazon.fetchFn });
+    expect(amazon.sent).toEqual(['DEWALT', 'RYOBI', 'RYOBI PBLRC01B', 'RYOBI PBLRC25B', 'RYOBI PCL1201K2']);
+    expect(job).toMatchObject({ status: 'stopped', stopReason: null, stopMessage: 'SerpApi returned HTTP 500.', searchesUsed: 6, queue: [] });
+    expect(job.deferred).toEqual([LOOKUP_01B_STEP, { kind: 'lookup', brand: 'RYOBI', model: 'PCL1201K2' }]);
+    expect(job.counts).toMatchObject({ catalogPages: 2, pagesFetched: 3, lookupsDone: 1 });
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched' });
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting', waitingSince: T0 });
+    expect(await w.store.getMatch('RYOBI:PCL1201K2')).toMatchObject({ status: 'waiting', waitingSince: T0 });
+  });
+
+  it('sets aside a refresh that fails; its match and price stay as they were', async () => {
+    const w = world();
+    await scan(w);
+    const later = T0 + 4 * DAY;
+    w.clock = later;
+    const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500 });
+    const job = await scan(w, { fetchFn: amazon.fetchFn });
+    expect(job).toMatchObject({ status: 'stopped', stopReason: null, stopMessage: 'SerpApi returned HTTP 500.', searchesUsed: 2, queue: [] });
+    expect(job.deferred).toEqual([{ kind: 'refresh', brand: 'RYOBI', model: 'PBLRC01B', asin: 'B0B6Z2ZGVK' }]);
+    expect(job.counts).toMatchObject({ lookupsDone: 0, refreshesDone: 1 });
+    expect(w.ledger.slice(3)).toEqual(['scan:listing:ryobi extended reach ratchet:p1', 'scan:refresh:PBLRC25B']);
+    // A refresh is not a lookup: the part is not marked waiting.
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'matched', asin: 'B0B6Z2ZGVK', waitingSince: null, updatedAt: T0 });
+    expect(await w.store.getPrice('B0B6Z2ZGVK')).toMatchObject({ price: 146.94, checkedAt: T0 });
+    expect(await w.store.getPrice('B0B3JWF5ZV')).toMatchObject({ price: 169, checkedAt: later });
+  });
+
+  it('a brand page that fails is dropped and does not count toward the two failures (2c rule 3)', async () => {
+    const w = world();
+    // Room for the ratchet page only: both parts wait.
+    await scan(w, { policy: { reserve: 0, maxPerRun: 1 } });
+    expect((await w.store.listMatches()).map((m) => m.status)).toEqual(['waiting', 'waiting']);
+
+    // No Home Depot page this time: the failed DEWALT brand page is followed directly by the PBLRC01B lookup.
+    w.clock = T0 + 10 * MINUTE;
+    const amazon = failingParts(w, { DEWALT: 500, 'RYOBI PBLRC01B': 500 });
+    const job = await scan(w, { settings: { ...RATCHET, queries: [], catalogPagesPerScan: 1 }, fetchFn: amazon.fetchFn });
+    expect(amazon.sent).toEqual(['DEWALT', 'RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
+    expect(job).toMatchObject({ status: 'stopped', stopReason: null, searchesUsed: 1, queue: [], deferred: [LOOKUP_01B_STEP] });
+    // The brand page's sentence, then the lookup's message.
+    expect(job.stopMessage).toBe('The DEWALT Amazon page 1 was skipped: SerpApi returned HTTP 500. SerpApi returned HTTP 500.');
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV' });
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting', waitingSince: T0 });
   });
 });

@@ -1,7 +1,8 @@
 // The scan runner: a few pages of the brands' own Amazon listings, then Home Depot listing
 // pages, then splits (free), then one Amazon lookup per new part that no saved listing
 // answers and a refresh per stale price. "Rule n" refers to the step 2 plan, Task 4 ("The
-// scan runner"); "2c rule n" to the step 2c plan, Task 2 ("The catalog phase").
+// scan runner"); "2c rule n" to the step 2c plan, Task 2 ("The catalog phase"); "3 rule n"
+// to the step 3 plan, Task 3 ("Runner: stop on request, and one failed lookup does not end a scan").
 
 import { type Catalog, catalogEntry, decompose, kindsFromTitle } from '../decompose';
 import { type Candidate, pick } from '../match';
@@ -24,6 +25,8 @@ export interface ScanDeps {
   now?: () => number;
   /** First part of every ledger label. Default 'scan'. The command line passes 'demo'. */
   labelPrefix?: string;
+  /** Checked before every paid step. True ends the scan as stopped by the user. */
+  shouldStop?: () => boolean;
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -38,11 +41,16 @@ interface Run {
   settings: ScanSettings;
   now: () => number;
   prefix: string;
+  shouldStop: () => boolean;
   job: ScanJob;
   /** The models the splitter and wantedFor know (2c rule 4). Built when the listing queue is empty, or when a continued job starts in the parts phase. */
   catalog: Catalog;
-  /** Set by rule 8: no further search in this run. */
+  /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
+  /** 3 rule 2: the last lookup or refresh of this run failed, and no paid step has succeeded since. */
+  lastFailed: boolean;
+  /** 3 rule 2: steps this run set aside after a failure. They lead `deferred`, in the order they failed. */
+  setAside: number;
 }
 
 /** Start a scan, or continue the newest one whose status is "running". Resolves with the finished job. */
@@ -69,7 +77,10 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
 async function startJob(deps: ScanDeps): Promise<Run> {
   const now = deps.now ?? Date.now;
   const { store, settings, budget } = deps;
-  const run = (job: ScanJob): Run => ({ client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', job, catalog: new Map(), halted: false });
+  const run = (job: ScanJob): Run => ({
+    client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop: deps.shouldStop ?? (() => false),
+    job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0,
+  });
 
   // An interrupted job is continued as saved: no new plan, whatever budget this run has.
   const newest = (await store.listScans())[0];
@@ -87,7 +98,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
       pages.push({ kind: 'listing', q: q.q, page, filterTokens: q.filterTokens ?? null, bundlesOnly: q.bundlesOnly ?? false });
     }
   }
-  const wants = await wantedParts(store, settings, startedAt, null);
+  const wants = await wantedParts(store, settings, startedAt);
   const plan = planScan(budget.spendable - catalogPages, { hdPagesWanted: pages.length, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
   const job: ScanJob = {
     id: String(startedAt), startedAt, finishedAt: null, status: 'running', stopReason: null, stopMessage: null, phase: 'listing',
@@ -130,14 +141,19 @@ function brandFilter(settings: ScanSettings, brand: string): string | null {
   return typeof rh === 'string' && rh.trim() !== '' ? rh : null;
 }
 
-// ---------------------------------------------------------------- rules 2, 3, 6, 7 and 2c rules 2, 3: paid steps
+// ---------------------------------------------------------------- rules 2, 3, 6, 7, 2c rules 2, 3 and 3 rules 1, 2: paid steps
 
 async function runQueue(run: Run): Promise<void> {
   const { job } = run;
   while (!run.halted && job.queue.length > 0) {
     const step = job.queue[0]!;
-    // Only the search is inside the try. An error from the store (below, or in halt) is not
-    // caught: the job stays "running" and the next runScan continues it.
+    // 3 rule 1: asked before every paid step, never during one.
+    if (run.shouldStop()) {
+      await halt(run, 'user', null);
+      return;
+    }
+    // Only the search is inside the try. An error from the store (below, in setAside or in
+    // halt) is not caught: the job stays "running" and the next runScan continues it.
     let result: SearchResult;
     try {
       result = await send(run, step);
@@ -145,16 +161,24 @@ async function runQueue(run: Run): Promise<void> {
       const stop = stopFor(err);
       if (step.kind === 'catalog' && stop.reason === 'error') {
         // 2c rule 3: a brand page that failed is dropped, not deferred, and the scan goes on.
-        // The cursor is not touched, so the next scan asks for the same page.
-        const sentence = `The ${step.brand} Amazon page ${step.page} was skipped: ${stop.message ?? 'the search failed.'}`;
+        // The cursor is not touched, so the next scan asks for the same page. It does not
+        // count toward the two failures of 3 rule 2.
+        const sentence = `The ${step.brand} Amazon page ${step.page} was skipped: ${stop.message}`;
         job.stopMessage = job.stopMessage === null ? sentence : `${job.stopMessage} ${sentence}`;
         job.queue.shift();
         await run.store.putScan(job);
         continue;
       }
+      // 3 rule 2: a lookup or refresh that failed is set aside, unless the one before it failed too.
+      if ((step.kind === 'lookup' || step.kind === 'refresh') && stop.reason === 'error' && !run.lastFailed) {
+        await setAside(run, step, stop.message);
+        continue;
+      }
       await halt(run, stop.reason, stop.message);
       return;
     }
+    // 3 rule 2: a step answered, from the network or the cache, resets the count.
+    run.lastFailed = false;
     // Rule 3: the store first, then the job.
     await apply(run, step, result.data);
     // searchesUsed counts the paid steps this job saved. A search in flight when the worker
@@ -166,9 +190,12 @@ async function runQueue(run: Run): Promise<void> {
   }
 }
 
-// ---------------------------------------------------------------- rule 8: stopping
+// ---------------------------------------------------------------- rule 8 and 3 rules 1, 2: stopping
 
-function stopFor(err: unknown): { reason: StopReason; message: string | null } {
+/** What a search error means for the scan. Only an "error" may drop or set aside a step (2c rule 3, 3 rule 2). */
+type Stop = { reason: 'error'; message: string } | { reason: Exclude<StopReason, 'error' | 'user'>; message: string | null };
+
+function stopFor(err: unknown): Stop {
   if (err instanceof BudgetExceededError) return { reason: err.reason, message: null };
   // RateLimitedError extends SerpApiError, so it is checked before the general case.
   if (err instanceof RateLimitedError) return { reason: 'rate_limited', message: err.message };
@@ -178,14 +205,31 @@ function stopFor(err: unknown): { reason: StopReason; message: string | null } {
   return { reason: 'error', message: (err instanceof Error && err.message) || String(err) };
 }
 
-/** The failed step and the rest of the queue are deferred; no further search in this run. */
+/**
+ * 3 rule 2: the failed step is deferred after the steps set aside before it in this run, in
+ * front of anything the budget deferred; a lookup's part waits. The job's stopMessage keeps
+ * the first failure's message (after a skipped brand page's sentence, if there is one). The
+ * stop reason is not touched, and the scan goes on with the next step.
+ */
+async function setAside(run: Run, step: Lookup | Refresh, message: string): Promise<void> {
+  const { job } = run;
+  if (step.kind === 'lookup') await markWaiting(run, step);
+  if (run.setAside === 0) job.stopMessage = job.stopMessage === null ? message : `${job.stopMessage} ${message}`;
+  job.queue.shift();
+  job.deferred.splice(run.setAside, 0, step);
+  run.setAside += 1;
+  run.lastFailed = true;
+  await run.store.putScan(job);
+}
+
+/** The step at the head of the queue and the rest of the queue are deferred; no further search in this run. */
 async function halt(run: Run, reason: StopReason, message: string | null): Promise<void> {
   const { job } = run;
   for (const step of job.queue) if (step.kind === 'lookup') await markWaiting(run, step);
   job.stopReason = reason;
   job.stopMessage = message;
-  // In front of anything deferred earlier: deferred[0] is the step that failed (rule 5).
-  job.deferred = [...job.queue, ...job.deferred];
+  // After the steps this run set aside (3 rule 2), in front of anything deferred earlier.
+  job.deferred.splice(run.setAside, 0, ...job.queue);
   job.queue = [];
   run.halted = true;
   await run.store.putScan(job);
@@ -437,13 +481,12 @@ interface Part {
 const lookupWanted = (match: MatchRecord | undefined): boolean => !match || (match.status === 'waiting' && match.decidedBy !== 'user');
 
 /**
- * The lookups and refreshes the store asks for right now, most valuable first. `jobId` is
- * the job being planned for (null before it exists): the newest other job is the last one.
+ * The lookups and refreshes the store asks for right now, most valuable first.
  * `fromListings` (2c rule 5) is tried first for every part that would need a lookup; the
  * match it returns, if any, stands in for one.
  */
 async function wantedParts(
-  store: ScanStore, settings: ScanSettings, now: number, jobId: string | null, fromListings?: (part: Part) => Promise<MatchRecord | null>,
+  store: ScanStore, settings: ScanSettings, now: number, fromListings?: (part: Part) => Promise<MatchRecord | null>,
 ): Promise<Wants> {
   // The parts of every resolved bundle, each with the largest saving among its bundles.
   const parts = new Map<string, { brand: string; model: string; saving: number }>();
@@ -479,35 +522,20 @@ async function wantedParts(
     }
   }
   const bySaving = (a: string, b: string) => parts.get(b)!.saving - parts.get(a)!.saving || (a < b ? -1 : a > b ? 1 : 0);
-  // Waiting parts first, oldest first; then by saving.
+  // Waiting parts first, oldest first; then by saving. A part whose lookup failed last scan
+  // takes its place like any other: it was set aside then, so it blocks nothing (3 rule 4).
   const rank = (k: string) => waitingSince.get(k) ?? Infinity;
   lookups.sort((a, b) => (rank(a) === rank(b) ? 0 : rank(a) < rank(b) ? -1 : 1) || bySaving(a, b));
   refreshes.sort(bySaving);
-  // The step the last job stopped on with an error goes last among its kind, so a part that
-  // always fails cannot stop every scan before the others are tried.
-  const last = (await store.listScans()).find((j) => j.id !== jobId);
-  const failed = last && (last.stopReason === 'error' || last.stopReason === 'rate_limited') ? last.deferred[0] : undefined;
-  for (const keys of [lookups, refreshes]) {
-    const i = failed ? keys.findIndex((k) => stepId(steps.get(k)!) === stepId(failed)) : -1;
-    if (i >= 0) keys.push(...keys.splice(i, 1));
-  }
   return { lookups, refreshes, steps };
 }
-
-/** Same kind, brand and model, and ASIN for a refresh, give the same id. */
-const stepId = (s: ScanStep): string =>
-  s.kind === 'listing'
-    ? `listing:${s.q}:${s.filterTokens ?? ''}:${s.page}`
-    : s.kind === 'catalog'
-      ? `catalog:${s.brand}:${s.page}`
-      : `${s.kind}:${s.brand}:${s.model}:${s.kind === 'refresh' ? s.asin : ''}`;
 
 /** `listings`: the saved listings, read once for this planning pass. */
 async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   const { job, budget } = run;
   // 2c rule 5 runs even when the listing phase stopped: it spends nothing.
-  const wants = await wantedParts(run.store, run.settings, run.now(), job.id, (part) => matchFromListings(run, listings, part));
-  // In the listing phase only rule 8 sets a stop reason: then nothing more is spent.
+  const wants = await wantedParts(run.store, run.settings, run.now(), (part) => matchFromListings(run, listings, part));
+  // In the listing phase only rule 8 or a stop on request (3 rule 1) sets a stop reason: then nothing more is spent.
   const allowance = job.stopReason === null ? budget.spendable : 0;
   const plan = planScan(allowance, { hdPagesWanted: 0, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
   const toSteps = (keys: string[]) => keys.map((k) => wants.steps.get(k)!);

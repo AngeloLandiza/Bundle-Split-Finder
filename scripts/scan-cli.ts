@@ -44,6 +44,7 @@ const STOP_WORDS: Record<Exclude<StopReason, 'error'>, string> = {
   run_cap: 'this run reached its search limit',
   hourly_limit: "the plan's hourly limit is reached",
   rate_limited: 'SerpApi refused the request (HTTP 429)',
+  user: 'stopped by you',
 };
 
 interface Options {

@@ -213,8 +213,8 @@ export type ScanStep =
   | { kind: 'lookup'; brand: string; model: string }
   | { kind: 'refresh'; brand: string; model: string; asin: string };
 
-/** A budget limit, SerpApi's own 429, or a failed request. */
-export type StopReason = BlockReason | 'rate_limited' | 'error';
+/** A budget limit, SerpApi's own 429, a failed request, or the user pressing Stop. */
+export type StopReason = BlockReason | 'rate_limited' | 'error' | 'user';
 
 export interface ScanCounts {
   pagesFetched: number;
