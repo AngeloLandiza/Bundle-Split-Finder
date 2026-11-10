@@ -10,6 +10,8 @@ import type { Request, StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
 import { createWorker } from '../lib/worker';
 
+declare const __SPLIT_FINDER_BASE_URL__: string | undefined;
+
 const TICK = 'tick';
 /** Notifications need an icon; until the extension has one, a plain square in --ink. */
 const ICON = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGOQkpEDAACoAFUlVprSAAAAAElFTkSuQmCC';
@@ -35,6 +37,8 @@ export default defineBackground(() => {
     ledger: appendLedger,
     fetchFn: (input, init) => fetch(input, init),
     now: Date.now,
+    // Set only in the end-to-end build; undefined means https://serpapi.com.
+    baseUrl: __SPLIT_FINDER_BASE_URL__,
     notify,
     broadcast: (state) => {
       // No page may be open to receive it.
