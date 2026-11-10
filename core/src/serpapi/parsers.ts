@@ -1,10 +1,10 @@
 // Turn SerpApi responses into our own types.
 //
-// IMPORTANT: field names here come from SerpApi's documentation (2026-11-09),
-// not from recorded live responses. The first development step is to record
-// real responses into fixtures/recorded/ and confirm every field below.
+// Field names are confirmed against the responses recorded in fixtures/recorded/ on 2026-11-09.
 // Parsers are deliberately tolerant: a missing field becomes null, never a crash.
 
+import type { HdProduct } from '../hdPage';
+import { toUpc12 } from '../identifiers';
 import type { Candidate } from '../match';
 
 type Json = Record<string, unknown>;
@@ -70,6 +70,7 @@ export function parseAmazonSearch(json: unknown): Candidate[] {
     out.push({
       asin,
       title,
+      brand: cleanBrand(str(r.brand)),
       price: num(r.extracted_price) ?? num(r.price),
       reviews: num(r.reviews),
       sponsored: r.sponsored === true,
@@ -111,5 +112,25 @@ export function parseAmazonProduct(json: unknown, asin: string): Candidate | nul
     upcs: upc ? upc.split(/[\s,]+/).filter(Boolean) : [],
     price: num(product.extracted_price) ?? num(product.price),
     reviews: num(product.reviews),
+  };
+}
+
+// ---------------------------------------------------------------- Home Depot product (engine=home_depot_product)
+
+export function parseHomeDepotProduct(json: unknown): HdProduct | null {
+  const p = obj(obj(json).product_results);
+  const itemId = str(p.product_id);
+  const title = str(p.title);
+  if (!itemId || !title) return null;
+  return {
+    retailer: 'homedepot',
+    itemId,
+    storeSku: str(p.store_sku_number),
+    model: str(p.model_number),
+    brand: str(obj(p.brand).name) ?? str(p.brand),
+    upc: toUpc12(str(p.upc)),
+    price: num(p.price),
+    regularPrice: num(obj(p.promotion).original),
+    title,
   };
 }
