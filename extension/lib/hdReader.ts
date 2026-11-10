@@ -54,7 +54,9 @@ export async function waitForDoorway(
  * Runs inside the tab. Self-contained: no imports, no outside variables, no nested named
  * functions (it is serialised by its source). Fetches `/p/<id>` same-origin, `concurrency` at a
  * time, and returns the text from `window.__APOLLO_STATE__=` to the next `</script>`, or null.
- * Results are in the order of `itemIds`. A fetch that throws gives status 0.
+ * Results are in the order of `itemIds`. A fetch that throws gives status 0. It starts no new
+ * fetch after the first answer that is not the page (non-200, a thrown fetch, or no embedded
+ * data); ids it never fetched come back with status -1.
  */
 export async function fetchPagesInTab(itemIds: string[], concurrency: number): Promise<InTabResult[]> {
   const results: InTabResult[] = new Array(itemIds.length);
@@ -133,7 +135,9 @@ export function createPageReader(
           continue;
         }
         if (start > 0) await env.sleep(pauseMs);
-        const results = await env.runInTab(tabId, fetchPagesInTab, [ids, concurrency]);
+        const answered = await env.runInTab(tabId, fetchPagesInTab, [ids, concurrency]);
+        // An empty script result (undefined, not an array) is a batch with no entries.
+        const results: InTabResult[] = Array.isArray(answered) ? answered : [];
         for (const itemId of ids) {
           if (stopped) {
             outcomes.push({ itemId, kind: 'skipped' });

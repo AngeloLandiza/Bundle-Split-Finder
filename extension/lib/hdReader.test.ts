@@ -20,6 +20,7 @@ function fake(opts: {
   respond?: (id: string) => InTabResult;
   loadFails?: boolean;
   runThrows?: boolean;
+  runResult?: (ids: string[]) => unknown;
   stored?: number | null;
 } = {}): Fake {
   const log: string[] = [];
@@ -39,6 +40,7 @@ function fake(opts: {
       log.push('run');
       batches.push(args[0]);
       if (opts.runThrows) throw new Error('boom');
+      if (opts.runResult) return opts.runResult(args[0]);
       return args[0].map(respond);
     }) as ReaderEnv['runInTab'],
     remember: async (id) => { stored = id; remembered.push(id); },
@@ -104,6 +106,20 @@ describe('createPageReader', () => {
     expect(f.log.at(-1)).toBe('close 7');
     expect(f.batches).toEqual([]);
     expect(f.remembered).toEqual([7, null]);
+  });
+
+  it('an empty script result (undefined) refuses the first id, skips the rest, and closes the tab', async () => {
+    const f = fake({ runResult: () => undefined });
+    const out = await createPageReader(f.env)(ids.slice(0, 3));
+    expect(out.map((o) => o.kind)).toEqual(['refused', 'skipped', 'skipped']);
+    expect(f.log.at(-1)).toBe('close 7');
+  });
+
+  it('a result array missing one id refuses that id, skips every later id, and makes no further call', async () => {
+    const f = fake({ runResult: (b) => b.filter((id) => id !== ids[1]).map((id) => byId.get(id)!) });
+    const out = await createPageReader(f.env, { batch: 2 })(ids.slice(0, 6));
+    expect(out.map((o) => o.kind)).toEqual(['read', 'refused', 'skipped', 'skipped', 'skipped', 'skipped']);
+    expect(f.batches).toHaveLength(1);
   });
 
   it('closes a doorway left by a stopped worker before opening a new one', async () => {
