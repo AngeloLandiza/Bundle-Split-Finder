@@ -114,8 +114,68 @@ describe('createPageReader', () => {
   });
 });
 
+describe('refusal handling', () => {
+  it('skips the rest of a later batch and every batch after it, with no further runInTab', async () => {
+    const f = fake({
+      respond: (id) => (id === ids[3] ? { itemId: id, status: 403, text: null } : byId.get(id)!),
+    });
+    const out = await createPageReader(f.env, { batch: 2 })(ids.slice(0, 8));
+    expect(out.map((o) => o.kind)).toEqual(['read', 'read', 'read', 'refused', 'skipped', 'skipped', 'skipped', 'skipped']);
+    expect(f.batches).toHaveLength(2);
+  });
+
+  it('marks ids the tab never fetched (status -1) as skipped', async () => {
+    const f = fake({
+      respond: (id) =>
+        id === ids[0] ? { itemId: id, status: 403, text: null } : { itemId: id, status: -1, text: null },
+    });
+    const out = await createPageReader(f.env)(ids.slice(0, 3));
+    expect(out.map((o) => o.kind)).toEqual(['refused', 'skipped', 'skipped']);
+  });
+
+  it('closes the doorway when remember(tabId) throws, and keeps that error', async () => {
+    const f = fake();
+    const real = f.env.remember;
+    f.env.remember = async (id) => {
+      if (id !== null) throw new Error('storage down');
+      await real(id);
+    };
+    await expect(createPageReader(f.env)(ids)).rejects.toThrow('storage down');
+    expect(f.log.at(-1)).toBe('close 7');
+  });
+
+  it('does not let a failing remember(null) mask the original error', async () => {
+    const f = fake({ runThrows: true });
+    f.env.remember = async (id) => {
+      if (id === null) throw new Error('cleanup failed');
+    };
+    await expect(createPageReader(f.env)(ids)).rejects.toThrow('boom');
+  });
+});
+
 describe('fetchPagesInTab', () => {
   afterEach(() => vi.unstubAllGlobals());
+
+  it('starts no fetch after a refusal; unfetched ids come back with status -1', async () => {
+    const started: string[] = [];
+    let refusedAt = -1;
+    vi.stubGlobal('fetch', async (url: string) => {
+      const id = url.split('/').pop()!;
+      started.push(id);
+      await new Promise((r) => setTimeout(r, id === 'b' ? 5 : 20));
+      if (id === 'b') {
+        refusedAt = started.length;
+        return { status: 403, text: async () => 'no' };
+      }
+      return { status: 200, text: async () => 'window.__APOLLO_STATE__={}</script>' };
+    });
+    const rebuilt = new Function(`return (${fetchPagesInTab.toString()})`)() as typeof fetchPagesInTab;
+    const out = await rebuilt(['a', 'b', 'c', 'd', 'e', 'f'], 2);
+    expect(started.length).toBe(refusedAt);
+    expect(started).toEqual(['a', 'b']);
+    expect(out.map((o) => o.status)).toEqual([200, 403, -1, -1, -1, -1]);
+    expect(out[3]).toEqual({ itemId: 'd', status: -1, text: null });
+  });
 
   it('runs from its own source against a stubbed fetch, in input order, within the concurrency limit', async () => {
     let active = 0;
@@ -137,6 +197,8 @@ describe('fetchPagesInTab', () => {
     expect(peak).toBe(2);
     expect(out[0]).toEqual({ itemId: 'a', status: 200, text: 'window.__APOLLO_STATE__={"id":"a"}' });
     expect(out[2]).toEqual({ itemId: 'c', status: 0, text: null });
-    expect(out[3]).toEqual({ itemId: 'd', status: 403, text: null });
+    // The throw on 'c' stops reading, so 'd' and 'e' are never fetched.
+    expect(out[3]).toEqual({ itemId: 'd', status: -1, text: null });
+    expect(out[4]).toEqual({ itemId: 'e', status: -1, text: null });
   });
 });

@@ -32,10 +32,16 @@ export interface InTabResult { itemId: string; status: number; text: string | nu
 export async function fetchPagesInTab(itemIds: string[], concurrency: number): Promise<InTabResult[]> {
   const results: InTabResult[] = new Array(itemIds.length);
   let next = 0;
+  let stopped = false;
   const worker = async (): Promise<void> => {
     while (next < itemIds.length) {
       const i = next++;
       const itemId = itemIds[i] as string;
+      if (stopped) {
+        // Never fetched, because an earlier page was refused.
+        results[i] = { itemId, status: -1, text: null };
+        continue;
+      }
       let status = 0;
       let text: string | null = null;
       try {
@@ -51,6 +57,7 @@ export async function fetchPagesInTab(itemIds: string[], concurrency: number): P
         status = 0;
         text = null;
       }
+      if (status !== 200 || text === null) stopped = true;
       results[i] = { itemId, status, text };
     }
   };
@@ -82,8 +89,8 @@ export function createPageReader(
     }
 
     const tabId = await env.openTab(`${env.origin}/p/${itemIds[0]}`);
-    await env.remember(tabId);
     try {
+      await env.remember(tabId);
       try {
         await env.waitForLoad(tabId, LOAD_TIMEOUT_MS);
       } catch {
@@ -106,6 +113,10 @@ export function createPageReader(
             continue;
           }
           const r = results.find((x) => x.itemId === itemId);
+          if (r && r.status === -1) {
+            outcomes.push({ itemId, kind: 'skipped' });
+            continue;
+          }
           if (!r || r.status !== 200 || r.text === null) {
             stopped = true;
             outcomes.push({ itemId, kind: 'refused' });
@@ -118,7 +129,7 @@ export function createPageReader(
       return outcomes;
     } finally {
       await env.closeTab(tabId).catch(() => undefined);
-      await env.remember(null);
+      await env.remember(null).catch(() => undefined);
     }
   };
 }
