@@ -10,49 +10,26 @@
 
 **Spec:** `docs/v1-plan.md` (Architecture, acceptance criteria 1, 2, 3, 7, 8, 10; "Lean version 1"), `docs/design.md` and `docs/design/mockups/Settings.dc.html`, `docs/search-budget.md` ("In the extension"), `docs/orchestration.md`, `CLAUDE.md`.
 
-## Where this stands (paused 2026-11-10)
+## Where this stands (step 3 complete, 2026-11-10)
 
-Read this first when resuming. Branch `step-3-extension-shell`, 14 searches used this month,
-236 left. Nothing paid is pending.
+Branch `step-3-extension-shell`. Every task below is merged and reviewed. Gate run by the
+controller: typecheck clean, 334 core and 123 extension tests, 8 end-to-end tests in a real
+browser, `ui-reviewer` PASS on the settings page. 14 searches used this month, 236 left;
+step 3 spent none. Step 2c (the Amazon catalog phase) was finished on this branch too.
 
-| Task | State |
-| --- | --- |
-| 1 Contracts | Done |
-| 2 Scaffold | Merged (reviewed by the controller only) |
-| 3 Runner: stop on request, one failed lookup set aside | Merged, reviewed |
-| 4 Settings logic and budget policy | Merged, reviewed, one fix applied |
-| 5a Storage | Merged, reviewed |
-| 5 Service worker | **Stopped part-way** at the pause: `opus`, worktree `.claude/worktrees/agent-a21ac45112d0ebffe` (branch `worktree-agent-a21ac45112d0ebffe`). Uncommitted, unreviewed work is there: `extension/lib/worker.ts` and `extension/lib/worker.test.ts`. Nothing is committed. Either resume that agent in the same session, or dispatch the task again from its brief and let the new implementer read those two files as a draft, not as finished work. |
-| 6 Settings page | Merged, code reviewed, one fix round applied. **Owed:** screenshots of every state at 1280px and 600px and a `ui-reviewer` pass against `docs/design/mockups/Settings.dc.html`. |
-| 7 End-to-end tests | Not started. Needs Task 5. Installing Playwright's Chromium is a one-time download. |
-| 8 Gate | Not started |
+Still owed, none blocking:
 
-Also stopped part-way at the pause, from step 2c (`docs/superpowers/plans/2026-11-10-step-2c-amazon-catalog.md`):
-the fix round for the Amazon catalog phase, `opus`, worktree
-`.claude/worktrees/agent-ace44eab369d930f8`. Only test files were changed there, uncommitted
-(`core/test/scan-runner.test.ts`, `core/test/scan-cli.test.ts`); `runner.ts` was not yet
-touched. Resume that agent or dispatch the round again. The seven fixes it must make:
-cached brand pages keep their listings' times; a brand page is never paid for twice in one
-job; a saved listing never overwrites a newer price; titles may resolve a DEWALT bundle only
-to a kit plus one item, and `DCK` models from titles are kits; a failed brand page gives other
-brands their turn; the command line reports set-aside steps; test N5 pins every request.
-Afterwards, a scoped `opus` re-review.
+- Screenshots of three settings states the visual review could not see: the "Remove key"
+  confirmation, the "Checking" label, and the "Lower the reserve, or scan less often." text.
+- A real icon for the extension and its notifications (a 1x1 placeholder is used).
+- The deferred minor review notes, which were kept in a scratch ledger during the build; the
+  ones that matter are in `docs/decisions.md` as known gaps.
+- Finished agent worktrees under `.claude/worktrees/` can be removed.
 
-Decisions made during execution that the tasks below do not show:
-
-- Saving settings never starts a scan: a changed schedule resets the reference time to now.
-- A scan whose searches-used count cannot be read spends nothing.
-- The settings page saves number and time fields on blur or Enter, and uses token colors only.
-  Open question for the owner: the mockup uses `#B9B6AD` (reserve meter) and `#1E3A8A` (link
-  hover), which `docs/design.md` does not list as tokens.
-- Stored settings are untrusted: the worker validates them and falls back to defaults per field.
-- The two project agents (`docs-checker`, `ui-reviewer`) did not load in the session that got
-  this far, because `.claude/agents/` was restored after it started. A new session should load them.
-- Finished agent worktrees under `.claude/worktrees/` are already cherry-picked onto the branch
-  and can be removed.
-
-After step 3: step 4 is the Home Depot page reader. Real page text for it is in
-`fixtures/homedepot-pages/bullets-2026-11-10.json`.
+Next: step 4, the Home Depot page reader. Real page text for it is in
+`fixtures/homedepot-pages/bullets-2026-11-10.json`. Two facts it depends on are not yet
+proven from inside the extension: that a background request to homedepot.com carries the
+browser's cookies, and how fast pages can be loaded without tripping Home Depot's bot check.
 
 ## Global Constraints
 

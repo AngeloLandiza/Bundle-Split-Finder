@@ -59,6 +59,10 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 
 - **Manifest V3, built with WXT 0.21, React, plain CSS.** One npm package, WXT at the repo root with `srcDir: 'extension'`. Permissions: storage, alarms, sidePanel, notifications; hosts: serpapi.com and homedepot.com.
 - **The service worker is the only context with the key.** Pages send typed messages. The key is in `chrome.storage.local`, restricted to trusted contexts, never in IndexedDB, logs or the page markup (the key field is uncontrolled so React does not mirror it into an attribute).
+- **The worker answers only the extension's own pages.** A message from a content script or another extension is refused. *For v2 and step 6:* the chip on Home Depot pages will need its own short allow-list of message types.
+- **A scan that cannot be saved is continued at most twice without progress**, then stopped with a plain sentence, so a full disk cannot become a spending loop.
+- **The key is stripped from any error text before a scan record is stored.**
+- **End-to-end tests use a separate build** (`SPLIT_FINDER_E2E=1`) that may talk to a local replay server on localhost; the production build has no localhost permission and a fixed SerpApi address, and a test asserts both.
 - **A one-minute alarm is the heartbeat.** Each tick continues an interrupted scan or starts a due one; nothing relies on the worker staying alive or on an alarm surviving a restart.
 - **IndexedDB sits behind the same store interface as the in-memory store**, proven by one shared conformance suite.
 - **Stored settings are untrusted:** validated on read, with a default per failing field. The shape check lives in `extension/lib/worker.ts`; *for v2* it belongs in `core/` next to `validateSettings`.
@@ -67,6 +71,7 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 
 ## Design
 
+- **Open question for the owner: the forecast meter's order.** It draws scheduled searches, then the reserve, then what is unused, so the unused part after the reserve can read as if the reserve were spent. The mockup never shows an unused part.
 - **Build to the mockups and `docs/design.md`; token colors only.** Open question for the owner: the Settings mockup uses `#B9B6AD` (reserve meter) and `#1E3A8A` (link hover), which the token list does not have. The nearest tokens are used meanwhile.
 
 ## How it was built
