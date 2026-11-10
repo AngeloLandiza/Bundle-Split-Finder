@@ -1,0 +1,2102 @@
+{
+  "search_metadata": {
+    "id": "6af27e551c3882b73277072a",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/fTHcUOlJ2_1sOAFvtWxBSfdthDULdOEUPZr0jAYfvCo/6af27e551c3882b73277072a.json",
+    "markdown_endpoint": "https://serpapi.com/searches/fTHcUOlJ2_1sOAFvtWxBSfdthDULdOEUPZr0jAYfvCo/6af27e551c3882b73277072a.md",
+    "created_at": "2026-11-10 02:15:49 UTC",
+    "processed_at": "2026-11-10 02:15:49 UTC",
+    "amazon_url": "https://www.amazon.com/s?k=DEWALT+DCF891B",
+    "raw_html_file": "https://serpapi.com/searches/fTHcUOlJ2_1sOAFvtWxBSfdthDULdOEUPZr0jAYfvCo/6af27e551c3882b73277072a.html",
+    "total_time_taken": 2.57
+  },
+  "search_parameters": {
+    "engine": "amazon",
+    "k": "DEWALT DCF891B",
+    "amazon_domain": "amazon.com",
+    "device": "desktop"
+  },
+  "search_information": {
+    "total_results": 111,
+    "query_displayed": "DEWALT DCF891B",
+    "store": "gateway",
+    "page": 1
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "asin": "B09YXXFPBJ",
+      "brand": "DEWALT",
+      "title": "20V MAX Cordless Impact Wrench, 1/2' Hog Ring, Includes LED Work Light and Belt Clip, Bare Tool Only (DCF891B)",
+      "link": "https://www.amazon.com/DEWALT-MID-RANGE-IMPACT-WRENCH-DCF891B/dp/B09YXXFPBJ/ref=sr_1_1?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-1",
+      "link_clean": "https://www.amazon.com/DEWALT-MID-RANGE-IMPACT-WRENCH-DCF891B/dp/B09YXXFPBJ/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09YXXFPBJ&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51jKHyIxU2L._AC_UL320_.jpg",
+      "rating": 4.8,
+      "reviews": 2200,
+      "bought_last_month": "600+ bought in past month",
+      "price": "$185.73",
+      "extracted_price": 185.73,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$178.00 (27+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09YXXFPBJ/ref=sr_1_1_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-1",
+      "purchase_options": [
+        {
+          "primary_price": "$185.73",
+          "extracted_primary_price": 185.73,
+          "more_buying_choices": "$178.00 (27+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09YXXFPBJ/ref=sr_1_1_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-1"
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "asin": "B0B9T68W3B",
+      "badges": [
+        "Overall Pick"
+      ],
+      "brand": "DEWALT",
+      "title": "20V MAX Cordless Impact Wrench, 1/2 Impact Gun, 4-speed High torque with Hog ring anvil and LED light, Brushless motor, Precision Wrench, tool Only (DCF900B)",
+      "link": "https://www.amazon.com/DEWALT-Cordless-Impact-Brushless-DCF900B/dp/B0B9T68W3B/ref=sr_1_2?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-2",
+      "link_clean": "https://www.amazon.com/DEWALT-Cordless-Impact-Brushless-DCF900B/dp/B0B9T68W3B/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B9T68W3B&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71Iy4AYMg9L._AC_UL320_.jpg",
+      "rating": 4.8,
+      "reviews": 2600,
+      "bought_last_month": "2K+ bought in past month",
+      "price": "$209.95",
+      "extracted_price": 209.95,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$199.45 (16+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B9T68W3B/ref=sr_1_2_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-2",
+      "purchase_options": [
+        {
+          "primary_price": "$209.95",
+          "extracted_primary_price": 209.95,
+          "more_buying_choices": "$199.45 (16+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B9T68W3B/ref=sr_1_2_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-2"
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "asin": "B09YSW2KXL",
+      "brand": "DEWALT",
+      "title": "20V MAX XR Cordless Impact Wrench, 1/2\", Includes Detent Pin Anvil and Belt Clip, Bare Tool Only (DCF892B)",
+      "link": "https://www.amazon.com/DEWALT-Mid-Range-Impact-Wrench-DCF892B/dp/B09YSW2KXL/ref=sr_1_3?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-3",
+      "link_clean": "https://www.amazon.com/DEWALT-Mid-Range-Impact-Wrench-DCF892B/dp/B09YSW2KXL/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09YSW2KXL&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51DaRHFaRTL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 1000,
+      "bought_last_month": "500+ bought in past month",
+      "price": "$178.90",
+      "extracted_price": 178.9,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$174.99 (18+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09YSW2KXL/ref=sr_1_3_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-3",
+      "purchase_options": [
+        {
+          "primary_price": "$178.90",
+          "extracted_primary_price": 178.9,
+          "more_buying_choices": "$174.99 (18+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09YSW2KXL/ref=sr_1_3_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-3"
+        }
+      ]
+    },
+    {
+      "position": 4,
+      "asin": "B0H75T66K5",
+      "brand": "DEWALT",
+      "title": "20V MAX 1/2 and 3/8 in. Cordless Impact Wrench Combo (DCK206D1P1)",
+      "link": "https://www.amazon.com/DEWALT-Cordless-Impact-Wrench-DCK206D1P1/dp/B0H75T66K5/ref=sr_1_4?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-4",
+      "link_clean": "https://www.amazon.com/DEWALT-Cordless-Impact-Wrench-DCK206D1P1/dp/B0H75T66K5/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H75T66K5&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/819tfeKpmdL._AC_UL320_.jpg",
+      "rating": 3.8,
+      "reviews": 7,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$399.00",
+      "extracted_price": 399,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$399.00",
+          "extracted_primary_price": 399
+        }
+      ]
+    },
+    {
+      "position": 5,
+      "asin": "B0B9T821KC",
+      "badges": [
+        "Limited time deal"
+      ],
+      "brand": "DEWALT",
+      "title": "20V MAX Cordless Impact Wrench (DCF900P1)",
+      "link": "https://www.amazon.com/DEWALT-Cordless-Battery-Charger-DCF900P1/dp/B0B9T821KC/ref=sr_1_5?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-5",
+      "link_clean": "https://www.amazon.com/DEWALT-Cordless-Battery-Charger-DCF900P1/dp/B0B9T821KC/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B9T821KC&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/81rSIJtrJRL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 2800,
+      "bought_last_month": "1K+ bought in past month",
+      "price": "$244.00",
+      "extracted_price": 244,
+      "old_price": "$289.07",
+      "extracted_old_price": 289.07,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$244.00",
+          "extracted_primary_price": 244,
+          "old_primary_price": "$289.07",
+          "extracted_old_primary_price": 289.07
+        }
+      ]
+    },
+    {
+      "position": 6,
+      "asin": "B09M3TL9BB",
+      "brand": "DEWALT",
+      "title": "ATOMIC 20V MAX* 1/2 in. Cordless Impact Wrench with Hog Ring Anvil (Tool Only) (DCF921B)",
+      "link": "https://www.amazon.com/DEWALT-ATOMIC-Cordless-Impact-DCF921B/dp/B09M3TL9BB/ref=sr_1_6?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-6",
+      "link_clean": "https://www.amazon.com/DEWALT-ATOMIC-Cordless-Impact-DCF921B/dp/B09M3TL9BB/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09M3TL9BB&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51pa9bfvqyL._AC_UL320_.jpg",
+      "rating": 4.8,
+      "reviews": 1000,
+      "bought_last_month": "800+ bought in past month",
+      "price": "$174.99",
+      "extracted_price": 174.99,
+      "delivery": [
+        "FREE delivery Tue, Nov 17"
+      ],
+      "more_buying_choices": "$137.99 (27+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09M3TL9BB/ref=sr_1_6_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-6",
+      "purchase_options": [
+        {
+          "primary_price": "$174.99",
+          "extracted_primary_price": 174.99,
+          "more_buying_choices": "$137.99 (27+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09M3TL9BB/ref=sr_1_6_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-6"
+        }
+      ]
+    },
+    {
+      "position": 7,
+      "asin": "B09YXY3DKN",
+      "brand": "DEWALT",
+      "title": "20V MAX Impact Wrench, Cordless, 1/2 inch, 2 Batteries and Charger Included (DCF891P2)",
+      "link": "https://www.amazon.com/DCF891P2-Brushless-Lithium-Ion-Mid-Range-Batteries/dp/B09YXY3DKN/ref=sr_1_7?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-7",
+      "link_clean": "https://www.amazon.com/DCF891P2-Brushless-Lithium-Ion-Mid-Range-Batteries/dp/B09YXY3DKN/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09YXY3DKN&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61LLZ-ZUf1L._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 201,
+      "price": "$379.00",
+      "extracted_price": 379,
+      "old_price": "$399.00",
+      "extracted_old_price": 399,
+      "delivery": [
+        "FREE delivery Nov 17 - 20",
+        "Or fastest delivery Nov 17 - 18"
+      ],
+      "more_buying_choices": "$319.99 (12 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09YXY3DKN/ref=sr_1_7_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-7",
+      "purchase_options": [
+        {
+          "primary_price": "$379.00",
+          "extracted_primary_price": 379,
+          "old_primary_price": "$399.00",
+          "extracted_old_primary_price": 399,
+          "more_buying_choices": "$319.99 (12 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09YXY3DKN/ref=sr_1_7_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-7"
+        }
+      ]
+    },
+    {
+      "position": 8,
+      "asin": "B078WDTV2F",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/DEWALT-Cordless-Impact-Wrench-DCF894B/dp/B078WDTV2F/ref=sr_1_8_so_WRENCH?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-8",
+      "brand": "DEWALT",
+      "title": "20V MAX XR Impact Wrench, Cordless, 1/2-Inch with Detent Pin Anvil, 330-lbs of Torque, 3,100 IPM, Bare Tool Only (DCF894B)",
+      "link": "https://www.amazon.com/DEWALT-Cordless-Impact-Wrench-DCF894B/dp/B078WDTV2F/ref=sr_1_8?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-8",
+      "link_clean": "https://www.amazon.com/DEWALT-Cordless-Impact-Wrench-DCF894B/dp/B078WDTV2F/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B078WDTV2F&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61wNGSCaOBL._AC_UL320_.jpg",
+      "rating": 4.8,
+      "reviews": 3800,
+      "no_featured_offers_available": true,
+      "more_buying_choices": "$180.00 (2 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B078WDTV2F/ref=sr_1_8_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-8",
+      "purchase_options": [
+        {
+          "no_featured_offers": true,
+          "more_buying_choices": "$180.00 (2 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B078WDTV2F/ref=sr_1_8_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-8"
+        }
+      ]
+    },
+    {
+      "position": 9,
+      "asin": "B0BW1L7LJH",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "DEWALT",
+      "title": "20V MAX Impact Driver, Cordless, 3-Speed, Battery and Charger Included (DCF845P1)",
+      "link": "https://www.amazon.com/DEWALT-Cordless-3-Speed-Included-DCF845P1/dp/B0BW1L7LJH/ref=sr_1_9?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-9",
+      "link_clean": "https://www.amazon.com/DEWALT-Cordless-3-Speed-Included-DCF845P1/dp/B0BW1L7LJH/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BW1L7LJH&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51uQzYSEJpL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 206,
+      "bought_last_month": "400+ bought in past month",
+      "price": "$170.00",
+      "extracted_price": 170,
+      "old_price": "$219.00",
+      "extracted_old_price": 219,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$170.00",
+          "extracted_primary_price": 170,
+          "old_primary_price": "$219.00",
+          "extracted_old_primary_price": 219
+        }
+      ]
+    },
+    {
+      "position": 10,
+      "asin": "B09MLLK9W5",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "DEWALT",
+      "title": "ATOMIC 20V MAX 1/4 in. Brushless Cordless Impact Driver Kit with Battery and Charger Included (DCF850P1)",
+      "link": "https://www.amazon.com/DEWALT-DCF850P1-Brushless-Cordless-3-Speed/dp/B09MLLK9W5/ref=sr_1_10_mod_primary_new?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-10",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF850P1-Brushless-Cordless-3-Speed/dp/B09MLLK9W5/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09MLLK9W5&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61aaOpGy4fL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 678,
+      "bought_last_month": "500+ bought in past month",
+      "price": "$161.99",
+      "extracted_price": 161.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$156.56 (21 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09MLLK9W5/ref=sr_1_10_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-10",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$161.99",
+          "extracted_primary_price": 161.99,
+          "more_buying_choices": "$156.56 (21 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09MLLK9W5/ref=sr_1_10_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-10"
+        },
+        {
+          "type": "Another way to buy",
+          "primary_price": "$164.80",
+          "extracted_primary_price": 164.8
+        }
+      ]
+    },
+    {
+      "position": 11,
+      "asin": "B07TXN4DHD",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "DEWALT",
+      "title": "XTREME 12V MAX* Impact Driver Kit, 1/4-Inch (DCF801F2)",
+      "link": "https://www.amazon.com/DEWALT-DCF801F2-Xtreme-Brushless-Cordless/dp/B07TXN4DHD/ref=sr_1_11?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-11",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF801F2-Xtreme-Brushless-Cordless/dp/B07TXN4DHD/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07TXN4DHD&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/817yOhMTJaL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 1300,
+      "price": "$169.00",
+      "extracted_price": 169,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$169.00",
+          "extracted_primary_price": 169
+        }
+      ]
+    },
+    {
+      "position": 12,
+      "asin": "B09KVLY25Q",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "DEWALT",
+      "title": "DCF850B ATOMIC 20V MAX* 1/4 in. Brushless Cordless 3-Speed Impact Driver (Tool Only)",
+      "link": "https://www.amazon.com/DEWALT-DCF850B-Brushless-Cordless-3-Speed/dp/B09KVLY25Q/ref=sr_1_12?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-12",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF850B-Brushless-Cordless-3-Speed/dp/B09KVLY25Q/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09KVLY25Q&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/511Ba4pINuL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 370,
+      "price": "$130.00",
+      "extracted_price": 130,
+      "old_price": "$169.00",
+      "extracted_old_price": 169,
+      "delivery": [
+        "FREE delivery Nov 17 - 19"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$130.00",
+          "extracted_primary_price": 130,
+          "old_primary_price": "$169.00",
+          "extracted_old_primary_price": 169
+        }
+      ]
+    },
+    {
+      "position": 13,
+      "asin": "B07TTFNHMS",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "DEWALT",
+      "title": "XTREME 12V MAX* Impact Driver, Cordless, 1/4-Inch, Tool Only (DCF801B)",
+      "link": "https://www.amazon.com/DEWALT-DCF801B-Xtreme-Brushless-Cordless/dp/B07TTFNHMS/ref=sr_1_13?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-13",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF801B-Xtreme-Brushless-Cordless/dp/B07TTFNHMS/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07TTFNHMS&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51pnVKvbsQL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 515,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$86.99",
+      "extracted_price": 86.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 5 left in stock - order soon.",
+      "more_buying_choices": "$70.00 (23+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07TTFNHMS/ref=sr_1_13_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-13",
+      "purchase_options": [
+        {
+          "primary_price": "$86.99",
+          "extracted_primary_price": 86.99,
+          "more_buying_choices": "$70.00 (23+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07TTFNHMS/ref=sr_1_13_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-13"
+        }
+      ]
+    },
+    {
+      "position": 14,
+      "asin": "B08J8L766B",
+      "brand": "DEWALT",
+      "title": "FLEXVOLT ADVANTAGE 20V MAX* Combo Kit with Hammer Drill & Impact Driver, 5.0-Ah, 2-Tool (DCK2100P2)",
+      "link": "https://www.amazon.com/DEWALT-FLEXVOLT-ADVANTAGE-Hammer-DCK2100P2/dp/B08J8L766B/ref=sr_1_14?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-14",
+      "link_clean": "https://www.amazon.com/DEWALT-FLEXVOLT-ADVANTAGE-Hammer-DCK2100P2/dp/B08J8L766B/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08J8L766B&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61aIHQZscrS._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 745,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$390.99",
+      "extracted_price": 390.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 9 left in stock - order soon.",
+      "more_buying_choices": "$379.00 (8 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08J8L766B/ref=sr_1_14_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-14",
+      "purchase_options": [
+        {
+          "primary_price": "$390.99",
+          "extracted_primary_price": 390.99,
+          "more_buying_choices": "$379.00 (8 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08J8L766B/ref=sr_1_14_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-14"
+        }
+      ]
+    },
+    {
+      "position": 15,
+      "asin": "B0CF3ZC3SV",
+      "brand": "DEWALT",
+      "title": "20V MAX Cordless Impact Wrench, 1/2\" Hog Ring, High Torque, Brushless, Bare Tool Only (DCF961B)",
+      "link": "https://www.amazon.com/DEWALT-Cordless-Impact-Brushless-DCF961B/dp/B0CF3ZC3SV/ref=sr_1_15?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-15",
+      "link_clean": "https://www.amazon.com/DEWALT-Cordless-Impact-Brushless-DCF961B/dp/B0CF3ZC3SV/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CF3ZC3SV&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/515fcjiST0L._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 1000,
+      "bought_last_month": "800+ bought in past month",
+      "price": "$274.68",
+      "extracted_price": 274.68,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$270.53 (36 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CF3ZC3SV/ref=sr_1_15_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-15",
+      "purchase_options": [
+        {
+          "primary_price": "$274.68",
+          "extracted_primary_price": 274.68,
+          "more_buying_choices": "$270.53 (36 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CF3ZC3SV/ref=sr_1_15_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-15"
+        }
+      ]
+    },
+    {
+      "position": 16,
+      "asin": "B09HW8XD6T",
+      "brand": "DEWALT",
+      "title": "DCF913B 20V MAX* 3/8 in. Cordless Impact Wrench with Hog Ring Anvil (Tool Only)",
+      "link": "https://www.amazon.com/DEWALT-DCF913B-Cordless-Impact-Wrench/dp/B09HW8XD6T/ref=sr_1_16?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-16",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF913B-Cordless-Impact-Wrench/dp/B09HW8XD6T/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09HW8XD6T&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51JrRZNTV+L._AC_UL320_.jpg",
+      "rating": 4.8,
+      "reviews": 1500,
+      "bought_last_month": "400+ bought in past month",
+      "price": "$124.99",
+      "extracted_price": 124.99,
+      "old_price": "$149.00",
+      "extracted_old_price": 149,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$124.00 (58 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HW8XD6T/ref=sr_1_16_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-16",
+      "purchase_options": [
+        {
+          "primary_price": "$124.99",
+          "extracted_primary_price": 124.99,
+          "old_primary_price": "$149.00",
+          "extracted_old_primary_price": 149,
+          "more_buying_choices": "$124.00 (58 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HW8XD6T/ref=sr_1_16_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-16"
+        }
+      ]
+    },
+    {
+      "position": 17,
+      "asin": "B0FP14XK2J",
+      "sponsored": true,
+      "title": "Cordless Impact Wrench, 900Ft-lbs (1200N.m) 1/2\" Brushless Impact Gun with 2x 4.0Ah Battery, Fast Charger & 3 Sockets, High Torque Power Impact Driver Ideal for Car, DIY, and Truck RV/Mower (1200N.m)",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTA1NTg3MDc4MjEwMjo6MDo6&url=%2FCordless-900Ft-lbs-1200N-m-Brushless-Battery%2Fdp%2FB0FP14XK2J%2Fref%3Dsr_1_17_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-17-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0FP14XK2J/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FP14XK2J&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71Kf3liGxLL._AC_UL320_.jpg",
+      "rating": 4.3,
+      "reviews": 66,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$84.99",
+      "extracted_price": 84.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$84.99",
+          "extracted_primary_price": 84.99
+        }
+      ]
+    },
+    {
+      "position": 18,
+      "asin": "B0H4VCY8M1",
+      "sponsored": true,
+      "title": "Impact Wrench for DeWalt Battery 1328Ft-Lbs (1800N.m) Impact Driver",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTQ3NjEwMjMwMjYwMjo6MDo6&url=%2FAIDERAR-Battery-1328Ft-Lbs-1800N-m-Equipment%2Fdp%2FB0H4VCY8M1%2Fref%3Dsr_1_18_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-18-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0H4VCY8M1/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H4VCY8M1&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71DA3pnxwbL._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 55,
+      "bought_last_month": "200+ bought in past month",
+      "price": "$89.99",
+      "extracted_price": 89.99,
+      "old_price": "$124.99",
+      "extracted_old_price": 124.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$89.99",
+          "extracted_primary_price": 89.99,
+          "old_primary_price": "$124.99",
+          "extracted_old_primary_price": 124.99
+        }
+      ]
+    },
+    {
+      "position": 19,
+      "asin": "B0FXM7V5ND",
+      "sponsored": true,
+      "title": "Cordless Impact Wrench for DeWALT 20V MAX Battery,1500Nm (1106 Ft-Lbs) 1/2\" Brushless Impact Gun, LED Work Light, 3-Speed High Torque Power Tool for Tire Removal, Rusted Bolts (No Battery)",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTA5NjUwODMyNjgwMjo6MDo6&url=%2FCordless-Battery-Brushless-3-Speed-Removal%2Fdp%2FB0FXM7V5ND%2Fref%3Dsr_1_19_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-19-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0FXM7V5ND/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FXM7V5ND&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71yzUBgchyL._AC_UL320_.jpg",
+      "rating": 4.3,
+      "reviews": 149,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$69.99",
+      "extracted_price": 69.99,
+      "old_price": "$79.99",
+      "extracted_old_price": 79.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$69.99",
+          "extracted_primary_price": 69.99,
+          "old_primary_price": "$79.99",
+          "extracted_old_primary_price": 79.99
+        }
+      ]
+    },
+    {
+      "position": 20,
+      "asin": "B0FJRQ1CG6",
+      "sponsored": true,
+      "title": "GZWEQI 20V 1/2 inch Brushless Impact Wrench 737 ft-lbs (1000N.m),Body only",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTA3MjA0MzIxMDIwMjo6MDo6&url=%2FGZWEQI-Brushless-Impact-1000N-m-Cordless%2Fdp%2FB0FJRQ1CG6%2Fref%3Dsr_1_20_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-20-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0FJRQ1CG6/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FJRQ1CG6&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/7171bVlfg5L._AC_UL320_.jpg",
+      "rating": 4,
+      "reviews": 2,
+      "price": "$55.99",
+      "extracted_price": 55.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 17 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$55.99",
+          "extracted_primary_price": 55.99
+        }
+      ]
+    },
+    {
+      "position": 21,
+      "asin": "B0DQYPZLMR",
+      "brand": "DEWALT",
+      "title": "20V MAX 1/4 Inch Hydraulic Impact Driver (DCF870B)",
+      "link": "https://www.amazon.com/DEWALT-Cordless-Hydraulic-Impact-DCF870B/dp/B0DQYPZLMR/ref=sr_1_21?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-21",
+      "link_clean": "https://www.amazon.com/DEWALT-Cordless-Hydraulic-Impact-DCF870B/dp/B0DQYPZLMR/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DQYPZLMR&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61ahqL+HeVL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 909,
+      "bought_last_month": "1K+ bought in past month",
+      "price": "$176.98",
+      "extracted_price": 176.98,
+      "old_price": "$199.00",
+      "extracted_old_price": 199,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$172.99 (19 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DQYPZLMR/ref=sr_1_21_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-21",
+      "purchase_options": [
+        {
+          "primary_price": "$176.98",
+          "extracted_primary_price": 176.98,
+          "old_primary_price": "$199.00",
+          "extracted_old_primary_price": 199,
+          "more_buying_choices": "$172.99 (19 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DQYPZLMR/ref=sr_1_21_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-21"
+        }
+      ]
+    },
+    {
+      "position": 22,
+      "asin": "B00EQ53HG4",
+      "brand": "DEWALT",
+      "title": "20V MAX XR Cordless Ratchet, 3/8\" and 1/2\" Sealed Head Ratchet, Bare Tool Only (DCF510B)",
+      "link": "https://www.amazon.com/DEWALT-Sealed-Head-Ratchet-DCF510B/dp/B00EQ53HG4/ref=sr_1_22_mod_primary_new?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-22",
+      "link_clean": "https://www.amazon.com/DEWALT-Sealed-Head-Ratchet-DCF510B/dp/B00EQ53HG4/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00EQ53HG4&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61O7wKV1qHL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 1400,
+      "bought_last_month": "1K+ bought in past month",
+      "price": "$192.00",
+      "extracted_price": 192,
+      "old_price": "$279.00",
+      "extracted_old_price": 279,
+      "delivery": [
+        "FREE delivery Sat, Nov 14",
+        "Or fastest delivery Fri, Nov 13"
+      ],
+      "stock": "Only 17 left in stock - order soon.",
+      "more_buying_choices": "$171.00 (19 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00EQ53HG4/ref=sr_1_22_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-22",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$192.00",
+          "extracted_primary_price": 192,
+          "old_primary_price": "$279.00",
+          "extracted_old_primary_price": 279,
+          "more_buying_choices": "$171.00 (19 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00EQ53HG4/ref=sr_1_22_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-22"
+        },
+        {
+          "type": "Another way to buy",
+          "primary_price": "$193.99",
+          "extracted_primary_price": 193.99,
+          "old_primary_price": "$279.00",
+          "extracted_old_primary_price": 279
+        }
+      ]
+    },
+    {
+      "position": 23,
+      "asin": "B09HVXKJF6",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "DEWALT",
+      "title": "DCF911B 20V MAX* 1/2\" Impact Wrench with Hog Ring Anvil (Tool Only)",
+      "link": "https://www.amazon.com/DEWALT-DCF911B-Impact-Wrench-Anvil/dp/B09HVXKJF6/ref=sr_1_23?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-23",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF911B-Impact-Wrench-Anvil/dp/B09HVXKJF6/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09HVXKJF6&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/5152miZIZSL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 2900,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$154.99",
+      "extracted_price": 154.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$154.49 (13 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HVXKJF6/ref=sr_1_23_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-23",
+      "purchase_options": [
+        {
+          "primary_price": "$154.99",
+          "extracted_primary_price": 154.99,
+          "more_buying_choices": "$154.49 (13 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HVXKJF6/ref=sr_1_23_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-23"
+        }
+      ]
+    },
+    {
+      "position": 24,
+      "asin": "B0BV17VLYG",
+      "tags": [
+        "Battery Powered"
+      ],
+      "badges": [
+        "Best Seller in Power Impact Drivers",
+        "Limited time deal"
+      ],
+      "brand": "DEWALT",
+      "title": "20V MAX Impact Driver, 1/4 Inch, Battery and Charger Included (DCF787D1)",
+      "link": "https://www.amazon.com/DEWALT-Battery-Charger-Included-DCF787D1/dp/B0BV17VLYG/ref=sr_1_24?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-24",
+      "link_clean": "https://www.amazon.com/DEWALT-Battery-Charger-Included-DCF787D1/dp/B0BV17VLYG/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BV17VLYG&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/711K5I8vD+L._AC_UL320_.jpg",
+      "rating": 4.8,
+      "reviews": 1800,
+      "bought_last_month": "1K+ bought in past month",
+      "price": "$98.99",
+      "extracted_price": 98.99,
+      "old_price": "$179.00",
+      "extracted_old_price": 179,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$98.99",
+          "extracted_primary_price": 98.99,
+          "old_primary_price": "$179.00",
+          "extracted_old_primary_price": 179
+        }
+      ]
+    },
+    {
+      "position": 25,
+      "asin": "B0FTTW9HT1",
+      "sponsored": true,
+      "title": "Cordless Impact Wrench 1/2\" for Dewalt 20V Battery",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTA5ODA1NTY1MTQwMjo6MDo6&url=%2FACROPOW-Cordless-1700FT-LBS-Brushless-Auto-Stop%2Fdp%2FB0FTTW9HT1%2Fref%3Dsr_1_25_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-25-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0FTTW9HT1/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FTTW9HT1&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61npLxAEL7L._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 75,
+      "price": "$109.99",
+      "extracted_price": 109.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$109.99",
+          "extracted_primary_price": 109.99
+        }
+      ]
+    },
+    {
+      "position": 26,
+      "asin": "B0HCTK4BLL",
+      "sponsored": true,
+      "title": "NA016760 Impact Wrench Front Cover Compatible With DeWalt DCF891N",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTQxMTQ5OTMxMTYwMjo6MDo6&url=%2FNxvsayy-NA016760-Impact-Compatible-DCF891N%2Fdp%2FB0HCTK4BLL%2Fref%3Dsr_1_26_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-26-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0HCTK4BLL/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HCTK4BLL&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51FriLzmmoL._AC_UL320_.jpg",
+      "price": "$33.92",
+      "extracted_price": 33.92,
+      "delivery": [
+        "FREE delivery Wed, Nov 25"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$33.92",
+          "extracted_primary_price": 33.92
+        }
+      ]
+    },
+    {
+      "position": 27,
+      "asin": "B0HQGDLWH9",
+      "sponsored": true,
+      "title": "NA020584 Impact Wrench Gearcase for DeWalt DCF891N, DCF891B",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTY0MjA2MzQ4MjcwMjo6MDo6&url=%2FNA020584-Gearcase-Direct-fit-gearcase-alignment%2Fdp%2FB0HQGDLWH9%2Fref%3Dsr_1_27_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-27-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0HQGDLWH9/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HQGDLWH9&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/611dp4RC8RL._AC_UL320_.jpg",
+      "price": "$100.83",
+      "extracted_price": 100.83,
+      "delivery": [
+        "FREE delivery Fri, Nov 27",
+        "Or fastest delivery Nov 17 - 19"
+      ],
+      "stock": "Only 15 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$100.83",
+          "extracted_primary_price": 100.83
+        }
+      ]
+    },
+    {
+      "position": 28,
+      "asin": "B0HQG2WS5V",
+      "sponsored": true,
+      "title": "NA016971 Impact Wrench Impactor for DeWalt DCF891B, DCF891N",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTY0NjkxMTA4ODIwMjo6MDo6&url=%2FNA016971-Impactor-Direct-fit-impactor-restores%2Fdp%2FB0HQG2WS5V%2Fref%3Dsr_1_28_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-28-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0HQG2WS5V/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HQG2WS5V&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51Y7sADtjSL._AC_UL320_.jpg",
+      "price": "$154.24",
+      "extracted_price": 154.24,
+      "delivery": [
+        "FREE delivery Fri, Nov 27",
+        "Or fastest delivery Nov 17 - 19"
+      ],
+      "stock": "Only 15 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$154.24",
+          "extracted_primary_price": 154.24
+        }
+      ]
+    },
+    {
+      "position": 29,
+      "asin": "B0DXK936XN",
+      "title": "NA142744 NA142746 Replaces for Dewalt DCF891 DCF892 Hog Ring 1/2˝Anvil Assy DCF891B DCF891N DCF892N DCF892NT DCF892P2T DCF892M2T Cordless Brushless Torque Impact Wrench",
+      "link": "https://www.amazon.com/NA142744-NA142746-DCF892P2T-DCF892M2T-Brushless/dp/B0DXK936XN/ref=sr_1_29?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-29",
+      "link_clean": "https://www.amazon.com/NA142744-NA142746-DCF892P2T-DCF892M2T-Brushless/dp/B0DXK936XN/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DXK936XN&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51+MZM7CtML._AC_UL320_.jpg",
+      "rating": 5,
+      "reviews": 13,
+      "price": "$25.88",
+      "extracted_price": 25.88,
+      "save_with_coupon": "You pay $24.58 with coupon",
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14 on $35 of items shipped by Amazon"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$25.88",
+          "extracted_primary_price": 25.88
+        }
+      ]
+    },
+    {
+      "position": 30,
+      "asin": "B09HSBYNXK",
+      "brand": "DEWALT",
+      "title": "DCF903B XTREME 12V MAX* Brushless 3/8 in. Cordless Impact Wrench (Tool Only)",
+      "link": "https://www.amazon.com/DEWALT-DCF903B-XTREME-Brushless-Cordless/dp/B09HSBYNXK/ref=sr_1_30?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-30",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF903B-XTREME-Brushless-Cordless/dp/B09HSBYNXK/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09HSBYNXK&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51j9q6AA8NL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 251,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$118.65",
+      "extracted_price": 118.65,
+      "old_price": "$128.00",
+      "extracted_old_price": 128,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 1 left in stock - order soon.",
+      "more_buying_choices": "$104.98 (31+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HSBYNXK/ref=sr_1_30_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-30",
+      "purchase_options": [
+        {
+          "primary_price": "$118.65",
+          "extracted_primary_price": 118.65,
+          "old_primary_price": "$128.00",
+          "extracted_old_primary_price": 128,
+          "more_buying_choices": "$104.98 (31+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HSBYNXK/ref=sr_1_30_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-30"
+        }
+      ]
+    },
+    {
+      "position": 31,
+      "asin": "B0FB3N5CN2",
+      "title": "DCF891 DCF892 NA142746 NA142744 Replaces for Dewalt 1/2˝ Anvil Assy DCF891B DCF891N DCF892N DCF892NT DCF892P2T DCF892M2T Cordless Brushless Torque Impact Wrench",
+      "link": "https://www.amazon.com/NA142746-NA142744-DCF892P2T-DCF892M2T-Brushless/dp/B0FB3N5CN2/ref=sr_1_31?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-31",
+      "link_clean": "https://www.amazon.com/NA142746-NA142744-DCF892P2T-DCF892M2T-Brushless/dp/B0FB3N5CN2/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FB3N5CN2&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61aTfZxUfhL._AC_UL320_.jpg",
+      "rating": 4.2,
+      "reviews": 3,
+      "price": "$25.88",
+      "extracted_price": 25.88,
+      "save_with_coupon": "You pay $24.58 with coupon",
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14 on $35 of items shipped by Amazon"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$25.88",
+          "extracted_primary_price": 25.88
+        }
+      ]
+    },
+    {
+      "position": 32,
+      "asin": "B0GVVN94T5",
+      "tags": [
+        "Battery Powered"
+      ],
+      "badges": [
+        "Limited time deal"
+      ],
+      "brand": "DEWALT",
+      "title": "20V MAX XR Brushless Hammer Drill 1/2 in. and High Torque 1/4 Impact Driver Combo with 2 x 4 Ah Batteries and 4 Amp Charger (DCK2112QQ2)",
+      "link": "https://www.amazon.com/DEWALT-Brushless-Batteries-Charger-DCK2112QQ2/dp/B0GVVN94T5/ref=sr_1_32?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-32",
+      "link_clean": "https://www.amazon.com/DEWALT-Brushless-Batteries-Charger-DCK2112QQ2/dp/B0GVVN94T5/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GVVN94T5&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/813DBMuizAL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 31,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$349.00",
+      "extracted_price": 349,
+      "old_price": "$449.00",
+      "extracted_old_price": 449,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$349.00",
+          "extracted_primary_price": 349,
+          "old_primary_price": "$449.00",
+          "extracted_old_primary_price": 449
+        }
+      ]
+    },
+    {
+      "position": 33,
+      "asin": "B0H93QPDC2",
+      "sponsored": true,
+      "title": "NA142744 Anvil Assembly Compatible With DeWalt DCF891B DCF891N",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTM4MTc5NTk3ODcwMjo6MDo6&url=%2FNxvsayy-NA142744-Compatible-DCF891B-DCF891N%2Fdp%2FB0H93QPDC2%2Fref%3Dsr_1_33_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-33-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0H93QPDC2/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H93QPDC2&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/4191HVe2SGL._AC_UL320_.jpg",
+      "price": "$38.92",
+      "extracted_price": 38.92,
+      "delivery": [
+        "FREE delivery Wed, Nov 25"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$38.92",
+          "extracted_primary_price": 38.92
+        }
+      ]
+    },
+    {
+      "position": 34,
+      "asin": "B0FDVXVJCN",
+      "sponsored": true,
+      "title": "1/2\" Cordless Impact Wrench | 1300N.m (960ft-lbs) | Fast Charger",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTAyOTkxNDI2ODIwMjo6MDo6&url=%2FCORANEX-Cordless-1300N-m-960ft-lbs-Batteries%2Fdp%2FB0FDVXVJCN%2Fref%3Dsr_1_34_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-34-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0FDVXVJCN/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FDVXVJCN&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/81TD3e2DL9L._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 298,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$79.99",
+      "extracted_price": 79.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$79.99",
+          "extracted_primary_price": 79.99
+        }
+      ]
+    },
+    {
+      "position": 35,
+      "asin": "B0HQNL1PKM",
+      "sponsored": true,
+      "title": "NA142744 Impact Wrench Anvil Assembly for DeWalt DCF891B, DCF891N",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTY1MjE1NDQxMjIwMjo6MDo6&url=%2FNA142744-Assembly-DCF891B-Replacement-restores%2Fdp%2FB0HQNL1PKM%2Fref%3Dsr_1_35_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-35-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0HQNL1PKM/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HQNL1PKM&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/31JHr6Ey0xL._AC_UL320_.jpg",
+      "price": "$99.95",
+      "extracted_price": 99.95,
+      "delivery": [
+        "FREE delivery Fri, Nov 27",
+        "Or fastest delivery Nov 17 - 19"
+      ],
+      "stock": "Only 15 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$99.95",
+          "extracted_primary_price": 99.95
+        }
+      ]
+    },
+    {
+      "position": 36,
+      "asin": "B0HN1TBD9C",
+      "sponsored": true,
+      "options": "See options",
+      "options_link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTY0NDQ3MDI0OTEwMjo6MDo6&url=%2FProtmex-900Ft-lbs-Brushless-Batteries-ImpactMotor%2Fdp%2FB0HN1TBD9C%2Fref%3Dsr_1_36_so_WRENCH%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-36-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "title": "Cordless Impact Wrench, 900Ft-lbs (1200N.m) 1/2\" Brushless Impact Gun, 21V High Torque Power Impact Driver, 2x4.0Ah Batteries Electric ImpactMotor Variable Speeds for Car/Pickup Truck/Mower",
+      "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyMTgxODQyMzk2MTk0OTYzOjE3OTQyNzY5NTA6c3BfbXRmOjMwMTY0NDQ3MDI0OTEwMjo6MDo6&url=%2FProtmex-900Ft-lbs-Brushless-Batteries-ImpactMotor%2Fdp%2FB0HN1TBD9C%2Fref%3Dsr_1_36_sspa%3Fdib%3DeyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCF891B%26qid%3D1794276950%26sr%3D8-36-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+      "link_clean": "https://www.amazon.com/dp/B0HN1TBD9C/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HN1TBD9C&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/714GwUQvTeL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 1900,
+      "price": "$99.99",
+      "extracted_price": 99.99,
+      "old_price": "$129.99",
+      "extracted_old_price": 129.99,
+      "offers": [
+        "Save 5% on 2 select item(s)"
+      ],
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$99.99",
+          "extracted_primary_price": 99.99,
+          "old_primary_price": "$129.99",
+          "extracted_old_primary_price": 129.99
+        }
+      ]
+    },
+    {
+      "position": 37,
+      "asin": "B0CSFWMT52",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/860ft-lbs-Cordless-Brushless-2300RPM-Battery/dp/B0CSFWMT52/ref=sr_1_37_so_WRENCH?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-37",
+      "title": "1600N.m (1180ft-lbs) Cordless Impact Wrench, 1/2 High Torque Brushless Impact Gun, 2400RPM Power, 2 x 4.0Ah Batteries, Fast Charger, Impact Wrench for Heavy Duty Truck RV Mower",
+      "link": "https://www.amazon.com/860ft-lbs-Cordless-Brushless-2300RPM-Battery/dp/B0CSFWMT52/ref=sr_1_37?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-37",
+      "link_clean": "https://www.amazon.com/860ft-lbs-Cordless-Brushless-2300RPM-Battery/dp/B0CSFWMT52/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CSFWMT52&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/81AgDa3NpZL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 285,
+      "bought_last_month": "200+ bought in past month",
+      "price": "$119.99",
+      "extracted_price": 119.99,
+      "old_price": "$139.99",
+      "extracted_old_price": 139.99,
+      "offers": [
+        "Save 10% on 3 select item(s)"
+      ],
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$119.99",
+          "extracted_primary_price": 119.99,
+          "old_primary_price": "$139.99",
+          "extracted_old_primary_price": 139.99
+        }
+      ]
+    },
+    {
+      "position": 38,
+      "asin": "B0FMXY44N7",
+      "title": "NA016971 Replaces for Dewalt DCF891 DCF891B DCF891N DCF892 DCF892NT",
+      "link": "https://www.amazon.com/NA016971-Assembly-Impactor-Replacement-DCF892M2T/dp/B0FMXY44N7/ref=sr_1_38?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-38",
+      "link_clean": "https://www.amazon.com/NA016971-Assembly-Impactor-Replacement-DCF892M2T/dp/B0FMXY44N7/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FMXY44N7&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61JR2N1jZZL._AC_UL320_.jpg",
+      "rating": 5,
+      "reviews": 1,
+      "price": "$73.88",
+      "extracted_price": 73.88,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 1 left in stock - order soon.",
+      "more_buying_choices": "$62.80 (2 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FMXY44N7/ref=sr_1_38_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-38",
+      "purchase_options": [
+        {
+          "primary_price": "$73.88",
+          "extracted_primary_price": 73.88,
+          "more_buying_choices": "$62.80 (2 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FMXY44N7/ref=sr_1_38_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-38"
+        }
+      ]
+    },
+    {
+      "position": 39,
+      "asin": "B07K4XN3HB",
+      "brand": "DEWALT",
+      "title": "20V MAX Tool Connect 1/2\" Mid-Range Impact Wrench with Hog Ring Anvil, Tool Only (DCF896HB)",
+      "link": "https://www.amazon.com/DEWALT-DCF896HB-Connect-Mid-Range-Impact/dp/B07K4XN3HB/ref=sr_1_39?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-39",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF896HB-Connect-Mid-Range-Impact/dp/B07K4XN3HB/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07K4XN3HB&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61w2QxhMn1L._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 40,
+      "price": "$269.00",
+      "extracted_price": 269,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$269.00",
+          "extracted_primary_price": 269
+        }
+      ]
+    },
+    {
+      "position": 40,
+      "asin": "B0FDFGN1YT",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/SOARFLY-Upgraded-Brushless-Batteries-Heavy-Duty/dp/B0FDFGN1YT/ref=sr_1_40_so_WRENCH?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-40",
+      "title": "Cordless Impact Wrench 1/2\", 900 Ft-Lbs(1200N.m), 2x4.0Ah Batteries",
+      "link": "https://www.amazon.com/SOARFLY-Upgraded-Brushless-Batteries-Heavy-Duty/dp/B0FDFGN1YT/ref=sr_1_40?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-40",
+      "link_clean": "https://www.amazon.com/SOARFLY-Upgraded-Brushless-Batteries-Heavy-Duty/dp/B0FDFGN1YT/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FDFGN1YT&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/81sV5YGPLRL._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 551,
+      "bought_last_month": "300+ bought in past month",
+      "price": "$89.99",
+      "extracted_price": 89.99,
+      "old_price": "$99.99",
+      "extracted_old_price": 99.99,
+      "offers": [
+        "Exclusive Prime price"
+      ],
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$89.99",
+          "extracted_primary_price": 89.99,
+          "old_primary_price": "$99.99",
+          "extracted_old_primary_price": 99.99
+        }
+      ]
+    },
+    {
+      "position": 41,
+      "asin": "B01M751WC3",
+      "brand": "DEWALT",
+      "title": "20V MAX Premium Lithium-Ion 6.0Ah Battery Pack (2 Pack)",
+      "link": "https://www.amazon.com/DEWALT-Battery-Premium-Double-DCB206-2/dp/B01M751WC3/ref=sr_1_41?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-41",
+      "link_clean": "https://www.amazon.com/DEWALT-Battery-Premium-Double-DCB206-2/dp/B01M751WC3/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01M751WC3&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/712inJGv3jL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 9200,
+      "bought_last_month": "3K+ bought in past month",
+      "price": "$279.00",
+      "extracted_price": 279,
+      "price_unit": "$139.50/count",
+      "extracted_price_unit": 139.5,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$117.10 (2+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M751WC3/ref=sr_1_41_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-41",
+      "purchase_options": [
+        {
+          "primary_price": "$279.00",
+          "extracted_primary_price": 279,
+          "more_buying_choices": "$117.10 (2+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M751WC3/ref=sr_1_41_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-41"
+        }
+      ]
+    },
+    {
+      "position": 42,
+      "asin": "B07TXN17NS",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/DEWALT-DCF601F2-Brushless-Cordless-Screwdriver/dp/B07TXN17NS/ref=sr_1_42_so_POWERED_SCREWDRIVER?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-42",
+      "brand": "DEWALT",
+      "title": "XTREME 12V MAX* Cordless Screwdriver, 1/4-Inch, 2-Ah Batteries (DCF601F2)",
+      "link": "https://www.amazon.com/DEWALT-DCF601F2-Brushless-Cordless-Screwdriver/dp/B07TXN17NS/ref=sr_1_42?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-42",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF601F2-Brushless-Cordless-Screwdriver/dp/B07TXN17NS/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07TXN17NS&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/614WcsY7WBL._AC_UL320_.jpg",
+      "rating": 4.8,
+      "reviews": 1000,
+      "no_featured_offers_available": true,
+      "more_buying_choices": "$170.05 (2 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07TXN17NS/ref=sr_1_42_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-42",
+      "purchase_options": [
+        {
+          "no_featured_offers": true,
+          "more_buying_choices": "$170.05 (2 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07TXN17NS/ref=sr_1_42_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-42"
+        }
+      ]
+    },
+    {
+      "position": 43,
+      "asin": "B0CF4V2YZF",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/DEWALT-DCF500B-Brushless-Cordless-Ratchet/dp/B0CF4V2YZF/ref=sr_1_43_so_ROTARY_TOOL?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-43",
+      "brand": "DEWALT",
+      "title": "DCF500B XTREME 12V MAX* 3/8\" and 1/4\" Brushless Cordless Sealed Head Ratchet (Tool Only)",
+      "link": "https://www.amazon.com/DEWALT-DCF500B-Brushless-Cordless-Ratchet/dp/B0CF4V2YZF/ref=sr_1_43?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-43",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF500B-Brushless-Cordless-Ratchet/dp/B0CF4V2YZF/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CF4V2YZF&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51ST6qnkpaL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 63,
+      "no_featured_offers_available": true,
+      "more_buying_choices": "$269.00 (11 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CF4V2YZF/ref=sr_1_43_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-43",
+      "purchase_options": [
+        {
+          "no_featured_offers": true,
+          "more_buying_choices": "$269.00 (11 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CF4V2YZF/ref=sr_1_43_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-43"
+        }
+      ]
+    },
+    {
+      "position": 44,
+      "asin": "B0BHB7JFFY",
+      "brand": "Amazon Renewed",
+      "title": "DCF891BR 20V MAX XR Brushless Lithium-Ion 1/2 in. Cordless Mid-Range Impact Wrench with Hog Ring Anvil (Tool Only) (Renewed)",
+      "link": "https://www.amazon.com/DCF891BR-Brushless-Lithium-Ion-Cordless-Mid-Range/dp/B0BHB7JFFY/ref=sr_1_44?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-44",
+      "link_clean": "https://www.amazon.com/DCF891BR-Brushless-Lithium-Ion-Cordless-Mid-Range/dp/B0BHB7JFFY/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BHB7JFFY&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71W5NQYR-oL._AC_UL320_.jpg",
+      "rating": 4,
+      "reviews": 21
+    },
+    {
+      "position": 45,
+      "asin": "B09MLMFJHF",
+      "brand": "DEWALT",
+      "title": "ATOMIC 20V MAX* 1/2 in. Cordless Impact Wrench with Detent Pin Anvil (Tool Only) (DCF922B)",
+      "link": "https://www.amazon.com/DEWALT-ATOMIC-Cordless-Impact-DCF922B/dp/B09MLMFJHF/ref=sr_1_45?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-45",
+      "link_clean": "https://www.amazon.com/DEWALT-ATOMIC-Cordless-Impact-DCF922B/dp/B09MLMFJHF/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09MLMFJHF&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51YmSkNbKsL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 329,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$178.33",
+      "extracted_price": 178.33,
+      "delivery": [
+        "FREE delivery Nov 16 - 18",
+        "Or fastest delivery Mon, Nov 16"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$178.33",
+          "extracted_primary_price": 178.33
+        }
+      ]
+    },
+    {
+      "position": 46,
+      "asin": "B0F5Z3C7NR",
+      "brand": "DEWALT",
+      "title": "20V MAX XR Cordless Impact Wrench Kit, 1/2” Hog Ring, High Torque, Brushless, Includes POWERSTACK Battery and Charger (DCF961GH1)",
+      "link": "https://www.amazon.com/DEWALT-Cordless-Brushless-POWERSTACK-DCF961GH1/dp/B0F5Z3C7NR/ref=sr_1_46?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-46",
+      "link_clean": "https://www.amazon.com/DEWALT-Cordless-Brushless-POWERSTACK-DCF961GH1/dp/B0F5Z3C7NR/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F5Z3C7NR&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/816KCF7IDeL._AC_UL320_.jpg",
+      "rating": 4.9,
+      "reviews": 49,
+      "price": "$434.99",
+      "extracted_price": 434.99,
+      "old_price": "$549.00",
+      "extracted_old_price": 549,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 11 left in stock - order soon.",
+      "more_buying_choices": "$408.40 (13 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F5Z3C7NR/ref=sr_1_46_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-46",
+      "purchase_options": [
+        {
+          "primary_price": "$434.99",
+          "extracted_primary_price": 434.99,
+          "old_primary_price": "$549.00",
+          "extracted_old_primary_price": 549,
+          "more_buying_choices": "$408.40 (13 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F5Z3C7NR/ref=sr_1_46_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-46"
+        }
+      ]
+    },
+    {
+      "position": 47,
+      "asin": "B0GL9MQBBT",
+      "brand": "DEWALT",
+      "title": "20V MAX* XR Brushless 1/4 in. & 3/8 in. Sealed Head Ratchet (Tool Only) (DCF520B)",
+      "link": "https://www.amazon.com/DEWALT-Brushless-Sealed-Ratchet-DCF520B/dp/B0GL9MQBBT/ref=sr_1_47?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-47",
+      "link_clean": "https://www.amazon.com/DEWALT-Brushless-Sealed-Ratchet-DCF520B/dp/B0GL9MQBBT/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GL9MQBBT&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61qUMoIJh5L._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 48,
+      "bought_last_month": "200+ bought in past month",
+      "price": "$257.75",
+      "extracted_price": 257.75,
+      "old_price": "$279.00",
+      "extracted_old_price": 279,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$257.75",
+          "extracted_primary_price": 257.75,
+          "old_primary_price": "$279.00",
+          "extracted_old_primary_price": 279
+        }
+      ]
+    },
+    {
+      "position": 48,
+      "asin": "B0DFLKLM4M",
+      "title": "Cordless Impact Wrench for DEWALT 20V Battery",
+      "link": "https://www.amazon.com/ACROPOW-Cordless-Compatible-Battery-Brushless/dp/B0DFLKLM4M/ref=sr_1_48?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-48",
+      "link_clean": "https://www.amazon.com/ACROPOW-Cordless-Compatible-Battery-Brushless/dp/B0DFLKLM4M/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DFLKLM4M&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61tpbA72LZL._AC_UL320_.jpg",
+      "rating": 4.3,
+      "reviews": 163,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$49.99",
+      "extracted_price": 49.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$49.99",
+          "extracted_primary_price": 49.99
+        }
+      ]
+    },
+    {
+      "position": 49,
+      "asin": "B0FJFFHK8D",
+      "title": "1500 FT-LBS(2000N.M) Cordless Impact Wrench, 1/2\" High Torque",
+      "link": "https://www.amazon.com/ALLOYPOWER-Cordless-Brushless-2000N-m-Electric/dp/B0FJFFHK8D/ref=sr_1_49?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-49",
+      "link_clean": "https://www.amazon.com/ALLOYPOWER-Cordless-Brushless-2000N-m-Electric/dp/B0FJFFHK8D/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FJFFHK8D&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71rhTll+hrL._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 392,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$159.99",
+      "extracted_price": 159.99,
+      "old_price": "$179.99",
+      "extracted_old_price": 179.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$159.99",
+          "extracted_primary_price": 159.99,
+          "old_primary_price": "$179.99",
+          "extracted_old_primary_price": 179.99
+        }
+      ]
+    },
+    {
+      "position": 50,
+      "asin": "B0BW1TP6SK",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "DEWALT",
+      "title": "20V MAX Impact Driver, Cordless, 3-Speed, 2 Batteries and Charger Included (DCF845P2)",
+      "link": "https://www.amazon.com/DEWALT-Cordless-Batteries-Included-DCF845P2/dp/B0BW1TP6SK/ref=sr_1_50?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-50",
+      "link_clean": "https://www.amazon.com/DEWALT-Cordless-Batteries-Included-DCF845P2/dp/B0BW1TP6SK/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BW1TP6SK&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51l43niNrXL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 78,
+      "price": "$249.00",
+      "extracted_price": 249,
+      "old_price": "$285.00",
+      "extracted_old_price": 285,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$247.00 (8 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BW1TP6SK/ref=sr_1_50_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-50",
+      "purchase_options": [
+        {
+          "primary_price": "$249.00",
+          "extracted_primary_price": 249,
+          "old_primary_price": "$285.00",
+          "extracted_old_primary_price": 285,
+          "more_buying_choices": "$247.00 (8 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BW1TP6SK/ref=sr_1_50_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-50"
+        }
+      ]
+    },
+    {
+      "position": 51,
+      "asin": "B09HSCRWHF",
+      "brand": "DEWALT",
+      "title": "DCF901B XTREME 12V MAX* Brushless 1/2 in. Cordless Impact Wrench (Tool Only)",
+      "link": "https://www.amazon.com/DEWALT-DCF901B-XTREME-Brushless-Cordless/dp/B09HSCRWHF/ref=sr_1_51_mod_primary_new?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-51",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF901B-XTREME-Brushless-Cordless/dp/B09HSCRWHF/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09HSCRWHF&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51YMk6CUzML._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 488,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$95.00",
+      "extracted_price": 95,
+      "delivery": [
+        "FREE delivery Mon, Nov 16",
+        "Or fastest delivery Fri, Nov 13"
+      ],
+      "stock": "Only 4 left in stock - order soon.",
+      "more_buying_choices": "$90.09 (23+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HSCRWHF/ref=sr_1_51_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-51",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$95.00",
+          "extracted_primary_price": 95,
+          "more_buying_choices": "$90.09 (23+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HSCRWHF/ref=sr_1_51_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-51"
+        },
+        {
+          "type": "Get it faster",
+          "primary_price": "$104.00",
+          "extracted_primary_price": 104
+        }
+      ]
+    },
+    {
+      "position": 52,
+      "asin": "B00WJA1J68",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/DEWALT-DCF899B-Brushless-Torque-Impact/dp/B00WJA1J68/ref=sr_1_52_so_WRENCH?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-52",
+      "brand": "DEWALT",
+      "title": "20V MAX XR Brushless High Torque 1/2\" Impact Wrench with Detent Anvil, Cordless, Tool Only (DCF899B)",
+      "link": "https://www.amazon.com/DEWALT-DCF899B-Brushless-Torque-Impact/dp/B00WJA1J68/ref=sr_1_52?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-52",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF899B-Brushless-Torque-Impact/dp/B00WJA1J68/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00WJA1J68&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61NzXF9dWUL._AC_UL320_.jpg",
+      "rating": 4.8,
+      "reviews": 5700,
+      "no_featured_offers_available": true,
+      "top_rated": true,
+      "more_buying_choices": "$420.71 (1 new offer)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00WJA1J68/ref=sr_1_52_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-52",
+      "purchase_options": [
+        {
+          "no_featured_offers": true,
+          "more_buying_choices": "$420.71 (1 new offer)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00WJA1J68/ref=sr_1_52_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-52"
+        }
+      ]
+    },
+    {
+      "position": 53,
+      "asin": "B0FXM7V5ND",
+      "title": "Cordless Impact Wrench for DeWALT 20V MAX Battery,1500Nm (1106 Ft-Lbs) 1/2\" Brushless Impact Gun, LED Work Light, 3-Speed High Torque Power Tool for Tire Removal, Rusted Bolts (No Battery)",
+      "link": "https://www.amazon.com/Cordless-Battery-Brushless-3-Speed-Removal/dp/B0FXM7V5ND/ref=sr_1_53?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-53",
+      "link_clean": "https://www.amazon.com/Cordless-Battery-Brushless-3-Speed-Removal/dp/B0FXM7V5ND/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FXM7V5ND&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71yzUBgchyL._AC_UL320_.jpg",
+      "rating": 4.3,
+      "reviews": 149,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$69.99",
+      "extracted_price": 69.99,
+      "old_price": "$79.99",
+      "extracted_old_price": 79.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$69.99",
+          "extracted_primary_price": 69.99,
+          "old_primary_price": "$79.99",
+          "extracted_old_primary_price": 79.99
+        }
+      ]
+    },
+    {
+      "position": 54,
+      "asin": "B0FN4YFYDF",
+      "title": "Brushless Impact Wrench for DeWalt Battery 20V, 1500Nm (1106 Ft-Lbs) 1/2\" Cordless, 3-Speed High Torque Power Tool for Tire Removal, Rusted Bolts & Heavy Equipment (No Battery)",
+      "link": "https://www.amazon.com/Yangtzone-Brushless-Battery-Cordless-Equipment/dp/B0FN4YFYDF/ref=sr_1_54?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-54",
+      "link_clean": "https://www.amazon.com/Yangtzone-Brushless-Battery-Cordless-Equipment/dp/B0FN4YFYDF/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FN4YFYDF&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51WH0LlvSQL._AC_UL320_.jpg",
+      "rating": 5,
+      "reviews": 7,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$59.99",
+      "extracted_price": 59.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$59.99",
+          "extracted_primary_price": 59.99
+        }
+      ]
+    },
+    {
+      "position": 55,
+      "asin": "B0H7VL4BXG",
+      "title": "PB891-92B Rubber Boot with Holder for DEWALT 20V DCF891 DCF892 Impact Wrench",
+      "link": "https://www.amazon.com/PB891-92B-Rubber-Holder-DEWALT-DCF891/dp/B0H7VL4BXG/ref=sr_1_55?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-55",
+      "link_clean": "https://www.amazon.com/PB891-92B-Rubber-Holder-DEWALT-DCF891/dp/B0H7VL4BXG/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H7VL4BXG&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61KPtbs+z1L._AC_UL320_.jpg",
+      "rating": 5,
+      "reviews": 1,
+      "price": "$17.99",
+      "extracted_price": 17.99,
+      "delivery": [
+        "FREE delivery Sat, Nov 14 on $35 of items shipped by Amazon",
+        "Or fastest delivery Fri, Nov 13"
+      ],
+      "stock": "Only 1 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$17.99",
+          "extracted_primary_price": 17.99
+        }
+      ]
+    },
+    {
+      "position": 56,
+      "asin": "B0B9TPH4B3",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/DEWALT-Torque-Impact-Wrench-DCF900P2/dp/B0B9TPH4B3/ref=sr_1_56_so_WRENCH?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-56",
+      "brand": "DEWALT",
+      "title": "20V MAX XR 1/2 in. High Torque Impact Wrench with Hog Ring Anvil Kit (DCF900P2)",
+      "link": "https://www.amazon.com/DEWALT-Torque-Impact-Wrench-DCF900P2/dp/B0B9TPH4B3/ref=sr_1_56?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-56",
+      "link_clean": "https://www.amazon.com/DEWALT-Torque-Impact-Wrench-DCF900P2/dp/B0B9TPH4B3/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B9TPH4B3&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/41s2Mek461L._AC_UL320_.jpg",
+      "rating": 4.8,
+      "reviews": 445,
+      "bought_last_month": "50+ bought in past month",
+      "no_featured_offers_available": true,
+      "more_buying_choices": "$424.99 (12 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B9TPH4B3/ref=sr_1_56_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-56",
+      "purchase_options": [
+        {
+          "no_featured_offers": true,
+          "more_buying_choices": "$424.99 (12 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B9TPH4B3/ref=sr_1_56_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-56"
+        }
+      ]
+    },
+    {
+      "position": 57,
+      "asin": "B0G4QZ6X8T",
+      "title": "DCF891 N870359 NA314100 Replace for Dewalt DCF891B DCF892B DCF891BR DCF891EHGT Shell Housing DCF891H2T DCF891P1T DCF891P2G DCF891P2LR DCF891P2T Cordless Impact Wrench Power Tools",
+      "link": "https://www.amazon.com/NA314100-DCF891EHGT-DCF891H2T-DCF891P1T-DCF891P2LR/dp/B0G4QZ6X8T/ref=sr_1_57?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-57",
+      "link_clean": "https://www.amazon.com/NA314100-DCF891EHGT-DCF891H2T-DCF891P1T-DCF891P2LR/dp/B0G4QZ6X8T/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0G4QZ6X8T&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61pE+B0GEJL._AC_UL320_.jpg",
+      "rating": 5,
+      "reviews": 2,
+      "price": "$25.88",
+      "extracted_price": 25.88,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14 on $35 of items shipped by Amazon"
+      ],
+      "stock": "Only 7 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$25.88",
+          "extracted_primary_price": 25.88
+        }
+      ]
+    },
+    {
+      "position": 58,
+      "asin": "B0FJRKMMMV",
+      "title": "Cordless Impact Wrench 1/2 inch for Dewalt 20V Battery, 1000N.m Impact Driver High Torque Brushless Electric Impact Gun Includes LED Work Light for Car/Truck RV/Mower (NO Battery/Charger)",
+      "link": "https://www.amazon.com/Cordless-Battery-1000N-m-Brushless-Electric/dp/B0FJRKMMMV/ref=sr_1_58?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-58",
+      "link_clean": "https://www.amazon.com/Cordless-Battery-1000N-m-Brushless-Electric/dp/B0FJRKMMMV/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FJRKMMMV&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61YlF5U24ML._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 78,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$54.99",
+      "extracted_price": 54.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$54.99",
+          "extracted_primary_price": 54.99
+        }
+      ]
+    },
+    {
+      "position": 59,
+      "asin": "B07TWK2S22",
+      "brand": "DEWALT",
+      "title": "xTREME 12V MAX* Cordless Screwdriver, 1/4-Inch, Tool Only (DCF601B), black-yellow",
+      "link": "https://www.amazon.com/DEWALT-DCF601B-Brushless-Cordless-Screwdriver/dp/B07TWK2S22/ref=sr_1_59?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-59",
+      "link_clean": "https://www.amazon.com/DEWALT-DCF601B-Brushless-Cordless-Screwdriver/dp/B07TWK2S22/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07TWK2S22&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61kd6LUjFqL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 472,
+      "bought_last_month": "200+ bought in past month",
+      "price": "$94.90",
+      "extracted_price": 94.9,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$88.16 (21+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07TWK2S22/ref=sr_1_59_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-59",
+      "purchase_options": [
+        {
+          "primary_price": "$94.90",
+          "extracted_primary_price": 94.9,
+          "more_buying_choices": "$88.16 (21+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07TWK2S22/ref=sr_1_59_olp?keywords=DEWALT+DCF891B&dib_tag=se&dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&qid=1794276950&sr=8-59"
+        }
+      ]
+    },
+    {
+      "position": 60,
+      "asin": "B0FP14XK2J",
+      "title": "Cordless Impact Wrench, 900Ft-lbs (1200N.m) 1/2\" Brushless Impact Gun with 2x 4.0Ah Battery, Fast Charger & 3 Sockets, High Torque Power Impact Driver Ideal for Car, DIY, and Truck RV/Mower (1200N.m)",
+      "link": "https://www.amazon.com/Cordless-900Ft-lbs-1200N-m-Brushless-Battery/dp/B0FP14XK2J/ref=sr_1_60?dib=eyJ2IjoiMSJ9.HExVfQUG9WYH7siVKVmEpwbqaGZtkSwYNStmfrUZDfdyhXX2IjAF2YlgdnpMzQfFC-RmOQqwO5eAiWqvoi3UCRXLqU8hDKZX61ohrAcWiEJIEMM1k17OlnJUWrTKFsmwL5QK71Ieh7gO2lalRVp9iuzaTif8eVfb2XEnFVlrmZvMv-3K2IMlyv5YDQXMtbzSnlihpGqQWqPkSC_X__qBNtajRLxNLb4gjyWXVNWuWiObDFwzaz390GxaSBIBcg1hdmILoq0F5e1pyyzzEL_o62XmdIl2IR2fn2-DGZ7iTbY.pOKPkbN8bZDZBwW_QUUwiJ407QoHRsvOuSxs88uUx9A&dib_tag=se&keywords=DEWALT+DCF891B&qid=1794276950&sr=8-60",
+      "link_clean": "https://www.amazon.com/Cordless-900Ft-lbs-1200N-m-Brushless-Battery/dp/B0FP14XK2J/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FP14XK2J&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71Kf3liGxLL._AC_UL320_.jpg",
+      "rating": 4.3,
+      "reviews": 66,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$84.99",
+      "extracted_price": 84.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$84.99",
+          "extracted_primary_price": 84.99
+        }
+      ]
+    }
+  ],
+  "related_searches": [
+    {
+      "position": 1,
+      "query": "dewalt dcf891",
+      "link": "https://www.amazon.com/s?k=dewalt+dcf891&ref=rsl_sug_0_0&pd_rd_w=c41vu&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=TH7ZWZ79DAG00VYBM9FF&pd_rd_wg=XNOKC&pd_rd_r=9559d0b8-afd7-4e3e-a7cc-bc58f1f5d0f2&qid=1794276950"
+    },
+    {
+      "position": 2,
+      "query": "dewalt dcf899b",
+      "link": "https://www.amazon.com/s?k=dewalt+dcf899b&ref=rsl_sug_0_3&pd_rd_w=c41vu&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=TH7ZWZ79DAG00VYBM9FF&pd_rd_wg=XNOKC&pd_rd_r=9559d0b8-afd7-4e3e-a7cc-bc58f1f5d0f2&qid=1794276950"
+    },
+    {
+      "position": 3,
+      "query": "dcf891b",
+      "link": "https://www.amazon.com/s?k=dcf891b&ref=rsl_sug_0_1&pd_rd_w=c41vu&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=TH7ZWZ79DAG00VYBM9FF&pd_rd_wg=XNOKC&pd_rd_r=9559d0b8-afd7-4e3e-a7cc-bc58f1f5d0f2&qid=1794276950"
+    },
+    {
+      "position": 4,
+      "query": "dewalt impact wrench 1/2",
+      "link": "https://www.amazon.com/s?k=dewalt+impact+wrench+1%2F2&ref=rsl_sug_0_4&pd_rd_w=c41vu&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=TH7ZWZ79DAG00VYBM9FF&pd_rd_wg=XNOKC&pd_rd_r=9559d0b8-afd7-4e3e-a7cc-bc58f1f5d0f2&qid=1794276950"
+    },
+    {
+      "position": 5,
+      "query": "dewalt",
+      "link": "https://www.amazon.com/s?k=dewalt&ref=rsl_sug_0_2&pd_rd_w=c41vu&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=TH7ZWZ79DAG00VYBM9FF&pd_rd_wg=XNOKC&pd_rd_r=9559d0b8-afd7-4e3e-a7cc-bc58f1f5d0f2&qid=1794276950"
+    },
+    {
+      "position": 6,
+      "query": "dewalt dcf892b",
+      "link": "https://www.amazon.com/s?k=dewalt+dcf892b&ref=rsl_sug_0_5&pd_rd_w=c41vu&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=TH7ZWZ79DAG00VYBM9FF&pd_rd_wg=XNOKC&pd_rd_r=9559d0b8-afd7-4e3e-a7cc-bc58f1f5d0f2&qid=1794276950"
+    }
+  ],
+  "sponsored_brands": {
+    "title": "Brands related to your search",
+    "brands": [
+      {
+        "position": 1,
+        "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/aec1e9d1-6d91-4c36-a800-7b2f2f3e1139._CR0,0,1200,628_SX920_CB1169409_QL70_.jpg",
+        "name": "Bosch",
+        "headline": "Hardest hitting hammers",
+        "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkM1u00AUhdVWQBUVUWVRpKyqSGRRMcn4J3ZcZCGPfxrjJnXtpKXZWBN74rhNbHdm0pQu-gC8AxJPwAPwBuwRvARCYs8CpQUhOLqLq3t0dO_9Ksnml5-fvj6sPjYGJ77lud5raNlBfU3Y25mQPLuOTPXKXSRpexksfPUgL_Z3Li1sIq-PR4uxf-aVQU815u5xsKWpTUFVm0K704Sj9RCNNw170LUDN6w-rTxKCLvgRVndGvYD2zw66Lsj26q9XatsrpxozCfVCp7jmyJvxsW89mzKMKAkLuZzkieYZ0UOGKFXWUwAI5jGUzDmk_oDkkfDcE-cL2Y8A2OK8wTElGCeXRHweyWIMU0YKHGWc0JBXOSc5Fzc7iEzkvzwMLLs0Bsc-fVOZQ1uf__47fOPD1Zt-096dYhUsln9iQQhlGVJFaGodaAibgxDa3_D9M09r_rCQoZZOi5QjVt0ea_UuEXHnBxpsfGvblF6V8Z9U9syU_v6wLBThQ6J-H698m59ynnJ9lut5XLZ_IulxXhBCWuVOCUtQVAcG6kd0EGKCGTJMQFCjgNkhBwTCpYoaNLLu0BEyUQPUWRAuS1KqiaEr7rW2ak2svxBDxgChJqgQmF0MrRcR5JcR-w3yiSiSVTOpgnVeWPKcBTTKEt02JiVEWZZznQEoQh7h4rmPUdQ6MtB6IXdlX25IPSNbtmnxuFg1zKdjiag1ZzNCq7_z7XBkjLCSZTSYlHqK8ZqGyoKVKU2lBuZjkvWwKsHLrrF7ObcWJ47vwBpWts2&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F116FEB78-8B62-43FC-BBFF-4BBFC01D2193%3Fstore_ref%3DSB_A04523791SJHDYW9ZDPTM-A10091701ZVUDIF33IF2N%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0020ML69K%2CB01N4RSKSH%26lp_query%3DDEWALT%20DCF891B%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300075066073504%26i%3Daps%26aref%3DkHolzjAwjF&ref_=sbx_be_s_3psl_mbd_mb0_bkgd&pd_rd_w=ojxqm&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=TH7ZWZ79DAG00VYBM9FF&pd_rd_wg=W1hjb&pd_rd_r=8aa53714-dc20-47bb-8ed2-9397237c057b",
+        "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/24beb41a-6764-4d48-8847-f7c261752a7c._CR0,0,2333,932_AC_SX278_SY200_CB1169409_QL70_.png"
+      },
+      {
+        "position": 2,
+        "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/c19f75ea-4dde-4bc6-bbfb-76c1f398698f._CR0,83,1380,723_SX920_CB1169409_QL70_.png",
+        "name": "BESWELL",
+        "headline": "Professional Tools",
+        "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkM9u00AQxtVWQBUVUeVQpJxQJHKo2GRjx167yELetfNHKa1jO7TkYm3sTWKR2O7uJml76ANwhDMS6o0jj8ELwMtwQGlBCD7NYTSfPs3Mr5Tsfv_57cfD8mM7fOM5_V7_HDquX91qHh5MWJZeRgStestkqq39pYc6WX50YPQ74-KqfY4JAoN8nCrX16E-8PdMVG8iVG9qRh2OtgM83rXdsOv6vaD8tPQoYeKdzIvy3vDEd8lp56Q3cp3K-63S7saJxnJSLtEFvc6zepwvKs9nggLO4nyxYFlCZZpnQDC-SmMGBKM8noGxnFQfsCwaBofKYjmXKRhzmiUg5ozKdMXA75UgpjwRoKBpJhkHcZ5Jlkll_zUmkeoFx5HjBv3w1Ksapa3m_u2Hj7dfvjqV_T_pzSFqIebVJyqEUGsZEEEFmVBXdoaBc7RDPHLYL790sE2Kdg8g-wZf3Gtq3-CBZKdmbP-rGzy9K_u-qeyRqXvZsd2pzodM-bxd-rQ9k7IQR43Ger2u_8XSEDLnTDQKOmUNQhDRDBUCSFwFtBTUAliDJtD1dstUTeQSvf3qLhBxNrECHNlQNyHSdDVUW-rJ4EzVRuc-sKEB1SaCSjDquk7Q7nXfBqhWJBFPomI-S7glazNBo5hHaWLB2ryIqEgzYWGIQ09DfnfwAkMHt_3QOxtt7Isl41eW457Zx-Ezh7QNs4k3czHPpfU_15pIiogm0ZTny8LaMDYMTWtBFSLYqqUWLUSNbh5YdLsrsoI2Nn4BAr_ZWw&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FCC7C5830-0CE2-4274-B509-66F49397EC6F%3Fstore_ref%3DSB_A06907563T343NQW35ZXR-A08031702SZHEDSFIHYS7%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0BTP57RHQ%2CB0DBFRTPWZ%26lp_query%3DDEWALT%20DCF891B%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300088554030704%26i%3Daps%26aref%3DmHHvCv0AB8&ref_=sbx_be_s_3psl_mbd_mb1_bkgd&pd_rd_w=ojxqm&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=TH7ZWZ79DAG00VYBM9FF&pd_rd_wg=W1hjb&pd_rd_r=8aa53714-dc20-47bb-8ed2-9397237c057b",
+        "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/051546d2-c54b-48ac-874b-5f129957ad18._CR0,0,1524,475_AC_SX278_SY200_CB1169409_QL70_.jpg"
+      },
+      {
+        "position": 3,
+        "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/79683538-05a0-4dc5-969a-72bc4ae085c3._CR0,0,1200,628_SX920_CB1169409_QL70_.png",
+        "name": "Chicago Pneumatic",
+        "headline": "Be Winter Ready with Chicago Pneumatic Tools",
+        "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUMtu00AUVVsBVVRElUWRskKRyKJikvE48SPIQuNH2tRpktpJU7qxJvbEsUhsd2bSBBZdsuAv2ICEkPgOfgAW_AoL5BaE4Oguju69R-feU4p2v_38-v1--SEenQ9tt-teQNvxqlvS4cGMpskmsNTr7iqKW2tvNVSP0qx90BkuBZ6O4l58MZlsJOCeaCsz9vZ0tS6pal1qaXV4ue2b013sjI4dr-uXH5ceRJS_Elle3hv3PccaHPW7l45debdV2i0mwVTMyiWyJG-ytB5my8rTOSeA0TBbLmkaEZFkKeCUXSchBZwSFs7BVMyq92gajP1DtFwtRAKmjKQRCBklIrmm4LclCAmLOMhJkgrKQJilgqYC7Z-aViAP_V5gO747GgyrWmkL7X_48fb9l892Zf-PujhEzvmi-kiGEMpyS1UhRCpU0M7Yt9s71tA6dMvPbRNbeacLVHxjXt0hxjfmmaADPcT_4saMbwvfkcqeFTubI-zEChtT9Gm79HF7LkTO243Ger2u_42lwUXGKG_kJKYNW-uoUlPSgaopHdA0FQhwR5EBwlrTUeSm6Vjai1tBwOjM8M0AQ1mWkaa5TWXs9Y_PJNy1AYYK0vVmC3nOGKNxT3Px-UktjwIWBfliHjFD1OacBCELksiAtUUeEJ6k3DAhhMj3TmXtWUHPThzdw7e0P3jpYVRsXq0oe23YzgT3Rk9sq6Ppkln0-SITxv8J13iUByQKYpatcqNIW0E60iFECDZriUFyXiPFK_liAMMJm26yX8tI3Dc&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FD8F71419-786F-4B60-AF63-2A84E634BEC8%3Fstore_ref%3DSB_A0333288K46URNHQ1AID-A06299452REUA2UL8KAVJ%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0002SRM38%2CB000QJE9RA%2CB000NOYRA2%26lp_query%3DDEWALT%20DCF891B%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300062929002204%26i%3Daps%26aref%3DplO0cWrbxo&ref_=sbx_be_s_3psl_mbd_mb2_bkgd&pd_rd_w=ojxqm&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=TH7ZWZ79DAG00VYBM9FF&pd_rd_wg=W1hjb&pd_rd_r=8aa53714-dc20-47bb-8ed2-9397237c057b",
+        "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/7b530c63-8db3-4e77-a180-7f8d66b3476f._CR0,0,550,550_AC_SX278_SY200_CB1169409_QL70_.png"
+      }
+    ]
+  },
+  "categories": [
+    {
+      "position": 1,
+      "name": "Custom Products",
+      "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+      "node": "11032013011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+    },
+    {
+      "position": 2,
+      "name": "Toys & Games",
+      "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+      "node": "165793011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+    },
+    {
+      "position": 3,
+      "name": "Home Improvement",
+      "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+      "node": "228013",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+    },
+    {
+      "position": 4,
+      "name": "Pet Supplies",
+      "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+      "node": "2619533011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+    },
+    {
+      "position": 5,
+      "name": "Gift Cards",
+      "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+      "node": "2238192011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+    },
+    {
+      "position": 6,
+      "name": "Amazon Home",
+      "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+      "node": "1055398",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+    },
+    {
+      "position": 7,
+      "name": "Audible",
+      "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+      "node": "18145289011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+    },
+    {
+      "position": 8,
+      "name": "Beauty & Personal Care",
+      "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+      "node": "3760911",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+    },
+    {
+      "position": 9,
+      "name": "Fashion",
+      "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+      "node": "7141123011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+    },
+    {
+      "position": 10,
+      "name": "Automotive",
+      "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+      "node": "15684181",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+    },
+    {
+      "position": 11,
+      "name": "Video Games",
+      "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+      "node": "468642",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+    },
+    {
+      "position": 12,
+      "name": "Baby",
+      "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+      "node": "165796011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+    },
+    {
+      "position": 13,
+      "name": "Smart Home",
+      "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+      "node": "6563140011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+    }
+  ],
+  "filters": {
+    "eligible_for_free_shipping": [
+      {
+        "position": 1,
+        "name": "Free Shipping by Amazon",
+        "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+        "rh": "p_76:1249152011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_76%3A1249152011&dc&qid=1794276950&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3AqTrUovltho%2BYWKfXmXri2tH20SsL5arBdiQNrHpb5jw",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_76%3A1249152011"
+      }
+    ],
+    "brands": [
+      {
+        "position": 1,
+        "name": "DEWALT",
+        "rh": "p_123:195991",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_123%3A195991&dc&qid=1794276950&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3AOfdQLdsO4w2L%2F%2Ba0DIrUjH7HmnUUsFBrlZf42Pz7vQs",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_123%3A195991"
+      }
+    ],
+    "condition": [
+      {
+        "position": 1,
+        "name": "New",
+        "rh": "p_n_condition-type:6358196011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_condition-type%3A6358196011&dc&qid=1794276950&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3AMXktVnp5J38pgo7MttL3sYNk4W2HYBtg5Db%2BEEtVgsA",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_condition-type%3A6358196011"
+      },
+      {
+        "position": 2,
+        "name": "Renewed",
+        "rh": "p_n_condition-type:16907721011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_condition-type%3A16907721011&dc&qid=1794276950&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3AERAV7CZ%2BMUwgWdmX8TUZ1rT2J3USciPgJzVRLtkpjHs",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_condition-type%3A16907721011"
+      },
+      {
+        "position": 3,
+        "name": "Used",
+        "rh": "p_n_condition-type:6358198011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_condition-type%3A6358198011&dc&qid=1794276950&rnid=6358194011&ref=sr_nr_p_n_condition-type_3&ds=v1%3Aoo2SyBfUlshjlD5SgveyUGjEr%2Bgwm3LCIfTCrEzNnVU",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_condition-type%3A6358198011"
+      }
+    ],
+    "customer_review": [
+      {
+        "position": 1,
+        "name": "4 Stars & Up",
+        "rh": "p_72:2661618011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_72%3A2661618011&dc&qid=1794276950&rnid=2661617011&ref=sr_nr_p_72_1&ds=v1%3A0nfc%2BcrGJC6fIf0RFuh4dL39lodPN%2By3Rk0%2FWhRVS3I",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_72%3A2661618011"
+      }
+    ],
+    "seller": [
+      {
+        "position": 1,
+        "name": "Triplenet Pricing INC",
+        "rh": "p_6:AAZRLVTNON75Z",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_6%3AAAZRLVTNON75Z&dc&qid=1794276950&rnid=2661622011&ref=sr_nr_p_6_1&ds=v1%3A3ccAVgpeZ%2BUIRZkCYK6ChM2f2CsFSg9ISeUSPmfrC4U",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_6%3AAAZRLVTNON75Z"
+      },
+      {
+        "position": 2,
+        "name": "Homestead Supply & More ✅",
+        "rh": "p_6:AKDENCFW3A9SI",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_6%3AAKDENCFW3A9SI&dc&qid=1794276950&rnid=2661622011&ref=sr_nr_p_6_2&ds=v1%3AAs24GU75SuN0bmmPB9BP1mc1paWxFP%2FBGdiBJ8roS18",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_6%3AAKDENCFW3A9SI"
+      },
+      {
+        "position": 3,
+        "name": "Amazon.com",
+        "rh": "p_6:ATVPDKIKX0DER",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_6%3AATVPDKIKX0DER&dc&qid=1794276950&rnid=2661622011&ref=sr_nr_p_6_3&ds=v1%3A5OHK48e7JjHEpj9BNh6cm8f6jZrw5QGC6ctH2V6tlGI",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_6%3AATVPDKIKX0DER"
+      },
+      {
+        "position": 4,
+        "name": "Household Trends",
+        "rh": "p_6:A2JH4AOVR29ETC",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_6%3AA2JH4AOVR29ETC&dc&qid=1794276950&rnid=2661622011&ref=sr_nr_p_6_4&ds=v1%3AUbZNtNmPl8VeNsaU71RWs4hnFCdn2%2BK87i4R%2B9H%2FUFI",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_6%3AA2JH4AOVR29ETC"
+      },
+      {
+        "position": 5,
+        "name": "Amazon Export Sales LLC",
+        "rh": "p_6:A2XZ7JICGUQ1CX",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_6%3AA2XZ7JICGUQ1CX&dc&qid=1794276950&rnid=2661622011&ref=sr_nr_p_6_5&ds=v1%3AKcOVBNe%2FjmGUqLvET%2BnCc%2FQxCml2Qw%2BW8dZEtONTqFs",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_6%3AA2XZ7JICGUQ1CX"
+      },
+      {
+        "position": 6,
+        "name": "ReHaven",
+        "rh": "p_6:AKIO5NVRQFORK",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_6%3AAKIO5NVRQFORK&dc&qid=1794276950&rnid=2661622011&ref=sr_nr_p_6_6&ds=v1%3AgwZE6mP76LdhATqRgkeoIwyr4dU3eqpaQ6iFeYA1mvU",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_6%3AAKIO5NVRQFORK"
+      }
+    ],
+    "price": [
+      {
+        "position": 1,
+        "name": "All Discounts",
+        "rh": "p_n_deal_type:23566065011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_deal_type%3A23566065011&dc&qid=1794276950&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3AemqEFfG9sGbbWhxvNHQ%2B%2FaV%2BvYfW7jgIOtybU8p%2BO2w",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_deal_type%3A23566065011"
+      },
+      {
+        "position": 2,
+        "name": "Coupons",
+        "rh": "p_n_deal_type:210906366011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_deal_type%3A210906366011&dc&qid=1794276950&rnid=23566063011&ref=sr_nr_p_n_deal_type_2&ds=v1%3AUVyKgYgzTyB%2FDmBbYaUdXC7z0YbIOn%2FzIU99FRgaUZw",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_deal_type%3A210906366011"
+      },
+      {
+        "position": 3,
+        "name": "Today's Deals",
+        "rh": "p_n_deal_type:23566064011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_deal_type%3A23566064011&dc&qid=1794276950&rnid=23566063011&ref=sr_nr_p_n_deal_type_3&ds=v1%3Afz%2BDIFCYYEcXAtrA7GYOk36kln5pIOjENDPy%2BIvUyk8",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_deal_type%3A23566064011"
+      }
+    ],
+    "battery_type": [
+      {
+        "position": 1,
+        "name": "Lithium Ion",
+        "rh": "p_n_g-1001830995111:212445696011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-1001830995111%3A212445696011&dc&qid=1794276950&rnid=2399136011&ref=sr_nr_p_n_g-1001830995111_1&ds=v1%3AOjE4okXtV0yNLF2hXHYxiSpeWWFr1LZBMIKr%2FwyYQho",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-1001830995111%3A212445696011"
+      }
+    ],
+    "top_brands": [
+      {
+        "position": 1,
+        "name": "Top Brands",
+        "rh": "p_n_g-101014971069111:119653281011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-101014971069111%3A119653281011&dc&qid=1794276950&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3ABTtOmktBcxSiMqqPDrjUO2dYPvtEpOdUwesKtxXa%2FAA",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-101014971069111%3A119653281011"
+      }
+    ],
+    "operation_mode": [
+      {
+        "position": 1,
+        "name": "Battery",
+        "rh": "p_n_g-1003412401111:24045452011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-1003412401111%3A24045452011&dc&qid=1794276950&rnid=24045308011&ref=sr_nr_p_n_g-1003412401111_1&ds=v1%3APpgW2vGETdvbs8qSDvJzp24FZRp7ivbi63zN8lHgxWg",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-1003412401111%3A24045452011"
+      },
+      {
+        "position": 2,
+        "name": "Mechanical",
+        "rh": "p_n_g-1003412401111:24045453011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-1003412401111%3A24045453011&dc&qid=1794276950&rnid=24045308011&ref=sr_nr_p_n_g-1003412401111_2&ds=v1%3Ajpjtu%2B67R1mC0TKf%2BE7nTiytDvaE6SDbzhnRDLySeC4",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-1003412401111%3A24045453011"
+      }
+    ],
+    "premium_brands": [
+      {
+        "position": 1,
+        "name": "Premium Brands",
+        "rh": "p_n_g-101015887018111:204376014011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-101015887018111%3A204376014011&dc&qid=1794276950&rnid=204376013011&ref=sr_nr_p_n_g-101015887018111_1&ds=v1%3AX3dqVSatmDQcLNRHJcaGRqr%2B7h3vZlZkVaQeqd7yF%2Fc",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-101015887018111%3A204376014011"
+      }
+    ],
+    "is_racheting": [
+      {
+        "position": 1,
+        "name": "Yes",
+        "rh": "p_n_g-101015724857111:203863934011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-101015724857111%3A203863934011&dc&qid=1794276950&rnid=203863921011&ref=sr_nr_p_n_g-101015724857111_1&ds=v1%3Auy3f6DK3i%2FK14BBGQvoGx3e4kDBRefTRZxRqFFU1QzU",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-101015724857111%3A203863934011"
+      }
+    ],
+    "is_non_sparking": [
+      {
+        "position": 1,
+        "name": "No",
+        "rh": "p_n_g-101015724856111:203863922011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-101015724856111%3A203863922011&dc&qid=1794276950&rnid=203863917011&ref=sr_nr_p_n_g-101015724856111_1&ds=v1%3AQOwG90Ky9rx2VOt1xue5urmgVsxlRlnQ1c%2FOr2QB5eY",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-101015724856111%3A203863922011"
+      }
+    ],
+    "head_type": [
+      {
+        "position": 1,
+        "name": "Fixed Square",
+        "rh": "p_n_g-1003521155111:41942764011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-1003521155111%3A41942764011&dc&qid=1794276950&rnid=41941878011&ref=sr_nr_p_n_g-1003521155111_1&ds=v1%3AoI8pHj8KS4eE%2BLbKInj8X8C0J5Tv%2FayU3fzGf9ZJe3g",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-1003521155111%3A41942764011"
+      },
+      {
+        "position": 2,
+        "name": "Fixed Ratchet",
+        "rh": "p_n_g-1003521155111:122390017011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-1003521155111%3A122390017011&dc&qid=1794276950&rnid=41941878011&ref=sr_nr_p_n_g-1003521155111_2&ds=v1%3AfzTouakDLZwFRB8NOBpC3VURyGK545ecpta7579ocIQ",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-1003521155111%3A122390017011"
+      },
+      {
+        "position": 3,
+        "name": "Square Drive",
+        "rh": "p_n_g-1003521155111:122390016011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-1003521155111%3A122390016011&dc&qid=1794276950&rnid=41941878011&ref=sr_nr_p_n_g-1003521155111_3&ds=v1%3ACp0qE740%2BI6sMiWevP1OwlcCBe7xNg7aRy%2FHLpbvL9k",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-1003521155111%3A122390016011"
+      },
+      {
+        "position": 4,
+        "name": "Flare Nut",
+        "rh": "p_n_g-1003521155111:41942768011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-1003521155111%3A41942768011&dc&qid=1794276950&rnid=41941878011&ref=sr_nr_p_n_g-1003521155111_4&ds=v1%3ApFFFt19Uahf8a5u0KyodNTIDNmKkkstobjCeKdJAZoQ",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-1003521155111%3A41942768011"
+      }
+    ],
+    "measurement_standard": [
+      {
+        "position": 1,
+        "name": "Metric",
+        "rh": "p_n_g-101015724670111:203863931011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-101015724670111%3A203863931011&dc&qid=1794276950&rnid=203863920011&ref=sr_nr_p_n_g-101015724670111_1&ds=v1%3Afm5OF7UetyeV4sMs7wOqaTHOsu%2FVYNYWbs%2BkoC1jatw",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-101015724670111%3A203863931011"
+      },
+      {
+        "position": 2,
+        "name": "SAE",
+        "rh": "p_n_g-101015724670111:203863932011",
+        "link": "https://www.amazon.com/s?k=DEWALT+DCF891B&rh=p_n_g-101015724670111%3A203863932011&dc&qid=1794276950&rnid=203863920011&ref=sr_nr_p_n_g-101015724670111_2&ds=v1%3AGO3hYUHkdN%2FeMhtBIOPIYAu%2BZu5ahs6qitmppC00fIM",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&rh=p_n_g-101015724670111%3A203863932011"
+      }
+    ]
+  },
+  "serpapi_pagination": {
+    "current": 1,
+    "next": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCF891B&page=2"
+  }
+}

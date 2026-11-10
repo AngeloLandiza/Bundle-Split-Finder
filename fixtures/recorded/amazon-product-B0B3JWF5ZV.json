@@ -1,0 +1,698 @@
+{
+  "search_metadata": {
+    "id": "6af27e614674de74faa8b723",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/ksDovqNdRt1rP1FisDvp_JLwJyvW0veAEUaBMMwSRbQ/6af27e614674de74faa8b723.json",
+    "markdown_endpoint": "https://serpapi.com/searches/ksDovqNdRt1rP1FisDvp_JLwJyvW0veAEUaBMMwSRbQ/6af27e614674de74faa8b723.md",
+    "created_at": "2026-11-10 02:16:01 UTC",
+    "processed_at": "2026-11-10 02:16:01 UTC",
+    "amazon_product_url": "https://www.amazon.com/dp/B0B3JWF5ZV/?",
+    "raw_html_file": "https://serpapi.com/searches/ksDovqNdRt1rP1FisDvp_JLwJyvW0veAEUaBMMwSRbQ/6af27e614674de74faa8b723.html",
+    "total_time_taken": 5.95
+  },
+  "search_parameters": {
+    "engine": "amazon_product",
+    "asin": "B0B3JWF5ZV",
+    "amazon_domain": "amazon.com",
+    "device": "desktop"
+  },
+  "product_results": {
+    "categories": [
+      {
+        "position": 1,
+        "name": "Tools & Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/ref=dp_bc_1?ie=UTF8&node=228013",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 2,
+        "name": "Power & Hand Tools",
+        "link": "https://www.amazon.com/power-tools-hand-tools/b/ref=dp_bc_2?ie=UTF8&node=328182011",
+        "node": "328182011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=328182011"
+      },
+      {
+        "position": 3,
+        "name": "Power Tools",
+        "link": "https://www.amazon.com/power-tools/b/ref=dp_bc_3?ie=UTF8&node=551236",
+        "node": "551236",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=551236"
+      },
+      {
+        "position": 4,
+        "name": "Ratchet Wrenches",
+        "link": "https://www.amazon.com/Ratchet-Wrenches/b/ref=dp_bc_4?ie=UTF8&node=9022387011",
+        "node": "9022387011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=9022387011"
+      }
+    ],
+    "asin": "B0B3JWF5ZV",
+    "title": "RYOBI ONEAND HP 18V BRUSHLESS Cordless 3/8 in. Extended Reach Ratchet Tool ONLY PBLRC25B",
+    "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Extended-PBLRC25B/dp/B0B3JWF5ZV/",
+    "link_clean": "https://www.amazon.com/dp/B0B3JWF5ZV/",
+    "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B3JWF5ZV&device=desktop&engine=amazon_product",
+    "description": "Stens replacement parts have become a favorite among lawn and landscape professionals thanks to exceptional performance.",
+    "brand": "Brand: RYOBI",
+    "thumbnail": "https://m.media-amazon.com/images/I/51DkhXYl3TL._AC_SX300_SY300_QL70_FMwebp_.jpg",
+    "thumbnails": [
+      "https://m.media-amazon.com/images/I/51DkhXYl3TL._AC_SL1500_.jpg",
+      "https://m.media-amazon.com/images/I/31gcOTTrLcL._AC_.jpg",
+      "https://m.media-amazon.com/images/I/51M+rEq7HuL._AC_.jpg",
+      "https://m.media-amazon.com/images/I/51IWRBW0udL._AC_.jpg",
+      "https://m.media-amazon.com/images/I/617dd3teh2L._AC_.jpg",
+      "https://m.media-amazon.com/images/I/51SrXKRHZsL._AC_.jpg",
+      "https://m.media-amazon.com/images/I/61DA8unaTuL._AC_.jpg"
+    ],
+    "rating": 4.5,
+    "reviews": 221,
+    "price": "$169.00",
+    "extracted_price": 169,
+    "delivery": [
+      "FREE delivery Friday, November 13. Details"
+    ],
+    "stock": "Only 5 left in stock - order soon."
+  },
+  "purchase_options": {
+    "single_offer": {
+      "price": "$169.00",
+      "extracted_price": 169,
+      "delivery": [
+        "FREE delivery Friday, November 13. Details"
+      ],
+      "stock": "Only 5 left in stock - order soon.",
+      "features": {
+        "shipper_seller": {
+          "text": "thedealvalley",
+          "details": {
+            "heading": "Shipper / Seller",
+            "content": "thedealvalley"
+          },
+          "link": {
+            "text": "thedealvalley",
+            "link": "https://www.amazon.com/gp/help/seller/at-a-glance.html/ref=dp_merchant_link?ie=UTF8&seller=A2SFBE706RTDX5&asin=B0B3JWF5ZV&ref_=dp_merchant_link"
+          }
+        },
+        "returns": {
+          "text": "FREE refund/replacement until Jan 31, 2027",
+          "details": {
+            "heading": "FREE refund/replacement until Jan 31, 2027",
+            "content": "For the 2026 holiday season, eligible items purchased between November 1 and December 31, 2026 can be returned until January 31, 2027."
+          },
+          "link": {
+            "text": "See exceptions",
+            "link": "https://www.amazon.com/gp/help/customer/display.html/?nodeId=GKQNFKFK5CF3C54B"
+          }
+        },
+        "payment": {
+          "text": "Secure transaction",
+          "details": {
+            "heading": "Your transaction is secure",
+            "content": "We work hard to protect your security and privacy. Our payment security system encrypts your information during transmission. We don’t share your credit card details with third-party sellers, and we don’t sell your information to others. Learn more"
+          },
+          "link": {
+            "text": "Learn more",
+            "link": "https://www.amazon.com/gp/help/customer/display.html?nodeId=201909010"
+          }
+        }
+      }
+    }
+  },
+  "protection_plan": [
+    {
+      "position": 1,
+      "asin": "B07P5GWG57",
+      "link": "https://www.amazon.com/dp/B07P5GWG57/",
+      "title": "3-Year Protection Plan",
+      "price": "$25.99",
+      "extracted_price": 25.99
+    },
+    {
+      "position": 2,
+      "asin": "B07P5HD93K",
+      "link": "https://www.amazon.com/dp/B07P5HD93K/",
+      "title": "4-Year Protection Plan",
+      "price": "$34.99",
+      "extracted_price": 34.99
+    },
+    {
+      "position": 3,
+      "asin": "B07RZ3LSHM",
+      "link": "https://www.amazon.com/dp/B07RZ3LSHM/",
+      "title": "Complete Protect: One plan covers all past and future eligible purchases (Great Value)",
+      "price": "$16.99/month",
+      "extracted_price": 16.99
+    }
+  ],
+  "item_specifications": {
+    "brand": "RYOBI",
+    "material": "Metal",
+    "product_dimensions": "15.37\"L x 3.5\"W x 5.21\"H",
+    "style": "Professional",
+    "power_source": "Battery Powered"
+  },
+  "about_item": [
+    "Stens replacement parts have become a favorite among lawn and landscape professionals thanks to exceptional performance."
+  ],
+  "bought_together": [
+    {
+      "position": 1,
+      "title": "RYOBI ONEAND HP 18V BRUSHLESS Cordless 3/8 in. Extended Reach Ratchet Tool ONLY PBLRC25B",
+      "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/51DkhXYl3TL._AC_UL116_SR116,116_.jpg",
+      "price": "$169.00",
+      "extracted_price": 169,
+      "delivery": [
+        "Get it as soon as Sunday, Nov 15"
+      ]
+    },
+    {
+      "position": 2,
+      "title": "ONEAND HP 18V BRUSHLESS Cordless 4-Mode 1/2 in. HIGH Torque Impact Wrench Tool ONLY",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-4-Mode-PBLIW01B/dp/B0BCSKD867/ref=pd_bxgy_thbs_d_sccl_1/000-0000000-0000000?pd_rd_w=XlZLt&content-id=amzn1.sym.a1314b7c-0add-4b9e-9106-1bfe04ddc9a2&pf_rd_p=a1314b7c-0add-4b9e-9106-1bfe04ddc9a2&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B0BCSKD867&psc=1",
+      "asin": "B0BCSKD867",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-4-Mode-PBLIW01B/dp/B0BCSKD867/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BCSKD867&device=desktop&engine=amazon_product",
+      "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/41b43L3D8nL._AC_UL116_SR116,116_.jpg",
+      "price": "$154.65",
+      "extracted_price": 154.65,
+      "delivery": [
+        "Get it as soon as Sunday, Nov 15"
+      ]
+    }
+  ],
+  "related_products": [
+    {
+      "position": 1,
+      "title": "ONEAND 18V Cordless 3/8 in. 4-Position Ratchet Tool ONLY",
+      "link": "https://www.amazon.com/RYOBI-4-Position-Rotating-Tool-Only-Included/dp/B08FD9GB92/ref=pd_sbs_d_sccl_1_1/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B08FD9GB92&psc=1",
+      "asin": "B08FD9GB92",
+      "link_clean": "https://www.amazon.com/RYOBI-4-Position-Rotating-Tool-Only-Included/dp/B08FD9GB92/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08FD9GB92&device=desktop&engine=amazon_product",
+      "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/41ONFgOyXdL._AC_UL165_SR165,165_.jpg",
+      "rating": 4.6,
+      "reviews": 1543,
+      "price": "$78.75",
+      "extracted_price": 78.75
+    },
+    {
+      "position": 2,
+      "title": "RYOBI 18V ONE+ Multi-Size Ratchet Kit Cordless 18 Volt W Battery & Charger, Green",
+      "link": "https://www.amazon.com/RYOBI-Multi-Size-Ratchet-Cordless-Battery/dp/B0D1877QD2/ref=pd_sbs_d_sccl_1_2/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B0D1877QD2&psc=1",
+      "asin": "B0D1877QD2",
+      "link_clean": "https://www.amazon.com/RYOBI-Multi-Size-Ratchet-Cordless-Battery/dp/B0D1877QD2/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D1877QD2&device=desktop&engine=amazon_product",
+      "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/51uAZZ3M6xL._AC_UL165_SR165,165_.jpg",
+      "rating": 4.5,
+      "reviews": 80,
+      "price": "$120.00",
+      "extracted_price": 120
+    },
+    {
+      "position": 3,
+      "title": "RYOBI ONEAND HP 18V BRUSHLESS Cordless 1/4 in. Extended Reach Ratchet Tool ONLY PBLRC01B",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Extended-Ratchet/dp/B0B6Z2ZGVK/ref=pd_sbs_d_sccl_1_3/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B0B6Z2ZGVK&psc=1",
+      "asin": "B0B6Z2ZGVK",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Extended-Ratchet/dp/B0B6Z2ZGVK/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B6Z2ZGVK&device=desktop&engine=amazon_product",
+      "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/41NgFmtohqL._AC_UL165_SR165,165_.jpg",
+      "rating": 4.4,
+      "reviews": 212,
+      "price": "$130.00",
+      "extracted_price": 130
+    },
+    {
+      "position": 4,
+      "title": "Robustrue 3/8\" Cordless Ratchet Wrench, 6 inch Extended Ratchet Wrench, 40Ft-lbs 400RPM Cordless Ratchet, 2 Batteries Power E",
+      "link": "https://www.amazon.com/Robustrue-Cordless-Extended-40Ft-lbs-Batteries/dp/B0CQX9FZ1G/ref=pd_sbs_d_sccl_1_4/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B0CQX9FZ1G&psc=1",
+      "asin": "B0CQX9FZ1G",
+      "link_clean": "https://www.amazon.com/Robustrue-Cordless-Extended-40Ft-lbs-Batteries/dp/B0CQX9FZ1G/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CQX9FZ1G&device=desktop&engine=amazon_product",
+      "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/71v9OF9JIVL._AC_UL165_SR165,165_.jpg",
+      "rating": 4.5,
+      "reviews": 325,
+      "price": "$69.99",
+      "extracted_price": 69.99
+    },
+    {
+      "position": 5,
+      "title": "RYOBI 18V ONE+ 3/8\" Ratchet Wrench (Battery & Charger Excluded) | R18RW3-0, Hyper Green, 60Nm torque, 4-position rotating hea",
+      "link": "https://www.amazon.com/RYOBI-R18RW3-0-4-position-automotive-fastening/dp/B086QKBLGL/ref=pd_sbs_d_sccl_1_5/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B086QKBLGL&psc=1",
+      "asin": "B086QKBLGL",
+      "link_clean": "https://www.amazon.com/RYOBI-R18RW3-0-4-position-automotive-fastening/dp/B086QKBLGL/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B086QKBLGL&device=desktop&engine=amazon_product",
+      "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/71EwyS2PiOL._AC_UL165_SR165,165_.jpg",
+      "rating": 4.6,
+      "reviews": 384,
+      "price": "$108.00",
+      "extracted_price": 108
+    },
+    {
+      "position": 6,
+      "title": "RYOBI 18V ONE+ HP Brushless 3/8'' Extended Reach Ratchet Green (Renewed)",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Extended-Ratchet-RENEWED/dp/B0BMZGP6Q8/ref=pd_sbs_d_sccl_1_6/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B0BMZGP6Q8&psc=1",
+      "asin": "B0BMZGP6Q8",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Extended-Ratchet-RENEWED/dp/B0BMZGP6Q8/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BMZGP6Q8&device=desktop&engine=amazon_product",
+      "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/51+Hrcqi2QL._AC_UL165_SR165,165_.jpg",
+      "rating": 4.5,
+      "reviews": 34,
+      "price": "$159.93",
+      "extracted_price": 159.93
+    }
+  ],
+  "related_product_sections": [
+    {
+      "title": "Customers who viewed this item also viewed",
+      "items": [
+        {
+          "position": 1,
+          "title": "ONEAND 18V Cordless 3/8 in. 4-Position Ratchet Tool ONLY",
+          "link": "https://www.amazon.com/RYOBI-4-Position-Rotating-Tool-Only-Included/dp/B08FD9GB92/ref=pd_sbs_d_sccl_1_1/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B08FD9GB92&psc=1",
+          "asin": "B08FD9GB92",
+          "link_clean": "https://www.amazon.com/RYOBI-4-Position-Rotating-Tool-Only-Included/dp/B08FD9GB92/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08FD9GB92&device=desktop&engine=amazon_product",
+          "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/41ONFgOyXdL._AC_UL165_SR165,165_.jpg",
+          "rating": 4.6,
+          "reviews": 1543,
+          "price": "$78.75",
+          "extracted_price": 78.75
+        },
+        {
+          "position": 2,
+          "title": "RYOBI 18V ONE+ Multi-Size Ratchet Kit Cordless 18 Volt W Battery & Charger, Green",
+          "link": "https://www.amazon.com/RYOBI-Multi-Size-Ratchet-Cordless-Battery/dp/B0D1877QD2/ref=pd_sbs_d_sccl_1_2/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B0D1877QD2&psc=1",
+          "asin": "B0D1877QD2",
+          "link_clean": "https://www.amazon.com/RYOBI-Multi-Size-Ratchet-Cordless-Battery/dp/B0D1877QD2/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D1877QD2&device=desktop&engine=amazon_product",
+          "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/51uAZZ3M6xL._AC_UL165_SR165,165_.jpg",
+          "rating": 4.5,
+          "reviews": 80,
+          "price": "$120.00",
+          "extracted_price": 120
+        },
+        {
+          "position": 3,
+          "title": "RYOBI ONEAND HP 18V BRUSHLESS Cordless 1/4 in. Extended Reach Ratchet Tool ONLY PBLRC01B",
+          "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Extended-Ratchet/dp/B0B6Z2ZGVK/ref=pd_sbs_d_sccl_1_3/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B0B6Z2ZGVK&psc=1",
+          "asin": "B0B6Z2ZGVK",
+          "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Extended-Ratchet/dp/B0B6Z2ZGVK/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B6Z2ZGVK&device=desktop&engine=amazon_product",
+          "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/41NgFmtohqL._AC_UL165_SR165,165_.jpg",
+          "rating": 4.4,
+          "reviews": 212,
+          "price": "$130.00",
+          "extracted_price": 130
+        },
+        {
+          "position": 4,
+          "title": "Robustrue 3/8\" Cordless Ratchet Wrench, 6 inch Extended Ratchet Wrench, 40Ft-lbs 400RPM Cordless Ratchet, 2 Batteries Power E",
+          "link": "https://www.amazon.com/Robustrue-Cordless-Extended-40Ft-lbs-Batteries/dp/B0CQX9FZ1G/ref=pd_sbs_d_sccl_1_4/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B0CQX9FZ1G&psc=1",
+          "asin": "B0CQX9FZ1G",
+          "link_clean": "https://www.amazon.com/Robustrue-Cordless-Extended-40Ft-lbs-Batteries/dp/B0CQX9FZ1G/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CQX9FZ1G&device=desktop&engine=amazon_product",
+          "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/71v9OF9JIVL._AC_UL165_SR165,165_.jpg",
+          "rating": 4.5,
+          "reviews": 325,
+          "price": "$69.99",
+          "extracted_price": 69.99
+        },
+        {
+          "position": 5,
+          "title": "RYOBI 18V ONE+ 3/8\" Ratchet Wrench (Battery & Charger Excluded) | R18RW3-0, Hyper Green, 60Nm torque, 4-position rotating hea",
+          "link": "https://www.amazon.com/RYOBI-R18RW3-0-4-position-automotive-fastening/dp/B086QKBLGL/ref=pd_sbs_d_sccl_1_5/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B086QKBLGL&psc=1",
+          "asin": "B086QKBLGL",
+          "link_clean": "https://www.amazon.com/RYOBI-R18RW3-0-4-position-automotive-fastening/dp/B086QKBLGL/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B086QKBLGL&device=desktop&engine=amazon_product",
+          "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/71EwyS2PiOL._AC_UL165_SR165,165_.jpg",
+          "rating": 4.6,
+          "reviews": 384,
+          "price": "$108.00",
+          "extracted_price": 108
+        },
+        {
+          "position": 6,
+          "title": "RYOBI 18V ONE+ HP Brushless 3/8'' Extended Reach Ratchet Green (Renewed)",
+          "link": "https://www.amazon.com/RYOBI-Brushless-Extended-Ratchet-RENEWED/dp/B0BMZGP6Q8/ref=pd_sbs_d_sccl_1_6/000-0000000-0000000?pd_rd_w=S69JT&content-id=amzn1.sym.0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_p=0cb10f30-7cd4-4985-9826-58b2c1174c19&pf_rd_r=TVJCTP4ZB9DWB40BGS9H&pd_rd_wg=PV7Od&pd_rd_r=96264087-426a-428e-ae19-11720f5c0678&pd_rd_i=B0BMZGP6Q8&psc=1",
+          "asin": "B0BMZGP6Q8",
+          "link_clean": "https://www.amazon.com/RYOBI-Brushless-Extended-Ratchet-RENEWED/dp/B0BMZGP6Q8/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BMZGP6Q8&device=desktop&engine=amazon_product",
+          "thumbnail": "https://images-na.ssl-images-amazon.com/images/I/51+Hrcqi2QL._AC_UL165_SR165,165_.jpg",
+          "rating": 4.5,
+          "reviews": 34,
+          "price": "$159.93",
+          "extracted_price": 159.93
+        }
+      ]
+    }
+  ],
+  "videos": [
+    {
+      "position": 1,
+      "title": "Ryobi Right Angle Ratchet",
+      "link": "https://m.media-amazon.com/images/S/vse-vms-transcoding-artifact-us-east-1-prod/6f48aa0b-8b43-4f9a-82b2-09b2d6864318/default.jobtemplate.hls.m3u8",
+      "thumbnail": "https://m.media-amazon.com/images/I/41fj+6y3a4L.jpg",
+      "duration": "1:38",
+      "vendor": "Nick Woolsey",
+      "vendor_thumbnail": "https://m.media-amazon.com/images/I/51EjvBSXxqL._CR0,0,1200,1200_._FMjpg_._SL34_.jpg",
+      "date": "Oct 6, 2023"
+    },
+    {
+      "position": 2,
+      "title": "My honest review on the Ryobi 3/8 impact wrench",
+      "link": "https://m.media-amazon.com/images/S/vse-vms-transcoding-artifact-us-east-1-prod/3790a33f-047e-4997-be22-bd6b55feec12/default.vertical.jobtemplate.hls.m3u8",
+      "thumbnail": "https://m.media-amazon.com/images/I/517W+fXcuUL.jpg",
+      "duration": "1:12",
+      "vendor": "Nate",
+      "vendor_thumbnail": "https://m.media-amazon.com/images/I/A1swl5glvPL._CR74,0,2160,2160_._FMjpg_._SL34_.jpg",
+      "date": "Nov 17, 2023"
+    },
+    {
+      "position": 3,
+      "title": "RYOBI Brushless Cordless 3/8 in Extended Reach Ratchet",
+      "link": "https://m.media-amazon.com/images/S/vse-vms-transcoding-artifact-us-east-1-prod/c3930ad0-5030-49f5-86e5-49bdbbead1c9/default.jobtemplate.hls.m3u8",
+      "thumbnail": "https://m.media-amazon.com/images/I/81+dpoTAMEL.jpg",
+      "duration": "1:23",
+      "vendor": "Lifefamily135",
+      "vendor_thumbnail": "https://m.media-amazon.com/images/I/71daf9tYrbL._CR0,0,2998,2998_._FMjpg_._SL34_.jpg",
+      "date": "Oct 29, 2024"
+    },
+    {
+      "position": 4,
+      "title": "Faulty merchandise.",
+      "link": "https://m.media-amazon.com/images/S/vse-vms-transcoding-artifact-us-east-1-prod/c206e1bf-f8f7-453d-af82-9dfff6a04734/default.jobtemplate.hls.m3u8",
+      "thumbnail": "https://m.media-amazon.com/images/I/5178pFQw4cL.jpg",
+      "duration": "0:18",
+      "vendor": "Taylor",
+      "vendor_thumbnail": "https://m.media-amazon.com/images/S/amazon-avatars-global/default._SL34_.png",
+      "date": "Jul 1, 2024"
+    }
+  ],
+  "product_details": {
+    "power_source": "Battery Powered",
+    "voltage": "18 volts",
+    "maximum_rotational_speed": "230 rpm",
+    "horsepower": "16.8 hp",
+    "material_type": "Metal",
+    "item_dimensions_l_x_w_x_h": "15.37\"L x 3.5\"W x 5.21\"H",
+    "style_name": "Professional",
+    "color": "Yellow",
+    "brand_name": "RYOBI",
+    "model_number": "#PBLRC25B",
+    "manufacturer": "RYOBI",
+    "manufacturer_warranty_description": "30 Day Limited Warranty",
+    "unit_count": "1 Count",
+    "upc": "033287193721",
+    "number_of_items": "1",
+    "number_of_packs": "1",
+    "included_components": "item",
+    "manufacturer_part_number": "PBLRC25B",
+    "best_sellers_rank": [
+      {
+        "text": "#235,029 in Tools & Home Improvement (See Top 100 in Tools & Home Improvement)",
+        "extracted_rank": 235029,
+        "link": "https://www.amazon.com/gp/bestsellers/hi/ref=pd_zg_ts_hi",
+        "link_text": "See Top 100 in Tools & Home Improvement"
+      },
+      {
+        "text": "#199 in Power Ratchet Wrenches",
+        "extracted_rank": 199,
+        "link": "https://www.amazon.com/gp/bestsellers/hi/9022387011/ref=pd_zg_hrsr_hi",
+        "link_text": "Power Ratchet Wrenches"
+      }
+    ],
+    "asin": "B0B3JWF5ZV",
+    "customer_reviews": "4.5 out of 5 stars",
+    "rating": 4.5,
+    "reviews": 221
+  },
+  "reviews_information": {
+    "summary": {
+      "text": "Customers find this cordless ratchet tool to be a great value for money, with good torque and surprising power. They appreciate its functionality, with one customer noting it's great for getting into tight spots, and another mentioning its adjustable wrench head. The tool has long battery life, and customers like its quality, with one comparing it favorably to Durafix. Customers find it a little heavier than other similar tools.",
+      "insights": [
+        {
+          "title": "Quality",
+          "sentiment": "positive",
+          "mentions": {
+            "total": 27,
+            "positive": 25,
+            "negative": 2
+          },
+          "summary": "Customers are satisfied with the grinder tool's quality, describing it as a great tool to have, with one customer noting it performs better than Durafix.",
+          "examples": [
+            {
+              "position": 1,
+              "snippet": "GREAT tool. Works GREAT. Very good torque and plenty of power. Does not appear to use a lot of battery. Definitely beats the old ratchet method.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2BLPALN757USH"
+            },
+            {
+              "position": 2,
+              "snippet": "I won't use a wrench anymore. Awesome tool. Easy to handle with one hand",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/RPZ5UEQ5M37SI"
+            },
+            {
+              "position": 3,
+              "snippet": "...It's a little on the heavy side but appears to be good quality. It fits into most places I've needed doing automotive work....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R3FQ30J9BSUJL"
+            },
+            {
+              "position": 4,
+              "snippet": "Great value and quality.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R1L37OFZWLQDTD"
+            }
+          ]
+        },
+        {
+          "title": "Functionality",
+          "sentiment": "positive",
+          "mentions": {
+            "total": 21,
+            "positive": 17,
+            "negative": 4
+          },
+          "summary": "Customers find that the tool works well, with one mentioning it's great for getting into tight spots.",
+          "examples": [
+            {
+              "position": 1,
+              "snippet": "GREAT tool. Works GREAT. Very good torque and plenty of power. Does not appear to use a lot of battery. Definitely beats the old ratchet method.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2BLPALN757USH"
+            },
+            {
+              "position": 2,
+              "snippet": "Great tool and very convenient! Havent had amy issues with it yet!",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R1W88YJAW56SX"
+            },
+            {
+              "position": 3,
+              "snippet": "He says it works great....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2X9XXBUNT02MB"
+            },
+            {
+              "position": 4,
+              "snippet": "...Nothing was in a plastic bag like new tools come. Tool works, but we'll see for how long....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/RDN9G96OXKYZC"
+            }
+          ]
+        },
+        {
+          "title": "Torque",
+          "sentiment": "positive",
+          "mentions": {
+            "total": 10,
+            "positive": 7,
+            "negative": 3
+          },
+          "summary": "Customers appreciate the tool's torque, with one mentioning its strength and another noting it provides good leverage.",
+          "examples": [
+            {
+              "position": 1,
+              "snippet": "...Great torque, 4 position head, and long battery life. I heartily recommend this tool.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R24J5W2MK8VVAQ"
+            },
+            {
+              "position": 2,
+              "snippet": "...It has better torque than most and the batteries last a long time with it.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R3FQ30J9BSUJL"
+            },
+            {
+              "position": 3,
+              "snippet": "...The torque it puts out is also highly unpredictable at first but you end up getting the hang of it....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R38GP5ZULCOVDM"
+            },
+            {
+              "position": 4,
+              "snippet": "I use this all the time, it works great has good torque.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R22AHQ6IK1PWRD"
+            }
+          ]
+        },
+        {
+          "title": "Value for money",
+          "sentiment": "positive",
+          "mentions": {
+            "total": 10,
+            "positive": 8,
+            "negative": 2
+          },
+          "summary": "Customers find the grinder tool to be a great value for the money.",
+          "examples": [
+            {
+              "position": 1,
+              "snippet": "Great value and quality.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R1L37OFZWLQDTD"
+            },
+            {
+              "position": 2,
+              "snippet": "...For the price and performance this ryobi tool is hard to beat. Tightens and loosens nuts and bolts way better than I expected....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R1GWCZ1Q4457N0"
+            },
+            {
+              "position": 3,
+              "snippet": "No complaints. Uses the same battery as my other ryobi products, great price, and works like i need it to",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/RDKKT8TQO9VXW"
+            },
+            {
+              "position": 4,
+              "snippet": "Do not buy, beware Ryobi does not honor warranty from Amazon purchases. They are unauthorized 3rd party sellers....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2LWCH8HLC528B"
+            }
+          ]
+        },
+        {
+          "title": "Power",
+          "sentiment": "positive",
+          "mentions": {
+            "total": 8,
+            "positive": 6,
+            "negative": 2
+          },
+          "summary": "Customers find the grinder tool has surprisingly good power.",
+          "examples": [
+            {
+              "position": 1,
+              "snippet": "Great tool! Great quality, powerful. Snapped a bolt on first use lol. My fault for doubting the power.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R37UZIZOTAYIYN"
+            },
+            {
+              "position": 2,
+              "snippet": "GREAT tool. Works GREAT. Very good torque and plenty of power. Does not appear to use a lot of battery. Definitely beats the old ratchet method.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2BLPALN757USH"
+            },
+            {
+              "position": 3,
+              "snippet": "+ Great for getting into tight spots. - Not very powerful. Need to break tight nuts loose with a rachet before using.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2QH5QIGMOALVS"
+            },
+            {
+              "position": 4,
+              "snippet": "...create easy to use very good durability very versatile and the power is great",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2VGN2Z2NW1HKS"
+            }
+          ]
+        },
+        {
+          "title": "Battery life",
+          "sentiment": "positive",
+          "mentions": {
+            "total": 7,
+            "positive": 5,
+            "negative": 2
+          },
+          "summary": "Customers appreciate the tool's battery life, with one mentioning they didn't need to purchase a new battery or charger.",
+          "examples": [
+            {
+              "position": 1,
+              "snippet": "Same review as the previous one and I just did all top notches battery life create easy to use very good durability very versatile and the power is...",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2VGN2Z2NW1HKS"
+            },
+            {
+              "position": 2,
+              "snippet": "...Works GREAT. Very good torque and plenty of power. Does not appear to use a lot of battery. Definitely beats the old ratchet method.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2BLPALN757USH"
+            },
+            {
+              "position": 3,
+              "snippet": "Doesn't work with all my batteries. Sometimes the contactors do not contact and you have to take the battery out and put it back in to reset it....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R38GP5ZULCOVDM"
+            },
+            {
+              "position": 4,
+              "snippet": "...I didn't have to buy a new battery or charger, because I have them already....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R1UGL6G0L2STRN"
+            }
+          ]
+        },
+        {
+          "title": "Adjustability",
+          "sentiment": "positive",
+          "mentions": {
+            "total": 5,
+            "positive": 4,
+            "negative": 1
+          },
+          "summary": "Customers appreciate the tool's adjustability, with one mentioning the longer wrench head that accommodates various ankle sizes, while another notes the ratchet's ability to rotate to any angle and quickly tighten or loosen nuts and bolts.",
+          "examples": [
+            {
+              "position": 1,
+              "snippet": "...It's so great to spin nuts and bolts in or out quickly rather than going back and forth with an ordinary ratchet hundreds of times in a tight space....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R1UGL6G0L2STRN"
+            },
+            {
+              "position": 2,
+              "snippet": "Great for fast adjustments and it's compact yet can reach tight areas easily. Not super to super torquay. But it's nice.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/RDDSZ4RU8LFK7"
+            },
+            {
+              "position": 3,
+              "snippet": "...The design is good and the longer wrench head is adjustable to all ankles. Is great for your DIY garage!...",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R3EDCNZCLEYC7J"
+            },
+            {
+              "position": 4,
+              "snippet": "Product was a defect. Ratchet anvil only turns clockwise. When changed to opposite direction, DOES NOT TURN OR RATCHET....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/RAVJVLI1DBWCT"
+            }
+          ]
+        },
+        {
+          "title": "Weight",
+          "sentiment": "negative",
+          "mentions": {
+            "total": 5,
+            "positive": 1,
+            "negative": 4
+          },
+          "summary": "Customers find that the grinder tool is a little heavier than other similar tools.",
+          "examples": [
+            {
+              "position": 1,
+              "snippet": "...The wrench seems a little heavy but without the hose associated with pneumatic tools the added versatility is well worth the negligible added weight.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R3B4G9SFQ3L379"
+            },
+            {
+              "position": 2,
+              "snippet": "...Also Ryobi battery design puts a lot of weight at the end and it is a large brick. 4/5 stars for while it worked. It is quite heavy....",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R2LWCH8HLC528B"
+            },
+            {
+              "position": 3,
+              "snippet": "...Is great for your DIY garage! Is a litlle heavier then others especially with the battery. But you get used to it!",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R3EDCNZCLEYC7J"
+            },
+            {
+              "position": 4,
+              "snippet": "...hose associated with pneumatic tools the added versatility is well worth the negligible added weight.",
+              "link": "https://www.amazon.com/portal/customer-reviews/srp/-/R3B4G9SFQ3L379"
+            }
+          ]
+        }
+      ],
+      "customer_reviews": {
+        "5 star": 78,
+        "4 star": 9,
+        "3 star": 6,
+        "2 star": 2,
+        "1 star": 5
+      }
+    }
+  }
+}

@@ -1,0 +1,2037 @@
+{
+  "search_metadata": {
+    "id": "6af27e50d6c0896a671cf510",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/GfzcDtj4MKl0yPCmH0ryi9dsZUmj11HPUCBqWlcB9WE/6af27e50d6c0896a671cf510.json",
+    "markdown_endpoint": "https://serpapi.com/searches/GfzcDtj4MKl0yPCmH0ryi9dsZUmj11HPUCBqWlcB9WE/6af27e50d6c0896a671cf510.md",
+    "created_at": "2026-11-10 02:15:44 UTC",
+    "processed_at": "2026-11-10 02:15:44 UTC",
+    "home_depot_url": "https://www.homedepot.com/b/N-5yc1v/Ntt-ryobi+extended+reach+ratchet?Nao=0",
+    "raw_html_file": "https://serpapi.com/searches/GfzcDtj4MKl0yPCmH0ryi9dsZUmj11HPUCBqWlcB9WE/6af27e50d6c0896a671cf510.html",
+    "prettify_html_file": "https://serpapi.com/searches/GfzcDtj4MKl0yPCmH0ryi9dsZUmj11HPUCBqWlcB9WE/6af27e50d6c0896a671cf510.prettify",
+    "total_time_taken": 0.93
+  },
+  "search_parameters": {
+    "q": "ryobi extended reach ratchet",
+    "nao": "0",
+    "ps": 24,
+    "page": "1",
+    "delivery_zip": "04401",
+    "store_id": "2414",
+    "country": "us",
+    "engine": "home_depot"
+  },
+  "search_information": {
+    "results_state": "Results for exact spelling",
+    "total_results": 162,
+    "store_id": "2414",
+    "store_name": "Bangor"
+  },
+  "taxonomy": [
+    {
+      "title": "Tools",
+      "link": "https://www.homedepot.com/b/Tools/N-5yc1vZc1xy/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+    },
+    {
+      "title": "Power Tools",
+      "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+    }
+  ],
+  "products": [
+    {
+      "position": 1,
+      "product_id": "316631068",
+      "title": "ONE+ HP 18V Brushless Cordless 3/8 in. Extended Reach Ratchet (Tool Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/d508df36-cac3-4f58-bdd8-2462ce140bf7/svn/ryobi-cordless-ratchets-pblrc25b-64_65.jpg",
+          "https://images.thdstatic.com/productImages/d508df36-cac3-4f58-bdd8-2462ce140bf7/svn/ryobi-cordless-ratchets-pblrc25b-64_100.jpg",
+          "https://images.thdstatic.com/productImages/d508df36-cac3-4f58-bdd8-2462ce140bf7/svn/ryobi-cordless-ratchets-pblrc25b-64_145.jpg",
+          "https://images.thdstatic.com/productImages/d508df36-cac3-4f58-bdd8-2462ce140bf7/svn/ryobi-cordless-ratchets-pblrc25b-64_300.jpg",
+          "https://images.thdstatic.com/productImages/d508df36-cac3-4f58-bdd8-2462ce140bf7/svn/ryobi-cordless-ratchets-pblrc25b-64_400.jpg",
+          "https://images.thdstatic.com/productImages/d508df36-cac3-4f58-bdd8-2462ce140bf7/svn/ryobi-cordless-ratchets-pblrc25b-64_600.jpg",
+          "https://images.thdstatic.com/productImages/d508df36-cac3-4f58-bdd8-2462ce140bf7/svn/ryobi-cordless-ratchets-pblrc25b-64_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-3-8-in-Extended-Reach-Ratchet-Tool-Only-PBLRC25B/316631068",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=316631068&store_id=2414",
+      "model_number": "PBLRC25B",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.6502,
+      "reviews": 666,
+      "price": 169,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "quantity": 2,
+        "store_name": "Bangor",
+        "distance": 0
+      }
+    },
+    {
+      "position": 2,
+      "product_id": "328814689",
+      "title": "ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_65.jpg",
+          "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_100.jpg",
+          "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_145.jpg",
+          "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_300.jpg",
+          "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_400.jpg",
+          "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_600.jpg",
+          "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-and-3-8-in-Extended-Reach-Ratchets-Tools-Only-PBLRC2501SB/328814689",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=328814689&store_id=2414",
+      "model_number": "PBLRC2501SB",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.5959,
+      "reviews": 344,
+      "price": 189,
+      "price_was": 338,
+      "price_saving": 149,
+      "percentage_off": 44,
+      "price_badge": "Special-Buy",
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 3,
+      "product_id": "318045287",
+      "title": "ONE+ 18V Brushless Cordless 2-Tool Combo Kit w/1/4 in Extended Reach Ratchet & 3/8 in Extended Reach Ratchet (ToolsOnly)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/62949d0e-4505-49bf-92a3-0846c11e4abe/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-64_65.jpg",
+          "https://images.thdstatic.com/productImages/62949d0e-4505-49bf-92a3-0846c11e4abe/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-64_100.jpg",
+          "https://images.thdstatic.com/productImages/62949d0e-4505-49bf-92a3-0846c11e4abe/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-64_145.jpg",
+          "https://images.thdstatic.com/productImages/62949d0e-4505-49bf-92a3-0846c11e4abe/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-64_300.jpg",
+          "https://images.thdstatic.com/productImages/62949d0e-4505-49bf-92a3-0846c11e4abe/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-64_400.jpg",
+          "https://images.thdstatic.com/productImages/62949d0e-4505-49bf-92a3-0846c11e4abe/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-64_600.jpg",
+          "https://images.thdstatic.com/productImages/62949d0e-4505-49bf-92a3-0846c11e4abe/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-power-tool-combo-kits-pblrc01b-pblrc25b-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Brushless-Cordless-2-Tool-Combo-Kit-w-1-4-in-Extended-Reach-Ratchet-3-8-in-Extended-Reach-Ratchet-ToolsOnly-PBLRC01B-PBLRC25B/318045287",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=318045287&store_id=2414",
+      "model_number": "PBLRC01B-PBLRC25B",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.7027,
+      "reviews": 582,
+      "price": 348,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 4,
+      "product_id": "316631067",
+      "title": "ONE+ 18V Brushless Cordless 1/4 in. Extended Reach Ratchet with (1) 2.0 Ah Battery and Charger",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/e683037c-d813-4682-a89a-b54e4a0f6ba8/svn/ryobi-cordless-ratchets-pblrc01k1-64_65.jpg",
+          "https://images.thdstatic.com/productImages/e683037c-d813-4682-a89a-b54e4a0f6ba8/svn/ryobi-cordless-ratchets-pblrc01k1-64_100.jpg",
+          "https://images.thdstatic.com/productImages/e683037c-d813-4682-a89a-b54e4a0f6ba8/svn/ryobi-cordless-ratchets-pblrc01k1-64_145.jpg",
+          "https://images.thdstatic.com/productImages/e683037c-d813-4682-a89a-b54e4a0f6ba8/svn/ryobi-cordless-ratchets-pblrc01k1-64_300.jpg",
+          "https://images.thdstatic.com/productImages/e683037c-d813-4682-a89a-b54e4a0f6ba8/svn/ryobi-cordless-ratchets-pblrc01k1-64_400.jpg",
+          "https://images.thdstatic.com/productImages/e683037c-d813-4682-a89a-b54e4a0f6ba8/svn/ryobi-cordless-ratchets-pblrc01k1-64_600.jpg",
+          "https://images.thdstatic.com/productImages/e683037c-d813-4682-a89a-b54e4a0f6ba8/svn/ryobi-cordless-ratchets-pblrc01k1-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/6f1e87f8-9a51-4a9e-b463-ab34f4d0a310/svn/ryobi-cordless-ratchets-pblrc01k1-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/6f1e87f8-9a51-4a9e-b463-ab34f4d0a310/svn/ryobi-cordless-ratchets-pblrc01k1-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/6f1e87f8-9a51-4a9e-b463-ab34f4d0a310/svn/ryobi-cordless-ratchets-pblrc01k1-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/6f1e87f8-9a51-4a9e-b463-ab34f4d0a310/svn/ryobi-cordless-ratchets-pblrc01k1-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/6f1e87f8-9a51-4a9e-b463-ab34f4d0a310/svn/ryobi-cordless-ratchets-pblrc01k1-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/6f1e87f8-9a51-4a9e-b463-ab34f4d0a310/svn/ryobi-cordless-ratchets-pblrc01k1-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/6f1e87f8-9a51-4a9e-b463-ab34f4d0a310/svn/ryobi-cordless-ratchets-pblrc01k1-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Brushless-Cordless-1-4-in-Extended-Reach-Ratchet-with-1-2-0-Ah-Battery-and-Charger-PBLRC01K1/316631067",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=316631067&store_id=2414",
+      "model_number": "PBLRC01K1",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.604,
+      "reviews": 500,
+      "price": 229,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 5,
+      "product_id": "323337327",
+      "title": "ONE+ 18V Cordless Multi Size Ratchet (Tool Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/63e59766-f0c4-4d8a-87e5-37e8c6c3418c/svn/ryobi-cordless-ratchets-pcl280b-64_65.jpg",
+          "https://images.thdstatic.com/productImages/63e59766-f0c4-4d8a-87e5-37e8c6c3418c/svn/ryobi-cordless-ratchets-pcl280b-64_100.jpg",
+          "https://images.thdstatic.com/productImages/63e59766-f0c4-4d8a-87e5-37e8c6c3418c/svn/ryobi-cordless-ratchets-pcl280b-64_145.jpg",
+          "https://images.thdstatic.com/productImages/63e59766-f0c4-4d8a-87e5-37e8c6c3418c/svn/ryobi-cordless-ratchets-pcl280b-64_300.jpg",
+          "https://images.thdstatic.com/productImages/63e59766-f0c4-4d8a-87e5-37e8c6c3418c/svn/ryobi-cordless-ratchets-pcl280b-64_400.jpg",
+          "https://images.thdstatic.com/productImages/63e59766-f0c4-4d8a-87e5-37e8c6c3418c/svn/ryobi-cordless-ratchets-pcl280b-64_600.jpg",
+          "https://images.thdstatic.com/productImages/63e59766-f0c4-4d8a-87e5-37e8c6c3418c/svn/ryobi-cordless-ratchets-pcl280b-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-Multi-Size-Ratchet-Tool-Only-PCL280B/323337327",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=323337327&store_id=2414",
+      "model_number": "PCL280B",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.6838,
+      "reviews": 389,
+      "price": 79,
+      "price_was": 119,
+      "price_saving": 40,
+      "percentage_off": 34,
+      "price_badge": "New-Lower-Price",
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "quantity": 8,
+        "store_name": "Bangor",
+        "distance": 0
+      }
+    },
+    {
+      "position": 6,
+      "product_id": "316631069",
+      "title": "ONE+ 18V Brushless Cordless 3/8 in. Extended Reach Ratchet with (1) 2.0 Ah Battery and Charger",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/92a39edb-d473-4e70-8c29-02fa3e6345a9/svn/ryobi-cordless-ratchets-pblrc25k1-64_65.jpg",
+          "https://images.thdstatic.com/productImages/92a39edb-d473-4e70-8c29-02fa3e6345a9/svn/ryobi-cordless-ratchets-pblrc25k1-64_100.jpg",
+          "https://images.thdstatic.com/productImages/92a39edb-d473-4e70-8c29-02fa3e6345a9/svn/ryobi-cordless-ratchets-pblrc25k1-64_145.jpg",
+          "https://images.thdstatic.com/productImages/92a39edb-d473-4e70-8c29-02fa3e6345a9/svn/ryobi-cordless-ratchets-pblrc25k1-64_300.jpg",
+          "https://images.thdstatic.com/productImages/92a39edb-d473-4e70-8c29-02fa3e6345a9/svn/ryobi-cordless-ratchets-pblrc25k1-64_400.jpg",
+          "https://images.thdstatic.com/productImages/92a39edb-d473-4e70-8c29-02fa3e6345a9/svn/ryobi-cordless-ratchets-pblrc25k1-64_600.jpg",
+          "https://images.thdstatic.com/productImages/92a39edb-d473-4e70-8c29-02fa3e6345a9/svn/ryobi-cordless-ratchets-pblrc25k1-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/41a4d7d7-e008-47ed-b772-65b71563f466/svn/ryobi-cordless-ratchets-pblrc25k1-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/41a4d7d7-e008-47ed-b772-65b71563f466/svn/ryobi-cordless-ratchets-pblrc25k1-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/41a4d7d7-e008-47ed-b772-65b71563f466/svn/ryobi-cordless-ratchets-pblrc25k1-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/41a4d7d7-e008-47ed-b772-65b71563f466/svn/ryobi-cordless-ratchets-pblrc25k1-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/41a4d7d7-e008-47ed-b772-65b71563f466/svn/ryobi-cordless-ratchets-pblrc25k1-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/41a4d7d7-e008-47ed-b772-65b71563f466/svn/ryobi-cordless-ratchets-pblrc25k1-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/41a4d7d7-e008-47ed-b772-65b71563f466/svn/ryobi-cordless-ratchets-pblrc25k1-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Brushless-Cordless-3-8-in-Extended-Reach-Ratchet-with-1-2-0-Ah-Battery-and-Charger-PBLRC25K1/316631069",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=316631069&store_id=2414",
+      "model_number": "PBLRC25K1",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.5448,
+      "reviews": 1250,
+      "price": 209,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 7,
+      "product_id": "320683876",
+      "title": "ONE+ HP 18V Brushless Cordless 3/8 in. Extended Reach Ratchet with 4.0 Ah Lithium Battery",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/387eb9cb-2000-4887-97a7-0b0b8bf2784a/svn/ryobi-cordless-ratchets-pblrc25b-pbp004-64_65.jpg",
+          "https://images.thdstatic.com/productImages/387eb9cb-2000-4887-97a7-0b0b8bf2784a/svn/ryobi-cordless-ratchets-pblrc25b-pbp004-64_100.jpg",
+          "https://images.thdstatic.com/productImages/387eb9cb-2000-4887-97a7-0b0b8bf2784a/svn/ryobi-cordless-ratchets-pblrc25b-pbp004-64_145.jpg",
+          "https://images.thdstatic.com/productImages/387eb9cb-2000-4887-97a7-0b0b8bf2784a/svn/ryobi-cordless-ratchets-pblrc25b-pbp004-64_300.jpg",
+          "https://images.thdstatic.com/productImages/387eb9cb-2000-4887-97a7-0b0b8bf2784a/svn/ryobi-cordless-ratchets-pblrc25b-pbp004-64_400.jpg",
+          "https://images.thdstatic.com/productImages/387eb9cb-2000-4887-97a7-0b0b8bf2784a/svn/ryobi-cordless-ratchets-pblrc25b-pbp004-64_600.jpg",
+          "https://images.thdstatic.com/productImages/387eb9cb-2000-4887-97a7-0b0b8bf2784a/svn/ryobi-cordless-ratchets-pblrc25b-pbp004-64_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-3-8-in-Extended-Reach-Ratchet-with-4-0-Ah-Lithium-Battery-PBLRC25B-PBP004/320683876",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=320683876&store_id=2414",
+      "model_number": "PBLRC25B-PBP004",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.5612,
+      "reviews": 1217,
+      "price": 288,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 8,
+      "product_id": "320684261",
+      "title": "ONE+ HP 18V Brushless Cordless 1/4 in. Extended Reach Ratchet with 4.0 Ah Lithium Battery",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/cddf1402-935b-4a64-aec7-9cc6cf5c3e9f/svn/ryobi-cordless-ratchets-pblrc01b-pbp004-64_65.jpg",
+          "https://images.thdstatic.com/productImages/cddf1402-935b-4a64-aec7-9cc6cf5c3e9f/svn/ryobi-cordless-ratchets-pblrc01b-pbp004-64_100.jpg",
+          "https://images.thdstatic.com/productImages/cddf1402-935b-4a64-aec7-9cc6cf5c3e9f/svn/ryobi-cordless-ratchets-pblrc01b-pbp004-64_145.jpg",
+          "https://images.thdstatic.com/productImages/cddf1402-935b-4a64-aec7-9cc6cf5c3e9f/svn/ryobi-cordless-ratchets-pblrc01b-pbp004-64_300.jpg",
+          "https://images.thdstatic.com/productImages/cddf1402-935b-4a64-aec7-9cc6cf5c3e9f/svn/ryobi-cordless-ratchets-pblrc01b-pbp004-64_400.jpg",
+          "https://images.thdstatic.com/productImages/cddf1402-935b-4a64-aec7-9cc6cf5c3e9f/svn/ryobi-cordless-ratchets-pblrc01b-pbp004-64_600.jpg",
+          "https://images.thdstatic.com/productImages/cddf1402-935b-4a64-aec7-9cc6cf5c3e9f/svn/ryobi-cordless-ratchets-pblrc01b-pbp004-64_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-Extended-Reach-Ratchet-with-4-0-Ah-Lithium-Battery-PBLRC01B-PBP004/320684261",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=320684261&store_id=2414",
+      "model_number": "PBLRC01B-PBP004",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.5489,
+      "reviews": 1124,
+      "price": 298,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 9,
+      "product_id": "335849279",
+      "title": "ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only) with Impact Socket Set (4-Piece)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/09827367-1b67-442a-ad91-efc7eb328fb1/svn/ryobi-cordless-ratchets-pblrc2501sb-a13401-64_65.jpg",
+          "https://images.thdstatic.com/productImages/09827367-1b67-442a-ad91-efc7eb328fb1/svn/ryobi-cordless-ratchets-pblrc2501sb-a13401-64_100.jpg",
+          "https://images.thdstatic.com/productImages/09827367-1b67-442a-ad91-efc7eb328fb1/svn/ryobi-cordless-ratchets-pblrc2501sb-a13401-64_145.jpg",
+          "https://images.thdstatic.com/productImages/09827367-1b67-442a-ad91-efc7eb328fb1/svn/ryobi-cordless-ratchets-pblrc2501sb-a13401-64_300.jpg",
+          "https://images.thdstatic.com/productImages/09827367-1b67-442a-ad91-efc7eb328fb1/svn/ryobi-cordless-ratchets-pblrc2501sb-a13401-64_400.jpg",
+          "https://images.thdstatic.com/productImages/09827367-1b67-442a-ad91-efc7eb328fb1/svn/ryobi-cordless-ratchets-pblrc2501sb-a13401-64_600.jpg",
+          "https://images.thdstatic.com/productImages/09827367-1b67-442a-ad91-efc7eb328fb1/svn/ryobi-cordless-ratchets-pblrc2501sb-a13401-64_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-and-3-8-in-Extended-Reach-Ratchets-Tools-Only-with-Impact-Socket-Set-4-Piece-PBLRC2501SB-A13401/335849279",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=335849279&store_id=2414",
+      "model_number": "PBLRC2501SB-A13401",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.6061,
+      "reviews": 132,
+      "price": 203.47,
+      "price_was": 213.47,
+      "price_saving": 10,
+      "percentage_off": 5,
+      "price_badge": null,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 10,
+      "product_id": "316631066",
+      "title": "ONE+ HP 18V Brushless Cordless 1/4 in. Extended Reach Ratchet (Tool Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/6d16deea-4467-433b-b7b0-dfca941cea27/svn/ryobi-cordless-ratchets-pblrc01b-64_65.jpg",
+          "https://images.thdstatic.com/productImages/6d16deea-4467-433b-b7b0-dfca941cea27/svn/ryobi-cordless-ratchets-pblrc01b-64_100.jpg",
+          "https://images.thdstatic.com/productImages/6d16deea-4467-433b-b7b0-dfca941cea27/svn/ryobi-cordless-ratchets-pblrc01b-64_145.jpg",
+          "https://images.thdstatic.com/productImages/6d16deea-4467-433b-b7b0-dfca941cea27/svn/ryobi-cordless-ratchets-pblrc01b-64_300.jpg",
+          "https://images.thdstatic.com/productImages/6d16deea-4467-433b-b7b0-dfca941cea27/svn/ryobi-cordless-ratchets-pblrc01b-64_400.jpg",
+          "https://images.thdstatic.com/productImages/6d16deea-4467-433b-b7b0-dfca941cea27/svn/ryobi-cordless-ratchets-pblrc01b-64_600.jpg",
+          "https://images.thdstatic.com/productImages/6d16deea-4467-433b-b7b0-dfca941cea27/svn/ryobi-cordless-ratchets-pblrc01b-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-cordless-ratchets-pblrc01b-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-cordless-ratchets-pblrc01b-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-cordless-ratchets-pblrc01b-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-cordless-ratchets-pblrc01b-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-cordless-ratchets-pblrc01b-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-cordless-ratchets-pblrc01b-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/324b0fee-07c1-4883-a7d4-457723e05b14/svn/ryobi-cordless-ratchets-pblrc01b-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-Extended-Reach-Ratchet-Tool-Only-PBLRC01B/316631066",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=316631066&store_id=2414",
+      "model_number": "PBLRC01B",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.604,
+      "reviews": 500,
+      "price": 179,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 11,
+      "product_id": "323867902",
+      "title": "M12 FUEL INSIDER 12V Lithium-Ion Brushless Cordless 1/4 in. - 3/8 in. Extended Reach Box Ratchet (Tool-Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/44818109-0f00-4571-9a2a-e88b98fbb488/svn/milwaukee-cordless-ratchets-3050-20-64_65.jpg",
+          "https://images.thdstatic.com/productImages/44818109-0f00-4571-9a2a-e88b98fbb488/svn/milwaukee-cordless-ratchets-3050-20-64_100.jpg",
+          "https://images.thdstatic.com/productImages/44818109-0f00-4571-9a2a-e88b98fbb488/svn/milwaukee-cordless-ratchets-3050-20-64_145.jpg",
+          "https://images.thdstatic.com/productImages/44818109-0f00-4571-9a2a-e88b98fbb488/svn/milwaukee-cordless-ratchets-3050-20-64_300.jpg",
+          "https://images.thdstatic.com/productImages/44818109-0f00-4571-9a2a-e88b98fbb488/svn/milwaukee-cordless-ratchets-3050-20-64_400.jpg",
+          "https://images.thdstatic.com/productImages/44818109-0f00-4571-9a2a-e88b98fbb488/svn/milwaukee-cordless-ratchets-3050-20-64_600.jpg",
+          "https://images.thdstatic.com/productImages/44818109-0f00-4571-9a2a-e88b98fbb488/svn/milwaukee-cordless-ratchets-3050-20-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/4cd8ccb9-9443-44b7-8a38-001be12294e8/svn/milwaukee-cordless-ratchets-3050-20-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/4cd8ccb9-9443-44b7-8a38-001be12294e8/svn/milwaukee-cordless-ratchets-3050-20-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/4cd8ccb9-9443-44b7-8a38-001be12294e8/svn/milwaukee-cordless-ratchets-3050-20-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/4cd8ccb9-9443-44b7-8a38-001be12294e8/svn/milwaukee-cordless-ratchets-3050-20-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/4cd8ccb9-9443-44b7-8a38-001be12294e8/svn/milwaukee-cordless-ratchets-3050-20-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/4cd8ccb9-9443-44b7-8a38-001be12294e8/svn/milwaukee-cordless-ratchets-3050-20-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/4cd8ccb9-9443-44b7-8a38-001be12294e8/svn/milwaukee-cordless-ratchets-3050-20-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/Milwaukee-M12-FUEL-INSIDER-12V-Lithium-Ion-Brushless-Cordless-1-4-in-3-8-in-Extended-Reach-Box-Ratchet-Tool-Only-3050-20/323867902",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=323867902&store_id=2414",
+      "model_number": "3050-20",
+      "brand": "Milwaukee",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.5207,
+      "reviews": 1160,
+      "price": 299,
+      "badges": [
+        "top rated",
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "quantity": 1,
+        "store_name": "Bangor",
+        "distance": 0
+      }
+    },
+    {
+      "position": 12,
+      "product_id": "327939252",
+      "title": "ONE+ 18V Cordless Multi Size Ratchet with ONE+ 18V Lithium 2.0 Ah Compact Battery and Charger",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/108425ad-6aa6-4215-b47f-886f7e7b852b/svn/ryobi-cordless-ratchets-pcl280b-psk005-64_65.jpg",
+          "https://images.thdstatic.com/productImages/108425ad-6aa6-4215-b47f-886f7e7b852b/svn/ryobi-cordless-ratchets-pcl280b-psk005-64_100.jpg",
+          "https://images.thdstatic.com/productImages/108425ad-6aa6-4215-b47f-886f7e7b852b/svn/ryobi-cordless-ratchets-pcl280b-psk005-64_145.jpg",
+          "https://images.thdstatic.com/productImages/108425ad-6aa6-4215-b47f-886f7e7b852b/svn/ryobi-cordless-ratchets-pcl280b-psk005-64_300.jpg",
+          "https://images.thdstatic.com/productImages/108425ad-6aa6-4215-b47f-886f7e7b852b/svn/ryobi-cordless-ratchets-pcl280b-psk005-64_400.jpg",
+          "https://images.thdstatic.com/productImages/108425ad-6aa6-4215-b47f-886f7e7b852b/svn/ryobi-cordless-ratchets-pcl280b-psk005-64_600.jpg",
+          "https://images.thdstatic.com/productImages/108425ad-6aa6-4215-b47f-886f7e7b852b/svn/ryobi-cordless-ratchets-pcl280b-psk005-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk005-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk005-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk005-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk005-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk005-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk005-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk005-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-Multi-Size-Ratchet-with-ONE-18V-Lithium-2-0-Ah-Compact-Battery-and-Charger-PCL280B-PSK005/327939252",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=327939252&store_id=2414",
+      "model_number": "PCL280B-PSK005",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.4885,
+      "reviews": 1609,
+      "price": 158,
+      "price_was": 218,
+      "price_saving": 60,
+      "percentage_off": 28,
+      "price_badge": "Special-Buy",
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 13,
+      "product_id": "327939313",
+      "title": "ONE+ 18V Cordless Multi Size Ratchet with ONE+ 18V 4.0 Ah Battery and Charger",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/570534bf-f9ed-4349-84ef-72b2063dab50/svn/ryobi-cordless-ratchets-pcl280b-psk014-64_65.jpg",
+          "https://images.thdstatic.com/productImages/570534bf-f9ed-4349-84ef-72b2063dab50/svn/ryobi-cordless-ratchets-pcl280b-psk014-64_100.jpg",
+          "https://images.thdstatic.com/productImages/570534bf-f9ed-4349-84ef-72b2063dab50/svn/ryobi-cordless-ratchets-pcl280b-psk014-64_145.jpg",
+          "https://images.thdstatic.com/productImages/570534bf-f9ed-4349-84ef-72b2063dab50/svn/ryobi-cordless-ratchets-pcl280b-psk014-64_300.jpg",
+          "https://images.thdstatic.com/productImages/570534bf-f9ed-4349-84ef-72b2063dab50/svn/ryobi-cordless-ratchets-pcl280b-psk014-64_400.jpg",
+          "https://images.thdstatic.com/productImages/570534bf-f9ed-4349-84ef-72b2063dab50/svn/ryobi-cordless-ratchets-pcl280b-psk014-64_600.jpg",
+          "https://images.thdstatic.com/productImages/570534bf-f9ed-4349-84ef-72b2063dab50/svn/ryobi-cordless-ratchets-pcl280b-psk014-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk014-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk014-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk014-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk014-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk014-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk014-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-psk014-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-Multi-Size-Ratchet-with-ONE-18V-4-0-Ah-Battery-and-Charger-PCL280B-PSK014/327939313",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=327939313&store_id=2414",
+      "model_number": "PCL280B-PSK014",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.6124,
+      "reviews": 645,
+      "price": 278,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 14,
+      "product_id": "323337329",
+      "title": "ONE+ 18V Cordless Multi-Size Ratchet 3/8 in. and 1/4 in. Kit with Compact Battery and Charger",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_65.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_100.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_145.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_300.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_400.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_600.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-Multi-Size-Ratchet-3-8-in-and-1-4-in-Kit-with-Compact-Battery-and-Charger-PCL280K1/323337329",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=323337329&store_id=2414",
+      "model_number": "PCL280K1",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com/collection/Tools/NEW-RYOBI-ONE-HP-18V-Brushless-Line-Up/Family-316126586?omsid=323337329",
+      "rating": 4.8951,
+      "reviews": 162,
+      "price": 158.75,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 15,
+      "product_id": "323141890",
+      "title": "18V Brushless Cordless 3/8 in. Extended Reach Ratchet (Tool Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/a883b378-5ab0-4ad3-9166-24f8b38bac37/svn/ridgid-cordless-ratchets-r866021b-64_65.jpg",
+          "https://images.thdstatic.com/productImages/a883b378-5ab0-4ad3-9166-24f8b38bac37/svn/ridgid-cordless-ratchets-r866021b-64_100.jpg",
+          "https://images.thdstatic.com/productImages/a883b378-5ab0-4ad3-9166-24f8b38bac37/svn/ridgid-cordless-ratchets-r866021b-64_145.jpg",
+          "https://images.thdstatic.com/productImages/a883b378-5ab0-4ad3-9166-24f8b38bac37/svn/ridgid-cordless-ratchets-r866021b-64_300.jpg",
+          "https://images.thdstatic.com/productImages/a883b378-5ab0-4ad3-9166-24f8b38bac37/svn/ridgid-cordless-ratchets-r866021b-64_400.jpg",
+          "https://images.thdstatic.com/productImages/a883b378-5ab0-4ad3-9166-24f8b38bac37/svn/ridgid-cordless-ratchets-r866021b-64_600.jpg",
+          "https://images.thdstatic.com/productImages/a883b378-5ab0-4ad3-9166-24f8b38bac37/svn/ridgid-cordless-ratchets-r866021b-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/3bdde549-dd7b-4b7f-a8e1-b0fae556e046/svn/ridgid-cordless-ratchets-r866021b-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/3bdde549-dd7b-4b7f-a8e1-b0fae556e046/svn/ridgid-cordless-ratchets-r866021b-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/3bdde549-dd7b-4b7f-a8e1-b0fae556e046/svn/ridgid-cordless-ratchets-r866021b-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/3bdde549-dd7b-4b7f-a8e1-b0fae556e046/svn/ridgid-cordless-ratchets-r866021b-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/3bdde549-dd7b-4b7f-a8e1-b0fae556e046/svn/ridgid-cordless-ratchets-r866021b-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/3bdde549-dd7b-4b7f-a8e1-b0fae556e046/svn/ridgid-cordless-ratchets-r866021b-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/3bdde549-dd7b-4b7f-a8e1-b0fae556e046/svn/ridgid-cordless-ratchets-r866021b-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RIDGID-18V-Brushless-Cordless-3-8-in-Extended-Reach-Ratchet-Tool-Only-R866021B/323141890",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=323141890&store_id=2414",
+      "model_number": "R866021B",
+      "brand": "RIDGID",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.6399,
+      "reviews": 586,
+      "price": 209,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 16,
+      "product_id": "322339817",
+      "title": "ONE+ 18V HP Brushless Cordless 1/4 in. High Speed Ratchet Kit with 2.0 Ah Battery and Charger",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/0e2926f2-c097-4411-b605-6c9ac81684a8/svn/ryobi-cordless-ratchets-psbrc02k1-64_65.jpg",
+          "https://images.thdstatic.com/productImages/0e2926f2-c097-4411-b605-6c9ac81684a8/svn/ryobi-cordless-ratchets-psbrc02k1-64_100.jpg",
+          "https://images.thdstatic.com/productImages/0e2926f2-c097-4411-b605-6c9ac81684a8/svn/ryobi-cordless-ratchets-psbrc02k1-64_145.jpg",
+          "https://images.thdstatic.com/productImages/0e2926f2-c097-4411-b605-6c9ac81684a8/svn/ryobi-cordless-ratchets-psbrc02k1-64_300.jpg",
+          "https://images.thdstatic.com/productImages/0e2926f2-c097-4411-b605-6c9ac81684a8/svn/ryobi-cordless-ratchets-psbrc02k1-64_400.jpg",
+          "https://images.thdstatic.com/productImages/0e2926f2-c097-4411-b605-6c9ac81684a8/svn/ryobi-cordless-ratchets-psbrc02k1-64_600.jpg",
+          "https://images.thdstatic.com/productImages/0e2926f2-c097-4411-b605-6c9ac81684a8/svn/ryobi-cordless-ratchets-psbrc02k1-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/da80044b-4035-4652-8b01-236f6e9dd69e/svn/ryobi-cordless-ratchets-psbrc02k1-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/da80044b-4035-4652-8b01-236f6e9dd69e/svn/ryobi-cordless-ratchets-psbrc02k1-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/da80044b-4035-4652-8b01-236f6e9dd69e/svn/ryobi-cordless-ratchets-psbrc02k1-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/da80044b-4035-4652-8b01-236f6e9dd69e/svn/ryobi-cordless-ratchets-psbrc02k1-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/da80044b-4035-4652-8b01-236f6e9dd69e/svn/ryobi-cordless-ratchets-psbrc02k1-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/da80044b-4035-4652-8b01-236f6e9dd69e/svn/ryobi-cordless-ratchets-psbrc02k1-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/da80044b-4035-4652-8b01-236f6e9dd69e/svn/ryobi-cordless-ratchets-psbrc02k1-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-HP-Brushless-Cordless-1-4-in-High-Speed-Ratchet-Kit-with-2-0-Ah-Battery-and-Charger-PSBRC02K1/322339817",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=322339817&store_id=2414",
+      "model_number": "PSBRC02K1",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.5944,
+      "reviews": 498,
+      "price": 159,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 17,
+      "product_id": "323141889",
+      "title": "18V Brushless Cordless 1/4 in. Extended Reach Ratchet (Tool Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/fe5d128c-982d-4add-b183-0b1c754fb025/svn/ridgid-cordless-ratchets-r866020b-64_65.jpg",
+          "https://images.thdstatic.com/productImages/fe5d128c-982d-4add-b183-0b1c754fb025/svn/ridgid-cordless-ratchets-r866020b-64_100.jpg",
+          "https://images.thdstatic.com/productImages/fe5d128c-982d-4add-b183-0b1c754fb025/svn/ridgid-cordless-ratchets-r866020b-64_145.jpg",
+          "https://images.thdstatic.com/productImages/fe5d128c-982d-4add-b183-0b1c754fb025/svn/ridgid-cordless-ratchets-r866020b-64_300.jpg",
+          "https://images.thdstatic.com/productImages/fe5d128c-982d-4add-b183-0b1c754fb025/svn/ridgid-cordless-ratchets-r866020b-64_400.jpg",
+          "https://images.thdstatic.com/productImages/fe5d128c-982d-4add-b183-0b1c754fb025/svn/ridgid-cordless-ratchets-r866020b-64_600.jpg",
+          "https://images.thdstatic.com/productImages/fe5d128c-982d-4add-b183-0b1c754fb025/svn/ridgid-cordless-ratchets-r866020b-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/53ac22e0-45fd-4256-b5bc-6d206a30b362/svn/ridgid-cordless-ratchets-r866020b-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/53ac22e0-45fd-4256-b5bc-6d206a30b362/svn/ridgid-cordless-ratchets-r866020b-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/53ac22e0-45fd-4256-b5bc-6d206a30b362/svn/ridgid-cordless-ratchets-r866020b-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/53ac22e0-45fd-4256-b5bc-6d206a30b362/svn/ridgid-cordless-ratchets-r866020b-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/53ac22e0-45fd-4256-b5bc-6d206a30b362/svn/ridgid-cordless-ratchets-r866020b-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/53ac22e0-45fd-4256-b5bc-6d206a30b362/svn/ridgid-cordless-ratchets-r866020b-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/53ac22e0-45fd-4256-b5bc-6d206a30b362/svn/ridgid-cordless-ratchets-r866020b-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RIDGID-18V-Brushless-Cordless-1-4-in-Extended-Reach-Ratchet-Tool-Only-R866020B/323141889",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=323141889&store_id=2414",
+      "model_number": "R866020B",
+      "brand": "RIDGID",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.6436,
+      "reviews": 578,
+      "price": 209,
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 18,
+      "product_id": "345174262",
+      "title": "ONE+ 18V Cordless Multi Size Ratchet (Tool Only) w/ 26-Piece 1/4\" Drive Ratchet and Socket Set",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/e5d61b91-c6d3-418e-9fa1-50ead149b634/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-64_65.jpg",
+          "https://images.thdstatic.com/productImages/e5d61b91-c6d3-418e-9fa1-50ead149b634/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-64_100.jpg",
+          "https://images.thdstatic.com/productImages/e5d61b91-c6d3-418e-9fa1-50ead149b634/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-64_145.jpg",
+          "https://images.thdstatic.com/productImages/e5d61b91-c6d3-418e-9fa1-50ead149b634/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-64_300.jpg",
+          "https://images.thdstatic.com/productImages/e5d61b91-c6d3-418e-9fa1-50ead149b634/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-64_400.jpg",
+          "https://images.thdstatic.com/productImages/e5d61b91-c6d3-418e-9fa1-50ead149b634/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-64_600.jpg",
+          "https://images.thdstatic.com/productImages/e5d61b91-c6d3-418e-9fa1-50ead149b634/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/de8b7184-5d31-4642-b187-6f42f28af6c4/svn/ryobi-cordless-ratchets-pcl280b-rhmts12601-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-Multi-Size-Ratchet-Tool-Only-w-26-Piece-1-4-Drive-Ratchet-and-Socket-Set-PCL280B-RHMTS12601/345174262",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=345174262&store_id=2414",
+      "model_number": "PCL280B-RHMTS12601",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.6603,
+      "reviews": 524,
+      "price": 148.97,
+      "badges": [
+        "new",
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 19,
+      "product_id": "341609268",
+      "title": "M12 FUEL 12V Lithium Ion Brushless 3/8 in. Drive Extended Reach Cordless Ratchet (Tool-Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/1d8f9c5b-073d-4d4d-b4a5-5d1195b67c81/svn/milwaukee-cordless-ratchets-3059-20-64_65.jpg",
+          "https://images.thdstatic.com/productImages/1d8f9c5b-073d-4d4d-b4a5-5d1195b67c81/svn/milwaukee-cordless-ratchets-3059-20-64_100.jpg",
+          "https://images.thdstatic.com/productImages/1d8f9c5b-073d-4d4d-b4a5-5d1195b67c81/svn/milwaukee-cordless-ratchets-3059-20-64_145.jpg",
+          "https://images.thdstatic.com/productImages/1d8f9c5b-073d-4d4d-b4a5-5d1195b67c81/svn/milwaukee-cordless-ratchets-3059-20-64_300.jpg",
+          "https://images.thdstatic.com/productImages/1d8f9c5b-073d-4d4d-b4a5-5d1195b67c81/svn/milwaukee-cordless-ratchets-3059-20-64_400.jpg",
+          "https://images.thdstatic.com/productImages/1d8f9c5b-073d-4d4d-b4a5-5d1195b67c81/svn/milwaukee-cordless-ratchets-3059-20-64_600.jpg",
+          "https://images.thdstatic.com/productImages/1d8f9c5b-073d-4d4d-b4a5-5d1195b67c81/svn/milwaukee-cordless-ratchets-3059-20-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/257419dc-9113-41b0-b27c-cdba82d88686/svn/milwaukee-cordless-ratchets-3059-20-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/257419dc-9113-41b0-b27c-cdba82d88686/svn/milwaukee-cordless-ratchets-3059-20-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/257419dc-9113-41b0-b27c-cdba82d88686/svn/milwaukee-cordless-ratchets-3059-20-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/257419dc-9113-41b0-b27c-cdba82d88686/svn/milwaukee-cordless-ratchets-3059-20-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/257419dc-9113-41b0-b27c-cdba82d88686/svn/milwaukee-cordless-ratchets-3059-20-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/257419dc-9113-41b0-b27c-cdba82d88686/svn/milwaukee-cordless-ratchets-3059-20-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/257419dc-9113-41b0-b27c-cdba82d88686/svn/milwaukee-cordless-ratchets-3059-20-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/Milwaukee-M12-FUEL-12V-Lithium-Ion-Brushless-3-8-in-Drive-Extended-Reach-Cordless-Ratchet-Tool-Only-3059-20/341609268",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=341609268&store_id=2414",
+      "model_number": "3059-20",
+      "brand": "Milwaukee",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.6618,
+      "reviews": 204,
+      "price": 279,
+      "badges": [
+        "new",
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "quantity": 2,
+        "store_name": "Bangor",
+        "distance": 0
+      }
+    },
+    {
+      "position": 20,
+      "product_id": "337133128",
+      "title": "M12 FUEL 12V Lithium-Ion 3/8 in. & 1/4 in. Brushless Compact Cordless Ratchet with Extended Reach",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/f608a882-7404-41e6-8713-0cc3c20682f0/svn/milwaukee-cordless-ratchets-3050-21-2446-20-64_65.jpg",
+          "https://images.thdstatic.com/productImages/f608a882-7404-41e6-8713-0cc3c20682f0/svn/milwaukee-cordless-ratchets-3050-21-2446-20-64_100.jpg",
+          "https://images.thdstatic.com/productImages/f608a882-7404-41e6-8713-0cc3c20682f0/svn/milwaukee-cordless-ratchets-3050-21-2446-20-64_145.jpg",
+          "https://images.thdstatic.com/productImages/f608a882-7404-41e6-8713-0cc3c20682f0/svn/milwaukee-cordless-ratchets-3050-21-2446-20-64_300.jpg",
+          "https://images.thdstatic.com/productImages/f608a882-7404-41e6-8713-0cc3c20682f0/svn/milwaukee-cordless-ratchets-3050-21-2446-20-64_400.jpg",
+          "https://images.thdstatic.com/productImages/f608a882-7404-41e6-8713-0cc3c20682f0/svn/milwaukee-cordless-ratchets-3050-21-2446-20-64_600.jpg",
+          "https://images.thdstatic.com/productImages/f608a882-7404-41e6-8713-0cc3c20682f0/svn/milwaukee-cordless-ratchets-3050-21-2446-20-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/74a83d06-b811-4f98-a9f3-e9def68d53ea/svn/milwaukee-cordless-ratchets-3050-21-2446-20-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/74a83d06-b811-4f98-a9f3-e9def68d53ea/svn/milwaukee-cordless-ratchets-3050-21-2446-20-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/74a83d06-b811-4f98-a9f3-e9def68d53ea/svn/milwaukee-cordless-ratchets-3050-21-2446-20-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/74a83d06-b811-4f98-a9f3-e9def68d53ea/svn/milwaukee-cordless-ratchets-3050-21-2446-20-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/74a83d06-b811-4f98-a9f3-e9def68d53ea/svn/milwaukee-cordless-ratchets-3050-21-2446-20-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/74a83d06-b811-4f98-a9f3-e9def68d53ea/svn/milwaukee-cordless-ratchets-3050-21-2446-20-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/74a83d06-b811-4f98-a9f3-e9def68d53ea/svn/milwaukee-cordless-ratchets-3050-21-2446-20-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/Milwaukee-M12-FUEL-12V-Lithium-Ion-3-8-in-1-4-in-Brushless-Compact-Cordless-Ratchet-with-Extended-Reach-3050-21-2446-20/337133128",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=337133128&store_id=2414",
+      "model_number": "3050-21-2446-20",
+      "brand": "Milwaukee",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.6638,
+      "reviews": 577,
+      "price": 399,
+      "price_was": 598,
+      "price_saving": 199,
+      "percentage_off": 33,
+      "price_badge": "Special-Buy",
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 21,
+      "product_id": "338334207",
+      "title": "ATOMIC 20V MAX 3/8 in. Extended Reach Cordless Ratchet (Tool Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/dfd700be-9db1-439b-b85f-26a909095b8f/svn/dewalt-cordless-ratchets-dcf513eb-64_65.jpg",
+          "https://images.thdstatic.com/productImages/dfd700be-9db1-439b-b85f-26a909095b8f/svn/dewalt-cordless-ratchets-dcf513eb-64_100.jpg",
+          "https://images.thdstatic.com/productImages/dfd700be-9db1-439b-b85f-26a909095b8f/svn/dewalt-cordless-ratchets-dcf513eb-64_145.jpg",
+          "https://images.thdstatic.com/productImages/dfd700be-9db1-439b-b85f-26a909095b8f/svn/dewalt-cordless-ratchets-dcf513eb-64_300.jpg",
+          "https://images.thdstatic.com/productImages/dfd700be-9db1-439b-b85f-26a909095b8f/svn/dewalt-cordless-ratchets-dcf513eb-64_400.jpg",
+          "https://images.thdstatic.com/productImages/dfd700be-9db1-439b-b85f-26a909095b8f/svn/dewalt-cordless-ratchets-dcf513eb-64_600.jpg",
+          "https://images.thdstatic.com/productImages/dfd700be-9db1-439b-b85f-26a909095b8f/svn/dewalt-cordless-ratchets-dcf513eb-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/556075d9-cbd3-4013-b7e6-e7cdc09eb068/svn/dewalt-cordless-ratchets-dcf513eb-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/556075d9-cbd3-4013-b7e6-e7cdc09eb068/svn/dewalt-cordless-ratchets-dcf513eb-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/556075d9-cbd3-4013-b7e6-e7cdc09eb068/svn/dewalt-cordless-ratchets-dcf513eb-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/556075d9-cbd3-4013-b7e6-e7cdc09eb068/svn/dewalt-cordless-ratchets-dcf513eb-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/556075d9-cbd3-4013-b7e6-e7cdc09eb068/svn/dewalt-cordless-ratchets-dcf513eb-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/556075d9-cbd3-4013-b7e6-e7cdc09eb068/svn/dewalt-cordless-ratchets-dcf513eb-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/556075d9-cbd3-4013-b7e6-e7cdc09eb068/svn/dewalt-cordless-ratchets-dcf513eb-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-3-8-in-Extended-Reach-Cordless-Ratchet-Tool-Only-DCF513EB/338334207",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=338334207&store_id=2414",
+      "model_number": "DCF513EB",
+      "brand": "DEWALT",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.5068,
+      "reviews": 665,
+      "price": 239,
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "quantity": 13,
+        "store_name": "Bangor",
+        "distance": 0
+      }
+    },
+    {
+      "position": 22,
+      "product_id": "339375658",
+      "title": "ONE+ 18V Cordless Multi-Size Ratchet Kit with (1) Battery and Charger",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_65.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_100.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_145.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_300.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_400.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_600.jpg",
+          "https://images.thdstatic.com/productImages/41032104-89fc-42cf-a64b-0777a19b6274/svn/ryobi-cordless-ratchets-pcl280k1-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/2438c52f-2cc1-4792-82d2-05af4b2a288a/svn/ryobi-cordless-ratchets-pcl280k1-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-Multi-Size-Ratchet-Kit-with-1-Battery-and-Charger-PCL280K1/339375658",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=339375658&store_id=2414",
+      "model_number": "PCL280K1",
+      "brand": "RYOBI",
+      "collection": "https://www.homedepot.com/collection/Tools/NEW-RYOBI-ONE-HP-18V-Brushless-Line-Up/Family-316126586?omsid=339375658",
+      "rating": 0,
+      "price": 189,
+      "badges": [
+        "new",
+        "exclusive"
+      ]
+    },
+    {
+      "position": 23,
+      "product_id": "334453186",
+      "title": "M12 FUEL INSIDER 12V Lithium-Ion Brushless 1/4 in.-3/8 in. Extended Reach Cordless Ratchet Box Ratchet Kit w Inflator",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/7b0ce27c-1c4d-4280-9f90-40ebec93dae9/svn/milwaukee-cordless-ratchets-3050-21-2475-20-64_65.jpg",
+          "https://images.thdstatic.com/productImages/7b0ce27c-1c4d-4280-9f90-40ebec93dae9/svn/milwaukee-cordless-ratchets-3050-21-2475-20-64_100.jpg",
+          "https://images.thdstatic.com/productImages/7b0ce27c-1c4d-4280-9f90-40ebec93dae9/svn/milwaukee-cordless-ratchets-3050-21-2475-20-64_145.jpg",
+          "https://images.thdstatic.com/productImages/7b0ce27c-1c4d-4280-9f90-40ebec93dae9/svn/milwaukee-cordless-ratchets-3050-21-2475-20-64_300.jpg",
+          "https://images.thdstatic.com/productImages/7b0ce27c-1c4d-4280-9f90-40ebec93dae9/svn/milwaukee-cordless-ratchets-3050-21-2475-20-64_400.jpg",
+          "https://images.thdstatic.com/productImages/7b0ce27c-1c4d-4280-9f90-40ebec93dae9/svn/milwaukee-cordless-ratchets-3050-21-2475-20-64_600.jpg",
+          "https://images.thdstatic.com/productImages/7b0ce27c-1c4d-4280-9f90-40ebec93dae9/svn/milwaukee-cordless-ratchets-3050-21-2475-20-64_1000.jpg"
+        ],
+        [
+          "https://images.thdstatic.com/productImages/6d1d2932-49a5-4a52-8d12-6fcf1394ee06/svn/milwaukee-cordless-ratchets-3050-21-2475-20-e4_65.jpg",
+          "https://images.thdstatic.com/productImages/6d1d2932-49a5-4a52-8d12-6fcf1394ee06/svn/milwaukee-cordless-ratchets-3050-21-2475-20-e4_100.jpg",
+          "https://images.thdstatic.com/productImages/6d1d2932-49a5-4a52-8d12-6fcf1394ee06/svn/milwaukee-cordless-ratchets-3050-21-2475-20-e4_145.jpg",
+          "https://images.thdstatic.com/productImages/6d1d2932-49a5-4a52-8d12-6fcf1394ee06/svn/milwaukee-cordless-ratchets-3050-21-2475-20-e4_300.jpg",
+          "https://images.thdstatic.com/productImages/6d1d2932-49a5-4a52-8d12-6fcf1394ee06/svn/milwaukee-cordless-ratchets-3050-21-2475-20-e4_400.jpg",
+          "https://images.thdstatic.com/productImages/6d1d2932-49a5-4a52-8d12-6fcf1394ee06/svn/milwaukee-cordless-ratchets-3050-21-2475-20-e4_600.jpg",
+          "https://images.thdstatic.com/productImages/6d1d2932-49a5-4a52-8d12-6fcf1394ee06/svn/milwaukee-cordless-ratchets-3050-21-2475-20-e4_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/Milwaukee-M12-FUEL-INSIDER-12V-Lithium-Ion-Brushless-1-4-in-3-8-in-Extended-Reach-Cordless-Ratchet-Box-Ratchet-Kit-w-Inflator-3050-21-2475-20/334453186",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=334453186&store_id=2414",
+      "model_number": "3050-21-2475-20",
+      "brand": "Milwaukee",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.5716,
+      "reviews": 2617,
+      "price": 399,
+      "price_was": 529,
+      "price_saving": 130,
+      "percentage_off": 25,
+      "price_badge": "Special-Buy",
+      "badges": [
+        "exclusive"
+      ],
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    },
+    {
+      "position": 24,
+      "product_id": "339060578",
+      "title": "20V MAX ATOMIC Brushless 1/2 in. Extended Reach Cordless Ratchet (Tool Only)",
+      "thumbnails": [
+        [
+          "https://images.thdstatic.com/productImages/38d5da77-b512-489a-880d-b0e01045ac5f/svn/dewalt-cordless-ratchets-dcf512eb-64_65.jpg",
+          "https://images.thdstatic.com/productImages/38d5da77-b512-489a-880d-b0e01045ac5f/svn/dewalt-cordless-ratchets-dcf512eb-64_100.jpg",
+          "https://images.thdstatic.com/productImages/38d5da77-b512-489a-880d-b0e01045ac5f/svn/dewalt-cordless-ratchets-dcf512eb-64_145.jpg",
+          "https://images.thdstatic.com/productImages/38d5da77-b512-489a-880d-b0e01045ac5f/svn/dewalt-cordless-ratchets-dcf512eb-64_300.jpg",
+          "https://images.thdstatic.com/productImages/38d5da77-b512-489a-880d-b0e01045ac5f/svn/dewalt-cordless-ratchets-dcf512eb-64_400.jpg",
+          "https://images.thdstatic.com/productImages/38d5da77-b512-489a-880d-b0e01045ac5f/svn/dewalt-cordless-ratchets-dcf512eb-64_600.jpg",
+          "https://images.thdstatic.com/productImages/38d5da77-b512-489a-880d-b0e01045ac5f/svn/dewalt-cordless-ratchets-dcf512eb-64_1000.jpg"
+        ]
+      ],
+      "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-ATOMIC-Brushless-1-2-in-Extended-Reach-Cordless-Ratchet-Tool-Only-DCF512EB/339060578",
+      "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=339060578&store_id=2414",
+      "model_number": "DCF512EB",
+      "brand": "DEWALT",
+      "collection": "https://www.homedepot.com",
+      "rating": 4.4947,
+      "reviews": 661,
+      "price": 239,
+      "delivery": {
+        "free": true,
+        "free_delivery_threshold": false
+      },
+      "pickup": {
+        "free_ship_to_store": true
+      }
+    }
+  ],
+  "filters": [
+    {
+      "key": "Review Rating",
+      "value": [
+        {
+          "name": "5",
+          "count": "32",
+          "value": "bwo5q",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Best-Rated/N-5yc1vZc298Zbwo5q/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "4 & Up",
+          "count": "157",
+          "value": "bwo5o",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Highly-Rated/N-5yc1vZc298Zbwo5o/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "3 & Up",
+          "count": "161",
+          "value": "bwo5n",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Zbwo5n/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "2 & Up",
+          "count": "161",
+          "value": "bwo5m",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Zbwo5m/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "1 & Up",
+          "count": "162",
+          "value": "bwo5l",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Zbwo5l/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Bundle/Single",
+      "value": [
+        {
+          "name": "Single Product",
+          "count": "165",
+          "value": "bwo65",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Single-Product/N-5yc1vZc298Zbwo65/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Bundle",
+          "count": "4",
+          "value": "bwo64",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Bundle/N-5yc1vZc298Zbwo64/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Category",
+      "value": [
+        {
+          "name": "Cordless Ratchets",
+          "count": "114",
+          "value": "2fkolhl",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Cordless-Ratchets/N-5yc1vZ2fkolhl/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Power Tool Combo Kits",
+          "count": "30",
+          "value": "c2ec",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Power-Tool-Combo-Kits/N-5yc1vZc2ec/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Impact Wrenches",
+          "count": "27",
+          "value": "c28c",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Impact-Wrenches/N-5yc1vZc28c/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Jobsite",
+          "count": "15",
+          "value": "clr2",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Jobsite/N-5yc1vZclr2/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Drills",
+          "count": "13",
+          "value": "c27f",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Drills/N-5yc1vZc27f/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Saws",
+          "count": "8",
+          "value": "c28l",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Saws/N-5yc1vZc28l/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Nail Guns",
+          "count": "3",
+          "value": "c2cd",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Nail-Guns/N-5yc1vZc2cd/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Power Cutting Tools",
+          "count": "2",
+          "value": "1z18g8u",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Power-Cutting-Tools/N-5yc1vZ1z18g8u/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Power Multi Tools",
+          "count": "2",
+          "value": "c2bp",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Power-Multi-Tools/N-5yc1vZc2bp/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Jobsite Lighting",
+          "count": "14",
+          "value": "clqz",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Jobsite-Jobsite-Lighting/N-5yc1vZclqz/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Power Drills",
+          "count": "6",
+          "value": "c7jj",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Drills-Power-Drills/N-5yc1vZc7jj/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Impact Drivers",
+          "count": "4",
+          "value": "c29x",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Drills-Impact-Drivers/N-5yc1vZc29x/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Reciprocating Saws",
+          "count": "3",
+          "value": "c2h7",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Saws-Reciprocating-Saws/N-5yc1vZc2h7/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Staplers",
+          "count": "3",
+          "value": "c2eu",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Nail-Guns-Staplers/N-5yc1vZc2eu/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Band Saws",
+          "count": "2",
+          "value": "2fkokio",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Saws-Band-Saws/N-5yc1vZ2fkokio/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Circular Saws",
+          "count": "2",
+          "value": "c2dc",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Saws-Circular-Saws/N-5yc1vZc2dc/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Oscillating Tools",
+          "count": "2",
+          "value": "c2b2",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Power-Multi-Tools-Oscillating-Tools/N-5yc1vZc2b2/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Portable Band Saws",
+          "count": "2",
+          "value": "c2h4",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools-Saws-Band-Saws-Portable-Band-Saws/N-5yc1vZc2h4/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "New Arrival",
+      "value": [
+        {
+          "name": "Recently Added",
+          "count": "23",
+          "value": "1z179pc",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Recently-Added/N-5yc1vZc298Z1z179pc/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Get It Fast",
+      "value": [
+        {
+          "name": "Pick Up Today",
+          "count": "38",
+          "value": "1z175a5",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Pick-Up-Today/N-5yc1vZc298Z1z175a5/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Next-Day Delivery",
+          "count": "57",
+          "value": "1z175cq",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Next-Day-Delivery/N-5yc1vZc298Z1z175cq/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Brand",
+      "value": [
+        {
+          "name": "RYOBI",
+          "count": "96",
+          "value": "m5d",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/RYOBI/N-5yc1vZc298Zm5d/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Milwaukee",
+          "count": "80",
+          "value": "zv",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Milwaukee/N-5yc1vZc298Zzv/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "DEWALT",
+          "count": "31",
+          "value": "4j2",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/DEWALT/N-5yc1vZc298Z4j2/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "RIDGID",
+          "count": "14",
+          "value": "18g",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/RIDGID/N-5yc1vZc298Z18g/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Makita",
+          "count": "8",
+          "value": "yg",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Makita/N-5yc1vZc298Zyg/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Price",
+      "value": [
+        {
+          "name": "$30 - $40",
+          "count": "3",
+          "value": "12l0",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12l0/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$50 - $100",
+          "count": "26",
+          "value": "12l2",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12l2/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$100 - $150",
+          "count": "20",
+          "value": "12l3",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12l3/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$150 - $200",
+          "count": "24",
+          "value": "12l4",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12l4/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$200 - $250",
+          "count": "28",
+          "value": "12l5",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12l5/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$250 - $300",
+          "count": "20",
+          "value": "12l6",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12l6/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$300 - $400",
+          "count": "35",
+          "value": "12l7",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12l7/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$400 - $500",
+          "count": "22",
+          "value": "12l8",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12l8/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$500 - $600",
+          "count": "25",
+          "value": "12l9",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12l9/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$600 - $700",
+          "count": "3",
+          "value": "12la",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12la/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "$700 - $800",
+          "count": "2",
+          "value": "12lb",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z12lb/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Special Values",
+          "count": "79",
+          "value": "7",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298Z7/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "The Home Depot Events",
+      "value": [
+        {
+          "name": "Tool Savings",
+          "count": "44",
+          "value": "1z1zuqf",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Tool-Savings/N-5yc1vZc298Z1z1zuqf/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Tools and Outdoor Power Equipment",
+          "count": "21",
+          "value": "1z1zcb0",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Tools-and-Outdoor-Power-Equipment/N-5yc1vZc298Z1z1zcb0/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Black Friday Deals",
+          "count": "18",
+          "value": "1z1zdoh",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Black-Friday-Deals/N-5yc1vZc298Z1z1zdoh/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Express Delivery",
+          "count": "16",
+          "value": "1z2658n",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Express-Delivery/N-5yc1vZc298Z1z2658n/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Gifting: Gifts for the Pro",
+          "count": "4",
+          "value": "1z24wjq",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Gifting-Gifts-for-the-Pro/N-5yc1vZc298Z1z24wjq/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Tool Innovation",
+          "count": "4",
+          "value": "1z25ftr",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Tool-Innovation/N-5yc1vZc298Z1z25ftr/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Featured BOGO",
+          "count": "4",
+          "value": "1z24hvk",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Featured-BOGO/N-5yc1vZc298Z1z24hvk/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Gifting: New Homeowner",
+          "count": "4",
+          "value": "1z24wm5",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Gifting-New-Homeowner/N-5yc1vZc298Z1z24wm5/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Gifting: Shop All",
+          "count": "2",
+          "value": "1z24xve",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Gifting-Shop-All/N-5yc1vZc298Z1z24xve/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Gifting: Top Gifts",
+          "count": "2",
+          "value": "1z24w26",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Gifting-Top-Gifts/N-5yc1vZc298Z1z24w26/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Anniversary",
+          "count": "1",
+          "value": "1z25e8c",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Anniversary/N-5yc1vZc298Z1z25e8c/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Gifting: Stocking Stuffers",
+          "count": "1",
+          "value": "1z24wnt",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Gifting-Stocking-Stuffers/N-5yc1vZc298Z1z24wnt/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Cordless/Corded",
+      "value": [
+        {
+          "name": "Cordless",
+          "count": "165",
+          "value": "1z140i3",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Cordless/N-5yc1vZc298Z1z140i3/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Hybrid",
+          "count": "8",
+          "value": "1z0m3yr",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Hybrid/N-5yc1vZc298Z1z0m3yr/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Power Tool Features",
+      "value": [
+        {
+          "name": "Variable Speed",
+          "count": "130",
+          "value": "1z0o2m7",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Variable-Speed/N-5yc1vZc298Z1z0o2m7/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "LED Light",
+          "count": "100",
+          "value": "1z0o2lf",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/LED-Light/N-5yc1vZc298Z1z0o2lf/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Cushioned Grip",
+          "count": "62",
+          "value": "1z0mwtf",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Cushioned-Grip/N-5yc1vZc298Z1z0mwtf/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Forward/Reverse Switch",
+          "count": "35",
+          "value": "1z17tn5",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Forward-Reverse-Switch/N-5yc1vZc298Z1z17tn5/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Built-In Light",
+          "count": "31",
+          "value": "1z1raxs",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Built-In-Light/N-5yc1vZc298Z1z1raxs/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Heavy Duty",
+          "count": "29",
+          "value": "1z1tiub",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Heavy-Duty/N-5yc1vZc298Z1z1tiub/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Keyless Chuck",
+          "count": "29",
+          "value": "1z0nuh2",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Keyless-Chuck/N-5yc1vZc298Z1z0nuh2/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Compact",
+          "count": "25",
+          "value": "1z1pkpa",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Compact/N-5yc1vZc298Z1z1pkpa/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Lockout Power Switch",
+          "count": "18",
+          "value": "1z0o2id",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Lockout-Power-Switch/N-5yc1vZc298Z1z0o2id/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "360-Degree Swivel",
+          "count": "14",
+          "value": "1z1raxi",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/360-Degree-Swivel/N-5yc1vZc298Z1z1raxi/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "No Additional Features",
+          "count": "9",
+          "value": "1z0o2lv",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/No-Additional-Features/N-5yc1vZc298Z1z0o2lv/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Reverse",
+          "count": "9",
+          "value": "1z1pxr5",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Reverse/N-5yc1vZc298Z1z1pxr5/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "LED Battery Indicator Light",
+          "count": "7",
+          "value": "1z1bpyc",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/LED-Battery-Indicator-Light/N-5yc1vZc298Z1z1bpyc/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Lock On Switch",
+          "count": "6",
+          "value": "1z0o2m4",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Lock-On-Switch/N-5yc1vZc298Z1z0o2m4/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Sub-Compact",
+          "count": "6",
+          "value": "1z1aabc",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Sub-Compact/N-5yc1vZc298Z1z1aabc/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Overload Protection",
+          "count": "5",
+          "value": "1z25g45",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Overload-Protection/N-5yc1vZc298Z1z25g45/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Keyless Blade Change",
+          "count": "4",
+          "value": "1z1b3q0",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Keyless-Blade-Change/N-5yc1vZc298Z1z1b3q0/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "No Tool Blade Change",
+          "count": "4",
+          "value": "1z0o2lh",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/No-Tool-Blade-Change/N-5yc1vZc298Z1z0o2lh/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Right Angle",
+          "count": "4",
+          "value": "1z27q4r",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Right-Angle/N-5yc1vZc298Z1z27q4r/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Spindle Lock",
+          "count": "3",
+          "value": "1z0o2m3",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Spindle-Lock/N-5yc1vZc298Z1z0o2m3/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Quick Release",
+          "count": "3",
+          "value": "1z1rb0u",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Quick-Release/N-5yc1vZc298Z1z1rb0u/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Depth Adjustment",
+          "count": "2",
+          "value": "1z0o2lq",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Depth-Adjustment/N-5yc1vZc298Z1z0o2lq/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Electric Brake",
+          "count": "2",
+          "value": "1z0o2lp",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Electric-Brake/N-5yc1vZc298Z1z0o2lp/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Keyed Blade Change",
+          "count": "2",
+          "value": "1z1b3s7",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Keyed-Blade-Change/N-5yc1vZc298Z1z1b3s7/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Adjustable Handle Position",
+          "count": "2",
+          "value": "1z0o2m5",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Adjustable-Handle-Position/N-5yc1vZc298Z1z0o2m5/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Worklight",
+          "count": "2",
+          "value": "1z1raxv",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Worklight/N-5yc1vZc298Z1z1raxv/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Adjustable Shoe",
+          "count": "1",
+          "value": "1z0o2li",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Adjustable-Shoe/N-5yc1vZc298Z1z0o2li/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Hydraulic",
+          "count": "1",
+          "value": "1z26bk5",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Hydraulic/N-5yc1vZc298Z1z26bk5/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Blade Guard System",
+          "count": "1",
+          "value": "1z0o2lm",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Blade-Guard-System/N-5yc1vZc298Z1z0o2lm/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Mobile App Integrated",
+          "count": "1",
+          "value": "1z0noab",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Mobile-App-Integrated/N-5yc1vZc298Z1z0noab/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Pivot Head",
+          "count": "1",
+          "value": "1z1ray3",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Pivot-Head/N-5yc1vZc298Z1z1ray3/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Battery Platform",
+      "value": [
+        {
+          "name": "Milwaukee M12",
+          "count": "80",
+          "value": "1z17rcu",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Milwaukee-M12/N-5yc1vZc298Z1z17rcu/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Ryobi 18V ONE+",
+          "count": "79",
+          "value": "1z2365c",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Ryobi-18V-ONE/N-5yc1vZc298Z1z2365c/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Dewalt 20V MAX",
+          "count": "26",
+          "value": "1z235nn",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Dewalt-20V-MAX/N-5yc1vZc298Z1z235nn/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "RIDGID 18V",
+          "count": "14",
+          "value": "1z236dm",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/RIDGID-18V/N-5yc1vZc298Z1z236dm/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Makita 18V:36V LXT",
+          "count": "7",
+          "value": "1z2365a",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Makita-18V36V-LXT/N-5yc1vZc298Z1z2365a/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "RYOBI USB Lithium",
+          "count": "7",
+          "value": "1z1uvnk",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/RYOBI-USB-Lithium/N-5yc1vZc298Z1z1uvnk/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Milwaukee M18",
+          "count": "5",
+          "value": "1z17rdr",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Milwaukee-M18/N-5yc1vZc298Z1z17rdr/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Makita 12V max CXT",
+          "count": "2",
+          "value": "1z2363a",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Makita-12V-max-CXT/N-5yc1vZc298Z1z2363a/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Motor Type",
+      "value": [
+        {
+          "name": "Brushless",
+          "count": "128",
+          "value": "1z17tnq",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Brushless/N-5yc1vZc298Z1z17tnq/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Brushed",
+          "count": "50",
+          "value": "1z17tqc",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Brushed/N-5yc1vZc298Z1z17tqc/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Both (Brushed + Brushless)",
+          "count": "4",
+          "value": "1z1c5em",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Both-Brushed-Brushless/N-5yc1vZc298Z1z1c5em/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Included",
+      "value": [
+        {
+          "name": "Battery Included",
+          "count": "100",
+          "value": "1z23lu3",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Battery-Included/N-5yc1vZc298Z1z23lu3/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Charger",
+          "count": "83",
+          "value": "1z23lsg",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Charger/N-5yc1vZc298Z1z23lsg/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Tool Bag",
+          "count": "39",
+          "value": "1z1pkrm",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Tool-Bag/N-5yc1vZc298Z1z1pkrm/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Tool Only",
+          "count": "39",
+          "value": "1z23lsz",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Tool-Only/N-5yc1vZc298Z1z23lsz/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "No Additional Items Included",
+          "count": "20",
+          "value": "1z17pql",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/No-Additional-Items-Included/N-5yc1vZc298Z1z17pql/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Other Accessories",
+          "count": "19",
+          "value": "1z23lrz",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Other-Accessories/N-5yc1vZc298Z1z23lrz/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Blade(s)",
+          "count": "13",
+          "value": "1z1s7f7",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Blades/N-5yc1vZc298Z1z1s7f7/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Bits",
+          "count": "12",
+          "value": "1z1pkxc",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Bits/N-5yc1vZc298Z1z1pkxc/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Tool Case",
+          "count": "1",
+          "value": "1z1pkrj",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Tool-Case/N-5yc1vZc298Z1z1pkrj/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Power Tool Product Type",
+      "value": [
+        {
+          "name": "Cordless",
+          "count": "130",
+          "value": "1z1cs94",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Cordless/N-5yc1vZc298Z1z1cs94/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Power Tool Combination Pack",
+          "count": "30",
+          "value": "1z1csam",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Power-Tool-Combination-Pack/N-5yc1vZc298Z1z1csam/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Drills & Drivers",
+          "count": "9",
+          "value": "1z1csas",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Drills-Drivers/N-5yc1vZc298Z1z1csas/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Cordless Tool Type",
+      "value": [
+        {
+          "name": "Cordless Ratchet",
+          "count": "115",
+          "value": "1z1papy",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Cordless-Ratchet/N-5yc1vZc298Z1z1papy/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Combo Kit",
+          "count": "28",
+          "value": "1z1csd9",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Combo-Kit/N-5yc1vZc298Z1z1csd9/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Impact Wrench",
+          "count": "28",
+          "value": "1z1csbe",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Impact-Wrench/N-5yc1vZc298Z1z1csbe/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Impact Driver",
+          "count": "4",
+          "value": "1z1cs80",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Impact-Driver/N-5yc1vZc298Z1z1cs80/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Drill/Driver",
+          "count": "3",
+          "value": "1z1cs7o",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Drill-Driver/N-5yc1vZc298Z1z1cs7o/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Circular Saw",
+          "count": "2",
+          "value": "1z1csec",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Circular-Saw/N-5yc1vZc298Z1z1csec/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Portable Band Saw",
+          "count": "2",
+          "value": "1z1cs8d",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Portable-Band-Saw/N-5yc1vZc298Z1z1cs8d/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Reciprocating Saw",
+          "count": "2",
+          "value": "1z1cs7c",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Reciprocating-Saw/N-5yc1vZc298Z1z1cs7c/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Oscillating Tool",
+          "count": "2",
+          "value": "1z1ncnz",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Oscillating-Tool/N-5yc1vZc298Z1z1ncnz/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Screw Gun",
+          "count": "2",
+          "value": "1z1pn6n",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Screw-Gun/N-5yc1vZc298Z1z1pn6n/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Compact Reciprocating Saw",
+          "count": "1",
+          "value": "1z1yl6w",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Compact-Reciprocating-Saw/N-5yc1vZc298Z1z1yl6w/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Cut-Off Tool",
+          "count": "1",
+          "value": "1z1t2q8",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Cut-Off-Tool/N-5yc1vZc298Z1z1t2q8/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Die Grinder",
+          "count": "1",
+          "value": "1z1csev",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Die-Grinder/N-5yc1vZc298Z1z1csev/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Hammer Drill",
+          "count": "1",
+          "value": "1z1cs2r",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Hammer-Drill/N-5yc1vZc298Z1z1cs2r/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Jig Saw",
+          "count": "1",
+          "value": "1z1cs8s",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Jig-Saw/N-5yc1vZc298Z1z1cs8s/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Specialty",
+          "count": "1",
+          "value": "1z1cs2d",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Specialty/N-5yc1vZc298Z1z1cs2d/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Angle Grinder",
+          "count": "1",
+          "value": "1z1cs9n",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Angle-Grinder/N-5yc1vZc298Z1z1cs9n/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Right Angle Drill",
+          "count": "1",
+          "value": "1z1csf6",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Right-Angle-Drill/N-5yc1vZc298Z1z1csf6/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Rotary Tool",
+          "count": "1",
+          "value": "1z1cseb",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Rotary-Tool/N-5yc1vZc298Z1z1cseb/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Length of Stroke (in.)",
+      "value": [
+        {
+          "name": ".625 in",
+          "count": "2",
+          "value": "1z0kqnt",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/625-in/N-5yc1vZc298Z1z0kqnt/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "1 in",
+          "count": "1",
+          "value": "1z0ujay",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/1-in/N-5yc1vZc298Z1z0ujay/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "1.125 in",
+          "count": "1",
+          "value": "1z0uja1",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/1125-in/N-5yc1vZc298Z1z0uja1/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "0.875 in",
+          "count": "1",
+          "value": "1z0uj03",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/0875-in/N-5yc1vZc298Z1z0uj03/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Tools Product Type",
+      "value": [
+        {
+          "name": "Power Tool",
+          "count": "148",
+          "value": "1z1c71s",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Power-Tool/N-5yc1vZc298Z1z1c71s/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Cordless Power Tool",
+          "count": "19",
+          "value": "1z1zow9",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Cordless-Power-Tool/N-5yc1vZc298Z1z1zow9/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Air Tool",
+          "count": "3",
+          "value": "1z1c6u3",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Air-Tool/N-5yc1vZc298Z1z1c6u3/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Other",
+          "count": "2",
+          "value": "1z1c6vz",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Other/N-5yc1vZc298Z1z1c6vz/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "Multiple Tool Set",
+          "count": "1",
+          "value": "1z1c71m",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/Multiple-Tool-Set/N-5yc1vZc298Z1z1c71m/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    },
+    {
+      "key": "Battery Voltage (V)",
+      "value": [
+        {
+          "name": "18V",
+          "count": "84",
+          "value": "1z1xob2",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/18V/N-5yc1vZc298Z1z1xob2/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "12V",
+          "count": "78",
+          "value": "1z1xo7u",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/12V/N-5yc1vZc298Z1z1xo7u/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "20V",
+          "count": "31",
+          "value": "1z1xo26",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/20V/N-5yc1vZc298Z1z1xo26/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        },
+        {
+          "name": "4V",
+          "count": "6",
+          "value": "1z1z8pl",
+          "link": "https://www.homedepot.com/b/Tools-Power-Tools/4V/N-5yc1vZc298Z1z1z8pl/Ntk-elasticplus/Ntt-ryobi%2Bextended%2Breach%2Bratchet?NCNI-5"
+        }
+      ]
+    }
+  ],
+  "related_products": [
+    "ryobi ratchet",
+    "ryobi battery",
+    "ryobi extended ratchet",
+    "ryobi cordless ratchet",
+    "ryobi 3/8 ratchet",
+    "ryobi ratchet wrench",
+    "ryobi 18 volt ratchet",
+    "extended reach ratchet"
+  ],
+  "pagination": {
+    "current": 1,
+    "next": "https://www.homedepot.com/b/N-5yc1v/Ntt-ryobi+extended+reach+ratchet?Nao=24",
+    "other_pages": {
+      "2": "https://www.homedepot.com/b/N-5yc1v/Ntt-ryobi+extended+reach+ratchet?Nao=24",
+      "3": "https://www.homedepot.com/b/N-5yc1v/Ntt-ryobi+extended+reach+ratchet?Nao=48",
+      "4": "https://www.homedepot.com/b/N-5yc1v/Ntt-ryobi+extended+reach+ratchet?Nao=72",
+      "5": "https://www.homedepot.com/b/N-5yc1v/Ntt-ryobi+extended+reach+ratchet?Nao=96"
+    }
+  },
+  "serpapi_pagination": {
+    "current": 1,
+    "next_link": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=24&page=1&ps=24&q=ryobi+extended+reach+ratchet&store_id=2414",
+    "next": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=24&page=1&ps=24&q=ryobi+extended+reach+ratchet&store_id=2414",
+    "other_pages": {
+      "2": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=24&page=1&ps=24&q=ryobi+extended+reach+ratchet&store_id=2414",
+      "3": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=48&page=1&ps=24&q=ryobi+extended+reach+ratchet&store_id=2414",
+      "4": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=72&page=1&ps=24&q=ryobi+extended+reach+ratchet&store_id=2414",
+      "5": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=96&page=1&ps=24&q=ryobi+extended+reach+ratchet&store_id=2414"
+    }
+  }
+}

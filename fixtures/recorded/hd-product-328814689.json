@@ -1,0 +1,320 @@
+{
+  "search_metadata": {
+    "id": "6af27e51a02ca973aaa99ca7",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/1pb-cHED8ASm7fhyhFdyWqEoe4w9U5d_df2bAF9I1-A/6af27e51a02ca973aaa99ca7.json",
+    "markdown_endpoint": "https://serpapi.com/searches/1pb-cHED8ASm7fhyhFdyWqEoe4w9U5d_df2bAF9I1-A/6af27e51a02ca973aaa99ca7.md",
+    "created_at": "2026-11-10 02:15:45 UTC",
+    "processed_at": "2026-11-10 02:15:45 UTC",
+    "home_depot_product_url": "https://www.homedepot.com/p/328814689",
+    "raw_html_file": "https://serpapi.com/searches/1pb-cHED8ASm7fhyhFdyWqEoe4w9U5d_df2bAF9I1-A/6af27e51a02ca973aaa99ca7.html",
+    "prettify_html_file": "https://serpapi.com/searches/1pb-cHED8ASm7fhyhFdyWqEoe4w9U5d_df2bAF9I1-A/6af27e51a02ca973aaa99ca7.prettify",
+    "total_time_taken": 0.49
+  },
+  "search_parameters": {
+    "product_id": "328814689",
+    "store_id": "2414",
+    "delivery_zip": "04401",
+    "engine": "home_depot_product"
+  },
+  "search_information": {
+    "taxonomy": [
+      {
+        "title": "Tools",
+        "link": "https://www.homedepot.com/b/Tools/N-5yc1vZc1xy"
+      },
+      {
+        "title": "Power Tools",
+        "link": "https://www.homedepot.com/b/Tools-Power-Tools/N-5yc1vZc298"
+      },
+      {
+        "title": "Cordless Ratchets",
+        "link": "https://www.homedepot.com/b/Tools-Power-Tools-Cordless-Ratchets/N-5yc1vZ2fkolhl"
+      }
+    ]
+  },
+  "product_results": {
+    "product_id": "328814689",
+    "title": "ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only)",
+    "description": "RYOBI introduces the 18V ONE+ HP Brushless 2-Tool Combo Kit. The 18V ONE+ HP Brushless 3/8 in. Extended Reach Ratchet features ONE+ HP Technology that provides up to 55 ft./lbs. of torque, while the 18V ONE+ HP Brushless 1/4 in. Extended Reach Ratchet delivers up to 40 ft-lbs. of torque. Utilize these ratchet's extended reach and slim heads to access hard to reach areas. The 4-position head makes fitting into tight spaces a breeze at any angle. Regardless of the angle you position the ratchet, your workspace will be illuminated by one of the two LED's on the front of the ratchet. The included Brushless Extended Reach Ratchets are compatible with all RYOBI 18V ONE+ Tools. Best of all, it is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. This 18V ONE+ HP 2-Tool Combo Kit is backed by the RYOBI 3-Year Manufacturer's Warranty and includes a Brushless 3/8 in. Extended Reach Ratchet, Brushless 1/4 in. Extended Reach Ratchet, and Operator's Manuals.",
+    "link": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-and-3-8-in-Extended-Reach-Ratchets-Tools-Only-PBLRC2501SB/328814689",
+    "upc": "033287232581",
+    "model_number": "PBLRC2501SB",
+    "store_sku_number": "1010927962",
+    "favorite": 0,
+    "rating": 4.5959,
+    "reviews": 344,
+    "price": 189,
+    "promotion": {
+      "type": "Special-Buy",
+      "save": 149,
+      "percentage": 44,
+      "original": 338
+    },
+    "highlights": [
+      "Slim Head and Extended Reach",
+      "Includes: 1/4\" and 3/8\" Extended Reach Ratchets",
+      "Over 300 ONE+ Products – All Work With Any RYOBI ONE+ 18V Battery"
+    ],
+    "brand": {
+      "name": "RYOBI",
+      "link": "https://www.homedepot.com/b/Tools-Power-Tools-Cordless-Ratchets/RYOBI/N-5yc1vZ2fkolhlZm5d"
+    },
+    "images": [
+      [
+        "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_65.jpg",
+        "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_100.jpg",
+        "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_145.jpg",
+        "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_300.jpg",
+        "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_400.jpg",
+        "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_600.jpg",
+        "https://images.thdstatic.com/productImages/ce04bc06-2150-444a-be18-a8f75506a1e9/svn/ryobi-cordless-ratchets-pblrc2501sb-64_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/869eff1d-586e-4196-857d-9310e8ef8151/svn/ryobi-cordless-ratchets-pblrc2501sb-40_65.jpg",
+        "https://images.thdstatic.com/productImages/869eff1d-586e-4196-857d-9310e8ef8151/svn/ryobi-cordless-ratchets-pblrc2501sb-40_100.jpg",
+        "https://images.thdstatic.com/productImages/869eff1d-586e-4196-857d-9310e8ef8151/svn/ryobi-cordless-ratchets-pblrc2501sb-40_145.jpg",
+        "https://images.thdstatic.com/productImages/869eff1d-586e-4196-857d-9310e8ef8151/svn/ryobi-cordless-ratchets-pblrc2501sb-40_300.jpg",
+        "https://images.thdstatic.com/productImages/869eff1d-586e-4196-857d-9310e8ef8151/svn/ryobi-cordless-ratchets-pblrc2501sb-40_400.jpg",
+        "https://images.thdstatic.com/productImages/869eff1d-586e-4196-857d-9310e8ef8151/svn/ryobi-cordless-ratchets-pblrc2501sb-40_600.jpg",
+        "https://images.thdstatic.com/productImages/869eff1d-586e-4196-857d-9310e8ef8151/svn/ryobi-cordless-ratchets-pblrc2501sb-40_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/dea54939-ef73-4534-a14b-87f8f625d314/svn/ryobi-cordless-ratchets-pblrc2501sb-a0_65.jpg",
+        "https://images.thdstatic.com/productImages/dea54939-ef73-4534-a14b-87f8f625d314/svn/ryobi-cordless-ratchets-pblrc2501sb-a0_100.jpg",
+        "https://images.thdstatic.com/productImages/dea54939-ef73-4534-a14b-87f8f625d314/svn/ryobi-cordless-ratchets-pblrc2501sb-a0_145.jpg",
+        "https://images.thdstatic.com/productImages/dea54939-ef73-4534-a14b-87f8f625d314/svn/ryobi-cordless-ratchets-pblrc2501sb-a0_300.jpg",
+        "https://images.thdstatic.com/productImages/dea54939-ef73-4534-a14b-87f8f625d314/svn/ryobi-cordless-ratchets-pblrc2501sb-a0_400.jpg",
+        "https://images.thdstatic.com/productImages/dea54939-ef73-4534-a14b-87f8f625d314/svn/ryobi-cordless-ratchets-pblrc2501sb-a0_600.jpg",
+        "https://images.thdstatic.com/productImages/dea54939-ef73-4534-a14b-87f8f625d314/svn/ryobi-cordless-ratchets-pblrc2501sb-a0_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/e27964df-5556-4c40-8ce0-e44cb646a670/svn/ryobi-cordless-ratchets-pblrc2501sb-1d_65.jpg",
+        "https://images.thdstatic.com/productImages/e27964df-5556-4c40-8ce0-e44cb646a670/svn/ryobi-cordless-ratchets-pblrc2501sb-1d_100.jpg",
+        "https://images.thdstatic.com/productImages/e27964df-5556-4c40-8ce0-e44cb646a670/svn/ryobi-cordless-ratchets-pblrc2501sb-1d_145.jpg",
+        "https://images.thdstatic.com/productImages/e27964df-5556-4c40-8ce0-e44cb646a670/svn/ryobi-cordless-ratchets-pblrc2501sb-1d_300.jpg",
+        "https://images.thdstatic.com/productImages/e27964df-5556-4c40-8ce0-e44cb646a670/svn/ryobi-cordless-ratchets-pblrc2501sb-1d_400.jpg",
+        "https://images.thdstatic.com/productImages/e27964df-5556-4c40-8ce0-e44cb646a670/svn/ryobi-cordless-ratchets-pblrc2501sb-1d_600.jpg",
+        "https://images.thdstatic.com/productImages/e27964df-5556-4c40-8ce0-e44cb646a670/svn/ryobi-cordless-ratchets-pblrc2501sb-1d_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/69b0a8fb-0fab-4ff4-8b47-4886f53099b8/svn/ryobi-cordless-ratchets-pblrc2501sb-66_65.jpg",
+        "https://images.thdstatic.com/productImages/69b0a8fb-0fab-4ff4-8b47-4886f53099b8/svn/ryobi-cordless-ratchets-pblrc2501sb-66_100.jpg",
+        "https://images.thdstatic.com/productImages/69b0a8fb-0fab-4ff4-8b47-4886f53099b8/svn/ryobi-cordless-ratchets-pblrc2501sb-66_145.jpg",
+        "https://images.thdstatic.com/productImages/69b0a8fb-0fab-4ff4-8b47-4886f53099b8/svn/ryobi-cordless-ratchets-pblrc2501sb-66_300.jpg",
+        "https://images.thdstatic.com/productImages/69b0a8fb-0fab-4ff4-8b47-4886f53099b8/svn/ryobi-cordless-ratchets-pblrc2501sb-66_400.jpg",
+        "https://images.thdstatic.com/productImages/69b0a8fb-0fab-4ff4-8b47-4886f53099b8/svn/ryobi-cordless-ratchets-pblrc2501sb-66_600.jpg",
+        "https://images.thdstatic.com/productImages/69b0a8fb-0fab-4ff4-8b47-4886f53099b8/svn/ryobi-cordless-ratchets-pblrc2501sb-66_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/6639c458-bc7a-4370-8030-227d3d796473/svn/ryobi-cordless-ratchets-pblrc2501sb-77_65.jpg",
+        "https://images.thdstatic.com/productImages/6639c458-bc7a-4370-8030-227d3d796473/svn/ryobi-cordless-ratchets-pblrc2501sb-77_100.jpg",
+        "https://images.thdstatic.com/productImages/6639c458-bc7a-4370-8030-227d3d796473/svn/ryobi-cordless-ratchets-pblrc2501sb-77_145.jpg",
+        "https://images.thdstatic.com/productImages/6639c458-bc7a-4370-8030-227d3d796473/svn/ryobi-cordless-ratchets-pblrc2501sb-77_300.jpg",
+        "https://images.thdstatic.com/productImages/6639c458-bc7a-4370-8030-227d3d796473/svn/ryobi-cordless-ratchets-pblrc2501sb-77_400.jpg",
+        "https://images.thdstatic.com/productImages/6639c458-bc7a-4370-8030-227d3d796473/svn/ryobi-cordless-ratchets-pblrc2501sb-77_600.jpg",
+        "https://images.thdstatic.com/productImages/6639c458-bc7a-4370-8030-227d3d796473/svn/ryobi-cordless-ratchets-pblrc2501sb-77_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/eb9d163b-be65-4bd5-9908-91b8cd6b1bb6/svn/ryobi-cordless-ratchets-pblrc2501sb-c3_65.jpg",
+        "https://images.thdstatic.com/productImages/eb9d163b-be65-4bd5-9908-91b8cd6b1bb6/svn/ryobi-cordless-ratchets-pblrc2501sb-c3_100.jpg",
+        "https://images.thdstatic.com/productImages/eb9d163b-be65-4bd5-9908-91b8cd6b1bb6/svn/ryobi-cordless-ratchets-pblrc2501sb-c3_145.jpg",
+        "https://images.thdstatic.com/productImages/eb9d163b-be65-4bd5-9908-91b8cd6b1bb6/svn/ryobi-cordless-ratchets-pblrc2501sb-c3_300.jpg",
+        "https://images.thdstatic.com/productImages/eb9d163b-be65-4bd5-9908-91b8cd6b1bb6/svn/ryobi-cordless-ratchets-pblrc2501sb-c3_400.jpg",
+        "https://images.thdstatic.com/productImages/eb9d163b-be65-4bd5-9908-91b8cd6b1bb6/svn/ryobi-cordless-ratchets-pblrc2501sb-c3_600.jpg",
+        "https://images.thdstatic.com/productImages/eb9d163b-be65-4bd5-9908-91b8cd6b1bb6/svn/ryobi-cordless-ratchets-pblrc2501sb-c3_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/6ec8a157-b234-4cab-bdf9-16f250863623/svn/ryobi-cordless-ratchets-pblrc2501sb-1f_65.jpg",
+        "https://images.thdstatic.com/productImages/6ec8a157-b234-4cab-bdf9-16f250863623/svn/ryobi-cordless-ratchets-pblrc2501sb-1f_100.jpg",
+        "https://images.thdstatic.com/productImages/6ec8a157-b234-4cab-bdf9-16f250863623/svn/ryobi-cordless-ratchets-pblrc2501sb-1f_145.jpg",
+        "https://images.thdstatic.com/productImages/6ec8a157-b234-4cab-bdf9-16f250863623/svn/ryobi-cordless-ratchets-pblrc2501sb-1f_300.jpg",
+        "https://images.thdstatic.com/productImages/6ec8a157-b234-4cab-bdf9-16f250863623/svn/ryobi-cordless-ratchets-pblrc2501sb-1f_400.jpg",
+        "https://images.thdstatic.com/productImages/6ec8a157-b234-4cab-bdf9-16f250863623/svn/ryobi-cordless-ratchets-pblrc2501sb-1f_600.jpg",
+        "https://images.thdstatic.com/productImages/6ec8a157-b234-4cab-bdf9-16f250863623/svn/ryobi-cordless-ratchets-pblrc2501sb-1f_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/dd62d5e5-0bdd-453c-aaae-a739f4d3b86b/svn/ryobi-cordless-ratchets-pblrc2501sb-44_65.jpg",
+        "https://images.thdstatic.com/productImages/dd62d5e5-0bdd-453c-aaae-a739f4d3b86b/svn/ryobi-cordless-ratchets-pblrc2501sb-44_100.jpg",
+        "https://images.thdstatic.com/productImages/dd62d5e5-0bdd-453c-aaae-a739f4d3b86b/svn/ryobi-cordless-ratchets-pblrc2501sb-44_145.jpg",
+        "https://images.thdstatic.com/productImages/dd62d5e5-0bdd-453c-aaae-a739f4d3b86b/svn/ryobi-cordless-ratchets-pblrc2501sb-44_300.jpg",
+        "https://images.thdstatic.com/productImages/dd62d5e5-0bdd-453c-aaae-a739f4d3b86b/svn/ryobi-cordless-ratchets-pblrc2501sb-44_400.jpg",
+        "https://images.thdstatic.com/productImages/dd62d5e5-0bdd-453c-aaae-a739f4d3b86b/svn/ryobi-cordless-ratchets-pblrc2501sb-44_600.jpg",
+        "https://images.thdstatic.com/productImages/dd62d5e5-0bdd-453c-aaae-a739f4d3b86b/svn/ryobi-cordless-ratchets-pblrc2501sb-44_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/0d0dbec3-ac67-4656-ae2b-1a94599690d6/svn/ryobi-cordless-ratchets-pblrc2501sb-fa_65.jpg",
+        "https://images.thdstatic.com/productImages/0d0dbec3-ac67-4656-ae2b-1a94599690d6/svn/ryobi-cordless-ratchets-pblrc2501sb-fa_100.jpg",
+        "https://images.thdstatic.com/productImages/0d0dbec3-ac67-4656-ae2b-1a94599690d6/svn/ryobi-cordless-ratchets-pblrc2501sb-fa_145.jpg",
+        "https://images.thdstatic.com/productImages/0d0dbec3-ac67-4656-ae2b-1a94599690d6/svn/ryobi-cordless-ratchets-pblrc2501sb-fa_300.jpg",
+        "https://images.thdstatic.com/productImages/0d0dbec3-ac67-4656-ae2b-1a94599690d6/svn/ryobi-cordless-ratchets-pblrc2501sb-fa_400.jpg",
+        "https://images.thdstatic.com/productImages/0d0dbec3-ac67-4656-ae2b-1a94599690d6/svn/ryobi-cordless-ratchets-pblrc2501sb-fa_600.jpg",
+        "https://images.thdstatic.com/productImages/0d0dbec3-ac67-4656-ae2b-1a94599690d6/svn/ryobi-cordless-ratchets-pblrc2501sb-fa_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/d55a2587-28f8-4a0b-a049-986d440b3ab3/svn/ryobi-cordless-ratchets-pblrc2501sb-76_65.jpg",
+        "https://images.thdstatic.com/productImages/d55a2587-28f8-4a0b-a049-986d440b3ab3/svn/ryobi-cordless-ratchets-pblrc2501sb-76_100.jpg",
+        "https://images.thdstatic.com/productImages/d55a2587-28f8-4a0b-a049-986d440b3ab3/svn/ryobi-cordless-ratchets-pblrc2501sb-76_145.jpg",
+        "https://images.thdstatic.com/productImages/d55a2587-28f8-4a0b-a049-986d440b3ab3/svn/ryobi-cordless-ratchets-pblrc2501sb-76_300.jpg",
+        "https://images.thdstatic.com/productImages/d55a2587-28f8-4a0b-a049-986d440b3ab3/svn/ryobi-cordless-ratchets-pblrc2501sb-76_400.jpg",
+        "https://images.thdstatic.com/productImages/d55a2587-28f8-4a0b-a049-986d440b3ab3/svn/ryobi-cordless-ratchets-pblrc2501sb-76_600.jpg",
+        "https://images.thdstatic.com/productImages/d55a2587-28f8-4a0b-a049-986d440b3ab3/svn/ryobi-cordless-ratchets-pblrc2501sb-76_1000.jpg"
+      ],
+      [
+        "https://images.thdstatic.com/productImages/da323ff9-dc26-44e2-80e8-1bbd003238ea/svn/ryobi-cordless-ratchets-pblrc2501sb-31_65.jpg",
+        "https://images.thdstatic.com/productImages/da323ff9-dc26-44e2-80e8-1bbd003238ea/svn/ryobi-cordless-ratchets-pblrc2501sb-31_100.jpg",
+        "https://images.thdstatic.com/productImages/da323ff9-dc26-44e2-80e8-1bbd003238ea/svn/ryobi-cordless-ratchets-pblrc2501sb-31_145.jpg",
+        "https://images.thdstatic.com/productImages/da323ff9-dc26-44e2-80e8-1bbd003238ea/svn/ryobi-cordless-ratchets-pblrc2501sb-31_300.jpg",
+        "https://images.thdstatic.com/productImages/da323ff9-dc26-44e2-80e8-1bbd003238ea/svn/ryobi-cordless-ratchets-pblrc2501sb-31_400.jpg",
+        "https://images.thdstatic.com/productImages/da323ff9-dc26-44e2-80e8-1bbd003238ea/svn/ryobi-cordless-ratchets-pblrc2501sb-31_600.jpg",
+        "https://images.thdstatic.com/productImages/da323ff9-dc26-44e2-80e8-1bbd003238ea/svn/ryobi-cordless-ratchets-pblrc2501sb-31_1000.jpg"
+      ]
+    ],
+    "specifications": [
+      {
+        "key": "Details",
+        "value": [
+          {
+            "name": "Batteries Included",
+            "value": "No"
+          },
+          {
+            "name": "Battery Amp Hours",
+            "value": "No Battery"
+          },
+          {
+            "name": "Battery Power Type",
+            "value": "Lithium Ion"
+          },
+          {
+            "name": "Battery Size",
+            "value": "18-volt"
+          },
+          {
+            "name": "Battery Voltage (V)",
+            "value": "18V"
+          },
+          {
+            "name": "Charger Included",
+            "value": "Charger Not Included"
+          },
+          {
+            "name": "Color Family",
+            "value": "Green"
+          },
+          {
+            "name": "Cordless Tool Type",
+            "value": "Cordless Ratchet"
+          },
+          {
+            "name": "Cordless/Corded",
+            "value": "Cordless"
+          },
+          {
+            "name": "Included",
+            "value": "Tool Only"
+          },
+          {
+            "name": "Motor Type",
+            "value": "Brushless"
+          },
+          {
+            "name": "Number of Total Batteries Included",
+            "value": "0"
+          },
+          {
+            "name": "Power Tool Features",
+            "value": "LED Light,Variable Speed"
+          },
+          {
+            "name": "Product Weight (lb.)",
+            "value": "2.85 lb"
+          },
+          {
+            "name": "Ratchet Reach",
+            "value": "Extended"
+          },
+          {
+            "name": "Returnable",
+            "value": "90-Day"
+          },
+          {
+            "name": "Tool Only| Kit",
+            "value": "Tool Only"
+          },
+          {
+            "name": "Tools Product Type",
+            "value": "Power Tool"
+          },
+          {
+            "name": "Variable Speed",
+            "value": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "Warranty / Certifications",
+        "value": [
+          {
+            "name": "Manufacturer Warranty",
+            "value": "3-Year Manufacturer's Warranty"
+          }
+        ]
+      },
+      {
+        "key": "Dimensions",
+        "value": [
+          {
+            "name": "Drive Size (in.)",
+            "value": "3/8 in. & 1/4 in."
+          },
+          {
+            "name": "Product Depth (in.)",
+            "value": "15.37 in"
+          },
+          {
+            "name": "Product Height (in.)",
+            "value": "5.21 in"
+          },
+          {
+            "name": "Product Width (in.)",
+            "value": "2.98 in"
+          }
+        ]
+      }
+    ],
+    "minimum_order_quantity": 0,
+    "availability_type": "Available",
+    "fulfillment": {
+      "countity": 571,
+      "quantity": 571,
+      "store": "Bangor",
+      "options": [
+        {
+          "type": "Ship to Home",
+          "title": "Get it by",
+          "arrival_time": [
+            "Nov 12",
+            "Nov 12"
+          ],
+          "bottom": "Free delivery",
+          "quantity": 571
+        },
+        {
+          "type": "Schedule delivery",
+          "title": "Not available for this item"
+        },
+        {
+          "type": "Ship to store",
+          "title": "Pickup",
+          "arrival_time": [
+            "Nov 16",
+            "Nov 19"
+          ],
+          "bottom": "FREE",
+          "quantity": 571
+        }
+      ]
+    }
+  }
+}

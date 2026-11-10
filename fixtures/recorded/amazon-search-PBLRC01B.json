@@ -1,0 +1,1815 @@
+{
+  "search_metadata": {
+    "id": "6af27e531736b79af67969f4",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/eK8rr3HJZu1wwNUcLQp4kxuk08iQV_Y8uw4rqhliF3U/6af27e531736b79af67969f4.json",
+    "markdown_endpoint": "https://serpapi.com/searches/eK8rr3HJZu1wwNUcLQp4kxuk08iQV_Y8uw4rqhliF3U/6af27e531736b79af67969f4.md",
+    "created_at": "2026-11-10 02:15:47 UTC",
+    "processed_at": "2026-11-10 02:15:47 UTC",
+    "amazon_url": "https://www.amazon.com/s?k=RYOBI+PBLRC01B",
+    "raw_html_file": "https://serpapi.com/searches/eK8rr3HJZu1wwNUcLQp4kxuk08iQV_Y8uw4rqhliF3U/6af27e531736b79af67969f4.html",
+    "total_time_taken": 1.87
+  },
+  "search_parameters": {
+    "engine": "amazon",
+    "k": "RYOBI PBLRC01B",
+    "amazon_domain": "amazon.com",
+    "device": "desktop"
+  },
+  "search_information": {
+    "total_results": 186,
+    "query_displayed": "RYOBI PBLRC01B",
+    "store": "gateway",
+    "page": 1
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "asin": "B0B6Z2ZGVK",
+      "brand": "RYOBI",
+      "title": "ONEAND HP 18V BRUSHLESS Cordless 1/4 in. Extended Reach Ratchet Tool ONLY PBLRC01B",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Extended-Ratchet/dp/B0B6Z2ZGVK/ref=sr_1_1?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-1",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Extended-Ratchet/dp/B0B6Z2ZGVK/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B6Z2ZGVK&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/41NgFmtohqL._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 212,
+      "price": "$146.94",
+      "extracted_price": 146.94,
+      "delivery": [
+        "FREE delivery Mon, Nov 16"
+      ],
+      "stock": "Only 10 left in stock - order soon.",
+      "more_buying_choices": "$130.00 (9+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B6Z2ZGVK/ref=sr_1_1_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-1",
+      "purchase_options": [
+        {
+          "primary_price": "$146.94",
+          "extracted_primary_price": 146.94,
+          "more_buying_choices": "$130.00 (9+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B6Z2ZGVK/ref=sr_1_1_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-1"
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "asin": "B0D1877QD2",
+      "brand": "RYOBI",
+      "title": "18V ONE+ Multi-Size Ratchet Kit Cordless 18 Volt W Battery & Charger, Green",
+      "link": "https://www.amazon.com/RYOBI-Multi-Size-Ratchet-Cordless-Battery/dp/B0D1877QD2/ref=sr_1_2?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-2",
+      "link_clean": "https://www.amazon.com/RYOBI-Multi-Size-Ratchet-Cordless-Battery/dp/B0D1877QD2/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D1877QD2&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51uAZZ3M6xL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 80,
+      "price": "$126.09",
+      "extracted_price": 126.09,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sun, Nov 15"
+      ],
+      "more_buying_choices": "$120.00 (5 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D1877QD2/ref=sr_1_2_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-2",
+      "purchase_options": [
+        {
+          "primary_price": "$126.09",
+          "extracted_primary_price": 126.09,
+          "more_buying_choices": "$120.00 (5 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D1877QD2/ref=sr_1_2_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-2"
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "asin": "B09JCNNT2Q",
+      "badges": [
+        "Overall Pick"
+      ],
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Brushless Cordless Reciprocating Saw (Tool Only)",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Reciprocating-Tool/dp/B09JCNNT2Q/ref=sr_1_3?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-3",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Reciprocating-Tool/dp/B09JCNNT2Q/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09JCNNT2Q&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61QBUiQY1pL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 290,
+      "price": "$134.95",
+      "extracted_price": 134.95,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 14 left in stock - order soon.",
+      "more_buying_choices": "$134.00 (7 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09JCNNT2Q/ref=sr_1_3_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-3",
+      "purchase_options": [
+        {
+          "primary_price": "$134.95",
+          "extracted_primary_price": 134.95,
+          "more_buying_choices": "$134.00 (7 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09JCNNT2Q/ref=sr_1_3_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-3"
+        }
+      ]
+    },
+    {
+      "position": 4,
+      "asin": "B0D6ZPQ25M",
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Brushless Oscillating Multi-Tool (Tool Only) PBLMT51B",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Oscillating-Multi-Tool/dp/B0D6ZPQ25M/ref=sr_1_4?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-4",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Oscillating-Multi-Tool/dp/B0D6ZPQ25M/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D6ZPQ25M&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/41280BchxLL._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 38,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$103.99",
+      "extracted_price": 103.99,
+      "delivery": [
+        "FREE delivery Wed, Nov 18",
+        "Or fastest delivery Fri, Nov 13"
+      ],
+      "stock": "Only 10 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$103.99",
+          "extracted_primary_price": 103.99
+        }
+      ]
+    },
+    {
+      "position": 5,
+      "asin": "B0B3JWF5ZV",
+      "brand": "RYOBI",
+      "title": "ONEAND HP 18V BRUSHLESS Cordless 3/8 in. Extended Reach Ratchet Tool ONLY PBLRC25B",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Extended-PBLRC25B/dp/B0B3JWF5ZV/ref=sr_1_5?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-5",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Extended-PBLRC25B/dp/B0B3JWF5ZV/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B3JWF5ZV&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51DkhXYl3TL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 221,
+      "price": "$169.00",
+      "extracted_price": 169,
+      "delivery": [
+        "FREE delivery Nov 14 - 16",
+        "Or fastest delivery Sun, Nov 15"
+      ],
+      "more_buying_choices": "$160.99 (8 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B3JWF5ZV/ref=sr_1_5_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-5",
+      "purchase_options": [
+        {
+          "primary_price": "$169.00",
+          "extracted_primary_price": 169,
+          "more_buying_choices": "$160.99 (8 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B3JWF5ZV/ref=sr_1_5_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-5"
+        }
+      ]
+    },
+    {
+      "position": 6,
+      "asin": "B0B2F99DTP",
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Brushless Cordless Reciprocating Saw Tool Only (Battery & Charger Not Included) PBLRS01B",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Reciprocating-Tool/dp/B0B2F99DTP/ref=sr_1_6_mod_primary_new?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-6",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Reciprocating-Tool/dp/B0B2F99DTP/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B2F99DTP&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61QBUiQY1pL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 149,
+      "price": "$134.95",
+      "extracted_price": 134.95,
+      "delivery": [
+        "FREE delivery Tue, Nov 17"
+      ],
+      "stock": "Only 4 left in stock - order soon.",
+      "more_buying_choices": "$132.99 (6 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B2F99DTP/ref=sr_1_6_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-6",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$134.95",
+          "extracted_primary_price": 134.95,
+          "more_buying_choices": "$132.99 (6 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B2F99DTP/ref=sr_1_6_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-6"
+        },
+        {
+          "type": "Get it faster",
+          "primary_price": "$139.90",
+          "extracted_primary_price": 139.9
+        }
+      ]
+    },
+    {
+      "position": 7,
+      "asin": "B09VTGKQYG",
+      "brand": "RYOBI",
+      "title": "RMT18-0 18V ONE+ Cordless Multi-Tool (Bare Tool), Hyper Green",
+      "link": "https://www.amazon.com/RYOBI-RMT18-0-Cordless-Multi-Tool-Hyper/dp/B09VTGKQYG/ref=sr_1_7_mod_primary_new?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-7",
+      "link_clean": "https://www.amazon.com/RYOBI-RMT18-0-Cordless-Multi-Tool-Hyper/dp/B09VTGKQYG/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09VTGKQYG&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61uiE0G8LeL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 679,
+      "bought_last_month": "500+ bought in past month",
+      "price": "$56.01",
+      "extracted_price": 56.01,
+      "old_price": "$59.99",
+      "extracted_old_price": 59.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$55.99 (23 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09VTGKQYG/ref=sr_1_7_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-7",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$56.01",
+          "extracted_primary_price": 56.01,
+          "old_primary_price": "$59.99",
+          "extracted_old_primary_price": 59.99,
+          "more_buying_choices": "$55.99 (23 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09VTGKQYG/ref=sr_1_7_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-7"
+        },
+        {
+          "type": "Another way to buy",
+          "primary_price": "$60.25",
+          "extracted_primary_price": 60.25
+        }
+      ]
+    },
+    {
+      "position": 8,
+      "asin": "B08L38QFFW",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Cordless Compact Brushless 1/2\" Drill/Driver PSBDD01 (TOOL ONLY- Battery and Charger NOT included)",
+      "link": "https://www.amazon.com/Cordless-Compact-Brushless-PSBDD01-included/dp/B08L38QFFW/ref=sr_1_8?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-8",
+      "link_clean": "https://www.amazon.com/Cordless-Compact-Brushless-PSBDD01-included/dp/B08L38QFFW/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08L38QFFW&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/714YfzGH-rL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 623,
+      "price": "$94.99",
+      "extracted_price": 94.99,
+      "delivery": [
+        "FREE delivery Nov 20 - 27",
+        "Or fastest delivery Nov 18 - 20"
+      ],
+      "stock": "Only 18 left in stock - order soon.",
+      "more_buying_choices": "$43.42 (3+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08L38QFFW/ref=sr_1_8_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-8",
+      "purchase_options": [
+        {
+          "primary_price": "$94.99",
+          "extracted_primary_price": 94.99,
+          "more_buying_choices": "$43.42 (3+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08L38QFFW/ref=sr_1_8_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-8"
+        }
+      ]
+    },
+    {
+      "position": 9,
+      "asin": "B099NRF98L",
+      "brand": "RYOBI",
+      "title": "PBLMT50B ONE+ HP 18-Volt Brushless Cordless Multi-Tool (Tool Only)",
+      "link": "https://www.amazon.com/RYOBI-PBLMT50B-Brushless-Cordless-Multi-Tool/dp/B099NRF98L/ref=sr_1_9_mod_primary_new?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-9",
+      "link_clean": "https://www.amazon.com/RYOBI-PBLMT50B-Brushless-Cordless-Multi-Tool/dp/B099NRF98L/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B099NRF98L&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61i1E1K00TL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 636,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$85.99",
+      "extracted_price": 85.99,
+      "delivery": [
+        "FREE delivery Tue, Nov 17",
+        "Or fastest delivery Thu, Nov 12"
+      ],
+      "stock": "Only 19 left in stock - order soon.",
+      "more_buying_choices": "$79.99 (11 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B099NRF98L/ref=sr_1_9_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-9",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$85.99",
+          "extracted_primary_price": 85.99,
+          "more_buying_choices": "$79.99 (11 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B099NRF98L/ref=sr_1_9_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-9"
+        },
+        {
+          "type": "Get it faster",
+          "primary_price": "$102.03",
+          "extracted_primary_price": 102.03
+        }
+      ]
+    },
+    {
+      "position": 10,
+      "asin": "B08L32HTBC",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Cordless Compact Brushless 1/4\" Impact Driver PSBID01 (Tool ONLY- Battery and Charger NOT Included)",
+      "link": "https://www.amazon.com/Cordless-Compact-Brushless-PSBID01-included/dp/B08L32HTBC/ref=sr_1_10?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-10",
+      "link_clean": "https://www.amazon.com/Cordless-Compact-Brushless-PSBID01-included/dp/B08L32HTBC/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08L32HTBC&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61t1WoidYLL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 543,
+      "price": "$89.99",
+      "extracted_price": 89.99,
+      "delivery": [
+        "FREE delivery Mon, Nov 16",
+        "Or fastest delivery Nov 12 - 13"
+      ],
+      "more_buying_choices": "$75.00 (6+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08L32HTBC/ref=sr_1_10_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-10",
+      "purchase_options": [
+        {
+          "primary_price": "$89.99",
+          "extracted_primary_price": 89.99,
+          "more_buying_choices": "$75.00 (6+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08L32HTBC/ref=sr_1_10_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-10"
+        }
+      ]
+    },
+    {
+      "position": 11,
+      "asin": "B0FP3Z9LFB",
+      "title": "ONE+ HP 18V Brushless Cordless Reciprocating Saw (Tool Only) GEN II",
+      "link": "https://www.amazon.com/Brushless-Cordless-Reciprocating-Tool-Only/dp/B0FP3Z9LFB/ref=sr_1_11?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-11",
+      "link_clean": "https://www.amazon.com/Brushless-Cordless-Reciprocating-Tool-Only/dp/B0FP3Z9LFB/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FP3Z9LFB&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51qMGnAvK3L._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 13,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$137.85",
+      "extracted_price": 137.85,
+      "delivery": [
+        "FREE delivery Nov 16 - 18",
+        "Or fastest delivery Wed, Nov 11"
+      ],
+      "stock": "Only 8 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$137.85",
+          "extracted_primary_price": 137.85
+        }
+      ]
+    },
+    {
+      "position": 12,
+      "asin": "B0BC9SSR2Q",
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Brushless Cordless Rotary Tool (Tool Only)",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Rotary-Tool/dp/B0BC9SSR2Q/ref=sr_1_12?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-12",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Rotary-Tool/dp/B0BC9SSR2Q/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BC9SSR2Q&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/41KdJQCFo1L._AC_UL320_.jpg",
+      "rating": 4.3,
+      "reviews": 68,
+      "price": "$104.95",
+      "extracted_price": 104.95,
+      "old_price": "$110.00",
+      "extracted_old_price": 110,
+      "delivery": [
+        "Join Prime to get FREE delivery Tomorrow, Nov 10",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$39.95 (12+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BC9SSR2Q/ref=sr_1_12_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-12",
+      "purchase_options": [
+        {
+          "primary_price": "$104.95",
+          "extracted_primary_price": 104.95,
+          "old_primary_price": "$110.00",
+          "extracted_old_primary_price": 110,
+          "more_buying_choices": "$39.95 (12+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BC9SSR2Q/ref=sr_1_12_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-12"
+        }
+      ]
+    },
+    {
+      "position": 13,
+      "asin": "B0C5BFHMPK",
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Brushless Cordless Multi-Tool Kit with 2.0 Ah HIGH PERFORMANCE Battery and Charger",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Multi-Tool-PERFORMANCE/dp/B0C5BFHMPK/ref=sr_1_13?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-13",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Multi-Tool-PERFORMANCE/dp/B0C5BFHMPK/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0C5BFHMPK&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51lPlJEUc1L._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 34,
+      "price": "$139.00",
+      "extracted_price": 139,
+      "delivery": [
+        "FREE delivery Nov 16 - 18",
+        "Or fastest delivery Wed, Nov 11"
+      ],
+      "stock": "Only 4 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$139.00",
+          "extracted_primary_price": 139
+        }
+      ]
+    },
+    {
+      "position": 14,
+      "asin": "B09K5SKV61",
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Brushless Cordless Jig Saw (Tool Only) PBLJS01",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Tool-PBLJS01/dp/B09K5SKV61/ref=sr_1_14_mod_primary_new?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-14",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Tool-PBLJS01/dp/B09K5SKV61/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09K5SKV61&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61pkKoo6BXL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 254,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$114.99",
+      "extracted_price": 114.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 12 left in stock - order soon.",
+      "more_buying_choices": "$93.28 (14+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09K5SKV61/ref=sr_1_14_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-14",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$114.99",
+          "extracted_primary_price": 114.99,
+          "more_buying_choices": "$93.28 (14+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09K5SKV61/ref=sr_1_14_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-14"
+        },
+        {
+          "type": "Another way to buy",
+          "primary_price": "$117.00",
+          "extracted_primary_price": 117
+        }
+      ]
+    },
+    {
+      "position": 15,
+      "asin": "B08RP9BDLY",
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Brushless Compact One-Handed Reciprocating Saw (Tool Only) PSBRS01B",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-One-Handed-Reciprocating/dp/B08RP9BDLY/ref=sr_1_15_mod_primary_new?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-15",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-One-Handed-Reciprocating/dp/B08RP9BDLY/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08RP9BDLY&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51mzbhzrOCL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 688,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$104.99",
+      "extracted_price": 104.99,
+      "old_price": "$115.00",
+      "extracted_old_price": 115,
+      "delivery": [
+        "FREE delivery Fri, Nov 13"
+      ],
+      "stock": "Only 2 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$104.99",
+          "extracted_primary_price": 104.99,
+          "old_primary_price": "$115.00",
+          "extracted_old_primary_price": 115
+        },
+        {
+          "type": "Another way to buy",
+          "primary_price": "$109.00",
+          "extracted_primary_price": 109,
+          "old_primary_price": "$115.00",
+          "extracted_old_primary_price": 115
+        }
+      ]
+    },
+    {
+      "position": 16,
+      "asin": "B0B88R7HWB",
+      "brand": "RYOBI",
+      "title": "ONE+ 18V Cordless Reciprocating Saw - 3,400 SPM Variable Speed, 1 in. Stroke Length, Tool Only (Battery Not Included) - PCL515B",
+      "link": "https://www.amazon.com/RYOBI-Cordless-Reciprocating-Tool-PCL515B/dp/B0B88R7HWB/ref=sr_1_16_mod_primary_new?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-16",
+      "link_clean": "https://www.amazon.com/RYOBI-Cordless-Reciprocating-Tool-PCL515B/dp/B0B88R7HWB/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B88R7HWB&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61-Dn-VOfcL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 1600,
+      "bought_last_month": "600+ bought in past month",
+      "price": "$57.97",
+      "extracted_price": 57.97,
+      "old_price": "$65.00",
+      "extracted_old_price": 65,
+      "delivery": [
+        "FREE delivery Tue, Nov 17"
+      ],
+      "stock": "Only 3 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$57.97",
+          "extracted_primary_price": 57.97,
+          "old_primary_price": "$65.00",
+          "extracted_old_primary_price": 65
+        },
+        {
+          "type": "Another way to buy",
+          "primary_price": "$57.99",
+          "extracted_primary_price": 57.99,
+          "old_primary_price": "$65.00",
+          "extracted_old_primary_price": 65
+        }
+      ]
+    },
+    {
+      "position": 17,
+      "asin": "B0CTJ1NDCT",
+      "brand": "RYOBI",
+      "title": "ONEAND 18V HP BRUSHLESS Cordless Compact 1/4 in. HIGH Speed Ratchet Tool ONLY PSBRC",
+      "link": "https://www.amazon.com/RYOBI-Compact-Brushless-Ratchet-Cordless/dp/B0CTJ1NDCT/ref=sr_1_17?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-17",
+      "link_clean": "https://www.amazon.com/RYOBI-Compact-Brushless-Ratchet-Cordless/dp/B0CTJ1NDCT/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CTJ1NDCT&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/511gL4+L7ML._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 33,
+      "price": "$91.25",
+      "extracted_price": 91.25,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 12 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$91.25",
+          "extracted_primary_price": 91.25
+        }
+      ]
+    },
+    {
+      "position": 18,
+      "asin": "B0GJJQHNF4",
+      "brand": "RYOBI",
+      "title": "ONEAND HP 18V BRUSHLESS Cordless 4-Mode Impact Driver Tool ONLY PBLID04B",
+      "link": "https://www.amazon.com/RYOBI-ONEAND-BRUSHLESS-Cordless-PBLID04B/dp/B0GJJQHNF4/ref=sr_1_18?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-18",
+      "link_clean": "https://www.amazon.com/RYOBI-ONEAND-BRUSHLESS-Cordless-PBLID04B/dp/B0GJJQHNF4/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GJJQHNF4&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51yBq3HezIL._AC_UL320_.jpg",
+      "rating": 3.8,
+      "reviews": 5,
+      "price": "$123.95",
+      "extracted_price": 123.95,
+      "delivery": [
+        "Join Prime to get FREE delivery Tomorrow, Nov 10",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "more_buying_choices": "$120.19 (10+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0GJJQHNF4/ref=sr_1_18_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-18",
+      "purchase_options": [
+        {
+          "primary_price": "$123.95",
+          "extracted_primary_price": 123.95,
+          "more_buying_choices": "$120.19 (10+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0GJJQHNF4/ref=sr_1_18_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-18"
+        }
+      ]
+    },
+    {
+      "position": 19,
+      "asin": "B09HBKJHBV",
+      "brand": "RYOBI",
+      "title": "One+ 18v Lithium Ion 2.0ah Battery and Charger Kit, Extreme Weather Performance Fast Charging Under 1 hour",
+      "link": "https://www.amazon.com/Lithium-Battery-Charger-Performance-Charging/dp/B09HBKJHBV/ref=sr_1_19?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-19",
+      "link_clean": "https://www.amazon.com/Lithium-Battery-Charger-Performance-Charging/dp/B09HBKJHBV/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09HBKJHBV&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61fWlKQoDgL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 1500,
+      "bought_last_month": "2K+ bought in past month",
+      "price": "$54.99",
+      "extracted_price": 54.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Thu, Nov 12",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 1 left in stock - order soon.",
+      "more_buying_choices": "$36.36 (45 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HBKJHBV/ref=sr_1_19_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-19",
+      "purchase_options": [
+        {
+          "primary_price": "$54.99",
+          "extracted_primary_price": 54.99,
+          "more_buying_choices": "$36.36 (45 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HBKJHBV/ref=sr_1_19_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-19"
+        }
+      ]
+    },
+    {
+      "position": 20,
+      "asin": "B099CTCV49",
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Brushless Cordless 4-1/2 in. Angle Grinder (Tool Only) PBLAG01B",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Grinder-PBLAG01B/dp/B099CTCV49/ref=sr_1_20?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-20",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Grinder-PBLAG01B/dp/B099CTCV49/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B099CTCV49&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61tgesZm+QL._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 207,
+      "price": "$95.00",
+      "extracted_price": 95,
+      "old_price": "$104.11",
+      "extracted_old_price": 104.11,
+      "delivery": [
+        "Join Prime to get FREE delivery Tomorrow, Nov 10",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 18 left in stock - order soon.",
+      "more_buying_choices": "$83.12 (13+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B099CTCV49/ref=sr_1_20_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-20",
+      "purchase_options": [
+        {
+          "primary_price": "$95.00",
+          "extracted_primary_price": 95,
+          "old_primary_price": "$104.11",
+          "extracted_old_primary_price": 104.11,
+          "more_buying_choices": "$83.12 (13+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B099CTCV49/ref=sr_1_20_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-20"
+        }
+      ]
+    },
+    {
+      "position": 21,
+      "asin": "B0B11CJ52Y",
+      "brand": "RYOBI",
+      "title": "ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)",
+      "link": "https://www.amazon.com/RYOBI-PCL430B-Ryobi-Multi-Tool/dp/B0B11CJ52Y/ref=sr_1_21?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-21",
+      "link_clean": "https://www.amazon.com/RYOBI-PCL430B-Ryobi-Multi-Tool/dp/B0B11CJ52Y/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B11CJ52Y&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51w007uMfeL._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 1700,
+      "bought_last_month": "800+ bought in past month",
+      "price": "$56.99",
+      "extracted_price": 56.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 10 left in stock - order soon.",
+      "more_buying_choices": "$51.00 (48+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B11CJ52Y/ref=sr_1_21_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-21",
+      "purchase_options": [
+        {
+          "primary_price": "$56.99",
+          "extracted_primary_price": 56.99,
+          "more_buying_choices": "$51.00 (48+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B11CJ52Y/ref=sr_1_21_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-21"
+        }
+      ]
+    },
+    {
+      "position": 22,
+      "asin": "B0B5HR7RN8",
+      "title": "RYOBI ONEAND 18V Cordless 1/4 in. 4-Position Ratchet Tool ONLY PRC01B",
+      "link": "https://www.amazon.com/18-Volt-Cordless-4-Position-PRC01B-Packaged/dp/B0B5HR7RN8/ref=sr_1_22?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-22",
+      "link_clean": "https://www.amazon.com/18-Volt-Cordless-4-Position-PRC01B-Packaged/dp/B0B5HR7RN8/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B5HR7RN8&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/41ZTMjARocL._AC_UL320_.jpg",
+      "rating": 4.9,
+      "reviews": 15,
+      "price": "$89.91",
+      "extracted_price": 89.91,
+      "delivery": [
+        "Join Prime to get FREE delivery Tomorrow, Nov 10",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 20 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$89.91",
+          "extracted_primary_price": 89.91
+        }
+      ]
+    },
+    {
+      "position": 23,
+      "asin": "B0BGYFTPGK",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "RYOBI",
+      "title": "ONE+ 18V Cordless 1/4 in. Impact Driver - 1,800 in-lbs Torque, 0-3,400 IPM, Tool Only (Battery Not Included) - PCL235B",
+      "link": "https://www.amazon.com/RYOBI-Cordless-Impact-Driver-Green/dp/B0BGYFTPGK/ref=sr_1_23?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-23",
+      "link_clean": "https://www.amazon.com/RYOBI-Cordless-Impact-Driver-Green/dp/B0BGYFTPGK/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BGYFTPGK&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61Bf2AIwqYL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 1400,
+      "bought_last_month": "300+ bought in past month",
+      "price": "$58.90",
+      "extracted_price": 58.9,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 2 left in stock - order soon.",
+      "more_buying_choices": "$50.00 (32 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BGYFTPGK/ref=sr_1_23_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-23",
+      "purchase_options": [
+        {
+          "primary_price": "$58.90",
+          "extracted_primary_price": 58.9,
+          "more_buying_choices": "$50.00 (32 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BGYFTPGK/ref=sr_1_23_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-23"
+        }
+      ]
+    },
+    {
+      "position": 24,
+      "asin": "B0BNFBL5PR",
+      "brand": "RYOBI",
+      "title": "ONE+ 18V Cordless Compact Fixed Base Router Tool Only (Battery Not Included) - PCL424B",
+      "link": "https://www.amazon.com/Cordless-Compact-Fixed-Base-Router/dp/B0BNFBL5PR/ref=sr_1_24?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-24",
+      "link_clean": "https://www.amazon.com/Cordless-Compact-Fixed-Base-Router/dp/B0BNFBL5PR/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BNFBL5PR&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61LaV29XPcL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 632,
+      "bought_last_month": "300+ bought in past month",
+      "price": "$74.00",
+      "extracted_price": 74,
+      "old_price": "$83.99",
+      "extracted_old_price": 83.99,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 10 left in stock - order soon.",
+      "more_buying_choices": "$66.99 (65+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BNFBL5PR/ref=sr_1_24_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-24",
+      "purchase_options": [
+        {
+          "primary_price": "$74.00",
+          "extracted_primary_price": 74,
+          "old_primary_price": "$83.99",
+          "extracted_old_primary_price": 83.99,
+          "more_buying_choices": "$66.99 (65+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BNFBL5PR/ref=sr_1_24_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-24"
+        }
+      ]
+    },
+    {
+      "position": 25,
+      "asin": "B09HDZ5MPV",
+      "title": "TTI Ryobi PBP004 ONE+ High Performance 18 Volts Lithium-Ion 4.0 Ah Battery",
+      "link": "https://www.amazon.com/TTI-PBP004-Performance-Lithium-Ion-Battery/dp/B09HDZ5MPV/ref=sr_1_25?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-25",
+      "link_clean": "https://www.amazon.com/TTI-PBP004-Performance-Lithium-Ion-Battery/dp/B09HDZ5MPV/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09HDZ5MPV&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61Jf2k9IURL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 1400,
+      "bought_last_month": "500+ bought in past month",
+      "price": "$69.99",
+      "extracted_price": 69.99,
+      "delivery": [
+        "FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 4 left in stock - order soon.",
+      "more_buying_choices": "$47.79 (31+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HDZ5MPV/ref=sr_1_25_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-25",
+      "purchase_options": [
+        {
+          "primary_price": "$69.99",
+          "extracted_primary_price": 69.99,
+          "more_buying_choices": "$47.79 (31+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HDZ5MPV/ref=sr_1_25_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-25"
+        }
+      ]
+    },
+    {
+      "position": 26,
+      "asin": "B0H1S2BGF6",
+      "brand": "RYOBI",
+      "title": "ONEAND 18V Lithium-ION Starter High Performance KIT with 2.0 AH Battery, 4.0 AH Battery, and Charger",
+      "link": "https://www.amazon.com/RYOBI-Lithium-ION-Starter-Performance-Battery/dp/B0H1S2BGF6/ref=sr_1_26?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-26",
+      "link_clean": "https://www.amazon.com/RYOBI-Lithium-ION-Starter-Performance-Battery/dp/B0H1S2BGF6/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H1S2BGF6&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51I6ZJC9TKL._AC_UL320_.jpg",
+      "rating": 4.9,
+      "reviews": 36,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$93.88",
+      "extracted_price": 93.88,
+      "delivery": [
+        "FREE delivery Tue, Nov 17"
+      ],
+      "stock": "Only 6 left in stock - order soon.",
+      "more_buying_choices": "$93.87 (29+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0H1S2BGF6/ref=sr_1_26_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-26",
+      "purchase_options": [
+        {
+          "primary_price": "$93.88",
+          "extracted_primary_price": 93.88,
+          "more_buying_choices": "$93.87 (29+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0H1S2BGF6/ref=sr_1_26_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-26"
+        }
+      ]
+    },
+    {
+      "position": 27,
+      "asin": "B08512HJ14",
+      "brand": "RYOBI",
+      "title": "R18ID2-0 Impact Wrench 1/4\" Hex 18V ONE+ 200Nm (Body Only)",
+      "link": "https://www.amazon.com/Ryobi-P235A-Impact-Driver-Bare/dp/B08512HJ14/ref=sr_1_27?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-27",
+      "link_clean": "https://www.amazon.com/Ryobi-P235A-Impact-Driver-Bare/dp/B08512HJ14/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08512HJ14&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61Fi3IHTcTL._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 4700,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$51.41",
+      "extracted_price": 51.41,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 15 left in stock - order soon.",
+      "more_buying_choices": "$45.00 (7+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08512HJ14/ref=sr_1_27_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-27",
+      "purchase_options": [
+        {
+          "primary_price": "$51.41",
+          "extracted_primary_price": 51.41,
+          "more_buying_choices": "$45.00 (7+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08512HJ14/ref=sr_1_27_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-27"
+        }
+      ]
+    },
+    {
+      "position": 28,
+      "asin": "B0CTHZZTYN",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/RYOBI-Cordless-6-Tool-Battery-Charger/dp/B0CTHZZTYN/ref=sr_1_28_so_POWER_TOOL_SET?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-28",
+      "brand": "RYOBI",
+      "title": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, and Charger",
+      "link": "https://www.amazon.com/RYOBI-Cordless-6-Tool-Battery-Charger/dp/B0CTHZZTYN/ref=sr_1_28?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-28",
+      "link_clean": "https://www.amazon.com/RYOBI-Cordless-6-Tool-Battery-Charger/dp/B0CTHZZTYN/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CTHZZTYN&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/616RBx-AVbL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 49,
+      "no_featured_offers_available": true,
+      "more_buying_choices": "$280.00 (8 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CTHZZTYN/ref=sr_1_28_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-28",
+      "purchase_options": [
+        {
+          "no_featured_offers": true,
+          "more_buying_choices": "$280.00 (8 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CTHZZTYN/ref=sr_1_28_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-28"
+        }
+      ]
+    },
+    {
+      "position": 29,
+      "asin": "B08DG7RQY1",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/Ryobi-P519-Reciprocating-Bare-Tool/dp/B08DG7RQY1/ref=sr_1_29_so_SAW?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-29",
+      "brand": "RYOBI",
+      "title": "P519 18V One+ Reciprocating Saw (Bare Tool)",
+      "link": "https://www.amazon.com/Ryobi-P519-Reciprocating-Bare-Tool/dp/B08DG7RQY1/ref=sr_1_29?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-29",
+      "link_clean": "https://www.amazon.com/Ryobi-P519-Reciprocating-Bare-Tool/dp/B08DG7RQY1/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08DG7RQY1&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/41+XjoCrL1L._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 1900,
+      "no_featured_offers_available": true,
+      "more_buying_choices": "$122.89 (5 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08DG7RQY1/ref=sr_1_29_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-29",
+      "purchase_options": [
+        {
+          "no_featured_offers": true,
+          "more_buying_choices": "$122.89 (5 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08DG7RQY1/ref=sr_1_29_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-29"
+        }
+      ]
+    },
+    {
+      "position": 30,
+      "asin": "B0F833QDTM",
+      "brand": "RYOBI",
+      "title": "18V ONEAND HP BRUSHLESS Cordless 130 MPH 510 CFM Blower Tool ONLY PBLLB01B",
+      "link": "https://www.amazon.com/18V-RYOBI-Brushless-Whisper-Blower/dp/B0F833QDTM/ref=sr_1_30?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-30",
+      "link_clean": "https://www.amazon.com/18V-RYOBI-Brushless-Whisper-Blower/dp/B0F833QDTM/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F833QDTM&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71IkFvoR-XL._AC_UL320_.jpg",
+      "rating": 5,
+      "reviews": 4,
+      "price": "$149.00",
+      "extracted_price": 149,
+      "delivery": [
+        "FREE delivery Nov 17 - 23",
+        "Or fastest delivery Thu, Nov 12"
+      ],
+      "stock": "Only 10 left in stock - order soon.",
+      "more_buying_choices": "$129.89 (7 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F833QDTM/ref=sr_1_30_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-30",
+      "purchase_options": [
+        {
+          "primary_price": "$149.00",
+          "extracted_primary_price": 149,
+          "more_buying_choices": "$129.89 (7 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F833QDTM/ref=sr_1_30_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-30"
+        }
+      ]
+    },
+    {
+      "position": 31,
+      "asin": "B0DNTYH21M",
+      "brand": "RYOBI",
+      "title": "ONEAND HP 18V BRUSHLESS Cordless Compact Router Tool ONLY PBLRR01B",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Worklights-Construction-Compatible/dp/B0DNTYH21M/ref=sr_1_31?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-31",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Worklights-Construction-Compatible/dp/B0DNTYH21M/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DNTYH21M&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51FyNQ8RmpL._AC_UL320_.jpg",
+      "rating": 5,
+      "reviews": 1,
+      "price": "$99.00",
+      "extracted_price": 99,
+      "delivery": [
+        "FREE delivery Tue, Nov 17",
+        "Or fastest delivery Thu, Nov 12"
+      ],
+      "stock": "Only 1 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$99.00",
+          "extracted_primary_price": 99
+        }
+      ]
+    },
+    {
+      "position": 32,
+      "asin": "B0CQ9KD45J",
+      "title": "USB Lithium 3/8 in. Ratchet KIT with 2.0 AH Battery and USB Charging Cable",
+      "link": "https://www.amazon.com/RYOBI-Lithium-Ratchet-Battery-Charging/dp/B0CQ9KD45J/ref=sr_1_32?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-32",
+      "link_clean": "https://www.amazon.com/RYOBI-Lithium-Ratchet-Battery-Charging/dp/B0CQ9KD45J/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CQ9KD45J&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51sCfgJ+lmL._AC_UL320_.jpg",
+      "rating": 4.1,
+      "reviews": 41,
+      "price": "$59.00",
+      "extracted_price": 59,
+      "delivery": [
+        "FREE delivery Nov 16 - 20",
+        "Or fastest delivery Mon, Nov 16"
+      ],
+      "more_buying_choices": "$54.28 (5 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CQ9KD45J/ref=sr_1_32_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-32",
+      "purchase_options": [
+        {
+          "primary_price": "$59.00",
+          "extracted_primary_price": 59,
+          "more_buying_choices": "$54.28 (5 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CQ9KD45J/ref=sr_1_32_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-32"
+        }
+      ]
+    },
+    {
+      "position": 33,
+      "asin": "B09BL9VXZX",
+      "brand": "RYOBI",
+      "title": "ONE+ 18V HIGH Performance Lithium-Ion Compact Battery PBP003",
+      "link": "https://www.amazon.com/RYOBI-Performance-Lithium-Ion-Compact-Battery/dp/B09BL9VXZX/ref=sr_1_33?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-33",
+      "link_clean": "https://www.amazon.com/RYOBI-Performance-Lithium-Ion-Compact-Battery/dp/B09BL9VXZX/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09BL9VXZX&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61v2wCIZ91L._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 904,
+      "bought_last_month": "400+ bought in past month",
+      "price": "$41.99",
+      "extracted_price": 41.99,
+      "delivery": [
+        "FREE delivery Mon, Nov 16",
+        "Or fastest delivery Nov 12 - 13"
+      ],
+      "more_buying_choices": "$29.63 (19 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09BL9VXZX/ref=sr_1_33_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-33",
+      "purchase_options": [
+        {
+          "primary_price": "$41.99",
+          "extracted_primary_price": 41.99,
+          "more_buying_choices": "$29.63 (19 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09BL9VXZX/ref=sr_1_33_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-33"
+        }
+      ]
+    },
+    {
+      "position": 34,
+      "asin": "B0B1QRQYK2",
+      "brand": "RYOBI",
+      "title": "ONEAND 18V Lithium-ION Charger PCG002",
+      "link": "https://www.amazon.com/RYOBI-ONE-18V-Lithium-Ion-Charger/dp/B0B1QRQYK2/ref=sr_1_34?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-34",
+      "link_clean": "https://www.amazon.com/RYOBI-ONE-18V-Lithium-Ion-Charger/dp/B0B1QRQYK2/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B1QRQYK2&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61whnhITN4L._AC_UL320_.jpg",
+      "rating": 4.7,
+      "reviews": 541,
+      "bought_last_month": "1K+ bought in past month",
+      "price": "$17.34",
+      "extracted_price": 17.34,
+      "old_price": "$18.99",
+      "extracted_old_price": 18.99,
+      "delivery": [
+        "FREE delivery Nov 15 - 20 on $35 of items shipped by Amazon",
+        "Or fastest delivery Nov 15 - 18"
+      ],
+      "more_buying_choices": "$12.99 (27 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B1QRQYK2/ref=sr_1_34_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-34",
+      "purchase_options": [
+        {
+          "primary_price": "$17.34",
+          "extracted_primary_price": 17.34,
+          "old_primary_price": "$18.99",
+          "extracted_old_primary_price": 18.99,
+          "more_buying_choices": "$12.99 (27 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B1QRQYK2/ref=sr_1_34_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-34"
+        }
+      ]
+    },
+    {
+      "position": 35,
+      "asin": "B0BMZGP6Q8",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/RYOBI-Brushless-Extended-Ratchet-RENEWED/dp/B0BMZGP6Q8/ref=sr_1_35_so_ROTARY_TOOL?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-35",
+      "brand": "Amazon Renewed",
+      "title": "18V ONE+ HP Brushless 3/8'' Extended Reach Ratchet Green (Renewed)",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Extended-Ratchet-RENEWED/dp/B0BMZGP6Q8/ref=sr_1_35?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-35",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Extended-Ratchet-RENEWED/dp/B0BMZGP6Q8/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BMZGP6Q8&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51+Hrcqi2QL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 34,
+      "price": "$159.94",
+      "extracted_price": 159.94,
+      "delivery": [
+        "Join Prime to get FREE delivery Wed, Nov 11",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "stock": "Only 12 left in stock - order soon.",
+      "more_buying_choices": "$159.93 (3 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BMZGP6Q8/ref=sr_1_35_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-35",
+      "purchase_options": [
+        {
+          "primary_price": "$159.94",
+          "extracted_primary_price": 159.94,
+          "more_buying_choices": "$159.93 (3 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BMZGP6Q8/ref=sr_1_35_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-35"
+        }
+      ]
+    },
+    {
+      "position": 36,
+      "asin": "B095CXKGLB",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "RYOBI",
+      "title": "ONE+ HP 18V Brushless Cordless 1/4 in. 4-Mode Impact Driver - PBLID02B - Tool Only (Battery Not Included)",
+      "link": "https://www.amazon.com/ONEAND-BRUSHLESS-Cordless-4-Mode-Impact/dp/B095CXKGLB/ref=sr_1_36?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-36",
+      "link_clean": "https://www.amazon.com/ONEAND-BRUSHLESS-Cordless-4-Mode-Impact/dp/B095CXKGLB/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B095CXKGLB&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61nqNB4LlGL._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 205,
+      "price": "$89.99",
+      "extracted_price": 89.99,
+      "delivery": [
+        "FREE delivery Mon, Nov 16",
+        "Or fastest delivery Nov 12 - 13"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$89.99",
+          "extracted_primary_price": 89.99
+        }
+      ]
+    },
+    {
+      "position": 37,
+      "asin": "B0DS9TVL92",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "RYOBI",
+      "title": "ONEAND HP 18V BRUSHLESS Cordless Compact 1/4 in. HEX Impact Driver Tool ONLY PSBID0",
+      "link": "https://www.amazon.com/Brushless-Cordless-Compact-Impact-Driver/dp/B0DS9TVL92/ref=sr_1_37_mod_primary_new?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-37",
+      "link_clean": "https://www.amazon.com/Brushless-Cordless-Compact-Impact-Driver/dp/B0DS9TVL92/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DS9TVL92&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51ZC8AIbp0L._AC_UL320_.jpg",
+      "rating": 3.3,
+      "reviews": 5,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$61.99",
+      "extracted_price": 61.99,
+      "old_price": "$79.28",
+      "extracted_old_price": 79.28,
+      "delivery": [
+        "FREE delivery Sun, Nov 15"
+      ],
+      "stock": "Only 9 left in stock - order soon.",
+      "more_buying_choices": "$58.55 (11 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DS9TVL92/ref=sr_1_37_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-37",
+      "purchase_options": [
+        {
+          "type": "One-time purchase",
+          "primary_price": "$61.99",
+          "extracted_primary_price": 61.99,
+          "old_primary_price": "$79.28",
+          "extracted_old_primary_price": 79.28,
+          "more_buying_choices": "$58.55 (11 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DS9TVL92/ref=sr_1_37_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-37"
+        },
+        {
+          "type": "Get it faster",
+          "primary_price": "$69.99",
+          "extracted_primary_price": 69.99,
+          "old_primary_price": "$79.28",
+          "extracted_old_primary_price": 79.28
+        }
+      ]
+    },
+    {
+      "position": 38,
+      "asin": "B09G1WD2CG",
+      "brand": "RYOBI",
+      "title": "ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery, ABS Plastic, Up to 3X Runtime vs 1.5Ah, LED Fuel Gauge, Black, PBP005",
+      "link": "https://www.amazon.com/Ryobi-PBP005-ONE-Lithium-Ion-Battery/dp/B09G1WD2CG/ref=sr_1_38?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-38",
+      "link_clean": "https://www.amazon.com/Ryobi-PBP005-ONE-Lithium-Ion-Battery/dp/B09G1WD2CG/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09G1WD2CG&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/51ZWjIiSBCL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 5900,
+      "bought_last_month": "500+ bought in past month",
+      "price": "$84.11",
+      "extracted_price": 84.11,
+      "delivery": [
+        "FREE delivery Nov 15 - 17",
+        "Or fastest delivery Sun, Nov 15"
+      ],
+      "stock": "Only 2 left in stock - order soon.",
+      "more_buying_choices": "$64.99 (13 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09G1WD2CG/ref=sr_1_38_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-38",
+      "purchase_options": [
+        {
+          "primary_price": "$84.11",
+          "extracted_primary_price": 84.11,
+          "more_buying_choices": "$64.99 (13 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09G1WD2CG/ref=sr_1_38_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-38"
+        }
+      ]
+    },
+    {
+      "position": 39,
+      "asin": "B0DYKX1GC1",
+      "brand": "RYOBI",
+      "title": "18V Brushless 8 in. Battery Compact Pruning Mini Chainsaw (Tool Only)",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Battery-Compact-Chainsaw/dp/B0DYKX1GC1/ref=sr_1_39?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-39",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Battery-Compact-Chainsaw/dp/B0DYKX1GC1/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DYKX1GC1&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/41-C0Yx9F+L._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 174,
+      "bought_last_month": "300+ bought in past month",
+      "price": "$149.00",
+      "extracted_price": 149,
+      "delivery": [
+        "FREE delivery Mon, Nov 16",
+        "Or fastest delivery Nov 12 - 13"
+      ],
+      "more_buying_choices": "$129.99 (9 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DYKX1GC1/ref=sr_1_39_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-39",
+      "purchase_options": [
+        {
+          "primary_price": "$149.00",
+          "extracted_primary_price": 149,
+          "more_buying_choices": "$129.99 (9 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DYKX1GC1/ref=sr_1_39_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-39"
+        }
+      ]
+    },
+    {
+      "position": 40,
+      "asin": "B0H67XWCMY",
+      "brand": "RYOBI",
+      "title": "40V HP Brushless Whisper Series 180 MPH 800 CFM Cordless Leaf Blower (Tool Only)",
+      "link": "https://www.amazon.com/Ryobi-Brushless-Whisper-Cordless-Blower/dp/B0H67XWCMY/ref=sr_1_40?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-40",
+      "link_clean": "https://www.amazon.com/Ryobi-Brushless-Whisper-Cordless-Blower/dp/B0H67XWCMY/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H67XWCMY&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/31jzM++vzUL._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 10,
+      "bought_last_month": "100+ bought in past month",
+      "price": "$229.96",
+      "extracted_price": 229.96,
+      "delivery": [
+        "FREE delivery Thu, Nov 19",
+        "Or fastest delivery Nov 13 - 17"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$229.96",
+          "extracted_primary_price": 229.96
+        }
+      ]
+    },
+    {
+      "position": 41,
+      "asin": "B0D84D6WHJ",
+      "options": "See options",
+      "options_link": "https://www.amazon.com/RYOBI-Cordless-Multi-Ratchet-PCL280B/dp/B0D84D6WHJ/ref=sr_1_41_so_DISC_GRINDER_TOOL?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-41",
+      "brand": "RYOBI",
+      "title": "18V ONE+ Multi‑Size Ratchet PCL280 (tool only)",
+      "link": "https://www.amazon.com/RYOBI-Cordless-Multi-Ratchet-PCL280B/dp/B0D84D6WHJ/ref=sr_1_41?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-41",
+      "link_clean": "https://www.amazon.com/RYOBI-Cordless-Multi-Ratchet-PCL280B/dp/B0D84D6WHJ/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D84D6WHJ&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/41tMhIIEjrL._AC_UL320_.jpg",
+      "rating": 4.6,
+      "reviews": 192,
+      "bought_last_month": "100+ bought in past month",
+      "no_featured_offers_available": true,
+      "more_buying_choices": "$104.09 (16 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D84D6WHJ/ref=sr_1_41_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-41",
+      "purchase_options": [
+        {
+          "no_featured_offers": true,
+          "more_buying_choices": "$104.09 (16 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D84D6WHJ/ref=sr_1_41_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-41"
+        }
+      ]
+    },
+    {
+      "position": 42,
+      "asin": "B0DNNYB9HR",
+      "brand": "RYOBI",
+      "title": "ONEAND HP 18V BRUSHLESS Cordless Compact 1/2 in. Drill/Driver Tool ONLY PSBDD02B",
+      "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Compact-Driver/dp/B0DNNYB9HR/ref=sr_1_42?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-42",
+      "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Compact-Driver/dp/B0DNNYB9HR/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DNNYB9HR&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/41blGlf6ZRL._AC_UL320_.jpg",
+      "rating": 4.3,
+      "reviews": 29,
+      "price": "$84.60",
+      "extracted_price": 84.6,
+      "old_price": "$95.99",
+      "extracted_old_price": 95.99,
+      "delivery": [
+        "FREE delivery Wed, Nov 18",
+        "Or fastest delivery Fri, Nov 13"
+      ],
+      "stock": "Only 5 left in stock - order soon.",
+      "more_buying_choices": "$83.59 (7 new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DNNYB9HR/ref=sr_1_42_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-42",
+      "purchase_options": [
+        {
+          "primary_price": "$84.60",
+          "extracted_primary_price": 84.6,
+          "old_primary_price": "$95.99",
+          "extracted_old_primary_price": 95.99,
+          "more_buying_choices": "$83.59 (7 new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DNNYB9HR/ref=sr_1_42_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-42"
+        }
+      ]
+    },
+    {
+      "position": 43,
+      "asin": "B096LCVYH9",
+      "brand": "RYOBI",
+      "title": "Carbon Fiber Brushless Expand-It 40-Volt Lithium-Ion Cordless Attachment Capable Trimmer Power Head- 2024 Model (Battery and Charger NOT Included)",
+      "link": "https://www.amazon.com/Brushless-Lithium-Ion-Cordless-Attachment-Included/dp/B096LCVYH9/ref=sr_1_43?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-43",
+      "link_clean": "https://www.amazon.com/Brushless-Lithium-Ion-Cordless-Attachment-Included/dp/B096LCVYH9/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B096LCVYH9&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61iqK+Miu2L._AC_UL320_.jpg",
+      "rating": 4.5,
+      "reviews": 23,
+      "bought_last_month": "50+ bought in past month",
+      "price": "$105.99",
+      "extracted_price": 105.99,
+      "delivery": [
+        "FREE delivery Wed, Nov 18"
+      ],
+      "more_buying_choices": "$89.00 (7 used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B096LCVYH9/ref=sr_1_43_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-43",
+      "purchase_options": [
+        {
+          "primary_price": "$105.99",
+          "extracted_primary_price": 105.99,
+          "more_buying_choices": "$89.00 (7 used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B096LCVYH9/ref=sr_1_43_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-43"
+        }
+      ]
+    },
+    {
+      "position": 44,
+      "asin": "B0FD55VL1Z",
+      "brand": "RYOBI",
+      "title": "18 Volt PCL700B Cordless Hand Vacuum with Powered Brush Kit",
+      "link": "https://www.amazon.com/RYOBI-PCL700B-Cordless-Powered-Included/dp/B0FD55VL1Z/ref=sr_1_44?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-44",
+      "link_clean": "https://www.amazon.com/RYOBI-PCL700B-Cordless-Powered-Included/dp/B0FD55VL1Z/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FD55VL1Z&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71CzYfkP-TL._AC_UL320_.jpg",
+      "rating": 4,
+      "reviews": 12,
+      "price": "$135.99",
+      "extracted_price": 135.99,
+      "delivery": [
+        "FREE delivery Tue, Nov 17",
+        "Or fastest delivery Thu, Nov 12"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$135.99",
+          "extracted_primary_price": 135.99
+        }
+      ]
+    },
+    {
+      "position": 45,
+      "asin": "B0HD6DCNCP",
+      "title": "2Pack 8000mAh Replacement for Ryobi 18 Volt Battery and Charger Kit",
+      "link": "https://www.amazon.com/8000mAh-Replacement-Compatible-Cordless-Green-3P/dp/B0HD6DCNCP/ref=sr_1_45?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-45",
+      "link_clean": "https://www.amazon.com/8000mAh-Replacement-Compatible-Cordless-Green-3P/dp/B0HD6DCNCP/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HD6DCNCP&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71lXybLb97L._AC_UL320_.jpg",
+      "rating": 4.3,
+      "reviews": 2500,
+      "bought_last_month": "300+ bought in past month",
+      "price": "$62.99",
+      "extracted_price": 62.99,
+      "price_unit": "$31.50/count",
+      "extracted_price_unit": 31.5,
+      "old_price": "$74.10",
+      "extracted_old_price": 74.1,
+      "delivery": [
+        "Join Prime to get FREE delivery Tomorrow, Nov 10",
+        "Or Non-members get FREE delivery Sat, Nov 14"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$62.99",
+          "extracted_primary_price": 62.99,
+          "old_primary_price": "$74.10",
+          "extracted_old_primary_price": 74.1
+        }
+      ]
+    },
+    {
+      "position": 46,
+      "asin": "B0B85RMS5N",
+      "tags": [
+        "Battery Powered"
+      ],
+      "brand": "RYOBI",
+      "title": "18V ONE+ 4.0Ah Starter Kit - PCL104K1",
+      "link": "https://www.amazon.com/RYOBI-18V-ONE-4-0Ah-Starter/dp/B0B85RMS5N/ref=sr_1_46?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-46",
+      "link_clean": "https://www.amazon.com/RYOBI-18V-ONE-4-0Ah-Starter/dp/B0B85RMS5N/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B85RMS5N&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/510-3i6b5VL._AC_UL320_.jpg",
+      "rating": 4.3,
+      "reviews": 43,
+      "bought_last_month": "200+ bought in past month",
+      "price": "$75.50",
+      "extracted_price": 75.5,
+      "delivery": [
+        "FREE delivery Tue, Nov 17",
+        "Or fastest delivery Fri, Nov 13"
+      ],
+      "stock": "Only 3 left in stock - order soon.",
+      "purchase_options": [
+        {
+          "primary_price": "$75.50",
+          "extracted_primary_price": 75.5
+        }
+      ]
+    },
+    {
+      "position": 47,
+      "asin": "B0DHCSLLNC",
+      "brand": "RYOBI",
+      "title": "RY18BLCXA-0 18V ONE+ Brushless Compact Blower (Bare Tool)",
+      "link": "https://www.amazon.com/Ryobi-RY18BLCXA-0-Brushless-Compact-Blower/dp/B0DHCSLLNC/ref=sr_1_47?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-47",
+      "link_clean": "https://www.amazon.com/Ryobi-RY18BLCXA-0-Brushless-Compact-Blower/dp/B0DHCSLLNC/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DHCSLLNC&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/61gOi9kyqRL._AC_UL320_.jpg",
+      "rating": 4.4,
+      "reviews": 393,
+      "bought_last_month": "200+ bought in past month",
+      "price": "$114.90",
+      "extracted_price": 114.9,
+      "delivery": [
+        "FREE delivery Nov 13 - 17"
+      ],
+      "more_buying_choices": "$94.00 (14+ used & new offers)",
+      "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DHCSLLNC/ref=sr_1_47_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-47",
+      "purchase_options": [
+        {
+          "primary_price": "$114.90",
+          "extracted_primary_price": 114.9,
+          "more_buying_choices": "$94.00 (14+ used & new offers)",
+          "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DHCSLLNC/ref=sr_1_47_olp?keywords=RYOBI+PBLRC01B&dib_tag=se&dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&qid=1794276948&sr=8-47"
+        }
+      ]
+    },
+    {
+      "position": 48,
+      "asin": "B0DPVKXHHF",
+      "title": "4-Pack HEPA Filter for Ryobi 18V ONE+ PBLHV701/PBLHV701K, A32HF01",
+      "link": "https://www.amazon.com/Moreffi-A32HF01-Replacement-Brushless-PBLHV701K/dp/B0DPVKXHHF/ref=sr_1_48?dib=eyJ2IjoiMSJ9.dmoyZR0611Y9UarME_rEkOCHp_WWHns8gVpSxk_3HA1odciUepU_tsOueyMyvtKC6Q60_AN8yQWJJTUTRARq5H5GxfYkKxjQ_WIgwjdjdW1fGtbRPoqZVTKkhi6mgwyIe-voNbAOLHDBryuCYNMhQO5-pHx2l0NEvdtJ64DiUggd69Pfmlsi4KLzRwXD2SDSPS1Bqu5vV54Qac4adKTsnNv6qWpmw0sfKvuw5KSG3gTXmDhPBEZlTqauW9cBKiRa6jwet_SNSpOonDBAbSqqsXFD7m7FEr8UITt58oOjhjA.qJJ2F7A45YHOSZiL4YxUEEDcP6Howb0tGZpx85UWIVI&dib_tag=se&keywords=RYOBI+PBLRC01B&qid=1794276948&sr=8-48",
+      "link_clean": "https://www.amazon.com/Moreffi-A32HF01-Replacement-Brushless-PBLHV701K/dp/B0DPVKXHHF/",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DPVKXHHF&device=desktop&engine=amazon_product",
+      "thumbnail": "https://m.media-amazon.com/images/I/71VdFakrb8L._AC_UL320_.jpg",
+      "rating": 4.2,
+      "reviews": 10,
+      "price": "$19.59",
+      "extracted_price": 19.59,
+      "price_unit": "$4.90/count",
+      "extracted_price_unit": 4.9,
+      "delivery": [
+        "FREE delivery Mon, Nov 23"
+      ],
+      "purchase_options": [
+        {
+          "primary_price": "$19.59",
+          "extracted_primary_price": 19.59
+        }
+      ]
+    }
+  ],
+  "sponsored_brands": {
+    "title": "Brands related to your search",
+    "brands": [
+      {
+        "position": 1,
+        "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/aec1e9d1-6d91-4c36-a800-7b2f2f3e1139._CR0,0,1200,628_SX920_CB1169409_QL70_.jpg",
+        "name": "Bosch",
+        "headline": "Hardest hitting hammers",
+        "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkM9u00AQxtVWQBWKqHIoUk4oEjlUbLJeO3ZcZCGv_zTBaeLaSWlzsTb2JnGb2O7utik99AF4BySegAfgDbhX4iUQEncOKC0Iwac5jObTp5n5leLN259fvj4sPzEHR77tdbxjaDtBdU3a3ZnQLL2Khn1ngi5zq-HDfTU_JHs7vRh18_R0RL2rxO8fe0qghk0zeCyhOtLrCKE6HK2HeLxpOoO2E3TC8rPSo4TyM5EX5a1hL3Cs_n6vM3Lsyvu10ubKicZiUi6RBbnOs3qcLyovZpwARuN8saBZQkSaZ4BTdpnGFHBKWDwDYzGpPqBZNAx30eJiLlIwZiRLQMwoEeklBb9XgpiwhIOCpJmgDMR5Jmgm0PYBtiLZD7uR7YTeoO9XW6U1uP3987fbH5_syvaf9OoQueDz6lMZQqgosoYg0ltQRRvD0N7bsHxr1yu_srFpFW4HaOYNPr_X1LzBh4L2W8D8Vzd4elfmfVPZsqbO1b7pTFU2pOjjeunD-kyIgu81Gsvlsv4XS4OLnFHeKMiUNiRJdR2stUALqwgosmsBjF0XKBi7FpRsJOny67tAxOjECHFkQqWJZE2Xwjdt--StPrL9wQEwJQh1SYPS6Ghod1xZ7rioVyuSiCVRMZ8lzBC1GSdRzKI0MWBtXkSEpxk3MIQIHnRV3XuJodRTgtAL2yv7_IKyd0Zw0sed5z7uBhaU8GrO57kw_uda40kRkSSasvyiMFaMtSZUVajJTajUUoMUvEZWD5y18_n1qbk8dX8BXzHaEA&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F116FEB78-8B62-43FC-BBFF-4BBFC01D2193%3Fstore_ref%3DSB_A04523791SJHDYW9ZDPTM-A10091701ZVUDIF33IF2N%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0020ML69K%2CB01N4RSKSH%26lp_query%3DRYOBI%20PBLRC01B%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300075066073504%26i%3Daps%26aref%3DkHolzjAwjF&ref_=sbx_be_s_3psl_mbd_mb0_bkgd&pd_rd_w=dQVO3&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=13PYHFJ696DV2BJ42KGV&pd_rd_wg=MTZEZ&pd_rd_r=191e8ed4-199d-4b46-93e0-866989a75eca",
+        "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/24beb41a-6764-4d48-8847-f7c261752a7c._CR0,0,2333,932_AC_SX278_SY200_CB1169409_QL70_.png"
+      },
+      {
+        "position": 2,
+        "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/79683538-05a0-4dc5-969a-72bc4ae085c3._CR0,0,1200,628_SX920_CB1169409_QL70_.png",
+        "name": "Chicago Pneumatic",
+        "headline": "Be Winter Ready with Chicago Pneumatic Tools",
+        "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUE1v00AQVVsBVSiiyqFIOaFI5FCxyXrtOnaRhdYfadOkcWLXpc3F2tibxODY7u6mKRx65MC_4AISQuJ3cEfiwF_hgNyCEDzN4Wlmnt7Mq0Sb335-_X63-gCfnA7tXrd3Bm3Hq69JuztTmiVXYeA6U3SZW60hPFDzEdnfWWbBhZOe4SNiTl6CPp2OFzRfefcl1ER6EyHUhON135xsYufk0PG6fvVR5V5M-SuRF9WtYOA5lnsw6I4du_ZurbJZTsKJmFYrZEHe5Fkzyhe1J3NOAKNRvljQLCYiyTPAKbtMIgo4JSyag4mY1u_QLAz8XbRYpiIBE0ayGESMEpFcUvDbEkSExRwUJMkEZSDKM0EzgbaPTSuUh34_tB2_d-IO61plTdr-8OPt-y-f7dr2H3V5iFzwtP5QhhDK8l67DSFqQxVtBL69v2ENrd1e9ZltYqvodEEbX5sXt5jha3MkqKsB_C-uzdlN4VtS27JmztUBdmYqCyj6tF75uD4XouD7rdZqtWr-jaXFRc4obxVkRlu21mlLiqSDtqZ2gGKqEOCOKgOENcVRZcV0LO35jSBkdGr4ZoihLMtI03qKGniDw5GEuzbAUEW6ruwhzwkwCvpaD58eNYo4ZHFYpPOYGaIx5ySMWJjEBmykRUh4knHDhBAi3zuWtaclHR05uodv6MA99zAqNy-WlL02vHPX7D4emn3PgpJZ9nmaC-P_hBs8LkIShzOWLwujTFtFOtIhRAgqjcQgBW-Q8pUidWH0gk2u8l_U19vt&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FD8F71419-786F-4B60-AF63-2A84E634BEC8%3Fstore_ref%3DSB_A0333288K46URNHQ1AID-A06299452REUA2UL8KAVJ%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0002SRM38%2CB000QJE9RA%2CB000NOYRA2%26lp_query%3DRYOBI%20PBLRC01B%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300062929002204%26i%3Daps%26aref%3DplO0cWrbxo&ref_=sbx_be_s_3psl_mbd_mb1_bkgd&pd_rd_w=dQVO3&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=13PYHFJ696DV2BJ42KGV&pd_rd_wg=MTZEZ&pd_rd_r=191e8ed4-199d-4b46-93e0-866989a75eca",
+        "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/7b530c63-8db3-4e77-a180-7f8d66b3476f._CR0,0,550,550_AC_SX278_SY200_CB1169409_QL70_.png"
+      },
+      {
+        "position": 3,
+        "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/355fbf17-33f9-4d0e-b3d7-8ac9344a889b._CR0,66,1600,838_SX920_CB1169409_QL70_.jpg",
+        "name": "Fhybat",
+        "headline": "Replacement for Ryobi 40V Battery and Charger",
+        "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUMFu00AQVVsBVSiiyqFIOaFI5FCxye7acZIiC3ltN3bTJo7TNG0u1sZeJ6aJ7e5um8KhH8CHIKR-Q0-cuCPxG3wAB5QWhOBpDk8z8_RmXiHc_Pbz6_fHxWfG8YlnddzOKbRsv7yGdndilibXwbBnx_gqM2sebGtZn-7t1E2Meb_fNWJ0Pu-H_rVLvfOl_xThKm5VMcZVOF4fkMmmYR87tu8Oii8KTyImzmWWF7eGXd82e-2uO7at0se1wuZqEkxkXCzQBf2QpdUwW5RezQQFnIXZYsHSiMokS4Fg_CoJGRCM8nAGJjIuP2JpMBzs4sXlXCZgwmkagZAzKpMrBn5bgpDySICcJqlkHIRZKlkq8fYRMQPFGxwGlj3oHPe8crOwhrc_3X25_XFnlbb_qFeHKLmYl58rECJYRwhCiFpQwxvDgbW3YXrmbqf4xiKGme-7oGHckIsHTI0b0pes1wTGv7gh0_syHkhpy5za123Dnmp8yPDteuHz-kzKXOzVasvlsvo3lpqQGWeiltMpq6n1pmZaKgRm0zKAarVagNTNfaCZTWQTQhAk1tt7QcBZrA9IYECoqaqGlCb0G87oaGiMOi1gwKaKkaIoJwf44KyvNNrO0aiSRwGPgnw-i7guKzNBg5AHSaTDyjwPqEhSoRPoOE67Pz48eE2gYzXwaLSPVtRxRmNFQavNi0vG3-v-WY-4Lz1y6JsQkVVfzDOp_x9xRUR5QKNgyrPLXF_FXVdxq4WUOoJqJdFpLip09YvH3Vzz4nd-9xftO9w2&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F4586CD40-C8DA-4D99-B5CF-6C81EBBB10BD%3Fstore_ref%3DSB_A0064461380R7HWMUAWK9-A08421333VJ2JYQ37GHMW%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0HHHGQZLJ%2CB0HD72WWF1%2CB0HHHWZ331%26lp_query%3DRYOBI%20PBLRC01B%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300154299135104%26i%3Daps%26aref%3DPrIp6PfjRN&ref_=sbx_be_s_3psl_mbd_mb2_bkgd&pd_rd_w=dQVO3&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=13PYHFJ696DV2BJ42KGV&pd_rd_wg=MTZEZ&pd_rd_r=191e8ed4-199d-4b46-93e0-866989a75eca",
+        "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/a835a29f-22b6-4d3e-a6ef-d14fb5e5792e._CR0,0,400,400_AC_SX278_SY200_CB1169409_QL70_.jpg"
+      }
+    ]
+  },
+  "categories": [
+    {
+      "position": 1,
+      "name": "Holiday Gifts",
+      "link": "https://www.amazon.com/b/?node=221346714011&enabledRefinements=%5B%7B%22rid%22%3A%22p_n_condition-type%22%2C%22value%22%3A%226461716011%22%2C%22ridType%22%3A%22SEARCH_SHORT_ID%22%2C%22type%22%3A%22BROWSE_NODE%22%7D%2C%7B%22rid%22%3A%22p_n_availability%22%2C%22value%22%3A%222661600011%22%2C%22ridType%22%3A%22SEARCH_SHORT_ID%22%2C%22type%22%3A%22BROWSE_NODE%22%7D%5D&ref_=nav_cs_discobar_hg2026#dossier-asin-grid",
+      "node": "221346714011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=221346714011"
+    },
+    {
+      "position": 2,
+      "name": "Custom Products",
+      "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+      "node": "11032013011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+    },
+    {
+      "position": 3,
+      "name": "Toys & Games",
+      "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+      "node": "165793011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+    },
+    {
+      "position": 4,
+      "name": "Home Improvement",
+      "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+      "node": "228013",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+    },
+    {
+      "position": 5,
+      "name": "Pet Supplies",
+      "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+      "node": "2619533011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+    },
+    {
+      "position": 6,
+      "name": "Gift Cards",
+      "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+      "node": "2238192011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+    },
+    {
+      "position": 7,
+      "name": "Amazon Home",
+      "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+      "node": "1055398",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+    },
+    {
+      "position": 8,
+      "name": "Audible",
+      "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+      "node": "18145289011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+    },
+    {
+      "position": 9,
+      "name": "Beauty & Personal Care",
+      "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+      "node": "3760911",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+    },
+    {
+      "position": 10,
+      "name": "Fashion",
+      "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+      "node": "7141123011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+    },
+    {
+      "position": 11,
+      "name": "Automotive",
+      "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+      "node": "15684181",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+    },
+    {
+      "position": 12,
+      "name": "Video Games",
+      "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+      "node": "468642",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+    },
+    {
+      "position": 13,
+      "name": "Baby",
+      "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+      "node": "165796011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+    },
+    {
+      "position": 14,
+      "name": "Smart Home",
+      "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+      "node": "6563140011",
+      "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+    }
+  ],
+  "filters": {
+    "eligible_for_free_shipping": [
+      {
+        "position": 1,
+        "name": "Free Shipping by Amazon",
+        "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+        "rh": "p_76:1249152011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_76%3A1249152011&dc&qid=1794276948&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3AaVJAbnvuyJo54x0ckr3CDVeXY8tDlReLrXBS38Ure8Y",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_76%3A1249152011"
+      }
+    ],
+    "delivery_day": [
+      {
+        "position": 1,
+        "name": "Get It by Tomorrow",
+        "rh": "p_90:8308921011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_90%3A8308921011&dc&qid=1794276948&rnid=8308919011&ref=sr_nr_p_90_1&ds=v1%3AH23klaxtUdDW7KPh3Yqr4lt%2FdAsFn48sYSt1iMSYodA",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_90%3A8308921011"
+      }
+    ],
+    "brands": [
+      {
+        "position": 1,
+        "name": "RYOBI",
+        "rh": "p_123:252605",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_123%3A252605&dc&qid=1794276948&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3ARl2iusdHyhUhclqCRY3kfYWNrRaLJ05%2FUjoJYdUi55M",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_123%3A252605"
+      }
+    ],
+    "customer_reviews": [
+      {
+        "position": 1,
+        "name": "4 Stars & Up",
+        "rh": "p_72:1248909011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_72%3A1248909011&dc&qid=1794276948&rnid=1248907011&ref=sr_nr_p_72_1&ds=v1%3AVKYHmrcmoRQAJagmvYVlWVa7i7GQLxlxNr8o5S50E%2Fo",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_72%3A1248909011"
+      }
+    ],
+    "condition": [
+      {
+        "position": 1,
+        "name": "New",
+        "rh": "p_n_condition-type:6358196011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_condition-type%3A6358196011&dc&qid=1794276948&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3AAIK0xBnkcb1naXtNXFMFNZkSfVme%2BeiWVAdMfWoQP6c",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_condition-type%3A6358196011"
+      },
+      {
+        "position": 2,
+        "name": "Renewed",
+        "rh": "p_n_condition-type:16907721011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_condition-type%3A16907721011&dc&qid=1794276948&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3Ag5CUFfWbbrmS9rBBciCeYSsksv3Dm49rem%2FoyNQkrRQ",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_condition-type%3A16907721011"
+      },
+      {
+        "position": 3,
+        "name": "Used",
+        "rh": "p_n_condition-type:6358198011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_condition-type%3A6358198011&dc&qid=1794276948&rnid=6358194011&ref=sr_nr_p_n_condition-type_3&ds=v1%3A3qzAZy6qq6HXrdu4GS8bRe5Jf9pMUM8HWQf1s%2BEtBHg",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_condition-type%3A6358198011"
+      }
+    ],
+    "battery_cell_composition": [
+      {
+        "position": 1,
+        "name": "Alkaline",
+        "rh": "p_n_g-101015850560111:204067607011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_g-101015850560111%3A204067607011&dc&qid=1794276948&rnid=204067512011&ref=sr_nr_p_n_g-101015850560111_1&ds=v1%3ADshWHJ2ggWYqs33YX91lfXWY3TSvmZoYa4D5zDekHsk",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_g-101015850560111%3A204067607011"
+      },
+      {
+        "position": 2,
+        "name": "Lithium Ion",
+        "rh": "p_n_g-101015850560111:204067613011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_g-101015850560111%3A204067613011&dc&qid=1794276948&rnid=204067512011&ref=sr_nr_p_n_g-101015850560111_2&ds=v1%3AQjIXFBYsou6V7fw1dc9Clg9P40uHW%2FBTr5b3t2ttdBw",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_g-101015850560111%3A204067613011"
+      }
+    ],
+    "air_compressor_voltage": [
+      {
+        "position": 1,
+        "name": "18 V",
+        "rh": "p_n_g-1004214698091:10467362011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_g-1004214698091%3A10467362011&dc&qid=1794276948&rnid=10467359011&ref=sr_nr_p_n_g-1004214698091_1&ds=v1%3A8Cvvv%2BLrspmOuuB76hkrtcMUlXFrXYKQiDifI0TWFO0",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_g-1004214698091%3A10467362011"
+      }
+    ],
+    "seller": [
+      {
+        "position": 1,
+        "name": "Supps Direct LLC",
+        "rh": "p_6:A3O3RXQE8MYLJP",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_6%3AA3O3RXQE8MYLJP&dc&qid=1794276948&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3AYrWWH%2B4DSMH9oO3SzUpnga6nb7VX4AGZd45bQSoRslM",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_6%3AA3O3RXQE8MYLJP"
+      },
+      {
+        "position": 2,
+        "name": "Triplenet Pricing INC",
+        "rh": "p_6:AAZRLVTNON75Z",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_6%3AAAZRLVTNON75Z&dc&qid=1794276948&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3AKEb0SciTVNFJEVEBN1o3JbqgTYx9w8e1qjpUw4myZp8",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_6%3AAAZRLVTNON75Z"
+      },
+      {
+        "position": 3,
+        "name": "Midwest Tool Company",
+        "rh": "p_6:AZNY9OO6RBMK8",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_6%3AAZNY9OO6RBMK8&dc&qid=1794276948&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3AJpSyIBr%2Bvs5Zc%2FX9GH38bvwXVjqdAOljoA86HPyOs1E",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_6%3AAZNY9OO6RBMK8"
+      },
+      {
+        "position": 4,
+        "name": "TotalTools LLC – We Record Serial Numbers",
+        "rh": "p_6:ATP0DYBJNOEG2",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_6%3AATP0DYBJNOEG2&dc&qid=1794276948&rnid=339807011&ref=sr_nr_p_6_4&ds=v1%3AC5zgCvcRFrBk8bkaQ8%2FfoIubc6PglLHUjpD%2Fk%2FKyI5Y",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_6%3AATP0DYBJNOEG2"
+      },
+      {
+        "position": 5,
+        "name": "Magiko Storefront Incorporated",
+        "rh": "p_6:A2YGIGEODUOXJZ",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_6%3AA2YGIGEODUOXJZ&dc&qid=1794276948&rnid=339807011&ref=sr_nr_p_6_5&ds=v1%3AyaEXrbL1KKzDyEjr9I28qqbJYrz5Pu6YOKv%2BNPFsStk",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_6%3AA2YGIGEODUOXJZ"
+      },
+      {
+        "position": 6,
+        "name": "Akashnil",
+        "rh": "p_6:AWVEFMI4QK3W",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_6%3AAWVEFMI4QK3W&dc&qid=1794276948&rnid=339807011&ref=sr_nr_p_6_6&ds=v1%3ATiIflVwgNqKPMIpufrMQIsjmkudNTFHGSGfe1%2BVNYfA",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_6%3AAWVEFMI4QK3W"
+      },
+      {
+        "position": 7,
+        "name": "HITO Me",
+        "rh": "p_6:A4ILNA3YN209W",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_6%3AA4ILNA3YN209W&dc&qid=1794276948&rnid=339807011&ref=sr_nr_p_6_7&ds=v1%3A3VAFP9nghg5jZdDRS0S8LGxQuUV1%2FTfIxn9u9EUSHfs",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_6%3AA4ILNA3YN209W"
+      }
+    ],
+    "battery_capacity": [
+      {
+        "position": 1,
+        "name": "Up to 3,789 mAh",
+        "rh": "p_n_g-101013567651111:64613661011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_g-101013567651111%3A64613661011&dc&qid=1794276948&rnid=64613658011&ref=sr_nr_p_n_g-101013567651111_1&ds=v1%3A6DMLc%2BHs%2FNkTr%2FFcEREjl%2B4FZa3m7m%2BxmuoTtu6xDug",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_g-101013567651111%3A64613661011"
+      }
+    ],
+    "price": [
+      {
+        "position": 1,
+        "name": "All Discounts",
+        "rh": "p_n_deal_type:23566065011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_deal_type%3A23566065011&dc&qid=1794276948&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3A6tIY%2FXxhcLmA3X0akpDdpkjNYk8FCYWgcMKA377JOFQ",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_deal_type%3A23566065011"
+      },
+      {
+        "position": 2,
+        "name": "Buy More, Save More",
+        "rh": "p_n_deal_type:210906365011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_deal_type%3A210906365011&dc&qid=1794276948&rnid=23566063011&ref=sr_nr_p_n_deal_type_2&ds=v1%3AvIN7P0cPObFcQHrFi%2BFa1RjUH8Lvu6I3erV3oX%2FQiEw",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_deal_type%3A210906365011"
+      },
+      {
+        "position": 3,
+        "name": "Coupons",
+        "rh": "p_n_deal_type:210906366011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_deal_type%3A210906366011&dc&qid=1794276948&rnid=23566063011&ref=sr_nr_p_n_deal_type_3&ds=v1%3A6NFERaUHhp4ECZd%2BxjquAoBErNFHIjj5kKWzyjvhoxs",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_deal_type%3A210906366011"
+      }
+    ],
+    "all_top_brands": [
+      {
+        "position": 1,
+        "name": "Top Brands",
+        "rh": "p_n_g-101014971069111:119653281011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_g-101014971069111%3A119653281011&dc&qid=1794276948&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3A8OlI0iGetPlQvvREGP7Li4%2F87rR4ML4hcbcCnXHq9%2BE",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_g-101014971069111%3A119653281011"
+      }
+    ],
+    "reusability": [
+      {
+        "position": 1,
+        "name": "Rechargeable",
+        "rh": "p_n_g-1003247105111:23876358011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_g-1003247105111%3A23876358011&dc&qid=1794276948&rnid=23876347011&ref=sr_nr_p_n_g-1003247105111_1&ds=v1%3Ax1mSDN%2FgOuTp2AhiExvNLejMJ%2B41%2Bt2i3CBs09ksrak",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_g-1003247105111%3A23876358011"
+      }
+    ],
+    "battery_quantity": [
+      {
+        "position": 1,
+        "name": "Up to 3 Batteries",
+        "rh": "p_n_g-1002806120111:23555310011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=p_n_g-1002806120111%3A23555310011&dc&qid=1794276948&rnid=23555274011&ref=sr_nr_p_n_g-1002806120111_1&ds=v1%3AYG0TlyWaVs4Ck9RIniPwPgxBpWyS9uwciebjmiH74T4",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=p_n_g-1002806120111%3A23555310011"
+      }
+    ],
+    "department": [
+      {
+        "position": 1,
+        "name": "Power Tools & Hand Tools",
+        "rh": "n:328182011",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=n%3A328182011&dc&qid=1794276948&rnid=2941120011&ref=sr_nr_n_1&ds=v1%3A4tuRbQ829XH0cjtMKNFPPSSP6Zdks%2FPpAfB%2F2wbvg14",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=n%3A328182011"
+      },
+      {
+        "position": 2,
+        "name": "Cordless Tool Battery Packs",
+        "rh": "n:552354",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=n%3A328182011%2Cn%3A552354&dc&qid=1794276948&rnid=2941120011&ref=sr_nr_n_2&ds=v1%3A1qum4EjOuAiOQtmbYkFqrEOkHMfRjBubzYZv7YytW74",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=n%3A328182011%2Cn%3A552354"
+      },
+      {
+        "position": 3,
+        "name": "Power Tools",
+        "rh": "n:551236",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=n%3A328182011%2Cn%3A551236&dc&qid=1794276948&rnid=2941120011&ref=sr_nr_n_3&ds=v1%3AFQhPjYWIca3Wc31HBChI8BFV%2FsZ5yYRQmKI9Fi7Orfs",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=n%3A328182011%2Cn%3A551236"
+      },
+      {
+        "position": 4,
+        "name": "Outdoor Power & Lawn Equipment",
+        "rh": "n:551242",
+        "link": "https://www.amazon.com/s?k=RYOBI+PBLRC01B&rh=n%3A551242&dc&qid=1794276948&rnid=2941120011&ref=sr_nr_n_4&ds=v1%3A1q%2FZsZmD9Fh54Jmq5aDBxl5K0GxKRYuj6NGZ0hgiWag",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&rh=n%3A551242"
+      }
+    ]
+  },
+  "serpapi_pagination": {
+    "current": 1,
+    "next": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBLRC01B&page=2"
+  }
+}
