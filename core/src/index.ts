@@ -15,3 +15,4 @@ export * from './serpapi/parsers';
 export * from './scan/types';
 export * from './scan/memoryStore';
 export * from './scan/classify';
+export * from './scan/runner';
