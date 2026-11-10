@@ -10,6 +10,45 @@
 
 **Spec:** `docs/v1-plan.md` (Architecture, acceptance criteria 1, 2, 3, 7, 8, 10; "Lean version 1"), `docs/design.md` and `docs/design/mockups/Settings.dc.html`, `docs/search-budget.md` ("In the extension"), `docs/orchestration.md`, `CLAUDE.md`.
 
+## Where this stands (paused 2026-11-10)
+
+Read this first when resuming. Branch `step-3-extension-shell`, 14 searches used this month,
+236 left. Nothing paid is pending.
+
+| Task | State |
+| --- | --- |
+| 1 Contracts | Done |
+| 2 Scaffold | Merged (reviewed by the controller only) |
+| 3 Runner: stop on request, one failed lookup set aside | Merged, reviewed |
+| 4 Settings logic and budget policy | Merged, reviewed, one fix applied |
+| 5a Storage | Merged, reviewed |
+| 5 Service worker | **In flight** when paused: `opus`, worktree branch `worktree-agent-a21ac45112d0ebffe`. If that branch has a commit `feat: service worker: scheduled and resumable scans within the budget`, cherry-pick it, verify, and send it to an `opus` reviewer. If it has none, dispatch the task again from its brief. |
+| 6 Settings page | Merged, code reviewed, one fix round applied. **Owed:** screenshots of every state at 1280px and 600px and a `ui-reviewer` pass against `docs/design/mockups/Settings.dc.html`. |
+| 7 End-to-end tests | Not started. Needs Task 5. Installing Playwright's Chromium is a one-time download. |
+| 8 Gate | Not started |
+
+Also in flight when paused, from step 2c (`docs/superpowers/plans/2026-11-10-step-2c-amazon-catalog.md`):
+the fix round for the Amazon catalog phase, `opus`, worktree branch
+`worktree-agent-ace44eab369d930f8`, expected commit `fix: catalog phase: cached pages keep
+their times; short codes are not guessed from titles`. Cherry-pick, verify, then a scoped
+`opus` re-review against the seven fixes listed in the step 2c ledger.
+
+Decisions made during execution that the tasks below do not show:
+
+- Saving settings never starts a scan: a changed schedule resets the reference time to now.
+- A scan whose searches-used count cannot be read spends nothing.
+- The settings page saves number and time fields on blur or Enter, and uses token colors only.
+  Open question for the owner: the mockup uses `#B9B6AD` (reserve meter) and `#1E3A8A` (link
+  hover), which `docs/design.md` does not list as tokens.
+- Stored settings are untrusted: the worker validates them and falls back to defaults per field.
+- The two project agents (`docs-checker`, `ui-reviewer`) did not load in the session that got
+  this far, because `.claude/agents/` was restored after it started. A new session should load them.
+- Finished agent worktrees under `.claude/worktrees/` are already cherry-picked onto the branch
+  and can be removed.
+
+After step 3: step 4 is the Home Depot page reader. Real page text for it is in
+`fixtures/homedepot-pages/bullets-2026-11-10.json`.
+
 ## Global Constraints
 
 - Only the controller runs a paid command. No task in this step needs one. Implementers and reviewers never run `npm run scan` without `--fixtures`, `npm run fixtures:record`, `npm run test:live` or `npm run budget`, and never read or print `SERPAPI_API_KEY` or `.env`.
