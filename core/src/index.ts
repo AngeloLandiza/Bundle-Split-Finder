@@ -15,6 +15,7 @@ export * from './serpapi/parsers';
 export * from './scan/types';
 export * from './scan/memoryStore';
 export * from './scan/classify';
+export * from './scan/listings';
 export * from './scan/runner';
 export * from './scan/report';
 export * from './scan/csv';

@@ -1,0 +1,55 @@
+// Amazon listings the tool has seen, saved so a part can later be matched without a search.
+//
+// Model numbers are read from titles only to index the saved listings. Whether a listing
+// is the part is still decided by pick() and grade() in match.ts, with hasModelToken as
+// the test for "same model": nothing here makes a match on weaker evidence.
+
+import { type Candidate, hasModelToken } from '../match';
+import type { ListingRecord } from './types';
+
+// A model must not touch another letter or digit on either side. Titles are upper-cased first.
+const MODEL_PATTERNS: Record<string, RegExp> = {
+  // A P, up to five letters, two to four digits, then letters or digits: PBLRC25B, PCL430B, PSK006, P1819.
+  RYOBI: /(?<![A-Z0-9])P[A-Z]{0,5}[0-9]{2,4}[A-Z0-9]*(?![A-Z0-9])/g,
+  // DC, one to three letters, three or four digits, then letters or digits, with an optional
+  // "-" and one digit: DCK240C2, DCS334B, DCB205-2, DCC020IB.
+  DEWALT: /(?<![A-Z0-9])DC[A-Z]{1,3}[0-9]{3,4}[A-Z0-9]*(?:-[0-9])?(?![A-Z0-9])/g,
+};
+
+const upper = (s: string): string => s.trim().toUpperCase();
+
+/** Model numbers in a title, as whole tokens, upper case, in order, without repeats. */
+export function modelsInTitle(brand: string, title: string): string[] {
+  const pattern = MODEL_PATTERNS[upper(brand)];
+  if (!pattern) return [];
+  return [...new Set(Array.from(title.toUpperCase().matchAll(pattern), (m) => m[0]))];
+}
+
+/** The record to save for a search row, or null when its brand is not one of `brands`. `old` is the stored record, if any. */
+export function listingFrom(c: Candidate, brands: string[], now: number, old?: ListingRecord): ListingRecord | null {
+  if (!c.brand) return null;
+  const brand = upper(c.brand);
+  if (!brand || !brands.some((b) => upper(b) === brand)) return null;
+  const price = c.price ?? null;
+  return {
+    asin: c.asin,
+    brand,
+    title: c.title,
+    models: modelsInTitle(brand, c.title),
+    // A row with no picture keeps the one saved before.
+    image: c.image ?? old?.image ?? null,
+    // A row with no price keeps the last price seen, and when it was seen.
+    price: price ?? old?.price ?? null,
+    reviews: c.reviews ?? null,
+    seenAt: price === null ? (old?.seenAt ?? null) : now,
+    checkedAt: now,
+  };
+}
+
+/** Saved listings of this brand whose title carries this model as a whole token, as candidates for pick(). */
+export function candidatesFor(brand: string, model: string, listings: ListingRecord[]): Candidate[] {
+  const want = upper(brand);
+  return listings
+    .filter((l) => upper(l.brand) === want && hasModelToken(l.title, model))
+    .map((l) => ({ asin: l.asin, title: l.title, brand: l.brand, price: l.price, reviews: l.reviews, image: l.image }));
+}

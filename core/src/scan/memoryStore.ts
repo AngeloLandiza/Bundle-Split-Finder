@@ -1,7 +1,7 @@
 // A ScanStore that lives in memory. Records are copied on the way in and on the way
 // out, so neither the caller's object nor a returned one aliases what is stored.
 
-import type { BundleRecord, CatalogRecord, MatchRecord, PriceRecord, ReviewItem, ScanJob, ScanStore } from './types';
+import type { BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PriceRecord, ReviewItem, ScanJob, ScanStore } from './types';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
   const x = key(a);
@@ -14,6 +14,8 @@ export class MemoryScanStore implements ScanStore {
   private readonly catalog = new Map<string, CatalogRecord>();
   private readonly matches = new Map<string, MatchRecord>();
   private readonly prices = new Map<string, PriceRecord>();
+  private readonly listings = new Map<string, ListingRecord>();
+  private readonly cursors = new Map<string, CatalogCursor>();
   private readonly reviews = new Map<string, ReviewItem>();
   private readonly scans = new Map<string, ScanJob>();
 
@@ -61,6 +63,23 @@ export class MemoryScanStore implements ScanStore {
   }
   async putPrice(record: PriceRecord) {
     this.prices.set(record.asin, structuredClone(record));
+  }
+
+  async getListing(asin: string) {
+    return this.get(this.listings, asin);
+  }
+  async putListing(record: ListingRecord) {
+    this.listings.set(record.asin, structuredClone(record));
+  }
+  async listListings() {
+    return this.list(this.listings, byKey((r) => r.asin));
+  }
+
+  async getCursor(brand: string) {
+    return this.get(this.cursors, brand);
+  }
+  async putCursor(cursor: CatalogCursor) {
+    this.cursors.set(cursor.brand, structuredClone(cursor));
   }
 
   async getReview(id: string) {

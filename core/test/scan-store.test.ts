@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { MemoryScanStore } from '../src/scan/memoryStore';
-import type { BundleRecord, CatalogRecord, MatchRecord, PriceRecord, ReviewItem, ScanJob } from '../src/scan/types';
+import type { BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PriceRecord, ReviewItem, ScanJob } from '../src/scan/types';
 
 const bundle = (itemId: string, over: Partial<BundleRecord> = {}): BundleRecord => ({
   key: `homedepot:${itemId}`,
@@ -48,6 +48,21 @@ const match = (model = 'PBLRC25B', over: Partial<MatchRecord> = {}): MatchRecord
 
 const price = (asin: string, over: Partial<PriceRecord> = {}): PriceRecord => ({ asin, price: 20, reviews: 5, seenAt: 1, checkedAt: 1, ...over });
 
+const listing = (asin: string, over: Partial<ListingRecord> = {}): ListingRecord => ({
+  asin,
+  brand: 'RYOBI',
+  title: 'ONEAND HP 18V BRUSHLESS Cordless 3/8 in. Extended Reach Ratchet Tool ONLY PBLRC25B',
+  models: ['PBLRC25B'],
+  image: 'https://m.media-amazon.com/images/I/a.jpg',
+  price: 169,
+  reviews: 221,
+  seenAt: 1,
+  checkedAt: 1,
+  ...over,
+});
+
+const cursor = (brand: string, over: Partial<CatalogCursor> = {}): CatalogCursor => ({ brand, nextPage: 2, passes: 0, updatedAt: 1, ...over });
+
 const review = (id: string, over: Partial<ReviewItem> = {}): ReviewItem => ({
   id,
   kind: 'match',
@@ -74,7 +89,10 @@ const scan = (startedAt: number, over: Partial<ScanJob> = {}): ScanJob => ({
   queue: [],
   deferred: [],
   searchesUsed: 0,
-  counts: { pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0 },
+  counts: {
+    pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
+    catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0,
+  },
   ...over,
 });
 
@@ -124,6 +142,29 @@ describe('MemoryScanStore round trips', () => {
     expect(await s.getPrice('B0NOPE0000')).toBeUndefined();
   });
 
+  it('listings: put, get, replace, missing', async () => {
+    const s = new MemoryScanStore();
+    const a = listing('B0B3JWF5ZV');
+    await s.putListing(a);
+    expect(await s.getListing(a.asin)).toEqual(a);
+    const b = listing('B0B3JWF5ZV', { price: null, image: null, models: [], checkedAt: 2 });
+    await s.putListing(b);
+    expect(await s.getListing(a.asin)).toEqual(b);
+    expect(await s.listListings()).toEqual([b]);
+    expect(await s.getListing('B0NOPE0000')).toBeUndefined();
+  });
+
+  it('cursors: put, get, replace, missing', async () => {
+    const s = new MemoryScanStore();
+    const a = cursor('DEWALT');
+    await s.putCursor(a);
+    expect(await s.getCursor('DEWALT')).toEqual(a);
+    const b = cursor('DEWALT', { nextPage: 1, passes: 1, updatedAt: 2 });
+    await s.putCursor(b);
+    expect(await s.getCursor('DEWALT')).toEqual(b);
+    expect(await s.getCursor('RYOBI')).toBeUndefined();
+  });
+
   it('review items: put, get, replace, missing', async () => {
     const s = new MemoryScanStore();
     const a = review('match:RYOBI:PBLRC25B');
@@ -163,6 +204,22 @@ describe('MemoryScanStore isolation and order', () => {
     expect((await store.getMatch(m.key))!.alternatives).toEqual([]);
   });
 
+  it('returns copies of listings and cursors', async () => {
+    const store = new MemoryScanStore();
+    const l = listing('B0B3JWF5ZV');
+    await store.putListing(l);
+    (await store.getListing(l.asin))!.models.push('CHANGED1');
+    l.models.push('CHANGED2');
+    (await store.listListings())[0]!.models.push('CHANGED3');
+    expect((await store.getListing(l.asin))!.models).toEqual(['PBLRC25B']);
+
+    const c = cursor('DEWALT');
+    await store.putCursor(c);
+    (await store.getCursor('DEWALT'))!.nextPage = 9;
+    c.passes = 9;
+    expect(await store.getCursor('DEWALT')).toEqual(cursor('DEWALT'));
+  });
+
   it('lists by key ascending, and scans newest first', async () => {
     const s = new MemoryScanStore();
     for (const id of ['b', 'a', 'c']) {
@@ -175,6 +232,8 @@ describe('MemoryScanStore isolation and order', () => {
     expect((await s.listCatalog()).map((r) => r.model)).toEqual(['A', 'B', 'C']);
     expect((await s.listMatches()).map((r) => r.model)).toEqual(['A', 'B', 'C']);
     expect((await s.listReview()).map((r) => r.id)).toEqual(['match:a', 'match:b', 'match:c']);
+    for (const asin of ['B0B6Z2ZGVK', 'B00IJ0ALYS', 'B0B3JWF5ZV']) await s.putListing(listing(asin));
+    expect((await s.listListings()).map((r) => r.asin)).toEqual(['B00IJ0ALYS', 'B0B3JWF5ZV', 'B0B6Z2ZGVK']);
     for (const t of [1, 3, 2]) await s.putScan(scan(t));
     expect((await s.listScans()).map((j) => j.startedAt)).toEqual([3, 2, 1]);
   });

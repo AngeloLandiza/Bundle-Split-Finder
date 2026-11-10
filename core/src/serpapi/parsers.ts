@@ -74,9 +74,16 @@ export function parseAmazonSearch(json: unknown): Candidate[] {
       price: num(r.extracted_price) ?? num(r.price),
       reviews: num(r.reviews),
       sponsored: r.sponsored === true,
+      image: str(r.thumbnail),
     });
   }
   return out;
+}
+
+/** True when the response links a next page (serpapi_pagination.next). */
+export function amazonHasNextPage(json: unknown): boolean {
+  const next = obj(obj(json).serpapi_pagination).next;
+  return typeof next === 'string' && next.length > 0;
 }
 
 // ---------------------------------------------------------------- Amazon product (engine=amazon_product)

@@ -90,7 +90,19 @@ describe('runScan: the founder\'s bundle (test A)', () => {
     const w = world();
     const job = await scan(w, { settings: RATCHET, policy: { reserve: 0, maxPerRun: 10 } });
     expect(job).toMatchObject({ id: String(T0), startedAt: T0, finishedAt: T0, status: 'done', stopReason: null, stopMessage: null, phase: 'finish', searchesUsed: 3, queue: [], deferred: [] });
-    expect(job.counts).toEqual({ pagesFetched: 1, productsSeen: 18, bundlesSeen: 8, bundlesResolved: 2, reviewsOpened: 6, lookupsDone: 2, refreshesDone: 0, partsMatched: 2 });
+    expect(job.counts).toEqual({
+      pagesFetched: 1, productsSeen: 18, bundlesSeen: 8, bundlesResolved: 2, reviewsOpened: 6, lookupsDone: 2, refreshesDone: 0, partsMatched: 2,
+      catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0,
+    });
+    // Every RYOBI row of both lookups is saved: 41 + 9 rows, 44 ASINs. Rows with no brand or
+    // with brand "Amazon Renewed" are not.
+    const listings = await w.store.listListings();
+    expect(listings).toHaveLength(44);
+    expect(listings.every((l) => l.brand === 'RYOBI')).toBe(true);
+    expect(await w.store.getListing('B0B3JWF5ZV')).toMatchObject({
+      brand: 'RYOBI', title: 'ONEAND HP 18V BRUSHLESS Cordless 3/8 in. Extended Reach Ratchet Tool ONLY PBLRC25B', models: ['PBLRC25B'],
+      image: expect.stringMatching(/^https:\/\//), price: 169, reviews: 221, seenAt: T0, checkedAt: T0,
+    });
     // PBLRC25B is in two bundles (328814689 and 318045287): one lookup, not two.
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B]);
     expect(w.ledger).toEqual(['scan:listing:ryobi extended reach ratchet:p1', 'scan:lookup:PBLRC01B', 'scan:lookup:PBLRC25B']);
@@ -129,7 +141,11 @@ describe('runScan: a page of kits and unresolved bundles (test B)', () => {
     const w = world();
     const job = await scan(w, { settings: { ...DEFAULT_SCAN_SETTINGS, queries: [{ q: 'dewalt 20v combo kit' }] } });
     expect(job).toMatchObject({ status: 'done', stopReason: null, searchesUsed: 1, queue: [], deferred: [] });
-    expect(job.counts).toEqual({ pagesFetched: 1, productsSeen: 24, bundlesSeen: 4, bundlesResolved: 0, reviewsOpened: 4, lookupsDone: 0, refreshesDone: 0, partsMatched: 0 });
+    expect(job.counts).toEqual({
+      pagesFetched: 1, productsSeen: 24, bundlesSeen: 4, bundlesResolved: 0, reviewsOpened: 4, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
+      catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0,
+    });
+    expect(await w.store.listListings()).toEqual([]);
     expect(await w.store.listCatalog()).toHaveLength(20);
     expect((await w.store.listReview()).map((r) => r.id)).toEqual([
       'split:homedepot:337440459', 'split:homedepot:337440461', 'split:homedepot:343992132', 'split:homedepot:343992133',
@@ -151,7 +167,8 @@ describe('runScan: the three limits (tests C and D)', () => {
     w.clock = T0 + 10 * MINUTE;
     const second = await scan(w, { policy: { reserve: 0, maxPerRun: 10 } });
     expect(second).toMatchObject({ id: String(T0 + 10 * MINUTE), status: 'done', stopReason: null, searchesUsed: 1, deferred: [] });
-    expect(second.counts).toMatchObject({ pagesFetched: 1, lookupsDone: 1, partsMatched: 1, reviewsOpened: 0 });
+    // Only the PBLRC25B lookup ran: its 9 RYOBI rows.
+    expect(second.counts).toMatchObject({ pagesFetched: 1, lookupsDone: 1, partsMatched: 1, reviewsOpened: 0, catalogPages: 0, listingsSaved: 9, partsFromCatalog: 0 });
     // The listing page came from the cache.
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B]);
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', waitingSince: null });
@@ -190,6 +207,9 @@ describe('runScan: an interruption is continued without paying twice (test E)', 
     const [saved] = await w.store.listScans();
     expect(saved).toMatchObject({ id: String(T0), status: 'running', phase: 'parts', searchesUsed: 1, finishedAt: null });
     expect(saved!.counts.lookupsDone).toBe(0);
+    expect(saved!.counts.listingsSaved).toBe(0);
+    // Rule 3: the rows of the PBLRC01B response were saved before the job save was attempted.
+    expect(await w.store.listListings()).toHaveLength(41);
     expect(saved!.queue).toEqual([
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' },
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' },
@@ -207,7 +227,13 @@ describe('runScan: an interruption is continued without paying twice (test E)', 
     expect(w.ledger).toHaveLength(3);
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B]);
     expect(new Set(w.replay.calls).size).toBe(3);
-    expect(job.counts).toEqual({ pagesFetched: 1, productsSeen: 18, bundlesSeen: 8, bundlesResolved: 2, reviewsOpened: 6, lookupsDone: 2, refreshesDone: 0, partsMatched: 2 });
+    // The PBLRC01B rows were saved before the interruption and are saved again from the cache:
+    // the continued job counts the rows it saved, 41 + 9.
+    expect(job.counts).toEqual({
+      pagesFetched: 1, productsSeen: 18, bundlesSeen: 8, bundlesResolved: 2, reviewsOpened: 6, lookupsDone: 2, refreshesDone: 0, partsMatched: 2,
+      catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0,
+    });
+    expect(await w.store.listListings()).toHaveLength(44);
     expect(await w.store.listScans()).toHaveLength(1);
     expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'matched', asin: 'B0B6Z2ZGVK' });
   });
@@ -221,7 +247,7 @@ describe('runScan: an interruption is continued without paying twice (test E)', 
     w.clock = T0 + 120 * MINUTE;
     const job = await scan(w);
     expect(job).toMatchObject({ id: String(T0), status: 'done', searchesUsed: 2 });
-    expect(job.counts).toMatchObject({ pagesFetched: 1, bundlesResolved: 2, lookupsDone: 2 });
+    expect(job.counts).toMatchObject({ pagesFetched: 1, bundlesResolved: 2, lookupsDone: 2, catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0 });
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B]);
   });
 
@@ -251,7 +277,8 @@ describe('runScan: an interruption is continued without paying twice (test E)', 
     const w = world();
     await w.store.putScan({
       id: '1', startedAt: T0 - MINUTE, finishedAt: null, status: 'running', stopReason: null, stopMessage: null,
-      phase: 'parts', queue: [], deferred: [], searchesUsed: 4, counts: { pagesFetched: 1, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 3, refreshesDone: 0, partsMatched: 0 },
+      phase: 'parts', queue: [], deferred: [], searchesUsed: 4,
+      counts: { pagesFetched: 1, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 3, refreshesDone: 0, partsMatched: 0, catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0 },
     });
     const job = await scan(w);
     expect(job).toMatchObject({ id: '1', status: 'done', phase: 'finish', searchesUsed: 4, finishedAt: T0 });
@@ -267,7 +294,7 @@ describe('runScan: time (tests F and G)', () => {
     w.clock = T0 + DAY;
     const job = await scan(w);
     expect(job).toMatchObject({ status: 'done', searchesUsed: 1 });
-    expect(job.counts).toMatchObject({ pagesFetched: 1, lookupsDone: 0, refreshesDone: 0, reviewsOpened: 0, bundlesResolved: 2 });
+    expect(job.counts).toMatchObject({ pagesFetched: 1, lookupsDone: 0, refreshesDone: 0, reviewsOpened: 0, bundlesResolved: 2, catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0 });
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B, LISTING]);
     expect(w.ledger.slice(3)).toEqual(['scan:listing:ryobi extended reach ratchet:p1']);
     expect(await w.store.getBundle('homedepot:328814689')).toMatchObject({ seenAt: T0 + DAY, split: { status: 'resolved' } });
@@ -280,7 +307,10 @@ describe('runScan: time (tests F and G)', () => {
     w.clock = later;
     const job = await scan(w);
     expect(job).toMatchObject({ status: 'done', searchesUsed: 3, deferred: [] });
-    expect(job.counts).toMatchObject({ lookupsDone: 0, refreshesDone: 2, partsMatched: 0 });
+    // A refresh saves every row of its response, as a lookup does: 41 + 9 rows again.
+    expect(job.counts).toMatchObject({ lookupsDone: 0, refreshesDone: 2, partsMatched: 0, catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0 });
+    expect(await w.store.listListings()).toHaveLength(44);
+    expect(await w.store.getListing('B0B3JWF5ZV')).toMatchObject({ price: 169, seenAt: later, checkedAt: later });
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B, LISTING, LOOKUP_01B, LOOKUP_25B]);
     expect(w.ledger.slice(3)).toEqual(['scan:listing:ryobi extended reach ratchet:p1', 'scan:refresh:PBLRC01B', 'scan:refresh:PBLRC25B']);
     expect(await w.store.getPrice('B0B3JWF5ZV')).toEqual({ asin: 'B0B3JWF5ZV', price: 169, reviews: 221, seenAt: later, checkedAt: later });
@@ -334,7 +364,8 @@ describe('runScan: stopping on errors (test H)', () => {
       ['RYOBI:PBLRC01B', 'waiting', T0],
       ['RYOBI:PBLRC25B', 'waiting', T0],
     ]);
-    expect(job.counts).toMatchObject({ lookupsDone: 0, bundlesResolved: 2 });
+    expect(job.counts).toMatchObject({ lookupsDone: 0, bundlesResolved: 2, catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0 });
+    expect(await w.store.listListings()).toEqual([]);
   });
 
   it('an error on a listing page still splits what was fetched, with nothing left to spend', async () => {
@@ -349,7 +380,7 @@ describe('runScan: stopping on errors (test H)', () => {
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' },
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' },
     ]);
-    expect(job.counts).toMatchObject({ pagesFetched: 1, bundlesResolved: 2, reviewsOpened: 6, lookupsDone: 0 });
+    expect(job.counts).toMatchObject({ pagesFetched: 1, bundlesResolved: 2, reviewsOpened: 6, lookupsDone: 0, catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0 });
     expect(hd.failed).toHaveLength(1);
     expect(w.replay.calls).toEqual([LISTING]);
     expect((await w.store.listMatches()).map((m) => m.status)).toEqual(['waiting', 'waiting']);
@@ -363,7 +394,7 @@ describe('runScan: stopping on errors (test H)', () => {
     const job = await scan(w, { policy: { reserve: 0, maxPerRun: 0 } });
     expect(job).toMatchObject({ id: String(T0), status: 'stopped', stopReason: 'run_cap', stopMessage: null, searchesUsed: 1, queue: [] });
     expect(job.deferred).toEqual([{ kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' }]);
-    expect(job.counts).toMatchObject({ lookupsDone: 1, partsMatched: 1 });
+    expect(job.counts).toMatchObject({ lookupsDone: 1, partsMatched: 1, catalogPages: 0, listingsSaved: 41, partsFromCatalog: 0 });
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'waiting', waitingSince: T0 });
     expect((await w.store.listScans())[0]!.status).toBe('stopped');
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B]);
@@ -377,7 +408,7 @@ describe('runScan: brands, the user\'s decision, a listing that disappeared (tes
     const catalog = await w.store.listCatalog();
     expect(catalog).toHaveLength(7);
     expect(catalog.filter((c) => c.brand === 'DEWALT')).toEqual([]);
-    expect(job.counts).toMatchObject({ productsSeen: 16, bundlesSeen: 8 });
+    expect(job.counts).toMatchObject({ productsSeen: 16, bundlesSeen: 8, catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0 });
   });
 
   it('never changes a match the user decided, and never looks it up (test J)', async () => {
@@ -393,7 +424,8 @@ describe('runScan: brands, the user\'s decision, a listing that disappeared (tes
     // The user's listing has no price yet, so it is refreshed (rule 5); it is not in the
     // results, so the check is recorded and no price is invented.
     expect(w.ledger).toEqual(['scan:listing:ryobi extended reach ratchet:p1', 'scan:lookup:PBLRC01B', 'scan:refresh:PBLRC25B']);
-    expect(job.counts).toMatchObject({ lookupsDone: 1, refreshesDone: 1, partsMatched: 1 });
+    // The PBLRC01B lookup and the PBLRC25B refresh both save their rows: 41 + 9.
+    expect(job.counts).toMatchObject({ lookupsDone: 1, refreshesDone: 1, partsMatched: 1, catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0 });
     expect(await w.store.getPrice('B0USERPICK0')).toEqual({ asin: 'B0USERPICK0', price: null, reviews: null, seenAt: null, checkedAt: T0 });
   });
 
@@ -411,6 +443,8 @@ describe('runScan: brands, the user\'s decision, a listing that disappeared (tes
     // PBLRC25B is refused by the budget and deferred. Neither changes the user's match.
     const job = await scan(w, { policy: { reserve: 0, maxPerRun: 0 } });
     expect(job).toMatchObject({ status: 'stopped', stopReason: 'run_cap' });
+    // The lookup skipped for the user's decision still saves the rows of its response.
+    expect(job.counts).toMatchObject({ lookupsDone: 1, partsMatched: 0, catalogPages: 0, listingsSaved: 41, partsFromCatalog: 0 });
     expect(await w.store.getMatch('RYOBI:PBLRC01B')).toEqual(user('PBLRC01B', 'B0USERPICK1'));
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toEqual(user('PBLRC25B', 'B0USERPICK2'));
   });
@@ -428,7 +462,7 @@ describe('runScan: brands, the user\'s decision, a listing that disappeared (tes
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B]);
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toEqual(decided);
     expect(job).toMatchObject({ status: 'done', searchesUsed: 2, deferred: [] });
-    expect(job.counts).toMatchObject({ lookupsDone: 1, refreshesDone: 0 });
+    expect(job.counts).toMatchObject({ lookupsDone: 1, refreshesDone: 0, catalogPages: 0, listingsSaved: 41, partsFromCatalog: 0 });
   });
 
   it('never erases a stored barcode with a search row (test L)', async () => {
@@ -468,7 +502,7 @@ describe('runScan: brands, the user\'s decision, a listing that disappeared (tes
 
     const job = await scan(w);
     expect(job).toMatchObject({ status: 'done', searchesUsed: 2 });
-    expect(job.counts).toMatchObject({ lookupsDone: 0, refreshesDone: 1 });
+    expect(job.counts).toMatchObject({ lookupsDone: 0, refreshesDone: 1, catalogPages: 0, listingsSaved: 9, partsFromCatalog: 0 });
     expect(w.ledger).toEqual(['scan:listing:ryobi extended reach ratchet:p1', 'scan:refresh:PBLRC25B']);
     expect(await w.store.getPrice('B0GONE00000')).toEqual({ asin: 'B0GONE00000', price: 150, reviews: 5, seenAt: T0, checkedAt: later });
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toEqual(gone);
@@ -546,7 +580,7 @@ describe('runScan: a lookup with no certain listing (rule 6)', () => {
   // ("Gearcase for DeWalt DCF891N, DCF891B") whose brand Amazon does not confirm.
   const [bundleModel, bundleTitle] = fx.HD_DEWALT_BUNDLES[0]!;
 
-  async function dewaltWorld(keep: (row: { asin: string; title: string }) => boolean) {
+  async function dewaltWorld(keep: (row: { asin: string; title: string }) => boolean, settings: ScanSettings = { ...DEFAULT_SCAN_SETTINGS, queries: [] }) {
     const w = world();
     await w.store.putBundle({
       key: 'homedepot:seeded', retailer: 'homedepot', itemId: 'seeded', title: bundleTitle, brand: 'DEWALT', model: bundleModel,
@@ -565,14 +599,15 @@ describe('runScan: a lookup with no certain listing (rule 6)', () => {
     const response = { ...data, organic_results: data.organic_results.filter(keep) };
     const fetchFn = (async (input: string | URL | Request) =>
       String(input).includes('k=DEWALT+DCF891B') ? new Response(JSON.stringify(response), { status: 200 }) : w.replay.fetchFn(input)) as typeof fetch;
-    const job = await scan(w, { settings: { ...DEFAULT_SCAN_SETTINGS, queries: [] }, fetchFn });
+    const job = await scan(w, { settings, fetchFn });
     return { w, job };
   }
 
   it('opens a review item when only unconfirmed listings show the model number', async () => {
     const { w, job } = await dewaltWorld((row) => row.asin !== 'B09YXXFPBJ');
     expect(job).toMatchObject({ status: 'done', searchesUsed: 1 });
-    expect(job.counts).toMatchObject({ pagesFetched: 0, bundlesResolved: 1, lookupsDone: 1, partsMatched: 0, reviewsOpened: 1 });
+    // The 33 DEWALT rows left in the response are saved; the review candidates are rows with no brand.
+    expect(job.counts).toMatchObject({ pagesFetched: 0, bundlesResolved: 1, lookupsDone: 1, partsMatched: 0, reviewsOpened: 1, catalogPages: 0, listingsSaved: 33, partsFromCatalog: 0 });
     expect(await w.store.getMatch('DEWALT:DCF891B')).toMatchObject({ status: 'review', asin: null, grade: null, alternatives: [], decidedBy: 'auto' });
     const item = await w.store.getReview('match:DEWALT:DCF891B');
     expect(item).toMatchObject({
@@ -590,16 +625,30 @@ describe('runScan: a lookup with no certain listing (rule 6)', () => {
 
   it('records "none" when no listing shows the model number', async () => {
     const { w, job } = await dewaltWorld((row) => !row.title.includes('DCF891'));
-    expect(job.counts).toMatchObject({ lookupsDone: 1, partsMatched: 0, reviewsOpened: 0 });
+    expect(job.counts).toMatchObject({ lookupsDone: 1, partsMatched: 0, reviewsOpened: 0, catalogPages: 0, listingsSaved: 32, partsFromCatalog: 0 });
     expect(await w.store.getMatch('DEWALT:DCF891B')).toMatchObject({ status: 'none', asin: null, grade: null });
     expect(await w.store.listReview()).toEqual([]);
   });
 
   it('matches the confirmed listing when the full recorded response is answered', async () => {
     const { w, job } = await dewaltWorld(() => true);
-    expect(job.counts).toMatchObject({ lookupsDone: 1, partsMatched: 1, reviewsOpened: 0 });
+    expect(job.counts).toMatchObject({ lookupsDone: 1, partsMatched: 1, reviewsOpened: 0, catalogPages: 0, listingsSaved: 34, partsFromCatalog: 0 });
     expect(await w.store.getMatch('DEWALT:DCF891B')).toMatchObject({ status: 'matched', asin: 'B09YXXFPBJ', grade: 'probable', alternatives: [] });
     expect(await w.store.getPrice('B09YXXFPBJ')).toEqual({ asin: 'B09YXXFPBJ', price: 185.73, reviews: 2200, seenAt: T0, checkedAt: T0 });
+    // 34 DEWALT rows; the 25 rows with no brand and the Amazon Renewed row are not saved.
+    const listings = await w.store.listListings();
+    expect(listings).toHaveLength(34);
+    expect(listings.every((l) => l.brand === 'DEWALT')).toBe(true);
+    // The aftermarket gearcase has no brand on Amazon, so it is not saved, whatever its title says.
+    expect(await w.store.getListing('B0HQGDLWH9')).toBeUndefined();
+  });
+
+  it('saves only rows of the brands in the settings', async () => {
+    const { w, job } = await dewaltWorld(() => true, { ...DEFAULT_SCAN_SETTINGS, brands: ['RYOBI'], queries: [] });
+    // The seeded DEWALT bundle is still split and looked up; its DEWALT rows are not saved.
+    expect(job.counts).toMatchObject({ lookupsDone: 1, partsMatched: 1, listingsSaved: 0 });
+    expect(await w.store.listListings()).toEqual([]);
+    expect(await w.store.getMatch('DEWALT:DCF891B')).toMatchObject({ status: 'matched', asin: 'B09YXXFPBJ' });
   });
 });
 

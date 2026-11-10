@@ -35,6 +35,7 @@ export interface Candidate {
   price?: number | null;
   reviews?: number | null;
   sponsored?: boolean;
+  image?: string | null;
 }
 
 export interface Graded {

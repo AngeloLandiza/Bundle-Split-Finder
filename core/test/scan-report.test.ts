@@ -58,6 +58,33 @@ describe('buildReport', () => {
     expect(report.review).toHaveLength(6);
   });
 
+  it("shows the picture of each part's saved listing", async () => {
+    const store = await scanWorld();
+    const report = await buildReport(store, RATCHET);
+    const parts = report.bundles[0]!.parts;
+    expect(parts.map((p) => p.asin)).toEqual(['B0B3JWF5ZV', 'B0B6Z2ZGVK']);
+    for (const p of parts) {
+      expect(p.image).toEqual(expect.any(String));
+      expect(p.image!.length).toBeGreaterThan(0);
+      expect(p.image).toBe((await store.getListing(p.asin!))!.image);
+    }
+  });
+
+  it('gives a part no picture when its listing is not saved, or it has no listing', async () => {
+    const report = await buildReport(await scanWorld({ reserve: 0, maxPerRun: 2 }), RATCHET);
+    const first = report.bundles.find((b) => b.model === 'PBLRC2501SB')!;
+    expect(first.parts.find((p) => p.model === 'PBLRC25B')).toMatchObject({ asin: null, image: null });
+    // A matched ASIN that no saved listing holds.
+    const store = new MemoryScanStore();
+    await store.putBundle({
+      key: bundleKey('1'), retailer: 'homedepot', itemId: '1', title: 'T', brand: 'RYOBI', model: 'A', upc: null,
+      price: 100, regularPrice: 200, percentOff: 50, link: null, seenAt: T0,
+      split: { components: ['A'], status: 'resolved', notes: [] },
+    });
+    await store.putMatch({ key: partKey('RYOBI', 'A'), brand: 'RYOBI', model: 'A', status: 'matched', asin: 'B000000001', grade: 'probable', alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null });
+    expect((await buildReport(store, RATCHET)).bundles[0]!.parts[0]).toMatchObject({ asin: 'B000000001', image: null });
+  });
+
   it('calls a bundle partial when a part has no priced listing', async () => {
     const store = await scanWorld({ reserve: 0, maxPerRun: 2 });
     const report = await buildReport(store, RATCHET);

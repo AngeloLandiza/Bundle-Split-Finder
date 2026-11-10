@@ -23,6 +23,7 @@ async function partRows(store: ScanStore, brand: string, components: string[]): 
   for (const model of Object.keys(counts)) {
     const match = await store.getMatch(partKey(brand, model));
     const price = match?.asin ? await store.getPrice(match.asin) : undefined;
+    const listing = match?.asin ? await store.getListing(match.asin) : undefined;
     let availability: PartAvailability = 'missing';
     if (match?.status === 'matched' && match.asin !== null) {
       availability = price !== undefined && price.price !== null && price.seenAt === price.checkedAt ? 'active' : 'inactive';
@@ -36,6 +37,7 @@ async function partRows(store: ScanStore, brand: string, components: string[]): 
       grade: match?.grade ?? null,
       price: price?.price ?? null,
       priceSeenAt: price?.seenAt ?? null,
+      image: listing?.image ?? null,
     });
   }
   return rows;

@@ -51,6 +51,10 @@ export interface ScanSettings {
   /** Value of a part with no listing, as a share of the bundle's per-part cost. */
   liquidationRate: number;
   amazonDomain: string;
+  /** Pages of a brand's own Amazon listings to save at the start of a scan (about 48 listings each). 0 turns the phase off. */
+  catalogPagesPerScan: number;
+  /** Amazon's brand filter per brand, sent as `rh`. Read from recorded responses. */
+  brandFilters: Record<string, string>;
 }
 
 const HOUR = 60 * 60 * 1000;
@@ -65,6 +69,8 @@ export const DEFAULT_SCAN_SETTINGS: ScanSettings = {
   fees: DEFAULT_FEES,
   liquidationRate: 0,
   amazonDomain: 'amazon.com',
+  catalogPagesPerScan: 1,
+  brandFilters: { DEWALT: 'p_123:195991', RYOBI: 'p_123:252605' },
 };
 
 // ---------------------------------------------------------------- records
@@ -141,6 +147,37 @@ export interface PriceRecord {
   checkedAt: number;
 }
 
+/**
+ * One Amazon listing the tool has seen, saved so parts can be matched without a search.
+ * Only listings whose brand field is one of the scanned brands are saved.
+ */
+export interface ListingRecord {
+  asin: string;
+  /** Upper case, exactly as Amazon's brand field gives it. */
+  brand: string;
+  title: string;
+  /** Model numbers found in the title as whole tokens, upper case. Empty when the title carries none. */
+  models: string[];
+  /** Picture URL from the search result; null when there was none. */
+  image: string | null;
+  price: number | null;
+  reviews: number | null;
+  /** When a response last showed this listing with a price; null if never. */
+  seenAt: number | null;
+  /** When a response last showed this listing at all. */
+  checkedAt: number;
+}
+
+/** How far the crawl of one brand's Amazon listings has got. It continues across scans. */
+export interface CatalogCursor {
+  brand: string;
+  /** The next page to read; back to 1 after the last page. */
+  nextPage: number;
+  /** Complete passes over the brand's listings so far. */
+  passes: number;
+  updatedAt: number;
+}
+
 export interface ReviewCandidate {
   asin: string;
   title: string;
@@ -171,6 +208,7 @@ export interface ReviewItem {
 // ---------------------------------------------------------------- the job
 
 export type ScanStep =
+  | { kind: 'catalog'; brand: string; page: number }
   | { kind: 'listing'; q: string; page: number; filterTokens: string | null; bundlesOnly: boolean }
   | { kind: 'lookup'; brand: string; model: string }
   | { kind: 'refresh'; brand: string; model: string; asin: string };
@@ -187,6 +225,12 @@ export interface ScanCounts {
   lookupsDone: number;
   refreshesDone: number;
   partsMatched: number;
+  /** Amazon brand pages read by the catalog phase. */
+  catalogPages: number;
+  /** Listing rows saved from any Amazon response (a row seen twice counts twice). */
+  listingsSaved: number;
+  /** Parts matched from saved listings, with no search. */
+  partsFromCatalog: number;
 }
 
 /**
@@ -205,7 +249,7 @@ export interface ScanJob {
   stopReason: StopReason | null;
   /** The error text when stopReason is "error" or "rate_limited". */
   stopMessage: string | null;
-  /** listing: fetching pages. parts: lookups then refreshes. finish: nothing paid is left. */
+  /** listing: Amazon catalog pages, then retailer pages. parts: lookups then refreshes. finish: nothing paid is left. */
   phase: 'listing' | 'parts' | 'finish';
   /** Paid steps still to run in this phase, in order. */
   queue: ScanStep[];
@@ -239,6 +283,14 @@ export interface ScanStore {
   getPrice(asin: string): Promise<PriceRecord | undefined>;
   putPrice(record: PriceRecord): Promise<void>;
 
+  getListing(asin: string): Promise<ListingRecord | undefined>;
+  putListing(record: ListingRecord): Promise<void>;
+  /** Sorted by asin ascending. */
+  listListings(): Promise<ListingRecord[]>;
+
+  getCursor(brand: string): Promise<CatalogCursor | undefined>;
+  putCursor(cursor: CatalogCursor): Promise<void>;
+
   getReview(id: string): Promise<ReviewItem | undefined>;
   putReview(item: ReviewItem): Promise<void>;
   listReview(): Promise<ReviewItem[]>;
@@ -268,6 +320,8 @@ export interface PartRow {
   grade: Grade | null;
   price: number | null;
   priceSeenAt: number | null;
+  /** Picture of the chosen listing, when it is among the saved listings. */
+  image: string | null;
 }
 
 /**

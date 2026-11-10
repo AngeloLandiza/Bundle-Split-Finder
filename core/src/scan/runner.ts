@@ -8,6 +8,7 @@ import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { looksLikeBundle, wantedFor } from './classify';
+import { listingFrom } from './listings';
 import { bundleKey, partKey } from './types';
 import type { BudgetView, MatchRecord, PriceRecord, ScanJob, ScanSettings, ScanStep, ScanStore, SearchClient, StopReason } from './types';
 
@@ -79,7 +80,10 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const job: ScanJob = {
     id: String(startedAt), startedAt, finishedAt: null, status: 'running', stopReason: null, stopMessage: null, phase: 'listing',
     queue: pages.slice(0, plan.hdPages), deferred: pages.slice(plan.hdPages), searchesUsed: 0,
-    counts: { pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0 },
+    counts: {
+      pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
+      catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0,
+    },
   };
   await store.putScan(job);
   return run(job);
@@ -104,7 +108,8 @@ async function runQueue(run: Run): Promise<void> {
     // Rule 3: the store first, then the job.
     if (step.kind === 'listing') await applyListing(run, step, result.data);
     else if (step.kind === 'lookup') await applyLookup(run, step, result.data);
-    else await applyRefresh(run, step, result.data);
+    else if (step.kind === 'refresh') await applyRefresh(run, step, result.data);
+    else throw new Error('catalog steps are not implemented yet');
     // searchesUsed counts the paid steps this job saved. A search in flight when the worker
     // was interrupted was paid (the ledger has it) but its step was never saved, so it is
     // not counted; the continued job answers that step from the cache, which is free.
@@ -148,6 +153,8 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
       { label: `${prefix}:listing:${step.q}:p${step.page}`, maxAgeMs: Math.max(settings.listingMaxAgeMs, run.now() - job.startedAt) },
     );
   }
+  // Nothing queues a catalog step yet; this keeps one from ever being sent.
+  if (step.kind === 'catalog') throw new Error('catalog steps are not implemented yet');
   const params = { engine: 'amazon', k: `${step.brand} ${step.model}`, amazon_domain: settings.amazonDomain };
   // No maxAgeMs on a lookup: a part is paid for once.
   if (step.kind === 'lookup') return run.client.search(params, { label: `${prefix}:lookup:${step.model}` });
@@ -195,9 +202,10 @@ async function applyLookup(run: Run, step: Lookup, data: unknown): Promise<void>
   const now = run.now();
   const key = partKey(step.brand, step.model);
   job.counts.lookupsDone += 1;
+  const candidates = parseAmazonSearch(data);
+  await saveListings(run, candidates, now);
   // A saved queue can outlive the plan: the user may have decided this part since.
   if ((await store.getMatch(key))?.decidedBy === 'user') return;
-  const candidates = parseAmazonSearch(data);
   const picked = pick(wantedFor(step.brand, step.model, run.catalog), candidates);
   const base = { key, brand: step.brand, model: step.model, decidedBy: 'auto' as const, updatedAt: now, waitingSince: null };
   let match: MatchRecord;
@@ -231,11 +239,26 @@ async function applyLookup(run: Run, step: Lookup, data: unknown): Promise<void>
 
 async function applyRefresh(run: Run, step: Refresh, data: unknown): Promise<void> {
   const { store } = run;
+  const now = run.now();
+  const candidates = parseAmazonSearch(data);
+  await saveListings(run, candidates, now);
   // A listing missing from the results keeps its old price; the check is still recorded,
   // so the part is not paid for again until it is stale once more.
-  const cand = firstWith(parseAmazonSearch(data), step.asin);
-  await store.putPrice(priceSeen(step.asin, await store.getPrice(step.asin), cand, run.now()));
+  const cand = firstWith(candidates, step.asin);
+  await store.putPrice(priceSeen(step.asin, await store.getPrice(step.asin), cand, now));
   run.job.counts.refreshesDone += 1;
+}
+
+/** Rules 6 and 7: every row of an Amazon response whose brand is scanned is saved as a listing. */
+async function saveListings(run: Run, candidates: Candidate[], now: number): Promise<void> {
+  const { store, settings, job } = run;
+  for (const c of candidates) {
+    const record = listingFrom(c, settings.brands, now, await store.getListing(c.asin));
+    if (record === null) continue;
+    await store.putListing(record);
+    // A row seen in two responses is counted twice; the store holds one record per ASIN.
+    job.counts.listingsSaved += 1;
+  }
 }
 
 /** A price record after a response was read: `cand` is the ASIN's row in it, if it was there. */
@@ -343,7 +366,11 @@ async function wantedParts(store: ScanStore, settings: ScanSettings, now: number
 
 /** Same kind, brand and model, and ASIN for a refresh, give the same id. */
 const stepId = (s: ScanStep): string =>
-  s.kind === 'listing' ? `listing:${s.q}:${s.filterTokens ?? ''}:${s.page}` : `${s.kind}:${s.brand}:${s.model}:${s.kind === 'refresh' ? s.asin : ''}`;
+  s.kind === 'listing'
+    ? `listing:${s.q}:${s.filterTokens ?? ''}:${s.page}`
+    : s.kind === 'catalog'
+      ? `catalog:${s.brand}:${s.page}`
+      : `${s.kind}:${s.brand}:${s.model}:${s.kind === 'refresh' ? s.asin : ''}`;
 
 async function planParts(run: Run): Promise<void> {
   const { job, budget } = run;
