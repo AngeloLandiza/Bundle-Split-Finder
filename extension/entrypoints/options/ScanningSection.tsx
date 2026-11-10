@@ -20,10 +20,12 @@ interface Props {
   draft: ExtensionSettings;
   problems: Problems;
   planPerMonth: number;
-  onChange(patch: Partial<ExtensionSettings>): void;
+  /** `commit` true means save now (radios); otherwise saving waits for onCommit. */
+  onChange(patch: Partial<ExtensionSettings>, commit?: boolean): void;
+  onCommit(): void;
 }
 
-export function ScanningSection({ draft, problems, planPerMonth, onChange }: Props) {
+export function ScanningSection({ draft, problems, planPerMonth, onChange, onCommit }: Props) {
   const [option, setOption] = useState<Option>(optionOf(draft.schedule));
   // Remembered so that switching between options does not lose what was typed.
   const [at, setAt] = useState(draft.schedule.mode === 'daily' ? draft.schedule.at : '07:00');
@@ -41,7 +43,7 @@ export function ScanningSection({ draft, problems, planPerMonth, onChange }: Pro
             : next === 'daily'
               ? { mode: 'daily', at }
               : { mode: 'interval', hours };
-    onChange({ schedule });
+    onChange({ schedule }, true);
   };
 
   const scheduleError = problems.schedule;
@@ -71,6 +73,10 @@ export function ScanningSection({ draft, problems, planPerMonth, onChange }: Pro
             value={option === 'daily' && draft.schedule.mode === 'daily' ? draft.schedule.at : at}
             aria-invalid={option === 'daily' && scheduleError ? true : undefined}
             aria-describedby={option === 'daily' && scheduleError ? 'error-schedule' : undefined}
+            onBlur={onCommit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onCommit();
+            }}
             onChange={(e) => {
               setAt(e.target.value);
               if (option !== 'daily') setOption('daily');
@@ -91,6 +97,7 @@ export function ScanningSection({ draft, problems, planPerMonth, onChange }: Pro
             value={draft.schedule.mode === 'interval' && option === 'every' ? draft.schedule.hours : hours}
             invalid={option === 'every' && Boolean(scheduleError)}
             describedBy={option === 'every' && scheduleError ? 'error-schedule' : undefined}
+            onCommit={onCommit}
             onChange={(h) => {
               setHours(h);
               if (option !== 'every') setOption('every');
@@ -116,6 +123,7 @@ export function ScanningSection({ draft, problems, planPerMonth, onChange }: Pro
           value={draft.searchesPerScan}
           invalid={Boolean(problems.searchesPerScan)}
           error={problems.searchesPerScan}
+          onCommit={onCommit}
           onChange={(v) => onChange({ searchesPerScan: v })}
         />
         <NumberField
@@ -127,6 +135,7 @@ export function ScanningSection({ draft, problems, planPerMonth, onChange }: Pro
           value={draft.reserve}
           invalid={Boolean(problems.reserve)}
           error={problems.reserve}
+          onCommit={onCommit}
           onChange={(v) => onChange({ reserve: v })}
         />
       </div>
@@ -139,7 +148,7 @@ export function ScanningSection({ draft, problems, planPerMonth, onChange }: Pro
 function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings; problems: Problems; planPerMonth: number }) {
   if (problems.schedule || problems.searchesPerScan || problems.reserve) {
     return (
-      <div className="forecast" data-testid="forecast">
+      <div className="forecast" role="status" data-testid="forecast">
         <span className="forecast-title">Fix the fields marked above to see what this schedule uses.</span>
       </div>
     );
@@ -150,7 +159,7 @@ function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings;
 
   if (schedule.mode === 'manual') {
     return (
-      <div className="forecast" data-testid="forecast">
+      <div className="forecast" role="status" data-testid="forecast">
         <span className="forecast-title">Scans run only when you click Scan now</span>
         <div className="forecast-note">
           Nothing is spent automatically. A scan you start can use up to <span className="figure small">{n(searchesPerScan)}</span>{' '}
@@ -166,7 +175,7 @@ function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings;
   const reservePct = planPerMonth > 0 ? Math.min(100 - scheduledPct, (reserve / planPerMonth) * 100) : 0;
 
   return (
-    <div className="forecast" data-testid="forecast" data-attention={f.fitsPlan ? undefined : 'true'}>
+    <div className="forecast" role="status" data-testid="forecast" data-attention={f.fitsPlan ? undefined : 'true'}>
       {f.fitsPlan ? (
         <div className="forecast-head">
           <span className="forecast-title">This fits your plan</span>
@@ -175,10 +184,16 @@ function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings;
           </span>
         </div>
       ) : (
-        <div className="forecast-title" role="alert">
+        <div className="forecast-title">
           This needs <span className="figure small">{n(f.searchesPerMonth)}</span> searches a month and your plan has{' '}
-          <span className="figure small">{n(usable)}</span> to spend. Use{' '}
-          <span className="figure small">{n(f.maxPerRunThatFits)}</span> per scan, or scan less often.
+          <span className="figure small">{n(usable)}</span> to spend.{' '}
+          {f.maxPerRunThatFits > 0 ? (
+            <>
+              Use <span className="figure small">{n(f.maxPerRunThatFits)}</span> per scan, or scan less often.
+            </>
+          ) : (
+            'Lower the reserve, or scan less often.'
+          )}
         </div>
       )}
       <div

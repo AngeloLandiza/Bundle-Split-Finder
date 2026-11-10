@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
+import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -89,7 +90,7 @@ describe('SerpApi key', () => {
     expect(keyLine().textContent).toBe('Key works. Free Plan · 212 of 250 searches left this month · 50 an hour');
     expect(send).toHaveBeenCalledWith({ type: 'checkKey', apiKey: 'abc123' });
     expect(keyField().value).toBe('');
-    expect(document.body.textContent).not.toContain('abc123');
+    expect(document.body.innerHTML).not.toContain('abc123');
   });
 
   it('key refused: shows the sentence the worker gave', async () => {
@@ -99,6 +100,7 @@ describe('SerpApi key', () => {
     await user.type(keyField(), 'nope');
     await user.click(screen.getByRole('button', { name: 'Check key' }));
     await waitFor(() => expect(keyLine().textContent).toBe('SerpApi did not accept this key.'));
+    expect(document.body.innerHTML).not.toContain('nope');
   });
 
   it('a saved key is never shown back; Remove key asks once', async () => {
@@ -164,6 +166,7 @@ describe('Scanning', () => {
     expect(saved()).toHaveLength(0);
     expect(screen.getByTestId('save-status').textContent).toContain('Not saved');
     await user.type(perScan, '7');
+    await user.tab();
     expect(perScan).not.toHaveAttribute('aria-invalid', 'true');
     await waitFor(() => expect(saved()).toHaveLength(1));
     expect((saved()[0] as { settings: ExtensionSettings }).settings.searchesPerScan).toBe(7);
@@ -183,5 +186,98 @@ describe('Your data', () => {
     expect(send).not.toHaveBeenCalledWith({ type: 'clearSavedSearches' });
     await user.click(screen.getByRole('button', { name: 'Yes, clear' }));
     expect(send).toHaveBeenCalledWith({ type: 'clearSavedSearches' });
+    await waitFor(() =>
+      expect(screen.getByTestId('data-status').textContent).toBe('Saved searches cleared. Matches and answers were kept.'),
+    );
+  });
+
+  it('an unreachable worker gives one plain sentence on clear', async () => {
+    const { user } = await open(stateWith(), {
+      clearSavedSearches: () => {
+        throw new Error('gone');
+      },
+    });
+    await user.click(screen.getByRole('button', { name: 'Clear saved searches' }));
+    await user.click(screen.getByRole('button', { name: 'Yes, clear' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('data-status').textContent).toBe(
+        'Could not reach the extension. Reload this page and try again.',
+      ),
+    );
+  });
+});
+
+describe('Saving waits for blur or Enter', () => {
+  it('typing 168 saves once, on blur, with hours 168', async () => {
+    const { user, saved } = await open(stateWith({}, { schedule: { mode: 'interval', hours: 24 } }));
+    const hours = screen.getByLabelText('Hours between scans');
+    await user.clear(hours);
+    await user.type(hours, '168');
+    expect(saved()).toHaveLength(0);
+    await user.tab();
+    await waitFor(() => expect(saved()).toHaveLength(1));
+    expect((saved()[0] as { settings: ExtensionSettings }).settings.schedule).toEqual({ mode: 'interval', hours: 168 });
+  });
+
+  it('Enter commits a number field', async () => {
+    const { user, saved } = await open(stateWith());
+    const perScan = screen.getByLabelText('Searches per scan, at most');
+    await user.clear(perScan);
+    await user.type(perScan, '9{Enter}');
+    await waitFor(() => expect(saved()).toHaveLength(1));
+  });
+
+  it('choosing a radio saves at once', async () => {
+    const { user, saved } = await open(stateWith());
+    await user.click(screen.getByRole('radio', { name: 'Every 12 hours' }));
+    await waitFor(() => expect(saved()).toHaveLength(1));
+    expect((saved()[0] as { settings: ExtensionSettings }).settings.schedule).toEqual({ mode: 'interval', hours: 12 });
+  });
+
+  it('the forecast follows every keystroke before anything is saved', async () => {
+    const { user, saved } = await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'daily', at: '07:00' } }));
+    const perScan = screen.getByLabelText('Searches per scan, at most');
+    await user.clear(perScan);
+    await user.type(perScan, '10');
+    expect(forecast().textContent).toContain('This needs 300 searches');
+    expect(saved()).toHaveLength(0);
+  });
+});
+
+describe('Confirmations', () => {
+  it.each([
+    ['Remove key', 'Yes, remove key', { hasKey: true, account: ACCOUNT }],
+    ['Clear saved searches', 'Yes, clear', {}],
+  ])('%s: Escape, Cancel and Yes return focus to the opener', async (opener, yes, over) => {
+    const { user } = await open(stateWith(over));
+    for (const how of ['escape', 'cancel', 'yes']) {
+      await user.click(screen.getByRole('button', { name: opener }));
+      if (how === 'escape') await user.keyboard('{Escape}');
+      else if (how === 'cancel') await user.click(screen.getByRole('button', { name: 'Cancel' }));
+      else await user.click(screen.getByRole('button', { name: yes }));
+      expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+      expect(screen.getByRole('button', { name: opener })).toHaveFocus();
+    }
+  });
+});
+
+describe('Page details', () => {
+  it('has one h1 and the forecast is a status, not an alert', async () => {
+    await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'interval', hours: 6 } }));
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(forecast()).toHaveAttribute('role', 'status');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('when not even 1 per scan fits, the fix is the reserve', async () => {
+    await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'interval', hours: 1 }, reserve: 100 }));
+    expect(forecast().textContent).toContain('Lower the reserve, or scan less often.');
+    expect(forecast().textContent).not.toContain('Use 0 per scan');
+  });
+
+  it('options.css has no literal colors', () => {
+    const css = readFileSync('extension/entrypoints/options/options.css', 'utf8');
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    expect(css).not.toMatch(/\b(rgb|rgba|hsl|hsla)\(/);
   });
 });

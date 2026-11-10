@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 /** One settings section: heading and help on the left, controls on the right. Stacks when narrow. */
 export function Section({ title, help, children }: { title: string; help: string; children: ReactNode }) {
@@ -35,6 +35,8 @@ interface NumberFieldProps {
   /** The control is used only inline, as in "Every [24] hours". */
   inline?: boolean;
   ariaLabel?: string;
+  /** Called on blur and Enter: the moment the value may be saved. */
+  onCommit?(): void;
   /** Multiply for display: a stored rate of 0.15 is shown as 15. */
   scale?: number;
 }
@@ -66,6 +68,10 @@ export function NumberField(p: NumberFieldProps) {
       aria-label={p.ariaLabel}
       aria-invalid={p.invalid ? true : undefined}
       aria-describedby={errorId ?? p.describedBy}
+      onBlur={p.onCommit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') p.onCommit?.();
+      }}
       onChange={(e) => {
         setText(e.target.value);
         p.onChange(parse(e.target.value) / scale);
@@ -101,27 +107,46 @@ export function Confirm({
   onYes(): void;
 }) {
   const [asking, setAsking] = useState(false);
+  const opener = useRef<HTMLButtonElement>(null);
+  const giveFocusBack = useRef(false);
+  const close = () => {
+    giveFocusBack.current = true;
+    setAsking(false);
+  };
+  useEffect(() => {
+    if (!asking && giveFocusBack.current) {
+      giveFocusBack.current = false;
+      opener.current?.focus();
+    }
+  }, [asking]);
   if (!asking) {
     return (
-      <button type="button" className={`btn${danger ? ' btn--danger' : ''}`} onClick={() => setAsking(true)}>
+      <button ref={opener} type="button" className={`btn${danger ? ' btn--danger' : ''}`} onClick={() => setAsking(true)}>
         {label}
       </button>
     );
   }
   return (
-    <div role="group" aria-label={label} className="confirm">
+    <div
+      role="group"
+      aria-label={label}
+      className="confirm"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') close();
+      }}
+    >
       <span>{question}</span>
       <button
         type="button"
         className="btn btn--danger"
         onClick={() => {
-          setAsking(false);
+          close();
           onYes();
         }}
       >
         {yes}
       </button>
-      <button type="button" className="btn" autoFocus onClick={() => setAsking(false)}>
+      <button type="button" className="btn" autoFocus onClick={close}>
         Cancel
       </button>
     </div>

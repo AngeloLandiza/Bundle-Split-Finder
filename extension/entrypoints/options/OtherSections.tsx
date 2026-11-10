@@ -8,13 +8,14 @@ type Problems = Partial<Record<SettingsField, string>>;
 interface Props {
   draft: ExtensionSettings;
   problems: Problems;
-  onChange(patch: Partial<ExtensionSettings>): void;
+  onChange(patch: Partial<ExtensionSettings>, commit?: boolean): void;
+  onCommit(): void;
 }
 
-export function WhatToScanSection({ draft, problems, onChange }: Props) {
+export function WhatToScanSection({ draft, problems, onChange, onCommit }: Props) {
   const toggle = (brand: string, on: boolean) => {
     const next = KNOWN_BRANDS.filter((b) => (b === brand ? on : draft.brands.includes(b)));
-    onChange({ brands: [...next] });
+    onChange({ brands: [...next] }, true);
   };
   return (
     <Section title="What to scan" help="Brands your seller account can list. Each brand costs one search per listing page.">
@@ -47,6 +48,7 @@ export function WhatToScanSection({ draft, problems, onChange }: Props) {
           value={draft.pagesPerBrand}
           invalid={Boolean(problems.pagesPerBrand)}
           error={problems.pagesPerBrand}
+          onCommit={onCommit}
           onChange={(v) => onChange({ pagesPerBrand: v })}
         />
         <span className="hint">24 bundles a page, biggest discounts first</span>
@@ -66,7 +68,7 @@ const FEE_FIELDS: { key: FeeKey; id: string; label: string; scale?: number; max?
 const badFee = (key: FeeKey, v: number): boolean =>
   !Number.isFinite(v) || v < 0 || (key === 'referralRate' && v > 1);
 
-export function FeesSection({ draft, problems, onChange }: Props) {
+export function FeesSection({ draft, problems, onChange, onCommit }: Props) {
   const setFee = (patch: Partial<FeeSettings>) => onChange({ fees: { ...draft.fees, ...patch } });
   return (
     <Section
@@ -86,6 +88,7 @@ export function FeesSection({ draft, problems, onChange }: Props) {
             value={draft.fees[f.key]}
             invalid={Boolean(problems.fees) && badFee(f.key, draft.fees[f.key])}
             describedBy={problems.fees ? 'error-fees' : undefined}
+            onCommit={onCommit}
             onChange={(v) => setFee({ [f.key]: v })}
           />
         ))}
@@ -99,13 +102,13 @@ export function FeesSection({ draft, problems, onChange }: Props) {
   );
 }
 
-export function AlertsSection({ draft, problems, onChange }: Props) {
+export function AlertsSection({ draft, problems, onChange, onCommit }: Props) {
   const a = draft.alerts;
   const bad = (v: number) => Boolean(problems.alerts) && (!Number.isFinite(v) || v < 0);
   return (
     <Section title="Alerts" help="A desktop notification when a scan finds a bundle that clears both estimated numbers.">
       <label className="choice">
-        <input type="checkbox" checked={a.enabled} onChange={(e) => onChange({ alerts: { ...a, enabled: e.target.checked } })} />
+        <input type="checkbox" checked={a.enabled} onChange={(e) => onChange({ alerts: { ...a, enabled: e.target.checked } }, true)} />
         Notify me about new deals
       </label>
       <div className="row row--wide">
@@ -118,6 +121,7 @@ export function AlertsSection({ draft, problems, onChange }: Props) {
           value={a.minProfit}
           invalid={bad(a.minProfit)}
           describedBy={problems.alerts ? 'error-alerts' : undefined}
+          onCommit={onCommit}
           onChange={(v) => onChange({ alerts: { ...a, minProfit: v } })}
         />
         <NumberField
@@ -129,6 +133,7 @@ export function AlertsSection({ draft, problems, onChange }: Props) {
           value={a.minRoiPercent}
           invalid={bad(a.minRoiPercent)}
           describedBy={problems.alerts ? 'error-alerts' : undefined}
+          onCommit={onCommit}
           onChange={(v) => onChange({ alerts: { ...a, minRoiPercent: v } })}
         />
       </div>
@@ -159,9 +164,9 @@ export function DataSection({ api }: { api: WorkerApi }) {
     setNote(null);
     try {
       const reply = await api.send<unknown>({ type: 'clearSavedSearches' });
-      setNote(reply.ok ? 'Saved searches cleared. Your matches and answers were kept.' : reply.error);
+      setNote(reply.ok ? 'Saved searches cleared. Matches and answers were kept.' : reply.error);
     } catch {
-      setNote('Split Finder could not be reached. Reload this page and try again.');
+      setNote('Could not reach the extension. Reload this page and try again.');
     }
   }
 
@@ -186,7 +191,7 @@ export function DataSection({ api }: { api: WorkerApi }) {
           onYes={clear}
         />
       </div>
-      <p className="note" role="status">
+      <p className="note" role="status" data-testid="data-status">
         {note}
       </p>
     </Section>

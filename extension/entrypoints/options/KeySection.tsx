@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { AccountInfo } from '@core/serpapi/budget';
 import type { AppState } from '../../lib/messages';
 import { Confirm, Section } from './fields';
@@ -6,6 +6,7 @@ import type { WorkerApi } from './worker';
 
 type Result = { ok: true; account: AccountInfo } | { ok: false; message: string };
 
+const UNREACHABLE = 'Could not reach the extension. Reload this page and try again.';
 const n = (v: number): string => v.toLocaleString('en-US');
 
 function KeyWorks({ account }: { account: AccountInfo }) {
@@ -35,7 +36,9 @@ function KeyWorks({ account }: { account: AccountInfo }) {
 }
 
 export function KeySection({ api, state }: { api: WorkerApi; state: AppState }) {
-  const [keyText, setKeyText] = useState('');
+  // Uncontrolled on purpose: React would copy the typed key into the DOM as a value attribute.
+  const keyRef = useRef<HTMLInputElement>(null);
+  const [hasText, setHasText] = useState(false);
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
 
@@ -43,10 +46,10 @@ export function KeySection({ api, state }: { api: WorkerApi; state: AppState }) 
     setChecking(true);
     setResult(null);
     try {
-      const reply = await api.send<AccountInfo>({ type: 'checkKey', apiKey: keyText.trim() });
+      const reply = await api.send<AccountInfo>({ type: 'checkKey', apiKey: (keyRef.current?.value ?? '').trim() });
       if (reply.ok) {
         setResult({ ok: true, account: reply.data });
-        setKeyText('');
+        clearField();
       } else {
         setResult({ ok: false, message: reply.error });
       }
@@ -57,10 +60,19 @@ export function KeySection({ api, state }: { api: WorkerApi; state: AppState }) 
     }
   }
 
+  function clearField() {
+    if (keyRef.current) keyRef.current.value = '';
+    setHasText(false);
+  }
+
   async function forget() {
-    const reply = await api.send<unknown>({ type: 'forgetKey' });
-    setResult(reply.ok ? null : { ok: false, message: reply.error });
-    setKeyText('');
+    try {
+      const reply = await api.send<unknown>({ type: 'forgetKey' });
+      setResult(reply.ok ? null : { ok: false, message: reply.error });
+      if (reply.ok) clearField();
+    } catch {
+      setResult({ ok: false, message: UNREACHABLE });
+    }
   }
 
   const shown: Result | null =
@@ -87,10 +99,10 @@ export function KeySection({ api, state }: { api: WorkerApi; state: AppState }) 
           spellCheck={false}
           className="input figure key-input"
           placeholder={state.hasKey ? 'Key saved' : ''}
-          value={keyText}
-          onChange={(e) => setKeyText(e.target.value)}
+          ref={keyRef}
+          onChange={(e) => setHasText(e.target.value.trim() !== '')}
         />
-        <button type="button" className="btn" disabled={checking || keyText.trim() === ''} onClick={check}>
+        <button type="button" className="btn" disabled={checking || !hasText} onClick={check}>
           {checking ? 'Checking' : 'Check key'}
         </button>
         {state.hasKey ? (

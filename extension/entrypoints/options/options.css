@@ -44,6 +44,10 @@ input {
   font-weight: 600;
 }
 .brand-page {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: 400;
   color: var(--ink-2);
 }
 .save-status {
@@ -123,8 +127,14 @@ input {
   line-height: 20px;
   color: var(--ink-2);
 }
-.note:empty {
-  display: none;
+.note:empty,
+.key-result:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .hint {
   font-size: 14px;
@@ -255,7 +265,7 @@ legend,
   text-decoration: none;
 }
 .link:hover {
-  color: #1e3a8a;
+  text-decoration: underline;
 }
 
 /* key result */
@@ -265,9 +275,6 @@ legend,
   gap: 8px;
   font-size: 14px;
   line-height: 20px;
-}
-.key-result:empty {
-  display: none;
 }
 .key-check {
   flex-shrink: 0;
@@ -311,7 +318,7 @@ legend,
   background: var(--ink);
 }
 .meter-reserve {
-  background: #b9b6ad;
+  background: var(--line-strong);
 }
 .forecast[data-attention] .meter-used {
   background: var(--attention);
@@ -345,7 +352,7 @@ legend,
   background: var(--attention);
 }
 .swatch--reserve {
-  background: #b9b6ad;
+  background: var(--line-strong);
 }
 .forecast-note {
   font-size: 14px;
