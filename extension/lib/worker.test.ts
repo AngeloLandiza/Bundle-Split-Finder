@@ -1,0 +1,727 @@
+import { describe, expect, it, vi } from 'vitest';
+import { replayRecorded, type Replay } from '../../scripts/replay';
+import * as fx from '../../core/test/fixtures';
+import { MemoryScanStore } from '@core/scan/memoryStore';
+import type { BundleRow, ScanJob, ScanStore } from '@core/scan/types';
+import { parseAccount } from '@core/serpapi/budget';
+import { type Cache, type LedgerEntry, MemoryCache } from '@core/serpapi/client';
+import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
+import type { AppState, Reply, Request } from './messages';
+import type { ActiveScan, StoredAccount } from './prefs';
+import { createWorker, type Prefs, type Worker } from './worker';
+
+// Every search goes through the real SerpApiClient over replayRecorded(); the Account API
+// is a fake answered from fx.SERPAPI_ACCOUNT_FREE. Nothing reaches the network.
+
+const T0 = Date.UTC(2026, 10, 10, 12);
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+const KEY = 'TEST';
+
+const FREE = parseAccount(fx.SERPAPI_ACCOUNT_FREE);
+const SIX_HOURS = { mode: 'interval', hours: 6 } as const;
+/** One brand, so the scan sends one Home Depot query: "ryobi 18v combo kit". */
+const RYOBI: ExtensionSettings = { ...DEFAULT_SETTINGS, brands: ['RYOBI'] };
+
+// toScanSettings builds one query per brand. The test answers the RYOBI query with the
+// recorded ratchet page, the page the core runner tests use (PBLRC2501SB and two parts).
+const RYOBI_QUERY = 'ryobi 18v combo kit';
+const RATCHET_QUERY = 'ryobi extended reach ratchet';
+const RATCHET = 'engine=home_depot&page=1&q=ryobi extended reach ratchet';
+const LOOKUP_01B = 'amazon_domain=amazon.com&engine=amazon&k=RYOBI PBLRC01B';
+const LOOKUP_25B = 'amazon_domain=amazon.com&engine=amazon&k=RYOBI PBLRC25B';
+const RYOBI_PAGE = 'amazon_domain=amazon.com&engine=amazon&k=RYOBI&rh=p_123:252605';
+
+// ---------------------------------------------------------------- the world
+
+/** prefs.ts in memory. Values are cloned in and out, as chrome.storage does. Nothing is repaired. */
+class FakePrefs implements Prefs {
+  data: {
+    apiKey?: string;
+    settings?: unknown;
+    activeScan?: ActiveScan | null;
+    lastScheduledRunAt?: number | null;
+    notified?: string[];
+    account?: StoredAccount | null;
+  } = {};
+  restricted = 0;
+
+  async getKey() {
+    return typeof this.data.apiKey === 'string' && this.data.apiKey !== '' ? this.data.apiKey : null;
+  }
+  async setKey(key: string) {
+    this.data.apiKey = key;
+  }
+  async forgetKey() {
+    delete this.data.apiKey;
+  }
+  async restrictKeyAccess() {
+    this.restricted += 1;
+  }
+  /** Defaults under what is stored, unchecked: the worker must not trust it. */
+  async getSettings() {
+    const s = this.data.settings;
+    return { ...structuredClone(DEFAULT_SETTINGS), ...(typeof s === 'object' && s !== null ? structuredClone(s) : {}) } as ExtensionSettings;
+  }
+  async saveSettings(s: ExtensionSettings) {
+    this.data.settings = structuredClone(s);
+  }
+  async getActiveScan() {
+    return structuredClone(this.data.activeScan ?? null);
+  }
+  async setActiveScan(v: ActiveScan | null) {
+    this.data.activeScan = structuredClone(v);
+  }
+  async getLastScheduledRunAt() {
+    return this.data.lastScheduledRunAt ?? null;
+  }
+  async setLastScheduledRunAt(v: number | null) {
+    this.data.lastScheduledRunAt = v;
+  }
+  async getNotified() {
+    return structuredClone(this.data.notified ?? []);
+  }
+  async setNotified(v: string[]) {
+    this.data.notified = structuredClone(v);
+  }
+  async getAccount() {
+    return structuredClone(this.data.account ?? null);
+  }
+  async setAccount(v: StoredAccount | null) {
+    this.data.account = structuredClone(v);
+  }
+}
+
+/** MemoryCache with the clear() the worker needs. */
+function clearableCache(): Cache & { clear(): Promise<void> } {
+  let inner = new MemoryCache();
+  return {
+    get: (key) => inner.get(key),
+    set: (key, entry) => inner.set(key, entry),
+    clear: async () => {
+      inner = new MemoryCache();
+    },
+  };
+}
+
+interface World {
+  store: MemoryScanStore;
+  cache: Cache & { clear(): Promise<void> };
+  prefs: FakePrefs;
+  replay: Replay;
+  clock: number;
+  ledger: LedgerEntry[];
+  notified: BundleRow[][];
+  broadcasts: AppState[];
+  /** Origin and path of every request, account checks included. Never the query: it holds the key. */
+  requests: string[];
+  /** Fields laid over fx.SERPAPI_ACCOUNT_FREE in the fake Account API's answer. */
+  accountOver: Record<string, unknown>;
+  /** The fake Account API. Default: 200 for KEY, 401 for any other key. */
+  accountApi: (key: string) => Response | Promise<Response>;
+  /** Called before each search reaches the replay; may wait, or throw as fetch does. */
+  beforeSearch: (url: URL) => void | Promise<void>;
+  fetchFn: typeof fetch;
+  worker: Worker;
+}
+
+interface Setup {
+  key?: string;
+  settings?: unknown;
+  lastScheduledRunAt?: number | null;
+  accountOver?: Record<string, unknown>;
+}
+
+function world(setup: Setup = {}): World {
+  const w = {
+    store: new MemoryScanStore(),
+    cache: clearableCache(),
+    prefs: new FakePrefs(),
+    replay: replayRecorded(),
+    clock: T0,
+    ledger: [],
+    notified: [],
+    broadcasts: [],
+    requests: [],
+    accountOver: setup.accountOver ?? {},
+    beforeSearch: () => {},
+  } as unknown as World;
+  if (setup.key !== undefined) w.prefs.data.apiKey = setup.key;
+  if (setup.settings !== undefined) w.prefs.data.settings = structuredClone(setup.settings);
+  if (setup.lastScheduledRunAt !== undefined) w.prefs.data.lastScheduledRunAt = setup.lastScheduledRunAt;
+  w.accountApi = (key) =>
+    key === KEY
+      ? new Response(JSON.stringify({ ...fx.SERPAPI_ACCOUNT_FREE, ...w.accountOver }), { status: 200 })
+      : new Response(JSON.stringify({ error: 'Invalid API key.' }), { status: 401 });
+  w.fetchFn = (async (input: string | URL | Request) => {
+    const url = new URL(String(input instanceof Request ? input.url : input));
+    w.requests.push(url.origin + url.pathname);
+    if (url.pathname === '/account.json') return w.accountApi(url.searchParams.get('api_key') ?? '');
+    await w.beforeSearch(url);
+    if (url.searchParams.get('q') === RYOBI_QUERY) url.searchParams.set('q', RATCHET_QUERY);
+    return w.replay.fetchFn(url.toString());
+  }) as typeof fetch;
+  w.worker = workerOver(w);
+  return w;
+}
+
+/** A worker over the world's storage. `store` replaces the world's store (to interrupt it). */
+function workerOver(w: World, store: ScanStore = w.store): Worker {
+  return createWorker({
+    store,
+    cache: w.cache,
+    prefs: w.prefs,
+    ledger: (entry) => void w.ledger.push(entry),
+    fetchFn: (input, init) => w.fetchFn(input, init),
+    now: () => w.clock,
+    notify: (rows) => void w.notified.push(rows),
+    broadcast: (state) => void w.broadcasts.push(state),
+  });
+}
+
+const send = <T = unknown>(w: World, request: Request): Promise<Reply<T>> => w.worker.onMessage(request) as Promise<Reply<T>>;
+
+async function state(w: World): Promise<AppState> {
+  const reply = await send<AppState>(w, { type: 'getState' });
+  if (!reply.ok) throw new Error(reply.error);
+  return reply.data;
+}
+
+/** Waits for the scan that scanNow started to end. */
+async function untilIdle(w: World): Promise<void> {
+  await vi.waitFor(async () => {
+    if ((await state(w)).scanRunning) throw new Error('still scanning');
+  });
+}
+
+async function lastJob(w: World): Promise<ScanJob> {
+  const job = (await state(w)).lastJob;
+  if (job === null) throw new Error('no job');
+  return job;
+}
+
+/** Holds every search until release(): the scan is under way and waiting on SerpApi. */
+function held(w: World): { release(): void } {
+  let release!: () => void;
+  const open = new Promise<void>((resolve) => (release = resolve));
+  w.beforeSearch = () => open;
+  return { release };
+}
+
+const labels = (w: World) => w.ledger.map((e) => e.label);
+
+// ---------------------------------------------------------------- 1. the key and the account
+
+describe('worker: the key (acceptance criteria 1 and 2)', () => {
+  it('no key: scanNow replies not ok, no request leaves, and problem is set', async () => {
+    const w = world();
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: false, error: 'Add your SerpApi key in Settings.' });
+    expect(w.requests).toEqual([]);
+    expect(w.ledger).toEqual([]);
+    expect(await w.store.listScans()).toEqual([]);
+    expect(await state(w)).toMatchObject({ hasKey: false, problem: 'Add your SerpApi key in Settings.', scanRunning: false, lastJob: null });
+  });
+
+  it('no key: a scheduled scan that is due sends nothing either', async () => {
+    const w = world({ settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    await w.worker.onTick();
+    expect(w.requests).toEqual([]);
+    expect(await w.store.listScans()).toEqual([]);
+    expect((await state(w)).problem).toBe('Add your SerpApi key in Settings.');
+    // Still due: nothing was run, so nothing moved the schedule on.
+    expect(w.prefs.data.lastScheduledRunAt).toBe(T0 - 7 * HOUR);
+  });
+
+  it('checkKey with a 401 replies in plain words and saves nothing', async () => {
+    const w = world();
+    expect(await send(w, { type: 'checkKey', apiKey: 'WRONG' })).toEqual({ ok: false, error: 'SerpApi did not accept this key.' });
+    expect(w.prefs.data.apiKey).toBeUndefined();
+    expect(w.prefs.data.account ?? null).toBeNull();
+    expect(w.requests).toEqual(['https://serpapi.com/account.json']);
+  });
+
+  it('checkKey with a 401 leaves a saved key untouched', async () => {
+    const w = world({ key: KEY });
+    expect(await send(w, { type: 'checkKey', apiKey: 'WRONG' })).toEqual({ ok: false, error: 'SerpApi did not accept this key.' });
+    expect(w.prefs.data.apiKey).toBe(KEY);
+  });
+
+  it('checkKey with a 200 saves the key and the account and replies with the plan', async () => {
+    const w = world();
+    const reply = await send(w, { type: 'checkKey', apiKey: KEY });
+    expect(reply).toEqual({ ok: true, data: FREE });
+    expect(FREE).toMatchObject({ planName: 'Free Plan', totalSearchesLeft: 250, rateLimitPerHour: 50 });
+    expect(w.prefs.data.apiKey).toBe(KEY);
+    expect(w.prefs.data.account).toEqual({ info: FREE, at: T0 });
+    expect(await state(w)).toMatchObject({ hasKey: true, account: FREE, accountCheckedAt: T0, problem: null });
+    expect(w.broadcasts.at(-1)).toMatchObject({ hasKey: true, account: FREE });
+    // A key check spends nothing.
+    expect(w.ledger).toEqual([]);
+  });
+
+  it('checkKey sends nothing for an empty key', async () => {
+    const w = world();
+    expect(await send(w, { type: 'checkKey', apiKey: '  ' })).toEqual({ ok: false, error: 'Enter your SerpApi key.' });
+    expect(w.requests).toEqual([]);
+  });
+
+  it('a key check that fails for another reason says so in one sentence', async () => {
+    const w = world();
+    w.accountApi = () => {
+      throw new TypeError('Failed to fetch');
+    };
+    expect(await send(w, { type: 'checkKey', apiKey: KEY })).toEqual({ ok: false, error: 'Something went wrong while checking your SerpApi account.' });
+    w.accountApi = () => new Response('{}', { status: 503 });
+    expect(await send(w, { type: 'checkKey', apiKey: KEY })).toEqual({ ok: false, error: 'SerpApi account check failed (HTTP 503).' });
+    expect(w.prefs.data.apiKey).toBeUndefined();
+  });
+
+  it('forgetKey removes the key and the account it showed', async () => {
+    const w = world();
+    await send(w, { type: 'checkKey', apiKey: KEY });
+    expect(await send(w, { type: 'forgetKey' })).toEqual({ ok: true, data: null });
+    expect(w.prefs.data.apiKey).toBeUndefined();
+    expect(await state(w)).toMatchObject({ hasKey: false, account: null, accountCheckedAt: null });
+    expect(w.broadcasts.at(-1)).toMatchObject({ hasKey: false, account: null });
+  });
+
+  it('getState never carries the key', async () => {
+    const w = world({ key: KEY });
+    expect(JSON.stringify(await state(w))).not.toContain(KEY);
+  });
+});
+
+// ---------------------------------------------------------------- 2. the budget
+
+describe('worker: each scan\'s budget (criterion 3 and the reserve rule)', () => {
+  it('a scheduled scan with searchesPerScan 2 on the ratchet query stops with run_cap after 2 searches', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 2, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    await w.worker.onTick();
+    const job = await lastJob(w);
+    expect(job).toMatchObject({ status: 'stopped', stopReason: 'run_cap', searchesUsed: 2, queue: [] });
+    expect(job.deferred).toEqual([{ kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' }]);
+    // A fifth of 2 rounds down to no brand page: the listing page and one lookup.
+    expect(w.replay.calls).toEqual([RATCHET, LOOKUP_01B]);
+    expect(labels(w)).toEqual([`scan:listing:${RYOBI_QUERY}:p1`, 'scan:lookup:PBLRC01B']);
+    expect(w.requests.filter((r) => r.endsWith('/account.json'))).toHaveLength(2); // before and after
+    expect(w.prefs.data.activeScan).toBeNull();
+    expect(w.prefs.data.lastScheduledRunAt).toBe(T0);
+    expect(await state(w)).toMatchObject({ scanRunning: false, problem: null, nextRunAt: T0 + 6 * HOUR });
+  });
+
+  it('a scheduled scan with 101 searches left and a reserve of 100 spends 1 and stops at the reserve', async () => {
+    const w = world({
+      key: KEY, settings: { ...RYOBI, reserve: 100, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR, accountOver: { total_searches_left: 101 },
+    });
+    await w.worker.onTick();
+    const job = await lastJob(w);
+    expect(job).toMatchObject({ status: 'stopped', stopReason: 'reserve', searchesUsed: 1 });
+    expect(w.replay.calls).toEqual([RATCHET]);
+    expect(w.ledger).toHaveLength(1);
+  });
+
+  it('scanNow in the same position may spend the reserve, up to searchesPerScan (5)', async () => {
+    const w = world({
+      key: KEY, settings: { ...RYOBI, reserve: 100, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR, accountOver: { total_searches_left: 101 },
+    });
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    await untilIdle(w);
+    const job = await lastJob(w);
+    // A fifth of 5 is one RYOBI brand page; its listings answer neither part, so both are
+    // looked up. Everything wanted fits in 5, and 101 - 4 = 97 is below the reserve.
+    expect(job).toMatchObject({ status: 'done', stopReason: null, searchesUsed: 4, deferred: [] });
+    expect(w.replay.calls).toEqual([RYOBI_PAGE, RATCHET, LOOKUP_01B, LOOKUP_25B]);
+    expect(labels(w)).toEqual(['scan:catalog:RYOBI:p1', `scan:listing:${RYOBI_QUERY}:p1`, 'scan:lookup:PBLRC01B', 'scan:lookup:PBLRC25B']);
+    // A manual scan does not move the schedule.
+    expect(w.prefs.data.lastScheduledRunAt).toBe(T0 - 7 * HOUR);
+  });
+
+  it('scanNow is still held to searchesPerScan, and may spend the account down to zero', async () => {
+    const capped = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 2 }, accountOver: { total_searches_left: 101 } });
+    await send(capped, { type: 'scanNow' });
+    await untilIdle(capped);
+    expect(await lastJob(capped)).toMatchObject({ status: 'stopped', stopReason: 'run_cap', searchesUsed: 2 });
+
+    const last = world({ key: KEY, settings: RYOBI, accountOver: { total_searches_left: 1 } });
+    await send(last, { type: 'scanNow' });
+    await untilIdle(last);
+    expect(await lastJob(last)).toMatchObject({ status: 'stopped', stopReason: 'reserve', searchesUsed: 1 });
+    expect(last.replay.calls).toEqual([RATCHET]);
+  });
+
+  it('a manual schedule starts nothing on a tick', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await w.worker.onTick();
+    expect(w.requests).toEqual([]);
+    expect(await state(w)).toMatchObject({ nextRunAt: null, lastJob: null });
+  });
+
+  it('broadcasts when a scan starts and when it ends', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const running = w.broadcasts.map((s) => s.scanRunning);
+    expect(running).toContain(true);
+    expect(running.at(-1)).toBe(false);
+    expect(w.broadcasts.at(-1)!.lastJob).toMatchObject({ status: 'done' });
+  });
+});
+
+// ---------------------------------------------------------------- 3. resume
+
+/** The world's store, except that the first job save after the first lookup throws, as when Chrome stops the worker. */
+function interruptedAfterFirstLookup(w: World): ScanStore {
+  let thrown = false;
+  return new Proxy(w.store, {
+    get(target, prop) {
+      if (prop === 'putScan') {
+        return async (job: ScanJob) => {
+          if (!thrown && job.counts.lookupsDone === 1) {
+            thrown = true;
+            throw new Error('interrupted');
+          }
+          return target.putScan(job);
+        };
+      }
+      const value: unknown = Reflect.get(target, prop);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}
+
+describe('worker: continues after the worker restarts (criterion 8)', () => {
+  it('a second worker over the same storage finishes the job, repeats no request, and keeps to searchesPerScan', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 3, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    const first = workerOver(w, interruptedAfterFirstLookup(w));
+    await first.onTick();
+    const [saved] = await w.store.listScans();
+    expect(saved).toMatchObject({ status: 'running', phase: 'parts', searchesUsed: 1 });
+    expect(w.prefs.data.activeScan).toEqual({ jobId: saved!.id, trigger: 'scheduled' });
+    // The scheduled run is not over, so the schedule has not moved on.
+    expect(w.prefs.data.lastScheduledRunAt).toBe(T0 - 7 * HOUR);
+    expect(w.ledger).toHaveLength(2);
+
+    w.clock = T0 + 2 * MINUTE;
+    const second = workerOver(w);
+    await second.onStart();
+    const [job] = await w.store.listScans();
+    expect(job).toMatchObject({ id: saved!.id, status: 'done', searchesUsed: 2, deferred: [] });
+    expect(await w.store.listScans()).toHaveLength(1);
+    // The interrupted lookup is answered from the cache.
+    expect(w.replay.calls).toEqual([RATCHET, LOOKUP_01B, LOOKUP_25B]);
+    expect(new Set(w.replay.calls).size).toBe(w.replay.calls.length);
+    expect(w.ledger.length).toBeLessThanOrEqual(3);
+    expect(w.prefs.data.activeScan).toBeNull();
+    // Continued with the trigger it was saved with.
+    expect(w.prefs.data.lastScheduledRunAt).toBe(T0 + 2 * MINUTE);
+    expect(w.prefs.restricted).toBeGreaterThanOrEqual(2);
+  });
+
+  it('a continued job runs only its saved queue: the two runs together spend searchesPerScan at most', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 2, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    await workerOver(w, interruptedAfterFirstLookup(w)).onTick();
+    await workerOver(w).onStart();
+    // The PBLRC01B lookup comes from the cache; PBLRC25B was deferred when the job was planned.
+    expect(await lastJob(w)).toMatchObject({ status: 'stopped', stopReason: 'run_cap', searchesUsed: 1 });
+    expect(w.replay.calls).toEqual([RATCHET, LOOKUP_01B]);
+    expect(w.ledger).toHaveLength(2);
+  });
+
+  it('scanNow on a job left running continues it with its saved trigger, so a scheduled job keeps the reserve', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 3, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    await workerOver(w, interruptedAfterFirstLookup(w)).onTick();
+    w.accountOver = { total_searches_left: 100 }; // exactly the reserve
+    w.clock = T0 + 5 * MINUTE;
+    const second = workerOver(w);
+    w.worker = second;
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    await untilIdle(w);
+    const job = await lastJob(w);
+    expect(job).toMatchObject({ status: 'stopped', stopReason: 'reserve', deferred: [{ kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' }] });
+    expect(w.replay.calls).toEqual([RATCHET, LOOKUP_01B]);
+    expect(w.prefs.data.lastScheduledRunAt).toBe(T0 + 5 * MINUTE);
+  });
+
+  it('clears an activeScan whose job is missing or finished, and starts nothing unless one is due', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.prefs.data.activeScan = { jobId: 'gone', trigger: 'manual' };
+    await w.worker.onTick();
+    expect(w.prefs.data.activeScan).toBeNull();
+    expect(w.requests).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------- 4. one scan at a time; the account unreachable
+
+describe('worker: one scan at a time', () => {
+  it('scanNow and onTick started together run one job', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    const [reply] = await Promise.all([send(w, { type: 'scanNow' }), w.worker.onTick()]);
+    expect(reply).toEqual({ ok: true, data: null });
+    await untilIdle(w);
+    expect(await w.store.listScans()).toHaveLength(1);
+    expect(new Set(w.replay.calls).size).toBe(w.replay.calls.length);
+    // The tick found the scan running and did nothing: a manual scan does not move the schedule.
+    expect(w.prefs.data.lastScheduledRunAt).toBe(T0 - 7 * HOUR);
+  });
+
+  it('scanNow while a scan runs is refused, and a tick does nothing', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    const gate = held(w);
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: false, error: 'A scan is already running.' });
+    const accountChecks = w.requests.length;
+    await w.worker.onTick();
+    expect(w.requests).toHaveLength(accountChecks);
+    expect((await state(w)).scanRunning).toBe(true);
+    gate.release();
+    await untilIdle(w);
+    expect(await w.store.listScans()).toHaveLength(1);
+  });
+
+  it('two ticks together (onStart and the first alarm) run one job', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    await Promise.all([w.worker.onStart(), w.worker.onTick()]);
+    expect(await w.store.listScans()).toHaveLength(1);
+    expect(w.replay.calls).toEqual([RYOBI_PAGE, RATCHET, LOOKUP_01B, LOOKUP_25B]);
+  });
+});
+
+describe('worker: the account cannot be checked when a scan is due (review focus 3)', () => {
+  it('sends no search, says why, and the next tick tries again', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    const answer = w.accountApi;
+    w.accountApi = () => {
+      throw new TypeError('Failed to fetch');
+    };
+    await w.worker.onTick();
+    expect(w.replay.calls).toEqual([]);
+    expect(await w.store.listScans()).toEqual([]);
+    expect((await state(w)).problem).toBe('Something went wrong while checking your SerpApi account.');
+    expect(w.broadcasts.at(-1)!.problem).toBe('Something went wrong while checking your SerpApi account.');
+
+    w.accountApi = () => new Response('{}', { status: 401 });
+    w.clock = T0 + MINUTE;
+    await w.worker.onTick();
+    expect(w.replay.calls).toEqual([]);
+    expect((await state(w)).problem).toBe('SerpApi did not accept this key.');
+
+    w.accountApi = answer;
+    w.clock = T0 + 2 * MINUTE;
+    await w.worker.onTick();
+    expect(await lastJob(w)).toMatchObject({ status: 'done' });
+    expect((await state(w)).problem).toBeNull();
+    expect(w.prefs.data.lastScheduledRunAt).toBe(T0 + 2 * MINUTE);
+  });
+});
+
+// ---------------------------------------------------------------- 5. settings and the schedule
+
+describe('worker: saving settings (rule 5, criterion 7)', () => {
+  it('manual to every 6 hours: no scan on the next tick, nextRunAt six hours on, and a tick then starts one', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    expect(await send(w, { type: 'saveSettings', settings: { ...RYOBI, schedule: SIX_HOURS } })).toEqual({ ok: true, data: null });
+    expect(w.broadcasts.at(-1)).toMatchObject({ settings: { schedule: SIX_HOURS }, nextRunAt: T0 + 6 * HOUR });
+    expect(w.requests).toEqual([]);
+
+    w.clock = T0 + MINUTE;
+    await w.worker.onTick();
+    expect(w.requests).toEqual([]);
+    expect(await state(w)).toMatchObject({ nextRunAt: T0 + 6 * HOUR, lastJob: null });
+
+    // The same worker, no reload in between.
+    w.clock = T0 + 6 * HOUR;
+    await w.worker.onTick();
+    expect(await lastJob(w)).toMatchObject({ status: 'done', startedAt: T0 + 6 * HOUR });
+    expect((await state(w)).nextRunAt).toBe(T0 + 12 * HOUR);
+  });
+
+  it('saving the same schedule again does not move nextRunAt', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await send(w, { type: 'saveSettings', settings: { ...RYOBI, schedule: SIX_HOURS } });
+    w.clock = T0 + HOUR;
+    const again = { ...RYOBI, schedule: { mode: 'interval', hours: 6 } as const, searchesPerScan: 9 };
+    expect(await send(w, { type: 'saveSettings', settings: again })).toEqual({ ok: true, data: null });
+    expect(await state(w)).toMatchObject({ nextRunAt: T0 + 6 * HOUR, settings: { searchesPerScan: 9 } });
+  });
+
+  it('a daily time comes at the next daily time, not on the next tick', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await send(w, { type: 'saveSettings', settings: { ...RYOBI, schedule: { mode: 'daily', at: '07:00' } } });
+    expect((await state(w)).nextRunAt!).toBeGreaterThan(T0);
+    w.clock = T0 + MINUTE;
+    await w.worker.onTick();
+    expect(w.requests).toEqual([]);
+  });
+
+  it('rejects settings with the first problem and saves nothing', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const reply = await send(w, { type: 'saveSettings', settings: { ...RYOBI, schedule: { mode: 'interval', hours: 0 }, searchesPerScan: 9999 } });
+    expect(reply).toEqual({ ok: false, error: 'Choose between 1 and 168 hours.' });
+    expect(w.prefs.data.settings).toEqual(RYOBI);
+    expect(w.prefs.data.lastScheduledRunAt ?? null).toBeNull();
+    const garbled = await send(w, { type: 'saveSettings', settings: { ...RYOBI, fees: null } as unknown as ExtensionSettings });
+    expect(garbled.ok).toBe(false);
+    expect(w.prefs.data.settings).toEqual(RYOBI);
+  });
+
+  it('a change while a scan runs does not stop it or change its budget', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 3 } });
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    expect(await send(w, { type: 'saveSettings', settings: { ...RYOBI, searchesPerScan: 1, schedule: SIX_HOURS } })).toEqual({ ok: true, data: null });
+    expect((await state(w)).scanRunning).toBe(true);
+    gate.release();
+    await untilIdle(w);
+    expect(await lastJob(w)).toMatchObject({ status: 'done', stopReason: null, searchesUsed: 3 });
+    // The new schedule counts from the change: no scheduled scan follows at once.
+    await w.worker.onTick();
+    expect(await w.store.listScans()).toHaveLength(1);
+    expect((await state(w)).nextRunAt).toBe(T0 + 6 * HOUR);
+  });
+
+  it('stored settings are checked field by field: fees null are read as the default fees', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, fees: null, alerts: { enabled: 'yes' }, schedule: { mode: 'weekly' }, searchesPerScan: 7 } });
+    const s = (await state(w)).settings;
+    expect(s).toEqual({ ...RYOBI, searchesPerScan: 7 });
+    expect(s.fees).toEqual(DEFAULT_SETTINGS.fees);
+    // A scan runs on them, and the export prices with the default fees.
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const csv = await send<string>(w, { type: 'exportDeals' });
+    expect(csv.ok && csv.data.split('\n')[1]).toMatch(/^confirmed,RYOBI,PBLRC2501SB,.*,268\.55,189,79\.55,0\.4209,/);
+  });
+});
+
+// ---------------------------------------------------------------- 6. stop and alerts
+
+describe('worker: stopScan', () => {
+  it('during a scan gives stopReason "user", and nothing more is sent', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    expect(await send(w, { type: 'stopScan' })).toEqual({ ok: true, data: null });
+    gate.release();
+    await untilIdle(w);
+    expect(await lastJob(w)).toMatchObject({ status: 'stopped', stopReason: 'user', searchesUsed: 1 });
+    // The brand page was in flight when Stop came; the runner asks before every paid step.
+    expect(w.replay.calls).toEqual([RYOBI_PAGE]);
+    expect(w.prefs.data.activeScan).toBeNull();
+  });
+
+  it('replies ok when nothing runs, and the next scan is not stopped by it', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    expect(await send(w, { type: 'stopScan' })).toEqual({ ok: true, data: null });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(await lastJob(w)).toMatchObject({ status: 'done', stopReason: null });
+  });
+
+  it('forgetKey during a scan stops it: nothing is spent once the key is gone', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    await send(w, { type: 'forgetKey' });
+    gate.release();
+    await untilIdle(w);
+    expect(await lastJob(w)).toMatchObject({ status: 'stopped', stopReason: 'user' });
+    expect(w.replay.calls).toEqual([RYOBI_PAGE]);
+  });
+});
+
+describe('worker: alerts', () => {
+  const ALERTS: ExtensionSettings = { ...RYOBI, alerts: { enabled: true, minProfit: 50, minRoiPercent: 30 } };
+
+  it('at $50 and 30%, notify is called once with PBLRC2501SB, and not again after a second scan', async () => {
+    const w = world({ key: KEY, settings: ALERTS });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(w.notified).toHaveLength(1);
+    expect(w.notified[0]!.map((r) => r.model)).toEqual(['PBLRC2501SB']);
+    expect(w.notified[0]![0]!.estimate).toMatchObject({ profit: 79.55, roi: 0.4209 });
+    expect(w.prefs.data.notified).toEqual(['homedepot:328814689']);
+
+    w.clock = T0 + 10 * MINUTE;
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(await w.store.listScans()).toHaveLength(2);
+    expect(w.notified).toHaveLength(1);
+  });
+
+  it('notifies nothing when alerts are off', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(w.notified).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------- 7. exports, saved searches, the key
+
+describe('worker: exports and saved searches (rule 6)', () => {
+  it('exportMatches replies with every match and the answered review items only', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const [first, ...rest] = await w.store.listReview();
+    await w.store.putReview({ ...first!, answer: 'not a bundle', answeredAt: T0 });
+    expect(rest.length).toBeGreaterThan(0);
+    const reply = await send<string>(w, { type: 'exportMatches' });
+    expect(reply.ok).toBe(true);
+    const data = JSON.parse(reply.ok ? reply.data : '{}');
+    expect(data.matches.map((m: { key: string }) => m.key)).toEqual(['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']);
+    expect(data.answers).toEqual([{ ...first, answer: 'not a bundle', answeredAt: T0 }]);
+  });
+
+  it('clearSavedSearches empties the cache only: the next scan pays for its pages again, the store keeps its records', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(await send(w, { type: 'clearSavedSearches' })).toEqual({ ok: true, data: null });
+    expect(await w.store.listMatches()).toHaveLength(2);
+    expect(await w.store.listScans()).toHaveLength(1);
+    // Ten minutes on, the listing page would have come from the cache; now it is paid for.
+    w.clock = T0 + 10 * MINUTE;
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(w.replay.calls.filter((c) => c === RATCHET)).toHaveLength(2);
+  });
+
+  it('uses baseUrl for the Account API and for searches', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.worker = createWorker({
+      store: w.store, cache: w.cache, prefs: w.prefs, ledger: () => {}, fetchFn: w.fetchFn, now: () => w.clock,
+      notify: () => {}, broadcast: () => {}, baseUrl: 'http://localhost:8787',
+    });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(new Set(w.requests)).toEqual(new Set(['http://localhost:8787/account.json', 'http://localhost:8787/search.json']));
+  });
+});
+
+describe('worker: the key never leaves in a reply or a broadcast', () => {
+  it('not in any reply, broadcast or notification of a whole session', async () => {
+    const w = world({ settings: { ...RYOBI, alerts: { enabled: true, minProfit: 0, minRoiPercent: 0 } } });
+    const replies: unknown[] = [];
+    for (const request of [{ type: 'checkKey', apiKey: KEY }, { type: 'getState' }, { type: 'scanNow' }] as Request[]) replies.push(await send(w, request));
+    await untilIdle(w);
+    for (const request of [{ type: 'exportDeals' }, { type: 'exportMatches' }, { type: 'getState' }, { type: 'stopScan' }] as Request[]) replies.push(await send(w, request));
+    expect(w.notified.length).toBeGreaterThan(0);
+    expect(JSON.stringify([replies, w.broadcasts, w.notified])).not.toContain(KEY);
+  });
+
+  it('not even when a failed search\'s error message carries the request URL', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.beforeSearch = (url) => {
+      if (url.searchParams.get('k')?.startsWith('RYOBI ')) throw new TypeError(`request to ${url} failed`);
+    };
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    // The runner keeps the message; the worker never hands it out with the key in it.
+    expect((await w.store.listScans())[0]!.stopMessage).toContain(`api_key=${KEY}`);
+    const shown = await state(w);
+    expect(shown.lastJob).toMatchObject({ status: 'stopped', stopReason: 'error' });
+    expect(shown.lastJob!.stopMessage).toMatch(/^Network error reaching SerpApi: request to /);
+    expect(JSON.stringify([shown, w.broadcasts])).not.toContain(KEY);
+  });
+});
