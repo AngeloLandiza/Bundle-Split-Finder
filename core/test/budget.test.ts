@@ -134,6 +134,14 @@ describe('client', () => {
     expect(calls).toHaveLength(2);
   });
 
+  it('says when a response was received: now from the network, the original time from the cache', async () => {
+    const { client, tick } = setup([ok()]);
+    const first = await client.search({ engine: 'amazon', k: 'a' });
+    expect(first).toMatchObject({ source: 'network', at: 1_000 });
+    tick(60_000);
+    expect(await client.search({ engine: 'amazon', k: 'a' })).toEqual({ data: first.data, source: 'cache', at: 1_000 });
+  });
+
   it('checks the account for free and reports a bad key clearly', async () => {
     const good = fakeFetch([{ body: fx.SERPAPI_ACCOUNT_FREE }]);
     expect((await SerpApiClient.account('SECRET', good.fn)).totalSearchesLeft).toBe(250);

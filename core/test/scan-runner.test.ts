@@ -1234,40 +1234,69 @@ function storedJigSaw(at: number) {
 }
 
 describe('runScan: an answer from the cache does not make old prices look fresh', () => {
-  it('a brand page from the cache leaves a stored listing as it was; the part matched from it keeps the listing\'s age', async () => {
+  it('a brand page from the cache, older than a stored listing, leaves that listing as it was; the part matched from it keeps the listing\'s age', async () => {
     const w = world();
     const twoDaysAgo = T0 - 2 * DAY;
     // DEWALT_PAGE is the brand page's cache key. Cached two days ago: within freshnessMs (three days).
     await w.cache.set(DEWALT_PAGE, { at: twoDaysAgo, data: recorded('amazon-brand-dewalt-p1') });
-    const stored = storedJigSaw(twoDaysAgo);
+    // Saved a day ago, after the page was read.
+    const stored = storedJigSaw(T0 - DAY);
     await w.store.putListing(stored);
     const job = await scan(w, { settings: CATALOG });
     expect(w.replay.calls).toEqual([DEWALT_COMBO]);
     expect(w.ledger).toEqual(['scan:listing:dewalt 20v combo kit:p1']);
     expect(await w.store.getListing('B07JPFHQKG')).toEqual(stored);
+    // A listing the store did not have is saved with the page's own age, not the clock's.
+    expect(await w.store.getListing('B0GQ6QKPWF')).toMatchObject({ models: ['DCK540D1'], price: 449, seenAt: twoDaysAgo, checkedAt: twoDaysAgo });
     // The page still counts, and the cursor still moves on.
     expect(job.counts).toMatchObject({ catalogPages: 1, listingsSaved: 60, partsFromCatalog: 2, refreshesDone: 0 });
     expect(await w.store.getCursor('DEWALT')).toEqual({ brand: 'DEWALT', nextPage: 2, passes: 0, updatedAt: T0 });
     expect(await w.store.getMatch('DEWALT:DCS334B')).toMatchObject({ status: 'matched', asin: 'B07JPFHQKG' });
-    expect(await w.store.getPrice('B07JPFHQKG')).toEqual({ asin: 'B07JPFHQKG', price: 119, reviews: stored.reviews, seenAt: twoDaysAgo, checkedAt: twoDaysAgo });
-    // Two days old is fresh: nothing is refreshed.
+    expect(await w.store.getPrice('B07JPFHQKG')).toEqual({ asin: 'B07JPFHQKG', price: 119, reviews: stored.reviews, seenAt: T0 - DAY, checkedAt: T0 - DAY });
+    expect(await w.store.getPrice('B0GQ6QKPWF')).toMatchObject({ price: 449, seenAt: twoDaysAgo, checkedAt: twoDaysAgo });
+    // One and two days old are fresh: nothing is refreshed.
     expect(job).toMatchObject({ status: 'done', searchesUsed: 1, deferred: [] });
   });
 
-  it('refreshes that part in the same scan when the stored listing is older than freshnessMs', async () => {
+  it('a brand page from the cache, newer than a stored listing, replaces it with the page\'s price and age', async () => {
     const w = world();
-    await w.cache.set(DEWALT_PAGE, { at: T0 - 2 * DAY, data: recorded('amazon-brand-dewalt-p1') });
+    const twoDaysAgo = T0 - 2 * DAY;
+    await w.cache.set(DEWALT_PAGE, { at: twoDaysAgo, data: recorded('amazon-brand-dewalt-p1') });
     const stored = storedJigSaw(T0 - 4 * DAY);
     await w.store.putListing(stored);
-    const amazon = answeredWith(w, ['DEWALT DCS334B'], 'amazon-brand-dewalt-p1');
-    const job = await scan(w, { settings: CATALOG, fetchFn: amazon.fetchFn });
-    expect(w.replay.calls).toEqual([DEWALT_COMBO]);
-    expect(amazon.answered).toEqual(['DEWALT DCS334B']);
-    expect(w.ledger).toEqual(['scan:listing:dewalt 20v combo kit:p1', 'scan:refresh:DCS334B']);
-    expect(job).toMatchObject({ status: 'done', searchesUsed: 2 });
-    expect(job.counts).toMatchObject({ partsFromCatalog: 2, refreshesDone: 1 });
-    // The refresh came from the network: its price and times are now.
-    expect(await w.store.getPrice('B07JPFHQKG')).toEqual({ asin: 'B07JPFHQKG', price: 123, reviews: stored.reviews, seenAt: T0, checkedAt: T0 });
+    const job = await scan(w, { settings: CATALOG });
+    expect(w.ledger).toEqual(['scan:listing:dewalt 20v combo kit:p1']);
+    expect(await w.store.getListing('B07JPFHQKG')).toEqual({ ...stored, price: 123, seenAt: twoDaysAgo, checkedAt: twoDaysAgo });
+    // The page's price is two days old, not four: fresh, so not refreshed.
+    expect(await w.store.getPrice('B07JPFHQKG')).toEqual({ asin: 'B07JPFHQKG', price: 123, reviews: stored.reviews, seenAt: twoDaysAgo, checkedAt: twoDaysAgo });
+    expect(job).toMatchObject({ status: 'done', searchesUsed: 1 });
+    expect(job.counts).toMatchObject({ partsFromCatalog: 2, refreshesDone: 0 });
+  });
+
+  it('a lookup paid before an interruption keeps the time it was paid, so the part is refreshed once that is stale', async () => {
+    const w = world();
+    await expect(scan(w, { store: afterFirstLookup(w) })).rejects.toThrow('interrupted');
+    // Continued four days later: the PBLRC01B lookup is answered from the cache, as received at T0.
+    const later = T0 + 4 * DAY;
+    w.clock = later;
+    const job = await scan(w);
+    expect(job).toMatchObject({ id: String(T0), status: 'done' });
+    expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B]);
+    expect(await w.store.getPrice('B0B6Z2ZGVK')).toEqual({ asin: 'B0B6Z2ZGVK', price: 146.94, reviews: 212, seenAt: T0, checkedAt: T0 });
+    expect(await w.store.getPrice('B0B3JWF5ZV')).toMatchObject({ seenAt: later, checkedAt: later });
+    // Rows of the PBLRC01B response that the PBLRC25B response (paid at `later`) did not show again keep T0.
+    const again = new Set(parseAmazonSearch(recorded('amazon-search-PBLRC25B')).map((c) => c.asin));
+    const listings = await w.store.listListings();
+    const onlyFirst = listings.filter((l) => !again.has(l.asin));
+    expect(onlyFirst.length).toBeGreaterThan(0);
+    expect(onlyFirst.every((l) => l.checkedAt === T0)).toBe(true);
+    expect(listings.filter((l) => again.has(l.asin)).every((l) => l.checkedAt === later)).toBe(true);
+
+    // A scan started right after refreshes the four-day-old price, and only that one.
+    w.clock = later + MINUTE;
+    const next = await scan(w);
+    expect(next).toMatchObject({ status: 'done' });
+    expect(w.ledger.slice(3)).toEqual(['scan:listing:ryobi extended reach ratchet:p1', 'scan:refresh:PBLRC01B']);
   });
 
   it('a lookup repeated from the cache leaves the listings it saved before as they were', async () => {
@@ -1386,6 +1415,53 @@ describe('runScan: models read from Amazon titles do not resolve a DEWALT short 
     // No searches allowed: only the split is looked at here.
     await scan(w, { settings: DEWALT_ONLY, policy: { reserve: 0, maxPerRun: 0 } });
     expect((await w.store.getBundle('homedepot:glued'))!.split).toMatchObject({ status: 'resolved', components: gluedParts });
+  });
+
+  it('never lets a title-matched listing model settle a short code the stored catalog found ambiguous', async () => {
+    const w = world();
+    // DCK283D2W380B as Home Depot lists it (core/test/fixtures.ts). The two stored tools are
+    // hand-made: both end with 380B and neither kind is in the bundle's title.
+    const [model, title] = fx.HD_DEWALT_BUNDLES.find(([m]) => m === 'DCK283D2W380B')!;
+    await w.store.putBundle({
+      key: 'homedepot:ambiguous', retailer: 'homedepot', itemId: 'ambiguous', title, brand: 'DEWALT', model,
+      upc: null, price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0, split: null,
+    });
+    for (const [m, kinds] of [['DCE380B', ['blower']], ['DCG380B', ['grinder']]] as const) {
+      await w.store.putCatalogEntry({ key: `DEWALT:${m}`, brand: 'DEWALT', model: m, title: `${m} (seeded for this test)`, kinds: [...kinds], isKit: false, upc: null, seenAt: T0 - DAY });
+    }
+    // A saved listing names a third model ending with 380B whose kind is in the title.
+    const saw = 'DEWALT 20V MAX Reciprocating Saw, Tool Only (DCS380B)';
+    await w.store.putListing(listingFrom({ asin: 'B0TESTSAW01', title: saw, brand: 'DEWALT', price: 99, reviews: 10 }, ['DEWALT'], T0 - HOUR)!);
+    // With all three models known, the splitter narrows the short code by the title to DCS380B.
+    const all: Catalog = new Map([
+      ['DCE380B', { model: 'DCE380B', brand: 'DEWALT', kinds: ['blower'], isKit: false }],
+      ['DCG380B', { model: 'DCG380B', brand: 'DEWALT', kinds: ['grinder'], isKit: false }],
+      ['DCS380B', catalogEntry('DEWALT', 'DCS380B', saw)],
+    ]);
+    expect(decompose('DEWALT', model, title, all)).toMatchObject({ status: 'resolved', components: ['DCK283D2', 'DCS380B'] });
+
+    const job = await scan(w, { settings: DEWALT_ONLY });
+    expect(w.replay.calls).toEqual([]);
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCK283D2'], status: 'needs_review', notes: ["'380B' fits DCE380B and DCG380B"] });
+    expect(await w.store.getReview('split:homedepot:ambiguous')).toMatchObject({ reason: "'380B' fits DCE380B and DCG380B" });
+    expect(job.counts).toMatchObject({ bundlesResolved: 0, partsFromCatalog: 0 });
+  });
+
+  it('never lets a listing model settle a two-character short code', async () => {
+    const w = world();
+    // DCKTS681D1P1W34 as Home Depot lists it, and the real DCS334B row of the DEWALT brand page.
+    const [model, title] = fx.HD_DEWALT_BUNDLES.find(([m]) => m === 'DCKTS681D1P1W34')!;
+    await w.store.putBundle({
+      key: 'homedepot:short', retailer: 'homedepot', itemId: 'short', title, brand: 'DEWALT', model,
+      upc: null, price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0, split: null,
+    });
+    await w.store.putListing(storedJigSaw(T0 - HOUR));
+    const all: Catalog = new Map([['DCS334B', catalogEntry('DEWALT', 'DCS334B', storedJigSaw(T0).title)]]);
+    expect(decompose('DEWALT', model, title, all)).toMatchObject({ status: 'resolved', components: ['DCKTS681D1P1', 'DCS334B'] });
+
+    await scan(w, { settings: DEWALT_ONLY });
+    expect(w.replay.calls).toEqual([]);
+    expect((await w.store.getBundle('homedepot:short'))!.split).toEqual({ components: ['DCKTS681D1P1'], status: 'needs_review', notes: ["'34' matches nothing in the catalog"] });
   });
 
   it('does not offer a kit as a bonus tool when its Amazon title does not say "combo kit"', async () => {

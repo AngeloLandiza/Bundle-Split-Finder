@@ -4,7 +4,7 @@
 // scan runner"); "2c rule n" to the step 2c plan, Task 2 ("The catalog phase"); "3 rule n"
 // to the step 3 plan, Task 3 ("Runner: stop on request, and one failed lookup does not end a scan").
 
-import { type Catalog, catalogEntry, type Decomposition, decompose, kindsFromTitle } from '../decompose';
+import { type Catalog, catalogEntry, DEWALT_BUNDLE, type Decomposition, decompose, kindsFromTitle } from '../decompose';
 import { type Candidate, pick } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
@@ -272,17 +272,23 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
 const amazonPart = (run: Run, step: Lookup | Refresh) => ({ engine: 'amazon', k: `${step.brand} ${step.model}`, amazon_domain: run.settings.amazonDomain });
 
 /** Rule 3 and 2c rule 2: what a step's response changes in the store. */
+/**
+ * Every time read from a response (a listing's or price's seenAt and checkedAt, a bundle's or
+ * catalog entry's seenAt) is `at`, when SerpApi answered, which for a cached answer may be days
+ * ago; a stored record is never replaced by an older response. Match records, review items,
+ * cursors and the job use the clock: they record when the tool decided something.
+ */
 async function apply(run: Run, step: ScanStep, result: SearchResult): Promise<void> {
-  const { data, source } = result;
+  const { data, at } = result;
   switch (step.kind) {
     case 'catalog':
-      return applyCatalog(run, step, data, source);
+      return applyCatalog(run, step, data, at);
     case 'listing':
-      return applyListing(run, step, data);
+      return applyListing(run, step, data, at);
     case 'lookup':
-      return applyLookup(run, step, data, source);
+      return applyLookup(run, step, data, at);
     case 'refresh':
-      return applyRefresh(run, step, data, source);
+      return applyRefresh(run, step, data, at);
     default:
       return unknownStep(step);
   }
@@ -294,10 +300,10 @@ function unknownStep(step: never): never {
 }
 
 /** 2c rule 2: save every row of a brand page, then move the brand's cursor on from this page. */
-async function applyCatalog(run: Run, step: CatalogStep, data: unknown, source: Source): Promise<void> {
+async function applyCatalog(run: Run, step: CatalogStep, data: unknown, at: number): Promise<void> {
   const { store, job } = run;
   const now = run.now();
-  await saveListings(run, parseAmazonSearch(data), now, source);
+  await saveListings(run, parseAmazonSearch(data), at);
   // The new cursor comes from the step's own page, not from the stored cursor, so a step
   // repeated from the cache after an interruption leaves the cursor where the first apply put
   // it. For the same reason a pass is counted only while the cursor still points at this page.
@@ -313,9 +319,8 @@ async function applyCatalog(run: Run, step: CatalogStep, data: unknown, source: 
   job.counts.catalogPages += 1;
 }
 
-async function applyListing(run: Run, step: Listing, data: unknown): Promise<void> {
+async function applyListing(run: Run, step: Listing, data: unknown, at: number): Promise<void> {
   const { store, job } = run;
-  const now = run.now();
   const brands = new Set(run.settings.brands.map((b) => b.trim().toUpperCase()));
   const { listings, hasNextPage } = parseHomeDepotSearch(data);
   for (const row of listings) {
@@ -326,20 +331,25 @@ async function applyListing(run: Run, step: Listing, data: unknown): Promise<voi
     if (step.bundlesOnly || looksLikeBundle(brand, row.model)) {
       const key = bundleKey(row.itemId);
       const known = await store.getBundle(key);
-      await store.putBundle({
-        key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: known?.upc ?? null,
-        price: row.price, regularPrice: row.regularPrice, percentOff: row.percentOff, link: row.link, seenAt: now,
-        split: known?.split ?? null,
-      });
+      // A record seen later than this response is kept as it is.
+      if (!known || known.seenAt <= at) {
+        await store.putBundle({
+          key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: known?.upc ?? null,
+          price: row.price, regularPrice: row.regularPrice, percentOff: row.percentOff, link: row.link, seenAt: at,
+          split: known?.split ?? null,
+        });
+      }
       job.counts.bundlesSeen += 1;
     } else {
       const entry = catalogEntry(brand, row.model, row.title);
       const key = partKey(entry.brand, entry.model);
       const known = await store.getCatalogEntry(key);
-      await store.putCatalogEntry({
-        key, brand: entry.brand, model: entry.model, title: row.title,
-        kinds: entry.kinds, isKit: entry.isKit ?? false, upc: known?.upc ?? null, seenAt: now,
-      });
+      if (!known || known.seenAt <= at) {
+        await store.putCatalogEntry({
+          key, brand: entry.brand, model: entry.model, title: row.title,
+          kinds: entry.kinds, isKit: entry.isKit ?? false, upc: known?.upc ?? null, seenAt: at,
+        });
+      }
     }
   }
   if (!hasNextPage) {
@@ -349,13 +359,13 @@ async function applyListing(run: Run, step: Listing, data: unknown): Promise<voi
   job.counts.pagesFetched += 1;
 }
 
-async function applyLookup(run: Run, step: Lookup, data: unknown, source: Source): Promise<void> {
+async function applyLookup(run: Run, step: Lookup, data: unknown, at: number): Promise<void> {
   const { store, job } = run;
   const now = run.now();
   const key = partKey(step.brand, step.model);
   job.counts.lookupsDone += 1;
   const candidates = parseAmazonSearch(data);
-  await saveListings(run, candidates, now, source);
+  await saveListings(run, candidates, at);
   // A saved queue can outlive the plan: the user may have decided this part since.
   if ((await store.getMatch(key))?.decidedBy === 'user') return;
   const picked = pick(wantedFor(step.brand, step.model, run.catalog), candidates);
@@ -365,7 +375,7 @@ async function applyLookup(run: Run, step: Lookup, data: unknown, source: Source
     const asin = picked.chosen.asin;
     const alternatives = unique(picked.alternatives.map((g) => g.asin)).filter((a) => a !== asin);
     match = { ...base, status: 'matched', asin, grade: picked.chosen.grade, alternatives };
-    for (const a of [asin, ...alternatives]) await store.putPrice(priceSeen(a, await store.getPrice(a), firstWith(candidates, a), now));
+    for (const a of [asin, ...alternatives]) await savePrice(run, a, firstWith(candidates, a), at);
     job.counts.partsMatched += 1;
   } else if (picked.review.length > 0) {
     match = { ...base, status: 'review', asin: null, grade: null, alternatives: [] };
@@ -389,44 +399,44 @@ async function applyLookup(run: Run, step: Lookup, data: unknown, source: Source
   await store.putMatch(match);
 }
 
-async function applyRefresh(run: Run, step: Refresh, data: unknown, source: Source): Promise<void> {
-  const { store } = run;
-  const now = run.now();
+async function applyRefresh(run: Run, step: Refresh, data: unknown, at: number): Promise<void> {
   const candidates = parseAmazonSearch(data);
-  await saveListings(run, candidates, now, source);
+  await saveListings(run, candidates, at);
   // A listing missing from the results keeps its old price; the check is still recorded,
   // so the part is not paid for again until it is stale once more.
-  const cand = firstWith(candidates, step.asin);
-  await store.putPrice(priceSeen(step.asin, await store.getPrice(step.asin), cand, now));
+  await savePrice(run, step.asin, firstWith(candidates, step.asin), at);
   run.job.counts.refreshesDone += 1;
 }
 
-type Source = SearchResult['source'];
-
 /**
- * Rules 6 and 7: every row of an Amazon response whose brand is scanned is saved as a listing.
- * A response from the cache may be days old, and how old is not known here: a listing already
- * stored keeps its price, seenAt and checkedAt, so an old price never looks fresh. A listing
- * not stored yet is saved as from the network.
+ * Rules 6 and 7: every row of an Amazon response whose brand is scanned is saved as a listing,
+ * as seen at `at`, when SerpApi answered. A listing checked later than that is kept as it is,
+ * so an old response never makes an old price look fresh. Every such row is counted.
  */
-async function saveListings(run: Run, candidates: Candidate[], now: number, source: Source): Promise<void> {
+async function saveListings(run: Run, candidates: Candidate[], at: number): Promise<void> {
   const { store, settings, job } = run;
   for (const c of candidates) {
     const old = await store.getListing(c.asin);
-    let record = listingFrom(c, settings.brands, now, old);
+    const record = listingFrom(c, settings.brands, at, old);
     if (record === null) continue;
-    if (source === 'cache' && old) record = { ...record, price: old.price, seenAt: old.seenAt, checkedAt: old.checkedAt };
-    await store.putListing(record);
+    if (!old || old.checkedAt <= at) await store.putListing(record);
     // A row seen in two responses is counted twice; the store holds one record per ASIN.
     job.counts.listingsSaved += 1;
   }
 }
 
-/** A price record after a response was read: `cand` is the ASIN's row in it, if it was there. */
-function priceSeen(asin: string, old: PriceRecord | undefined, cand: Candidate | undefined, now: number): PriceRecord {
-  if (!cand) return { asin, price: old?.price ?? null, reviews: old?.reviews ?? null, seenAt: old?.seenAt ?? null, checkedAt: now };
+/** Saves the price an ASIN has in a response received at `at`, unless the stored one was checked later. */
+async function savePrice(run: Run, asin: string, cand: Candidate | undefined, at: number): Promise<void> {
+  const old = await run.store.getPrice(asin);
+  if (old && old.checkedAt > at) return;
+  await run.store.putPrice(priceSeen(asin, old, cand, at));
+}
+
+/** A price record after a response received at `at` was read: `cand` is the ASIN's row in it, if it was there. */
+function priceSeen(asin: string, old: PriceRecord | undefined, cand: Candidate | undefined, at: number): PriceRecord {
+  if (!cand) return { asin, price: old?.price ?? null, reviews: old?.reviews ?? null, seenAt: old?.seenAt ?? null, checkedAt: at };
   const price = cand.price ?? null;
-  return { asin, price, reviews: cand.reviews ?? null, seenAt: price === null ? (old?.seenAt ?? null) : now, checkedAt: now };
+  return { asin, price, reviews: cand.reviews ?? null, seenAt: price === null ? (old?.seenAt ?? null) : at, checkedAt: at };
 }
 
 const firstWith = (candidates: Candidate[], asin: string): Candidate | undefined => candidates.find((c) => c.asin === asin);
@@ -478,7 +488,14 @@ function splitBundle(bundle: BundleRecord, stored: Catalog, catalog: Catalog): D
   const second = decompose(bundle.brand, bundle.model, bundle.title, catalog);
   if (second.status !== 'resolved') return first;
   const brand = bundle.brand.trim().toUpperCase();
-  return brand === 'RYOBI' || (brand === 'DEWALT' && second.components.length === 2) ? second : first;
+  if (brand === 'RYOBI') return second;
+  if (brand !== 'DEWALT' || second.components.length !== 2) return first;
+  // DEWALT, one bonus item: only when the stored catalog knew nothing at all for the short
+  // code (not when it found two readings, "fits A and B" or "more than one way", which a title
+  // match must not settle), and only for a short code of three characters or more.
+  const suffix = DEWALT_BUNDLE.exec(bundle.model.toUpperCase().replace(/[-\s]/g, ''))?.[2];
+  if (suffix === undefined || suffix.length < 3) return first;
+  return first.notes.length === 1 && first.notes[0] === `'${suffix}' matches nothing in the catalog` ? second : first;
 }
 
 /** `stored`: the stored catalog alone; `run.catalog` adds the listings' models. */

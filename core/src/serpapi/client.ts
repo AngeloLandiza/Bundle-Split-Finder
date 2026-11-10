@@ -90,6 +90,8 @@ export interface SearchOptions {
 export interface SearchResult {
   data: unknown;
   source: 'cache' | 'network';
+  /** When this response was received from SerpApi, epoch ms. */
+  at: number;
 }
 
 export class SerpApiClient {
@@ -118,7 +120,7 @@ export class SerpApiClient {
     const key = cacheKey(params);
     const cached = await this.cache.get(key);
     if (cached && (options.maxAgeMs === undefined || this.now() - cached.at <= options.maxAgeMs)) {
-      return { data: cached.data, source: 'cache' };
+      return { data: cached.data, source: 'cache', at: cached.at };
     }
 
     const reason = this.opts.budget.blockReason(1);
@@ -155,7 +157,8 @@ export class SerpApiClient {
       key,
       label: options.label ?? 'unlabelled',
     });
-    await this.cache.set(key, { at: this.now(), data });
-    return { data, source: 'network' };
+    const at = this.now();
+    await this.cache.set(key, { at, data });
+    return { data, source: 'network', at };
   }
 }
