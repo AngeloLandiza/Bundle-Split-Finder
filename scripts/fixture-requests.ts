@@ -18,4 +18,10 @@ export const REQUESTS: FixtureRequest[] = [
   { name: 'amazon-search-DCF891B', params: { engine: 'amazon', k: 'DEWALT DCF891B', amazon_domain: 'amazon.com' } },
   { name: 'amazon-product-B0B6Z2ZGVK', params: { engine: 'amazon_product', asin: 'B0B6Z2ZGVK', amazon_domain: 'amazon.com' } },
   { name: 'amazon-product-B0B3JWF5ZV', params: { engine: 'amazon_product', asin: 'B0B3JWF5ZV', amazon_domain: 'amazon.com' } },
+  // Home Depot's own "Bundle" filter (bwo64) plus the brand filter (RYOBI m5d, DEWALT 4j2).
+  { name: 'hd-bundles-ryobi-p1', params: { engine: 'home_depot', q: 'ryobi 18v combo kit', hd_filter_tokens: 'bwo64,m5d', page: 1 } },
+  { name: 'hd-bundles-dewalt-p1', params: { engine: 'home_depot', q: 'dewalt 20v combo kit', hd_filter_tokens: 'bwo64,4j2', page: 1 } },
+  // One page of a brand's own Amazon listings: Amazon's brand filter, read from an earlier response.
+  { name: 'amazon-brand-ryobi-p1', params: { engine: 'amazon', k: 'RYOBI', rh: 'p_123:252605', amazon_domain: 'amazon.com' } },
+  { name: 'amazon-brand-dewalt-p1', params: { engine: 'amazon', k: 'DEWALT', rh: 'p_123:195991', amazon_domain: 'amazon.com' } },
 ];

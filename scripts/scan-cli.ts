@@ -112,7 +112,7 @@ export async function runScanCli(args: string[], deps: CliDeps): Promise<number>
 
   const settings: ScanSettings = { ...DEFAULT_SCAN_SETTINGS };
   if (opts.queries.length > 0) settings.queries = opts.queries.map((q) => ({ q }));
-  else if (opts.fixtures) settings.queries = REQUESTS.filter((r) => r.params.engine === 'home_depot').map((r) => ({ q: String(r.params.q) }));
+  else if (opts.fixtures) settings.queries = REQUESTS.filter((r) => r.params.engine === 'home_depot' && r.params.hd_filter_tokens === undefined).map((r) => ({ q: String(r.params.q) }));
   if (opts.pages !== null) settings.pagesPerQuery = opts.pages;
 
   if (opts.dryRun) {

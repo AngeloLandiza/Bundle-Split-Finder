@@ -35,12 +35,11 @@ describe('replayRecorded', () => {
     const replay = replayRecorded();
     const budget = new SearchBudget(account(), { reserve: 0, maxPerRun: 20 });
     const client = new SerpApiClient({ apiKey: 'TEST', budget, fetchFn: replay.fetchFn });
-    expect(REQUESTS).toHaveLength(9);
     for (const req of REQUESTS) {
       const { data } = await client.search(req.params);
       expect((data as { search_metadata: { status: string } }).search_metadata.status).toBe('Success');
     }
-    expect(replay.calls).toHaveLength(9);
+    expect(replay.calls).toHaveLength(REQUESTS.length);
   });
 
   it('answers 404 with the cache key in the body, and accepts a URL object', async () => {
