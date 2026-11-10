@@ -41,10 +41,12 @@ async function partRows(store: ScanStore, brand: string, components: string[]): 
   return rows;
 }
 
-function sectionOf(parts: PartRow[]): ReportSection {
+// A bundle with no parts is never confirmed, and neither is one without its own price.
+function sectionOf(parts: PartRow[], bundlePrice: number | null): ReportSection {
+  if (parts.length === 0) return 'split';
   if (parts.some((p) => p.availability === 'missing')) return 'missing_listing';
   if (parts.some((p) => p.availability === 'inactive')) return 'inactive_listing';
-  return 'confirmed';
+  return bundlePrice === null ? 'inactive_listing' : 'confirmed';
 }
 
 async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
@@ -58,7 +60,7 @@ async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleReco
   }
   const parts = await partRows(store, b.brand, split.components);
   if (b.price === null) {
-    return { ...base, status: 'partial', section: sectionOf(parts), parts, estimate: null, uncovered: parts.map((p) => p.model) };
+    return { ...base, status: 'partial', section: sectionOf(parts, b.price), parts, estimate: null, uncovered: parts.map((p) => p.model) };
   }
   const priced: PricedListing[] = [];
   for (const p of parts) {
@@ -70,7 +72,7 @@ async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleReco
   return {
     ...base,
     status: evaluation.uncovered.length === 0 ? 'complete' : 'partial',
-    section: sectionOf(parts),
+    section: sectionOf(parts, b.price),
     parts,
     estimate: evaluation.result,
     uncovered: evaluation.uncovered,

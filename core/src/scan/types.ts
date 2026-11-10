@@ -279,10 +279,10 @@ export type BundleStatus = 'complete' | 'partial' | 'needs_review';
 
 /**
  * Where a bundle is shown.
- * confirmed         every part has an active listing: buying the bundle leaves nothing over
- * inactive_listing  every part has a listing, but at least one is not for sale right now
+ * confirmed         the bundle has a price and every part has an active listing: buying it leaves nothing over
+ * inactive_listing  every part has a listing, but at least one is not for sale right now, or the bundle itself has no price
  * missing_listing   at least one part has no Amazon listing
- * split             what the bundle contains is not known yet
+ * split             what the bundle contains is not known yet (also a resolved split that names no parts)
  */
 export type ReportSection = 'confirmed' | 'inactive_listing' | 'missing_listing' | 'split';
 

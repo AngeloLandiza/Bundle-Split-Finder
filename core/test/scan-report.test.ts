@@ -95,6 +95,47 @@ describe('buildReport', () => {
     return store;
   }
 
+  async function nullPriceStore(matchB: boolean) {
+    const store = new MemoryScanStore();
+    await store.putBundle({
+      key: bundleKey('2'), retailer: 'homedepot', itemId: '2', title: 'T', brand: 'RYOBI', model: 'A-B', upc: null,
+      price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0,
+      split: { components: ['A', 'B'], status: 'resolved', notes: [] },
+    });
+    const models = matchB ? ['A', 'B'] : ['A'];
+    for (const [i, m] of models.entries()) {
+      const asin = `B00000000${i}`;
+      await store.putMatch({ key: partKey('RYOBI', m), brand: 'RYOBI', model: m, status: 'matched', asin, grade: 'probable', alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null });
+      await store.putPrice({ asin, price: 50, reviews: 10, seenAt: T0, checkedAt: T0 });
+    }
+    return store;
+  }
+
+  it('never shows a resolved bundle with no parts as confirmed', async () => {
+    const store = new MemoryScanStore();
+    await store.putBundle({
+      key: bundleKey('3'), retailer: 'homedepot', itemId: '3', title: 'T', brand: 'RYOBI', model: 'X', upc: null,
+      price: 100, regularPrice: 200, percentOff: 50, link: null, seenAt: T0,
+      split: { components: [], status: 'resolved', notes: [] },
+    });
+    const report = await buildReport(store, RATCHET);
+    expect(report.bundles[0]!.section).toBe('split');
+    expect(report.bundles.some((b) => b.section === 'confirmed')).toBe(false);
+    const cells = runCsv(report).split('\n')[1]!;
+    expect(cells.startsWith('split,RYOBI,X,T,3,100,200,50,,,,,,,,,,')).toBe(true);
+  });
+
+  it('is inactive_listing, not confirmed, when every part is active but the bundle has no price', async () => {
+    const report = await buildReport(await nullPriceStore(true), RATCHET);
+    expect(report.bundles[0]).toMatchObject({ section: 'inactive_listing', status: 'partial', estimate: null });
+    expect(report.bundles[0]!.parts.map((p) => p.availability)).toEqual(['active', 'active']);
+  });
+
+  it('is missing_listing when a part is missing and the bundle has no price', async () => {
+    const report = await buildReport(await nullPriceStore(false), RATCHET);
+    expect(report.bundles[0]).toMatchObject({ section: 'missing_listing', status: 'partial', estimate: null });
+  });
+
   it('makes a part inactive when its price record has a null price', async () => {
     const store = await oneBundleStore({ asin: 'B000000001', price: null, reviews: null, seenAt: null, checkedAt: T0 });
     const report = await buildReport(store, RATCHET);
