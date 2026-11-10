@@ -29,6 +29,7 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 - **Every paid search goes through one client and one budget guard**: reserve, per-scan cap, hourly limit. The tightest wins. Only successful searches are charged, as SerpApi counts.
 - **A scheduled scan never touches the reserve; a scan the owner starts may.** The per-scan cap holds across the whole job, including after it is continued.
 - **If a number cannot be read, the scan spends nothing.** Unreadable usage, allowance or reserve gives a budget of zero, not a fresh allowance.
+- **Known gap: a continued scan can spend one search over its allowance** when the worker dies between a paid Home Depot page and its save, because the job counts only saved steps. *For v2:* count from the ledger, which records every charged search.
 - **No retries around a search.** A failed lookup or refresh is set aside and the scan moves on; two failures in a row stop it. A failed Home Depot page, a budget refusal or a 429 stops at once. *For v2:* a failed search that SerpApi still counted (a malformed 200) is invisible to the local budget.
 - **The Amazon catalog phase may take at most a fifth of a scan's allowance.**
 - **Listing pages are reused for one hour; a brand page for the freshness period (3 days), and always within one job.** Nothing is paid for twice in a job.
@@ -38,6 +39,7 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 ## Pipeline
 
 - **A scan is a saved job.** Results are written to the store first, then the job is saved, after every paid step. An interrupted job is continued and repeats its last step from the cache.
+- **Every response carries the time it was received** (`SearchResult.at`), and every time written from a response uses it, not the clock. A response replayed from the cache days later keeps its real age, and an older response never overwrites a newer record. Match records, review items, cursors and the job use the clock: they record when the tool decided something.
 - **A job stopped by a limit is finished, not paused.** Its leftover lookups are marked waiting and go first next scan. Only a job interrupted mid-run is continued.
 - **The pipeline depends on three injected things** (search client, budget view, store), so the same code runs in tests, on the command line and in the service worker. *For v2:* keep this; it is why 300+ tests run with no network.
 - **Tests replay recorded SerpApi responses** through the real client and budget. Expected values come from the recordings. *For v2:* keep the recordings; they are the regression suite.
@@ -48,7 +50,7 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 - **Never guess.** An uncertain split or match becomes a review item or a lower grade. Tests are built on real examples.
 - **An Amazon search row counts as "probable"** when its brand field (or title prefix) is the brand and the model number is a whole token in the title, and it is not renewed, aftermarket, a kit or a multipack. Search rows carry a brand field but no barcode or part number; a detail page (1 search) upgrades the grade.
 - **A part matched from saved listings skips its lookup** even though the saved pool is not the same as a live search. Same evidence, same grade; the risk is a valid but less popular listing, never a different product.
-- **Amazon title models may resolve a DEWALT bundle only to a kit plus one item.** Glued short codes are not resolved from titles; they go to review. (Fix in progress.)
+- **Amazon title models may resolve a DEWALT bundle only to a kit plus one item, and only when the stored catalog found nothing for the short code** (three or more characters). A stored ambiguity is never settled by a title, and glued short codes are never resolved from titles; both go to review. A `DCK` model read from a title is always a kit. *For v2:* Home Depot's own page names the parts; once the page reader exists, this path matters less.
 - **A bundle is recognised by the shape of its model number** (RYOBI hyphen or `SB`, DEWALT `…W…`); plain kits and single tools go to the catalog only and get no lookup.
 - **`DCK…` is asked for as a kit; `DCB205-2` as a pack of 2.**
 - **Known gaps, left as they are:** several RYOBI kits are not recognised as kits by the catalog rule; aftermarket "for DeWalt" titles land in review rather than being rejected; `PCL500525SB` (six-digit special buy) has no split rule.
@@ -59,7 +61,8 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 - **The service worker is the only context with the key.** Pages send typed messages. The key is in `chrome.storage.local`, restricted to trusted contexts, never in IndexedDB, logs or the page markup (the key field is uncontrolled so React does not mirror it into an attribute).
 - **A one-minute alarm is the heartbeat.** Each tick continues an interrupted scan or starts a due one; nothing relies on the worker staying alive or on an alarm surviving a restart.
 - **IndexedDB sits behind the same store interface as the in-memory store**, proven by one shared conformance suite.
-- **Stored settings are untrusted:** validated on read, with a default per failing field.
+- **Stored settings are untrusted:** validated on read, with a default per failing field. The shape check lives in `extension/lib/worker.ts`; *for v2* it belongs in `core/` next to `validateSettings`.
+- **Known gap: a network error's text is stored with the scan record** in IndexedDB. Replies to pages strip the key from such text; the stored copy does not. *For v2:* strip it where the runner records the message.
 - **The settings page saves a field on blur or Enter**, radios and checkboxes at once; the forecast follows every keystroke.
 
 ## Design
