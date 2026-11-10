@@ -66,14 +66,11 @@ export function splitWithPage(
   const named = [...fromPage.keys()];
   const modelResolved = modelSplit.status === 'resolved';
 
+  if (fromPage.size === 0) return withNote(modelSplit, 'page names no models'); // R1, every brand
   if (brand === 'DEWALT') {
-    // A page that names nothing beyond the bundle's own kit says nothing about the bonus item.
+    // A page that names only the bundle's own kit says nothing about the bonus item.
     const kit = DEWALT_BUNDLE.exec(bundle.model.toUpperCase().replace(/[-\s]/g, ''))?.[1];
-    if (named.length === 0 || (named.length === 1 && named[0] === kit)) {
-      return modelResolved ? standsUnnamed(modelSplit, fromPage) : modelSplit;
-    }
-  } else if (fromPage.size === 0) {
-    return withNote(modelSplit, 'page names no models'); // R1
+    if (named.length === 1 && named[0] === kit) return modelResolved ? standsUnnamed(modelSplit, fromPage) : modelSplit;
   }
 
   const pageSplit = decompose(brand, bundle.model, bundle.title, fromPage);
@@ -90,7 +87,11 @@ export function splitWithPage(
     return { components: modelSplit.components, status: 'needs_review', notes: [reason] };
   }
   if (modelResolved) { // R3
-    if (brand === 'DEWALT') return { components: modelSplit.components, status: 'needs_review', notes: [doNotFit] };
+    // DEWALT: both readings in the notes, which the runner joins into the review reason.
+    if (brand === 'DEWALT') {
+      const says = `model number says ${list(modelSplit.components)}`;
+      return { components: modelSplit.components, status: 'needs_review', notes: [says, doNotFit] };
+    }
     // A RYOBI Includes list goes deeper than the boxed items: it can confirm but not contradict.
     return standsUnnamed(modelSplit, fromPage);
   }
@@ -102,5 +103,6 @@ export function splitWithPage(
     const both = decompose(brand, bundle.model, bundle.title, merged);
     if (both.status === 'resolved') return { ...both, notes: ['parts known from the catalog and the page'] };
   }
-  return misfit ? withNote(modelSplit, doNotFit) : modelSplit;
+  // DEWALT here: the page names models beyond the kit and its split is not exactly them.
+  return brand === 'DEWALT' ? withNote(modelSplit, doNotFit) : modelSplit;
 }

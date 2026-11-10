@@ -106,7 +106,8 @@ const ROWS: Row[] = [
   { item: '337440459', brand: 'DEWALT', model: 'DCK200D1P1W921B', known: ['DCF921B'], page: p('337440459'),
     status: 'resolved', parts: ['DCF921B', 'DCK200D1P1'], notes: ['model number and page agree'] },
   { item: "337440459's bullets", brand: 'DEWALT', model: 'DCK200D1P1WB606', known: ['DCB606'], page: p('337440459'),
-    status: 'needs_review', notes: ['page names DCF921B, DCK200D1P1, which do not fit the model number'] },
+    status: 'needs_review',
+    notes: ['model number says DCB606, DCK200D1P1', 'page names DCF921B, DCK200D1P1, which do not fit the model number'] },
   { item: '337440461', brand: 'DEWALT', model: 'DCK200D1P1WB606', page: p('337440461'),
     status: 'resolved', parts: ['DCB606', 'DCK200D1P1'], notes: ['split read from the page'] },
   { item: '343992133', brand: 'DEWALT', model: 'DCK540D1WCS334B', page: p('343992133'),
@@ -150,16 +151,20 @@ describe('splitWithPage: a DEWALT page silent beyond the kit', () => {
     expect(got.status).toBe('needs_review');
   });
 
-  it('names no model: a resolved kit stands, with the note that the page does not name it', () => {
-    // 206510146 is the plain kit DCK940D2; its bullets read "DEWALT DCD771 20-Volt MAX ...".
+});
+
+describe('splitWithPage: a DEWALT page that names no models takes R1', () => {
+  // 206510146 is the plain kit DCK940D2; its bullets read "DEWALT DCD771 20-Volt MAX ...".
+  it('a resolved kit stands, noting the page names no models', () => {
     const { modelSplit, got } = run({ brand: 'DEWALT', model: 'DCK940D2', known: ['DCK940D2'], page: p('206510146') });
     expect(modelSplit.status).toBe('resolved');
-    expect(got).toEqual({ ...modelSplit, notes: [...modelSplit.notes, 'page does not name DCK940D2'] });
+    expect(got).toEqual({ ...modelSplit, notes: ['manufacturer kit', 'page names no models'] });
   });
 
-  it('names no model: an unresolved model split is unchanged', () => {
+  it('an unresolved model split stays in review, noting the page names no models', () => {
     const { modelSplit, got } = run({ brand: 'DEWALT', model: 'DCK940D2', page: p('206510146') });
-    expect(got).toEqual(modelSplit);
+    expect(modelSplit.status).toBe('needs_review');
+    expect(got).toEqual({ ...modelSplit, notes: ['no known DEWALT bundle pattern', 'page names no models'] });
   });
 });
 
@@ -169,16 +174,25 @@ describe('splitWithPage: a DEWALT page naming another kit', () => {
   const page = p('337440459');
   const misfit = 'page names DCF921B, DCK200D1P1, which do not fit the model number';
 
-  it('model split resolved: to review, the page reading in the reason', () => {
+  it('model split resolved: to review, both readings in the reason', () => {
     const { modelSplit, got } = run({ brand: 'DEWALT', model: 'DCK240C2W921B', known: ['DCF921B'], page });
     expect(modelSplit.status).toBe('resolved');
-    expect(got).toEqual({ components: modelSplit.components, status: 'needs_review', notes: [misfit] });
+    expect(got).toEqual({
+      components: modelSplit.components, status: 'needs_review', notes: ['model number says DCF921B, DCK240C2', misfit],
+    });
   });
 
   it('model split unresolved: stays in review, with the page reading added', () => {
     const { modelSplit, got } = run({ brand: 'DEWALT', model: 'DCK240C2W921B', page });
     expect(modelSplit.status).toBe('needs_review');
     expect(got).toEqual({ ...modelSplit, notes: [...modelSplit.notes, misfit] });
+  });
+
+  it('neither split resolved: stays in review, with the page reading added', () => {
+    // 337440459's bullets against DCK200D1P1WB606: 'B606' fits nothing the page names, nor anything known.
+    const { modelSplit, got } = run({ brand: 'DEWALT', model: 'DCK200D1P1WB606', page });
+    expect(modelSplit.status).toBe('needs_review');
+    expect(got).toEqual({ ...modelSplit, notes: ["'B606' matches nothing in the catalog", misfit] });
   });
 });
 
