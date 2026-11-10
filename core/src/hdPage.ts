@@ -65,3 +65,55 @@ export function componentItemIds(pageHtml: string, ownItemId: string): string[] 
   ids.delete(ownItemId);
   return [...ids].sort();
 }
+
+/** What a bundle's own Home Depot page says, read from its embedded data. */
+export interface PageContent {
+  /** details.descriptiveAttributes[].value, in page order, exactly as the page gives them. */
+  bullets: string[];
+  /** details.description; null when absent. Stored for review; not used to split. */
+  description: string | null;
+}
+
+const STATE_MARK = 'window.__APOLLO_STATE__=';
+
+/** End index (exclusive) of the JSON object starting at `start`, matching braces outside strings; -1 if it never closes. */
+function objectEnd(text: string, start: number): number {
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (c === '\\') i++;
+      else if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if (c === '{') depth++;
+    else if (c === '}' && --depth === 0) return i + 1;
+  }
+  return -1;
+}
+
+/** Null when the text has no `window.__APOLLO_STATE__=` object, it does not parse, or it has no `base-catalog-<itemId>`. */
+export function parseBundlePage(text: string, itemId: string): PageContent | null {
+  const mark = text.indexOf(STATE_MARK);
+  if (mark < 0) return null;
+  const start = mark + STATE_MARK.length;
+  if (text[start] !== '{') return null;
+  const end = objectEnd(text, start);
+  if (end < 0) return null;
+  let state: unknown;
+  try {
+    state = JSON.parse(text.slice(start, end));
+  } catch {
+    return null;
+  }
+  const product = asObj(state)[`base-catalog-${itemId}`];
+  if (!product || typeof product !== 'object') return null;
+  const details = asObj(asObj(product).details);
+  const attrs = Array.isArray(details.descriptiveAttributes) ? details.descriptiveAttributes : [];
+  const bullets: string[] = [];
+  for (const a of attrs) {
+    const v = asObj(a).value;
+    if (typeof v === 'string') bullets.push(v);
+  }
+  return { bullets, description: typeof details.description === 'string' ? details.description : null };
+}

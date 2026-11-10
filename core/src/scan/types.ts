@@ -6,6 +6,7 @@
 // worker with IndexedDB behind the same ScanStore.
 
 import type { Decomposition } from '../decompose';
+import type { PageContent } from '../hdPage';
 import type { Grade } from '../match';
 import { DEFAULT_FEES, type BundleResult, type FeeSettings } from '../money';
 import type { BlockReason } from '../serpapi/budget';
@@ -55,6 +56,8 @@ export interface ScanSettings {
   catalogPagesPerScan: number;
   /** Amazon's brand filter per brand, sent as `rh`. Read from recorded responses. */
   brandFilters: Record<string, string>;
+  /** Bundle pages read at most per scan. */
+  pageReadsPerScan: number;
 }
 
 const HOUR = 60 * 60 * 1000;
@@ -71,6 +74,7 @@ export const DEFAULT_SCAN_SETTINGS: ScanSettings = {
   amazonDomain: 'amazon.com',
   catalogPagesPerScan: 1,
   brandFilters: { DEWALT: 'p_123:195991', RYOBI: 'p_123:252605' },
+  pageReadsPerScan: 60,
 };
 
 // ---------------------------------------------------------------- records
@@ -97,7 +101,27 @@ export interface BundleRecord {
   seenAt: number;
   /** Result of the last split attempt; null before the first one. */
   split: Decomposition | null;
+  /** What the bundle's own page said. Undefined or null: not read yet. */
+  page?: PageReading | null;
 }
+
+export interface PageReading extends PageContent {
+  /** Clock time of the reading. */
+  readAt: number;
+}
+
+/**
+ * read        the page was read
+ * unreadable  the page came back but its data could not be read
+ * refused     Home Depot answered with something other than the page; reading stopped here
+ * skipped     not tried, because reading stopped earlier
+ */
+export type PageOutcome =
+  | { itemId: string; kind: 'read'; content: PageContent }
+  | { itemId: string; kind: 'unreadable' | 'refused' | 'skipped' };
+
+/** Reads bundle pages in the owner's browser. Never a search. */
+export type ReadPages = (itemIds: string[]) => Promise<PageOutcome[]>;
 
 export interface CatalogRecord {
   /** partKey(brand, model) */
