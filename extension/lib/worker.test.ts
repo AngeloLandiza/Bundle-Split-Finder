@@ -396,7 +396,7 @@ describe('worker: continues after the worker restarts (criterion 8)', () => {
     await first.onTick();
     const [saved] = await w.store.listScans();
     expect(saved).toMatchObject({ status: 'running', phase: 'parts', searchesUsed: 1 });
-    expect(w.prefs.data.activeScan).toEqual({ jobId: saved!.id, trigger: 'scheduled' });
+    expect(w.prefs.data.activeScan).toEqual({ jobId: saved!.id, trigger: 'scheduled', attempts: 0, progress: '0:listing:1' });
     // The scheduled run is not over, so the schedule has not moved on.
     expect(w.prefs.data.lastScheduledRunAt).toBe(T0 - 7 * HOUR);
     expect(w.ledger).toHaveLength(2);
@@ -717,11 +717,183 @@ describe('worker: the key never leaves in a reply or a broadcast', () => {
     };
     await send(w, { type: 'scanNow' });
     await untilIdle(w);
-    // The runner keeps the message; the worker never hands it out with the key in it.
-    expect((await w.store.listScans())[0]!.stopMessage).toContain(`api_key=${KEY}`);
+    // The key is taken out before the job is written: the stored job never holds it.
+    const stored = (await w.store.listScans())[0]!.stopMessage!;
+    expect(stored).toMatch(/^Network error reaching SerpApi: request to .*api_key=\[key\]/);
+    expect(stored).not.toContain(KEY);
+    expect(stored).not.toContain(`api_key=${KEY}`);
     const shown = await state(w);
     expect(shown.lastJob).toMatchObject({ status: 'stopped', stopReason: 'error' });
-    expect(shown.lastJob!.stopMessage).toMatch(/^Network error reaching SerpApi: request to /);
     expect(JSON.stringify([shown, w.broadcasts])).not.toContain(KEY);
+    // Once the key is forgotten the reply scrub no longer knows it; the stored job is clean anyway.
+    await send(w, { type: 'forgetKey' });
+    expect(JSON.stringify((await state(w)).lastJob)).not.toContain(KEY);
+  });
+
+  it('any api_key value in an error text is replaced, whatever the key was', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.beforeSearch = (url) => {
+      if (url.searchParams.get('k')?.startsWith('RYOBI ')) throw new TypeError('request to https://serpapi.com/search.json?api_key=OLDKEY123&q=x failed');
+    };
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const stored = (await w.store.listScans())[0]!.stopMessage!;
+    expect(stored).toContain('api_key=[key]&q=x');
+    expect(stored).not.toContain('OLDKEY123');
+  });
+});
+
+// ---------------------------------------------------------------- review fixes: storage failures, write order, a start in progress
+
+describe('worker: a scan that cannot be saved stops after two tries', () => {
+  const GAVE_UP = 'The scan could not be saved, so it was stopped. Check that Chrome has free storage, then scan again.';
+
+  it('every job save after the first fails and the cache cannot be written: two tries, then nothing is sent', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 3, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    let saves = 0;
+    const broken = new Proxy(w.store, {
+      get(target, prop) {
+        if (prop === 'putScan') {
+          return async (job: ScanJob) => {
+            saves += 1;
+            if (saves > 1) throw new Error('QuotaExceededError');
+            return target.putScan(job);
+          };
+        }
+        const value: unknown = Reflect.get(target, prop);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    w.cache.set = async () => {
+      throw new Error('QuotaExceededError');
+    };
+    const worker = workerOver(w, broken);
+    w.worker = worker;
+
+    await worker.onTick();
+    expect(w.replay.calls).toEqual([RATCHET]);
+    expect(w.prefs.data.activeScan).toMatchObject({ attempts: 0, progress: '0:listing:1' });
+
+    w.clock = T0 + MINUTE;
+    await worker.onTick();
+    expect(w.replay.calls).toEqual([RATCHET, RATCHET]);
+    expect(w.prefs.data.activeScan).toMatchObject({ attempts: 1, progress: '0:listing:1' });
+
+    w.clock = T0 + 2 * MINUTE;
+    const before = w.requests.length;
+    await worker.onTick();
+    expect(w.requests).toHaveLength(before);
+    expect(w.prefs.data.activeScan).toBeNull();
+    expect((await state(w)).problem).toBe(GAVE_UP);
+    expect(w.broadcasts.at(-1)!.problem).toBe(GAVE_UP);
+
+    // The schedule does not start it again at once either.
+    w.clock = T0 + 3 * MINUTE;
+    await worker.onTick();
+    expect(w.requests).toHaveLength(before);
+
+    // A later Scan now may try again.
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    await untilIdle(w);
+    expect(w.replay.calls).toEqual([RATCHET, RATCHET, RATCHET]);
+  });
+
+  it('a job that makes progress between interruptions is continued as many times as needed', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 3, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    // The first save after each paid step fails once, as when Chrome stops the worker each time.
+    const thrown = new Set<string>();
+    const flaky = new Proxy(w.store, {
+      get(target, prop) {
+        if (prop === 'putScan') {
+          return async (job: ScanJob) => {
+            const at = `${job.counts.pagesFetched}:${job.counts.lookupsDone}`;
+            if (at !== '0:0' && !thrown.has(at)) {
+              thrown.add(at);
+              throw new Error('interrupted');
+            }
+            return target.putScan(job);
+          };
+        }
+        const value: unknown = Reflect.get(target, prop);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    for (let i = 0; i < 6; i++) {
+      w.clock = T0 + i * MINUTE;
+      await workerOver(w, flaky).onTick();
+    }
+    expect(thrown.size).toBe(3);
+    expect(await lastJob(w)).toMatchObject({ status: 'done', searchesUsed: 0 });
+    expect(await w.store.listScans()).toHaveLength(1);
+    // Each paid step once: every repeat came from the cache.
+    expect(w.replay.calls).toEqual([RATCHET, LOOKUP_01B, LOOKUP_25B]);
+    expect((await state(w)).problem).toBeNull();
+    expect(w.prefs.data.activeScan).toBeNull();
+  });
+});
+
+describe('worker: the order of the writes after a scheduled scan', () => {
+  it('lastScheduledRunAt is written before activeScan is cleared, so a failure between them starts no second scan', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    const setActiveScan = w.prefs.setActiveScan.bind(w.prefs);
+    let failed = false;
+    w.prefs.setActiveScan = async (v) => {
+      if (v === null && !failed) {
+        failed = true;
+        throw new Error('storage failed');
+      }
+      return setActiveScan(v);
+    };
+    await w.worker.onTick();
+    expect(failed).toBe(true);
+    expect(w.prefs.data.lastScheduledRunAt).toBe(T0);
+    w.clock = T0 + MINUTE;
+    await w.worker.onTick();
+    expect(await w.store.listScans()).toHaveLength(1);
+    expect(w.prefs.data.activeScan).toBeNull();
+  });
+});
+
+describe('worker: stopScan and forgetKey while a start waits on the Account API', () => {
+  function pendingAccount(w: World) {
+    let release!: () => void;
+    const open = new Promise<void>((resolve) => (release = resolve));
+    const answer = w.accountApi;
+    w.accountApi = async (key) => {
+      await open;
+      return answer(key);
+    };
+    return { release, asked: () => vi.waitFor(() => expect(w.requests).toContain('https://serpapi.com/account.json')) };
+  }
+
+  it('stopScan sent then results in no search', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const account = pendingAccount(w);
+    const reply = send(w, { type: 'scanNow' });
+    await account.asked();
+    expect(await send(w, { type: 'stopScan' })).toEqual({ ok: true, data: null });
+    account.release();
+    expect((await reply).ok).toBe(false);
+    await untilIdle(w);
+    expect(w.replay.calls).toEqual([]);
+    expect(w.ledger).toEqual([]);
+    // The stop was for that start only.
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(await lastJob(w)).toMatchObject({ status: 'done' });
+  });
+
+  it('forgetKey sent then results in no search and no key', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const account = pendingAccount(w);
+    const reply = send(w, { type: 'scanNow' });
+    await account.asked();
+    await send(w, { type: 'forgetKey' });
+    account.release();
+    expect(await reply).toEqual({ ok: false, error: 'Add your SerpApi key in Settings.' });
+    await untilIdle(w);
+    expect(w.replay.calls).toEqual([]);
+    expect(w.prefs.data.apiKey).toBeUndefined();
+    expect(await w.store.listScans()).toEqual([]);
   });
 });

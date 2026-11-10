@@ -8,6 +8,10 @@ import type { AccountInfo } from '@core/serpapi/budget';
 export interface ActiveScan {
   jobId: string;
   trigger: ScanTrigger;
+  /** Continuations in a row that found the job where the last one left it. */
+  attempts?: number;
+  /** The job's searchesUsed, phase and queue length when it was last started or continued. */
+  progress?: string;
 }
 
 export interface StoredAccount {

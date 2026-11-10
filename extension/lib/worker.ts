@@ -66,6 +66,11 @@ const ENTER_KEY = 'Enter your SerpApi key.';
 const ACCOUNT_FAILED = 'Something went wrong while checking your SerpApi account.';
 const FAILED = 'Something went wrong. Try again.';
 const RUNNING = 'A scan is already running.';
+const GAVE_UP = 'The scan could not be saved, so it was stopped. Check that Chrome has free storage, then scan again.';
+const STOPPED = 'The scan was stopped before it began.';
+const KEY_CHANGED = 'The SerpApi key changed while the scan was starting. Scan again.';
+/** A job is continued at most this many times in a row without progress. */
+const MAX_TRIES = 2;
 /** Notifications per scan, one per bundle. */
 const MAX_NOTIFIED = 3;
 
@@ -133,21 +138,29 @@ function sameSchedule(a: Schedule, b: Schedule): boolean {
   return a.mode === b.mode;
 }
 
-/** The store, except that `first` runs, and must succeed, before every job save. */
-function beforePutScan(store: ScanStore, first: (job: ScanJob) => Promise<void>): ScanStore {
+/** The store, except that every job goes through `prepare`, which must succeed, before it is saved. */
+function onPutScan(store: ScanStore, prepare: (job: ScanJob) => Promise<ScanJob>): ScanStore {
   return new Proxy(store, {
     get(target, prop) {
-      if (prop === 'putScan') {
-        return async (job: ScanJob) => {
-          await first(job);
-          return target.putScan(job);
-        };
-      }
+      if (prop === 'putScan') return async (job: ScanJob) => target.putScan(await prepare(job));
       const value: unknown = Reflect.get(target, prop, target);
       return typeof value === 'function' ? value.bind(target) : value;
     },
   });
 }
+
+/**
+ * Error text with the key taken out, and any api_key value in a URL too, whatever key it was.
+ * A failed search's message can carry the request URL; the stored job must never hold the key.
+ */
+export function withoutKey(text: string, key: string): string {
+  let out = text;
+  for (const k of new Set([key, encodeURIComponent(key)])) if (k !== '') out = out.split(k).join('[key]');
+  return out.replace(/api_key=[^&\s"']+/g, 'api_key=[key]');
+}
+
+/** What a continuation compares to tell whether the job moved on since the last start. */
+const progressOf = (job: ScanJob): string => `${job.searchesUsed}:${job.phase}:${job.queue.length}`;
 
 // ---------------------------------------------------------------- the worker
 
@@ -164,6 +177,8 @@ export function createWorker(env: WorkerEnv): Worker {
   let stopRequested = false;
   /** The key the running scan holds, so it is kept out of replies even after it was forgotten. */
   let scanKey: string | null = null;
+  /** True while a start is between its first read and the scan's claim (or its refusal). */
+  let starting = false;
 
   const settings = async () => trusted(await prefs.getSettings());
 
@@ -212,9 +227,36 @@ export function createWorker(env: WorkerEnv): Worker {
    * Resolves once the scan is under way; `scan` then holds the run until it ends. Called
    * only through serial(), with no scan running.
    */
-  async function start(trigger: ScanTrigger): Promise<Reply<null>> {
+  async function start(trigger: ScanTrigger, resume: ActiveScan | null): Promise<Reply<null>> {
+    starting = true;
+    try {
+      return await startScan(trigger, resume);
+    } finally {
+      starting = false;
+      // A stop sent during a start that did not run was for that start only.
+      if (scan === null) stopRequested = false;
+    }
+  }
+
+  async function startScan(trigger: ScanTrigger, resume: ActiveScan | null): Promise<Reply<null>> {
     const key = await prefs.getKey();
     if (key === null) return fail(NO_KEY);
+
+    // runScan continues the newest job when it is "running".
+    const newest = (await store.listScans())[0];
+    const continued = newest?.status === 'running' ? newest : undefined;
+    // A continuation that finds the job where the last one left it counts as another try.
+    // Each try may pay again for a step whose save failed, so the tries are limited.
+    const progress = continued ? progressOf(continued) : null;
+    const attempts = continued && resume?.jobId === continued.id && resume.progress === progress ? (resume.attempts ?? 0) + 1 : 0;
+    if (attempts >= MAX_TRIES) {
+      // The schedule counts from now, so it does not start the job again at once. Written
+      // before activeScan is cleared, as after a scan.
+      await prefs.setLastScheduledRunAt(env.now());
+      await prefs.setActiveScan(null);
+      return fail(GAVE_UP);
+    }
+
     let account: AccountInfo;
     try {
       account = await accountOf(key);
@@ -225,8 +267,6 @@ export function createWorker(env: WorkerEnv): Worker {
     problem = null;
 
     const s = await settings();
-    const newest = (await store.listScans())[0];
-    const continued = newest?.status === 'running' ? newest : undefined;
     const budget = new SearchBudget(account, budgetPolicyFor(s, trigger, continued?.searchesUsed ?? 0));
     const client = new SerpApiClient({ apiKey: key, budget, cache: env.cache, fetchFn: env.fetchFn, onSpend: env.ledger, now: env.now, baseUrl });
     const scanSettings = toScanSettings(s);
@@ -235,20 +275,27 @@ export function createWorker(env: WorkerEnv): Worker {
     // activeScan names the job before its first search. A new job is first saved before
     // runScan sends anything; a continued one is named here.
     let named = false;
-    const name = async (jobId: string) => {
+    const name = async (job: ScanJob, tries: number) => {
       if (named) return;
-      await prefs.setActiveScan({ jobId, trigger });
+      await prefs.setActiveScan({ jobId: job.id, trigger, attempts: tries, progress: progressOf(job) });
       named = true;
     };
-    if (continued) await name(continued.id);
-    const naming = beforePutScan(store, async (job) => {
-      if (job.status === 'running') await name(job.id);
+    if (continued) await name(continued, attempts);
+    const saving = onPutScan(store, async (job) => {
+      if (job.status === 'running') await name(job, 0);
+      return job.stopMessage === null ? job : { ...job, stopMessage: withoutKey(job.stopMessage, key) };
     });
+
+    // Asked last before the scan is claimed, so a forgetKey or stopScan sent while the account
+    // was being checked is not lost. After the claim, both set stopRequested.
+    const keyNow = await prefs.getKey();
+    if (keyNow !== key) return fail(keyNow === null ? NO_KEY : KEY_CHANGED);
+    if (stopRequested) return refuse(STOPPED);
 
     scanKey = key;
     scan = (async () => {
       try {
-        await runScan({ client, budget, store: naming, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested });
+        await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested });
       } catch {
         // The job stays "running" and activeScan keeps naming it: the next tick continues it.
         return;
@@ -270,8 +317,10 @@ export function createWorker(env: WorkerEnv): Worker {
 
   /** Rule 2, afterwards. */
   async function finished(trigger: ScanTrigger, startedAt: number): Promise<void> {
-    await prefs.setActiveScan(null);
+    // The schedule first: a failure between the two writes leaves a finished job named, which
+    // the next tick clears, rather than a due schedule that would start a second scan at once.
     if (trigger === 'scheduled') await prefs.setLastScheduledRunAt(startedAt);
+    await prefs.setActiveScan(null);
     const key = await prefs.getKey();
     if (key !== null) {
       try {
@@ -308,14 +357,14 @@ export function createWorker(env: WorkerEnv): Worker {
   }
 
   /**
-   * The trigger of the job activeScan names, when that job is the one runScan will continue
+   * activeScan, when that job is the one runScan will continue
    * (the newest, and "running"). Otherwise activeScan is cleared and null is returned.
    */
-  async function saved(): Promise<ScanTrigger | null> {
+  async function saved(): Promise<ActiveScan | null> {
     const active = await prefs.getActiveScan();
     if (active === null) return null;
     const newest = (await store.listScans())[0];
-    if (newest?.id === active.jobId && newest.status === 'running') return active.trigger;
+    if (newest?.id === active.jobId && newest.status === 'running') return active;
     await prefs.setActiveScan(null);
     return null;
   }
@@ -333,13 +382,13 @@ export function createWorker(env: WorkerEnv): Worker {
         // Rule 3: a tick while a scan is active does nothing.
         if (scan !== null) return null;
         const resume = await saved();
-        if (resume !== null) return (await start(resume)).ok ? scan : null;
+        if (resume !== null) return (await start(resume.trigger, resume)).ok ? scan : null;
         const s = await settings();
         const last = await prefs.getLastScheduledRunAt();
         const now = env.now();
         const due = nextRun(s.schedule, new Date(now), last === null ? null : new Date(last));
         if (due === null || due.getTime() > now) return null;
-        return (await start('scheduled')).ok ? scan : null;
+        return (await start('scheduled', null)).ok ? scan : null;
       });
     } catch {
       // A storage error before the scan started: nothing was spent, and the next tick tries again.
@@ -351,7 +400,8 @@ export function createWorker(env: WorkerEnv): Worker {
   const scanNow = (): Promise<Reply<null>> =>
     serial(async () => {
       if (scan !== null) return refuse(RUNNING);
-      return start((await saved()) ?? 'manual');
+      const resume = await saved();
+      return start(resume?.trigger ?? 'manual', resume);
     });
 
   // ---------------------------------------------------------------- messages
@@ -376,7 +426,7 @@ export function createWorker(env: WorkerEnv): Worker {
   async function forgetKey(): Promise<Reply<null>> {
     await prefs.forgetKey();
     // A scan holds the key in memory: it stops before its next search.
-    if (scan !== null) stopRequested = true;
+    if (scan !== null || starting) stopRequested = true;
     // The account shown belonged to that key.
     await prefs.setAccount(null);
     await broadcast();
@@ -426,7 +476,7 @@ export function createWorker(env: WorkerEnv): Worker {
       case 'exportMatches':
         return exportMatches();
       case 'stopScan':
-        if (scan !== null) stopRequested = true;
+        if (scan !== null || starting) stopRequested = true;
         return ok(null);
       case 'clearSavedSearches':
         await env.cache.clear();
