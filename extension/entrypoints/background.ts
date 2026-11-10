@@ -9,9 +9,74 @@ import { appendLedger } from '../lib/ledger';
 import type { Request, StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
 import { isOwnPage } from '../lib/sender';
+import { createPageReader, type ReaderEnv } from '../lib/hdReader';
 import { createWorker } from '../lib/worker';
 
 declare const __SPLIT_FINDER_BASE_URL__: string | undefined;
+declare const __SPLIT_FINDER_HD_ORIGIN__: string;
+declare const __SPLIT_FINDER_DEBUG__: boolean;
+
+const DOORWAY_KEY = 'hdReaderTab';
+
+/** The reader's Chrome calls. Neither way of opening a tab needs a permission. */
+function chromeReaderEnv(): ReaderEnv {
+  return {
+    origin: __SPLIT_FINDER_HD_ORIGIN__,
+    async openTab(url) {
+      try {
+        const win = await browser.windows.create({ url, focused: false, state: 'minimized' });
+        const id = win?.tabs?.[0]?.id;
+        if (typeof id === 'number') return id;
+        // A window without a tab id: close it, then use a plain background tab.
+        if (win?.id !== undefined) await browser.windows.remove(win.id).catch(() => {});
+      } catch {
+        // Fall through to a tab.
+      }
+      const tab = await browser.tabs.create({ url, active: false });
+      if (typeof tab.id !== 'number') throw new Error('Chrome opened no tab.');
+      return tab.id;
+    },
+    async closeTab(tabId) {
+      await browser.tabs.remove(tabId);
+    },
+    async waitForLoad(tabId, timeoutMs) {
+      await new Promise<void>((resolve, reject) => {
+        const finish = (fail?: Error) => {
+          clearTimeout(timer);
+          browser.tabs.onUpdated.removeListener(onUpdated);
+          if (fail) reject(fail);
+          else resolve();
+        };
+        const onUpdated = (id: number, info: { status?: string }) => {
+          if (id === tabId && info.status === 'complete') finish();
+        };
+        const timer = setTimeout(() => finish(new Error('timeout')), timeoutMs);
+        browser.tabs.onUpdated.addListener(onUpdated);
+        // It may have finished before the listener was added.
+        browser.tabs.get(tabId).then(
+          (tab) => {
+            if (tab.status === 'complete') finish();
+          },
+          (err) => finish(err instanceof Error ? err : new Error(String(err))),
+        );
+      });
+    },
+    async runInTab(tabId, func, args) {
+      const results = await browser.scripting.executeScript({ target: { tabId }, world: 'ISOLATED', func, args });
+      return results[0]?.result as Awaited<ReturnType<typeof func>>;
+    },
+    async remember(tabId) {
+      if (tabId === null) await browser.storage.session.remove(DOORWAY_KEY);
+      else await browser.storage.session.set({ [DOORWAY_KEY]: tabId });
+    },
+    async remembered() {
+      const got = await browser.storage.session.get(DOORWAY_KEY);
+      const v = got[DOORWAY_KEY];
+      return typeof v === 'number' ? v : null;
+    },
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  };
+}
 
 const TICK = 'tick';
 /** Notifications need an icon; until the extension has one, a plain square in --ink. */
@@ -31,6 +96,8 @@ async function notify(rows: BundleRow[]): Promise<void> {
 }
 
 export default defineBackground(() => {
+  const readPages = createPageReader(chromeReaderEnv());
+  if (__SPLIT_FINDER_DEBUG__) (globalThis as { splitFinderReadPages?: unknown }).splitFinderReadPages = readPages;
   const worker = createWorker({
     store: new IdbScanStore(),
     cache: new IdbCache(),
@@ -40,6 +107,7 @@ export default defineBackground(() => {
     now: Date.now,
     // Set only in the end-to-end build; undefined means https://serpapi.com.
     baseUrl: __SPLIT_FINDER_BASE_URL__,
+    readPages,
     notify,
     broadcast: (state) => {
       // No page may be open to receive it.

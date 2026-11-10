@@ -57,11 +57,12 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 
 ## Extension
 
-- **Manifest V3, built with WXT 0.21, React, plain CSS.** One npm package, WXT at the repo root with `srcDir: 'extension'`. Permissions: storage, alarms, sidePanel, notifications; hosts: serpapi.com and homedepot.com.
+- **Manifest V3, built with WXT 0.21, React, plain CSS.** One npm package, WXT at the repo root with `srcDir: 'extension'`. Permissions: storage, alarms, sidePanel, notifications, scripting; hosts: serpapi.com and homedepot.com.
 - **The service worker is the only context with the key.** Pages send typed messages. The key is in `chrome.storage.local`, restricted to trusted contexts, never in IndexedDB, logs or the page markup (the key field is uncontrolled so React does not mirror it into an attribute).
 - **The worker answers only the extension's own pages.** A message from a content script or another extension is refused. *For v2 and step 6:* the chip on Home Depot pages will need its own short allow-list of message types.
 - **A scan that cannot be saved is continued at most twice without progress**, then stopped with a plain sentence, so a full disk cannot become a spending loop.
 - **The key is stripped from any error text before a scan record is stored.**
+- **Bundle pages are read from a background Home Depot tab.** Home Depot refuses page requests from the service worker, so the reader (`extension/lib/hdReader.ts`) opens one minimized window (falling back to an inactive tab; neither needs a permission), runs `fetch('/p/<id>')` inside it with `scripting.executeScript` in the isolated world, and closes it. The tab id is kept in `storage.session` so a tab left by a stopped worker is closed on the next read. `scripting` is the one permission this adds. The function run in the tab is serialised from the built bundle; the end-to-end build proves the bundler leaves it self-contained. `globalThis.splitFinderReadPages` exists only when built with `SPLIT_FINDER_DEBUG=1`; a test asserts the production build has neither it nor any localhost text.
 - **End-to-end tests use a separate build** (`SPLIT_FINDER_E2E=1`) that may talk to a local replay server on localhost; the production build has no localhost permission and a fixed SerpApi address, and a test asserts both.
 - **A one-minute alarm is the heartbeat.** Each tick continues an interrupted scan or starts a due one; nothing relies on the worker staying alive or on an alarm surviving a restart.
 - **IndexedDB sits behind the same store interface as the in-memory store**, proven by one shared conformance suite.
