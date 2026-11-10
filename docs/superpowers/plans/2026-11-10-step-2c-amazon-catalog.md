@@ -86,8 +86,8 @@ it.each([
 ] as const)('modelsInTitle(%s, %s)', (brand, title, models) => expect(modelsInTitle(brand, title)).toEqual(models));
 
 it('finds a model on 40 of the 60 recorded DEWALT rows and 17 of the 51 recorded RYOBI rows', () => { /* parseAmazonSearch(recorded(...)), filter by brand, count rows with modelsInTitle(...).length > 0 */ });
-it('never calls a plain word a model on the recorded pages', () => { /* every model found on both brand pages matches /\d{2,}/ and is at least 5 characters long */ });
-it('saves a row of a scanned brand, with its picture', () => { /* first DEWALT row of amazon-brand-dewalt-p1: asin 'B00IJ0ALYS', brand 'DEWALT', models ['DCK240C2'], price 149, reviews 61300, image a non-empty string, seenAt and checkedAt equal now */ });
+it('never calls a plain word a model on the recorded pages', () => { /* every model found on both brand pages matches /\d{2,}/ and is at least 4 characters long (P505 and P590 are real RYOBI models) */ });
+it('saves a row of a scanned brand, with its picture', () => { /* the row of amazon-brand-dewalt-p1 whose asin is 'B00IJ0ALYS': brand 'DEWALT', models ['DCK240C2'], price 149, reviews 61300, image a non-empty string, seenAt and checkedAt equal now */ });
 it('does not save a row with no brand, another brand, or Amazon Renewed', () => { /* listingFrom returns null for each */ });
 it('keeps the last price when the listing is seen again without one', () => { /* old price 149 seenAt 1; row with price null at now 5 -> price 149, seenAt 1, checkedAt 5 */ });
 it('offers saved listings for a part by whole model token only', () => { /* from the DEWALT page's saved rows: candidatesFor('DEWALT', 'DCS334B', ...) has asins ['B07JPFHQKG']; candidatesFor('DEWALT', 'DCS334', ...) is [] */ });
