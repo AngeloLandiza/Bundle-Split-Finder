@@ -1,0 +1,100 @@
+/* Design tokens. Values come from docs/design.md; tokens.test.ts checks them. */
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/barlow-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/barlow-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/barlow-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-600.woff2') format('woff2');
+}
+
+:root {
+  --paper: #FAFAF7;
+  --surface: #FFFFFF;
+  --sunken: #F1F0EA;
+  --ink: #1A1C1E;
+  --ink-2: #54585D;
+  --ink-3: #676B70;
+  --line: #E2E0D8;
+  --line-strong: #8B887F;
+  --link: #1D4ED8;
+  --attention: #744600;
+  --attention-bg: #FFF3D1;
+  --loss: #A33A12;
+
+  --radius-control: 4px;
+  --radius-notice: 6px;
+  --radius-tag: 3px;
+
+  --space: 4px;
+  --gutter: 16px;
+
+  --font-words: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  --font-figures: 'JetBrains Mono', Menlo, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-words);
+}
+
+.figure {
+  font-family: var(--font-figures);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
