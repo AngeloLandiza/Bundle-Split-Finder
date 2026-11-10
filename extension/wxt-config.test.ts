@@ -59,7 +59,7 @@ describe('the production build', () => {
     {
       const dir = join('.output-prod-check', 'chrome-mv3');
       const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8')) as { permissions: string[]; host_permissions: string[] };
-      expect(manifest.permissions).toContain('scripting');
+      expect(manifest.permissions).toEqual(['storage', 'alarms', 'sidePanel', 'notifications', 'scripting']);
       expect(manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*']);
       const files = (d: string): string[] =>
         readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? files(join(d, e.name)) : [join(d, e.name)]));
