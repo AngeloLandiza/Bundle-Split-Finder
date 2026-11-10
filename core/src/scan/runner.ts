@@ -487,6 +487,7 @@ async function readBundlePages(run: Run): Promise<void> {
   const asked = new Map(unread.map((b) => [b.itemId, b]));
   let refused = false;
   let unreadable = false;
+  let anyRead = false;
   for (const outcome of outcomes) {
     const bundle = asked.get(outcome.itemId);
     // An outcome for an id that was not asked for, or a second one for the same id, is ignored.
@@ -495,6 +496,7 @@ async function readBundlePages(run: Run): Promise<void> {
     if (outcome.kind === 'read') {
       await store.putBundle({ ...bundle, page: { ...outcome.content, readAt } });
       job.counts.pagesRead += 1;
+      anyRead = true;
     } else if (outcome.kind === 'refused') {
       refused = true;
     } else if (outcome.kind === 'unreadable') {
@@ -502,7 +504,9 @@ async function readBundlePages(run: Run): Promise<void> {
     }
   }
   if (refused) noteProblem(job, 'Home Depot refused a page; the rest are read next scan.');
-  else if (unreadable) noteProblem(job, 'A Home Depot page could not be read.');
+  else if (unreadable) {
+    noteProblem(job, anyRead ? 'A Home Depot page could not be read.' : 'No Home Depot page could be read.');
+  }
   await store.putScan(job);
 }
 

@@ -1586,6 +1586,7 @@ const ONE_SEARCH: BudgetPolicy = { reserve: 0, maxPerRun: 1 };
 const NO_SEARCH: BudgetPolicy = { reserve: 0, maxPerRun: 0 };
 const REFUSED = 'Home Depot refused a page; the rest are read next scan.';
 const UNREADABLE = 'A Home Depot page could not be read.';
+const NONE_READABLE = 'No Home Depot page could be read.';
 const lookup = (model: string) => ({ kind: 'lookup', brand: 'DEWALT', model }) as const;
 /** Item id, the time its page was read (null: unread), and its split status. */
 const pagesOf = async (store: ScanStore) =>
@@ -1888,12 +1889,20 @@ describe('runScan: split review items follow the latest reading (step 4, fix rou
 });
 
 describe('runScan: pages and old jobs (step 4, fix round 1)', () => {
+  it('one page read and the others unreadable: the message is that a page could not be read (final review)', async () => {
+    const w = world();
+    const reader = pageReader({ garble: COMBO_IDS.slice(1) });
+    const job = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader.readPages });
+    expect(job.counts.pagesRead).toBe(1);
+    expect(job.stopMessage).toBe(UNREADABLE);
+  });
+
   it('every page comes back unreadable: nothing is stored on a bundle, the splits are the model number\'s, and the message says so (Review Focus 1)', async () => {
     const w = world();
     const reader = pageReader({ garble: COMBO_IDS });
     const job = await scan(w, { settings: COMBO, policy: OPEN, readPages: reader.readPages });
     expect(reader.calls).toEqual([COMBO_IDS]);
-    expect(job).toMatchObject({ status: 'done', stopReason: null, stopMessage: UNREADABLE, searchesUsed: 1 });
+    expect(job).toMatchObject({ status: 'done', stopReason: null, stopMessage: NONE_READABLE, searchesUsed: 1 });
     expect(job.counts).toMatchObject({ pagesRead: 0, bundlesResolved: 0, reviewsOpened: 4 });
     expect((await w.store.listBundles()).some((b) => 'page' in b)).toBe(false);
 
