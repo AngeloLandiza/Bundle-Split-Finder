@@ -72,5 +72,8 @@ test('the built bundle talks only to the local replay server', () => {
     readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]));
   const background = readFileSync(join(EXTENSION_DIR, 'background.js'), 'utf8');
   expect(background).toContain(`http://localhost:${E2E_PORT}`);
+  // The page reader's origin is the replay server here, and its debug handle is not in the build.
+  expect(manifest.permissions).toContain('scripting');
+  expect(background).not.toContain('splitFinderReadPages');
   expect(files(EXTENSION_DIR).length).toBeGreaterThan(0);
 });

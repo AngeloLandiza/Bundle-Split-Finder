@@ -2,5 +2,6 @@
 declare const chrome: {
   runtime: { sendMessage(message: unknown): Promise<any> };
   storage: { local: object };
+  tabs: { query(q: object): Promise<{ url?: string; pendingUrl?: string }[]> };
   alarms: { get(name: string): Promise<{ periodInMinutes?: number } | undefined> };
 };
