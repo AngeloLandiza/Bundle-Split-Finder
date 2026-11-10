@@ -15,7 +15,8 @@ const recordedPages = new Map(
     p.text,
   ]),
 );
-const refusedPage = readFileSync(new URL('refused-2026-11-10.html', PAGES_DIR), 'utf8');
+// The refused page's own scripts are not part of what the reader sees: one loads from Home Depot's CDN, the other is the blanked bot-script path.
+const refusedPage = readFileSync(new URL('refused-2026-11-10.html', PAGES_DIR), 'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '');
 // type="text/plain" so the tab does not run the recorded text: after the state object the fixtures replace every
 // letter and digit with x, which is not valid JavaScript. The reader looks at the text, not at what ran.
 const html = (script: string): string =>
