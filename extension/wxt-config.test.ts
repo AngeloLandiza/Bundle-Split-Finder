@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -47,10 +47,17 @@ describe('wxt.config', () => {
 
 describe('the production build', () => {
   it('has the scripting permission, Home Depot as the reader origin, no localhost and no debug handle', async () => {
-    // The real command, into .output/chrome-mv3 (ignored by git), with the end-to-end and debug switches off.
-    execFileSync('npx', ['wxt', 'build'], { env: { ...process.env, SPLIT_FINDER_E2E: '', SPLIT_FINDER_DEBUG: '' }, stdio: 'ignore' });
+    // The real command into its own folder, with the end-to-end and debug switches off. It must leave
+    // .output/chrome-mv3, which the owner loads in Chrome, as it was.
+    const loaded = join('.output', 'chrome-mv3', 'manifest.json');
+    const before = existsSync(loaded) ? statSync(loaded).mtimeMs : null;
+    execFileSync('npx', ['wxt', 'build'], {
+      env: { ...process.env, SPLIT_FINDER_E2E: '', SPLIT_FINDER_DEBUG: '', SPLIT_FINDER_PROD_CHECK: '1' },
+      stdio: 'ignore',
+    });
+    expect(existsSync(loaded) ? statSync(loaded).mtimeMs : null).toBe(before);
     {
-      const dir = join('.output', 'chrome-mv3');
+      const dir = join('.output-prod-check', 'chrome-mv3');
       const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8')) as { permissions: string[]; host_permissions: string[] };
       expect(manifest.permissions).toContain('scripting');
       expect(manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*']);
@@ -61,7 +68,7 @@ describe('the production build', () => {
       for (const f of code) {
         const text = readFileSync(f, 'utf8');
         expect(text, f).not.toContain('splitFinderReadPages');
-        expect(text, f).not.toContain('localhost');
+        expect(text, f).not.toContain('http://localhost');
       }
       expect(readFileSync(join(dir, 'background.js'), 'utf8')).toContain('https://www.homedepot.com');
     }

@@ -10,5 +10,6 @@ __pycache__/
 .pytest_cache/
 output/
 .output-e2e/
+.output-prod-check/
 test-results/
 playwright-report/

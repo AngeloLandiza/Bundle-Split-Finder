@@ -55,7 +55,6 @@ test('the first scan sends the listing pages, the second what the first left, an
   expect(seen.console.filter((c) => !c.includes('status of 403'))).toEqual([]);
 });
 
-
 // Bundle 337440459 (DEWALT DCK200D1P1W921B) is on the recorded page 1 of the default DEWALT query. Its page is
 // in fixtures/homedepot-pages. The reader opens one background tab on the replay server's /p/<id>, so this also
 // proves the function run in the tab survives the production bundler.
