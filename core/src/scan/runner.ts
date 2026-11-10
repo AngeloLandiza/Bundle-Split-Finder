@@ -1,11 +1,14 @@
 // The scan runner: a few pages of the brands' own Amazon listings, then Home Depot listing
-// pages, then splits (free), then one Amazon lookup per new part that no saved listing
-// answers and a refresh per stale price. "Rule n" refers to the step 2 plan, Task 4 ("The
-// scan runner"); "2c rule n" to the step 2c plan, Task 2 ("The catalog phase"); "3 rule n"
-// to the step 3 plan, Task 3 ("Runner: stop on request, and one failed lookup does not end a scan").
+// pages, then the bundles' own pages (free, never a search), then splits (free), then one
+// Amazon lookup per new part that no saved listing answers and a refresh per stale price.
+// "Rule n" refers to the step 2 plan, Task 4 ("The scan runner"); "2c rule n" to the step 2c
+// plan, Task 2 ("The catalog phase"); "3 rule n" to the step 3 plan, Task 3 ("Runner: stop on
+// request, and one failed lookup does not end a scan"); "Pn" to the step 4 plan, Task 4
+// ("Runner reads pages before the split").
 
 import { type Catalog, catalogEntry, DEWALT_BUNDLE, type Decomposition, decompose, kindsFromTitle } from '../decompose';
 import { type Candidate, pick } from '../match';
+import { splitWithPage } from '../pageSplit';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
@@ -13,7 +16,8 @@ import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { bundleKey, partKey } from './types';
 import type {
-  BudgetView, BundleRecord, CatalogCursor, ListingRecord, MatchRecord, PriceRecord, ScanJob, ScanSettings, ScanStep, ScanStore, SearchClient, StopReason,
+  BudgetView, BundleRecord, CatalogCursor, ListingRecord, MatchRecord, PageOutcome, PriceRecord, ReadPages, ScanJob, ScanSettings, ScanStep, ScanStore,
+  SearchClient, StopReason,
 } from './types';
 
 export interface ScanDeps {
@@ -27,6 +31,8 @@ export interface ScanDeps {
   labelPrefix?: string;
   /** Checked before every paid step. True ends the scan as stopped by the user. */
   shouldStop?: () => boolean;
+  /** Reads bundle pages in the owner's browser (P1). Without it no page is read; pages read before still count in the split (P5). */
+  readPages?: ReadPages;
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -42,6 +48,7 @@ interface Run {
   now: () => number;
   prefix: string;
   shouldStop: () => boolean;
+  readPages: ReadPages | null;
   job: ScanJob;
   /** The models the splitter and wantedFor know (2c rule 4). Built when the listing queue is empty, or when a continued job starts in the parts phase. */
   catalog: Catalog;
@@ -59,6 +66,8 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
   if (run.job.phase === 'listing') {
     // Amazon brand pages, then Home Depot pages: one queue.
     await runQueue(run);
+    // P1: the bundles' own pages, free, once the queue is empty and before the split.
+    await readBundlePages(run);
     // Read once for the split and the planning pass that follows it.
     const known = await knownModels(run.store);
     run.catalog = known.catalog;
@@ -79,7 +88,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const { store, settings, budget } = deps;
   const run = (job: ScanJob): Run => ({
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop: deps.shouldStop ?? (() => false),
-    job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0,
+    readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0,
   });
 
   // An interrupted job is continued as saved: no new plan, whatever budget this run has.
@@ -105,7 +114,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     queue: [...catalog.slice(0, catalogPages), ...pages.slice(0, plan.hdPages)], deferred: pages.slice(plan.hdPages), searchesUsed: 0,
     counts: {
       pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
-      catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0,
+      catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
     },
   };
   await store.putScan(job);
@@ -337,6 +346,8 @@ async function applyListing(run: Run, step: Listing, data: unknown, at: number):
           key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: known?.upc ?? null,
           price: row.price, regularPrice: row.regularPrice, percentOff: row.percentOff, link: row.link, seenAt: at,
           split: known?.split ?? null,
+          // A page is read once (P1): a row seen again keeps it.
+          ...(known && known.page !== undefined ? { page: known.page } : {}),
         });
       }
       job.counts.bundlesSeen += 1;
@@ -442,6 +453,68 @@ function priceSeen(asin: string, old: PriceRecord | undefined, cand: Candidate |
 const firstWith = (candidates: Candidate[], asin: string): Candidate | undefined => candidates.find((c) => c.asin === asin);
 const unique = (xs: string[]): string[] => [...new Set(xs)];
 
+// ---------------------------------------------------------------- P1 to P4: the bundles' own pages (free)
+
+/**
+ * P1: bundles with no page yet, newest seenAt first then key, in one call to readPages. The
+ * limit is per job: a job continued after its readings were saved reads only what is left of
+ * pageReadsPerScan. P2: each page read is saved on its bundle. P3: a refusal, a page that could
+ * not be read, or a reader that threw is noted in stopMessage; none of them stops the scan.
+ * P4: the bundles are saved, then the job, once, before the split.
+ */
+async function readBundlePages(run: Run): Promise<void> {
+  const { store, job, readPages } = run;
+  if (!readPages) return;
+  const room = Math.max(0, Math.floor(run.settings.pageReadsPerScan) - job.counts.pagesRead);
+  const unread = (await store.listBundles())
+    .filter((b) => b.page === undefined || b.page === null)
+    .sort((a, b) => b.seenAt - a.seenAt || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+    .slice(0, room);
+  if (unread.length === 0 || run.shouldStop()) return;
+
+  // Only the reader is inside the try. An error from the store is not caught: the job stays
+  // "running" and the next runScan continues it, reading only the bundles still unread.
+  let outcomes: PageOutcome[];
+  try {
+    outcomes = await readPages(unread.map((b) => b.itemId));
+  } catch (err) {
+    noteProblem(job, `Reading Home Depot pages failed: ${(err instanceof Error && err.message) || String(err)}`);
+    await store.putScan(job);
+    return;
+  }
+  const readAt = run.now();
+  const asked = new Map(unread.map((b) => [b.itemId, b]));
+  let refused = false;
+  let unreadable = false;
+  for (const outcome of outcomes) {
+    const bundle = asked.get(outcome.itemId);
+    // An outcome for an id that was not asked for, or a second one for the same id, is ignored.
+    if (!bundle) continue;
+    asked.delete(outcome.itemId);
+    if (outcome.kind === 'read') {
+      await store.putBundle({ ...bundle, page: { ...outcome.content, readAt } });
+      job.counts.pagesRead += 1;
+    } else if (outcome.kind === 'refused') {
+      refused = true;
+    } else if (outcome.kind === 'unreadable') {
+      unreadable = true;
+    }
+  }
+  if (refused) noteProblem(job, 'Home Depot refused a page; the rest are read next scan.');
+  else if (unreadable) noteProblem(job, 'A Home Depot page could not be read.');
+  await store.putScan(job);
+}
+
+/**
+ * A problem that does not stop the scan, after any message already there, as a skipped brand
+ * page's sentence is (2c rule 3). A continued job that meets the same problem again does not
+ * repeat it.
+ */
+function noteProblem(job: ScanJob, sentence: string): void {
+  if (job.stopMessage === null) job.stopMessage = sentence;
+  else if (!job.stopMessage.includes(sentence)) job.stopMessage = `${job.stopMessage} ${sentence}`;
+}
+
 // ---------------------------------------------------------------- rule 4 and 2c rule 4: split (free)
 
 interface KnownModels {
@@ -504,7 +577,8 @@ async function splitBundles(run: Run, stored: Catalog): Promise<void> {
   const now = run.now();
   let resolved = 0;
   for (const bundle of await store.listBundles()) {
-    const split = splitBundle(bundle, stored, catalog);
+    // P5: the model number's split, then the bundle's own page, when it was read.
+    const split = splitWithPage(bundle, splitBundle(bundle, stored, catalog), bundle.page ?? null, catalog);
     await store.putBundle({ ...bundle, split });
     const id = `split:${bundle.key}`;
     const item = await store.getReview(id);

@@ -255,6 +255,8 @@ export interface ScanCounts {
   listingsSaved: number;
   /** Parts matched from saved listings, with no search. */
   partsFromCatalog: number;
+  /** Bundle pages read and saved on their bundles. Never a search. */
+  pagesRead: number;
 }
 
 /**

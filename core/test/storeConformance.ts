@@ -90,7 +90,7 @@ const scan = (startedAt: number, over: Partial<ScanJob> = {}): ScanJob => ({
   searchesUsed: 0,
   counts: {
     pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
-    catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0,
+    catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
   },
   ...over,
 });
