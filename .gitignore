@@ -8,3 +8,4 @@ dist/
 .wxt/
 __pycache__/
 .pytest_cache/
+output/

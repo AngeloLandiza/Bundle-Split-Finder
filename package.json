@@ -6,6 +6,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "budget": "tsx scripts/budget.ts",
+    "scan": "tsx scripts/scan.ts",
     "fixtures:record": "tsx scripts/record-fixtures.ts",
     "test:live": "vitest run --config vitest.live.config.ts"
   },

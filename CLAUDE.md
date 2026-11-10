@@ -27,6 +27,8 @@ reads `docs/orchestration.md`: which model does which task, and what may run in 
     npm run budget        free: what the account has and what may be spent now
     npm run fixtures:record -- --dry-run
     npm run test:live     spends at most 2 searches
+    npm run scan -- --fixtures   free: the whole pipeline on recorded responses
+    npm run scan -- --limit N    spends up to N searches (demo bucket)
 
 ## Rules that are not negotiable
 

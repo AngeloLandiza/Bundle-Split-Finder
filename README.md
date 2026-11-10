@@ -11,6 +11,7 @@ tooling, the plan and the design. The extension itself is built next (see `docs/
     npm test                 # 122 tests, no network
     cp .env.example .env     # then paste a SerpApi key
     npm run budget           # free: what the account has, what may be spent
+    npm run scan -- --fixtures   # free: the whole pipeline on recorded responses, writes output/*.csv
 
 | Read | For |
 | --- | --- |
