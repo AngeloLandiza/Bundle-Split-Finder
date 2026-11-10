@@ -15,7 +15,7 @@ reads `docs/orchestration.md`: which model does which task, and what may run in 
     core/test-live/   Opt-in tests that spend real searches.
     scripts/          Node-only tools: budget report, fixture recorder, dev client.
     fixtures/         Recorded SerpApi responses (committed) and the validation set.
-    extension/        The Chrome extension (to be built). Imports core.
+    extension/        The Chrome extension. Imports core.
     docs/             Plan, design spec, budget rules, orchestration, mockups.
     .claude/agents/   Two read-only review agents: ui-reviewer and docs-checker.
     reference/        The original Python prototype. Read-only reference.
@@ -24,6 +24,8 @@ reads `docs/orchestration.md`: which model does which task, and what may run in 
 
     npm test              unit + replay tests, no network
     npm run typecheck
+    npm run ext:build     build the extension into .output/chrome-mv3
+    npm run ext:dev       run the extension with live reload
     npm run budget        free: what the account has and what may be spent now
     npm run fixtures:record -- --dry-run
     npm run test:live     spends at most 2 searches

@@ -1,10 +1,14 @@
 {
   "name": "bundle-split-finder",
   "private": true,
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "test": "vitest run && vitest run --config vitest.ext.config.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p extension",
+    "ext:dev": "wxt",
+    "ext:build": "wxt build",
+    "postinstall": "wxt prepare",
     "budget": "tsx scripts/budget.ts",
     "scan": "tsx scripts/scan.ts",
     "fixtures:record": "tsx scripts/record-fixtures.ts",
@@ -12,8 +16,19 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@wxt-dev/module-react": "^1.2.2",
+    "fake-indexeddb": "^6.2.8",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.0"
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0",
+    "wxt": "^0.21.5"
+  },
+  "dependencies": {
+    "idb": "^8.0.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   }
 }
