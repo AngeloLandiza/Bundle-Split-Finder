@@ -164,7 +164,9 @@ export async function runScanCli(args: string[], deps: CliDeps): Promise<number>
     log('Scan done');
   }
   const c = job.counts;
-  log(`Pages ${c.pagesFetched} · products ${c.productsSeen} · bundles ${c.bundlesSeen} (${c.bundlesResolved} split, ${report.review.length} for review) · parts matched ${c.partsMatched}`);
+  const inSection = (section: string): number => report.bundles.filter((b) => b.section === section).length;
+  log(`Pages ${c.pagesFetched} · products ${c.productsSeen} · bundles ${c.bundlesSeen} · parts matched ${c.partsMatched}`);
+  log(`Confirmed ${inSection('confirmed')} · review: inactive listing ${inSection('inactive_listing')}, missing listing ${inSection('missing_listing')}, contents not known ${inSection('split')}`);
   log(`Ranked bundles: ${runPath}`);
   log(`Review items:   ${reviewPath}`);
   log('Profit figures are estimates from fee settings, not real Amazon fees.');

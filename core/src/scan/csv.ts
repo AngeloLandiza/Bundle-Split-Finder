@@ -4,7 +4,7 @@
 import type { BundleRow, PartRow, ReviewItem, ScanReport } from './types';
 
 export const RUN_COLUMNS: readonly string[] = [
-  'status', 'brand', 'bundle_model', 'bundle_title', 'hd_item_id', 'hd_price', 'hd_was_price', 'hd_percent_off',
+  'section', 'brand', 'bundle_model', 'bundle_title', 'hd_item_id', 'hd_price', 'hd_was_price', 'hd_percent_off',
   'parts', 'asins', 'match_grades', 'amazon_prices', 'est_net_revenue', 'est_cost', 'est_profit', 'est_roi',
   'uncovered_parts', 'hd_link',
 ];
@@ -27,9 +27,9 @@ const orQ = (v: string | number | null): string => (v === null ? '?' : String(v)
 const partName = (p: PartRow): string => (p.qty > 1 ? `${p.model} x${p.qty}` : p.model);
 
 function runRow(b: BundleRow): (string | number | null)[] {
-  const head = [b.status, b.brand, b.model, b.title, b.itemId, b.price, b.regularPrice, b.percentOff];
+  const head = [b.section, b.brand, b.model, b.title, b.itemId, b.price, b.regularPrice, b.percentOff];
   const tail = [b.link];
-  if (b.status === 'needs_review') return [...head, '', '', '', '', null, null, null, null, '', ...tail];
+  if (b.section === 'split') return [...head, '', '', '', '', null, null, null, null, '', ...tail];
   const e = b.estimate;
   return [
     ...head,

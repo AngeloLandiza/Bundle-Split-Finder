@@ -35,10 +35,11 @@ describe('npm run scan', () => {
     const code = await runScanCli(['--fixtures'], deps);
     expect(code).toBe(0);
     const run = readFileSync(join(deps.outDir, 'run_20261109-120000.csv'), 'utf8');
-    expect(run.split('\n')[1]).toMatch(/^complete,RYOBI,PBLRC2501SB,.*,268\.55,189,79\.55,0\.4209,,https:/);
+    expect(run.split('\n')[1]).toMatch(/^confirmed,RYOBI,PBLRC2501SB,.*,268\.55,189,79\.55,0\.4209,,https:/);
     expect(run.split('\n')).toHaveLength(25); // header, 23 bundles, trailing empty string
     expect(readFileSync(join(deps.outDir, 'review_20261109-120000.csv'), 'utf8').split('\n')).toHaveLength(23); // header, 21 items, trailing
     expect(logs).toContain('Searches used: 0 (replayed 5 recorded responses)');
+    expect(logs).toContain('Confirmed 2 · review: inactive listing 0, missing listing 0, contents not known 21');
     expect(logs).toContain('Profit figures are estimates from fee settings, not real Amazon fees.');
   });
 

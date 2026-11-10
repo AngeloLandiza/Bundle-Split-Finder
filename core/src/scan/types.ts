@@ -250,11 +250,20 @@ export interface ScanStore {
 
 // ---------------------------------------------------------------- the report
 
+/**
+ * Whether a part can be sold on Amazon right now.
+ * active    a listing is chosen, and the last check saw it with a price
+ * inactive  a listing is chosen, but the last check saw no price for it, or did not see it
+ * missing   no listing is chosen for this part
+ */
+export type PartAvailability = 'active' | 'inactive' | 'missing';
+
 export interface PartRow {
   model: string;
   qty: number;
   /** "unmatched" when the part has no match record yet. */
   status: MatchStatus | 'unmatched';
+  availability: PartAvailability;
   asin: string | null;
   grade: Grade | null;
   price: number | null;
@@ -268,6 +277,15 @@ export interface PartRow {
  */
 export type BundleStatus = 'complete' | 'partial' | 'needs_review';
 
+/**
+ * Where a bundle is shown.
+ * confirmed         every part has an active listing: buying the bundle leaves nothing over
+ * inactive_listing  every part has a listing, but at least one is not for sale right now
+ * missing_listing   at least one part has no Amazon listing
+ * split             what the bundle contains is not known yet
+ */
+export type ReportSection = 'confirmed' | 'inactive_listing' | 'missing_listing' | 'split';
+
 export interface BundleRow {
   key: string;
   itemId: string;
@@ -279,6 +297,7 @@ export interface BundleRow {
   regularPrice: number | null;
   percentOff: number | null;
   status: BundleStatus;
+  section: ReportSection;
   parts: PartRow[];
   /** An estimate from fee settings, never the seller's real fees. Null without a resolved split and a price. */
   estimate: BundleResult | null;
@@ -287,7 +306,7 @@ export interface BundleRow {
 }
 
 export interface ScanReport {
-  /** complete first, then partial, then needs_review; within each, highest estimated profit first. */
+  /** By section: confirmed, inactive_listing, missing_listing, split; within each, highest estimated profit first. */
   bundles: BundleRow[];
   /** Open review items, oldest first. */
   review: ReviewItem[];
