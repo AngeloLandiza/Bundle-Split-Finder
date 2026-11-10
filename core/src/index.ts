@@ -13,3 +13,4 @@ export * from './serpapi/budget';
 export * from './serpapi/client';
 export * from './serpapi/parsers';
 export * from './scan/types';
+export * from './scan/memoryStore';

@@ -1,0 +1,181 @@
+import { describe, expect, it } from 'vitest';
+
+import { MemoryScanStore } from '../src/scan/memoryStore';
+import type { BundleRecord, CatalogRecord, MatchRecord, PriceRecord, ReviewItem, ScanJob } from '../src/scan/types';
+
+const bundle = (itemId: string, over: Partial<BundleRecord> = {}): BundleRecord => ({
+  key: `homedepot:${itemId}`,
+  retailer: 'homedepot',
+  itemId,
+  title: 'RYOBI 18V 2-Tool Combo Kit',
+  brand: 'RYOBI',
+  model: 'PBLCK200',
+  upc: null,
+  price: 99,
+  regularPrice: 149,
+  percentOff: 34,
+  link: null,
+  seenAt: 1,
+  split: null,
+  ...over,
+});
+
+const catalog = (model: string, over: Partial<CatalogRecord> = {}): CatalogRecord => ({
+  key: `RYOBI:${model}`,
+  brand: 'RYOBI',
+  model,
+  title: 'RYOBI Ratchet',
+  kinds: ['ratchet'],
+  isKit: false,
+  upc: null,
+  seenAt: 1,
+  ...over,
+});
+
+const match = (model = 'PBLRC25B', over: Partial<MatchRecord> = {}): MatchRecord => ({
+  key: `RYOBI:${model}`,
+  brand: 'RYOBI',
+  model,
+  status: 'matched',
+  asin: 'B0B6Z2ZGVK',
+  grade: 'exact',
+  alternatives: [],
+  decidedBy: 'auto',
+  updatedAt: 1,
+  waitingSince: null,
+  ...over,
+});
+
+const price = (asin: string, over: Partial<PriceRecord> = {}): PriceRecord => ({ asin, price: 20, reviews: 5, seenAt: 1, checkedAt: 1, ...over });
+
+const review = (id: string, over: Partial<ReviewItem> = {}): ReviewItem => ({
+  id,
+  kind: 'match',
+  subject: 'RYOBI:PBLRC25B',
+  brand: 'RYOBI',
+  model: 'PBLRC25B',
+  title: null,
+  reason: 'Two listings fit',
+  candidates: [{ asin: 'B0B6Z2ZGVK', title: 'A', price: 20, reviews: 5, reasons: ['model'] }],
+  openedAt: 1,
+  answer: null,
+  answeredAt: null,
+  ...over,
+});
+
+const scan = (startedAt: number, over: Partial<ScanJob> = {}): ScanJob => ({
+  id: String(startedAt),
+  startedAt,
+  finishedAt: null,
+  status: 'running',
+  stopReason: null,
+  stopMessage: null,
+  phase: 'listing',
+  queue: [],
+  deferred: [],
+  searchesUsed: 0,
+  counts: { pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0 },
+  ...over,
+});
+
+describe('MemoryScanStore round trips', () => {
+  it('bundles: put, get, replace, missing', async () => {
+    const s = new MemoryScanStore();
+    const a = bundle('1');
+    await s.putBundle(a);
+    expect(await s.getBundle(a.key)).toEqual(a);
+    const b = bundle('1', { price: 80 });
+    await s.putBundle(b);
+    expect(await s.getBundle(a.key)).toEqual(b);
+    expect(await s.listBundles()).toHaveLength(1);
+    expect(await s.getBundle('homedepot:nope')).toBeUndefined();
+  });
+
+  it('catalog: put, get, replace, missing', async () => {
+    const s = new MemoryScanStore();
+    const a = catalog('PBLRC25B');
+    await s.putCatalogEntry(a);
+    expect(await s.getCatalogEntry(a.key)).toEqual(a);
+    const b = catalog('PBLRC25B', { title: 'New title' });
+    await s.putCatalogEntry(b);
+    expect(await s.getCatalogEntry(a.key)).toEqual(b);
+    expect(await s.getCatalogEntry('RYOBI:NOPE')).toBeUndefined();
+  });
+
+  it('matches: put, get, replace, missing', async () => {
+    const s = new MemoryScanStore();
+    const a = match();
+    await s.putMatch(a);
+    expect(await s.getMatch(a.key)).toEqual(a);
+    const b = match('PBLRC25B', { status: 'none', asin: null, grade: null });
+    await s.putMatch(b);
+    expect(await s.getMatch(a.key)).toEqual(b);
+    expect(await s.getMatch('RYOBI:NOPE')).toBeUndefined();
+  });
+
+  it('prices: put, get, replace, missing', async () => {
+    const s = new MemoryScanStore();
+    const a = price('B0B6Z2ZGVK');
+    await s.putPrice(a);
+    expect(await s.getPrice(a.asin)).toEqual(a);
+    const b = price('B0B6Z2ZGVK', { price: 25, checkedAt: 2 });
+    await s.putPrice(b);
+    expect(await s.getPrice(a.asin)).toEqual(b);
+    expect(await s.getPrice('B0NOPE0000')).toBeUndefined();
+  });
+
+  it('review items: put, get, replace, missing', async () => {
+    const s = new MemoryScanStore();
+    const a = review('match:RYOBI:PBLRC25B');
+    await s.putReview(a);
+    expect(await s.getReview(a.id)).toEqual(a);
+    const b = review(a.id, { answer: 'B0B6Z2ZGVK', answeredAt: 2 });
+    await s.putReview(b);
+    expect(await s.getReview(a.id)).toEqual(b);
+    expect(await s.getReview('match:nope')).toBeUndefined();
+  });
+
+  it('scans: put, get, replace, missing', async () => {
+    const s = new MemoryScanStore();
+    const a = scan(1);
+    await s.putScan(a);
+    expect(await s.getScan(a.id)).toEqual(a);
+    const b = scan(1, { status: 'done', finishedAt: 5 });
+    await s.putScan(b);
+    expect(await s.getScan(a.id)).toEqual(b);
+    expect(await s.getScan('999')).toBeUndefined();
+  });
+});
+
+describe('MemoryScanStore isolation and order', () => {
+  it('returns copies, so a caller cannot change the store by accident', async () => {
+    const store = new MemoryScanStore();
+    const m = match();
+    await store.putMatch(m);
+    const got = (await store.getMatch(m.key))!;
+    got.alternatives.push('B0CHANGED00');
+    got.status = 'none';
+    expect(await store.getMatch(m.key)).toEqual(match());
+    m.alternatives.push('B0CHANGED01'); // the object that was put is not held either
+    expect((await store.getMatch(m.key))!.alternatives).toEqual([]);
+    const listed = await store.listMatches();
+    listed[0]!.alternatives.push('B0CHANGED02');
+    expect((await store.getMatch(m.key))!.alternatives).toEqual([]);
+  });
+
+  it('lists by key ascending, and scans newest first', async () => {
+    const s = new MemoryScanStore();
+    for (const id of ['b', 'a', 'c']) {
+      await s.putBundle(bundle(id));
+      await s.putCatalogEntry(catalog(id.toUpperCase()));
+      await s.putMatch(match(id.toUpperCase()));
+      await s.putReview(review(`match:${id}`));
+    }
+    expect((await s.listBundles()).map((r) => r.itemId)).toEqual(['a', 'b', 'c']);
+    expect((await s.listCatalog()).map((r) => r.model)).toEqual(['A', 'B', 'C']);
+    expect((await s.listMatches()).map((r) => r.model)).toEqual(['A', 'B', 'C']);
+    expect((await s.listReview()).map((r) => r.id)).toEqual(['match:a', 'match:b', 'match:c']);
+    for (const t of [1, 3, 2]) await s.putScan(scan(t));
+    expect((await s.listScans()).map((j) => j.startedAt)).toEqual([3, 2, 1]);
+  });
+});
