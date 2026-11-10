@@ -222,7 +222,7 @@ describe('toScanSettings', () => {
     const { brands: _db, queries: _dq, pagesPerQuery: _dp, fees: _df, ...defaults } = DEFAULT_SCAN_SETTINGS;
     expect(rest).toEqual(defaults);
     expect(Object.keys(rest).sort()).toEqual(
-      ['amazonDomain', 'brandFilters', 'catalogPagesPerScan', 'freshnessMs', 'liquidationRate', 'listingMaxAgeMs'],
+      ['amazonDomain', 'brandFilters', 'catalogPagesPerScan', 'freshnessMs', 'liquidationRate', 'listingMaxAgeMs', 'pageReadsPerScan'],
     );
   });
 
