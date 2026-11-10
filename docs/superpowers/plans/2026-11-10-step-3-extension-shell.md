@@ -211,7 +211,7 @@ Rules:
 2. Starting or continuing a scan: no key means no scan and `problem: 'Add your SerpApi key in Settings.'`. Call the Account API (free); on failure set `problem` to the error's sentence and stop without spending. Build `SearchBudget(account, budgetPolicyFor(settings, trigger, job?.searchesUsed ?? 0))` and a `SerpApiClient` with the IndexedDB cache and `onSpend: appendLedger`. Save `activeScan` before the first search. Run `runScan` with `shouldStop` reading a flag set by `stopScan`. Afterwards: clear `activeScan`, set `lastScheduledRunAt` for a scheduled scan, refresh the saved account, build the report, call `notify(dealsToNotify(...))` and remember the notified keys, broadcast the state.
 3. One scan at a time: `scanNow` while a scan is active replies `{ ok: false, error: 'A scan is already running.' }`; a tick while a scan is active does nothing.
 4. `checkKey`: Account API with the given key; on success save the key and the account and reply with the account; on failure reply with the error's sentence and leave any saved key untouched.
-5. `saveSettings`: reject with the first validation message when `validateSettings` finds anything; otherwise save and broadcast. A running scan is not affected.
+5. `saveSettings`: reject with the first validation message when `validateSettings` finds anything; otherwise save and broadcast. A running scan is not affected. Saving never starts a scan: when the saved schedule differs from the stored one, `lastScheduledRunAt` is set to now, so the first scheduled scan comes one interval later (or at the next daily time), not on the next tick. Settings read back from storage are validated too; any field that fails falls back to its default before use.
 6. `clearSavedSearches` empties the `cache` store only. `exportDeals` replies with `runCsv(report)`; `exportMatches` with JSON of all match records and answered review items.
 7. `nextRunAt` in `AppState` comes from `nextRun`.
 
@@ -222,7 +222,7 @@ Rules:
   - "continues after the worker restarts": make the store's `putScan` throw once after the first lookup, then build a second worker over the same store, cache and prefs and call `onStart`: the job finishes, no request is repeated, and the two runs together respect `searchesPerScan` (criterion 8);
   - "one scan at a time": `scanNow` and `onTick` started together run one job;
   - the Account API unreachable when a scan is due: no search, `problem` set, the next tick tries again;
-  - changing the schedule from manual to every 6 hours makes the next tick start a scan and sets `nextRunAt` six hours after it (criterion 7); a change while a scan runs does not stop it;
+  - changing the schedule from manual to every 6 hours starts no scan on the next tick, sets `nextRunAt` six hours after the change, and a tick six hours later starts one, with no reload in between (criterion 7); saving the same schedule again does not move `nextRunAt`; a change while a scan runs does not stop it; stored settings with `fees: null` are read as the default fees;
   - `stopScan` during a scan gives `stopReason: 'user'`;
   - alerts on at $50 and 30%: `notify` is called once with PBLRC2501SB, and not again after a second scan.
 - [ ] **Step 2:** See them fail. **Step 3:** Implement. **Step 4:** `npm run typecheck`, `npm test`, `npm run ext:build`.
