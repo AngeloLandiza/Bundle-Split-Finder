@@ -143,7 +143,7 @@ export function splitWithPage(
 - R4: model split not resolved, page split resolved → resolved from the page, notes `['split read from the page']`.
 - R5: neither resolved. RYOBI only: `decompose` with `known` and the page catalog merged; resolved → notes `['parts known from the catalog and the page']`. Otherwise `modelSplit`.
 
-- [ ] **Tests first**, one per row, bullets from `bullets-2026-11-10.json` (RYOBI) and `pages-2026-11-10.json` (DEWALT), `known` empty unless given:
+- [ ] **Tests first**, one per row, bullets read from `pages-2026-11-10.json` with `parseBundlePage`, `known` empty unless given (models in `known` are entries of their brand; `DCK…` and `PSK…` are kits). The recorded full pages name the same models as `bullets-2026-11-10.json`; the plain kit page 317987591 (PCL1600K2) has the same Includes list as bundle 341645081:
 
 | Item | Model | `known` | Result |
 | --- | --- | --- | --- |
@@ -159,7 +159,9 @@ export function splitWithPage(
 | 337440459 | DCK200D1P1W921B | — | resolved DCK200D1P1, DCF921B; split read from the page |
 | 337440459 | DCK200D1P1W921B | DCF921B | resolved; model number and page agree |
 | 337440459's bullets | DCK200D1P1WB606 | DCB606 | needs_review; page names DCK200D1P1, DCF921B, which do not fit the model number |
-| 337440461, 343992133, 343992132 | their models | — | resolved from the page (filled in by Task 1) |
+| 337440461 | DCK200D1P1WB606 | — | resolved DCK200D1P1, DCB606; split read from the page |
+| 343992133 | DCK540D1WCS334B | — | resolved DCK540D1, DCS334B; split read from the page |
+| 343992132 | DCK540D1WCS565B | — | resolved DCK540D1, DCS565B; split read from the page |
 | any page | any | — | page null: unchanged, no note |
 
 - [ ] Implement. Commit `feat(core): split a bundle from its page and reconcile with the model number`.
