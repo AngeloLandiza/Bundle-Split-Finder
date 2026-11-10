@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Side panel, search limit reached</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button,input,select{font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="width: 400px; height: 820px; box-sizing: border-box; display: flex; flex-direction: column; background: #FAFAF7; color: #1A1C1E; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 20px">
+
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: #FFFFFF; border-bottom: 1px solid #E2E0D8">
+<div style="display: flex; align-items: center; gap: 8px">
+<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="2.75" width="14.5" height="14.5" rx="2.5" fill="none" stroke="#1A1C1E" stroke-width="1.5"/><path d="M10 2.75h4.75a2.5 2.5 0 0 1 2.5 2.5v9.5a2.5 2.5 0 0 1-2.5 2.5H10z" fill="#1A1C1E"/></svg>
+<span style="font-size: 15px; font-weight: 600; letter-spacing: 0.01em">Split Finder</span>
+</div>
+<div style="display: flex; align-items: center; gap: 4px">
+<button disabled style="height: 32px; padding: 0 12px; border: 1px solid #E2E0D8; border-radius: 4px; background: #F1F0EA; color: #676B70; font-weight: 600; font-size: 13px">Scan now</button>
+<button aria-label="Settings" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 4px; background: transparent; cursor: pointer">
+<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#54585D" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 5h12M3 9h12M3 13h12"/><circle cx="6.5" cy="5" r="1.6" fill="#FFFFFF"/><circle cx="11.5" cy="9" r="1.6" fill="#FFFFFF"/><circle cx="8" cy="13" r="1.6" fill="#FFFFFF"/></svg>
+</button>
+</div>
+</header>
+
+<nav aria-label="Views" style="display: flex; gap: 20px; padding: 0 16px; background: #FFFFFF; border-bottom: 1px solid #E2E0D8">
+<button style="height: 40px; padding: 0; border: 0; border-bottom: 2px solid #1A1C1E; background: transparent; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px">Deals <span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px; font-weight: 500; color: #54585D">3</span></button>
+<button style="height: 40px; padding: 0; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #54585D; cursor: pointer">This page</button>
+<button style="height: 40px; padding: 0; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #54585D; cursor: pointer">Review</button>
+</nav>
+
+<section style="display: flex; flex-direction: column; gap: 10px; margin: 12px 16px 4px; padding: 12px; background: #FFF3D1; border-radius: 6px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-weight: 600; color: #4A2D00">Scan stopped at your search limit</div>
+<div style="font-size: 13px; line-height: 18px; color: #744600">It used the 40 searches allowed per scan. 14 parts still need an Amazon lookup and go first next time.</div>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="Settings.dc.html" style="height: 32px; padding: 0 12px; display: flex; align-items: center; border: 1px solid #744600; border-radius: 4px; background: #FFFFFF; color: #4A2D00; font-size: 13px; font-weight: 600">Change the limit</a>
+<span style="font-size: 13px; color: #744600">Next scan tomorrow 07:00</span>
+</div>
+</section>
+
+<div style="padding: 10px 16px 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #54585D">READY · 3</div>
+
+<div style="display: flex; flex-direction: column; background: #FFFFFF; border-top: 1px solid #E2E0D8">
+
+<a href="Detail.dc.html" style="display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 11px 16px; border-bottom: 1px solid #E2E0D8">
+<div style="min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">9-Tool Combo Kit + 1/2 in. Impact Wrench</div>
+<div style="display: flex; gap: 8px; font-size: 13px; color: #54585D; white-space: nowrap"><span>DEWALT</span><span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px">DCK940D2WCF891B</span></div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace">
+<div style="font-size: 15px; font-weight: 600">+$337.30</div>
+<div style="font-size: 12px; color: #54585D">ROI 45%</div>
+</div>
+</a>
+
+<a href="Detail.dc.html" style="display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 11px 16px; border-bottom: 1px solid #E2E0D8">
+<div style="min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">4-Tool Combo Kit + 6-1/2 in. Circular Saw</div>
+<div style="display: flex; gap: 8px; font-size: 13px; color: #54585D; white-space: nowrap"><span>DEWALT</span><span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px">DCK411Q2WCS565B</span></div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace">
+<div style="font-size: 15px; font-weight: 600">+$169.80</div>
+<div style="font-size: 12px; color: #54585D">ROI 38%</div>
+</div>
+</a>
+
+<a href="Detail.dc.html" style="display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 11px 16px; border-bottom: 1px solid #E2E0D8">
+<div style="min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">1/4 in. + 3/8 in. Extended Reach Ratchets</div>
+<div style="display: flex; gap: 8px; font-size: 13px; color: #54585D; white-space: nowrap"><span>RYOBI</span><span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px">PBLRC2501SB</span></div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace">
+<div style="font-size: 15px; font-weight: 600">+$98.30</div>
+<div style="font-size: 12px; color: #54585D">ROI 52%</div>
+</div>
+</a>
+
+</div>
+
+<div style="padding: 14px 16px 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #54585D">WAITING FOR AN AMAZON LOOKUP · 9 BUNDLES</div>
+
+<div style="display: flex; flex-direction: column; background: #FFFFFF; border-top: 1px solid #E2E0D8">
+
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid #E2E0D8">
+<div style="min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">4-Tool Combo Kit + Handheld Blower</div>
+<div style="display: flex; gap: 8px; font-size: 13px; color: #54585D; white-space: nowrap"><span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px; color: #1A1C1E">$449.00</span><span>34% off</span><span>2 parts unknown</span></div>
+</div>
+<button style="height: 28px; padding: 0 10px; border: 1px solid #8B887F; border-radius: 4px; background: #FFFFFF; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px">Look up <span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 11px; color: #54585D">2 searches</span></button>
+</div>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid #E2E0D8">
+<div style="min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Hammer Drill + Impact Driver Kit + Compact Router</div>
+<div style="display: flex; gap: 8px; font-size: 13px; color: #54585D; white-space: nowrap"><span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px; color: #1A1C1E">$478.00</span><span>20% off</span><span>1 part unknown</span></div>
+</div>
+<button style="height: 28px; padding: 0 10px; border: 1px solid #8B887F; border-radius: 4px; background: #FFFFFF; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px">Look up <span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 11px; color: #54585D">1 search</span></button>
+</div>
+
+<a href="Main.dc.html" style="padding: 11px 16px; font-size: 13px; font-weight: 500; color: #1D4ED8; border-bottom: 1px solid #E2E0D8">Show 7 more</a>
+
+</div>
+
+<div style="flex-grow: 1"></div>
+
+<footer style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; background: #FFFFFF; border-top: 1px solid #E2E0D8; font-size: 13px; color: #54585D">
+<span>Scanned today 07:02</span>
+<span style="display: flex; align-items: center; gap: 8px">
+<span role="img" aria-label="172 of 250 searches left" style="display: flex; width: 48px; height: 4px; background: #E2E0D8; border-radius: 2px"><span style="width: 69%; background: #1A1C1E; border-radius: 2px"></span></span>
+<span><span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px; color: #1A1C1E">172</span> searches left</span>
+</span>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":400,"height":820}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

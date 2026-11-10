@@ -1,0 +1,10 @@
+node_modules/
+.env
+cache/
+.serpapi-ledger.jsonl
+.serpapi.lock
+dist/
+.output/
+.wxt/
+__pycache__/
+.pytest_cache/

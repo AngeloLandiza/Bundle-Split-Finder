@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Side panel, first run</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button,input,select{font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="width: 400px; height: 820px; box-sizing: border-box; display: flex; flex-direction: column; background: #FAFAF7; color: #1A1C1E; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 20px">
+
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: #FFFFFF; border-bottom: 1px solid #E2E0D8">
+<div style="display: flex; align-items: center; gap: 8px">
+<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="2.75" width="14.5" height="14.5" rx="2.5" fill="none" stroke="#1A1C1E" stroke-width="1.5"/><path d="M10 2.75h4.75a2.5 2.5 0 0 1 2.5 2.5v9.5a2.5 2.5 0 0 1-2.5 2.5H10z" fill="#1A1C1E"/></svg>
+<span style="font-size: 15px; font-weight: 600; letter-spacing: 0.01em">Split Finder</span>
+</div>
+<button disabled style="height: 32px; padding: 0 12px; border: 1px solid #E2E0D8; border-radius: 4px; background: #F1F0EA; color: #676B70; font-weight: 600; font-size: 13px">Scan now</button>
+</header>
+
+<main style="display: flex; flex-direction: column; gap: 20px; padding: 24px 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-size: 20px; line-height: 26px; font-weight: 600">Find bundles worth splitting</h1>
+<p style="margin: 0; color: #54585D">Split Finder checks Home Depot for DEWALT and RYOBI bundles, matches each part to its Amazon listing, and ranks the bundles by estimated profit.</p>
+</div>
+
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E2E0D8; border-radius: 6px">
+
+<li style="display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 12px; padding: 14px; border-bottom: 1px solid #E2E0D8">
+<span style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: #1A1C1E; color: #FFFFFF; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px; font-weight: 600">1</span>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-weight: 600">Add your SerpApi key</div>
+<div style="font-size: 13px; line-height: 18px; color: #54585D">The free plan gives 250 searches a month. Your key stays in this browser.</div>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<a href="Settings.dc.html" style="height: 32px; padding: 0 12px; display: flex; align-items: center; border-radius: 4px; background: #1A1C1E; color: #FFFFFF; font-weight: 600; font-size: 13px">Open settings</a>
+<a href="https://serpapi.com" style="font-size: 13px; font-weight: 500; color: #1D4ED8">Get a free key</a>
+</div>
+</div>
+</li>
+
+<li style="display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 12px; padding: 14px; border-bottom: 1px solid #E2E0D8">
+<span style="width: 24px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid #8B887F; color: #54585D; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px; font-weight: 600">2</span>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-weight: 600; color: #54585D">Choose brands and how often to scan</div>
+<div style="font-size: 13px; line-height: 18px; color: #54585D">Starts with DEWALT and RYOBI, scanning only when you click.</div>
+</div>
+</li>
+
+<li style="display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 12px; padding: 14px">
+<span style="width: 24px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid #8B887F; color: #54585D; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12px; font-weight: 600">3</span>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-weight: 600; color: #54585D">Run your first scan</div>
+<div style="font-size: 13px; line-height: 18px; color: #54585D">A scan never spends more searches than the limit you set.</div>
+</div>
+</li>
+
+</ol>
+
+<div style="display: flex; gap: 10px; padding: 12px; background: #F1F0EA; border-radius: 6px; font-size: 13px; line-height: 18px; color: #54585D">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#54585D" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.25v3.5M8 5.1v.1"/></svg>
+<span>Opening a bundle on homedepot.com is free. Split Finder reads the page you are on and only uses a search to look up a part on Amazon.</span>
+</div>
+</main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":400,"height":820}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

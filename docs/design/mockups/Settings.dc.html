@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings page</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1D4ED8;text-decoration:none}a:hover{color:#1E3A8A}
+button,input,select{font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="min-height: 1640px; box-sizing: border-box; background: #FAFAF7; color: #1A1C1E; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 22px">
+
+<header style="background: #FFFFFF; border-bottom: 1px solid #E2E0D8">
+<div style="max-width: 880px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="2.75" width="14.5" height="14.5" rx="2.5" fill="none" stroke="#1A1C1E" stroke-width="1.5"/><path d="M10 2.75h4.75a2.5 2.5 0 0 1 2.5 2.5v9.5a2.5 2.5 0 0 1-2.5 2.5H10z" fill="#1A1C1E"/></svg>
+<span style="font-size: 16px; font-weight: 600">Split Finder</span>
+<span style="color: #54585D">Settings</span>
+</div>
+<span style="font-size: 14px; color: #54585D">Changes save as you make them</span>
+</div>
+</header>
+
+<main style="max-width: 880px; margin: 0 auto; padding: 8px 24px 64px; display: flex; flex-direction: column">
+
+<section style="display: flex; flex-wrap: wrap; gap: 16px 40px; padding: 32px 0; border-bottom: 1px solid #E2E0D8">
+<div style="flex: 1 1 220px; max-width: 280px; display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 17px; line-height: 24px; font-weight: 600">SerpApi key</h2>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #54585D">Split Finder gets Home Depot and Amazon data through your own SerpApi account. The key is stored only in this browser.</p>
+</div>
+<div style="flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+<label for="key" style="font-size: 14px; font-weight: 600">API key</label>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<input id="key" type="password" value="0000000000000000000000000000000000000000" autocomplete="off" style="flex: 1 1 240px; min-width: 0; height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+<button style="height: 40px; padding: 0 16px; border: 1px solid #8B887F; border-radius: 4px; background: #FFFFFF; font-weight: 600; cursor: pointer">Check key</button>
+</div>
+<div style="display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 20px">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1A1C1E" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M3.5 8.5l3 3L12.5 5"/></svg>
+<span><strong style="font-weight: 600">Key works.</strong> Free Plan · <span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 13px">212</span> of <span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 13px">250</span> searches left this month · <span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 13px">50</span> an hour</span>
+</div>
+<a href="https://serpapi.com" style="font-size: 14px; font-weight: 500">Get a free key at serpapi.com</a>
+</div>
+</section>
+
+<section style="display: flex; flex-wrap: wrap; gap: 16px 40px; padding: 32px 0; border-bottom: 1px solid #E2E0D8">
+<div style="flex: 1 1 220px; max-width: 280px; display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 17px; line-height: 24px; font-weight: 600">Scanning</h2>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #54585D">How often Split Finder checks for bundles, and how many searches a scan may use. Scans run while Chrome is open.</p>
+</div>
+<div style="flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 2px">
+<legend style="padding: 0; margin-bottom: 8px; font-size: 14px; font-weight: 600">Scan for bundles</legend>
+<label style="display: flex; align-items: center; gap: 10px; min-height: 36px; cursor: pointer"><input type="radio" name="freq" style="width: 16px; height: 16px; margin: 0; accent-color: #1A1C1E">Only when I click Scan now</label>
+<label style="display: flex; align-items: center; gap: 10px; min-height: 36px; cursor: pointer"><input type="radio" name="freq" style="width: 16px; height: 16px; margin: 0; accent-color: #1A1C1E">Every 6 hours</label>
+<label style="display: flex; align-items: center; gap: 10px; min-height: 36px; cursor: pointer"><input type="radio" name="freq" style="width: 16px; height: 16px; margin: 0; accent-color: #1A1C1E">Every 12 hours</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 36px">
+<label style="display: flex; align-items: center; gap: 10px; cursor: pointer"><input type="radio" name="freq" checked style="width: 16px; height: 16px; margin: 0; accent-color: #1A1C1E">Once a day at</label>
+<input type="time" value="07:00" aria-label="Time of the daily scan" style="height: 36px; box-sizing: border-box; padding: 0 8px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 36px">
+<label style="display: flex; align-items: center; gap: 10px; cursor: pointer"><input type="radio" name="freq" style="width: 16px; height: 16px; margin: 0; accent-color: #1A1C1E">Every</label>
+<input type="number" value="24" min="1" max="168" aria-label="Hours between scans" style="width: 72px; height: 36px; box-sizing: border-box; padding: 0 8px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+<span>hours</span>
+</div>
+</fieldset>
+
+<div style="display: flex; flex-wrap: wrap; gap: 16px 24px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="perscan" style="font-size: 14px; font-weight: 600">Searches per scan, at most</label>
+<input id="perscan" type="number" value="5" min="1" style="width: 120px; height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="reserve" style="font-size: 14px; font-weight: 600">Always keep in reserve</label>
+<input id="reserve" type="number" value="100" min="0" style="width: 120px; height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: #F1F0EA; border-radius: 6px">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px">
+<span style="font-weight: 600">This fits your plan</span>
+<span style="font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 13px">150 of 150 usable a month</span>
+</div>
+<div role="img" aria-label="Scheduled scans use up to 150 searches, 100 are held in reserve, of 250 in the plan" style="display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: #FFFFFF">
+<span style="width: 60%; background: #1A1C1E"></span>
+<span style="width: 40%; background: #B9B6AD"></span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 14px; line-height: 20px; color: #54585D">
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; background: #1A1C1E; border-radius: 2px"></span>Scheduled scans, up to 150</span>
+<span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; background: #B9B6AD; border-radius: 2px"></span>Reserve, 100</span>
+</div>
+<div style="font-size: 14px; line-height: 20px; color: #54585D">30 scans a month × 5 searches. Lookups you start yourself come out of the reserve.</div>
+</div>
+
+</div>
+</section>
+
+<section style="display: flex; flex-wrap: wrap; gap: 16px 40px; padding: 32px 0; border-bottom: 1px solid #E2E0D8">
+<div style="flex: 1 1 220px; max-width: 280px; display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 17px; line-height: 24px; font-weight: 600">What to scan</h2>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #54585D">Brands your seller account can list. Each brand costs one search per listing page.</p>
+</div>
+<div style="flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-wrap: wrap; gap: 4px 24px">
+<legend style="padding: 0; margin-bottom: 8px; font-size: 14px; font-weight: 600">Brands</legend>
+<label style="display: flex; align-items: center; gap: 10px; min-height: 36px; cursor: pointer"><input type="checkbox" checked style="width: 16px; height: 16px; margin: 0; accent-color: #1A1C1E">DEWALT</label>
+<label style="display: flex; align-items: center; gap: 10px; min-height: 36px; cursor: pointer"><input type="checkbox" checked style="width: 16px; height: 16px; margin: 0; accent-color: #1A1C1E">RYOBI</label>
+</fieldset>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="pages" style="font-size: 14px; font-weight: 600">Listing pages per brand</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+<input id="pages" type="number" value="2" min="1" max="10" style="width: 120px; height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+<span style="font-size: 14px; color: #54585D">24 bundles a page, biggest discounts first</span>
+</div>
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-wrap: wrap; gap: 16px 40px; padding: 32px 0; border-bottom: 1px solid #E2E0D8">
+<div style="flex: 1 1 220px; max-width: 280px; display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 17px; line-height: 24px; font-weight: 600">Fees</h2>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #54585D">Used for every profit estimate. Amazon charges 15% on most tools and 12% on base equipment power tools.</p>
+</div>
+<div style="flex: 999 1 420px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 16px 24px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="ref" style="font-size: 14px; font-weight: 600">Referral fee, %</label>
+<input id="ref" type="number" value="15" style="height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="ful" style="font-size: 14px; font-weight: 600">Fulfillment per unit, $</label>
+<input id="ful" type="number" value="0.00" style="height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="tax" style="font-size: 14px; font-weight: 600">Sales tax on purchases, %</label>
+<input id="tax" type="number" value="0" style="height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="inb" style="font-size: 14px; font-weight: 600">Inbound cost per bundle, $</label>
+<input id="inb" type="number" value="0.00" style="height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-wrap: wrap; gap: 16px 40px; padding: 32px 0; border-bottom: 1px solid #E2E0D8">
+<div style="flex: 1 1 220px; max-width: 280px; display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 17px; line-height: 24px; font-weight: 600">Alerts</h2>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #54585D">A desktop notification when a scan finds a bundle that clears both numbers.</p>
+</div>
+<div style="flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<label style="display: flex; align-items: center; gap: 10px; min-height: 36px; cursor: pointer"><input type="checkbox" checked style="width: 16px; height: 16px; margin: 0; accent-color: #1A1C1E">Notify me about new deals</label>
+<div style="display: flex; flex-wrap: wrap; gap: 16px 24px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="minp" style="font-size: 14px; font-weight: 600">Profit at least, $</label>
+<input id="minp" type="number" value="50" style="width: 140px; height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="minr" style="font-size: 14px; font-weight: 600">ROI at least, %</label>
+<input id="minr" type="number" value="25" style="width: 140px; height: 40px; box-sizing: border-box; padding: 0 12px; background: #FFFFFF; border: 1px solid #8B887F; border-radius: 4px; font-family: 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 14px">
+</div>
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-wrap: wrap; gap: 16px 40px; padding: 32px 0">
+<div style="flex: 1 1 220px; max-width: 280px; display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 17px; line-height: 24px; font-weight: 600">Your data</h2>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #54585D">Everything stays in this browser. Export it to keep a copy or move to another computer.</p>
+</div>
+<div style="flex: 999 1 420px; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<button style="height: 40px; padding: 0 16px; border: 1px solid #8B887F; border-radius: 4px; background: #FFFFFF; font-weight: 600; cursor: pointer">Export deals as CSV</button>
+<button style="height: 40px; padding: 0 16px; border: 1px solid #8B887F; border-radius: 4px; background: #FFFFFF; font-weight: 600; cursor: pointer">Export matches and answers</button>
+<button style="height: 40px; padding: 0 16px; border: 1px solid #8B887F; border-radius: 4px; background: #FFFFFF; font-weight: 600; color: #A33A12; cursor: pointer">Clear saved searches</button>
+</div>
+</section>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1640}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
