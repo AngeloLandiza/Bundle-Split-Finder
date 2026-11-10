@@ -19,3 +19,4 @@ export * from './scan/listings';
 export * from './scan/runner';
 export * from './scan/report';
 export * from './scan/csv';
+export * from './settings';
