@@ -66,7 +66,7 @@ output/
 
 **Files:** Create `fixtures/recorded/<name>.json` for each of the 9 names in `scripts/record-fixtures.ts`.
 
-- [ ] **Step 1:** `npm run budget`. Expected: `fixtures 0 of 15`, `May be spent now` at least 9.
+- [x] **Step 1:** `npm run budget`. Expected: `fixtures 0 of 15`, `May be spent now` at least 9.
 - [ ] **Step 2:** `npm run fixtures:record -- --dry-run`. Expected: `0 of 9 fixtures already recorded. 9 to record (1 search each).`
 - [ ] **Step 3:** Tell the user: 9 searches, `fixtures` bucket. Wait for the yes.
 - [ ] **Step 4:** `npm run fixtures:record`, once. Expected: `Allowed to spend 9 now.` then nine `recorded <name> (network)` lines. If it stops early, do not run it again until the error has been read and understood: an errored search is free, and a re-run only requests the files that are still missing.
@@ -74,7 +74,7 @@ output/
 - [ ] **Step 6:** Leak check. `grep -rlF -- "$SERPAPI_API_KEY" fixtures/` prints nothing, and `grep -rl "api_key" fixtures/recorded/` is reviewed by hand (file names only; the key itself is never echoed).
 - [ ] **Step 7:** `npm run fixtures:record -- --dry-run`. Expected: `9 of 9 fixtures already recorded. 0 to record`.
 - [ ] **Step 8:** Commit: `test: record 9 SerpApi responses (fixtures bucket)`.
-- [ ] **Step 9: Pin the recorded facts.** Read each file's structure with `jq` (key paths and the handful of values below, never whole files) and replace every ⟨pin⟩ in Task 2 with the value from the file. These values cannot be known before the searches are spent; nothing in Task 2 is dispatched while a ⟨pin⟩ remains.
+- [x] **Step 9: Pin the recorded facts (done 2026-11-09).** Read each file's structure with `jq` (key paths and the handful of values below, never whole files) and replace every placeholder in Task 2 with the value from the file. Done: see the Recorded facts table in Task 2.
 
 ### Task 2: Parsers confirmed against the recordings
 
@@ -85,11 +85,20 @@ output/
 - Create: `core/test/parsers.recorded.test.ts`
 - Modify: `core/src/serpapi/parsers.ts`
 
+**Recorded facts (read from `fixtures/recorded/` on 2026-11-09 by the controller).** Every value in the tests below comes from these files.
+
+| Engine | Confirmed as documented | Differs from what the parser assumes |
+| --- | --- | --- |
+| `home_depot` | `products[]` with `product_id` (string), `title`, `brand` (string), `model_number`, `price` (number), `price_was`, `percentage_off`, `price_badge`, `link`; `serpapi_pagination.next` and `pagination.next` | Nothing. `price_was`, `percentage_off` and `price_badge` are simply absent on rows that are not on sale |
+| `amazon` | `organic_results[]` with `asin`, `title`, `price` (string), `extracted_price` (number), `reviews` (number); `sponsored: true` only on sponsored rows, absent otherwise | **Rows carry a `brand` field** (`"RYOBI"`, `"DEWALT"`, `"Amazon Renewed"`, or absent), and **the title does not start with the brand** (`"ONEAND HP 18V BRUSHLESS Cordless 3/8 in. ... PBLRC25B"`). The parser drops `brand` today, so `pick()` grades the founder's own listings `review` and chooses nothing |
+| `amazon_product` | `product_results.asin/title/extracted_price/reviews`; `product_results.brand` is `"Brand: RYOBI"`; `product_details.manufacturer_part_number`, `product_details.upc` | Nothing. `product_details.model_number` also exists (`"#PBLRC25B"`); `item_model_number` does not appear |
+| `home_depot_product` | `product_results.product_id/title/model_number/upc/price` | No parser exists. `brand` is an object `{ name, link }`. The was-price is `promotion.original`. Nothing in the response lists the bundle's parts |
+
 **Interfaces:**
-- Consumes: `grade(want: Wanted, cand: Candidate): Graded` and `pick(want: Wanted, candidates: Candidate[]): Picked` from `core/src/match.ts`, unchanged.
+- Consumes: `grade(want: Wanted, cand: Candidate): Graded` and `pick(want: Wanted, candidates: Candidate[]): Picked` from `core/src/match.ts`, unchanged. `Candidate.brand` is already an optional field, and `grade()` already treats a candidate brand equal to the wanted brand as brand confirmation.
 - Produces:
   - `core/test/recorded.ts`: `export const RECORDED_NAMES = [...] as const` (the 9 names), `export type RecordedName = (typeof RECORDED_NAMES)[number]`, `export function recorded(name: RecordedName): unknown` which reads `fixtures/recorded/<name>.json` with `node:fs` relative to the file's own URL and returns `JSON.parse` of it.
-  - `core/src/serpapi/parsers.ts`: existing signatures unchanged, plus
+  - `core/src/serpapi/parsers.ts`: existing signatures unchanged; `parseAmazonSearch` now sets `brand` on each candidate (through `cleanBrand`, `null` when the row has none); plus
 
     ```ts
     export interface HdProduct {
@@ -121,27 +130,51 @@ Run `npx vitest run core/test/parsers.recorded.test.ts`. Expected: 9 pass.
 
 ```ts
 describe.each([
-  ['hd-search-ryobi-combo-p1', ⟨pin: product count⟩, ⟨pin: rows with a model number⟩, ⟨pin: rows with a was-price⟩, ⟨pin: has next page⟩],
-  ['hd-search-dewalt-combo-p1', ⟨pin⟩, ⟨pin⟩, ⟨pin⟩, ⟨pin⟩],
-  ['hd-search-ryobi-ratchet', ⟨pin⟩, ⟨pin⟩, ⟨pin⟩, ⟨pin⟩],
-] as const)('parseHomeDepotSearch(%s)', (name, count, withModel, withWas, next) => {
+  // name, rows, rows with a model number, rows with a was-price
+  ['hd-search-ryobi-combo-p1', 24, 24, 12],
+  ['hd-search-dewalt-combo-p1', 24, 24, 11],
+  ['hd-search-ryobi-ratchet', 24, 24, 6],
+] as const)('parseHomeDepotSearch(%s)', (name, count, withModel, withWas) => {
   const { listings, hasNextPage } = parseHomeDepotSearch(recorded(name));
   it('keeps every product row', () => expect(listings).toHaveLength(count));
-  it('reads an all-digit item id and a title on every row', () => {
-    for (const l of listings) { expect(l.itemId).toMatch(/^\d+$/); expect(l.title.length).toBeGreaterThan(0); }
+  it('reads an all-digit item id, a title, a brand and a numeric price on every row', () => {
+    for (const l of listings) {
+      expect(l.itemId).toMatch(/^\d+$/);
+      expect(l.title.length).toBeGreaterThan(0);
+      expect(l.brand).toEqual(expect.any(String));
+      expect(l.price).toEqual(expect.any(Number));
+    }
   });
   it('reads model numbers', () => expect(listings.filter((l) => l.model).length).toBe(withModel));
-  it('reads was-prices as numbers above the price', () => {
+  it('reads was-prices as numbers above the price, with a percentage', () => {
     const marked = listings.filter((l) => l.regularPrice !== null);
     expect(marked).toHaveLength(withWas);
-    for (const l of marked) expect(l.regularPrice!).toBeGreaterThan(l.price!);
+    for (const l of marked) {
+      expect(l.regularPrice!).toBeGreaterThan(l.price!);
+      expect(l.percentOff).toEqual(expect.any(Number));
+    }
   });
-  it('reads pagination', () => expect(hasNextPage).toBe(next));
+  it('sees a next page', () => expect(hasNextPage).toBe(true));
 });
 
-it('reads one known row exactly', () => {
-  const { listings } = parseHomeDepotSearch(recorded('⟨pin: file⟩'));
-  expect(listings.find((l) => l.itemId === '⟨pin⟩')).toEqual(⟨pin: the full HdListing for one row, typed from the file⟩);
+it('reads the founder\'s bundle exactly as Home Depot lists it', () => {
+  const { listings } = parseHomeDepotSearch(recorded('hd-search-ryobi-ratchet'));
+  expect(listings.find((l) => l.itemId === '328814689')).toEqual({
+    itemId: '328814689',
+    title: 'ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only)',
+    brand: 'RYOBI',
+    model: 'PBLRC2501SB',
+    price: 189,
+    regularPrice: 338,
+    percentOff: 44,
+    badge: 'Special-Buy',
+    link: 'https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-and-3-8-in-Extended-Reach-Ratchets-Tools-Only-PBLRC2501SB/328814689',
+  });
+});
+
+it('reads a row that is not on sale', () => {
+  const { listings } = parseHomeDepotSearch(recorded('hd-search-dewalt-combo-p1'));
+  expect(listings.find((l) => l.itemId === '206510146')).toMatchObject({ model: 'DCK940D2', price: 799, regularPrice: null, percentOff: null, badge: null });
 });
 ```
 
@@ -149,47 +182,71 @@ it('reads one known row exactly', () => {
 
 ```ts
 it.each([
-  ['amazon-search-PBLRC25B', 'RYOBI', 'PBLRC25B', 'B0B3JWF5ZV'],
-  ['amazon-search-PBLRC01B', 'RYOBI', 'PBLRC01B', 'B0B6Z2ZGVK'],
-] as const)('%s: pick() chooses the founder\'s listing', (name, brand, model, asin) => {
+  // name, rows, rows with no price
+  ['amazon-search-PBLRC25B', 10, 0],
+  ['amazon-search-PBLRC01B', 48, 3],
+  ['amazon-search-DCF891B', 60, 6],
+] as const)('%s: every row is kept, priced or not', (name, rows, unpriced) => {
   const results = parseAmazonSearch(recorded(name));
-  const hit = results.find((r) => r.asin === asin)!;
-  expect(typeof hit.price).toBe('number');
-  expect(typeof hit.reviews).toBe('number');
+  expect(results).toHaveLength(rows);
+  expect(results.filter((r) => r.price === null)).toHaveLength(unpriced);
+});
+
+it.each([
+  ['amazon-search-PBLRC25B', 'RYOBI', 'PBLRC25B', 'B0B3JWF5ZV', 169, 221],
+  ['amazon-search-PBLRC01B', 'RYOBI', 'PBLRC01B', 'B0B6Z2ZGVK', 146.94, 212],
+] as const)('%s: pick() chooses the founder\'s listing', (name, brand, model, asin, price, reviews) => {
+  const results = parseAmazonSearch(recorded(name));
+  expect(results.find((r) => r.asin === asin)).toMatchObject({ brand: 'RYOBI', price, reviews, sponsored: false });
   expect(pick({ brand, model }, results).chosen).toMatchObject({ asin, grade: 'probable' });
 });
 
-it('amazon-search-DCF891B: a listing is chosen and it is a title match', () => {
+it('reads the brand Amazon shows on a search row', () => {
+  const brands = new Set(parseAmazonSearch(recorded('amazon-search-PBLRC25B')).map((r) => r.brand));
+  expect(brands).toEqual(new Set(['RYOBI', 'Amazon Renewed']));
+});
+
+it('amazon-search-DCF891B: one DEWALT listing is chosen as a title match, with no alternatives', () => {
   const picked = pick({ brand: 'DEWALT', model: 'DCF891B' }, parseAmazonSearch(recorded('amazon-search-DCF891B')));
   expect(picked.chosen?.grade).toBe('probable');
+  expect(picked.alternatives).toEqual([]);
 });
 
 it('marks sponsored results', () => {
-  const results = parseAmazonSearch(recorded('⟨pin: file with a sponsored row⟩'));
-  expect(results.filter((r) => r.sponsored).map((r) => r.asin)).toEqual(⟨pin: ASINs⟩);
+  const results = parseAmazonSearch(recorded('amazon-search-DCF891B'));
+  expect(results.filter((r) => r.sponsored).map((r) => r.asin)).toEqual([
+    'B0FP14XK2J', 'B0H4VCY8M1', 'B0FXM7V5ND', 'B0FJRQ1CG6', 'B0FTTW9HT1', 'B0HCTK4BLL',
+    'B0HQGDLWH9', 'B0HQG2WS5V', 'B0H93QPDC2', 'B0FDVXVJCN', 'B0HQNL1PKM', 'B0HN1TBD9C',
+  ]);
 });
 ```
 
-The DEWALT test does not pin an ASIN: which listing is correct for DCF891B is confirmed with the user in step 6, not assumed here. Print nothing; the controller reads the chosen ASIN from the recording for the report.
+The DEWALT test does not pin the chosen ASIN: which listing is correct for DCF891B is confirmed with the user in step 6, not assumed here. Do not assert anything about `picked.review` for that file: it holds aftermarket parts with no brand, and whether they belong there is a matching-rule question for a later `opus` task.
 
 - [ ] **Step 4: Write the Amazon product tests.**
 
 ```ts
 it('amazon-product-B0B6Z2ZGVK carries brand, part number and barcode', () => {
-  const c = parseAmazonProduct(recorded('amazon-product-B0B6Z2ZGVK'), 'B0B6Z2ZGVK')!;
-  expect(c).toMatchObject({ asin: 'B0B6Z2ZGVK', brand: 'RYOBI', partNumber: 'PBLRC01B' });
-  expect(c.upcs).toEqual(⟨pin: the UPC list in the file; '033287193714' is what Amazon's own page showed⟩);
-  expect(grade({ brand: 'RYOBI', model: 'PBLRC01B' }, c).grade).toBe('strong');
+  const c = parseAmazonProduct(recorded('amazon-product-B0B6Z2ZGVK'), 'B0B6Z2ZGVK');
+  expect(c).toEqual({
+    asin: 'B0B6Z2ZGVK',
+    title: 'RYOBI ONEAND HP 18V BRUSHLESS Cordless 1/4 in. Extended Reach Ratchet Tool ONLY PBLRC01B',
+    brand: 'RYOBI',
+    partNumber: 'PBLRC01B',
+    upcs: ['033287193714'],
+    price: 160,
+    reviews: 212,
+  });
+  expect(grade({ brand: 'RYOBI', model: 'PBLRC01B' }, c!).grade).toBe('strong');
+  expect(grade({ brand: 'RYOBI', model: 'PBLRC01B', upc: '033287193714' }, c!).grade).toBe('exact');
 });
 
-it('amazon-product-B0B3JWF5ZV carries brand and part number', () => {
-  const c = parseAmazonProduct(recorded('amazon-product-B0B3JWF5ZV'), 'B0B3JWF5ZV')!;
-  expect(c).toMatchObject({ asin: 'B0B3JWF5ZV', brand: 'RYOBI', partNumber: 'PBLRC25B' });
-  expect(grade({ brand: 'RYOBI', model: 'PBLRC25B' }, c).grade).toBe('strong');
+it('amazon-product-B0B3JWF5ZV carries brand, part number and barcode', () => {
+  const c = parseAmazonProduct(recorded('amazon-product-B0B3JWF5ZV'), 'B0B3JWF5ZV');
+  expect(c).toMatchObject({ asin: 'B0B3JWF5ZV', brand: 'RYOBI', partNumber: 'PBLRC25B', upcs: ['033287193721'], price: 169, reviews: 221 });
+  expect(grade({ brand: 'RYOBI', model: 'PBLRC25B' }, c!).grade).toBe('strong');
 });
 ```
-
-If a recording carries no UPC or no part-number field, the pinned expectation is `[]` or `null` and the `grade` line is pinned to what the evidence supports. The parser is not changed to find one somewhere else.
 
 - [ ] **Step 5: Write the Home Depot product test.**
 
@@ -197,28 +254,67 @@ If a recording carries no UPC or no part-number field, the pinned expectation is
 it('hd-product-328814689 is the founder\'s bundle', () => {
   expect(parseHomeDepotProduct(recorded('hd-product-328814689'))).toEqual({
     itemId: '328814689',
-    title: ⟨pin⟩,
+    title: 'ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only)',
     brand: 'RYOBI',
     model: 'PBLRC2501SB',
-    upc: ⟨pin: '033287232581' is what the page showed⟩,
-    price: ⟨pin⟩,
-    regularPrice: ⟨pin⟩,
+    upc: '033287232581',
+    price: 189,
+    regularPrice: 338,
   });
   expect(parseHomeDepotProduct({})).toBeNull();
 });
 ```
 
-- [ ] **Step 6: Write the tolerance tests (Review Focus 1 to 5).** Inline object literals shaped with the field names the recordings use (⟨pin: field names⟩), one `it` per line of Review Focus, plus: a row with no product id is skipped, a row with no ASIN is skipped, `parseHomeDepotSearch({})` returns `{ listings: [], hasNextPage: false }`, `parseAmazonSearch({})` returns `[]`, `parseAmazonProduct({}, 'X')` returns `null`, `cleanBrand('Brand: DEWALT')` is `'DEWALT'` and `cleanBrand('Visit the RYOBI Store')` is `'RYOBI'`.
+`brand` is read from `product_results.brand.name`; a plain string is accepted too. `regularPrice` is `product_results.promotion.original`, and `null` when there is no promotion. The function returns `null` when `product_id` or `title` is missing.
 
-- [ ] **Step 7: Run the file and record which tests fail.** `npx vitest run core/test/parsers.recorded.test.ts`. Expected: `parseHomeDepotProduct` fails (not defined); any other failure is a documentation mismatch.
+- [ ] **Step 6: Write the tolerance tests (Review Focus 1 to 5).** One `it` per line, on inline object literals that use the real field names:
 
-- [ ] **Step 8: Correct `core/src/serpapi/parsers.ts`.** Change only field paths and add `parseHomeDepotProduct`. Replace the header comment (lines 3 to 6) with one line saying field names are confirmed against `fixtures/recorded/` and which date they were recorded. Remove fallbacks that no recording exercises only where the recording shows the documented name does not exist.
+```ts
+it('keeps a Home Depot row with no price at all', () => {
+  const { listings } = parseHomeDepotSearch({ products: [{ product_id: '1', title: 'T', model_number: 'M' }] });
+  expect(listings[0]).toMatchObject({ itemId: '1', price: null, regularPrice: null, percentOff: null, badge: null, brand: null });
+});
+it('keeps an Amazon row with no price, and reads a price range as no price', () => {
+  const rows = parseAmazonSearch({ organic_results: [{ asin: 'A1', title: 'T' }, { asin: 'A2', title: 'T', price: '$10.00 - $20.00' }] });
+  expect(rows.map((r) => r.price)).toEqual([null, null]);
+  expect(rows[0]).toMatchObject({ brand: null, reviews: null, sponsored: false });
+});
+it('reads sponsored only from sponsored: true', () => {
+  const rows = parseAmazonSearch({ organic_results: [{ asin: 'A1', title: 'T', sponsored: true }, { asin: 'A2', title: 'T', sponsored: 'yes' }, { asin: 'A3', title: 'T' }] });
+  expect(rows.map((r) => r.sponsored)).toEqual([true, false, false]);
+});
+it('reads no barcode and no part number from a detail page that has neither', () => {
+  expect(parseAmazonProduct({ product_results: { title: 'RYOBI Ratchet PBLRC25B' } }, 'A1')).toMatchObject({ asin: 'A1', partNumber: null, upcs: [], brand: null });
+});
+it('reads every barcode when a detail page lists several', () => {
+  expect(parseAmazonProduct({ product_results: { title: 'T' }, product_details: { upc: '033287193714 033287193721' } }, 'A1')!.upcs).toEqual(['033287193714', '033287193721']);
+});
+it('returns empty values for a successful response with no results', () => {
+  const none = { search_metadata: { status: 'Success' }, error: "Amazon hasn't returned any results for this query." };
+  expect(parseHomeDepotSearch(none)).toEqual({ listings: [], hasNextPage: false });
+  expect(parseAmazonSearch(none)).toEqual([]);
+  expect(parseAmazonProduct(none, 'X')).toBeNull();
+  expect(parseHomeDepotProduct(none)).toBeNull();
+});
+it('skips rows without an id', () => {
+  expect(parseHomeDepotSearch({ products: [{ title: 'no id' }] }).listings).toEqual([]);
+  expect(parseAmazonSearch({ organic_results: [{ title: 'no asin' }] })).toEqual([]);
+});
+it('cleans brand strings', () => {
+  expect(cleanBrand('Brand: DEWALT')).toBe('DEWALT');
+  expect(cleanBrand('Visit the RYOBI Store')).toBe('RYOBI');
+});
+```
+
+- [ ] **Step 7: Run the file and record which tests fail.** `npx vitest run core/test/parsers.recorded.test.ts`. Expected failures: everything that calls `parseHomeDepotProduct` (not defined), the two `pick() chooses the founder's listing` tests, the brand test and the DCF891B test (the parser drops `brand`), and any tolerance line that expects `brand: null` on an Amazon search row. Any other failure is a difference the controller did not see: report it before changing code.
+
+- [ ] **Step 8: Correct `core/src/serpapi/parsers.ts`.** Add `brand: cleanBrand(str(r.brand))` to `parseAmazonSearch`. Add `HdProduct` and `parseHomeDepotProduct` under a `Home Depot product (engine=home_depot_product)` section. Replace the header comment (lines 3 to 6) with: `// Field names are confirmed against the responses recorded in fixtures/recorded/ on 2026-11-09.` followed by the existing sentence about tolerance. Change nothing else.
 
 - [ ] **Step 9: Verify.** `npx vitest run core/test/parsers.recorded.test.ts` all pass; `npm run typecheck` prints nothing; `npm test` passes with the old 80 tests still green.
 
 - [ ] **Step 10: Commit.** `fix: parsers confirmed against recorded SerpApi responses`.
 
-**Report back (short):** the tests that passed first time, the fields that had to change (old name, real name), anything in a recording that contradicts `match.ts` or the plan, and the final test count.
+**Report back (short):** the tests that passed first time, the tests that failed first and why, anything in a recording that contradicts `match.ts` or this plan, and the final test count.
 
 ### Task 3: Remove the doc-shaped samples
 
@@ -231,7 +327,7 @@ it('hd-product-328814689 is the founder\'s bundle', () => {
 
 - [ ] **Step 1:** In `core/test/fixtures.ts`, delete the exports `SERPAPI_HD_SEARCH`, `SERPAPI_AMAZON_SEARCH` and `SERPAPI_AMAZON_PRODUCT`. Keep `SERPAPI_ACCOUNT_FREE` and replace the section comment above it with: `// Account API sample. Not recorded: the real response contains the account's email and key.` In the file header (lines 3 to 4) replace the sentence about SerpApi-shaped samples with: `Recorded SerpApi responses live in fixtures/recorded/ and are loaded by core/test/recorded.ts.`
 - [ ] **Step 2:** In `core/test/budget.test.ts`, delete the whole `describe('parsers (doc-shaped samples)', ...)` block and narrow the import on line 7 to `import { parseAmazonSearch } from '../src/serpapi/parsers';`.
-- [ ] **Step 3:** In `README.md`, replace the last paragraph with: `What is verified: the core logic is tested on data read from live pages on 2026-11-09, and the SerpApi parsers are tested against responses recorded on ⟨pin: date⟩ in fixtures/recorded/.` and change `# 80 tests, no network` to the count `npm test` prints.
+- [ ] **Step 3:** In `README.md`, replace the last paragraph with: `What is verified: the core logic is tested on data read from live pages on 2026-11-09, and the SerpApi parsers are tested against responses recorded on 2026-11-09 in fixtures/recorded/.` and change `# 80 tests, no network` to the count `npm test` prints.
 - [ ] **Step 4:** Verify. `grep -rn "SERPAPI_HD_SEARCH\|SERPAPI_AMAZON_SEARCH\|SERPAPI_AMAZON_PRODUCT\|doc-shaped" core scripts README.md` prints nothing. `npm run typecheck` prints nothing. `npm test` passes.
 - [ ] **Step 5:** Commit: `test: replace doc-shaped SerpApi samples with recordings`.
 
