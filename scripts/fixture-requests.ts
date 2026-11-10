@@ -24,4 +24,6 @@ export const REQUESTS: FixtureRequest[] = [
   // One page of a brand's own Amazon listings: Amazon's brand filter, read from an earlier response.
   { name: 'amazon-brand-ryobi-p1', params: { engine: 'amazon', k: 'RYOBI', rh: 'p_123:252605', amazon_domain: 'amazon.com' } },
   { name: 'amazon-brand-dewalt-p1', params: { engine: 'amazon', k: 'DEWALT', rh: 'p_123:195991', amazon_domain: 'amazon.com' } },
+  // A kit that is a part of a bundle: the lookup the scan sends for it.
+  { name: 'amazon-search-PCL1201K2', params: { engine: 'amazon', k: 'RYOBI PCL1201K2', amazon_domain: 'amazon.com' } },
 ];
