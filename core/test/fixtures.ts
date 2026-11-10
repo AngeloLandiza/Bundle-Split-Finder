@@ -1,7 +1,7 @@
 // Real data captured on 2026-11-09. Each block says where it came from.
 // Nothing here was fetched by this code: the values were read from live pages
-// and typed in. SerpApi-shaped samples at the bottom follow SerpApi's docs and
-// must be replaced by recorded responses (see docs/search-budget.md).
+// and typed in. Recorded SerpApi responses live in fixtures/recorded/ and are
+// loaded by core/test/recorded.ts.
 
 import type { Catalog, CatalogModel } from '../src/decompose';
 import type { Candidate } from '../src/match';
@@ -174,7 +174,7 @@ export const HD_DEWALT_AMBIGUOUS: [string, string] = [
   '20V Lithium-Ion Cordless 6-Tool Combo Kit and 1/2 in. Impact Wrench w/ 5 Ah & 2 Ah Batteries Charger & Rolling Toolbox',
 ];
 
-// ---------------------------------------------------------------- SerpApi-shaped samples (from docs, NOT recorded)
+// Account API sample. Not recorded: the real response contains the account's email and key.
 
 export const SERPAPI_ACCOUNT_FREE = {
   account_status: 'Active',
@@ -190,41 +190,4 @@ export const SERPAPI_ACCOUNT_FREE = {
   this_hour_searches: 0,
   last_hour_searches: 0,
   account_rate_limit_per_hour: 50,
-};
-
-export const SERPAPI_HD_SEARCH = {
-  search_metadata: { status: 'Success' },
-  products: [
-    {
-      position: 1,
-      product_id: '328814689',
-      title: 'RYOBI ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only)',
-      link: 'https://www.homedepot.com/p/328814689',
-      model_number: 'PBLRC2501SB',
-      brand: 'RYOBI',
-      price: 189.0,
-      price_was: 338.0,
-      price_saving: 149.0,
-      percentage_off: 44.0,
-      price_badge: 'Special-Buy',
-    },
-    { position: 2, product_id: '316631066', title: 'ONE+ HP 18V Brushless Cordless 1/4 in. Extended Reach Ratchet (Tool Only)', model_number: 'PBLRC01B', brand: 'RYOBI', price: 179.0 },
-    { position: 3, title: 'A row with no product id is skipped' },
-  ],
-  serpapi_pagination: { next: 'https://serpapi.com/search.json?engine=home_depot&page=2' },
-};
-
-export const SERPAPI_AMAZON_SEARCH = {
-  search_metadata: { status: 'Success' },
-  organic_results: [
-    { position: 1, asin: 'B0B3JWF5ZV', title: ASIN_3_8_SEARCH_RESULT.title, price: '$169.00', extracted_price: 169.0, rating: 4.4, reviews: 181 },
-    { position: 2, asin: 'B0SPONSORED', sponsored: true, title: 'RYOBI PBLRC25B Ratchet Kit with Battery and Charger', extracted_price: 229.0, reviews: 12 },
-    { position: 3, title: 'A row with no ASIN is skipped' },
-  ],
-};
-
-export const SERPAPI_AMAZON_PRODUCT = {
-  search_metadata: { status: 'Success' },
-  product_results: { asin: 'B0B6Z2ZGVK', title: ASIN_1_4.title, brand: 'Visit the RYOBI Store', extracted_price: 179.0, reviews: 206 },
-  product_details: { upc: '033287193714', item_model_number: '#PBLRC01B', manufacturer: 'RYOBI' },
 };

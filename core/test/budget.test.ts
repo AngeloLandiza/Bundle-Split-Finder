@@ -4,7 +4,7 @@ import { planScan } from '../src/scanPlan';
 import { forecastUsage, nextRun, runsPerMonth, validateSchedule } from '../src/schedule';
 import { parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { BudgetExceededError, cacheKey, MemoryCache, RateLimitedError, SerpApiClient, SerpApiError, type LedgerEntry } from '../src/serpapi/client';
-import { cleanBrand, parseAmazonProduct, parseAmazonSearch, parseHomeDepotSearch } from '../src/serpapi/parsers';
+import { parseAmazonSearch } from '../src/serpapi/parsers';
 import { DEV_ALLOCATION, DEV_RESERVE, FREE_PLAN } from '../../scripts/dev-budget';
 import * as fx from './fixtures';
 
@@ -143,31 +143,6 @@ describe('client', () => {
 
   it('will not start without a key', () => {
     expect(() => new SerpApiClient({ apiKey: '', budget: new SearchBudget(free(), { reserve: 0, maxPerRun: 1 }) })).toThrow(/No SerpApi key/);
-  });
-});
-
-describe('parsers (doc-shaped samples)', () => {
-  it('reads Home Depot search results', () => {
-    const { listings, hasNextPage } = parseHomeDepotSearch(fx.SERPAPI_HD_SEARCH);
-    expect(listings).toHaveLength(2);
-    expect(listings[0]).toMatchObject({ itemId: '328814689', model: 'PBLRC2501SB', brand: 'RYOBI', price: 189, regularPrice: 338, badge: 'Special-Buy' });
-    expect(listings[1]!.regularPrice).toBeNull();
-    expect(hasNextPage).toBe(true);
-    expect(parseHomeDepotSearch({}).listings).toEqual([]);
-  });
-
-  it('reads Amazon search results', () => {
-    const results = parseAmazonSearch(fx.SERPAPI_AMAZON_SEARCH);
-    expect(results.map((r) => r.asin)).toEqual(['B0B3JWF5ZV', 'B0SPONSORED']);
-    expect(results[0]).toMatchObject({ price: 169, reviews: 181, sponsored: false });
-    expect(results[1]!.sponsored).toBe(true);
-  });
-
-  it('reads an Amazon product page and cleans its brand and part number', () => {
-    const c = parseAmazonProduct(fx.SERPAPI_AMAZON_PRODUCT, 'B0B6Z2ZGVK');
-    expect(c).toMatchObject({ asin: 'B0B6Z2ZGVK', brand: 'RYOBI', partNumber: 'PBLRC01B', upcs: ['033287193714'], price: 179 });
-    expect(cleanBrand('Brand: DEWALT')).toBe('DEWALT');
-    expect(parseAmazonProduct({}, 'X')).toBeNull();
   });
 });
 

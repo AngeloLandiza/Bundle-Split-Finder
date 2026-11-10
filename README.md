@@ -8,7 +8,7 @@ tooling, the plan and the design. The extension itself is built next (see `docs/
 
     npm install
     npm run typecheck
-    npm test                 # 80 tests, no network
+    npm test                 # 122 tests, no network
     cp .env.example .env     # then paste a SerpApi key
     npm run budget           # free: what the account has, what may be spent
 
@@ -21,6 +21,5 @@ tooling, the plan and the design. The extension itself is built next (see `docs/
 | `docs/dev-prompt.md` | The prompt to start development in Claude Code |
 | `CLAUDE.md` | Rules for any agent working in this repo |
 
-What is and is not verified: the core logic is tested on data read from live pages on
-2026-11-09. The SerpApi parsers follow SerpApi's documentation and have not yet been run
-against real responses; recording fixtures is step 1.
+What is verified: the core logic is tested on data read from live pages on 2026-11-09, and
+the SerpApi parsers are tested against responses recorded on 2026-11-09 in fixtures/recorded/.
