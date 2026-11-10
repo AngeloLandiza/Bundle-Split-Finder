@@ -14,3 +14,4 @@ export * from './serpapi/client';
 export * from './serpapi/parsers';
 export * from './scan/types';
 export * from './scan/memoryStore';
+export * from './scan/classify';

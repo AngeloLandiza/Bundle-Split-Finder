@@ -95,7 +95,7 @@ export function decomposeRyobi(bundleModel: string, catalog: Catalog): Decomposi
 
 // Home Depot writes DEWALT bundles as <kit model>W<short code for the bonus item>,
 // e.g. DCK940D2WCF891B = kit DCK940D2 "with" DCF891B.
-const DEWALT_BUNDLE = /^(DCK[A-Z]{0,2}\d{3,4}(?:[A-Z]\d){0,2})W(.+)$/;
+export const DEWALT_BUNDLE = /^(DCK[A-Z]{0,2}\d{3,4}(?:[A-Z]\d){0,2})W(.+)$/;
 
 function suffixCandidates(suffix: string, title: string, catalog: Catalog): string[] {
   const hits = [...catalog.values()]
