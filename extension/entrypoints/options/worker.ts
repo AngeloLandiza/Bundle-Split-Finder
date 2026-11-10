@@ -4,6 +4,8 @@
 import { browser } from 'wxt/browser';
 import type { AppState, Reply, Request, StateChanged } from '../../lib/messages';
 
+export const UNREACHABLE = 'Could not reach the extension. Reload this page and try again.';
+
 export interface WorkerApi {
   send<T>(request: Request): Promise<Reply<T>>;
   /** Calls the listener with each new AppState. Returns a function that stops listening. */

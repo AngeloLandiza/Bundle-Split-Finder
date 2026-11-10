@@ -7,6 +7,7 @@ type Option = 'manual' | 'six' | 'twelve' | 'daily' | 'every';
 type Problems = Partial<Record<SettingsField, string>>;
 
 const n = (v: number): string => v.toLocaleString('en-US');
+const searches = (v: number): string => `${n(v)} ${v === 1 ? 'search' : 'searches'}`;
 
 function optionOf(s: Schedule): Option {
   if (s.mode === 'manual') return 'manual';
@@ -163,7 +164,7 @@ function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings;
         <span className="forecast-title">Scans run only when you click Scan now</span>
         <div className="forecast-note">
           Nothing is spent automatically. A scan you start can use up to <span className="figure small">{n(searchesPerScan)}</span>{' '}
-          searches, and it may use the reserve.
+          {searchesPerScan === 1 ? 'search' : 'searches'}, and it may use the reserve.
         </div>
       </div>
     );
@@ -171,8 +172,9 @@ function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings;
 
   const f = forecastUsage(schedule, searchesPerScan, planPerMonth, reserve);
   const runs = runsPerMonth(schedule);
-  const scheduledPct = planPerMonth > 0 ? Math.min(100, (f.searchesPerMonth / planPerMonth) * 100) : 0;
-  const reservePct = planPerMonth > 0 ? Math.min(100 - scheduledPct, (reserve / planPerMonth) * 100) : 0;
+  // The reserve is always shown at its own size; scheduled scans fill at most the usable rest.
+  const reservePct = planPerMonth > 0 ? Math.min(100, (reserve / planPerMonth) * 100) : 0;
+  const scheduledPct = planPerMonth > 0 ? Math.min(100 - reservePct, (Math.min(f.searchesPerMonth, usable) / planPerMonth) * 100) : 0;
 
   return (
     <div className="forecast" role="status" data-testid="forecast" data-attention={f.fitsPlan ? undefined : 'true'}>
@@ -185,12 +187,15 @@ function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings;
         </div>
       ) : (
         <div className="forecast-title">
-          This needs <span className="figure small">{n(f.searchesPerMonth)}</span> searches a month and your plan has{' '}
+          This needs <span className="figure small">{n(f.searchesPerMonth)}</span>{' '}
+          {f.searchesPerMonth === 1 ? 'search' : 'searches'} a month and your plan has{' '}
           <span className="figure small">{n(usable)}</span> to spend.{' '}
           {f.maxPerRunThatFits > 0 ? (
             <>
               Use <span className="figure small">{n(f.maxPerRunThatFits)}</span> per scan, or scan less often.
             </>
+          ) : runs > planPerMonth ? (
+            'Scan less often.'
           ) : (
             'Lower the reserve, or scan less often.'
           )}
@@ -199,7 +204,7 @@ function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings;
       <div
         className="meter"
         role="img"
-        aria-label={`Scheduled scans use up to ${n(f.searchesPerMonth)} searches, ${n(reserve)} are held in reserve, of ${n(planPerMonth)} in the plan`}
+        aria-label={`${f.fitsPlan ? `Scheduled scans use up to ${searches(f.searchesPerMonth)}` : `Scheduled scans need ${searches(f.searchesPerMonth)} but only ${searches(usable)} can be spent`}, ${n(reserve)} held in reserve, of ${n(planPerMonth)} in the plan`}
       >
         <span className="meter-used" style={{ width: `${scheduledPct}%` }} />
         <span className="meter-reserve" style={{ width: `${reservePct}%` }} />
@@ -207,7 +212,7 @@ function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings;
       <div className="legend">
         <span>
           <i className="swatch swatch--used" />
-          Scheduled scans, up to {n(f.searchesPerMonth)}
+          {f.fitsPlan ? `Scheduled scans, up to ${n(f.searchesPerMonth)}` : `Scheduled scans, ${n(usable)} usable of ${n(f.searchesPerMonth)} needed`}
         </span>
         <span>
           <i className="swatch swatch--reserve" />
@@ -216,7 +221,7 @@ function Forecast({ draft, problems, planPerMonth }: { draft: ExtensionSettings;
       </div>
       <div className="forecast-note">
         <span className="figure small">{n(runs)}</span> scans a month × <span className="figure small">{n(searchesPerScan)}</span>{' '}
-        searches. Lookups you start yourself come out of the reserve.
+        {searchesPerScan === 1 ? 'search' : 'searches'}. Lookups you start yourself come out of the reserve.
       </div>
     </div>
   );

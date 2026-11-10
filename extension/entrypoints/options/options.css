@@ -170,6 +170,15 @@ legend,
   border-color: var(--attention);
   border-width: 2px;
 }
+.key-input::placeholder {
+  font-family: var(--font-words);
+}
+.field-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
 .key-input {
   flex: 1 1 240px;
   min-width: 0;
@@ -255,8 +264,16 @@ legend,
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 8px 12px;
   font-size: 14px;
+}
+.confirm-question {
+  flex: 1 1 auto;
+}
+.confirm-buttons {
+  display: flex;
+  flex: none;
+  gap: 8px;
 }
 .link {
   font-size: 14px;

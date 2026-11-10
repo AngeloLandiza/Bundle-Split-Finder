@@ -2,11 +2,10 @@ import { useRef, useState } from 'react';
 import type { AccountInfo } from '@core/serpapi/budget';
 import type { AppState } from '../../lib/messages';
 import { Confirm, Section } from './fields';
-import type { WorkerApi } from './worker';
+import { UNREACHABLE, type WorkerApi } from './worker';
 
 type Result = { ok: true; account: AccountInfo } | { ok: false; message: string };
 
-const UNREACHABLE = 'Could not reach the extension. Reload this page and try again.';
 const n = (v: number): string => v.toLocaleString('en-US');
 
 function KeyWorks({ account }: { account: AccountInfo }) {
@@ -54,7 +53,7 @@ export function KeySection({ api, state }: { api: WorkerApi; state: AppState }) 
         setResult({ ok: false, message: reply.error });
       }
     } catch {
-      setResult({ ok: false, message: 'Split Finder could not be reached. Reload this page and try again.' });
+      setResult({ ok: false, message: UNREACHABLE });
     } finally {
       setChecking(false);
     }

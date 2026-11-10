@@ -261,6 +261,67 @@ describe('Confirmations', () => {
   });
 });
 
+describe('Forecast copy and meter', () => {
+  const widths = () => {
+    const used = document.querySelector('.meter-used') as HTMLElement;
+    const reserve = document.querySelector('.meter-reserve') as HTMLElement;
+    return [used.style.width, reserve.style.width];
+  };
+
+  it('scans a month beyond the whole plan: lowering the reserve cannot help', async () => {
+    await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'interval', hours: 1 } }));
+    expect(forecast().textContent).toContain('to spend. Scan less often.');
+    expect(forecast().textContent).not.toContain('Lower the reserve');
+  });
+
+  it('a reserve that is too big can be lowered', async () => {
+    await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'interval', hours: 12 }, reserve: 250 }));
+    expect(forecast().textContent).toContain('Lower the reserve, or scan less often.');
+  });
+
+  it('meter: fitting schedule', async () => {
+    await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'daily', at: '07:00' } }));
+    expect(widths()).toEqual(['60%', '40%']);
+  });
+
+  it('meter: a schedule that does not fit still shows the reserve', async () => {
+    await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'interval', hours: 6 } }));
+    expect(widths()).toEqual(['60%', '40%']);
+    expect(forecast().textContent).toContain('Reserve, 100');
+  });
+
+  it('says 1 search and 5 searches', async () => {
+    await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'daily', at: '07:00' }, searchesPerScan: 1 }));
+    expect(forecast().textContent).toContain('30 scans a month × 1 search.');
+    cleanup();
+    await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'daily', at: '07:00' }, searchesPerScan: 5 }));
+    expect(forecast().textContent).toContain('× 5 searches.');
+    cleanup();
+    await open(stateWith({ account: ACCOUNT }, { searchesPerScan: 1 }));
+    expect(forecast().textContent).toContain('up to 1 search,');
+  });
+});
+
+describe('Field formats', () => {
+  it('money fields show two decimals when not being edited; percent fields do not', async () => {
+    const { user } = await open(stateWith());
+    const ful = screen.getByLabelText('Fulfillment per unit, $') as HTMLInputElement;
+    expect(ful.value).toBe('0.00');
+    expect((screen.getByLabelText('Referral fee, %') as HTMLInputElement).value).toBe('15');
+    await user.clear(ful);
+    await user.type(ful, '1.5');
+    expect(ful.value).toBe('1.5');
+    await user.tab();
+    expect(ful.value).toBe('1.50');
+  });
+
+  it('the hint sits in the same row as the pages input', async () => {
+    await open(stateWith());
+    const input = screen.getByLabelText('Listing pages per brand');
+    expect(input.parentElement?.textContent).toContain('24 bundles a page');
+  });
+});
+
 describe('Page details', () => {
   it('has one h1 and the forecast is a status, not an alert', async () => {
     await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'interval', hours: 6 } }));
@@ -271,7 +332,7 @@ describe('Page details', () => {
 
   it('when not even 1 per scan fits, the fix is the reserve', async () => {
     await open(stateWith({ account: ACCOUNT }, { schedule: { mode: 'interval', hours: 1 }, reserve: 100 }));
-    expect(forecast().textContent).toContain('Lower the reserve, or scan less often.');
+    expect(forecast().textContent).toContain('to spend. Scan less often.');
     expect(forecast().textContent).not.toContain('Use 0 per scan');
   });
 

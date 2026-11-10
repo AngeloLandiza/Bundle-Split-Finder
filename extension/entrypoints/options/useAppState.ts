@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ExtensionSettings } from '@core/settings';
 import type { AppState } from '../../lib/messages';
-import type { WorkerApi } from './worker';
+import { UNREACHABLE, type WorkerApi } from './worker';
 
 export interface AppStateHook {
   state: AppState | null;
@@ -30,7 +30,7 @@ export function useAppState(api: WorkerApi): AppStateHook {
         else setError(reply.error);
       })
       .catch(() => {
-        if (live) setError('Split Finder could not be reached. Reload this page.');
+        if (live) setError(UNREACHABLE);
       })
       .finally(() => {
         if (live) setLoading(false);
@@ -47,7 +47,7 @@ export function useAppState(api: WorkerApi): AppStateHook {
         const reply = await api.send<unknown>({ type: 'saveSettings', settings });
         return reply.ok ? null : reply.error;
       } catch {
-        return 'Split Finder could not be reached. Reload this page.';
+        return UNREACHABLE;
       }
     },
     [api],

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { KNOWN_BRANDS, type ExtensionSettings, type SettingsField } from '@core/settings';
 import type { FeeSettings } from '@core/money';
 import { Confirm, NumberField, Section } from './fields';
-import type { WorkerApi } from './worker';
+import { UNREACHABLE, type WorkerApi } from './worker';
 
 type Problems = Partial<Record<SettingsField, string>>;
 interface Props {
@@ -38,7 +38,7 @@ export function WhatToScanSection({ draft, problems, onChange, onCommit }: Props
           </p>
         ) : null}
       </fieldset>
-      <div className="row">
+      <div>
         <NumberField
           id="pages"
           label="Listing pages per brand"
@@ -50,19 +50,19 @@ export function WhatToScanSection({ draft, problems, onChange, onCommit }: Props
           error={problems.pagesPerBrand}
           onCommit={onCommit}
           onChange={(v) => onChange({ pagesPerBrand: v })}
+          after={<span className="hint">24 bundles a page, biggest discounts first</span>}
         />
-        <span className="hint">24 bundles a page, biggest discounts first</span>
       </div>
     </Section>
   );
 }
 
 type FeeKey = 'referralRate' | 'fulfillmentFee' | 'salesTaxRate' | 'inboundCost';
-const FEE_FIELDS: { key: FeeKey; id: string; label: string; scale?: number; max?: number }[] = [
+const FEE_FIELDS: { key: FeeKey; id: string; label: string; scale?: number; max?: number; decimals?: number }[] = [
   { key: 'referralRate', id: 'ref', label: 'Referral fee, %', scale: 100, max: 100 },
-  { key: 'fulfillmentFee', id: 'ful', label: 'Fulfillment per unit, $' },
+  { key: 'fulfillmentFee', id: 'ful', label: 'Fulfillment per unit, $', decimals: 2 },
   { key: 'salesTaxRate', id: 'tax', label: 'Sales tax on purchases, %', scale: 100 },
-  { key: 'inboundCost', id: 'inb', label: 'Inbound cost per bundle, $' },
+  { key: 'inboundCost', id: 'inb', label: 'Inbound cost per bundle, $', decimals: 2 },
 ];
 
 const badFee = (key: FeeKey, v: number): boolean =>
@@ -82,6 +82,7 @@ export function FeesSection({ draft, problems, onChange, onCommit }: Props) {
             id={f.id}
             label={f.label}
             scale={f.scale}
+            decimals={f.decimals}
             step="any"
             min={0}
             max={f.max}
@@ -156,7 +157,7 @@ export function DataSection({ api }: { api: WorkerApi }) {
       if (reply.ok) api.download(filename, reply.data, mime);
       else setNote(reply.error);
     } catch {
-      setNote('Split Finder could not be reached. Reload this page and try again.');
+      setNote(UNREACHABLE);
     }
   }
 
@@ -166,7 +167,7 @@ export function DataSection({ api }: { api: WorkerApi }) {
       const reply = await api.send<unknown>({ type: 'clearSavedSearches' });
       setNote(reply.ok ? 'Saved searches cleared. Matches and answers were kept.' : reply.error);
     } catch {
-      setNote('Could not reach the extension. Reload this page and try again.');
+      setNote(UNREACHABLE);
     }
   }
 

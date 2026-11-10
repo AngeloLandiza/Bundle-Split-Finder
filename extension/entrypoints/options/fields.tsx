@@ -37,6 +37,10 @@ interface NumberFieldProps {
   ariaLabel?: string;
   /** Called on blur and Enter: the moment the value may be saved. */
   onCommit?(): void;
+  /** Fixed decimals shown while the field is not being edited (money). */
+  decimals?: number;
+  /** Shown beside the input, in the same row, centered. */
+  after?: ReactNode;
   /** Multiply for display: a stored rate of 0.15 is shown as 15. */
   scale?: number;
 }
@@ -44,12 +48,17 @@ interface NumberFieldProps {
 /** A number box that can be empty while the owner types. */
 export function NumberField(p: NumberFieldProps) {
   const scale = p.scale ?? 1;
-  const toShown = (n: number) => show(n * scale);
+  const toShown = (n: number) =>
+    p.decimals !== undefined && Number.isFinite(n) ? (n * scale).toFixed(p.decimals) : show(n * scale);
   const [text, setText] = useState(toShown(p.value));
+  const focused = useRef(false);
 
   // Follow outside changes (for example a new state from the worker), but never overwrite what is being typed.
   useEffect(() => {
-    setText((current) => (sameNumber(parse(current) / scale, p.value) ? current : toShown(p.value)));
+    setText((current) => {
+      if (focused.current) return sameNumber(parse(current) / scale, p.value) ? current : toShown(p.value);
+      return toShown(p.value);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p.value, scale]);
 
@@ -68,7 +77,15 @@ export function NumberField(p: NumberFieldProps) {
       aria-label={p.ariaLabel}
       aria-invalid={p.invalid ? true : undefined}
       aria-describedby={errorId ?? p.describedBy}
-      onBlur={p.onCommit}
+      onFocus={() => {
+        focused.current = true;
+      }}
+      onBlur={() => {
+        focused.current = false;
+        const typed = parse(text);
+        if (p.decimals !== undefined && Number.isFinite(typed)) setText(typed.toFixed(p.decimals));
+        p.onCommit?.();
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') p.onCommit?.();
       }}
@@ -80,9 +97,16 @@ export function NumberField(p: NumberFieldProps) {
   );
   if (p.inline) return input;
   return (
-    <div className="field">
+    <div className="field" style={p.width && !p.after ? { width: p.width } : undefined}>
       <label htmlFor={p.id}>{p.label}</label>
-      {input}
+      {p.after ? (
+        <div className="field-line">
+          {input}
+          {p.after}
+        </div>
+      ) : (
+        input
+      )}
       {p.error ? (
         <p id={errorId} className="field-error">
           {p.error}
@@ -135,20 +159,22 @@ export function Confirm({
         if (e.key === 'Escape') close();
       }}
     >
-      <span>{question}</span>
-      <button
-        type="button"
-        className="btn btn--danger"
-        onClick={() => {
-          close();
-          onYes();
-        }}
-      >
-        {yes}
-      </button>
-      <button type="button" className="btn" autoFocus onClick={close}>
-        Cancel
-      </button>
+      <span className="confirm-question">{question}</span>
+      <span className="confirm-buttons">
+        <button
+          type="button"
+          className="btn btn--danger"
+          onClick={() => {
+            close();
+            onYes();
+          }}
+        >
+          {yes}
+        </button>
+        <button type="button" className="btn" autoFocus onClick={close}>
+          Cancel
+        </button>
+      </span>
     </div>
   );
 }
