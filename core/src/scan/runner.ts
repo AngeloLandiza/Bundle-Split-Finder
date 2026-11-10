@@ -1,16 +1,19 @@
-// The scan runner: Home Depot listing pages, then splits (free), then one Amazon lookup
-// per new part and a refresh per stale price. Rule numbers refer to the step 2 plan,
-// Task 4 ("The scan runner").
+// The scan runner: a few pages of the brands' own Amazon listings, then Home Depot listing
+// pages, then splits (free), then one Amazon lookup per new part that no saved listing
+// answers and a refresh per stale price. "Rule n" refers to the step 2 plan, Task 4 ("The
+// scan runner"); "2c rule n" to the step 2c plan, Task 2 ("The catalog phase").
 
-import { type Catalog, catalogEntry, decompose } from '../decompose';
+import { type Catalog, catalogEntry, decompose, kindsFromTitle } from '../decompose';
 import { type Candidate, pick } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
-import { parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
+import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { looksLikeBundle, wantedFor } from './classify';
-import { listingFrom } from './listings';
+import { candidatesFor, listingFrom } from './listings';
 import { bundleKey, partKey } from './types';
-import type { BudgetView, MatchRecord, PriceRecord, ScanJob, ScanSettings, ScanStep, ScanStore, SearchClient, StopReason } from './types';
+import type {
+  BudgetView, CatalogCursor, ListingRecord, MatchRecord, PriceRecord, ScanJob, ScanSettings, ScanStep, ScanStore, SearchClient, StopReason,
+} from './types';
 
 export interface ScanDeps {
   client: SearchClient;
@@ -23,6 +26,7 @@ export interface ScanDeps {
   labelPrefix?: string;
 }
 
+type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
 type Listing = Extract<ScanStep, { kind: 'listing' }>;
 type Lookup = Extract<ScanStep, { kind: 'lookup' }>;
 type Refresh = Extract<ScanStep, { kind: 'refresh' }>;
@@ -35,7 +39,7 @@ interface Run {
   now: () => number;
   prefix: string;
   job: ScanJob;
-  /** Built from the store when the parts phase starts. */
+  /** The models the splitter and wantedFor know (2c rule 4). Built when the listing queue is empty, or when a continued job starts in the parts phase. */
   catalog: Catalog;
   /** Set by rule 8: no further search in this run. */
   halted: boolean;
@@ -45,14 +49,18 @@ interface Run {
 export async function runScan(deps: ScanDeps): Promise<ScanJob> {
   const run = await startJob(deps);
   if (run.job.phase === 'listing') {
+    // Amazon brand pages, then Home Depot pages: one queue.
     await runQueue(run);
+    // Read once for the split and the planning pass that follows it.
+    const known = await knownModels(run.store);
+    run.catalog = known.catalog;
     await splitBundles(run);
-    await planParts(run);
+    await planParts(run, known.listings);
+  } else if (run.job.phase === 'parts') {
+    // A continued job: its lookups are judged with the models the split knew.
+    run.catalog = (await knownModels(run.store)).catalog;
   }
-  if (run.job.phase === 'parts') {
-    run.catalog = await catalogOf(run.store);
-    await runQueue(run);
-  }
+  if (run.job.phase === 'parts') await runQueue(run);
   return finish(run);
 }
 
@@ -68,6 +76,10 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   if (newest?.status === 'running') return run(newest);
 
   const startedAt = now();
+  // 2c rule 1: brand pages first, from at most a fifth of the allowance, measured before
+  // anything is spent. Pages that do not fit are dropped, not deferred: the cursor keeps the place.
+  const catalog = await catalogWanted(store, settings);
+  const catalogPages = Math.min(catalog.length, Math.floor(budget.spendable * 0.2));
   // Page 1 of every query in settings order, then page 2 of every query, and so on.
   const pages: Listing[] = [];
   for (let page = 1; page <= settings.pagesPerQuery; page++) {
@@ -76,10 +88,10 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     }
   }
   const wants = await wantedParts(store, settings, startedAt, null);
-  const plan = planScan(budget.spendable, { hdPagesWanted: pages.length, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
+  const plan = planScan(budget.spendable - catalogPages, { hdPagesWanted: pages.length, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
   const job: ScanJob = {
     id: String(startedAt), startedAt, finishedAt: null, status: 'running', stopReason: null, stopMessage: null, phase: 'listing',
-    queue: pages.slice(0, plan.hdPages), deferred: pages.slice(plan.hdPages), searchesUsed: 0,
+    queue: [...catalog.slice(0, catalogPages), ...pages.slice(0, plan.hdPages)], deferred: pages.slice(plan.hdPages), searchesUsed: 0,
     counts: {
       pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
       catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0,
@@ -89,7 +101,36 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   return run(job);
 }
 
-// ---------------------------------------------------------------- rules 2, 3, 6, 7: paid steps
+/**
+ * 2c rule 1: `catalogPagesPerScan` brand pages, shared by the scanned brands that have a
+ * brand filter, one page per brand in turn: a brand with no cursor first, then the brand
+ * whose cursor moved longest ago, ties by name. Each brand reads on from its cursor.
+ */
+async function catalogWanted(store: ScanStore, settings: ScanSettings): Promise<CatalogStep[]> {
+  const brands = unique(settings.brands.map((b) => b.trim().toUpperCase())).filter((b) => brandFilter(settings, b) !== null);
+  const cursors = new Map<string, CatalogCursor | undefined>();
+  for (const b of brands) cursors.set(b, await store.getCursor(b));
+  const movedAt = (b: string) => cursors.get(b)?.updatedAt ?? -Infinity;
+  brands.sort((a, b) => (movedAt(a) !== movedAt(b) ? (movedAt(a) < movedAt(b) ? -1 : 1) : a < b ? -1 : a > b ? 1 : 0));
+  const wanted = Math.max(0, Math.floor(settings.catalogPagesPerScan));
+  const steps: CatalogStep[] = [];
+  for (let round = 0; brands.length > 0 && steps.length < wanted; round++) {
+    for (const brand of brands.slice(0, wanted - steps.length)) steps.push({ kind: 'catalog', brand, page: pageOf(cursors.get(brand)) + round });
+  }
+  return steps;
+}
+
+/** The page a cursor points at; 1 without a usable cursor. */
+const pageOf = (cursor: CatalogCursor | undefined): number =>
+  cursor && Number.isInteger(cursor.nextPage) && cursor.nextPage >= 1 ? cursor.nextPage : 1;
+
+/** Amazon's brand filter for a brand (upper case), or null when the settings have none. */
+function brandFilter(settings: ScanSettings, brand: string): string | null {
+  const rh = Object.hasOwn(settings.brandFilters, brand) ? settings.brandFilters[brand] : undefined;
+  return typeof rh === 'string' && rh.trim() !== '' ? rh : null;
+}
+
+// ---------------------------------------------------------------- rules 2, 3, 6, 7 and 2c rules 2, 3: paid steps
 
 async function runQueue(run: Run): Promise<void> {
   const { job } = run;
@@ -102,14 +143,20 @@ async function runQueue(run: Run): Promise<void> {
       result = await send(run, step);
     } catch (err) {
       const stop = stopFor(err);
+      if (step.kind === 'catalog' && stop.reason === 'error') {
+        // 2c rule 3: a brand page that failed is dropped, not deferred, and the scan goes on.
+        // The cursor is not touched, so the next scan asks for the same page.
+        const sentence = `The ${step.brand} Amazon page ${step.page} was skipped: ${stop.message ?? 'the search failed.'}`;
+        job.stopMessage = job.stopMessage === null ? sentence : `${job.stopMessage} ${sentence}`;
+        job.queue.shift();
+        await run.store.putScan(job);
+        continue;
+      }
       await halt(run, stop.reason, stop.message);
       return;
     }
     // Rule 3: the store first, then the job.
-    if (step.kind === 'listing') await applyListing(run, step, result.data);
-    else if (step.kind === 'lookup') await applyLookup(run, step, result.data);
-    else if (step.kind === 'refresh') await applyRefresh(run, step, result.data);
-    else throw new Error('catalog steps are not implemented yet');
+    await apply(run, step, result.data);
     // searchesUsed counts the paid steps this job saved. A search in flight when the worker
     // was interrupted was paid (the ledger has it) but its step was never saved, so it is
     // not counted; the continued job answers that step from the cache, which is free.
@@ -146,19 +193,75 @@ async function halt(run: Run, reason: StopReason, message: string | null): Promi
 
 function send(run: Run, step: ScanStep): Promise<SearchResult> {
   const { settings, prefix, job } = run;
-  if (step.kind === 'listing') {
-    return run.client.search(
-      { engine: 'home_depot', q: step.q, page: step.page, hd_filter_tokens: step.filterTokens ?? undefined },
-      // Always reuse a page fetched earlier in the same job.
-      { label: `${prefix}:listing:${step.q}:p${step.page}`, maxAgeMs: Math.max(settings.listingMaxAgeMs, run.now() - job.startedAt) },
-    );
+  switch (step.kind) {
+    case 'catalog': {
+      const rh = brandFilter(settings, step.brand);
+      // The settings lost the filter since the job was planned: without it the search would be
+      // a different one. Thrown before searching, so nothing is spent (2c rule 3 drops the step).
+      if (rh === null) throw new Error(`No Amazon brand filter is set for ${step.brand}.`);
+      return run.client.search(
+        // Page 1 goes without a page parameter, the request Amazon's own first page answers.
+        { engine: 'amazon', k: step.brand, rh, amazon_domain: settings.amazonDomain, page: step.page === 1 ? undefined : step.page },
+        { label: `${prefix}:catalog:${step.brand}:p${step.page}`, maxAgeMs: settings.freshnessMs },
+      );
+    }
+    case 'listing':
+      return run.client.search(
+        { engine: 'home_depot', q: step.q, page: step.page, hd_filter_tokens: step.filterTokens ?? undefined },
+        // Always reuse a page fetched earlier in the same job.
+        { label: `${prefix}:listing:${step.q}:p${step.page}`, maxAgeMs: Math.max(settings.listingMaxAgeMs, run.now() - job.startedAt) },
+      );
+    case 'lookup':
+      // No maxAgeMs on a lookup: a part is paid for once.
+      return run.client.search(amazonPart(run, step), { label: `${prefix}:lookup:${step.model}` });
+    case 'refresh':
+      return run.client.search(amazonPart(run, step), { label: `${prefix}:refresh:${step.model}`, maxAgeMs: settings.freshnessMs });
+    default:
+      return unknownStep(step);
   }
-  // Nothing queues a catalog step yet; this keeps one from ever being sent.
-  if (step.kind === 'catalog') throw new Error('catalog steps are not implemented yet');
-  const params = { engine: 'amazon', k: `${step.brand} ${step.model}`, amazon_domain: settings.amazonDomain };
-  // No maxAgeMs on a lookup: a part is paid for once.
-  if (step.kind === 'lookup') return run.client.search(params, { label: `${prefix}:lookup:${step.model}` });
-  return run.client.search(params, { label: `${prefix}:refresh:${step.model}`, maxAgeMs: settings.freshnessMs });
+}
+
+const amazonPart = (run: Run, step: Lookup | Refresh) => ({ engine: 'amazon', k: `${step.brand} ${step.model}`, amazon_domain: run.settings.amazonDomain });
+
+/** Rule 3 and 2c rule 2: what a step's response changes in the store. */
+async function apply(run: Run, step: ScanStep, data: unknown): Promise<void> {
+  switch (step.kind) {
+    case 'catalog':
+      return applyCatalog(run, step, data);
+    case 'listing':
+      return applyListing(run, step, data);
+    case 'lookup':
+      return applyLookup(run, step, data);
+    case 'refresh':
+      return applyRefresh(run, step, data);
+    default:
+      return unknownStep(step);
+  }
+}
+
+/** Every step kind is handled above: a new kind does not compile until it is. */
+function unknownStep(step: never): never {
+  throw new Error(`Unknown scan step: ${JSON.stringify(step)}`);
+}
+
+/** 2c rule 2: save every row of a brand page, then move the brand's cursor on from this page. */
+async function applyCatalog(run: Run, step: CatalogStep, data: unknown): Promise<void> {
+  const { store, job } = run;
+  const now = run.now();
+  await saveListings(run, parseAmazonSearch(data), now);
+  // The new cursor comes from the step's own page, not from the stored cursor, so a step
+  // repeated from the cache after an interruption leaves the cursor where the first apply put
+  // it. For the same reason a pass is counted only while the cursor still points at this page.
+  const old = await store.getCursor(step.brand);
+  const passes = old?.passes ?? 0;
+  if (amazonHasNextPage(data)) {
+    await store.putCursor({ brand: step.brand, nextPage: step.page + 1, passes, updatedAt: now });
+  } else {
+    await store.putCursor({ brand: step.brand, nextPage: 1, passes: pageOf(old) === step.page ? passes + 1 : passes, updatedAt: now });
+    // The brand has no later page: later pages queued for it are dropped, not deferred.
+    job.queue = job.queue.filter((s) => !(s.kind === 'catalog' && s.brand === step.brand && s.page > step.page));
+  }
+  job.counts.catalogPages += 1;
 }
 
 async function applyListing(run: Run, step: Listing, data: unknown): Promise<void> {
@@ -271,18 +374,30 @@ function priceSeen(asin: string, old: PriceRecord | undefined, cand: Candidate |
 const firstWith = (candidates: Candidate[], asin: string): Candidate | undefined => candidates.find((c) => c.asin === asin);
 const unique = (xs: string[]): string[] => [...new Set(xs)];
 
-// ---------------------------------------------------------------- rule 4: split (free)
+// ---------------------------------------------------------------- rule 4 and 2c rule 4: split (free)
 
-async function catalogOf(store: ScanStore): Promise<Catalog> {
+/**
+ * 2c rule 4: the stored catalog, plus an entry for every model in a saved listing's title.
+ * A stored entry wins over one read from a listing. The one source of the catalog for the
+ * split and for the parts phase.
+ */
+async function knownModels(store: ScanStore): Promise<{ catalog: Catalog; listings: ListingRecord[] }> {
+  const listings = await store.listListings();
   const catalog: Catalog = new Map();
+  // Listings come sorted by ASIN: when two titles name the same model, the first ASIN's is kept.
+  for (const l of listings) {
+    for (const model of l.models) {
+      if (catalog.has(model)) continue;
+      catalog.set(model, { model, brand: l.brand, kinds: kindsFromTitle(l.title), isKit: catalogEntry(l.brand, model, l.title).isKit ?? false });
+    }
+  }
   for (const c of await store.listCatalog()) catalog.set(c.model, { model: c.model, brand: c.brand, kinds: c.kinds, isKit: c.isKit });
-  return catalog;
+  return { catalog, listings };
 }
 
 async function splitBundles(run: Run): Promise<void> {
-  const { store, job } = run;
+  const { store, job, catalog } = run;
   const now = run.now();
-  const catalog = await catalogOf(store);
   let resolved = 0;
   for (const bundle of await store.listBundles()) {
     const split = decompose(bundle.brand, bundle.model, bundle.title, catalog);
@@ -312,11 +427,24 @@ interface Wants {
   steps: Map<string, Lookup | Refresh>;
 }
 
+interface Part {
+  key: string;
+  brand: string;
+  model: string;
+}
+
+/** Rule 5: a lookup is wanted for a part with no match, or one left waiting, never for a user's decision. */
+const lookupWanted = (match: MatchRecord | undefined): boolean => !match || (match.status === 'waiting' && match.decidedBy !== 'user');
+
 /**
  * The lookups and refreshes the store asks for right now, most valuable first. `jobId` is
  * the job being planned for (null before it exists): the newest other job is the last one.
+ * `fromListings` (2c rule 5) is tried first for every part that would need a lookup; the
+ * match it returns, if any, stands in for one.
  */
-async function wantedParts(store: ScanStore, settings: ScanSettings, now: number, jobId: string | null): Promise<Wants> {
+async function wantedParts(
+  store: ScanStore, settings: ScanSettings, now: number, jobId: string | null, fromListings?: (part: Part) => Promise<MatchRecord | null>,
+): Promise<Wants> {
   // The parts of every resolved bundle, each with the largest saving among its bundles.
   const parts = new Map<string, { brand: string; model: string; saving: number }>();
   for (const b of await store.listBundles()) {
@@ -334,13 +462,15 @@ async function wantedParts(store: ScanStore, settings: ScanSettings, now: number
   const waitingSince = new Map<string, number>();
   const steps = new Map<string, Lookup | Refresh>();
   for (const [key, { brand, model }] of parts) {
-    const match = await store.getMatch(key);
+    let match = await store.getMatch(key);
+    if (fromListings && lookupWanted(match)) match = (await fromListings({ key, brand, model })) ?? match;
     // Never a lookup for a match the user decided, even one left waiting.
-    if (!match || (match.status === 'waiting' && match.decidedBy !== 'user')) {
+    if (lookupWanted(match)) {
       if (match) waitingSince.set(key, match.waitingSince ?? 0);
       lookups.push(key);
       steps.set(key, { kind: 'lookup', brand, model });
-    } else if (match.status === 'matched' && match.asin !== null) {
+    } else if (match?.status === 'matched' && match.asin !== null) {
+      // Also a part just matched from a saved listing: its price is the listing's, as old as that.
       const price = await store.getPrice(match.asin);
       if (!price || now - price.checkedAt > settings.freshnessMs) {
         refreshes.push(key);
@@ -372,9 +502,11 @@ const stepId = (s: ScanStep): string =>
       ? `catalog:${s.brand}:${s.page}`
       : `${s.kind}:${s.brand}:${s.model}:${s.kind === 'refresh' ? s.asin : ''}`;
 
-async function planParts(run: Run): Promise<void> {
+/** `listings`: the saved listings, read once for this planning pass. */
+async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   const { job, budget } = run;
-  const wants = await wantedParts(run.store, run.settings, run.now(), job.id);
+  // 2c rule 5 runs even when the listing phase stopped: it spends nothing.
+  const wants = await wantedParts(run.store, run.settings, run.now(), job.id, (part) => matchFromListings(run, listings, part));
   // In the listing phase only rule 8 sets a stop reason: then nothing more is spent.
   const allowance = job.stopReason === null ? budget.spendable : 0;
   const plan = planScan(allowance, { hdPagesWanted: 0, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
@@ -387,6 +519,32 @@ async function planParts(run: Run): Promise<void> {
   if (job.deferred.length > 0 && job.stopReason === null) job.stopReason = budget.blockReason(budget.spendable + 1);
   job.phase = 'parts';
   await run.store.putScan(job);
+}
+
+/**
+ * 2c rule 5: the saved listings that carry the part's model, judged by pick() exactly as a
+ * lookup's results are. A chosen listing is saved as a lookup saves it, priced from the
+ * saved listings. Otherwise null: the part is left to a paid lookup, which alone may open a
+ * review item.
+ */
+async function matchFromListings(run: Run, listings: ListingRecord[], part: Part): Promise<MatchRecord | null> {
+  const { store, job } = run;
+  const picked = pick(wantedFor(part.brand, part.model, run.catalog), candidatesFor(part.brand, part.model, listings));
+  if (!picked.chosen) return null;
+  const asin = picked.chosen.asin;
+  const alternatives = unique(picked.alternatives.map((g) => g.asin)).filter((a) => a !== asin);
+  for (const a of [asin, ...alternatives]) {
+    const l = listings.find((x) => x.asin === a)!;
+    await store.putPrice({ asin: a, price: l.price, reviews: l.reviews, seenAt: l.seenAt, checkedAt: l.checkedAt });
+  }
+  const match: MatchRecord = {
+    key: part.key, brand: part.brand, model: part.model, status: 'matched', asin, grade: picked.chosen.grade, alternatives,
+    decidedBy: 'auto', updatedAt: run.now(), waitingSince: null,
+  };
+  await store.putMatch(match);
+  job.counts.partsFromCatalog += 1;
+  job.counts.partsMatched += 1;
+  return match;
 }
 
 /** A lookup that did not run: the part goes first next scan. Keeps the first waitingSince. */

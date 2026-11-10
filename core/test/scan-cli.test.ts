@@ -36,10 +36,19 @@ describe('npm run scan', () => {
     expect(code).toBe(0);
     const run = readFileSync(join(deps.outDir, 'run_20261109-120000.csv'), 'utf8');
     expect(run.split('\n')[1]).toMatch(/^confirmed,RYOBI,PBLRC2501SB,.*,268\.55,189,79\.55,0\.4209,,https:/);
+    // Both parts are on the DEWALT brand page: the bundle is confirmed, at a small estimated loss.
+    expect(run.split('\n')[2]).toMatch(/^confirmed,DEWALT,DCK540D1WCS334B,.*,486\.2,499,-12\.8,-0\.0257,,https:/);
+    // PCL515B is on the RYOBI brand page; no Amazon result names the kit PCL1201K2.
+    expect(run.split('\n')[4]).toMatch(/^missing_listing,RYOBI,PCL1201K2-PCL515B,.*,PCL1201K2,https:/);
     expect(run.split('\n')).toHaveLength(25); // header, 23 bundles, trailing empty string
-    expect(readFileSync(join(deps.outDir, 'review_20261109-120000.csv'), 'utf8').split('\n')).toHaveLength(23); // header, 21 items, trailing
-    expect(logs).toContain('Searches used: 0 (replayed 5 recorded responses)');
-    expect(logs).toContain('Confirmed 2 · review: inactive listing 0, missing listing 0, contents not known 21');
+    expect(readFileSync(join(deps.outDir, 'review_20261109-120000.csv'), 'utf8').split('\n')).toHaveLength(21); // header, 19 items, trailing
+    // Two brand pages, three Home Depot pages, lookups for PBLRC01B, PBLRC25B and PCL1201K2.
+    expect(logs).toContain('Searches used: 0 (replayed 8 recorded responses)');
+    expect(logs).toContain('Scan done');
+    const counts = logs.indexOf('Pages 3 · products 66 · bundles 23 · parts matched 5');
+    expect(counts).toBeGreaterThanOrEqual(0);
+    expect(logs[counts + 1]).toBe('Amazon listings saved 183 · parts matched without a search 3');
+    expect(logs).toContain('Confirmed 3 · review: inactive listing 0, missing listing 1, contents not known 19');
     expect(logs).toContain('Profit figures are estimates from fee settings, not real Amazon fees.');
   });
 

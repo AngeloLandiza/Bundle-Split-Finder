@@ -113,6 +113,8 @@ export async function runScanCli(args: string[], deps: CliDeps): Promise<number>
   const settings: ScanSettings = { ...DEFAULT_SCAN_SETTINGS };
   if (opts.queries.length > 0) settings.queries = opts.queries.map((q) => ({ q }));
   else if (opts.fixtures) settings.queries = REQUESTS.filter((r) => r.params.engine === 'home_depot' && r.params.hd_filter_tokens === undefined).map((r) => ({ q: String(r.params.q) }));
+  // Both recorded brand pages (DEWALT and RYOBI, page 1) are replayed.
+  if (opts.fixtures) settings.catalogPagesPerScan = 2;
   if (opts.pages !== null) settings.pagesPerQuery = opts.pages;
 
   if (opts.dryRun) {
@@ -166,6 +168,7 @@ export async function runScanCli(args: string[], deps: CliDeps): Promise<number>
   const c = job.counts;
   const inSection = (section: string): number => report.bundles.filter((b) => b.section === section).length;
   log(`Pages ${c.pagesFetched} · products ${c.productsSeen} · bundles ${c.bundlesSeen} · parts matched ${c.partsMatched}`);
+  log(`Amazon listings saved ${c.listingsSaved} · parts matched without a search ${c.partsFromCatalog}`);
   log(`Confirmed ${inSection('confirmed')} · review: inactive listing ${inSection('inactive_listing')}, missing listing ${inSection('missing_listing')}, contents not known ${inSection('split')}`);
   log(`Ranked bundles: ${runPath}`);
   log(`Review items:   ${reviewPath}`);
