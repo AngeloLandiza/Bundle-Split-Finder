@@ -114,14 +114,15 @@ export function toScanSettings(s: ExtensionSettings): ScanSettings {
  * The budget policy for a scan. `usedSoFar` is the job's searchesUsed when it is being continued.
  *
  * A scheduled scan keeps the owner's reserve; a scan the user starts may spend it, down to zero.
- * Either way the whole job, across every continuation, spends at most searchesPerScan.
- * A number that cannot be read spends nothing rather than guess: an unreadable allowance gives
- * any scan 0, and an unreadable reserve gives a scheduled scan 0.
+ * Either way the whole job, across every continuation, spends at most searchesPerScan
+ * (whole searches, at most 250). A number that cannot be read spends nothing rather than guess:
+ * an unreadable allowance or searches-used count gives any scan 0, and an unreadable reserve
+ * gives a scheduled scan 0. A negative searches-used count counts as 0.
  */
 export function budgetPolicyFor(s: ExtensionSettings, trigger: ScanTrigger, usedSoFar: number): BudgetPolicy {
-  const used = Number.isFinite(usedSoFar) && usedSoFar > 0 ? usedSoFar : 0;
-  const allowance = isAtLeastZero(s.searchesPerScan) ? s.searchesPerScan : 0;
-  const maxPerRun = Math.max(0, allowance - used);
+  const allowance = isAtLeastZero(s.searchesPerScan) ? Math.floor(Math.min(s.searchesPerScan, 250)) : 0;
+  // A continued job whose usage cannot be read may already have spent its whole allowance.
+  const maxPerRun = Number.isFinite(usedSoFar) ? Math.max(0, Math.floor(allowance - Math.max(0, usedSoFar))) : 0;
   if (trigger === 'manual') return { reserve: 0, maxPerRun };
   if (!isAtLeastZero(s.reserve)) return { reserve: 0, maxPerRun: 0 };
   return { reserve: s.reserve, maxPerRun };

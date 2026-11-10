@@ -282,11 +282,33 @@ describe('budgetPolicyFor', () => {
     expect(first.spentThisRun + second.spentThisRun).toBe(5);
   });
 
-  it('treats a negative or unreadable searches-used count as 0', () => {
-    for (const used of [-2, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
-      expect(budgetPolicyFor(s, 'scheduled', used), String(used)).toEqual({ reserve: 100, maxPerRun: 5 });
-      expect(budgetPolicyFor(s, 'manual', used), String(used)).toEqual({ reserve: 0, maxPerRun: 5 });
+  it('counts a negative searches-used count as 0', () => {
+    expect(budgetPolicyFor(s, 'scheduled', -2)).toEqual({ reserve: 100, maxPerRun: 5 });
+    expect(budgetPolicyFor(s, 'manual', -2)).toEqual({ reserve: 0, maxPerRun: 5 });
+  });
+
+  it("spends nothing when a continued job's searches-used count cannot be read", () => {
+    // The job may already have spent its whole allowance; a fresh one could double it.
+    for (const used of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      expect(budgetPolicyFor(s, 'scheduled', used), String(used)).toEqual({ reserve: 100, maxPerRun: 0 });
+      expect(budgetPolicyFor(s, 'manual', used), String(used)).toEqual({ reserve: 0, maxPerRun: 0 });
+      expect(new SearchBudget(freeAccount(250), budgetPolicyFor(s, 'manual', used)).spendable).toBe(0);
     }
+  });
+
+  it('floors what is left after a fractional searches-used count', () => {
+    expect(budgetPolicyFor(s, 'scheduled', 2.5)).toEqual({ reserve: 100, maxPerRun: 2 });
+    expect(budgetPolicyFor(s, 'manual', 2.5)).toEqual({ reserve: 0, maxPerRun: 2 });
+  });
+
+  it('caps searches per scan at 250 and floors a fractional one before subtracting', () => {
+    const big = settings({ searchesPerScan: 9999, reserve: 100 });
+    expect(budgetPolicyFor(big, 'scheduled', 0)).toEqual({ reserve: 100, maxPerRun: 250 });
+    expect(budgetPolicyFor(big, 'manual', 3)).toEqual({ reserve: 0, maxPerRun: 247 });
+    const fractional = settings({ searchesPerScan: 7.9, reserve: 100 });
+    expect(budgetPolicyFor(fractional, 'scheduled', 0)).toEqual({ reserve: 100, maxPerRun: 7 });
+    // 7 - 2.5 floors to 4; flooring only after subtracting would give 5.
+    expect(budgetPolicyFor(fractional, 'manual', 2.5)).toEqual({ reserve: 0, maxPerRun: 4 });
   });
 
   it('spends nothing when searches per scan cannot be read', () => {
@@ -369,6 +391,14 @@ describe('dealsToNotify', () => {
     expect(models(dealsToNotify(report, on(79.55, 42.09), []))).toEqual(['PBLRC2501SB']);
     expect(dealsToNotify(report, on(79.56, 42.09), [])).toEqual([]);
     expect(dealsToNotify(report, on(79.55, 42.1), [])).toEqual([]);
+  });
+
+  it('skips a confirmed bundle whose estimate is null', () => {
+    const noEstimate: ScanReport = {
+      ...report,
+      bundles: report.bundles.map((b) => (b.model === 'PBLRC2501SB' ? { ...b, estimate: null } : b)),
+    };
+    expect(models(dealsToNotify(noEstimate, on(-100, -100), []))).toEqual(['PBLRC01B-PBLRC25B']);
   });
 
   it('notifies only confirmed bundles', () => {
