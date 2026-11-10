@@ -1,0 +1,57 @@
+// The two files the command line writes. Text from retailers is untrusted: a cell that
+// starts like a spreadsheet formula is made inert, and separators are quoted.
+
+import type { BundleRow, PartRow, ReviewItem, ScanReport } from './types';
+
+export const RUN_COLUMNS: readonly string[] = [
+  'status', 'brand', 'bundle_model', 'bundle_title', 'hd_item_id', 'hd_price', 'hd_was_price', 'hd_percent_off',
+  'parts', 'asins', 'match_grades', 'amazon_prices', 'est_net_revenue', 'est_cost', 'est_profit', 'est_roi',
+  'uncovered_parts', 'hd_link',
+];
+
+export const REVIEW_COLUMNS: readonly string[] = ['kind', 'brand', 'model', 'title', 'reason', 'candidates', 'opened_at'];
+
+function cell(value: string | number | null): string {
+  if (value === null) return '';
+  if (typeof value === 'number') return String(value);
+  const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
+  return /[,"\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+}
+
+export function csvLine(cells: (string | number | null)[]): string {
+  return cells.map(cell).join(',');
+}
+
+const join = (items: string[]): string => items.join(' | ');
+const orQ = (v: string | number | null): string => (v === null ? '?' : String(v));
+const partName = (p: PartRow): string => (p.qty > 1 ? `${p.model} x${p.qty}` : p.model);
+
+function runRow(b: BundleRow): (string | number | null)[] {
+  const head = [b.status, b.brand, b.model, b.title, b.itemId, b.price, b.regularPrice, b.percentOff];
+  const tail = [b.link];
+  if (b.status === 'needs_review') return [...head, '', '', '', '', null, null, null, null, '', ...tail];
+  const e = b.estimate;
+  return [
+    ...head,
+    join(b.parts.map(partName)),
+    join(b.parts.map((p) => orQ(p.asin))),
+    join(b.parts.map((p) => orQ(p.grade))),
+    join(b.parts.map((p) => orQ(p.price))),
+    e ? e.netRevenue : null, e ? e.cost : null, e ? e.profit : null, e ? e.roi : null,
+    join(b.uncovered),
+    ...tail,
+  ];
+}
+
+export function runCsv(report: ScanReport): string {
+  return [csvLine([...RUN_COLUMNS]), ...report.bundles.map((b) => csvLine(runRow(b)))].join('\n') + '\n';
+}
+
+function reviewRow(r: ReviewItem): (string | number | null)[] {
+  const candidates = r.candidates.map((c) => `${c.asin} ${c.price === null ? '$?' : `$${c.price}`} ${c.title}`);
+  return [r.kind, r.brand, r.model, r.title, r.reason, join(candidates), new Date(r.openedAt).toISOString()];
+}
+
+export function reviewCsv(report: ScanReport): string {
+  return [csvLine([...REVIEW_COLUMNS]), ...report.review.map((r) => csvLine(reviewRow(r)))].join('\n') + '\n';
+}
