@@ -5,7 +5,7 @@
 import { type Catalog, catalogEntry, decompose } from '../decompose';
 import { type Candidate, pick } from '../match';
 import { planScan } from '../scanPlan';
-import { BudgetExceededError, RateLimitedError, SerpApiError, type SearchResult } from '../serpapi/client';
+import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { looksLikeBundle, wantedFor } from './classify';
 import { bundleKey, partKey } from './types';
@@ -91,13 +91,13 @@ async function runQueue(run: Run): Promise<void> {
   const { job } = run;
   while (!run.halted && job.queue.length > 0) {
     const step = job.queue[0]!;
+    // Only the search is inside the try. An error from the store (below, or in halt) is not
+    // caught: the job stays "running" and the next runScan continues it.
     let result: SearchResult;
     try {
       result = await send(run, step);
     } catch (err) {
       const stop = stopFor(err);
-      // Anything else is not caught: the job stays "running" and the next runScan continues it.
-      if (!stop) throw err;
       await halt(run, stop.reason, stop.message);
       return;
     }
@@ -116,12 +116,14 @@ async function runQueue(run: Run): Promise<void> {
 
 // ---------------------------------------------------------------- rule 8: stopping
 
-function stopFor(err: unknown): { reason: StopReason; message: string | null } | null {
+function stopFor(err: unknown): { reason: StopReason; message: string | null } {
   if (err instanceof BudgetExceededError) return { reason: err.reason, message: null };
-  // RateLimitedError extends SerpApiError, so it is checked first.
+  // RateLimitedError extends SerpApiError, so it is checked before the general case.
   if (err instanceof RateLimitedError) return { reason: 'rate_limited', message: err.message };
-  if (err instanceof SerpApiError) return { reason: 'error', message: err.message };
-  return null;
+  // Any other SerpApiError, or anything else the search threw (a body that is not JSON).
+  // SerpApi may already have counted that search, so the job must not stay "running":
+  // a continued run would send the same request again.
+  return { reason: 'error', message: (err instanceof Error && err.message) || String(err) };
 }
 
 /** The failed step and the rest of the queue are deferred; no further search in this run. */
@@ -160,20 +162,23 @@ async function applyListing(run: Run, step: Listing, data: unknown): Promise<voi
     const brand = row.brand?.trim().toUpperCase();
     if (!brand || !brands.has(brand) || row.model === null) continue;
     job.counts.productsSeen += 1;
+    // A search row carries no barcode: one already stored is kept, never replaced by null.
     if (step.bundlesOnly || looksLikeBundle(brand, row.model)) {
       const key = bundleKey(row.itemId);
       const known = await store.getBundle(key);
       await store.putBundle({
-        key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: null,
+        key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: known?.upc ?? null,
         price: row.price, regularPrice: row.regularPrice, percentOff: row.percentOff, link: row.link, seenAt: now,
         split: known?.split ?? null,
       });
       job.counts.bundlesSeen += 1;
     } else {
       const entry = catalogEntry(brand, row.model, row.title);
+      const key = partKey(entry.brand, entry.model);
+      const known = await store.getCatalogEntry(key);
       await store.putCatalogEntry({
-        key: partKey(entry.brand, entry.model), brand: entry.brand, model: entry.model, title: row.title,
-        kinds: entry.kinds, isKit: entry.isKit ?? false, upc: null, seenAt: now,
+        key, brand: entry.brand, model: entry.model, title: row.title,
+        kinds: entry.kinds, isKit: entry.isKit ?? false, upc: known?.upc ?? null, seenAt: now,
       });
     }
   }

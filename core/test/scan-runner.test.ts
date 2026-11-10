@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { replayRecorded, type Replay } from '../../scripts/replay';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { runScan } from '../src/scan/runner';
-import { DEFAULT_SCAN_SETTINGS, type ScanSettings, type SearchClient } from '../src/scan/types';
+import { DEFAULT_SCAN_SETTINGS, type ScanJob, type ScanSettings, type ScanStore } from '../src/scan/types';
 import { type BudgetPolicy, parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '../src/serpapi/client';
 import * as fx from './fixtures';
@@ -39,7 +39,8 @@ interface ScanOptions {
   policy?: BudgetPolicy;
   account?: ReturnType<typeof account>;
   fetchFn?: typeof fetch;
-  wrap?: (client: SearchClient) => SearchClient;
+  /** Default: the world's store. */
+  store?: ScanStore;
 }
 
 function scan(w: World, opts: ScanOptions = {}) {
@@ -54,20 +55,35 @@ function scan(w: World, opts: ScanOptions = {}) {
       w.ledger.push(entry.label);
     },
   });
-  return runScan({ client: opts.wrap ? opts.wrap(client) : client, budget, store: w.store, settings: opts.settings ?? RATCHET, now: () => w.clock });
+  return runScan({ client, budget, store: opts.store ?? w.store, settings: opts.settings ?? RATCHET, now: () => w.clock });
 }
 
-/** Its `n`th search completes underneath (paid, cached, in the ledger), then the worker "dies". */
-const interruptOn = (n: number) => (client: SearchClient): SearchClient => {
-  let calls = 0;
-  return {
-    async search(params, options) {
-      const result = await client.search(params, options);
-      if (++calls === n) throw new Error('interrupted');
-      return result;
+/**
+ * The world's store, except that the first job save matching `when` throws, as when the
+ * service worker dies: the step's result is in the store, the save that records the step
+ * never happens. Every other call goes to the world's store unchanged.
+ */
+function interruptSave(w: World, when: (job: ScanJob) => boolean): ScanStore {
+  let thrown = false;
+  return new Proxy(w.store, {
+    get(target, prop) {
+      if (prop === 'putScan') {
+        return async (job: ScanJob) => {
+          if (!thrown && when(job)) {
+            thrown = true;
+            throw new Error('interrupted');
+          }
+          return target.putScan(job);
+        };
+      }
+      const value: unknown = Reflect.get(target, prop);
+      return typeof value === 'function' ? value.bind(target) : value;
     },
-  };
-};
+  });
+}
+
+/** Interrupted at the save after the first lookup (PBLRC01B): the job keeps both lookups queued. */
+const afterFirstLookup = (w: World) => interruptSave(w, (job) => job.counts.lookupsDone === 1);
 
 describe('runScan: the founder\'s bundle (test A)', () => {
   it('splits the ratchet bundles from one recorded page and matches both parts', async () => {
@@ -167,16 +183,19 @@ describe('runScan: the three limits (tests C and D)', () => {
 });
 
 describe('runScan: an interruption is continued without paying twice (test E)', () => {
-  it('continues the running job and answers the repeated step from the cache', async () => {
+  it('continues the running job and answers the repeated step from the cache (also rule 3)', async () => {
     const w = world();
-    // The second search (the PBLRC01B lookup) is paid, then the runner never sees it.
-    await expect(scan(w, { wrap: interruptOn(2) })).rejects.toThrow('interrupted');
+    // The PBLRC01B lookup is paid, cached and applied; the save that records the step fails.
+    await expect(scan(w, { store: afterFirstLookup(w) })).rejects.toThrow('interrupted');
     const [saved] = await w.store.listScans();
     expect(saved).toMatchObject({ id: String(T0), status: 'running', phase: 'parts', searchesUsed: 1, finishedAt: null });
+    expect(saved!.counts.lookupsDone).toBe(0);
     expect(saved!.queue).toEqual([
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' },
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' },
     ]);
+    // Rule 3: the step's result reached the store before the job save was attempted.
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'matched', asin: 'B0B6Z2ZGVK' });
     expect(w.ledger).toHaveLength(2);
 
     w.clock = T0 + 5 * MINUTE;
@@ -195,7 +214,7 @@ describe('runScan: an interruption is continued without paying twice (test E)', 
 
   it('continues a job interrupted during the listing phase, without fetching the page again', async () => {
     const w = world();
-    await expect(scan(w, { wrap: interruptOn(1) })).rejects.toThrow('interrupted');
+    await expect(scan(w, { store: interruptSave(w, (job) => job.counts.pagesFetched === 1) })).rejects.toThrow('interrupted');
     expect((await w.store.listScans())[0]).toMatchObject({ status: 'running', phase: 'listing', searchesUsed: 0, queue: [{ kind: 'listing', page: 1 }] });
 
     // Two hours later the page is older than listingMaxAgeMs, but it belongs to this job.
@@ -206,26 +225,26 @@ describe('runScan: an interruption is continued without paying twice (test E)', 
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B]);
   });
 
-  it('writes a step\'s result to the store before it saves the job (rule 3)', async () => {
-    // A store whose 4th job save fails: the one after the PBLRC01B lookup (saves are:
-    // start, listing page, parts plan, lookup, lookup, finish).
-    class FailingSave extends MemoryScanStore {
-      saves = 0;
-      override async putScan(job: Parameters<MemoryScanStore['putScan']>[0]) {
-        if (++this.saves === 4) throw new Error('interrupted');
-        return super.putScan(job);
-      }
-    }
-    const w = { ...world(), store: new FailingSave() };
-    await expect(scan(w)).rejects.toThrow('interrupted');
-    // The lookup's result is already in the store; the saved job still has the step queued.
-    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'matched', asin: 'B0B6Z2ZGVK' });
-    expect((await w.store.listScans())[0]).toMatchObject({ status: 'running', searchesUsed: 1, queue: [{ model: 'PBLRC01B' }, { model: 'PBLRC25B' }] });
+  it('stops, not "running", when a search fails in an unexpected way (test E2)', async () => {
+    const w = world();
+    // HTTP 200 with a body that is not JSON: the client's res.json() throws a SyntaxError.
+    const amazon = failing(w, 'engine=amazon', 200, 'not json');
+    const job = await scan(w, { fetchFn: amazon.fetchFn });
+    expect(job).toMatchObject({ status: 'stopped', stopReason: 'error', phase: 'finish', searchesUsed: 1, queue: [] });
+    expect(job.stopMessage).toEqual(expect.stringMatching(/\S/));
+    expect((await w.store.listScans())[0]!.status).not.toBe('running');
+    expect((await w.store.listMatches()).map((m) => [m.key, m.status])).toEqual([
+      ['RYOBI:PBLRC01B', 'waiting'],
+      ['RYOBI:PBLRC25B', 'waiting'],
+    ]);
+    expect(amazon.failed).toHaveLength(1);
 
-    const job = await scan(w);
-    expect(job).toMatchObject({ id: String(T0), status: 'done', searchesUsed: 2 });
-    expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B]);
-    expect(job.counts).toMatchObject({ lookupsDone: 2, partsMatched: 2 });
+    // The next run starts a new job (ids are the start time, so the clock moves on).
+    w.clock = T0 + MINUTE;
+    const next = await scan(w);
+    expect(next.id).not.toBe(job.id);
+    expect(next).toMatchObject({ id: String(T0 + MINUTE), status: 'done' });
+    expect((await w.store.listScans()).map((j) => j.id)).toEqual([String(T0 + MINUTE), String(T0)]);
   });
 
   it('finishes a continued job whose parts queue is empty', async () => {
@@ -282,14 +301,14 @@ describe('runScan: time (tests F and G)', () => {
   });
 });
 
-/** The replay, except that requests whose URL contains `match` get an HTTP `status` reply. */
-function failing(w: World, match: string, status: number) {
+/** The replay, except that requests whose URL contains `match` get an HTTP `status` reply with `body`. */
+function failing(w: World, match: string, status: number, body = JSON.stringify({ error: 'refused' })) {
   const failed: string[] = [];
   const fetchFn = (async (input: string | URL | Request) => {
     const url = String(input instanceof Request ? input.url : input);
     if (url.includes(match)) {
       failed.push(url);
-      return new Response(JSON.stringify({ error: 'refused' }), { status });
+      return new Response(body, { status });
     }
     return w.replay.fetchFn(input);
   }) as typeof fetch;
@@ -338,7 +357,7 @@ describe('runScan: stopping on errors (test H)', () => {
 
   it('a continued job whose budget refuses stops cleanly instead of staying running', async () => {
     const w = world();
-    await expect(scan(w, { wrap: interruptOn(2) })).rejects.toThrow('interrupted');
+    await expect(scan(w, { store: afterFirstLookup(w) })).rejects.toThrow('interrupted');
 
     // No searches allowed: PBLRC01B comes from the cache, PBLRC25B is refused.
     const job = await scan(w, { policy: { reserve: 0, maxPerRun: 0 } });
@@ -380,7 +399,7 @@ describe('runScan: brands, the user\'s decision, a listing that disappeared (tes
 
   it('keeps a decision the user made while a job was interrupted (test J, continued)', async () => {
     const w = world();
-    await expect(scan(w, { wrap: interruptOn(2) })).rejects.toThrow('interrupted');
+    await expect(scan(w, { store: afterFirstLookup(w) })).rejects.toThrow('interrupted');
     const user = (model: string, asin: string) => ({
       key: `RYOBI:${model}`, brand: 'RYOBI', model, status: 'matched' as const, asin, grade: null,
       alternatives: [], decidedBy: 'user' as const, updatedAt: T0, waitingSince: null,
@@ -394,6 +413,28 @@ describe('runScan: brands, the user\'s decision, a listing that disappeared (tes
     expect(job).toMatchObject({ status: 'stopped', stopReason: 'run_cap' });
     expect(await w.store.getMatch('RYOBI:PBLRC01B')).toEqual(user('PBLRC01B', 'B0USERPICK1'));
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toEqual(user('PBLRC25B', 'B0USERPICK2'));
+  });
+
+  it('never erases a stored barcode with a search row (test L)', async () => {
+    const w = world();
+    // The bundle's barcode is from its Home Depot page (core/test/fixtures.ts, HD_BUNDLE).
+    await w.store.putBundle({
+      key: 'homedepot:328814689', retailer: 'homedepot', itemId: fx.HD_BUNDLE.productID, title: fx.HD_BUNDLE.title, brand: 'RYOBI', model: fx.HD_BUNDLE.model,
+      upc: fx.HD_BUNDLE.upc, price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0 - DAY, split: null,
+    });
+    await w.store.putCatalogEntry({
+      key: 'RYOBI:PBLRC25B', brand: 'RYOBI', model: 'PBLRC25B', title: 'ONE+ HP 18V Brushless Cordless 3/8 in. Extended Reach Ratchet (Tool Only)',
+      kinds: ['ratchet'], isKit: false, upc: '033287193721', seenAt: T0 - DAY,
+    });
+    await scan(w);
+    // The row replaces what it carries (price, seenAt) and keeps what it does not (the barcode).
+    expect(await w.store.getBundle('homedepot:328814689')).toMatchObject({
+      upc: '033287232581', price: 189, regularPrice: 338, percentOff: 44, seenAt: T0, split: { status: 'resolved' },
+    });
+    expect(await w.store.getCatalogEntry('RYOBI:PBLRC25B')).toMatchObject({ upc: '033287193721', seenAt: T0 });
+    // Records with no stored barcode still get null.
+    expect(await w.store.getCatalogEntry('RYOBI:PBLRC01B')).toMatchObject({ upc: null });
+    expect(await w.store.getBundle('homedepot:318045287')).toMatchObject({ upc: null });
   });
 
   it('keeps the old price of a listing missing at refresh time and records the check (test K)', async () => {
