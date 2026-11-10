@@ -1,0 +1,119 @@
+{
+  "about": "Text read from live homedepot.com product pages on 2026-11-10, in a browser, with no SerpApi search. Each page embeds a list of DescriptiveAttribute objects ({ \"__typename\": \"DescriptiveAttribute\", \"name\": \"Bullet13\", \"value\": \"...\", \"bulleted\": true }). The values below are those bullets that mention what the product includes or begin with a model number. Characters outside plain ASCII were replaced by a space when they were captured, so an apostrophe can appear as a space (\"Operator s Manual\"). The page is only served to a real browser session: a request without the browser's cookies gets a 2.5 KB placeholder.",
+  "pages": [
+    {
+      "itemId": "328814689",
+      "brand": "RYOBI",
+      "model": "PBLRC2501SB",
+      "bullets": [
+        "Includes: (1) PBLRC01 18V ONE+ HP Brushless 1/4\" Extended Reach Ratchet (1) PBLRC25 18V ONE+ HP Brushless Cordless 3/8 in. Extended Reach Ratchet and Operator's Manual"
+      ],
+      "note": "The models are written without the tool-only suffix: PBLRC01 and PBLRC25, sold separately as PBLRC01B and PBLRC25B."
+    },
+    {
+      "itemId": "341645081",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-PBP004",
+      "bullets": [
+        "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals"
+      ],
+      "note": "The list names the loose tools inside the kit PCL1600K2, not the kit itself. The first two bullets of five that mention includes were captured."
+    },
+    {
+      "itemId": "320683876",
+      "brand": "RYOBI",
+      "model": "PBLRC25B-PBP004",
+      "bullets": [
+        "Includes: (1) PBLRC25 18V ONE+ HP Brushless Cordless 3/8 in. Extended Reach Ratchet and operator's manual : Includes: (1) PBP004 18V ONE+ 4.0 Ah Lithium Battery and Operator s Manual"
+      ],
+      "note": "One bullet holds both halves of the bundle, joined by ' : Includes:'."
+    },
+    {
+      "itemId": "327939252",
+      "brand": "RYOBI",
+      "model": "PCL280B-PSK005",
+      "bullets": [
+        "Includes: PCL280 18V ONE+ Multi-Size Ratchet, Reversible 1/4 in. and 3/8 in. Anvil, 1/2 in. Anvil with 1/4 in. Hex, and Operator s Manual : Includes: (1) PBP006 18V ONE+ Lithium 2.0 Ah battery, (1) PCG002 18V charger, and operator's manual"
+      ],
+      "note": "The second half lists the contents of the starter kit PSK005 (battery PBP006 and charger PCG002), not PSK005 itself."
+    },
+    {
+      "itemId": "328690510",
+      "brand": "RYOBI",
+      "model": "PCL500525SB",
+      "bullets": [
+        "Includes: 18V 5-1/2\" Circular Saw, 18V Jig Saw, 18T Carbide Tipped Blade, (2) Hex Wrenches, Non-Marring Shoe, T-Shank Wood Cutting Blade, and Operator's Manuals"
+      ],
+      "note": "No model numbers at all."
+    },
+    {
+      "itemId": "335849279",
+      "brand": "RYOBI",
+      "model": "PBLRC2501SB-A13401",
+      "bullets": [
+        "Includes: (1) PBLRC01 18V ONE+ HP Brushless 1/4\" Extended Reach Ratchet (1) PBLRC25 18V ONE+ HP Brushless Cordless 3/8 in. Extended Reach Ratchet and Operator's Manual",
+        "Includes: A13401 3/8 in. Deep well, thin wall socket - (1) 1/2 in., (1) 9/16 in., (1) 3/8 in., (1) 3/8 in. Socket Adapter"
+      ]
+    },
+    {
+      "itemId": "345178210",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-A983002",
+      "bullets": [
+        "Includes hex shank black oxide drill bits in 1/8 in. and 5/32 in."
+      ],
+      "note": "The first of four bullets that mention includes; it names no model."
+    },
+    {
+      "itemId": "324904496",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL430B",
+      "bullets": [],
+      "description": "includes (1) PCL206 18V ONE+ 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V compact batteries, Charger, Bag, and Operator s Manuals. In addition, expand your RYOBI 18V ONE+ System with the new and improved 18V ONE+ Multi-Tool. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and ONE+ 18V Oscillating Multi-Tool (Tool Only).",
+      "note": "None of the 9 bullets mentions includes or a model. The text above is from the page's description field instead."
+    },
+    {
+      "itemId": "337440459",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1W921B",
+      "bullets": [
+        "DCK200D1P1: DCD799: unlock power in a compact size with 552 uwo and up to 28,050 bpm to tackle tough jobs in tight spaces",
+        "DCK200D1P1: DCD799: our shortest 20-Volt MAX hammer drill at 6.49 in. (tool head length only) to access hard to reach areas",
+        "DCK200D1P1: DCF850: features 1,825 lbs. of torque and 3,250 rpm for driving large screws",
+        "DCK200D1P1: DCF850: maneuver with ease - access difficult-to-reach spots with a compact, ergonomic design (less than 4 in. front to back)",
+        "DCF921B: adaptable fastening range: up to 300 ft. lbs. of fastening torque and 450 ft. lbs. of breakaway torque",
+        "DCF921B: enhanced user control in a variety of applications with 4 speed settings",
+        "DCF921B: prevents over tightening and fastener run-off with precision wrench(TM) control"
+      ],
+      "bulletPrefixes": ["DCK200D1P1 > DCD799", "DCK200D1P1 > DCF850", "DCF921B"],
+      "note": "No bullet says includes. Each bullet starts with the model it describes; a tool inside the kit is written kit: tool. The first 7 of 11 such bullets were captured."
+    },
+    {
+      "itemId": "337440461",
+      "brand": "DEWALT",
+      "model": "DCK200D1P1WB606",
+      "bullets": [],
+      "bulletPrefixes": ["DCK200D1P1 > DCD799", "DCK200D1P1 > DCF850", "DCB606"],
+      "note": "Only the distinct leading models of the 12 model-prefixed bullets were captured."
+    },
+    {
+      "itemId": "343992133",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCS334B",
+      "bullets": [
+        "DCK540D1: DEWALT brushless motor delivers more run time over brushed"
+      ],
+      "bulletPrefixes": ["DCK540D1", "DCS334B"],
+      "note": "Only the first bullet and the distinct leading models of the 18 model-prefixed bullets were captured."
+    },
+    {
+      "itemId": "343992132",
+      "brand": "DEWALT",
+      "model": "DCK540D1WCS565B",
+      "bullets": [],
+      "bulletPrefixes": ["DCK540D1", "DCS565B"],
+      "note": "Only the distinct leading models of the 18 model-prefixed bullets were captured."
+    }
+  ]
+}
