@@ -9,7 +9,7 @@ import { appendLedger } from '../lib/ledger';
 import type { Request, StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
 import { isOwnPage } from '../lib/sender';
-import { createPageReader, doorwayLoaded, type ReaderEnv } from '../lib/hdReader';
+import { createPageReader, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
 import { createWorker } from '../lib/worker';
 
 declare const __SPLIT_FINDER_BASE_URL__: string | undefined;
@@ -30,27 +30,8 @@ function chromeReaderEnv(): ReaderEnv {
     async closeTab(tabId) {
       await browser.tabs.remove(tabId);
     },
-    async waitForLoad(tabId, timeoutMs) {
-      await new Promise<void>((resolve, reject) => {
-        const finish = (fail?: Error) => {
-          clearTimeout(timer);
-          browser.tabs.onUpdated.removeListener(onUpdated);
-          if (fail) reject(fail);
-          else resolve();
-        };
-        const onUpdated = (id: number, _info: unknown, tab: { status?: string; url?: string }) => {
-          if (id === tabId && doorwayLoaded(tab, __SPLIT_FINDER_HD_ORIGIN__)) finish();
-        };
-        const timer = setTimeout(() => finish(new Error('timeout')), timeoutMs);
-        browser.tabs.onUpdated.addListener(onUpdated);
-        // It may have finished before the listener was added.
-        browser.tabs.get(tabId).then(
-          (tab) => {
-            if (doorwayLoaded(tab, __SPLIT_FINDER_HD_ORIGIN__)) finish();
-          },
-          (err) => finish(err instanceof Error ? err : new Error(String(err))),
-        );
-      });
+    waitForLoad(tabId, timeoutMs) {
+      return waitForDoorway((id) => browser.tabs.get(id), tabId, __SPLIT_FINDER_HD_ORIGIN__, timeoutMs, (ms) => new Promise((resolve) => setTimeout(resolve, ms)));
     },
     async runInTab(tabId, func, args) {
       const results = await browser.scripting.executeScript({ target: { tabId }, world: 'ISOLATED', func, args });

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createPageReader, doorwayLoaded, fetchPagesInTab, type InTabResult, type ReaderEnv } from './hdReader';
+import { createPageReader, doorwayLoaded, fetchPagesInTab, type InTabResult, type ReaderEnv, waitForDoorway } from './hdReader';
 
 const pages = (JSON.parse(readFileSync('fixtures/homedepot-pages/pages-2026-11-10.json', 'utf8')) as {
   pages: InTabResult[];
@@ -213,5 +213,47 @@ describe('doorwayLoaded', () => {
     expect(doorwayLoaded({ status: 'loading', url: 'https://www.homedepot.com/p/1' }, origin)).toBe(false);
     expect(doorwayLoaded({ status: 'complete', url: 'https://www.homedepot.com.example.test/p/1' }, origin)).toBe(false);
     expect(doorwayLoaded({ status: 'complete', url: 'https://www.homedepot.com/p/RYOBI-x/328814689' }, origin)).toBe(true);
+  });
+});
+
+describe('waitForDoorway', () => {
+  const origin = 'https://www.homedepot.com';
+
+  function clock() {
+    let t = 0;
+    const sleeps: number[] = [];
+    return {
+      sleep: async (ms: number) => { sleeps.push(ms); t += ms; },
+      now: () => t,
+      sleeps,
+    };
+  }
+
+  it('resolves when the third check is complete on the Home Depot origin', async () => {
+    const c = clock();
+    const checks = [
+      { status: 'loading' },
+      { status: 'loading', url: 'https://www.homedepot.com/p/1' },
+      { status: 'complete', url: 'https://www.homedepot.com/p/1' },
+    ];
+    const getTab = vi.fn(async (_id: number) => checks.shift()!);
+    await waitForDoorway(getTab, 7, origin, 1000, c.sleep, c.now);
+    expect(getTab).toHaveBeenCalledTimes(3);
+    expect(getTab.mock.calls.every((args) => args[0] === 7)).toBe(true);
+  });
+
+  it('rejects with timeout when every check is on about:blank', async () => {
+    const c = clock();
+    const getTab = vi.fn(async () => ({ status: 'complete', url: 'about:blank' }));
+    await expect(waitForDoorway(getTab, 7, origin, 1000, c.sleep, c.now, 250)).rejects.toThrow('timeout');
+    expect(getTab).toHaveBeenCalledTimes(5);
+  });
+
+  it('rejects at once with the same error when the tab is gone', async () => {
+    const c = clock();
+    const sleep = vi.fn(c.sleep);
+    const getTab = vi.fn(async () => { throw new Error('No tab with id: 7.'); });
+    await expect(waitForDoorway(getTab, 7, origin, 1000, sleep, c.now)).rejects.toThrow('No tab with id: 7.');
+    expect(sleep).not.toHaveBeenCalled();
   });
 });

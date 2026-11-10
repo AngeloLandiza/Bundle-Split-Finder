@@ -29,6 +29,28 @@ export function doorwayLoaded(tab: { status?: string; url?: string }, origin: st
 }
 
 /**
+ * Resolves once the doorway tab is complete on `origin`. It checks the tab every `everyMs`
+ * instead of listening for Chrome's update event, which Chrome does not always deliver.
+ * Rejects with Error('timeout') after `timeoutMs`; a failing `getTab` (the tab was closed) rejects at once.
+ */
+export async function waitForDoorway(
+  getTab: (tabId: number) => Promise<{ status?: string; url?: string }>,
+  tabId: number,
+  origin: string,
+  timeoutMs: number,
+  sleep: (ms: number) => Promise<void>,
+  now: () => number = Date.now,
+  everyMs = 250,
+): Promise<void> {
+  const until = now() + timeoutMs;
+  for (;;) {
+    if (doorwayLoaded(await getTab(tabId), origin)) return;
+    if (now() >= until) throw new Error('timeout');
+    await sleep(everyMs);
+  }
+}
+
+/**
  * Runs inside the tab. Self-contained: no imports, no outside variables, no nested named
  * functions (it is serialised by its source). Fetches `/p/<id>` same-origin, `concurrency` at a
  * time, and returns the text from `window.__APOLLO_STATE__=` to the next `</script>`, or null.
