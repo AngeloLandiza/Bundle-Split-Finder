@@ -13,6 +13,55 @@ server. He installs it, pastes his own SerpApi key, and scans.
 | Start on a free SerpApi key | Every paid search goes through a budget guard. See `search-budget.md`. |
 | A proper Chrome extension as the front end | Side panel, a chip on Home Depot product pages, and a settings page. See `design.md`. |
 
+## Direction update (Nov 10, 2026)
+
+The founder described the tool in his own words after seeing step 2. Where this section and
+a later section disagree, this section wins until the later one is rewritten.
+
+| He said | What it changes |
+| --- | --- |
+| The scraper first identifies RYOBI and DEWALT products on Amazon and saves model number, picture, title and barcode | A new first phase saves Amazon listings into a catalog. Bundle parts are matched against the saved catalog before any single-part lookup is paid for. |
+| Bundles say what they contain in the title and in an "Includes" section, with model numbers | The split reads the retailer's own Includes list. The model-number rules stay as a second signal. |
+| Find combinations of listings that leave no leftover tools | Results have two sections: **Confirmed matches** (every part has an active listing) and **Review**, split into **missing listing** and **inactive listing**. |
+| Some Amazon listings hold several products or a multipack | A listing may cover more than one part. The combination finder already allows it. |
+| Only listings with the brand RYOBI or DEWALT | Unchanged: any other brand, including "Amazon Renewed", never counts. |
+| Lowe's often has the same bundle cheaper | Lowe's comes after Home Depot, as its own step. When both carry a bundle, the cheaper one is shown. |
+| A Home Depot BOGO deal: go through each item in it | Each "kit + free tool" option is evaluated as its own bundle and the options are shown together. |
+| Free SerpApi plan for now | 250 searches a month stays the design budget. |
+
+### What was checked on homedepot.com (2026-11-10, in a browser, no searches spent)
+
+- **The Includes list is on the product page, with model numbers.** Item 328814689 says, under
+  Product Details: `Includes: (1) PBLRC01 18V ONE+ HP Brushless 1/4" Extended Reach Ratchet
+  (1) PBLRC25 18V ONE+ HP Brushless Cordless 3/8 in. Extended Reach Ratchet and Operator's Manual`.
+  The models are written without the tool-only suffix (PBLRC01, not PBLRC01B).
+- **SerpApi's `home_depot_product` response does not carry that list.** Its highlights say only
+  `Includes: 1/4" and 3/8" Extended Reach Ratchets`. The list has to be read from the page.
+- **The page can be read for free from the user's own browser.** The list is in the page's
+  embedded data before anything is clicked. A request without the browser's cookies gets a
+  2.5 KB placeholder instead of the page, so a plain script outside the browser cannot read it.
+- **An Includes list can go deeper than the retail items.** `PCL1201K2-PCL430B` lists the loose
+  tools inside the kit (`(1) PCL206 ... Drill/Driver, (1) PCL500 ... Circular Saw, (2) 18V compact
+  batteries, Charger, Bag`). Some pages list items with no model number at all
+  (`PCL500525SB`: "an 18V 5-1/2 in. Circular Saw, 18V Jig Saw").
+- **DEWALT pages name the parts the short code hides.** The page for `DCK200D1P1W921B` names
+  DCK200D1P1, DCD799, DCF850, DCF921B, DCB205 and DCB203.
+- **A BOGO deal is a kit with a menu of free tools, and every option is its own listing.** The kit
+  `PCL1201K2` at $179 is marked "Free Gift With Purchase"; `PCL1201K2-PCL430B`,
+  `PCL1201K2-PCL515B`, `PCL1201K2-PCL265B` and eight more are listed at the same price. Home
+  Depot has a "Featured BOGO" filter (token `1z24hvk`), 104 results for "ryobi 18v combo kit".
+
+### Open decisions
+
+1. **How Home Depot pages are read.** Recommended: the extension reads them in the user's own
+   browser (free, and the only place the Includes list exists), and Amazon stays on SerpApi so
+   his Amazon account is never used for automated browsing.
+2. **How deep a split goes.** His example splits a bundle down to each drill, battery and
+   charger. A tool taken out of a kit has no retail box, which matters for selling it as New on
+   Amazon (see the packaging rule in `core/src/money.ts`).
+3. **A model written without its suffix** (PBLRC01 for PBLRC01B): which listing is the right one
+   when the catalog also holds PBLRC01K1.
+
 ## Scope
 
 | In v1 | Not in v1 |
@@ -138,6 +187,7 @@ Settings and the key live in `chrome.storage.local`.
 | 0 | Repo runs: typecheck and tests green | 0 |
 | 1 | Record fixtures; parsers confirmed against real responses | up to 9 |
 | 2 | Scan pipeline in `core/` with injected client and store; command-line run that writes a CSV | 0 with fixtures; up to 50 for the real run |
+| 2b | Direction update: Amazon catalog phase, Includes-list reader, Confirmed and Review sections | 2 to record filtered pages; the real run after |
 | 3 | Extension shell: service worker, storage, settings page with key check, frequency and forecast | 0 |
 | 4 | Side panel: deals, detail, review, first-run and limit states | 0 |
 | 5 | Home Depot content script, chip, This page tab | 0 |
