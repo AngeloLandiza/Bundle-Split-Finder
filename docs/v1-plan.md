@@ -62,6 +62,39 @@ a later section disagree, this section wins until the later one is rewritten.
 3. **A model written without its suffix** (PBLRC01 for PBLRC01B): which listing is the right one
    when the catalog also holds PBLRC01K1.
 
+### Lean version 1 (decided Nov 10, 2026)
+
+The owner plans to move to private label later; these tools exist to raise capital. So
+version 1 does only what finds him a deal he can act on, and nothing is built for reuse.
+
+| Kept | Cut from version 1 |
+| --- | --- |
+| The scan pipeline, budget guard and matching already built | A modular platform, or plug points for other retailers and categories |
+| Results in sections: Confirmed, Review (inactive listing, missing listing), contents not known | Lowe's |
+| Reading Home Depot pages in his browser for the Includes list | Special handling for BOGO deals: each kit-plus-free-tool option is already its own listing and is evaluated as a bundle |
+| The extension: settings, side panel, chip on Home Depot pages | The item-by-item split comparison; boxed items decide the result |
+| Validation set and a build he can load | A dedicated crawl of Amazon listings; the paid command-line demo run |
+
+**Amazon catalog.** Every Amazon listing the tool already pays to see is saved (title,
+picture, price, brand), so the catalog grows as a by-product. A dedicated crawl is poor
+value on the free plan: about 7,800 RYOBI and DEWALT listings at 48 a search, and only
+11 of 48 RYOBI titles on a recorded page carry a model number (40 of 48 for DEWALT).
+
+**Home Depot's bundle filter does not work through SerpApi.** `hd_filter_tokens=bwo64,<brand>`
+was accepted and returned 22 of the same 24 products as the unfiltered page (recorded
+2026-11-10). On Home Depot's own site the "Featured BOGO" page lists almost only bundles;
+the extension can load that page in his browser.
+
+**Proposed order for the remaining steps** (replaces rows 3 to 6 of "Build order" once agreed):
+
+| Step | Delivers |
+| --- | --- |
+| 3 | Extension shell: service worker, storage, settings page with key check, frequency and forecast |
+| 4 | Home Depot page reader: loads bundle pages in his browser, reads the Includes list, feeds the splitter |
+| 5 | Side panel: Confirmed, Review, detail, first-run and limit states |
+| 6 | Chip on Home Depot product pages, This page tab |
+| 7 | Validation set, accessibility pass, packaged build he can load |
+
 ## Scope
 
 | In v1 | Not in v1 |
