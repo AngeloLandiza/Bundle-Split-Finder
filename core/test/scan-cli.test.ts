@@ -45,6 +45,7 @@ describe('npm run scan', () => {
     // Two brand pages, three Home Depot pages, lookups for PBLRC01B, PBLRC25B and PCL1201K2.
     expect(logs).toContain('Searches used: 0 (replayed 8 recorded responses)');
     expect(logs).toContain('Scan done');
+    expect(logs.filter((l) => l.startsWith('Note:'))).toEqual([]);
     const counts = logs.indexOf('Pages 3 · products 66 · bundles 23 · parts matched 5');
     expect(counts).toBeGreaterThanOrEqual(0);
     expect(logs[counts + 1]).toBe('Amazon listings saved 183 · parts matched without a search 3');
@@ -81,6 +82,52 @@ describe('npm run scan', () => {
     expect(ledger.length).toBeGreaterThan(0);
     expect(ledger.every((e) => e.label.startsWith('demo:'))).toBe(true);
     expect(logs).toContain(`Searches used: ${ledger.length}`);
+  });
+
+  /**
+   * A paid run over the replay, except that a request whose decoded `k` is one of `fail` gets
+   * HTTP 500. The default settings read one brand page (DEWALT) before the query's page.
+   */
+  function failingClient(fail: string[]): void {
+    const budget = new SearchBudget(
+      { planName: 'Test', status: 'Active', searchesPerMonth: 250, totalSearchesLeft: 250, thisMonthUsage: 0, thisHourSearches: 0, rateLimitPerHour: 250, renewalDate: null },
+      { reserve: 0, maxPerRun: 5 },
+    );
+    const replay = replayRecorded();
+    const fetchFn = (async (input: string | URL | Request) => {
+      const k = new URL(String(input instanceof Request ? input.url : input)).searchParams.get('k');
+      if (k !== null && fail.includes(k)) return new Response(JSON.stringify({ error: 'refused' }), { status: 500 });
+      return replay.fetchFn(input);
+    }) as typeof fetch;
+    const client = new SerpApiClient({ apiKey: 'TEST', budget, cache: new MemoryCache(), fetchFn, now: () => NOW });
+    deps.openClient = (async () => ({ client, budget, account: {}, allowance: 5, release: vi.fn() })) as unknown as CliDeps['openClient'];
+  }
+
+  const RATCHET_RUN = ['--limit', '5', '--query', 'ryobi extended reach ratchet'];
+
+  it('says a scan that set a failed lookup aside finished with work left, and why', async () => {
+    failingClient(['RYOBI PBLRC01B']);
+    expect(await runScanCli(RATCHET_RUN, deps)).toBe(0);
+    expect(logs).not.toContain('Scan done');
+    const status = logs.indexOf('Scan finished; some steps were set aside');
+    expect(status).toBeGreaterThanOrEqual(0);
+    expect(logs[status + 1]).toBe('Note: SerpApi returned HTTP 500.');
+    expect(logs.filter((l) => l.startsWith('Scan '))).toEqual(['Scan finished; some steps were set aside']);
+  });
+
+  it('adds a note to a scan that is done but skipped a brand page', async () => {
+    failingClient(['DEWALT']);
+    expect(await runScanCli(RATCHET_RUN, deps)).toBe(0);
+    const status = logs.indexOf('Scan done');
+    expect(status).toBeGreaterThanOrEqual(0);
+    expect(logs[status + 1]).toBe('Note: The DEWALT Amazon page 1 was skipped: SerpApi returned HTTP 500.');
+  });
+
+  it('adds no note when a failure stopped the scan: the stop line already says it', async () => {
+    failingClient(['RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
+    expect(await runScanCli(RATCHET_RUN, deps)).toBe(0);
+    expect(logs).toContain('Scan stopped: a search failed: SerpApi returned HTTP 500.');
+    expect(logs.filter((l) => l.startsWith('Note:'))).toEqual([]);
   });
 
   it('releases the lock when the scan throws', async () => {

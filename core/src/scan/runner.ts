@@ -4,7 +4,7 @@
 // scan runner"); "2c rule n" to the step 2c plan, Task 2 ("The catalog phase"); "3 rule n"
 // to the step 3 plan, Task 3 ("Runner: stop on request, and one failed lookup does not end a scan").
 
-import { type Catalog, catalogEntry, decompose, kindsFromTitle } from '../decompose';
+import { type Catalog, catalogEntry, type Decomposition, decompose, kindsFromTitle } from '../decompose';
 import { type Candidate, pick } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
@@ -13,7 +13,7 @@ import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { bundleKey, partKey } from './types';
 import type {
-  BudgetView, CatalogCursor, ListingRecord, MatchRecord, PriceRecord, ScanJob, ScanSettings, ScanStep, ScanStore, SearchClient, StopReason,
+  BudgetView, BundleRecord, CatalogCursor, ListingRecord, MatchRecord, PriceRecord, ScanJob, ScanSettings, ScanStep, ScanStore, SearchClient, StopReason,
 } from './types';
 
 export interface ScanDeps {
@@ -62,7 +62,7 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
     // Read once for the split and the planning pass that follows it.
     const known = await knownModels(run.store);
     run.catalog = known.catalog;
-    await splitBundles(run);
+    await splitBundles(run, known.stored);
     await planParts(run, known.listings);
   } else if (run.job.phase === 'parts') {
     // A continued job: its lookups are judged with the models the split knew.
@@ -161,8 +161,11 @@ async function runQueue(run: Run): Promise<void> {
       const stop = stopFor(err);
       if (step.kind === 'catalog' && stop.reason === 'error') {
         // 2c rule 3: a brand page that failed is dropped, not deferred, and the scan goes on.
-        // The cursor is not touched, so the next scan asks for the same page. It does not
-        // count toward the two failures of 3 rule 2.
+        // It does not count toward the two failures of 3 rule 2. The cursor keeps its page and
+        // passes, so the brand asks for the same page again; only its time moves, so the other
+        // brands have their turn first (a brand with no cursor gets one at page 1).
+        const old = await run.store.getCursor(step.brand);
+        await run.store.putCursor(old ? { ...old, updatedAt: run.now() } : { brand: step.brand, nextPage: 1, passes: 0, updatedAt: run.now() });
         const sentence = `The ${step.brand} Amazon page ${step.page} was skipped: ${stop.message}`;
         job.stopMessage = job.stopMessage === null ? sentence : `${job.stopMessage} ${sentence}`;
         job.queue.shift();
@@ -180,7 +183,7 @@ async function runQueue(run: Run): Promise<void> {
     // 3 rule 2: a step answered, from the network or the cache, resets the count.
     run.lastFailed = false;
     // Rule 3: the store first, then the job.
-    await apply(run, step, result.data);
+    await apply(run, step, result);
     // searchesUsed counts the paid steps this job saved. A search in flight when the worker
     // was interrupted was paid (the ledger has it) but its step was never saved, so it is
     // not counted; the continued job answers that step from the cache, which is free.
@@ -246,7 +249,8 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
       return run.client.search(
         // Page 1 goes without a page parameter, the request Amazon's own first page answers.
         { engine: 'amazon', k: step.brand, rh, amazon_domain: settings.amazonDomain, page: step.page === 1 ? undefined : step.page },
-        { label: `${prefix}:catalog:${step.brand}:p${step.page}`, maxAgeMs: settings.freshnessMs },
+        // Always reuse a page fetched earlier in the same job, as a listing page is.
+        { label: `${prefix}:catalog:${step.brand}:p${step.page}`, maxAgeMs: Math.max(settings.freshnessMs, run.now() - job.startedAt) },
       );
     }
     case 'listing':
@@ -268,16 +272,17 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
 const amazonPart = (run: Run, step: Lookup | Refresh) => ({ engine: 'amazon', k: `${step.brand} ${step.model}`, amazon_domain: run.settings.amazonDomain });
 
 /** Rule 3 and 2c rule 2: what a step's response changes in the store. */
-async function apply(run: Run, step: ScanStep, data: unknown): Promise<void> {
+async function apply(run: Run, step: ScanStep, result: SearchResult): Promise<void> {
+  const { data, source } = result;
   switch (step.kind) {
     case 'catalog':
-      return applyCatalog(run, step, data);
+      return applyCatalog(run, step, data, source);
     case 'listing':
       return applyListing(run, step, data);
     case 'lookup':
-      return applyLookup(run, step, data);
+      return applyLookup(run, step, data, source);
     case 'refresh':
-      return applyRefresh(run, step, data);
+      return applyRefresh(run, step, data, source);
     default:
       return unknownStep(step);
   }
@@ -289,10 +294,10 @@ function unknownStep(step: never): never {
 }
 
 /** 2c rule 2: save every row of a brand page, then move the brand's cursor on from this page. */
-async function applyCatalog(run: Run, step: CatalogStep, data: unknown): Promise<void> {
+async function applyCatalog(run: Run, step: CatalogStep, data: unknown, source: Source): Promise<void> {
   const { store, job } = run;
   const now = run.now();
-  await saveListings(run, parseAmazonSearch(data), now);
+  await saveListings(run, parseAmazonSearch(data), now, source);
   // The new cursor comes from the step's own page, not from the stored cursor, so a step
   // repeated from the cache after an interruption leaves the cursor where the first apply put
   // it. For the same reason a pass is counted only while the cursor still points at this page.
@@ -344,13 +349,13 @@ async function applyListing(run: Run, step: Listing, data: unknown): Promise<voi
   job.counts.pagesFetched += 1;
 }
 
-async function applyLookup(run: Run, step: Lookup, data: unknown): Promise<void> {
+async function applyLookup(run: Run, step: Lookup, data: unknown, source: Source): Promise<void> {
   const { store, job } = run;
   const now = run.now();
   const key = partKey(step.brand, step.model);
   job.counts.lookupsDone += 1;
   const candidates = parseAmazonSearch(data);
-  await saveListings(run, candidates, now);
+  await saveListings(run, candidates, now, source);
   // A saved queue can outlive the plan: the user may have decided this part since.
   if ((await store.getMatch(key))?.decidedBy === 'user') return;
   const picked = pick(wantedFor(step.brand, step.model, run.catalog), candidates);
@@ -384,11 +389,11 @@ async function applyLookup(run: Run, step: Lookup, data: unknown): Promise<void>
   await store.putMatch(match);
 }
 
-async function applyRefresh(run: Run, step: Refresh, data: unknown): Promise<void> {
+async function applyRefresh(run: Run, step: Refresh, data: unknown, source: Source): Promise<void> {
   const { store } = run;
   const now = run.now();
   const candidates = parseAmazonSearch(data);
-  await saveListings(run, candidates, now);
+  await saveListings(run, candidates, now, source);
   // A listing missing from the results keeps its old price; the check is still recorded,
   // so the part is not paid for again until it is stale once more.
   const cand = firstWith(candidates, step.asin);
@@ -396,12 +401,21 @@ async function applyRefresh(run: Run, step: Refresh, data: unknown): Promise<voi
   run.job.counts.refreshesDone += 1;
 }
 
-/** Rules 6 and 7: every row of an Amazon response whose brand is scanned is saved as a listing. */
-async function saveListings(run: Run, candidates: Candidate[], now: number): Promise<void> {
+type Source = SearchResult['source'];
+
+/**
+ * Rules 6 and 7: every row of an Amazon response whose brand is scanned is saved as a listing.
+ * A response from the cache may be days old, and how old is not known here: a listing already
+ * stored keeps its price, seenAt and checkedAt, so an old price never looks fresh. A listing
+ * not stored yet is saved as from the network.
+ */
+async function saveListings(run: Run, candidates: Candidate[], now: number, source: Source): Promise<void> {
   const { store, settings, job } = run;
   for (const c of candidates) {
-    const record = listingFrom(c, settings.brands, now, await store.getListing(c.asin));
+    const old = await store.getListing(c.asin);
+    let record = listingFrom(c, settings.brands, now, old);
     if (record === null) continue;
+    if (source === 'cache' && old) record = { ...record, price: old.price, seenAt: old.seenAt, checkedAt: old.checkedAt };
     await store.putListing(record);
     // A row seen in two responses is counted twice; the store holds one record per ASIN.
     job.counts.listingsSaved += 1;
@@ -420,31 +434,60 @@ const unique = (xs: string[]): string[] => [...new Set(xs)];
 
 // ---------------------------------------------------------------- rule 4 and 2c rule 4: split (free)
 
+interface KnownModels {
+  /** The stored catalog alone: the models Home Depot's own rows showed. */
+  stored: Catalog;
+  /** The stored catalog plus an entry for every model in a saved listing's title (2c rule 4). */
+  catalog: Catalog;
+  listings: ListingRecord[];
+}
+
 /**
  * 2c rule 4: the stored catalog, plus an entry for every model in a saved listing's title.
- * A stored entry wins over one read from a listing. The one source of the catalog for the
- * split and for the parts phase.
+ * A stored entry wins over one read from a listing. A DEWALT model read from a listing that
+ * starts with DCK is a kit, whatever its Amazon title says, so the splitter never offers it as
+ * a bonus tool. The one source of the catalog for the split and for the parts phase.
  */
-async function knownModels(store: ScanStore): Promise<{ catalog: Catalog; listings: ListingRecord[] }> {
+async function knownModels(store: ScanStore): Promise<KnownModels> {
   const listings = await store.listListings();
+  const stored: Catalog = new Map();
+  for (const c of await store.listCatalog()) stored.set(c.model, { model: c.model, brand: c.brand, kinds: c.kinds, isKit: c.isKit });
   const catalog: Catalog = new Map();
   // Listings come sorted by ASIN: when two titles name the same model, the first ASIN's is kept.
   for (const l of listings) {
     for (const model of l.models) {
       if (catalog.has(model)) continue;
-      catalog.set(model, { model, brand: l.brand, kinds: kindsFromTitle(l.title), isKit: catalogEntry(l.brand, model, l.title).isKit ?? false });
+      const isKit = (l.brand === 'DEWALT' && model.startsWith('DCK')) || (catalogEntry(l.brand, model, l.title).isKit ?? false);
+      catalog.set(model, { model, brand: l.brand, kinds: kindsFromTitle(l.title), isKit });
     }
   }
-  for (const c of await store.listCatalog()) catalog.set(c.model, { model: c.model, brand: c.brand, kinds: c.kinds, isKit: c.isKit });
-  return { catalog, listings };
+  for (const [model, entry] of stored) catalog.set(model, entry);
+  return { stored, catalog, listings };
 }
 
-async function splitBundles(run: Run): Promise<void> {
+/**
+ * The split of one bundle. Models read from Amazon titles may not make a DEWALT short code
+ * resolve by guesswork: the stored catalog is tried alone first, and a resolved split stands.
+ * Otherwise the split with the listings' models is taken only for RYOBI, whose patterns spell
+ * every part out, or for DEWALT when it names exactly two parts (the kit and one bonus item, so
+ * no short code was glued together from pieces). In every other case the first result stands.
+ */
+function splitBundle(bundle: BundleRecord, stored: Catalog, catalog: Catalog): Decomposition {
+  const first = decompose(bundle.brand, bundle.model, bundle.title, stored);
+  if (first.status === 'resolved') return first;
+  const second = decompose(bundle.brand, bundle.model, bundle.title, catalog);
+  if (second.status !== 'resolved') return first;
+  const brand = bundle.brand.trim().toUpperCase();
+  return brand === 'RYOBI' || (brand === 'DEWALT' && second.components.length === 2) ? second : first;
+}
+
+/** `stored`: the stored catalog alone; `run.catalog` adds the listings' models. */
+async function splitBundles(run: Run, stored: Catalog): Promise<void> {
   const { store, job, catalog } = run;
   const now = run.now();
   let resolved = 0;
   for (const bundle of await store.listBundles()) {
-    const split = decompose(bundle.brand, bundle.model, bundle.title, catalog);
+    const split = splitBundle(bundle, stored, catalog);
     await store.putBundle({ ...bundle, split });
     const id = `split:${bundle.key}`;
     const item = await store.getReview(id);
@@ -563,6 +606,9 @@ async function matchFromListings(run: Run, listings: ListingRecord[], part: Part
   const alternatives = unique(picked.alternatives.map((g) => g.asin)).filter((a) => a !== asin);
   for (const a of [asin, ...alternatives]) {
     const l = listings.find((x) => x.asin === a)!;
+    // A saved listing never overwrites a price that was checked later than the listing was.
+    const old = await store.getPrice(a);
+    if (old && old.checkedAt >= l.checkedAt) continue;
     await store.putPrice({ asin: a, price: l.price, reviews: l.reviews, seenAt: l.seenAt, checkedAt: l.checkedAt });
   }
   const match: MatchRecord = {

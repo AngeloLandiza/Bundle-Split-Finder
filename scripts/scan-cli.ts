@@ -163,9 +163,14 @@ export async function runScanCli(args: string[], deps: CliDeps): Promise<number>
   if (job.status === 'stopped' && job.stopReason !== null) {
     const words = job.stopReason === 'error' ? `a search failed: ${job.stopMessage ?? ''}`.trimEnd() : STOP_WORDS[job.stopReason];
     log(`Scan stopped: ${words}`);
+  } else if (job.status === 'stopped') {
+    // Nothing stopped the scan, but a failed step was set aside and is still to do.
+    log('Scan finished; some steps were set aside');
   } else {
     log('Scan done');
   }
+  // A step that failed and was set aside or skipped. An "error" stop already shows its message.
+  if (job.stopMessage !== null && job.stopReason !== 'error') log(`Note: ${job.stopMessage}`);
   const c = job.counts;
   const inSection = (section: string): number => report.bundles.filter((b) => b.section === section).length;
   log(`Pages ${c.pagesFetched} · products ${c.productsSeen} · bundles ${c.bundlesSeen} · parts matched ${c.partsMatched}`);
