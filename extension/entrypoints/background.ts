@@ -8,6 +8,7 @@ import { IdbScanStore } from '../lib/idbStore';
 import { appendLedger } from '../lib/ledger';
 import type { Request, StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
+import { isOwnPage } from '../lib/sender';
 import { createWorker } from '../lib/worker';
 
 declare const __SPLIT_FINDER_BASE_URL__: string | undefined;
@@ -46,7 +47,12 @@ export default defineBackground(() => {
     },
   });
 
-  browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+  browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // Only this extension's own pages may ask the worker to do anything.
+    if (!isOwnPage(sender, browser.runtime.id)) {
+      sendResponse({ ok: false, error: 'This request is not allowed from here.' });
+      return false;
+    }
     worker.onMessage(request as Request).then(sendResponse);
     return true;
   });
@@ -55,9 +61,12 @@ export default defineBackground(() => {
     if (alarm.name === TICK) void worker.onTick();
   });
 
-  void browser.alarms.get(TICK).then((alarm) => {
-    if (!alarm) return browser.alarms.create(TICK, { periodInMinutes: 1 });
-  });
+  void browser.alarms
+    .get(TICK)
+    .then((alarm) => {
+      if (!alarm) return browser.alarms.create(TICK, { periodInMinutes: 1 });
+    })
+    .catch(() => {});
 
   if (typeof browser.sidePanel?.setPanelBehavior === 'function') {
     void browser.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});

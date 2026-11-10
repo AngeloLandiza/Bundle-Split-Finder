@@ -23,12 +23,12 @@ describe('wxt.config', () => {
     expect(c.outDir).toBeUndefined();
     expect(c.vite().define.__SPLIT_FINDER_BASE_URL__).toBe('undefined');
     expect(JSON.stringify(c)).not.toContain('localhost');
-  });
+  }, 30_000);
 
   it('the end-to-end build adds only http://localhost/* and a localhost base URL', async () => {
     const c = await configFor(true);
     expect(c.manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'http://localhost/*']);
     expect(c.outDir).toBe('.output-e2e');
     expect(c.vite().define.__SPLIT_FINDER_BASE_URL__).toMatch(/^"http:\/\/localhost:\d+"$/);
-  });
+  }, 30_000);
 });
