@@ -1550,10 +1550,12 @@ function readRecorded(itemId: string): PageContent {
 /**
  * A readPages over the recorded pages, each read with parseBundlePage as the tab reader reads
  * it. `refuse`: Home Depot refuses this id, and the ids after it are skipped, as the tab reader
- * skips them. `garble`: this id comes back with another item's page (320683876's), which cannot
- * be read for it. Logs the ids of every call. An id with no recorded page throws.
+ * skips them. `garble`: these ids come back with another item's page (320683876's), which cannot
+ * be read for them. `misfit`: an id read as the page of another item, whose bullets name parts
+ * that do not fit the bundle's model number (the misfit case of page-split.test.ts). Logs the
+ * ids of every call. An id with no recorded page throws.
  */
-function pageReader(opts: { refuse?: string; garble?: string } = {}) {
+function pageReader(opts: { refuse?: string; garble?: string[]; misfit?: Record<string, string> } = {}) {
   const calls: string[][] = [];
   const readPages: ReadPages = async (itemIds) => {
     calls.push([...itemIds]);
@@ -1564,7 +1566,9 @@ function pageReader(opts: { refuse?: string; garble?: string } = {}) {
         stopped = true;
         return { itemId, kind: 'refused' };
       }
-      const rec = RECORDED_PAGES.find((p) => p.itemId === (itemId === opts.garble ? '320683876' : itemId));
+      const other = opts.misfit && Object.hasOwn(opts.misfit, itemId) ? opts.misfit[itemId]! : null;
+      if (other !== null) return { itemId, kind: 'read', content: readRecorded(other) };
+      const rec = RECORDED_PAGES.find((p) => p.itemId === (opts.garble?.includes(itemId) ? '320683876' : itemId));
       if (!rec) throw new Error(`no recorded page ${itemId}`);
       const content = parseBundlePage(rec.text, itemId);
       return content ? { itemId, kind: 'read', content } : { itemId, kind: 'unreadable' };
@@ -1675,7 +1679,7 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
 
   it('a page that cannot be read is left unread and noted; a refusal in the same call is the message (P3)', async () => {
     const w = world();
-    const job = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: pageReader({ garble: '337440461' }).readPages });
+    const job = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: pageReader({ garble: ['337440461'] }).readPages });
     expect(job.stopMessage).toBe(UNREADABLE);
     expect(job.counts.pagesRead).toBe(3);
     expect(await pagesOf(w.store)).toEqual([
@@ -1683,7 +1687,7 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
     ]);
 
     const both = world();
-    const job2 = await scan(both, { settings: COMBO, policy: ONE_SEARCH, readPages: pageReader({ garble: '337440461', refuse: '343992133' }).readPages });
+    const job2 = await scan(both, { settings: COMBO, policy: ONE_SEARCH, readPages: pageReader({ garble: ['337440461'], refuse: '343992133' }).readPages });
     expect(job2.stopMessage).toBe(REFUSED);
     expect(job2.counts.pagesRead).toBe(2);
   });
@@ -1809,5 +1813,114 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
     expect(job.counts.pagesRead).toBe(1);
     expect(job.stopMessage).toBeNull();
     expect((await w.store.listBundles()).filter((b) => b.page).map((b) => b.itemId)).toEqual(['337440459']);
+  });
+});
+
+describe('runScan: split review items follow the latest reading (step 4, fix round 1)', () => {
+  /** Test B's page with the DEWALT brand only and no brand page: the store keeps what CATALOG's brand page saved. */
+  const COMBO_DEWALT: ScanSettings = { ...CATALOG, catalogPagesPerScan: 0 };
+  const MISFIT = 'page names DCF921B, DCK200D1P1, which do not fit the model number';
+
+  it('an open item from an earlier scan takes the new reason when the page does not fit, and keeps when it was opened', async () => {
+    const w = world();
+    await scan(w, { settings: COMBO_DEWALT, policy: OPEN });
+    expect(await w.store.getReview('split:homedepot:337440461')).toMatchObject({ reason: "'B606' matches nothing in the catalog", openedAt: T0, answer: null });
+
+    // 337440461 (DCK200D1P1WB606) is read as 337440459's page, which names DCF921B, not DCB606.
+    w.clock = T0 + DAY;
+    const job = await scan(w, { settings: COMBO_DEWALT, policy: ONE_SEARCH, readPages: pageReader({ misfit: { '337440461': '337440459' } }).readPages });
+    expect((await w.store.getBundle('homedepot:337440461'))!.split).toEqual({
+      components: ['DCK200D1P1'], status: 'needs_review', notes: ["'B606' matches nothing in the catalog", MISFIT],
+    });
+    expect(await w.store.getReview('split:homedepot:337440461')).toMatchObject({
+      reason: `'B606' matches nothing in the catalog; ${MISFIT}`, openedAt: T0, answer: null, answeredAt: null,
+    });
+    // The other three are split from their own pages and their items closed; nothing new was opened.
+    expect(job.counts).toMatchObject({ pagesRead: 4, bundlesResolved: 3, reviewsOpened: 0 });
+    expect((await w.store.listReview()).map((r) => [r.id, r.answer])).toEqual([
+      ['split:homedepot:337440459', 'resolved by a later scan'],
+      ['split:homedepot:337440461', null],
+      ['split:homedepot:343992132', 'resolved by a later scan'],
+      ['split:homedepot:343992133', 'resolved by a later scan'],
+    ]);
+  });
+
+  it('an item the runner closed is opened again when a page reading sends its bundle back to review', async () => {
+    const w = world();
+    // Scan 1: no brand page, so 343992133 (DCK540D1WCS334B) goes to review.
+    await scan(w, { settings: COMBO_DEWALT, policy: OPEN });
+    expect(await w.store.getReview('split:homedepot:343992133')).toMatchObject({ answer: null, openedAt: T0 });
+
+    // Scan 2: the DEWALT brand page saves DCS334B's listing; the bundle resolves and its item is closed (test N1).
+    w.clock = T0 + DAY;
+    await scan(w, { settings: CATALOG, policy: OPEN });
+    expect((await w.store.getBundle('homedepot:343992133'))!.split).toMatchObject({ status: 'resolved', components: ['DCK540D1', 'DCS334B'] });
+    expect(await w.store.getReview('split:homedepot:343992133')).toMatchObject({ answer: 'resolved by a later scan', answeredAt: T0 + DAY });
+
+    // Scan 3: the model number still resolves it, but its page is read as 337440459's, which does not fit.
+    w.clock = T0 + 2 * DAY;
+    const job = await scan(w, { settings: COMBO_DEWALT, policy: ONE_SEARCH, readPages: pageReader({ misfit: { '343992133': '337440459' } }).readPages });
+    expect((await w.store.getBundle('homedepot:343992133'))!.split).toEqual({
+      components: ['DCK540D1', 'DCS334B'], status: 'needs_review', notes: ['model number says DCK540D1, DCS334B', MISFIT],
+    });
+    expect(await w.store.getReview('split:homedepot:343992133')).toMatchObject({
+      kind: 'split', subject: 'homedepot:343992133', brand: 'DEWALT', model: 'DCK540D1WCS334B', candidates: [],
+      reason: `model number says DCK540D1, DCS334B; ${MISFIT}`, openedAt: T0 + 2 * DAY, answer: null, answeredAt: null,
+    });
+    expect(job.counts).toMatchObject({ pagesRead: 4, bundlesResolved: 3, reviewsOpened: 1 });
+    // It is the one open question, so the bundle shows up in review.
+    expect((await buildReport(w.store, COMBO_DEWALT)).review.map((r) => r.id)).toEqual(['split:homedepot:343992133']);
+  });
+
+  it('never changes an item the user answered', async () => {
+    const w = world();
+    await scan(w, { settings: COMBO_DEWALT, policy: OPEN });
+    const open = await w.store.getReview('split:homedepot:337440461');
+    const answered = { ...open!, answer: 'not a bundle', answeredAt: T0 + MINUTE };
+    await w.store.putReview(answered);
+
+    w.clock = T0 + DAY;
+    const job = await scan(w, { settings: COMBO_DEWALT, policy: ONE_SEARCH, readPages: pageReader({ misfit: { '337440461': '337440459' } }).readPages });
+    expect((await w.store.getBundle('homedepot:337440461'))!.split).toMatchObject({ status: 'needs_review', notes: ["'B606' matches nothing in the catalog", MISFIT] });
+    expect(await w.store.getReview('split:homedepot:337440461')).toEqual(answered);
+    expect(job.counts.reviewsOpened).toBe(0);
+  });
+});
+
+describe('runScan: pages and old jobs (step 4, fix round 1)', () => {
+  it('every page comes back unreadable: nothing is stored on a bundle, the splits are the model number\'s, and the message says so (Review Focus 1)', async () => {
+    const w = world();
+    const reader = pageReader({ garble: COMBO_IDS });
+    const job = await scan(w, { settings: COMBO, policy: OPEN, readPages: reader.readPages });
+    expect(reader.calls).toEqual([COMBO_IDS]);
+    expect(job).toMatchObject({ status: 'done', stopReason: null, stopMessage: UNREADABLE, searchesUsed: 1 });
+    expect(job.counts).toMatchObject({ pagesRead: 0, bundlesResolved: 0, reviewsOpened: 4 });
+    expect((await w.store.listBundles()).some((b) => 'page' in b)).toBe(false);
+
+    // The same scan with no reader at all: the same bundles, splits and review items.
+    const plain = world();
+    await scan(plain, { settings: COMBO, policy: OPEN });
+    expect(await w.store.listBundles()).toStrictEqual(await plain.store.listBundles());
+    expect(await w.store.listReview()).toStrictEqual(await plain.store.listReview());
+  });
+
+  it('continues a job saved before pagesRead existed, counting it from 0', async () => {
+    const w = world();
+    // A job interrupted before its listing page, saved by the version before step 4: its counts have no pagesRead.
+    const counts = {
+      pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
+      catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0,
+    };
+    await w.store.putScan({
+      id: String(T0 - MINUTE), startedAt: T0 - MINUTE, finishedAt: null, status: 'running', stopReason: null, stopMessage: null, phase: 'listing',
+      queue: [{ kind: 'listing', q: 'dewalt 20v combo kit', page: 1, filterTokens: null, bundlesOnly: false }], deferred: [], searchesUsed: 0,
+      counts: counts as ScanJob['counts'],
+    });
+    const reader = pageReader();
+    const job = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader.readPages });
+    expect(job.id).toBe(String(T0 - MINUTE));
+    expect(reader.calls).toEqual([COMBO_IDS]);
+    expect(job.counts).toMatchObject({ pagesFetched: 1, pagesRead: 4, bundlesResolved: 4 });
+    expect((await w.store.listScans())[0]!.counts.pagesRead).toBe(4);
   });
 });

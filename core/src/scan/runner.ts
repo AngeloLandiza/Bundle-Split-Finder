@@ -91,9 +91,10 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0,
   });
 
-  // An interrupted job is continued as saved: no new plan, whatever budget this run has.
+  // An interrupted job is continued as saved: no new plan, whatever budget this run has. A job
+  // saved before step 4 has no pagesRead: it counts from 0, so its page limit is not NaN (P1).
   const newest = (await store.listScans())[0];
-  if (newest?.status === 'running') return run(newest);
+  if (newest?.status === 'running') return run({ ...newest, counts: { ...newest.counts, pagesRead: newest.counts.pagesRead ?? 0 } });
 
   const startedAt = now();
   // 2c rule 1: brand pages first, from at most a fifth of the allowance, measured before
@@ -571,6 +572,9 @@ function splitBundle(bundle: BundleRecord, stored: Catalog, catalog: Catalog): D
   return first.notes.length === 1 && first.notes[0] === `'${suffix}' matches nothing in the catalog` ? second : first;
 }
 
+/** The answer a scan gives a split question when the bundle resolves; any other answer is the user's. */
+const RESOLVED_BY_SCAN = 'resolved by a later scan';
+
 /** `stored`: the stored catalog alone; `run.catalog` adds the listings' models. */
 async function splitBundles(run: Run, stored: Catalog): Promise<void> {
   const { store, job, catalog } = run;
@@ -584,13 +588,22 @@ async function splitBundles(run: Run, stored: Catalog): Promise<void> {
     const item = await store.getReview(id);
     if (split.status === 'resolved') {
       resolved += 1;
-      if (item && item.answer === null) await store.putReview({ ...item, answer: 'resolved by a later scan', answeredAt: now });
-    } else if (!item) {
+      if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
+      continue;
+    }
+    // The question follows the latest reading (a page that does not fit names both readings).
+    // An item the user answered is never changed.
+    const reason = split.notes.join('; ');
+    if (!item || item.answer === RESOLVED_BY_SCAN) {
+      // A new question, or one a scan closed and must ask again.
       await store.putReview({
         id, kind: 'split', subject: bundle.key, brand: bundle.brand, model: bundle.model, title: bundle.title,
-        reason: split.notes.join('; '), candidates: [], openedAt: now, answer: null, answeredAt: null,
+        reason, candidates: [], openedAt: now, answer: null, answeredAt: null,
       });
       job.counts.reviewsOpened += 1;
+    } else if (item.answer === null && item.reason !== reason) {
+      // Still open: a new reason, the same question, so openedAt stays.
+      await store.putReview({ ...item, reason });
     }
   }
   job.counts.bundlesResolved = resolved;

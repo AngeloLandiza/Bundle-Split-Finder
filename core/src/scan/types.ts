@@ -224,7 +224,11 @@ export interface ReviewItem {
   /** Listings a person can choose from (match questions only). */
   candidates: ReviewCandidate[];
   openedAt: number;
-  /** The user's answer; null while open. A scan never changes an answered item. */
+  /**
+   * The user's answer; null while open. A scan never changes an item the user answered. A split
+   * question a scan closed itself ('resolved by a later scan') is opened again when the bundle
+   * needs review again.
+   */
   answer: string | null;
   answeredAt: number | null;
 }
