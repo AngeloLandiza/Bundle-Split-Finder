@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { replayRecorded, type Replay } from '../../scripts/replay';
 import * as fx from '../../core/test/fixtures';
 import { MemoryScanStore } from '@core/scan/memoryStore';
-import type { BundleRow, ScanJob, ScanStore } from '@core/scan/types';
+import type { BundleRow, PageOutcome, ReadPages, ScanJob, ScanStore } from '@core/scan/types';
 import { parseAccount } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, MemoryCache } from '@core/serpapi/client';
 import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
@@ -122,6 +122,7 @@ interface World {
   /** Called before each search reaches the replay; may wait, or throw as fetch does. */
   beforeSearch: (url: URL) => void | Promise<void>;
   fetchFn: typeof fetch;
+  readPages?: ReadPages;
   worker: Worker;
 }
 
@@ -130,6 +131,7 @@ interface Setup {
   settings?: unknown;
   lastScheduledRunAt?: number | null;
   accountOver?: Record<string, unknown>;
+  readPages?: ReadPages;
 }
 
 function world(setup: Setup = {}): World {
@@ -145,6 +147,7 @@ function world(setup: Setup = {}): World {
     requests: [],
     accountOver: setup.accountOver ?? {},
     beforeSearch: () => {},
+    readPages: setup.readPages,
   } as unknown as World;
   if (setup.key !== undefined) w.prefs.data.apiKey = setup.key;
   if (setup.settings !== undefined) w.prefs.data.settings = structuredClone(setup.settings);
@@ -176,6 +179,7 @@ function workerOver(w: World, store: ScanStore = w.store): Worker {
     now: () => w.clock,
     notify: (rows) => void w.notified.push(rows),
     broadcast: (state) => void w.broadcasts.push(state),
+    readPages: w.readPages,
   });
 }
 
@@ -292,6 +296,21 @@ describe('worker: the key (acceptance criteria 1 and 2)', () => {
 });
 
 // ---------------------------------------------------------------- 2. the budget
+
+describe('worker: reading bundle pages', () => {
+  it('a scan hands the reader it was given to runScan, which asks it for the bundles it has seen', async () => {
+    const asked: string[][] = [];
+    const readPages: ReadPages = async (ids) => {
+      asked.push(ids);
+      return ids.map((itemId): PageOutcome => ({ itemId, kind: 'unreadable' }));
+    };
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR, readPages });
+    await w.worker.onTick();
+    expect(asked).toHaveLength(1);
+    expect(asked[0]!.length).toBeGreaterThan(0);
+    expect((await lastJob(w)).counts.pagesRead).toBe(0);
+  });
+});
 
 describe('worker: each scan\'s budget (criterion 3 and the reserve rule)', () => {
   it('a scheduled scan with searchesPerScan 2 on the ratchet query stops with run_cap after 2 searches', async () => {

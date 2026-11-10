@@ -6,7 +6,7 @@
 // "Rule n" refers to the step 3 plan, Task 5 ("The service worker").
 
 import { runScan } from '@core/scan/runner';
-import type { BundleRow, ScanJob, ScanStore } from '@core/scan/types';
+import type { BundleRow, ReadPages, ScanJob, ScanStore } from '@core/scan/types';
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
 import {
@@ -51,6 +51,8 @@ export interface WorkerEnv {
   broadcast: (state: AppState) => void;
   /** Default https://serpapi.com, for the Account API and for searches. */
   baseUrl?: string;
+  /** Reads bundle pages in the owner's browser; without it no page is read. */
+  readPages?: ReadPages;
 }
 
 export interface Worker {
@@ -295,7 +297,7 @@ export function createWorker(env: WorkerEnv): Worker {
     scanKey = key;
     scan = (async () => {
       try {
-        await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested });
+        await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages });
       } catch {
         // The job stays "running" and activeScan keeps naming it: the next tick continues it.
         return;
