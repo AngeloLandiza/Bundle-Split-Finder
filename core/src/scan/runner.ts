@@ -74,7 +74,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
       pages.push({ kind: 'listing', q: q.q, page, filterTokens: q.filterTokens ?? null, bundlesOnly: q.bundlesOnly ?? false });
     }
   }
-  const wants = await wantedParts(store, settings, startedAt);
+  const wants = await wantedParts(store, settings, startedAt, null);
   const plan = planScan(budget.spendable, { hdPagesWanted: pages.length, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
   const job: ScanJob = {
     id: String(startedAt), startedAt, finishedAt: null, status: 'running', stopReason: null, stopMessage: null, phase: 'listing',
@@ -132,7 +132,8 @@ async function halt(run: Run, reason: StopReason, message: string | null): Promi
   for (const step of job.queue) if (step.kind === 'lookup') await markWaiting(run, step);
   job.stopReason = reason;
   job.stopMessage = message;
-  job.deferred.push(...job.queue);
+  // In front of anything deferred earlier: deferred[0] is the step that failed (rule 5).
+  job.deferred = [...job.queue, ...job.deferred];
   job.queue = [];
   run.halted = true;
   await run.store.putScan(job);
@@ -288,8 +289,11 @@ interface Wants {
   steps: Map<string, Lookup | Refresh>;
 }
 
-/** The lookups and refreshes the store asks for right now, most valuable first. */
-async function wantedParts(store: ScanStore, settings: ScanSettings, now: number): Promise<Wants> {
+/**
+ * The lookups and refreshes the store asks for right now, most valuable first. `jobId` is
+ * the job being planned for (null before it exists): the newest other job is the last one.
+ */
+async function wantedParts(store: ScanStore, settings: ScanSettings, now: number, jobId: string | null): Promise<Wants> {
   // The parts of every resolved bundle, each with the largest saving among its bundles.
   const parts = new Map<string, { brand: string; model: string; saving: number }>();
   for (const b of await store.listBundles()) {
@@ -308,7 +312,8 @@ async function wantedParts(store: ScanStore, settings: ScanSettings, now: number
   const steps = new Map<string, Lookup | Refresh>();
   for (const [key, { brand, model }] of parts) {
     const match = await store.getMatch(key);
-    if (!match || match.status === 'waiting') {
+    // Never a lookup for a match the user decided, even one left waiting.
+    if (!match || (match.status === 'waiting' && match.decidedBy !== 'user')) {
       if (match) waitingSince.set(key, match.waitingSince ?? 0);
       lookups.push(key);
       steps.set(key, { kind: 'lookup', brand, model });
@@ -325,12 +330,24 @@ async function wantedParts(store: ScanStore, settings: ScanSettings, now: number
   const rank = (k: string) => waitingSince.get(k) ?? Infinity;
   lookups.sort((a, b) => (rank(a) === rank(b) ? 0 : rank(a) < rank(b) ? -1 : 1) || bySaving(a, b));
   refreshes.sort(bySaving);
+  // The step the last job stopped on with an error goes last among its kind, so a part that
+  // always fails cannot stop every scan before the others are tried.
+  const last = (await store.listScans()).find((j) => j.id !== jobId);
+  const failed = last && (last.stopReason === 'error' || last.stopReason === 'rate_limited') ? last.deferred[0] : undefined;
+  for (const keys of [lookups, refreshes]) {
+    const i = failed ? keys.findIndex((k) => stepId(steps.get(k)!) === stepId(failed)) : -1;
+    if (i >= 0) keys.push(...keys.splice(i, 1));
+  }
   return { lookups, refreshes, steps };
 }
 
+/** Same kind, brand and model, and ASIN for a refresh, give the same id. */
+const stepId = (s: ScanStep): string =>
+  s.kind === 'listing' ? `listing:${s.q}:${s.filterTokens ?? ''}:${s.page}` : `${s.kind}:${s.brand}:${s.model}:${s.kind === 'refresh' ? s.asin : ''}`;
+
 async function planParts(run: Run): Promise<void> {
   const { job, budget } = run;
-  const wants = await wantedParts(run.store, run.settings, run.now());
+  const wants = await wantedParts(run.store, run.settings, run.now(), job.id);
   // In the listing phase only rule 8 sets a stop reason: then nothing more is spent.
   const allowance = job.stopReason === null ? budget.spendable : 0;
   const plan = planScan(allowance, { hdPagesWanted: 0, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
