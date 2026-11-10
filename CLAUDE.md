@@ -64,3 +64,5 @@ reads `docs/orchestration.md`: which model does which task, and what may run in 
 Plan before coding and show the plan. Small commits, one concern each. A change is done when
 `npm run typecheck` and `npm test` pass and any new behaviour has a test built on real data.
 When a SerpApi field name is in doubt, check a recorded fixture, not the docs and not memory.
+When a choice is made that the code alone does not explain, add it to `docs/decisions.md`:
+version 1 will be rewritten, and the rewrite needs to know what was decided and why.
