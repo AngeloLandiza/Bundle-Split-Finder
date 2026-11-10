@@ -22,16 +22,21 @@ Read this first when resuming. Branch `step-3-extension-shell`, 14 searches used
 | 3 Runner: stop on request, one failed lookup set aside | Merged, reviewed |
 | 4 Settings logic and budget policy | Merged, reviewed, one fix applied |
 | 5a Storage | Merged, reviewed |
-| 5 Service worker | **In flight** when paused: `opus`, worktree branch `worktree-agent-a21ac45112d0ebffe`. If that branch has a commit `feat: service worker: scheduled and resumable scans within the budget`, cherry-pick it, verify, and send it to an `opus` reviewer. If it has none, dispatch the task again from its brief. |
+| 5 Service worker | **Stopped part-way** at the pause: `opus`, worktree `.claude/worktrees/agent-a21ac45112d0ebffe` (branch `worktree-agent-a21ac45112d0ebffe`). Uncommitted, unreviewed work is there: `extension/lib/worker.ts` and `extension/lib/worker.test.ts`. Nothing is committed. Either resume that agent in the same session, or dispatch the task again from its brief and let the new implementer read those two files as a draft, not as finished work. |
 | 6 Settings page | Merged, code reviewed, one fix round applied. **Owed:** screenshots of every state at 1280px and 600px and a `ui-reviewer` pass against `docs/design/mockups/Settings.dc.html`. |
 | 7 End-to-end tests | Not started. Needs Task 5. Installing Playwright's Chromium is a one-time download. |
 | 8 Gate | Not started |
 
-Also in flight when paused, from step 2c (`docs/superpowers/plans/2026-11-10-step-2c-amazon-catalog.md`):
-the fix round for the Amazon catalog phase, `opus`, worktree branch
-`worktree-agent-ace44eab369d930f8`, expected commit `fix: catalog phase: cached pages keep
-their times; short codes are not guessed from titles`. Cherry-pick, verify, then a scoped
-`opus` re-review against the seven fixes listed in the step 2c ledger.
+Also stopped part-way at the pause, from step 2c (`docs/superpowers/plans/2026-11-10-step-2c-amazon-catalog.md`):
+the fix round for the Amazon catalog phase, `opus`, worktree
+`.claude/worktrees/agent-ace44eab369d930f8`. Only test files were changed there, uncommitted
+(`core/test/scan-runner.test.ts`, `core/test/scan-cli.test.ts`); `runner.ts` was not yet
+touched. Resume that agent or dispatch the round again. The seven fixes it must make:
+cached brand pages keep their listings' times; a brand page is never paid for twice in one
+job; a saved listing never overwrites a newer price; titles may resolve a DEWALT bundle only
+to a kit plus one item, and `DCK` models from titles are kits; a failed brand page gives other
+brands their turn; the command line reports set-aside steps; test N5 pins every request.
+Afterwards, a scoped `opus` re-review.
 
 Decisions made during execution that the tasks below do not show:
 
