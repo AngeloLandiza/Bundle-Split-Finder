@@ -101,17 +101,11 @@ output/
   - `core/src/serpapi/parsers.ts`: existing signatures unchanged; `parseAmazonSearch` now sets `brand` on each candidate (through `cleanBrand`, `null` when the row has none); plus
 
     ```ts
-    export interface HdProduct {
-      itemId: string;
-      title: string;
-      brand: string | null;
-      model: string | null;
-      upc: string | null;
-      price: number | null;
-      regularPrice: number | null;
-    }
+    import type { HdProduct } from '../hdPage';
     export function parseHomeDepotProduct(json: unknown): HdProduct | null;
     ```
+
+    `HdProduct` is the existing type in `core/src/hdPage.ts` (the product read from an open page). The paid lookup returns the same type so both sources feed one pipeline. Do not declare a second product interface: `core/src/index.ts` re-exports both modules with `export *`, and a second `HdProduct` breaks the typecheck.
 
 A test that passes on its first run is a confirmed field name; list those in the report. A test that fails is a difference between the documentation and the real response; fix the parser, not the test.
 
@@ -253,19 +247,21 @@ it('amazon-product-B0B3JWF5ZV carries brand, part number and barcode', () => {
 ```ts
 it('hd-product-328814689 is the founder\'s bundle', () => {
   expect(parseHomeDepotProduct(recorded('hd-product-328814689'))).toEqual({
+    retailer: 'homedepot',
     itemId: '328814689',
-    title: 'ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only)',
-    brand: 'RYOBI',
+    storeSku: '1010927962',
     model: 'PBLRC2501SB',
+    brand: 'RYOBI',
     upc: '033287232581',
     price: 189,
     regularPrice: 338,
+    title: 'ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only)',
   });
   expect(parseHomeDepotProduct({})).toBeNull();
 });
 ```
 
-`brand` is read from `product_results.brand.name`; a plain string is accepted too. `regularPrice` is `product_results.promotion.original`, and `null` when there is no promotion. The function returns `null` when `product_id` or `title` is missing.
+`brand` is read from `product_results.brand.name`; a plain string is accepted too. `storeSku` is `product_results.store_sku_number`. `upc` goes through `toUpc12` from `core/src/identifiers.ts`, as `hdPage.ts` does, so an invalid barcode is `null`. `regularPrice` is `product_results.promotion.original`, and `null` when there is no promotion. The function returns `null` when `product_id` or `title` is missing.
 
 - [ ] **Step 6: Write the tolerance tests (Review Focus 1 to 5).** One `it` per line, on inline object literals that use the real field names:
 
@@ -308,7 +304,7 @@ it('cleans brand strings', () => {
 
 - [ ] **Step 7: Run the file and record which tests fail.** `npx vitest run core/test/parsers.recorded.test.ts`. Expected failures: everything that calls `parseHomeDepotProduct` (not defined), the two `pick() chooses the founder's listing` tests, the brand test and the DCF891B test (the parser drops `brand`), and any tolerance line that expects `brand: null` on an Amazon search row. Any other failure is a difference the controller did not see: report it before changing code.
 
-- [ ] **Step 8: Correct `core/src/serpapi/parsers.ts`.** Add `brand: cleanBrand(str(r.brand))` to `parseAmazonSearch`. Add `HdProduct` and `parseHomeDepotProduct` under a `Home Depot product (engine=home_depot_product)` section. Replace the header comment (lines 3 to 6) with: `// Field names are confirmed against the responses recorded in fixtures/recorded/ on 2026-11-09.` followed by the existing sentence about tolerance. Change nothing else.
+- [ ] **Step 8: Correct `core/src/serpapi/parsers.ts`.** Add `brand: cleanBrand(str(r.brand))` to `parseAmazonSearch`. Add `parseHomeDepotProduct` under a `Home Depot product (engine=home_depot_product)` section, returning the existing `HdProduct` type imported from `../hdPage`. Replace the header comment (lines 3 to 6) with: `// Field names are confirmed against the responses recorded in fixtures/recorded/ on 2026-11-09.` followed by the existing sentence about tolerance. Change nothing else.
 
 - [ ] **Step 9: Verify.** `npx vitest run core/test/parsers.recorded.test.ts` all pass; `npm run typecheck` prints nothing; `npm test` passes with the old 80 tests still green.
 
