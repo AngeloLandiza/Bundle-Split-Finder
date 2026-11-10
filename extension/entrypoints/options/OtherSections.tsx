@@ -1,0 +1,194 @@
+import { useState } from 'react';
+import { KNOWN_BRANDS, type ExtensionSettings, type SettingsField } from '@core/settings';
+import type { FeeSettings } from '@core/money';
+import { Confirm, NumberField, Section } from './fields';
+import type { WorkerApi } from './worker';
+
+type Problems = Partial<Record<SettingsField, string>>;
+interface Props {
+  draft: ExtensionSettings;
+  problems: Problems;
+  onChange(patch: Partial<ExtensionSettings>): void;
+}
+
+export function WhatToScanSection({ draft, problems, onChange }: Props) {
+  const toggle = (brand: string, on: boolean) => {
+    const next = KNOWN_BRANDS.filter((b) => (b === brand ? on : draft.brands.includes(b)));
+    onChange({ brands: [...next] });
+  };
+  return (
+    <Section title="What to scan" help="Brands your seller account can list. Each brand costs one search per listing page.">
+      <fieldset className="group group--across">
+        <legend>Brands</legend>
+        {KNOWN_BRANDS.map((brand) => (
+          <label className="choice" key={brand}>
+            <input
+              type="checkbox"
+              checked={draft.brands.includes(brand)}
+              aria-describedby={problems.brands ? 'error-brands' : undefined}
+              onChange={(e) => toggle(brand, e.target.checked)}
+            />
+            {brand}
+          </label>
+        ))}
+        {problems.brands ? (
+          <p id="error-brands" className="field-error group-error">
+            {problems.brands}
+          </p>
+        ) : null}
+      </fieldset>
+      <div className="row">
+        <NumberField
+          id="pages"
+          label="Listing pages per brand"
+          width={120}
+          min={1}
+          max={5}
+          value={draft.pagesPerBrand}
+          invalid={Boolean(problems.pagesPerBrand)}
+          error={problems.pagesPerBrand}
+          onChange={(v) => onChange({ pagesPerBrand: v })}
+        />
+        <span className="hint">24 bundles a page, biggest discounts first</span>
+      </div>
+    </Section>
+  );
+}
+
+type FeeKey = 'referralRate' | 'fulfillmentFee' | 'salesTaxRate' | 'inboundCost';
+const FEE_FIELDS: { key: FeeKey; id: string; label: string; scale?: number; max?: number }[] = [
+  { key: 'referralRate', id: 'ref', label: 'Referral fee, %', scale: 100, max: 100 },
+  { key: 'fulfillmentFee', id: 'ful', label: 'Fulfillment per unit, $' },
+  { key: 'salesTaxRate', id: 'tax', label: 'Sales tax on purchases, %', scale: 100 },
+  { key: 'inboundCost', id: 'inb', label: 'Inbound cost per bundle, $' },
+];
+
+const badFee = (key: FeeKey, v: number): boolean =>
+  !Number.isFinite(v) || v < 0 || (key === 'referralRate' && v > 1);
+
+export function FeesSection({ draft, problems, onChange }: Props) {
+  const setFee = (patch: Partial<FeeSettings>) => onChange({ fees: { ...draft.fees, ...patch } });
+  return (
+    <Section
+      title="Fees"
+      help="Used for every profit estimate. Amazon charges 15% on most tools and 12% on base equipment power tools."
+    >
+      <div className="grid">
+        {FEE_FIELDS.map((f) => (
+          <NumberField
+            key={f.id}
+            id={f.id}
+            label={f.label}
+            scale={f.scale}
+            step="any"
+            min={0}
+            max={f.max}
+            value={draft.fees[f.key]}
+            invalid={Boolean(problems.fees) && badFee(f.key, draft.fees[f.key])}
+            describedBy={problems.fees ? 'error-fees' : undefined}
+            onChange={(v) => setFee({ [f.key]: v })}
+          />
+        ))}
+      </div>
+      {problems.fees ? (
+        <p id="error-fees" className="field-error">
+          {problems.fees}
+        </p>
+      ) : null}
+    </Section>
+  );
+}
+
+export function AlertsSection({ draft, problems, onChange }: Props) {
+  const a = draft.alerts;
+  const bad = (v: number) => Boolean(problems.alerts) && (!Number.isFinite(v) || v < 0);
+  return (
+    <Section title="Alerts" help="A desktop notification when a scan finds a bundle that clears both estimated numbers.">
+      <label className="choice">
+        <input type="checkbox" checked={a.enabled} onChange={(e) => onChange({ alerts: { ...a, enabled: e.target.checked } })} />
+        Notify me about new deals
+      </label>
+      <div className="row row--wide">
+        <NumberField
+          id="minp"
+          label="Estimated profit at least, $"
+          width={140}
+          step="any"
+          min={0}
+          value={a.minProfit}
+          invalid={bad(a.minProfit)}
+          describedBy={problems.alerts ? 'error-alerts' : undefined}
+          onChange={(v) => onChange({ alerts: { ...a, minProfit: v } })}
+        />
+        <NumberField
+          id="minr"
+          label="Estimated ROI at least, %"
+          width={140}
+          step="any"
+          min={0}
+          value={a.minRoiPercent}
+          invalid={bad(a.minRoiPercent)}
+          describedBy={problems.alerts ? 'error-alerts' : undefined}
+          onChange={(v) => onChange({ alerts: { ...a, minRoiPercent: v } })}
+        />
+      </div>
+      {problems.alerts ? (
+        <p id="error-alerts" className="field-error">
+          {problems.alerts}
+        </p>
+      ) : null}
+    </Section>
+  );
+}
+
+export function DataSection({ api }: { api: WorkerApi }) {
+  const [note, setNote] = useState<string | null>(null);
+
+  async function exportFile(type: 'exportDeals' | 'exportMatches', filename: string, mime: string) {
+    setNote(null);
+    try {
+      const reply = await api.send<string>({ type });
+      if (reply.ok) api.download(filename, reply.data, mime);
+      else setNote(reply.error);
+    } catch {
+      setNote('Split Finder could not be reached. Reload this page and try again.');
+    }
+  }
+
+  async function clear() {
+    setNote(null);
+    try {
+      const reply = await api.send<unknown>({ type: 'clearSavedSearches' });
+      setNote(reply.ok ? 'Saved searches cleared. Your matches and answers were kept.' : reply.error);
+    } catch {
+      setNote('Split Finder could not be reached. Reload this page and try again.');
+    }
+  }
+
+  return (
+    <Section title="Your data" help="Everything stays in this browser. Export it to keep a copy or move to another computer.">
+      <div className="row">
+        <button type="button" className="btn" onClick={() => exportFile('exportDeals', 'split-finder-deals.csv', 'text/csv')}>
+          Export deals as CSV
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => exportFile('exportMatches', 'split-finder-matches.json', 'application/json')}
+        >
+          Export matches and answers
+        </button>
+        <Confirm
+          label="Clear saved searches"
+          question="Delete the saved search results? The next scan will spend searches again."
+          yes="Yes, clear"
+          danger
+          onYes={clear}
+        />
+      </div>
+      <p className="note" role="status">
+        {note}
+      </p>
+    </Section>
+  );
+}
