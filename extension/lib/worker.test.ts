@@ -1138,6 +1138,27 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
     expect(JSON.stringify(w.broadcasts)).not.toContain('OLDKEY123');
   });
 
+  it('forgetKey sent while the account is checked: no search, and no account saved for the forgotten key', async () => {
+    const w = await waitingWorld();
+    let asked!: () => void;
+    const checking = new Promise<void>((resolve) => (asked = resolve));
+    let release!: () => void;
+    const open = new Promise<void>((resolve) => (release = resolve));
+    const answer = w.accountApi;
+    w.accountApi = async (key) => {
+      asked();
+      await open;
+      return answer(key);
+    };
+    const reply = runPaid(w, LOOK_01B);
+    await checking;
+    await send(w, { type: 'forgetKey' });
+    release();
+    expect(await reply).toEqual({ ok: false, error: 'Add your SerpApi key in Settings.' });
+    expect(w.replay.calls).toEqual([RATCHET]);
+    expect(w.prefs.data.account ?? null).toBeNull();
+  });
+
   it('without a key both say so, and a request that is not a paid action is refused', async () => {
     const w = await waitingWorld();
     await send(w, { type: 'forgetKey' });

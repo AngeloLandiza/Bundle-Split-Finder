@@ -86,7 +86,7 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 - **Stored settings are untrusted:** validated on read, with a default per failing field. The shape check lives in `extension/lib/worker.ts`; *for v2* it belongs in `core/` next to `validateSettings`.
 - **Known gap: a network error's text is stored with the scan record** in IndexedDB. Replies to pages strip the key from such text; the stored copy does not. *For v2:* strip it where the runner records the message.
 - **The settings page saves a field on blur or Enter**, radios and checkboxes at once; the forecast follows every keystroke.
-- **A Verify or Look up replies when it has ended**, unlike Scan now, which replies once the scan is under way: it is short, and its answer is the button's. **Known gap:** Forget key and Stop do not interrupt a Look up already running; it spends at most its quote.
+- **A Verify or Look up replies when it has ended**, unlike Scan now, which replies once the scan is under way: it is short, and its answer is the button's. A Forget key sent while it checks the account stops it before its first search. **Known gap:** once it is searching, Forget key and Stop do not interrupt a Look up; it spends at most its quote.
 
 ## Design
 

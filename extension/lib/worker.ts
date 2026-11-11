@@ -81,6 +81,7 @@ const ANSWER_LATER = 'A scan is running. Answer again when it has finished.';
 const SCAN_RUNNING = 'A scan is running.';
 /** A scan, or a second Verify or Look up, asked for while one runs. */
 const PAID_RUNNING = 'A Look up or Verify is running.';
+const KEY_CHANGED_PAID = 'The SerpApi key changed. Try again.';
 /** A quote reads the account saved this recently; an older one is checked again (free). */
 const ACCOUNT_FRESH_MS = 5 * 60_000;
 /** The budget a quote shows when it is refused before the account is read; the refusal is said instead. */
@@ -596,6 +597,9 @@ export function createWorker(env: WorkerEnv): Worker {
         problem = accountSentence(err);
         return refuse(problem);
       }
+      // Asked again before anything is saved or sent, so a forgetKey sent during the check is not lost.
+      const keyNow = await prefs.getKey();
+      if (keyNow !== key) return refuse(keyNow === null ? NO_KEY : KEY_CHANGED_PAID);
       await prefs.setAccount({ info: account, at: env.now() });
       problem = null;
       const s = await settings();
