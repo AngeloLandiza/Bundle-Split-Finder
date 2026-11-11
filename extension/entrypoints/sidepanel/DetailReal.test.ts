@@ -17,6 +17,7 @@ import { parseAccount, SearchBudget } from '@core/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '@core/serpapi/client';
 import { DEFAULT_SETTINGS } from '@core/settings';
 import type { AppState, PanelReport } from '../../lib/messages';
+import { when } from '../../lib/format';
 import type { WorkerApi } from '../../lib/pageClient';
 import { Detail } from './Detail';
 import { ReviewTab } from './ReviewTab';
@@ -93,6 +94,24 @@ describe('Detail on a replayed scan', () => {
       expect(await block.findByRole('button', { name: 'Verify · 1 search' })).not.toHaveAttribute('aria-disabled');
     }
     expect(screen.getByRole('button', { name: 'Copy both ASINs' })).toBeEnabled();
+  });
+
+  it("dates each replayed part price: 'seen' and the time the replayed scan saw it, under a fixed clock", () => {
+    const clock = T0 + 3 * 3_600_000;
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(clock);
+    try {
+      const row = full.bundles.find((b) => b.model === 'PBLRC2501SB')!;
+      open(full, row.key);
+      const blocks = screen.getAllByRole('listitem');
+      for (const [i, p] of row.parts.entries()) {
+        expect(p.price).not.toBeNull();
+        expect(p.priceSeenAt).not.toBeNull();
+        expect(blocks[i]!.querySelector('.detail-part-seen')).toHaveTextContent(`seen ${when(p.priceSeenAt!, clock)}`);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('offers Look up for a bundle whose split the owner chose after the scan: its parts have no match yet', async () => {

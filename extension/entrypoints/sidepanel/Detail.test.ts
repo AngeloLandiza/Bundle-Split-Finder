@@ -123,6 +123,18 @@ describe('head and top bar', () => {
     expect(screen.getByText(/^Home Depot · price seen 11:00/)).toBeInTheDocument();
   });
 
+  it("dates each part's Amazon price under its net, from the part's own time and the same clock as Home Depot's", () => {
+    show(row({ parts: [part('A1', { priceSeenAt: NOW - 12 * 60_000 }), part('A2', { priceSeenAt: NOW - 3 * 3_600_000 })] }));
+    const [a, b] = screen.getAllByRole('listitem');
+    expect(a!.querySelector('.detail-part-net')?.nextElementSibling).toHaveTextContent('seen 12 min ago');
+    expect(b!.querySelector('.detail-part-net')?.nextElementSibling).toHaveTextContent('seen 11:00 AM');
+  });
+
+  it('shows no seen line for a price with no time, or for a part with no price', () => {
+    show(row({ parts: [part('A1', { priceSeenAt: null }), part('A2', { price: null, priceSeenAt: null }), part('A3', { price: null, priceSeenAt: NOW })] }));
+    expect(document.querySelector('.detail-part-seen')).toBeNull();
+  });
+
   it('takes focus on its title when it opens, which can be focused but is not a tab stop', () => {
     show(row());
     const title = screen.getByRole('heading', { level: 1 });

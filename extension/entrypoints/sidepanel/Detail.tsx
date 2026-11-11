@@ -114,6 +114,7 @@ function Check() {
 }
 
 interface PartProps {
+  now: number;
   part: PartRow;
   row: BundleRow;
   report: PanelReport;
@@ -125,7 +126,7 @@ interface PartProps {
   run: (action: PaidAction, button: HTMLButtonElement | null) => Promise<string | null>;
 }
 
-function Part({ part, row, report, fees, api, scanRunning, version, busy, run }: PartProps) {
+function Part({ part, row, report, fees, api, scanRunning, version, busy, run, now }: PartProps) {
   const label = labelOf(part);
   const asin = part.asin;
   return (
@@ -146,6 +147,11 @@ function Part({ part, row, report, fees, api, scanRunning, version, busy, run }:
           <div className="detail-part-money">
             <div className="detail-part-price">{money(part.price)}</div>
             <div className="detail-part-net">nets {money(amazonNet(part.price, fees))}</div>
+            {part.priceSeenAt !== null ? (
+              <div className="detail-part-seen">
+                <span className="detail-part-seen-word">seen</span> {when(part.priceSeenAt, now)}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -400,6 +406,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
       .catch(() => setCopyFailed(true));
   };
 
+  const now = Date.now();
   return (
     <div className="detail">
       {top}
@@ -410,7 +417,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
           <h1 className="detail-title" ref={titleRef} tabIndex={-1}>{row.title}</h1>
           <div className="detail-meta">
             <span className="detail-model">{row.model}</span>
-            <span>Home Depot{row.seenAt !== null ? ` · price seen ${when(row.seenAt, Date.now())}` : ''}</span>
+            <span>Home Depot{row.seenAt !== null ? ` · price seen ${when(row.seenAt, now)}` : ''}</span>
             {loose ? <span className="detail-tag">Loose</span> : null}
           </div>
         </section>
@@ -481,7 +488,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
             {row.answer && row.answer.kind !== 'none' ? answerLine : null}
             <ul className="detail-parts">
               {row.parts.map((p) => (
-                <Part key={p.model} part={p} row={row} report={report} fees={fees} api={api} scanRunning={state.scanRunning} version={version} busy={busy} run={run} />
+                <Part key={p.model} part={p} row={row} report={report} fees={fees} api={api} scanRunning={state.scanRunning} version={version} busy={busy} run={run} now={now} />
               ))}
             </ul>
             <PackagingQuestion key={row.key} row={row} api={api} answer={answer} onAnswered={(value) => setSaved({ model: row.model, value })} />
