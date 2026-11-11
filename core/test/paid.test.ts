@@ -279,7 +279,7 @@ describe('runPaid verify: one detail page upgrades or rejects a title match', ()
       reason: "The listing's Amazon page does not confirm the part",
       candidates: [{
         asin: 'B0B6Z2ZGVK', title: 'RYOBI ONEAND HP 18V BRUSHLESS Cordless 1/4 in. Extended Reach Ratchet Tool ONLY PBLRC01B', price: 160, reviews: 212,
-        reasons: ['no identifier matches'],
+        reasons: ['no identifier matches'], seenAt: T0 + 2 * MINUTE,
       }],
       choices: [], openedAt: T0 + 2 * MINUTE, answer: null, answeredAt: null,
     });

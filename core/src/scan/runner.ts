@@ -419,7 +419,7 @@ export async function applyLookup(ctx: PartContext, step: LookupStep, data: unkn
     // One candidate per ASIN: a search can list the same ASIN twice.
     const listed = unique(picked.review.map((g) => g.asin)).map((a) => {
       const c = firstWith(candidates, a)!;
-      return { asin: a, title: c.title, price: c.price ?? null, reviews: c.reviews ?? null, reasons: picked.review.find((g) => g.asin === a)!.reasons };
+      return { asin: a, title: c.title, price: c.price ?? null, reviews: c.reviews ?? null, reasons: picked.review.find((g) => g.asin === a)!.reasons, seenAt: at };
     });
     const reason = `${listed.length} listing(s) show the model number, but the brand is not confirmed`;
     await openMatchReview(ctx, { key, brand: step.brand, model: step.model }, reason, listed, now);

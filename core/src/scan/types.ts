@@ -208,6 +208,11 @@ export interface ReviewCandidate {
   price: number | null;
   reviews: number | null;
   reasons: string[];
+  /**
+   * When the response that showed this listing was received (SearchResult.at): the time of `price`.
+   * A candidate saved before step 5's final review has none; it reads as null.
+   */
+  seenAt: number | null;
 }
 
 export interface ReviewItem {

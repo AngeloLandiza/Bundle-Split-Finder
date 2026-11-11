@@ -46,8 +46,8 @@ const MATCH = item({
   title: null,
   reason: 'Two listings fit equally well.',
   candidates: [
-    { asin: 'B0AAAAAAA1', title: 'DEWALT DCF891B 20V MAX XR Cordless Impact Wrench with a very long title that runs on and on', price: 189.5, reviews: 10, reasons: [] },
-    { asin: 'B0AAAAAAA2', title: 'DEWALT DCF891B Bare Tool', price: null, reviews: 3, reasons: [] },
+    { asin: 'B0AAAAAAA1', title: 'DEWALT DCF891B 20V MAX XR Cordless Impact Wrench with a very long title that runs on and on', price: 189.5, reviews: 10, reasons: [], seenAt: 1 },
+    { asin: 'B0AAAAAAA2', title: 'DEWALT DCF891B Bare Tool', price: null, reviews: 3, reasons: [], seenAt: 1 },
   ],
   openedAt: 2,
 });
@@ -143,7 +143,7 @@ describe('ReviewTab: a split question', () => {
     await waitFor(() => expect(screen.getByText('Which Amazon listing is DEWALT DCF891B?', { selector: 'legend' })).toHaveFocus());
     // The owner moves on to something else; the report reloads and the question changes under them.
     (document.activeElement as HTMLElement).blur();
-    again(reportOf([{ ...MATCH, reason: 'Another listing appeared.', candidates: [...MATCH.candidates, { asin: 'B0AAAAAAA3', title: 'Third', price: 1, reviews: 1, reasons: [] }] }]));
+    again(reportOf([{ ...MATCH, reason: 'Another listing appeared.', candidates: [...MATCH.candidates, { asin: 'B0AAAAAAA3', title: 'Third', price: 1, reviews: 1, reasons: [], seenAt: 1 }] }]));
     expect(screen.getByText('Another listing appeared.')).toBeInTheDocument();
     expect(document.body).toHaveFocus();
     // Answering the last one focuses the empty sentence; a reload afterwards does not move focus again.

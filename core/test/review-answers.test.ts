@@ -237,11 +237,40 @@ describe('applyReviewAnswer: a match question', () => {
     w.clock = T0 + 10 * MINUTE;
     const job = await scan(w, { settings: DEWALT_ONLY, fetchFn });
     expect(await w.store.getMatch('DEWALT:DCF891B')).toEqual(decided);
-    // The listing has no price yet, so it is refreshed, from the lookup's saved response: nothing is paid.
-    expect(job.counts).toMatchObject({ lookupsDone: 0, refreshesDone: 1, reviewsOpened: 0 });
+    // The answer saved the price the question showed, as the lookup saw it: it is fresh, so nothing is refreshed.
+    expect(job.counts).toMatchObject({ lookupsDone: 0, refreshesDone: 0, reviewsOpened: 0 });
     expect(w.ledger).toEqual(['scan:lookup:DCF891B']);
-    expect(await w.store.getPrice('B0HQGDLWH9')).toMatchObject({ price: 100.83, seenAt: T0, checkedAt: T0 });
+    expect(await w.store.getPrice('B0HQGDLWH9')).toEqual({ asin: 'B0HQGDLWH9', price: 100.83, reviews: null, seenAt: T0, checkedAt: T0 });
     expect((await buildReport(w.store, DEWALT_ONLY)).review).toEqual([]);
+  });
+
+  it('a choice saves the listing\'s price as the lookup saw it, so the part is active in the report at once', async () => {
+    const { w, item } = await unconfirmed();
+    // The question keeps when the lookup's response showed each listing.
+    expect(item.candidates[0]).toMatchObject({ asin: 'B0HQGDLWH9', price: 100.83, seenAt: T0 });
+    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 0 }), T0 + MINUTE);
+    expect(await w.store.getPrice('B0HQGDLWH9')).toEqual({ asin: 'B0HQGDLWH9', price: 100.83, reviews: null, seenAt: T0, checkedAt: T0 });
+    const row = (await buildReport(w.store, DEWALT_ONLY)).bundles.find((b) => b.key === 'homedepot:seeded')!;
+    expect(row.parts.find((p) => p.model === 'DCF891B')).toMatchObject({ availability: 'active', asin: 'B0HQGDLWH9', price: 100.83, priceSeenAt: T0 });
+  });
+
+  it('a question saved before its listings carried a time saves no price, as before', async () => {
+    const { w, item } = await unconfirmed();
+    const old = { ...item, candidates: item.candidates.map(({ seenAt: _seenAt, ...c }) => c) } as unknown as ReviewItem;
+    await w.store.putReview(old);
+    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 0 }), T0 + MINUTE);
+    expect(await w.store.getMatch('DEWALT:DCF891B')).toMatchObject({ status: 'matched', asin: 'B0HQGDLWH9', decidedBy: 'user' });
+    expect(await w.store.getPrice('B0HQGDLWH9')).toBeUndefined();
+    const row = (await buildReport(w.store, DEWALT_ONLY)).bundles.find((b) => b.key === 'homedepot:seeded')!;
+    expect(row.parts.find((p) => p.model === 'DCF891B')).toMatchObject({ availability: 'inactive', price: null });
+  });
+
+  it('a choice never writes over a price checked after the lookup', async () => {
+    const { w } = await unconfirmed();
+    const newer = { asin: 'B0HQGDLWH9', price: 97.5, reviews: 3, seenAt: T0 + 5 * MINUTE, checkedAt: T0 + 5 * MINUTE };
+    await w.store.putPrice(newer);
+    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 0 }), T0 + 10 * MINUTE);
+    expect(await w.store.getPrice('B0HQGDLWH9')).toEqual(newer);
   });
 
   it('"none" saves that the part has no listing, decided by the user, and a later scan does not look it up', async () => {

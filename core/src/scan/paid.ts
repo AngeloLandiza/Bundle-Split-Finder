@@ -183,7 +183,7 @@ async function verify(
   const graded = grade(want, page);
   const reasons = graded.packaging === 'bulk' ? [...graded.reasons, BULK] : graded.reasons;
   // The question first, then the match, as a lookup writes them.
-  await openMatchReview(ctx, part, NOT_CONFIRMED, [{ asin, title: page.title, price: page.price ?? null, reviews: page.reviews ?? null, reasons }], now);
+  await openMatchReview(ctx, part, NOT_CONFIRMED, [{ asin, title: page.title, price: page.price ?? null, reviews: page.reviews ?? null, reasons, seenAt: at }], now);
   await ctx.store.putMatch({ ...match, status: 'review', asin: null, grade: null, alternatives: [], updatedAt: now, waitingSince: null });
 }
 

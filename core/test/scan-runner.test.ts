@@ -649,7 +649,7 @@ describe('runScan: a lookup with no certain listing (rule 6)', () => {
     expect(item!.candidates.map((c) => c.asin)).toEqual(['B0HQGDLWH9', 'B0HQG2WS5V', 'B0DXK936XN', 'B0FB3N5CN2', 'B0HQNL1PKM', 'B0FMXY44N7', 'B0G4QZ6X8T']);
     expect(item!.candidates[0]).toEqual({
       asin: 'B0HQGDLWH9', title: 'NA020584 Impact Wrench Gearcase for DeWalt DCF891N, DCF891B', price: 100.83, reviews: null,
-      reasons: ['model number in the title, brand not confirmed'],
+      reasons: ['model number in the title, brand not confirmed'], seenAt: T0,
     });
     // Nothing is chosen, so nothing is priced.
     expect(await w.store.getPrice('B0HQGDLWH9')).toBeUndefined();

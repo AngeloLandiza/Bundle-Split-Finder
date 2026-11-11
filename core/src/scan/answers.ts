@@ -8,7 +8,7 @@
 // decided by the user, which no scan changes.
 
 import type { Decomposition } from '../decompose';
-import type { ReviewAnswer, ReviewItem, ScanStore } from './types';
+import type { ReviewAnswer, ReviewCandidate, ReviewItem, ScanStore } from './types';
 
 /** The note on a split the owner chose. */
 export const CHOSEN_NOTE = 'parts chosen by you';
@@ -116,9 +116,9 @@ function picked(a: Record<string, unknown>, count: number): number | typeof NONE
  * split  `{ choice: i }` sets the bundle's split to `choices[i]`, resolved, and answers the item
  *        with those parts joined by ','. `{ none: true }` answers 'none' and leaves the bundle in
  *        review, noted.
- * match  `{ choice: i }` saves `candidates[i]` as the part's match, decided by the user, and
- *        answers the item with its ASIN. `{ none: true }` saves that the part has no listing,
- *        decided by the user, and answers 'none'.
+ * match  `{ choice: i }` saves `candidates[i]` as the part's match, decided by the user, with the
+ *        price the question showed for it (saveShownPrice), and answers the item with its ASIN.
+ *        `{ none: true }` saves that the part has no listing, decided by the user, and answers 'none'.
  *
  * Refused with AnswerRefused, writing nothing, for an unknown id, an item already answered (by
  * the owner or by a scan), an answer whose `seen` is not the item's signature now (a scan changed
@@ -146,10 +146,25 @@ export async function applyReviewAnswer(store: ScanStore, id: string, answer: Re
 
   const pick = picked(given, item.candidates.length);
   const asin = pick === NONE ? null : item.candidates[pick]!.asin;
-  // No price is saved: the candidate's price has no time of its own. The next scan refreshes it.
+  if (pick !== NONE) await saveShownPrice(store, item.candidates[pick]!);
   await store.putMatch({
     key: item.subject, brand: item.brand, model: item.model, status: asin === null ? 'none' : 'matched', asin, grade: null,
     alternatives: [], decidedBy: 'user', updatedAt: now, waitingSince: null,
   });
   await store.putReview({ ...item, choices, answer: asin ?? NONE, answeredAt: now });
+}
+
+/**
+ * The price a match question showed for the listing the owner chose, saved as the response that showed it
+ * saw it, at its time (`seenAt`), as a refresh of that response would save it: a listing shown without a
+ * price keeps the time its last price was seen. A price checked later than that response is kept. A candidate
+ * saved before it carried a time saves nothing; the next scan refreshes its price.
+ */
+async function saveShownPrice(store: ScanStore, cand: ReviewCandidate): Promise<void> {
+  const at = (cand as { seenAt?: unknown }).seenAt;
+  if (typeof at !== 'number' || !Number.isFinite(at)) return;
+  const old = await store.getPrice(cand.asin);
+  if (old && old.checkedAt > at) return;
+  const price = typeof cand.price === 'number' ? cand.price : null;
+  await store.putPrice({ asin: cand.asin, price, reviews: cand.reviews ?? null, seenAt: price === null ? (old?.seenAt ?? null) : at, checkedAt: at });
 }
