@@ -57,8 +57,9 @@ interface RowProps {
 function Row({ row, report, asked, api, scanRunning, version, busy, onRun, onOpen }: RowProps) {
   const split = row.section === 'split';
   const state = split ? (asked ? null : 'Contents not known') : matchState(row);
+  const hasLookUp = waitingParts(row).length > 0;
   return (
-    <li className="deal-row">
+    <li className={hasLookUp ? 'deal-row deal-row-lookup' : 'deal-row'}>
       <a
         className="deal-link"
         data-key={row.key}
@@ -72,19 +73,21 @@ function Row({ row, report, asked, api, scanRunning, version, busy, onRun, onOpe
           <div className="deal-title" title={row.title}>
             {row.title}
           </div>
-          <div className="deal-sub">
-            <span>{row.brand}</span>
-            <span className="deal-fig">{row.model}</span>
-          </div>
-          <div className="deal-sub">
-            {row.price !== null ? <span className="deal-fig deal-price">{money(row.price)}</span> : null}
-            {row.percentOff !== null ? <span>{Math.round(row.percentOff)}% off</span> : null}
-            {state ? <span>{state}</span> : null}
+          <div className="deal-subs">
+            <div className="deal-sub">
+              <span>{row.brand}</span>
+              <span className="deal-fig">{row.model}</span>
+            </div>
+            <div className="deal-sub">
+              {row.price !== null ? <span className="deal-fig deal-price">{money(row.price)}</span> : null}
+              {row.percentOff !== null ? <span>{Math.round(row.percentOff)}% off</span> : null}
+              {state ? <span>{state}</span> : null}
+            </div>
           </div>
         </div>
         {split ? asked ? <span className="deal-tag">Needs your answer</span> : null : <Figures row={row} />}
       </a>
-      {waitingParts(row).length > 0 ? <LookUp row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} onRun={onRun} inRow /> : null}
+      {hasLookUp ? <LookUp row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} onRun={onRun} inRow /> : null}
     </li>
   );
 }

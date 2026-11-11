@@ -139,6 +139,57 @@
   flex-direction: column;
   gap: 2px;
 }
+.deal-subs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+/* A row with a Look up button: the title takes the full width on the first line, and the button sits in the right
+   column beside the brand/model and price lines below it, centred on them. The link spans the whole row and lays its
+   own parts out on the row's grid (subgrid), so the button stays a sibling of the link, never inside it. */
+.deal-row-lookup {
+  grid-template-rows: auto auto auto;
+}
+.deal-row-lookup > .deal-link:not(:last-child),
+.deal-row-lookup > .deal-link {
+  grid-column: 1 / -1;
+  grid-row: 1 / 3;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  column-gap: 0;
+  padding: 0;
+}
+.deal-row-lookup .deal-main {
+  display: contents;
+}
+.deal-row-lookup .deal-title {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  padding: 11px 16px 0;
+}
+.deal-row-lookup .deal-subs {
+  grid-column: 1;
+  grid-row: 2;
+  padding: 2px 0 11px 16px;
+}
+.deal-row-lookup .deal-link > .deal-figures,
+.deal-row-lookup .deal-link > .deal-tag {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
+  margin-right: 16px;
+}
+.deal-row-lookup > .deal-lookup-btn {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
+  margin-right: 16px;
+}
+.deal-row-lookup > .deal-refusal {
+  grid-row: 3;
+}
 .deal-title {
   font-weight: 500;
   white-space: nowrap;

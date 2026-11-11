@@ -435,6 +435,24 @@ describe('Look up', () => {
     parts: [part('DCB1', { status: 'waiting', grade: null, availability: 'missing', asin: null }), part('DCB2', { status: 'waiting', grade: null, availability: 'missing', asin: null })],
   });
 
+  it('lays a row with a button out in two rows so the title spans the full width (H4)', async () => {
+    show(report([waiting, row('c1')]));
+    const button = await screen.findByRole('button', { name: /^Look up/ });
+    const li = button.closest('li')!;
+    const link = li.querySelector('a.deal-link')!;
+    expect(li).toHaveClass('deal-row-lookup');
+    expect(button.parentElement).toBe(li);
+    expect(link.contains(button)).toBe(false);
+    // The title is its own line in the link; the lines beside the button are one block under it.
+    const title = link.querySelector('.deal-title')!;
+    const subs = link.querySelector('.deal-subs')!;
+    expect(title.nextElementSibling).toBe(subs);
+    expect(subs.querySelectorAll('.deal-sub')).toHaveLength(2);
+    // A row without a button keeps its plain layout.
+    const plain = document.querySelector('a.deal-link[data-key="c1"]')!.closest('li')!;
+    expect(plain).not.toHaveClass('deal-row-lookup');
+  });
+
   it('asks for the price of the waiting parts, shows it on the button, and sends runPaid on click', async () => {
     const user = userEvent.setup();
     const { api, send } = fakeApi({ searches: 2, refusal: null });
@@ -456,7 +474,7 @@ describe('Look up', () => {
 
   it('keeps the button in the row beside the link, never inside it', async () => {
     show(report([waiting]), state(), { api: fakeApi({ searches: 2, refusal: null }).api });
-    const button = await screen.findByRole('button', { name: 'Look up 2 searches' });
+    const button = await screen.findByRole('button', { name: /^Look up/ });
     const li = button.closest('li')!;
     expect(button.closest('a')).toBeNull();
     expect(li.querySelector('a.deal-link')).not.toBeNull();
