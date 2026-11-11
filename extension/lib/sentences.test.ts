@@ -17,4 +17,16 @@ describe('sentenceFor', () => {
     expect(sentenceFor(null)).toBeNull();
     expect(sentenceFor(undefined)).toBeNull();
   });
+
+  it('maps SerpApi texts inside a longer message (Ruling 49)', () => {
+    expect(sentenceFor('The lookup of PCL526B failed: SerpApi returned HTTP 404.', 'try again')).toBe(
+      'The lookup of PCL526B failed: SerpApi answered with an error (HTTP 404).',
+    );
+    expect(sentenceFor('A Home Depot page could not be read. The lookup of PCL526B failed: SerpApi returned HTTP 404.', 'try again')).toBe(
+      'A Home Depot page could not be read. The lookup of PCL526B failed: SerpApi answered with an error (HTTP 404).',
+    );
+    expect(sentenceFor(`The price check of PCL526B failed: ${network}`, 'try again')).toBe(
+      'The price check of PCL526B failed: SerpApi could not be reached.',
+    );
+  });
 });
