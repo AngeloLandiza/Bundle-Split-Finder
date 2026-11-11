@@ -16,6 +16,15 @@ export const RECORDED_NAMES = [
   'amazon-brand-ryobi-p1',
   'amazon-brand-dewalt-p1',
   'amazon-search-PCL1201K2',
+  'amazon-search-PCL1600K2',
+  'amazon-search-P553',
+  'amazon-search-PCL206',
+  'amazon-search-PCL235',
+  'amazon-search-PCL500',
+  'amazon-search-PCL515',
+  'amazon-search-PCL430',
+  'amazon-search-PCL660',
+  'amazon-search-PBP002',
 ] as const;
 
 export type RecordedName = (typeof RECORDED_NAMES)[number];

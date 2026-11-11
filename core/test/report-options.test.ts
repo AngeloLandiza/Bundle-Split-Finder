@@ -164,14 +164,16 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     const row = await rowOf(w);
     const [whole, split] = row.options;
     expect(whole!.id).toBe('whole');
-    // The PCL1600K2 search has no row with PCL1600K2 in its title: the kit has no listing.
-    expect(whole!.parts.map((p) => [p.model, p.status, p.availability])).toEqual([['PCL1600K2', 'none', 'missing'], ['P553', 'matched', 'active']]);
-    expect(whole!.leftovers).toEqual(['PCL1600K2']);
-    expect(whole!.estimate).toEqual(evaluateBundle(388, { PCL1600K2: 1, P553: 1 }, [{ asin: whole!.parts[1]!.asin!, covers: { P553: 1 }, price: whole!.parts[1]!.price! }]).result);
-    // P553 is matched now in the split option too; the kit's items are not looked up.
-    expect(split!.parts.find((p) => p.model === 'P553')!.status).toBe('matched');
+    // The PCL1600K2 search has no row with PCL1600K2 in its title: the kit has no listing. The P553 search
+    // holds only the miter saw's spare parts (Ruling 65): RYOBI's own are rejected, and the brandless ones are
+    // a question for the owner, so P553 is in review with no listing yet.
+    expect(whole!.parts.map((p) => [p.model, p.status, p.availability])).toEqual([['PCL1600K2', 'none', 'missing'], ['P553', 'review', 'missing']]);
+    expect(whole!.leftovers).toEqual(['PCL1600K2', 'P553']);
+    expect(whole!.estimate).toEqual(evaluateBundle(388, { PCL1600K2: 1, P553: 1 }, []).result);
+    // P553 is in review now in the split option too; the kit's items are not looked up.
+    expect(split!.parts.find((p) => p.model === 'P553')!.status).toBe('review');
     expect(split!.estimate).toBeNull();
-    expect(row).toMatchObject({ section: 'missing_listing', estimate: whole!.estimate, parts: whole!.parts, uncovered: ['PCL1600K2'] });
+    expect(row).toMatchObject({ section: 'missing_listing', estimate: whole!.estimate, parts: whole!.parts, uncovered: ['P553', 'PCL1600K2'] });
   });
 
   it('with the items looked up as well, the split option has an estimate, and its leftovers are the models with no listing, then the unnamed items', async () => {
@@ -184,10 +186,11 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     const split = row.options.find((o) => o.id === 'split:PCL1600K2')!;
     const whole = row.options.find((o) => o.id === 'whole')!;
     expect(split.parts.map((p) => [p.model, p.status])).toEqual([
-      ['PCL206', 'none'], ['PCL235', 'review'], ['PCL500', 'none'], ['PCL515', 'review'], ['PCL430', 'matched'], ['PCL660', 'none'],
-      ['PBP005', 'matched'], ['PBP002', 'matched'], ['P553', 'matched'],
+      // PCL430's search holds a RYOBI backing pad that fits it, rejected as a spare part (Ruling 65), and brandless parts in review.
+      ['PCL206', 'none'], ['PCL235', 'review'], ['PCL500', 'none'], ['PCL515', 'review'], ['PCL430', 'review'], ['PCL660', 'none'],
+      ['PBP005', 'matched'], ['PBP002', 'matched'], ['P553', 'review'],
     ]);
-    expect(split.leftovers).toEqual(['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL660', ...UNNAMED]);
+    expect(split.leftovers).toEqual(['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL430', 'PCL660', 'P553', ...UNNAMED]);
     const active = split.parts.filter((p) => p.availability === 'active');
     const components = { ...Object.fromEntries(split.parts.map((p) => [p.model, 1])), ...Object.fromEntries(UNNAMED.map((n) => [`~${n}`, 1])) };
     expect(split.estimate).toEqual(evaluateBundle(388, components, active.map((p) => ({ asin: p.asin!, covers: { [p.model]: 1 }, price: p.price! }))).result);
@@ -196,7 +199,7 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     expect(row.options.map((o) => o.id)).toEqual(['split:PCL1600K2', 'whole']);
     expect(row).toMatchObject({
       section: 'missing_listing', status: 'partial', estimate: split.estimate, parts: split.parts,
-      uncovered: ['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL660', ...UNNAMED],
+      uncovered: ['P553', 'PCL206', 'PCL235', 'PCL430', 'PCL500', 'PCL515', 'PCL660', ...UNNAMED],
     });
   });
 

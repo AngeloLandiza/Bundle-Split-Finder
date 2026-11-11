@@ -7,9 +7,10 @@
 //   strong    manufacturer part number matches exactly           -> used automatically
 //   probable  brand confirmed and the model number is a whole
 //             word in the title (all a search result can show)   -> used, labelled "verify"
-//   review    model number in the title, brand not confirmed     -> a person decides once
-//   reject    renewed, other brand, aftermarket, wrong pack size,
-//             or a kit variant of a single tool                  -> never used
+//   review    model number in the title, brand not confirmed,
+//             or a title that may name a spare part              -> a person decides once
+//   reject    renewed, other brand, aftermarket, spare part,
+//             wrong pack size, or a kit variant of a single tool -> never used
 //
 // A "probable" match becomes "exact" by loading the listing's detail page
 // (1 search), which carries the barcode.
@@ -18,6 +19,20 @@ import { toUpc12 } from './identifiers';
 
 const RENEWED = /\b(renewed|refurbished|reconditioned|used|pre-owned|open box)\b/i;
 const AFTERMARKET = /\b(replacement for|compatible with|for use with|fits|aftermarket)\b/i;
+// A spare part for the tool, not the tool (Ruling 65). Each form is taken from recorded titles that
+// carry the RYOBI brand and the model as a whole word, so the title test alone made them "probable":
+//   "OEM 89240027010 Replacement Miter Saw Inlet Dust Chute P553 TS1144"
+//   "OEM 303590006 Sander Backing Pad P343 P570 PCL430 MT100 …"
+// "OEM" followed by a run of digits is a part number, never a RYOBI or DEWALT model number;
+// "Replacement" (not "Replacement for") followed within a few words by a part's name names the part.
+const SPARE_PART = [
+  /\bOEM\s+\d{6,}\b/i,
+  /\breplacement\s+(?!for\b)(?:\S+\s+){0,5}?(?:chute|knob|cap|indicator|pads?|sleeve|wheels?)\b/i,
+];
+// Possibly a spare part: "OEM" or "Replacement" without the forms above. The title alone then cannot
+// make a listing "probable"; the owner decides. No genuine tool, battery, charger or kit row in the
+// recordings uses either word.
+const MAYBE_SPARE_PART = /\b(OEM|replacement)\b/i;
 const BULK = /(bulk packaged|non-retail packag|no retail packag)/i;
 const MULTI = /\b(\d+)\s*-?\s*pack\b|\bpack of (\d+)\b|\bset of (\d+)\b/i;
 const KIT_WORDS = /\b(kit|combo|bundle|with battery|with charger|w\/ battery|and charger)\b/i;
@@ -69,6 +84,7 @@ export function grade(want: Wanted, cand: Candidate): Graded {
 
   if (cand.brand && cand.brand.trim().toUpperCase() !== brand) return out('reject', 'different brand');
   if (AFTERMARKET.test(cand.title)) return out('reject', 'aftermarket or compatible part');
+  if (SPARE_PART.some((re) => re.test(cand.title))) return out('reject', 'spare part');
   if (RENEWED.test(cand.title)) return out('reject', 'renewed or used listing');
 
   let qty = cand.packageQty ?? null;
@@ -92,9 +108,11 @@ export function grade(want: Wanted, cand: Candidate): Graded {
     const brandConfirmed =
       (!!cand.brand && cand.brand.trim().toUpperCase() === brand) ||
       cand.title.trim().toUpperCase().startsWith(brand);
-    return brandConfirmed
-      ? out('probable', 'brand and model number in the title; barcode not checked yet')
-      : out('review', 'model number in the title, brand not confirmed');
+    if (!brandConfirmed) return out('review', 'model number in the title, brand not confirmed');
+    if (MAYBE_SPARE_PART.test(cand.title)) {
+      return out('review', 'brand and model number in the title, but the title may name a spare part (OEM or Replacement)');
+    }
+    return out('probable', 'brand and model number in the title; barcode not checked yet');
   }
   return out('reject', 'no identifier matches');
 }
