@@ -336,7 +336,7 @@ describe('limit notice', () => {
   it('run_cap names the per-scan limit and the parts waiting', () => {
     show(report([row('c1')]), stopped('run_cap', deferred));
     expect(screen.getByText('Scan stopped at your search limit')).toBeInTheDocument();
-    expect(screen.getByText('It used 5 of the 40 searches allowed per scan. 2 parts still need an Amazon lookup and go first next time.')).toBeInTheDocument();
+    expect(screen.getByText('It used 5 of the 40 searches allowed per scan. 2 parts still need an Amazon lookup.')).toBeInTheDocument();
   });
 
   it('reserve keeps the rest of the month for the owner', () => {
@@ -363,7 +363,7 @@ describe('limit notice', () => {
     });
     show(report([row('c1')]), s);
     expect(screen.getByText('You stopped the last scan')).toBeInTheDocument();
-    expect(screen.getByText('Scan now picks up where it left off. 2 parts still need an Amazon lookup and go first next time.')).toBeInTheDocument();
+    expect(screen.getByText('Scan now picks up where it left off. 2 parts still need an Amazon lookup.')).toBeInTheDocument();
     expect(screen.queryByText('Change the limit')).toBeNull();
     expect(screen.getByText(/^Next scan /)).toBeInTheDocument();
     // N4: the failure kept on the job is said, not hidden.

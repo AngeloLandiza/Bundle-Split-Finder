@@ -13,23 +13,23 @@ export function limitCopy(state: AppState, now: number): { title: string; text: 
   if (!job || job.status !== 'stopped') return null;
   const k = lookupsWaiting(job);
   // Said only when something waits.
-  const waiting = (tail: string) => (k === 0 ? '' : ` ${k} ${k === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup${tail}`);
+  // It does not promise an order: at a limit of 1 the listing phase can take the only search.
+  const waiting = () => (k === 0 ? '' : ` ${k} ${k === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup.`);
   const n = state.settings.searchesPerScan;
-  const first = k === 1 ? ' and goes first next time.' : ' and go first next time.';
   switch (job.stopReason) {
     case 'user':
       // Not a limit: no link to the settings. A message kept from an earlier failure is not shown.
-      return { title: 'You stopped the last scan', text: `Scan now picks up where it left off.${waiting(first)}`, limit: false };
+      return { title: 'You stopped the last scan', text: `Scan now picks up where it left off.${waiting()}`, limit: false };
     case 'run_cap': {
       const noun = n === 1 ? 'search' : 'searches';
       // Said as it was: all of the allowance, or part of it (a scan can stop at the limit with searches to spare, or none used).
       const used = job.searchesUsed === n ? `the ${n} ${noun}` : `${job.searchesUsed} of the ${n} ${noun}`;
-      return { title: 'Scan stopped at your search limit', text: `It used ${used} allowed per scan.${waiting(first)}`, limit: true };
+      return { title: 'Scan stopped at your search limit', text: `It used ${used} allowed per scan.${waiting()}`, limit: true };
     }
     case 'reserve':
       return {
         title: 'Scan stopped at your reserve',
-        text: `The rest of this month's searches are kept for scans you start yourself.${waiting('.')}`,
+        text: `The rest of this month's searches are kept for scans you start yourself.${waiting()}`,
         limit: true,
       };
     case 'hourly_limit': {
