@@ -324,7 +324,7 @@ describe('Look up', () => {
     const user = userEvent.setup();
     const { api, send } = fakeApi({ searches: 2, refusal: null });
     show(report([waiting, row('c1')]), state(), { api });
-    const button = await screen.findByRole('button', { name: 'Look up · 2 searches' });
+    const button = await screen.findByRole('button', { name: 'Look up 2 searches' });
     const action = { kind: 'lookUp', parts: [{ brand: 'DEWALT', model: 'DCB1' }, { brand: 'DEWALT', model: 'DCB2' }] };
     expect(send).toHaveBeenCalledWith({ type: 'quote', action });
     expect(screen.getAllByRole('button', { name: /^Look up/ })).toHaveLength(1);
@@ -334,7 +334,7 @@ describe('Look up', () => {
 
   it('says 1 search in the singular', async () => {
     show(report([waiting]), state(), { api: fakeApi({ searches: 1, refusal: null }).api });
-    expect(await screen.findByRole('button', { name: 'Look up · 1 search' })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: 'Look up 1 search' })).toBeEnabled();
   });
 
   it('disables the button and shows the refusal beneath', async () => {
@@ -353,7 +353,7 @@ describe('Look up', () => {
     });
     const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting]), state(), { api });
-    const button = await screen.findByRole('button', { name: 'Look up · 2 searches' });
+    const button = await screen.findByRole('button', { name: 'Look up 2 searches' });
     await user.click(button);
     expect(button).toBeDisabled();
     await user.click(button);
@@ -374,7 +374,7 @@ describe('Look up', () => {
     });
     const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting, waiting2]), state(), { api });
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /^Look up · / })).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /^Look up \d/ })).toHaveLength(2));
     const [first, second] = screen.getAllByRole('button', { name: /^Look up/ });
     await user.click(first!);
     expect(first).toBeDisabled();
@@ -391,7 +391,7 @@ describe('Look up', () => {
     expect(screen.getByText('A scan is running.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Look up' })).toBeDisabled();
     view.rerender(createElement(DealsTab, props(api, state({ scanRunning: false }))));
-    expect(await screen.findByRole('button', { name: 'Look up · 2 searches' })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: 'Look up 2 searches' })).toBeEnabled();
     expect(screen.queryByText('A scan is running.')).toBeNull();
   });
 
@@ -407,7 +407,7 @@ describe('Look up', () => {
     // A scan starts and ends: the price is asked for again.
     view.rerender(createElement(DealsTab, props(api, state({ scanRunning: true }))));
     view.rerender(createElement(DealsTab, props(api, state({ scanRunning: false }))));
-    expect(await screen.findByRole('button', { name: 'Look up · 2 searches' })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: 'Look up 2 searches' })).toBeEnabled();
     expect(screen.queryByText('A scan is already running.')).toBeNull();
   });
 
@@ -421,15 +421,34 @@ describe('Look up', () => {
     });
     const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting]), state(), { api });
-    await user.click(await screen.findByRole('button', { name: 'Look up · 2 searches' }));
-    expect(await screen.findByRole('button', { name: 'Look up · 1 search' })).toBeEnabled();
+    await user.click(await screen.findByRole('button', { name: 'Look up 2 searches' }));
+    expect(await screen.findByRole('button', { name: 'Look up 1 search' })).toBeEnabled();
     expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(2);
+  });
+
+  it('keeps a failed run\'s sentence through the next successful quote, and clears it on the next click', async () => {
+    const user = userEvent.setup();
+    let fail = true;
+    const send = vi.fn(async (r: Request): Promise<Reply> => {
+      if (r.type === 'quote') return { ok: true, data: { searches: 2, refusal: null } };
+      return fail ? { ok: false, error: 'Not available yet.' } : { ok: true, data: null };
+    });
+    const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    show(report([waiting]), state(), { api });
+    await user.click(await screen.findByRole('button', { name: 'Look up 2 searches' }));
+    expect(await screen.findByText('Not available yet.')).toBeInTheDocument();
+    // The re-quote after the run succeeded; the sentence is still there.
+    await waitFor(() => expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(2));
+    expect(screen.getByText('Not available yet.')).toBeInTheDocument();
+    fail = false;
+    await user.click(await screen.findByRole('button', { name: 'Look up 2 searches' }));
+    await waitFor(() => expect(screen.queryByText('Not available yet.')).toBeNull());
   });
 
   it('does not ask again when only the api object changes', async () => {
     const { api, send } = fakeApi({ searches: 2, refusal: null });
     const { view } = show(report([waiting]), state(), { api });
-    await screen.findByRole('button', { name: 'Look up · 2 searches' });
+    await screen.findByRole('button', { name: 'Look up 2 searches' });
     view.rerender(createElement(DealsTab, props({ ...api }, state())));
     expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(1);
   });
@@ -455,11 +474,11 @@ describe('empty states', () => {
   });
   it('says the scan did not finish when it stopped or failed with nothing found', () => {
     show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'error' }) }));
-    expect(screen.getByText('The last scan did not finish.')).toBeInTheDocument();
+    expect(screen.getByText('The last scan did not finish. Scan now tries again.')).toBeInTheDocument();
     expect(screen.queryByText('The last scan found no bundles.')).toBeNull();
     cleanup();
     show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'user' }) }));
-    expect(screen.getByText('The last scan did not finish.')).toBeInTheDocument();
+    expect(screen.getByText('The last scan did not finish. Scan now tries again.')).toBeInTheDocument();
   });
   it('under a limit notice, says nothing else', () => {
     show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'run_cap' }) }));
@@ -473,7 +492,7 @@ describe('stale prices', () => {
   const aged = (days: number) => row('c1', { parts: [part('A'), part('B', { priceSeenAt: NOW - days * DAY - 3_600_000 })] });
   it('names the age of the oldest shown price when it is past the freshness period', () => {
     show(report([aged(4)]));
-    expect(screen.getByText('Prices seen 4 days ago')).toBeInTheDocument();
+    expect(screen.getByText('Prices seen 4 days ago. The next scan refreshes them.')).toBeInTheDocument();
   });
   it('is absent when prices are fresh', () => {
     show(report([aged(2)]));

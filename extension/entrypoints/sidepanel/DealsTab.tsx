@@ -117,7 +117,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api }: DealsTabP
           ? 'The last scan found no bundles.'
           : limitCopy(state, now)
             ? null
-            : 'The last scan did not finish.';
+            : 'The last scan did not finish. Scan now tries again.';
     return (
       <>
         <LimitNotice state={state} now={now} />
@@ -157,7 +157,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api }: DealsTabP
           </svg>
         </span>
       </div>
-      {days !== null ? <p className="deals-stale">Prices seen {days === 1 ? '1 day' : `${days} days`} ago</p> : null}
+      {days !== null ? <p className="deals-stale">Prices seen {days === 1 ? '1 day' : `${days} days`} ago. The next scan refreshes them.</p> : null}
       {groups.map((g) => (
         <section key={g.id} aria-label={g.label}>
           {g.id === labelled ? <p className="deals-caption">Estimated profit · ROI</p> : null}

@@ -65,3 +65,34 @@ test('deals tab, no scan yet', async ({ context, extensionId, options, server: _
   await expect(panel.getByText("No scan yet. Scan now looks at Home Depot's DEWALT and RYOBI bundles.")).toBeVisible();
   await shoot(panel, 'empty');
 });
+
+test('deals tab, bundles waiting for a lookup', async ({ context, extensionId, options, server: _server }) => {
+  await saveKey(options, 'TEST');
+  await expect(options.getByTestId('key-result')).toContainText('Key works.');
+  // Just above the catalog and listing pages: bundles resolve, their part lookups are deferred.
+  await configure(options, { searchesPerScan: 4 });
+  await scanAndWait(options);
+
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await expect(panel.getByRole('button', { name: /^Look up/ }).first()).toBeVisible();
+  await expect(panel.getByText('Not available yet.').first()).toBeVisible();
+  await shoot(panel, 'waiting');
+});
+
+test('deals tab, keyboard focus on the first row', async ({ context, extensionId, options, server }) => {
+  await saveKey(options, 'TEST');
+  await expect(options.getByTestId('key-result')).toContainText('Key works.');
+  await configure(options, { searchesPerScan: 10 });
+  server.refuse('*');
+  await scanAndWait(options);
+
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  const first = panel.locator('.deal-link').first();
+  await expect(first).toBeVisible();
+  // Tab from the page start to the first row link.
+  for (let i = 0; i < 20 && !(await first.evaluate((el) => el === document.activeElement)); i++) await panel.keyboard.press('Tab');
+  await expect(first).toBeFocused();
+  await shoot(panel, 'focus');
+});

@@ -29,6 +29,8 @@ export function LookUp({ row, api, scanRunning, version, busy, onRun }: LookUpPr
   // The quote is kept with the version it answers, so a stale one can never enable the button.
   const [quote, setQuote] = useState<{ version: number; quote: Quote } | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  // A failed run's sentence is kept apart from the quote, so a later quote cannot wipe it. It belongs to the parts it was for.
+  const [runError, setRunError] = useState<{ partKey: string; text: string } | null>(null);
   const apiRef = useRef(api);
   apiRef.current = api;
   const parts = waitingParts(row);
@@ -55,11 +57,11 @@ export function LookUp({ row, api, scanRunning, version, busy, onRun }: LookUpPr
   }, [row.brand, partKey, scanRunning, version]);
 
   const fresh = !scanRunning && quote !== null && quote.version === version ? quote.quote : null;
-  const refusal = scanRunning ? SCAN_RUNNING : (fresh?.refusal ?? problem);
+  const refusal = scanRunning ? SCAN_RUNNING : ((runError?.partKey === partKey ? runError.text : null) ?? fresh?.refusal ?? problem);
   const run = () => {
     if (busy || !fresh || fresh.refusal) return;
-    setProblem(null);
-    void onRun(parts).then((error) => setProblem(error));
+    setRunError(null);
+    void onRun(parts).then((error) => setRunError(error ? { partKey, text: error } : null));
   };
 
   return (
@@ -67,7 +69,7 @@ export function LookUp({ row, api, scanRunning, version, busy, onRun }: LookUpPr
       {refusal ? <p className="deal-refusal">{refusal}</p> : null}
       <button type="button" className="deal-lookup-btn" disabled={busy || !fresh || fresh.refusal !== null} onClick={run}>
         Look up{' '}
-        {fresh ? <span className="deal-lookup-cost">· {searches(fresh.searches)}</span> : null}
+        {fresh ? <span className="deal-lookup-cost">{searches(fresh.searches)}</span> : null}
       </button>
     </div>
   );
