@@ -37,6 +37,8 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 - **Listing pages are reused for one hour; a brand page for the freshness period (3 days), and always within one job.** Nothing is paid for twice in a job.
 - **Saving settings never starts a scan.** A changed schedule starts its clock from the change.
 - **Development spends from named buckets** (fixtures, validation, live, demo) with caps in code and a shared ledger. 14 of 250 used by Nov 10, all on recordings.
+- **Verify and Look up from the side panel spend under the manual-trigger budget** (reserve 0, at most searches per scan, from a fresh account check), and check their whole cost before the first search: a cost that does not fit is refused with the budget's own sentence and nothing is sent. The quote is what the action spends: a part a saved listing answers, or one that wants no lookup, costs 0, and a Look up of only such parts still applies their matches. A panel action and a scan exclude each other, and one panel action runs at a time. No retry: a failed lookup ends the action and its parts wait. Ledger labels are `panel:lookup:<MODEL>` and `panel:verify:<MODEL>`, the scan's label shape.
+- **A quote reads the account saved in the last five minutes, and otherwise checks it again (free).** A saved account can be hours old, and its hourly count would keep a button disabled that would now work. The action itself always checks afresh. *For v2:* SerpApi does not say whether its hourly limit is a rolling hour.
 
 ## Pipeline
 
@@ -64,6 +66,8 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 - **RYOBI: an Includes list can confirm a part but never contradict one**, because it often lists the loose tools inside a kit rather than the kit (the plain kit `PCL1600K2`'s page carries the same list as the bundle `PCL1600K2-PBP004`). A model written without its tool-only suffix counts for the suffixed part (`PBLRC25` for `PBLRC25B`). Parts the stored catalog knows and parts the page names may together resolve a RYOBI split, never a DEWALT one, whose short codes are matched by their ending.
 - **The page's description is stored but not used to split:** it is marketing prose and can name products that are not in the box.
 - **Known gaps in the page signal:** a special buy inside a hyphen bundle (`PBLRC2501SB-A13401`) is not expanded and goes to review; quantities such as `(2)` are ignored. *For v2:* the description and the item-by-item Includes list are stored and could feed the second view noted under Product.
+- **Verify grades the listing's detail page with the existing grading** (`pick` over that one listing, `wantedFor` as a lookup asks). Exact or strong: the match takes that grade and drops its alternatives, which were of the old grade. Probable (the page shows no part number or barcode that matches): the match stays as it was. Review, reject or non-retail packaging: the match goes to review, with a question offering that listing and the grading's reasons. A page with no title, or for another ASIN, changes nothing. The page's price is saved at the time SerpApi answered. Only an automatic title match can be verified; one the owner chose is refused. On the recording, `B0B3JWF5ZV` becomes strong for `PBLRC25B` (manufacturer part number). *For v2:* `wantedFor` carries no barcode, so a page gives strong, never exact, until a part's barcode is known; the question offers only the verified listing, not the lookup's other listings.
+- **A Look up from the panel is the scan's lookup step under rule 5 and 2c rule 5, planned once**: only parts of resolved bundles with no match or one left waiting, never one the owner decided; parts a saved listing answers are matched first, free. As in a scan, a lookup earlier in the same action does not cancel a later one whose part its results happen to answer.
 
 ## Extension
 
@@ -82,6 +86,7 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 - **Stored settings are untrusted:** validated on read, with a default per failing field. The shape check lives in `extension/lib/worker.ts`; *for v2* it belongs in `core/` next to `validateSettings`.
 - **Known gap: a network error's text is stored with the scan record** in IndexedDB. Replies to pages strip the key from such text; the stored copy does not. *For v2:* strip it where the runner records the message.
 - **The settings page saves a field on blur or Enter**, radios and checkboxes at once; the forecast follows every keystroke.
+- **A Verify or Look up replies when it has ended**, unlike Scan now, which replies once the scan is under way: it is short, and its answer is the button's. **Known gap:** Forget key and Stop do not interrupt a Look up already running; it spends at most its quote.
 
 ## Design
 
