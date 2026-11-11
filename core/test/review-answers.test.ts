@@ -477,11 +477,15 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     const w = world();
     const open = await ambiguous(w);
     const before = await snapshot(w);
-    for (const pack of ['DCB205-', 'DCB205-22', 'DCB205-2PK', 'DCB205-2-2', 'DCF891B-2', 'DCB-2', 'DCB205 -2', 'DCKTS650D1P1-DCB205']) {
+    // A pack is of 2 to 9: `-0` and `-1` are refused too.
+    for (const pack of ['DCB205-', 'DCB205-0', 'DCB205-1', 'DCB205-22', 'DCB205-2PK', 'DCB205-2-2', 'DCF891B-2', 'DCB-2', 'DCB205 -2', 'DCKTS650D1P1-DCB205']) {
       const parts = ['DCKTS650D1P1', pack];
       await expect(applyReviewAnswer(w.store, AMBIGUOUS, { parts, seen: reviewSignature(open) }, T0 + MINUTE), pack).rejects.toThrow(INVALID);
     }
     expect(await snapshot(w)).toEqual(before);
+    // The top of the range, -9, passes.
+    await applyReviewAnswer(w.store, AMBIGUOUS, { parts: ['DCKTS650D1P1', 'DCB205-9'], seen: reviewSignature(open) }, T0 + MINUTE);
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split!.components).toEqual(['DCKTS650D1P1', 'DCB205-9']);
 
     const r = world();
     const sb = await special(r);
@@ -496,7 +500,7 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     await scan(w, { settings: DEWALT_ONLY, policy: NO_SEARCH });
     expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCKTS650D1P1', 'DCB205-2'], status: 'resolved', notes: [ENTERED] });
 
-    for (const answerParts of [['DCKTS650D1P1', 'DCB205-2PK'], ['DCKTS650D1P1', 'DCF891B-2']]) {
+    for (const answerParts of [['DCKTS650D1P1', 'DCB205-2PK'], ['DCKTS650D1P1', 'DCF891B-2'], ['DCKTS650D1P1', 'DCB205-1'], ['DCKTS650D1P1', 'DCB205-0']]) {
       const x = world();
       const q = await ambiguous(x);
       await x.store.putReview({ ...q, answer: answerParts.join(','), answerParts, answeredAt: T0 + MINUTE });

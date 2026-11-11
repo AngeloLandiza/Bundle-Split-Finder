@@ -140,16 +140,22 @@ export function ownerAnswer(item: ReviewItem | undefined, split: Decomposition |
 
 /**
  * 1 to MAX_ENTERED_PARTS entries, each a model number (OFFERABLE_PART) or, for a DEWALT question,
- * a battery pack written as the splitter writes it (`DCB205-2`, DEWALT_PACK; Ruling 47). No other
+ * a battery pack of 2 to 9 written as the splitter writes it (`DCB205-2`, DEWALT_PACK; Ruling 47). No other
  * hyphen form passes. A repeat counts as an entry.
  */
 function validParts(parts: unknown, item: ReviewItem): parts is string[] {
   const dewalt = typeof item.brand === 'string' && item.brand.trim().toUpperCase() === 'DEWALT';
   return (
     Array.isArray(parts) && parts.length > 0 && parts.length <= MAX_ENTERED_PARTS &&
-    parts.every((p) => typeof p === 'string' && (OFFERABLE_PART.test(p) || (dewalt && DEWALT_PACK.test(p))))
+    parts.every((p) => typeof p === 'string' && (OFFERABLE_PART.test(p) || (dewalt && isPack(p))))
   );
 }
+
+/** A battery pack as the splitter writes it, of 2 to 9: `-0` and `-1` are not packs. */
+const isPack = (part: string): boolean => {
+  const m = DEWALT_PACK.exec(part);
+  return m !== null && Number(m[1]) >= 2;
+};
 
 /** A model number with its hyphens and spaces taken out, upper case: `PCL1600K2-P553` and `PCL1600K2P553` are one model. */
 const bare = (model: string): string => model.toUpperCase().replace(/[-\s]/g, '');

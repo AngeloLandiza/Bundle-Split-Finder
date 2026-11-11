@@ -2148,6 +2148,38 @@ describe('runScan: a slot the cache answers is given back (Ruling 48; QA 3, Majo
     expect(Math.max(...spent)).toBe(1);
   });
 
+  it('a page known not to exist leaves the deferred list too, so no later scan pays for it (F6 review)', async () => {
+    const w = world();
+    // The recorded ratchet page, with its pagination saying there is no next page; every other
+    // request is the plain replay (a page 2 has no recording and answers 404).
+    const A2 = 'engine=home_depot&page=2&q=ryobi extended reach ratchet';
+    const fetchFn = (async (input: string | URL | Request) => {
+      const url = new URL(String(input instanceof Request ? input.url : input));
+      const res = await w.replay.fetchFn(input);
+      if (url.searchParams.get('q') !== 'ryobi extended reach ratchet' || url.searchParams.get('page') !== '1') return res;
+      const body = (await res.json()) as { serpapi_pagination?: Record<string, unknown>; pagination?: Record<string, unknown> };
+      body.serpapi_pagination = { current: 1 };
+      delete body.pagination;
+      return new Response(JSON.stringify(body), { status: 200 });
+    }) as typeof fetch;
+    // Two queries of two pages at a limit of 2: one page fits (hdPages 1).
+    const settings: ScanSettings = { ...STEP2, pagesPerQuery: 2, queries: [{ q: 'ryobi extended reach ratchet' }, { q: 'dewalt 20v combo kit' }] };
+    const policy: BudgetPolicy = { reserve: 0, maxPerRun: 2 };
+
+    const first = await scan(w, { settings, policy, fetchFn });
+    // A1 said there is no page 2: A2 is neither queued nor deferred.
+    expect(first.deferred.filter((s) => s.kind === 'listing')).toEqual([listing('dewalt 20v combo kit'), { ...listing('dewalt 20v combo kit'), page: 2 }]);
+    const spent: number[] = [first.searchesUsed];
+    for (const i of [1, 2, 3, 4]) {
+      w.clock = T0 + i * 10 * MINUTE;
+      const job = await scan(w, { settings, policy, fetchFn });
+      spent.push(job.searchesUsed);
+    }
+    // Before the fix, A2 stayed deferred, went first two scans later and was paid for.
+    expect(w.replay.calls).not.toContain(A2);
+    expect(Math.max(...spent)).toBeLessThanOrEqual(2);
+  });
+
   it('a listing page planned and answered from the cache gives its slot to the page deferred after it', async () => {
     const w = world();
     // DEWALT's page alone, paid and cached.

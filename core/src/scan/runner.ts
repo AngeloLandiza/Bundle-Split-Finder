@@ -80,7 +80,9 @@ interface Run extends PartContext {
    * Ruling 48: the steps this run's planning deferred for the phase now running, in plan order,
    * that may still move into the queue when a planned step is answered from the cache. Each
    * leaves this list when it moves, so it moves at most once. Never a step set aside after a
-   * failure. Empty for a continued job, which tops nothing up.
+   * failure. A continued job starts with it empty, so its listing pages are not topped up; one
+   * continued in the listing phase still plans its parts (planParts), which fills it, so its
+   * parts phase may top up. Safe either way: every move is checked against what may still be spent.
    */
   movable: ScanStep[];
   /** Ruling 50: the parts the job before this one set aside after a failure; planned after the others. */
@@ -458,8 +460,11 @@ async function applyListing(run: Run, step: Listing, data: unknown, at: number):
     // Later pages of this query do not exist: dropped, not deferred.
     const later = (s: ScanStep) => s.kind === 'listing' && s.q === step.q && s.filterTokens === step.filterTokens && s.page > step.page;
     job.queue = job.queue.filter((s) => !later(s));
-    // Nor are they moved into the queue (Ruling 48).
+    // Nor are they moved into the queue, or put first by the next job (Ruling 48). Only listing
+    // steps leave `deferred`, and the listing phase sets nothing aside, so run.setAside still
+    // counts the steps at its front.
     run.movable = run.movable.filter((s) => !later(s));
+    job.deferred = job.deferred.filter((s) => !later(s));
   }
   job.counts.pagesFetched += 1;
 }
