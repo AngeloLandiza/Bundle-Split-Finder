@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 import { when } from '../../lib/format';
 import type { AppState } from '../../lib/messages';
+import { sentenceFor } from '../../lib/sentences';
 import { lookupsWaiting } from './dealsModel';
 import { tryAgain } from './hourlyBlock';
 
@@ -42,14 +43,27 @@ export function limitCopy(state: AppState, now: number): { title: string; text: 
   }
 }
 
+/**
+ * A step that failed and was set aside leaves its message on the job while the scan goes on. An error or a rate limit
+ * is shown by the Notice above the tabs; every other job that kept a message says it here.
+ */
+export function setAsideSentence(state: AppState): string | null {
+  const job = state.lastJob;
+  if (!job || job.stopReason === 'error' || job.stopReason === 'rate_limited') return null;
+  const text = sentenceFor(job.stopMessage, 'try again');
+  return text === null ? null : `A search failed and was set aside: ${text}`;
+}
+
 export function LimitNotice({ state, now }: { state: AppState; now: number }) {
   const copy = limitCopy(state, now);
   if (!copy) return null;
+  const aside = setAsideSentence(state);
   return (
     <section className="deal-notice" aria-label="Scan limit">
       <div className="deal-notice-text">
         <h2 className="deal-notice-title">{copy.title}</h2>
         <p className="deal-notice-body">{copy.text}</p>
+        {aside ? <p className="deal-notice-body">{aside}</p> : null}
       </div>
       <div className="deal-notice-actions">
         {copy.limit ? (

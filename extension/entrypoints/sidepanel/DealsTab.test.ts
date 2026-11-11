@@ -272,6 +272,46 @@ describe('rows', () => {
   });
 });
 
+describe('a failure set aside (N4)', () => {
+  const SET_ASIDE = 'A search failed and was set aside: SerpApi answered with an error (HTTP 404). Try again later.';
+  const failed = (over: Partial<ScanJob>) => state({ lastJob: job({ stopMessage: 'SerpApi returned HTTP 404.', ...over }) });
+
+  it('joins the limit notice when the scan stopped at a limit', () => {
+    show(report([row('c1')]), failed({ status: 'stopped', stopReason: 'run_cap', searchesUsed: 1 }));
+    const band = screen.getByRole('region', { name: 'Scan limit' });
+    expect(within(band).getByText('Scan stopped at your search limit')).toBeInTheDocument();
+    expect(within(band).getByText(SET_ASIDE)).toBeInTheDocument();
+  });
+
+  it('joins the notice after a user stop', () => {
+    show(report([row('c1')]), failed({ status: 'stopped', stopReason: 'user' }));
+    expect(within(screen.getByRole('region', { name: 'Scan limit' })).getByText(SET_ASIDE)).toBeInTheDocument();
+  });
+
+  it('stands alone when the job is done and there is no band', () => {
+    show(report([row('c1')]), failed({ status: 'done' }));
+    expect(screen.queryByRole('region', { name: 'Scan limit' })).toBeNull();
+    expect(screen.getByText(SET_ASIDE)).toBeInTheDocument();
+  });
+
+  it('sits under the empty state when there are no bundles', () => {
+    show(report([]), failed({ status: 'stopped', stopReason: 'run_cap', searchesUsed: 1 }));
+    expect(screen.getByText(SET_ASIDE)).toBeInTheDocument();
+    cleanup();
+    show(report([]), failed({ status: 'done' }));
+    expect(screen.getByText('The last scan found no bundles.')).toBeInTheDocument();
+    expect(screen.getByText(SET_ASIDE)).toBeInTheDocument();
+  });
+
+  it('is not repeated for an error or rate limit, which the Notice above the tabs shows, and absent without a message', () => {
+    show(report([row('c1')]), failed({ status: 'stopped', stopReason: 'error' }));
+    expect(screen.queryByText(/set aside/)).toBeNull();
+    cleanup();
+    show(report([row('c1')]), state({ lastJob: job({ status: 'stopped', stopReason: 'run_cap' }) }));
+    expect(screen.queryByText(/set aside/)).toBeNull();
+  });
+});
+
 describe('limit notice', () => {
   const stopped = (reason: string, deferred: ScanStep[] = []) => state({ lastJob: job({ status: 'stopped', stopReason: reason as ScanJob['stopReason'], deferred }) });
   const deferred = [lookup('A'), lookup('A'), lookup('B'), { kind: 'refresh', brand: 'DEWALT', model: 'C', asin: 'B0' } as ScanStep];
@@ -299,7 +339,7 @@ describe('limit notice', () => {
     expect(screen.getByText(/^Try again after 30 min\.$/)).toBeInTheDocument();
   });
 
-  it('a stop by the owner is said on the rows too, with the waiting parts and the next scan, and never the earlier failure', () => {
+  it('a stop by the owner is said on the rows too, with the waiting parts and the next scan, and the failure that was set aside', () => {
     const s = state({
       lastJob: job({ status: 'stopped', stopReason: 'user', stopMessage: 'SerpApi returned HTTP 404.', deferred }),
       nextRunAt: NOW + 3_600_000,
@@ -309,7 +349,8 @@ describe('limit notice', () => {
     expect(screen.getByText('Scan now picks up where it left off. 2 parts still need an Amazon lookup and go first next time.')).toBeInTheDocument();
     expect(screen.queryByText('Change the limit')).toBeNull();
     expect(screen.getByText(/^Next scan /)).toBeInTheDocument();
-    expect(screen.queryByText(/404/)).toBeNull();
+    // N4: the failure kept on the job is said, not hidden.
+    expect(screen.getByText('A search failed and was set aside: SerpApi answered with an error (HTTP 404). Try again later.')).toBeInTheDocument();
   });
 
   it('run_cap says how many searches the scan used against the limit (QA m7)', () => {
@@ -387,6 +428,22 @@ describe('Look up', () => {
     expect(screen.getAllByRole('button', { name: /^Look up/ })).toHaveLength(1);
     await user.click(button);
     expect(send).toHaveBeenCalledWith({ type: 'runPaid', action });
+  });
+
+  it('says Look up · no search when the quote is free, never 0 searches (N8)', async () => {
+    show(report([waiting]), state(), { api: fakeApi({ searches: 0, refusal: null }).api });
+    const button = await screen.findByRole('button', { name: 'Look up · no search' });
+    expect(button).toBeEnabled();
+    expect(screen.queryByRole('button', { name: /0 searches/ })).toBeNull();
+  });
+
+  it('keeps the button in the row beside the link, never inside it', async () => {
+    show(report([waiting]), state(), { api: fakeApi({ searches: 2, refusal: null }).api });
+    const button = await screen.findByRole('button', { name: 'Look up 2 searches' });
+    const li = button.closest('li')!;
+    expect(button.closest('a')).toBeNull();
+    expect(li.querySelector('a.deal-link')).not.toBeNull();
+    expect(button.parentElement).toBe(li);
   });
 
   it('says at most N searches until a quote returns, and ties the refusal to the button', async () => {

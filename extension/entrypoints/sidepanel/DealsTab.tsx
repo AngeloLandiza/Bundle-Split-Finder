@@ -4,7 +4,7 @@ import { money, profit, roi, when } from '../../lib/format';
 import type { AppState, PanelReport } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import { matchState, sections, staleDays, waitingParts } from './dealsModel';
-import { LimitNotice, limitCopy } from './DealsLimitNotice';
+import { LimitNotice, limitCopy, setAsideSentence } from './DealsLimitNotice';
 import { LookUp } from './DealsLookUp';
 import { UNREACHABLE } from '../../lib/pageClient';
 import type { SortKey } from './sort';
@@ -84,7 +84,7 @@ function Row({ row, report, asked, api, scanRunning, version, busy, onRun, onOpe
         </div>
         {split ? asked ? <span className="deal-tag">Needs your answer</span> : null : <Figures row={row} />}
       </a>
-      {waitingParts(row).length > 0 ? <LookUp row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} onRun={onRun} /> : null}
+      {waitingParts(row).length > 0 ? <LookUp row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} onRun={onRun} inRow /> : null}
     </li>
   );
 }
@@ -114,6 +114,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
   );
   if (!report) return null;
   const job = state.lastJob;
+  const aside = setAsideSentence(state);
 
   if (report.bundles.length === 0) {
     // Say only what the scan established: it found nothing only when it finished.
@@ -132,6 +133,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
       <>
         <LimitNotice state={state} now={now} />
         {text ? <p className="deals-empty">{text}</p> : null}
+        {aside && !limitCopy(state, now) ? <p className="deals-empty">{aside}</p> : null}
       </>
     );
   }
@@ -167,6 +169,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
           </svg>
         </span>
       </div>
+      {aside && !limitCopy(state, now) ? <p className="deals-stale">{aside}</p> : null}
       {days !== null ? <p className="deals-stale">Prices seen {days === 1 ? '1 day' : `${days} days`} ago. The next scan refreshes them.</p> : null}
       {groups.map((g) => (
         <section key={g.id} aria-label={g.label}>
