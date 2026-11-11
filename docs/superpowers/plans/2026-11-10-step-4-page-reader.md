@@ -10,6 +10,23 @@
 
 **Spec:** `docs/v1-plan.md` ("Direction update", "Lean version 1"), `docs/decisions.md`, `CLAUDE.md`, the facts below.
 
+## Where this stands (step 4 complete, 2026-11-10)
+
+Branch `step-4-page-reader`, not merged. Gate run by the controller on the final commit: typecheck clean, 391 core and 146 extension tests, 10 end-to-end tests (the two page-reading ones also 20 of 20 over ten repeats). Proof in the owner's Chrome on the final code: 12 of 12 bundle pages read in 8.9 s, every bullet count and length equal to the recording, through a background tab that never took focus and was closed. No searches spent; 14 of 250 used this month.
+
+Where the build departed from the plan, and why (details in `docs/decisions.md`):
+
+- The doorway is a background tab only. The "minimized" window opened full-screen and focused on the owner's Mac.
+- The doorway is ready only when the tab is complete on Home Depot itself, checked every 250 ms. Accepting any "complete" made the first proof fail; relying on Chrome's update event timed out 7 of 20 end-to-end runs.
+- DEWALT page rule refined: the page split stands only when it equals the models the page names; a page naming only the kit is silent; a misfit names both readings.
+- Split review items follow the latest reading and reopen when a page sends a bundle back to review.
+- When no page at all can be read, the scan record says so separately.
+- The production-build check builds outside `.output/chrome-mv3`.
+
+Who did what: Task 1 (recording) controller; 2 Sonnet; 3 Opus; 4 Opus; 5 Sonnet; 6 Sonnet; doorway fixes Haiku; final-review fixes Sonnet. Reviews: Opus for 3, 4 and the whole branch; Sonnet for 2, 5, 6 and the final fix wave.
+
+Not done here: the known gaps listed in `docs/decisions.md` (Pipeline, Matching and splitting, Extension). Next: step 5, the side panel.
+
 ## Facts proven on 2026-11-10 (no searches spent)
 
 | Fact | How |
