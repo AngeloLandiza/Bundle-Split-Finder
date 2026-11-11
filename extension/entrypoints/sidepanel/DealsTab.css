@@ -1,0 +1,258 @@
+/* Deals tab. Sizes, spacing and colors come from docs/design/mockups/Main.dc.html and Limit.dc.html. */
+
+.deals-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.deals-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--line);
+}
+.deals-sort {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+.deals-sort select {
+  appearance: none;
+  height: 28px;
+  padding: 0 24px 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  cursor: pointer;
+}
+.deals-sort svg {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: var(--ink);
+}
+.deals-bar select:focus-visible,
+.deal-link:focus-visible,
+.deal-lookup-btn:focus-visible,
+.deal-notice-link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.deals-stale {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--attention);
+  background: var(--attention-bg);
+}
+.deals-empty {
+  margin: 0;
+  padding: 16px;
+  color: var(--ink-2);
+}
+
+.deals-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 16px 6px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+}
+.deals-estimate {
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.deals-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.deal-row {
+  border-bottom: 1px solid var(--line);
+}
+.deal-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: start;
+  padding: 11px 16px;
+  color: inherit;
+  text-decoration: none;
+}
+.deal-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.deal-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.deal-sub {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  min-width: 0;
+}
+.deal-fig {
+  font-family: var(--font-figures);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+.deal-price {
+  color: var(--ink);
+}
+.deal-figures {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-family: var(--font-figures);
+  font-variant-numeric: tabular-nums;
+}
+.deal-profit {
+  font-size: 15px;
+  font-weight: 600;
+}
+.deal-roi {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.deal-figures[data-loss] .deal-profit,
+.deal-figures[data-loss] .deal-roi {
+  color: var(--loss);
+}
+.deal-noestimate {
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.deal-tag {
+  align-self: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--attention);
+  background: var(--attention-bg);
+  padding: 3px 8px;
+  border-radius: var(--radius-tag);
+  white-space: nowrap;
+}
+
+.deal-lookup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px 11px;
+}
+.deal-refusal {
+  margin: 0;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.deal-lookup-btn {
+  flex: none;
+  margin-left: auto;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.deal-lookup-btn:disabled {
+  border-color: var(--line);
+  background: var(--sunken);
+  color: var(--ink-3);
+  cursor: default;
+}
+.deal-lookup-cost {
+  font-family: var(--font-figures);
+  font-size: 11px;
+  color: var(--ink-2);
+}
+.deal-lookup-btn:disabled .deal-lookup-cost {
+  color: var(--ink-3);
+}
+
+/* limit notice */
+.deal-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 16px 4px;
+  padding: 12px;
+  background: var(--attention-bg);
+  border-radius: var(--radius-notice);
+}
+.deal-notice-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.deal-notice-title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: #4a2d00;
+}
+.deal-notice-body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--attention);
+}
+.deal-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.deal-notice-link {
+  height: 32px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--attention);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: #4a2d00;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.deal-notice-next {
+  font-size: 13px;
+  color: var(--attention);
+}

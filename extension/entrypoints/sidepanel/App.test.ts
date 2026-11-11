@@ -14,6 +14,11 @@ import { Notice } from './Notice';
 import { progressText } from './ProgressRow';
 
 vi.mock('./Notice', () => ({ Notice: vi.fn(() => null) }));
+// The shell tests need only to know the report arrived; the list has its own tests in DealsTab.test.ts.
+vi.mock('./DealsTab', async () => {
+  const { createElement: h } = await import('react');
+  return { DealsTab: ({ report }: { report: PanelReport | null }) => h('p', null, report ? `${report.bundles.length} bundles` : 'No scan has finished yet.') };
+});
 
 afterEach(cleanup);
 
