@@ -5,7 +5,8 @@ import { reviewSignature } from '@core/scan/answers';
 import { MemoryScanStore } from '@core/scan/memoryStore';
 import type { BundleRow, PageOutcome, PaidAction, Quote, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
 import { parseAccount } from '@core/serpapi/budget';
-import { type Cache, type LedgerEntry, MemoryCache } from '@core/serpapi/client';
+import { type Cache, type LedgerEntry, MemoryCache, NETWORK_ERROR_PREFIX } from '@core/serpapi/client';
+import { noticeSentence } from '../entrypoints/sidepanel/Notice';
 import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
 import type { AppState, PanelReport, Reply, Request } from './messages';
 import type { ActiveScan, StoredAccount } from './prefs';
@@ -32,6 +33,8 @@ const RATCHET = 'engine=home_depot&page=1&q=ryobi extended reach ratchet';
 const LOOKUP_01B = 'amazon_domain=amazon.com&engine=amazon&k=RYOBI PBLRC01B';
 const LOOKUP_25B = 'amazon_domain=amazon.com&engine=amazon&k=RYOBI PBLRC25B';
 const RYOBI_PAGE = 'amazon_domain=amazon.com&engine=amazon&k=RYOBI&rh=p_123:252605';
+/** What the panel's Notice says for a network failure. */
+const OFFLINE = 'SerpApi could not be reached. Check the connection, then retry.';
 
 // ---------------------------------------------------------------- the world
 
@@ -285,7 +288,9 @@ describe('worker: the key (acceptance criteria 1 and 2)', () => {
     w.accountApi = () => {
       throw new TypeError('Failed to fetch');
     };
-    expect(await send(w, { type: 'checkKey', apiKey: KEY })).toEqual({ ok: false, error: 'Something went wrong while checking your SerpApi account.' });
+    const offline = await send(w, { type: 'checkKey', apiKey: KEY });
+    expect(offline).toEqual({ ok: false, error: expect.stringMatching(new RegExp(`^${NETWORK_ERROR_PREFIX}: `)) });
+    expect(offline).not.toMatchObject({ error: expect.stringContaining('Failed to fetch') });
     w.accountApi = () => new Response('{}', { status: 503 });
     expect(await send(w, { type: 'checkKey', apiKey: KEY })).toEqual({ ok: false, error: 'SerpApi account check failed (HTTP 503).' });
     expect(w.prefs.data.apiKey).toBeUndefined();
@@ -572,8 +577,8 @@ describe('worker: the account cannot be checked when a scan is due (review focus
     await w.worker.onTick();
     expect(w.replay.calls).toEqual([]);
     expect(await w.store.listScans()).toEqual([]);
-    expect((await state(w)).problem).toBe('Something went wrong while checking your SerpApi account.');
-    expect(w.broadcasts.at(-1)!.problem).toBe('Something went wrong while checking your SerpApi account.');
+    expect((await state(w)).problem).toMatch(new RegExp(`^${NETWORK_ERROR_PREFIX}: `));
+    expect(noticeSentence(w.broadcasts.at(-1)!, null)).toBe(OFFLINE);
 
     w.accountApi = () => new Response('{}', { status: 401 });
     w.clock = T0 + MINUTE;
@@ -587,6 +592,21 @@ describe('worker: the account cannot be checked when a scan is due (review focus
     expect(await lastJob(w)).toMatchObject({ status: 'done' });
     expect((await state(w)).problem).toBeNull();
     expect(w.prefs.data.lastScheduledRunAt).toBe(T0 + 2 * MINUTE);
+  });
+
+  it('Scan now with SerpApi out of reach: the panel says it could not be reached, with no text of the failed request', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.accountApi = (key) => {
+      throw new TypeError(`request to https://serpapi.com/account.json?api_key=${key} failed`);
+    };
+    const reply = await send(w, { type: 'scanNow' });
+    expect(reply.ok).toBe(false);
+    const { problem } = await state(w);
+    expect(problem).toMatch(new RegExp(`^${NETWORK_ERROR_PREFIX}: `));
+    expect(problem).not.toMatch(/request to|api_key/);
+    expect(noticeSentence(await state(w), null)).toBe(OFFLINE);
+    expect(noticeSentence(w.broadcasts.at(-1)!, reply.ok ? null : reply.error)).toBe(OFFLINE);
+    expect(w.replay.calls).toEqual([]);
   });
 });
 

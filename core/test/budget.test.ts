@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { planScan } from '../src/scanPlan';
 import { forecastUsage, nextRun, runsPerMonth, validateSchedule } from '../src/schedule';
 import { parseAccount, SearchBudget } from '../src/serpapi/budget';
-import { BudgetExceededError, cacheKey, MemoryCache, RateLimitedError, SerpApiClient, SerpApiError, type LedgerEntry } from '../src/serpapi/client';
+import {
+  BudgetExceededError, cacheKey, MemoryCache, NETWORK_ERROR_PREFIX, RateLimitedError, SerpApiClient, SerpApiError, type LedgerEntry,
+} from '../src/serpapi/client';
 import { parseAmazonSearch } from '../src/serpapi/parsers';
 import { DEV_ALLOCATION, DEV_RESERVE, FREE_PLAN } from '../../scripts/dev-budget';
 import * as fx from './fixtures';
@@ -147,6 +149,17 @@ describe('client', () => {
     expect((await SerpApiClient.account('SECRET', good.fn)).totalSearchesLeft).toBe(250);
     expect(good.calls[0]).toContain('/account.json');
     await expect(SerpApiClient.account('BAD', fakeFetch([{ status: 401, body: {} }]).fn)).rejects.toThrow(/did not accept/);
+  });
+
+  it('reports an account check that never reached SerpApi as a network error, without the fetch error\'s text', async () => {
+    // The fetch error can carry the request URL, and the account URL holds the key.
+    const offline = (async (url: string | URL | Request) => {
+      throw new TypeError(`Failed to fetch ${String(url)}`);
+    }) as typeof fetch;
+    const err = await SerpApiClient.account('SECRET', offline).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(SerpApiError);
+    expect((err as Error).message.startsWith(`${NETWORK_ERROR_PREFIX}: `)).toBe(true);
+    expect((err as Error).message).not.toMatch(/SECRET|Failed to fetch|account\.json/);
   });
 
   it('will not start without a key', () => {

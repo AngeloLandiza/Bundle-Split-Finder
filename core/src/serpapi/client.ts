@@ -44,6 +44,7 @@ export class BudgetExceededError extends Error {
 
 /** A network failure's message starts with this, then a colon and the reason. */
 export const NETWORK_ERROR_PREFIX = 'Network error reaching SerpApi';
+const ACCOUNT_UNREACHED = `${NETWORK_ERROR_PREFIX}: the account check got no answer.`;
 
 export class SerpApiError extends Error {
   constructor(
@@ -111,9 +112,18 @@ export class SerpApiClient {
     this.baseUrl = opts.baseUrl ?? 'https://serpapi.com';
   }
 
-  /** Account status. Free: SerpApi does not count this call. */
+  /**
+   * Account status. Free: SerpApi does not count this call. A request that never reaches SerpApi
+   * throws the network error a search throws, without the fetch error's own text: that text can
+   * carry the request URL, and this URL holds the key.
+   */
   static async account(apiKey: string, fetchFn: typeof fetch = fetch, baseUrl = 'https://serpapi.com'): Promise<AccountInfo> {
-    const res = await fetchFn(`${baseUrl}/account.json?api_key=${encodeURIComponent(apiKey)}`);
+    let res: Response;
+    try {
+      res = await fetchFn(`${baseUrl}/account.json?api_key=${encodeURIComponent(apiKey)}`);
+    } catch {
+      throw new SerpApiError(ACCOUNT_UNREACHED);
+    }
     if (res.status === 401) throw new SerpApiError('SerpApi did not accept this key.', 401);
     if (!res.ok) throw new SerpApiError(`SerpApi account check failed (HTTP ${res.status}).`, res.status);
     return parseAccount(await res.json());

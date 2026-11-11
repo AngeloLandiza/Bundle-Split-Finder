@@ -96,7 +96,10 @@ const PROGRESS_MS = 1_000;
 /** Notifications per scan, one per bundle. */
 const MAX_NOTIFIED = 3;
 
-/** A SerpApiError's message is one plain sentence and never carries the key; nothing else is shown. */
+/**
+ * A SerpApiError's message is one plain sentence and never carries the key; nothing else is shown. An account
+ * check that never reached SerpApi is the client's network error, which the panel says as "could not be reached".
+ */
 const accountSentence = (err: unknown): string => (err instanceof SerpApiError ? err.message : ACCOUNT_FAILED);
 
 const ok = <T>(data: T): Reply<T> => ({ ok: true, data });
