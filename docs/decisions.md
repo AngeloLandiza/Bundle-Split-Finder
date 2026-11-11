@@ -86,6 +86,10 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 ## Design
 
 - **Open question for the owner: the forecast meter's order.** It draws scheduled searches, then the reserve, then what is unused, so the unused part after the reserve can read as if the reserve were spent. The mockup never shows an unused part.
+- **Detail: the "price seen" time is the newest part price time.** A report row carries no time for the bundle's own price, so the head says when the newest Amazon part price was seen, and only "Home Depot" when there is none. *For v2:* put the bundle's `seenAt` on `BundleRow`.
+- **Detail: "Parts sell for" is the sum of listed part prices before fees; "After fees" is the estimate's net revenue**, which also holds any liquidation value of parts with no listing.
+- **Detail: a part left in review is labelled "Needs your answer"**, not "No listing", because a listing exists and is waiting for the owner's choice.
+- **Detail: Export row reuses the run file's columns** (`bundlesCsv` in `core/src/scan/csv.ts`), so one row and the full export never differ.
 - **Build to the mockups and `docs/design.md`; token colors only.** Open question for the owner: the Settings mockup uses `#B9B6AD` (reserve meter) and `#1E3A8A` (link hover), which the token list does not have. The nearest tokens are used meanwhile.
 
 ## How it was built
