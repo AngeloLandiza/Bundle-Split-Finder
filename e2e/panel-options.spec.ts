@@ -21,9 +21,13 @@ async function shoot(panel: Page, name: string): Promise<void> {
   }
 }
 
-async function scanAndWait(page: Page): Promise<void> {
-  const settings = { ...((await getState(page)).data as unknown as { settings: Record<string, unknown> }).settings, searchesPerScan: 10 };
+async function setPerScan(page: Page, searchesPerScan: number): Promise<void> {
+  const settings = { ...((await getState(page)).data as unknown as { settings: Record<string, unknown> }).settings, searchesPerScan };
   expect(await page.evaluate((s) => chrome.runtime.sendMessage({ type: 'saveSettings', settings: s }), settings)).toMatchObject({ ok: true });
+}
+
+async function scanAndWait(page: Page): Promise<void> {
+  await setPerScan(page, 10);
   await page.evaluate(() => chrome.runtime.sendMessage({ type: 'scanNow' }));
   await expect.poll(async () => (await getState(page)).data.scanRunning, { timeout: 60_000, intervals: [250] }).toBe(false);
 }
@@ -99,6 +103,57 @@ test('deals and detail, a bundle with a kit that can be sold whole or split', as
   await expect(region.getByRole('button', { name: /^Look up 2 parts/ })).toHaveCount(0);
   await expect(region.locator('.detail-way').first().locator('.detail-way-profit')).toHaveText(/^[+−]\$/);
   await shoot(panel, 'after-lookup');
+});
+
+/**
+ * Here PBP005 has no saved listing and its search is not recorded (the unit replay saves it from a brand page), so
+ * its lookup fails and ends the press, as any failed lookup does: the press spends at most 5, and fewer parts wait.
+ */
+test('ways to sell at the default 5 searches per scan: the split looks up what fits, and is quoted again for the rest (Ruling 72)', async ({ context, extensionId, options, server }) => {
+  await saveKey(options, 'TEST');
+  await expect(options.getByTestId('key-result')).toContainText('Key works.');
+  await scanAndWait(options);
+  await storeKitPage(options);
+  await ownerChoosesKit(options);
+  await setPerScan(options, 5);
+
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await panel.locator('.deal-row', { has: panel.locator(`[data-key="${P553}"]`) }).locator('.deal-link').click();
+  const region = panel.getByRole('region', { name: 'Ways to sell' });
+  const split = region.locator('.detail-way', { hasText: 'split into its parts' });
+  const first = split.getByRole('button', { name: 'Look up 5 of 9 parts · 5 searches' });
+  await expect(first).toBeVisible();
+  await expect(first).not.toHaveAttribute('aria-disabled', 'true');
+  // The whole way's two parts fit: unchanged.
+  await expect(region.getByRole('button', { name: 'Look up 2 parts · 2 searches' })).toBeVisible();
+  await shoot(panel, 'split-capped');
+
+  const sent = server.searches.length;
+  await first.click();
+  // Quoted again for the parts still waiting, fewer than the 9; above the limit it still says how many of them.
+  const rest = split.getByRole('button', { name: /^Look up (\d+ of )?[1-8] parts? · / });
+  await expect(rest).toBeVisible();
+  await expect(rest).not.toHaveAttribute('aria-disabled', 'true');
+  expect(server.searches.slice(sent).length).toBeLessThanOrEqual(5);
+  await shoot(panel, 'split-rest');
+
+  // A refusal in a way to sell is its own full-width line under the button (QA, 360px). A scan held running refuses
+  // every Look up with one.
+  server.delaySearches(2_000);
+  await options.evaluate(() => chrome.runtime.sendMessage({ type: 'scanNow' }));
+  const refusal = split.getByText('A scan is running.');
+  await expect(refusal).toBeVisible();
+  const button = split.getByRole('button', { name: /^Look up/ });
+  for (const width of WIDTHS) {
+    await panel.setViewportSize({ width, height: 900 });
+    const b = (await button.boundingBox())!;
+    const r = (await refusal.boundingBox())!;
+    expect(r.y).toBeGreaterThanOrEqual(b.y + b.height);
+    expect(r.width).toBeGreaterThan(b.width);
+  }
+  await shoot(panel, 'refusal-stacked');
+  await expect.poll(async () => (await getState(options)).data.scanRunning, { timeout: 60_000, intervals: [250] }).toBe(false);
 });
 
 test('detail, a kit whose Home Depot page has not been read', async ({ context, extensionId, options, server }) => {
