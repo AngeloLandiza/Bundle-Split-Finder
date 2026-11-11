@@ -971,12 +971,105 @@ describe('worker: getReport and setPackaging', () => {
     expect(reply.ok && reply.data.packaging).toEqual({ A1: 'loose' });
   });
 
-  it('answerReview, quote and runPaid are not available yet', async () => {
+  it('quote and runPaid are not available yet', async () => {
     const w = world({ key: KEY, settings: RYOBI });
     for (const request of [
-      { type: 'answerReview', id: 'r1', answer: { none: true } },
       { type: 'quote', action: { kind: 'lookUp', parts: [] } },
       { type: 'runPaid', action: { kind: 'lookUp', parts: [] } },
     ] as Request[]) expect(await send(w, request)).toEqual({ ok: false, error: 'Not available yet.' });
+  });
+});
+
+describe('worker: answerReview', () => {
+  const AMBIGUOUS = 'split:homedepot:ambiguous';
+  const SCANNING = 'A scan is running. Answer again when it has finished.';
+
+  /** The real bundle whose '1B' fits DCF891B and DCF921B (core/test/fixtures.ts). A scan asks which. */
+  async function seedAmbiguous(store: ScanStore): Promise<void> {
+    const [model, title] = fx.HD_DEWALT_AMBIGUOUS;
+    await store.putBundle({
+      key: 'homedepot:ambiguous', retailer: 'homedepot', itemId: 'ambiguous', title, brand: 'DEWALT', model,
+      upc: null, price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0, split: null,
+    });
+    for (const m of ['DCF891B', 'DCF921B']) {
+      await store.putCatalogEntry({ key: `DEWALT:${m}`, brand: 'DEWALT', model: m, title: `${m} (seeded for this test)`, kinds: ['impact wrench'], isKit: false, upc: null, seenAt: T0 });
+    }
+  }
+
+  async function report(w: World): Promise<PanelReport> {
+    const reply = await send<PanelReport>(w, { type: 'getReport' });
+    if (!reply.ok) throw new Error(reply.error);
+    return reply.data;
+  }
+
+  it('saves the chosen reading, broadcasts, and the report no longer asks the question', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seedAmbiguous(w.store);
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect((await report(w)).review.find((r) => r.id === AMBIGUOUS)).toMatchObject({
+      kind: 'split', choices: [['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']],
+    });
+
+    const before = w.broadcasts.length;
+    w.clock = T0 + MINUTE;
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 1 } })).toEqual({ ok: true, data: null });
+    expect(w.broadcasts.length).toBe(before + 1);
+    expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: 'DCKTS650D1P1,DCF921B', answeredAt: T0 + MINUTE });
+    const after = await report(w);
+    expect(after.review.map((r) => r.id)).not.toContain(AMBIGUOUS);
+    expect(after.bundles.find((b) => b.key === 'homedepot:ambiguous')).toMatchObject({
+      section: 'missing_listing', parts: [{ model: 'DCKTS650D1P1' }, { model: 'DCF921B' }],
+    });
+  });
+
+  it('refuses an unknown question, an answered one and an answer not shown with a plain sentence', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seedAmbiguous(w.store);
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const before = w.broadcasts.length;
+    expect(await send(w, { type: 'answerReview', id: 'split:homedepot:nothing', answer: { none: true } })).toEqual({ ok: false, error: 'That question was not found.' });
+    for (const answer of [{ choice: 2 }, { choice: -1 }, {}, undefined]) {
+      const request = { type: 'answerReview', id: AMBIGUOUS, answer } as unknown as Request;
+      expect(await send(w, request)).toEqual({ ok: false, error: 'Choose one of the answers shown.' });
+    }
+    expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: null });
+    expect(w.broadcasts.length).toBe(before);
+
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { none: true } })).toEqual({ ok: true, data: null });
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 0 } })).toEqual({ ok: false, error: 'That question was already answered.' });
+    expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: 'none' });
+  });
+
+  it('refuses while a scan runs, which reads and rewrites the questions, and takes the answer once it has ended', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seedAmbiguous(w.store);
+    const gate = held(w);
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 0 } })).toEqual({ ok: false, error: SCANNING });
+    gate.release();
+    await untilIdle(w);
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 0 } })).toEqual({ ok: true, data: null });
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({
+      components: ['DCKTS650D1P1', 'DCF891B'], status: 'resolved', notes: ['parts chosen by you'],
+    });
+  });
+
+  it('the answer stands after the worker restarts and scans again', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seedAmbiguous(w.store);
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 1 } });
+
+    w.worker = workerOver(w);
+    w.clock = T0 + 10 * MINUTE;
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({
+      components: ['DCKTS650D1P1', 'DCF921B'], status: 'resolved', notes: ['parts chosen by you'],
+    });
+    expect((await report(w)).review.map((r) => r.id)).not.toContain(AMBIGUOUS);
   });
 });

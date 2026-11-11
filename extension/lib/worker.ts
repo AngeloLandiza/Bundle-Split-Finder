@@ -5,8 +5,9 @@
 // calls onTick, and every tick either continues an interrupted scan or starts one that is due.
 // "Rule n" refers to the step 3 plan, Task 5 ("The service worker").
 
+import { AnswerRefused, applyReviewAnswer } from '@core/scan/answers';
 import { runScan } from '@core/scan/runner';
-import type { BundleRow, ReadPages, ScanJob, ScanStore } from '@core/scan/types';
+import type { BundleRow, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
 import {
@@ -75,6 +76,7 @@ const STOPPED = 'The scan was stopped before it began.';
 const BAD_PACKAGING = 'Choose retail boxed or loose.';
 const NO_MODEL = 'Name the bundle model.';
 const NOT_YET = 'Not available yet.';
+const ANSWER_LATER = 'A scan is running. Answer again when it has finished.';
 const KEY_CHANGED = 'The SerpApi key changed while the scan was starting. Scan again.';
 /** A job is continued at most this many times in a row without progress. */
 const MAX_TRIES = 2;
@@ -474,6 +476,24 @@ export function createWorker(env: WorkerEnv): Worker {
     return ok({ ...report, packaging });
   }
 
+  /**
+   * The owner's answer to a review question (answers.ts). Taken through the start gate, so no
+   * scan starts while it is written, and refused while a scan runs: the scan reads and rewrites
+   * splits, matches and questions, and could write over an answer saved in the middle of it.
+   */
+  const answerReview = (id: string, answer: ReviewAnswer): Promise<Reply<null>> =>
+    serial(async () => {
+      if (scan !== null) return refuse(ANSWER_LATER);
+      try {
+        await applyReviewAnswer(store, id, answer, env.now());
+      } catch (err) {
+        if (err instanceof AnswerRefused) return refuse(err.message);
+        throw err;
+      }
+      await broadcast();
+      return ok(null);
+    });
+
   const setPackaging = (model: string, packaging: unknown): Promise<Reply<null>> =>
     serial(async () => {
       if (packaging !== 'retail_boxed' && packaging !== 'loose') return refuse(BAD_PACKAGING);
@@ -511,9 +531,10 @@ export function createWorker(env: WorkerEnv): Worker {
       case 'setPackaging':
         return setPackaging(request.model, request.packaging);
       case 'answerReview':
+        return answerReview(request.id, request.answer);
       case 'quote':
       case 'runPaid':
-        // Replaced by the review and paid-action tasks.
+        // Replaced by the paid-action task.
         return refuse(NOT_YET);
       default:
         return refuse(FAILED);
