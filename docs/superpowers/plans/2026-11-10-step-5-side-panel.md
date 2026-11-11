@@ -10,15 +10,59 @@
 
 **Spec:** `docs/design.md` (Side panel, Behaviour, Words, Do not), mockups `Main`, `Detail`, `FirstRun`, `Limit` in `docs/design/mockups/`, `docs/v1-plan.md` ("Direction update", acceptance criteria 1, 9), `docs/decisions.md`, `CLAUDE.md`.
 
-## Where this stands (step 5 complete, 2026-11-10)
+## Where this stands (step 5 complete after five QA walkthroughs, 2026-11-11)
 
-Branch `step-5-side-panel`, not merged. Gate run by the controller on the final commit: typecheck clean, 448 core and 372 extension tests, 30 end-to-end tests. Every screen passed `ui-reviewer` at 360 and 480px: shell, Deals, Detail, Review, first run and the error notice. A final whole-branch review on Opus found five problems that only show when worker and panel run together (progress row, offline at start, unmatched parts, stale quotes, a match answer's price); all were fixed and re-checked. No searches spent; 14 of 250 used this month.
+Branch `step-5-side-panel`, not merged. The controller ran the gate on the final commit (aa4d0d7, plus docs): typecheck clean, 511 core and 472 extension tests, 31 end-to-end tests. No searches were spent: 14 of 250 used this month.
+
+**After the first report (Nov 11).** The owner asked for end-to-end testing by subagents.
+- A QA agent (Opus) walked every owner flow in the built extension against the replay server, five times. Each walkthrough came after a round of fixes.
+- Two final whole-branch reviews (Opus, core half and panel half) followed the third round, and their findings were fixed too.
+
+What the walkthroughs found and what was fixed:
+- **Walkthrough 1.** A blocker: settings opened in Chrome's small dialog, and the key field could not be reached. Seven major problems:
+  - Detail had no question.
+  - Parts could not be typed.
+  - Waiting parts were filed as "missing listing".
+  - A Look up that found nothing was not said.
+  - Confirmed rows said "to verify".
+  - Detail showed the Amazon time as Home Depot's.
+  - Stop was silent, and a stop in the last search was recorded as done.
+- **Walkthrough 2.** The first-run note was untrue. A bundle's own model was accepted as its part, and answers could not be changed. Change was added.
+- **Walkthroughs 3 and 4.** At a low limit, scans starved:
+  - a cached step kept the only slot
+  - a failing lookup or page kept it
+  - page 2 waited behind page 1 for ever
+
+  Paid-action refusals said "Stopped". Notices stayed stale after a Look up. Focus was lost after paid actions.
+- **Final reviews.** A page 2 could be paid for before its page 1. "Counts at $0" left parts out. Answers were allowed during a Look up.
+- **Walkthrough 5.** Every fix holds, except one case parked for the owner (Ruling 58 in `docs/decisions.md`). A listing page that fails on every scan still holds up the lookups. Fixing it changes step 3's stopping rule.
+
+Rulings 30 to 58 are in the SDD ledger. Each one that the code alone does not explain is in `docs/decisions.md`.
+
+**Before the first report:** the gate on the commit that ended Task 9 was typecheck clean, 448 core and 372 extension tests, and 30 end-to-end tests. Every screen passed `ui-reviewer` at 360 and 480px: shell, Deals, Detail, Review, first run and the error notice. A final whole-branch review on Opus found five problems that only show when worker and panel run together (progress row, offline at start, unmatched parts, stale quotes, a match answer's price); all were fixed and re-checked. No searches spent; 14 of 250 used this month.
 
 Owner decisions 1 to 6 above were approved on Nov 10. Rulings made during the build are in `docs/decisions.md` (Design, Matching and splitting, Pipeline, Extension).
 
 Who did what: Task 1 Sonnet; 2 Opus; 3 Opus; 4 to 8 Sonnet; small test fixes Haiku; the final fix wave Opus. Reviews: Opus for 2, 3 and the whole branch; Sonnet for 1 and 4 to 8; `ui-reviewer` (Opus) per screen.
 
-Known, left as polish: "Try again now." can show beside a still-disabled Scan now in the hourly block's last minute; an offline refusal under Look up or Verify shows the raw network sentence; a scan message that joins several sentences, and the account check's own HTTP wording, are not put into words. No recorded response yields a match question, so that screen is covered by unit tests only. Open question for the owner: should Scan now show its count?
+Who did what in the QA rounds:
+- Implementers:
+  - Opus did core, budget and splitting: F2, F4, F6, F9.
+  - Sonnet did the panel: F1, F3a, F3b, F5a, F5b, F7, F8, F10.
+- Reviews:
+  - Opus reviewed every core and budget change, plus an independent re-check of each Important budget finding. Two were confirmed, one by a fresh agent and one by a test that failed first.
+  - Sonnet reviewed the panel changes.
+  - `ui-reviewer` (Sonnet) checked the screens of every walkthrough.
+
+Known and left as is:
+- "Try again now." can show beside a still-disabled Scan now in the hourly block's last minute.
+- The account check's own HTTP wording is not put into words.
+- No recorded response produces a match question, an inactive listing or a free Look up, so those paths are covered by unit tests only.
+- The limit notice says "It used 0 of the 1 search allowed" when that one search failed.
+
+Open questions for the owner:
+- Should Scan now show its count?
+- Should a failed listing page be set aside like a failed lookup (Ruling 58)?
 
 Next: step 6, the chip on Home Depot product pages and the This page tab.
 
