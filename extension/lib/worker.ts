@@ -197,8 +197,12 @@ export function createWorker(env: WorkerEnv): Worker {
   let scanKey: string | null = null;
   /** True while a start is between its first read and the scan's claim (or its refusal). */
   let starting = false;
-  /** The Verify or Look up this worker is running, from its claim to the end of its broadcast. */
+  /** The Verify or Look up this worker is running, from its claim until it has ended; cleared before the broadcast that follows. */
   let paid: Promise<Reply<null>> | null = null;
+  /** The key the running paid action holds. */
+  let paidKey: string | null = null;
+  /** Set by forgetKey, and by checkKey saving a different key, while a paid action runs. runPaid asks it before every search. */
+  let paidStop = false;
 
   const settings = async () => trusted(await prefs.getSettings());
 
@@ -437,6 +441,8 @@ export function createWorker(env: WorkerEnv): Worker {
       // Rule 4: the saved key, if any, is left as it was.
       return refuse(accountSentence(err));
     }
+    // A paid action holds the key it started with: a different one stops it before its next search.
+    if (paid !== null && key !== paidKey) paidStop = true;
     await prefs.setKey(key);
     await prefs.setAccount({ info: account, at: env.now() });
     problem = null;
@@ -446,8 +452,9 @@ export function createWorker(env: WorkerEnv): Worker {
 
   async function forgetKey(): Promise<Reply<null>> {
     await prefs.forgetKey();
-    // A scan holds the key in memory: it stops before its next search.
+    // A scan or a paid action holds the key in memory: it stops before its next search.
     if (scan !== null || starting) stopRequested = true;
+    if (paid !== null) paidStop = true;
     // The account shown belonged to that key.
     await prefs.setAccount(null);
     await broadcast();
@@ -577,6 +584,8 @@ export function createWorker(env: WorkerEnv): Worker {
       const key = await prefs.getKey();
       if (key === null) return refuse(NO_KEY);
       // Claimed before the gate opens again. Wrapped, so the gate does not wait for the action.
+      paidKey = key;
+      paidStop = false;
       const running = spend(key, action);
       paid = running;
       return { running };
@@ -609,7 +618,7 @@ export function createWorker(env: WorkerEnv): Worker {
       const budget = new SearchBudget(account, budgetPolicyFor(s, 'manual', 0));
       const client = new SerpApiClient({ apiKey: key, budget, cache: env.cache, fetchFn: env.fetchFn, onSpend: env.ledger, now: env.now, baseUrl });
       try {
-        await runPaid({ client, budget, store, now: env.now, settings: toScanSettings(s) }, action);
+        await runPaid({ client, budget, store, now: env.now, settings: toScanSettings(s), shouldStop: () => paidStop }, action);
         return ok(null);
       } catch (err) {
         if (err instanceof PaidProblem) return refuse(err.message);
@@ -621,6 +630,8 @@ export function createWorker(env: WorkerEnv): Worker {
     } finally {
       if (spent) await recheckAccount(key);
       paid = null;
+      paidKey = null;
+      paidStop = false;
       await broadcast();
     }
   }

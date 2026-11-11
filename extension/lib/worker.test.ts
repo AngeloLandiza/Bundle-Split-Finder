@@ -1184,6 +1184,8 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
     return keys;
   }
 
+  const STOPPED_KEY = 'Stopped: the key was removed or changed.';
+
   it('Forget key during the search: the account is not checked again with the forgotten key, nor saved', async () => {
     const w = await waitingWorld();
     const keys = accountKeys(w);
@@ -1232,6 +1234,42 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
     release();
     expect(await reply).toEqual({ ok: true, data: { searches: 1, refusal: 'Add your SerpApi key in Settings.' } });
     expect(w.prefs.data.account ?? null).toBeNull();
+  });
+
+  it('Forget key during a two-part Look up spends at most what was already in flight', async () => {
+    const w = await waitingWorld();
+    w.prefs.data.settings = { ...ONE, searchesPerScan: 2 };
+    expect(await quote(w, LOOK_BOTH)).toEqual({ ok: true, data: { searches: 2, refusal: null } });
+    const search = holdSearch(w, 'RYOBI PBLRC01B');
+    const reply = runPaid(w, LOOK_BOTH);
+    await search.reached;
+    await send(w, { type: 'forgetKey' });
+    search.release();
+    expect(await reply).toEqual({ ok: false, error: STOPPED_KEY });
+    expect(panelLabels(w)).toEqual(['panel:lookup:PBLRC01B']);
+    expect(w.replay.calls).toEqual([RATCHET, LOOKUP_01B]);
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'matched' });
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'waiting' });
+  });
+
+  it('a different key saved during a two-part Look up stops it too; the same key saved again does not', async () => {
+    for (const [apiKey, stopped] of [['NEWKEY', true], [KEY, false]] as const) {
+      const w = await waitingWorld();
+      w.prefs.data.settings = { ...ONE, searchesPerScan: 2 };
+      accountKeys(w);
+      const search = holdSearch(w, 'RYOBI PBLRC01B');
+      const reply = runPaid(w, LOOK_BOTH);
+      await search.reached;
+      expect(await send(w, { type: 'checkKey', apiKey })).toMatchObject({ ok: true });
+      search.release();
+      expect(await reply, apiKey).toEqual(stopped ? { ok: false, error: STOPPED_KEY } : { ok: true, data: null });
+      expect(panelLabels(w), apiKey).toEqual(stopped ? ['panel:lookup:PBLRC01B'] : ['panel:lookup:PBLRC01B', 'panel:lookup:PBLRC25B']);
+    }
+    // The next action runs with the new key, unstopped.
+    const w = await waitingWorld();
+    accountKeys(w);
+    expect(await send(w, { type: 'checkKey', apiKey: 'NEWKEY' })).toMatchObject({ ok: true });
+    expect(await runPaid(w, LOOK_01B)).toEqual({ ok: true, data: null });
   });
 
   it('without a key both say so, and a request that is not a paid action is refused', async () => {
