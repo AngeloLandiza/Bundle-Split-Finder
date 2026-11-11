@@ -83,19 +83,19 @@ describe('progress row on a replayed scan', () => {
   });
 });
 
-describe('the row keeps a total from falling within a phase', () => {
+describe('the row shows the live plan', () => {
   const base: Partial<ScanJob> = { id: 'j', searchesUsed: 1, phase: 'listing', counts: { pagesFetched: 0, catalogPages: 0 } as ScanJob['counts'] };
   const page = (n: number) => ({ kind: 'listing', q: 'a', page: n, filterTokens: null, bundlesOnly: false }) as ScanJob['queue'][number];
   const job = (over: Partial<ScanJob>) => ({ ...base, queue: [], deferred: [], ...over }) as ScanJob;
 
-  it('page 3 planned, page 2 found to be the last: the total stays 3', () => {
-    const view = render(createElement(ProgressRow, { job: job({ queue: [page(1), page(2), page(3)] }) }));
-    expect(screen.getByRole('status')).toHaveTextContent('Scanning · page 1 of 3 · 1 search used');
-    view.rerender(createElement(ProgressRow, { job: job({ queue: [page(2)], counts: { pagesFetched: 1 } as ScanJob['counts'] }) }));
+  it('a planned page that is dropped lowers the total by one, and the current page stays', () => {
+    const view = render(createElement(ProgressRow, { job: job({ queue: [page(2), page(3)], counts: { pagesFetched: 1 } as ScanJob['counts'] }) }));
     expect(screen.getByRole('status')).toHaveTextContent('Scanning · page 2 of 3 · 1 search used');
+    view.rerender(createElement(ProgressRow, { job: job({ queue: [page(2)], counts: { pagesFetched: 1 } as ScanJob['counts'] }) }));
+    expect(screen.getByRole('status')).toHaveTextContent('Scanning · page 2 of 2 · 1 search used');
   });
 
-  it('a new phase starts its own total', () => {
+  it('parts: done and the queued lookups', () => {
     const lookups = [{ kind: 'lookup', brand: 'DEWALT', model: 'A' }, { kind: 'lookup', brand: 'DEWALT', model: 'B' }] as ScanJob['queue'];
     const view = render(createElement(ProgressRow, { job: job({ phase: 'parts', queue: lookups }) }));
     expect(screen.getByRole('status')).toHaveTextContent('Looking up parts · 0 of 2 · 1 search used');

@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import type { ScanJob } from '@core/scan/types';
 
 /**
@@ -46,9 +45,6 @@ export function progressText(job: ScanJob | null): string {
 }
 
 export function ProgressRow({ job }: { job: ScanJob | null }) {
-  // A total never goes down within a phase. It can only be planned too high: a brand or a query with no later
-  // page drops its queued pages, and a lookup set aside after a failure leaves the queue.
-  const high = useRef<{ key: string; total: number }>({ key: '', total: 0 });
   const n = (v: number) => <span className="figure fig-sm">{v}</span>;
   if (!job) return <div className="progress" role="status">Scanning</div>;
   const p = progressOf(job);
@@ -64,10 +60,9 @@ export function ProgressRow({ job }: { job: ScanJob | null }) {
       </div>
     );
   }
-  const key = `${job.id}|${p.phase}`;
-  if (high.current.key !== key) high.current = { key, total: 0 };
-  high.current.total = Math.max(high.current.total, p.total);
-  const total = high.current.total;
+  // The total is the job's live plan: done plus queued. It falls by one when a brand has no further page or a failed
+  // lookup is set aside, and that is a true change in the plan.
+  const total = p.total;
   return (
     <div className="progress" role="status">
       {p.phase === 'pages' ? (
