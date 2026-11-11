@@ -8,7 +8,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { replayRecorded } from '../../../scripts/replay';
 import { HD_DEWALT_AMBIGUOUS, SERPAPI_ACCOUNT_FREE } from '../../../core/test/fixtures';
 import { applyReviewAnswer, reviewSignature } from '@core/scan/answers';
-import { DEFAULT_SCAN_SETTINGS, partKey, type ScanJob, type ScanSettings } from '@core/scan/types';
+import { DEFAULT_SCAN_SETTINGS, partKey, type PartRow, type ScanJob, type ScanSettings } from '@core/scan/types';
 import { MemoryScanStore } from '@core/scan/memoryStore';
 import { buildReport } from '@core/scan/report';
 import { runPaid } from '@core/scan/paid';
@@ -113,6 +113,16 @@ describe('Deals on a replayed scan', () => {
     expect(kit.key).toBe('homedepot:343992133');
     expect(matchState(kit)).toBe('2 title matches');
     expect(kit.estimate?.profit).toBe(-12.8);
+  });
+
+  it('counts each part once on a Missing listing row: a part with no listing is not also one to verify', () => {
+    const kit = dewalt.report.bundles.find((b) => b.key === 'homedepot:343992133')!;
+    const noListing = { status: 'review' as const, asin: null, grade: null, price: null, availability: 'missing' as const, title: null };
+    const [a, b] = kit.parts as [PartRow, PartRow];
+    // The real kit's two title-matched parts, changed to two left in review with no listing, plus a third that is only a title match.
+    const row = { ...kit, section: 'missing_listing' as const, parts: [{ ...a, ...noListing }, { ...b, ...noListing }, { ...a, model: 'X3' }] };
+    expect(matchState(row)).toBe('2 parts with no listing · 1 to verify');
+    expect(matchState({ ...row, parts: row.parts.slice(0, 2) })).toBe('2 parts with no listing');
   });
 
   it('renders that report, a real loss with the real minus, and a tag only where a question is open', () => {

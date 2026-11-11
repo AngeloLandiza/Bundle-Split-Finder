@@ -45,8 +45,10 @@ export function matchState(row: BundleRow): string | null {
       if (toLookUp > 0) return count(toLookUp, 'to look up');
       break;
     case 'missing_listing': {
+      // Each part counts once: a part with no listing is not also one to verify, even when it sits in review.
       const none = parts.filter((p) => p.availability === 'missing').length;
-      if (none > 0) return count(none, 'with no listing') + (verify > 0 ? ` · ${verify} to verify` : '');
+      const others = parts.filter((p) => p.availability !== 'missing' && !isWaiting(p) && (p.grade === 'probable' || p.status === 'review')).length;
+      if (none > 0) return count(none, 'with no listing') + (others > 0 ? ` · ${others} to verify` : '');
       break;
     }
     default:
