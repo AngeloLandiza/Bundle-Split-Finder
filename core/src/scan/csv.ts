@@ -6,7 +6,7 @@ import type { BundleRow, PartRow, ReviewItem, ScanReport } from './types';
 export const RUN_COLUMNS: readonly string[] = [
   'section', 'brand', 'bundle_model', 'bundle_title', 'hd_item_id', 'hd_price', 'hd_was_price', 'hd_percent_off',
   'parts', 'asins', 'match_grades', 'amazon_prices', 'est_net_revenue', 'est_cost', 'est_profit', 'est_roi',
-  'uncovered_parts', 'hd_link',
+  'uncovered_parts', 'hd_link', 'sold_as', 'other_options',
 ];
 
 export const REVIEW_COLUMNS: readonly string[] = ['kind', 'brand', 'model', 'title', 'reason', 'candidates', 'opened_at'];
@@ -26,9 +26,18 @@ const join = (items: string[]): string => items.join(' | ');
 const orQ = (v: string | number | null): string => (v === null ? '?' : String(v));
 const partName = (p: PartRow): string => (p.qty > 1 ? `${p.model} x${p.qty}` : p.model);
 
+/**
+ * The ways to sell beyond the primary, as "label: est_profit" pairs. An option with no estimate yet is left
+ * out: a figure is never made up for it. Empty for a bundle with one way to sell.
+ */
+function otherOptions(b: BundleRow): string {
+  return join(b.options.slice(1).filter((o) => o.estimate).map((o) => `${o.label}: ${o.estimate!.profit}`));
+}
+
 function runRow(b: BundleRow): (string | number | null)[] {
   const head = [b.section, b.brand, b.model, b.title, b.itemId, b.price, b.regularPrice, b.percentOff];
-  const tail = [b.link];
+  // sold_as is the primary's label, which the row's figures are; '' when the bundle has one way to sell.
+  const tail = [b.link, b.options[0]?.label ?? '', otherOptions(b)];
   if (b.section === 'split') return [...head, '', '', '', '', null, null, null, null, '', ...tail];
   const e = b.estimate;
   return [
