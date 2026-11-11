@@ -23,14 +23,14 @@ const AFTERMARKET = /\b(replacement for|compatible with|for use with|fits|afterm
 // carry the RYOBI brand and the model as a whole word, so the title test alone made them "probable":
 //   "OEM 89240027010 Replacement Miter Saw Inlet Dust Chute P553 TS1144"
 //   "OEM 303590006 Sander Backing Pad P343 P570 PCL430 MT100 …"
-// "OEM" followed by a run of digits is a part number, never a RYOBI or DEWALT model number;
-// "Replacement" (not "Replacement for") followed within a few words by a part's name names the part.
-const SPARE_PART = [
-  /\bOEM\s+\d{6,}\b/i,
-  /\breplacement\s+(?!for\b)(?:\S+\s+){0,5}?(?:chute|knob|cap|indicator|pads?|sleeve|wheels?)\b/i,
-];
-// Possibly a spare part: "OEM" or "Replacement" without the forms above. The title alone then cannot
-// make a listing "probable"; the owner decides. No genuine tool, battery, charger or kit row in the
+// "OEM" followed by a run of digits is a part number, never a RYOBI or DEWALT model number; with a
+// part's name anywhere in the title it is the part. Either signal alone is not enough: a genuine
+// battery can carry an OEM number, and a genuine sander can come "with 3 Replacement Sanding Pads".
+// The part names are the ones in recorded spare-part titles.
+const OEM_PART_NUMBER = /\bOEM\s+\d{6,}\b/i;
+const PART_NAME = /\b(chute|knob|cap|indicator|pads?|sleeve|wheels?)\b/i;
+// Possibly a spare part: "OEM" or "Replacement" anywhere else. The title alone then cannot make a
+// listing "probable"; the owner decides. No genuine tool, battery, charger or kit row in the
 // recordings uses either word.
 const MAYBE_SPARE_PART = /\b(OEM|replacement)\b/i;
 const BULK = /(bulk packaged|non-retail packag|no retail packag)/i;
@@ -84,7 +84,10 @@ export function grade(want: Wanted, cand: Candidate): Graded {
 
   if (cand.brand && cand.brand.trim().toUpperCase() !== brand) return out('reject', 'different brand');
   if (AFTERMARKET.test(cand.title)) return out('reject', 'aftermarket or compatible part');
-  if (SPARE_PART.some((re) => re.test(cand.title))) return out('reject', 'spare part');
+  const wantUpc = toUpc12(want.upc);
+  const upcOk = wantUpc !== null && (cand.upcs ?? []).some((u) => toUpc12(u) === wantUpc);
+  // A barcode match is the listing itself, whatever its title says.
+  if (!upcOk && OEM_PART_NUMBER.test(cand.title) && PART_NAME.test(cand.title)) return out('reject', 'spare part');
   if (RENEWED.test(cand.title)) return out('reject', 'renewed or used listing');
 
   let qty = cand.packageQty ?? null;
@@ -95,8 +98,6 @@ export function grade(want: Wanted, cand: Candidate): Graded {
 
   const partOk = !!cand.partNumber && clean(cand.partNumber) === clean(want.model);
   const titleOk = hasModelToken(cand.title, want.model);
-  const wantUpc = toUpc12(want.upc);
-  const upcOk = wantUpc !== null && (cand.upcs ?? []).some((u) => toUpc12(u) === wantUpc);
 
   if (!want.isKit && KIT_WORDS.test(cand.title) && !partOk) {
     return out('reject', 'listing is a kit, component is a single item');
