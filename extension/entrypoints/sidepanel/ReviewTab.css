@@ -1,0 +1,117 @@
+/* Review tab. Hairline rows, tokens only. */
+.review {
+  padding: 12px 16px 16px;
+}
+.review-count {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.review-empty {
+  margin: 0;
+  padding: 16px;
+  color: var(--ink-2);
+}
+.review-question {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.review-title {
+  margin: 0;
+  padding: 0;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.review-bundle {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.review-model {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.review-reason,
+.review-note {
+  margin: 0;
+  color: var(--ink-2);
+}
+.review-choices {
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+.review-choices > legend.review-title {
+  padding: 10px 0 2px;
+}
+.review-choices .review-note {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.review-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+.review-choice input {
+  margin: 3px 0 0;
+  accent-color: var(--ink);
+  flex: none;
+}
+.review-choice:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+.review-choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+}
+.review-cand-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.review-cand-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.review-cand-meta a {
+  color: var(--link);
+}
+.review-save {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+.review-sentence {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.fig {
+  font-family: var(--font-figures);
+  font-variant-numeric: tabular-nums;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

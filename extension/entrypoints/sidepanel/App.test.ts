@@ -63,7 +63,7 @@ const state = (over: Partial<AppState> = {}): AppState => ({
   ...over,
 });
 
-const REPORT = { bundles: [{ key: 'a' }, { key: 'b' }, { key: 'c' }], review: [{ id: 'r1' }], packaging: {} } as unknown as PanelReport;
+const REPORT = { bundles: [{ key: 'a' }, { key: 'b' }, { key: 'c' }], review: [{ id: 'r1', kind: 'split', brand: 'DEWALT', model: 'DCK1', title: null, reason: 'why', candidates: [], choices: [], openedAt: 1 }], packaging: {} } as unknown as PanelReport;
 const EMPTY = { bundles: [], review: [], packaging: {} } as unknown as PanelReport;
 
 function setup(initial: AppState, report: PanelReport = REPORT) {
@@ -114,7 +114,7 @@ describe('side panel shell', () => {
     setup(state());
     await screen.findByText('3 bundles');
     await user.click(tab('Review'));
-    expect(await screen.findByText('1 to review')).toBeInTheDocument();
+    expect(await screen.findByText('1 of 1')).toBeInTheDocument();
     expect(tab('Review')).toHaveAttribute('aria-current', 'true');
   });
 
