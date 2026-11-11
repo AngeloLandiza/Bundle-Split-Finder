@@ -7,10 +7,18 @@ import './Notice.css';
 
 const OFFLINE = 'SerpApi could not be reached. Check the connection, then retry.';
 
-/** Every sentence this notice can show goes through here, so a network failure always reads the same. */
+/** The client's text for a search SerpApi answered with an HTTP error it has no words for (core/src/serpapi/client.ts). */
+const HTTP_ERROR = /^SerpApi returned HTTP (\d+)\.$/;
+
+/**
+ * Every sentence this notice can show goes through here, so a network failure always reads the same, and an
+ * HTTP error is said in words. SerpApi's own sentences (a key it did not accept, a limit) pass as they are.
+ */
 export function sentenceFor(raw: string | null | undefined): string | null {
   if (raw === null || raw === undefined || raw === '') return null;
-  return raw.startsWith(NETWORK_ERROR_PREFIX) ? OFFLINE : raw;
+  if (raw.startsWith(NETWORK_ERROR_PREFIX)) return OFFLINE;
+  const http = HTTP_ERROR.exec(raw);
+  return http ? `SerpApi answered with an error (HTTP ${http[1]}). Try again later.` : raw;
 }
 
 /** The one sentence to show, in priority: a refused action, the worker's problem, then the last scan's error. */

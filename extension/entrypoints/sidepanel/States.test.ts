@@ -55,6 +55,28 @@ describe('fix round: Notice', () => {
     expect(sentenceFor((err as Error).message)).toBe(OFFLINE);
   });
 
+  it('says an HTTP error from SerpApi in words, from the message the client itself throws', async () => {
+    const client = new SerpApiClient({
+      apiKey: 'K',
+      budget: new SearchBudget(parseAccount(fx.SERPAPI_ACCOUNT_FREE), { reserve: 0, maxPerRun: 5 }),
+      cache: new MemoryCache(),
+      fetchFn: (async () => new Response('{}', { status: 503 })) as typeof fetch,
+    });
+    const err = await client.search({ engine: 'home_depot', q: 'x' }).catch((e: Error) => e);
+    const words = 'SerpApi answered with an error (HTTP 503). Try again later.';
+    expect(sentenceFor((err as Error).message)).toBe(words);
+    expect(noticeSentence(state({ lastJob: job({ stopMessage: (err as Error).message }) }), null)).toBe(words);
+    // A key SerpApi refused already says so in words.
+    const refused = await new SerpApiClient({
+      apiKey: 'K',
+      budget: new SearchBudget(parseAccount(fx.SERPAPI_ACCOUNT_FREE), { reserve: 0, maxPerRun: 5 }),
+      fetchFn: (async () => new Response('{}', { status: 401 })) as typeof fetch,
+    })
+      .search({ engine: 'home_depot', q: 'x' })
+      .catch((e: Error) => e);
+    expect(sentenceFor((refused as Error).message)).toBe('SerpApi did not accept this key.');
+  });
+
   it('shows the offline sentence for a refused retry too', async () => {
     const api = makeApi({ ok: false, error: network });
     render(createElement(Notice, { state: state({ problem: 'Bad.' }), api: api.api, error: null }));
