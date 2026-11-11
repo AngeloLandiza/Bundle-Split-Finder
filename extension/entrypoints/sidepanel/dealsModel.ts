@@ -1,7 +1,7 @@
 // What the Deals list shows, worked out from the report: the match state of a row, the order within a
 // section, the sections themselves. No React here, so the rules can be tested on their own.
 
-import type { BundleRow, PartRow, ReportSection, ScanJob, ScanStep } from '@core/scan/types';
+import { partKey, type BundleRow, type PartRow, type ReportSection, type ScanJob } from '@core/scan/types';
 import type { SortKey } from './sort';
 
 export const SECTION_ORDER: readonly ReportSection[] = ['confirmed', 'waiting', 'inactive_listing', 'missing_listing', 'split'];
@@ -94,11 +94,20 @@ export function sections(bundles: BundleRow[], sort: SortKey): Section[] {
   );
 }
 
-const stepKey = (s: ScanStep): string => (s.kind === 'lookup' ? `${s.brand}|${s.model}` : '');
+/** The parts that still wait for an Amazon lookup in the report, as partKeys. */
+export function waitingKeys(bundles: BundleRow[]): Set<string> {
+  const keys = new Set<string>();
+  for (const b of bundles) for (const p of b.parts) if (isWaiting(p)) keys.add(partKey(b.brand, p.model));
+  return keys;
+}
 
-/** How many distinct parts still need an Amazon lookup after the last scan. */
-export function lookupsWaiting(job: ScanJob): number {
-  return new Set(job.deferred.filter((s) => s.kind === 'lookup').map(stepKey)).size;
+/**
+ * How many distinct parts still need an Amazon lookup after the last scan. The job is the scan's own and a panel
+ * Look up never rewrites it, so a deferred lookup counts only while its part still waits in the report.
+ */
+export function lookupsWaiting(job: ScanJob, bundles: BundleRow[]): number {
+  const waiting = waitingKeys(bundles);
+  return new Set(job.deferred.filter((s) => s.kind === 'lookup').map((s) => partKey(s.brand, s.model)).filter((k) => waiting.has(k))).size;
 }
 
 /** Days since the oldest shown part price, when it is older than the freshness period; else null. */

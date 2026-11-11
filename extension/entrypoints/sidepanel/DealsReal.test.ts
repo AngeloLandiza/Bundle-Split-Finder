@@ -8,9 +8,10 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { replayRecorded } from '../../../scripts/replay';
 import { HD_DEWALT_AMBIGUOUS, SERPAPI_ACCOUNT_FREE } from '../../../core/test/fixtures';
 import { applyReviewAnswer, reviewSignature } from '@core/scan/answers';
-import { DEFAULT_SCAN_SETTINGS, type ScanJob, type ScanSettings } from '@core/scan/types';
+import { DEFAULT_SCAN_SETTINGS, partKey, type ScanJob, type ScanSettings } from '@core/scan/types';
 import { MemoryScanStore } from '@core/scan/memoryStore';
 import { buildReport } from '@core/scan/report';
+import { runPaid } from '@core/scan/paid';
 import { runScan } from '@core/scan/runner';
 import { parseAccount, SearchBudget } from '@core/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '@core/serpapi/client';
@@ -57,6 +58,22 @@ async function ownerChose(): Promise<PanelReport> {
   const question = (await store.getReview('split:homedepot:ambiguous'))!;
   await applyReviewAnswer(store, question.id, { choice: 1, seen: reviewSignature(question) }, T0);
   return { ...(await buildReport(store, settings)), packaging: {} };
+}
+
+/** The limited scan, then a panel Look up of every part it left waiting. The job is the scan's: Look up never rewrites it. */
+async function limitedThenLookedUp(): Promise<{ before: PanelReport; after: PanelReport; job: ScanJob }> {
+  const store = new MemoryScanStore();
+  const mk = (maxPerRun: number) => {
+    const budget = new SearchBudget(parseAccount({ ...SERPAPI_ACCOUNT_FREE }), { reserve: 0, maxPerRun });
+    return { budget, client: new SerpApiClient({ apiKey: 'TEST', budget, cache: new MemoryCache(), fetchFn: replayRecorded().fetchFn, now: () => T0 }) };
+  };
+  const scan = mk(1);
+  const job = await runScan({ ...scan, store, settings: RATCHET, now: () => T0 });
+  const before = { ...(await buildReport(store, RATCHET)), packaging: {} };
+  const parts = before.bundles.flatMap((b) => b.parts.filter((p) => p.status === 'waiting').map((p) => ({ brand: b.brand, model: p.model })));
+  const paid = mk(50);
+  await runPaid({ ...paid, store, now: () => T0, settings: RATCHET }, { kind: 'lookUp', parts });
+  return { before, after: { ...(await buildReport(store, RATCHET)), packaging: {} }, job };
 }
 
 let dewalt: Awaited<ReturnType<typeof replayed>>;
@@ -113,7 +130,7 @@ describe('Deals on a replayed scan', () => {
 
   it('counts the lookups a limited scan left waiting, and offers Look up for those bundles', async () => {
     expect(ratchet.job.status).toBe('stopped');
-    const waiting = lookupsWaiting(ratchet.job);
+    const waiting = lookupsWaiting(ratchet.job, ratchet.report.bundles);
     expect(waiting).toBeGreaterThan(0);
     const rows = ratchet.report.bundles.filter((b) => b.parts.some((p) => p.status === 'waiting'));
     expect(rows.length).toBeGreaterThan(0);
@@ -126,5 +143,45 @@ describe('Deals on a replayed scan', () => {
     render(createElement(DealsTab, { api, report: ratchet.report, state: appState(ratchet.job), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
     expect((await screen.findAllByRole('button', { name: /^Look up/ })).length).toBe(rows.length);
     expect(screen.getByText(/^It used the 1 search allowed per scan\./)).toBeInTheDocument();
+  });
+});
+
+describe('notices after a Look up, on replayed data', () => {
+  it('says what waits after a limit stop, and stops saying it once a Look up has done those parts', async () => {
+    const { before, after, job } = await limitedThenLookedUp();
+    expect(job.stopReason).toBe('run_cap');
+    const waiting = before.bundles.flatMap((b) => b.parts.filter((p) => p.status === 'waiting').map((p) => partKey(b.brand, p.model)));
+    expect(waiting.length).toBeGreaterThan(0);
+    // The job still defers those lookups; the report says whether they still wait.
+    expect(job.deferred.filter((s) => s.kind === 'lookup').length).toBeGreaterThan(0);
+    expect(lookupsWaiting(job, before.bundles)).toBe(new Set(waiting).size);
+    expect(after.bundles.flatMap((b) => b.parts).some((p) => p.status === 'waiting')).toBe(false);
+    expect(lookupsWaiting(job, after.bundles)).toBe(0);
+
+    render(createElement(DealsTab, { api, report: before, state: appState(job), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
+    expect(screen.getByText(/still needs? an Amazon lookup\.$/)).toBeInTheDocument();
+    cleanup();
+    render(createElement(DealsTab, { api, report: after, state: appState(job), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
+    expect(screen.getByText('It used the 1 search allowed per scan.')).toBeInTheDocument();
+    expect(screen.queryByText(/an Amazon lookup/)).toBeNull();
+  });
+
+  it("drops a failed lookup's set-aside sentence once its part is looked up, and keeps a page's", async () => {
+    const { before, after, job } = await limitedThenLookedUp();
+    const failedPart = before.bundles.flatMap((b) => b.parts).find((p) => p.status === 'waiting')!.model;
+    const key = partKey(before.bundles.find((b) => b.parts.some((p) => p.model === failedPart))!.brand, failedPart);
+    const withFailure = (message: string): ScanJob => ({ ...job, stopMessage: message, setAsideParts: [key] });
+    const lookupFailed = `The lookup of ${failedPart} failed: SerpApi returned HTTP 503.`;
+    const joined = `A Home Depot page could not be read. ${lookupFailed}`;
+    const go = (report: PanelReport, j: ScanJob) => {
+      cleanup();
+      render(createElement(DealsTab, { api, report, state: appState(j), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
+    };
+    go(before, withFailure(lookupFailed));
+    expect(screen.getByText(`Set aside for the next scan. The lookup of ${failedPart} failed: SerpApi answered with an error (HTTP 503).`)).toBeInTheDocument();
+    go(after, withFailure(lookupFailed));
+    expect(screen.queryByText(/^Set aside for the next scan/)).toBeNull();
+    go(after, withFailure(joined));
+    expect(screen.getByText('Set aside for the next scan. A Home Depot page could not be read.')).toBeInTheDocument();
   });
 });

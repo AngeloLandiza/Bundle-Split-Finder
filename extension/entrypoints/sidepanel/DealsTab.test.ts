@@ -310,7 +310,7 @@ describe('a failure set aside (N4)', () => {
 
   it('says a joined lookup failure as sentences with SerpApi\'s text mapped', () => {
     show(
-      report([row('c1')]),
+      report([row('c1', { estimate: null, parts: [part('PCL526B', { status: 'waiting', grade: null, availability: 'missing', asin: null })] })]),
       failed({ status: 'done', stopMessage: 'A Home Depot page could not be read. The lookup of PCL526B failed: SerpApi returned HTTP 404.' }),
     );
     expect(
@@ -332,15 +332,18 @@ describe('a failure set aside (N4)', () => {
 describe('limit notice', () => {
   const stopped = (reason: string, deferred: ScanStep[] = []) => state({ lastJob: job({ status: 'stopped', stopReason: reason as ScanJob['stopReason'], deferred }) });
   const deferred = [lookup('A'), lookup('A'), lookup('B'), { kind: 'refresh', brand: 'DEWALT', model: 'C', asin: 'B0' } as ScanStep];
+  // The report's rows say which of those still wait: A and B do.
+  const waits = (...models: string[]) =>
+    row('w', { estimate: null, section: 'waiting', parts: models.map((m) => part(m, { status: 'waiting', grade: null, availability: 'missing', asin: null, price: null })) });
 
   it('run_cap names the per-scan limit and the parts waiting', () => {
-    show(report([row('c1')]), stopped('run_cap', deferred));
+    show(report([waits('A', 'B')]), stopped('run_cap', deferred));
     expect(screen.getByText('Scan stopped at your search limit')).toBeInTheDocument();
     expect(screen.getByText('It used 5 of the 40 searches allowed per scan. 2 parts still need an Amazon lookup.')).toBeInTheDocument();
   });
 
   it('reserve keeps the rest of the month for the owner', () => {
-    show(report([row('c1')]), stopped('reserve', deferred));
+    show(report([waits('A', 'B')]), stopped('reserve', deferred));
     expect(screen.getByText('Scan stopped at your reserve')).toBeInTheDocument();
     expect(screen.getByText("The rest of this month's searches are kept for scans you start yourself. 2 parts still need an Amazon lookup.")).toBeInTheDocument();
   });
@@ -361,7 +364,7 @@ describe('limit notice', () => {
       lastJob: job({ status: 'stopped', stopReason: 'user', stopMessage: 'SerpApi returned HTTP 404.', deferred }),
       nextRunAt: NOW + 3_600_000,
     });
-    show(report([row('c1')]), s);
+    show(report([waits('A', 'B')]), s);
     expect(screen.getByText('You stopped the last scan')).toBeInTheDocument();
     expect(screen.getByText('Scan now picks up where it left off. 2 parts still need an Amazon lookup.')).toBeInTheDocument();
     expect(screen.queryByText('Change the limit')).toBeNull();

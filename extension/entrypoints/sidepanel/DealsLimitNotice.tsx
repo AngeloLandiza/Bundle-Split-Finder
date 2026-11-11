@@ -1,17 +1,18 @@
 import { browser } from 'wxt/browser';
 import { when } from '../../lib/format';
+import type { BundleRow } from '@core/scan/types';
 import type { AppState } from '../../lib/messages';
 import { sentenceFor } from '../../lib/sentences';
-import { lookupsWaiting } from './dealsModel';
+import { lookupsWaiting, waitingKeys } from './dealsModel';
 import { tryAgain } from './hourlyBlock';
 
 const HOUR = 60 * 60_000;
 
 /** The title and sentence for each limit that can stop a scan; null when the last scan did not stop at one. */
-export function limitCopy(state: AppState, now: number): { title: string; text: string; limit: boolean } | null {
+export function limitCopy(state: AppState, now: number, bundles: BundleRow[]): { title: string; text: string; limit: boolean } | null {
   const job = state.lastJob;
   if (!job || job.status !== 'stopped') return null;
-  const k = lookupsWaiting(job);
+  const k = lookupsWaiting(job, bundles);
   // Said only when something waits.
   // It does not promise an order: at a limit of 1 the listing phase can take the only search.
   const waiting = () => (k === 0 ? '' : ` ${k} ${k === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup.`);
@@ -43,21 +44,34 @@ export function limitCopy(state: AppState, now: number): { title: string; text: 
   }
 }
 
+/** The sentence a failed lookup leaves in the job's message (core/src/scan/runner.ts, setAside). */
+const LOOKUP_FAILED = /The lookup of (\S+) failed: /;
+
 /**
  * A step that failed and was set aside leaves its message on the job while the scan goes on. An error or a rate limit
- * is shown by the Notice above the tabs; every other job that kept a message says it here.
+ * is shown by the Notice above the tabs; every other job that kept a message says it here. A lookup's sentence is said
+ * only while that part still waits in the report: a Look up on the panel does not rewrite the job, so the part's own
+ * state decides. A page's sentence stays.
  */
-export function setAsideSentence(state: AppState): string | null {
+export function setAsideSentence(state: AppState, bundles: BundleRow[]): string | null {
   const job = state.lastJob;
   if (!job || job.stopReason === 'error' || job.stopReason === 'rate_limited') return null;
-  const text = sentenceFor(job.stopMessage, 'try again');
+  let message = job.stopMessage;
+  const lookup = message === null ? null : LOOKUP_FAILED.exec(message);
+  if (message !== null && lookup) {
+    const waiting = waitingKeys(bundles);
+    const still = [...waiting].some((k) => k.endsWith(`:${lookup[1]!.toUpperCase()}`));
+    // The lookup's sentence is the last the runner adds, after any page's.
+    if (!still) message = message.slice(0, lookup.index).trim();
+  }
+  const text = sentenceFor(message, 'try again');
   return text === null ? null : `Set aside for the next scan. ${text}`;
 }
 
-export function LimitNotice({ state, now }: { state: AppState; now: number }) {
-  const copy = limitCopy(state, now);
+export function LimitNotice({ state, now, bundles }: { state: AppState; now: number; bundles: BundleRow[] }) {
+  const copy = limitCopy(state, now, bundles);
   if (!copy) return null;
-  const aside = setAsideSentence(state);
+  const aside = setAsideSentence(state, bundles);
   return (
     <section className="deal-notice" aria-label="Scan limit">
       <div className="deal-notice-text">

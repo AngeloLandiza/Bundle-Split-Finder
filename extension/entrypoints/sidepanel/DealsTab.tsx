@@ -117,7 +117,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
   );
   if (!report) return null;
   const job = state.lastJob;
-  const aside = setAsideSentence(state);
+  const aside = setAsideSentence(state, report.bundles);
 
   if (report.bundles.length === 0) {
     // Say only what the scan established: it found nothing only when it finished.
@@ -129,14 +129,14 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
         : job.status === 'done'
           ? 'The last scan found no bundles.'
           : // A limit has its own notice, and an error its sentence in the Notice above the tabs.
-            limitCopy(state, now) || job.stopReason === 'error' || job.stopReason === 'rate_limited'
+            limitCopy(state, now, report.bundles) || job.stopReason === 'error' || job.stopReason === 'rate_limited'
             ? null
             : 'The last scan did not finish. Scan now tries again.';
     return (
       <>
-        <LimitNotice state={state} now={now} />
+        <LimitNotice state={state} now={now} bundles={report.bundles} />
         {text ? <p className="deals-empty">{text}</p> : null}
-        {aside && !limitCopy(state, now) ? <p className="deals-empty">{aside}</p> : null}
+        {aside && !limitCopy(state, now, report.bundles) ? <p className="deals-empty">{aside}</p> : null}
       </>
     );
   }
@@ -150,7 +150,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
 
   return (
     <>
-      <LimitNotice state={state} now={now} />
+      <LimitNotice state={state} now={now} bundles={report.bundles} />
       <div className="deals-bar">
         <span>
           {n} {n === 1 ? 'bundle' : 'bundles'}
@@ -172,7 +172,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
           </svg>
         </span>
       </div>
-      {aside && !limitCopy(state, now) ? <p className="deals-stale">{aside}</p> : null}
+      {aside && !limitCopy(state, now, report.bundles) ? <p className="deals-stale">{aside}</p> : null}
       {days !== null ? <p className="deals-stale">Prices seen {days === 1 ? '1 day' : `${days} days`} ago. The next scan refreshes them.</p> : null}
       {groups.map((g) => (
         <section key={g.id} aria-label={g.label}>
