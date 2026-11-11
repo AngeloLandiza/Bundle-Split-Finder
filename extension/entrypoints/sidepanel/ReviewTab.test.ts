@@ -297,3 +297,70 @@ describe('ReviewTab: a report built on the replayed recordings', () => {
     expect(await screen.findByText(`2 of ${report.review.length}`)).toBeInTheDocument();
   });
 });
+
+describe('ReviewTab: Not now and what None of these does', () => {
+  const notNow = () => screen.getByRole('button', { name: 'Not now' });
+  const legend = (t: string) => screen.getByText(t, { selector: 'legend' });
+  const SPLIT_Q = 'Which parts come in this bundle?';
+  const MATCH_Q = 'Which Amazon listing is DEWALT DCF891B?';
+
+  it('sends no message and shows the next question, the count unchanged', async () => {
+    const user = userEvent.setup();
+    const { send } = setup(reportOf([SPLIT, MATCH]));
+    await user.click(notNow());
+    expect(send).not.toHaveBeenCalled();
+    expect(legend(MATCH_Q)).toBeInTheDocument();
+    expect(screen.getByText('1 of 2')).toBeInTheDocument();
+  });
+
+  it('brings a skipped question back after the others, and again when only skipped ones remain', async () => {
+    const user = userEvent.setup();
+    const third = item({ id: 'split:c', model: 'DCK999', openedAt: 3, reason: 'Third.', choices: [['DCF891B']] });
+    setup(reportOf([SPLIT, MATCH, third]));
+    await user.click(notNow());
+    await user.click(notNow());
+    expect(screen.getByText('Third.')).toBeInTheDocument();
+    await user.click(notNow());
+    expect(legend(SPLIT_Q)).toBeInTheDocument();
+    expect(screen.getByText('DCK240C2')).toBeInTheDocument();
+    await user.click(notNow());
+    expect(legend(MATCH_Q)).toBeInTheDocument();
+    expect(screen.getByText('1 of 3')).toBeInTheDocument();
+  });
+
+  it('keeps a single question on screen', async () => {
+    const user = userEvent.setup();
+    const { send } = setup(reportOf([SPLIT]));
+    await user.click(notNow());
+    expect(legend(SPLIT_Q)).toBeInTheDocument();
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('moves focus to the next question', async () => {
+    const user = userEvent.setup();
+    setup(reportOf([SPLIT, MATCH]));
+    await user.click(notNow());
+    await waitFor(() => expect(legend(MATCH_Q)).toHaveFocus());
+  });
+
+  it('stays enabled while a scan runs', async () => {
+    const user = userEvent.setup();
+    const { send } = setup(reportOf([SPLIT, MATCH]), undefined, state({ scanRunning: true }));
+    expect(notNow()).toBeEnabled();
+    await user.click(notNow());
+    expect(legend(MATCH_Q)).toBeInTheDocument();
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('says what None of these does, on a split and on a match question, tied to the radio', () => {
+    setup(reportOf([SPLIT]));
+    let none = screen.getByRole('radio', { name: 'None of these' });
+    const line = screen.getByText('The bundle stays in Contents not known.');
+    expect(none).toHaveAttribute('aria-describedby', line.id);
+    expect(none).toHaveAccessibleDescription('The bundle stays in Contents not known.');
+    cleanup();
+    setup(reportOf([MATCH]));
+    none = screen.getByRole('radio', { name: 'None of these' });
+    expect(none).toHaveAccessibleDescription('The part stays without a listing.');
+  });
+});

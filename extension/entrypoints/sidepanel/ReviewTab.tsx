@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { reviewSignature } from '@core/scan/answers';
-import type { ReviewAnswer } from '@core/scan/types';
+import type { ReviewAnswer, ReviewItem } from '@core/scan/types';
 import type { AppState, PanelReport } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { ReviewQuestion } from './ReviewQuestion';
@@ -18,10 +18,16 @@ export interface ReviewTabProps {
  */
 export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const [done, setDone] = useState<ReadonlySet<string>>(new Set());
+  // Questions put off with Not now, in the order they were put off. Panel session only, never stored.
+  const [skipped, setSkipped] = useState<readonly string[]>([]);
   const [focusNext, setFocusNext] = useState(false);
   const emptyRef = useRef<HTMLParagraphElement>(null);
 
-  const open = report ? [...report.review].sort((a, b) => a.openedAt - b.openedAt).filter((r) => !done.has(`${r.id}|${reviewSignature(r)}`)) : [];
+  const keyOf = (r: ReviewItem) => `${r.id}|${reviewSignature(r)}`;
+  const byAge = report ? [...report.review].sort((a, b) => a.openedAt - b.openedAt).filter((r) => !done.has(keyOf(r))) : [];
+  // Questions not yet put off come first, oldest first; those put off come back after them, in the order they were put off.
+  const later = skipped.map((k) => byAge.find((r) => keyOf(r) === k)).filter((r): r is ReviewItem => r !== undefined);
+  const open = [...byAge.filter((r) => !skipped.includes(keyOf(r))), ...later];
   const item = open[0];
 
   // After an answer the form is gone: focus goes to the next question's heading (ReviewQuestion), or here.
@@ -56,17 +62,26 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
     return null;
   };
 
+  // Sends nothing. With one question open there is nowhere to go, so it stays.
+  const notNow = () => {
+    if (open.length < 2) return;
+    const k = keyOf(item);
+    setSkipped((s) => [...s.filter((x) => x !== k), k]);
+    setFocusNext(true);
+  };
+
   return (
     <section className="review" aria-label="Review">
       <p className="review-count figure" aria-live="polite">
         {done.size + 1} of {total}
       </p>
       <ReviewQuestion
-        key={`${item.id}|${reviewSignature(item)}`}
+        key={keyOf(item)}
         item={item}
         scanRunning={state.scanRunning}
         focusHeading={focusNext}
         onSave={save}
+        onNotNow={notNow}
       />
     </section>
   );

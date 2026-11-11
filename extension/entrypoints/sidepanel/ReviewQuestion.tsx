@@ -15,9 +15,11 @@ export interface ReviewQuestionProps {
   focusHeading?: boolean;
   /** Resolves to a sentence when the answer was refused, null when it was saved. */
   onSave: (answer: ReviewAnswer) => Promise<string | null>;
+  /** Put the question off: nothing is sent or stored. */
+  onNotNow: () => void;
 }
 
-export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave }: ReviewQuestionProps) {
+export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave, onNotNow }: ReviewQuestionProps) {
   const [picked, setPicked] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -111,11 +113,23 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
                   priceId,
                 );
               })}
-          {row(NONE, 'None of these')}
+          {row(
+            NONE,
+            'None of these',
+            <p id="review-none-effect" className="review-none-effect">
+              {split ? 'The bundle stays in Contents not known.' : 'The part stays without a listing.'}
+            </p>,
+            'review-none-effect',
+          )}
         </div>
-        <button type="submit" className="btn btn-primary review-save" disabled={picked === null || scanRunning || saving}>
-          Save answer
-        </button>
+        <div className="review-actions">
+          <button type="submit" className="btn btn-primary" disabled={picked === null || scanRunning || saving}>
+            Save answer
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={onNotNow}>
+            Not now
+          </button>
+        </div>
         {scanRunning ? (
           <p className="review-sentence">{SCAN_RUNNING}</p>
         ) : error ? (

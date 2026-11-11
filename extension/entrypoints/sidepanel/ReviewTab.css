@@ -124,9 +124,17 @@
 .review-cand-meta a {
   color: var(--link);
 }
-.review-save {
+.review-actions {
+  display: flex;
+  gap: 8px;
   align-self: flex-start;
   margin-top: 4px;
+}
+.review-none-effect {
+  margin: 2px 0 0 26px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
 }
 .review-sentence {
   margin-top: 0;
