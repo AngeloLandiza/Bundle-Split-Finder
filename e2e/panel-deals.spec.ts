@@ -76,8 +76,8 @@ test('deals tab, bundles waiting for a lookup', async ({ context, extensionId, o
   const panel = await context.newPage();
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   await expect(panel.getByRole('button', { name: /^Look up/ }).first()).toBeVisible();
-  // Until the worker answers quotes, the label says what it could cost at most.
-  await expect(panel.getByRole('button', { name: /^Look up up to \d+ searches?$/ }).first()).toBeVisible();
+  // The worker quotes each Look up: the label shows the quoted count.
+  await expect(panel.getByRole('button', { name: /^Look up \d+ search(es)?$/ }).first()).toBeVisible();
   await shoot(panel, 'waiting');
 });
 
