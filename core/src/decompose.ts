@@ -64,9 +64,11 @@ export function catalogEntry(brand: string, model: string, title: string): Catal
 const RYOBI_MODEL = /^[A-Z]{1,6}\d{2,5}[A-Z0-9]*$/;
 const RYOBI_SB = /^([A-Z]{2,6})(\d{2})(\d{2})SB$/;
 // A hyphen part that can be offered to the owner as a model number: upper-case letters and digits,
-// with at least one of each. Wider than RYOBI_MODEL, which still decides automatic resolution; an
-// empty part, a bare count ("-2") or a word ("-KIT") is not a model, so it offers no reading.
-const OFFERABLE_PART = /^(?=[A-Z0-9]*[A-Z])(?=[A-Z0-9]*\d)[A-Z0-9]+$/;
+// starting with a letter, with a digit, four characters or more (the shortest recorded part is
+// P553). Wider than RYOBI_MODEL, which still decides automatic resolution. An empty part, a bare
+// count ("-2"), a word ("-KIT"), a pack size ("-2PK"), a voltage ("-18V") or a short tag ("-V2")
+// is not a model, so it offers no reading.
+const OFFERABLE_PART = /^(?=[A-Z0-9]{4,}$)[A-Z][A-Z0-9]*\d[A-Z0-9]*$/;
 
 // A split in review offers, as `alternatives`, the reading its model number spells out (Ruling 29):
 // the owner may confirm it, but only the owner's answer turns it into the split.

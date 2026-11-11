@@ -55,6 +55,8 @@ describe('splitting bundles', () => {
   it('sends unknown RYOBI parts to review instead of guessing', () => {
     const d = decomposeRyobi('PBLXX9988SB', fx.RYOBI_CATALOG);
     expect(d).toMatchObject({ status: 'needs_review', components: [] });
+    // The expansion is offered for the owner to confirm, never taken (Ruling 29).
+    expect(d.alternatives).toEqual([['PBLXX99B', 'PBLXX88B']]);
   });
 
   describe('a RYOBI model number that spells out its parts offers that reading, in review (Ruling 29)', () => {
@@ -73,7 +75,8 @@ describe('splitting bundles', () => {
 
     it('hyphen form: a token that is not a model number gives no reading, and the split is as before', () => {
       // Constructed: an empty part, a pack count, a word, and spaces around the hyphen.
-      for (const model of ['PCL1600K2-', '-P553', 'PCL1600K2--P553', 'DCB205-2', 'PCL1600K2-KIT', 'PCL1600K2 - P553']) {
+      // Also a pack size, a voltage and a short version tag: a part must start with a letter and be four characters or more.
+      for (const model of ['PCL1600K2-', '-P553', 'PCL1600K2--P553', 'DCB205-2', 'PCL1600K2-KIT', 'PCL1600K2 - P553', 'PCL1600K2-2PK', 'PCL1600K2-18V', 'PCL1600K2-V2']) {
         const d = decomposeRyobi(model, new Map());
         expect(d, model).toEqual({ components: model.toUpperCase().trim().split('-'), status: 'needs_review', notes: [HYPHEN_NOTE] });
       }
