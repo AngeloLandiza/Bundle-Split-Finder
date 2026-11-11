@@ -124,6 +124,16 @@ describe('headline', () => {
     expect(screen.getByText(/\(12% referral, \$3\.50 fulfillment per unit\)\./)).toBeInTheDocument();
   });
 
+  it('adds sales tax and inbound cost to the fee text only when they are not zero', () => {
+    show(row(), { state: state({ settings: { ...DEFAULT_SETTINGS, fees: { ...DEFAULT_FEES, salesTaxRate: 0.07, inboundCost: 2 } } }) });
+    expect(screen.getByText(/\(15% referral, no fulfillment fee, 7% sales tax, \$2\.00 inbound per bundle\)\./)).toBeInTheDocument();
+  });
+
+  it('shows the scan progress under the top bar while a scan runs', () => {
+    show(row(), { state: state({ scanRunning: true }) });
+    expect(screen.getAllByRole('status')[0]).toHaveTextContent(/^Scanning/);
+  });
+
   it('writes a loss with the real minus and the loss colour', () => {
     show(row({ estimate: { cost: 300, netRevenue: 277.3, profit: -22.7, roi: -0.0757 } }));
     const figure = screen.getByText('−$22.70');
@@ -144,6 +154,13 @@ describe('headline', () => {
     expect(screen.getByText('No estimate yet: 2 parts still need an Amazon lookup.')).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: /^Look up/ })).toBeEnabled();
     expect(screen.queryByText(/^Estimate from your fee settings/)).toBeNull();
+  });
+
+  it('shows up to N searches on Look up until a quote returns', () => {
+    const send = vi.fn(() => new Promise<Reply>(() => {}));
+    const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    show(row({ estimate: null, section: 'missing_listing', parts: [part('A1', { status: 'waiting', asin: null, grade: null, price: null, availability: 'missing' })] }), { api });
+    expect(screen.getByRole('button', { name: 'Look up up to 1 search' })).toBeDisabled();
   });
 
   it('says why when there is no estimate for another reason', () => {
@@ -212,11 +229,25 @@ describe('parts', () => {
     expect(send.mock.calls.filter(([r]) => r.type === 'runPaid')).toHaveLength(1);
   });
 
-  it('disables Verify and says why when the quote is refused', async () => {
+  it('disables Verify and says why when the quote is refused, still showing its price', async () => {
     const { api } = fakeApi(undefined, { searches: 1, refusal: 'The hourly search limit is reached.' });
     show(row({ parts: [part('PBLRC25B', { grade: 'probable' })] }), { api });
-    expect(await screen.findByText('The hourly search limit is reached.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Verify/ })).toBeDisabled();
+    const sentence = await screen.findByText('The hourly search limit is reached.');
+    const button = screen.getByRole('button', { name: 'Verify · 1 search' });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-describedby', sentence.id);
+  });
+
+  it('shows the price of Verify before any quote came back', () => {
+    const send = vi.fn(() => new Promise<Reply>(() => {}));
+    const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    show(row({ parts: [part('PBLRC25B', { grade: 'probable' })] }), { api });
+    expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeDisabled();
+  });
+
+  it('reads Needs your answer in Review for a part left in review', () => {
+    show(row({ parts: [part('X1', { status: 'review', asin: null, grade: null, price: null, availability: 'missing' })] }));
+    expect(screen.getByText('Needs your answer in Review')).toBeInTheDocument();
   });
 
   it('shows the sentence of a refused run under Verify', async () => {
@@ -252,6 +283,32 @@ describe('packaging', () => {
     expect(send).toHaveBeenCalledWith({ type: 'setPackaging', model: 'PBLRC2501SB', packaging: 'retail_boxed' });
     expect(await screen.findByText('Boxed')).toBeInTheDocument();
     expect(screen.queryByText('Do these arrive individually boxed?')).toBeNull();
+  });
+
+  it('shows the Loose tag and note at once after saving Loose', async () => {
+    const user = userEvent.setup();
+    show(row());
+    expect(document.querySelector('.detail-tag')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'No, loose' }));
+    expect(await screen.findByText('Loose', { selector: '.detail-tag' })).toBeInTheDocument();
+    expect(screen.getByText(/Loose parts cannot be listed as New/)).toBeInTheDocument();
+  });
+
+  it('hides the question again with Cancel when it was opened by Change, saving nothing', async () => {
+    const user = userEvent.setup();
+    const { api, send } = fakeApi();
+    show(row(), { api, packaging: { PBLRC2501SB: 'retail_boxed' } });
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByText('Do these arrive individually boxed?')).toBeNull();
+    expect(screen.getByText('Boxed')).toBeInTheDocument();
+    expect(send.mock.calls.filter(([r]) => r.type === 'setPackaging')).toHaveLength(0);
+  });
+
+  it('has no Cancel while the question has never been answered', () => {
+    show(row());
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
   });
 
   it('shows the saved answer as one line, and asks again after Change', async () => {
@@ -290,13 +347,14 @@ describe('footer', () => {
   it('copies both ASINs joined by a space, then says Copied for two seconds', async () => {
     const user = userEvent.setup();
     show(row());
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
     await user.click(screen.getByRole('button', { name: 'Copy both ASINs' }));
     expect(await navigator.clipboard.readText()).toBe('B0B3JWF5ZV B0B6Z2ZGVK');
     expect(await screen.findByRole('status')).toHaveTextContent('Copied');
     // Still there after a second, gone after two (real timers: only the clock's Date is faked).
     await new Promise((r) => setTimeout(r, 1000));
     expect(screen.getByRole('status')).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByRole('status')).toBeNull(), { timeout: 2000 });
+    await waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement(), { timeout: 2000 });
   }, 8000);
 
   it('is called Copy ASINs for one or three, and is disabled with none', () => {

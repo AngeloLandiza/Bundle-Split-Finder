@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { BundleRow } from '@core/scan/types';
 import type { Quote } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
@@ -56,6 +56,10 @@ export function LookUp({ row, api, scanRunning, version, busy, onRun }: LookUpPr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [row.brand, partKey, scanRunning, version]);
 
+  // The last quoted count stays on the label while the next quote is asked for, so the price never disappears.
+  const unknown = row.parts.filter((p) => p.status === 'waiting' || p.status === 'unmatched').length;
+  const shown = quote ? quote.quote.searches : null;
+  const refusalId = useId();
   const fresh = !scanRunning && quote !== null && quote.version === version ? quote.quote : null;
   const refusal = scanRunning ? SCAN_RUNNING : ((runError?.partKey === partKey ? runError.text : null) ?? fresh?.refusal ?? problem);
   const run = () => {
@@ -66,10 +70,19 @@ export function LookUp({ row, api, scanRunning, version, busy, onRun }: LookUpPr
 
   return (
     <div className="deal-lookup">
-      {refusal ? <p className="deal-refusal">{refusal}</p> : null}
-      <button type="button" className="deal-lookup-btn" disabled={busy || !fresh || fresh.refusal !== null} onClick={run}>
-        Look up{' '}
-        {fresh ? <span className="deal-lookup-cost">{searches(fresh.searches)}</span> : null}
+      {refusal ? (
+        <p className="deal-refusal" id={refusalId}>
+          {refusal}
+        </p>
+      ) : null}
+      <button
+        type="button"
+        className="deal-lookup-btn"
+        aria-describedby={refusal ? refusalId : undefined}
+        disabled={busy || !fresh || fresh.refusal !== null}
+        onClick={run}
+      >
+        Look up <span className="deal-lookup-cost">{shown !== null ? searches(shown) : `up to ${searches(unknown)}`}</span>
       </button>
     </div>
   );

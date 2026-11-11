@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { Quote } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { SCAN_RUNNING } from './DealsLookUp';
@@ -22,6 +22,7 @@ export function Verify({ brand, model, asin, api, scanRunning, version, busy, on
   const [quote, setQuote] = useState<{ version: number; quote: Quote } | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
+  const refusalId = useId();
   const apiRef = useRef(api);
   apiRef.current = api;
 
@@ -53,16 +54,20 @@ export function Verify({ brand, model, asin, api, scanRunning, version, busy, on
 
   return (
     <div className="detail-verify">
-      <button type="button" className="detail-verify-btn" disabled={busy || !fresh || fresh.refusal !== null} onClick={run}>
-        Verify{' '}
-        {fresh ? (
-          <span className="detail-verify-cost">
-            {'· '}
-            {fresh.searches} {fresh.searches === 1 ? 'search' : 'searches'}
-          </span>
-        ) : null}
+      <button
+        type="button"
+        className="detail-verify-btn"
+        aria-describedby={refusal ? refusalId : undefined}
+        disabled={busy || !fresh || fresh.refusal !== null}
+        onClick={run}
+      >
+        Verify <span className="detail-verify-cost">· 1 search</span>
       </button>
-      {refusal ? <p className="detail-refusal">{refusal}</p> : null}
+      {refusal ? (
+        <p className="detail-refusal" id={refusalId}>
+          {refusal}
+        </p>
+      ) : null}
     </div>
   );
 }

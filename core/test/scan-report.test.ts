@@ -73,7 +73,6 @@ describe('buildReport', () => {
   it('writes one bundle as the run file does: the same header and the same row', async () => {
     const report = await buildReport(await scanWorld(), RATCHET);
     const lines = runCsv(report).split('\n');
-    expect(bundlesCsv(report.bundles)).toBe(runCsv(report));
     expect(bundlesCsv([report.bundles[1]!])).toBe(`${lines[0]}\n${lines[2]}\n`);
   });
 

@@ -342,6 +342,35 @@ describe('Look up', () => {
     expect(send).toHaveBeenCalledWith({ type: 'runPaid', action });
   });
 
+  it('says up to N searches until a quote returns, and ties the refusal to the button', async () => {
+    const send = vi.fn(() => new Promise<Reply>(() => {}));
+    const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    show(report([waiting]), state(), { api });
+    expect(screen.getByRole('button', { name: 'Look up up to 2 searches' })).toBeDisabled();
+    cleanup();
+    const sentence = 'The hourly search limit is reached.';
+    show(report([waiting]), state(), { api: fakeApi({ searches: 2, refusal: sentence }).api });
+    const text = await screen.findByText(sentence);
+    expect(screen.getByRole('button', { name: /^Look up/ })).toHaveAttribute('aria-describedby', text.id);
+  });
+
+  it('keeps the last quoted count on the label while it is quoted again after a run', async () => {
+    const user = userEvent.setup();
+    let release: (r: Reply) => void = () => {};
+    let quotes = 0;
+    const send = vi.fn((r: Request): Promise<Reply> => {
+      if (r.type === 'quote') return quotes++ === 0 ? Promise.resolve({ ok: true, data: { searches: 2, refusal: null } }) : new Promise<Reply>((res) => (release = res));
+      return Promise.resolve({ ok: true, data: null });
+    });
+    const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    show(report([waiting]), state(), { api });
+    await user.click(await screen.findByRole('button', { name: 'Look up 2 searches' }));
+    const button = await screen.findByRole('button', { name: 'Look up 2 searches' });
+    expect(button).toBeDisabled();
+    release({ ok: true, data: { searches: 1, refusal: null } });
+    expect(await screen.findByRole('button', { name: 'Look up 1 search' })).toBeEnabled();
+  });
+
   it('says 1 search in the singular', async () => {
     show(report([waiting]), state(), { api: fakeApi({ searches: 1, refusal: null }).api });
     expect(await screen.findByRole('button', { name: 'Look up 1 search' })).toBeEnabled();
@@ -399,7 +428,7 @@ describe('Look up', () => {
     const { api } = fakeApi({ searches: 2, refusal: null });
     const { view } = show(report([waiting]), state({ scanRunning: true }), { api });
     expect(screen.getByText('A scan is running.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Look up' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Look up up to 2 searches' })).toBeDisabled();
     view.rerender(createElement(DealsTab, props(api, state({ scanRunning: false }))));
     expect(await screen.findByRole('button', { name: 'Look up 2 searches' })).toBeEnabled();
     expect(screen.queryByText('A scan is running.')).toBeNull();

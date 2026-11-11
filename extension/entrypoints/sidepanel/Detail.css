@@ -189,6 +189,27 @@
 .detail-link:hover {
   text-decoration: underline;
 }
+.detail-text-btn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.detail-text-btn:hover,
+.detail-text-btn:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.detail-text-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.detail-packaging-buttons {
+  align-items: center;
+}
 .detail .deal-lookup {
   padding: 0;
 }
@@ -407,6 +428,7 @@
   height: 14px;
 }
 .detail-footer {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -433,6 +455,12 @@
 }
 .detail-export {
   height: 36px;
+}
+.detail-copied:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 .detail-copied {
   order: -1;

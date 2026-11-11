@@ -8,6 +8,7 @@ import type { AppState, Packaging, PanelReport } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { waitingParts } from './dealsModel';
 import { LookUp } from './DealsLookUp';
+import { ProgressRow } from './ProgressRow';
 import { Verify } from './DetailVerify';
 import './Detail.css';
 
@@ -26,7 +27,10 @@ const percent = (rate: number): string => `${Math.round(rate * 10000) / 100}%`;
 /** "15% referral, no fulfillment fee": the fee settings the estimate came from, in words. */
 export function feeText(fees: FeeSettings): string {
   const fulfillment = fees.fulfillmentFee > 0 ? `${money(fees.fulfillmentFee)} fulfillment per unit` : 'no fulfillment fee';
-  return `${percent(fees.referralRate)} referral, ${fulfillment}`;
+  const parts = [`${percent(fees.referralRate)} referral`, fulfillment];
+  if (fees.salesTaxRate > 0) parts.push(`${percent(fees.salesTaxRate)} sales tax`);
+  if (fees.inboundCost > 0) parts.push(`${money(fees.inboundCost)} inbound per bundle`);
+  return parts.join(', ');
 }
 
 /** The newest time one of the parts' prices was seen; the report row keeps no time of its own for the bundle. */
@@ -49,7 +53,7 @@ interface Label {
 
 function labelOf(p: PartRow): Label {
   if (p.status === 'waiting' || p.status === 'unmatched') return { text: 'Not looked up yet', tone: 'plain' };
-  if (p.status === 'review') return { text: 'Needs your answer', tone: 'attention' };
+  if (p.status === 'review') return { text: 'Needs your answer in Review', tone: 'attention' };
   if (p.status === 'none' || p.asin === null) return { text: 'No listing', tone: 'plain' };
   if (p.availability === 'inactive') return { text: 'Listing inactive', tone: 'plain' };
   if (p.grade === 'exact') return { text: 'Barcode verified', tone: 'verified' };
@@ -130,11 +134,17 @@ function Part({ part, row, fees, api, scanRunning, version, busy, run }: PartPro
   );
 }
 
-function PackagingQuestion({ row, api, report }: { row: BundleRow; api: WorkerApi; report: PanelReport }) {
-  const [local, setLocal] = useState<Packaging | null>(null);
+interface PackagingProps {
+  row: BundleRow;
+  api: WorkerApi;
+  /** The answer in force: this screen's own save first, then the report's. */
+  answer: Packaging | null;
+  onAnswered: (p: Packaging) => void;
+}
+
+function PackagingQuestion({ row, api, answer, onAnswered }: PackagingProps) {
   const [asking, setAsking] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const answer = local ?? report.packaging[row.model.toUpperCase()] ?? null;
 
   const choose = (packaging: Packaging) => {
     setProblem(null);
@@ -142,7 +152,7 @@ function PackagingQuestion({ row, api, report }: { row: BundleRow; api: WorkerAp
       .send({ type: 'setPackaging', model: row.model, packaging })
       .then((reply) => {
         if (reply.ok) {
-          setLocal(packaging);
+          onAnswered(packaging);
           setAsking(false);
         } else setProblem(reply.error);
       })
@@ -154,7 +164,7 @@ function PackagingQuestion({ row, api, report }: { row: BundleRow; api: WorkerAp
       <div className="detail-packaging-line">
         <span>Packaging</span>
         <span className="detail-packaging-answer">{answer === 'loose' ? 'Loose' : 'Boxed'}</span>
-        <button type="button" className="detail-link" onClick={() => setAsking(true)}>
+        <button type="button" className="detail-text-btn" onClick={() => setAsking(true)}>
           Change
         </button>
       </div>
@@ -175,11 +185,19 @@ function PackagingQuestion({ row, api, report }: { row: BundleRow; api: WorkerAp
         <button type="button" className="detail-btn" onClick={() => choose('loose')}>
           No, loose
         </button>
+        {answer !== null ? (
+          <button type="button" className="detail-text-btn" onClick={() => setAsking(false)}>
+            Cancel
+          </button>
+        ) : null}
       </div>
       {problem ? <p className="detail-refusal">{problem}</p> : null}
     </section>
   );
 }
+
+/** What a paid action returns when another one is still running: a sentence, never read as success. */
+export const BUSY = 'Another search is still running.';
 
 const fileName = (model: string): string => `split-finder-${model.replace(/[^A-Za-z0-9._-]+/g, '-')}.csv`;
 
@@ -187,7 +205,9 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
   const row = report?.bundles.find((b) => b.key === bundleKey) ?? null;
   // One paid request at a time on this screen; `version` makes every quote ask again afterwards.
   const [busy, setBusy] = useState(false);
+  const locked = useRef(false);
   const [version, setVersion] = useState(0);
+  const [saved, setSaved] = useState<{ model: string; value: Packaging } | null>(null);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -195,7 +215,9 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
 
   const run = useCallback(
     async (action: PaidAction): Promise<string | null> => {
-      if (busy) return null;
+      // The lock is a ref, so two clicks in one tick cannot both pass.
+      if (locked.current) return BUSY;
+      locked.current = true;
       setBusy(true);
       let error: string | null = null;
       try {
@@ -204,11 +226,12 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
       } catch {
         error = UNREACHABLE;
       }
+      locked.current = false;
       setBusy(false);
       setVersion((v) => v + 1);
       return error;
     },
-    [api, busy],
+    [api],
   );
 
   const top = (
@@ -240,7 +263,8 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
   }
 
   const fees = state.settings.fees;
-  const loose = report.packaging[row.model.toUpperCase()] === 'loose';
+  const answer = (saved?.model === row.model ? saved.value : null) ?? report.packaging[row.model.toUpperCase()] ?? null;
+  const loose = answer === 'loose';
   const seen = priceSeen(row);
   const asins = row.parts.map((p) => p.asin).filter((a): a is string => a !== null);
   const e = row.estimate;
@@ -263,6 +287,7 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
   return (
     <div className="detail">
       {top}
+      {state.scanRunning ? <ProgressRow job={state.lastJob} /> : null}
       <main className="detail-body">
         <section className="detail-head">
           <div className="detail-brand">{row.brand}</div>
@@ -322,7 +347,7 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
                 <Part key={p.model} part={p} row={row} fees={fees} api={api} scanRunning={state.scanRunning} version={version} busy={busy} run={run} />
               ))}
             </ul>
-            <PackagingQuestion key={row.key} row={row} api={api} report={report} />
+            <PackagingQuestion key={row.key} row={row} api={api} answer={answer} onAnswered={(value) => setSaved({ model: row.model, value })} />
           </>
         ) : null}
       </main>
@@ -334,11 +359,9 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
         <button type="button" className="detail-btn detail-export" onClick={() => api.download(fileName(row.model), bundlesCsv([row]), 'text/csv')}>
           Export row
         </button>
-        {copied ? (
-          <span role="status" className="detail-copied">
-            Copied
-          </span>
-        ) : null}
+        <span role="status" className="detail-copied">
+          {copied ? 'Copied' : ''}
+        </span>
         {copyFailed ? (
           <span role="alert" className="detail-copied">
             Could not copy. Select the ASINs by hand.
