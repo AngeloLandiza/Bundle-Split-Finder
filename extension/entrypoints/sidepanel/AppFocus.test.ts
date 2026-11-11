@@ -22,7 +22,7 @@ const part = (model: string): PartRow => ({
 const row = (key: string): BundleRow => ({
   key, itemId: key, brand: 'DEWALT', model: key.toUpperCase(), title: `Title of ${key}`, link: null, price: 749, regularPrice: 1270, percentOff: 41,
   seenAt: NOW - 3_600_000, status: 'complete', section: 'confirmed', parts: [part('DCD791B'), part('DCF891B')],
-  estimate: { cost: 800, netRevenue: 1137.3, profit: 337.3, roi: 0.4216 }, uncovered: [], answer: null,
+  estimate: { cost: 800, netRevenue: 1137.3, profit: 337.3, roi: 0.4216 }, uncovered: [], answer: null, options: [], kitsNotRead: [],
 });
 
 const REPORT: PanelReport = { bundles: [row('first'), row('second')], review: [], packaging: {} };

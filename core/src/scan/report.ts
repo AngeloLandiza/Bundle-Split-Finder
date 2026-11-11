@@ -1,17 +1,20 @@
 // Turn what a scan left in the store into ranked rows. Reads only; never searches.
 // Profit figures are estimates from fee settings, not the seller's real fees.
 
+import { type KitItem, kitContents, kitPageStored, sameModel } from '../kitContents';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
 import { componentCounts } from './classify';
 import {
   type BundleRecord,
   type BundleRow,
+  type BundleStatus,
   type PartAvailability,
   type PartRow,
   type ReportSection,
   partKey,
   resolvedParts,
+  type SaleOption,
   type ScanReport,
   type ScanSettings,
   type ScanStore,
@@ -19,8 +22,7 @@ import {
 
 const SECTION_RANK: Record<ReportSection, number> = { confirmed: 0, waiting: 1, inactive_listing: 2, missing_listing: 3, split: 4 };
 
-async function partRows(store: ScanStore, brand: string, components: string[]): Promise<PartRow[]> {
-  const counts = componentCounts(components);
+async function partRows(store: ScanStore, brand: string, counts: Record<string, number>): Promise<PartRow[]> {
   const rows: PartRow[] = [];
   for (const model of Object.keys(counts)) {
     const match = await store.getMatch(partKey(brand, model));
@@ -59,7 +61,126 @@ function sectionOf(parts: PartRow[], bundlePrice: number | null): ReportSection 
   return bundlePrice === null ? 'inactive_listing' : 'confirmed';
 }
 
-async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
+// ---------------------------------------------------------------- ways to sell (step 6)
+
+/**
+ * The component key of a kit item with no model number. It is never looked up, so no listing
+ * covers it, and the '~' keeps it apart from every model (a model starts with a letter).
+ */
+const UNNAMED = '~';
+
+/** An option with what the row takes from it when it is the primary. */
+interface Evaluated {
+  option: SaleOption;
+  status: BundleStatus;
+  section: ReportSection;
+  uncovered: string[];
+}
+
+/** "A", "A and B", "A, B and C". */
+const listOf = (names: string[]): string => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)!}`);
+
+/** The option's label, in the plan's exact words; '' when the bundle holds no kit with known contents. */
+function labelOf(kits: string[], split: string[]): string {
+  const whole = kits.filter((k) => !split.includes(k));
+  const words: string[] = [];
+  if (split.length > 0) words.push(`${listOf(split)} split into ${split.length === 1 ? 'its' : 'their'} items`);
+  if (whole.length > 0) words.push(`${listOf(whole)} sold whole`);
+  return words.join(', ');
+}
+
+/** The kits split in each option, whole first: every choice for one or two kits, all whole and all split for more. */
+function splitChoices(kits: string[]): string[][] {
+  if (kits.length === 2) return [[], [kits[0]!], [kits[1]!], [...kits]];
+  return kits.length === 0 ? [[]] : [[], [...kits]];
+}
+
+const shown = (name: string, qty: number): string => (qty > 1 ? `${name} ×${qty}` : name);
+
+/**
+ * One way to sell: the bundle's parts, with each kit in `split` replaced by its items. A model item
+ * joins the part of the same model (its quantity adds); an item with no model number is a component
+ * of its own, which the estimate values at the liquidation rate, as any part with no listing.
+ */
+async function optionOf(
+  store: ScanStore, settings: ScanSettings, b: BundleRecord, counts: Record<string, number>, kits: Map<string, KitItem[]>, split: string[],
+): Promise<Evaluated> {
+  const components: Record<string, number> = {};
+  // Component key of each item with no model number -> the page's own text, in page order.
+  const unnamed = new Map<string, string>();
+  const add = (key: string, qty: number) => {
+    components[key] = (Object.hasOwn(components, key) ? components[key]! : 0) + qty;
+  };
+  for (const [model, qty] of Object.entries(counts)) {
+    if (!split.includes(model)) {
+      add(model, qty);
+      continue;
+    }
+    for (const item of kits.get(model)!) {
+      if (item.model !== null) {
+        add(item.model, item.qty * qty);
+      } else {
+        const key = UNNAMED + item.name;
+        unnamed.set(key, item.name);
+        add(key, item.qty * qty);
+      }
+    }
+  }
+  const models = Object.fromEntries(Object.entries(components).filter(([k]) => !k.startsWith(UNNAMED)));
+  const parts = await partRows(store, b.brand, models);
+  const priced: PricedListing[] = [];
+  for (const p of parts) {
+    if (p.availability === 'active' && p.asin !== null && p.price !== null) {
+      priced.push({ asin: p.asin, covers: { [p.model]: 1 }, price: p.price });
+    }
+  }
+  // Without a bundle price the plan is still what is left unsold; only the estimate needs the price.
+  const evaluation = evaluateBundle(b.price ?? 0, components, priced, settings.fees, settings.liquidationRate);
+  const left = new Map<string, number>();
+  for (const k of evaluation.plan.liquidated) left.set(k, (left.get(k) ?? 0) + 1);
+  const leftUnnamed = [...unnamed].filter(([k]) => left.has(k));
+  // A part not looked up yet is not known to be left: only the lookup says it has no listing.
+  const leftovers = [
+    ...parts.filter((p) => !notLookedUp(p) && left.has(p.model)).map((p) => shown(p.model, left.get(p.model)!)),
+    ...leftUnnamed.map(([k, name]) => shown(name, left.get(k)!)),
+  ];
+  // A part not looked up yet has no price, which is not the same as a price of zero: no estimate until it is.
+  // A part that was looked up and has no listing ("none") still counts at the liquidation rate, as the owner set.
+  const estimate = b.price === null || parts.some(notLookedUp) ? null : evaluation.result;
+  const uncovered = b.price === null
+    ? [...parts.map((p) => p.model), ...unnamed.values()]
+    : [...evaluation.uncovered.filter((k) => !k.startsWith(UNNAMED)), ...leftUnnamed.map(([, name]) => name)];
+  return {
+    option: {
+      id: split.length === 0 ? 'whole' : `split:${[...split].sort().join('+')}`,
+      label: labelOf([...kits.keys()], split),
+      splitKits: [...split],
+      parts,
+      estimate,
+      leftovers,
+      loose: split.length > 0,
+    },
+    status: b.price !== null && evaluation.uncovered.length === 0 ? 'complete' : 'partial',
+    // Items from a split kit that are left unsold are a missing listing, whatever the models' listings say.
+    section: split.length > 0 && leftovers.length > 0 ? 'missing_listing' : sectionOf(parts, b.price),
+    uncovered,
+  };
+}
+
+/**
+ * The primary option: among those with an estimate, the ones that leave nothing if any, and of
+ * them the highest profit; without any estimate, whole. A tie goes to the earlier option, and
+ * whole is first.
+ */
+function primaryOf(options: Evaluated[]): number {
+  const priced = options.flatMap((o, i) => (o.option.estimate ? [i] : []));
+  if (priced.length === 0) return 0;
+  const clean = priced.filter((i) => options[i]!.option.leftovers.length === 0);
+  const profit = (i: number) => options[i]!.option.estimate!.profit;
+  return (clean.length > 0 ? clean : priced).reduce((best, i) => (profit(i) > profit(best) ? i : best));
+}
+
+async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleRecord, bundles: BundleRecord[]): Promise<BundleRow> {
   const base = {
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
     price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff, seenAt: b.seenAt,
@@ -68,29 +189,34 @@ async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleReco
   };
   const split = b.split;
   if (!split || split.status !== 'resolved') {
-    return { ...base, status: 'needs_review', section: 'split', parts: [], estimate: null, uncovered: [] };
+    return { ...base, status: 'needs_review', section: 'split', parts: [], estimate: null, uncovered: [], options: [], kitsNotRead: [] };
   }
-  const parts = await partRows(store, b.brand, split.components);
-  if (b.price === null) {
-    return { ...base, status: 'partial', section: sectionOf(parts, b.price), parts, estimate: null, uncovered: parts.map((p) => p.model) };
-  }
-  const priced: PricedListing[] = [];
-  for (const p of parts) {
-    if (p.availability === 'active' && p.asin !== null && p.price !== null) {
-      priced.push({ asin: p.asin, covers: { [p.model]: 1 }, price: p.price });
+  const counts = componentCounts(split.components);
+  // The kits whose own stored page lists their items, in part order. Contents come only from that page.
+  const kits = new Map<string, KitItem[]>();
+  const kitsNotRead: string[] = [];
+  for (const model of Object.keys(counts)) {
+    const items = kitContents(bundles, b.brand, model);
+    // A list that names the kit itself is not a list of what is inside it: the kit is not split.
+    if (items && !items.some((i) => i.model !== null && sameModel(b.brand, i.model, model))) {
+      kits.set(model, items);
+    } else if (!kitPageStored(bundles, b.brand, model) && (await store.getCatalogEntry(partKey(b.brand, model)))?.isKit) {
+      kitsNotRead.push(model);
     }
   }
-  const evaluation = evaluateBundle(b.price, componentCounts(split.components), priced, settings.fees, settings.liquidationRate);
-  // A part not looked up yet has no price, which is not the same as a price of zero: no estimate until it is.
-  // A part that was looked up and has no listing ("none") still counts at the liquidation rate, as the owner set.
-  const unknown = parts.some(notLookedUp);
+  const evaluated: Evaluated[] = [];
+  for (const choice of splitChoices([...kits.keys()])) evaluated.push(await optionOf(store, settings, b, counts, kits, choice));
+  const p = primaryOf(evaluated);
+  const primary = evaluated[p]!;
   return {
     ...base,
-    status: evaluation.uncovered.length === 0 ? 'complete' : 'partial',
-    section: sectionOf(parts, b.price),
-    parts,
-    estimate: unknown ? null : evaluation.result,
-    uncovered: evaluation.uncovered,
+    status: primary.status,
+    section: primary.section,
+    parts: primary.option.parts,
+    estimate: primary.option.estimate,
+    uncovered: primary.uncovered,
+    options: [primary, ...evaluated.filter((_, i) => i !== p)].map((e) => e.option),
+    kitsNotRead,
   };
 }
 
@@ -98,8 +224,9 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   const bundles: BundleRow[] = [];
   // The parts some bundle's split holds now, as the lookups see them (resolved splits only).
   const held = new Set<string>();
-  for (const b of await store.listBundles()) {
-    bundles.push(await bundleRow(store, settings, b));
+  const stored = await store.listBundles();
+  for (const b of stored) {
+    bundles.push(await bundleRow(store, settings, b, stored));
     for (const part of resolvedParts(b)) held.add(part.key);
   }
   bundles.sort((a, b) => {

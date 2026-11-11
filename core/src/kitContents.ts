@@ -70,6 +70,18 @@ const norm = (s: string): string => s.toUpperCase().trim();
 // neither (it is compared as XB).
 const ryobiBase = (m: string): string => (m.endsWith('B') ? m.slice(0, -1) : m);
 
+/** Whether two models of a brand name the same kit or tool, by the rule above. */
+export function sameModel(brand: string, a: string, b: string): boolean {
+  const x = norm(a);
+  const y = norm(b);
+  return x === y || (norm(brand) === 'RYOBI' && ryobiBase(x) === ryobiBase(y));
+}
+
+/** Whether a stored record of this kit's own brand and model has its page read, whatever the page says. */
+export function kitPageStored(bundles: BundleRecord[], brand: string, model: string): boolean {
+  return bundles.some((r) => norm(r.brand) === norm(brand) && sameModel(brand, r.model, model) && !!r.page);
+}
+
 /**
  * A kit's items from its own stored page: the newest reading, among the stored records of this
  * brand and model, whose Includes list names at least one model. Null when there is none. A bundle
@@ -77,9 +89,7 @@ const ryobiBase = (m: string): string => (m.endsWith('B') ? m.slice(0, -1) : m);
  */
 export function kitContents(bundles: BundleRecord[], brand: string, model: string): KitItem[] | null {
   const b = norm(brand);
-  const m = norm(model);
-  const same = (other: string): boolean =>
-    other === m || (b === 'RYOBI' && ryobiBase(other) === ryobiBase(m));
+  const same = (other: string): boolean => sameModel(b, other, model);
   let best: { readAt: number; itemId: string; items: KitItem[] } | null = null;
   for (const r of bundles) {
     if (norm(r.brand) !== b || !same(norm(r.model)) || !r.page) continue;

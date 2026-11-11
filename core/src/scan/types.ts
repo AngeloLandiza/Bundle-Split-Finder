@@ -453,13 +453,48 @@ export interface BundleRow {
   parts: PartRow[];
   /** An estimate from fee settings, never the seller's real fees. Null without a resolved split and a price, or while a part is waiting for its lookup. */
   estimate: BundleResult | null;
-  /** Parts no priced listing covers. With an estimate they are valued at the liquidation rate; waiting parts are listed but not valued. */
+  /**
+   * Parts no priced listing covers, sorted; for a split primary, then its kits' items with no model
+   * number, by their page text in page order. With an estimate they are valued at the liquidation
+   * rate; waiting parts are listed but not valued.
+   */
   uncovered: string[];
   /**
    * Set when the bundle's split, or its None of these, is the owner's answer to its split question
    * (answers.ts, ownerAnswer): a reading chosen, parts entered, or none. Null otherwise.
    */
   answer: OwnerAnswer | null;
+  /**
+   * The ways to sell the bundle (step 6): each kit inside it whose own Home Depot page lists its
+   * items (kitContents) sold whole or split into them. options[0] is the primary, and `section`,
+   * `parts`, `estimate` and `uncovered` above are its. One option when no part is such a kit; none
+   * while the split is not resolved.
+   */
+  options: SaleOption[];
+  /** Parts the stored catalog marks as kits whose own Home Depot page is not stored, in part order. */
+  kitsNotRead: string[];
+}
+
+/** One way to sell a bundle: each kit inside it sold whole, or split into the items its page lists. */
+export interface SaleOption {
+  /** 'whole', or 'split:' and the split kits' models, sorted and joined by '+'. */
+  id: string;
+  /** "PCL1600K2 sold whole", "PCL1600K2 split into its items", ...; '' when the bundle holds no such kit. */
+  label: string;
+  /** The kits split into their items, in part order. */
+  splitKits: string[];
+  /** The option's model items, one row per model, quantities summed (a kit item that is also another part adds to it). */
+  parts: PartRow[];
+  /** An estimate from fee settings, never the seller's real fees. Null without a bundle price, or while any of its parts waits or is unmatched. */
+  estimate: BundleResult | null;
+  /**
+   * What the option leaves unsold, as display names with ` ×N` after a quantity above 1: first the
+   * models no priced listing covers (looked up, in part order), then the kits' items with no model
+   * number, in page order. Empty when it leaves nothing.
+   */
+  leftovers: string[];
+  /** True when a kit is split: its items have no retail box of their own. */
+  loose: boolean;
 }
 
 /** Which of the owner's answers decides a bundle's split, and the question it answered. */

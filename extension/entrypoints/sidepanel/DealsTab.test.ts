@@ -53,6 +53,8 @@ const row = (key: string, over: Partial<BundleRow> = {}): BundleRow => ({
   estimate: { cost: 800, netRevenue: 1137.3, profit: 337.3, roi: 0.4216 },
   uncovered: [],
   answer: null,
+  options: [],
+  kitsNotRead: [],
   ...over,
 });
 
