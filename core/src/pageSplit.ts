@@ -17,9 +17,9 @@ import type { PageContent } from './hdPage';
 
 // DEWALT writes each bullet as "<model>: <text>", and a tool inside a kit as "<kit>: <tool>: <text>".
 // Only the leading model counts: the kit is the boxed item, not the tools inside it.
-const DEWALT_LEADING = /^([A-Z]{2,}\d[A-Z0-9]*):/;
+export const DEWALT_LEADING = /^([A-Z]{2,}\d[A-Z0-9]*):/;
 // decompose's RYOBI model shape, as whole words; 18V and 18T start with digits and do not match.
-const RYOBI_TOKEN = /\b[A-Z]{1,6}\d{2,5}[A-Z0-9]*\b/g;
+export const RYOBI_TOKEN = /\b[A-Z]{1,6}\d{2,5}[A-Z0-9]*\b/g;
 const INCLUDES = /^includes/i;
 
 const entry = (model: string, brand: string, isKit: boolean): CatalogModel => ({ model, brand, kinds: [], isKit });
