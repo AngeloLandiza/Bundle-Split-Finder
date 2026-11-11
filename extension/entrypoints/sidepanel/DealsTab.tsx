@@ -6,6 +6,7 @@ import type { WorkerApi } from '../../lib/pageClient';
 import { matchState, sections, staleDays, waitingParts } from './dealsModel';
 import { LimitNotice, limitCopy, setAsideSentence } from './DealsLimitNotice';
 import { LookUp } from './DealsLookUp';
+import { rowLinkOrTab, usePaidFocus } from './paidFocus';
 import { UNREACHABLE } from '../../lib/pageClient';
 import type { SortKey } from './sort';
 import './DealsTab.css';
@@ -50,7 +51,7 @@ interface RowProps {
   scanRunning: boolean;
   version: number;
   busy: boolean;
-  onRun: (parts: { brand: string; model: string }[]) => Promise<string | null>;
+  onRun: (parts: { brand: string; model: string }[], button: HTMLButtonElement | null, rowKey: string) => Promise<string | null>;
   onOpen: (key: string) => void;
 }
 
@@ -87,7 +88,7 @@ function Row({ row, report, asked, api, scanRunning, version, busy, onRun, onOpe
         </div>
         {split ? asked ? <span className="deal-tag">Needs your answer</span> : null : <Figures row={row} />}
       </a>
-      {hasLookUp ? <LookUp row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} onRun={onRun} inRow /> : null}
+      {hasLookUp ? <LookUp row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} onRun={(parts, button) => onRun(parts, button, row.key)} inRow /> : null}
     </li>
   );
 }
@@ -97,9 +98,12 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
   // One paid request at a time across the whole tab; `version` makes every Look up ask for its price again afterwards.
   const [busy, setBusy] = useState(false);
   const [version, setVersion] = useState(0);
+  const focus = usePaidFocus(report);
   const run = useCallback(
-    async (parts: { brand: string; model: string }[]): Promise<string | null> => {
+    async (parts: { brand: string; model: string }[], button: HTMLButtonElement | null, rowKey: string): Promise<string | null> => {
       if (busy) return null;
+      // Focus on the button when it was pressed: when the Look up has ended and the button is gone, it goes to the row.
+      focus.begin(button, () => rowLinkOrTab(rowKey));
       setBusy(true);
       let error: string | null = null;
       try {
@@ -108,12 +112,13 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
       } catch {
         error = UNREACHABLE;
       }
+      focus.end();
       setBusy(false);
       setVersion((v) => v + 1);
       onPaidEnd?.();
       return error;
     },
-    [api, busy, onPaidEnd],
+    [api, busy, onPaidEnd, focus],
   );
   if (!report) return null;
   const job = state.lastJob;

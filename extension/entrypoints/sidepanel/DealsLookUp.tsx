@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { BundleRow } from '@core/scan/types';
 import type { WorkerApi } from '../../lib/pageClient';
 import { sentenceFor } from '../../lib/sentences';
@@ -20,7 +20,7 @@ interface LookUpProps {
   /** True while any Look up in the tab is in flight. */
   busy: boolean;
   /** Runs the paid action; resolves to the refusal sentence, or null when it ran. */
-  onRun: (parts: { brand: string; model: string }[]) => Promise<string | null>;
+  onRun: (parts: { brand: string; model: string }[], button: HTMLButtonElement | null) => Promise<string | null>;
   /** True in a Deals row: the button and its refusal are the row's own grid cells, not a wrapper of their own. */
   inRow?: boolean;
 }
@@ -43,12 +43,13 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
   // The last quoted count stays on the label while the next quote is asked for, so the price never disappears.
   const shown = last ? last.searches : null;
   const refusalId = useId();
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const refusal = scanRunning ? SCAN_RUNNING : ((runError?.partKey === partKey ? runError.text : null) ?? fresh?.refusal ?? problem);
   const run = () => {
     if (busy || !fresh || fresh.refusal) return;
     setRunError(null);
     setRunning(true);
-    void onRun(parts).then((error) => {
+    void onRun(parts, buttonRef.current).then((error) => {
       setRunning(false);
       // Said in words, never as the client's raw text.
       setRunError(error ? { partKey, text: sentenceFor(error, 'try again') ?? error } : null);
@@ -62,6 +63,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
   ) : null;
   const button = (
       <button
+        ref={buttonRef}
         type="button"
         className="deal-lookup-btn"
         aria-describedby={refusal ? refusalId : undefined}

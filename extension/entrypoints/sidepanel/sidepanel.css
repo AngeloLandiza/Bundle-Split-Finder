@@ -89,7 +89,8 @@ select {
   background: var(--surface);
   color: var(--ink);
 }
-.btn:disabled {
+.btn:disabled,
+.btn[aria-disabled='true'] {
   border: 1px solid var(--line);
   background: var(--sunken);
   color: var(--ink-3);

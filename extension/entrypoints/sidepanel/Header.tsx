@@ -23,7 +23,7 @@ export function Header({ scanRunning, stopping = false, noKey, scanBlockedTitle,
       </div>
       <div className="header-actions">
         {scanRunning ? (
-          <button type="button" id="scan-control" className="btn btn-secondary" disabled={stopping} onClick={onStop}>
+          <button type="button" id="scan-control" className="btn btn-secondary" aria-disabled={stopping ? 'true' : undefined} onClick={onStop}>
             {stopping ? 'Stopping…' : 'Stop'}
           </button>
         ) : (

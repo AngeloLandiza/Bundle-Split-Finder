@@ -12,6 +12,7 @@ import { LookUp } from './DealsLookUp';
 import { ProgressRow } from './ProgressRow';
 import { ReviewQuestion } from './ReviewQuestion';
 import { Verify } from './DetailVerify';
+import { usePaidFocus } from './paidFocus';
 import './Detail.css';
 
 export interface DetailProps {
@@ -111,7 +112,7 @@ interface PartProps {
   scanRunning: boolean;
   version: number;
   busy: boolean;
-  run: (action: PaidAction) => Promise<string | null>;
+  run: (action: PaidAction, button: HTMLButtonElement | null) => Promise<string | null>;
 }
 
 function Part({ part, row, report, fees, api, scanRunning, version, busy, run }: PartProps) {
@@ -160,7 +161,7 @@ function Part({ part, row, report, fees, api, scanRunning, version, busy, run }:
             scanRunning={scanRunning}
             version={version}
             busy={busy}
-            onRun={() => run({ kind: 'verify', brand: row.brand, model: part.model, asin })}
+            onRun={(button) => run({ kind: 'verify', brand: row.brand, model: part.model, asin }, button)}
           />
         ) : null}
       </div>
@@ -263,11 +264,20 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
     if (present) titleRef.current?.focus();
   }, [present]);
 
+  const focus = usePaidFocus(report);
+  // A Change that ends in the settled sentence: the Change button is gone, so focus goes to the title (Ruling 45).
+  const settledNow = reopened && row !== null && !row.answer && !(report?.review.some((r) => r.kind === 'split' && r.subject === row.key) ?? false);
+  useEffect(() => {
+    if (settledNow && (document.activeElement === null || document.activeElement === document.body)) titleRef.current?.focus();
+  }, [settledNow]);
+
   const run = useCallback(
-    async (action: PaidAction): Promise<string | null> => {
+    async (action: PaidAction, button: HTMLButtonElement | null): Promise<string | null> => {
       // The lock is a ref, so two clicks in one tick cannot both pass.
       if (locked.current) return BUSY;
       locked.current = true;
+      // Focus on the button when it was pressed: when the action has ended and the button is gone, it goes to the title.
+      focus.begin(button, () => titleRef.current);
       setBusy(true);
       let error: string | null = null;
       try {
@@ -277,12 +287,13 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
         error = UNREACHABLE;
       }
       locked.current = false;
+      focus.end();
       setBusy(false);
       setVersion((v) => v + 1);
       onPaidEnd?.();
       return error;
     },
-    [api, onPaidEnd],
+    [api, onPaidEnd, focus],
   );
 
   const top = (
@@ -433,7 +444,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
               <p className="detail-noestimate">
                 No estimate yet: {waiting} {waiting === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup.
               </p>
-              <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts) => run({ kind: 'lookUp', parts })} />
+              <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts, button) => run({ kind: 'lookUp', parts }, button)} />
             </>
           ) : (
             <>

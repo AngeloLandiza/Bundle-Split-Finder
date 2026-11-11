@@ -741,4 +741,14 @@ describe('changing a split answer', () => {
     show(row({ answer: null }));
     expect(screen.queryByText(settled)).toBeNull();
   });
+
+  it('moves focus to the title when a Change ends in the settled sentence, since Change is gone', async () => {
+    const user = userEvent.setup();
+    const { next } = reload(answered('chosen'));
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    expect(screen.getByRole('button', { name: 'Change' })).toHaveFocus();
+    next(row({ answer: null }), []);
+    await screen.findByText("The model number and page now settle this bundle's parts, so there is no question to answer.");
+    expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
+  });
 });

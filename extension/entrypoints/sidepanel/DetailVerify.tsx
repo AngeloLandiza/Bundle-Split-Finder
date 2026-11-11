@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { WorkerApi } from '../../lib/pageClient';
 import { sentenceFor } from '../../lib/sentences';
 import { SCAN_RUNNING } from './DealsLookUp';
@@ -17,7 +17,7 @@ interface VerifyProps {
   /** True while any paid action on this screen is in flight. */
   busy: boolean;
   /** Runs the paid action; resolves to the refusal sentence, or null when it ran. */
-  onRun: () => Promise<string | null>;
+  onRun: (button: HTMLButtonElement | null) => Promise<string | null>;
 }
 
 /** Verify for a title-only match. The price is asked for before the click; a refusal disables the button and says why. */
@@ -26,6 +26,7 @@ export function Verify({ brand, model, asin, report, api, scanRunning, version, 
   // True from the press until the request ends: this button says so.
   const [running, setRunning] = useState(false);
   const refusalId = useId();
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const { fresh, problem } = useQuote(api, { kind: 'verify', brand, model, asin }, `${brand}|${model}|${asin}`, scanRunning, version, report);
 
   const refusal = scanRunning ? SCAN_RUNNING : (runError ?? fresh?.refusal ?? problem);
@@ -33,7 +34,7 @@ export function Verify({ brand, model, asin, report, api, scanRunning, version, 
     if (busy || !fresh || fresh.refusal) return;
     setRunError(null);
     setRunning(true);
-    void onRun().then((error) => {
+    void onRun(buttonRef.current).then((error) => {
       setRunning(false);
       // Said in words, never as the client's raw text.
       setRunError(error === null ? null : (sentenceFor(error, 'try again') ?? error));
@@ -43,6 +44,7 @@ export function Verify({ brand, model, asin, report, api, scanRunning, version, 
   return (
     <div className="detail-verify">
       <button
+        ref={buttonRef}
         type="button"
         className="detail-verify-btn"
         aria-describedby={refusal ? refusalId : undefined}

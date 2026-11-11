@@ -322,10 +322,12 @@ describe('side panel shell', () => {
     onNext(send, 'stopScan', () => new Promise<Reply>((r) => (release = r)));
     await user.click(await screen.findByRole('button', { name: 'Stop' }));
     const stopping = screen.getByRole('button', { name: 'Stopping…' });
-    expect(stopping).toBeDisabled();
+    // aria-disabled, not disabled: focus stays on the button.
+    expect(stopping).toHaveAttribute('aria-disabled', 'true');
+    expect(stopping).toHaveFocus();
     await user.click(stopping);
     release({ ok: true, data: null });
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Stopping…' })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Stopping…' })).toHaveAttribute('aria-disabled', 'true'));
     expect(send.mock.calls.filter(([r]) => r.type === 'stopScan')).toHaveLength(1);
     await emit(state({ scanRunning: false, lastJob: { ...JOB, status: 'stopped' } as ScanJob }));
     expect(screen.getByRole('button', { name: 'Scan now' })).toBeInTheDocument();
