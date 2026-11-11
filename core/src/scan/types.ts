@@ -496,7 +496,7 @@ export interface BundleRow {
 export interface SaleOption {
   /** 'whole', or 'split:' and the split kits' models, sorted and joined by '+'. */
   id: string;
-  /** "PCL1600K2 sold whole", "PCL1600K2 split into its items", ...; '' when the bundle holds no such kit. */
+  /** "PCL1600K2 sold whole", "PCL1600K2 split into its parts", ... (Ruling 68: on screen a kit holds parts, never items); '' when the bundle holds no such kit. */
   label: string;
   /** The kits split into their items, in part order. */
   splitKits: string[];
