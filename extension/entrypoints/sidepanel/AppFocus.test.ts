@@ -32,17 +32,18 @@ const STATE: AppState = {
   nextRunAt: null,
 };
 
-function setup(first: PanelReport = REPORT, paid?: (r: Request) => PanelReport | null) {
+function setup(first: PanelReport = REPORT, paid?: (r: Request) => PanelReport | Reply | null, refusal: string | null = null) {
   let report = first;
   let listener: (s: AppState) => void = () => {};
   let n = 1;
   const send = vi.fn(async (r: Request): Promise<Reply> => {
     if (r.type === 'getState') return { ok: true, data: STATE };
     if (r.type === 'getReport') return { ok: true, data: report };
-    if (r.type === 'quote') return { ok: true, data: { searches: 1, refusal: null } };
+    if (r.type === 'quote') return { ok: true, data: { searches: 1, refusal } };
     if (r.type === 'runPaid' && paid) {
       // The worker saves, tells the panel its state changed, then replies.
       const next = paid(r);
+      if (next && 'ok' in next) return next;
       if (next) {
         report = next;
         n += 1;
@@ -126,7 +127,7 @@ describe('focus after a paid action', () => {
     setup({ bundles: [waiting('first')], review: [], packaging: {} }, () => ({ bundles: [waiting('first')], review: [], packaging: {} }));
     const button = await screen.findByRole('button', { name: /^Look up/ });
     await user.click(button);
-    await waitFor(() => expect(screen.getByRole('button', { name: /^Look up/ })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^Look up/ })).not.toHaveAttribute('aria-disabled'));
     expect(screen.getByRole('button', { name: /^Look up/ })).toHaveFocus();
   });
 
@@ -140,6 +141,37 @@ describe('focus after a paid action', () => {
     other.focus();
     await waitFor(() => expect(screen.queryByRole('button', { name: /^Look up/ })).toBeNull());
     expect(other).toHaveFocus();
+  });
+
+  it('Deals: a failed Look up leaves focus on its button, never <body>', async () => {
+    const user = userEvent.setup();
+    setup({ bundles: [waiting('first')], review: [], packaging: {} }, () => ({ ok: false, error: 'SerpApi returned HTTP 503.' }));
+    await user.click(await screen.findByRole('button', { name: /^Look up/ }));
+    await screen.findByText(/SerpApi answered with an error/);
+    const button = screen.getByRole('button', { name: /^Look up/ });
+    expect(button).toHaveFocus();
+    expect(document.body).not.toHaveFocus();
+  });
+
+  it('Deals: a refused Look up keeps focus on its button, and sends nothing', async () => {
+    const user = userEvent.setup();
+    const { send } = setup({ bundles: [waiting('first')], review: [], packaging: {} }, () => null, 'The monthly allowance is used up.');
+    const button = await screen.findByRole('button', { name: /^Look up/ });
+    await screen.findByText('The monthly allowance is used up.');
+    await user.click(button);
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveFocus();
+    expect(send.mock.calls.some(([r]) => r.type === 'runPaid')).toBe(false);
+  });
+
+  it('Detail: a failed Verify leaves focus on its button, never <body>', async () => {
+    const user = userEvent.setup();
+    const probable = { ...REPORT.bundles[0]!, key: 'first', parts: [{ ...part('DCD791B'), grade: 'probable' as const }, part('DCF891B')] };
+    setup({ bundles: [probable], review: [], packaging: {} }, () => ({ ok: false, error: 'SerpApi returned HTTP 503.' }));
+    await user.click(await screen.findByRole('link', { name: /Title of first/ }));
+    await user.click(await screen.findByRole('button', { name: /^Verify/ }));
+    await screen.findByText(/SerpApi answered with an error/);
+    expect(screen.getByRole('button', { name: /^Verify/ })).toHaveFocus();
   });
 
   it('Detail: a Look up that removes its button leaves focus on the title', async () => {

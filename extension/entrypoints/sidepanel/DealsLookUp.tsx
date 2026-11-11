@@ -45,8 +45,10 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
   const refusalId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const refusal = scanRunning ? SCAN_RUNNING : ((runError?.partKey === partKey ? runError.text : null) ?? fresh?.refusal ?? problem);
+  // aria-disabled, not disabled: focus stays on the button while it is busy or refused.
+  const blocked = busy || !fresh || fresh.refusal !== null;
   const run = () => {
-    if (busy || !fresh || fresh.refusal) return;
+    if (blocked) return;
     setRunError(null);
     setRunning(true);
     void onRun(parts, buttonRef.current).then((error) => {
@@ -57,7 +59,8 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
   };
 
   const cost = shown === null ? `at most ${searches(parts.length)}` : shown === 0 ? 'no search' : searches(shown);
-  // The name says what is looked up; the visible label stays short.
+  // The name starts with the visible label (WCAG 2.5.3) and then says what is looked up.
+  const visible = `Look up ${shown === 0 ? '· no search' : cost}`;
   const what = parts.length === 1 ? parts[0]!.model : `${parts.length} parts of ${row.model}`;
 
   const refusalText = refusal ? (
@@ -70,9 +73,9 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
         ref={buttonRef}
         type="button"
         className="deal-lookup-btn"
-        aria-label={running ? undefined : `Look up ${what}, ${cost}`}
+        aria-label={running ? undefined : `${visible}, ${what}`}
         aria-describedby={refusal ? refusalId : undefined}
-        disabled={busy || !fresh || fresh.refusal !== null}
+        aria-disabled={blocked ? 'true' : undefined}
         onClick={run}
       >
         {running ? (

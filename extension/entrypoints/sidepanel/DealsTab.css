@@ -285,7 +285,7 @@
   align-items: center;
   gap: 6px;
 }
-.deal-lookup-btn:disabled {
+.deal-lookup-btn[aria-disabled='true'] {
   border-color: var(--line);
   background: var(--sunken);
   color: var(--ink-3);
@@ -297,7 +297,7 @@
   font-variant-numeric: tabular-nums;
   color: var(--ink-2);
 }
-.deal-lookup-btn:disabled .deal-lookup-cost {
+.deal-lookup-btn[aria-disabled='true'] .deal-lookup-cost {
   color: var(--ink-3);
 }
 

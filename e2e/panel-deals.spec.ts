@@ -82,7 +82,7 @@ test('deals tab, bundles waiting for a lookup', async ({ context, extensionId, o
   await expect(panel.getByText('Scan stopped at your search limit')).toBeVisible();
   await expect(panel.getByRole('region', { name: 'Problem' })).toHaveCount(0);
   // The worker quotes each Look up: the label shows the quoted count.
-  await expect(panel.getByRole('button', { name: /^Look up .+, \d+ search(es)?$/ }).first()).toBeEnabled();
+  await expect(panel.getByRole('button', { name: /^Look up \d+ search(es)?, .+$/ }).first()).not.toHaveAttribute('aria-disabled');
   await expect(panel.locator('.deal-refusal')).toHaveCount(0);
   // N9: the left column of a row with a Look up button stops before the button, at both widths.
   for (const width of WIDTHS) {

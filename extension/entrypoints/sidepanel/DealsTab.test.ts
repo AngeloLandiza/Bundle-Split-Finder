@@ -436,20 +436,20 @@ describe('Look up names what it looks up', () => {
     const one = row('o1', { model: 'PCL1201K2', estimate: null, section: 'waiting', parts: [part('PCL1201K2', none)] });
     const two = row('t1', { model: 'PCL1201K2-PCL515B', estimate: null, section: 'waiting', parts: [part('PCL1201K2', none), part('PCL515B', none)] });
     show(report([one, two]), state(), { api: fakeApi({ searches: 1, refusal: null }).api });
-    expect(await screen.findByRole('button', { name: 'Look up PCL1201K2, 1 search' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Look up 2 parts of PCL1201K2-PCL515B, 1 search' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Look up 1 search, PCL1201K2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Look up 1 search, 2 parts of PCL1201K2-PCL515B' })).toBeInTheDocument();
     // The visible label is unchanged.
-    expect(screen.getByRole('button', { name: 'Look up PCL1201K2, 1 search' })).toHaveTextContent('Look up 1 search');
+    expect(screen.getByRole('button', { name: 'Look up 1 search, PCL1201K2' })).toHaveTextContent('Look up 1 search');
   });
 
   it('says at most N searches before the quote returns, and no search when it is free', async () => {
     const two = row('t1', { model: 'PCL1201K2-PCL515B', estimate: null, section: 'waiting', parts: [part('PCL1201K2', none), part('PCL515B', none)] });
     const never: WorkerApi = { send: vi.fn(() => new Promise(() => {})) as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([two]), state(), { api: never });
-    expect(screen.getByRole('button', { name: 'Look up 2 parts of PCL1201K2-PCL515B, at most 2 searches' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Look up at most 2 searches, 2 parts of PCL1201K2-PCL515B' })).toHaveAttribute('aria-disabled', 'true');
     cleanup();
     show(report([two]), state(), { api: fakeApi({ searches: 0, refusal: null }).api });
-    expect(await screen.findByRole('button', { name: 'Look up 2 parts of PCL1201K2-PCL515B, no search' })).toHaveTextContent('Look up · no search');
+    expect(await screen.findByRole('button', { name: 'Look up · no search, 2 parts of PCL1201K2-PCL515B' })).toHaveTextContent('Look up · no search');
   });
 
   it('labels the limit notice by its own heading', () => {
@@ -491,7 +491,7 @@ describe('Look up', () => {
     const user = userEvent.setup();
     const { api, send } = fakeApi({ searches: 2, refusal: null });
     show(report([waiting, row('c1')]), state(), { api });
-    const button = await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ });
+    const button = await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ });
     const action = { kind: 'lookUp', parts: [{ brand: 'DEWALT', model: 'DCB1' }, { brand: 'DEWALT', model: 'DCB2' }] };
     expect(send).toHaveBeenCalledWith({ type: 'quote', action });
     expect(screen.getAllByRole('button', { name: /^Look up/ })).toHaveLength(1);
@@ -501,7 +501,7 @@ describe('Look up', () => {
 
   it('says Look up · no search when the quote is free, never 0 searches (N8)', async () => {
     show(report([waiting]), state(), { api: fakeApi({ searches: 0, refusal: null }).api });
-    const button = await screen.findByRole('button', { name: /^Look up .+, no search$/ });
+    const button = await screen.findByRole('button', { name: /^Look up · no search, .+$/ });
     expect(button).toBeEnabled();
     expect(screen.queryByRole('button', { name: /0 searches/ })).toBeNull();
   });
@@ -519,7 +519,7 @@ describe('Look up', () => {
     const send = vi.fn(() => new Promise<Reply>(() => {}));
     const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting]), state(), { api });
-    expect(screen.getByRole('button', { name: /^Look up .+, at most 2 searches$/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Look up at most 2 searches, .+$/ })).toHaveAttribute('aria-disabled', 'true');
     cleanup();
     const sentence = 'The hourly search limit is reached.';
     show(report([waiting]), state(), { api: fakeApi({ searches: 2, refusal: sentence }).api });
@@ -537,23 +537,23 @@ describe('Look up', () => {
     });
     const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting]), state(), { api });
-    await user.click(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ }));
-    const button = await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ });
-    expect(button).toBeDisabled();
+    await user.click(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ }));
+    const button = await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ });
+    expect(button).toHaveAttribute('aria-disabled', 'true');
     release({ ok: true, data: { searches: 1, refusal: null } });
-    expect(await screen.findByRole('button', { name: /^Look up .+, 1 search$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 1 search, .+$/ })).not.toHaveAttribute('aria-disabled');
   });
 
   it('says 1 search in the singular', async () => {
     show(report([waiting]), state(), { api: fakeApi({ searches: 1, refusal: null }).api });
-    expect(await screen.findByRole('button', { name: /^Look up .+, 1 search$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 1 search, .+$/ })).not.toHaveAttribute('aria-disabled');
   });
 
   it('disables the button and shows the refusal beneath', async () => {
     const sentence = 'The hourly search limit is reached. Try again after 15:00.';
     show(report([waiting]), state(), { api: fakeApi({ searches: 2, refusal: sentence }).api });
     expect(await screen.findByText(sentence)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Look up/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Look up/ })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('sends one request at a time', async () => {
@@ -565,9 +565,9 @@ describe('Look up', () => {
     });
     const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting]), state(), { api });
-    const button = await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ });
+    const button = await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ });
     await user.click(button);
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
     await user.click(button);
     expect(send.mock.calls.filter((c) => c[0].type === 'runPaid')).toHaveLength(1);
     release({ ok: false, error: 'Not available yet.' });
@@ -583,8 +583,8 @@ describe('Look up', () => {
     });
     const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting]), state(), { api });
-    await user.click(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ }));
-    expect(screen.getByRole('button', { name: 'Looking up…' })).toBeDisabled();
+    await user.click(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ }));
+    expect(screen.getByRole('button', { name: 'Looking up…' })).toHaveAttribute('aria-disabled', 'true');
     release({ ok: false, error: 'SerpApi returned HTTP 404.' });
     expect(await screen.findByText('SerpApi answered with an error (HTTP 404). Try again later.')).toBeInTheDocument();
     expect(screen.queryByText(/returned HTTP/)).toBeNull();
@@ -603,11 +603,11 @@ describe('Look up', () => {
     });
     const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting, waiting2]), state(), { api });
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /^Look up .+, \d/ })).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /^Look up .*\d.*, / })).toHaveLength(2));
     const [first, second] = screen.getAllByRole('button', { name: /^Look up/ });
     await user.click(first!);
-    expect(first).toBeDisabled();
-    expect(second).toBeDisabled();
+    expect(first).toHaveAttribute('aria-disabled', 'true');
+    expect(second).toHaveAttribute('aria-disabled', 'true');
     await user.click(second!);
     expect(send.mock.calls.filter((c) => c[0].type === 'runPaid')).toHaveLength(1);
     release({ ok: true, data: null });
@@ -618,9 +618,9 @@ describe('Look up', () => {
     const { api } = fakeApi({ searches: 2, refusal: null });
     const { view } = show(report([waiting]), state({ scanRunning: true }), { api });
     expect(screen.getByText('A scan is running.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Look up .+, at most 2 searches$/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Look up at most 2 searches, .+$/ })).toHaveAttribute('aria-disabled', 'true');
     view.rerender(createElement(DealsTab, props(api, state({ scanRunning: false }))));
-    expect(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ })).not.toHaveAttribute('aria-disabled');
     expect(screen.queryByText('A scan is running.')).toBeNull();
   });
 
@@ -631,12 +631,12 @@ describe('Look up', () => {
     );
     const { view } = show(report([waiting]), state({ scanRunning: false }), { api });
     expect(await screen.findByText('A scan is already running.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Look up/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Look up/ })).toHaveAttribute('aria-disabled', 'true');
     refuse = false;
     // A scan starts and ends: the price is asked for again.
     view.rerender(createElement(DealsTab, props(api, state({ scanRunning: true }))));
     view.rerender(createElement(DealsTab, props(api, state({ scanRunning: false }))));
-    expect(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ })).not.toHaveAttribute('aria-disabled');
     expect(screen.queryByText('A scan is already running.')).toBeNull();
   });
 
@@ -645,7 +645,7 @@ describe('Look up', () => {
     const onPaidEnd = vi.fn();
     const { api } = fakeApi((r) => (r.type === 'quote' ? { ok: true, data: { searches: 2, refusal: null } } : { ok: false, error: 'Not available yet.' }));
     render(createElement(DealsTab, { api, report: report([waiting]), state: state(), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn(), onPaidEnd }));
-    await user.click(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ }));
+    await user.click(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ }));
     await waitFor(() => expect(onPaidEnd).toHaveBeenCalledTimes(1));
   });
 
@@ -659,8 +659,8 @@ describe('Look up', () => {
     });
     const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting]), state(), { api });
-    await user.click(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ }));
-    expect(await screen.findByRole('button', { name: /^Look up .+, 1 search$/ })).toBeEnabled();
+    await user.click(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ }));
+    expect(await screen.findByRole('button', { name: /^Look up 1 search, .+$/ })).not.toHaveAttribute('aria-disabled');
     expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(2);
   });
 
@@ -673,13 +673,13 @@ describe('Look up', () => {
     });
     const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting]), state(), { api });
-    await user.click(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ }));
+    await user.click(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ }));
     expect(await screen.findByText('Not available yet.')).toBeInTheDocument();
     // The re-quote after the run succeeded; the sentence is still there.
     await waitFor(() => expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(2));
     expect(screen.getByText('Not available yet.')).toBeInTheDocument();
     fail = false;
-    await user.click(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ }));
+    await user.click(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ }));
     await waitFor(() => expect(screen.queryByText('Not available yet.')).toBeNull());
   });
 
@@ -688,7 +688,7 @@ describe('Look up', () => {
     const r = report([waiting]);
     const s = state();
     const { view } = show(r, s, { api });
-    await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ });
+    await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ });
     view.rerender(createElement(DealsTab, { ...props({ ...api }, s), report: r }));
     expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(1);
   });
@@ -716,13 +716,13 @@ describe('Look up', () => {
     const tab = (s: AppState) => createElement(DealsTab, { api, report: r, state: s, sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() });
     const view = render(tab(state()));
     await answer(2);
-    expect(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ })).not.toHaveAttribute('aria-disabled');
     view.rerender(tab(state({ scanRunning: true })));
     view.rerender(tab(state({ scanRunning: false })));
     // The quote from before the scan is not this one's.
-    expect(screen.getByRole('button', { name: /^Look up .+, 2 searches$/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Look up 2 searches, .+$/ })).toHaveAttribute('aria-disabled', 'true');
     await answer(1);
-    expect(await screen.findByRole('button', { name: /^Look up .+, 1 search$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 1 search, .+$/ })).not.toHaveAttribute('aria-disabled');
   });
 
   it('after its parts change, stays disabled until their quote comes', async () => {
@@ -731,11 +731,11 @@ describe('Look up', () => {
     const tab = (r: BundleRow) => createElement(DealsTab, { api, report: report([r]), state: state(), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() });
     const view = render(tab(waiting));
     await answer(2);
-    expect(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ })).not.toHaveAttribute('aria-disabled');
     view.rerender(tab(more));
-    expect(screen.getByRole('button', { name: /^Look up .+, 2 searches$/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Look up 2 searches, .+$/ })).toHaveAttribute('aria-disabled', 'true');
     await answer(3);
-    expect(await screen.findByRole('button', { name: /^Look up .+, 3 searches$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 3 searches, .+$/ })).not.toHaveAttribute('aria-disabled');
   });
 
   it('asks again when a new report comes, so a refusal from a paid action elsewhere does not stay', async () => {
@@ -745,11 +745,11 @@ describe('Look up', () => {
     const tab = (r: PanelReport) => createElement(DealsTab, { api, report: r, state: state(), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() });
     const view = render(tab(report([waiting])));
     expect(await screen.findByText(paying)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Look up .+, 2 searches$/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Look up 2 searches, .+$/ })).toHaveAttribute('aria-disabled', 'true');
     // The other screen's Verify ended: the worker broadcast, and the panel read the report again.
     refusal = null;
     view.rerender(tab(report([waiting])));
-    expect(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ })).not.toHaveAttribute('aria-disabled');
     expect(screen.queryByText(paying)).toBeNull();
     expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(2);
   });
@@ -762,7 +762,7 @@ describe('Look up', () => {
     });
     const { api, send } = fakeApi({ searches: 2, refusal: null });
     show(report([chosen]), state(), { api });
-    expect(await screen.findByRole('button', { name: /^Look up .+, 2 searches$/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up 2 searches, .+$/ })).not.toHaveAttribute('aria-disabled');
     expect(send).toHaveBeenCalledWith({ type: 'quote', action: { kind: 'lookUp', parts: [{ brand: 'DEWALT', model: 'DCKTS650D1P1' }, { brand: 'DEWALT', model: 'DCF921B' }] } });
   });
 });

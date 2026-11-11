@@ -30,8 +30,10 @@ export function Verify({ brand, model, asin, report, api, scanRunning, version, 
   const { fresh, problem } = useQuote(api, { kind: 'verify', brand, model, asin }, `${brand}|${model}|${asin}`, scanRunning, version, report);
 
   const refusal = scanRunning ? SCAN_RUNNING : (runError ?? fresh?.refusal ?? problem);
+  // aria-disabled, not disabled: focus stays on the button while it is busy or refused.
+  const blocked = busy || !fresh || fresh.refusal !== null;
   const run = () => {
-    if (busy || !fresh || fresh.refusal) return;
+    if (blocked) return;
     setRunError(null);
     setRunning(true);
     void onRun(buttonRef.current).then((error) => {
@@ -48,7 +50,7 @@ export function Verify({ brand, model, asin, report, api, scanRunning, version, 
         type="button"
         className="detail-verify-btn"
         aria-describedby={refusal ? refusalId : undefined}
-        disabled={busy || !fresh || fresh.refusal !== null}
+        aria-disabled={blocked ? 'true' : undefined}
         onClick={run}
       >
         {running ? (

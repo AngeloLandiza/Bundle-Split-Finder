@@ -89,7 +89,7 @@ describe('Detail on a replayed scan', () => {
       expect(block.getByText(p.title!)).toHaveAttribute('title', p.title!);
       expect(block.getByRole('link', { name: p.asin! })).toHaveAttribute('href', `https://www.amazon.com/dp/${p.asin}`);
       expect(block.getByText('Title match')).toBeInTheDocument();
-      expect(await block.findByRole('button', { name: 'Verify · 1 search' })).toBeEnabled();
+      expect(await block.findByRole('button', { name: 'Verify · 1 search' })).not.toHaveAttribute('aria-disabled');
     }
     expect(screen.getByRole('button', { name: 'Copy both ASINs' })).toBeEnabled();
   });
@@ -100,7 +100,7 @@ describe('Detail on a replayed scan', () => {
     expect(row.parts.map((p) => p.status)).toEqual(['unmatched', 'unmatched']);
     open(report, row.key);
     expect(screen.getByText('No estimate yet: 2 parts still need an Amazon lookup.')).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: `Look up 2 parts of ${row.model}, 1 search` })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: `Look up 1 search, 2 parts of ${row.model}` })).not.toHaveAttribute('aria-disabled');
     expect(screen.getAllByText('Not looked up yet')).toHaveLength(2);
   });
 
@@ -110,7 +110,7 @@ describe('Detail on a replayed scan', () => {
     open(limited, row.key);
     expect(row.estimate).toBeNull();
     expect(screen.getByText(`No estimate yet: ${waiting} ${waiting === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup.`)).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: /^Look up/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up/ })).not.toHaveAttribute('aria-disabled');
     expect(screen.getAllByText('Not looked up yet').length).toBe(waiting);
   });
 

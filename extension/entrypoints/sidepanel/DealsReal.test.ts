@@ -42,6 +42,11 @@ async function replayed(settings: ScanSettings, maxPerRun: number): Promise<{ re
  * asks which, and the owner answers DCF921B. Its parts have no match record until something looks them up.
  */
 async function ownerChose(): Promise<PanelReport> {
+  const { store, settings } = await ownerChoseStore();
+  return { ...(await buildReport(store, settings)), packaging: {} };
+}
+
+async function ownerChoseStore(): Promise<{ store: MemoryScanStore; settings: ScanSettings }> {
   const store = new MemoryScanStore();
   const [model, title] = HD_DEWALT_AMBIGUOUS;
   await store.putBundle({
@@ -57,7 +62,7 @@ async function ownerChose(): Promise<PanelReport> {
   await runScan({ client, budget, store, settings, now: () => T0 });
   const question = (await store.getReview('split:homedepot:ambiguous'))!;
   await applyReviewAnswer(store, question.id, { choice: 1, seen: reviewSignature(question) }, T0);
-  return { ...(await buildReport(store, settings)), packaging: {} };
+  return { store, settings };
 }
 
 /** The limited scan, then a panel Look up of every part it left waiting. The job is the scan's: Look up never rewrites it. */
@@ -124,7 +129,7 @@ describe('Deals on a replayed scan', () => {
     const send = vi.fn(async (r: { type: string }) => (r.type === 'quote' ? { ok: true, data: { searches: 2, refusal: null } } : { ok: true, data: null }));
     const quoting: WorkerApi = { ...api, send: send as unknown as WorkerApi['send'] };
     render(createElement(DealsTab, { api: quoting, report, state: appState(ratchet.job), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
-    expect(await screen.findByRole('button', { name: `Look up 2 parts of ${row.model}, 2 searches` })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: `Look up 2 searches, 2 parts of ${row.model}` })).not.toHaveAttribute('aria-disabled');
     expect(send).toHaveBeenCalledWith({ type: 'quote', action: { kind: 'lookUp', parts: [{ brand: 'DEWALT', model: 'DCKTS650D1P1' }, { brand: 'DEWALT', model: 'DCF921B' }] } });
   });
 
@@ -148,7 +153,7 @@ describe('Deals on a replayed scan', () => {
       const what = parts.length === 1 ? parts[0]!.model : `${parts.length} parts of ${r.model}`;
       const li = document.querySelector(`a.deal-link[data-key="${r.key}"]`)!.closest('li')!;
       const button = li.querySelector<HTMLElement>('.deal-lookup-btn')!;
-      expect(button.getAttribute('aria-label')).toMatch(new RegExp(`^Look up ${what.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}, (at most )?\\d+ search(es)?$`));
+      expect(button.getAttribute('aria-label')).toMatch(new RegExp(`^Look up (at most )?\\d+ search(es)?, ${what.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`));
       expect(button.textContent).toMatch(/^Look up /);
       // The layout classes the stylesheet's two-line grid and its wrapping rely on.
       expect(li).toHaveClass('deal-row', 'deal-row-lookup');
@@ -199,5 +204,35 @@ describe('notices after a Look up, on replayed data', () => {
     expect(screen.queryByText(/^Set aside for the next scan/)).toBeNull();
     go(after, withFailure(joined));
     expect(screen.getByText('Set aside for the next scan. A Home Depot page could not be read.')).toBeInTheDocument();
+  });
+
+  it('a lookup the real runner set aside is said while its part waits, and not once a Look up has done it', async () => {
+    // The owner's chosen split has parts the replay has no answer for; the ratchet scan's own parts answer.
+    const { store } = await ownerChoseStore();
+    const settings = RATCHET;
+    // Only DCF921B is left to fail: the bundle's other part already has its lookup result.
+    await store.putMatch({ key: 'DEWALT:DCKTS650D1P1', brand: 'DEWALT', model: 'DCKTS650D1P1', status: 'none', asin: null, grade: null, alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null });
+    const budget = new SearchBudget(parseAccount({ ...SERPAPI_ACCOUNT_FREE }), { reserve: 0, maxPerRun: 20 });
+    const client = new SerpApiClient({ apiKey: 'TEST', budget, cache: new MemoryCache(), fetchFn: replayRecorded().fetchFn, now: () => T0 });
+    const job = await runScan({ client, budget, store, settings, now: () => T0 });
+    // The replay has no recording for one of the two parts: its lookup fails and is set aside by core's own runner.
+    expect(job.stopMessage).toMatch(/The lookup of (\S+) failed: /);
+    expect(job.setAsideParts?.length).toBeGreaterThan(0);
+    const failed = /The lookup of (\S+) failed: /.exec(job.stopMessage!)![1]!;
+    const before = { ...(await buildReport(store, settings)), packaging: {} };
+    expect(before.bundles.flatMap((b) => b.parts).find((p) => p.model === failed)?.status).toBe('waiting');
+    const show = (report: PanelReport) => {
+      cleanup();
+      render(createElement(DealsTab, { api, report, state: appState(job), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
+    };
+    show(before);
+    expect(screen.getByText(new RegExp(`^Set aside for the next scan\\..*The lookup of ${failed} failed:`))).toBeInTheDocument();
+    // A Look up of that part (the panel never rewrites the job) leaves it looked up: a 'none' match, as a finished lookup saves.
+    const owner = before.bundles.find((b) => b.parts.some((p) => p.model === failed))!;
+    await store.putMatch({ key: partKey(owner.brand, failed), brand: owner.brand, model: failed, status: 'none', asin: null, grade: null, alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null });
+    const after = { ...(await buildReport(store, settings)), packaging: {} };
+    expect(after.bundles.flatMap((b) => b.parts).find((p) => p.model === failed)?.status).not.toBe('waiting');
+    show(after);
+    expect(screen.queryByText(/^Set aside for the next scan/)).toBeNull();
   });
 });

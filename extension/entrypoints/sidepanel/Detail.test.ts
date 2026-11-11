@@ -183,7 +183,7 @@ describe('headline', () => {
       { api },
     );
     expect(screen.getByText('No estimate yet: 2 parts still need an Amazon lookup.')).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: /^Look up/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up/ })).not.toHaveAttribute('aria-disabled');
     expect(screen.queryByText(/^Estimate from your fee settings/)).toBeNull();
   });
 
@@ -192,7 +192,7 @@ describe('headline', () => {
     const none = { asin: null, grade: null, price: null, availability: 'missing' as const, title: null };
     show(row({ estimate: null, section: 'missing_listing', parts: [part('A1', { status: 'unmatched', ...none }), part('A2', { status: 'waiting', ...none })] }), { api });
     expect(screen.getByText('No estimate yet: 2 parts still need an Amazon lookup.')).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: /^Look up/ })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: /^Look up/ })).not.toHaveAttribute('aria-disabled');
     expect(send).toHaveBeenCalledWith({ type: 'quote', action: { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'A1' }, { brand: 'RYOBI', model: 'A2' }] } });
   });
 
@@ -200,7 +200,7 @@ describe('headline', () => {
     const send = vi.fn(() => new Promise<Reply>(() => {}));
     const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(row({ estimate: null, section: 'missing_listing', parts: [part('A1', { status: 'waiting', asin: null, grade: null, price: null, availability: 'missing' })] }), { api });
-    expect(screen.getByRole('button', { name: /^Look up .+, at most 1 search$/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Look up at most 1 search, .+$/ })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('says why when there is no estimate for another reason', () => {
@@ -380,7 +380,7 @@ describe('parts', () => {
     show(row({ parts: [part('PBLRC25B', { grade: 'probable' })] }), { api });
     const sentence = await screen.findByText('The hourly search limit is reached.');
     const button = screen.getByRole('button', { name: 'Verify · 1 search' });
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(button).toHaveAttribute('aria-describedby', sentence.id);
   });
 
@@ -388,7 +388,7 @@ describe('parts', () => {
     const send = vi.fn(() => new Promise<Reply>(() => {}));
     const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(row({ parts: [part('PBLRC25B', { grade: 'probable' })] }), { api });
-    expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('reads Needs your answer in Review for a part left in review', () => {
@@ -424,23 +424,23 @@ describe('parts', () => {
     const r = row({ parts: [part('PBLRC25B', { grade: 'probable' })] });
     const view = render(detailOf(api, r));
     await answer();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).not.toHaveAttribute('aria-disabled'));
     view.rerender(detailOf(api, r, state({ scanRunning: true })));
     view.rerender(detailOf(api, r, state({ scanRunning: false })));
-    expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toHaveAttribute('aria-disabled', 'true');
     await answer();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).not.toHaveAttribute('aria-disabled'));
   });
 
   it('Verify stays disabled after the listing changes until its quote comes', async () => {
     const { api, send, answer } = heldQuotes();
     const view = render(detailOf(api, row({ parts: [part('PBLRC25B', { grade: 'probable' })] })));
     await answer();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).not.toHaveAttribute('aria-disabled'));
     view.rerender(detailOf(api, row({ parts: [part('PBLRC25B', { grade: 'probable', asin: 'B0OTHER001' })] })));
-    expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toHaveAttribute('aria-disabled', 'true');
     await answer();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).not.toHaveAttribute('aria-disabled'));
     expect(send).toHaveBeenLastCalledWith({ type: 'quote', action: { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0OTHER001' } });
   });
 
@@ -455,7 +455,7 @@ describe('parts', () => {
     refusal = null;
     // detailOf builds a new report: as after the worker's broadcast when the other action ended.
     view.rerender(detailOf(api, r));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).not.toHaveAttribute('aria-disabled'));
     expect(screen.queryByText(paying)).toBeNull();
   });
 
@@ -479,7 +479,7 @@ describe('parts', () => {
     const buttons = await screen.findAllByRole('button', { name: /^Verify/ });
     await waitFor(() => expect(buttons[0]).toBeEnabled());
     await user.click(buttons[0]!);
-    await waitFor(() => expect(buttons[1]).toBeDisabled());
+    await waitFor(() => expect(buttons[1]).toHaveAttribute('aria-disabled', 'true'));
     await user.click(buttons[1]!);
     expect(send.mock.calls.filter(([r]) => r.type === 'runPaid')).toHaveLength(1);
     release({ ok: true, data: null });

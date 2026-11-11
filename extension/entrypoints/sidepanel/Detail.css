@@ -359,7 +359,7 @@
   cursor: pointer;
   white-space: nowrap;
 }
-.detail-verify-btn:disabled {
+.detail-verify-btn[aria-disabled='true'] {
   border-color: var(--line);
   background: var(--sunken);
   color: var(--ink-3);
@@ -371,7 +371,7 @@
   font-variant-numeric: tabular-nums;
   color: var(--ink-2);
 }
-.detail-verify-btn:disabled .detail-verify-cost {
+.detail-verify-btn[aria-disabled='true'] .detail-verify-cost {
   color: var(--ink-3);
 }
 .detail-refusal {
