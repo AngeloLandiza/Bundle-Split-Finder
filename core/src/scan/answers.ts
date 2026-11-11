@@ -8,7 +8,7 @@
 // decided by the user, which no scan changes.
 
 import { type Decomposition, OFFERABLE_PART } from '../decompose';
-import type { ReviewAnswer, ReviewCandidate, ReviewItem, ScanStore } from './types';
+import type { OwnerAnswer, ReviewAnswer, ReviewCandidate, ReviewItem, ScanStore } from './types';
 
 /** The note on a split the owner chose. */
 export const CHOSEN_NOTE = 'parts chosen by you';
@@ -109,6 +109,22 @@ export function ownerSplit(item: ReviewItem | undefined): Decomposition | typeof
   }
   const chosen = choices.find((c) => c.join(',') === item.answer);
   return chosen ? chosenSplit(chosen) : null;
+}
+
+/**
+ * Which of the owner's answers decides `split`, the bundle's split as stored: the answer of `item`, its
+ * split question, when ownerSplit reads one and the split is it (the parts chosen or entered, resolved,
+ * with its note) or, for "none", the split is noted as the owner's none. Null otherwise: no question,
+ * an open one, one a scan closed, an answer that decides nothing, or a split that is not the answer's.
+ */
+export function ownerAnswer(item: ReviewItem | undefined, split: Decomposition | null): OwnerAnswer | null {
+  const owner = ownerSplit(item);
+  if (owner === null || !item || !split) return null;
+  if (owner === NONE) return split.status !== 'resolved' && split.notes.includes(NONE_NOTE) ? { reviewId: item.id, kind: 'none' } : null;
+  const note = owner.notes[0]!;
+  const same = split.status === 'resolved' && split.notes.includes(note) &&
+    split.components.length === owner.components.length && split.components.every((m, i) => m === owner.components[i]);
+  return same ? { reviewId: item.id, kind: note === CHOSEN_NOTE ? 'chosen' : 'entered' } : null;
 }
 
 /** 1 to MAX_ENTERED_PARTS entries, each a model number (OFFERABLE_PART). A repeat counts as an entry. */

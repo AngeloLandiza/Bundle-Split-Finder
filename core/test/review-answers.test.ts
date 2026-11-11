@@ -487,6 +487,65 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
   });
 });
 
+// ---------------------------------------------------------------- the report names the owner's answer
+
+describe('BundleRow.answer: the report says when a split is the owner\'s answer', () => {
+  const RYOBI_COMBO: ScanSettings = { ...STEP2, brands: ['RYOBI'], queries: [{ q: 'ryobi 18v combo kit' }] };
+  const RYOBI_ONLY: ScanSettings = { ...STEP2, brands: ['RYOBI'], queries: [] };
+  const SB = 'split:homedepot:328690510';
+  const P553 = 'split:homedepot:320243741';
+  const rowOf = async (w: World, settings: ScanSettings, key: string) => (await buildReport(w.store, settings)).bundles.find((b) => b.key === key)!;
+
+  it('is null for every bundle a scan split or left open', async () => {
+    const w = world();
+    await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    const report = await buildReport(w.store, RYOBI_COMBO);
+    expect(report.bundles.length).toBeGreaterThan(0);
+    for (const b of report.bundles) expect(b.answer, b.model).toBeNull();
+  });
+
+  it('names a chosen reading, typed parts and None of these, and survives a later scan', async () => {
+    const w = world();
+    await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    await applyReviewAnswer(w.store, P553, await shown(w, P553, { choice: 0 }), T0 + MINUTE);
+    await applyReviewAnswer(w.store, SB, { parts: ['PCL500B', 'PCL526B'], seen: reviewSignature((await w.store.getReview(SB))!) }, T0 + MINUTE);
+    const A983002 = 'split:homedepot:345178210';
+    await applyReviewAnswer(w.store, A983002, await shown(w, A983002, { none: true }), T0 + MINUTE);
+    const expected = async () => {
+      expect((await rowOf(w, RYOBI_ONLY, 'homedepot:320243741')).answer).toEqual({ reviewId: P553, kind: 'chosen' });
+      expect((await rowOf(w, RYOBI_ONLY, 'homedepot:328690510')).answer).toEqual({ reviewId: SB, kind: 'entered' });
+      expect((await rowOf(w, RYOBI_ONLY, 'homedepot:345178210')).answer).toEqual({ reviewId: A983002, kind: 'none' });
+    };
+    await expected();
+    w.clock = T0 + DAY;
+    await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    await expected();
+  });
+
+  it('typed parts that are one of the choices read as chosen', async () => {
+    const w = world();
+    await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    await applyReviewAnswer(w.store, P553, { parts: ['pcl1600k2', 'p553'], seen: reviewSignature((await w.store.getReview(P553))!) }, T0 + MINUTE);
+    expect((await rowOf(w, RYOBI_ONLY, 'homedepot:320243741')).answer).toEqual({ reviewId: P553, kind: 'chosen' });
+  });
+
+  it('is null for a question a scan closed and for a stored answer that decides nothing', async () => {
+    const closed = world();
+    await scan(closed, { settings: COMBO });
+    closed.clock = T0 + DAY;
+    await scan(closed, { settings: COMBO, policy: ONE_SEARCH, readPages: reader() });
+    expect(await closed.store.getReview('split:homedepot:337440459')).toMatchObject({ answer: 'resolved by a later scan' });
+    expect((await rowOf(closed, COMBO, 'homedepot:337440459')).answer).toBeNull();
+
+    const w = world();
+    await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    await w.store.putReview({ ...(await w.store.getReview(SB))!, answer: 'PCL500B,PCL526B', answeredAt: T0 + MINUTE });
+    w.clock = T0 + DAY;
+    await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect((await rowOf(w, RYOBI_ONLY, 'homedepot:328690510')).answer).toBeNull();
+  });
+});
+
 // ---------------------------------------------------------------- match questions
 
 const MATCH = 'match:DEWALT:DCF891B';

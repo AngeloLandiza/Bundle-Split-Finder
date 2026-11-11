@@ -413,6 +413,17 @@ export interface BundleRow {
   estimate: BundleResult | null;
   /** Parts no priced listing covers. With an estimate they are valued at the liquidation rate; waiting parts are listed but not valued. */
   uncovered: string[];
+  /**
+   * Set when the bundle's split, or its None of these, is the owner's answer to its split question
+   * (answers.ts, ownerAnswer): a reading chosen, parts entered, or none. Null otherwise.
+   */
+  answer: OwnerAnswer | null;
+}
+
+/** Which of the owner's answers decides a bundle's split, and the question it answered. */
+export interface OwnerAnswer {
+  reviewId: string;
+  kind: 'chosen' | 'entered' | 'none';
 }
 
 export interface ScanReport {

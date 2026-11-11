@@ -2,7 +2,7 @@
 // Profit figures are estimates from fee settings, not the seller's real fees.
 
 import { evaluateBundle, type PricedListing } from '../scanPlan';
-import { choicesOf } from './answers';
+import { choicesOf, ownerAnswer } from './answers';
 import { componentCounts } from './classify';
 import {
   type BundleRecord,
@@ -62,6 +62,8 @@ async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleReco
   const base = {
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
     price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff, seenAt: b.seenAt,
+    // The split question's id is the runner's: `split:` and the bundle key.
+    answer: ownerAnswer(await store.getReview(`split:${b.key}`), b.split ?? null),
   };
   const split = b.split;
   if (!split || split.status !== 'resolved') {

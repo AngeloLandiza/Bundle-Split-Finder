@@ -51,6 +51,7 @@ const row = (over: Partial<BundleRow> = {}): BundleRow => ({
   parts: [part('PBLRC25B'), part('PBLRC01B', { asin: 'B0B6Z2ZGVK' })],
   estimate: { cost: 189, netRevenue: 287.3, profit: 98.3, roi: 0.52 },
   uncovered: [],
+  answer: null,
   ...over,
 });
 
