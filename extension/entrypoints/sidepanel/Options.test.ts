@@ -62,7 +62,7 @@ const UNNAMED = [
 
 const region = () => screen.getByRole('region', { name: 'Ways to sell' });
 const blocks = () => within(region()).getAllByRole('listitem');
-const splitBlock = () => blocks().find((b) => b.textContent!.includes('split into its items'))!;
+const splitBlock = () => blocks().find((b) => b.textContent!.includes('split into its parts'))!;
 
 describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 + P553', () => {
   it('lists both ways, the primary first and marked as the one shown above', async () => {
@@ -72,7 +72,7 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     const [a, b] = blocks();
     expect(a).toHaveTextContent(row.options[0]!.label);
     expect(a).toHaveTextContent('PCL1600K2 sold whole');
-    expect(b).toHaveTextContent('PCL1600K2 split into its items');
+    expect(b).toHaveTextContent('PCL1600K2 split into its parts');
     expect(within(a!).getByText('Shown above')).toBeInTheDocument();
     expect(within(b!).queryByText('Shown above')).toBeNull();
     expect(screen.getAllByText('Shown above')).toHaveLength(1);
@@ -132,7 +132,7 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     const left = waitingOf('RYOBI', next.parts);
     expect(left.length).toBeLessThan(waiting.length);
     await waitFor(() => {
-      const block = blocks().find((b) => b.textContent!.includes('split into its items'))!;
+      const block = blocks().find((b) => b.textContent!.includes('split into its parts'))!;
       const button = within(block).queryByRole('button', { name: /^Look up/ });
       if (left.length === 0) expect(button).toBeNull();
       else expect(button).toHaveAccessibleName(new RegExp(`^Look up ${left.length} parts`));
@@ -150,7 +150,7 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     expect(row.options.map((o) => o.id)).toEqual(['split:PCL1600K2', 'whole']);
     render(createElement(Harness, { w, api: workerApi(w), first, bundleKey: P553_KEY }));
     const [a, b] = blocks();
-    expect(a).toHaveTextContent('PCL1600K2 split into its items');
+    expect(a).toHaveTextContent('PCL1600K2 split into its parts');
     expect(within(a!).getByText('Shown above')).toBeInTheDocument();
     expect(within(a!).getByText(/^[+−]\$/)).toHaveTextContent(profit(row.options[0]!.estimate!.profit));
     expect(within(a!).queryByRole('button', { name: /^Look up/ })).toBeNull();
