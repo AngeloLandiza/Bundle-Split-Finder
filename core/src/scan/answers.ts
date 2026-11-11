@@ -42,8 +42,10 @@ const ANSWERED = 'That question was already answered.';
 const NOT_SHOWN = 'Choose one of the answers shown.';
 const CHANGED = 'That question changed. Choose again.';
 /** The typed-parts refusal, with an example of the question's brand (N11): DCB205 for DEWALT, PCL500B otherwise. */
-const invalidParts = (item: ReviewItem): string =>
-  `Enter model numbers like ${item.brand.trim().toUpperCase() === 'DEWALT' ? 'DCB205' : 'PCL500B'}, separated by commas.`;
+const invalidParts = (item: ReviewItem, entry?: string): string => {
+  const shown = entry === undefined || entry === '' ? '' : `"${entry.length > 30 ? `${entry.slice(0, 30)}…` : entry}" is not a model number. `;
+  return `${shown}Enter model numbers like ${item.brand.trim().toUpperCase() === 'DEWALT' ? 'DCB205' : 'PCL500B'}, separated by commas.`;
+};
 const NOT_FOR_MATCH = 'Parts can be entered only for a question about what a bundle contains.';
 const SELF_PART = "Enter the parts inside the bundle, not the bundle's own model number.";
 const NOT_ANSWERED = 'That question has not been answered yet.';
@@ -179,7 +181,11 @@ function enteredParts(raw: unknown, item: ReviewItem): string[] {
   if (!Array.isArray(raw) || !raw.every((p) => typeof p === 'string')) throw new AnswerRefused(invalidParts(item));
   const parts = raw.map((p: string) => p.trim().toUpperCase());
   if (parts.some(isBundle(item))) throw new AnswerRefused(SELF_PART);
-  if (!validParts(parts, item)) throw new AnswerRefused(invalidParts(item));
+  if (!validParts(parts, item)) {
+    // Name the first entry that is not a model number, as typed (trimmed). Only a count problem names none.
+    const bad = parts.findIndex((p) => !validParts([p], item));
+    throw new AnswerRefused(invalidParts(item, bad < 0 ? undefined : raw[bad].trim()));
+  }
   return parts;
 }
 

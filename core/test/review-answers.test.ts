@@ -478,10 +478,26 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
   it('the refusal names a model of the question\'s brand: DCB205 for DEWALT, PCL500B for RYOBI (N11; QA 4)', async () => {
     const d = world();
     const open = await ambiguous(d);
-    await expect(applyReviewAnswer(d.store, AMBIGUOUS, { parts: ['KIT'], seen: reviewSignature(open) }, T0 + MINUTE)).rejects.toThrow(new AnswerRefused(INVALID_DEWALT));
+    await expect(applyReviewAnswer(d.store, AMBIGUOUS, { parts: ['KIT'], seen: reviewSignature(open) }, T0 + MINUTE)).rejects.toThrow(new AnswerRefused('"KIT" is not a model number. ' + INVALID_DEWALT));
     const r = world();
     const sb = await special(r);
-    await expect(applyReviewAnswer(r.store, SB, { parts: ['KIT'], seen: reviewSignature(sb) }, T0 + MINUTE)).rejects.toThrow(new AnswerRefused(INVALID));
+    await expect(applyReviewAnswer(r.store, SB, { parts: ['KIT'], seen: reviewSignature(sb) }, T0 + MINUTE)).rejects.toThrow(new AnswerRefused('"KIT" is not a model number. ' + INVALID));
+  });
+
+  it('the refusal names the first entry that is not a model number, as typed and trimmed, at most 30 characters', async () => {
+    const d = world();
+    const open = await ambiguous(d);
+    const seen = reviewSignature(open);
+    const refusal = (parts: unknown) => applyReviewAnswer(d.store, AMBIGUOUS, { parts, seen } as unknown as ReviewAnswer, T0 + MINUTE);
+    const tail = 'Enter model numbers like DCB205, separated by commas.';
+    await expect(refusal([' hello '])).rejects.toThrow(new AnswerRefused(`"hello" is not a model number. ${tail}`));
+    await expect(refusal(['DCKTS650D1P1', 'kit', 'bad2'])).rejects.toThrow(new AnswerRefused(`"kit" is not a model number. ${tail}`));
+    await expect(refusal(['x'.repeat(31)])).rejects.toThrow(new AnswerRefused(`"${'x'.repeat(30)}…" is not a model number. ${tail}`));
+    await expect(refusal(['x'.repeat(30)])).rejects.toThrow(new AnswerRefused(`"${'x'.repeat(30)}" is not a model number. ${tail}`));
+    // No entry to name: nothing typed, a blank, too many, or not a list of text.
+    await expect(refusal([])).rejects.toThrow(new AnswerRefused(tail));
+    await expect(refusal(['  '])).rejects.toThrow(new AnswerRefused(tail));
+    await expect(refusal(null)).rejects.toThrow(new AnswerRefused(tail));
   });
 
   it('refuses every other hyphen form, and the pack form for a RYOBI question (Ruling 47)', async () => {

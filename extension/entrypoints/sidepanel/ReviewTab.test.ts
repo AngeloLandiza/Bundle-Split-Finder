@@ -116,11 +116,11 @@ describe('ReviewTab: a split question', () => {
 
   it('shows the worker refusal of typed parts and keeps the entry', async () => {
     const user = userEvent.setup();
-    setup(reportOf([SPLIT]), { ok: false, error: 'Enter model numbers like PCL500B, separated by commas.' });
+    setup(reportOf([SPLIT]), { ok: false, error: '"bad" is not a model number. Enter model numbers like PCL500B, separated by commas.' });
     await user.click(screen.getByRole('radio', { name: 'Enter the parts' }));
     await user.type(screen.getByLabelText('Model numbers, separated by commas'), 'bad');
     await user.click(save());
-    expect(await screen.findByRole('alert')).toHaveTextContent('Enter model numbers like PCL500B, separated by commas.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('"bad" is not a model number. Enter model numbers like PCL500B, separated by commas.');
     expect(screen.getByLabelText('Model numbers, separated by commas')).toHaveValue('bad');
   });
 

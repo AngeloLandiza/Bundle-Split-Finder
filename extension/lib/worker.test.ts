@@ -1487,9 +1487,10 @@ describe('worker: answerReview', () => {
     await untilIdle(w);
     const { seen } = await asShown(w, AMBIGUOUS, { none: true });
     const before = w.broadcasts.length;
-    for (const parts of [[], ['KIT'], 'DCKTS650D1P1, DCB205']) {
+    const tail = 'Enter model numbers like DCB205, separated by commas.';
+    for (const [parts, error] of [[[], tail], [['KIT'], `"KIT" is not a model number. ${tail}`], ['DCKTS650D1P1, DCB205', tail]] as const) {
       const request = { type: 'answerReview', id: AMBIGUOUS, answer: { parts, seen } } as unknown as Request;
-      expect(await send(w, request), JSON.stringify(parts)).toEqual({ ok: false, error: 'Enter model numbers like DCB205, separated by commas.' });
+      expect(await send(w, request), JSON.stringify(parts)).toEqual({ ok: false, error });
     }
     expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: null });
     expect(w.broadcasts.length).toBe(before);
