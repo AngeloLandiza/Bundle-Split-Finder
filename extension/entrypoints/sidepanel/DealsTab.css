@@ -101,7 +101,28 @@
   border-top: 1px solid var(--line);
 }
 .deal-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   border-bottom: 1px solid var(--line);
+}
+/* The link is the whole row; a Look up button, when there is one, takes the right column beside it. */
+.deal-link {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+.deal-link:not(:last-child) {
+  grid-column: 1;
+}
+.deal-row > .deal-lookup-btn {
+  grid-column: 2;
+  grid-row: 1;
+  margin-right: 16px;
+}
+.deal-row > .deal-refusal {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  padding: 0 16px 11px;
 }
 .deal-link {
   display: grid;
@@ -181,7 +202,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 16px 11px;
 }
 .deal-refusal {
   margin: 0;

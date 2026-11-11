@@ -21,6 +21,8 @@ interface LookUpProps {
   busy: boolean;
   /** Runs the paid action; resolves to the refusal sentence, or null when it ran. */
   onRun: (parts: { brand: string; model: string }[]) => Promise<string | null>;
+  /** True in a Deals row: the button and its refusal are the row's own grid cells, not a wrapper of their own. */
+  inRow?: boolean;
 }
 
 /**
@@ -28,7 +30,7 @@ interface LookUpProps {
  * before the click and is asked for again whenever a scan starts or ends, a paid action finishes, the parts
  * change or a new report comes (useQuote). A refused quote disables the button and says why.
  */
-export function LookUp({ row, report, api, scanRunning, version, busy, onRun }: LookUpProps) {
+export function LookUp({ row, report, api, scanRunning, version, busy, onRun, inRow = false }: LookUpProps) {
   // A failed run's sentence is kept apart from the quote, so a later quote cannot wipe it. It belongs to the parts it was for.
   const [runError, setRunError] = useState<{ partKey: string; text: string } | null>(null);
   // True from the press until the request ends: this button says so.
@@ -53,13 +55,12 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun }: 
     });
   };
 
-  return (
-    <div className="deal-lookup">
-      {refusal ? (
-        <p className="deal-refusal" id={refusalId}>
-          {refusal}
-        </p>
-      ) : null}
+  const refusalText = refusal ? (
+    <p className="deal-refusal" id={refusalId}>
+      {refusal}
+    </p>
+  ) : null;
+  const button = (
       <button
         type="button"
         className="deal-lookup-btn"
@@ -71,10 +72,23 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun }: 
           'Looking up…'
         ) : (
           <>
-            Look up <span className="deal-lookup-cost">{shown !== null ? searches(shown) : `at most ${searches(parts.length)}`}</span>
+            Look up <span className="deal-lookup-cost">{shown === null ? `at most ${searches(parts.length)}` : shown === 0 ? '· no search' : searches(shown)}</span>
           </>
         )}
       </button>
+  );
+  if (inRow) {
+    return (
+      <>
+        {button}
+        {refusalText}
+      </>
+    );
+  }
+  return (
+    <div className="deal-lookup">
+      {refusalText}
+      {button}
     </div>
   );
 }
