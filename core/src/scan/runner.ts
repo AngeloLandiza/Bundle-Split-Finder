@@ -9,7 +9,7 @@
 import { type Catalog, catalogEntry, DEWALT_BUNDLE, type Decomposition, decompose, kindsFromTitle } from '../decompose';
 import { type Candidate, pick } from '../match';
 import { splitWithPage } from '../pageSplit';
-import { choicesOf, sameChoices, splitChoices } from './answers';
+import { choicesOf, chosenSplit, NONE, notKnown, ownerSplit, sameChoices, splitChoices } from './answers';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
@@ -577,7 +577,11 @@ function splitBundle(bundle: BundleRecord, stored: Catalog, catalog: Catalog): D
   return first.notes.length === 1 && first.notes[0] === `'${suffix}' matches nothing in the catalog` ? second : first;
 }
 
-/** The answer a scan gives a split question when the bundle resolves; any other answer is the user's. */
+/**
+ * The answer a scan gives a split question when the bundle resolves; any other answer is the
+ * user's. Only a user's answer that names one of the item's choices, or 'none', decides the split
+ * (answers.ts, ownerSplit).
+ */
 const RESOLVED_BY_SCAN = 'resolved by a later scan';
 
 /** `stored`: the stored catalog alone; `run.catalog` adds the listings' models. */
@@ -586,11 +590,15 @@ async function splitBundles(run: Run, stored: Catalog): Promise<void> {
   const now = run.now();
   let resolved = 0;
   for (const bundle of await store.listBundles()) {
-    // P5: the model number's split, then the bundle's own page, when it was read.
-    const split = splitWithPage(bundle, splitBundle(bundle, stored, catalog), bundle.page ?? null, catalog);
-    await store.putBundle({ ...bundle, split });
     const id = `split:${bundle.key}`;
     const item = await store.getReview(id);
+    // The owner's answer comes first (step 5): parts the owner chose stand instead of any reading,
+    // and "none" keeps the bundle in review whatever the readings now say. Otherwise P5: the
+    // model number's split, then the bundle's own page, when it was read.
+    const owner = ownerSplit(item);
+    const read = () => splitWithPage(bundle, splitBundle(bundle, stored, catalog), bundle.page ?? null, catalog);
+    const split = owner === null ? read() : owner === NONE ? notKnown(read()) : chosenSplit(owner);
+    await store.putBundle({ ...bundle, split });
     if (split.status === 'resolved') {
       resolved += 1;
       if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
