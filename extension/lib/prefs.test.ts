@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { DEFAULT_SETTINGS } from '@core/settings';
 import {
-  forgetKey, getAccount, getActiveScan, getKey, getLastScheduledRunAt, getNotified, getSettings, restrictKeyAccess,
+  forgetKey, getAccount, getActiveScan, getKey, getLastScheduledRunAt, getNotified, getPackaging, getSettings, savePackaging, restrictKeyAccess,
   saveSettings, setAccount, setActiveScan, setKey, setLastScheduledRunAt, setNotified,
 } from './prefs';
 
@@ -89,5 +89,19 @@ describe('other keys', () => {
     const info = { plan: 'Free' } as never;
     await setAccount({ info, at: 7 });
     expect(await getAccount()).toEqual({ info, at: 7 });
+  });
+});
+
+describe('packaging', () => {
+  it('is empty until saved, round-trips, and drops entries that are not a known answer', async () => {
+    expect(await getPackaging()).toEqual({});
+    await savePackaging({ A1: 'loose', B2: 'retail_boxed' });
+    expect(await getPackaging()).toEqual({ A1: 'loose', B2: 'retail_boxed' });
+    await fakeBrowser.storage.local.set({ packaging: { A1: 'loose', B2: 'sealed', C3: null } });
+    expect(await getPackaging()).toEqual({ A1: 'loose' });
+    await fakeBrowser.storage.local.set({ packaging: ['loose'] });
+    expect(await getPackaging()).toEqual({});
+    await fakeBrowser.storage.local.set({ packaging: 'junk' });
+    expect(await getPackaging()).toEqual({});
   });
 });

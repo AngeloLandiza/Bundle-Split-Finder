@@ -1,7 +1,7 @@
 // Messages between the extension's pages and its service worker.
 // The service worker is the only context that holds the key and talks to SerpApi.
 
-import type { ScanJob } from '../../core/src/scan/types';
+import type { PaidAction, Quote, ReviewAnswer, ScanJob, ScanReport } from '../../core/src/scan/types';
 import type { AccountInfo } from '../../core/src/serpapi/budget';
 import type { ExtensionSettings } from '../../core/src/settings';
 
@@ -18,7 +18,23 @@ export type Request =
   /** Reply data: JSON text of every match and every answered review item. */
   | { type: 'exportMatches' }
   /** Empties the saved SerpApi responses. Nothing else is deleted. */
-  | { type: 'clearSavedSearches' };
+  | { type: 'clearSavedSearches' }
+  /** Reply data: PanelReport. */
+  | { type: 'getReport' }
+  | { type: 'setPackaging'; model: string; packaging: Packaging }
+  | { type: 'answerReview'; id: string; answer: ReviewAnswer }
+  /** Reply data: Quote. */
+  | { type: 'quote'; action: PaidAction }
+  | { type: 'runPaid'; action: PaidAction };
+
+export type { PaidAction, Quote, ReviewAnswer };
+
+export type Packaging = 'retail_boxed' | 'loose';
+
+export interface PanelReport extends ScanReport {
+  /** The owner's packaging answers by bundle model, upper case. A model not here is not answered. */
+  packaging: Record<string, Packaging>;
+}
 
 export type Reply<T = unknown> = { ok: true; data: T } | { ok: false; error: string };
 

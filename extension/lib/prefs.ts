@@ -73,6 +73,18 @@ export async function getSettings(): Promise<ExtensionSettings> {
 
 export const saveSettings = (s: ExtensionSettings): Promise<void> => write('settings', s);
 
+// ---------------------------------------------------------------- packaging
+
+/** The owner's packaging answers by upper-case bundle model. An entry that is not a known answer is dropped. */
+export async function getPackaging(): Promise<Record<string, 'retail_boxed' | 'loose'>> {
+  const v = await read('packaging');
+  const out: Record<string, 'retail_boxed' | 'loose'> = {};
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return out;
+  for (const [model, answer] of Object.entries(v)) if (answer === 'retail_boxed' || answer === 'loose') out[model] = answer;
+  return out;
+}
+export const savePackaging = (v: Record<string, 'retail_boxed' | 'loose'>): Promise<void> => write('packaging', v);
+
 // ---------------------------------------------------------------- the rest
 
 export async function getActiveScan(): Promise<ActiveScan | null> {

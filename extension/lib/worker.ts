@@ -15,7 +15,7 @@ import {
 import { runCsv } from '@core/scan/csv';
 import { buildReport } from '@core/scan/report';
 import { nextRun, type Schedule } from '@core/schedule';
-import type { AppState, Reply, Request } from './messages';
+import type { AppState, Packaging, PanelReport, Reply, Request } from './messages';
 import type { ActiveScan, StoredAccount } from './prefs';
 
 /** The functions of prefs.ts the worker uses, with the same names and signatures. */
@@ -32,6 +32,8 @@ export interface Prefs {
   setLastScheduledRunAt(v: number | null): Promise<void>;
   getNotified(): Promise<string[]>;
   setNotified(v: string[]): Promise<void>;
+  getPackaging(): Promise<Record<string, Packaging>>;
+  savePackaging(v: Record<string, Packaging>): Promise<void>;
   getAccount(): Promise<StoredAccount | null>;
   setAccount(v: StoredAccount | null): Promise<void>;
 }
@@ -70,6 +72,9 @@ const FAILED = 'Something went wrong. Try again.';
 const RUNNING = 'A scan is already running.';
 const GAVE_UP = 'The scan could not be saved, so it was stopped. Check that Chrome has free storage, then scan again.';
 const STOPPED = 'The scan was stopped before it began.';
+const BAD_PACKAGING = 'Choose retail boxed or loose.';
+const NO_MODEL = 'Name the bundle model.';
+const NOT_YET = 'Not available yet.';
 const KEY_CHANGED = 'The SerpApi key changed while the scan was starting. Scan again.';
 /** A job is continued at most this many times in a row without progress. */
 const MAX_TRIES = 2;
@@ -461,6 +466,24 @@ export function createWorker(env: WorkerEnv): Worker {
     return ok(JSON.stringify({ matches, answers }, null, 2));
   }
 
+  async function getReport(): Promise<Reply<PanelReport>> {
+    const report = await buildReport(store, toScanSettings(await settings()));
+    // Validated on read, like settings: prefs drops entries that are not a known answer.
+    const packaging: Record<string, Packaging> = {};
+    for (const [m, a] of Object.entries(await prefs.getPackaging())) if (a === 'retail_boxed' || a === 'loose') packaging[m] = a;
+    return ok({ ...report, packaging });
+  }
+
+  const setPackaging = (model: string, packaging: unknown): Promise<Reply<null>> =>
+    serial(async () => {
+      if (packaging !== 'retail_boxed' && packaging !== 'loose') return refuse(BAD_PACKAGING);
+      const key = typeof model === 'string' ? model.trim().toUpperCase() : '';
+      if (key === '') return refuse(NO_MODEL);
+      await prefs.savePackaging({ ...(await prefs.getPackaging()), [key]: packaging });
+      await broadcast();
+      return ok(null);
+    });
+
   async function handle(request: Request): Promise<Reply> {
     switch (request.type) {
       case 'getState':
@@ -483,6 +506,15 @@ export function createWorker(env: WorkerEnv): Worker {
       case 'clearSavedSearches':
         await env.cache.clear();
         return ok(null);
+      case 'getReport':
+        return getReport();
+      case 'setPackaging':
+        return setPackaging(request.model, request.packaging);
+      case 'answerReview':
+      case 'quote':
+      case 'runPaid':
+        // Replaced by the review and paid-action tasks.
+        return refuse(NOT_YET);
       default:
         return refuse(FAILED);
     }

@@ -6,7 +6,7 @@ import type { BundleRow, PageOutcome, ReadPages, ScanJob, ScanStore } from '@cor
 import { parseAccount } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, MemoryCache } from '@core/serpapi/client';
 import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
-import type { AppState, Reply, Request } from './messages';
+import type { AppState, PanelReport, Reply, Request } from './messages';
 import type { ActiveScan, StoredAccount } from './prefs';
 import { createWorker, type Prefs, type Worker } from './worker';
 
@@ -42,6 +42,7 @@ class FakePrefs implements Prefs {
     activeScan?: ActiveScan | null;
     lastScheduledRunAt?: number | null;
     notified?: string[];
+    packaging?: unknown;
     account?: StoredAccount | null;
   } = {};
   restricted = 0;
@@ -83,6 +84,15 @@ class FakePrefs implements Prefs {
   }
   async setNotified(v: string[]) {
     this.data.notified = structuredClone(v);
+  }
+  async getPackaging() {
+    const v = this.data.packaging;
+    const out: Record<string, 'retail_boxed' | 'loose'> = {};
+    if (typeof v === 'object' && v !== null) for (const [m, a] of Object.entries(v)) if (a === 'retail_boxed' || a === 'loose') out[m] = a;
+    return out;
+  }
+  async savePackaging(v: Record<string, 'retail_boxed' | 'loose'>) {
+    this.data.packaging = structuredClone(v);
   }
   async getAccount() {
     return structuredClone(this.data.account ?? null);
@@ -914,5 +924,59 @@ describe('worker: stopScan and forgetKey while a start waits on the Account API'
     expect(w.replay.calls).toEqual([]);
     expect(w.prefs.data.apiKey).toBeUndefined();
     expect(await w.store.listScans()).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------- side panel messages
+
+describe('worker: getReport and setPackaging', () => {
+  it('getReport returns the report sections and review plus an empty packaging map', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const reply = await send<PanelReport>(w, { type: 'getReport' });
+    expect(reply.ok).toBe(true);
+    if (!reply.ok) return;
+    expect(reply.data.packaging).toEqual({});
+    expect(reply.data.bundles.length).toBeGreaterThan(0);
+    expect(reply.data.bundles[0]).toMatchObject({ model: 'PBLRC2501SB' });
+    expect(Array.isArray(reply.data.review)).toBe(true);
+  });
+
+  it('setPackaging saves under the upper-case model, broadcasts, and survives a worker restart', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const before = w.broadcasts.length;
+    expect(await send(w, { type: 'setPackaging', model: ' pblrc2501sb ', packaging: 'loose' })).toEqual({ ok: true, data: null });
+    expect(w.broadcasts.length).toBeGreaterThan(before);
+    w.worker = workerOver(w);
+    const reply = await send<PanelReport>(w, { type: 'getReport' });
+    expect(reply.ok && reply.data.packaging).toEqual({ PBLRC2501SB: 'loose' });
+    await send(w, { type: 'setPackaging', model: 'PBLRC2501SB', packaging: 'retail_boxed' });
+    const again = await send<PanelReport>(w, { type: 'getReport' });
+    expect(again.ok && again.data.packaging).toEqual({ PBLRC2501SB: 'retail_boxed' });
+  });
+
+  it('setPackaging refuses any other value with a plain sentence and saves nothing', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const bad = await send(w, { type: 'setPackaging', model: 'X1', packaging: 'boxed' } as unknown as Request);
+    expect(bad).toEqual({ ok: false, error: 'Choose retail boxed or loose.' });
+    expect(await send(w, { type: 'setPackaging', model: '  ', packaging: 'loose' })).toEqual({ ok: false, error: 'Name the bundle model.' });
+    expect(w.prefs.data.packaging).toBeUndefined();
+  });
+
+  it('a stored entry that is not a known answer is dropped on read', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.prefs.data.packaging = { A1: 'loose', B2: 'sealed', C3: 7 };
+    const reply = await send<PanelReport>(w, { type: 'getReport' });
+    expect(reply.ok && reply.data.packaging).toEqual({ A1: 'loose' });
+  });
+
+  it('answerReview, quote and runPaid are not available yet', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    for (const request of [
+      { type: 'answerReview', id: 'r1', answer: { none: true } },
+      { type: 'quote', action: { kind: 'lookUp', parts: [] } },
+      { type: 'runPaid', action: { kind: 'lookUp', parts: [] } },
+    ] as Request[]) expect(await send(w, request)).toEqual({ ok: false, error: 'Not available yet.' });
   });
 });
