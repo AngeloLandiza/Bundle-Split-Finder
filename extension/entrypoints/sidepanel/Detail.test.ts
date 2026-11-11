@@ -267,6 +267,46 @@ describe('parts', () => {
     expect(await screen.findByText('Not available yet.')).toBeInTheDocument();
   });
 
+  /** Quotes answer only when told to, oldest first; anything else answers at once. */
+  function heldQuotes() {
+    const pending: ((r: Reply) => void)[] = [];
+    const send = vi.fn((r: Request): Promise<Reply> => (r.type === 'quote' ? new Promise((ok) => pending.push(ok)) : Promise.resolve({ ok: true, data: null })));
+    const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    const answer = async (refusal: string | null = null) => {
+      await waitFor(() => expect(pending.length).toBeGreaterThan(0));
+      pending.shift()!({ ok: true, data: { searches: 1, refusal } });
+    };
+    return { api, send, answer };
+  }
+
+  const detailOf = (api: WorkerApi, r: BundleRow, s: AppState = state()) =>
+    createElement(Detail, { api, report: { bundles: [r], review: [], packaging: {} }, state: s, bundleKey: r.key, onBack: vi.fn() });
+
+  it('Verify stays disabled after a scan ends until the new quote comes', async () => {
+    const { api, answer } = heldQuotes();
+    const r = row({ parts: [part('PBLRC25B', { grade: 'probable' })] });
+    const view = render(detailOf(api, r));
+    await answer();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+    view.rerender(detailOf(api, r, state({ scanRunning: true })));
+    view.rerender(detailOf(api, r, state({ scanRunning: false })));
+    expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeDisabled();
+    await answer();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+  });
+
+  it('Verify stays disabled after the listing changes until its quote comes', async () => {
+    const { api, send, answer } = heldQuotes();
+    const view = render(detailOf(api, row({ parts: [part('PBLRC25B', { grade: 'probable' })] })));
+    await answer();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+    view.rerender(detailOf(api, row({ parts: [part('PBLRC25B', { grade: 'probable', asin: 'B0OTHER001' })] })));
+    expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeDisabled();
+    await answer();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+    expect(send).toHaveBeenLastCalledWith({ type: 'quote', action: { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0OTHER001' } });
+  });
+
   it('runs one paid request at a time', async () => {
     const user = userEvent.setup();
     let release: (r: Reply) => void = () => {};

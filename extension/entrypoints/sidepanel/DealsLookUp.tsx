@@ -1,8 +1,8 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useState } from 'react';
 import type { BundleRow } from '@core/scan/types';
-import type { Quote } from '../../lib/messages';
-import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
+import type { WorkerApi } from '../../lib/pageClient';
 import { waitingParts } from './dealsModel';
+import { useQuote } from './useQuote';
 
 const searches = (n: number): string => `${n} ${n === 1 ? 'search' : 'searches'}`;
 
@@ -26,41 +26,16 @@ interface LookUpProps {
  * change. A refused quote disables the button and says why.
  */
 export function LookUp({ row, api, scanRunning, version, busy, onRun }: LookUpProps) {
-  // The quote is kept with the version it answers, so a stale one can never enable the button.
-  const [quote, setQuote] = useState<{ version: number; quote: Quote } | null>(null);
-  const [problem, setProblem] = useState<string | null>(null);
   // A failed run's sentence is kept apart from the quote, so a later quote cannot wipe it. It belongs to the parts it was for.
   const [runError, setRunError] = useState<{ partKey: string; text: string } | null>(null);
-  const apiRef = useRef(api);
-  apiRef.current = api;
   const parts = waitingParts(row);
   // The row object changes on every report refresh; the quote only when the waiting parts do.
   const partKey = parts.map((p) => p.model).join(',');
-
-  useEffect(() => {
-    if (scanRunning) return;
-    let live = true;
-    apiRef.current
-      .send<Quote>({ type: 'quote', action: { kind: 'lookUp', parts } })
-      .then((reply) => {
-        if (!live) return;
-        if (reply.ok) {
-          setQuote({ version, quote: reply.data });
-          setProblem(null);
-        } else setProblem(reply.error);
-      })
-      .catch(() => live && setProblem(UNREACHABLE));
-    return () => {
-      live = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [row.brand, partKey, scanRunning, version]);
+  const { fresh, last, problem } = useQuote(api, { kind: 'lookUp', parts }, `${row.brand}|${partKey}`, scanRunning, version);
 
   // The last quoted count stays on the label while the next quote is asked for, so the price never disappears.
-  const unknown = row.parts.filter((p) => p.status === 'waiting' || p.status === 'unmatched').length;
-  const shown = quote ? quote.quote.searches : null;
+  const shown = last ? last.searches : null;
   const refusalId = useId();
-  const fresh = !scanRunning && quote !== null && quote.version === version ? quote.quote : null;
   const refusal = scanRunning ? SCAN_RUNNING : ((runError?.partKey === partKey ? runError.text : null) ?? fresh?.refusal ?? problem);
   const run = () => {
     if (busy || !fresh || fresh.refusal) return;
@@ -82,7 +57,7 @@ export function LookUp({ row, api, scanRunning, version, busy, onRun }: LookUpPr
         disabled={busy || !fresh || fresh.refusal !== null}
         onClick={run}
       >
-        Look up <span className="deal-lookup-cost">{shown !== null ? searches(shown) : `up to ${searches(unknown)}`}</span>
+        Look up <span className="deal-lookup-cost">{shown !== null ? searches(shown) : `up to ${searches(parts.length)}`}</span>
       </button>
     </div>
   );

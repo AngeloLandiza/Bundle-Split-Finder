@@ -1,7 +1,7 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import type { Quote } from '../../lib/messages';
-import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
+import { useId, useState } from 'react';
+import type { WorkerApi } from '../../lib/pageClient';
 import { SCAN_RUNNING } from './DealsLookUp';
+import { useQuote } from './useQuote';
 
 interface VerifyProps {
   brand: string;
@@ -19,32 +19,10 @@ interface VerifyProps {
 
 /** Verify for a title-only match. The price is asked for before the click; a refusal disables the button and says why. */
 export function Verify({ brand, model, asin, api, scanRunning, version, busy, onRun }: VerifyProps) {
-  const [quote, setQuote] = useState<{ version: number; quote: Quote } | null>(null);
-  const [problem, setProblem] = useState<string | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const refusalId = useId();
-  const apiRef = useRef(api);
-  apiRef.current = api;
+  const { fresh, problem } = useQuote(api, { kind: 'verify', brand, model, asin }, `${brand}|${model}|${asin}`, scanRunning, version);
 
-  useEffect(() => {
-    if (scanRunning) return;
-    let live = true;
-    apiRef.current
-      .send<Quote>({ type: 'quote', action: { kind: 'verify', brand, model, asin } })
-      .then((reply) => {
-        if (!live) return;
-        if (reply.ok) {
-          setQuote({ version, quote: reply.data });
-          setProblem(null);
-        } else setProblem(reply.error);
-      })
-      .catch(() => live && setProblem(UNREACHABLE));
-    return () => {
-      live = false;
-    };
-  }, [brand, model, asin, scanRunning, version]);
-
-  const fresh = !scanRunning && quote !== null && quote.version === version ? quote.quote : null;
   const refusal = scanRunning ? SCAN_RUNNING : (runError ?? fresh?.refusal ?? problem);
   const run = () => {
     if (busy || !fresh || fresh.refusal) return;

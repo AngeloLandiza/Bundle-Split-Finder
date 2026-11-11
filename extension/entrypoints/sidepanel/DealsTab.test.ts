@@ -497,6 +497,46 @@ describe('Look up', () => {
     expect(screen.queryByRole('button', { name: /Look up/ })).toBeNull();
   });
 
+  /** Quotes answer only when told to, oldest first; anything else answers at once. */
+  function heldQuotes() {
+    const pending: ((r: Reply) => void)[] = [];
+    const send = vi.fn((r: Request): Promise<Reply> => (r.type === 'quote' ? new Promise((ok) => pending.push(ok)) : Promise.resolve({ ok: true, data: null })));
+    const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    const answer = async (searches: number) => {
+      await waitFor(() => expect(pending.length).toBeGreaterThan(0));
+      pending.shift()!({ ok: true, data: { searches, refusal: null } });
+    };
+    return { api, answer };
+  }
+
+  it('after a scan ends, stays disabled until the new quote comes, with the last count on its label', async () => {
+    const { api, answer } = heldQuotes();
+    const r = report([waiting]);
+    const tab = (s: AppState) => createElement(DealsTab, { api, report: r, state: s, sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() });
+    const view = render(tab(state()));
+    await answer(2);
+    expect(await screen.findByRole('button', { name: 'Look up 2 searches' })).toBeEnabled();
+    view.rerender(tab(state({ scanRunning: true })));
+    view.rerender(tab(state({ scanRunning: false })));
+    // The quote from before the scan is not this one's.
+    expect(screen.getByRole('button', { name: 'Look up 2 searches' })).toBeDisabled();
+    await answer(1);
+    expect(await screen.findByRole('button', { name: 'Look up 1 search' })).toBeEnabled();
+  });
+
+  it('after its parts change, stays disabled until their quote comes', async () => {
+    const { api, answer } = heldQuotes();
+    const more = { ...waiting, parts: [...waiting.parts, part('DCB3', { status: 'waiting', grade: null, availability: 'missing', asin: null })] };
+    const tab = (r: BundleRow) => createElement(DealsTab, { api, report: report([r]), state: state(), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() });
+    const view = render(tab(waiting));
+    await answer(2);
+    expect(await screen.findByRole('button', { name: 'Look up 2 searches' })).toBeEnabled();
+    view.rerender(tab(more));
+    expect(screen.getByRole('button', { name: 'Look up 2 searches' })).toBeDisabled();
+    await answer(3);
+    expect(await screen.findByRole('button', { name: 'Look up 3 searches' })).toBeEnabled();
+  });
+
   it('offers Look up for parts with no match yet, as when the owner chose the split after the scan', async () => {
     const chosen = row('u1', {
       estimate: null,
