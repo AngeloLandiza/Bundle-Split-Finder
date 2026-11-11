@@ -619,8 +619,9 @@ describe('changing a split answer', () => {
     show(none());
     const band = screen.getByRole('region', { name: 'Estimate' });
     expect(within(band).getByText('No estimate: you said none of the readings is right.')).toBeInTheDocument();
-    expect(within(band).getByText('You said none of the readings is right.')).toBeInTheDocument();
-    expect(within(band).getByRole('button', { name: 'Change' })).toBeInTheDocument();
+    expect(within(band).queryByText('You said none of the readings is right.')).toBeNull();
+    const change = within(band).getByRole('button', { name: 'Change' });
+    expect(change.previousElementSibling ?? change.parentElement?.firstElementChild).toBe(screen.getByText('No estimate: you said none of the readings is right.'));
     expect(screen.queryByText(/not known yet/)).toBeNull();
   });
 

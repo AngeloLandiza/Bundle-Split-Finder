@@ -50,16 +50,15 @@ function listOf(items: string[]): string {
 const ANSWER_LINE = {
   chosen: 'You chose these parts.',
   entered: 'You entered these parts.',
-  none: 'You said none of the readings is right.',
 } as const;
 
 const SETTLED = "The model number and page now settle this bundle's parts, so there is no question to answer.";
 
 /** Whose answer the split is, with the way to take it back. */
-function AnswerLine({ kind, disabled, scanRunning, error, onChange }: { kind: keyof typeof ANSWER_LINE; disabled: boolean; scanRunning: boolean; error: string | null; onChange: () => void }) {
+function AnswerLine({ text, className = 'detail-answer', disabled, scanRunning, error, onChange }: { text: string; className?: string; disabled: boolean; scanRunning: boolean; error: string | null; onChange: () => void }) {
   return (
-    <div className="detail-answer">
-      <span>{ANSWER_LINE[kind]}</span>{' '}
+    <div className={className}>
+      <span>{text}</span>{' '}
       <button type="button" className="detail-text-btn" disabled={disabled || scanRunning} title={scanRunning ? 'A scan is running. Change this when it has finished.' : undefined} onClick={onChange}>
         Change
       </button>
@@ -362,7 +361,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
     setReopening(false);
   };
   const answerLine = row.answer ? (
-    <AnswerLine kind={row.answer.kind} disabled={reopening} scanRunning={state.scanRunning} error={reopenError} onChange={() => void reopen()} />
+    <AnswerLine text={row.answer.kind === 'none' ? noEstimate(row) : ANSWER_LINE[row.answer.kind]} className={row.answer.kind === 'none' ? 'detail-noestimate' : undefined} disabled={reopening} scanRunning={state.scanRunning} error={reopenError} onChange={() => void reopen()} />
   ) : null;
 
   const copy = () => {
@@ -437,8 +436,8 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
             </>
           ) : (
             <>
-              <p className="detail-noestimate">{noEstimate(row)}</p>
-              {row.answer?.kind === 'none' ? answerLine : null}
+              {/* After None the band says it once, with Change right after it. */}
+              {row.answer?.kind === 'none' ? answerLine : <p className="detail-noestimate">{noEstimate(row)}</p>}
             </>
           )}
           {reopened && !row.answer && !question ? <p className="detail-noestimate">{SETTLED}</p> : null}
