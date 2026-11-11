@@ -273,7 +273,7 @@ describe('rows', () => {
 });
 
 describe('a failure set aside (N4)', () => {
-  const SET_ASIDE = 'Set aside for the next scan: SerpApi answered with an error (HTTP 404). Try again later.';
+  const SET_ASIDE = 'Set aside for the next scan. SerpApi answered with an error (HTTP 404). Try again later.';
   const failed = (over: Partial<ScanJob>) => state({ lastJob: job({ stopMessage: 'SerpApi returned HTTP 404.', ...over }) });
 
   it('joins the limit notice when the scan stopped at a limit', () => {
@@ -305,7 +305,19 @@ describe('a failure set aside (N4)', () => {
 
   it('says an unread page the same way', () => {
     show(report([row('c1')]), failed({ status: 'done', stopMessage: 'A Home Depot page could not be read.' }));
-    expect(screen.getByText('Set aside for the next scan: A Home Depot page could not be read.')).toBeInTheDocument();
+    expect(screen.getByText('Set aside for the next scan. A Home Depot page could not be read.')).toBeInTheDocument();
+  });
+
+  it('says a joined lookup failure as sentences with SerpApi\'s text mapped', () => {
+    show(
+      report([row('c1')]),
+      failed({ status: 'done', stopMessage: 'A Home Depot page could not be read. The lookup of PCL526B failed: SerpApi returned HTTP 404.' }),
+    );
+    expect(
+      screen.getByText(
+        'Set aside for the next scan. A Home Depot page could not be read. The lookup of PCL526B failed: SerpApi answered with an error (HTTP 404).',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('is not repeated for an error or rate limit, which the Notice above the tabs shows, and absent without a message', () => {
@@ -355,7 +367,7 @@ describe('limit notice', () => {
     expect(screen.queryByText('Change the limit')).toBeNull();
     expect(screen.getByText(/^Next scan /)).toBeInTheDocument();
     // N4: the failure kept on the job is said, not hidden.
-    expect(screen.getByText('Set aside for the next scan: SerpApi answered with an error (HTTP 404). Try again later.')).toBeInTheDocument();
+    expect(screen.getByText('Set aside for the next scan. SerpApi answered with an error (HTTP 404). Try again later.')).toBeInTheDocument();
   });
 
   it('run_cap says how many searches the scan used against the limit (QA m7)', () => {
