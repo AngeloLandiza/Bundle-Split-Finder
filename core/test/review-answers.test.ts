@@ -409,6 +409,27 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     expect((await w.store.getReview(SB))!.answer).toBeNull();
   });
 
+  it('refuses a hyphen bundle\'s own model number typed without its hyphen, typed or stored (Ruling 43)', async () => {
+    const P553 = 'split:homedepot:320243741';
+    const w = world();
+    await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    const open = (await w.store.getReview(P553))!;
+    expect(open.model).toBe('PCL1600K2-P553');
+    const before = await snapshot(w);
+    for (const parts of [['PCL1600K2P553'], ['pcl1600k2p553 '], ['P553', 'PCL1600K2P553']]) {
+      await expect(applyReviewAnswer(w.store, P553, { parts, seen: reviewSignature(open) }, T0 + MINUTE), JSON.stringify(parts)).rejects.toThrow(SELF);
+    }
+    expect(await snapshot(w)).toEqual(before);
+
+    // Stored, it decides nothing: the question stays as stored and the bundle as the model number reads it.
+    const stored = { ...open, answer: 'PCL1600K2P553', answerParts: ['PCL1600K2P553'], answeredAt: T0 + MINUTE };
+    await w.store.putReview(stored);
+    w.clock = T0 + DAY;
+    await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect((await w.store.getBundle('homedepot:320243741'))!.split).toMatchObject({ components: ['PCL1600K2', 'P553'], status: 'needs_review' });
+    expect(await w.store.getReview(P553)).toEqual(stored);
+  });
+
   it('stored parts holding the bundle\'s own model number are ignored by later scans (Ruling 43)', async () => {
     const w = world();
     const open = await special(w);
@@ -654,6 +675,42 @@ describe('reopenReviewAnswer: the owner can change a split answer (Ruling 42)', 
       expect(await shownFor(w, SB_KEY, SB)).toEqual(notKnownYet);
     }
     expect(w.ledger).toEqual(['scan:listing:ryobi 18v combo kit:p1']);
+  });
+
+  it('a reopened question takes the reading the data gives now, as a scan updates an open question, and keeps openedAt', async () => {
+    const w = world();
+    const id = 'split:homedepot:337440461';
+    // Without pages, 337440461 (DCK200D1P1WB606) offers no reading; the owner answers None of these.
+    await scan(w, { settings: COMBO });
+    const first = (await w.store.getReview(id))!;
+    expect(first).toMatchObject({ choices: [], answer: null, openedAt: T0 });
+    await applyReviewAnswer(w.store, id, { none: true, seen: reviewSignature(first) }, T0 + MINUTE);
+    // A later scan reads 337440459's page for it; the answer stands, so the question is not rewritten.
+    w.clock = T0 + DAY;
+    await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader({ '337440461': '337440459' }) });
+    expect(await w.store.getReview(id)).toMatchObject({ choices: [], answer: 'none' });
+
+    await reopenReviewAnswer(w.store, id, T0 + DAY + MINUTE);
+    const reopened = (await w.store.getReview(id))!;
+    expect(reopened).toMatchObject({ answer: null, answeredAt: null, openedAt: T0, choices: [['DCK200D1P1', 'DCF921B']] });
+    expect(reopened.reason).not.toBe(first.reason);
+    expect(reopened.reason).toBe((await w.store.getBundle('homedepot:337440461'))!.split!.notes.join('; '));
+    expect((await w.store.getBundle('homedepot:337440461'))!.split!.status).toBe('needs_review');
+
+    // An answer made for the old choices is refused; one made for the new ones is taken.
+    const before = await snapshot(w);
+    await expect(applyReviewAnswer(w.store, id, { none: true, seen: reviewSignature(first) }, T0 + DAY + 2 * MINUTE)).rejects.toThrow(CHANGED);
+    expect(await snapshot(w)).toEqual(before);
+    await applyReviewAnswer(w.store, id, { choice: 0, seen: reviewSignature(reopened) }, T0 + DAY + 2 * MINUTE);
+    expect((await w.store.getBundle('homedepot:337440461'))!.split).toEqual({ components: ['DCK200D1P1', 'DCF921B'], status: 'resolved', notes: [CHOSEN] });
+
+    // A later scan leaves the reopened question as a scan leaves any open one: the same.
+    await reopenReviewAnswer(w.store, id, T0 + DAY + 3 * MINUTE);
+    const again = (await w.store.getReview(id))!;
+    w.clock = T0 + 2 * DAY;
+    const job = await scan(w, { settings: COMBO, policy: NO_SEARCH });
+    expect(await w.store.getReview(id)).toEqual(again);
+    expect(job.counts.reviewsOpened).toBe(0);
   });
 
   it('a bundle the data now resolves is split as a scan splits it, and its question closed as a scan closes it', async () => {

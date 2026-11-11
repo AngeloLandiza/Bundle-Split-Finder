@@ -145,8 +145,14 @@ function validParts(parts: unknown): parts is string[] {
   );
 }
 
-/** A part that is the bundle the question is about (its `model`): a bundle is never its own part (Ruling 43). */
-const isBundle = (item: ReviewItem) => (part: string): boolean => part === item.model.trim().toUpperCase();
+/** A model number with its hyphens and spaces taken out, upper case: `PCL1600K2-P553` and `PCL1600K2P553` are one model. */
+const bare = (model: string): string => model.toUpperCase().replace(/[-\s]/g, '');
+
+/**
+ * A part that is the bundle the question is about (its `model`), hyphens and spaces aside: a bundle
+ * is never its own part (Ruling 43).
+ */
+const isBundle = (item: ReviewItem) => (part: string): boolean => bare(part) === bare(item.model);
 
 /**
  * The parts the owner typed for `item`, as model numbers: each trimmed and upper-cased, in the order
@@ -243,10 +249,11 @@ export async function applyReviewAnswer(store: ScanStore, id: string, answer: Re
 /**
  * Opens again split question `id`, which the owner answered (a reading chosen, parts typed, or
  * "none": an answer ownerSplit reads), so it can be answered again (Ruling 42). The item loses its
- * answer, `answerParts` and `answeredAt`; its choices, reason and `openedAt` stay as the question last
- * showed them, so a new answer is signed against them as usual. Its bundle is split at once as a scan
+ * answer, `answerParts` and `answeredAt`, and keeps `openedAt`. Its bundle is split at once as a scan
  * splits a bundle no answer decides (split.ts, readSplit, with the store's known models): normally
- * in review, Contents not known, with the question open. Should that reading now resolve, the item
+ * in review, Contents not known, with the question open and taking that reading's reason and
+ * choices, as a scan updates an open question; a new answer is signed against them as usual, so one
+ * made for the old choices is refused. Should that reading now resolve, the item
  * is closed as a scan closes it (RESOLVED_BY_SCAN, at `now`), as the next scan would. Match records
  * and prices saved for the old parts stay; nothing reads them for this bundle.
  *
@@ -266,15 +273,18 @@ export async function reopenReviewAnswer(store: ScanStore, id: string, now: numb
   const open: ReviewItem = { ...rest, choices: choicesOf(item), answer: null, answeredAt: null };
   const bundle = await store.getBundle(item.subject);
   // A bundle not stored (never the case after a scan) is split when a scan sees it.
-  if (bundle) {
-    const split = readSplit(bundle, await knownModels(store));
-    await store.putBundle({ ...bundle, split });
-    if (split.status === 'resolved') {
-      await store.putReview({ ...open, answer: RESOLVED_BY_SCAN, answeredAt: now });
-      return;
-    }
+  if (!bundle) {
+    await store.putReview(open);
+    return;
   }
-  await store.putReview(open);
+  const split = readSplit(bundle, await knownModels(store));
+  await store.putBundle({ ...bundle, split });
+  if (split.status === 'resolved') {
+    await store.putReview({ ...open, answer: RESOLVED_BY_SCAN, answeredAt: now });
+    return;
+  }
+  // As a scan updates an open question: the reading's reason and choices, openedAt kept.
+  await store.putReview({ ...open, reason: split.notes.join('; '), choices: splitChoices(split) });
 }
 
 /**
