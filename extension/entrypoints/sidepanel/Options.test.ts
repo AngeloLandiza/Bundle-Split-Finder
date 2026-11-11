@@ -266,6 +266,19 @@ describe('Detail: a refusal in Ways to sell is its own line under the button (QA
   });
 });
 
+describe("Detail: a refusal in the estimate band's Look up is its own line under the button", () => {
+  it('stacks the button and the sentence, on the kit whose page is not read (one way to sell, two parts waiting)', async () => {
+    await openP553({ pages: false, account: { this_hour_searches: 50 } });
+    const band = screen.getByRole('region', { name: 'Estimate' });
+    const sentence = await within(band).findByText('SerpApi allows 50 searches an hour, and they are used. Try again later.');
+    const wrapper = sentence.parentElement!;
+    expect(wrapper).toHaveClass('deal-lookup', 'deal-lookup-stacked');
+    const button = within(wrapper).getByRole('button', { name: /^Look up/ });
+    expect(Array.from(wrapper.children)).toEqual([button, sentence]);
+    expect(button.getAttribute('aria-describedby')?.split(' ')).toContain(sentence.id);
+  });
+});
+
 describe('Deals: a Look up above the searches per scan (Ruling 72)', () => {
   it('names how many of the row\'s parts it looks up, and the row, at a limit of 1', async () => {
     const w = await answeredKitWorld();

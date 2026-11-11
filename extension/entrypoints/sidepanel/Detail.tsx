@@ -472,7 +472,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
               </p>
               {/* With more than one way to sell, each holds its own Look up. */}
               {row.options.length > 1 ? null : (
-                <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts, button) => run({ kind: 'lookUp', parts }, button)} />
+                <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} stacked onRun={(parts, button) => run({ kind: 'lookUp', parts }, button)} />
               )}
             </>
           ) : (
