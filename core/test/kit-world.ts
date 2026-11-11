@@ -45,8 +45,9 @@ export interface KitWorld {
   ledger: string[];
 }
 
-function paidDeps(w: KitWorld, maxPerRun: number) {
-  const budget = new SearchBudget(parseAccount({ ...fx.SERPAPI_ACCOUNT_FREE }), { reserve: 0, maxPerRun });
+/** The recorded free-plan account, with `account` over it (such as this hour's searches). */
+function paidDeps(w: KitWorld, maxPerRun: number, account: Record<string, unknown> = {}) {
+  const budget = new SearchBudget(parseAccount({ ...fx.SERPAPI_ACCOUNT_FREE, ...account }), { reserve: 0, maxPerRun });
   const client = new SerpApiClient({ apiKey: 'TEST', budget, cache: w.cache, fetchFn: replayRecorded().fetchFn, now: () => KIT_T0, onSpend: (e) => void w.ledger.push(e.label) });
   return { budget, client };
 }
@@ -67,10 +68,10 @@ export const kitReport = async (w: KitWorld) => ({ ...(await buildReport(w.store
 /**
  * What the worker answers to a quote: the store's refusal or the budget's, the number of searches and
  * the parts the per-scan limit leaves out (Ruling 72). `perScan` is the settings' searches per scan,
- * the manual-trigger budget's cap; default 20. Nothing is spent.
+ * the manual-trigger budget's cap; default 20. `account` goes over the recorded account. Nothing is spent.
  */
-export async function kitQuote(w: KitWorld, action: PaidAction, perScan = 20): Promise<Quote> {
-  const { budget } = paidDeps(w, perScan);
+export async function kitQuote(w: KitWorld, action: PaidAction, perScan = 20, account: Record<string, unknown> = {}): Promise<Quote> {
+  const { budget } = paidDeps(w, perScan, account);
   const q = quotePaid(action, await savedAnswers(w.store), budget);
   return { ...q, refusal: (await refusalFor(w.store, action)) ?? q.refusal };
 }

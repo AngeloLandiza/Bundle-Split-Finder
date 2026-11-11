@@ -6,6 +6,7 @@ import { waitingParts } from './dealsModel';
 import { useQuote } from './useQuote';
 
 const searches = (n: number): string => `${n} ${n === 1 ? 'search' : 'searches'}`;
+const count = (n: number): string => `${n} ${n === 1 ? 'part' : 'parts'}`;
 
 export const SCAN_RUNNING = 'A scan is running.';
 
@@ -27,6 +28,8 @@ interface LookUpProps {
   items?: { brand: string; model: string }[];
   /** An id that names what this button is for: two buttons of one name are told apart by it. */
   describedBy?: string;
+  /** True in Ways to sell: a refusal is its own full-width line under the button, as in a Deals row, not squeezed beside it. */
+  stacked?: boolean;
 }
 
 /**
@@ -34,7 +37,7 @@ interface LookUpProps {
  * before the click and is asked for again whenever a scan starts or ends, a paid action finishes, the parts
  * change or a new report comes (useQuote). A refused quote disables the button and says why.
  */
-export function LookUp({ row, report, api, scanRunning, version, busy, onRun, inRow = false, items, describedBy }: LookUpProps) {
+export function LookUp({ row, report, api, scanRunning, version, busy, onRun, inRow = false, items, describedBy, stacked = false }: LookUpProps) {
   // A failed run's sentence is kept apart from the quote, so a later quote cannot wipe it. It belongs to the parts it was for.
   const [runError, setRunError] = useState<{ partKey: string; text: string } | null>(null);
   // True from the press until the request ends: this button says so.
@@ -63,11 +66,17 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
   };
 
   const cost = shown === null ? `at most ${searches(parts.length)}` : shown === 0 ? 'no search' : searches(shown);
+  // Ruling 72: above the per-scan limit a press looks up only what fits, and the label says how many of the parts.
+  // A quote taken for other parts (kept while the next one is asked for) can leave none: then the plain label.
+  const left = last?.leftWaiting ?? 0;
+  const fits = shown !== null && shown > 0 && left > 0 && left < parts.length ? parts.length - left : null;
+  // A way to sell's button says how many parts: "Look up 8 parts · 8 searches"; above the limit any Look up does:
+  // "Look up 5 of 8 parts · 5 searches". Then its name starts with that visible text.
+  const partsLabel = fits !== null ? `${fits} of ${count(parts.length)}` : items ? count(items.length) : null;
+  const costLabel = shown === 0 ? '· no search' : `${partsLabel ? '· ' : ''}${cost}`;
   // The name starts with the visible label (WCAG 2.5.3) and then says what is looked up.
-  const visible = `Look up ${shown === 0 ? '· no search' : cost}`;
-  // A way to sell's button says how many parts: "Look up 9 items · 8 searches". Its name is its visible text.
-  const itemsLabel = items ? `${items.length} ${items.length === 1 ? 'part' : 'parts'}` : null;
-  const what = parts.length === 1 ? parts[0]!.model : `${parts.length} parts of ${row.model}`;
+  const visible = `Look up${partsLabel ? ` ${partsLabel}` : ''} ${costLabel}`;
+  const what = fits !== null ? `for ${row.model}` : parts.length === 1 ? parts[0]!.model : `${parts.length} parts of ${row.model}`;
 
   const refusalText = refusal ? (
     <p className="deal-refusal" id={refusalId}>
@@ -79,7 +88,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
         ref={buttonRef}
         type="button"
         className="deal-lookup-btn"
-        aria-label={running || itemsLabel ? undefined : `${visible}, ${what}`}
+        aria-label={running || items ? undefined : `${visible}, ${what}`}
         aria-describedby={[describedBy, refusal ? refusalId : undefined].filter(Boolean).join(' ') || undefined}
         aria-disabled={blocked ? 'true' : undefined}
         onClick={run}
@@ -88,7 +97,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
           'Looking up…'
         ) : (
           <>
-            Look up{itemsLabel ? ` ${itemsLabel}` : ''} <span className="deal-lookup-cost">{shown === 0 ? '· no search' : `${itemsLabel ? '· ' : ''}${cost}`}</span>
+            Look up{partsLabel ? ` ${partsLabel}` : ''} <span className="deal-lookup-cost">{costLabel}</span>
           </>
         )}
       </button>
@@ -99,6 +108,14 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
         {button}
         {refusalText}
       </>
+    );
+  }
+  if (stacked) {
+    return (
+      <div className="deal-lookup deal-lookup-stacked">
+        {button}
+        {refusalText}
+      </div>
     );
   }
   return (

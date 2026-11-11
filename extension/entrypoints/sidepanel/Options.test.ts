@@ -21,14 +21,17 @@ afterEach(cleanup);
 
 const state: AppState = { hasKey: true, account: null, accountCheckedAt: 1, problem: null, settings: DEFAULT_SETTINGS, scanRunning: false, lastJob: null, nextRunAt: null };
 
-/** The worker's answers over the replayed world: the real quote and the real Look up. */
-function workerApi(w: KitWorld, sent: unknown[] = []): WorkerApi {
+/**
+ * The worker's answers over the replayed world: the real quote and the real Look up, under the settings' searches
+ * per scan (`perScan`, default 20) and the recorded account with `account` over it.
+ */
+function workerApi(w: KitWorld, sent: unknown[] = [], perScan = 20, account: Record<string, unknown> = {}): WorkerApi {
   return {
     send: (async (r: { type: string; action?: PaidAction }) => {
       sent.push(r);
-      if (r.type === 'quote') return { ok: true, data: await kitQuote(w, r.action!) };
+      if (r.type === 'quote') return { ok: true, data: await kitQuote(w, r.action!, perScan, account) };
       if (r.type === 'runPaid') {
-        const error = await kitRunPaid(w, r.action!);
+        const error = await kitRunPaid(w, r.action!, perScan);
         return error === null ? { ok: true, data: null } : { ok: false, error };
       }
       return { ok: true, data: null };
@@ -47,11 +50,11 @@ function Harness({ w, api, first, bundleKey }: { w: KitWorld; api: WorkerApi; fi
   });
 }
 
-async function openP553(opts: { answer?: 'choice' | 'none'; pages?: boolean } = {}) {
+async function openP553(opts: { answer?: 'choice' | 'none'; pages?: boolean; perScan?: number; account?: Record<string, unknown> } = {}) {
   const w = await answeredKitWorld(opts.answer, opts.pages);
   const first = await kitReport(w);
   const sent: unknown[] = [];
-  render(createElement(Harness, { w, api: workerApi(w, sent), first, bundleKey: P553_KEY }));
+  render(createElement(Harness, { w, api: workerApi(w, sent, opts.perScan, opts.account), first, bundleKey: P553_KEY }));
   return { w, first, sent };
 }
 
@@ -158,6 +161,75 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     expect(within(b!).getByText(/^Leaves 2 parts:/)).toHaveTextContent('Leaves 2 parts: PCL1600K2, P553');
     // The headline is the primary's: the same figure.
     expect(screen.getByText(profit(row.estimate!.profit), { selector: '.detail-profit' })).toBeInTheDocument();
+  });
+});
+
+describe('Detail: a Look up above the searches per scan looks up what fits (Ruling 72)', () => {
+  const cost = (n: number) => (n === 0 ? '· no search' : `· ${n} ${n === 1 ? 'search' : 'searches'}`);
+  const splitWaiting = async (w: KitWorld) => waitingOf('RYOBI', (await kitReport(w)).bundles.find((b) => b.key === P553_KEY)!.options.find((o) => o.id === 'split:PCL1600K2')!.parts);
+  const panelLookups = (w: KitWorld) => w.ledger.filter((l) => l.startsWith('panel:lookup:')).length;
+
+  it('at the default 5, the split reads "Look up 5 of 8 parts · 5 searches"; a press spends exactly 5, the button is quoted for the rest, and a second press finishes them', async () => {
+    const user = userEvent.setup();
+    expect(DEFAULT_SETTINGS.searchesPerScan).toBe(5);
+    const { w, sent } = await openP553({ perScan: DEFAULT_SETTINGS.searchesPerScan });
+    const waiting = await splitWaiting(w);
+    expect(waiting).toHaveLength(8);
+    const button = await within(splitBlock()).findByRole('button', { name: 'Look up 5 of 8 parts · 5 searches' });
+    expect(button).toHaveTextContent(/^Look up 5 of 8 parts · 5 searches$/);
+    expect(button).not.toHaveAttribute('aria-disabled');
+    // The whole way's 2 parts fit: its button is unchanged.
+    expect(within(blocks()[0]!).getByRole('button', { name: 'Look up 2 parts · 2 searches' })).toBeInTheDocument();
+
+    await user.click(button);
+    // The panel sends every waiting part; the worker looks up what fits.
+    expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: waiting } });
+    await waitFor(() => expect(panelLookups(w)).toBe(5));
+    const left = await splitWaiting(w);
+    expect(left).toHaveLength(3);
+    const next = (await kitQuote(w, { kind: 'lookUp', parts: left }, 5)).searches;
+    expect(next).toBeLessThanOrEqual(3);
+    const again = await within(splitBlock()).findByRole('button', { name: `Look up 3 parts ${cost(next)}` });
+    await waitFor(() => expect(again).not.toHaveAttribute('aria-disabled'));
+
+    await user.click(again);
+    await waitFor(() => expect(within(splitBlock()).queryByRole('button', { name: /^Look up/ })).toBeNull());
+    expect(panelLookups(w)).toBe(5 + next);
+    expect(await splitWaiting(w)).toEqual([]);
+  });
+
+  it('at 1, the split reads "Look up 1 of 8 parts · 1 search"', async () => {
+    await openP553({ perScan: 1 });
+    const button = await within(splitBlock()).findByRole('button', { name: 'Look up 1 of 8 parts · 1 search' });
+    expect(button).not.toHaveAttribute('aria-disabled');
+    expect(within(blocks()[0]!).getByRole('button', { name: 'Look up 1 of 2 parts · 1 search' })).toBeInTheDocument();
+  });
+
+  it('at 0 nothing fits: refused with the per-scan sentence for the whole cost, as before', async () => {
+    await openP553({ perScan: 0 });
+    const button = await within(splitBlock()).findByRole('button', { name: 'Look up 8 parts · 8 searches' });
+    await waitFor(() => expect(button).toHaveAttribute('aria-disabled', 'true'));
+    expect(within(splitBlock()).getByText('This needs 8 searches, and a scan may use 0. Raise the searches per scan in settings to do it here.')).toBeInTheDocument();
+  });
+
+  it('with the hour used up, refused with the hourly sentence, never the per-scan one', async () => {
+    await openP553({ perScan: 5, account: { this_hour_searches: 50 } });
+    const button = await within(splitBlock()).findByRole('button', { name: 'Look up 5 of 8 parts · 5 searches' });
+    await waitFor(() => expect(button).toHaveAttribute('aria-disabled', 'true'));
+    expect(within(splitBlock()).getByText('SerpApi allows 50 searches an hour, and they are used. Try again later.')).toBeInTheDocument();
+    expect(within(region()).queryByText(/a scan may use/)).toBeNull();
+  });
+});
+
+describe('Deals: a Look up above the searches per scan (Ruling 72)', () => {
+  it('names how many of the row\'s parts it looks up, and the row, at a limit of 1', async () => {
+    const w = await answeredKitWorld();
+    const report = await kitReport(w);
+    const row = report.bundles.find((b) => b.key === P553_KEY)!;
+    expect(waitingOf('RYOBI', row.parts)).toHaveLength(2);
+    render(createElement(DealsTab, { api: workerApi(w, [], 1), report, state, sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
+    const button = await screen.findByRole('button', { name: `Look up 1 of 2 parts · 1 search, for ${row.model}` });
+    expect(button).toHaveTextContent(/^Look up 1 of 2 parts · 1 search$/);
   });
 });
 
