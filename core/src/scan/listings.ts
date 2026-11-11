@@ -2,9 +2,10 @@
 //
 // Model numbers are read from titles only to index the saved listings. Whether a listing
 // is the part is still decided by pick() and grade() in match.ts, with hasModelToken as
-// the test for "same model": nothing here makes a match on weaker evidence.
+// the test for "same model" (titleHasModel, which adds RYOBI's tool-only B): nothing here makes a
+// match on weaker evidence.
 
-import { type Candidate, hasModelToken } from '../match';
+import { type Candidate, titleHasModel } from '../match';
 import type { ListingRecord } from './types';
 
 // A model must not touch another letter or digit on either side. Titles are upper-cased first.
@@ -46,10 +47,13 @@ export function listingFrom(c: Candidate, brands: string[], now: number, old?: L
   };
 }
 
-/** Saved listings of this brand whose title carries this model as a whole token, as candidates for pick(). */
+/**
+ * Saved listings of this brand whose title carries this model as a whole token, as candidates for
+ * pick(): for RYOBI, either form of it (Ruling 70, titleHasModel), as a lookup's results are graded.
+ */
 export function candidatesFor(brand: string, model: string, listings: ListingRecord[]): Candidate[] {
   const want = upper(brand);
   return listings
-    .filter((l) => upper(l.brand) === want && hasModelToken(l.title, model))
+    .filter((l) => upper(l.brand) === want && titleHasModel(want, l.title, model))
     .map((l) => ({ asin: l.asin, title: l.title, brand: l.brand, price: l.price, reviews: l.reviews, image: l.image }));
 }

@@ -157,10 +157,24 @@ describe('no genuine listing loses its grade', () => {
     expect(RECORDED_NAMES.filter((n) => n.startsWith('amazon-'))).toHaveLength(17);
   });
 
+  /**
+   * Ruling 70's only additions: a search that asked for a RYOBI model without its tool-only B, whose
+   * RYOBI listing writes it with the B (PCL235B, PCL515B, PCL660B).
+   */
+  const TOOL_ONLY_B = [
+    'amazon-search-PCL235 B0BGYFTPGK PCL235 probable',
+    'amazon-search-PCL515 B0B88R7HWB PCL515 probable',
+    'amazon-search-PCL660 B0B1GKJXNB PCL660 probable',
+  ];
+
   it('219 listing and model pairs were probable or better before the rule; the 5 that are spare parts are gone and the other 214 keep their grade', () => {
     // The before-and-after table, row by row, is in the Task 2b report. The rule only rejects or
     // demotes, so a count of 214 means no genuine tool, battery, charger or kit listing lost its grade.
-    const now = probableOrBetter();
+    // Ruling 70 then adds 3 pairs and changes none of the 214 (q1a report): 217 now.
+    const all = probableOrBetter();
+    expect(all).toHaveLength(217);
+    expect(all).toEqual(expect.arrayContaining(TOOL_ONLY_B));
+    const now = all.filter((k) => !TOOL_ONLY_B.includes(k));
     expect(now).toHaveLength(214);
     for (const asin of ['B08TGP8MGR', 'B08TGW83LC', 'B00DQD7EIE']) expect(now.some((k) => k.includes(` ${asin} `))).toBe(false);
     expect(now).toEqual(expect.arrayContaining([

@@ -373,38 +373,42 @@ describe('runPaid lookUp above the per-scan limit: what fits is looked up, best 
   });
 });
 
-describe('runPaid lookUp: PCL1600K2 split into its parts, at the default limit of 5 (Ruling 72, replayed)', () => {
+describe('runPaid lookUp: PCL1600K2 split into its parts, above the per-scan limit (Ruling 72, replayed)', () => {
   const panelLookups = (w: KitWorld) => w.ledger.filter((l) => l.startsWith('panel:lookup:'));
   const splitWaiting = async (w: KitWorld) => {
     const row = (await kitReport(w)).bundles.find((b) => b.key === P553_KEY)!;
     const split = row.options.find((o) => o.id === 'split:PCL1600K2')!;
     return split.parts.filter((p) => p.status === 'waiting' || p.status === 'unmatched').map((p) => ({ brand: 'RYOBI', model: p.model }));
   };
+  /** A scan's order: P553 is a part of the bundle's own split, so it ranks above the kit's items, which tie on waiting and saving and so go by model. */
+  const scanOrdered = (models: string[]) => [...models.filter((m) => m === 'P553'), ...models.filter((m) => m !== 'P553').sort()];
 
-  it('quotes 5 of the 8 waiting parts, spends exactly 5 on a press, best first, then quotes the rest and a second press finishes them', async () => {
+  it('quotes what fits of the waiting parts, spends exactly that on a press, best first, then quotes the rest and a second press finishes them', async () => {
     const w = await answeredKitWorld();
     const parts = await splitWaiting(w);
-    expect(parts.map((p) => p.model)).toEqual(['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL430', 'PCL660', 'PBP002', 'P553']);
+    // Ruling 70: PCL235, PCL515 and PCL660 are matched free from the saved brand page, so no more than the
+    // default 5 wait; a limit two below the parts keeps this press above the limit.
+    expect(parts.map((p) => p.model)).toEqual(['PCL206', 'PCL500', 'PCL430', 'PBP002', 'P553']);
+    const limit = parts.length - 2;
     const action: PaidAction = { kind: 'lookUp', parts };
-    expect(await kitQuote(w, action, 5)).toEqual({ searches: 5, refusal: null, leftWaiting: 3 });
-    expect(await kitRunPaid(w, action, 5)).toBeNull();
-    // P553 is a part of the bundle's own split: a scan ranks it above the kit's items, which tie on
-    // waiting and saving and so go by model.
-    expect(panelLookups(w)).toEqual(['P553', 'PBP002', 'PCL206', 'PCL235', 'PCL430'].map((m) => `panel:lookup:${m}`));
+    expect(await kitQuote(w, action, limit)).toEqual({ searches: limit, refusal: null, leftWaiting: parts.length - limit });
+    expect(await kitRunPaid(w, action, limit)).toBeNull();
+    const first = scanOrdered(parts.map((p) => p.model)).slice(0, limit);
+    expect(panelLookups(w)).toEqual(first.map((m) => `panel:lookup:${m}`));
     const left = await splitWaiting(w);
-    expect(left.map((p) => p.model)).toEqual(['PCL500', 'PCL515', 'PCL660']);
-    const next = await kitQuote(w, { kind: 'lookUp', parts: left }, 5);
+    expect(left.map((p) => p.model)).toEqual(parts.map((p) => p.model).filter((m) => !first.includes(m)));
+    const next = await kitQuote(w, { kind: 'lookUp', parts: left }, limit);
     expect(next).toEqual({ searches: next.searches, refusal: null });
-    expect(next.searches).toBeLessThanOrEqual(3);
-    expect(await kitRunPaid(w, { kind: 'lookUp', parts: left }, 5)).toBeNull();
-    expect(panelLookups(w)).toHaveLength(5 + next.searches);
+    expect(next.searches).toBeLessThanOrEqual(left.length);
+    expect(await kitRunPaid(w, { kind: 'lookUp', parts: left }, limit)).toBeNull();
+    expect(panelLookups(w)).toHaveLength(limit + next.searches);
     expect(await splitWaiting(w)).toEqual([]);
   });
 
-  it('at a limit of 1, one part of the 8', async () => {
+  it('at a limit of 1, one part of those waiting', async () => {
     const w = await answeredKitWorld();
     const action: PaidAction = { kind: 'lookUp', parts: await splitWaiting(w) };
-    expect(await kitQuote(w, action, 1)).toEqual({ searches: 1, refusal: null, leftWaiting: 7 });
+    expect(await kitQuote(w, action, 1)).toEqual({ searches: 1, refusal: null, leftWaiting: action.parts.length - 1 });
     expect(await kitRunPaid(w, action, 1)).toBeNull();
     expect(panelLookups(w)).toEqual(['panel:lookup:P553']);
   });

@@ -129,8 +129,10 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     const [whole, split] = row.options;
     // PCL1600K2 waits, since the kit is also a bundle the scan resolved; nothing asked for P553 or the items.
     expect(whole!.parts.map((p) => p.status)).toEqual(['waiting', 'unmatched']);
-    // Except PBP005, which the saved brand page answers: the scan matched it for nothing (Task 3).
-    expect(split!.parts.map((p) => [p.model, p.status])).toEqual([...KIT_MODELS, 'P553'].map((m) => [m, m === 'PBP005' ? 'matched' : 'unmatched']));
+    // Except the items the saved brand page answers, which the scan matched for nothing (Task 3): PBP005, and
+    // PCL235, PCL515 and PCL660, whose listings there are PCL235B, PCL515B and PCL660B (Ruling 70).
+    const free = ['PBP005', 'PCL235', 'PCL515', 'PCL660'];
+    expect(split!.parts.map((p) => [p.model, p.status])).toEqual([...KIT_MODELS, 'P553'].map((m) => [m, free.includes(m) ? 'matched' : 'unmatched']));
     expect(whole!.estimate).toBeNull();
     expect(split!.estimate).toBeNull();
     // Leftovers name only what a lookup has shown to have no listing: none of these models yet.
@@ -163,18 +165,26 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     const w = await answered();
     await lookUp(w, ['PCL1600K2', 'P553']);
     await lookUpItems(w, KIT_MODELS);
-    // PBP005 comes from the saved brand page, free; the other seven are one replayed search each, in a
-    // scan's order (Ruling 72): the items tie on waiting and saving, so they go by model.
-    expect(w.ledger.slice(5)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').sort().map((m) => `panel:lookup:${m}`));
+    // PBP005, PCL235, PCL515 and PCL660 come from the saved brand page, free (Ruling 70 for three of them);
+    // the other four are one replayed search each, in a scan's order (Ruling 72): the items tie on waiting
+    // and saving, so they go by model.
+    expect(w.ledger.slice(5)).toEqual(['PCL206', 'PCL500', 'PCL430', 'PBP002'].sort().map((m) => `panel:lookup:${m}`));
     const row = await rowOf(w);
     const split = row.options.find((o) => o.id === 'split:PCL1600K2')!;
     const whole = row.options.find((o) => o.id === 'whole')!;
-    expect(split.parts.map((p) => [p.model, p.status])).toEqual([
+    expect(split.parts.map((p) => [p.model, p.status, p.asin])).toEqual([
+      // The PCL206 search shows PCL206B only as renewed listings sold by "Amazon Renewed" (B0BVYFSHXX, B0BKTNLS6X), rejected.
+      ['PCL206', 'none', null],
+      // Ruling 70: the page writes these without the tool-only B; their listings are PCL235B, PCL515B and PCL660B.
+      ['PCL235', 'matched', 'B0BGYFTPGK'], ['PCL500', 'none', null], ['PCL515', 'matched', 'B0B88R7HWB'],
       // PCL430's search holds a RYOBI backing pad that fits it, rejected as a spare part (Ruling 65), and brandless parts in review.
-      ['PCL206', 'none'], ['PCL235', 'review'], ['PCL500', 'none'], ['PCL515', 'review'], ['PCL430', 'review'], ['PCL660', 'none'],
-      ['PBP005', 'matched'], ['PBP002', 'matched'], ['P553', 'review'],
+      ['PCL430', 'review', null], ['PCL660', 'matched', 'B0B1GKJXNB'],
+      ['PBP005', 'matched', 'B09G1WD2CG'], ['PBP002', 'matched', 'B08L339D94'], ['P553', 'review', null],
     ]);
-    expect(split.leftovers).toEqual(['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL430', 'PCL660', 'P553', ...UNNAMED]);
+    expect(split.parts.filter((p) => p.grade !== null).map((p) => [p.model, p.grade])).toEqual([
+      ['PCL235', 'probable'], ['PCL515', 'probable'], ['PCL660', 'probable'], ['PBP005', 'probable'], ['PBP002', 'probable'],
+    ]);
+    expect(split.leftovers).toEqual(['PCL206', 'PCL500', 'PCL430', 'P553', ...UNNAMED]);
     const active = split.parts.filter((p) => p.availability === 'active');
     const components = { ...Object.fromEntries(split.parts.map((p) => [p.model, 1])), ...Object.fromEntries(UNNAMED.map((n) => [`~${n}`, 1])) };
     expect(split.estimate).toEqual(evaluateBundle(388, components, active.map((p) => ({ asin: p.asin!, covers: { [p.model]: 1 }, price: p.price! }))).result);
@@ -183,7 +193,7 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     expect(row.options.map((o) => o.id)).toEqual(['split:PCL1600K2', 'whole']);
     expect(row).toMatchObject({
       section: 'missing_listing', status: 'partial', estimate: split.estimate, parts: split.parts,
-      uncovered: ['P553', 'PCL206', 'PCL235', 'PCL430', 'PCL500', 'PCL515', 'PCL660', ...UNNAMED],
+      uncovered: ['P553', 'PCL206', 'PCL430', 'PCL500', ...UNNAMED],
     });
   });
 

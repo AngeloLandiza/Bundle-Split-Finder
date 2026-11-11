@@ -4,13 +4,13 @@
 // only through the client and budget they are given, check their whole cost against that budget
 // before the first search, and never repeat a search that failed.
 
-import { grade, pick } from '../match';
+import { grade, kitKey, pick } from '../match';
 import type { SearchResult } from '../serpapi/client';
 import { parseAmazonProduct } from '../serpapi/parsers';
 import { wantedFor } from './classify';
 import {
   applyLookup, bundleParts, failingBefore, type KnownModels, knownModels, lookupOrder, type LookupStep, lookupWanted, markWaiting, matchFromListings,
-  openMatchReview, type Part, type PartContext, pickFromListings, savePrice, sendLookup,
+  openMatchReview, type Part, type PartContext, pickFromListings, savePrice, sendLookup, sharedMatch,
 } from './runner';
 import { DEFAULT_SCAN_SETTINGS, partKey } from './types';
 import type { BudgetView, MatchRecord, PaidAction, Quote, ScanCounts, ScanSettings, ScanStore, SearchClient } from './types';
@@ -55,7 +55,9 @@ export interface SavedAnswers {
  */
 export function quotePaid(action: PaidAction, saved: { listingAnswers: (brand: string, model: string) => boolean }, budget: BudgetView): Quote {
   if (action.kind === 'verify') return { searches: 1, refusal: overBudget(budget, 1) };
-  const needed = partsOf(action.parts).filter((p) => !saved.listingAnswers(p.brand, p.model)).length;
+  // Ruling 70: a RYOBI part asked for in both its written forms is one search (onePerProduct); then
+  // Ruling 72's cap, exactly as lookUp counts them, so the quote is what a press spends.
+  const needed = onePerProduct(partsOf(action.parts).filter((p) => !saved.listingAnswers(p.brand, p.model))).length;
   const searches = fitting(budget, needed);
   const quote: Quote = { searches, refusal: overBudget(budget, searches) };
   if (searches < needed) quote.leftWaiting = needed - searches;
@@ -126,7 +128,9 @@ async function lookUp(
 ): Promise<void> {
   const need = await judge(ctx.store, known);
   const parts = partsOf(asked);
-  const wanted = await scanOrder(ctx.store, parts.filter((p) => need(p) === 'search'));
+  // Ruling 70: one search per product, the form asked first; the other written form takes its match
+  // after the searches. Then Ruling 72: best first in the scan's order, as many as fit. As quotePaid counts.
+  const wanted = await scanOrder(ctx.store, onePerProduct(parts.filter((p) => need(p) === 'search')));
   const searches = wanted.slice(0, fitting(budget, wanted.length));
   const refusal = overBudget(budget, searches.length);
   if (refusal !== null) throw new PaidProblem(refusal);
@@ -147,6 +151,8 @@ async function lookUp(
     }
     await applyLookup(ctx, step, result.data, result.at);
   }
+  // Ruling 70: the forms onePerProduct skipped, never those past the limit, take their twin's result.
+  for (const part of parts) if (need(part) === 'search' && !wanted.includes(part)) await matchFromListings(ctx, known.listings, part);
 }
 
 /**
@@ -219,6 +225,8 @@ async function judge(store: ScanStore, known: KnownModels): Promise<(part: Part)
     // Rule 5: a part of a resolved bundle, or (step 6) an item of a kit one splits, with no match or one
     // left waiting, never one the owner decided. The owner asks for a kit's items: not the scan's kit rule.
     if (!wanted.has(part.key) || !lookupWanted(matches.get(part.key))) return 'nothing';
+    // Ruling 70: the match of the part's other written form stands for it, free (matchFromListings).
+    if (sharedMatch(part, (key) => matches.get(key))) return 'listing';
     return pickFromListings(part, known.catalog, known.listings).chosen ? 'listing' : 'search';
   };
 }
@@ -251,6 +259,12 @@ async function scanOrder(store: ScanStore, parts: Part[]): Promise<Part[]> {
   const { byLookup } = lookupOrder(wanted, waitingSince, failingBefore(await store.listScans()));
   const item = (p: Part) => ((wanted.get(p.key)?.kits.length ?? 0) > 0 ? 1 : 0);
   return [...parts].sort((a, b) => item(a) - item(b) || byLookup(a.key, b.key));
+}
+
+/** Ruling 70: the parts with only the first of a RYOBI part's two written forms (kitKey), in order. */
+function onePerProduct(parts: Part[]): Part[] {
+  const seen = new Set<string>();
+  return parts.filter((p) => !seen.has(kitKey(p.brand, p.model)) && !!seen.add(kitKey(p.brand, p.model)));
 }
 
 function verifyRefusal(match: MatchRecord | undefined, asin: string): string | null {

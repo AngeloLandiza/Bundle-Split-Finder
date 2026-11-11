@@ -7,6 +7,7 @@
 // record, or (step 6, Ruling 67) a catalog entry marked a kit, whose page the scan read by its item id.
 
 import { OFFERABLE_PART } from './decompose';
+import { kitKey, sameModel } from './match';
 import { DEWALT_LEADING, RYOBI_TOKEN } from './pageSplit';
 import { type BundleRecord, type CatalogRecord, type PageReading, partKey, resolvedParts } from './scan/types';
 
@@ -86,23 +87,9 @@ export function parseIncludes(brand: string, bullets: string[]): KitItem[] {
 
 const norm = (s: string): string => s.toUpperCase().trim();
 // RYOBI writes a tool without its tool-only B (PBLRC25 for PBLRC25B). pageCatalog goes one way: a
-// model X on the page also adds XB. Here the rule is two-way: one trailing B is removed from both
-// models before they are compared, so X matches X and XB, XB matches XB and X, and XBB matches
-// neither (it is compared as XB).
-const ryobiBase = (m: string): string => (m.endsWith('B') ? m.slice(0, -1) : m);
-
-/** Whether two models of a brand name the same kit or tool, by the rule above. */
-export function sameModel(brand: string, a: string, b: string): boolean {
-  const x = norm(a);
-  const y = norm(b);
-  return x === y || (norm(brand) === 'RYOBI' && ryobiBase(x) === ryobiBase(y));
-}
-
-/** The key under which sameModel's models meet: brand, and the model without one RYOBI trailing B. */
-export const kitKey = (brand: string, model: string): string => {
-  const b = norm(brand);
-  return `${b}:${b === 'RYOBI' ? ryobiBase(norm(model)) : norm(model)}`;
-};
+// model X on the page also adds XB. Here the rule is two-way: sameModel and kitKey, which live in
+// match.ts since Ruling 70, as the matcher uses the same rule.
+export { kitKey, sameModel };
 
 /**
  * The stored records grouped by kitKey, built once per report: `of(brand, model)` returns every

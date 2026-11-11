@@ -77,6 +77,41 @@ export function hasModelToken(text: string, model: string): boolean {
   return new RegExp(`(?<![A-Z0-9])${escapeRe(model.toUpperCase())}(?![A-Z0-9])`).test(text.toUpperCase());
 }
 
+const norm = (s: string): string => s.toUpperCase().trim();
+// RYOBI writes a tool without its tool-only B (PBLRC25 for PBLRC25B): a kit's Home Depot page lists
+// "(1) PCL206 …" where Amazon sells PCL206B. One trailing B is removed from both models before they are
+// compared, so X matches X and XB, XB matches XB and X, and XBB matches neither (it is compared as XB).
+const ryobiBase = (m: string): string => (m.endsWith('B') ? m.slice(0, -1) : m);
+
+/** Whether two models of a brand name the same kit or tool, by the rule above. DEWALT: only the same model. */
+export function sameModel(brand: string, a: string, b: string): boolean {
+  const x = norm(a);
+  const y = norm(b);
+  return x === y || (norm(brand) === 'RYOBI' && ryobiBase(x) === ryobiBase(y));
+}
+
+/** The key under which sameModel's models meet: brand, and the model without one RYOBI trailing B. */
+export const kitKey = (brand: string, model: string): string => {
+  const b = norm(brand);
+  return `${b}:${b === 'RYOBI' ? ryobiBase(norm(model)) : norm(model)}`;
+};
+
+/**
+ * Ruling 70: every way a model may be written that sameModel accepts for it, the model itself first:
+ * PCL206 and PCL206B for a RYOBI PCL206 or PCL206B; only the model for DEWALT, and for a RYOBI XBB.
+ */
+export function modelForms(brand: string, model: string): string[] {
+  const m = norm(model);
+  if (norm(brand) !== 'RYOBI') return [m];
+  const base = ryobiBase(m);
+  return [...new Set([m, base, `${base}B`])].filter((f) => sameModel(brand, f, m));
+}
+
+/** Ruling 70: the title carries the model, or for RYOBI its other form by sameModel, as a whole token. */
+export function titleHasModel(brand: string, title: string, model: string): boolean {
+  return modelForms(brand, model).some((f) => hasModelToken(title, f));
+}
+
 export function grade(want: Wanted, cand: Candidate): Graded {
   const packaging = BULK.test(cand.title) ? 'bulk' : 'retail';
   const out = (g: Grade, ...reasons: string[]): Graded => ({ asin: cand.asin, grade: g, packaging, reasons });
@@ -97,7 +132,8 @@ export function grade(want: Wanted, cand: Candidate): Graded {
   if (qty && qty !== wantQty) return out('reject', `pack of ${qty}, component is a pack of ${wantQty}`);
 
   const partOk = !!cand.partNumber && clean(cand.partNumber) === clean(want.model);
-  const titleOk = hasModelToken(cand.title, want.model);
+  // Ruling 70: a RYOBI part written without its tool-only B (PCL206) is its Amazon listing's PCL206B.
+  const titleOk = titleHasModel(want.brand, cand.title, want.model);
 
   if (!want.isKit && KIT_WORDS.test(cand.title) && !partOk) {
     return out('reject', 'listing is a kit, component is a single item');

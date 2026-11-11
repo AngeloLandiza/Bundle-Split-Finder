@@ -98,11 +98,12 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     const row = first.bundles.find((b) => b.key === P553_KEY)!;
     const [whole, split] = blocks();
     expect(within(whole!).queryByText(/^[+−]\$/)).toBeNull();
-    // Nine items, but PBP005 was matched for free from a saved listing: only the rest still wait for a lookup.
+    // Nine items, but PBP005, PCL235, PCL515 and PCL660 were matched for free from saved listings (Ruling 70):
+    // only the rest still wait for a lookup.
     expect(row.options[1]!.parts).toHaveLength(9);
     expect(row.options[1]!.parts.find((p) => p.model === 'PBP005')!.status).toBe('matched');
     const waiting = waitingOf('RYOBI', row.options[1]!.parts);
-    expect(waiting).toHaveLength(8);
+    expect(waiting).toHaveLength(5);
     // The quote is whatever the worker's quotePaid says (it counts what Look up would search for).
     const quoted = async (o: number) => (await kitQuote(w, { kind: 'lookUp', parts: o === 1 ? waiting : row.options[o]!.parts.map((p) => ({ brand: 'RYOBI', model: p.model })) })).searches;
     const cost = (n: number) => (n === 0 ? '· no search' : `· ${n} ${n === 1 ? 'search' : 'searches'}`);
@@ -171,15 +172,28 @@ describe('Detail: a Look up above the searches per scan looks up what fits (Ruli
   const cost = (n: number) => (n === 0 ? '· no search' : `· ${n} ${n === 1 ? 'search' : 'searches'}`);
   const splitWaiting = async (w: KitWorld) => waitingOf('RYOBI', (await kitReport(w)).bundles.find((b) => b.key === P553_KEY)!.options.find((o) => o.id === 'split:PCL1600K2')!.parts);
   const panelLookups = (w: KitWorld) => w.ledger.filter((l) => l.startsWith('panel:lookup:')).length;
+  /**
+   * How many of the split's parts wait on the replay, read before the panel opens, and a searches per scan two
+   * below that. Ruling 70 matches PCL235, PCL515 and PCL660 free from the saved brand page, so the split's
+   * waiting parts fit the default 5; the lower limit keeps each press here above the limit.
+   */
+  const above = async () => {
+    const n = (await splitWaiting(await answeredKitWorld())).length;
+    expect(n).toBeLessThanOrEqual(DEFAULT_SETTINGS.searchesPerScan);
+    const limit = n - 2;
+    expect(limit).toBeGreaterThanOrEqual(2);
+    return { n, limit };
+  };
 
-  it('at the default 5, the split reads "Look up 5 of 8 parts · 5 searches"; a press spends exactly 5, the button is quoted for the rest, and a second press finishes them', async () => {
+  it('above the limit, the split reads "Look up X of N parts · X searches"; a press spends exactly X, the button is quoted for the rest, and a second press finishes them', async () => {
     const user = userEvent.setup();
-    expect(DEFAULT_SETTINGS.searchesPerScan).toBe(5);
-    const { w, sent } = await openP553({ perScan: DEFAULT_SETTINGS.searchesPerScan });
+    const { n, limit } = await above();
+    const { w, sent } = await openP553({ perScan: limit });
     const waiting = await splitWaiting(w);
-    expect(waiting).toHaveLength(8);
-    const button = await within(splitBlock()).findByRole('button', { name: 'Look up 5 of 8 parts · 5 searches' });
-    expect(button).toHaveTextContent(/^Look up 5 of 8 parts · 5 searches$/);
+    expect(waiting).toHaveLength(n);
+    const label = `Look up ${limit} of ${n} parts ${cost(limit)}`;
+    const button = await within(splitBlock()).findByRole('button', { name: label });
+    expect(button).toHaveTextContent(new RegExp(`^${label}$`));
     expect(button).not.toHaveAttribute('aria-disabled');
     // The whole way's 2 parts fit: its button is unchanged.
     expect(within(blocks()[0]!).getByRole('button', { name: 'Look up 2 parts · 2 searches' })).toBeInTheDocument();
@@ -187,37 +201,40 @@ describe('Detail: a Look up above the searches per scan looks up what fits (Ruli
     await user.click(button);
     // The panel sends every waiting part; the worker looks up what fits.
     expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: waiting } });
-    await waitFor(() => expect(panelLookups(w)).toBe(5));
+    await waitFor(() => expect(panelLookups(w)).toBe(limit));
     const left = await splitWaiting(w);
-    expect(left).toHaveLength(3);
-    const next = (await kitQuote(w, { kind: 'lookUp', parts: left }, 5)).searches;
-    expect(next).toBeLessThanOrEqual(3);
-    const again = await within(splitBlock()).findByRole('button', { name: `Look up 3 parts ${cost(next)}` });
+    expect(left).toHaveLength(n - limit);
+    const next = (await kitQuote(w, { kind: 'lookUp', parts: left }, limit)).searches;
+    expect(next).toBeLessThanOrEqual(n - limit);
+    const again = await within(splitBlock()).findByRole('button', { name: `Look up ${n - limit} parts ${cost(next)}` });
     await waitFor(() => expect(again).not.toHaveAttribute('aria-disabled'));
 
     await user.click(again);
     await waitFor(() => expect(within(splitBlock()).queryByRole('button', { name: /^Look up/ })).toBeNull());
-    expect(panelLookups(w)).toBe(5 + next);
+    expect(panelLookups(w)).toBe(limit + next);
     expect(await splitWaiting(w)).toEqual([]);
   });
 
-  it('at 1, the split reads "Look up 1 of 8 parts · 1 search"', async () => {
+  it('at 1, the split reads "Look up 1 of N parts · 1 search"', async () => {
+    const { n } = await above();
     await openP553({ perScan: 1 });
-    const button = await within(splitBlock()).findByRole('button', { name: 'Look up 1 of 8 parts · 1 search' });
+    const button = await within(splitBlock()).findByRole('button', { name: `Look up 1 of ${n} parts · 1 search` });
     expect(button).not.toHaveAttribute('aria-disabled');
     expect(within(blocks()[0]!).getByRole('button', { name: 'Look up 1 of 2 parts · 1 search' })).toBeInTheDocument();
   });
 
   it('at 0 nothing fits: refused with the per-scan sentence for the whole cost, as before', async () => {
+    const { n } = await above();
     await openP553({ perScan: 0 });
-    const button = await within(splitBlock()).findByRole('button', { name: 'Look up 8 parts · 8 searches' });
+    const button = await within(splitBlock()).findByRole('button', { name: `Look up ${n} parts ${cost(n)}` });
     await waitFor(() => expect(button).toHaveAttribute('aria-disabled', 'true'));
-    expect(within(splitBlock()).getByText('This needs 8 searches, and a scan may use 0. Raise the searches per scan in settings to do it here.')).toBeInTheDocument();
+    expect(within(splitBlock()).getByText(`This needs ${n} searches, and a scan may use 0. Raise the searches per scan in settings to do it here.`)).toBeInTheDocument();
   });
 
   it('with the hour used up, refused with the hourly sentence, never the per-scan one', async () => {
-    await openP553({ perScan: 5, account: { this_hour_searches: 50 } });
-    const button = await within(splitBlock()).findByRole('button', { name: 'Look up 5 of 8 parts · 5 searches' });
+    const { n, limit } = await above();
+    await openP553({ perScan: limit, account: { this_hour_searches: 50 } });
+    const button = await within(splitBlock()).findByRole('button', { name: `Look up ${limit} of ${n} parts ${cost(limit)}` });
     await waitFor(() => expect(button).toHaveAttribute('aria-disabled', 'true'));
     expect(within(splitBlock()).getByText('SerpApi allows 50 searches an hour, and they are used. Try again later.')).toBeInTheDocument();
     expect(within(region()).queryByText(/a scan may use/)).toBeNull();

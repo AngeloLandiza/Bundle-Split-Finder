@@ -36,10 +36,17 @@ const BRAND_PAGE: ScanSettings = { ...KITS, queries: [], catalogPagesPerScan: 1 
 const KIT_MODELS = ['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL430', 'PCL660', 'PBP005', 'PBP002'];
 const isItem = (label: string): boolean => KIT_MODELS.some((m) => label.endsWith(`:${m}`));
 /**
- * The items a scan plans once the kit is looked up with no listing: every item but PBP005, which the
- * saved brand page answers. They share the kit's bundles, so the same saving: by part key.
+ * The items the saved brand page answers, free: PBP005, and (Ruling 70) PCL235, PCL515 and PCL660, which
+ * the page lists as PCL235B (B0BGYFTPGK), PCL515B (B0B88R7HWB) and PCL660B (B0B1GKJXNB).
  */
-const ITEM_PLAN = ['PBP002', 'PCL206', 'PCL235', 'PCL430', 'PCL500', 'PCL515', 'PCL660'].map((m) => `lookup:${m}`);
+const FREE_ITEMS = ['PBP005', 'PCL235', 'PCL515', 'PCL660'];
+/** The items a Look up searches for, in the page's order. */
+const SEARCHED_ITEMS = KIT_MODELS.filter((m) => !FREE_ITEMS.includes(m));
+/**
+ * The items a scan plans once the kit is looked up with no listing: every item the saved brand page
+ * does not answer. They share the kit's bundles, so the same saving: by part key.
+ */
+const ITEM_PLAN = ['PBP002', 'PCL206', 'PCL430', 'PCL500'].map((m) => `lookup:${m}`);
 
 /** The run limits the plan names: 1, 3 and the default searches per scan (5). */
 const CAPS = [1, 3, DEFAULT_SETTINGS.searchesPerScan];
@@ -274,20 +281,20 @@ describe('the panel\'s Look up on a kit\'s items', () => {
     await lookUp(w, ['PCL1600K2', 'P553']);
     const parts = await splitParts(w);
     expect(parts.map((p) => p.model)).toEqual([...KIT_MODELS, 'P553']);
-    // PBP005 has a saved listing and P553 was looked up (in review): the seven other items are searches.
+    // Four items have a saved listing (Ruling 70 for three of them) and P553 was looked up (in review): the four other items are searches.
     const { budget } = paid(w, { reserve: 0, maxPerRun: 20 });
-    expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget)).toEqual({ searches: 7, refusal: null });
+    expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget)).toEqual({ searches: 4, refusal: null });
     const before = w.ledger.length;
     await lookUp(w, parts.map((p) => p.model));
     // In a scan's order (Ruling 72): the items tie on waiting and saving, so they go by model.
-    expect(w.ledger.slice(before)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').sort().map((m) => `panel:lookup:${m}`));
+    expect(w.ledger.slice(before)).toEqual([...SEARCHED_ITEMS].sort().map((m) => `panel:lookup:${m}`));
   });
 
   it('before the kit is looked up, the quote counts the items no saved listing answers, and P553', async () => {
     const w = await answered();
     const parts = await splitParts(w);
     const { budget } = paid(w, { reserve: 0, maxPerRun: 20 });
-    expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget).searches).toBe(8);
+    expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget).searches).toBe(SEARCHED_ITEMS.length + 1);
   });
 });
 
@@ -302,24 +309,25 @@ describe('a kit item\'s match question', () => {
 
   it('reaches Review while a bundle splits the kit in one of its options', async () => {
     const w = await allLookedUp();
-    // PCL235, PCL515 and PCL430 have listings that may be them, the brand not confirmed; P553 is a part of the split itself.
-    expect(await questions(w)).toEqual(['P553', 'PCL235', 'PCL430', 'PCL515']);
+    // PCL430 has listings that may be it, the brand not confirmed; P553 is a part of the split itself. PCL235
+    // and PCL515 are matched to their tool-only listings (Ruling 70), so they ask nothing.
+    expect(await questions(w)).toEqual(['P553', 'PCL430']);
   });
 
-  it('the kit\'s page read again without PCL235: its question is left out', async () => {
+  it('the kit\'s page read again without PCL430: its question is left out', async () => {
     const w = await allLookedUp();
-    await withoutPCL235(w);
-    expect(await questions(w)).toEqual(['P553', 'PCL430', 'PCL515']);
+    await withoutPCL430(w);
+    expect(await questions(w)).toEqual(['P553']);
     const row = (await buildReport(w.store, KITS)).bundles.find((b) => b.key === P553)!;
-    expect(row.options.find((o) => o.id === 'split:PCL1600K2')!.parts.map((p) => p.model)).not.toContain('PCL235');
+    expect(row.options.find((o) => o.id === 'split:PCL1600K2')!.parts.map((p) => p.model)).not.toContain('PCL430');
   });
 });
 
-/** The kit's own page as if read again a minute later, its Includes list without PCL235. Nothing else is changed. */
-async function withoutPCL235(w: World): Promise<void> {
+/** The kit's own page as if read again a minute later, its Includes list without PCL430. Nothing else is changed. */
+async function withoutPCL430(w: World): Promise<void> {
   const kit = (await w.store.getBundle(KIT))!;
   const content = page('317987591');
-  const bullets = content.bullets.map((b) => b.replace('(1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, ', ''));
+  const bullets = content.bullets.map((b) => b.replace(', (1) PCL430 Multi-Tool', ''));
   expect(bullets).not.toEqual(content.bullets);
   await w.store.putBundle({ ...kit, page: { ...content, bullets, readAt: T0 + MINUTE } });
 }
@@ -328,8 +336,8 @@ describe('a kit\'s page read again with a different list', () => {
   it('the next scan plans the items of the new list', async () => {
     const w = await answered();
     await lookUp(w, ['PCL1600K2']);
-    await withoutPCL235(w);
-    expect((await scan(w, 1)).plan).toEqual([...TODAY_AFTER_KIT, ...ITEM_PLAN.filter((l) => l !== 'lookup:PCL235')]);
+    await withoutPCL430(w);
+    expect((await scan(w, 1)).plan).toEqual([...TODAY_AFTER_KIT, ...ITEM_PLAN.filter((l) => l !== 'lookup:PCL430')]);
   });
 });
 
@@ -376,10 +384,10 @@ describe('Ruling 69: a kit in review holds its items', () => {
     await kitInReview(w);
     const parts = KIT_MODELS.map((model) => ({ brand: 'RYOBI', model }));
     const { budget } = paid(w, { reserve: 0, maxPerRun: 20 });
-    expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget).searches).toBe(7);
+    expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget).searches).toBe(SEARCHED_ITEMS.length);
     const before = w.ledger.length;
     await lookUp(w, KIT_MODELS);
-    expect(w.ledger.slice(before)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').sort().map((m) => `panel:lookup:${m}`));
+    expect(w.ledger.slice(before)).toEqual([...SEARCHED_ITEMS].sort().map((m) => `panel:lookup:${m}`));
   });
 });
 
@@ -411,7 +419,7 @@ describe('ordinary lookups and kit items in one scan', () => {
     const s = await scan(w, 1, STORED, T0 + 4 * 24 * 60 * MINUTE);
     const refreshes = ['refresh:P553', 'refresh:PCL1600K2'];
     expect([...s.queue, s.deferred[0]].sort()).toEqual(refreshes);
-    expect(s.deferred.slice(1)).toEqual([...ITEM_PLAN, 'refresh:PBP005']);
+    expect(s.deferred.slice(1)).toEqual([...ITEM_PLAN, ...FREE_ITEMS.map((m) => `refresh:${m}`)]);
     // The queued refresh comes from the cache and gives its slot to the deferred refresh, also from the
     // cache, which gives it to the first item: the one search the scan pays for.
     expect(s.ran.slice(0, 2).sort()).toEqual(refreshes.map((r) => `scan:${r}`));
@@ -420,3 +428,96 @@ describe('ordinary lookups and kit items in one scan', () => {
   });
 });
 
+// ---------------------------------------------------------------- Ruling 70, on the replay
+
+/** PCL1201K2-PCL430B: in review in this world, its one reading PCL1201K2 + PCL430B. */
+const PCL430B_BUNDLE = 'homedepot:324904496';
+/** PCL1201K2-PCL515B: resolved in this world, so PCL515B is a part of a split. */
+const PCL515B_BUNDLE = 'homedepot:324903619';
+
+/** The owner answers PCL1201K2-PCL430B's split question with its one reading. */
+async function answerPCL430B(w: World): Promise<void> {
+  const id = `split:${PCL430B_BUNDLE}`;
+  const q = (await w.store.getReview(id))!;
+  expect(q.choices).toEqual([['PCL1201K2', 'PCL430B']]);
+  await applyReviewAnswer(w.store, id, { choice: 0, seen: reviewSignature(q) }, T0);
+}
+
+/** The panel's quote for a Look up of these RYOBI models. Spends nothing. */
+async function quoteFor(w: World, models: string[]) {
+  const { budget } = paid(w, { reserve: 0, maxPerRun: 20 });
+  return quotePaid({ kind: 'lookUp', parts: models.map((model) => ({ brand: 'RYOBI', model })) }, await savedAnswers(w.store), budget);
+}
+
+describe('Ruling 70: a RYOBI part and its tool-only form are one product, looked up once', () => {
+  it('PCL515, an item of the kit, has the match of PCL515B, a part of PCL1201K2-PCL515B: one listing, no lookup', async () => {
+    const w = await answered();
+    expect((await w.store.getBundle(PCL515B_BUNDLE))!.split).toMatchObject({ status: 'resolved', components: ['PCL1201K2', 'PCL515B'] });
+    const b = await w.store.getMatch(partKey('RYOBI', 'PCL515B'));
+    expect(b).toMatchObject({ status: 'matched', asin: 'B0B88R7HWB', decidedBy: 'auto' });
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toMatchObject({ status: 'matched', asin: 'B0B88R7HWB', grade: b!.grade, decidedBy: 'auto' });
+    expect(w.ledger.filter((l) => l.includes(':PCL515'))).toEqual([]);
+  });
+
+  it('the owner\'s choice for PCL430 stands for PCL430B: quote 0, nothing spent, never planned, and the answer is kept', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2', 'P553', ...KIT_MODELS]);
+    const id = `match:${partKey('RYOBI', 'PCL430')}`;
+    const q = (await w.store.getReview(id))!;
+    await applyReviewAnswer(w.store, id, { choice: 0, seen: reviewSignature(q) }, T0);
+    const chosen = q.candidates[0]!.asin;
+    await answerPCL430B(w);
+    expect(await quoteFor(w, ['PCL430B'])).toEqual({ searches: 0, refusal: null });
+    const before = w.ledger.length;
+    await lookUp(w, ['PCL430B']);
+    expect(w.ledger.slice(before)).toEqual([]);
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430B'))).toMatchObject({ status: 'matched', asin: chosen, decidedBy: 'user' });
+    expect(await w.store.getReview(id)).toMatchObject({ answer: chosen });
+    const s = await scan(w, 20);
+    expect(s.plan.filter((l) => l.includes('PCL430'))).toEqual([]);
+    expect(s.spent.filter((l) => l.includes('PCL430'))).toEqual([]);
+  });
+
+  it('the owner\'s "None of these" for PCL430 stands for PCL430B too, and a scan plans no lookup for it', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2', 'PCL430']);
+    const id = `match:${partKey('RYOBI', 'PCL430')}`;
+    await applyReviewAnswer(w.store, id, { none: true, seen: reviewSignature((await w.store.getReview(id))!) }, T0);
+    await answerPCL430B(w);
+    expect((await quoteFor(w, ['PCL430B'])).searches).toBe(0);
+    const s = await scan(w, 20);
+    expect(s.plan).not.toContain('lookup:PCL430B');
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430B'))).toMatchObject({ status: 'none', asin: null, decidedBy: 'user' });
+  });
+
+  it('both forms wanted, neither looked up: one search in the quote, and one lookup in a scan\'s plan', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2']);
+    await answerPCL430B(w);
+    expect(await quoteFor(w, ['PCL430', 'PCL430B'])).toEqual({ searches: 1, refusal: null });
+    // A scan plans PCL430B, a part of a split, with the ordinary lookups; the kit's item PCL430 is not planned.
+    const plan = (await scan(w, 1)).plan;
+    expect(plan).toContain('lookup:PCL430B');
+    expect(plan).not.toContain('lookup:PCL430');
+  });
+
+  it('the panel\'s Look up of both forms spends one search, the first asked; the other is left as it was when that finds no listing', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2']);
+    await answerPCL430B(w);
+    const before = w.ledger.length;
+    await lookUp(w, ['PCL430', 'PCL430B']);
+    expect(w.ledger.slice(before)).toEqual(['panel:lookup:PCL430']);
+    // PCL430's search finds only listings in review: no match to share, so PCL430B is not settled by it.
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430'))).toMatchObject({ status: 'review' });
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430B'))).toBeUndefined();
+  });
+
+  it('one refresh for the listing two forms share: PCL515B\'s, not PCL515\'s', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2']);
+    const s = await scan(w, 1, KITS, T0 + 4 * 24 * 60 * MINUTE);
+    expect(s.plan).toContain('refresh:PCL515B');
+    expect(s.plan).not.toContain('refresh:PCL515');
+  });
+});

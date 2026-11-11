@@ -12,7 +12,7 @@
 
 import { type Catalog, catalogEntry } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
-import { type Candidate, pick, type Picked } from '../match';
+import { type Candidate, modelForms, pick, type Picked } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
@@ -1021,8 +1021,25 @@ async function wantedParts(
   const { byLookup, byRefresh } = lookupOrder(parts, waitingSince, failedBefore);
   lookups.sort(byLookup);
   refreshes.sort(byRefresh);
+  itemLookups.sort(byLookup);
+  itemRefreshes.sort(byRefresh);
+  // Ruling 70: one lookup per product. A RYOBI part written two ways (PCL515 and PCL515B, kitKey) is
+  // looked up once, the first in this order; the other takes that match at the next planning
+  // (matchFromListings). And one refresh per listing the two forms share. DEWALT parts are each their own.
+  const looked = new Set<string>();
+  const firstLookup = (k: string): boolean => once(looked, kitKey(parts.get(k)!.brand, parts.get(k)!.model));
+  const refreshed = new Set<string>();
+  const firstRefresh = (k: string): boolean => {
+    const step = steps.get(k) as Refresh;
+    return once(refreshed, `${kitKey(step.brand, step.model)} ${step.asin}`);
+  };
   // Step 6: kit items take their own rank, below every part above, ordered among themselves the same way.
-  return { lookups, refreshes, items: [...itemLookups.sort(byLookup), ...itemRefreshes.sort(byRefresh)], steps };
+  return {
+    lookups: lookups.filter(firstLookup),
+    refreshes: refreshes.filter(firstRefresh),
+    items: [...itemLookups.filter(firstLookup), ...itemRefreshes.filter(firstRefresh)],
+    steps,
+  };
 }
 
 /**
@@ -1044,6 +1061,13 @@ export function lookupOrder(
   const byLookup = (a: string, b: string) => failed(a) - failed(b) || (rank(a) === rank(b) ? 0 : rank(a) < rank(b) ? -1 : 1) || bySaving(a, b);
   const byRefresh = (a: string, b: string) => failed(a) - failed(b) || bySaving(a, b);
   return { byLookup, byRefresh };
+}
+
+/** Adds `id` to `seen`: true the first time, false after. */
+function once(seen: Set<string>, id: string): boolean {
+  if (seen.has(id)) return false;
+  seen.add(id);
+  return true;
 }
 
 /** `listings`: the saved listings, read once for this planning pass. */
@@ -1075,13 +1099,43 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
 }
 
 /**
+ * Ruling 70: the match a RYOBI part takes from its other written form (PCL515 for PCL515B, or the
+ * reverse, by sameModel), which is the same product: that form's record when it holds a listing,
+ * matched automatically or chosen by the owner, or the owner's "none". Null otherwise, and always
+ * for DEWALT. `matchOf` reads a stored match by part key.
+ */
+export function sharedMatch(part: Pick<Part, 'key' | 'brand' | 'model'>, matchOf: (key: string) => MatchRecord | undefined): MatchRecord | null {
+  for (const form of modelForms(part.brand, part.model)) {
+    const key = partKey(part.brand, form);
+    if (key === part.key) continue;
+    const m = matchOf(key);
+    if (m && ((m.status === 'matched' && m.asin !== null) || (m.decidedBy === 'user' && m.status === 'none'))) return m;
+  }
+  return null;
+}
+
+/** The part keys of a RYOBI part's other written forms (Ruling 70); none for DEWALT. */
+const otherFormKeys = (part: Pick<Part, 'key' | 'brand' | 'model'>): string[] =>
+  modelForms(part.brand, part.model).map((f) => partKey(part.brand, f)).filter((k) => k !== part.key);
+
+/**
  * 2c rule 5: the saved listings that carry the part's model, judged by pick() exactly as a
  * lookup's results are. A chosen listing is saved as a lookup saves it, priced from the
  * saved listings. Otherwise null: the part is left to a paid lookup, which alone may open a
- * review item.
+ * review item. Before the listings, Ruling 70: a match the part's other written form holds
+ * (sharedMatch) is saved as the part's own, decided by whoever decided it, and no lookup is wanted.
  */
 export async function matchFromListings(ctx: PartContext, listings: ListingRecord[], part: Part): Promise<MatchRecord | null> {
   const { store, job } = ctx;
+  const others = new Map<string, MatchRecord | undefined>();
+  for (const key of otherFormKeys(part)) others.set(key, await store.getMatch(key));
+  const shared = sharedMatch(part, (key) => others.get(key));
+  if (shared) {
+    const copy: MatchRecord = { ...shared, key: part.key, brand: part.brand, model: part.model, updatedAt: ctx.now(), waitingSince: null };
+    await store.putMatch(copy);
+    if (copy.status === 'matched') job.counts.partsMatched += 1;
+    return copy;
+  }
   const picked = pickFromListings(part, ctx.catalog, listings);
   if (!picked.chosen) return null;
   const asin = picked.chosen.asin;
