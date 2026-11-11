@@ -365,7 +365,7 @@ export interface PartRow {
 
 /**
  * complete      split resolved and every part has a priced listing
- * partial       split resolved, at least one part has no priced listing (it counts as liquidated)
+ * partial       split resolved, at least one part has no priced listing (it counts as liquidated once it has been looked up; while a part waits, there is no estimate)
  * needs_review  the split is not resolved; no estimate
  */
 export type BundleStatus = 'complete' | 'partial' | 'needs_review';
@@ -392,9 +392,9 @@ export interface BundleRow {
   status: BundleStatus;
   section: ReportSection;
   parts: PartRow[];
-  /** An estimate from fee settings, never the seller's real fees. Null without a resolved split and a price. */
+  /** An estimate from fee settings, never the seller's real fees. Null without a resolved split and a price, or while a part is waiting for its lookup. */
   estimate: BundleResult | null;
-  /** Parts valued at the liquidation rate because no priced listing covers them. */
+  /** Parts no priced listing covers. With an estimate they are valued at the liquidation rate; waiting parts are listed but not valued. */
   uncovered: string[];
 }
 

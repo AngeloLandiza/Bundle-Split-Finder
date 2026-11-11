@@ -29,6 +29,8 @@ const SORTS: { key: SortKey; label: string }[] = [
 const FRESHNESS_MS = DEFAULT_SCAN_SETTINGS.freshnessMs;
 
 function Figures({ row }: { row: BundleRow }) {
+  // A waiting part is already said in the match state, so the slot stays empty.
+  if (!row.estimate && row.parts.some((p) => p.status === 'waiting' || p.status === 'unmatched')) return null;
   if (!row.estimate) return <div className="deal-noestimate">No estimate</div>;
   return (
     <div className="deal-figures" data-loss={row.estimate.profit < 0 ? 'true' : undefined}>

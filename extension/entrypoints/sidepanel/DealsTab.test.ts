@@ -243,6 +243,15 @@ describe('rows', () => {
     expect(screen.getByText('No estimate')).toBeInTheDocument();
   });
 
+  it('leaves the figure column empty when a part waits, and says No estimate for other rows without one', () => {
+    const waitingPart = part('W', { status: 'waiting', grade: null, availability: 'missing', asin: null });
+    show(report([row('w', { estimate: null, parts: [waitingPart] }), row('u', { estimate: null, parts: [part('U', { status: 'unmatched', grade: null })] })]));
+    expect(screen.queryByText('No estimate')).toBeNull();
+    cleanup();
+    show(report([row('n', { estimate: null, price: null, section: 'inactive_listing' })]));
+    expect(screen.getByText('No estimate')).toBeInTheDocument();
+  });
+
   it('shows the amber tag for a split with an open question, else Contents not known', () => {
     const open = { id: 'split:s1', kind: 'split', subject: 's1' } as unknown as ReviewItem;
     show(report([row('s1', { section: 'split', parts: [], estimate: null }), row('s2', { section: 'split', parts: [], estimate: null })], [open]));
