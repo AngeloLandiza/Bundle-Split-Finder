@@ -186,6 +186,19 @@ describe('side panel shell', () => {
     await waitFor(() => expect(noticeError()).toBeNull());
   });
 
+  it('a refused scanNow sentence survives a successful report refresh', async () => {
+    const user = userEvent.setup();
+    const { send, emit } = setup(state());
+    await user.click(await screen.findByRole('button', { name: 'Scan now' }));
+    send.mockImplementationOnce(async () => ({ ok: false, error: 'No searches left to spend.' }));
+    await user.click(screen.getByRole('button', { name: 'Scan now' }));
+    await waitFor(() => expect(noticeError()).toBe('No searches left to spend.'));
+    send.mockImplementation(async (r) => (r.type === 'getReport' ? { ok: true, data: REPORT } : { ok: true, data: null }));
+    await emit(state({ nextRunAt: 5 }));
+    await waitFor(() => expect(send.mock.calls.filter((c) => c[0].type === 'getReport').length).toBeGreaterThan(1));
+    expect(noticeError()).toBe('No searches left to spend.');
+  });
+
   it('Notice gets the unreachable sentence when stopScan rejects', async () => {
     const user = userEvent.setup();
     const { send } = setup(state({ scanRunning: true, lastJob: JOB }));

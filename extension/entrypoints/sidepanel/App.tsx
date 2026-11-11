@@ -32,8 +32,9 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [sort, setSort] = useSort();
   const [clock, setClock] = useState(now);
-  // The sentence of the latest refused or failed scanNow, stopScan or getReport; cleared by the next success.
-  const [error, setError] = useState<string | null>(null);
+  // Two slots, so a report refresh cannot wipe a refused scan's sentence. Each is cleared only by its own next success.
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [reportError, setReportError] = useState<string | null>(null);
 
   // The report is read on mount and after every state change. The last one stays on screen while the next loads.
   useEffect(() => {
@@ -44,10 +45,10 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
       .then((reply) => {
         if (!live) return;
         if (reply.ok) setReport(reply.data);
-        setError(reply.ok ? null : reply.error);
+        setReportError(reply.ok ? null : reply.error);
       })
       .catch(() => {
-        if (live) setError(UNREACHABLE);
+        if (live) setReportError(UNREACHABLE);
       });
     return () => {
       live = false;
@@ -76,8 +77,8 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     const request: Request = { type };
     api
       .send(request)
-      .then((reply) => setError(reply.ok ? null : reply.error))
-      .catch(() => setError(UNREACHABLE));
+      .then((reply) => setScanError(reply.ok ? null : reply.error))
+      .catch(() => setScanError(UNREACHABLE));
   };
 
   if (!state.hasKey) {
@@ -108,7 +109,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
         onStop={send('stopScan')}
         onSettings={openSettings}
       />
-      <Notice state={state} api={api} error={error} />
+      <Notice state={state} api={api} error={scanError ?? reportError} />
       <Tabs
         active={tab}
         dealCount={report?.bundles.length ?? 0}
