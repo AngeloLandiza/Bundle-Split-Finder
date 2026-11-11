@@ -806,3 +806,38 @@ describe('Ruling 71: the P553 question on the replay', () => {
   });
 });
 
+describe('Rulings 70 and 72 together: the quote is what a press spends', () => {
+  it('a split Look up with a twin asked too, at the default 5 searches per scan: one search per product, and the quote\'s searches are the ones spent', async () => {
+    const w = await answered();
+    await answerPCL430B(w);
+    const split = (await buildReport(w.store, KITS)).bundles.find((b) => b.key === P553)!.options.find((o) => o.id === 'split:PCL1600K2')!;
+    // The split's parts, and PCL430B: PCL1201K2-PCL430B's part, and the twin of the kit's item PCL430.
+    const models = [...split.parts.map((p) => p.model), 'PCL430B'];
+    expect(models).toEqual([...KIT_MODELS, 'P553', 'PCL430B']);
+    const parts = models.map((model) => ({ brand: 'RYOBI', model }));
+    const cap = DEFAULT_SETTINGS.searchesPerScan;
+    const { budget } = paid(w, { reserve: 0, maxPerRun: cap });
+    // More forms want a search than the limit allows: the items no saved listing answers, P553 and PCL430B.
+    const saved = await savedAnswers(w.store);
+    const forms = models.filter((m) => !saved.listingAnswers('RYOBI', m));
+    expect(forms).toEqual([...SEARCHED_ITEMS, 'P553', 'PCL430B']);
+    expect(forms.length).toBeGreaterThan(cap);
+    // But PCL430 and PCL430B are one product (Ruling 70): one search fewer, within the limit, and none left waiting.
+    const quote = quotePaid({ kind: 'lookUp', parts }, saved, budget);
+    expect(quote).toEqual({ searches: forms.length - 1, refusal: null });
+    expect(quote.searches).toBeLessThanOrEqual(cap);
+
+    const before = w.ledger.length;
+    await runPaid({ ...paid(w, { reserve: 0, maxPerRun: cap }), store: w.store, now: () => T0, settings: KITS }, { kind: 'lookUp', parts });
+    const spent = w.ledger.slice(before);
+    expect(spent).toHaveLength(quote.searches);
+    // The form asked first is the one searched. P553 comes first in a scan's order, then the items by model.
+    expect(spent).toEqual(['P553', ...[...SEARCHED_ITEMS].sort()].map((m) => `panel:lookup:${m}`));
+    // PCL430B takes PCL430's result after the searches.
+    const pcl430 = (await w.store.getMatch(partKey('RYOBI', 'PCL430')))!;
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430B'))).toMatchObject({ status: pcl430.status, asin: pcl430.asin, decidedBy: 'auto' });
+    // Nothing asked for still waits, so nothing more is quoted.
+    expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget)).toEqual({ searches: 0, refusal: null });
+  });
+});
+
