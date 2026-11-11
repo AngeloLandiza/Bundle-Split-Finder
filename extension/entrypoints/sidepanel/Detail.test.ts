@@ -1,0 +1,329 @@
+// @vitest-environment jsdom
+import '@testing-library/jest-dom/vitest';
+import { createElement } from 'react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_FEES } from '@core/money';
+import { DEFAULT_SETTINGS } from '@core/settings';
+import type { BundleRow, PartRow, ScanJob } from '@core/scan/types';
+import type { AppState, PanelReport, Quote, Reply, Request } from '../../lib/messages';
+import type { WorkerApi } from '../../lib/pageClient';
+import { Detail } from './Detail';
+
+afterEach(cleanup);
+
+const NOW = new Date(2026, 10, 10, 14, 0, 0).getTime();
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(NOW);
+});
+afterEach(() => vi.useRealTimers());
+
+const part = (model: string, over: Partial<PartRow> = {}): PartRow => ({
+  model,
+  qty: 1,
+  status: 'matched',
+  availability: 'active',
+  asin: 'B0B3JWF5ZV',
+  grade: 'exact',
+  price: 169,
+  priceSeenAt: NOW - 3 * 3_600_000,
+  image: null,
+  title: 'RYOBI ONE+ HP 18V 3/8 in. Extended Reach Ratchet',
+  ...over,
+});
+
+const row = (over: Partial<BundleRow> = {}): BundleRow => ({
+  key: 'homedepot:1',
+  itemId: '1',
+  brand: 'RYOBI',
+  model: 'PBLRC2501SB',
+  title: 'ONE+ HP 18V Extended Reach Ratchets (Tools Only)',
+  link: 'https://www.homedepot.com/p/328814689',
+  price: 189,
+  regularPrice: 338,
+  percentOff: 44,
+  status: 'complete',
+  section: 'confirmed',
+  parts: [part('PBLRC25B'), part('PBLRC01B', { asin: 'B0B6Z2ZGVK' })],
+  estimate: { cost: 189, netRevenue: 287.3, profit: 98.3, roi: 0.52 },
+  uncovered: [],
+  ...over,
+});
+
+const state = (over: Partial<AppState> = {}): AppState => ({
+  hasKey: true,
+  account: null,
+  accountCheckedAt: 1,
+  problem: null,
+  settings: DEFAULT_SETTINGS,
+  scanRunning: false,
+  lastJob: null as unknown as ScanJob,
+  nextRunAt: null,
+  ...over,
+});
+
+function fakeApi(handler: (r: Request) => Reply = () => ({ ok: true, data: null }), quote: Quote = { searches: 1, refusal: null }) {
+  const send = vi.fn(async (r: Request): Promise<Reply> => (r.type === 'quote' ? { ok: true, data: quote } : handler(r)));
+  const download = vi.fn();
+  const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download };
+  return { api, send, download };
+}
+
+function show(r: BundleRow, extra: { packaging?: PanelReport['packaging']; api?: WorkerApi; state?: AppState; onBack?: () => void } = {}) {
+  const report: PanelReport = { bundles: [r], review: [], packaging: extra.packaging ?? {} };
+  const onBack = extra.onBack ?? vi.fn();
+  const api = extra.api ?? fakeApi().api;
+  render(createElement(Detail, { api, report, state: extra.state ?? state(), bundleKey: r.key, onBack }));
+  return { onBack, api };
+}
+
+describe('head and top bar', () => {
+  it('goes back, and opens Home Depot in a new tab safely', async () => {
+    const user = userEvent.setup();
+    const { onBack } = show(row());
+    await user.click(screen.getByRole('button', { name: 'Deals' }));
+    expect(onBack).toHaveBeenCalled();
+    const open = screen.getByRole('link', { name: /^Open on Home Depot/ });
+    expect(open).toHaveAttribute('href', 'https://www.homedepot.com/p/328814689');
+    expect(open).toHaveAttribute('target', '_blank');
+    expect(open).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('shows brand, title, model and when the price was seen', () => {
+    show(row());
+    expect(screen.getByText('RYOBI')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ONE+ HP 18V Extended Reach Ratchets (Tools Only)');
+    expect(screen.getByText('PBLRC2501SB')).toBeInTheDocument();
+    expect(screen.getByText(/^Home Depot · price seen 11:00/)).toBeInTheDocument();
+  });
+
+  it('says so when the bundle is no longer in the report', () => {
+    render(createElement(Detail, { api: fakeApi().api, report: { bundles: [], review: [], packaging: {} }, state: state(), bundleKey: 'gone', onBack: vi.fn() }));
+    expect(screen.getByText('This bundle is no longer in the report.')).toBeInTheDocument();
+  });
+});
+
+describe('headline', () => {
+  it('shows profit, ROI, cost, sells for and after fees, with the estimate line and a Change link', () => {
+    show(row());
+    expect(screen.getByText('+$98.30')).toBeInTheDocument();
+    expect(screen.getByText('ROI 52%')).toBeInTheDocument();
+    const figures = (label: string) => screen.getByText(label).nextElementSibling?.textContent;
+    expect(figures('Bundle costs')).toBe('$189.00');
+    expect(figures('Parts sell for')).toBe('$338.00');
+    expect(figures('After fees')).toBe('$287.30');
+    expect(screen.getByText(/^Estimate from your fee settings \(15% referral, no fulfillment fee\)\./)).toBeInTheDocument();
+    const change = screen.getByRole('link', { name: 'Change' });
+    expect(change.getAttribute('href')).toMatch(/options\.html$/);
+  });
+
+  it('writes the fee settings it was given', () => {
+    show(row(), { state: state({ settings: { ...DEFAULT_SETTINGS, fees: { ...DEFAULT_FEES, referralRate: 0.12, fulfillmentFee: 3.5 } } }) });
+    expect(screen.getByText(/\(12% referral, \$3\.50 fulfillment per unit\)\./)).toBeInTheDocument();
+  });
+
+  it('writes a loss with the real minus and the loss colour', () => {
+    show(row({ estimate: { cost: 300, netRevenue: 277.3, profit: -22.7, roi: -0.0757 } }));
+    const figure = screen.getByText('−$22.70');
+    expect(figure.parentElement).toHaveAttribute('data-loss', 'true');
+    expect(screen.getByText('ROI −8%')).toBeInTheDocument();
+  });
+
+  it('says how many parts wait and offers Look up, quoting it first', async () => {
+    const { api } = fakeApi();
+    show(
+      row({
+        estimate: null,
+        section: 'missing_listing',
+        parts: [part('A1', { status: 'waiting', asin: null, grade: null, price: null, availability: 'missing', title: null }), part('A2', { status: 'waiting', asin: null, grade: null, price: null, availability: 'missing', title: null })],
+      }),
+      { api },
+    );
+    expect(screen.getByText('No estimate yet: 2 parts still need an Amazon lookup.')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^Look up/ })).toBeEnabled();
+    expect(screen.queryByText(/^Estimate from your fee settings/)).toBeNull();
+  });
+
+  it('says why when there is no estimate for another reason', () => {
+    show(row({ estimate: null, section: 'split', status: 'needs_review', parts: [] }));
+    expect(screen.getByText('No estimate: what this bundle contains is not known yet.')).toBeInTheDocument();
+    cleanup();
+    show(row({ estimate: null, price: null }));
+    expect(screen.getByText('No estimate: Home Depot shows no price for this bundle.')).toBeInTheDocument();
+  });
+});
+
+describe('parts', () => {
+  const blocks = () => screen.getAllByRole('listitem');
+
+  it('shows model, clipped title with the full title, price, what it nets and the ASIN link', () => {
+    show(row());
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('PARTS · 2');
+    const first = within(blocks()[0]!);
+    expect(first.getByText('PBLRC25B')).toBeInTheDocument();
+    expect(first.getByText('RYOBI ONE+ HP 18V 3/8 in. Extended Reach Ratchet')).toHaveAttribute('title', 'RYOBI ONE+ HP 18V 3/8 in. Extended Reach Ratchet');
+    expect(first.getByText('$169.00')).toBeInTheDocument();
+    expect(first.getByText('nets $143.65')).toBeInTheDocument();
+    const link = first.getByRole('link', { name: 'B0B3JWF5ZV' });
+    expect(link).toHaveAttribute('href', 'https://www.amazon.com/dp/B0B3JWF5ZV');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('nets by the fee settings', () => {
+    show(row(), { state: state({ settings: { ...DEFAULT_SETTINGS, fees: { ...DEFAULT_FEES, fulfillmentFee: 5 } } }) });
+    expect(screen.getAllByText('nets $138.65').length).toBe(2);
+  });
+
+  const label = (p: Partial<PartRow>) => {
+    cleanup();
+    show(row({ parts: [part('X1', p)] }));
+    return within(screen.getAllByRole('listitem')[0]!);
+  };
+
+  it('labels each grade and state', () => {
+    expect(label({ grade: 'exact' }).getByText('Barcode verified')).toBeInTheDocument();
+    expect(label({ grade: 'strong' }).getByText('Verified')).toBeInTheDocument();
+    expect(label({ grade: 'probable' }).getByText('Title match')).toBeInTheDocument();
+    expect(label({ grade: null }).getByText('Chosen by you')).toBeInTheDocument();
+    expect(label({ status: 'none', asin: null, grade: null, price: null, availability: 'missing' }).getByText('No listing')).toBeInTheDocument();
+    expect(label({ status: 'waiting', asin: null, grade: null, price: null, availability: 'missing' }).getByText('Not looked up yet')).toBeInTheDocument();
+    expect(label({ status: 'unmatched', asin: null, grade: null, price: null, availability: 'missing' }).getByText('Not looked up yet')).toBeInTheDocument();
+    expect(label({ availability: 'inactive', price: null }).getByText('Listing inactive')).toBeInTheDocument();
+  });
+
+  it('offers Verify only for a title match', () => {
+    label({ grade: 'exact' });
+    expect(screen.queryByRole('button', { name: /^Verify/ })).toBeNull();
+  });
+
+  it('quotes Verify before the click, and runs it once', async () => {
+    const user = userEvent.setup();
+    const { api, send } = fakeApi();
+    show(row({ parts: [part('PBLRC25B', { grade: 'probable' })] }), { api });
+    const button = await screen.findByRole('button', { name: /^Verify/ });
+    await waitFor(() => expect(button).toBeEnabled());
+    expect(button).toHaveAccessibleName('Verify · 1 search');
+    expect(send).toHaveBeenCalledWith({ type: 'quote', action: { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0B3JWF5ZV' } });
+    await user.click(button);
+    expect(send).toHaveBeenCalledWith({ type: 'runPaid', action: { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0B3JWF5ZV' } });
+    expect(send.mock.calls.filter(([r]) => r.type === 'runPaid')).toHaveLength(1);
+  });
+
+  it('disables Verify and says why when the quote is refused', async () => {
+    const { api } = fakeApi(undefined, { searches: 1, refusal: 'The hourly search limit is reached.' });
+    show(row({ parts: [part('PBLRC25B', { grade: 'probable' })] }), { api });
+    expect(await screen.findByText('The hourly search limit is reached.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Verify/ })).toBeDisabled();
+  });
+
+  it('shows the sentence of a refused run under Verify', async () => {
+    const user = userEvent.setup();
+    const { api } = fakeApi((r) => (r.type === 'runPaid' ? { ok: false, error: 'Not available yet.' } : { ok: true, data: null }));
+    show(row({ parts: [part('PBLRC25B', { grade: 'probable' })] }), { api });
+    await user.click(await screen.findByRole('button', { name: /^Verify/ }));
+    expect(await screen.findByText('Not available yet.')).toBeInTheDocument();
+  });
+
+  it('runs one paid request at a time', async () => {
+    const user = userEvent.setup();
+    let release: (r: Reply) => void = () => {};
+    const { api, send } = fakeApi((r) => (r.type === 'runPaid' ? ({ then: (f: (r: Reply) => void) => (release = f) } as unknown as Reply) : { ok: true, data: null }));
+    show(row({ parts: [part('PBLRC25B', { grade: 'probable' }), part('PBLRC01B', { grade: 'probable', asin: 'B0B6Z2ZGVK' })] }), { api });
+    const buttons = await screen.findAllByRole('button', { name: /^Verify/ });
+    await waitFor(() => expect(buttons[0]).toBeEnabled());
+    await user.click(buttons[0]!);
+    await waitFor(() => expect(buttons[1]).toBeDisabled());
+    await user.click(buttons[1]!);
+    expect(send.mock.calls.filter(([r]) => r.type === 'runPaid')).toHaveLength(1);
+    release({ ok: true, data: null });
+  });
+});
+
+describe('packaging', () => {
+  it('asks until answered, and saves the answer for the model', async () => {
+    const user = userEvent.setup();
+    const { api, send } = fakeApi();
+    show(row(), { api });
+    expect(screen.getByText('Do these arrive individually boxed?')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Yes, boxed' }));
+    expect(send).toHaveBeenCalledWith({ type: 'setPackaging', model: 'PBLRC2501SB', packaging: 'retail_boxed' });
+    expect(await screen.findByText('Boxed')).toBeInTheDocument();
+    expect(screen.queryByText('Do these arrive individually boxed?')).toBeNull();
+  });
+
+  it('shows the saved answer as one line, and asks again after Change', async () => {
+    const user = userEvent.setup();
+    show(row(), { packaging: { PBLRC2501SB: 'retail_boxed' } });
+    expect(screen.queryByText('Do these arrive individually boxed?')).toBeNull();
+    expect(screen.getByText('Boxed')).toBeInTheDocument();
+    // The Change link of the estimate line is a link; this one is a button.
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    expect(screen.getByText('Do these arrive individually boxed?')).toBeInTheDocument();
+  });
+
+  it('says why when the answer could not be saved', async () => {
+    const user = userEvent.setup();
+    const { api } = fakeApi((r) => (r.type === 'setPackaging' ? { ok: false, error: 'Could not save.' } : { ok: true, data: null }));
+    show(row(), { api });
+    await user.click(screen.getByRole('button', { name: 'No, loose' }));
+    expect(await screen.findByText('Could not save.')).toBeInTheDocument();
+    expect(screen.getByText('Do these arrive individually boxed?')).toBeInTheDocument();
+  });
+
+  it('marks a loose bundle with a tag and a note on the estimate', () => {
+    show(row(), { packaging: { PBLRC2501SB: 'loose' } });
+    expect(screen.getByText('Loose', { selector: '.detail-tag' })).toBeInTheDocument();
+    expect(screen.getByText(/Loose parts cannot be listed as New on Amazon; this estimate assumes they can\./)).toBeInTheDocument();
+  });
+
+  it('shows no tag or note for a boxed or unanswered bundle', () => {
+    show(row(), { packaging: { PBLRC2501SB: 'retail_boxed' } });
+    expect(document.querySelector('.detail-tag')).toBeNull();
+    expect(screen.queryByText(/Loose parts cannot/)).toBeNull();
+  });
+});
+
+describe('footer', () => {
+  it('copies both ASINs joined by a space, then says Copied for two seconds', async () => {
+    const user = userEvent.setup();
+    show(row());
+    await user.click(screen.getByRole('button', { name: 'Copy both ASINs' }));
+    expect(await navigator.clipboard.readText()).toBe('B0B3JWF5ZV B0B6Z2ZGVK');
+    expect(await screen.findByRole('status')).toHaveTextContent('Copied');
+    // Still there after a second, gone after two (real timers: only the clock's Date is faked).
+    await new Promise((r) => setTimeout(r, 1000));
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull(), { timeout: 2000 });
+  }, 8000);
+
+  it('is called Copy ASINs for one or three, and is disabled with none', () => {
+    show(row({ parts: [part('A1')] }));
+    expect(screen.getByRole('button', { name: 'Copy ASINs' })).toBeEnabled();
+    cleanup();
+    show(row({ parts: [part('A1'), part('A2', { asin: 'B000000002' }), part('A3', { asin: 'B000000003' })] }));
+    expect(screen.getByRole('button', { name: 'Copy ASINs' })).toBeEnabled();
+    cleanup();
+    show(row({ parts: [part('A1', { asin: null, status: 'none', grade: null, availability: 'missing', price: null })] }));
+    expect(screen.getByRole('button', { name: 'Copy ASINs' })).toBeDisabled();
+  });
+
+  it('downloads this row as CSV with the run file columns', async () => {
+    const user = userEvent.setup();
+    const { api, download } = fakeApi();
+    show(row(), { api });
+    await user.click(screen.getByRole('button', { name: 'Export row' }));
+    expect(download).toHaveBeenCalledTimes(1);
+    const [name, text, type] = download.mock.calls[0] as [string, string, string];
+    expect(name).toBe('split-finder-PBLRC2501SB.csv');
+    expect(type).toBe('text/csv');
+    const lines = text.trimEnd().split('\n');
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toMatch(/^section,brand,bundle_model,bundle_title,/);
+    expect(lines[1]).toBe(
+      'confirmed,RYOBI,PBLRC2501SB,ONE+ HP 18V Extended Reach Ratchets (Tools Only),1,189,338,44,PBLRC25B | PBLRC01B,B0B3JWF5ZV | B0B6Z2ZGVK,exact | exact,169 | 169,287.3,189,98.3,0.52,,https://www.homedepot.com/p/328814689',
+    );
+  });
+});
