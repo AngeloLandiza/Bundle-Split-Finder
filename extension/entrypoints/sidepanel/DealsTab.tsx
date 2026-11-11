@@ -42,6 +42,7 @@ function Figures({ row }: { row: BundleRow }) {
 
 interface RowProps {
   row: BundleRow;
+  report: PanelReport;
   asked: boolean;
   api: WorkerApi;
   scanRunning: boolean;
@@ -51,7 +52,7 @@ interface RowProps {
   onOpen: (key: string) => void;
 }
 
-function Row({ row, asked, api, scanRunning, version, busy, onRun, onOpen }: RowProps) {
+function Row({ row, report, asked, api, scanRunning, version, busy, onRun, onOpen }: RowProps) {
   const split = row.section === 'split';
   const state = split ? (asked ? null : 'Contents not known') : matchState(row);
   return (
@@ -80,7 +81,7 @@ function Row({ row, asked, api, scanRunning, version, busy, onRun, onOpen }: Row
         </div>
         {split ? asked ? <span className="deal-tag">Needs your answer</span> : null : <Figures row={row} />}
       </a>
-      {waitingParts(row).length > 0 ? <LookUp row={row} api={api} scanRunning={scanRunning} version={version} busy={busy} onRun={onRun} /> : null}
+      {waitingParts(row).length > 0 ? <LookUp row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} onRun={onRun} /> : null}
     </li>
   );
 }
@@ -169,7 +170,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api }: DealsTabP
           </h2>
           <ul className="deals-list">
             {g.rows.map((row) => (
-              <Row key={row.key} row={row} asked={asking.has(row.key)} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={run} onOpen={onOpen} />
+              <Row key={row.key} row={row} report={report} asked={asking.has(row.key)} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={run} onOpen={onOpen} />
             ))}
           </ul>
         </section>

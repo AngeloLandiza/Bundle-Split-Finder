@@ -73,6 +73,7 @@ function Check() {
 interface PartProps {
   part: PartRow;
   row: BundleRow;
+  report: PanelReport;
   fees: FeeSettings;
   api: WorkerApi;
   scanRunning: boolean;
@@ -81,7 +82,7 @@ interface PartProps {
   run: (action: PaidAction) => Promise<string | null>;
 }
 
-function Part({ part, row, fees, api, scanRunning, version, busy, run }: PartProps) {
+function Part({ part, row, report, fees, api, scanRunning, version, busy, run }: PartProps) {
   const label = labelOf(part);
   const asin = part.asin;
   return (
@@ -122,6 +123,7 @@ function Part({ part, row, fees, api, scanRunning, version, busy, run }: PartPro
             brand={row.brand}
             model={part.model}
             asin={asin}
+            report={report}
             api={api}
             scanRunning={scanRunning}
             version={version}
@@ -332,7 +334,7 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
               <p className="detail-noestimate">
                 No estimate yet: {waiting} {waiting === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup.
               </p>
-              <LookUp row={row} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts) => run({ kind: 'lookUp', parts })} />
+              <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts) => run({ kind: 'lookUp', parts })} />
             </>
           ) : (
             <p className="detail-noestimate">{noEstimate(row)}</p>
@@ -344,7 +346,7 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
             <h2 className="detail-label">PARTS · {row.parts.length}</h2>
             <ul className="detail-parts">
               {row.parts.map((p) => (
-                <Part key={p.model} part={p} row={row} fees={fees} api={api} scanRunning={state.scanRunning} version={version} busy={busy} run={run} />
+                <Part key={p.model} part={p} row={row} report={report} fees={fees} api={api} scanRunning={state.scanRunning} version={version} busy={busy} run={run} />
               ))}
             </ul>
             <PackagingQuestion key={row.key} row={row} api={api} answer={answer} onAnswered={(value) => setSaved({ model: row.model, value })} />

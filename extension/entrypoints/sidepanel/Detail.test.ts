@@ -307,6 +307,21 @@ describe('parts', () => {
     expect(send).toHaveBeenLastCalledWith({ type: 'quote', action: { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0OTHER001' } });
   });
 
+  it('Verify asks again when a new report comes, so a refusal from a paid action elsewhere does not stay', async () => {
+    const paying = 'A Look up or Verify is running.';
+    let refusal: string | null = paying;
+    const send = vi.fn(async (r: Request): Promise<Reply> => (r.type === 'quote' ? { ok: true, data: { searches: 1, refusal } } : { ok: true, data: null }));
+    const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    const r = row({ parts: [part('PBLRC25B', { grade: 'probable' })] });
+    const view = render(detailOf(api, r));
+    expect(await screen.findByText(paying)).toBeInTheDocument();
+    refusal = null;
+    // detailOf builds a new report: as after the worker's broadcast when the other action ended.
+    view.rerender(detailOf(api, r));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toBeEnabled());
+    expect(screen.queryByText(paying)).toBeNull();
+  });
+
   it('runs one paid request at a time', async () => {
     const user = userEvent.setup();
     let release: (r: Reply) => void = () => {};

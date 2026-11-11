@@ -486,9 +486,11 @@ describe('Look up', () => {
 
   it('does not ask again when only the api object changes', async () => {
     const { api, send } = fakeApi({ searches: 2, refusal: null });
-    const { view } = show(report([waiting]), state(), { api });
+    const r = report([waiting]);
+    const s = state();
+    const { view } = show(r, s, { api });
     await screen.findByRole('button', { name: 'Look up 2 searches' });
-    view.rerender(createElement(DealsTab, props({ ...api }, state())));
+    view.rerender(createElement(DealsTab, { ...props({ ...api }, s), report: r }));
     expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(1);
   });
 
@@ -535,6 +537,22 @@ describe('Look up', () => {
     expect(screen.getByRole('button', { name: 'Look up 2 searches' })).toBeDisabled();
     await answer(3);
     expect(await screen.findByRole('button', { name: 'Look up 3 searches' })).toBeEnabled();
+  });
+
+  it('asks again when a new report comes, so a refusal from a paid action elsewhere does not stay', async () => {
+    const paying = 'A Look up or Verify is running.';
+    let refusal: string | null = paying;
+    const { api, send } = fakeApi((r) => (r.type === 'quote' ? { ok: true, data: { searches: 2, refusal } } : { ok: true, data: null }));
+    const tab = (r: PanelReport) => createElement(DealsTab, { api, report: r, state: state(), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() });
+    const view = render(tab(report([waiting])));
+    expect(await screen.findByText(paying)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Look up 2 searches' })).toBeDisabled();
+    // The other screen's Verify ended: the worker broadcast, and the panel read the report again.
+    refusal = null;
+    view.rerender(tab(report([waiting])));
+    expect(await screen.findByRole('button', { name: 'Look up 2 searches' })).toBeEnabled();
+    expect(screen.queryByText(paying)).toBeNull();
+    expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(2);
   });
 
   it('offers Look up for parts with no match yet, as when the owner chose the split after the scan', async () => {

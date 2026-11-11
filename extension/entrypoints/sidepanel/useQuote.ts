@@ -22,14 +22,19 @@ export interface Quoted {
 
 /**
  * The worker's quote for a Verify or Look up. It is asked for again whenever `actionKey` (what the action is
- * for: the parts, the listing), `version` (bumped by the screen after its own paid action) or the scan period
- * changes; a scan's start and its end each begin a new period. Nothing is asked while a scan runs. A quote is
- * fresh only under the key, version and period it was taken under, so a quote from before a scan, another
- * paid action or other parts never enables a button.
+ * for: the parts, the listing), `version` (bumped by the screen after its own paid action), the scan period
+ * (a scan's start and its end each begin one) or the report changes. The panel reads the report again after
+ * every broadcast, and the worker broadcasts when a paid action ends, so a refusal from a Verify or Look up on
+ * another screen does not stay. Only the report's identity is read. Nothing is asked while a scan runs. A
+ * quote is fresh only under what it was taken under, so a quote from before a scan, another paid action or
+ * other parts never enables a button.
  */
-export function useQuote(api: WorkerApi, action: PaidAction, actionKey: string, scanRunning: boolean, version: number): Quoted {
+export function useQuote(
+  api: WorkerApi, action: PaidAction, actionKey: string, scanRunning: boolean, version: number, report: unknown,
+): Quoted {
   const period = useChanges(scanRunning);
-  const key = `${actionKey}|${version}|${period}`;
+  const reports = useChanges(report);
+  const key = `${actionKey}|${version}|${period}|${reports}`;
   const [held, setHeld] = useState<{ key: string; quote: Quote } | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const apiRef = useRef(api);

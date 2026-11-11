@@ -7,6 +7,8 @@ interface VerifyProps {
   brand: string;
   model: string;
   asin: string;
+  /** The report on screen. Only its identity is read: a new one asks for the price again. */
+  report: unknown;
   api: WorkerApi;
   scanRunning: boolean;
   /** Bumped by Detail each time a paid action finishes, so every quote is asked for again. */
@@ -18,10 +20,10 @@ interface VerifyProps {
 }
 
 /** Verify for a title-only match. The price is asked for before the click; a refusal disables the button and says why. */
-export function Verify({ brand, model, asin, api, scanRunning, version, busy, onRun }: VerifyProps) {
+export function Verify({ brand, model, asin, report, api, scanRunning, version, busy, onRun }: VerifyProps) {
   const [runError, setRunError] = useState<string | null>(null);
   const refusalId = useId();
-  const { fresh, problem } = useQuote(api, { kind: 'verify', brand, model, asin }, `${brand}|${model}|${asin}`, scanRunning, version);
+  const { fresh, problem } = useQuote(api, { kind: 'verify', brand, model, asin }, `${brand}|${model}|${asin}`, scanRunning, version, report);
 
   const refusal = scanRunning ? SCAN_RUNNING : (runError ?? fresh?.refusal ?? problem);
   const run = () => {
