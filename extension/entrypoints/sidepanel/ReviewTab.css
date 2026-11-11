@@ -148,3 +148,33 @@
   line-height: 18px;
   color: var(--ink-2);
 }
+
+/* The typed parts: the settings page's input, under its radio row. */
+.review-enter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0 0 var(--review-indent);
+}
+.review-enter-label {
+  font-size: 13px;
+  line-height: 18px;
+}
+.review-enter-input {
+  height: 40px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-family: var(--font-figures);
+  font-size: 14px;
+  color: inherit;
+  min-width: 0;
+}
+.review-enter-help {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}

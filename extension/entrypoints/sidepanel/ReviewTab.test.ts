@@ -81,15 +81,72 @@ describe('ReviewTab: a split question', () => {
     const group = screen.getByRole('group', { name: 'Which parts come in this bundle?' });
     expect(group.tagName).toBe('FIELDSET');
     const radios = screen.getAllByRole('radio');
-    expect(radios.map((r) => r.closest('label')!.textContent)).toEqual(['DCF891B + DCB205', 'DCF921B + DCB205', 'None of these']);
+    expect(radios.map((r) => r.closest('label')!.textContent)).toEqual(['DCF891B + DCB205', 'DCF921B + DCB205', 'Enter the parts', 'None of these']);
     expect(save()).toBeDisabled();
   });
 
-  it('with no readings offers only None of these and says why', () => {
+  it('with no readings offers Enter the parts and None of these, and says why', () => {
     setup(reportOf([item({ choices: [] })]));
-    expect(screen.getAllByRole('radio')).toHaveLength(1);
-    expect(screen.getByText('None of these')).toBeInTheDocument();
-    expect(screen.getByText('No reading could be made from the model number or the page.')).toBeInTheDocument();
+    expect(screen.getAllByRole('radio').map((r) => r.closest('label')!.textContent)).toEqual(['Enter the parts', 'None of these']);
+    expect(screen.getByText('No reading could be made from the model number or the page. Enter the parts if you know them.')).toBeInTheDocument();
+  });
+
+  it('Enter the parts shows a labelled field with a helper line, and Save stays disabled while it is empty', async () => {
+    const user = userEvent.setup();
+    setup(reportOf([SPLIT]));
+    expect(screen.queryByLabelText('Model numbers, separated by commas')).toBeNull();
+    await user.click(screen.getByRole('radio', { name: 'Enter the parts' }));
+    const field = screen.getByLabelText('Model numbers, separated by commas');
+    expect(screen.getByText('List a part twice if the bundle has two.')).toBeInTheDocument();
+    expect(save()).toBeDisabled();
+    await user.type(field, '  ');
+    expect(save()).toBeDisabled();
+    await user.type(field, 'pcl500b');
+    expect(save()).toBeEnabled();
+  });
+
+  it('sends the entry split on commas, trimmed, empty ones dropped, repeats kept, not upper-cased', async () => {
+    const user = userEvent.setup();
+    const { send } = setup(reportOf([SPLIT]));
+    await user.click(screen.getByRole('radio', { name: 'Enter the parts' }));
+    await user.type(screen.getByLabelText('Model numbers, separated by commas'), ' pcl500b , ,PCL500B,, DCB205 ');
+    await user.click(save());
+    expect(send).toHaveBeenCalledWith({ type: 'answerReview', id: 'split:a', answer: { parts: ['pcl500b', 'PCL500B', 'DCB205'], seen: reviewSignature(SPLIT) } });
+  });
+
+  it('shows the worker refusal of typed parts and keeps the entry', async () => {
+    const user = userEvent.setup();
+    setup(reportOf([SPLIT]), { ok: false, error: 'Enter model numbers like PCL500B, separated by commas.' });
+    await user.click(screen.getByRole('radio', { name: 'Enter the parts' }));
+    await user.type(screen.getByLabelText('Model numbers, separated by commas'), 'bad');
+    await user.click(save());
+    expect(await screen.findByRole('alert')).toHaveTextContent('Enter model numbers like PCL500B, separated by commas.');
+    expect(screen.getByLabelText('Model numbers, separated by commas')).toHaveValue('bad');
+  });
+
+  it('a match question does not offer Enter the parts', () => {
+    setup(reportOf([MATCH]));
+    expect(screen.queryByRole('radio', { name: 'Enter the parts' })).toBeNull();
+  });
+
+  it('Enter on a radio does not save; the Save button still does with Enter and with Space', async () => {
+    const user = userEvent.setup();
+    const { send } = setup(reportOf([SPLIT]));
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.keyboard('{Enter}');
+    expect(send).not.toHaveBeenCalled();
+    save().focus();
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(send).toHaveBeenCalledTimes(1));
+  });
+
+  it('Space on the Save button saves', async () => {
+    const user = userEvent.setup();
+    const { send } = setup(reportOf([SPLIT]));
+    await user.click(screen.getAllByRole('radio')[0]!);
+    save().focus();
+    await user.keyboard(' ');
+    await waitFor(() => expect(send).toHaveBeenCalledTimes(1));
   });
 
   it('sends the chosen index with the signature of the question as shown, then moves on', async () => {
@@ -310,7 +367,25 @@ describe('ReviewTab: Skip for now and what None of these does', () => {
     await user.click(skipForNow());
     expect(send).not.toHaveBeenCalled();
     expect(legend(MATCH_Q)).toBeInTheDocument();
-    expect(screen.getByText('1 of 2')).toBeInTheDocument();
+    expect(screen.getByText('2 of 2')).toBeInTheDocument();
+  });
+
+  it('counts three questions through skip, skip, skip, answer', async () => {
+    const user = userEvent.setup();
+    const third = item({ id: 'split:c', model: 'DCK999', openedAt: 3, reason: 'Third.', choices: [['DCF891B']] });
+    setup(reportOf([SPLIT, MATCH, third]));
+    expect(screen.getByText('1 of 3')).toBeInTheDocument();
+    await user.click(skipForNow());
+    expect(screen.getByText('2 of 3')).toBeInTheDocument();
+    await user.click(skipForNow());
+    expect(screen.getByText('3 of 3')).toBeInTheDocument();
+    await user.click(skipForNow());
+    // Every question has been put off: back to the first one put off, and its number with it.
+    expect(legend(SPLIT_Q)).toBeInTheDocument();
+    expect(screen.getByText('1 of 3')).toBeInTheDocument();
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.click(save());
+    expect(await screen.findByText('2 of 3')).toBeInTheDocument();
   });
 
   it('brings a skipped question back after the others, and again when only skipped ones remain', async () => {
@@ -325,7 +400,7 @@ describe('ReviewTab: Skip for now and what None of these does', () => {
     expect(screen.getByText('DCK240C2')).toBeInTheDocument();
     await user.click(skipForNow());
     expect(legend(MATCH_Q)).toBeInTheDocument();
-    expect(screen.getByText('1 of 3')).toBeInTheDocument();
+    expect(screen.getByText('2 of 3')).toBeInTheDocument();
   });
 
   it('keeps a single question on screen', async () => {
