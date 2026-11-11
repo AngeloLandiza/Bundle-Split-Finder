@@ -118,6 +118,11 @@ describe('Deals on a replayed scan', () => {
     const rows = ratchet.report.bundles.filter((b) => b.parts.some((p) => p.status === 'waiting'));
     expect(rows.length).toBeGreaterThan(0);
     for (const r of rows) expect(matchState(r)).toMatch(/unknown$/);
+    // Their parts were never looked up: they wait for a lookup, after Confirmed and before the review sections.
+    expect(sections(ratchet.report.bundles, 'profit').map((g) => `${g.label} · ${g.rows.length}`)).toEqual([
+      `WAITING FOR AN AMAZON LOOKUP · ${rows.length}`,
+      'CONTENTS NOT KNOWN · 6',
+    ]);
     render(createElement(DealsTab, { api, report: ratchet.report, state: appState(ratchet.job), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
     expect((await screen.findAllByRole('button', { name: /^Look up/ })).length).toBe(rows.length);
     expect(screen.getByText(/^It used the 1 search allowed per scan\./)).toBeInTheDocument();

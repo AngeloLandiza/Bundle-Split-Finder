@@ -16,7 +16,7 @@ import {
   type ScanStore,
 } from './types';
 
-const SECTION_RANK: Record<ReportSection, number> = { confirmed: 0, inactive_listing: 1, missing_listing: 2, split: 3 };
+const SECTION_RANK: Record<ReportSection, number> = { confirmed: 0, waiting: 1, inactive_listing: 2, missing_listing: 3, split: 4 };
 
 async function partRows(store: ScanStore, brand: string, components: string[]): Promise<PartRow[]> {
   const counts = componentCounts(components);
@@ -45,9 +45,14 @@ async function partRows(store: ScanStore, brand: string, components: string[]): 
   return rows;
 }
 
-// A bundle with no parts is never confirmed, and neither is one without its own price.
+/** A part not looked up yet: it has no listing because nobody has looked, not because there is none. */
+const notLookedUp = (p: PartRow): boolean => p.status === 'waiting' || p.status === 'unmatched';
+
+// A bundle with no parts is never confirmed, and neither is one without its own price. A priced
+// bundle with a part not looked up yet waits for that lookup, before any listing says inactive or missing.
 function sectionOf(parts: PartRow[], bundlePrice: number | null): ReportSection {
   if (parts.length === 0) return 'split';
+  if (bundlePrice !== null && parts.some(notLookedUp)) return 'waiting';
   if (parts.some((p) => p.availability === 'missing')) return 'missing_listing';
   if (parts.some((p) => p.availability === 'inactive')) return 'inactive_listing';
   return bundlePrice === null ? 'inactive_listing' : 'confirmed';
@@ -75,7 +80,7 @@ async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleReco
   const evaluation = evaluateBundle(b.price, componentCounts(split.components), priced, settings.fees, settings.liquidationRate);
   // A part not looked up yet has no price, which is not the same as a price of zero: no estimate until it is.
   // A part that was looked up and has no listing ("none") still counts at the liquidation rate, as the owner set.
-  const unknown = parts.some((p) => p.status === 'waiting' || p.status === 'unmatched');
+  const unknown = parts.some(notLookedUp);
   return {
     ...base,
     status: evaluation.uncovered.length === 0 ? 'complete' : 'partial',

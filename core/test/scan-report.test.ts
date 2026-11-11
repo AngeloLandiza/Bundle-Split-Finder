@@ -112,7 +112,8 @@ describe('buildReport', () => {
     // The waiting part has not been looked up, so there is no estimate (it used to be valued at the liquidation rate).
     expect(first.estimate).toBeNull();
     expect(first.parts.find((p) => p.model === 'PBLRC25B')).toMatchObject({ status: 'waiting', asin: null });
-    expect(first.section).toBe('missing_listing');
+    // Not "missing listing": nobody has looked for one yet.
+    expect(first.section).toBe('waiting');
     expect(first.parts.find((p) => p.model === 'PBLRC25B')!.availability).toBe('missing');
     expect(first.parts.find((p) => p.model === 'PBLRC01B')!.availability).toBe('active');
   });

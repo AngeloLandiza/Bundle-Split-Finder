@@ -4,10 +4,11 @@
 import type { BundleRow, PartRow, ReportSection, ScanJob, ScanStep } from '@core/scan/types';
 import type { SortKey } from './sort';
 
-export const SECTION_ORDER: readonly ReportSection[] = ['confirmed', 'inactive_listing', 'missing_listing', 'split'];
+export const SECTION_ORDER: readonly ReportSection[] = ['confirmed', 'waiting', 'inactive_listing', 'missing_listing', 'split'];
 
 export const SECTION_LABEL: Record<ReportSection, string> = {
   confirmed: 'CONFIRMED',
+  waiting: 'WAITING FOR AN AMAZON LOOKUP',
   inactive_listing: 'REVIEW: INACTIVE LISTING',
   missing_listing: 'REVIEW: MISSING LISTING',
   split: 'CONTENTS NOT KNOWN',
