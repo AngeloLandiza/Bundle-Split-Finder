@@ -1,5 +1,7 @@
 export interface HeaderProps {
   scanRunning: boolean;
+  /** Stop was pressed and the scan has not ended yet: the button says so and cannot be pressed again. */
+  stopping?: boolean;
   /** No key yet: Scan now is disabled and settings are reached from the first-run body. */
   noKey: boolean;
   /** When set, Scan now is disabled and this is its title. */
@@ -9,7 +11,7 @@ export interface HeaderProps {
   onSettings: () => void;
 }
 
-export function Header({ scanRunning, noKey, scanBlockedTitle, onScan, onStop, onSettings }: HeaderProps) {
+export function Header({ scanRunning, stopping = false, noKey, scanBlockedTitle, onScan, onStop, onSettings }: HeaderProps) {
   return (
     <header className="header">
       <div className="brand">
@@ -21,8 +23,8 @@ export function Header({ scanRunning, noKey, scanBlockedTitle, onScan, onStop, o
       </div>
       <div className="header-actions">
         {scanRunning ? (
-          <button type="button" id="scan-control" className="btn btn-secondary" onClick={onStop}>
-            Stop
+          <button type="button" id="scan-control" className="btn btn-secondary" disabled={stopping} onClick={onStop}>
+            {stopping ? 'Stopping…' : 'Stop'}
           </button>
         ) : (
           <button type="button" id="scan-control" className="btn btn-primary" disabled={noKey || scanBlockedTitle !== undefined} title={noKey ? 'Add your SerpApi key first.' : scanBlockedTitle} onClick={onScan}>

@@ -272,6 +272,8 @@ describe('side panel shell', () => {
     send.mockImplementationOnce(async () => ({ ok: false, error: 'Could not stop.' }));
     await user.click(screen.getByRole('button', { name: 'Stop' }));
     await waitFor(() => expect(noticeError()).toBe('Could not stop.'));
+    // Refused: the button is Stop again, ready to be pressed.
+    expect(screen.getByRole('button', { name: 'Stop' })).toBeEnabled();
     await emit(state({ scanRunning: false, lastJob: { ...JOB, status: 'stopped' } as ScanJob }));
     expect(noticeError()).toBeNull();
   });
@@ -290,12 +292,29 @@ describe('side panel shell', () => {
   it('Notice gets the unreachable sentence when stopScan rejects', async () => {
     const user = userEvent.setup();
     const { send } = setup(state({ scanRunning: true, lastJob: JOB }));
-    await user.click(await screen.findByRole('button', { name: 'Stop' }));
+    await screen.findByRole('button', { name: 'Stop' });
     send.mockImplementationOnce(async () => {
       throw new Error('gone');
     });
     await user.click(screen.getByRole('button', { name: 'Stop' }));
     await waitFor(() => expect(noticeError()).toBe(UNREACHABLE));
+    expect(screen.getByRole('button', { name: 'Stop' })).toBeEnabled();
+  });
+
+  it('Stop reads Stopping… and is disabled until the scan ends, and sends one stopScan (QA m1)', async () => {
+    const user = userEvent.setup();
+    const { send, emit } = setup(state({ scanRunning: true, lastJob: JOB }));
+    let release: (r: Reply) => void = () => {};
+    send.mockImplementationOnce(() => new Promise<Reply>((r) => (release = r)));
+    await user.click(await screen.findByRole('button', { name: 'Stop' }));
+    const stopping = screen.getByRole('button', { name: 'Stopping…' });
+    expect(stopping).toBeDisabled();
+    await user.click(stopping);
+    release({ ok: true, data: null });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Stopping…' })).toBeDisabled());
+    expect(send.mock.calls.filter(([r]) => r.type === 'stopScan')).toHaveLength(1);
+    await emit(state({ scanRunning: false, lastJob: { ...JOB, status: 'stopped' } as ScanJob }));
+    expect(screen.getByRole('button', { name: 'Scan now' })).toBeInTheDocument();
   });
 
   it('the screens get the api; FirstRun gets openSettings', async () => {

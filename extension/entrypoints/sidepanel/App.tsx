@@ -36,6 +36,8 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   // Two slots, so a report refresh cannot wipe a refused scan's sentence. The report's is cleared by its next success.
   const [scanError, setScanError] = useState<string | null>(null);
   const [reportError, setReportError] = useState<string | null>(null);
+  // Stop was pressed and the scan has not ended: the button reads Stopping… and cannot be pressed twice.
+  const [stopping, setStopping] = useState(false);
 
   // A refused Scan now or Stop belongs to the moment it was refused in: it goes when a scan starts or ends, when
   // a Look up or Verify on this panel ends, and on the scan control's next success.
@@ -44,6 +46,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   if (seenRunning !== running) {
     setSeenRunning(running);
     setScanError(null);
+    setStopping(false);
   }
   const paidEnded = useCallback(() => setScanError(null), []);
 
@@ -84,7 +87,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     return <div className="panel">{loadError ? <p className="load-error">{loadError}</p> : null}</div>;
   }
 
-  const send = (type: 'scanNow' | 'stopScan') => () => {
+  const send = (type: 'scanNow') => () => {
     const request: Request = { type };
     api
       .send(request)
@@ -92,10 +95,25 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
       .catch(() => setScanError(UNREACHABLE));
   };
 
+  const stop = () => {
+    if (stopping) return;
+    setStopping(true);
+    api
+      .send({ type: 'stopScan' })
+      .then((reply) => {
+        if (!reply.ok) setStopping(false);
+        setScanError(reply.ok ? null : reply.error);
+      })
+      .catch(() => {
+        setStopping(false);
+        setScanError(UNREACHABLE);
+      });
+  };
+
   if (!state.hasKey) {
     return (
       <div className="panel">
-        <Header scanRunning={false} noKey onScan={send('scanNow')} onStop={send('stopScan')} onSettings={openSettings} />
+        <Header scanRunning={false} noKey onScan={send('scanNow')} onStop={stop} onSettings={openSettings} />
         <main className="panel-body">
           <FirstRun state={state} api={api} openSettings={openSettings} />
         </main>
@@ -115,10 +133,11 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     <div className="panel">
       <Header
         scanRunning={state.scanRunning}
+        stopping={stopping}
         noKey={false}
         scanBlockedTitle={hourlyBlockTitle(state, clock)}
         onScan={send('scanNow')}
-        onStop={send('stopScan')}
+        onStop={stop}
         onSettings={openSettings}
       />
       <Tabs
