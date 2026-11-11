@@ -29,4 +29,24 @@ describe('sentenceFor', () => {
       'The price check of PCL526B failed: SerpApi could not be reached.',
     );
   });
+
+  it('maps a network text wherever it sits in a message (no period, dots inside, middle, start)', () => {
+    expect(sentenceFor(`The lookup of PCL526B failed: ${NETWORK_ERROR_PREFIX}: Failed to fetch`, 'try again')).toBe(
+      'The lookup of PCL526B failed: SerpApi could not be reached.',
+    );
+    expect(sentenceFor(`The lookup of PCL526B failed: ${NETWORK_ERROR_PREFIX}: getaddrinfo ENOTFOUND serpapi.com`, 'try again')).toBe(
+      'The lookup of PCL526B failed: SerpApi could not be reached.',
+    );
+    expect(sentenceFor(`A Home Depot page could not be read. ${NETWORK_ERROR_PREFIX}: Failed to fetch. The price check of X failed: SerpApi returned HTTP 404.`, 'try again')).toBe(
+      'A Home Depot page could not be read. SerpApi could not be reached. The price check of X failed: SerpApi answered with an error (HTTP 404).',
+    );
+  });
+
+  it('keeps what follows a network text at the start of a message', () => {
+    expect(sentenceFor(`${NETWORK_ERROR_PREFIX}: Failed to fetch. A Home Depot page could not be read.`, 'try again')).toBe(
+      'SerpApi could not be reached. A Home Depot page could not be read.',
+    );
+    expect(sentenceFor(`${NETWORK_ERROR_PREFIX}: Failed to fetch`, 'try again')).toBe('SerpApi could not be reached. Check the connection, then try again.');
+    expect(sentenceFor(`${NETWORK_ERROR_PREFIX}: serpapi.com unreachable.`, 'try again')).toBe('SerpApi could not be reached. Check the connection, then try again.');
+  });
 });

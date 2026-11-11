@@ -151,7 +151,6 @@
 .deal-row-lookup {
   grid-template-rows: auto auto auto;
 }
-.deal-row-lookup > .deal-link:not(:last-child),
 .deal-row-lookup > .deal-link {
   grid-column: 1 / -1;
   grid-row: 1 / 3;
