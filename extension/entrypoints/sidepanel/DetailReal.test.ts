@@ -149,6 +149,15 @@ describe('Detail on a replayed scan', () => {
     }
   });
 
+  it("sets only the row's part models in the figure face; an unnamed part is words", () => {
+    const row = full.bundles.find((b) => b.key === 'homedepot:328814689')!;
+    const model = row.parts[0]!.model;
+    open({ ...full, bundles: [{ ...row, uncovered: [model, 'Hex Wrench', '18V. Charger'] }] }, row.key);
+    const sentence = screen.getByText(/ at \$0: /);
+    expect(sentence).toHaveTextContent(`Counts ${model}, Hex Wrench and 18V. Charger at $0: no priced Amazon listing is chosen.`);
+    expect([...sentence.querySelectorAll('.figure')].map((n) => n.textContent)).toEqual([model]);
+  });
+
   it('after None of these, says the owner marked the parts as not known, with Change right after, and sends the real review id', async () => {
     const user = userEvent.setup();
     const report = await ownerChose('none');

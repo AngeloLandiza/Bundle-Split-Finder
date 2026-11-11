@@ -347,6 +347,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
   const counted = new Set(row.uncovered);
   const gross = row.parts.reduce((sum, p) => sum + (p.price !== null && !counted.has(p.model) ? p.price * p.qty : 0), 0);
   const waiting = waitingParts(row).length;
+  const partModels = new Set([...row.parts, ...row.options.flatMap((o) => o.parts)].map((p) => p.model));
   const missingAsin = row.parts.filter((p) => p.asin === null).map((p) => p.model);
   const question = report.review.find((r) => r.kind === 'split' && r.subject === row.key) ?? null;
 
@@ -452,11 +453,12 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
               </p>
               {row.uncovered.length > 0 ? (
                 <p className="detail-estimate">
+                  {/* Only a model number is set in the figure face; an unnamed part such as "Hex Wrench" is words. */}
                   Counts{' '}
                   {row.uncovered.map((m, i) => (
                     <Fragment key={m}>
                       {i === 0 ? '' : i === row.uncovered.length - 1 ? ' and ' : ', '}
-                      <span className="figure fig-sm">{m}</span>
+                      {partModels.has(m) ? <span className="figure fig-sm">{m}</span> : m}
                     </Fragment>
                   ))}{' '}
                   at $0: no priced Amazon listing is chosen.
