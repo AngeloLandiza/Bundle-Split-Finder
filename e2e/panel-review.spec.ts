@@ -163,6 +163,10 @@ test('review tab, a scan is running: Save answer is disabled and says why', asyn
   await expect(panel.getByRole('button', { name: 'Save answer' })).toBeDisabled();
   await shoot(panel, 'scanning');
 
+  const was = await lastJobId(options);
   await panel.getByRole('button', { name: 'Stop' }).click();
   server.delaySearches(0);
+  // The scan that was running has ended (stopped), and is the one the state now reports.
+  await expect.poll(async () => (await getState(options)).data.scanRunning, { timeout: 60_000, intervals: [100] }).toBe(false);
+  expect(await lastJobId(options)).toBe(was);
 });

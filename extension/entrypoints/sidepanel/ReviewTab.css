@@ -68,6 +68,9 @@
   line-height: 18px;
   color: var(--ink-2);
 }
+.review-reason-model {
+  font-size: 12px;
+}
 .review-choices {
   margin-top: 4px;
   background: var(--surface);

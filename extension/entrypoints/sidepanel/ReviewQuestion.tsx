@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { reviewSignature } from '@core/scan/answers';
 import type { ReviewAnswer, ReviewItem } from '@core/scan/types';
 import { money } from '../../lib/format';
-import { reviewReason } from './reviewReason';
+import { reviewReasonParts } from './reviewReason';
 
 const NONE = 'none';
 const CHANGED = 'That question changed. Choose again.';
@@ -76,7 +76,17 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
           <span>{item.brand}</span>
           <span className="figure fig-sm">{item.model}</span>
         </p>
-        <p className="review-reason">{reviewReason(item.reason)}</p>
+        <p className="review-reason">
+          {reviewReasonParts(item.reason).map((p, i) =>
+            'model' in p ? (
+              <span key={i} className="figure review-reason-model">
+                {p.model}
+              </span>
+            ) : (
+              p.text
+            ),
+          )}
+        </p>
         <div className="review-choices">
           {split && item.choices.length === 0 ? (
             <p className="review-note">No reading could be made from the model number or the page.</p>
@@ -91,7 +101,7 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
                     {c.title}
                   </span>,
                   <p className="review-cand-meta fig-sm">
-                    <span id={priceId} className="figure">
+                    <span id={priceId} className={c.price === null ? undefined : 'figure'}>
                       {c.price === null ? 'No price seen' : money(c.price)}
                     </span>
                     <a className="figure" href={`https://www.amazon.com/dp/${c.asin}`} target="_blank" rel="noreferrer">

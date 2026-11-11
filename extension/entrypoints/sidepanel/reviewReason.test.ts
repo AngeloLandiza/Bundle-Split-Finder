@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { reviewReason } from './reviewReason';
+import { reviewReason, reviewReasonParts } from './reviewReason';
 
 describe('reviewReason', () => {
   const cases: [string, string][] = [
@@ -11,7 +11,10 @@ describe('reviewReason', () => {
     ["'921B' can be split more than one way", 'The model number can be read more than one way.'],
     ["'CS334B' matches nothing in the catalog", 'Part of the model number matches no known product.'],
     ['model number says DCF921B', 'The model number says DCF921B.'],
-    ['page names DCF850, DCF921B, which do not fit the model number', 'The Home Depot page names DCF850, DCF921B, which does not fit the model number.'],
+    ['page names DCF850, DCF921B, which do not fit the model number', 'The Home Depot page names DCF850, DCF921B, which do not fit the model number.'],
+    ['page names DCF850, which do not fit the model number', 'The Home Depot page names DCF850, which does not fit the model number.'],
+    ['1 listing(s) show the model number, but the brand is not confirmed', 'One listing shows this model number, but its brand is not confirmed.'],
+    ['3 listing(s) show the model number, but the brand is not confirmed', '3 listings show this model number, but their brand is not confirmed.'],
     ['page names no models', 'The Home Depot page names no parts.'],
     ['page does not name DCB606', 'The Home Depot page does not name DCB606.'],
   ];
@@ -23,6 +26,19 @@ describe('reviewReason', () => {
     expect(reviewReason('model number says DCB606, DCK200D1P1; page says DCF921B, DCK200D1P1')).toBe(
       'The model number says DCB606, DCK200D1P1. The Home Depot page says DCF921B, DCK200D1P1.',
     );
+  });
+
+  it('sets each model number apart and keeps the separators as words', () => {
+    expect(reviewReasonParts("'CS565B' fits DCB205 and DCB606")).toEqual([
+      { text: 'Part of the model number fits more than one product: ' },
+      { model: 'DCB205' },
+      { text: ' or ' },
+      { model: 'DCB606' },
+      { text: '.' },
+    ]);
+    expect(reviewReasonParts('model number says A1, B2')).toEqual([
+      { text: 'The model number says ' }, { model: 'A1' }, { text: ', ' }, { model: 'B2' }, { text: '.' },
+    ]);
   });
 
   it('joins several notes with a space', () => {

@@ -185,6 +185,20 @@ describe('ReviewTab: a match question', () => {
     expect(screen.getByRole('radio', { name: MATCH.candidates[1]!.title })).toBeInTheDocument();
   });
 
+  it('sets real prices in mono and "No price seen" in words', () => {
+    setup(reportOf([MATCH]));
+    expect(screen.getByText('$189.50')).toHaveClass('figure');
+    expect(screen.getByText('No price seen')).not.toHaveClass('figure');
+  });
+
+  it('sets model numbers in the reason in mono', () => {
+    setup(reportOf([item({ reason: 'model number says DCB606, DCK200D1P1; page says DCF921B' })]));
+    for (const m of ['DCB606', 'DCK200D1P1', 'DCF921B']) expect(screen.getByText(m)).toHaveClass('figure');
+    expect(document.querySelector('.review-reason')!.textContent).toBe(
+      'The model number says DCB606, DCK200D1P1. The Home Depot page says DCF921B.',
+    );
+  });
+
   it('sends the candidate index', async () => {
     const user = userEvent.setup();
     const { send } = setup(reportOf([MATCH]));
