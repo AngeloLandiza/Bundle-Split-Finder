@@ -88,7 +88,10 @@ function Way({ option, primary, kits, row, report, api, scanRunning, version, bu
       </p>
       {option.loose ? <p className="detail-way-line">{LOOSE_PARTS_NOTE}</p> : null}
       {items.length > 0 ? (
-        <LookUp row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} items={items} describedBy={labelId} onRun={(parts, button) => run({ kind: 'lookUp', parts }, button)} />
+        <LookUp
+          row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} items={items} describedBy={labelId} stacked
+          onRun={(parts, button) => run({ kind: 'lookUp', parts }, button)}
+        />
       ) : null}
     </li>
   );

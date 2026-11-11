@@ -564,6 +564,13 @@
 .detail-way .deal-lookup {
   justify-content: flex-end;
 }
+/* A refusal in a way to sell is its own full-width line under the button, as in a Deals row (QA, 360px):
+   beside the button it was squeezed into a narrow column. The button keeps the right edge. */
+.detail-way .deal-lookup-stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
 .detail-way-none {
   font-family: var(--font-words);
 }
