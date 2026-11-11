@@ -70,6 +70,26 @@ describe('splitting bundles', () => {
     expect(d.notes[0]).toContain('DCF921B');
   });
 
+  it('lists both whole readings of a short code that fits two tools, for the owner to choose from', () => {
+    const d = decomposeDewalt(...fx.HD_DEWALT_AMBIGUOUS, fx.DEWALT_CATALOG);
+    expect(d.alternatives).toEqual([['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']]);
+  });
+
+  it('lists every way a glued short code can be cut, sorted by their parts', () => {
+    // Constructed: no recorded bundle is glued two ways. '205' + '205' is DCB205 twice; '2052' + '05'
+    // is DCB205-2 and DCB205 (the title's batteries rule out DCD805B, which also ends in 05B).
+    const d = decomposeDewalt('DCK940D2W205205', '20V MAX Cordless 9 Tool Combo Kit with (4) 20V 5.0Ah Batteries', fx.DEWALT_CATALOG);
+    expect(d).toMatchObject({ components: ['DCK940D2'], status: 'needs_review', notes: ["'205205' can be split more than one way"] });
+    expect(d.alternatives).toEqual([['DCK940D2', 'DCB205', 'DCB205'], ['DCK940D2', 'DCB205-2', 'DCB205']]);
+  });
+
+  it('lists no alternatives for a resolved split or a short code that matches nothing', () => {
+    for (const [model, title] of fx.HD_DEWALT_BUNDLES) expect(decomposeDewalt(model, title, fx.DEWALT_CATALOG).alternatives).toBeUndefined();
+    const nothing = decomposeDewalt('DCK2100W354606', '', new Map());
+    expect(nothing.notes).toEqual(["'354606' matches nothing in the catalog"]);
+    expect(nothing.alternatives).toBeUndefined();
+  });
+
   it('routes by brand and refuses brands it has no rules for', () => {
     expect(decompose('ryobi', fx.HD_BUNDLE.model, fx.HD_BUNDLE.title, fx.RYOBI_CATALOG).status).toBe('resolved');
     expect(decompose('Milwaukee', '2997-22', 'M18 FUEL 2-Tool Combo Kit', new Map()).status).toBe('needs_review');

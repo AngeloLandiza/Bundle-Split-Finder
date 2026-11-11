@@ -25,6 +25,8 @@ export interface Decomposition {
   components: string[];
   status: 'resolved' | 'needs_review';
   notes: string[];
+  /** Whole readings the model number allows when it cannot choose, e.g. kit + DCF891B and kit + DCF921B. */
+  alternatives?: string[][];
 }
 
 const norm = (model: string): string => model.toUpperCase().replace(/[-\s]/g, '');
@@ -108,10 +110,17 @@ function suffixCandidates(suffix: string, title: string, catalog: Catalog): stri
   return byTitle.length ? byTitle : hits;
 }
 
-function resolveSuffix(suffix: string, title: string, catalog: Catalog): { models: string[]; problem: string } {
+/**
+ * The bonus items a short code names. `readings` (each a list of bonus items) is set only when
+ * the code fits more than one way; it lists exactly the candidates the problem names.
+ */
+function resolveSuffix(suffix: string, title: string, catalog: Catalog): { models: string[]; problem: string; readings?: string[][] } {
   const whole = suffixCandidates(suffix, title, catalog);
   if (whole.length === 1) return { models: whole, problem: '' };
-  if (whole.length > 1) return { models: [], problem: `'${suffix}' fits ${[...whole].sort().join(' and ')}` };
+  if (whole.length > 1) {
+    const sorted = [...whole].sort();
+    return { models: [], problem: `'${suffix}' fits ${sorted.join(' and ')}`, readings: sorted.map((m) => [m]) };
+  }
 
   // Two bonus items can be glued together: "354606" = DCS354B + DCB606.
   const splits: string[][] = [];
@@ -121,9 +130,15 @@ function resolveSuffix(suffix: string, title: string, catalog: Catalog): { model
     if (left.length === 1 && right.length === 1) splits.push([...left, ...right]);
   }
   if (splits.length === 1) return { models: splits[0]!, problem: '' };
-  if (splits.length > 1) return { models: [], problem: `'${suffix}' can be split more than one way` };
+  if (splits.length > 1) return { models: [], problem: `'${suffix}' can be split more than one way`, readings: splits };
   return { models: [], problem: `'${suffix}' matches nothing in the catalog` };
 }
+
+const byParts = (a: string[], b: string[]): number => {
+  const x = a.join(',');
+  const y = b.join(',');
+  return x < y ? -1 : x > y ? 1 : 0;
+};
 
 export function decomposeDewalt(bundleModel: string, title: string, catalog: Catalog): Decomposition {
   const model = norm(bundleModel);
@@ -135,8 +150,13 @@ export function decomposeDewalt(bundleModel: string, title: string, catalog: Cat
   }
   const base = m[1]!;
   const suffix = m[2]!;
-  const { models, problem } = resolveSuffix(suffix, title, catalog);
-  if (problem) return { components: [base], status: 'needs_review', notes: [problem] };
+  const { models, problem, readings } = resolveSuffix(suffix, title, catalog);
+  if (problem) {
+    const split: Decomposition = { components: [base], status: 'needs_review', notes: [problem] };
+    // The owner chooses among these; the split itself stays in review.
+    if (readings) split.alternatives = readings.map((r) => [base, ...r]).sort(byParts);
+    return split;
+  }
   const notes = ['kit + bonus item'];
   if (!catalog.has(base)) notes.push(`kit ${base} is new to the catalog`);
   return { components: [base, ...models], status: 'resolved', notes };

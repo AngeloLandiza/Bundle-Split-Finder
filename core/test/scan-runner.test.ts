@@ -1449,7 +1449,11 @@ describe('runScan: models read from Amazon titles do not resolve a DEWALT short 
 
     const job = await scan(w, { settings: DEWALT_ONLY });
     expect(w.replay.calls).toEqual([]);
-    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCK283D2'], status: 'needs_review', notes: ["'380B' fits DCE380B and DCG380B"] });
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({
+      components: ['DCK283D2'], status: 'needs_review', notes: ["'380B' fits DCE380B and DCG380B"],
+      // The stored catalog's two readings, for the owner to choose from (step 5); never the listing's DCS380B.
+      alternatives: [['DCK283D2', 'DCE380B'], ['DCK283D2', 'DCG380B']],
+    });
     expect(await w.store.getReview('split:homedepot:ambiguous')).toMatchObject({ reason: "'380B' fits DCE380B and DCG380B" });
     expect(job.counts).toMatchObject({ bundlesResolved: 0, partsFromCatalog: 0 });
   });
@@ -1832,6 +1836,7 @@ describe('runScan: split review items follow the latest reading (step 4, fix rou
     const job = await scan(w, { settings: COMBO_DEWALT, policy: ONE_SEARCH, readPages: pageReader({ misfit: { '337440461': '337440459' } }).readPages });
     expect((await w.store.getBundle('homedepot:337440461'))!.split).toEqual({
       components: ['DCK200D1P1'], status: 'needs_review', notes: ["'B606' matches nothing in the catalog", MISFIT],
+      alternatives: [['DCK200D1P1', 'DCF921B']],
     });
     expect(await w.store.getReview('split:homedepot:337440461')).toMatchObject({
       reason: `'B606' matches nothing in the catalog; ${MISFIT}`, openedAt: T0, answer: null, answeredAt: null,
@@ -1863,6 +1868,7 @@ describe('runScan: split review items follow the latest reading (step 4, fix rou
     const job = await scan(w, { settings: COMBO_DEWALT, policy: ONE_SEARCH, readPages: pageReader({ misfit: { '343992133': '337440459' } }).readPages });
     expect((await w.store.getBundle('homedepot:343992133'))!.split).toEqual({
       components: ['DCK540D1', 'DCS334B'], status: 'needs_review', notes: ['model number says DCK540D1, DCS334B', MISFIT],
+      alternatives: [['DCK540D1', 'DCS334B'], ['DCK200D1P1', 'DCF921B']],
     });
     expect(await w.store.getReview('split:homedepot:343992133')).toMatchObject({
       kind: 'split', subject: 'homedepot:343992133', brand: 'DEWALT', model: 'DCK540D1WCS334B', candidates: [],

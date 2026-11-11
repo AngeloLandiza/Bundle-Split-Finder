@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { decompose, type Catalog, type Decomposition } from '../src/decompose';
 import { parseBundlePage, type PageContent } from '../src/hdPage';
 import { pageCatalog, splitWithPage } from '../src/pageSplit';
+import * as fx from './fixtures';
 
 interface Rec { itemId: string; status: number; text: string }
 const pages = (
@@ -179,20 +180,21 @@ describe('splitWithPage: a DEWALT page naming another kit', () => {
     expect(modelSplit.status).toBe('resolved');
     expect(got).toEqual({
       components: modelSplit.components, status: 'needs_review', notes: ['model number says DCF921B, DCK240C2', misfit],
+      alternatives: [['DCK240C2', 'DCF921B'], ['DCK200D1P1', 'DCF921B']],
     });
   });
 
   it('model split unresolved: stays in review, with the page reading added', () => {
     const { modelSplit, got } = run({ brand: 'DEWALT', model: 'DCK240C2W921B', page });
     expect(modelSplit.status).toBe('needs_review');
-    expect(got).toEqual({ ...modelSplit, notes: [...modelSplit.notes, misfit] });
+    expect(got).toEqual({ ...modelSplit, notes: [...modelSplit.notes, misfit], alternatives: [['DCK200D1P1', 'DCF921B']] });
   });
 
   it('neither split resolved: stays in review, with the page reading added', () => {
     // 337440459's bullets against DCK200D1P1WB606: 'B606' fits nothing the page names, nor anything known.
     const { modelSplit, got } = run({ brand: 'DEWALT', model: 'DCK200D1P1WB606', page });
     expect(modelSplit.status).toBe('needs_review');
-    expect(got).toEqual({ ...modelSplit, notes: ["'B606' matches nothing in the catalog", misfit] });
+    expect(got).toEqual({ ...modelSplit, notes: ["'B606' matches nothing in the catalog", misfit], alternatives: [['DCK200D1P1', 'DCF921B']] });
   });
 });
 
@@ -215,5 +217,44 @@ describe('splitWithPage: other cases', () => {
   it('a brand with no page rules: the model split, noting the page names no models', () => {
     const { modelSplit, got } = run({ brand: 'MILWAUKEE', model: '3697-22', page: p('337440459') });
     expect(got).toEqual({ ...modelSplit, notes: [...modelSplit.notes, 'page names no models'] });
+  });
+});
+
+describe('splitWithPage: the readings the owner can choose from (step 5)', () => {
+  const misfit = 'page names DCF921B, DCK200D1P1, which do not fit the model number';
+
+  it("337440459's page with model DCK200D1P1WB606: the model-number reading, then the page reading", () => {
+    const { got } = run({ brand: 'DEWALT', model: 'DCK200D1P1WB606', known: ['DCB606'], page: p('337440459') });
+    expect(got.status).toBe('needs_review');
+    expect(got.alternatives).toEqual([['DCK200D1P1', 'DCB606'], ['DCK200D1P1', 'DCF921B']]);
+  });
+
+  it('both resolved to different parts: the model-number reading, then the page reading', () => {
+    const { got } = run({ brand: 'DEWALT', model: 'DCK200D1P1W921B', known: ['DCD921B'], page: p('337440459') });
+    expect(got.status).toBe('needs_review');
+    expect(got.alternatives).toEqual([['DCK200D1P1', 'DCD921B'], ['DCK200D1P1', 'DCF921B']]);
+  });
+
+  it("the model number cannot choose and the page does not fit: the page reading, then the model number's readings", () => {
+    // The real bundle DCKTS650D1P1W1B read with 337440459's page (a constructed pairing, as in the misfit cases above).
+    const [model, title] = fx.HD_DEWALT_AMBIGUOUS;
+    const { modelSplit, got } = run({ brand: 'DEWALT', model, title, known: ['DCF891B', 'DCF921B'], page: p('337440459') });
+    expect(modelSplit.alternatives).toEqual([['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']]);
+    expect(got).toEqual({
+      components: ['DCKTS650D1P1'], status: 'needs_review', notes: ["'1B' fits DCF891B and DCF921B", misfit],
+      alternatives: [['DCK200D1P1', 'DCF921B'], ['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']],
+    });
+  });
+
+  it("a page that adds nothing keeps the model number's readings", () => {
+    const [model, title] = fx.HD_DEWALT_AMBIGUOUS;
+    const noModels: PageContent = { ...p('337440459'), bullets: [] };
+    const { modelSplit, got } = run({ brand: 'DEWALT', model, title, known: ['DCF891B', 'DCF921B'], page: noModels });
+    expect(got).toEqual({ ...modelSplit, notes: [...modelSplit.notes, 'page names no models'] });
+    expect(got.alternatives).toEqual([['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']]);
+  });
+
+  it('a resolved split lists no alternatives', () => {
+    for (const row of ROWS.filter((r) => r.status === 'resolved')) expect(run(row).got.alternatives, row.item).toBeUndefined();
   });
 });

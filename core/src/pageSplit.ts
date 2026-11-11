@@ -4,6 +4,10 @@
 // brand-specific way, which `pageCatalog` turns into a catalog. The splitter is then run on
 // that catalog alone, and the two readings are compared. Neither signal wins alone when they
 // disagree: the bundle goes to review. Rules R1 to R5 are in the step 4 plan, Task 3.
+//
+// On a disagreement the split keeps both readings as `alternatives` for the owner to choose
+// from (step 5): the model number's first, then the page's, then any the model number could not
+// choose between. Only the owner's answer turns one of them into the split.
 
 import { DEWALT_BUNDLE, decompose, reconcile, type Catalog, type CatalogModel, type Decomposition } from './decompose';
 import type { PageContent } from './hdPage';
@@ -84,13 +88,20 @@ export function splitWithPage(
       return { ...modelSplit, notes: ['model number and page agree'] };
     }
     const { reason } = reconcile(modelSplit.components, pageSplit.components);
-    return { components: modelSplit.components, status: 'needs_review', notes: [reason] };
+    return {
+      components: modelSplit.components, status: 'needs_review', notes: [reason],
+      alternatives: [[...modelSplit.components], [...pageSplit.components]],
+    };
   }
   if (modelResolved) { // R3
-    // DEWALT: both readings in the notes, which the runner joins into the review reason.
+    // DEWALT: both readings in the notes, which the runner joins into the review reason. The
+    // page's reading is the models it names, as the note says.
     if (brand === 'DEWALT') {
       const says = `model number says ${list(modelSplit.components)}`;
-      return { components: modelSplit.components, status: 'needs_review', notes: [says, doNotFit] };
+      return {
+        components: modelSplit.components, status: 'needs_review', notes: [says, doNotFit],
+        alternatives: [[...modelSplit.components], [...named]],
+      };
     }
     // A RYOBI Includes list goes deeper than the boxed items: it can confirm but not contradict.
     return standsUnnamed(modelSplit, fromPage);
@@ -103,6 +114,8 @@ export function splitWithPage(
     const both = decompose(brand, bundle.model, bundle.title, merged);
     if (both.status === 'resolved') return { ...both, notes: ['parts known from the catalog and the page'] };
   }
-  // DEWALT here: the page names models beyond the kit and its split is not exactly them.
-  return brand === 'DEWALT' ? withNote(modelSplit, doNotFit) : modelSplit;
+  // DEWALT here: the page names models beyond the kit and its split is not exactly them. The
+  // model number has no single reading: the page's comes first, then any it could not choose between.
+  if (brand !== 'DEWALT') return modelSplit;
+  return { ...withNote(modelSplit, doNotFit), alternatives: [[...named], ...(modelSplit.alternatives ?? [])] };
 }
