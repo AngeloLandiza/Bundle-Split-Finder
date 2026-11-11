@@ -89,9 +89,11 @@ export function notKnown(split: Decomposition | null): Decomposition {
 /**
  * What the owner's answer to a split question fixes: the split of the parts they chose or typed,
  * or NONE. An item with `answerParts` (every answer saved since typed parts exist) is decided by
- * them, when `answer` is them joined; the split is noted as chosen when they are one of the
- * question's choices, as entered otherwise. An item without them counts as before: only when its
- * answer equals one of its choices. Null when the owner has not answered: the item is missing or
+ * them, when `answer` is them joined and they still pass the typed-parts rule (stored data is
+ * untrusted: 1 to MAX_ENTERED_PARTS entries, each OFFERABLE_PART); the split is noted as chosen when
+ * they are one of the question's choices, as entered otherwise. An item without them, or with
+ * parts that fail the rule, counts as before: only when its answer equals one of its choices.
+ * Null when the owner has not answered: the item is missing or
  * open, a scan closed it itself, or its answer names none of its choices (an answer saved before
  * step 5).
  */
@@ -100,28 +102,30 @@ export function ownerSplit(item: ReviewItem | undefined): Decomposition | typeof
   if (item.answer === NONE) return NONE;
   const choices = choicesOf(item);
   const parts = item.answerParts;
-  if (Array.isArray(parts) && parts.length > 0 && parts.every((p) => typeof p === 'string') && parts.join(',') === item.answer) {
+  if (validParts(parts) && parts.join(',') === item.answer) {
     return chosenSplit(parts, choices.some((c) => c.join(',') === item.answer) ? CHOSEN_NOTE : ENTERED_NOTE);
   }
   const chosen = choices.find((c) => c.join(',') === item.answer);
   return chosen ? chosenSplit(chosen) : null;
 }
 
+/** 1 to MAX_ENTERED_PARTS entries, each a model number (OFFERABLE_PART). A repeat counts as an entry. */
+function validParts(parts: unknown): parts is string[] {
+  return (
+    Array.isArray(parts) && parts.length > 0 && parts.length <= MAX_ENTERED_PARTS &&
+    parts.every((p) => typeof p === 'string' && OFFERABLE_PART.test(p))
+  );
+}
+
 /**
- * The parts the owner typed, as model numbers: each trimmed and upper-cased, each once, in the
- * order typed. Each must look like a model number (OFFERABLE_PART), and there must be 1 to
- * MAX_ENTERED_PARTS of them; anything else is refused. Nothing is guessed from what was typed.
+ * The parts the owner typed, as model numbers: each trimmed and upper-cased, in the order typed.
+ * A part typed twice is kept twice: a split lists a part once per unit, so it means two of it.
+ * The entries must pass validParts; anything else is refused. Nothing is guessed from what was typed.
  */
 function enteredParts(raw: unknown): string[] {
-  if (!Array.isArray(raw)) throw new AnswerRefused(INVALID_PARTS);
-  const parts: string[] = [];
-  for (const p of raw) {
-    if (typeof p !== 'string') throw new AnswerRefused(INVALID_PARTS);
-    const model = p.trim().toUpperCase();
-    if (!OFFERABLE_PART.test(model)) throw new AnswerRefused(INVALID_PARTS);
-    if (!parts.includes(model)) parts.push(model);
-  }
-  if (parts.length === 0 || parts.length > MAX_ENTERED_PARTS) throw new AnswerRefused(INVALID_PARTS);
+  if (!Array.isArray(raw) || !raw.every((p) => typeof p === 'string')) throw new AnswerRefused(INVALID_PARTS);
+  const parts = raw.map((p: string) => p.trim().toUpperCase());
+  if (!validParts(parts)) throw new AnswerRefused(INVALID_PARTS);
   return parts;
 }
 

@@ -321,12 +321,26 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     expect(report.bundles.find((b) => b.key === SB_KEY)).toMatchObject({ section: 'waiting', estimate: null, parts: [{ model: 'PCL500B', status: 'unmatched' }, { model: 'PCL526B', status: 'unmatched' }] });
   });
 
-  it('upper-cases, trims and de-duplicates the parts typed', async () => {
+  it('upper-cases and trims the parts typed', async () => {
     const w = world();
     const open = await special(w);
-    await applyReviewAnswer(w.store, SB, { parts: [' pcl500b ', 'PCL526B', 'Pcl500B'], seen: reviewSignature(open) }, T0 + MINUTE);
+    await applyReviewAnswer(w.store, SB, { parts: [' pcl500b ', 'Pcl526B '], seen: reviewSignature(open) }, T0 + MINUTE);
     expect((await w.store.getBundle(SB_KEY))!.split).toEqual(typed);
     expect(await w.store.getReview(SB)).toMatchObject({ answer: 'PCL500B,PCL526B', answerParts: ['PCL500B', 'PCL526B'] });
+  });
+
+  it('keeps a part typed twice: the bundle holds two of it, and the report counts qty 2', async () => {
+    const w = world();
+    const open = await special(w);
+    await applyReviewAnswer(w.store, SB, { parts: ['PCL500B', 'pcl526b', ' PCL526B'], seen: reviewSignature(open) }, T0 + MINUTE);
+    expect((await w.store.getBundle(SB_KEY))!.split).toEqual({ ...typed, components: ['PCL500B', 'PCL526B', 'PCL526B'] });
+    expect(await w.store.getReview(SB)).toMatchObject({ answer: 'PCL500B,PCL526B,PCL526B', answerParts: ['PCL500B', 'PCL526B', 'PCL526B'] });
+    const row = (await buildReport(w.store, RYOBI_COMBO)).bundles.find((b) => b.key === SB_KEY)!;
+    expect(row.parts.map((p) => [p.model, p.qty])).toEqual([['PCL500B', 1], ['PCL526B', 2]]);
+    // A later scan keeps the repeat.
+    w.clock = T0 + DAY;
+    await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect((await w.store.getBundle(SB_KEY))!.split!.components).toEqual(['PCL500B', 'PCL526B', 'PCL526B']);
   });
 
   it('survives later scans, which plan lookups for its parts', async () => {
@@ -361,6 +375,8 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     const nine = ['PCL500B', 'PCL526B', 'PCL515B', 'PCL430B', 'P553', 'PBP003', 'PBP004', 'A983002', 'PBLRC25B'];
     const invalid: unknown[] = [
       [], [''], ['  '], ['KIT'], ['PCL500B', '-2'], ['PCL500B', '18V'], ['PCL500B', 'V2'], ['PCL500B, PCL526B'], ['2PK'], nine,
+      // Nine entries, one a repeat: the limit counts entries.
+      [...nine.slice(0, 8), 'pcl500b'],
       'PCL500B, PCL526B', null, {}, [5], ['PCL500B', null],
     ];
     for (const parts of invalid) {
@@ -373,9 +389,9 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
       await expect(applyReviewAnswer(w.store, SB, answer as unknown as ReviewAnswer, T0 + MINUTE)).rejects.toThrow(NOT_SHOWN);
     }
     expect(await snapshot(w)).toEqual(before);
-    // Eight, one of them typed twice, is fine.
-    await applyReviewAnswer(w.store, SB, { parts: [...nine.slice(0, 8), 'pcl500b'], seen }, T0 + MINUTE);
-    expect((await w.store.getBundle(SB_KEY))!.split!.components).toEqual(nine.slice(0, 8));
+    // Eight entries, one of them typed twice, is fine.
+    await applyReviewAnswer(w.store, SB, { parts: [...nine.slice(0, 7), 'pcl500b'], seen }, T0 + MINUTE);
+    expect((await w.store.getBundle(SB_KEY))!.split!.components).toEqual([...nine.slice(0, 7), 'PCL500B']);
   });
 
   it('refuses an entry made on the question before a scan changed it', async () => {
@@ -418,6 +434,30 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
     expect((await w.store.getBundle(SB_KEY))!.split).toMatchObject({ status: 'needs_review', notes: ['no known RYOBI bundle pattern'] });
     expect(await w.store.getReview(SB)).toEqual(freeText);
+  });
+
+  it('stored parts that fail the rule are ignored: the answer counts only by today\'s rule', async () => {
+    // Stored data is untrusted. An entry that is not a model number, or more than eight: the marker decides nothing.
+    for (const answerParts of [['PCL500B', 'KIT'], ['PCL500B', 'pcl526b'], Array.from({ length: 9 }, () => 'PCL500B')]) {
+      const w = world();
+      const open = await special(w);
+      const stored = { ...open, answer: answerParts.join(','), answerParts, answeredAt: T0 + MINUTE };
+      await w.store.putReview(stored);
+      w.clock = T0 + DAY;
+      await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+      expect((await w.store.getBundle(SB_KEY))!.split, JSON.stringify(answerParts)).toMatchObject({ status: 'needs_review', notes: ['no known RYOBI bundle pattern'] });
+      expect(await w.store.getReview(SB)).toEqual(stored);
+    }
+
+    // Stored parts that are not the answer, on an answer that equals one of the choices: the choice still stands, as before.
+    const chose = world();
+    await ambiguous(chose);
+    await applyReviewAnswer(chose.store, AMBIGUOUS, await shown(chose, AMBIGUOUS, { choice: 1 }), T0 + MINUTE);
+    const answered = (await chose.store.getReview(AMBIGUOUS))!;
+    await chose.store.putReview({ ...answered, answerParts: ['DCKTS650D1P1', 'DCF921B', '-2'] });
+    chose.clock = T0 + DAY;
+    await scan(chose, { settings: DEWALT_ONLY, policy: NO_SEARCH });
+    expect((await chose.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCKTS650D1P1', 'DCF921B'], status: 'resolved', notes: [CHOSEN] });
   });
 });
 
