@@ -189,6 +189,7 @@
 .detail-link:hover {
   text-decoration: underline;
 }
+/* Change and Cancel: underlined at rest, so they read as controls, not as text. */
 .detail-text-btn {
   padding: 0;
   border: 0;
@@ -197,11 +198,11 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-}
-.detail-text-btn:hover,
-.detail-text-btn:focus-visible {
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+.detail-text-btn:hover {
+  text-decoration-thickness: 2px;
 }
 .detail-text-btn:focus-visible {
   outline: 2px solid var(--ink);

@@ -59,7 +59,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun }: 
         disabled={busy || !fresh || fresh.refusal !== null}
         onClick={run}
       >
-        Look up <span className="deal-lookup-cost">{shown !== null ? searches(shown) : `up to ${searches(parts.length)}`}</span>
+        Look up <span className="deal-lookup-cost">{shown !== null ? searches(shown) : `at most ${searches(parts.length)}`}</span>
       </button>
     </div>
   );

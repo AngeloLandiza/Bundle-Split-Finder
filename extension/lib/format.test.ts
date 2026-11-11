@@ -44,6 +44,8 @@ describe('when', () => {
     expect(when(now + 12 * 60_000, now)).toBe('in 12 min');
     expect(when(now - 5 * 60_000, now)).toBe('5 min ago');
     expect(when(now + 20_000, now)).toBe('now');
+    expect(when(now - 20_000, now)).toBe('just now');
+    expect(when(now, now)).toBe('just now');
     expect(when(now + 59 * 60_000, now)).toBe('in 59 min');
   });
   it('an hour or more today: local time only', () => {

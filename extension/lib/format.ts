@@ -27,13 +27,14 @@ const time = (d: Date): string => d.toLocaleTimeString([], { hour: 'numeric', mi
 const dayStart = (d: Date): number => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 
 /**
- * A moment as the owner reads it: relative while it is less than an hour away, otherwise the local
- * time today, "tomorrow" and the time, or the local date and time.
+ * A moment as the owner reads it: relative while it is less than an hour away ("just now" for the last
+ * minute, "now" for the next), otherwise the local time today, "tomorrow" and the time, or the local date
+ * and time.
  */
 export function when(ms: number, now: number): string {
   const diff = ms - now;
   const minutes = Math.round(Math.abs(diff) / 60_000);
-  if (Math.abs(diff) < 60_000) return 'now';
+  if (Math.abs(diff) < 60_000) return diff <= 0 ? 'just now' : 'now';
   if (minutes < 60) return diff > 0 ? `in ${minutes} min` : `${minutes} min ago`;
   const d = new Date(ms);
   const days = Math.round((dayStart(d) - dayStart(new Date(now))) / 86_400_000);

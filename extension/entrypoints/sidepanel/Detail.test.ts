@@ -165,11 +165,11 @@ describe('headline', () => {
     expect(send).toHaveBeenCalledWith({ type: 'quote', action: { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'A1' }, { brand: 'RYOBI', model: 'A2' }] } });
   });
 
-  it('shows up to N searches on Look up until a quote returns', () => {
+  it('shows at most N searches on Look up until a quote returns', () => {
     const send = vi.fn(() => new Promise<Reply>(() => {}));
     const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(row({ estimate: null, section: 'missing_listing', parts: [part('A1', { status: 'waiting', asin: null, grade: null, price: null, availability: 'missing' })] }), { api });
-    expect(screen.getByRole('button', { name: 'Look up up to 1 search' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Look up at most 1 search' })).toBeDisabled();
   });
 
   it('says why when there is no estimate for another reason', () => {

@@ -2,6 +2,7 @@ import { browser } from 'wxt/browser';
 import { when } from '../../lib/format';
 import type { AppState } from '../../lib/messages';
 import { lookupsWaiting } from './dealsModel';
+import { tryAgain } from './hourlyBlock';
 
 const HOUR = 60 * 60_000;
 
@@ -26,7 +27,7 @@ export function limitCopy(state: AppState, now: number): { title: string; text: 
       };
     case 'hourly_limit': {
       const until = (job.finishedAt ?? now) + HOUR;
-      const again = until <= now ? 'Try again now.' : `Try again after ${when(until, now).replace(/^in /, '')}.`;
+      const again = tryAgain(until, now);
       const limit = state.account?.rateLimitPerHour;
       return { title: 'Scan stopped at the hourly limit', text: limit ? `SerpApi allows ${limit} searches an hour. ${again}` : again };
     }

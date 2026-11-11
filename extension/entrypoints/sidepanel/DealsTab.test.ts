@@ -304,6 +304,17 @@ describe('limit notice', () => {
     expect(screen.getByText('Try again now.')).toBeInTheDocument();
   });
 
+  it('says Try again now, never "after now", in the hour\'s last minute', () => {
+    show(report([row('c1')]), state({ lastJob: job({ status: 'stopped', stopReason: 'hourly_limit', finishedAt: NOW - 3_600_000 + 20_000 }) }));
+    expect(screen.getByText('Try again now.')).toBeInTheDocument();
+    expect(screen.queryByText(/after now/)).toBeNull();
+  });
+
+  it('says the list was scanned just now, not "scanned now"', () => {
+    show(report([row('c1')]), state({ lastJob: job({ finishedAt: NOW - 10_000 }) }));
+    expect(screen.getByText('1 bundle · scanned just now')).toBeInTheDocument();
+  });
+
   it('shows the next scan and a real link to the options page', () => {
     show(report([row('c1')]), { ...stopped('run_cap'), nextRunAt: NOW + DAY });
     expect(screen.getByText(/^Next scan tomorrow /)).toBeInTheDocument();
@@ -342,11 +353,11 @@ describe('Look up', () => {
     expect(send).toHaveBeenCalledWith({ type: 'runPaid', action });
   });
 
-  it('says up to N searches until a quote returns, and ties the refusal to the button', async () => {
+  it('says at most N searches until a quote returns, and ties the refusal to the button', async () => {
     const send = vi.fn(() => new Promise<Reply>(() => {}));
     const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(report([waiting]), state(), { api });
-    expect(screen.getByRole('button', { name: 'Look up up to 2 searches' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Look up at most 2 searches' })).toBeDisabled();
     cleanup();
     const sentence = 'The hourly search limit is reached.';
     show(report([waiting]), state(), { api: fakeApi({ searches: 2, refusal: sentence }).api });
@@ -428,7 +439,7 @@ describe('Look up', () => {
     const { api } = fakeApi({ searches: 2, refusal: null });
     const { view } = show(report([waiting]), state({ scanRunning: true }), { api });
     expect(screen.getByText('A scan is running.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Look up up to 2 searches' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Look up at most 2 searches' })).toBeDisabled();
     view.rerender(createElement(DealsTab, props(api, state({ scanRunning: false }))));
     expect(await screen.findByRole('button', { name: 'Look up 2 searches' })).toBeEnabled();
     expect(screen.queryByText('A scan is running.')).toBeNull();

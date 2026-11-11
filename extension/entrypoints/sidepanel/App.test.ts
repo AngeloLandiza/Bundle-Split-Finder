@@ -173,6 +173,19 @@ describe('side panel shell', () => {
     expect(await screen.findByRole('contentinfo')).toHaveTextContent('Scanned 5 min ago');
   });
 
+  it('footer right after a limit stop: Scanned just now', async () => {
+    const now = new Date(2026, 10, 10, 14, 0, 0).getTime();
+    setup(state({ lastJob: stopped('run_cap', now - 10_000) }));
+    expect(await screen.findByRole('contentinfo')).toHaveTextContent('Scanned just now');
+  });
+
+  it('Scan now in the last minute of an hourly limit says Try again now, never "after now"', async () => {
+    const now = new Date(2026, 10, 10, 14, 0, 0).getTime();
+    setup(state({ lastJob: stopped('hourly_limit', now - 60 * 60_000 + 20_000) }));
+    const button = await screen.findByRole('button', { name: 'Scan now' });
+    expect(button).toHaveAttribute('title', 'The hourly search limit is reached. Try again now.');
+  });
+
   it('footer after a user stop still shows the schedule', async () => {
     const now = new Date(2026, 10, 10, 14, 0, 0).getTime();
     setup(state({ lastJob: stopped('user', now - 5 * 60_000) }));
