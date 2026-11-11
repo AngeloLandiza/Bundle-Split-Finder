@@ -514,3 +514,56 @@
 .detail-noestimate .detail-text-btn:disabled {
   color: var(--ink-3);
 }
+
+/* ways to sell: one block per way, in the part-block style (docs/design.md). Same list, same rows. */
+.detail-ways-label {
+  text-transform: uppercase;
+}
+.detail-way {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.detail-way:last-child {
+  border-bottom: 0;
+}
+.detail-way-label {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.detail-way-profit {
+  font-size: 13px;
+}
+.detail-part-money[data-loss='true'] .detail-way-profit {
+  color: var(--loss);
+}
+.detail-way-shown {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.detail-way-line {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.detail-ways-note {
+  margin: 0;
+  padding: 6px 16px 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-2);
+}
+.detail-way .deal-lookup {
+  justify-content: flex-end;
+}
+.detail-way-none {
+  font-family: var(--font-words);
+}

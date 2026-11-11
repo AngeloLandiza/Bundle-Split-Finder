@@ -1,0 +1,181 @@
+// @vitest-environment jsdom
+// Ways to sell in Detail and the Deals tag, on the report a replayed scan really produced for PCL1600K2-P553
+// (core/test/kit-world.ts): recorded Home Depot and Amazon responses, the recorded bundle pages, the owner's
+// answer, and the panel's own Look up. Nothing reaches the network.
+import '@testing-library/jest-dom/vitest';
+import { createElement, useState } from 'react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { PaidAction } from '@core/scan/types';
+import { DEFAULT_SETTINGS } from '@core/settings';
+import { answeredKitWorld, KIT_KEY, kitLookUpItems, kitQuote, kitReport, kitRunPaid, type KitWorld, P553_KEY } from '../../../core/test/kit-world';
+import { profit } from '../../lib/format';
+import type { AppState, PanelReport } from '../../lib/messages';
+import type { WorkerApi } from '../../lib/pageClient';
+import { DealsTab } from './DealsTab';
+import { Detail } from './Detail';
+
+afterEach(cleanup);
+
+const state: AppState = { hasKey: true, account: null, accountCheckedAt: 1, problem: null, settings: DEFAULT_SETTINGS, scanRunning: false, lastJob: null, nextRunAt: null };
+
+/** The worker's answers over the replayed world: the real quote and the real Look up. */
+function workerApi(w: KitWorld, sent: unknown[] = []): WorkerApi {
+  return {
+    send: (async (r: { type: string; action?: PaidAction }) => {
+      sent.push(r);
+      if (r.type === 'quote') return { ok: true, data: await kitQuote(w, r.action!) };
+      if (r.type === 'runPaid') {
+        const error = await kitRunPaid(w, r.action!);
+        return error === null ? { ok: true, data: null } : { ok: false, error };
+      }
+      return { ok: true, data: null };
+    }) as WorkerApi['send'],
+    onStateChanged: () => () => {},
+    download: vi.fn(),
+  };
+}
+
+/** Detail that reads the report again when a paid action ends, as the panel does. */
+function Harness({ w, api, first, bundleKey }: { w: KitWorld; api: WorkerApi; first: PanelReport; bundleKey: string }) {
+  const [report, setReport] = useState(first);
+  return createElement(Detail, {
+    api, report, state, bundleKey, onBack: vi.fn(),
+    onPaidEnd: () => void kitReport(w).then((r) => act(() => setReport(r))),
+  });
+}
+
+async function openP553(opts: { answer?: 'choice' | 'none'; pages?: boolean } = {}) {
+  const w = await answeredKitWorld(opts.answer, opts.pages);
+  const first = await kitReport(w);
+  const sent: unknown[] = [];
+  render(createElement(Harness, { w, api: workerApi(w, sent), first, bundleKey: P553_KEY }));
+  return { w, first, sent };
+}
+
+const UNNAMED = [
+  '18T Carbide Blade', 'Hex Wrench', 'Reciprocating Saw Blade', 'Hex Key', 'Flush Cut Blade', 'Plunge Cut Blade', '6 in. Wood Blade', 'Sanding Pad',
+  '5-Pieces Sandpaper', '18V. Charger', 'Tool Bag',
+];
+
+const region = () => screen.getByRole('region', { name: 'Ways to sell' });
+const blocks = () => within(region()).getAllByRole('listitem');
+const splitBlock = () => blocks().find((b) => b.textContent!.includes('split into its items'))!;
+
+describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 + P553', () => {
+  it('lists both ways, the primary first and marked as the one shown above', async () => {
+    const { first } = await openP553();
+    const row = first.bundles.find((b) => b.key === P553_KEY)!;
+    expect(screen.getByRole('heading', { level: 2, name: 'Ways to sell' })).toBeInTheDocument();
+    const [a, b] = blocks();
+    expect(a).toHaveTextContent(row.options[0]!.label);
+    expect(a).toHaveTextContent('PCL1600K2 sold whole');
+    expect(b).toHaveTextContent('PCL1600K2 split into its items');
+    expect(within(a!).getByText('Shown above')).toBeInTheDocument();
+    expect(within(b!).queryByText('Shown above')).toBeNull();
+    expect(screen.getAllByText('Shown above')).toHaveLength(1);
+  });
+
+  it('says what each leaves: nothing, or the count and the items, and the loose note only on the split', async () => {
+    await openP553();
+    const [whole, split] = blocks();
+    expect(within(whole!).getByText('Leaves nothing')).toBeInTheDocument();
+    expect(within(split!).getByText(`Leaves ${UNNAMED.length} items: ${UNNAMED.join(', ')}`)).toBeInTheDocument();
+    expect(within(whole!).queryByText('Items from a kit have no retail box of their own.')).toBeNull();
+    expect(within(split!).getByText('Items from a kit have no retail box of their own.')).toBeInTheDocument();
+  });
+
+  it("has no figure for either way yet, and offers Look up N items with the worker's own quote", async () => {
+    const { w, first } = await openP553();
+    const row = first.bundles.find((b) => b.key === P553_KEY)!;
+    const [whole, split] = blocks();
+    expect(within(whole!).queryByText(/^[+−]\$/)).toBeNull();
+    expect(row.options[1]!.parts).toHaveLength(9);
+    // The quote is whatever the worker's quotePaid says (it counts what Look up would search for).
+    const quoted = async (o: number) => (await kitQuote(w, { kind: 'lookUp', parts: row.options[o]!.parts.map((p) => ({ brand: 'RYOBI', model: p.model })) })).searches;
+    const cost = (n: number) => (n === 0 ? '· no search' : `· ${n} ${n === 1 ? 'search' : 'searches'}`);
+    expect(await within(split!).findByRole('button', { name: `Look up 9 items ${cost(await quoted(1))}` })).not.toHaveAttribute('aria-disabled');
+    expect(await quoted(0)).toBe(2);
+    expect(await within(whole!).findByRole('button', { name: 'Look up 2 items · 2 searches' })).not.toHaveAttribute('aria-disabled');
+    // The estimate band does not repeat them: the options hold the buttons.
+    expect(screen.getAllByRole('button', { name: /^Look up/ })).toHaveLength(2);
+  });
+
+  it("pressing the whole way's Look up sends exactly its parts and gives it an estimate, with the estimate label under the list", async () => {
+    const user = userEvent.setup();
+    const { sent } = await openP553();
+    await user.click(await within(blocks()[0]!).findByRole('button', { name: 'Look up 2 items · 2 searches' }));
+    expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PCL1600K2' }, { brand: 'RYOBI', model: 'P553' }] } });
+    await waitFor(() => expect(within(region()).queryByRole('button', { name: /Look up 2 items/ })).toBeNull());
+    expect(within(blocks()[0]!).getByText(/^[+−]\$/)).toBeInTheDocument();
+    expect(within(region()).getByText(/^Estimated profit and ROI/)).toBeInTheDocument();
+  });
+
+  it("pressing the split way's Look up sends its nine items, as the worker is asked today", async () => {
+    const user = userEvent.setup();
+    const { first, sent } = await openP553();
+    const items = first.bundles.find((b) => b.key === P553_KEY)!.options[1]!.parts.map((p) => ({ brand: 'RYOBI', model: p.model }));
+    await user.click(await within(splitBlock()).findByRole('button', { name: /^Look up 9 items · / }));
+    expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: items } });
+  });
+
+  it('with the items looked up, the split has an estimate, is the primary and is the one shown above', async () => {
+    const w = await answeredKitWorld();
+    await kitRunPaid(w, { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PCL1600K2' }, { brand: 'RYOBI', model: 'P553' }] });
+    await kitLookUpItems(w, ['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL430', 'PCL660', 'PBP005', 'PBP002']);
+    const first = await kitReport(w);
+    const row = first.bundles.find((b) => b.key === P553_KEY)!;
+    expect(row.options.map((o) => o.id)).toEqual(['split:PCL1600K2', 'whole']);
+    render(createElement(Harness, { w, api: workerApi(w), first, bundleKey: P553_KEY }));
+    const [a, b] = blocks();
+    expect(a).toHaveTextContent('PCL1600K2 split into its items');
+    expect(within(a!).getByText('Shown above')).toBeInTheDocument();
+    expect(within(a!).getByText(/^[+−]\$/)).toHaveTextContent(profit(row.options[0]!.estimate!.profit));
+    expect(within(a!).queryByRole('button', { name: /^Look up/ })).toBeNull();
+    expect(within(a!).getByText(/^Leaves \d+ items: /)).toBeInTheDocument();
+    expect(within(b!).getByText('Leaves 2 items: PCL1600K2, P553')).toBeInTheDocument();
+    // The headline is the primary's: the same figure.
+    expect(screen.getByText(profit(row.estimate!.profit), { selector: '.detail-profit' })).toBeInTheDocument();
+  });
+});
+
+describe('Detail: a kit whose page has not been read', () => {
+  it('says its contents are not known, with one way to sell and no Ways to sell', async () => {
+    const { first } = await openP553({ pages: false });
+    const row = first.bundles.find((b) => b.key === P553_KEY)!;
+    expect(row.kitsNotRead).toEqual(['PCL1600K2']);
+    expect(screen.getByText("PCL1600K2's contents are not known yet: its Home Depot page has not been read.")).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Ways to sell' })).toBeNull();
+    expect(screen.queryByText('Shown above')).toBeNull();
+  });
+});
+
+describe('Detail: a bundle with one way to sell', () => {
+  it('shows no Ways to sell and no not-known sentence', async () => {
+    await openP553({ answer: 'none' });
+    expect(screen.queryByRole('heading', { name: 'Ways to sell' })).toBeNull();
+    expect(screen.queryByText(/contents are not known yet/)).toBeNull();
+  });
+});
+
+describe('Deals: the tag', () => {
+  const rows = (report: PanelReport) => render(createElement(DealsTab, { api: workerApi({} as KitWorld), report, state, sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
+
+  it('tags a bundle with two ways to sell, and only those', async () => {
+    const report = await kitReport(await answeredKitWorld());
+    expect(report.bundles.find((b) => b.key === P553_KEY)!.options).toHaveLength(2);
+    expect(report.bundles.find((b) => b.key === KIT_KEY)!.options).toHaveLength(2);
+    rows(report);
+    const link = document.querySelector(`[data-key="${P553_KEY}"]`) as HTMLElement;
+    expect(within(link).getByText('2 ways to sell')).toBeInTheDocument();
+    expect(screen.getAllByText('2 ways to sell')).toHaveLength(report.bundles.filter((b) => b.options.length > 1).length);
+  });
+
+  it('shows no tag on a bundle with one way to sell', async () => {
+    const report = await kitReport(await answeredKitWorld('none'));
+    rows(report);
+    const link = document.querySelector(`[data-key="${P553_KEY}"]`) as HTMLElement;
+    expect(within(link).queryByText(/ways to sell/)).toBeNull();
+  });
+});

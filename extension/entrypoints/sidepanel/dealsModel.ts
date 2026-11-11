@@ -65,7 +65,12 @@ export function matchState(row: BundleRow): string | null {
  * (a split the owner chose after the scan planned its lookups).
  */
 export function waitingParts(row: BundleRow): { brand: string; model: string }[] {
-  return row.parts.filter(isWaiting).map((p) => ({ brand: row.brand, model: p.model }));
+  return waitingOf(row.brand, row.parts);
+}
+
+/** The same for any list of parts, such as one way to sell's. */
+export function waitingOf(brand: string, parts: PartRow[]): { brand: string; model: string }[] {
+  return parts.filter(isWaiting).map((p) => ({ brand, model: p.model }));
 }
 
 const metric = (row: BundleRow, sort: SortKey): number | null => {

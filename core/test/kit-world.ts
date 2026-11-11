@@ -11,8 +11,9 @@ import { applyReviewAnswer, reviewSignature } from '../src/scan/answers';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { PaidProblem, quotePaid, refusalFor, runPaid, savedAnswers } from '../src/scan/paid';
 import { buildReport } from '../src/scan/report';
-import { runScan } from '../src/scan/runner';
-import { DEFAULT_SCAN_SETTINGS, type PageOutcome, type PaidAction, type Quote, type ReadPages, type ScanSettings } from '../src/scan/types';
+import { applyLookup, matchFromListings, type PartContext, runScan, sendLookup } from '../src/scan/runner';
+import { knownModels } from '../src/scan/split';
+import { DEFAULT_SCAN_SETTINGS, type PageOutcome, partKey, type ScanCounts, type PaidAction, type Quote, type ReadPages, type ScanSettings } from '../src/scan/types';
 import { parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '../src/serpapi/client';
 import * as fx from './fixtures';
@@ -51,10 +52,10 @@ function paidDeps(w: KitWorld, maxPerRun: number) {
 }
 
 /** The brand page, both listing pages with the recorded bundle pages, then the owner's answer: PCL1600K2 + P553 (or `none`). No lookup has run. */
-export async function answeredKitWorld(answer: 'choice' | 'none' = 'choice'): Promise<KitWorld> {
+export async function answeredKitWorld(answer: 'choice' | 'none' = 'choice', pages = true): Promise<KitWorld> {
   const w: KitWorld = { store: new MemoryScanStore(), cache: new MemoryCache(), ledger: [] };
   await runScan({ ...paidDeps(w, 5), store: w.store, settings: BRAND_PAGE, now: () => KIT_T0 });
-  await runScan({ ...paidDeps(w, 2), store: w.store, settings: KIT_SETTINGS, now: () => KIT_T0, readPages: recordedPages });
+  await runScan({ ...paidDeps(w, 2), store: w.store, settings: KIT_SETTINGS, now: () => KIT_T0, readPages: pages ? recordedPages : undefined });
   const question = (await w.store.getReview(QUESTION))!;
   const seen = reviewSignature(question);
   await applyReviewAnswer(w.store, QUESTION, answer === 'choice' ? { choice: 0, seen } : { none: true, seen }, KIT_T0);
@@ -78,5 +79,27 @@ export async function kitRunPaid(w: KitWorld, action: PaidAction): Promise<strin
   } catch (err) {
     if (err instanceof PaidProblem) return err.message;
     throw err;
+  }
+}
+
+const NO_COUNTS: ScanCounts = {
+  pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
+  catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
+};
+
+/**
+ * The kit's items looked up by the scan's own steps (a saved listing first, free; else one replayed search),
+ * as the panel's Look up will run them once it asks for kit items. Until then the panel's own Look up leaves them.
+ */
+export async function kitLookUpItems(w: KitWorld, models: string[]): Promise<void> {
+  const known = await knownModels(w.store);
+  const ctx: PartContext = {
+    ...paidDeps(w, 20), store: w.store, settings: KIT_SETTINGS, now: () => KIT_T0, prefix: 'panel', catalog: known.catalog, job: { counts: { ...NO_COUNTS } },
+  };
+  for (const model of models) {
+    if (await matchFromListings(ctx, known.listings, { key: partKey('RYOBI', model), brand: 'RYOBI', model })) continue;
+    const step = { kind: 'lookup', brand: 'RYOBI', model } as const;
+    const result = await sendLookup(ctx, step);
+    await applyLookup(ctx, step, result.data, result.at);
   }
 }

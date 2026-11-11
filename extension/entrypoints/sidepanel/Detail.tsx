@@ -14,6 +14,7 @@ import { OpenOnHomeDepot } from './OpenOnHomeDepot';
 import { ProgressRow } from './ProgressRow';
 import { ReviewQuestion } from './ReviewQuestion';
 import { Verify } from './DetailVerify';
+import { notReadText, WaysToSell } from './WaysToSell';
 import { usePaidFocus } from './paidFocus';
 import './Detail.css';
 
@@ -467,7 +468,10 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
               <p className="detail-noestimate">
                 No estimate yet: {waiting} {waiting === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup.
               </p>
-              <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts, button) => run({ kind: 'lookUp', parts }, button)} />
+              {/* With more than one way to sell, each holds its own Look up. */}
+              {row.options.length > 1 ? null : (
+                <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts, button) => run({ kind: 'lookUp', parts }, button)} />
+              )}
             </>
           ) : (
             <>
@@ -476,7 +480,14 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
             </>
           )}
           {reopened && !row.answer && !question ? <p className="detail-noestimate">{SETTLED}</p> : null}
+          {row.kitsNotRead.map((m) => (
+            <p className="detail-estimate" key={m}>
+              {notReadText(m)}
+            </p>
+          ))}
         </section>
+
+        {row.options.length > 1 ? <WaysToSell row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} run={run} /> : null}
 
         {!e && waiting === 0 && question ? (
           <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} focusHeading={reopened} onSave={answerQuestion} compact />

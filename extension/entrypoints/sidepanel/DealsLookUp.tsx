@@ -23,6 +23,8 @@ interface LookUpProps {
   onRun: (parts: { brand: string; model: string }[], button: HTMLButtonElement | null) => Promise<string | null>;
   /** True in a Deals row: the button and its refusal are the row's own grid cells, not a wrapper of their own. */
   inRow?: boolean;
+  /** The parts to look up, when they are not the row's own waiting parts: one way to sell's items. Names them "N items". */
+  items?: { brand: string; model: string }[];
 }
 
 /**
@@ -30,12 +32,12 @@ interface LookUpProps {
  * before the click and is asked for again whenever a scan starts or ends, a paid action finishes, the parts
  * change or a new report comes (useQuote). A refused quote disables the button and says why.
  */
-export function LookUp({ row, report, api, scanRunning, version, busy, onRun, inRow = false }: LookUpProps) {
+export function LookUp({ row, report, api, scanRunning, version, busy, onRun, inRow = false, items }: LookUpProps) {
   // A failed run's sentence is kept apart from the quote, so a later quote cannot wipe it. It belongs to the parts it was for.
   const [runError, setRunError] = useState<{ partKey: string; text: string } | null>(null);
   // True from the press until the request ends: this button says so.
   const [running, setRunning] = useState(false);
-  const parts = waitingParts(row);
+  const parts = items ?? waitingParts(row);
   // The row object changes on every report refresh; the quote only when the waiting parts do.
   const partKey = parts.map((p) => p.model).join(',');
   const { fresh, last, problem } = useQuote(api, { kind: 'lookUp', parts }, `${row.brand}|${partKey}`, scanRunning, version, report);
@@ -61,6 +63,8 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
   const cost = shown === null ? `at most ${searches(parts.length)}` : shown === 0 ? 'no search' : searches(shown);
   // The name starts with the visible label (WCAG 2.5.3) and then says what is looked up.
   const visible = `Look up ${shown === 0 ? '· no search' : cost}`;
+  // A way to sell's button says how many items: "Look up 9 items · 8 searches". Its name is its visible text.
+  const itemsLabel = items ? `${items.length} ${items.length === 1 ? 'item' : 'items'}` : null;
   const what = parts.length === 1 ? parts[0]!.model : `${parts.length} parts of ${row.model}`;
 
   const refusalText = refusal ? (
@@ -73,7 +77,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
         ref={buttonRef}
         type="button"
         className="deal-lookup-btn"
-        aria-label={running ? undefined : `${visible}, ${what}`}
+        aria-label={running || itemsLabel ? undefined : `${visible}, ${what}`}
         aria-describedby={refusal ? refusalId : undefined}
         aria-disabled={blocked ? 'true' : undefined}
         onClick={run}
@@ -82,7 +86,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
           'Looking up…'
         ) : (
           <>
-            Look up <span className="deal-lookup-cost">{shown === 0 ? '· no search' : cost}</span>
+            Look up{itemsLabel ? ` ${itemsLabel}` : ''} <span className="deal-lookup-cost">{shown === 0 ? '· no search' : `${itemsLabel ? '· ' : ''}${cost}`}</span>
           </>
         )}
       </button>

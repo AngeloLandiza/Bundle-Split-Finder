@@ -83,6 +83,7 @@ function Row({ row, report, asked, api, scanRunning, version, busy, onRun, onOpe
               {row.price !== null ? <span className="deal-fig deal-price">{money(row.price)}</span> : null}
               {row.percentOff !== null ? <span>{Math.round(row.percentOff)}% off</span> : null}
               {state ? <span>{state}</span> : null}
+              {row.options.length > 1 ? <span>{row.options.length} ways to sell</span> : null}
             </div>
           </div>
         </div>
