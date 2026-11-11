@@ -157,14 +157,15 @@ const isBundle = (item: ReviewItem) => (part: string): boolean => bare(part) ===
 /**
  * The parts the owner typed for `item`, as model numbers: each trimmed and upper-cased, in the order
  * typed. A part typed twice is kept twice: a split lists a part once per unit, so it means two of it.
- * The entries must pass validParts, and none may be the bundle's own model number (Ruling 43);
- * anything else is refused. Nothing is guessed from what was typed.
+ * None may be the bundle's own model number (Ruling 43), which is checked first, so a hyphen
+ * bundle's own model gets that sentence rather than the format one; then the entries must pass
+ * validParts. Anything else is refused. Nothing is guessed from what was typed.
  */
 function enteredParts(raw: unknown, item: ReviewItem): string[] {
   if (!Array.isArray(raw) || !raw.every((p) => typeof p === 'string')) throw new AnswerRefused(INVALID_PARTS);
   const parts = raw.map((p: string) => p.trim().toUpperCase());
-  if (!validParts(parts)) throw new AnswerRefused(INVALID_PARTS);
   if (parts.some(isBundle(item))) throw new AnswerRefused(SELF_PART);
+  if (!validParts(parts)) throw new AnswerRefused(INVALID_PARTS);
   return parts;
 }
 

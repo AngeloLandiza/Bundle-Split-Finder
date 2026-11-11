@@ -409,7 +409,7 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     expect((await w.store.getReview(SB))!.answer).toBeNull();
   });
 
-  it('refuses a hyphen bundle\'s own model number typed without its hyphen, typed or stored (Ruling 43)', async () => {
+  it('refuses a hyphen bundle\'s own model number typed with or without its hyphen, typed or stored (Ruling 43)', async () => {
     const P553 = 'split:homedepot:320243741';
     const w = world();
     await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
@@ -418,6 +418,15 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     const before = await snapshot(w);
     for (const parts of [['PCL1600K2P553'], ['pcl1600k2p553 '], ['P553', 'PCL1600K2P553']]) {
       await expect(applyReviewAnswer(w.store, P553, { parts, seen: reviewSignature(open) }, T0 + MINUTE), JSON.stringify(parts)).rejects.toThrow(SELF);
+    }
+    expect(await snapshot(w)).toEqual(before);
+
+    // Typed with its hyphen, which the format rule alone refuses, it still gets this sentence (QA 3, N2).
+    const PBP003 = 'split:homedepot:341644756';
+    const own = (await w.store.getReview(PBP003))!;
+    expect(own.model).toBe('PCL1600K2-PBP003');
+    for (const parts of [['PCL1600K2-PBP003'], [' pcl1600k2-pbp003'], ['PCL1600K2', 'PCL1600K2-PBP003']]) {
+      await expect(applyReviewAnswer(w.store, PBP003, { parts, seen: reviewSignature(own) }, T0 + MINUTE), JSON.stringify(parts)).rejects.toThrow(SELF);
     }
     expect(await snapshot(w)).toEqual(before);
 
