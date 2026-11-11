@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { replayRecorded } from '../../scripts/replay';
-import { csvLine, REVIEW_COLUMNS, reviewCsv, RUN_COLUMNS, runCsv } from '../src/scan/csv';
+import { bundlesCsv, csvLine, REVIEW_COLUMNS, reviewCsv, RUN_COLUMNS, runCsv } from '../src/scan/csv';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
 import { runScan } from '../src/scan/runner';
@@ -68,6 +68,13 @@ describe('buildReport', () => {
       expect(p.image!.length).toBeGreaterThan(0);
       expect(p.image).toBe((await store.getListing(p.asin!))!.image);
     }
+  });
+
+  it('writes one bundle as the run file does: the same header and the same row', async () => {
+    const report = await buildReport(await scanWorld(), RATCHET);
+    const lines = runCsv(report).split('\n');
+    expect(bundlesCsv(report.bundles)).toBe(runCsv(report));
+    expect(bundlesCsv([report.bundles[1]!])).toBe(`${lines[0]}\n${lines[2]}\n`);
   });
 
   it("shows the title of each part's saved listing, and none when the listing is not saved", async () => {

@@ -44,7 +44,12 @@ function runRow(b: BundleRow): (string | number | null)[] {
 }
 
 export function runCsv(report: ScanReport): string {
-  return [csvLine([...RUN_COLUMNS]), ...report.bundles.map((b) => csvLine(runRow(b)))].join('\n') + '\n';
+  return bundlesCsv(report.bundles);
+}
+
+/** The run file's header and these bundles, with the same columns as runCsv. */
+export function bundlesCsv(bundles: BundleRow[]): string {
+  return [csvLine([...RUN_COLUMNS]), ...bundles.map((b) => csvLine(runRow(b)))].join('\n') + '\n';
 }
 
 function reviewRow(r: ReviewItem): (string | number | null)[] {
