@@ -10,6 +10,18 @@
 
 **Spec:** `docs/design.md` (Side panel, Behaviour, Words, Do not), mockups `Main`, `Detail`, `FirstRun`, `Limit` in `docs/design/mockups/`, `docs/v1-plan.md` ("Direction update", acceptance criteria 1, 9), `docs/decisions.md`, `CLAUDE.md`.
 
+## Where this stands (step 5 complete, 2026-11-10)
+
+Branch `step-5-side-panel`, not merged. Gate run by the controller on the final commit: typecheck clean, 448 core and 372 extension tests, 30 end-to-end tests. Every screen passed `ui-reviewer` at 360 and 480px: shell, Deals, Detail, Review, first run and the error notice. A final whole-branch review on Opus found five problems that only show when worker and panel run together (progress row, offline at start, unmatched parts, stale quotes, a match answer's price); all were fixed and re-checked. No searches spent; 14 of 250 used this month.
+
+Owner decisions 1 to 6 above were approved on Nov 10. Rulings made during the build are in `docs/decisions.md` (Design, Matching and splitting, Pipeline, Extension).
+
+Who did what: Task 1 Sonnet; 2 Opus; 3 Opus; 4 to 8 Sonnet; small test fixes Haiku; the final fix wave Opus. Reviews: Opus for 2, 3 and the whole branch; Sonnet for 1 and 4 to 8; `ui-reviewer` (Opus) per screen.
+
+Known, left as polish: "Try again now." can show beside a still-disabled Scan now in the hourly block's last minute; an offline refusal under Look up or Verify shows the raw network sentence; a scan message that joins several sentences, and the account check's own HTTP wording, are not put into words. No recorded response yields a match question, so that screen is covered by unit tests only. Open question for the owner: should Scan now show its count?
+
+Next: step 6, the chip on Home Depot product pages and the This page tab.
+
 ## Decisions this plan asks the owner for (recommended answers)
 
 1. **Deals are shown in sections**, as decided on Nov 10: Confirmed, Review: inactive listing, Review: missing listing, Contents not known. Section labels follow the Limit mockup (`READY · 3`), rows follow the Main mockup. The Main mockup predates the sections.
