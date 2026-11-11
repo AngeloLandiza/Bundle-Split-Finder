@@ -70,7 +70,7 @@ export function FirstRun({ state, openSettings }: { state: AppState; api: Worker
           <path d="M8 7.25v3.5M8 5.1v.1" />
         </svg>
         <span>
-          Reading Home Depot pages is free: Split Finder reads them in your browser and only uses a search to look up a part on Amazon.
+          Searches go to Home Depot and Amazon listing pages and to part lookups. Each bundle's own page is read in your browser, free.
         </span>
       </p>
     </div>

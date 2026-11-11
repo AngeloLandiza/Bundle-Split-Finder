@@ -170,7 +170,7 @@ describe('FirstRun', () => {
     expect(screen.getByText('Starts with RYOBI, scanning only when you click.')).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
     expect(
-      screen.getByText('Reading Home Depot pages is free: Split Finder reads them in your browser and only uses a search to look up a part on Amazon.'),
+      screen.getByText('Searches go to Home Depot and Amazon listing pages and to part lookups. Each bundle\'s own page is read in your browser, free.'),
     ).toBeInTheDocument();
     expect(screen.queryByText(/reads the page you are on/)).toBeNull();
   });
