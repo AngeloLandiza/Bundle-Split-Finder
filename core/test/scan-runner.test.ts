@@ -1172,7 +1172,8 @@ describe('runScan: a failed lookup or refresh is set aside (step 3 rule 2)', () 
     const job = await scan(w, { fetchFn: amazon.fetchFn });
     expect(job).toMatchObject({ status: 'stopped', stopReason: null, phase: 'finish', searchesUsed: 2, queue: [], deferred: [LOOKUP_01B_STEP] });
     expect(job.stopMessage).toMatch(/HTTP 500/);
-    expect(job.stopMessage).toBe('SerpApi returned HTTP 500.');
+    // Ruling 49: the sentence names what failed.
+    expect(job.stopMessage).toBe('The lookup of PBLRC01B failed: SerpApi returned HTTP 500.');
     // Exactly one request for each part.
     expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_25B]);
@@ -1203,7 +1204,7 @@ describe('runScan: a failed lookup or refresh is set aside (step 3 rule 2)', () 
     const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500, 'RYOBI PCL1201K2': 503 });
     const job = await scan(w, { settings, fetchFn: amazon.fetchFn });
     expect(amazon.sent).toEqual(['DEWALT', 'RYOBI', 'RYOBI PBLRC01B', 'RYOBI PBLRC25B', 'RYOBI PCL1201K2']);
-    expect(job).toMatchObject({ status: 'stopped', stopReason: null, stopMessage: 'SerpApi returned HTTP 500.', searchesUsed: 6, queue: [] });
+    expect(job).toMatchObject({ status: 'stopped', stopReason: null, stopMessage: 'The lookup of PBLRC01B failed: SerpApi returned HTTP 500.', searchesUsed: 6, queue: [] });
     expect(job.deferred).toEqual([LOOKUP_01B_STEP, { kind: 'lookup', brand: 'RYOBI', model: 'PCL1201K2' }]);
     expect(job.counts).toMatchObject({ catalogPages: 2, pagesFetched: 3, lookupsDone: 1 });
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched' });
@@ -1218,7 +1219,7 @@ describe('runScan: a failed lookup or refresh is set aside (step 3 rule 2)', () 
     w.clock = later;
     const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500 });
     const job = await scan(w, { fetchFn: amazon.fetchFn });
-    expect(job).toMatchObject({ status: 'stopped', stopReason: null, stopMessage: 'SerpApi returned HTTP 500.', searchesUsed: 2, queue: [] });
+    expect(job).toMatchObject({ status: 'stopped', stopReason: null, stopMessage: 'The price check of PBLRC01B failed: SerpApi returned HTTP 500.', searchesUsed: 2, queue: [] });
     expect(job.deferred).toEqual([{ kind: 'refresh', brand: 'RYOBI', model: 'PBLRC01B', asin: 'B0B6Z2ZGVK' }]);
     expect(job.counts).toMatchObject({ lookupsDone: 0, refreshesDone: 1 });
     expect(w.ledger.slice(3)).toEqual(['scan:listing:ryobi extended reach ratchet:p1', 'scan:refresh:PBLRC25B']);
@@ -1240,8 +1241,8 @@ describe('runScan: a failed lookup or refresh is set aside (step 3 rule 2)', () 
     const job = await scan(w, { settings: { ...RATCHET, queries: [], catalogPagesPerScan: 1 }, fetchFn: amazon.fetchFn });
     expect(amazon.sent).toEqual(['DEWALT', 'RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
     expect(job).toMatchObject({ status: 'stopped', stopReason: null, searchesUsed: 1, queue: [], deferred: [LOOKUP_01B_STEP] });
-    // The brand page's sentence, then the lookup's message.
-    expect(job.stopMessage).toBe('The DEWALT Amazon page 1 was skipped: SerpApi returned HTTP 500. SerpApi returned HTTP 500.');
+    // The brand page's sentence, then the lookup's.
+    expect(job.stopMessage).toBe('The DEWALT Amazon page 1 was skipped: SerpApi returned HTTP 500. The lookup of PBLRC01B failed: SerpApi returned HTTP 500.');
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV' });
     expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting', waitingSince: T0 });
   });

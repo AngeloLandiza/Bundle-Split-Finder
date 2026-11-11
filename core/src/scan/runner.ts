@@ -295,7 +295,9 @@ function stopFor(err: unknown): Stop {
 async function setAside(run: Run, step: Lookup | Refresh, message: string): Promise<void> {
   const { job } = run;
   if (step.kind === 'lookup') await markWaiting(run, step);
-  if (run.setAside === 0) job.stopMessage = job.stopMessage === null ? message : `${job.stopMessage} ${message}`;
+  // Ruling 49: the sentence names what failed, so it reads true beside the other sentences here.
+  const sentence = `${step.kind === 'lookup' ? 'The lookup' : 'The price check'} of ${step.model} failed: ${message}`;
+  if (run.setAside === 0) job.stopMessage = job.stopMessage === null ? sentence : `${job.stopMessage} ${sentence}`;
   job.queue.shift();
   job.deferred.splice(run.setAside, 0, step);
   run.setAside += 1;

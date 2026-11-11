@@ -111,7 +111,7 @@ describe('npm run scan', () => {
     expect(logs).not.toContain('Scan done');
     const status = logs.indexOf('Scan finished; some steps were set aside');
     expect(status).toBeGreaterThanOrEqual(0);
-    expect(logs[status + 1]).toBe('Note: SerpApi returned HTTP 500.');
+    expect(logs[status + 1]).toBe('Note: The lookup of PBLRC01B failed: SerpApi returned HTTP 500.');
     expect(logs.filter((l) => l.startsWith('Scan '))).toEqual(['Scan finished; some steps were set aside']);
   });
 
