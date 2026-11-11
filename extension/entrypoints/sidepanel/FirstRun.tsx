@@ -1,4 +1,4 @@
-import type { Schedule } from '../../../core/src/schedule';
+import type { Schedule } from '@core/schedule';
 import type { AppState } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import './FirstRun.css';

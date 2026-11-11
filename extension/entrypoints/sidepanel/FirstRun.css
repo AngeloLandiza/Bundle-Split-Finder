@@ -86,6 +86,11 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--link);
+  text-decoration: none;
+}
+.firstrun-link:hover,
+.firstrun-link:focus-visible {
+  text-decoration: underline;
 }
 .firstrun-link:focus-visible,
 .firstrun-actions .btn:focus-visible {
