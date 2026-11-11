@@ -1,8 +1,10 @@
 // The scan runner: a few pages of the brands' own Amazon listings, then Home Depot listing
 // pages, then the bundles' own pages (free, never a search), then splits (free), then one
 // Amazon lookup per new part that no saved listing answers and a refresh per stale price.
-// The lookup step, matching from saved listings and the match question are shared with the side
-// panel's Look up and Verify (paid.ts), through PartContext. "Rule n" refers to the step 2 plan, Task 4 ("The scan runner"); "2c rule n" to the step 2c
+// The lookup step, matching from saved listings and the match question are shared with the
+// side panel's Look up and Verify (paid.ts), through PartContext.
+//
+// "Rule n" refers to the step 2 plan, Task 4 ("The scan runner"); "2c rule n" to the step 2c
 // plan, Task 2 ("The catalog phase"); "3 rule n" to the step 3 plan, Task 3 ("Runner: stop on
 // request, and one failed lookup does not end a scan"); "Pn" to the step 4 plan, Task 4
 // ("Runner reads pages before the split").
@@ -54,24 +56,20 @@ export interface PartContext {
   now: () => number;
   /** First part of every ledger label. */
   prefix: string;
-  /** The models the split knew (knownModels). */
+  /**
+   * The models the splitter and wantedFor know (2c rule 4, knownModels). A scan builds it when the
+   * listing queue is empty, or when a continued job starts in the parts phase.
+   */
   catalog: Catalog;
   /** Counted as a scan counts. The panel's are not kept. */
   job: Pick<ScanJob, 'counts'>;
 }
 
 interface Run extends PartContext {
-  client: SearchClient;
   budget: BudgetView;
-  store: ScanStore;
-  settings: ScanSettings;
-  now: () => number;
-  prefix: string;
   shouldStop: () => boolean;
   readPages: ReadPages | null;
   job: ScanJob;
-  /** The models the splitter and wantedFor know (2c rule 4). Built when the listing queue is empty, or when a continued job starts in the parts phase. */
-  catalog: Catalog;
   /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
   /** 3 rule 2: the last lookup or refresh of this run failed, and no paid step has succeeded since. */
@@ -303,7 +301,9 @@ export function sendLookup(ctx: PartContext, step: LookupStep): Promise<SearchRe
   return ctx.client.search(amazonPart(ctx, step), { label: `${ctx.prefix}:lookup:${step.model}` });
 }
 
-const amazonPart = (ctx: PartContext, step: Lookup | Refresh) => ({ engine: 'amazon', k: `${step.brand} ${step.model}`, amazon_domain: ctx.settings.amazonDomain });
+const amazonPart = (ctx: PartContext, step: Lookup | Refresh) => ({
+  engine: 'amazon', k: `${step.brand} ${step.model}`, amazon_domain: ctx.settings.amazonDomain,
+});
 
 /** Rule 3 and 2c rule 2: what a step's response changes in the store. */
 /**
@@ -421,7 +421,8 @@ export async function applyLookup(ctx: PartContext, step: LookupStep, data: unkn
       const c = firstWith(candidates, a)!;
       return { asin: a, title: c.title, price: c.price ?? null, reviews: c.reviews ?? null, reasons: picked.review.find((g) => g.asin === a)!.reasons };
     });
-    await openMatchReview(ctx, { key, brand: step.brand, model: step.model }, `${listed.length} listing(s) show the model number, but the brand is not confirmed`, listed, now);
+    const reason = `${listed.length} listing(s) show the model number, but the brand is not confirmed`;
+    await openMatchReview(ctx, { key, brand: step.brand, model: step.model }, reason, listed, now);
   } else {
     match = { ...base, status: 'none', asin: null, grade: null, alternatives: [] };
   }
