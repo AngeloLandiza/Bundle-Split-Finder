@@ -12,7 +12,7 @@
 
 import { type Catalog, catalogEntry } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
-import { type Candidate, modelForms, pick, type Picked } from '../match';
+import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, maySparePart, modelForms, pick, type Picked } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
@@ -632,17 +632,47 @@ export async function applyLookup(ctx: PartContext, step: LookupStep, data: unkn
     job.counts.partsMatched += 1;
   } else if (picked.review.length > 0) {
     match = { ...base, status: 'review', asin: null, grade: null, alternatives: [] };
-    // One candidate per ASIN: a search can list the same ASIN twice.
-    const listed = unique(picked.review.map((g) => g.asin)).map((a) => {
-      const c = firstWith(candidates, a)!;
-      return { asin: a, title: c.title, price: c.price ?? null, reviews: c.reviews ?? null, reasons: picked.review.find((g) => g.asin === a)!.reasons, seenAt: at };
-    });
-    const reason = `${listed.length} listing(s) show the model number, but the brand is not confirmed`;
+    const { reason, listed } = matchQuestion(picked.review, candidates, at);
     await openMatchReview(ctx, { key, brand: step.brand, model: step.model }, reason, listed, now);
   } else {
     match = { ...base, status: 'none', asin: null, grade: null, alternatives: [] };
   }
   await store.putMatch(match);
+}
+
+/** Ruling 71: a match question offers at most this many listings. */
+export const MATCH_CHOICES = 5;
+
+/** Ruling 71: the note when a listing the question offers says "Replacement" or "OEM" (maySparePart). */
+export const SPARE_PART_NOTE = 'title says Replacement or OEM, which often marks a spare part';
+
+const GRADE_RANK: Record<Grade, number> = { exact: 0, strong: 1, probable: 2, review: 3, reject: 4 };
+
+/**
+ * Ruling 71: the listings a lookup's match question offers, and its reason. One candidate per ASIN (a
+ * search can list the same ASIN twice), best first: grade, then most reviews, then a price shown; then
+ * as the response listed them. At most MATCH_CHOICES are kept. The reason's notes, joined by "; ":
+ * how many of all the listings show the model with the brand not confirmed; SPARE_PART_NOTE when a
+ * listing kept says "Replacement" or "OEM"; and how many were left out.
+ */
+export function matchQuestion(review: Graded[], candidates: Candidate[], at: number): { reason: string; listed: ReviewCandidate[] } {
+  const all = unique(review.map((g) => g.asin)).map((asin) => {
+    const c = firstWith(candidates, asin)!;
+    const g = review.find((x) => x.asin === asin)!;
+    return { grade: g.grade, candidate: { asin, title: c.title, price: c.price ?? null, reviews: c.reviews ?? null, reasons: g.reasons, seenAt: at } };
+  });
+  // Array.prototype.sort is stable: ties keep the response's order.
+  all.sort((a, b) =>
+    GRADE_RANK[a.grade] - GRADE_RANK[b.grade]
+    || (b.candidate.reviews ?? 0) - (a.candidate.reviews ?? 0)
+    || Number(a.candidate.price === null) - Number(b.candidate.price === null));
+  const listed = all.slice(0, MATCH_CHOICES).map((x) => x.candidate);
+  const notes: string[] = [];
+  const unconfirmed = all.filter((x) => x.candidate.reasons.includes(BRAND_NOT_CONFIRMED)).length;
+  if (unconfirmed > 0) notes.push(`${unconfirmed} listing(s) show the model number, but the brand is not confirmed`);
+  if (listed.some((c) => maySparePart(c.title))) notes.push(SPARE_PART_NOTE);
+  if (all.length > listed.length) notes.push(`${all.length - listed.length} more listing(s) not shown`);
+  return { reason: notes.join('; '), listed };
 }
 
 /**

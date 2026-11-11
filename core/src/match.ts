@@ -39,6 +39,9 @@ const KIT_WORDS = /\b(kit|combo|bundle|with battery|with charger|w\/ battery|and
 
 export type Grade = 'exact' | 'strong' | 'probable' | 'review' | 'reject';
 
+/** The reason a listing showing the model is review when nothing confirms its brand. */
+export const BRAND_NOT_CONFIRMED = 'model number in the title, brand not confirmed';
+
 export interface Candidate {
   asin: string;
   title: string;
@@ -112,6 +115,9 @@ export function titleHasModel(brand: string, title: string, model: string): bool
   return modelForms(brand, model).some((f) => hasModelToken(title, f));
 }
 
+/** Ruling 71: the title says "OEM" or "Replacement", which often marks a spare part (MAYBE_SPARE_PART). */
+export const maySparePart = (title: string): boolean => MAYBE_SPARE_PART.test(title);
+
 export function grade(want: Wanted, cand: Candidate): Graded {
   const packaging = BULK.test(cand.title) ? 'bulk' : 'retail';
   const out = (g: Grade, ...reasons: string[]): Graded => ({ asin: cand.asin, grade: g, packaging, reasons });
@@ -145,7 +151,7 @@ export function grade(want: Wanted, cand: Candidate): Graded {
     const brandConfirmed =
       (!!cand.brand && cand.brand.trim().toUpperCase() === brand) ||
       cand.title.trim().toUpperCase().startsWith(brand);
-    if (!brandConfirmed) return out('review', 'model number in the title, brand not confirmed');
+    if (!brandConfirmed) return out('review', BRAND_NOT_CONFIRMED);
     if (MAYBE_SPARE_PART.test(cand.title)) {
       return out('review', 'brand and model number in the title, but the title may name a spare part (OEM or Replacement)');
     }

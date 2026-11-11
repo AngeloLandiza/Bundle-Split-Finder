@@ -881,10 +881,13 @@ describe('reopenReviewAnswer: the owner can change a split answer (Ruling 42)', 
 // ---------------------------------------------------------------- match questions
 
 const MATCH = 'match:DEWALT:DCF891B';
+/** B0HQGDLWH9's place in the DCF891B question (unconfirmed). */
+const GEARCASE = 4;
 
 /**
  * The bundle DCK940D2WCF891B and the recorded DCF891B search without its one confirmed listing
- * (as in scan-runner's rule 6 test): the part's question lists 7 unconfirmed listings.
+ * (as in scan-runner's rule 6 test): 7 unconfirmed listings, of which the part's question shows 5,
+ * most reviews first (Ruling 71). The gearcase B0HQGDLWH9 ($100.83, no reviews) is the fifth.
  */
 async function unconfirmed() {
   const w = world();
@@ -905,7 +908,8 @@ async function unconfirmed() {
   await scan(w, { settings: DEWALT_ONLY, fetchFn });
   const item = (await w.store.getReview(MATCH))!;
   expect(item).toMatchObject({ kind: 'match', answer: null, choices: [] });
-  expect(item.candidates).toHaveLength(7);
+  expect(item.candidates.map((c) => c.asin)).toEqual(['B0DXK936XN', 'B0FB3N5CN2', 'B0G4QZ6X8T', 'B0FMXY44N7', 'B0HQGDLWH9']);
+  expect(item.candidates[GEARCASE]!.asin).toBe('B0HQGDLWH9');
   expect(w.ledger).toEqual(['scan:lookup:DCF891B']);
   return { w, fetchFn, item };
 }
@@ -917,7 +921,7 @@ const userMatch = (over: object) => ({
 describe('applyReviewAnswer: a match question', () => {
   it('a choice saves that listing as the user\'s match, and a later scan keeps it and looks nothing up', async () => {
     const { w, fetchFn, item } = await unconfirmed();
-    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 0 }), T0 + MINUTE);
+    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: GEARCASE }), T0 + MINUTE);
     const decided = userMatch({ status: 'matched', asin: 'B0HQGDLWH9' });
     expect(await w.store.getMatch('DEWALT:DCF891B')).toEqual(decided);
     expect(await w.store.getReview(MATCH)).toEqual({ ...item, answer: 'B0HQGDLWH9', answeredAt: T0 + MINUTE });
@@ -935,8 +939,8 @@ describe('applyReviewAnswer: a match question', () => {
   it('a choice saves the listing\'s price as the lookup saw it, so the part is active in the report at once', async () => {
     const { w, item } = await unconfirmed();
     // The question keeps when the lookup's response showed each listing.
-    expect(item.candidates[0]).toMatchObject({ asin: 'B0HQGDLWH9', price: 100.83, seenAt: T0 });
-    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 0 }), T0 + MINUTE);
+    expect(item.candidates[GEARCASE]).toMatchObject({ asin: 'B0HQGDLWH9', price: 100.83, seenAt: T0 });
+    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: GEARCASE }), T0 + MINUTE);
     expect(await w.store.getPrice('B0HQGDLWH9')).toEqual({ asin: 'B0HQGDLWH9', price: 100.83, reviews: null, seenAt: T0, checkedAt: T0 });
     const row = (await buildReport(w.store, DEWALT_ONLY)).bundles.find((b) => b.key === 'homedepot:seeded')!;
     expect(row.parts.find((p) => p.model === 'DCF891B')).toMatchObject({ availability: 'active', asin: 'B0HQGDLWH9', price: 100.83, priceSeenAt: T0 });
@@ -946,7 +950,7 @@ describe('applyReviewAnswer: a match question', () => {
     const { w, item } = await unconfirmed();
     const old = { ...item, candidates: item.candidates.map(({ seenAt: _seenAt, ...c }) => c) } as unknown as ReviewItem;
     await w.store.putReview(old);
-    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 0 }), T0 + MINUTE);
+    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: GEARCASE }), T0 + MINUTE);
     expect(await w.store.getMatch('DEWALT:DCF891B')).toMatchObject({ status: 'matched', asin: 'B0HQGDLWH9', decidedBy: 'user' });
     expect(await w.store.getPrice('B0HQGDLWH9')).toBeUndefined();
     const row = (await buildReport(w.store, DEWALT_ONLY)).bundles.find((b) => b.key === 'homedepot:seeded')!;
@@ -957,7 +961,7 @@ describe('applyReviewAnswer: a match question', () => {
     const { w } = await unconfirmed();
     const newer = { asin: 'B0HQGDLWH9', price: 97.5, reviews: 3, seenAt: T0 + 5 * MINUTE, checkedAt: T0 + 5 * MINUTE };
     await w.store.putPrice(newer);
-    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 0 }), T0 + 10 * MINUTE);
+    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: GEARCASE }), T0 + 10 * MINUTE);
     expect(await w.store.getPrice('B0HQGDLWH9')).toEqual(newer);
   });
 
@@ -978,7 +982,7 @@ describe('applyReviewAnswer: a match question', () => {
   it('refuses a choice beyond the listings shown', async () => {
     const { w } = await unconfirmed();
     const before = await w.store.getMatch('DEWALT:DCF891B');
-    await expect(applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 7 }), T0 + MINUTE)).rejects.toThrow(NOT_SHOWN);
+    await expect(applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 5 }), T0 + MINUTE)).rejects.toThrow(NOT_SHOWN);
     expect(await w.store.getMatch('DEWALT:DCF891B')).toEqual(before);
     expect((await w.store.getReview(MATCH))!.answer).toBeNull();
   });
@@ -1108,7 +1112,7 @@ describe('the report leaves out a match question no current split holds (final r
     expect(w.ledger).toEqual(['scan:lookup:DCF891B']);
     const question = (await w.store.getReview(MATCH))!;
     expect(question).toMatchObject({ kind: 'match', subject: 'DEWALT:DCF891B', answer: null });
-    expect(question.candidates).toHaveLength(7);
+    expect(question.candidates).toHaveLength(5);
     expect(await asked()).toEqual([MATCH]);
 
     // Change: the bundle is back in Contents not known, so no bundle holds DCF891B.

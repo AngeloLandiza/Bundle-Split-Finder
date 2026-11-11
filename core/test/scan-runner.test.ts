@@ -731,10 +731,13 @@ describe('runScan: a lookup with no certain listing (rule 6)', () => {
     const item = await w.store.getReview('match:DEWALT:DCF891B');
     expect(item).toMatchObject({
       kind: 'match', subject: 'DEWALT:DCF891B', brand: 'DEWALT', model: 'DCF891B', title: 'DCF891B (catalog entry seeded for this test)',
-      reason: '7 listing(s) show the model number, but the brand is not confirmed', openedAt: T0, answer: null, answeredAt: null,
+      reason: '7 listing(s) show the model number, but the brand is not confirmed; 2 more listing(s) not shown', openedAt: T0, answer: null, answeredAt: null,
     });
-    expect(item!.candidates.map((c) => c.asin)).toEqual(['B0HQGDLWH9', 'B0HQG2WS5V', 'B0DXK936XN', 'B0FB3N5CN2', 'B0HQNL1PKM', 'B0FMXY44N7', 'B0G4QZ6X8T']);
-    expect(item!.candidates[0]).toEqual({
+    // Ruling 71: at most 5, most reviews first (13, 3, 2, 1), then as the response listed them; the two cut
+    // are B0HQG2WS5V and B0HQNL1PKM, with no reviews and later in the response than B0HQGDLWH9.
+    expect(item!.candidates.map((c) => c.asin)).toEqual(['B0DXK936XN', 'B0FB3N5CN2', 'B0G4QZ6X8T', 'B0FMXY44N7', 'B0HQGDLWH9']);
+    expect(item!.candidates.map((c) => c.reviews)).toEqual([13, 3, 2, 1, null]);
+    expect(item!.candidates[4]).toEqual({
       asin: 'B0HQGDLWH9', title: 'NA020584 Impact Wrench Gearcase for DeWalt DCF891N, DCF891B', price: 100.83, reviews: null,
       reasons: ['model number in the title, brand not confirmed'], seenAt: T0,
     });

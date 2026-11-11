@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Candidate, grade, modelForms, pick, sameModel, titleHasModel } from '../src/match';
+import { type Candidate, grade, type Graded, modelForms, pick, sameModel, titleHasModel } from '../src/match';
 import { candidatesFor, listingFrom } from '../src/scan/listings';
+import { MATCH_CHOICES, matchQuestion, SPARE_PART_NOTE } from '../src/scan/runner';
 import type { ListingRecord } from '../src/scan/types';
 import { parseAmazonSearch } from '../src/serpapi/parsers';
 import { recorded, type RecordedName } from './recorded';
 
 // Ruling 70: a RYOBI part written without its tool-only B (as a kit's Home Depot page writes it,
-// "(1) PCL206 …") matches its Amazon listing, which writes the B (PCL206B). Every title here is a
-// recorded Amazon row; nothing reaches the network.
+// "(1) PCL206 …") matches its Amazon listing, which writes the B (PCL206B). Ruling 71: a match question
+// offers at most five listings, best first. Every title here is a recorded Amazon row unless it says
+// hand-made; nothing reaches the network.
 
 const rows = (name: RecordedName): Candidate[] => parseAmazonSearch(recorded(name));
 const row = (name: RecordedName, asin: string): Candidate => {
@@ -83,5 +85,54 @@ describe('Ruling 70: a lookup\'s results, on the recordings', () => {
       expect(pick({ brand: 'RYOBI', model }, cands).chosen).toMatchObject({ asin, grade: 'probable' });
     }
     expect(candidatesFor('DEWALT', 'PCL235', saved)).toEqual([]);
+  });
+});
+
+describe('Ruling 71: a match question\'s listings', () => {
+  it('P553: 22 listings, 5 shown, most reviews first, with the spare-part note and the cut count', () => {
+    const cands = rows('amazon-search-P553');
+    const { reason, listed } = matchQuestion(pick({ brand: 'RYOBI', model: 'P553' }, cands).review, cands, 7);
+    expect(listed).toHaveLength(MATCH_CHOICES);
+    expect(listed.map((c) => c.asin)).toEqual(['B0DXK73C59', 'B0GY3L2LFP', 'B0HP6GFW3H', 'B0HL81J9GN', 'B0HN1FZ74T']);
+    // B0DXK73C59 is the only one with a review; the rest keep the response's order.
+    expect(listed[0]).toMatchObject({ reviews: 1, title: 'Replacement 89240027010 Miter Saw Inlet Dust Chute for Ryobi P553 TS1144', seenAt: 7 });
+    expect(reason).toBe(`22 listing(s) show the model number, but the brand is not confirmed; ${SPARE_PART_NOTE}; 17 more listing(s) not shown`);
+  });
+
+  it('PCL430: 8 listings, 5 shown; one shown says "Replacement Parts", so the note is there', () => {
+    const cands = rows('amazon-search-PCL430');
+    const { reason, listed } = matchQuestion(pick({ brand: 'RYOBI', model: 'PCL430' }, cands).review, cands, 0);
+    expect(listed.map((c) => [c.asin, c.reviews])).toEqual([
+      ['B0GWT6TBJ2', 2], ['B0D5Y8PQXJ', 2], ['B0HPF71CNF', null], ['B0HGFPX3MX', null], ['B0HKCWMCH4', null],
+    ]);
+    expect(listed[1]!.title).toContain('for ryobi Multi Tool Replacement Parts');
+    expect(reason).toBe(`8 listing(s) show the model number, but the brand is not confirmed; ${SPARE_PART_NOTE}; 3 more listing(s) not shown`);
+  });
+
+  it('PCL235 before Ruling 70 (its tool-only listing aside): 2 listings, none cut, the note for "replacement parts"', () => {
+    const cands = rows('amazon-search-PCL235').filter((c) => c.asin !== 'B0BGYFTPGK');
+    const { reason, listed } = matchQuestion(pick({ brand: 'RYOBI', model: 'PCL235' }, cands).review, cands, 0);
+    expect(listed.map((c) => c.asin)).toEqual(['B0HFS4PFLN', 'B0GJTLR3S7']);
+    expect(reason).toBe(`2 listing(s) show the model number, but the brand is not confirmed; ${SPARE_PART_NOTE}`);
+  });
+
+  it('hand-made: grade first, then most reviews, then a listing with a price before one without', () => {
+    const c = (asin: string, reviews: number | null, price: number | null): Candidate => ({ asin, title: `RYOBI P1 ${asin}`, reviews, price });
+    const g = (asin: string, gr: Graded['grade'], reason: string): Graded => ({ asin, grade: gr, packaging: 'retail', reasons: [reason] });
+    const cands = [c('A', 0, null), c('B', 0, 10), c('C', 5, null), c('D', 1, 3), c('E', 9, 9), c('F', 0, 1)];
+    const review = [
+      g('A', 'review', 'model number in the title, brand not confirmed'), g('B', 'review', 'model number in the title, brand not confirmed'),
+      g('C', 'review', 'model number in the title, brand not confirmed'), g('D', 'review', 'model number in the title, brand not confirmed'),
+      g('E', 'reject', 'hand-made worse grade'), g('F', 'probable', 'hand-made better grade'),
+    ];
+    const { reason, listed } = matchQuestion(review, cands, 0);
+    expect(listed.map((x) => x.asin)).toEqual(['F', 'C', 'D', 'B', 'A']);
+    expect(reason).toBe('4 listing(s) show the model number, but the brand is not confirmed; 1 more listing(s) not shown');
+  });
+
+  it('hand-made: five or fewer listings, none saying Replacement or OEM: the reason is as before', () => {
+    const cands: Candidate[] = [{ asin: 'A', title: 'Gearcase for X P1' }, { asin: 'A', title: 'Gearcase for X P1' }];
+    const review: Graded[] = [{ asin: 'A', grade: 'review', packaging: 'retail', reasons: ['model number in the title, brand not confirmed'] }];
+    expect(matchQuestion(review, cands, 0)).toMatchObject({ reason: '1 listing(s) show the model number, but the brand is not confirmed' });
   });
 });

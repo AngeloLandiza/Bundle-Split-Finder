@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { replayRecorded, type Replay } from '../../scripts/replay';
 import { type PageContent, parseBundlePage } from '../src/hdPage';
+import { pick } from '../src/match';
 import { DEFAULT_SETTINGS } from '../src/settings';
 import { applyReviewAnswer, reviewSignature } from '../src/scan/answers';
 import { MemoryScanStore } from '../src/scan/memoryStore';
@@ -14,7 +15,9 @@ import {
 } from '../src/scan/types';
 import { type BudgetPolicy, parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '../src/serpapi/client';
+import { parseAmazonSearch } from '../src/serpapi/parsers';
 import * as fx from './fixtures';
+import { recorded } from './recorded';
 
 // When a scan looks up the items of a kit inside a bundle (step 6, Task 3). The tests run the real
 // pipeline over the recorded Home Depot searches and pages and the recorded Amazon searches; nothing
@@ -428,7 +431,7 @@ describe('ordinary lookups and kit items in one scan', () => {
   });
 });
 
-// ---------------------------------------------------------------- Ruling 70, on the replay
+// ---------------------------------------------------------------- Rulings 70 and 71, on the replay
 
 /** PCL1201K2-PCL430B: in review in this world, its one reading PCL1201K2 + PCL430B. */
 const PCL430B_BUNDLE = 'homedepot:324904496';
@@ -521,3 +524,42 @@ describe('Ruling 70: a RYOBI part and its tool-only form are one product, looked
     expect(s.plan).not.toContain('refresh:PCL515');
   });
 });
+
+describe('Ruling 71: the P553 question on the replay', () => {
+  it('offers 5 listings, best first, and says that more were cut and that a title says Replacement', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2', 'P553']);
+    const q = (await w.store.getReview(`match:${partKey('RYOBI', 'P553')}`))!;
+    expect(q.candidates.map((c) => [c.asin, c.reviews])).toEqual([
+      ['B0DXK73C59', 1], ['B0GY3L2LFP', null], ['B0HP6GFW3H', null], ['B0HL81J9GN', null], ['B0HN1FZ74T', null],
+    ]);
+    expect(q.reason).toBe(
+      '22 listing(s) show the model number, but the brand is not confirmed; title says Replacement or OEM, which often marks a spare part; 17 more listing(s) not shown',
+    );
+  });
+
+  it('a question stored before the cap keeps its listings through a scan, and its answer still applies', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2', 'P553']);
+    const id = `match:${partKey('RYOBI', 'P553')}`;
+    const now = (await w.store.getReview(id))!;
+    // Built from the recorded rows: the question as a lookup wrote it before Ruling 71, all 22 listings.
+    const rows = parseAmazonSearch(recorded('amazon-search-P553'));
+    const review = pick({ brand: 'RYOBI', model: 'P553' }, rows).review;
+    const asins = [...new Set(review.map((g) => g.asin))];
+    const old = {
+      ...now, reason: '22 listing(s) show the model number, but the brand is not confirmed',
+      candidates: asins.map((asin) => {
+        const r = rows.find((x) => x.asin === asin)!;
+        return { asin, title: r.title, price: r.price ?? null, reviews: r.reviews ?? null, reasons: review.find((g) => g.asin === asin)!.reasons, seenAt: T0 };
+      }),
+    };
+    expect(old.candidates).toHaveLength(22);
+    await w.store.putReview(old);
+    await scan(w, 20);
+    expect(await w.store.getReview(id)).toEqual(old);
+    await applyReviewAnswer(w.store, id, { choice: 21, seen: reviewSignature(old) }, T0 + MINUTE);
+    expect(await w.store.getMatch(partKey('RYOBI', 'P553'))).toMatchObject({ status: 'matched', asin: asins[21], decidedBy: 'user' });
+  });
+});
+
