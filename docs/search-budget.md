@@ -98,6 +98,8 @@ every scan.
   new part lookups, then stale price refreshes. Work that does not fit is deferred to the
   next scan and shown as waiting, never dropped. A planned step the cache answers frees its
   slot for the next deferred step of its phase, and deferred listing pages go first next scan.
+  A step that failed (a lookup set aside, or a page an error stopped on) is planned after the
+  other deferred work of its phase, so one that keeps failing never holds the only slot.
 - `forecastUsage()` (core/src/schedule.ts) shows, next to the frequency setting, the worst
   case a schedule can use in a month against the plan, before the setting is saved.
 
