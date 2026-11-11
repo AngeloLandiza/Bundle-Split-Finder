@@ -2049,3 +2049,73 @@ describe('runScan: pages and old jobs (step 4, fix round 1)', () => {
     expect((await w.store.listScans())[0]!.counts.pagesRead).toBe(4);
   });
 });
+
+describe('runScan: a slot the cache answers is given back (Ruling 48; QA 3, Major)', () => {
+  const DEWALT_COMBO = 'engine=home_depot&page=1&q=dewalt 20v combo kit';
+  const RYOBI_COMBO = 'engine=home_depot&page=1&q=ryobi 18v combo kit';
+  /** Every page is refused, as in QA's flow 8: nothing resolves from a page. */
+  const refuseAll: ReadPages = async (ids) => ids.map((itemId) => ({ itemId, kind: 'refused' as const }));
+
+  const listing = (q: string) => ({ kind: 'listing', q, page: 1, filterTokens: null, bundlesOnly: false });
+
+  it('at a limit of 1 with two brands, the RYOBI listing is fetched by the second scan and no scan spends more than 1', async () => {
+    const w = world();
+    const spent: number[] = [];
+    const jobs: ScanJob[] = [];
+    const scanAt = async (at: number) => {
+      w.clock = at;
+      const before = w.ledger.length;
+      jobs.push(await scan(w, { settings: DEFAULT_SCAN_SETTINGS, policy: ONE_SEARCH, readPages: refuseAll }));
+      spent.push(w.ledger.length - before);
+    };
+    for (let i = 0; i < 4; i++) await scanAt(T0 + i * 10 * MINUTE);
+    // Before Ruling 48 every scan after the first answered DEWALT's page from the cache, spent
+    // nothing, and left RYOBI's page deferred for ever.
+    expect(w.replay.calls).toEqual([DEWALT_COMBO, RYOBI_COMBO]);
+    expect(spent).toEqual([1, 1, 0, 0]);
+    expect(jobs.map((j) => [j.status, j.stopReason, j.searchesUsed, j.deferred])).toEqual([
+      // The page the first scan deferred goes first in the second.
+      ['stopped', 'run_cap', 1, [listing('ryobi 18v combo kit')]],
+      ['stopped', 'run_cap', 1, [listing('dewalt 20v combo kit')]],
+      // Both pages are within the hour: DEWALT's, planned, comes from the cache and gives its slot to RYOBI's, also cached.
+      ['done', null, 0, []],
+      ['done', null, 0, []],
+    ]);
+
+    // Once both pages are older than the hour, the brands take the one search in turn.
+    await scanAt(T0 + 3 * 60 * MINUTE);
+    await scanAt(T0 + 3 * 60 * MINUTE + 10 * MINUTE);
+    expect(w.replay.calls.slice(2)).toEqual([DEWALT_COMBO, RYOBI_COMBO]);
+    expect(spent.slice(4)).toEqual([1, 1]);
+    expect(Math.max(...spent)).toBe(1);
+  });
+
+  it('a listing page planned and answered from the cache gives its slot to the page deferred after it', async () => {
+    const w = world();
+    // DEWALT's page alone, paid and cached.
+    await scan(w, { settings: { ...DEFAULT_SCAN_SETTINGS, catalogPagesPerScan: 0, queries: [{ q: 'dewalt 20v combo kit' }] }, policy: OPEN });
+    w.clock = T0 + 10 * MINUTE;
+    const job = await scan(w, { settings: DEFAULT_SCAN_SETTINGS, policy: ONE_SEARCH });
+    // Planned: DEWALT's page (cached). Moved in: RYOBI's, paid with the slot DEWALT's gave back.
+    expect(w.replay.calls).toEqual([DEWALT_COMBO, RYOBI_COMBO]);
+    expect(w.ledger.slice(1)).toEqual(['scan:listing:ryobi 18v combo kit:p1']);
+    expect(job).toMatchObject({ status: 'done', stopReason: null, searchesUsed: 1, queue: [], deferred: [] });
+    expect(job.counts.pagesFetched).toBe(2);
+  });
+
+  it('a lookup planned and answered from the cache gives its slot to the lookup deferred after it', async () => {
+    const w = world();
+    // The listing page and PBLRC01B's lookup are paid and cached; PBLRC25B waits (test C).
+    await scan(w, { policy: { reserve: 0, maxPerRun: 2 } });
+    expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B]);
+    // A store that knows none of it, with the same cache: both parts want a lookup again.
+    const fresh: World = { ...w, store: new MemoryScanStore(), clock: T0 + 10 * MINUTE };
+    const job = await scan(fresh, { policy: ONE_SEARCH });
+    // The listing page and PBLRC01B come from the cache; PBLRC25B moves into the queue and is paid.
+    expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B]);
+    expect(w.ledger.slice(2)).toEqual(['scan:lookup:PBLRC25B']);
+    expect(job).toMatchObject({ status: 'done', stopReason: null, searchesUsed: 1, queue: [], deferred: [] });
+    expect(job.counts).toMatchObject({ lookupsDone: 2, partsMatched: 2 });
+    expect(await fresh.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', waitingSince: null });
+  });
+});

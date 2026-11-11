@@ -76,6 +76,13 @@ interface Run extends PartContext {
   lastFailed: boolean;
   /** 3 rule 2: steps this run set aside after a failure. They lead `deferred`, in the order they failed. */
   setAside: number;
+  /**
+   * Ruling 48: the steps this run's planning deferred for the phase now running, in plan order,
+   * that may still move into the queue when a planned step is answered from the cache. Each
+   * leaves this list when it moves, so it moves at most once. Never a step set aside after a
+   * failure. Empty for a continued job, which tops nothing up.
+   */
+  movable: ScanStep[];
 }
 
 /** Start a scan, or continue the newest one whose status is "running". Resolves with the finished job. */
@@ -110,7 +117,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const shouldStop = (): boolean => (stopAsked ||= asked());
   const run = (job: ScanJob): Run => ({
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
-    readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0,
+    readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [],
   });
 
   // An interrupted job is continued as saved: no new plan, whatever budget this run has. A job
@@ -124,24 +131,42 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const catalog = await catalogWanted(store, settings);
   const catalogPages = Math.min(catalog.length, Math.floor(budget.spendable * 0.2));
   // Page 1 of every query in settings order, then page 2 of every query, and so on.
-  const pages: Listing[] = [];
+  const inOrder: Listing[] = [];
   for (let page = 1; page <= settings.pagesPerQuery; page++) {
     for (const q of settings.queries) {
-      pages.push({ kind: 'listing', q: q.q, page, filterTokens: q.filterTokens ?? null, bundlesOnly: q.bundlesOnly ?? false });
+      inOrder.push({ kind: 'listing', q: q.q, page, filterTokens: q.filterTokens ?? null, bundlesOnly: q.bundlesOnly ?? false });
     }
   }
+  // Ruling 48: the pages the last job deferred go first, in its order, so at a low limit one
+  // query cannot hold the only slot on every scan. Only pages the settings still ask for.
+  const pages = deferredFirst(inOrder, newest?.deferred ?? []);
   const wants = await wantedParts(store, settings, startedAt);
   const plan = planScan(budget.spendable - catalogPages, { hdPagesWanted: pages.length, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
+  const deferred = pages.slice(plan.hdPages);
   const job: ScanJob = {
     id: String(startedAt), startedAt, finishedAt: null, status: 'running', stopReason: null, stopMessage: null, phase: 'listing',
-    queue: [...catalog.slice(0, catalogPages), ...pages.slice(0, plan.hdPages)], deferred: pages.slice(plan.hdPages), searchesUsed: 0,
+    queue: [...catalog.slice(0, catalogPages), ...pages.slice(0, plan.hdPages)], deferred, searchesUsed: 0,
     counts: {
       pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
       catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
     },
   };
   await store.putScan(job);
-  return run(job);
+  return { ...run(job), movable: [...deferred] };
+}
+
+const sameListing = (a: Listing, b: Listing): boolean =>
+  a.q === b.q && a.page === b.page && (a.filterTokens ?? null) === (b.filterTokens ?? null);
+
+/** `pages` with those that equal a listing step in `earlier` first, in `earlier`'s order; the rest keep their order. */
+function deferredFirst(pages: Listing[], earlier: ScanStep[]): Listing[] {
+  const first: Listing[] = [];
+  for (const step of earlier) {
+    if (step.kind !== 'listing') continue;
+    const page = pages.find((p) => sameListing(p, step));
+    if (page && !first.includes(page)) first.push(page);
+  }
+  return [...first, ...pages.filter((p) => !first.includes(p))];
 }
 
 /**
@@ -221,7 +246,28 @@ async function runQueue(run: Run): Promise<void> {
     // not counted; the continued job answers that step from the cache, which is free.
     if (result.source === 'network') job.searchesUsed += 1;
     job.queue.shift();
+    if (result.source === 'cache') topUp(run);
     await run.store.putScan(job);
+  }
+}
+
+/**
+ * Ruling 48: a step answered from the cache spent nothing, so its planned slot is given back: the
+ * next step this run's planning deferred in the same phase moves to the end of the queue. Only
+ * when what may still be spent is more than the steps already queued, so every queued step can
+ * still be paid for; the guard still decides each search. Not a retry: a step set aside after a
+ * failure is never in `movable`, and a step leaves `movable` when it moves.
+ */
+function topUp(run: Run): void {
+  const { job } = run;
+  if (run.budget.spendable <= job.queue.length) return;
+  while (run.movable.length > 0) {
+    const step = run.movable.shift()!;
+    const at = job.deferred.indexOf(step);
+    if (at < 0) continue;
+    job.deferred.splice(at, 1);
+    job.queue.push(step);
+    return;
   }
 }
 
@@ -394,7 +440,10 @@ async function applyListing(run: Run, step: Listing, data: unknown, at: number):
   }
   if (!hasNextPage) {
     // Later pages of this query do not exist: dropped, not deferred.
-    job.queue = job.queue.filter((s) => !(s.kind === 'listing' && s.q === step.q && s.filterTokens === step.filterTokens && s.page > step.page));
+    const later = (s: ScanStep) => s.kind === 'listing' && s.q === step.q && s.filterTokens === step.filterTokens && s.page > step.page;
+    job.queue = job.queue.filter((s) => !later(s));
+    // Nor are they moved into the queue (Ruling 48).
+    run.movable = run.movable.filter((s) => !later(s));
   }
   job.counts.pagesFetched += 1;
 }
@@ -690,6 +739,8 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   for (const step of later) if (step.kind === 'lookup') await markWaiting(run, step);
   job.queue = [...toSteps(plan.lookups), ...toSteps(plan.refreshes)];
   job.deferred.push(...later);
+  // Ruling 48: from now on only the parts phase's own deferred steps may move into the queue.
+  run.movable = [...later];
   // Names the limit that made work wait. It does not stop the queue just planned.
   if (job.deferred.length > 0 && job.stopReason === null) job.stopReason = budget.blockReason(budget.spendable + 1);
   job.phase = 'parts';
@@ -751,6 +802,10 @@ export async function markWaiting(ctx: Pick<PartContext, 'store' | 'now'>, step:
 async function finish(run: Run): Promise<ScanJob> {
   const { job } = run;
   if (run.shouldStop() && job.stopReason !== 'error' && job.stopReason !== 'rate_limited') job.stopReason = 'user';
+  // Planning named the limit that made work wait (planParts); when every deferred step has
+  // since moved into the queue (Ruling 48), nothing waits and no limit stopped the job. A
+  // budget refusal at a search always defers that step (halt), so it never ends here.
+  if (job.deferred.length === 0 && (job.stopReason === 'run_cap' || job.stopReason === 'reserve' || job.stopReason === 'hourly_limit')) job.stopReason = null;
   job.phase = 'finish';
   job.status = job.stopReason !== null || job.deferred.length > 0 ? 'stopped' : 'done';
   job.finishedAt = run.now();
