@@ -6,8 +6,9 @@
 // "Rule n" refers to the step 3 plan, Task 5 ("The service worker").
 
 import { AnswerRefused, applyReviewAnswer } from '@core/scan/answers';
+import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
 import { runScan } from '@core/scan/runner';
-import type { BundleRow, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
+import type { BudgetView, BundleRow, PaidAction, Quote, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
 import {
@@ -75,8 +76,15 @@ const GAVE_UP = 'The scan could not be saved, so it was stopped. Check that Chro
 const STOPPED = 'The scan was stopped before it began.';
 const BAD_PACKAGING = 'Choose retail boxed or loose.';
 const NO_MODEL = 'Name the bundle model.';
-const NOT_YET = 'Not available yet.';
 const ANSWER_LATER = 'A scan is running. Answer again when it has finished.';
+/** A Verify or Look up asked for while a scan runs. */
+const SCAN_RUNNING = 'A scan is running.';
+/** A scan, or a second Verify or Look up, asked for while one runs. */
+const PAID_RUNNING = 'A Look up or Verify is running.';
+/** A quote reads the account saved this recently; an older one is checked again (free). */
+const ACCOUNT_FRESH_MS = 5 * 60_000;
+/** The budget a quote shows when it is refused before the account is read; the refusal is said instead. */
+const CLOSED: BudgetView = { spendable: 0, blockReason: () => 'reserve' };
 const KEY_CHANGED = 'The SerpApi key changed while the scan was starting. Scan again.';
 /** A job is continued at most this many times in a row without progress. */
 const MAX_TRIES = 2;
@@ -188,6 +196,8 @@ export function createWorker(env: WorkerEnv): Worker {
   let scanKey: string | null = null;
   /** True while a start is between its first read and the scan's claim (or its refusal). */
   let starting = false;
+  /** The Verify or Look up this worker is running, from its claim to the end of its broadcast. */
+  let paid: Promise<Reply<null>> | null = null;
 
   const settings = async () => trusted(await prefs.getSettings());
 
@@ -388,8 +398,8 @@ export function createWorker(env: WorkerEnv): Worker {
     let started: Promise<void> | null = null;
     try {
       started = await serial(async () => {
-        // Rule 3: a tick while a scan is active does nothing.
-        if (scan !== null) return null;
+        // Rule 3: a tick while a scan is active does nothing; nor while a Verify or Look up runs.
+        if (scan !== null || paid !== null) return null;
         const resume = await saved();
         if (resume !== null) return (await start(resume.trigger, resume)).ok ? scan : null;
         const s = await settings();
@@ -409,6 +419,7 @@ export function createWorker(env: WorkerEnv): Worker {
   const scanNow = (): Promise<Reply<null>> =>
     serial(async () => {
       if (scan !== null) return refuse(RUNNING);
+      if (paid !== null) return refuse(PAID_RUNNING);
       const resume = await saved();
       return start(resume?.trigger ?? 'manual', resume);
     });
@@ -506,6 +517,113 @@ export function createWorker(env: WorkerEnv): Worker {
       return ok(null);
     });
 
+  // ---------------------------------------------------------------- Verify and Look up (paid.ts)
+
+  /**
+   * The account a quote reads: the one saved in the last five minutes, or a fresh check (free),
+   * saved. A saved account can be hours old, and its hour's searches would refuse a click that
+   * fits now. A failed check is its one plain sentence.
+   */
+  async function accountForQuote(key: string): Promise<AccountInfo | string> {
+    const stored = await prefs.getAccount();
+    if (stored !== null && env.now() - stored.at < ACCOUNT_FRESH_MS) return stored.info;
+    try {
+      const info = await accountOf(key);
+      await prefs.setAccount({ info, at: env.now() });
+      return info;
+    } catch (err) {
+      return accountSentence(err);
+    }
+  }
+
+  /**
+   * What a Verify or Look up would spend, shown before the click, and why it may not run now: a
+   * scan or another paid action is running, there is no key, the account cannot be checked, the
+   * store refuses it (refusalFor), or the manual-trigger budget does not fit it (quotePaid). A
+   * request that is not a paid action the panel offers is refused.
+   */
+  async function quote(action: PaidAction): Promise<Reply<Quote>> {
+    const unreadable = requestProblem(action);
+    if (unreadable !== null) return refuse(unreadable);
+    const key = await prefs.getKey();
+    let refusal: string | null = scan !== null || starting ? SCAN_RUNNING : paid !== null ? PAID_RUNNING : null;
+    let budget: BudgetView = CLOSED;
+    if (refusal === null && key === null) refusal = NO_KEY;
+    else if (refusal === null && key !== null) {
+      const account = await accountForQuote(key);
+      if (typeof account === 'string') refusal = account;
+      else budget = new SearchBudget(account, budgetPolicyFor(await settings(), 'manual', 0));
+    }
+    refusal ??= await refusalFor(store, action);
+    const q = quotePaid(action, await savedAnswers(store), budget);
+    return ok({ searches: q.searches, refusal: refusal ?? q.refusal });
+  }
+
+  /**
+   * Runs a Verify or Look up. Taken through the start gate and claimed there: refused while a scan
+   * runs, and while another paid action runs, so one runs at a time and no scan starts beside it.
+   * Replies when the action has ended.
+   */
+  async function runPaidAction(action: PaidAction): Promise<Reply<null>> {
+    const claim = await serial(async (): Promise<Reply<null> | { running: Promise<Reply<null>> }> => {
+      const unreadable = requestProblem(action);
+      if (unreadable !== null) return refuse(unreadable);
+      if (scan !== null) return refuse(SCAN_RUNNING);
+      if (paid !== null) return refuse(PAID_RUNNING);
+      const key = await prefs.getKey();
+      if (key === null) return refuse(NO_KEY);
+      // Claimed before the gate opens again. Wrapped, so the gate does not wait for the action.
+      const running = spend(key, action);
+      paid = running;
+      return { running };
+    });
+    return 'running' in claim ? claim.running : claim;
+  }
+
+  /**
+   * The action with the manual-trigger budget (reserve 0, at most searchesPerScan), built from a
+   * fresh account check as a scan's is. A refusal or a failed search is replied in one plain
+   * sentence with the key taken out; nothing is retried. Afterwards the account is checked again
+   * when anything was spent, and the state is broadcast.
+   */
+  async function spend(key: string, action: PaidAction): Promise<Reply<null>> {
+    let spent = false;
+    try {
+      let account: AccountInfo;
+      try {
+        account = await accountOf(key);
+      } catch (err) {
+        problem = accountSentence(err);
+        return refuse(problem);
+      }
+      await prefs.setAccount({ info: account, at: env.now() });
+      problem = null;
+      const s = await settings();
+      const budget = new SearchBudget(account, budgetPolicyFor(s, 'manual', 0));
+      const client = new SerpApiClient({ apiKey: key, budget, cache: env.cache, fetchFn: env.fetchFn, onSpend: env.ledger, now: env.now, baseUrl });
+      try {
+        await runPaid({ client, budget, store, now: env.now, settings: toScanSettings(s) }, action);
+        return ok(null);
+      } catch (err) {
+        if (err instanceof PaidProblem) return refuse(err.message);
+        // A failed search, or a store that could not be written.
+        return refuse(withoutKey((err instanceof Error && err.message) || FAILED, key));
+      } finally {
+        spent = budget.spentThisRun > 0;
+      }
+    } finally {
+      if (spent) {
+        try {
+          await prefs.setAccount({ info: await accountOf(key), at: env.now() });
+        } catch {
+          // The saved account is the one from before; a quote checks again once it is five minutes old.
+        }
+      }
+      paid = null;
+      await broadcast();
+    }
+  }
+
   async function handle(request: Request): Promise<Reply> {
     switch (request.type) {
       case 'getState':
@@ -535,9 +653,9 @@ export function createWorker(env: WorkerEnv): Worker {
       case 'answerReview':
         return answerReview(request.id, request.answer);
       case 'quote':
+        return quote(request.action);
       case 'runPaid':
-        // Replaced by the paid-action task.
-        return refuse(NOT_YET);
+        return runPaidAction(request.action);
       default:
         return refuse(FAILED);
     }

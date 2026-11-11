@@ -3,7 +3,7 @@ import { replayRecorded, type Replay } from '../../scripts/replay';
 import * as fx from '../../core/test/fixtures';
 import { reviewSignature } from '@core/scan/answers';
 import { MemoryScanStore } from '@core/scan/memoryStore';
-import type { BundleRow, PageOutcome, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
+import type { BundleRow, PageOutcome, PaidAction, Quote, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
 import { parseAccount } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, MemoryCache } from '@core/serpapi/client';
 import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
@@ -972,12 +972,183 @@ describe('worker: getReport and setPackaging', () => {
     expect(reply.ok && reply.data.packaging).toEqual({ A1: 'loose' });
   });
 
-  it('quote and runPaid are not available yet', async () => {
-    const w = world({ key: KEY, settings: RYOBI });
-    for (const request of [
-      { type: 'quote', action: { kind: 'lookUp', parts: [] } },
-      { type: 'runPaid', action: { kind: 'lookUp', parts: [] } },
-    ] as Request[]) expect(await send(w, request)).toEqual({ ok: false, error: 'Not available yet.' });
+});
+
+describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
+  const LOOK_01B: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC01B' }] };
+  const LOOK_25B: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC25B' }] };
+  const LOOK_BOTH: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC01B' }, { brand: 'RYOBI', model: 'PBLRC25B' }] };
+  const VERIFY_25B: PaidAction = { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0B3JWF5ZV' };
+  const PRODUCT_25B = 'amazon_domain=amazon.com&asin=B0B3JWF5ZV&engine=amazon_product';
+  const RUN_CAP = 'Stopped: this run reached its search limit.';
+  const HOURLY = "Stopped: the plan's hourly search limit is reached. Try again next hour.";
+  const SCANNING = 'A scan is running.';
+  const PAYING = 'A Look up or Verify is running.';
+  /** One search per scan, and so per paid action (the manual-trigger budget: reserve 0, cap searchesPerScan). */
+  const ONE: ExtensionSettings = { ...RYOBI, searchesPerScan: 1 };
+
+  /** Scan now with one search: the ratchet page is read and both parts are left waiting. */
+  async function waitingWorld(setup: Setup = {}): Promise<World> {
+    const w = world({ key: KEY, settings: ONE, ...setup });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(await lastJob(w)).toMatchObject({ status: 'stopped', stopReason: 'run_cap', searchesUsed: 1 });
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting' });
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'waiting' });
+    return w;
+  }
+
+  const quote = (w: World, action: PaidAction) => send<Quote>(w, { type: 'quote', action });
+  const runPaid = (w: World, action: PaidAction) => send<null>(w, { type: 'runPaid', action });
+  const accountChecks = (w: World) => w.requests.filter((r) => r.endsWith('/account.json')).length;
+  const panelLabels = (w: World) => labels(w).filter((l) => l.startsWith('panel:'));
+
+  it('quote shows the cost before the click; Look up runs the scan\'s lookup for a waiting part, labelled panel:lookup, and broadcasts', async () => {
+    const w = await waitingWorld();
+    expect(await quote(w, LOOK_01B)).toEqual({ ok: true, data: { searches: 1, refusal: null } });
+    const checks = accountChecks(w);
+    const broadcasts = w.broadcasts.length;
+    w.clock = T0 + MINUTE;
+    expect(await runPaid(w, LOOK_01B)).toEqual({ ok: true, data: null });
+    expect(labels(w)).toEqual([`scan:listing:${RYOBI_QUERY}:p1`, 'panel:lookup:PBLRC01B']);
+    expect(w.replay.calls).toEqual([RATCHET, LOOKUP_01B]);
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'matched', asin: 'B0B6Z2ZGVK', grade: 'probable', decidedBy: 'auto' });
+    // A fresh account check (free) before it, and again after it spent.
+    expect(accountChecks(w)).toBe(checks + 2);
+    expect(w.prefs.data.account).toMatchObject({ at: T0 + MINUTE });
+    expect(w.broadcasts.length).toBeGreaterThan(broadcasts);
+    expect(w.broadcasts.at(-1)).toMatchObject({ scanRunning: false });
+    // The panel's action is not a scan: the last job is as the scan left it.
+    expect(await lastJob(w)).toMatchObject({ status: 'stopped', searchesUsed: 1 });
+
+    // PBLRC25B is now answered by a listing the PBLRC01B search saved: it costs nothing.
+    expect(await quote(w, LOOK_25B)).toEqual({ ok: true, data: { searches: 0, refusal: null } });
+    expect(await runPaid(w, LOOK_25B)).toEqual({ ok: true, data: null });
+    expect(panelLabels(w)).toEqual(['panel:lookup:PBLRC01B']);
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', grade: 'probable' });
+  });
+
+  it('Verify upgrades the title match from the recorded detail page; a listing the owner chose is refused', async () => {
+    const w = await waitingWorld();
+    await runPaid(w, LOOK_01B);
+    await runPaid(w, LOOK_25B);
+    expect(await quote(w, VERIFY_25B)).toEqual({ ok: true, data: { searches: 1, refusal: null } });
+    expect(await runPaid(w, VERIFY_25B)).toEqual({ ok: true, data: null });
+    expect(w.replay.calls.at(-1)).toBe(PRODUCT_25B);
+    expect(panelLabels(w)).toEqual(['panel:lookup:PBLRC01B', 'panel:verify:PBLRC25B']);
+    const match = (await w.store.getMatch('RYOBI:PBLRC25B'))!;
+    expect(match).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', grade: 'strong', decidedBy: 'auto' });
+
+    await w.store.putMatch({ ...match, decidedBy: 'user' });
+    const chosen = 'You chose this listing yourself.';
+    expect(await quote(w, VERIFY_25B)).toEqual({ ok: true, data: { searches: 1, refusal: chosen } });
+    expect(await runPaid(w, VERIFY_25B)).toEqual({ ok: false, error: chosen });
+    expect(panelLabels(w)).toHaveLength(2);
+  });
+
+  it('a quote above the budget refuses with the budget\'s own sentence, and runPaid then sends nothing', async () => {
+    const w = await waitingWorld();
+    expect(await quote(w, LOOK_BOTH)).toEqual({ ok: true, data: { searches: 2, refusal: RUN_CAP } });
+    const requests = w.requests.length;
+    expect(await runPaid(w, LOOK_BOTH)).toEqual({ ok: false, error: RUN_CAP });
+    // The account is checked (free); no search is sent.
+    expect(w.requests.slice(requests)).toEqual(['https://serpapi.com/account.json']);
+    expect(w.replay.calls).toEqual([RATCHET]);
+    expect(panelLabels(w)).toEqual([]);
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting' });
+  });
+
+  it('quote uses the account checked in the last five minutes, and checks it again (free) when older', async () => {
+    const w = await waitingWorld();
+    const checks = accountChecks(w);
+    w.accountOver = { this_hour_searches: 50 };
+    w.clock = T0 + 4 * MINUTE;
+    expect(await quote(w, LOOK_01B)).toEqual({ ok: true, data: { searches: 1, refusal: null } });
+    expect(accountChecks(w)).toBe(checks);
+    w.clock = T0 + 6 * MINUTE;
+    expect(await quote(w, LOOK_01B)).toEqual({ ok: true, data: { searches: 1, refusal: HOURLY } });
+    expect(accountChecks(w)).toBe(checks + 1);
+    expect(w.prefs.data.account).toMatchObject({ at: T0 + 6 * MINUTE, info: { thisHourSearches: 50 } });
+    // runPaid checks the account itself, whatever quote saw.
+    expect(await runPaid(w, LOOK_01B)).toEqual({ ok: false, error: HOURLY });
+    expect(w.replay.calls).toEqual([RATCHET]);
+  });
+
+  it('during a scan both refuse with "A scan is running."', async () => {
+    const w = await waitingWorld();
+    const gate = held(w);
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    expect(await quote(w, LOOK_01B)).toEqual({ ok: true, data: { searches: 1, refusal: SCANNING } });
+    expect(await runPaid(w, LOOK_01B)).toEqual({ ok: false, error: SCANNING });
+    gate.release();
+    await untilIdle(w);
+    expect(panelLabels(w)).toEqual([]);
+  });
+
+  it('one paid action at a time, and no scan beside it; a second runPaid is refused and spends nothing', async () => {
+    const w = await waitingWorld({ settings: { ...ONE, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    let reached!: () => void;
+    const atSearch = new Promise<void>((resolve) => (reached = resolve));
+    let release!: () => void;
+    const open = new Promise<void>((resolve) => (release = resolve));
+    w.beforeSearch = async () => {
+      reached();
+      await open;
+    };
+    const first = runPaid(w, LOOK_01B);
+    await atSearch;
+    expect(await runPaid(w, LOOK_01B)).toEqual({ ok: false, error: PAYING });
+    expect(await quote(w, VERIFY_25B)).toEqual({ ok: true, data: { searches: 1, refusal: PAYING } });
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: false, error: PAYING });
+    // A scheduled scan that is due does not start either.
+    const requests = w.requests.length;
+    await w.worker.onTick();
+    expect(w.requests).toHaveLength(requests);
+    release();
+    expect(await first).toEqual({ ok: true, data: null });
+    expect(panelLabels(w)).toEqual(['panel:lookup:PBLRC01B']);
+    expect(await w.store.listScans()).toHaveLength(1);
+  });
+
+  it('two runPaid sent together spend once', async () => {
+    const w = await waitingWorld();
+    const replies = await Promise.all([runPaid(w, LOOK_01B), runPaid(w, LOOK_01B)]);
+    expect(replies).toContainEqual({ ok: true, data: null });
+    expect(replies).toContainEqual({ ok: false, error: PAYING });
+    expect(panelLabels(w)).toEqual(['panel:lookup:PBLRC01B']);
+    expect(w.replay.calls).toEqual([RATCHET, LOOKUP_01B]);
+  });
+
+  it('a failed search is reported in one sentence without the key, and not retried', async () => {
+    const w = await waitingWorld();
+    w.beforeSearch = (url) => {
+      if (url.searchParams.get('k') === 'RYOBI PBLRC01B') throw new TypeError(`request to ${url} failed (api_key=OLDKEY123&q=x)`);
+    };
+    const searches = () => w.requests.filter((r) => r.endsWith('/search.json')).length;
+    const before = searches();
+    const reply = await runPaid(w, LOOK_01B);
+    expect(reply.ok).toBe(false);
+    const error = reply.ok ? '' : reply.error;
+    expect(error).toMatch(/^Network error reaching SerpApi: request to .*api_key=\[key\]/);
+    expect(error).toContain('api_key=[key]&q=x');
+    expect(error).not.toContain(`api_key=${KEY}`);
+    expect(error).not.toContain('OLDKEY123');
+    expect(searches()).toBe(before + 1);
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting' });
+    expect(JSON.stringify(w.broadcasts)).not.toContain('OLDKEY123');
+  });
+
+  it('without a key both say so, and a request that is not a paid action is refused', async () => {
+    const w = await waitingWorld();
+    await send(w, { type: 'forgetKey' });
+    expect(await quote(w, LOOK_01B)).toEqual({ ok: true, data: { searches: 1, refusal: 'Add your SerpApi key in Settings.' } });
+    expect(await runPaid(w, LOOK_01B)).toEqual({ ok: false, error: 'Add your SerpApi key in Settings.' });
+    for (const action of [{ kind: 'lookUp', parts: [] }, { kind: 'verify', brand: 'RYOBI' }, null]) {
+      for (const type of ['quote', 'runPaid'] as const) {
+        expect(await send(w, { type, action } as unknown as Request)).toEqual({ ok: false, error: 'That request could not be read.' });
+      }
+    }
+    expect(w.replay.calls).toEqual([RATCHET]);
   });
 });
 

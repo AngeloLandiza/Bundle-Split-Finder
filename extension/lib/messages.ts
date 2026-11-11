@@ -23,8 +23,9 @@ export type Request =
   | { type: 'getReport' }
   | { type: 'setPackaging'; model: string; packaging: Packaging }
   | { type: 'answerReview'; id: string; answer: ReviewAnswer }
-  /** Reply data: Quote. */
+  /** Reply data: Quote, what the action would spend now and why it may not run. Spends nothing. */
   | { type: 'quote'; action: PaidAction }
+  /** Spends at most the quote's searches. Replies once the action has ended; a refusal or failure is one sentence. */
   | { type: 'runPaid'; action: PaidAction };
 
 export type { PaidAction, Quote, ReviewAnswer };
