@@ -57,7 +57,8 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
   const refusalId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const failed = runError !== null && parts.length > 0 && parts.every((p) => runError.models.includes(p.model)) ? runError.text : null;
-  const refusal = scanRunning ? SCAN_RUNNING : (failed ?? fresh?.refusal ?? problem);
+  // A refused quote says why the button is disabled now: it goes before a kept failure, which says what went wrong before.
+  const refusal = scanRunning ? SCAN_RUNNING : (fresh?.refusal ?? failed ?? problem);
   // aria-disabled, not disabled: focus stays on the button while it is busy or refused.
   const blocked = busy || !fresh || fresh.refusal !== null;
   const run = () => {

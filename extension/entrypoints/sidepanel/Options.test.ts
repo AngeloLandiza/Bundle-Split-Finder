@@ -250,6 +250,25 @@ describe('Detail: a press that made progress and then failed still says why (Rul
     await waitFor(() => expect(within(splitBlock()).getByRole('button', { name: /^Look up/ })).not.toHaveAttribute('aria-disabled'));
     expect(within(splitBlock()).queryByText(FAILED)).toBeNull();
   });
+
+  it('gives way to a refusal of the next quote: the disabled button says why it is disabled', async () => {
+    const user = userEvent.setup();
+    // The account each quote reads; the press itself runs on the recorded account.
+    const hour: Record<string, unknown> = {};
+    const { w } = await openP553({ perScan: 5, brandPage: false, account: hour });
+    const before = await within(splitBlock()).findByRole('button', { name: 'Look up 5 of 9 parts · 5 searches' });
+    await waitFor(() => expect(before).not.toHaveAttribute('aria-disabled'));
+    // The hour is used up by the time the parts left are quoted.
+    hour.this_hour_searches = 50;
+    await user.click(before);
+    await waitFor(() => expect(w.ledger.filter((l) => l.startsWith('panel:lookup:'))).toHaveLength(2));
+    const HOURLY = 'SerpApi allows 50 searches an hour, and they are used. Try again later.';
+    const sentence = await within(splitBlock()).findByText(HOURLY);
+    const after = within(splitBlock()).getByRole('button', { name: /^Look up \d+ of 7 parts · / });
+    expect(after).toHaveAttribute('aria-disabled', 'true');
+    expect(after.getAttribute('aria-describedby')?.split(' ')).toContain(sentence.id);
+    expect(within(splitBlock()).queryByText(FAILED)).toBeNull();
+  });
 });
 
 describe('Detail: a refusal in Ways to sell is its own line under the button (QA, 360px)', () => {
@@ -287,7 +306,8 @@ describe('Deals: a Look up above the searches per scan (Ruling 72)', () => {
     expect(waitingOf('RYOBI', row.parts)).toHaveLength(2);
     render(createElement(DealsTab, { api: workerApi(w, [], 1), report, state, sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
     const button = await screen.findByRole('button', { name: `Look up 1 of 2 parts · 1 search, for ${row.model}` });
-    expect(button).toHaveTextContent(/^Look up 1 of 2 parts · 1 search$/);    // A label that names how many of the parts may wrap inside the button, so the row's left column keeps its room.
+    expect(button).toHaveTextContent(/^Look up 1 of 2 parts · 1 search$/);
+    // A label that names how many of the parts may wrap inside the button, so the row's left column keeps its room.
     expect(button).toHaveClass('deal-lookup-btn', 'deal-lookup-btn-long');
   });
 
