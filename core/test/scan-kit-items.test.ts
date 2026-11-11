@@ -617,6 +617,36 @@ describe('fix round 1, Important 1: a Verify writes its outcome to the twin that
     expect(row.options.find((o) => o.id === 'split:PCL1600K2')!.parts.find((p) => p.model === 'PCL515')).toMatchObject({ status: 'review', availability: 'missing' });
   });
 
+  it('fix round 2: no scan undoes it: two scans later both forms are still in review, the question open, nothing searched for them', async () => {
+    const w = await answered();
+    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    const id = `match:${partKey('RYOBI', 'PCL515B')}`;
+    const question = await w.store.getReview(id);
+    expect(question).toMatchObject({ answer: null, candidates: [{ asin: 'B0B88R7HWB' }] });
+    for (let i = 0; i < 2; i++) {
+      const s = await scan(w, 20, KITS);
+      expect(s.ran.filter((l) => l.includes('PCL515'))).toEqual([]);
+      for (const model of ['PCL515B', 'PCL515']) {
+        expect(await w.store.getMatch(partKey('RYOBI', model))).toMatchObject({ status: 'review', asin: null, decidedBy: 'auto' });
+      }
+      expect(await w.store.getReview(id)).toEqual(question);
+      expect(await w.store.getReview(`match:${partKey('RYOBI', 'PCL515')}`)).toBeUndefined();
+    }
+  });
+
+  it('fix round 2: a listing a page rejected for PCL515B is never chosen for its twin from a search row', async () => {
+    const w = await answered();
+    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    // Hand-made: PCL515 holds an automatic "none" of its own, written from a search, which Ruling 73 judges again.
+    const none = {
+      key: partKey('RYOBI', 'PCL515'), brand: 'RYOBI', model: 'PCL515', status: 'none' as const, asin: null, grade: null, alternatives: [],
+      decidedBy: 'auto' as const, updatedAt: T0, waitingSince: null,
+    };
+    await w.store.putMatch(none);
+    await scan(w, 20, KITS);
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toEqual(none);
+  });
+
   it('a Verify that finds the part number upgrades PCL515B to strong, and PCL515 with it', async () => {
     const w = await answered();
     await verifyRecipSaw(w, 'PCL515B', SAW, { manufacturer_part_number: 'PCL515B' });

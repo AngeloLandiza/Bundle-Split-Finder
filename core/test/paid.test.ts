@@ -452,6 +452,8 @@ describe('runPaid verify: one detail page upgrades or rejects a title match', ()
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toEqual({
       key: 'RYOBI:PBLRC25B', brand: 'RYOBI', model: 'PBLRC25B', status: 'review', asin: null, grade: null, alternatives: [],
       decidedBy: 'auto', updatedAt: T0 + 2 * MINUTE, waitingSince: null,
+      // Q1a fix round 2: the page's evidence is kept, so no scan matches the part to this listing again.
+      source: 'page', rejectedAsins: ['B0B6Z2ZGVK'],
     });
     const item = await w.store.getReview('match:RYOBI:PBLRC25B');
     expect(item).toEqual({

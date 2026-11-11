@@ -192,6 +192,17 @@ export interface MatchRecord {
   updatedAt: number;
   /** When the part first had to wait; null unless status is "waiting". */
   waitingSince: number | null;
+  /**
+   * Q1a fix round 2: 'page' when Verify wrote this result from a listing's detail page. A scan never
+   * judges such a result again from search rows, which carry no part number or packaging. Absent
+   * otherwise, and on records saved before it existed.
+   */
+  source?: 'page';
+  /**
+   * Q1a fix round 2: listings a detail page showed are not this part (Verify sent them to review).
+   * Matching from saved listings never chooses one of them for the part or its twin. Absent when none.
+   */
+  rejectedAsins?: string[];
 }
 
 export interface PriceRecord {

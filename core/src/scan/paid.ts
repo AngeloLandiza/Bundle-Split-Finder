@@ -214,7 +214,11 @@ async function verify(
   const reasons = graded.packaging === 'bulk' ? [...graded.reasons, BULK] : graded.reasons;
   // The question first, then the match, as a lookup writes them.
   await openMatchReview(ctx, part, NOT_CONFIRMED, [{ asin, title: page.title, price: page.price ?? null, reviews: page.reviews ?? null, reasons, seenAt: at }], now);
-  const inReview: MatchRecord = { ...match, status: 'review', asin: null, grade: null, alternatives: [], updatedAt: now, waitingSince: null };
+  // Fix round 2: the page's evidence stands; no scan matches the part to this listing again from a search row.
+  const inReview: MatchRecord = {
+    ...match, status: 'review', asin: null, grade: null, alternatives: [], updatedAt: now, waitingSince: null,
+    source: 'page', rejectedAsins: [...new Set([...(match.rejectedAsins ?? []), asin])],
+  };
   await ctx.store.putMatch(inReview);
   await writeTwins(ctx.store, inReview, sameListing);
 }

@@ -19,11 +19,27 @@ export const twinKeysOf = (key: string): string[] => {
 
 /**
  * Writes `record`'s outcome to each stored twin record that `replace` accepts, under the twin's own
- * key, brand and model. A twin with no record is left to take it when it is next judged (sharedMatch).
+ * key, brand and model, keeping the listings either one's detail pages rejected (fix round 2). A twin
+ * with no record is left to take it when it is next judged (sharedMatch).
  */
 export async function writeTwins(store: ScanStore, record: MatchRecord, replace: (twin: MatchRecord) => boolean): Promise<void> {
   for (const key of twinKeys(record.brand, record.model)) {
     const twin = await store.getMatch(key);
-    if (twin && replace(twin)) await store.putMatch({ ...record, key: twin.key, brand: twin.brand, model: twin.model });
+    if (!twin || !replace(twin)) continue;
+    const rejected = rejectedOf(record, twin);
+    await store.putMatch({ ...record, key: twin.key, brand: twin.brand, model: twin.model, ...(rejected.length > 0 ? { rejectedAsins: rejected } : {}) });
   }
+}
+
+/**
+ * Fix round 2: the listings detail pages rejected on any of these records, each once. Stored data is
+ * untrusted: anything but a list of strings counts as none.
+ */
+export function rejectedOf(...records: (MatchRecord | undefined)[]): string[] {
+  const out = new Set<string>();
+  for (const r of records) {
+    const list: unknown = r?.rejectedAsins;
+    if (Array.isArray(list)) for (const a of list) if (typeof a === 'string') out.add(a);
+  }
+  return [...out];
 }

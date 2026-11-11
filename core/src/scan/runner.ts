@@ -20,7 +20,7 @@ import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, s
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { knownModels, readSplit } from './split';
-import { twinKeys } from './twins';
+import { rejectedOf, twinKeys } from './twins';
 import { bundleKey, partKey, priceActive, resolvedParts } from './types';
 import type {
   BudgetView, BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PageOutcome, PageReading, PriceRecord, ReadPages, ReviewCandidate,
@@ -1169,22 +1169,34 @@ async function closeQuestion(ctx: Pick<PartContext, 'store' | 'now'>, key: strin
  * as the part's own, decided by whoever decided it, and no lookup is wanted. Ruling 73: a scan also
  * judges an automatic "none" or "review" again here; a listing or a twin's settled match then closes
  * the part's open question. The owner's own answer is never touched (null).
+ *
+ * Fix round 2, a detail page beats a search row: a result Verify wrote from a listing's page
+ * (`source: 'page'`) is never judged again here (null), and no listing a page rejected for the part or
+ * its twin (`rejectedAsins`) is chosen, from saved listings or by an automatic twin's match.
  */
 export async function matchFromListings(ctx: PartContext, listings: ListingRecord[], part: Part): Promise<MatchRecord | null> {
   const { store, job } = ctx;
   const own = await store.getMatch(part.key);
   if (own?.decidedBy === 'user') return null;
+  if (own?.source === 'page' && own.status !== 'waiting') return null;
   const twins = new Map<string, MatchRecord | undefined>();
   for (const key of twinKeys(part.brand, part.model)) twins.set(key, await store.getMatch(key));
-  const shared = sharedMatch(part, (key) => twins.get(key), own);
+  const rejected = rejectedOf(own, ...twins.values());
+  const keep = rejected.length > 0 ? { rejectedAsins: rejected } : {};
+  // An automatic twin's match on a rejected listing does not stand for the part; the owner's choice does.
+  const twinOf = (key: string): MatchRecord | undefined => {
+    const m = twins.get(key);
+    return m && m.decidedBy === 'auto' && m.asin !== null && rejected.includes(m.asin) ? undefined : m;
+  };
+  const shared = sharedMatch(part, twinOf, own);
   if (shared) {
-    const copy: MatchRecord = { ...shared, key: part.key, brand: part.brand, model: part.model, updatedAt: ctx.now(), waitingSince: null };
+    const copy: MatchRecord = { ...shared, key: part.key, brand: part.brand, model: part.model, updatedAt: ctx.now(), waitingSince: null, ...keep };
     await store.putMatch(copy);
     if (copy.status === 'matched') job.counts.partsMatched += 1;
     if (copy.status === 'matched' || copy.decidedBy === 'user') await closeQuestion(ctx, part.key);
     return copy;
   }
-  const picked = pickFromListings(part, ctx.catalog, listings);
+  const picked = pickFromListings(part, ctx.catalog, rejected.length > 0 ? listings.filter((l) => !rejected.includes(l.asin)) : listings);
   if (!picked.chosen) return null;
   const asin = picked.chosen.asin;
   const alternatives = unique(picked.alternatives.map((g) => g.asin)).filter((a) => a !== asin);
@@ -1197,7 +1209,7 @@ export async function matchFromListings(ctx: PartContext, listings: ListingRecor
   }
   const match: MatchRecord = {
     key: part.key, brand: part.brand, model: part.model, status: 'matched', asin, grade: picked.chosen.grade, alternatives,
-    decidedBy: 'auto', updatedAt: ctx.now(), waitingSince: null,
+    decidedBy: 'auto', updatedAt: ctx.now(), waitingSince: null, ...keep,
   };
   await store.putMatch(match);
   await closeQuestion(ctx, part.key);
