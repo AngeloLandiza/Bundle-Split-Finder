@@ -109,12 +109,12 @@ const rowOf = async (w: World, key = P553): Promise<BundleRow> => (await buildRe
 const models = (row: { parts: { model: string }[] }) => row.parts.map((p) => p.model);
 
 describe('ways to sell PCL1600K2-P553, on the replay', () => {
-  it('the owner\'s answer gives two options, with the exact labels, the kit whole and the kit split into its items', async () => {
+  it('the owner\'s answer gives two options, with the exact labels, the kit whole and the kit split into its parts', async () => {
     const w = await answered();
     const row = await rowOf(w);
     expect(row.options.map((o) => [o.id, o.label, o.splitKits, o.loose])).toEqual([
       ['whole', 'PCL1600K2 sold whole', [], false],
-      ['split:PCL1600K2', 'PCL1600K2 split into its items', ['PCL1600K2'], true],
+      ['split:PCL1600K2', 'PCL1600K2 split into its parts', ['PCL1600K2'], true],
     ]);
     const [whole, split] = row.options;
     expect(models(whole!)).toEqual(['PCL1600K2', 'P553']);
@@ -186,12 +186,12 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     });
   });
 
-  it('the plain kit PCL1600K2 (317987591) is itself a bundle of one kit: sold whole or split into its items', async () => {
+  it('the plain kit PCL1600K2 (317987591) is itself a bundle of one kit: sold whole or split into its parts', async () => {
     const w = await answered();
     const row = await rowOf(w, KIT);
     expect(row.options.map((o) => [o.label, models(o)])).toEqual([
       ['PCL1600K2 sold whole', ['PCL1600K2']],
-      ['PCL1600K2 split into its items', KIT_MODELS],
+      ['PCL1600K2 split into its parts', KIT_MODELS],
     ]);
   });
 
@@ -277,9 +277,9 @@ describe('ways to sell: edge cases', () => {
     const row = (await buildReport(store, KITS)).bundles.find((b) => b.key === P553)!;
     expect(row.options.map((o) => [o.id, o.label])).toEqual([
       ['whole', 'PCL1600K2 and PBLRC2501SB sold whole'],
-      ['split:PCL1600K2', 'PCL1600K2 split into its items, PBLRC2501SB sold whole'],
-      ['split:PBLRC2501SB', 'PBLRC2501SB split into its items, PCL1600K2 sold whole'],
-      ['split:PBLRC2501SB+PCL1600K2', 'PCL1600K2 and PBLRC2501SB split into their items'],
+      ['split:PCL1600K2', 'PCL1600K2 split into its parts, PBLRC2501SB sold whole'],
+      ['split:PBLRC2501SB', 'PBLRC2501SB split into its parts, PCL1600K2 sold whole'],
+      ['split:PBLRC2501SB+PCL1600K2', 'PCL1600K2 and PBLRC2501SB split into their parts'],
     ]);
     expect(models(row.options[3]!)).toEqual([...KIT_MODELS, 'PBLRC01', 'PBLRC25']);
   });
@@ -293,7 +293,7 @@ describe('ways to sell: edge cases', () => {
     const row = (await buildReport(store, KITS)).bundles.find((b) => b.key === P553)!;
     expect(row.options.map((o) => [o.id, o.label, o.splitKits])).toEqual([
       ['whole', 'PCL1600K2, PBLRC2501SB and PCL280B-PSK005 sold whole', []],
-      ['split:PBLRC2501SB+PCL1600K2+PCL280B-PSK005', 'PCL1600K2, PBLRC2501SB and PCL280B-PSK005 split into their items', ['PCL1600K2', 'PBLRC2501SB', 'PCL280B-PSK005']],
+      ['split:PBLRC2501SB+PCL1600K2+PCL280B-PSK005', 'PCL1600K2, PBLRC2501SB and PCL280B-PSK005 split into their parts', ['PCL1600K2', 'PBLRC2501SB', 'PCL280B-PSK005']],
     ]);
     expect(models(row.options[1]!)).toEqual([...KIT_MODELS, 'PBLRC01', 'PBLRC25', 'PCL280', 'PBP006', 'PCG002']);
     expect(row.options[1]!.leftovers).toEqual([...UNNAMED, 'Reversible 1/4 in. and 3/8 in. Anvil', '1/2 in. Anvil with 1/4 in. Hex']);

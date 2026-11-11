@@ -84,7 +84,7 @@ test('deals and detail, a bundle with a kit that can be sold whole or split', as
   const region = panel.getByRole('region', { name: 'Ways to sell' });
   await expect(region.getByRole('heading', { name: 'Ways to sell' })).toBeVisible();
   await expect(region.getByText('PCL1600K2 sold whole')).toBeVisible();
-  await expect(region.getByText('PCL1600K2 split into its items')).toBeVisible();
+  await expect(region.getByText('PCL1600K2 split into its parts')).toBeVisible();
   await expect(region.getByText('Shown above')).toHaveCount(1);
   await expect(region.getByText('Leaves nothing')).toBeVisible();
   await expect(region.getByText('Parts from a kit have no retail box of their own.')).toBeVisible();

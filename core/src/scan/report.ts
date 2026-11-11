@@ -85,7 +85,7 @@ const listOf = (names: string[]): string => (names.length < 2 ? names.join('') :
 function labelOf(kits: string[], split: string[]): string {
   const whole = kits.filter((k) => !split.includes(k));
   const words: string[] = [];
-  if (split.length > 0) words.push(`${listOf(split)} split into ${split.length === 1 ? 'its' : 'their'} items`);
+  if (split.length > 0) words.push(`${listOf(split)} split into ${split.length === 1 ? 'its' : 'their'} parts`);
   if (whole.length > 0) words.push(`${listOf(whole)} sold whole`);
   return words.join(', ');
 }
