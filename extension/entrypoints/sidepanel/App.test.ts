@@ -325,15 +325,19 @@ describe('side panel shell', () => {
 });
 
 describe('progress row', () => {
-  const job = (pagesFetched: number, queue: unknown[]) => ({ ...JOB, counts: { pagesFetched }, queue, searchesUsed: 0 }) as unknown as ScanJob;
+  const job = (counts: Record<string, number>, queue: unknown[], phase = 'listing') => ({ ...JOB, counts, queue, phase, searchesUsed: 0 }) as unknown as ScanJob;
   const listing = { kind: 'listing', q: 'a', page: 1, filterTokens: null, bundlesOnly: true };
   const catalog = { kind: 'catalog', brand: 'DEWALT', page: 1 };
   const lookup = { kind: 'lookup', brand: 'DEWALT', model: 'X' };
 
   it('start of scan: the page being fetched is page 1', () => {
-    expect(progressText(job(0, [listing, catalog]))).toBe('Scanning · page 1 of 2 · 0 searches used');
+    expect(progressText(job({ pagesFetched: 0 }, [listing, catalog]))).toBe('Scanning · page 1 of 2 · 0 searches used');
   });
-  it('after the pages: the count stops at the pages fetched', () => {
-    expect(progressText(job(2, [lookup]))).toBe('Scanning · page 2 of 2 · 0 searches used');
+  it('a brand page counts as fetched, so the total does not drop', () => {
+    expect(progressText(job({ pagesFetched: 0, catalogPages: 1 }, [listing]))).toBe('Scanning · page 2 of 2 · 0 searches used');
+  });
+  it('after the pages: bundle pages being read, then parts being looked up', () => {
+    expect(progressText(job({ pagesFetched: 1, catalogPages: 1, pagesRead: 3 }, []))).toBe('Reading bundle pages · 3 read · 0 searches used');
+    expect(progressText(job({ lookupsDone: 2, refreshesDone: 1 }, [lookup], 'parts'))).toBe('Looking up parts · 3 of 4 · 0 searches used');
   });
 });
