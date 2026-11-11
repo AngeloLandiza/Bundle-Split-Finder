@@ -40,18 +40,18 @@
   - An item named "Operator's Manual" or "Operator's Manuals" (any case, with or without the apostrophe) is dropped.
   - Leftovers are valued as today (`liquidationRate`, default 0).
 - **Quantities count.** "(2)" gives qty 2, and no "(n)" gives 1.
-- **Copy, exact:**
+- **Copy, exact.** Ruling 68: design.md's fixed vocabulary bans "item" in the UI, so every on-screen "item" below reads "part". The labels in core change in Task 3b, and the panel's copy in Task 4.
   - Option labels:
     - `PCL1600K2 sold whole`
-    - `PCL1600K2 split into its items`
-    - With two kits: `PCL1600K2 and PCL1201K2 split into their items`, and `PCL1600K2 split into its items, PCL1201K2 sold whole`
+    - `PCL1600K2 split into its parts`
+    - With two kits: `PCL1600K2 and PCL1201K2 split into their parts`, and `PCL1600K2 split into its parts, PCL1201K2 sold whole`
   - Section heading: `Ways to sell`
   - Leftover line:
     - `Leaves nothing`
-    - or `Leaves 11 items: 18V Charger, Tool Bag, …`
+    - or `Leaves 11 parts: 18V Charger, Tool Bag, …`
       - Models with no listing come first, then unnamed items in page order.
       - `×N` follows a quantity above 1.
-  - Loose note: `Items from a kit have no retail box of their own.`
+  - Loose note: `Parts from a kit have no retail box of their own.`
   - Primary marker: `Shown above`
   - Deals row tag when a bundle has more than one option: `N ways to sell`, for example `2 ways to sell`
 - **Options per bundle:**
@@ -166,6 +166,29 @@ Spends **9 searches**. The account showed 14 of 250 used on Nov 11. Run `npm run
 - [ ] Implement with `evaluateBundle()` once per option. The components are the option's model items, plus one component per unnamed item that no listing covers.
 - [ ] Run typecheck and `npm test`. Commit.
 
+### Task 2b (Opus implementer, Opus review plus an independent re-check): spare parts must not match as tools
+Added on Nov 11 (Ruling 65), after Task 2 found it on the recordings.
+- P553 matched B08TGP8MGR, "OEM … Replacement Miter Saw Inlet Dust Chute P553", at $11.33.
+- PCL430 matched B00DQD7EIE, "OEM 303590006 Sander Backing Pad … PCL430", at $7.97.
+
+Both were graded `probable`. `AFTERMARKET` in `core/src/match.ts:20` catches "replacement for", but not these.
+
+**Files:**
+- Modify: `core/src/match.ts`
+- Modify: its tests
+- Modify: `core/test/report-options.test.ts`, where its assertions name these listings
+
+- [ ] **Tests first, on every recorded Amazon response** (`fixtures/recorded/amazon-*.json`):
+  - B08TGP8MGR is not `probable` for P553.
+  - B00DQD7EIE is not `probable` for PCL430.
+  - A before-and-after table of every row graded `probable` or better, in the report. No genuine tool, battery or kit listing may lose its grade.
+  - Acceptance criterion 5 still holds: PBLRC2501SB maps to B0B3JWF5ZV and B0B6Z2ZGVK.
+- [ ] **The rule rests on recorded titles only.**
+  - A title that is clearly a spare part is `reject` with the reason `spare part`. For example: "Replacement" followed by a part name, or an OEM part number that is not the model.
+  - A title that is only possibly one (for example "OEM" alone) is `review`, never `probable`.
+  - Never guess.
+- [ ] Update Task 2's assertions that named the two listings. Then run typecheck and `npm test`, and commit.
+
 ### Task 3 (Opus implementer, Opus review plus an independent re-check of Important findings): lookups for kit items
 **Files:**
 - Modify: `core/src/scan/runner.ts` (`bundleParts`, `wantedParts`, free listing matches)
@@ -188,6 +211,37 @@ Spends **9 searches**. The account showed 14 of 250 used on Nov 11. Run `npm run
 - [ ] Implement in `bundleParts` and `wantedParts`. Item lookups take a new lowest rank. Nothing else in the order moves.
 - [ ] Update `docs/search-budget.md` with one sentence on kit items.
 - [ ] Run typecheck and `npm test`. Commit.
+
+### Task 3b (Opus implementer, Opus review plus an independent re-check): read a kit's own page
+Added on Nov 11 (Ruling 67), after Task 4 found the gap. In a real scan, a plain kit such as PCL1600K2 (item 317987591) is never stored as a bundle:
+- `looksLikeBundle` takes a RYOBI model only when it has a hyphen or is a special buy.
+- No default search is bundles-only.
+
+So the kit is a catalog entry (`isKit`), its page is never read, and its bundle would say "contents not known yet" forever. The recorded page exists only because step 4 recorded it by hand.
+
+**Files:**
+- Modify: `core/src/scan/runner.ts` (applyListing, readBundlePages)
+- Modify: `core/src/scan/types.ts` (`CatalogRecord.itemId`, `CatalogRecord.page`)
+- Modify: `core/src/kitContents.ts` (kit records may be catalog records)
+- Modify: `core/src/scan/report.ts`, only the `kitsNotRead` and `kitContents` callers
+- Modify: the extension store, only if its schema needs a version bump
+- Tests: a replayed scan of the default searches with the recorded pages
+
+- [ ] **Tests first, on a replayed scan with the default searches** (not bundles-only) and the recorded pages:
+  - PCL1600K2 is stored as a catalog kit, with item id 317987591.
+  - The page phase reads 317987591 because PCL1600K2-P553's resolved split holds PCL1600K2. Once the owner has answered, the split holds it.
+  - After that, the report gives PCL1600K2-P553 two options, and `kitsNotRead` is empty.
+- [ ] **Order and cap.**
+  - Bundle pages first, as today. Then kit pages, newest bundle first.
+  - Kit pages share `pageReadsPerScan`.
+  - A kit page is read once, like a bundle page.
+  - It costs no searches.
+- [ ] **Never guess.**
+  - Only a catalog entry marked `isKit` that some resolved split holds is read.
+  - Only through its own item id, as recorded from a Home Depot listing row.
+- [ ] **Labels (Ruling 68).** Change the option labels in report.ts from "items" to "parts". Update every assertion of them: core tests, extension tests and e2e.
+- [ ] Migration: catalog entries stored before this step have no item id. They stay unread until a listing row shows them again. Test that case.
+- [ ] Run typecheck, `npm test`, and e2e. Commit.
 
 ### Task 4 (Sonnet implementer, Sonnet review, then `ui-reviewer`): panel and CSV
 Runs in parallel with Task 3, in its own worktree, once Task 2 is merged.
