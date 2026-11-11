@@ -46,6 +46,13 @@ test('detail, priced parts, the packaging question and the answer', async ({ con
   await expect(panel.getByText(/Loose parts cannot be listed as New on Amazon/)).toBeVisible();
   await shoot(panel, 'loose');
 
+  // The same bundle once it is answered as boxed.
+  await panel.getByRole('button', { name: 'Change' }).last().click();
+  await panel.getByRole('button', { name: 'Yes, boxed' }).click();
+  await expect(panel.locator('.detail-packaging-answer')).toHaveText('Boxed');
+  await expect(panel.locator('.detail-tag')).toHaveCount(0);
+  await shoot(panel, 'boxed');
+
   // Escape goes back to the list.
   await panel.keyboard.press('Escape');
   await expect(panel.locator('.deal-row').first()).toBeVisible();
@@ -63,4 +70,25 @@ test('detail, a bundle whose parts wait for a lookup', async ({ context, extensi
   await expect(panel.getByText(/^No estimate yet: \d+ parts? still needs? an Amazon lookup\.$/)).toBeVisible();
   await expect(panel.getByRole('button', { name: /^Look up/ })).toBeVisible();
   await shoot(panel, 'waiting');
+});
+
+test('detail, while a scan runs', async ({ context, extensionId, options, server }) => {
+  await saveKey(options, 'TEST');
+  await expect(options.getByTestId('key-result')).toContainText('Key works.');
+  await configure(options, { searchesPerScan: 4 });
+  await scanAndWait(options);
+  // The next scan's searches wait, so it is still running when the panel is photographed.
+  server.delaySearches(20_000);
+  await options.evaluate(() => chrome.runtime.sendMessage({ type: 'scanNow' }));
+  await expect.poll(async () => (await getState(options)).data.scanRunning, { intervals: [100] }).toBe(true);
+
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await panel.locator('.deal-row', { has: panel.getByRole('button', { name: /^Look up/ }) }).first().locator('.deal-link').click();
+  await expect(panel.getByRole('heading', { level: 2, name: /^PARTS · / })).toBeVisible();
+  await expect(panel.getByRole('status').first()).toContainText('Scanning');
+  await shoot(panel, 'scanning');
+
+  await options.evaluate(() => chrome.runtime.sendMessage({ type: 'stopScan' }));
+  server.delaySearches(0);
 });
