@@ -318,9 +318,10 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
   const loose = answer === 'loose';
   const asins = row.parts.map((p) => p.asin).filter((a): a is string => a !== null);
   const e = row.estimate;
-  const gross = row.parts.reduce((sum, p) => sum + (p.price !== null ? p.price * p.qty : 0), 0);
+  // Core counts every uncovered part at $0 (inactive, in review, with no listing), so its price is not in the figure.
+  const counted = new Set(row.uncovered);
+  const gross = row.parts.reduce((sum, p) => sum + (p.price !== null && !counted.has(p.model) ? p.price * p.qty : 0), 0);
   const waiting = waitingParts(row).length;
-  const noListing = row.parts.filter(hasNoListing).map((p) => p.model);
   const missingAsin = row.parts.filter((p) => p.asin === null).map((p) => p.model);
   const question = report.review.find((r) => r.kind === 'split' && r.subject === row.key) ?? null;
 
@@ -423,8 +424,8 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
                   Change
                 </a>
               </p>
-              {noListing.length > 0 ? (
-                <p className="detail-estimate">Counts {listOf(noListing)} at $0: no Amazon listing was found.</p>
+              {row.uncovered.length > 0 ? (
+                <p className="detail-estimate">Counts {listOf(row.uncovered)} at $0: no priced Amazon listing is chosen.</p>
               ) : null}
             </>
           ) : waiting > 0 ? (

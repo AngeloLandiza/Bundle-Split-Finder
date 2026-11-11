@@ -113,6 +113,21 @@ describe('Detail on a replayed scan', () => {
     expect(screen.getAllByText('Not looked up yet').length).toBe(waiting);
   });
 
+  it("names exactly the row's uncovered parts at $0, and Parts sell for leaves them out", () => {
+    const rows = full.bundles.filter((b) => b.estimate && b.parts.length > 0);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      cleanup();
+      open(full, row.key);
+      const sentence = screen.queryByText(/ at \$0: /);
+      if (row.uncovered.length === 0) expect(sentence).toBeNull();
+      else expect(sentence?.textContent).toMatch(/^Counts .+ at \$0: no priced Amazon listing is chosen\.$/);
+      const counted = new Set(row.uncovered);
+      const gross = row.parts.reduce((sum, p) => sum + (p.price !== null && !counted.has(p.model) ? p.price * p.qty : 0), 0);
+      expect(screen.getByText('Parts sell for').nextElementSibling).toHaveTextContent(`$${gross.toFixed(2)}`);
+    }
+  });
+
   it('shows the split question of a bundle in Needs your answer, under its no-estimate sentence', () => {
     const q = full.review.find((r) => r.kind === 'split' && full.bundles.some((b) => b.key === r.subject))!;
     const row = full.bundles.find((b) => b.key === q.subject)!;
