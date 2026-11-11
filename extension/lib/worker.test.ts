@@ -1159,6 +1159,81 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
     expect(w.prefs.data.account ?? null).toBeNull();
   });
 
+  /** Holds the search for `k` until release(); `reached` resolves when it is held. */
+  function holdSearch(w: World, k: string) {
+    let reach!: () => void;
+    const reached = new Promise<void>((resolve) => (reach = resolve));
+    let release!: () => void;
+    const open = new Promise<void>((resolve) => (release = resolve));
+    w.beforeSearch = async (url) => {
+      if (url.searchParams.get('k') !== k) return;
+      reach();
+      await open;
+    };
+    return { reached, release };
+  }
+
+  /** The key of every Account API request from now on. NEWKEY is accepted too, with 77 searches left. */
+  function accountKeys(w: World): string[] {
+    const keys: string[] = [];
+    const answer = w.accountApi;
+    w.accountApi = (key) => {
+      keys.push(key);
+      return key === 'NEWKEY' ? new Response(JSON.stringify({ ...fx.SERPAPI_ACCOUNT_FREE, total_searches_left: 77 }), { status: 200 }) : answer(key);
+    };
+    return keys;
+  }
+
+  it('Forget key during the search: the account is not checked again with the forgotten key, nor saved', async () => {
+    const w = await waitingWorld();
+    const keys = accountKeys(w);
+    const search = holdSearch(w, 'RYOBI PBLRC01B');
+    const reply = runPaid(w, LOOK_01B);
+    await search.reached;
+    expect(keys).toEqual([KEY]);
+    await send(w, { type: 'forgetKey' });
+    search.release();
+    // The one search was already sent: it is answered and applied.
+    expect(await reply).toEqual({ ok: true, data: null });
+    expect(panelLabels(w)).toEqual(['panel:lookup:PBLRC01B']);
+    expect(keys).toEqual([KEY]);
+    expect(w.prefs.data.account ?? null).toBeNull();
+  });
+
+  it('a new key saved during the search: its account is not overwritten with the old key\'s', async () => {
+    const w = await waitingWorld();
+    const keys = accountKeys(w);
+    const search = holdSearch(w, 'RYOBI PBLRC01B');
+    const reply = runPaid(w, LOOK_01B);
+    await search.reached;
+    expect(await send(w, { type: 'checkKey', apiKey: 'NEWKEY' })).toMatchObject({ ok: true });
+    search.release();
+    await reply;
+    expect(keys).toEqual([KEY, 'NEWKEY']);
+    expect(w.prefs.data.account).toMatchObject({ info: { totalSearchesLeft: 77 } });
+  });
+
+  it('a quote whose account check outlives the key saves nothing, and says there is no key', async () => {
+    const w = await waitingWorld();
+    w.clock = T0 + 6 * MINUTE;
+    let asked!: () => void;
+    const checking = new Promise<void>((resolve) => (asked = resolve));
+    let release!: () => void;
+    const open = new Promise<void>((resolve) => (release = resolve));
+    const answer = w.accountApi;
+    w.accountApi = async (key) => {
+      asked();
+      await open;
+      return answer(key);
+    };
+    const reply = quote(w, LOOK_01B);
+    await checking;
+    await send(w, { type: 'forgetKey' });
+    release();
+    expect(await reply).toEqual({ ok: true, data: { searches: 1, refusal: 'Add your SerpApi key in Settings.' } });
+    expect(w.prefs.data.account ?? null).toBeNull();
+  });
+
   it('without a key both say so, and a request that is not a paid action is refused', async () => {
     const w = await waitingWorld();
     await send(w, { type: 'forgetKey' });

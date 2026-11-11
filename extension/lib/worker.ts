@@ -530,6 +530,9 @@ export function createWorker(env: WorkerEnv): Worker {
     if (stored !== null && env.now() - stored.at < ACCOUNT_FRESH_MS) return stored.info;
     try {
       const info = await accountOf(key);
+      // The key may have been forgotten or replaced during the check: that key's account is not saved.
+      const keyNow = await prefs.getKey();
+      if (keyNow !== key) return keyNow === null ? NO_KEY : KEY_CHANGED_PAID;
       await prefs.setAccount({ info, at: env.now() });
       return info;
     } catch (err) {
@@ -616,15 +619,24 @@ export function createWorker(env: WorkerEnv): Worker {
         spent = budget.spentThisRun > 0;
       }
     } finally {
-      if (spent) {
-        try {
-          await prefs.setAccount({ info: await accountOf(key), at: env.now() });
-        } catch {
-          // The saved account is the one from before; a quote checks again once it is five minutes old.
-        }
-      }
+      if (spent) await recheckAccount(key);
       paid = null;
       await broadcast();
+    }
+  }
+
+  /**
+   * After a paid action spent: the account of `key` checked again (free) and saved, as after a scan,
+   * but only while `key` is still the saved key, before the check and after it. A forgotten key is
+   * never sent again, and a new key's account is never overwritten with the old key's.
+   */
+  async function recheckAccount(key: string): Promise<void> {
+    try {
+      if ((await prefs.getKey()) !== key) return;
+      const info = await accountOf(key);
+      if ((await prefs.getKey()) === key) await prefs.setAccount({ info, at: env.now() });
+    } catch {
+      // The saved account is the one from before; a quote checks again once it is five minutes old.
     }
   }
 
