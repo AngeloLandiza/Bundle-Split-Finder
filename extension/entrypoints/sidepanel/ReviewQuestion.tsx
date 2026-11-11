@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { reviewSignature } from '@core/scan/answers';
 import type { ReviewAnswer, ReviewItem } from '@core/scan/types';
 import { money } from '../../lib/format';
@@ -10,16 +10,29 @@ export const SCAN_RUNNING = 'A scan is running. Answer when it has finished.';
 export interface ReviewQuestionProps {
   item: ReviewItem;
   scanRunning: boolean;
+  /** Move focus to the question when it appears: the one before it was just answered. */
+  focusHeading?: boolean;
   /** Resolves to a sentence when the answer was refused, null when it was saved. */
   onSave: (answer: ReviewAnswer) => Promise<string | null>;
 }
 
-export function ReviewQuestion({ item, scanRunning, onSave }: ReviewQuestionProps) {
+export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave }: ReviewQuestionProps) {
   const [picked, setPicked] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const legendRef = useRef<HTMLLegendElement>(null);
   const split = item.kind === 'split';
   const subject = `${item.brand} ${item.model}`;
+
+  // Only when the question appears.
+  useEffect(() => {
+    if (focusHeading) legendRef.current?.focus();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A refusal belongs to the attempt that met it: a scan starting makes it stale.
+  useEffect(() => {
+    if (scanRunning) setError(null);
+  }, [scanRunning]);
 
   const submit = async () => {
     if (picked === null) return;
@@ -36,66 +49,65 @@ export function ReviewQuestion({ item, scanRunning, onSave }: ReviewQuestionProp
     }
   };
 
-  const radio = (value: string, body: ReactNode) => (
-    <label className="review-choice" key={value}>
-      <input type="radio" name="review-choice" value={value} checked={picked === value} onChange={() => setPicked(value)} />
-      <span className="review-choice-body">{body}</span>
-    </label>
+  const row = (value: string, label: ReactNode, meta?: ReactNode, describedBy?: string) => (
+    <div className="review-row" key={value}>
+      <label className="review-choice">
+        <input type="radio" name="review-choice" value={value} checked={picked === value} aria-describedby={describedBy} onChange={() => setPicked(value)} />
+        <span className="review-choice-label">{label}</span>
+      </label>
+      {meta}
+    </div>
   );
 
   return (
     <form
-      className="review-question"
       onSubmit={(e) => {
         e.preventDefault();
         void submit();
       }}
     >
-      {split ? (
-        <>
-          <h2 className="review-title">Which parts come in this bundle?</h2>
-          {item.title ? <p className="review-bundle">{item.title}</p> : null}
-        </>
-      ) : null}
-      <p className="review-model fig">{subject}</p>
-      <p className="review-reason">{item.reason}</p>
-      <fieldset className="review-choices">
-        <legend className={split ? 'sr-only' : 'review-title'}>
+      <fieldset className="review-question">
+        <legend className="review-title" ref={legendRef} tabIndex={-1}>
           {split ? 'Which parts come in this bundle?' : `Which Amazon listing is ${subject}?`}
         </legend>
-        {split && item.choices.length === 0 ? (
-          <p className="review-note">No reading could be made from the model number or the page.</p>
-        ) : null}
-        {split
-          ? item.choices.map((parts, i) => radio(String(i), <span className="fig">{parts.join(' + ')}</span>))
-          : item.candidates.map((c, i) =>
-              radio(
-                String(i),
-                <>
+        {split && item.title ? <p className="review-bundle">{item.title}</p> : null}
+        <p className="review-model fig-sm">{subject}</p>
+        <p className="review-reason">{item.reason}</p>
+        <div className="review-choices">
+          {split && item.choices.length === 0 ? (
+            <p className="review-note">No reading could be made from the model number or the page.</p>
+          ) : null}
+          {split
+            ? item.choices.map((parts, i) => row(String(i), <span className="figure">{parts.join(' + ')}</span>))
+            : item.candidates.map((c, i) => {
+                const priceId = `review-price-${i}`;
+                return row(
+                  String(i),
                   <span className="review-cand-title" title={c.title}>
                     {c.title}
-                  </span>
-                  <span className="review-cand-meta">
-                    <span className="fig">{c.price === null ? 'No price seen' : money(c.price)}</span>
-                    <a className="fig" href={`https://www.amazon.com/dp/${c.asin}`} target="_blank" rel="noreferrer">
+                  </span>,
+                  <p className="review-cand-meta fig-sm">
+                    <span id={priceId}>{c.price === null ? 'No price seen' : money(c.price)}</span>
+                    <a className="figure" href={`https://www.amazon.com/dp/${c.asin}`} target="_blank" rel="noreferrer">
                       {c.asin}
                     </a>
-                  </span>
-                </>,
-              ),
-            )}
-        {radio(NONE, 'None of these')}
+                  </p>,
+                  priceId,
+                );
+              })}
+          {row(NONE, 'None of these')}
+        </div>
+        <button type="submit" className="btn btn-primary review-save" disabled={picked === null || scanRunning || saving}>
+          Save answer
+        </button>
+        {scanRunning ? (
+          <p className="review-sentence">{SCAN_RUNNING}</p>
+        ) : error ? (
+          <p className="review-sentence" role="alert">
+            {error}
+          </p>
+        ) : null}
       </fieldset>
-      <button type="submit" className="btn btn-primary review-save" disabled={picked === null || scanRunning || saving}>
-        Save answer
-      </button>
-      {scanRunning ? (
-        <p className="review-sentence">{SCAN_RUNNING}</p>
-      ) : error ? (
-        <p className="review-sentence" role="alert">
-          {error}
-        </p>
-      ) : null}
     </form>
   );
 }

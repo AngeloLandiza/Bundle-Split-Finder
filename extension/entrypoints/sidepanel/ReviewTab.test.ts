@@ -71,9 +71,10 @@ describe('ReviewTab: a split question', () => {
   it('shows the question, the reading of each choice in order, and None of these', () => {
     setup(reportOf([SPLIT, MATCH]));
     expect(screen.getByText('1 of 2')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Which parts come in this bundle?' })).toBeInTheDocument();
+    expect(screen.getByText('Which parts come in this bundle?', { selector: 'legend' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading')).toBeNull();
     expect(screen.getByText('DEWALT 20V MAX Cordless 2 Tool Combo Kit')).toBeInTheDocument();
-    expect(screen.getByText('DEWALT DCK240C2')).toHaveClass('fig');
+    expect(screen.getByText('DEWALT DCK240C2')).toHaveClass('fig-sm');
     expect(screen.getByText('The kit lists two impact wrenches.')).toBeInTheDocument();
     const group = screen.getByRole('group', { name: 'Which parts come in this bundle?' });
     expect(group.tagName).toBe('FIELDSET');
@@ -105,6 +106,33 @@ describe('ReviewTab: a split question', () => {
     expect(screen.getByText('2 of 2')).toBeInTheDocument();
   });
 
+  it('shows a question again when a later scan reopens it with other choices, and not when it is unchanged', async () => {
+    const user = userEvent.setup();
+    const { again } = setup(reportOf([SPLIT]));
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.click(save());
+    expect(await screen.findByText('Nothing needs your answer.')).toBeInTheDocument();
+    again(reportOf([SPLIT]));
+    expect(screen.getByText('Nothing needs your answer.')).toBeInTheDocument();
+    const reopened = item({ choices: [['DCF891B', 'DCB606']], reason: 'The page names another battery.', openedAt: 5 });
+    again(reportOf([reopened]));
+    expect(screen.getByText('The page names another battery.')).toBeInTheDocument();
+    expect(screen.getByText('DCF891B + DCB606')).toBeInTheDocument();
+  });
+
+  it('moves focus to the next question, or to the empty sentence, and announces the count politely', async () => {
+    const user = userEvent.setup();
+    const { again } = setup(reportOf([SPLIT, MATCH]));
+    expect(screen.getByText('1 of 2')).toHaveAttribute('aria-live', 'polite');
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.click(save());
+    await waitFor(() => expect(screen.getByText('Which Amazon listing is DEWALT DCF891B?', { selector: 'legend' })).toHaveFocus());
+    again(reportOf([MATCH]));
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.click(save());
+    await waitFor(() => expect(screen.getByText('Nothing needs your answer.')).toHaveFocus());
+  });
+
   it('None of these sends none', async () => {
     const user = userEvent.setup();
     const { send } = setup(reportOf([SPLIT]));
@@ -130,6 +158,9 @@ describe('ReviewTab: a match question', () => {
     expect(link).toHaveAttribute('href', 'https://www.amazon.com/dp/B0AAAAAAA1');
     expect(link).toHaveAttribute('target', '_blank');
     expect(screen.getAllByRole('radio')).toHaveLength(3);
+    // The link is not part of the radio's label: the radio is named by its title alone.
+    expect(link.closest('label')).toBeNull();
+    expect(screen.getByRole('radio', { name: MATCH.candidates[1]!.title })).toBeInTheDocument();
   });
 
   it('sends the candidate index', async () => {
@@ -160,6 +191,18 @@ describe('ReviewTab: refusals and states', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('That question changed. Choose again.');
     for (const r of screen.getAllByRole('radio')) expect(r).not.toBeChecked();
     expect(save()).toBeDisabled();
+  });
+
+  it('a refusal is cleared when a scan starts, and does not come back when it ends', async () => {
+    const user = userEvent.setup();
+    const { again } = setup(reportOf([SPLIT]), { ok: false, error: 'That question was already answered.' });
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.click(save());
+    await screen.findByRole('alert');
+    again(reportOf([SPLIT]), state({ scanRunning: true }));
+    expect(screen.queryByRole('alert')).toBeNull();
+    again(reportOf([SPLIT]), state({ scanRunning: false }));
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('a worker that cannot be reached says so', async () => {

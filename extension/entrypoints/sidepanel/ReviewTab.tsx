@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { reviewSignature } from '@core/scan/answers';
 import type { ReviewAnswer } from '@core/scan/types';
 import type { AppState, PanelReport } from '../../lib/messages';
@@ -12,14 +12,30 @@ export interface ReviewTabProps {
   state: AppState;
 }
 
-/** Oldest question first, one at a time. An answered one is hidden at once, before the report reloads. */
+/**
+ * Oldest question first, one at a time. An answered one is hidden at once, before the report reloads.
+ * It is remembered by id and signature, so a question a later scan reopens with other choices is shown again.
+ */
 export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const [done, setDone] = useState<ReadonlySet<string>>(new Set());
-  if (!report) return <p className="review-empty">No scan has finished yet.</p>;
+  const emptyRef = useRef<HTMLParagraphElement>(null);
 
-  const open = [...report.review].sort((a, b) => a.openedAt - b.openedAt).filter((r) => !done.has(r.id));
+  const open = report ? [...report.review].sort((a, b) => a.openedAt - b.openedAt).filter((r) => !done.has(`${r.id}|${reviewSignature(r)}`)) : [];
   const item = open[0];
-  if (!item) return <p className="review-empty">Nothing needs your answer.</p>;
+
+  // After an answer the form is gone: focus goes to the next question's heading (ReviewQuestion), or here.
+  useEffect(() => {
+    if (report && !item && done.size > 0) emptyRef.current?.focus();
+  }, [report, item, done.size]);
+
+  if (!report) return <p className="review-empty">No scan has finished yet.</p>;
+  if (!item) {
+    return (
+      <p className="review-empty" ref={emptyRef} tabIndex={-1}>
+        Nothing needs your answer.
+      </p>
+    );
+  }
   const total = done.size + open.length;
 
   const save = async (answer: ReviewAnswer): Promise<string | null> => {
@@ -29,16 +45,22 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
     } catch {
       return UNREACHABLE;
     }
-    setDone((d) => new Set(d).add(item.id));
+    setDone((d) => new Set(d).add(`${item.id}|${answer.seen}`));
     return null;
   };
 
   return (
     <section className="review" aria-label="Review">
-      <p className="review-count fig">
+      <p className="review-count figure" aria-live="polite">
         {done.size + 1} of {total}
       </p>
-      <ReviewQuestion key={`${item.id}|${reviewSignature(item)}`} item={item} scanRunning={state.scanRunning} onSave={save} />
+      <ReviewQuestion
+        key={`${item.id}|${reviewSignature(item)}`}
+        item={item}
+        scanRunning={state.scanRunning}
+        focusHeading={done.size > 0}
+        onSave={save}
+      />
     </section>
   );
 }
