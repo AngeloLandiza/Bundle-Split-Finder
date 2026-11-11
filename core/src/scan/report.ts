@@ -1,7 +1,7 @@
 // Turn what a scan left in the store into ranked rows. Reads only; never searches.
 // Profit figures are estimates from fee settings, not the seller's real fees.
 
-import { type KitItem, kitContents, kitIndex, kitPageStored, kitPageUnread, sameModel } from '../kitContents';
+import { type KitItem, kitIndex, kitItemParts, kitPageStored, kitPageUnread, splitItems } from '../kitContents';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
 import { componentCounts } from './classify';
@@ -13,6 +13,7 @@ import {
   type PartRow,
   type ReportSection,
   partKey,
+  priceActive,
   resolvedParts,
   type SaleOption,
   type ScanReport,
@@ -30,7 +31,7 @@ async function partRows(store: ScanStore, brand: string, counts: Record<string, 
     const listing = match?.asin ? await store.getListing(match.asin) : undefined;
     let availability: PartAvailability = 'missing';
     if (match?.status === 'matched' && match.asin !== null) {
-      availability = price !== undefined && price.price !== null && price.seenAt === price.checkedAt ? 'active' : 'inactive';
+      availability = priceActive(price) ? 'active' : 'inactive';
     }
     rows.push({
       model,
@@ -200,9 +201,9 @@ async function bundleRow(
   const kitsNotRead: string[] = [];
   for (const model of Object.keys(counts)) {
     const records = recordsOf(b.brand, model);
-    const items = kitContents(records, b.brand, model);
-    // A list that names the kit itself is not a list of what is inside it: the kit is not split.
-    if (items && !items.some((i) => i.model !== null && sameModel(b.brand, i.model, model))) {
+    // A list that names the kit itself is not a list of what is inside it: the kit is not split (splitItems).
+    const items = splitItems(records, b.brand, model);
+    if (items) {
       kits.set(model, items);
     } else if (
       // Not read: no stored record of the kit has its page, and either a record of it is stored with
@@ -231,13 +232,15 @@ async function bundleRow(
 
 export async function buildReport(store: ScanStore, settings: ScanSettings): Promise<ScanReport> {
   const bundles: BundleRow[] = [];
-  // The parts some bundle's split holds now, as the lookups see them (resolved splits only).
+  // The parts some bundle's split holds now, as the lookups see them (resolved splits only, bundleParts):
+  // with the items of every kit a bundle's options split, whatever the kit's own listing, as those
+  // items' parts are shown in that option.
   const held = new Set<string>();
   const stored = await store.listBundles();
   const recordsOf = kitIndex(stored);
   for (const b of stored) {
     bundles.push(await bundleRow(store, settings, b, recordsOf));
-    for (const part of resolvedParts(b)) held.add(part.key);
+    for (const part of [...resolvedParts(b), ...kitItemParts(b, recordsOf)]) held.add(part.key);
   }
   bundles.sort((a, b) => {
     if (a.section !== b.section) return SECTION_RANK[a.section] - SECTION_RANK[b.section];

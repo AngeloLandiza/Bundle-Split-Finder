@@ -10,6 +10,7 @@
 // ("Runner reads pages before the split").
 
 import { type Catalog, catalogEntry } from '../decompose';
+import { kitIndex, kitItemParts } from '../kitContents';
 import { type Candidate, pick, type Picked } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
@@ -18,7 +19,7 @@ import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, s
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { knownModels, readSplit } from './split';
-import { bundleKey, partKey, resolvedParts } from './types';
+import { bundleKey, partKey, priceActive, resolvedParts } from './types';
 import type {
   BudgetView, BundleRecord, CatalogCursor, ListingRecord, MatchRecord, PageOutcome, PriceRecord, ReadPages, ReviewCandidate, ScanJob, ScanSettings,
   ScanStep, ScanStore, SearchClient, StopReason,
@@ -796,6 +797,12 @@ interface Wants {
   /** Part keys, in the order they should be paid for. */
   lookups: string[];
   refreshes: string[];
+  /**
+   * Step 6: the lookups, then the refreshes, of kit items no bundle's split holds itself, in the
+   * order they should be paid for. Planned only after every lookup and refresh above, from what the
+   * allowance has left (planParts); a job's start never counts them, so they move nothing else.
+   */
+  items: string[];
   steps: Map<string, Lookup | Refresh>;
 }
 
@@ -809,18 +816,55 @@ export interface Part {
 /** Rule 5: a lookup is wanted for a part with no match, or one left waiting, never for a user's decision. */
 export const lookupWanted = (match: MatchRecord | undefined): boolean => !match || (match.status === 'waiting' && match.decidedBy !== 'user');
 
-/** Rule 5: the parts of every resolved bundle, by part key, each with the largest saving among its bundles. */
-export async function bundleParts(store: ScanStore): Promise<Map<string, Part & { saving: number }>> {
-  const parts = new Map<string, Part & { saving: number }>();
-  for (const b of await store.listBundles()) {
-    const saving = (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0);
-    for (const part of resolvedParts(b)) {
-      const seen = parts.get(part.key);
-      if (!seen) parts.set(part.key, { ...part, saving });
-      else seen.saving = Math.max(seen.saving, saving);
+/** A part some bundle holds, as the lookups see it. */
+export interface BundlePart extends Part {
+  /** The largest saving among the bundles that hold it. */
+  saving: number;
+  /**
+   * Step 6: the part keys of the kits it is an item of (kitItemParts), when no bundle's split holds
+   * the part itself; empty when one does, and then it is planned as any part.
+   */
+  kits: string[];
+}
+
+/**
+ * Rule 5: the parts of every resolved bundle, by part key, each with the largest saving among its
+ * bundles; then (step 6) the items with a model number of every kit those bundles' options split,
+ * that no split holds itself, with the kits that hold them. A kit item that is also a part of some
+ * split is that part.
+ */
+export async function bundleParts(store: ScanStore): Promise<Map<string, BundlePart>> {
+  const parts = new Map<string, BundlePart>();
+  const items = new Map<string, BundlePart>();
+  const bundles = await store.listBundles();
+  const recordsOf = kitIndex(bundles);
+  const add = (into: Map<string, BundlePart>, part: Part, saving: number, kit: string | null) => {
+    const seen = into.get(part.key);
+    if (!seen) into.set(part.key, { key: part.key, brand: part.brand, model: part.model, saving, kits: kit === null ? [] : [kit] });
+    else {
+      seen.saving = Math.max(seen.saving, saving);
+      if (kit !== null && !seen.kits.includes(kit)) seen.kits.push(kit);
     }
+  };
+  for (const b of bundles) {
+    const saving = (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0);
+    for (const part of resolvedParts(b)) add(parts, part, saving, null);
+    for (const item of kitItemParts(b, recordsOf)) add(items, item, saving, item.kit);
   }
+  for (const [key, item] of items) if (!parts.has(key)) parts.set(key, item);
   return parts;
+}
+
+/**
+ * Step 6: whether a scan may look up (or refresh) the items of a kit: the kit was looked up (its
+ * match is no longer waiting) and has no active listing, by the report's rule (a matched listing
+ * whose price was seen at its last check). Before the kit's own lookup nobody knows it does not sell
+ * whole; with an active listing it does.
+ */
+async function itemsWanted(store: ScanStore, kit: MatchRecord | undefined): Promise<boolean> {
+  if (!kit || kit.status === 'waiting') return false;
+  if (kit.status !== 'matched' || kit.asin === null) return true;
+  return !priceActive(await store.getPrice(kit.asin));
 }
 
 /**
@@ -835,21 +879,43 @@ async function wantedParts(
   const parts = await bundleParts(store);
   const lookups: string[] = [];
   const refreshes: string[] = [];
+  const itemLookups: string[] = [];
+  const itemRefreshes: string[] = [];
   const waitingSince = new Map<string, number>();
   const steps = new Map<string, Lookup | Refresh>();
+  // 2c rule 5 first, for every part, kit items too whatever their kit's state: a saved listing costs
+  // nothing. The kits' own matches are final before any kit's items are judged below.
+  const matches = new Map<string, MatchRecord | undefined>();
   for (const [key, { brand, model }] of parts) {
     let match = await store.getMatch(key);
     if (fromListings && lookupWanted(match)) match = (await fromListings({ key, brand, model })) ?? match;
+    matches.set(key, match);
+  }
+  // Step 6: per kit, whether a scan may look up its items, read once. A kit is itself a part of a
+  // resolved split (kitItemParts), so its match was read above.
+  const kitWanted = new Map<string, boolean>();
+  const anyKitWanted = async (kits: string[]): Promise<boolean> => {
+    for (const kit of kits) {
+      if (!kitWanted.has(kit)) kitWanted.set(kit, await itemsWanted(store, matches.get(kit)));
+      if (kitWanted.get(kit)) return true;
+    }
+    return false;
+  };
+  for (const [key, { brand, model, kits }] of parts) {
+    const match = matches.get(key);
+    const item = kits.length > 0;
+    // A kit item is planned only while one of its kits was looked up and has no active listing.
+    if (item && !(await anyKitWanted(kits))) continue;
     // Never a lookup for a match the user decided, even one left waiting.
     if (lookupWanted(match)) {
       if (match) waitingSince.set(key, match.waitingSince ?? 0);
-      lookups.push(key);
+      (item ? itemLookups : lookups).push(key);
       steps.set(key, { kind: 'lookup', brand, model });
     } else if (match?.status === 'matched' && match.asin !== null) {
       // Also a part just matched from a saved listing: its price is the listing's, as old as that.
       const price = await store.getPrice(match.asin);
       if (!price || now - price.checkedAt > settings.freshnessMs) {
-        refreshes.push(key);
+        (item ? itemRefreshes : refreshes).push(key);
         steps.set(key, { kind: 'refresh', brand, model, asin: match.asin });
       }
     }
@@ -861,9 +927,12 @@ async function wantedParts(
   const failed = (k: string) => failedBefore.indexOf(k);
   // Then waiting parts first, oldest first; then by saving.
   const rank = (k: string) => waitingSince.get(k) ?? Infinity;
-  lookups.sort((a, b) => failed(a) - failed(b) || (rank(a) === rank(b) ? 0 : rank(a) < rank(b) ? -1 : 1) || bySaving(a, b));
-  refreshes.sort((a, b) => failed(a) - failed(b) || bySaving(a, b));
-  return { lookups, refreshes, steps };
+  const byLookup = (a: string, b: string) => failed(a) - failed(b) || (rank(a) === rank(b) ? 0 : rank(a) < rank(b) ? -1 : 1) || bySaving(a, b);
+  const byRefresh = (a: string, b: string) => failed(a) - failed(b) || bySaving(a, b);
+  lookups.sort(byLookup);
+  refreshes.sort(byRefresh);
+  // Step 6: kit items take their own rank, below every part above, ordered among themselves the same way.
+  return { lookups, refreshes, items: [...itemLookups.sort(byLookup), ...itemRefreshes.sort(byRefresh)], steps };
 }
 
 /** `listings`: the saved listings, read once for this planning pass. */
@@ -876,12 +945,15 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   // In the listing phase only rule 8 or a stop on request (3 rule 1) sets a stop reason: then nothing more is spent.
   const allowance = job.stopReason === null ? budget.spendable : 0;
   const plan = planScan(allowance, { hdPagesWanted: 0, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
+  // Step 6: kit items only from what every other lookup and refresh leaves.
+  const room = Math.max(0, Math.floor(allowance) - plan.searches);
+  const items = wants.items.slice(0, room);
   const toSteps = (keys: string[]) => keys.map((k) => wants.steps.get(k)!);
-  const later = [...toSteps(plan.deferredLookups), ...toSteps(plan.deferredRefreshes)];
+  const later = [...toSteps(plan.deferredLookups), ...toSteps(plan.deferredRefreshes), ...toSteps(wants.items.slice(items.length))];
   // Ruling 57: a failing part no longer wanted (matched since, decided, or in no bundle) is dropped.
   keepFailing(job, (k) => wants.steps.has(k));
   for (const step of later) if (step.kind === 'lookup') await markWaiting(run, step);
-  job.queue = [...toSteps(plan.lookups), ...toSteps(plan.refreshes)];
+  job.queue = [...toSteps(plan.lookups), ...toSteps(plan.refreshes), ...toSteps(items)];
   job.deferred.push(...later);
   // Ruling 48: from now on only the parts phase's own deferred steps may move into the queue.
   run.movable = [...later];

@@ -8,11 +8,9 @@ import { applyReviewAnswer, reviewSignature } from '../src/scan/answers';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { runPaid } from '../src/scan/paid';
 import { buildReport } from '../src/scan/report';
-import { applyLookup, matchFromListings, type PartContext, runScan, sendLookup } from '../src/scan/runner';
-import { knownModels } from '../src/scan/split';
+import { runScan } from '../src/scan/runner';
 import {
-  bundleKey, type BundleRecord, type BundleRow, DEFAULT_SCAN_SETTINGS, type PageOutcome, partKey, type ReadPages, type ReviewAnswer, type ScanCounts,
-  type ScanSettings,
+  bundleKey, type BundleRecord, type BundleRow, DEFAULT_SCAN_SETTINGS, type PageOutcome, partKey, type ReadPages, type ReviewAnswer, type ScanSettings,
 } from '../src/scan/types';
 import { type BudgetPolicy, parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '../src/serpapi/client';
@@ -101,27 +99,11 @@ async function lookUp(w: World, models: string[]): Promise<void> {
   });
 }
 
-const NO_COUNTS: ScanCounts = {
-  pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
-  catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
-};
-
 /**
- * The kit's items looked up by the scan's own steps, as the panel's Look up runs them: a saved listing
- * first (free), else one replayed search. Until Task 3 the Look up itself asks only for a split's parts.
+ * The kit's items looked up by the panel's Look up, as the worker runs it: a saved listing first (free),
+ * else one replayed search. Before Task 3 the Look up did nothing for a kit's items: they were in no split.
  */
-async function lookUpItems(w: World, models: string[]): Promise<void> {
-  const known = await knownModels(w.store);
-  const ctx: PartContext = {
-    ...paid(w, { reserve: 0, maxPerRun: 20 }), store: w.store, settings: KITS, now: () => T0, prefix: 'panel', catalog: known.catalog, job: { counts: { ...NO_COUNTS } },
-  };
-  for (const model of models) {
-    if (await matchFromListings(ctx, known.listings, { key: partKey('RYOBI', model), brand: 'RYOBI', model })) continue;
-    const step = { kind: 'lookup', brand: 'RYOBI', model } as const;
-    const result = await sendLookup(ctx, step);
-    await applyLookup(ctx, step, result.data, result.at);
-  }
-}
+const lookUpItems = lookUp;
 
 const rowOf = async (w: World, key = P553): Promise<BundleRow> => (await buildReport(w.store, KITS)).bundles.find((b) => b.key === key)!;
 const models = (row: { parts: { model: string }[] }) => row.parts.map((p) => p.model);
@@ -147,7 +129,8 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     const [whole, split] = row.options;
     // PCL1600K2 waits, since the kit is also a bundle the scan resolved; nothing asked for P553 or the items.
     expect(whole!.parts.map((p) => p.status)).toEqual(['waiting', 'unmatched']);
-    expect(split!.parts.every((p) => p.status === 'unmatched')).toBe(true);
+    // Except PBP005, which the saved brand page answers: the scan matched it for nothing (Task 3).
+    expect(split!.parts.map((p) => [p.model, p.status])).toEqual([...KIT_MODELS, 'P553'].map((m) => [m, m === 'PBP005' ? 'matched' : 'unmatched']));
     expect(whole!.estimate).toBeNull();
     expect(split!.estimate).toBeNull();
     // Leftovers name only what a lookup has shown to have no listing: none of these models yet.

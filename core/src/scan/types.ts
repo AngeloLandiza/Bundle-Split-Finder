@@ -101,6 +101,13 @@ export const resolvedParts = (b: Pick<BundleRecord, 'brand' | 'split'>): { key: 
     ? b.split.components.map((c) => ({ key: partKey(b.brand, c), brand: b.brand.trim().toUpperCase(), model: c.trim().toUpperCase() }))
     : [];
 
+/**
+ * Whether a matched listing is active: its price was seen at its last check. The report's
+ * availability, and (step 6) what keeps a scan from looking up a kit's items.
+ */
+export const priceActive = (price: PriceRecord | undefined): boolean =>
+  price !== undefined && price.price !== null && price.seenAt === price.checkedAt;
+
 export interface BundleRecord {
   /** bundleKey(itemId) */
   key: string;

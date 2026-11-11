@@ -37,7 +37,8 @@ const BULK = 'the listing says non-retail packaging';
 /** What the store already answers, read once by savedAnswers, for quotePaid. */
 export interface SavedAnswers {
   /**
-   * True when a Look up would not search for the part: it is in no resolved bundle, its match wants
+   * True when a Look up would not search for the part: it is in no resolved bundle nor among the
+   * items of a kit one splits (bundleParts; whatever that kit's own listing), its match wants
    * no lookup (rule 5: matched, in review, none, or decided by the owner), or a saved listing
    * answers it, judged exactly as the scan's matchFromListings judges it (2c rule 5).
    */
@@ -196,7 +197,8 @@ async function judge(store: ScanStore, known: KnownModels): Promise<(part: Part)
   const wanted = await bundleParts(store);
   const matches = new Map((await store.listMatches()).map((m) => [m.key, m]));
   return (part) => {
-    // Rule 5: a part of a resolved bundle with no match or one left waiting, never one the owner decided.
+    // Rule 5: a part of a resolved bundle, or (step 6) an item of a kit one splits, with no match or one
+    // left waiting, never one the owner decided. The owner asks for a kit's items: not the scan's kit rule.
     if (!wanted.has(part.key) || !lookupWanted(matches.get(part.key))) return 'nothing';
     return pickFromListings(part, known.catalog, known.listings).chosen ? 'listing' : 'search';
   };

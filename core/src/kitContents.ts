@@ -7,7 +7,7 @@
 
 import { OFFERABLE_PART } from './decompose';
 import { DEWALT_LEADING, RYOBI_TOKEN } from './pageSplit';
-import type { BundleRecord } from './scan/types';
+import { type BundleRecord, partKey, resolvedParts } from './scan/types';
 
 export interface KitItem {
   /** The item's model number, or null for an item the page names without one. */
@@ -128,4 +128,38 @@ export function kitContents(bundles: BundleRecord[], brand: string, model: strin
     if (newer) best = { readAt: r.page.readAt, itemId: r.itemId, items };
   }
   return best?.items ?? null;
+}
+
+/**
+ * The items a kit splits into in a bundle's ways to sell: kitContents, unless that list names the kit
+ * itself, which is not a list of what is inside it (then null, and the kit is not split). `records`:
+ * the stored records of the kit's brand and model (kitIndex), or all of them.
+ */
+export function splitItems(records: BundleRecord[], brand: string, model: string): KitItem[] | null {
+  const items = kitContents(records, brand, model);
+  return items && !items.some((i) => i.model !== null && sameModel(brand, i.model, model)) ? items : null;
+}
+
+/**
+ * The parts a bundle's split kits hold (step 6): for each part of a resolved split that splitItems
+ * splits, its items that have a model number, each once per kit, brand and model trimmed and upper
+ * case, with the kit's own part key. An item with no model number is never looked up, so it is not
+ * a part. Shared by the lookups' planning (bundleParts) and the report's Review, so the two agree.
+ */
+export function kitItemParts(
+  b: Pick<BundleRecord, 'brand' | 'split'>, recordsOf: (brand: string, model: string) => BundleRecord[],
+): { key: string; brand: string; model: string; kit: string }[] {
+  const out: { key: string; brand: string; model: string; kit: string }[] = [];
+  for (const part of resolvedParts(b)) {
+    const seen = new Set<string>();
+    for (const item of splitItems(recordsOf(part.brand, part.model), part.brand, part.model) ?? []) {
+      if (item.model === null) continue;
+      const model = item.model.trim().toUpperCase();
+      const key = partKey(part.brand, model);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ key, brand: part.brand, model, kit: part.key });
+    }
+  }
+  return out;
 }
