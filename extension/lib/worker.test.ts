@@ -395,6 +395,51 @@ describe('worker: each scan\'s budget (criterion 3 and the reserve rule)', () =>
     expect(running.at(-1)).toBe(false);
     expect(w.broadcasts.at(-1)!.lastJob).toMatchObject({ status: 'done' });
   });
+
+  /** Both brands and two searches: the DEWALT combo page, then the ratchet page; every lookup is left waiting. */
+  const TWO_PAGES: ExtensionSettings = { ...DEFAULT_SETTINGS, searchesPerScan: 2 };
+  const pagesWhileRunning = (w: World) =>
+    w.broadcasts.filter((s) => s.scanRunning && s.lastJob?.status === 'running').map((s) => s.lastJob!.counts.pagesFetched);
+
+  it('broadcasts the job as it is saved, so the progress moves before the scan ends', async () => {
+    const w = world({ key: KEY, settings: TWO_PAGES });
+    // Each search takes two seconds by the worker's clock, and a moment of real time for the broadcasts to land.
+    w.beforeSearch = async () => {
+      w.clock += 2_000;
+      await new Promise((ok) => setTimeout(ok, 20));
+    };
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(w.replay.calls).toHaveLength(2);
+    const pages = pagesWhileRunning(w);
+    expect(pages).toEqual(expect.arrayContaining([0, 1, 2]));
+    expect(pages).toEqual([...pages].sort((a, b) => a - b));
+    expect(w.broadcasts.at(-1)).toMatchObject({ scanRunning: false, lastJob: { status: 'stopped', counts: { pagesFetched: 2 } } });
+  });
+
+  it('broadcasts saves at most once a second, and the last save of a burst once its second is up', async () => {
+    const w = world({ key: KEY, settings: TWO_PAGES });
+    let reach!: () => void;
+    const reached = new Promise<void>((ok) => (reach = ok));
+    let release!: () => void;
+    const open = new Promise<void>((ok) => (release = ok));
+    // The worker's clock stands still. The DEWALT page waits a moment, so the broadcast of the new job lands first;
+    // the ratchet page is held, so the scan waits with page 1 saved.
+    w.beforeSearch = async (url) => {
+      if (url.searchParams.get('q') !== RYOBI_QUERY) return void (await new Promise((ok) => setTimeout(ok, 20)));
+      reach();
+      await open;
+    };
+    await send(w, { type: 'scanNow' });
+    await reached;
+    await new Promise((ok) => setTimeout(ok, 50));
+    // The new job was broadcast at once; page 1 was saved within the same second, so it waits.
+    expect(pagesWhileRunning(w)).toEqual([0]);
+    await vi.waitFor(() => expect(pagesWhileRunning(w)).toEqual([0, 1]), { timeout: 3_000 });
+    release();
+    await untilIdle(w);
+    expect(w.broadcasts.at(-1)).toMatchObject({ scanRunning: false, lastJob: { counts: { pagesFetched: 2 } } });
+  });
 });
 
 // ---------------------------------------------------------------- 3. resume

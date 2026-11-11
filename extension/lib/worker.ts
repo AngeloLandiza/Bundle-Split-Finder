@@ -91,6 +91,8 @@ const CLOSED: BudgetView = { spendable: 0, blockReason: () => 'reserve' };
 const KEY_CHANGED = 'The SerpApi key changed while the scan was starting. Scan again.';
 /** A job is continued at most this many times in a row without progress. */
 const MAX_TRIES = 2;
+/** A running scan's saves are broadcast at most this often; the last save of a burst is broadcast once the time is up. */
+const PROGRESS_MS = 1_000;
 /** Notifications per scan, one per bundle. */
 const MAX_NOTIFIED = 3;
 
@@ -158,11 +160,19 @@ function sameSchedule(a: Schedule, b: Schedule): boolean {
   return a.mode === b.mode;
 }
 
-/** The store, except that every job goes through `prepare`, which must succeed, before it is saved. */
-function onPutScan(store: ScanStore, prepare: (job: ScanJob) => Promise<ScanJob>): ScanStore {
+/**
+ * The store, except that every job goes through `prepare`, which must succeed, before it is saved,
+ * and `saved` is called once it is.
+ */
+function onPutScan(store: ScanStore, prepare: (job: ScanJob) => Promise<ScanJob>, saved: () => void): ScanStore {
   return new Proxy(store, {
     get(target, prop) {
-      if (prop === 'putScan') return async (job: ScanJob) => target.putScan(await prepare(job));
+      if (prop === 'putScan') {
+        return async (job: ScanJob) => {
+          await target.putScan(await prepare(job));
+          saved();
+        };
+      }
       const value: unknown = Reflect.get(target, prop, target);
       return typeof value === 'function' ? value.bind(target) : value;
     },
@@ -247,6 +257,37 @@ export function createWorker(env: WorkerEnv): Worker {
     }
   }
 
+  /** When the last progress broadcast was sent, by env.now. */
+  let progressAt = -Infinity;
+  /** The broadcast that carries the last save of a burst, due when its second is up. */
+  let progressTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /**
+   * A running scan saved its job: the pages hear of it, at most once a second. A save within the
+   * second is broadcast when the second is up, with whatever the job holds by then.
+   */
+  function jobSaved(): void {
+    const wait = progressAt + PROGRESS_MS - env.now();
+    if (wait > 0) {
+      // Never longer than the second, even if the clock was set back.
+      progressTimer ??= setTimeout(sendProgress, Math.min(wait, PROGRESS_MS));
+      return;
+    }
+    sendProgress();
+  }
+
+  function sendProgress(): void {
+    endProgress();
+    progressAt = env.now();
+    void broadcast();
+  }
+
+  /** No progress broadcast is due any more: the scan's last broadcast carries its last save. */
+  function endProgress(): void {
+    clearTimeout(progressTimer);
+    progressTimer = undefined;
+  }
+
   /**
    * Rule 2: starts a scan, or continues the job runScan will continue (the newest, when it
    * is "running"). No key or a failed account check means no scan, and `problem` says why.
@@ -307,10 +348,14 @@ export function createWorker(env: WorkerEnv): Worker {
       named = true;
     };
     if (continued) await name(continued, attempts);
-    const saving = onPutScan(store, async (job) => {
-      if (job.status === 'running') await name(job, 0);
-      return job.stopMessage === null ? job : { ...job, stopMessage: withoutKey(job.stopMessage, key) };
-    });
+    const saving = onPutScan(
+      store,
+      async (job) => {
+        if (job.status === 'running') await name(job, 0);
+        return job.stopMessage === null ? job : { ...job, stopMessage: withoutKey(job.stopMessage, key) };
+      },
+      jobSaved,
+    );
 
     // Asked last before the scan is claimed, so a forgetKey or stopScan sent while the account
     // was being checked is not lost. After the claim, both set stopRequested.
@@ -335,6 +380,7 @@ export function createWorker(env: WorkerEnv): Worker {
         scan = null;
         stopRequested = false;
         scanKey = null;
+        endProgress();
         void broadcast();
       });
     await broadcast();
