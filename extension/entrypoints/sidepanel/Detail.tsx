@@ -73,7 +73,7 @@ function AnswerLine({ text, className = 'detail-answer', disabled, scanRunning, 
 }
 
 function noEstimate(row: BundleRow): string {
-  if (row.answer?.kind === 'none') return 'No estimate: you said none of the readings is right.';
+  if (row.answer?.kind === 'none') return "No estimate: you marked this bundle's parts as not known.";
   if (row.section === 'split' || row.status === 'needs_review') return 'No estimate: what this bundle contains is not known yet.';
   if (row.price === null) return 'No estimate: Home Depot shows no price for this bundle.';
   return 'No estimate: a part has not been looked up yet.';

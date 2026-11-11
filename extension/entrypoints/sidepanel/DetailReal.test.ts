@@ -4,6 +4,7 @@
 import '@testing-library/jest-dom/vitest';
 import { createElement } from 'react';
 import { cleanup, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { replayRecorded } from '../../../scripts/replay';
 import { HD_DEWALT_AMBIGUOUS, SERPAPI_ACCOUNT_FREE } from '../../../core/test/fixtures';
@@ -36,7 +37,7 @@ async function replayed(maxPerRun: number): Promise<PanelReport> {
  * The real bundle whose '1B' fits DCF891B and DCF921B (core/test/fixtures.ts): a scan that may spend nothing
  * asks which, and the owner answers DCF921B. Its parts have no match record until something looks them up.
  */
-async function ownerChose(): Promise<PanelReport> {
+async function ownerChose(answer: 'second' | 'none' = 'second'): Promise<PanelReport> {
   const store = new MemoryScanStore();
   const [model, title] = HD_DEWALT_AMBIGUOUS;
   await store.putBundle({
@@ -51,7 +52,7 @@ async function ownerChose(): Promise<PanelReport> {
   const client = new SerpApiClient({ apiKey: 'TEST', budget, cache: new MemoryCache(), fetchFn: replayRecorded().fetchFn, now: () => T0 });
   await runScan({ client, budget, store, settings, now: () => T0 });
   const question = (await store.getReview('split:homedepot:ambiguous'))!;
-  await applyReviewAnswer(store, question.id, { choice: 1, seen: reviewSignature(question) }, T0);
+  await applyReviewAnswer(store, question.id, answer === 'none' ? { none: true, seen: reviewSignature(question) } : { choice: 1, seen: reviewSignature(question) }, T0);
   return { ...(await buildReport(store, settings)), packaging: {} };
 }
 
@@ -126,6 +127,33 @@ describe('Detail on a replayed scan', () => {
       const gross = row.parts.reduce((sum, p) => sum + (p.price !== null && !counted.has(p.model) ? p.price * p.qty : 0), 0);
       expect(screen.getByText('Parts sell for').nextElementSibling).toHaveTextContent(`$${gross.toFixed(2)}`);
     }
+  });
+
+  it('after None of these, says the owner marked the parts as not known, with Change right after, and sends the real review id', async () => {
+    const user = userEvent.setup();
+    const report = await ownerChose('none');
+    const row = report.bundles.find((b) => b.key === 'homedepot:ambiguous')!;
+    expect(row.answer).toEqual({ reviewId: 'split:homedepot:ambiguous', kind: 'none' });
+    const send = vi.fn(async (r: { type: string }) => ({ ok: true, data: null }));
+    render(createElement(Detail, { api: { ...api, send: send as unknown as WorkerApi['send'] }, report, state, bundleKey: row.key, onBack: vi.fn() }));
+    const band = screen.getByRole('region', { name: 'Estimate' });
+    const sentence = within(band).getByText("No estimate: you marked this bundle's parts as not known.");
+    expect(screen.queryByText(/none of the readings/)).toBeNull();
+    const change = within(band).getByRole('button', { name: 'Change' });
+    expect(sentence.parentElement).toBe(change.parentElement);
+    await user.click(change);
+    expect(send).toHaveBeenCalledWith({ type: 'reopenReview', id: 'split:homedepot:ambiguous' });
+  });
+
+  it('after a chosen reading, Change sits under PARTS and sends the real review id', async () => {
+    const user = userEvent.setup();
+    const report = await ownerChose();
+    const row = report.bundles.find((b) => b.key === 'homedepot:ambiguous')!;
+    const send = vi.fn(async (r: { type: string }) => (r.type === 'quote' ? { ok: true, data: { searches: 2, refusal: null } } : { ok: true, data: null }));
+    render(createElement(Detail, { api: { ...api, send: send as unknown as WorkerApi['send'] }, report, state, bundleKey: row.key, onBack: vi.fn() }));
+    expect(screen.getByText('You chose these parts.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    expect(send).toHaveBeenCalledWith({ type: 'reopenReview', id: 'split:homedepot:ambiguous' });
   });
 
   it('shows the split question of a bundle in Needs your answer, under its no-estimate sentence', () => {
