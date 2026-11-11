@@ -81,12 +81,12 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     await openP553();
     const [whole, split] = blocks();
     expect(within(whole!).getByText('Leaves nothing')).toBeInTheDocument();
-    expect(within(split!).getByText(`Leaves ${UNNAMED.length} items: ${UNNAMED.join(', ')}`)).toBeInTheDocument();
-    expect(within(whole!).queryByText('Items from a kit have no retail box of their own.')).toBeNull();
-    expect(within(split!).getByText('Items from a kit have no retail box of their own.')).toBeInTheDocument();
+    expect(within(split!).getByText(`Leaves ${UNNAMED.length} parts: ${UNNAMED.join(', ')}`)).toBeInTheDocument();
+    expect(within(whole!).queryByText('Parts from a kit have no retail box of their own.')).toBeNull();
+    expect(within(split!).getByText('Parts from a kit have no retail box of their own.')).toBeInTheDocument();
   });
 
-  it("has no figure for either way yet, and offers Look up N items with the worker's own quote", async () => {
+  it("has no figure for either way yet, and offers Look up N parts with the worker's own quote", async () => {
     const { w, first } = await openP553();
     const row = first.bundles.find((b) => b.key === P553_KEY)!;
     const [whole, split] = blocks();
@@ -95,9 +95,9 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     // The quote is whatever the worker's quotePaid says (it counts what Look up would search for).
     const quoted = async (o: number) => (await kitQuote(w, { kind: 'lookUp', parts: row.options[o]!.parts.map((p) => ({ brand: 'RYOBI', model: p.model })) })).searches;
     const cost = (n: number) => (n === 0 ? '· no search' : `· ${n} ${n === 1 ? 'search' : 'searches'}`);
-    expect(await within(split!).findByRole('button', { name: `Look up 9 items ${cost(await quoted(1))}` })).not.toHaveAttribute('aria-disabled');
+    expect(await within(split!).findByRole('button', { name: `Look up 9 parts ${cost(await quoted(1))}` })).not.toHaveAttribute('aria-disabled');
     expect(await quoted(0)).toBe(2);
-    expect(await within(whole!).findByRole('button', { name: 'Look up 2 items · 2 searches' })).not.toHaveAttribute('aria-disabled');
+    expect(await within(whole!).findByRole('button', { name: 'Look up 2 parts · 2 searches' })).not.toHaveAttribute('aria-disabled');
     // The estimate band does not repeat them: the options hold the buttons.
     expect(screen.getAllByRole('button', { name: /^Look up/ })).toHaveLength(2);
   });
@@ -105,9 +105,9 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
   it("pressing the whole way's Look up sends exactly its parts and gives it an estimate, with the estimate label under the list", async () => {
     const user = userEvent.setup();
     const { sent } = await openP553();
-    await user.click(await within(blocks()[0]!).findByRole('button', { name: 'Look up 2 items · 2 searches' }));
+    await user.click(await within(blocks()[0]!).findByRole('button', { name: 'Look up 2 parts · 2 searches' }));
     expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PCL1600K2' }, { brand: 'RYOBI', model: 'P553' }] } });
-    await waitFor(() => expect(within(region()).queryByRole('button', { name: /Look up 2 items/ })).toBeNull());
+    await waitFor(() => expect(within(region()).queryByRole('button', { name: /Look up 2 parts/ })).toBeNull());
     expect(within(blocks()[0]!).getByText(/^[+−]\$/)).toBeInTheDocument();
     expect(within(region()).getByText(/^Estimated profit and ROI/)).toBeInTheDocument();
   });
@@ -116,7 +116,7 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     const user = userEvent.setup();
     const { first, sent } = await openP553();
     const items = first.bundles.find((b) => b.key === P553_KEY)!.options[1]!.parts.map((p) => ({ brand: 'RYOBI', model: p.model }));
-    await user.click(await within(splitBlock()).findByRole('button', { name: /^Look up 9 items · / }));
+    await user.click(await within(splitBlock()).findByRole('button', { name: /^Look up 9 parts · / }));
     expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: items } });
   });
 
@@ -133,10 +133,49 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     expect(within(a!).getByText('Shown above')).toBeInTheDocument();
     expect(within(a!).getByText(/^[+−]\$/)).toHaveTextContent(profit(row.options[0]!.estimate!.profit));
     expect(within(a!).queryByRole('button', { name: /^Look up/ })).toBeNull();
-    expect(within(a!).getByText(/^Leaves \d+ items: /)).toBeInTheDocument();
-    expect(within(b!).getByText('Leaves 2 items: PCL1600K2, P553')).toBeInTheDocument();
+    expect(within(a!).getByText(/^Leaves \d+ parts: /)).toBeInTheDocument();
+    expect(within(b!).getByText(/^Leaves 2 parts:/)).toHaveTextContent('Leaves 2 parts: PCL1600K2, P553');
     // The headline is the primary's: the same figure.
     expect(screen.getByText(profit(row.estimate!.profit), { selector: '.detail-profit' })).toBeInTheDocument();
+  });
+});
+
+describe('Detail: model numbers and names in Ways to sell', () => {
+  const mono = (el: HTMLElement) => Array.from(el.querySelectorAll('.figure')).map((m) => m.textContent);
+
+  it('sets each kit model of a label, and a leftover that is a part model, in the figure face, and leaves unnamed parts in the body face', async () => {
+    await openP553();
+    const [whole, split] = blocks();
+    expect(mono(within(whole!).getByText(/sold whole/))).toEqual(['PCL1600K2']);
+    expect(mono(within(split!).getByText(/split into its/))).toEqual(['PCL1600K2']);
+    // The split leaves only unnamed parts here: none of them is a model.
+    expect(mono(split!.querySelector('.detail-way-line') as HTMLElement)).toEqual([]);
+  });
+
+  it('sets the leftover models in the figure face once the looked-up parts have no listing', async () => {
+    const w = await answeredKitWorld();
+    await kitRunPaid(w, { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PCL1600K2' }, { brand: 'RYOBI', model: 'P553' }] });
+    const first = await kitReport(w);
+    render(createElement(Harness, { w, api: workerApi(w), first, bundleKey: P553_KEY }));
+    const line = within(blocks()[0]!).getByText(/^Leaves 2 parts:/);
+    expect(Array.from(line.querySelectorAll('.figure')).map((m) => m.textContent)).toEqual(['PCL1600K2', 'P553']);
+  });
+
+  it('sets the kit model of the not-known sentence in the figure face', async () => {
+    await openP553({ pages: false });
+    const sentence = screen.getByText(/contents are not known yet/);
+    expect(Array.from(sentence.querySelectorAll('.figure')).map((m) => m.textContent)).toEqual(['PCL1600K2']);
+  });
+
+  it('describes each Look up by its own way to sell, so two buttons of one name are told apart', async () => {
+    await openP553();
+    const [whole, split] = blocks();
+    for (const block of [whole!, split!]) {
+      const button = await within(block).findByRole('button', { name: /^Look up/ });
+      const label = block.querySelector('.detail-way-label') as HTMLElement;
+      expect(label.id).not.toBe('');
+      expect(button.getAttribute('aria-describedby')?.split(' ')).toContain(label.id);
+    }
   });
 });
 
@@ -145,7 +184,7 @@ describe('Detail: a kit whose page has not been read', () => {
     const { first } = await openP553({ pages: false });
     const row = first.bundles.find((b) => b.key === P553_KEY)!;
     expect(row.kitsNotRead).toEqual(['PCL1600K2']);
-    expect(screen.getByText("PCL1600K2's contents are not known yet: its Home Depot page has not been read.")).toBeInTheDocument();
+    expect(screen.getByText(/contents are not known yet/)).toHaveTextContent("PCL1600K2's contents are not known yet: its Home Depot page has not been read.");
     expect(screen.queryByRole('heading', { name: 'Ways to sell' })).toBeNull();
     expect(screen.queryByText('Shown above')).toBeNull();
   });

@@ -13,3 +13,5 @@ output/
 .output-prod-check/
 test-results/
 playwright-report/
+qa-shots/
+qa-shots-2/

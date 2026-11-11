@@ -2,11 +2,12 @@ import { readFileSync } from 'node:fs';
 import type { Page } from '@playwright/test';
 import { parseBundlePage } from '../core/src/hdPage';
 import { reviewSignature } from '../core/src/scan/answers';
-import type { ReviewItem } from '../core/src/scan/types';
+import type { BundleRecord, ReviewItem } from '../core/src/scan/types';
 import { expect, getState, saveKey, test } from './fixtures';
 
-// Outside test-results/, which every e2e run clears.
-const DIR = 'qa-shots/';
+// Screenshots only when SPLIT_FINDER_SHOTS is set: 1 writes to qa-shots/, any other value is the folder. Never in a normal run.
+const SHOTS = process.env.SPLIT_FINDER_SHOTS;
+const DIR = SHOTS ? `${SHOTS === '1' ? 'qa-shots' : SHOTS}/` : null;
 const WIDTHS = [360, 480];
 const P553 = 'homedepot:320243741';
 
@@ -14,7 +15,7 @@ async function shoot(panel: Page, name: string): Promise<void> {
   for (const width of WIDTHS) {
     await panel.setViewportSize({ width, height: 900 });
     await panel.waitForTimeout(150);
-    await panel.screenshot({ path: `${DIR}options-${name}-${width}.png` });
+    if (DIR) await panel.screenshot({ path: `${DIR}options-${name}-${width}.png` });
     expect(await panel.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     expect(await panel.evaluate(() => (document.querySelector('.detail-body') ? document.querySelector('.detail-body')!.scrollWidth <= document.querySelector('.detail-body')!.clientWidth : true))).toBe(true);
   }
@@ -35,7 +36,8 @@ async function scanAndWait(page: Page): Promise<void> {
 async function storeKitPage(page: Page): Promise<void> {
   const pages = (JSON.parse(readFileSync('fixtures/homedepot-pages/pages-2026-11-10.json', 'utf8')) as { pages: { itemId: string; text: string }[] }).pages;
   const content = parseBundlePage(pages.find((p) => p.itemId === '317987591')!.text, '317987591')!;
-  const record = {
+  // The database name and the store are the extension's own (extension/lib/db.ts: 'split-finder', 'bundles').
+  const record: BundleRecord = {
     key: 'homedepot:317987591', retailer: 'homedepot', itemId: '317987591', title: 'RYOBI ONE+ 18V Cordless 11-Tool Combo Kit', brand: 'RYOBI', model: 'PCL1600K2',
     upc: null, price: null, regularPrice: null, percentOff: null, link: null, seenAt: Date.now(), split: null, page: { ...content, readAt: Date.now() },
   };
@@ -85,16 +87,16 @@ test('deals and detail, a bundle with a kit that can be sold whole or split', as
   await expect(region.getByText('PCL1600K2 split into its items')).toBeVisible();
   await expect(region.getByText('Shown above')).toHaveCount(1);
   await expect(region.getByText('Leaves nothing')).toBeVisible();
-  await expect(region.getByText('Items from a kit have no retail box of their own.')).toBeVisible();
+  await expect(region.getByText('Parts from a kit have no retail box of their own.')).toBeVisible();
   await expect(region.getByText(/^Estimated profit and ROI/)).toBeVisible();
-  const whole = region.getByRole('button', { name: 'Look up 2 items · 2 searches' });
+  const whole = region.getByRole('button', { name: 'Look up 2 parts · 2 searches' });
   await expect(whole).toBeVisible();
   await expect(whole).not.toHaveAttribute('aria-disabled', 'true');
-  await expect(region.getByRole('button', { name: /^Look up 9 items · / })).toBeVisible();
+  await expect(region.getByRole('button', { name: /^Look up 9 parts · / })).toBeVisible();
   await shoot(panel, 'before-lookup');
 
   await whole.click();
-  await expect(region.getByRole('button', { name: /^Look up 2 items/ })).toHaveCount(0);
+  await expect(region.getByRole('button', { name: /^Look up 2 parts/ })).toHaveCount(0);
   await expect(region.locator('.detail-way').first().locator('.detail-way-profit')).toHaveText(/^[+−]\$/);
   await shoot(panel, 'after-lookup');
 });

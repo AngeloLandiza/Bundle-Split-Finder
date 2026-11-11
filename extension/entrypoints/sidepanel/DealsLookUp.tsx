@@ -25,6 +25,8 @@ interface LookUpProps {
   inRow?: boolean;
   /** The parts to look up, when they are not the row's own waiting parts: one way to sell's items. Names them "N items". */
   items?: { brand: string; model: string }[];
+  /** An id that names what this button is for: two buttons of one name are told apart by it. */
+  describedBy?: string;
 }
 
 /**
@@ -32,7 +34,7 @@ interface LookUpProps {
  * before the click and is asked for again whenever a scan starts or ends, a paid action finishes, the parts
  * change or a new report comes (useQuote). A refused quote disables the button and says why.
  */
-export function LookUp({ row, report, api, scanRunning, version, busy, onRun, inRow = false, items }: LookUpProps) {
+export function LookUp({ row, report, api, scanRunning, version, busy, onRun, inRow = false, items, describedBy }: LookUpProps) {
   // A failed run's sentence is kept apart from the quote, so a later quote cannot wipe it. It belongs to the parts it was for.
   const [runError, setRunError] = useState<{ partKey: string; text: string } | null>(null);
   // True from the press until the request ends: this button says so.
@@ -63,8 +65,8 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
   const cost = shown === null ? `at most ${searches(parts.length)}` : shown === 0 ? 'no search' : searches(shown);
   // The name starts with the visible label (WCAG 2.5.3) and then says what is looked up.
   const visible = `Look up ${shown === 0 ? '· no search' : cost}`;
-  // A way to sell's button says how many items: "Look up 9 items · 8 searches". Its name is its visible text.
-  const itemsLabel = items ? `${items.length} ${items.length === 1 ? 'item' : 'items'}` : null;
+  // A way to sell's button says how many parts: "Look up 9 items · 8 searches". Its name is its visible text.
+  const itemsLabel = items ? `${items.length} ${items.length === 1 ? 'part' : 'parts'}` : null;
   const what = parts.length === 1 ? parts[0]!.model : `${parts.length} parts of ${row.model}`;
 
   const refusalText = refusal ? (
@@ -78,7 +80,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
         type="button"
         className="deal-lookup-btn"
         aria-label={running || itemsLabel ? undefined : `${visible}, ${what}`}
-        aria-describedby={refusal ? refusalId : undefined}
+        aria-describedby={[describedBy, refusal ? refusalId : undefined].filter(Boolean).join(' ') || undefined}
         aria-disabled={blocked ? 'true' : undefined}
         onClick={run}
       >

@@ -14,7 +14,7 @@ import { OpenOnHomeDepot } from './OpenOnHomeDepot';
 import { ProgressRow } from './ProgressRow';
 import { ReviewQuestion } from './ReviewQuestion';
 import { Verify } from './DetailVerify';
-import { notReadText, WaysToSell } from './WaysToSell';
+import { KitNotRead, WaysToSell } from './WaysToSell';
 import { usePaidFocus } from './paidFocus';
 import './Detail.css';
 
@@ -482,7 +482,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
           {reopened && !row.answer && !question ? <p className="detail-noestimate">{SETTLED}</p> : null}
           {row.kitsNotRead.map((m) => (
             <p className="detail-estimate" key={m}>
-              {notReadText(m)}
+              <KitNotRead model={m} />
             </p>
           ))}
         </section>
