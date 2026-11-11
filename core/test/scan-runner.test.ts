@@ -2335,6 +2335,67 @@ describe('runScan: a slot the cache answers is given back (Ruling 48; QA 3, Majo
     expect(Math.max(...spent)).toBeLessThanOrEqual(1);
   });
 
+  /**
+   * The replay, with a page 2 for both queries: the recorded page 1, whose pagination then says
+   * there is no page 3. `asked` logs every Home Depot page that reaches the network, as `A1`, `B2`.
+   */
+  const withPageTwo = (w: World) => {
+    const asked: string[] = [];
+    const fetchFn = (async (input: string | URL | Request) => {
+      const url = new URL(String(input instanceof Request ? input.url : input));
+      if (url.searchParams.get('engine') !== 'home_depot') return w.replay.fetchFn(input);
+      const page = url.searchParams.get('page') ?? '1';
+      asked.push(`${url.searchParams.get('q') === 'ryobi extended reach ratchet' ? 'A' : 'B'}${page}`);
+      if (page === '1') return w.replay.fetchFn(input);
+      const first = new URL(url);
+      first.searchParams.set('page', '1');
+      const body = (await (await w.replay.fetchFn(first.toString())).json()) as { serpapi_pagination?: unknown; pagination?: unknown };
+      body.serpapi_pagination = { current: 2 };
+      delete body.pagination;
+      return new Response(JSON.stringify(body), { status: 200 });
+    }) as typeof fetch;
+    return { fetchFn, asked };
+  };
+
+  it('page 2 is read once page 1 has been answered: at a limit of 1, four scans read all four pages (F9 review, Important)', async () => {
+    const w = world();
+    const { fetchFn, asked } = withPageTwo(w);
+    const spent: number[] = [];
+    for (const i of [0, 1, 2, 3]) {
+      // Three hours apart: no page comes from the cache.
+      w.clock = T0 + i * 3 * 60 * MINUTE;
+      const before = w.ledger.length;
+      await scan(w, { settings: TWO_PAGES, policy: ONE_SEARCH, fetchFn });
+      spent.push(w.ledger.length - before);
+    }
+    // Before the fix, every scan put page 1 first again: A1 B1 A1 B1, and page 2 was never read.
+    expect(asked, 'page 2 starved behind page 1').toEqual(['A1', 'B1', 'A2', 'B2']);
+    expect(spent).toEqual([1, 1, 1, 1]);
+  });
+
+  it('a page 2 a top-up passes over while its page 1 waits in the queue is moved up once page 1 is answered (F9 review)', async () => {
+    const w = world();
+    const { fetchFn, asked } = withPageTwo(w);
+    // Both page 1s paid and cached.
+    await scan(w, { settings: { ...TWO_PAGES, pagesPerQuery: 1 }, policy: OPEN, fetchFn });
+    expect(asked).toEqual(['A1', 'B1']);
+    // A store whose last job, stored before page answers were kept, deferred B2 then A2.
+    const page2 = (q: string): ScanStep => ({ kind: 'listing', q, page: 2, filterTokens: null, bundlesOnly: false });
+    const { answeredPages: _unknown, ...last } = (await w.store.listScans())[0]!;
+    const fresh: World = { ...w, store: new MemoryScanStore(), clock: T0 + 10 * MINUTE };
+    await fresh.store.putScan({ ...last, status: 'stopped', deferred: [page2('dewalt 20v combo kit'), page2('ryobi extended reach ratchet')] });
+    // The bundles, without their matches: their parts want lookups, so at a limit of 5 planning
+    // queues two of the four pages (its page share) and defers the others.
+    for (const b of await w.store.listBundles()) await fresh.store.putBundle(b);
+    const before = w.ledger.length;
+    const job = await scan(fresh, { settings: TWO_PAGES, policy: { reserve: 0, maxPerRun: 5 }, fetchFn });
+    // Planned: B1 then A1, both from the cache. B1's slot: A2 still waits for A1, so B2 takes it.
+    // A1's slot: A1 has now answered, so A2, passed over before, takes it.
+    expect(asked.slice(2)).toEqual(['B2', 'A2']);
+    expect(w.ledger.slice(before)).toEqual(['scan:listing:dewalt 20v combo kit:p2', 'scan:listing:ryobi extended reach ratchet:p2']);
+    expect(job.deferred.filter((s) => s.kind === 'listing')).toEqual([]);
+  });
+
   it('a listing page planned and answered from the cache gives its slot to the page deferred after it', async () => {
     const w = world();
     // DEWALT's page alone, paid and cached.

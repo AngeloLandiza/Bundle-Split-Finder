@@ -18,7 +18,7 @@ import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, s
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { knownModels, readSplit } from './split';
-import { bundleKey, partKey } from './types';
+import { bundleKey, partKey, resolvedParts } from './types';
 import type {
   BudgetView, BundleRecord, CatalogCursor, ListingRecord, MatchRecord, PageOutcome, PriceRecord, ReadPages, ReviewCandidate, ScanJob, ScanSettings,
   ScanStep, ScanStore, SearchClient, StopReason,
@@ -151,7 +151,10 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   // query cannot hold the only slot on every scan. Only pages the settings still ask for.
   // Ruling 52: a page whose search failed in the last job goes after every other page.
   const failedPages = failedPagesOf(newest);
-  const pages = deferredFirst(inOrder, newest?.deferred ?? [], failedPages);
+  // F9 review: the pages whose last answer said there is a next one, as the last job left them.
+  const askedFor = new Set(inOrder.map(pageKey));
+  const answered = new Set([...answeredPagesOf(newest)].filter((k) => askedFor.has(k) && !failedPages.has(k)));
+  const pages = deferredFirst(inOrder, newest?.deferred ?? [], failedPages, answered);
   const wants = await wantedParts(store, settings, startedAt, undefined, failedBefore);
   const plan = planScan(budget.spendable - catalogPages, { hdPagesWanted: pages.length, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
   const deferred = pages.slice(plan.hdPages);
@@ -169,6 +172,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   };
   // Ruling 57: carried on, so a part that keeps failing stays behind the others until it is answered.
   if (failedBefore.length > 0) job.failingParts = [...failedBefore];
+  if (answered.size > 0) job.answeredPages = [...answered];
   await store.putScan(job);
   return { ...run(job), movable };
 }
@@ -181,6 +185,15 @@ function failedPagesOf(job: ScanJob | undefined): Set<string> {
   const pages: unknown = job?.failedPages;
   return new Set(Array.isArray(pages) ? pages.filter((p): p is string => typeof p === 'string') : []);
 }
+
+/** The pages a stored job knew to have a next page (F9 review). Untrusted, as failedPagesOf. */
+function answeredPagesOf(job: ScanJob | undefined): Set<string> {
+  const pages: unknown = job?.answeredPages;
+  return new Set(Array.isArray(pages) ? pages.filter((p): p is string => typeof p === 'string') : []);
+}
+
+/** The key of the page before `p` in its query. */
+const earlierPageKey = (p: Listing): string => pageKey({ ...p, page: p.page - 1 });
 
 /**
  * The parts a stored job left failing, least recent failure first (Ruling 57); a job saved before
@@ -208,12 +221,13 @@ const queryKey = (p: Listing): string => JSON.stringify([p.q, p.filterTokens ?? 
 /**
  * `pages` with those that equal a listing step in `earlier` first, in `earlier`'s order; the rest
  * keep their order; and last, in that same order, the pages in `failed` and the later pages of
- * their queries (Ruling 52). Then each query's pages are put in page order within the places that
- * query holds, so a page is never planned before an earlier page of its query, which may say it
- * does not exist (final review): a job's deferred list and a failed page could otherwise put page
- * 2 in front of page 1.
+ * their queries (Ruling 52). Then, within the places each query holds, a page N waits behind page
+ * N−1 while N−1 is unanswered: not in `answered` (its last answer said there is a next page), or
+ * failed. Page N−1 may say page N does not exist (final review); but once it has said there is a
+ * page N, page N keeps its deferred place, or a low limit would read page 1 on every scan and never
+ * page 2 (F9 review).
  */
-function deferredFirst(pages: Listing[], earlier: ScanStep[], failed: Set<string> = new Set()): Listing[] {
+function deferredFirst(pages: Listing[], earlier: ScanStep[], failed: Set<string> = new Set(), answered: Set<string> = new Set()): Listing[] {
   const first: Listing[] = [];
   for (const step of earlier) {
     if (step.kind !== 'listing') continue;
@@ -224,15 +238,34 @@ function deferredFirst(pages: Listing[], earlier: ScanStep[], failed: Set<string
   const failedAt = pages.filter((p) => failed.has(pageKey(p)));
   const isFailed = (p: Listing) => failedAt.some((f) => queryKey(f) === queryKey(p) && f.page <= p.page);
   const placed = [...ordered.filter((p) => !isFailed(p)), ...ordered.filter(isFailed)];
+  const free = (p: Listing) => p.page <= 1 || (answered.has(earlierPageKey(p)) && !failed.has(earlierPageKey(p)));
   const byQuery = new Map<string, Listing[]>();
   for (const p of placed) byQuery.set(queryKey(p), [...(byQuery.get(queryKey(p)) ?? []), p]);
-  for (const group of byQuery.values()) group.sort((a, b) => a.page - b.page);
+  for (const [query, group] of byQuery) {
+    const out: Listing[] = [];
+    // Pages held, by the page number they wait for.
+    const held = new Map<number, Listing[]>();
+    const emit = (p: Listing): void => {
+      out.push(p);
+      const next = held.get(p.page) ?? [];
+      held.delete(p.page);
+      for (const n of next) emit(n);
+    };
+    for (const p of group) {
+      if (free(p) || out.some((o) => o.page === p.page - 1) || !group.some((o) => o.page === p.page - 1)) emit(p);
+      else held.set(p.page - 1, [...(held.get(p.page - 1) ?? []), p]);
+    }
+    byQuery.set(query, out);
+  }
   return placed.map((p) => byQuery.get(queryKey(p))!.shift()!);
 }
 
-/** A listing step with an earlier page of its query still deferred: it must wait for that page. */
-const behindDeferredPage = (step: ScanStep, deferred: ScanStep[]): boolean =>
-  step.kind === 'listing' && deferred.some((s) => s.kind === 'listing' && queryKey(s) === queryKey(step) && s.page < step.page);
+/**
+ * A listing step whose earlier page has not said there is a next page, in this job or one before it
+ * (F9 review): it must wait for that page.
+ */
+const waitsForEarlierPage = (step: ScanStep, job: ScanJob): boolean =>
+  step.kind === 'listing' && step.page > 1 && !(job.answeredPages ?? []).includes(earlierPageKey(step));
 
 /**
  * 2c rule 1: `catalogPagesPerScan` brand pages, shared by the scanned brands that have a
@@ -327,16 +360,22 @@ async function runQueue(run: Run): Promise<void> {
  * when what may still be spent is more than the steps already queued, so every queued step can
  * still be paid for; the guard still decides each search. Not a retry: a step set aside after a
  * failure is never in `movable`, and a step leaves `movable` when it moves. A listing page whose
- * query has an earlier page still deferred (one that failed, say) does not move: that page may
- * say it does not exist (final review).
+ * earlier page has not said there is a next one does not move yet, as that page may say it does not
+ * exist (final review); it stays movable, so a later top-up in the run takes it once that page is
+ * answered (F9 review).
  */
 function topUp(run: Run): void {
   const { job } = run;
   if (run.budget.spendable <= job.queue.length) return;
-  while (run.movable.length > 0) {
-    const step = run.movable.shift()!;
+  for (let i = 0; i < run.movable.length; i++) {
+    const step = run.movable[i]!;
     const at = job.deferred.indexOf(step);
-    if (at < 0 || behindDeferredPage(step, job.deferred)) continue;
+    if (at < 0) {
+      run.movable.splice(i--, 1);
+      continue;
+    }
+    if (waitsForEarlierPage(step, job)) continue;
+    run.movable.splice(i, 1);
     job.deferred.splice(at, 1);
     job.queue.push(step);
     return;
@@ -393,6 +432,8 @@ async function halt(run: Run, reason: StopReason, message: string | null): Promi
   if (reason === 'error' && head?.kind === 'listing' && !(job.failedPages ?? []).includes(pageKey(head))) {
     job.failedPages = [...(job.failedPages ?? []), pageKey(head)];
   }
+  // F9 review: a page whose search failed is unanswered until it answers again.
+  if (reason === 'error' && head?.kind === 'listing') setAnswered(job, head, false);
   job.stopReason = reason;
   job.stopMessage = message;
   // After the steps this run set aside (3 rule 2), in front of anything deferred earlier.
@@ -489,6 +530,14 @@ async function applyCatalog(run: Run, step: CatalogStep, data: unknown, at: numb
   job.counts.catalogPages += 1;
 }
 
+/** Records whether `page`'s last answer said there is a next page (`ScanJob.answeredPages`); the field is absent when empty. */
+function setAnswered(job: ScanJob, page: Listing, hasNext: boolean): void {
+  const left = (job.answeredPages ?? []).filter((k) => k !== pageKey(page));
+  if (hasNext) left.push(pageKey(page));
+  if (left.length > 0) job.answeredPages = left;
+  else delete job.answeredPages;
+}
+
 async function applyListing(run: Run, step: Listing, data: unknown, at: number): Promise<void> {
   const { store, job } = run;
   const brands = new Set(run.settings.brands.map((b) => b.trim().toUpperCase()));
@@ -524,6 +573,8 @@ async function applyListing(run: Run, step: Listing, data: unknown, at: number):
       }
     }
   }
+  // F9 review: remembered, so the next page may be planned before this one on a later scan.
+  setAnswered(job, step, hasNextPage);
   if (!hasNextPage) {
     // Later pages of this query do not exist: dropped, not deferred.
     const later = (s: ScanStep) => s.kind === 'listing' && s.q === step.q && s.filterTokens === step.filterTokens && s.page > step.page;
@@ -762,12 +813,10 @@ export const lookupWanted = (match: MatchRecord | undefined): boolean => !match 
 export async function bundleParts(store: ScanStore): Promise<Map<string, Part & { saving: number }>> {
   const parts = new Map<string, Part & { saving: number }>();
   for (const b of await store.listBundles()) {
-    if (b.split?.status !== 'resolved') continue;
     const saving = (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0);
-    for (const component of b.split.components) {
-      const key = partKey(b.brand, component);
-      const seen = parts.get(key);
-      if (!seen) parts.set(key, { key, brand: b.brand.trim().toUpperCase(), model: component.trim().toUpperCase(), saving });
+    for (const part of resolvedParts(b)) {
+      const seen = parts.get(part.key);
+      if (!seen) parts.set(part.key, { ...part, saving });
       else seen.saving = Math.max(seen.saving, saving);
     }
   }

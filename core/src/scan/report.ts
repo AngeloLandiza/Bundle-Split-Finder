@@ -11,6 +11,7 @@ import {
   type PartRow,
   type ReportSection,
   partKey,
+  resolvedParts,
   type ScanReport,
   type ScanSettings,
   type ScanStore,
@@ -99,7 +100,7 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   const held = new Set<string>();
   for (const b of await store.listBundles()) {
     bundles.push(await bundleRow(store, settings, b));
-    if (b.split?.status === 'resolved') for (const c of b.split.components) held.add(partKey(b.brand, c));
+    for (const part of resolvedParts(b)) held.add(part.key);
   }
   bundles.sort((a, b) => {
     if (a.section !== b.section) return SECTION_RANK[a.section] - SECTION_RANK[b.section];

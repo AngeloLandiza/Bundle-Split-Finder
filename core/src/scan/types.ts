@@ -91,6 +91,16 @@ export const bundleKey = (itemId: string): string => `homedepot:${itemId}`;
 /** Key of a catalog entry and of a match record: brand and model, upper case. */
 export const partKey = (brand: string, model: string): string => `${brand.trim().toUpperCase()}:${model.trim().toUpperCase()}`;
 
+/**
+ * The parts a bundle's split holds, once per unit, brand and model trimmed and upper case: none
+ * unless the split is resolved. The one reading of a bundle's parts, shared by the lookups'
+ * planning (bundleParts) and the report, so the two cannot drift.
+ */
+export const resolvedParts = (b: Pick<BundleRecord, 'brand' | 'split'>): { key: string; brand: string; model: string }[] =>
+  b.split?.status === 'resolved'
+    ? b.split.components.map((c) => ({ key: partKey(b.brand, c), brand: b.brand.trim().toUpperCase(), model: c.trim().toUpperCase() }))
+    : [];
+
 export interface BundleRecord {
   /** bundleKey(itemId) */
   key: string;
@@ -330,6 +340,13 @@ export interface ScanJob {
    * Absent otherwise, and on jobs saved before it existed, which plan as before.
    */
   failedPages?: string[];
+  /**
+   * Listing pages (keyed as failedPages) whose last answer said there is a next page, in this job or
+   * one before it; carried from job to job. A page N > 1 is planned before page N−1 of its query
+   * only while N−1 is in this list and did not fail; otherwise it waits behind N−1 (F9 review).
+   * Absent when there are none; a job saved before it existed holds every page behind its earlier one.
+   */
+  answeredPages?: string[];
   /** Searches that counted against the quota (responses that came from the network). */
   searchesUsed: number;
   counts: ScanCounts;
