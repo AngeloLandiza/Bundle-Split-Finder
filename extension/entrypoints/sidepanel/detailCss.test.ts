@@ -25,3 +25,11 @@ describe('the Change beside an answer (Detail.dc.html line 47: a link, not an un
     expect(declarations(both(':disabled'))).toContain('color: var(--ink-3)');
   });
 });
+
+describe("a part's seen line", () => {
+  it('stays on one line, in the body face', () => {
+    const rule = declarations('.detail-part-seen');
+    expect(rule).toContain('white-space: nowrap');
+    expect(rule).toContain('font-family: var(--font-words)');
+  });
+});

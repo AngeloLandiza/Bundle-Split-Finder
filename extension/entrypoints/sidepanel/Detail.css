@@ -300,17 +300,13 @@
   color: var(--ink-2);
 }
 .detail-part-seen {
-  /* Zero basis, full width: the line never widens the money column (the price and net set it), so the
-     long form "seen Nov 9, 9:41 AM" wraps instead of taking room from the part's name. */
-  width: 0;
-  min-width: 100%;
+  /* One line in the body face, like the head's "price seen". The money column grows to fit it; only the
+     long form "seen Nov 9, 9:41 AM" costs the part's name room, and the title ellipsizes. */
+  font-family: var(--font-words);
   font-size: 12px;
   color: var(--ink-2);
   text-align: right;
-  white-space: normal;
-}
-.detail-part-seen-word {
-  font-family: var(--font-words);
+  white-space: nowrap;
 }
 .detail-part-bottom {
   display: flex;

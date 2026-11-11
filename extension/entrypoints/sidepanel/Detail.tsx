@@ -149,7 +149,7 @@ function Part({ part, row, report, fees, api, scanRunning, version, busy, run, n
             <div className="detail-part-net">nets {money(amazonNet(part.price, fees))}</div>
             {part.priceSeenAt !== null ? (
               <div className="detail-part-seen">
-                <span className="detail-part-seen-word">seen</span> {when(part.priceSeenAt, now)}
+                seen {when(part.priceSeenAt, now)}
               </div>
             ) : null}
           </div>
