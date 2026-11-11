@@ -41,7 +41,9 @@ const NOT_FOUND = 'That question was not found.';
 const ANSWERED = 'That question was already answered.';
 const NOT_SHOWN = 'Choose one of the answers shown.';
 const CHANGED = 'That question changed. Choose again.';
-const INVALID_PARTS = 'Enter model numbers like PCL500B, separated by commas.';
+/** The typed-parts refusal, with an example of the question's brand (N11): DCB205 for DEWALT, PCL500B otherwise. */
+const invalidParts = (item: ReviewItem): string =>
+  `Enter model numbers like ${item.brand.trim().toUpperCase() === 'DEWALT' ? 'DCB205' : 'PCL500B'}, separated by commas.`;
 const NOT_FOR_MATCH = 'Parts can be entered only for a question about what a bundle contains.';
 const SELF_PART = "Enter the parts inside the bundle, not the bundle's own model number.";
 const NOT_ANSWERED = 'That question has not been answered yet.';
@@ -174,10 +176,10 @@ const isBundle = (item: ReviewItem) => (part: string): boolean => bare(part) ===
  * validParts. Anything else is refused. Nothing is guessed from what was typed.
  */
 function enteredParts(raw: unknown, item: ReviewItem): string[] {
-  if (!Array.isArray(raw) || !raw.every((p) => typeof p === 'string')) throw new AnswerRefused(INVALID_PARTS);
+  if (!Array.isArray(raw) || !raw.every((p) => typeof p === 'string')) throw new AnswerRefused(invalidParts(item));
   const parts = raw.map((p: string) => p.trim().toUpperCase());
   if (parts.some(isBundle(item))) throw new AnswerRefused(SELF_PART);
-  if (!validParts(parts, item)) throw new AnswerRefused(INVALID_PARTS);
+  if (!validParts(parts, item)) throw new AnswerRefused(invalidParts(item));
   return parts;
 }
 

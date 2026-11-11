@@ -296,6 +296,8 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
   const SB_KEY = 'homedepot:328690510';
   const ENTERED = 'parts entered by you';
   const INVALID = 'Enter model numbers like PCL500B, separated by commas.';
+  /** N11: a DEWALT question's example is a DEWALT model. */
+  const INVALID_DEWALT = 'Enter model numbers like DCB205, separated by commas.';
   const NOT_FOR_MATCH = 'Parts can be entered only for a question about what a bundle contains.';
   const SELF = 'Enter the parts inside the bundle, not the bundle\'s own model number.';
   const typed = { components: ['PCL500B', 'PCL526B'], status: 'resolved', notes: [ENTERED] };
@@ -473,6 +475,15 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     expect(await w.store.getMatch('DEWALT:DCB205-2')).toMatchObject({ status: 'matched', asin: 'B00KQU1ENG', grade: 'probable', decidedBy: 'auto' });
   });
 
+  it('the refusal names a model of the question\'s brand: DCB205 for DEWALT, PCL500B for RYOBI (N11; QA 4)', async () => {
+    const d = world();
+    const open = await ambiguous(d);
+    await expect(applyReviewAnswer(d.store, AMBIGUOUS, { parts: ['KIT'], seen: reviewSignature(open) }, T0 + MINUTE)).rejects.toThrow(new AnswerRefused(INVALID_DEWALT));
+    const r = world();
+    const sb = await special(r);
+    await expect(applyReviewAnswer(r.store, SB, { parts: ['KIT'], seen: reviewSignature(sb) }, T0 + MINUTE)).rejects.toThrow(new AnswerRefused(INVALID));
+  });
+
   it('refuses every other hyphen form, and the pack form for a RYOBI question (Ruling 47)', async () => {
     const w = world();
     const open = await ambiguous(w);
@@ -480,7 +491,7 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     // A pack is of 2 to 9: `-0` and `-1` are refused too.
     for (const pack of ['DCB205-', 'DCB205-0', 'DCB205-1', 'DCB205-22', 'DCB205-2PK', 'DCB205-2-2', 'DCF891B-2', 'DCB-2', 'DCB205 -2', 'DCKTS650D1P1-DCB205']) {
       const parts = ['DCKTS650D1P1', pack];
-      await expect(applyReviewAnswer(w.store, AMBIGUOUS, { parts, seen: reviewSignature(open) }, T0 + MINUTE), pack).rejects.toThrow(INVALID);
+      await expect(applyReviewAnswer(w.store, AMBIGUOUS, { parts, seen: reviewSignature(open) }, T0 + MINUTE), pack).rejects.toThrow(INVALID_DEWALT);
     }
     expect(await snapshot(w)).toEqual(before);
     // The top of the range, -9, passes.

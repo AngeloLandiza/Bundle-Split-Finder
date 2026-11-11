@@ -1488,7 +1488,7 @@ describe('worker: answerReview', () => {
     const before = w.broadcasts.length;
     for (const parts of [[], ['KIT'], 'DCKTS650D1P1, DCB205']) {
       const request = { type: 'answerReview', id: AMBIGUOUS, answer: { parts, seen } } as unknown as Request;
-      expect(await send(w, request), JSON.stringify(parts)).toEqual({ ok: false, error: 'Enter model numbers like PCL500B, separated by commas.' });
+      expect(await send(w, request), JSON.stringify(parts)).toEqual({ ok: false, error: 'Enter model numbers like DCB205, separated by commas.' });
     }
     expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: null });
     expect(w.broadcasts.length).toBe(before);
