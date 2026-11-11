@@ -9,7 +9,7 @@ import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
 import { runScan } from '../src/scan/runner';
 import {
-  type BundleRecord, bundleKey, DEFAULT_SCAN_SETTINGS, type PageOutcome, type ReadPages, type ReviewItem, type ScanJob, type ScanSettings, type ScanStore,
+  type BundleRecord, bundleKey, DEFAULT_SCAN_SETTINGS, type PageOutcome, type ReadPages, type ReviewItem, type ScanJob, type ScanSettings, type ScanStep, type ScanStore,
 } from '../src/scan/types';
 import { type BudgetPolicy, parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '../src/serpapi/client';
@@ -2248,6 +2248,64 @@ describe('runScan: a slot the cache answers is given back (Ruling 48; QA 3, Majo
     const failed = await run(500);
     expect(failed.refused).toMatchObject({ stopReason: 'error', failedPages: [JSON.stringify(['dewalt 20v combo kit', 1, null])] });
     expect(failed.next).not.toContain(B1);
+  });
+
+  it("a query's page 2 is never paid before its page 1 has been answered, when page 1 keeps failing (final review, Important)", async () => {
+    const w = world();
+    // B1 fails with an HTTP 500 on every scan; the replay never sees it, so its tries are counted here.
+    let b1Tries = 0;
+    const fetchFn = lastRatchetPage(w, (url) => {
+      if (url.searchParams.get('q') !== 'dewalt 20v combo kit' || url.searchParams.get('page') !== '1') return null;
+      b1Tries += 1;
+      return 500;
+    });
+    const spent: number[] = [];
+    const calls: string[][] = [];
+    const triedB1: boolean[] = [];
+    for (const i of [0, 1, 2, 3, 4, 5]) {
+      w.clock = T0 + i * 10 * MINUTE;
+      const before = w.ledger.length;
+      const at = w.replay.calls.length;
+      const tries = b1Tries;
+      const job = await scan(w, { settings: TWO_PAGES, policy: ONE_SEARCH, fetchFn });
+      spent.push(w.ledger.length - before);
+      calls.push(w.replay.calls.slice(at));
+      triedB1.push(b1Tries > tries);
+      expect(job.searchesUsed).toBeLessThanOrEqual(1);
+    }
+    // Before the fix, B1's failure moved it behind B2, which the third scan paid for although
+    // B1 might have said there is no page 2.
+    expect(calls.flat(), 'B2 was asked for before B1 was ever answered').not.toContain(B2);
+    // Ruling 52 still holds: B1 is tried every other scan, and the scans between read or look up.
+    expect(triedB1).toEqual([false, true, false, true, false, true]);
+    expect(Math.max(...spent)).toBeLessThanOrEqual(1);
+  });
+
+  it('a job stored before c588c70 that kept a page known not to exist in its deferred list does not pay for it (final review)', async () => {
+    const w = world();
+    const fetchFn = lastRatchetPage(w);
+    const first = await scan(w, { settings: TWO_PAGES, policy: ONE_SEARCH, fetchFn });
+    // A1 said there is no page 2. The version before c588c70 kept A2 deferred, ahead of the rest.
+    const a2: ScanStep = { kind: 'listing', q: 'ryobi extended reach ratchet', page: 2, filterTokens: null, bundlesOnly: false };
+    const stored = (await w.store.listScans())[0]!;
+    expect(stored.id).toBe(first.id);
+    await w.store.putScan({ ...stored, deferred: [a2, ...stored.deferred] });
+    const spent: number[] = [];
+    // Once within the hour (A1 from the cache), once after it (A1 paid again).
+    for (const at of [T0 + 10 * MINUTE, T0 + 3 * 60 * MINUTE]) {
+      // Each time from a job that holds A2 first, as the old version stored it.
+      const newest = (await w.store.listScans())[0]!;
+      if (!newest.deferred.some((s) => s.kind === 'listing' && s.q === 'ryobi extended reach ratchet' && s.page === 2)) {
+        await w.store.putScan({ ...newest, deferred: [a2, ...newest.deferred] });
+      }
+      w.clock = at;
+      const before = w.ledger.length;
+      await scan(w, { settings: TWO_PAGES, policy: ONE_SEARCH, fetchFn });
+      spent.push(w.ledger.length - before);
+    }
+    // Before the fix, A2 went first and was asked for. Now A1 takes its slot and drops it.
+    expect(w.replay.calls).not.toContain(A2);
+    expect(Math.max(...spent)).toBeLessThanOrEqual(1);
   });
 
   it('a listing page planned and answered from the cache gives its slot to the page deferred after it', async () => {

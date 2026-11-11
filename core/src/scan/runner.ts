@@ -186,9 +186,16 @@ function setAsidePartsOf(job: ScanJob | undefined): Set<string> {
 const sameListing = (a: Listing, b: Listing): boolean =>
   a.q === b.q && a.page === b.page && (a.filterTokens ?? null) === (b.filterTokens ?? null);
 
+/** A listing page's query: pages of one query share it. */
+const queryKey = (p: Listing): string => JSON.stringify([p.q, p.filterTokens ?? null]);
+
 /**
  * `pages` with those that equal a listing step in `earlier` first, in `earlier`'s order; the rest
- * keep their order; and last, in that same order, the pages in `failed` (Ruling 52).
+ * keep their order; and last, in that same order, the pages in `failed` and the later pages of
+ * their queries (Ruling 52). Then each query's pages are put in page order within the places that
+ * query holds, so a page is never planned before an earlier page of its query, which may say it
+ * does not exist (final review): a job's deferred list and a failed page could otherwise put page
+ * 2 in front of page 1.
  */
 function deferredFirst(pages: Listing[], earlier: ScanStep[], failed: Set<string> = new Set()): Listing[] {
   const first: Listing[] = [];
@@ -198,9 +205,18 @@ function deferredFirst(pages: Listing[], earlier: ScanStep[], failed: Set<string
     if (page && !first.includes(page)) first.push(page);
   }
   const ordered = [...first, ...pages.filter((p) => !first.includes(p))];
-  const isFailed = (p: Listing) => failed.has(pageKey(p));
-  return [...ordered.filter((p) => !isFailed(p)), ...ordered.filter(isFailed)];
+  const failedAt = pages.filter((p) => failed.has(pageKey(p)));
+  const isFailed = (p: Listing) => failedAt.some((f) => queryKey(f) === queryKey(p) && f.page <= p.page);
+  const placed = [...ordered.filter((p) => !isFailed(p)), ...ordered.filter(isFailed)];
+  const byQuery = new Map<string, Listing[]>();
+  for (const p of placed) byQuery.set(queryKey(p), [...(byQuery.get(queryKey(p)) ?? []), p]);
+  for (const group of byQuery.values()) group.sort((a, b) => a.page - b.page);
+  return placed.map((p) => byQuery.get(queryKey(p))!.shift()!);
 }
+
+/** A listing step with an earlier page of its query still deferred: it must wait for that page. */
+const behindDeferredPage = (step: ScanStep, deferred: ScanStep[]): boolean =>
+  step.kind === 'listing' && deferred.some((s) => s.kind === 'listing' && queryKey(s) === queryKey(step) && s.page < step.page);
 
 /**
  * 2c rule 1: `catalogPagesPerScan` brand pages, shared by the scanned brands that have a
@@ -289,7 +305,9 @@ async function runQueue(run: Run): Promise<void> {
  * next step this run's planning deferred in the same phase moves to the end of the queue. Only
  * when what may still be spent is more than the steps already queued, so every queued step can
  * still be paid for; the guard still decides each search. Not a retry: a step set aside after a
- * failure is never in `movable`, and a step leaves `movable` when it moves.
+ * failure is never in `movable`, and a step leaves `movable` when it moves. A listing page whose
+ * query has an earlier page still deferred (one that failed, say) does not move: that page may
+ * say it does not exist (final review).
  */
 function topUp(run: Run): void {
   const { job } = run;
@@ -297,7 +315,7 @@ function topUp(run: Run): void {
   while (run.movable.length > 0) {
     const step = run.movable.shift()!;
     const at = job.deferred.indexOf(step);
-    if (at < 0) continue;
+    if (at < 0 || behindDeferredPage(step, job.deferred)) continue;
     job.deferred.splice(at, 1);
     job.queue.push(step);
     return;
