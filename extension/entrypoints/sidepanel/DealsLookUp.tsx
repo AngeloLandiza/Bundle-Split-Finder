@@ -93,7 +93,8 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
       <button
         ref={buttonRef}
         type="button"
-        className="deal-lookup-btn"
+        // A label that names how many of the parts may wrap inside a Deals row's button (DealsTab.css).
+        className={fits !== null ? 'deal-lookup-btn deal-lookup-btn-long' : 'deal-lookup-btn'}
         aria-label={running || items ? undefined : `${visible}, ${what}`}
         aria-describedby={[describedBy, refusal ? refusalId : undefined].filter(Boolean).join(' ') || undefined}
         aria-disabled={blocked ? 'true' : undefined}

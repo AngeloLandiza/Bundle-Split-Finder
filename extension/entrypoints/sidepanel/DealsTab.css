@@ -203,6 +203,20 @@
 .deal-row-lookup > .deal-refusal {
   grid-row: 3;
 }
+/* A label that names how many of the parts ("Look up 5 of 8 parts · 5 searches", Ruling 72) puts its cost on a second
+   line inside the button, so the left column keeps its room at 360px. */
+.deal-row > .deal-lookup-btn-long {
+  max-width: 160px;
+  height: auto;
+  min-height: 28px;
+  padding: 4px 10px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  white-space: normal;
+  text-align: right;
+  line-height: 18px;
+}
 .deal-title {
   font-weight: 500;
   white-space: nowrap;
