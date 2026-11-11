@@ -8,6 +8,7 @@
 // decided by the user, which no scan changes.
 
 import { type Decomposition, OFFERABLE_PART } from '../decompose';
+import { DEWALT_PACK } from './classify';
 import { knownModels, readSplit } from './split';
 import type { OwnerAnswer, ReviewAnswer, ReviewCandidate, ReviewItem, ScanStore } from './types';
 
@@ -101,7 +102,7 @@ export function notKnown(split: Decomposition | null): Decomposition {
  * What the owner's answer to a split question fixes: the split of the parts they chose or typed,
  * or NONE. An item with `answerParts` (every answer saved since typed parts exist) is decided by
  * them, when `answer` is them joined and they still pass the typed-parts rule (stored data is
- * untrusted: 1 to MAX_ENTERED_PARTS entries, each OFFERABLE_PART and none the bundle's own model
+ * untrusted: 1 to MAX_ENTERED_PARTS entries, each passing validParts and none the bundle's own model
  * number, Ruling 43); the split is noted as chosen when
  * they are one of the question's choices, as entered otherwise. An item without them, or with
  * parts that fail the rule, counts as before: only when its answer equals one of its choices.
@@ -114,7 +115,7 @@ export function ownerSplit(item: ReviewItem | undefined): Decomposition | typeof
   if (item.answer === NONE) return NONE;
   const choices = choicesOf(item);
   const parts = item.answerParts;
-  if (validParts(parts) && !parts.some(isBundle(item)) && parts.join(',') === item.answer) {
+  if (validParts(parts, item) && !parts.some(isBundle(item)) && parts.join(',') === item.answer) {
     return chosenSplit(parts, choices.some((c) => c.join(',') === item.answer) ? CHOSEN_NOTE : ENTERED_NOTE);
   }
   const chosen = choices.find((c) => c.join(',') === item.answer);
@@ -137,11 +138,16 @@ export function ownerAnswer(item: ReviewItem | undefined, split: Decomposition |
   return same ? { reviewId: item.id, kind: note === CHOSEN_NOTE ? 'chosen' : 'entered' } : null;
 }
 
-/** 1 to MAX_ENTERED_PARTS entries, each a model number (OFFERABLE_PART). A repeat counts as an entry. */
-function validParts(parts: unknown): parts is string[] {
+/**
+ * 1 to MAX_ENTERED_PARTS entries, each a model number (OFFERABLE_PART) or, for a DEWALT question,
+ * a battery pack written as the splitter writes it (`DCB205-2`, DEWALT_PACK; Ruling 47). No other
+ * hyphen form passes. A repeat counts as an entry.
+ */
+function validParts(parts: unknown, item: ReviewItem): parts is string[] {
+  const dewalt = typeof item.brand === 'string' && item.brand.trim().toUpperCase() === 'DEWALT';
   return (
     Array.isArray(parts) && parts.length > 0 && parts.length <= MAX_ENTERED_PARTS &&
-    parts.every((p) => typeof p === 'string' && OFFERABLE_PART.test(p))
+    parts.every((p) => typeof p === 'string' && (OFFERABLE_PART.test(p) || (dewalt && DEWALT_PACK.test(p))))
   );
 }
 
@@ -165,7 +171,7 @@ function enteredParts(raw: unknown, item: ReviewItem): string[] {
   if (!Array.isArray(raw) || !raw.every((p) => typeof p === 'string')) throw new AnswerRefused(INVALID_PARTS);
   const parts = raw.map((p: string) => p.trim().toUpperCase());
   if (parts.some(isBundle(item))) throw new AnswerRefused(SELF_PART);
-  if (!validParts(parts)) throw new AnswerRefused(INVALID_PARTS);
+  if (!validParts(parts, item)) throw new AnswerRefused(INVALID_PARTS);
   return parts;
 }
 

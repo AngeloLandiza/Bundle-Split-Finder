@@ -6,6 +6,7 @@ import { type PageContent, parseBundlePage } from '../src/hdPage';
 import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer, reviewSignature } from '../src/scan/answers';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
+import { wantedFor } from '../src/scan/classify';
 import { runScan } from '../src/scan/runner';
 import { DEFAULT_SCAN_SETTINGS, type PageOutcome, type ReadPages, type ReviewAnswer, type ReviewItem, type ScanSettings } from '../src/scan/types';
 import { type BudgetPolicy, parseAccount, SearchBudget } from '../src/serpapi/budget';
@@ -448,6 +449,68 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
     expect((await w.store.getBundle(SB_KEY))!.split).toMatchObject({ status: 'needs_review', notes: ['no known RYOBI bundle pattern'] });
     expect(await w.store.getReview(SB)).toEqual(stored);
+  });
+
+  it('a DEWALT battery pack may be typed as the splitter writes it, DCB205-2, and is looked up as a pack of 2 (Ruling 47)', async () => {
+    const w = world();
+    const open = await ambiguous(w);
+    await applyReviewAnswer(w.store, AMBIGUOUS, { parts: ['DCKTS650D1P1', ' dcb205-2 '], seen: reviewSignature(open) }, T0 + MINUTE);
+    const split = { components: ['DCKTS650D1P1', 'DCB205-2'], status: 'resolved', notes: [ENTERED] };
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual(split);
+    expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: 'DCKTS650D1P1,DCB205-2', answerParts: ['DCKTS650D1P1', 'DCB205-2'] });
+
+    // A later scan keeps it and plans the pack's lookup exactly as for a pack the splitter returned.
+    w.clock = T0 + DAY;
+    const job = await scan(w, { settings: DEWALT_ONLY, policy: NO_SEARCH });
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual(split);
+    expect(job.deferred).toContainEqual(lookup('DCB205-2'));
+    expect(wantedFor('DEWALT', 'DCB205-2', new Map())).toEqual({ brand: 'DEWALT', model: 'DCB205-2', packQty: 2 });
+
+    // With the recorded DEWALT brand page saved, the pack is matched from it as any part is: the
+    // 2-pack listing, "20V MAX 5 Ah Lithium Ion Battery 2-Pack (DCB205-2)".
+    w.clock = T0 + 2 * DAY;
+    await scan(w, { settings: { ...DEWALT_ONLY, catalogPagesPerScan: 1 }, policy: OPEN });
+    expect(await w.store.getMatch('DEWALT:DCB205-2')).toMatchObject({ status: 'matched', asin: 'B00KQU1ENG', grade: 'probable', decidedBy: 'auto' });
+  });
+
+  it('refuses every other hyphen form, and the pack form for a RYOBI question (Ruling 47)', async () => {
+    const w = world();
+    const open = await ambiguous(w);
+    const before = await snapshot(w);
+    for (const pack of ['DCB205-', 'DCB205-22', 'DCB205-2PK', 'DCB205-2-2', 'DCF891B-2', 'DCB-2', 'DCB205 -2', 'DCKTS650D1P1-DCB205']) {
+      const parts = ['DCKTS650D1P1', pack];
+      await expect(applyReviewAnswer(w.store, AMBIGUOUS, { parts, seen: reviewSignature(open) }, T0 + MINUTE), pack).rejects.toThrow(INVALID);
+    }
+    expect(await snapshot(w)).toEqual(before);
+
+    const r = world();
+    const sb = await special(r);
+    await expect(applyReviewAnswer(r.store, SB, { parts: ['PCL500B', 'DCB205-2'], seen: reviewSignature(sb) }, T0 + MINUTE)).rejects.toThrow(INVALID);
+  });
+
+  it('stored parts follow the same rule: the pack form decides a DEWALT answer, never a RYOBI one (Ruling 47)', async () => {
+    const w = world();
+    const open = await ambiguous(w);
+    await w.store.putReview({ ...open, answer: 'DCKTS650D1P1,DCB205-2', answerParts: ['DCKTS650D1P1', 'DCB205-2'], answeredAt: T0 + MINUTE });
+    w.clock = T0 + DAY;
+    await scan(w, { settings: DEWALT_ONLY, policy: NO_SEARCH });
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCKTS650D1P1', 'DCB205-2'], status: 'resolved', notes: [ENTERED] });
+
+    for (const answerParts of [['DCKTS650D1P1', 'DCB205-2PK'], ['DCKTS650D1P1', 'DCF891B-2']]) {
+      const x = world();
+      const q = await ambiguous(x);
+      await x.store.putReview({ ...q, answer: answerParts.join(','), answerParts, answeredAt: T0 + MINUTE });
+      x.clock = T0 + DAY;
+      await scan(x, { settings: DEWALT_ONLY, policy: NO_SEARCH });
+      expect((await x.store.getBundle('homedepot:ambiguous'))!.split, JSON.stringify(answerParts)).toMatchObject({ status: 'needs_review' });
+    }
+
+    const r = world();
+    const sb = await special(r);
+    await r.store.putReview({ ...sb, answer: 'PCL500B,DCB205-2', answerParts: ['PCL500B', 'DCB205-2'], answeredAt: T0 + MINUTE });
+    r.clock = T0 + DAY;
+    await scan(r, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect((await r.store.getBundle(SB_KEY))!.split).toMatchObject({ status: 'needs_review', notes: ['no known RYOBI bundle pattern'] });
   });
 
   it('refuses an entry made on the question before a scan changed it', async () => {

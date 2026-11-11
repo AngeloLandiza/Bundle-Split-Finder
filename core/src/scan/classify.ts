@@ -12,8 +12,9 @@ const norm = (model: string): string => model.toUpperCase().replace(/[-\s]/g, ''
 
 // "PBLRC2501SB", "PCL500525SB": four or more digits, then SB.
 const RYOBI_SPECIAL_BUY = /\d{4,}SB$/;
-// "DCB205-2": a DEWALT battery N-pack.
-const DEWALT_PACK = /^DCB\d+-(\d)$/;
+// "DCB205-2": a DEWALT battery N-pack, as Home Depot writes it and so as the splitter returns it
+// from the catalog. Also the one hyphen form a typed DEWALT part may take (answers.ts, Ruling 47).
+export const DEWALT_PACK = /^DCB\d+-(\d)$/;
 
 /** True when the model number has the shape of a retailer bundle. Shape only: it does not say the split will resolve. */
 export function looksLikeBundle(brand: string, model: string): boolean {
