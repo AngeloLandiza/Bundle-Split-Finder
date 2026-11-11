@@ -2,12 +2,14 @@ export interface HeaderProps {
   scanRunning: boolean;
   /** No key yet: Scan now is disabled and settings are reached from the first-run body. */
   noKey: boolean;
+  /** When set, Scan now is disabled and this is its title. */
+  scanBlockedTitle?: string;
   onScan: () => void;
   onStop: () => void;
   onSettings: () => void;
 }
 
-export function Header({ scanRunning, noKey, onScan, onStop, onSettings }: HeaderProps) {
+export function Header({ scanRunning, noKey, scanBlockedTitle, onScan, onStop, onSettings }: HeaderProps) {
   return (
     <header className="header">
       <div className="brand">
@@ -23,7 +25,7 @@ export function Header({ scanRunning, noKey, onScan, onStop, onSettings }: Heade
             Stop
           </button>
         ) : (
-          <button type="button" className="btn btn-primary" disabled={noKey} onClick={onScan}>
+          <button type="button" className="btn btn-primary" disabled={noKey || scanBlockedTitle !== undefined} title={scanBlockedTitle} onClick={onScan}>
             Scan now
           </button>
         )}

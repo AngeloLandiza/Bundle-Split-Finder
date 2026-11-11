@@ -81,6 +81,9 @@ function setup(initial: AppState, report: PanelReport = REPORT) {
   return { send, openSettings, emit: (s: AppState) => act(async () => listener(s)) };
 }
 
+const stopped = (stopReason: string, finishedAt: number) =>
+  ({ ...JOB, status: 'stopped', stopReason, finishedAt, queue: [] }) as unknown as ScanJob;
+
 const noticeError = () => vi.mocked(Notice).mock.calls.at(-1)![0].error;
 
 const tab = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) });
@@ -120,7 +123,9 @@ describe('side panel shell', () => {
     await emit(state({ scanRunning: true, lastJob: JOB }));
     const stop = screen.getByRole('button', { name: 'Stop' });
     expect(screen.queryByRole('button', { name: 'Scan now' })).toBeNull();
-    expect(screen.getByText('Scanning · page 4 of 5 · 12 searches used')).toBeInTheDocument();
+    const status = screen.getByRole('status');
+    expect(status.textContent).toBe('Scanning · page 4 of 5 · 12 searches used');
+    expect([...status.querySelectorAll('.figure')].map((e) => e.textContent)).toEqual(['4', '5', '12']);
     await user.click(stop);
     expect(send).toHaveBeenCalledWith({ type: 'stopScan' });
 
@@ -142,7 +147,7 @@ describe('side panel shell', () => {
   it('footer: next scan time, or the manual sentence, and the searches left', async () => {
     const { emit } = setup(state());
     const footer = await screen.findByRole('contentinfo');
-    expect(footer).toHaveTextContent('Scans when you click Scan now');
+    expect(footer).toHaveTextContent('No scan scheduled');
     expect(within(footer).getByRole('img', { name: '212 of 250 searches left' })).toBeInTheDocument();
     expect(footer).toHaveTextContent('212 searches left');
     await emit(state({ nextRunAt: new Date(2026, 10, 10, 14, 12, 0).getTime() }));
@@ -152,6 +157,39 @@ describe('side panel shell', () => {
   it('footer: a next scan time in the past reads due now', async () => {
     setup(state({ nextRunAt: new Date(2026, 10, 10, 13, 0, 0).getTime() }));
     expect(await screen.findByRole('contentinfo')).toHaveTextContent('Next scan due now');
+  });
+
+  it('footer after a limit stop: Scanned <when>', async () => {
+    const now = new Date(2026, 10, 10, 14, 0, 0).getTime();
+    setup(state({ lastJob: stopped('run_cap', now - 5 * 60_000) }));
+    expect(await screen.findByRole('contentinfo')).toHaveTextContent('Scanned 5 min ago');
+  });
+
+  it('footer after a user stop still shows the schedule', async () => {
+    const now = new Date(2026, 10, 10, 14, 0, 0).getTime();
+    setup(state({ lastJob: stopped('user', now - 5 * 60_000) }));
+    expect(await screen.findByRole('contentinfo')).toHaveTextContent('No scan scheduled');
+  });
+
+  it('Scan now is disabled within the hour of an hourly limit, keeping its label and a title', async () => {
+    const now = new Date(2026, 10, 10, 14, 0, 0).getTime();
+    setup(state({ lastJob: stopped('hourly_limit', now - 20 * 60_000) }));
+    const button = await screen.findByRole('button', { name: 'Scan now' });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('title', 'The hourly search limit is reached. Try again after 40 min.');
+    expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
+  });
+
+  it('Scan now is enabled an hour after an hourly limit, and after run_cap or reserve', async () => {
+    const now = new Date(2026, 10, 10, 14, 0, 0).getTime();
+    setup(state({ lastJob: stopped('hourly_limit', now - 61 * 60_000) }));
+    expect(await screen.findByRole('button', { name: 'Scan now' })).toBeEnabled();
+    cleanup();
+    setup(state({ lastJob: stopped('run_cap', now - 60_000) }));
+    expect(await screen.findByRole('button', { name: 'Scan now' })).toBeEnabled();
+    cleanup();
+    setup(state({ lastJob: stopped('reserve', now - 60_000) }));
+    expect(await screen.findByRole('button', { name: 'Scan now' })).toBeEnabled();
   });
 
   it('footer says so when the account has not been checked', async () => {
