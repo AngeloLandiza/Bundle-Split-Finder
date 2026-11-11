@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { AccountInfo } from '@core/serpapi/budget';
 import type { AppState } from '../../lib/messages';
 import { Confirm, Section } from './fields';
-import { UNREACHABLE, type WorkerApi } from './worker';
+import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 
 type Result = { ok: true; account: AccountInfo } | { ok: false; message: string };
 

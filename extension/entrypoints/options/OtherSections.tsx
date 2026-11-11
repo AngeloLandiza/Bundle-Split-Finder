@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { KNOWN_BRANDS, type ExtensionSettings, type SettingsField } from '@core/settings';
 import type { FeeSettings } from '@core/money';
 import { Confirm, NumberField, Section } from './fields';
-import { UNREACHABLE, type WorkerApi } from './worker';
+import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 
 type Problems = Partial<Record<SettingsField, string>>;
 interface Props {

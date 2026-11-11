@@ -3,8 +3,7 @@ import { validateSettings, type ExtensionSettings } from '@core/settings';
 import { AlertsSection, DataSection, FeesSection, WhatToScanSection } from './OtherSections';
 import { KeySection } from './KeySection';
 import { ScanningSection } from './ScanningSection';
-import { useAppState } from './useAppState';
-import { realWorker, type WorkerApi } from './worker';
+import { realWorker, useAppState, type WorkerApi } from '../../lib/pageClient';
 
 const DEFAULT_PLAN_PER_MONTH = 250;
 

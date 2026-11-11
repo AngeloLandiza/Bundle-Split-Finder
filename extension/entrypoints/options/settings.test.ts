@@ -9,7 +9,7 @@ import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
 import type { AccountInfo } from '@core/serpapi/budget';
 import type { AppState, Reply, Request } from '../../lib/messages';
 import { SettingsPage } from './SettingsPage';
-import type { WorkerApi } from './worker';
+import type { WorkerApi } from '../../lib/pageClient';
 
 afterEach(cleanup);
 
