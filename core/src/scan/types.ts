@@ -398,3 +398,18 @@ export interface ScanReport {
   /** Open review items, oldest first. */
   review: ReviewItem[];
 }
+
+/** An index into the review item's `choices` (split) or `candidates` (match), or none of them. */
+export type ReviewAnswer = { choice: number } | { none: true };
+
+/** A paid action the side panel can ask for. */
+export type PaidAction =
+  | { kind: 'verify'; brand: string; model: string; asin: string }
+  | { kind: 'lookUp'; parts: { brand: string; model: string }[] };
+
+export interface Quote {
+  /** Searches the action would spend now. */
+  searches: number;
+  /** One plain sentence when it may not run now; null when it may. */
+  refusal: string | null;
+}
