@@ -52,10 +52,14 @@ function paidDeps(w: KitWorld, maxPerRun: number, account: Record<string, unknow
   return { budget, client };
 }
 
-/** The brand page, both listing pages with the recorded bundle pages, then the owner's answer: PCL1600K2 + P553 (or `none`). No lookup has run. */
-export async function answeredKitWorld(answer: 'choice' | 'none' = 'choice', pages = true): Promise<KitWorld> {
+/**
+ * The brand page, both listing pages with the recorded bundle pages, then the owner's answer: PCL1600K2 + P553 (or `none`). No lookup has run.
+ * `brandPage` false leaves the brand page out, as the panel's own scan does: then no saved listing answers PBP005, and its
+ * Amazon search is not recorded, so its lookup fails (the replay answers 404).
+ */
+export async function answeredKitWorld(answer: 'choice' | 'none' = 'choice', pages = true, brandPage = true): Promise<KitWorld> {
   const w: KitWorld = { store: new MemoryScanStore(), cache: new MemoryCache(), ledger: [] };
-  await runScan({ ...paidDeps(w, 5), store: w.store, settings: BRAND_PAGE, now: () => KIT_T0 });
+  if (brandPage) await runScan({ ...paidDeps(w, 5), store: w.store, settings: BRAND_PAGE, now: () => KIT_T0 });
   await runScan({ ...paidDeps(w, 2), store: w.store, settings: KIT_SETTINGS, now: () => KIT_T0, readPages: pages ? recordedPages : undefined });
   const question = (await w.store.getReview(QUESTION))!;
   const seen = reviewSignature(question);
@@ -76,13 +80,17 @@ export async function kitQuote(w: KitWorld, action: PaidAction, perScan = 20, ac
   return { ...q, refusal: (await refusalFor(w.store, action)) ?? q.refusal };
 }
 
-/** The panel's Look up as the worker runs it, under a per-scan limit of `perScan` (default 20); resolves to the refusal sentence, or null when it ran. */
+/**
+ * The panel's Look up as the worker runs it, under a per-scan limit of `perScan` (default 20); resolves to the refusal
+ * sentence, or to a failed search's message as the worker replies it, or null when it ran.
+ */
 export async function kitRunPaid(w: KitWorld, action: PaidAction, perScan = 20): Promise<string | null> {
   try {
     await runPaid({ ...paidDeps(w, perScan), store: w.store, now: () => KIT_T0, settings: KIT_SETTINGS }, action);
     return null;
   } catch (err) {
     if (err instanceof PaidProblem) return err.message;
+    if (err instanceof Error) return err.message;
     throw err;
   }
 }

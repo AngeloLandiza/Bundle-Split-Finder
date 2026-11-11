@@ -136,6 +136,10 @@ test('ways to sell at the default 5 searches per scan: the split looks up what f
   await expect(rest).toBeVisible();
   await expect(rest).not.toHaveAttribute('aria-disabled', 'true');
   expect(server.searches.slice(sent).length).toBeLessThanOrEqual(5);
+  // The press made progress and then failed at PBP005: the owner is told so under the button quoted again.
+  const failed = split.getByText('SerpApi answered with an error (HTTP 404). Try again later.');
+  await expect(failed).toBeVisible();
+  expect((await failed.boundingBox())!.y).toBeGreaterThanOrEqual((await rest.boundingBox())!.y);
   await shoot(panel, 'split-rest');
 
   // A refusal in a way to sell is its own full-width line under the button (QA, 360px). A scan held running refuses

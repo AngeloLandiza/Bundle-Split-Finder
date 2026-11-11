@@ -42,20 +42,23 @@ function workerApi(w: KitWorld, sent: unknown[] = [], perScan = 20, account: Rec
 }
 
 /** Detail that reads the report again when a paid action ends, as the panel does. */
-function Harness({ w, api, first, bundleKey }: { w: KitWorld; api: WorkerApi; first: PanelReport; bundleKey: string }) {
+function Harness({ w, api, first, bundleKey, scanRunning = false }: { w: KitWorld; api: WorkerApi; first: PanelReport; bundleKey: string; scanRunning?: boolean }) {
   const [report, setReport] = useState(first);
   return createElement(Detail, {
-    api, report, state, bundleKey, onBack: vi.fn(),
+    api, report, state: { ...state, scanRunning }, bundleKey, onBack: vi.fn(),
     onPaidEnd: () => void kitReport(w).then((r) => act(() => setReport(r))),
   });
 }
 
-async function openP553(opts: { answer?: 'choice' | 'none'; pages?: boolean; perScan?: number; account?: Record<string, unknown> } = {}) {
-  const w = await answeredKitWorld(opts.answer, opts.pages);
+async function openP553(opts: { answer?: 'choice' | 'none'; pages?: boolean; perScan?: number; account?: Record<string, unknown>; brandPage?: boolean } = {}) {
+  const w = await answeredKitWorld(opts.answer, opts.pages, opts.brandPage);
   const first = await kitReport(w);
   const sent: unknown[] = [];
-  render(createElement(Harness, { w, api: workerApi(w, sent, opts.perScan, opts.account), first, bundleKey: P553_KEY }));
-  return { w, first, sent };
+  const api = workerApi(w, sent, opts.perScan, opts.account);
+  const view = render(createElement(Harness, { w, api, first, bundleKey: P553_KEY }));
+  /** The same Detail with a scan running or not, as the panel's state says. */
+  const scanning = (scanRunning: boolean) => view.rerender(createElement(Harness, { w, api, first, bundleKey: P553_KEY, scanRunning }));
+  return { w, first, sent, scanning };
 }
 
 const UNNAMED = [
@@ -218,6 +221,34 @@ describe('Detail: a Look up above the searches per scan looks up what fits (Ruli
     await waitFor(() => expect(button).toHaveAttribute('aria-disabled', 'true'));
     expect(within(splitBlock()).getByText('SerpApi allows 50 searches an hour, and they are used. Try again later.')).toBeInTheDocument();
     expect(within(region()).queryByText(/a scan may use/)).toBeNull();
+  });
+});
+
+describe('Detail: a press that made progress and then failed still says why (Ruling 72 review)', () => {
+  // Without the brand page no saved listing answers PBP005, and its Amazon search is not recorded: the replay answers 404.
+  const FAILED = 'SerpApi answered with an error (HTTP 404). Try again later.';
+
+  it('shows the failure under the button quoted again for the parts left, until the next press or the end of a scan', async () => {
+    const user = userEvent.setup();
+    const { w, scanning } = await openP553({ perScan: 5, brandPage: false });
+    const before = await within(splitBlock()).findByRole('button', { name: 'Look up 5 of 9 parts · 5 searches' });
+    await waitFor(() => expect(before).not.toHaveAttribute('aria-disabled'));
+    await user.click(before);
+    // P553 and PBP002 were looked up before PBP005 failed: fewer parts wait, and the button is quoted for them.
+    await waitFor(() => expect(w.ledger.filter((l) => l.startsWith('panel:lookup:'))).toEqual(['panel:lookup:P553', 'panel:lookup:PBP002']));
+    const after = await within(splitBlock()).findByRole('button', { name: /^Look up \d+ of 7 parts · / });
+    await waitFor(() => expect(after).not.toHaveAttribute('aria-disabled'));
+    const sentence = within(splitBlock()).getByText(FAILED);
+    expect(after.getAttribute('aria-describedby')?.split(' ')).toContain(sentence.id);
+    // The whole way's Look up was not pressed: it says nothing of it.
+    expect(within(blocks()[0]!).queryByText(FAILED)).toBeNull();
+
+    // A scan that ends clears it.
+    scanning(true);
+    expect(within(splitBlock()).queryByText(FAILED)).toBeNull();
+    scanning(false);
+    await waitFor(() => expect(within(splitBlock()).getByRole('button', { name: /^Look up/ })).not.toHaveAttribute('aria-disabled'));
+    expect(within(splitBlock()).queryByText(FAILED)).toBeNull();
   });
 });
 

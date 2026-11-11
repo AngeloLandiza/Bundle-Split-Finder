@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { BundleRow } from '@core/scan/types';
 import type { WorkerApi } from '../../lib/pageClient';
 import { sentenceFor } from '../../lib/sentences';
@@ -38,20 +38,26 @@ interface LookUpProps {
  * change or a new report comes (useQuote). A refused quote disables the button and says why.
  */
 export function LookUp({ row, report, api, scanRunning, version, busy, onRun, inRow = false, items, describedBy, stacked = false }: LookUpProps) {
-  // A failed run's sentence is kept apart from the quote, so a later quote cannot wipe it. It belongs to the parts it was for.
-  const [runError, setRunError] = useState<{ partKey: string; text: string } | null>(null);
+  // A failed run's sentence is kept apart from the quote, so a later quote cannot wipe it. It belongs to the parts it
+  // was for: it stays while the parts still waiting are some of them, since a press may make progress before it
+  // fails (Ruling 72), and goes on the next press or when a scan ends.
+  const [runError, setRunError] = useState<{ models: string[]; text: string } | null>(null);
   // True from the press until the request ends: this button says so.
   const [running, setRunning] = useState(false);
   const parts = items ?? waitingParts(row);
   // The row object changes on every report refresh; the quote only when the waiting parts do.
   const partKey = parts.map((p) => p.model).join(',');
   const { fresh, last, problem } = useQuote(api, { kind: 'lookUp', parts }, `${row.brand}|${partKey}`, scanRunning, version, report);
+  useEffect(() => {
+    if (!scanRunning) setRunError(null);
+  }, [scanRunning]);
 
   // The last quoted count stays on the label while the next quote is asked for, so the price never disappears.
   const shown = last ? last.searches : null;
   const refusalId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const refusal = scanRunning ? SCAN_RUNNING : ((runError?.partKey === partKey ? runError.text : null) ?? fresh?.refusal ?? problem);
+  const failed = runError !== null && parts.length > 0 && parts.every((p) => runError.models.includes(p.model)) ? runError.text : null;
+  const refusal = scanRunning ? SCAN_RUNNING : (failed ?? fresh?.refusal ?? problem);
   // aria-disabled, not disabled: focus stays on the button while it is busy or refused.
   const blocked = busy || !fresh || fresh.refusal !== null;
   const run = () => {
@@ -61,7 +67,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
     void onRun(parts, buttonRef.current).then((error) => {
       setRunning(false);
       // Said in words, never as the client's raw text.
-      setRunError(error ? { partKey, text: sentenceFor(error, 'try again') ?? error } : null);
+      setRunError(error ? { models: parts.map((p) => p.model), text: sentenceFor(error, 'try again') ?? error } : null);
     });
   };
 
