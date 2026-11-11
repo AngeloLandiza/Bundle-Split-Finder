@@ -312,6 +312,13 @@ export interface ScanJob {
    */
   setAsideParts?: string[];
   /**
+   * Ruling 57: partKey of every part whose last lookup or refresh failed, in this job or one before
+   * it, and that has not been answered since, least recent failure first. Carried from job to job;
+   * the next job plans these after every other candidate, in this order. Absent when there are
+   * none; a job saved before it existed is read from its setAsideParts.
+   */
+  failingParts?: string[];
+  /**
    * Ruling 52: the listing page whose search failed and stopped this job, as a key of its query,
    * page and filter tokens. The next job plans it after every other page and never tops it up.
    * Absent otherwise, and on jobs saved before it existed, which plan as before.

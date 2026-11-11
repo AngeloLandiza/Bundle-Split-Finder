@@ -660,6 +660,33 @@ describe('runScan: a part that always fails does not block the others (test M)',
     expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC01B']);
     expect(spent).toEqual([0, 0]);
   });
+
+  it('at a limit of 1 with page reads on, every waiting part is tried within a bounded number of scans, and failing ones are retried (Ruling 57; QA 4)', async () => {
+    const w = world();
+    const reader = pageReader();
+    const spent: number[] = [];
+    const scanAt = async (i: number) => {
+      w.clock = T0 + i * 10 * MINUTE;
+      const before = w.ledger.length;
+      const job = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader.readPages });
+      spent.push(w.ledger.length - before);
+      return job;
+    };
+    // The listing page takes the one search; the pages resolve the bundles and every part waits.
+    await scanAt(0);
+    const waiting = (await w.store.listMatches()).filter((m) => m.status === 'waiting').map((m) => m.model);
+    expect(waiting.length).toBeGreaterThan(2);
+    const tried = () => w.replay.calls.filter((c) => c.includes('engine=amazon&k=DEWALT')).map((c) => c.split('k=DEWALT ')[1]!);
+    // One scan per waiting part, and two more.
+    for (let i = 1; i <= waiting.length + 2; i++) await scanAt(i);
+    // Before Ruling 57 the two oldest failing lookups took turns and the others were never tried.
+    expect([...new Set(tried())].sort()).toEqual([...waiting].sort());
+    // A part that keeps failing is still tried again once the others have had their turn.
+    const counts = new Map<string, number>();
+    for (const m of tried()) counts.set(m, (counts.get(m) ?? 0) + 1);
+    expect(Math.max(...counts.values())).toBeGreaterThan(1);
+    expect(Math.max(...spent)).toBeLessThanOrEqual(1);
+  });
 });
 
 describe('runScan: a lookup with no certain listing (rule 6)', () => {

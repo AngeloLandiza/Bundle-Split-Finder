@@ -85,8 +85,11 @@ interface Run extends PartContext {
    * parts phase may top up. Safe either way: every move is checked against what may still be spent.
    */
   movable: ScanStep[];
-  /** Ruling 50: the parts the job before this one set aside after a failure; planned after the others. */
-  failedBefore: Set<string>;
+  /**
+   * Rulings 50 and 57: the parts whose last lookup or refresh failed, as the job before this one
+   * left them, least recent failure first; planned after every other candidate, in this order.
+   */
+  failedBefore: string[];
 }
 
 /** Start a scan, or continue the newest one whose status is "running". Resolves with the finished job. */
@@ -121,8 +124,8 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const shouldStop = (): boolean => (stopAsked ||= asked());
   const scans = await store.listScans();
   const newest = scans[0];
-  // Ruling 50: the job before this one (before the job being continued, when one is).
-  const failedBefore = setAsidePartsOf(newest?.status === 'running' ? scans[1] : newest);
+  // Rulings 50 and 57: the job before this one (before the job being continued, when one is).
+  const failedBefore = failingPartsOf(newest?.status === 'running' ? scans[1] : newest);
   const run = (job: ScanJob): Run => ({
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
     readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
@@ -164,6 +167,8 @@ async function startJob(deps: ScanDeps): Promise<Run> {
       catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
     },
   };
+  // Ruling 57: carried on, so a part that keeps failing stays behind the others until it is answered.
+  if (failedBefore.length > 0) job.failingParts = [...failedBefore];
   await store.putScan(job);
   return { ...run(job), movable };
 }
@@ -177,10 +182,21 @@ function failedPagesOf(job: ScanJob | undefined): Set<string> {
   return new Set(Array.isArray(pages) ? pages.filter((p): p is string => typeof p === 'string') : []);
 }
 
-/** The parts a stored job set aside (Ruling 50). Stored data is untrusted: anything but a list of strings counts as none. */
-function setAsidePartsOf(job: ScanJob | undefined): Set<string> {
-  const parts: unknown = job?.setAsideParts;
-  return new Set(Array.isArray(parts) ? parts.filter((p): p is string => typeof p === 'string') : []);
+/**
+ * The parts a stored job left failing, least recent failure first (Ruling 57); a job saved before
+ * that field existed gives the parts it set aside (Ruling 50). Stored data is untrusted: anything
+ * but a list of strings counts as none.
+ */
+function failingPartsOf(job: ScanJob | undefined): string[] {
+  const parts: unknown = Array.isArray(job?.failingParts) ? job.failingParts : job?.setAsideParts;
+  return Array.isArray(parts) ? [...new Set(parts.filter((p): p is string => typeof p === 'string'))] : [];
+}
+
+/** Ruling 57: `job.failingParts` with only the parts `keep` accepts; absent when none is left. */
+function keepFailing(job: ScanJob, keep: (key: string) => boolean): void {
+  const left = (job.failingParts ?? []).filter(keep);
+  if (left.length > 0) job.failingParts = left;
+  else delete job.failingParts;
 }
 
 const sameListing = (a: Listing, b: Listing): boolean =>
@@ -290,6 +306,11 @@ async function runQueue(run: Run): Promise<void> {
     run.lastFailed = false;
     // Rule 3: the store first, then the job.
     await apply(run, step, result);
+    // Ruling 57: a part answered is no longer failing.
+    if (step.kind === 'lookup' || step.kind === 'refresh') {
+      const answered = partKey(step.brand, step.model);
+      keepFailing(job, (k) => k !== answered);
+    }
     // searchesUsed counts the paid steps this job saved. A search in flight when the worker
     // was interrupted was paid (the ledger has it) but its step was never saved, so it is
     // not counted; the continued job answers that step from the cache, which is free.
@@ -349,6 +370,8 @@ async function setAside(run: Run, step: Lookup | Refresh, message: string): Prom
   // Ruling 50: remembered, so the next job plans this part after the others.
   const key = partKey(step.brand, step.model);
   if (!(job.setAsideParts ?? []).includes(key)) job.setAsideParts = [...(job.setAsideParts ?? []), key];
+  // Ruling 57: now the most recent failure, so it goes last among the failing parts.
+  job.failingParts = [...(job.failingParts ?? []).filter((k) => k !== key), key];
   // Ruling 49: the sentence names what failed, so it reads true beside the other sentences here.
   const sentence = `${step.kind === 'lookup' ? 'The lookup' : 'The price check'} of ${step.model} failed: ${message}`;
   if (run.setAside === 0) job.stopMessage = job.stopMessage === null ? sentence : `${job.stopMessage} ${sentence}`;
@@ -758,7 +781,7 @@ export async function bundleParts(store: ScanStore): Promise<Map<string, Part & 
  */
 async function wantedParts(
   store: ScanStore, settings: ScanSettings, now: number, fromListings?: (part: Part) => Promise<MatchRecord | null>,
-  failedBefore: Set<string> = new Set(),
+  failedBefore: string[] = [],
 ): Promise<Wants> {
   const parts = await bundleParts(store);
   const lookups: string[] = [];
@@ -783,9 +806,10 @@ async function wantedParts(
     }
   }
   const bySaving = (a: string, b: string) => parts.get(b)!.saving - parts.get(a)!.saving || (a < b ? -1 : a > b ? 1 : 0);
-  // Ruling 50: a part the last job set aside after a failure goes after every other, so one that
-  // keeps failing cannot take the only slot on every scan; it still runs if the allowance reaches it.
-  const failed = (k: string) => (failedBefore.has(k) ? 1 : 0);
+  // Rulings 50 and 57: a part whose last lookup or refresh failed goes after every other candidate,
+  // the least recent failure first, so failing parts cannot take the only slot in turns; each still
+  // runs when the allowance reaches it or nothing else waits.
+  const failed = (k: string) => failedBefore.indexOf(k);
   // Then waiting parts first, oldest first; then by saving.
   const rank = (k: string) => waitingSince.get(k) ?? Infinity;
   lookups.sort((a, b) => failed(a) - failed(b) || (rank(a) === rank(b) ? 0 : rank(a) < rank(b) ? -1 : 1) || bySaving(a, b));
@@ -805,6 +829,8 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   const plan = planScan(allowance, { hdPagesWanted: 0, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
   const toSteps = (keys: string[]) => keys.map((k) => wants.steps.get(k)!);
   const later = [...toSteps(plan.deferredLookups), ...toSteps(plan.deferredRefreshes)];
+  // Ruling 57: a failing part no longer wanted (matched since, decided, or in no bundle) is dropped.
+  keepFailing(job, (k) => wants.steps.has(k));
   for (const step of later) if (step.kind === 'lookup') await markWaiting(run, step);
   job.queue = [...toSteps(plan.lookups), ...toSteps(plan.refreshes)];
   job.deferred.push(...later);
