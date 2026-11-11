@@ -1435,8 +1435,11 @@ describe('worker: answerReview', () => {
     const after = await report(w);
     expect(after.review.map((r) => r.id)).not.toContain(AMBIGUOUS);
     expect(after.bundles.find((b) => b.key === 'homedepot:ambiguous')).toMatchObject({
-      section: 'missing_listing', parts: [{ model: 'DCKTS650D1P1' }, { model: 'DCF921B' }],
+      section: 'missing_listing', parts: [{ model: 'DCKTS650D1P1', status: 'unmatched' }, { model: 'DCF921B', status: 'unmatched' }],
     });
+    // Its parts have no match yet: a Look up searches for both.
+    const lookUp: PaidAction = { kind: 'lookUp', parts: [{ brand: 'DEWALT', model: 'DCKTS650D1P1' }, { brand: 'DEWALT', model: 'DCF921B' }] };
+    expect(await send(w, { type: 'quote', action: lookUp })).toEqual({ ok: true, data: { searches: 2, refusal: null } });
   });
 
   it('refuses an unknown question, an answered one and an answer not shown with a plain sentence', async () => {

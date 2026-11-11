@@ -496,6 +496,18 @@ describe('Look up', () => {
     show(report([row('c1')]));
     expect(screen.queryByRole('button', { name: /Look up/ })).toBeNull();
   });
+
+  it('offers Look up for parts with no match yet, as when the owner chose the split after the scan', async () => {
+    const chosen = row('u1', {
+      estimate: null,
+      section: 'missing_listing',
+      parts: [part('DCKTS650D1P1', { status: 'unmatched', grade: null, availability: 'missing', asin: null }), part('DCF921B', { status: 'unmatched', grade: null, availability: 'missing', asin: null })],
+    });
+    const { api, send } = fakeApi({ searches: 2, refusal: null });
+    show(report([chosen]), state(), { api });
+    expect(await screen.findByRole('button', { name: 'Look up 2 searches' })).toBeEnabled();
+    expect(send).toHaveBeenCalledWith({ type: 'quote', action: { kind: 'lookUp', parts: [{ brand: 'DEWALT', model: 'DCKTS650D1P1' }, { brand: 'DEWALT', model: 'DCF921B' }] } });
+  });
 });
 
 describe('empty states', () => {

@@ -156,6 +156,15 @@ describe('headline', () => {
     expect(screen.queryByText(/^Estimate from your fee settings/)).toBeNull();
   });
 
+  it('counts parts with no match yet as waiting, and offers Look up for them', async () => {
+    const { api, send } = fakeApi();
+    const none = { asin: null, grade: null, price: null, availability: 'missing' as const, title: null };
+    show(row({ estimate: null, section: 'missing_listing', parts: [part('A1', { status: 'unmatched', ...none }), part('A2', { status: 'waiting', ...none })] }), { api });
+    expect(screen.getByText('No estimate yet: 2 parts still need an Amazon lookup.')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^Look up/ })).toBeEnabled();
+    expect(send).toHaveBeenCalledWith({ type: 'quote', action: { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'A1' }, { brand: 'RYOBI', model: 'A2' }] } });
+  });
+
   it('shows up to N searches on Look up until a quote returns', () => {
     const send = vi.fn(() => new Promise<Reply>(() => {}));
     const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
