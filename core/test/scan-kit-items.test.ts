@@ -107,13 +107,25 @@ function recording(w: World): ScanStore {
 }
 
 let clock = 0;
-/** One scan of the two listing pages (from the cache within the hour) at a run limit of `cap`; returns its plan and what it spent. */
-async function scan(w: World, cap: number, settings: ScanSettings = KITS): Promise<Plan & { plan: string[]; spent: string[] }> {
+/**
+ * One scan of the two listing pages (from the cache within the hour) at a run limit of `cap`, at `at`
+ * (default: a minute after the last); returns its plan, what it spent, and every search it sent to the
+ * client in order, whether the cache or the network answered it.
+ */
+async function scan(
+  w: World, cap: number, settings: ScanSettings = KITS, at?: number,
+): Promise<Plan & { plan: string[]; spent: string[]; ran: string[] }> {
   const before = w.ledger.length;
   clock += 1;
-  await runScan({ ...paid(w, { reserve: 0, maxPerRun: cap }), store: recording(w), settings, now: () => T0 + clock * MINUTE, readPages: recordedPages });
+  const { budget, client } = paid(w, { reserve: 0, maxPerRun: cap });
+  const ran: string[] = [];
+  const watched = { search: (params: Parameters<typeof client.search>[0], options?: Parameters<typeof client.search>[1]) => {
+    ran.push(options?.label ?? '');
+    return client.search(params, options);
+  } };
+  await runScan({ budget, client: watched, store: recording(w), settings, now: () => at ?? T0 + clock * MINUTE, readPages: recordedPages });
   const { queue, deferred } = w.plans.at(-1)!;
-  return { queue, deferred, plan: [...queue, ...deferred], spent: w.ledger.slice(before) };
+  return { queue, deferred, plan: [...queue, ...deferred], spent: w.ledger.slice(before), ran };
 }
 
 /**
@@ -317,6 +329,93 @@ describe('a kit\'s page read again with a different list', () => {
     await lookUp(w, ['PCL1600K2']);
     await withoutPCL235(w);
     expect((await scan(w, 1)).plan).toEqual([...TODAY_AFTER_KIT, ...ITEM_PLAN.filter((l) => l !== 'lookup:PCL235')]);
+  });
+});
+
+const KIT_QUESTION = `match:${partKey('RYOBI', 'PCL1600K2')}`;
+
+/**
+ * Hand-made, as the replay's PCL1600K2 search has no listing that could be it: the kit's match in review,
+ * with a match question offering one saved RYOBI listing, as a lookup or a Verify opens one.
+ */
+async function kitInReview(w: World): Promise<void> {
+  const l = (await w.store.listListings()).find((x) => x.brand === 'RYOBI')!;
+  await w.store.putReview({
+    id: KIT_QUESTION, kind: 'match', subject: partKey('RYOBI', 'PCL1600K2'), brand: 'RYOBI', model: 'PCL1600K2', title: null,
+    reason: '1 listing(s) show the model number, but the brand is not confirmed',
+    candidates: [{ asin: l.asin, title: l.title, price: l.price, reviews: l.reviews, reasons: ['brand not confirmed'], seenAt: T0 }],
+    choices: [], openedAt: T0, answer: null, answeredAt: null,
+  });
+  await w.store.putMatch({
+    key: partKey('RYOBI', 'PCL1600K2'), brand: 'RYOBI', model: 'PCL1600K2', status: 'review', asin: null, grade: null, alternatives: [],
+    decidedBy: 'auto', updatedAt: T0, waitingSince: null,
+  });
+}
+
+describe('Ruling 69: a kit in review holds its items', () => {
+  for (const cap of CAPS) {
+    it(`at a run limit of ${cap}: no item is planned while the kit is in review; after "None of these", they are planned last`, async () => {
+      const w = await twoBundles(await answered());
+      await kitInReview(w);
+      const first = await scan(w, cap, STORED);
+      expect(first.plan).toEqual(['lookup:P553']);
+      expect(first.spent).toEqual(['scan:lookup:P553']);
+      // The owner says no listing is the kit: it has no listing, so its items are looked up.
+      const item = (await w.store.getReview(KIT_QUESTION))!;
+      await applyReviewAnswer(w.store, KIT_QUESTION, { none: true, seen: reviewSignature(item) }, T0 + MINUTE);
+      expect(await w.store.getMatch(partKey('RYOBI', 'PCL1600K2'))).toMatchObject({ status: 'none', decidedBy: 'user' });
+      const second = await scan(w, cap, STORED);
+      expect(second.plan).toEqual(ITEM_PLAN);
+      expect(second.spent).toEqual(ITEM_PLAN.slice(0, cap).map((l) => `scan:${l}`));
+    });
+  }
+
+  it('the panel\'s Look up on the items still works while the kit is in review', async () => {
+    const w = await answered();
+    await kitInReview(w);
+    const parts = KIT_MODELS.map((model) => ({ brand: 'RYOBI', model }));
+    const { budget } = paid(w, { reserve: 0, maxPerRun: 20 });
+    expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget).searches).toBe(7);
+    const before = w.ledger.length;
+    await lookUp(w, KIT_MODELS);
+    expect(w.ledger.slice(before)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').map((m) => `panel:lookup:${m}`));
+  });
+});
+
+describe('ordinary lookups and kit items in one scan', () => {
+  it('with room left after the ordinary lookups, the same scan runs both, the ordinary first', async () => {
+    const w = await twoBundles(await answered());
+    await lookUp(w, ['PCL1600K2']);
+    const s = await scan(w, DEFAULT_SETTINGS.searchesPerScan, STORED);
+    expect(s.plan).toEqual(['lookup:P553', ...ITEM_PLAN]);
+    expect(s.queue).toEqual(['lookup:P553', ...ITEM_PLAN.slice(0, 4)]);
+    expect(s.spent).toEqual(['scan:lookup:P553', ...ITEM_PLAN.slice(0, 4).map((l) => `scan:${l}`)]);
+  });
+
+  it('a top-up from a step the cache answers (Ruling 48) reaches a deferred refresh before any item', async () => {
+    const w = await twoBundles(await answered());
+    // Both searches are saved now (the replay's cache holds them), so a refresh of either is answered free.
+    await lookUp(w, ['PCL1600K2', 'P553']);
+    // The owner chose P553's first listing, priced at T0.
+    const q553 = (await w.store.getReview(`match:${partKey('RYOBI', 'P553')}`))!;
+    await applyReviewAnswer(w.store, q553.id, { choice: 0, seen: reviewSignature(q553) }, T0);
+    // Hand-made: the owner chose a listing for the kit too, and its last check did not see it (inactive).
+    const asin = 'B0KITINACTIVE';
+    await w.store.putMatch({
+      key: partKey('RYOBI', 'PCL1600K2'), brand: 'RYOBI', model: 'PCL1600K2', status: 'matched', asin, grade: null, alternatives: [],
+      decidedBy: 'user', updatedAt: T0, waitingSince: null,
+    });
+    await w.store.putPrice({ asin, price: 249, reviews: 10, seenAt: T0 - 24 * 60 * MINUTE, checkedAt: T0 });
+    // Four days on, every price is stale. At a run limit of 1 the queue holds one refresh.
+    const s = await scan(w, 1, STORED, T0 + 4 * 24 * 60 * MINUTE);
+    const refreshes = ['refresh:P553', 'refresh:PCL1600K2'];
+    expect([...s.queue, s.deferred[0]].sort()).toEqual(refreshes);
+    expect(s.deferred.slice(1)).toEqual([...ITEM_PLAN, 'refresh:PBP005']);
+    // The queued refresh comes from the cache and gives its slot to the deferred refresh, also from the
+    // cache, which gives it to the first item: the one search the scan pays for.
+    expect(s.ran.slice(0, 2).sort()).toEqual(refreshes.map((r) => `scan:${r}`));
+    expect(s.ran.slice(2)).toEqual(['scan:lookup:PBP002']);
+    expect(s.spent).toEqual(['scan:lookup:PBP002']);
   });
 });
 

@@ -102,7 +102,7 @@ every scan.
   other work of its phase, so one that keeps failing never holds the only slot; failing lookups
   wait behind every other part until they are answered, the least recent failure first.
   The items of a kit inside a bundle are looked up by a scan only once the kit itself was looked up
-  and has no active listing, and then last of all, from what every other lookup and refresh leaves;
+  and has no active listing and no open match question, and then last of all, from what every other lookup and refresh leaves;
   a saved listing still matches them for nothing, and the panel's Look up may ask for them at any time.
 - `forecastUsage()` (core/src/schedule.ts) shows, next to the frequency setting, the worst
   case a schedule can use in a month against the plan, before the setting is saved.

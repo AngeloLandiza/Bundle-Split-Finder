@@ -859,10 +859,11 @@ export async function bundleParts(store: ScanStore): Promise<Map<string, BundleP
  * Step 6: whether a scan may look up (or refresh) the items of a kit: the kit was looked up (its
  * match is no longer waiting) and has no active listing, by the report's rule (a matched listing
  * whose price was seen at its last check). Before the kit's own lookup nobody knows it does not sell
- * whole; with an active listing it does.
+ * whole; with an active listing it does. Ruling 69: a kit in review holds its items too, as the owner
+ * may still choose a listing that is the kit; the panel's Look up is not held.
  */
 async function itemsWanted(store: ScanStore, kit: MatchRecord | undefined): Promise<boolean> {
-  if (!kit || kit.status === 'waiting') return false;
+  if (!kit || kit.status === 'waiting' || kit.status === 'review') return false;
   if (kit.status !== 'matched' || kit.asin === null) return true;
   return !priceActive(await store.getPrice(kit.asin));
 }
