@@ -9,6 +9,7 @@ import { DEFAULT_SCAN_SETTINGS, type MatchRecord, type PaidAction, type ScanSett
 import { type BudgetPolicy, parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, SerpApiClient, SerpApiError } from '../src/serpapi/client';
 import * as fx from './fixtures';
+import { answeredKitWorld, kitQuote, kitReport, kitRunPaid, type KitWorld, P553_KEY } from './kit-world';
 import { recorded } from './recorded';
 
 // The side panel's paid actions, replayed: every search goes through the real SerpApiClient
@@ -32,8 +33,8 @@ const LOOK_25B: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 
 const LOOK_BOTH: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC01B' }, { brand: 'RYOBI', model: 'PBLRC25B' }] };
 const VERIFY_25B: PaidAction = { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0B3JWF5ZV' };
 
-/** Ruling 53: a paid action that needs more searches than a scan may use says so, and what to do. */
-const RUN_CAP = 'This needs 2 searches, and a scan may use 1. Raise the searches per scan in settings to do it here.';
+/** Ruling 53: a paid action that needs more searches than a scan may use says so, and what to do. A Look up says it only when nothing fits (Ruling 72). */
+const RUN_CAP = 'This needs 2 searches, and a scan may use 0. Raise the searches per scan in settings to do it here.';
 // A refused quote or run describes the action, never a scan: nothing has stopped. A manual action may
 // use the reserve down to zero, so a reserve refusal means the month's searches are used up.
 const RESERVE = 'This needs 2 searches, and 1 is left this month.';
@@ -237,6 +238,139 @@ describe('runPaid lookUp: the scan\'s own lookup step for parts left waiting', (
   });
 });
 
+// ---------------------------------------------------------------- Ruling 72
+
+describe('runPaid lookUp above the per-scan limit: what fits is looked up, best first, and the rest wait (Ruling 72)', () => {
+  const lookups = (w: World, prefix: string) => w.ledger.filter((l) => l.startsWith(`${prefix}:lookup:`)).map((l) => l.slice(prefix.length + 8));
+
+  /** The part a scan allowed one search looks up next in this world: the listing page comes from the cache, free. */
+  async function scanPicks(w: World): Promise<string[]> {
+    const { budget, client } = clientFor(w, { reserve: 0, maxPerRun: 1 });
+    await runScan({ client, budget, store: w.store, settings: RATCHET, now: () => w.clock });
+    return lookups(w, 'scan');
+  }
+
+  it('at a limit of 1, a Look up of both ratchet parts quotes 1 search with 1 left waiting, and looks up the part a scan would', async () => {
+    const twin = await waiting();
+    twin.clock = T0 + MINUTE;
+    const scanChoice = await scanPicks(twin);
+    expect(scanChoice).toHaveLength(1);
+
+    const w = await waiting();
+    const one: BudgetPolicy = { reserve: 0, maxPerRun: 1 };
+    expect(await quote(w, LOOK_BOTH, one)).toEqual({ searches: 1, refusal: null, leftWaiting: 1 });
+    w.clock = T0 + MINUTE;
+    await paid(w, LOOK_BOTH, one);
+    expect(lookups(w, 'panel')).toEqual(scanChoice);
+    expect(w.ledger).toHaveLength(2);
+    const other = ['PBLRC01B', 'PBLRC25B'].find((m) => m !== scanChoice[0])!;
+    // The part left out waits, as a scan leaves a lookup it defers, and keeps when it began to wait.
+    expect(await w.store.getMatch(`RYOBI:${other}`)).toMatchObject({ status: 'waiting', waitingSince: T0 });
+  });
+
+  it('a part whose last lookup failed goes after the others, as in a scan (Ruling 57)', async () => {
+    // The replayed world, with the last job's failingParts set by hand to the part a scan would take first.
+    const first = await scanPicks(await (async () => {
+      const t = await waiting();
+      t.clock = T0 + MINUTE;
+      return t;
+    })());
+    const failing = async (): Promise<World> => {
+      const t = await waiting();
+      const [job] = await t.store.listScans();
+      await t.store.putScan({ ...job!, failingParts: [`RYOBI:${first[0]}`] });
+      t.clock = T0 + MINUTE;
+      return t;
+    };
+    const scanChoice = await scanPicks(await failing());
+    expect(scanChoice).toHaveLength(1);
+    expect(scanChoice).not.toEqual(first);
+    const w = await failing();
+    await paid(w, LOOK_BOTH, { reserve: 0, maxPerRun: 1 });
+    expect(lookups(w, 'panel')).toEqual(scanChoice);
+  });
+
+  it('the parts left waiting are quoted next, and the next press looks them up', async () => {
+    const w = await waiting();
+    const one: BudgetPolicy = { reserve: 0, maxPerRun: 1 };
+    w.clock = T0 + MINUTE;
+    await paid(w, LOOK_BOTH, one);
+    const next = await quote(w, LOOK_BOTH, one);
+    // The first search may have saved a listing that answers the other part for nothing (2c rule 5).
+    expect(next.leftWaiting).toBeUndefined();
+    expect(next.searches).toBeLessThanOrEqual(1);
+    await paid(w, LOOK_BOTH, one);
+    for (const key of ['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']) expect(await w.store.getMatch(key)).toMatchObject({ status: 'matched' });
+    expect(await quote(w, LOOK_BOTH, one)).toEqual({ searches: 0, refusal: null });
+  });
+
+  it('at a limit of 0 nothing fits: refused with Ruling 53\'s sentence for the whole cost, and nothing is sent', async () => {
+    const w = await waiting();
+    const zero: BudgetPolicy = { reserve: 0, maxPerRun: 0 };
+    const sentence = 'This needs 2 searches, and a scan may use 0. Raise the searches per scan in settings to do it here.';
+    expect(await quote(w, LOOK_BOTH, zero)).toEqual({ searches: 2, refusal: sentence });
+    await expect(paid(w, LOOK_BOTH, zero)).rejects.toThrow(new PaidProblem(sentence));
+    expect(w.replay.calls).toEqual([LISTING]);
+  });
+
+  it('the hourly limit still refuses with its own sentence, for what would fit, and nothing is written', async () => {
+    const w = await waiting();
+    const before = await w.store.listMatches();
+    const one: BudgetPolicy = { reserve: 0, maxPerRun: 1 };
+    const used = account({ this_hour_searches: 50 });
+    expect(await quote(w, LOOK_BOTH, one, used)).toEqual({ searches: 1, refusal: HOURLY, leftWaiting: 1 });
+    await expect(paid(w, LOOK_BOTH, one, used)).rejects.toThrow(new PaidProblem(HOURLY));
+    // One search left this hour, two wanted and the limit allows 5: the hour refuses.
+    const oneLeft = account({ this_hour_searches: 49 });
+    expect(await quote(w, LOOK_BOTH, MANUAL, oneLeft)).toEqual({ searches: 2, refusal: HOURLY });
+    await expect(paid(w, LOOK_BOTH, MANUAL, oneLeft)).rejects.toThrow(new PaidProblem(HOURLY));
+    expect(w.replay.calls).toEqual([LISTING]);
+    expect(await w.store.listMatches()).toEqual(before);
+  });
+
+  it('a Verify is not cut: under a limit of 0 it is refused as before', async () => {
+    const w = await bothMatched();
+    expect((await quote(w, VERIFY_25B, { reserve: 0, maxPerRun: 0 })).leftWaiting).toBeUndefined();
+  });
+});
+
+describe('runPaid lookUp: PCL1600K2 split into its parts, at the default limit of 5 (Ruling 72, replayed)', () => {
+  const panelLookups = (w: KitWorld) => w.ledger.filter((l) => l.startsWith('panel:lookup:'));
+  const splitWaiting = async (w: KitWorld) => {
+    const row = (await kitReport(w)).bundles.find((b) => b.key === P553_KEY)!;
+    const split = row.options.find((o) => o.id === 'split:PCL1600K2')!;
+    return split.parts.filter((p) => p.status === 'waiting' || p.status === 'unmatched').map((p) => ({ brand: 'RYOBI', model: p.model }));
+  };
+
+  it('quotes 5 of the 8 waiting parts, spends exactly 5 on a press, best first, then quotes the rest and a second press finishes them', async () => {
+    const w = await answeredKitWorld();
+    const parts = await splitWaiting(w);
+    expect(parts.map((p) => p.model)).toEqual(['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL430', 'PCL660', 'PBP002', 'P553']);
+    const action: PaidAction = { kind: 'lookUp', parts };
+    expect(await kitQuote(w, action, 5)).toEqual({ searches: 5, refusal: null, leftWaiting: 3 });
+    expect(await kitRunPaid(w, action, 5)).toBeNull();
+    // P553 is a part of the bundle's own split: a scan ranks it above the kit's items, which tie on
+    // waiting and saving and so go by model.
+    expect(panelLookups(w)).toEqual(['P553', 'PBP002', 'PCL206', 'PCL235', 'PCL430'].map((m) => `panel:lookup:${m}`));
+    const left = await splitWaiting(w);
+    expect(left.map((p) => p.model)).toEqual(['PCL500', 'PCL515', 'PCL660']);
+    const next = await kitQuote(w, { kind: 'lookUp', parts: left }, 5);
+    expect(next).toEqual({ searches: next.searches, refusal: null });
+    expect(next.searches).toBeLessThanOrEqual(3);
+    expect(await kitRunPaid(w, { kind: 'lookUp', parts: left }, 5)).toBeNull();
+    expect(panelLookups(w)).toHaveLength(5 + next.searches);
+    expect(await splitWaiting(w)).toEqual([]);
+  });
+
+  it('at a limit of 1, one part of the 8', async () => {
+    const w = await answeredKitWorld();
+    const action: PaidAction = { kind: 'lookUp', parts: await splitWaiting(w) };
+    expect(await kitQuote(w, action, 1)).toEqual({ searches: 1, refusal: null, leftWaiting: 7 });
+    expect(await kitRunPaid(w, action, 1)).toBeNull();
+    expect(panelLookups(w)).toEqual(['panel:lookup:P553']);
+  });
+});
+
 // ---------------------------------------------------------------- Verify
 
 describe('runPaid verify: one detail page upgrades or rejects a title match', () => {
@@ -363,7 +497,7 @@ describe('runPaid verify: one detail page upgrades or rejects a title match', ()
 describe('quotePaid and runPaid: the manual-trigger budget', () => {
   it('a quote above the budget refuses with the budget\'s own sentence, and runPaid then spends nothing', async () => {
     const cases: [PaidAction, BudgetPolicy, ReturnType<typeof account>, number, string][] = [
-      [LOOK_BOTH, { reserve: 0, maxPerRun: 1 }, account(), 2, RUN_CAP],
+      [LOOK_BOTH, { reserve: 0, maxPerRun: 0 }, account(), 2, RUN_CAP],
       [LOOK_BOTH, MANUAL, account({ total_searches_left: 1 }), 2, RESERVE],
       [LOOK_01B, MANUAL, account({ this_hour_searches: 50 }), 1, HOURLY],
     ];

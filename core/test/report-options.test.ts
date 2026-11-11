@@ -163,8 +163,9 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     const w = await answered();
     await lookUp(w, ['PCL1600K2', 'P553']);
     await lookUpItems(w, KIT_MODELS);
-    // PBP005 comes from the saved brand page, free; the other seven are one replayed search each.
-    expect(w.ledger.slice(5)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').map((m) => `panel:lookup:${m}`));
+    // PBP005 comes from the saved brand page, free; the other seven are one replayed search each, in a
+    // scan's order (Ruling 72): the items tie on waiting and saving, so they go by model.
+    expect(w.ledger.slice(5)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').sort().map((m) => `panel:lookup:${m}`));
     const row = await rowOf(w);
     const split = row.options.find((o) => o.id === 'split:PCL1600K2')!;
     const whole = row.options.find((o) => o.id === 'whole')!;

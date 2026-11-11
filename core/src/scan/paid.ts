@@ -9,8 +9,8 @@ import type { SearchResult } from '../serpapi/client';
 import { parseAmazonProduct } from '../serpapi/parsers';
 import { wantedFor } from './classify';
 import {
-  applyLookup, bundleParts, type KnownModels, knownModels, type LookupStep, lookupWanted, markWaiting, matchFromListings, openMatchReview, type Part,
-  type PartContext, pickFromListings, savePrice, sendLookup,
+  applyLookup, bundleParts, failingBefore, type KnownModels, knownModels, lookupOrder, type LookupStep, lookupWanted, markWaiting, matchFromListings,
+  openMatchReview, type Part, type PartContext, pickFromListings, savePrice, sendLookup,
 } from './runner';
 import { DEFAULT_SCAN_SETTINGS, partKey } from './types';
 import type { BudgetView, MatchRecord, PaidAction, Quote, ScanCounts, ScanSettings, ScanStore, SearchClient } from './types';
@@ -49,12 +49,17 @@ export interface SavedAnswers {
 
 /**
  * What the action would spend now, and the budget's own sentence when that does not fit. A
- * Verify is 1 search; a Look up is 1 per part asked for (each once) that `saved` does not answer.
- * Nothing to spend is never refused. The store's refusals are refusalFor's.
+ * Verify is 1 search; a Look up is 1 per part asked for (each once) that `saved` does not answer,
+ * at most the per-scan limit when that is at least 1 (Ruling 72): the parts past it are counted in
+ * `leftWaiting`. Nothing to spend is never refused. The store's refusals are refusalFor's.
  */
 export function quotePaid(action: PaidAction, saved: { listingAnswers: (brand: string, model: string) => boolean }, budget: BudgetView): Quote {
-  const searches = action.kind === 'verify' ? 1 : partsOf(action.parts).filter((p) => !saved.listingAnswers(p.brand, p.model)).length;
-  return { searches, refusal: overBudget(budget, searches) };
+  if (action.kind === 'verify') return { searches: 1, refusal: overBudget(budget, 1) };
+  const needed = partsOf(action.parts).filter((p) => !saved.listingAnswers(p.brand, p.model)).length;
+  const searches = fitting(budget, needed);
+  const quote: Quote = { searches, refusal: overBudget(budget, searches) };
+  if (searches < needed) quote.leftWaiting = needed - searches;
+  return quote;
 }
 
 /** The SavedAnswers of the store as it is now. */
@@ -85,7 +90,8 @@ export async function refusalFor(store: ScanStore, action: PaidAction): Promise<
  * and a sentence, the caller's own, stops the action.
  *
  * Throws PaidProblem, having written and spent nothing, when refused: refusalFor's sentence, or the
- * budget's own when the whole cost does not fit. A failed search is thrown as the client threw it,
+ * budget's own when the cost does not fit. A Look up's cost is what fits the per-scan limit (Ruling
+ * 72; quotePaid): the parts past it wait for the next press or scan. A failed search is thrown as the client threw it,
  * never retried. A Verify whose page cannot be used throws PaidProblem after its search. A stop
  * throws PaidProblem with shouldStop's sentence; the parts a Look up had not searched for yet wait.
  */
@@ -109,19 +115,22 @@ export async function runPaid(
 
 /**
  * Rule 5 and 2c rule 5 as a scan plans them, once: parts a saved listing answers are matched first,
- * for nothing; then one lookup per remaining part, in the order asked, through the scan's own step
- * (rule 6). A stop before a search, or a failed search, ends the action: that part and the ones
- * after it wait, as a scan leaves its queue when it halts.
+ * for nothing; then one lookup per remaining part, best first in the scan's own order (Ruling 72),
+ * through the scan's own step (rule 6). Only what fits the per-scan limit is searched for; the rest
+ * wait, as a scan leaves the lookups it defers. A stop before a search, or a failed search, ends
+ * the action: that part and the ones after it wait, as a scan leaves its queue when it halts.
  */
 async function lookUp(
   ctx: PartContext, budget: BudgetView, known: KnownModels, asked: { brand: string; model: string }[], stop: () => string | null,
 ): Promise<void> {
   const need = await judge(ctx.store, known);
   const parts = partsOf(asked);
-  const searches = parts.filter((p) => need(p) === 'search');
+  const wanted = await scanOrder(ctx.store, parts.filter((p) => need(p) === 'search'));
+  const searches = wanted.slice(0, fitting(budget, wanted.length));
   const refusal = overBudget(budget, searches.length);
   if (refusal !== null) throw new PaidProblem(refusal);
   for (const part of parts) if (need(part) === 'listing') await matchFromListings(ctx, known.listings, part);
+  for (const p of wanted.slice(searches.length)) await markWaiting(ctx, { kind: 'lookup', brand: p.brand, model: p.model });
   const waitFrom = async (i: number) => {
     for (const p of searches.slice(i)) await markWaiting(ctx, { kind: 'lookup', brand: p.brand, model: p.model });
   };
@@ -202,6 +211,36 @@ async function judge(store: ScanStore, known: KnownModels): Promise<(part: Part)
     if (!wanted.has(part.key) || !lookupWanted(matches.get(part.key))) return 'nothing';
     return pickFromListings(part, known.catalog, known.listings).chosen ? 'listing' : 'search';
   };
+}
+
+/**
+ * Ruling 72: how many of a Look up's `searches` one press spends. All of them, or as many as the
+ * per-scan limit allows when it allows at least one. Under a limit of 0 nothing fits, and the
+ * whole cost is refused with Ruling 53's sentence. The reserve and the hourly limit are not
+ * counted here: overBudget refuses on them, with their own sentences.
+ */
+function fitting(budget: BudgetView, searches: number): number {
+  const cap = Math.floor(budget.leftThisRun);
+  return cap >= 1 ? Math.min(searches, cap) : searches;
+}
+
+/**
+ * Ruling 72: `parts` (each a part some bundle wants) best first, in the order a scan would look
+ * them up: lookupOrder over the store as it is now, with kit items after every other part.
+ */
+async function scanOrder(store: ScanStore, parts: Part[]): Promise<Part[]> {
+  if (parts.length < 2) return parts;
+  const wanted = await bundleParts(store);
+  const matches = new Map((await store.listMatches()).map((m) => [m.key, m]));
+  // As wantedParts sets it: a part to look up with a match record ranks by when it began to wait.
+  const waitingSince = new Map<string, number>();
+  for (const p of parts) {
+    const match = matches.get(p.key);
+    if (match) waitingSince.set(p.key, match.waitingSince ?? 0);
+  }
+  const { byLookup } = lookupOrder(wanted, waitingSince, failingBefore(await store.listScans()));
+  const item = (p: Part) => ((wanted.get(p.key)?.kits.length ?? 0) > 0 ? 1 : 0);
+  return [...parts].sort((a, b) => item(a) - item(b) || byLookup(a.key, b.key));
 }
 
 function verifyRefusal(match: MatchRecord | undefined, asin: string): string | null {

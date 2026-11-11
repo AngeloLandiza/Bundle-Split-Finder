@@ -651,7 +651,8 @@ export function createWorker(env: WorkerEnv): Worker {
     }
     refusal ??= await refusalFor(store, action);
     const q = quotePaid(action, await savedAnswers(store), budget);
-    return ok({ searches: q.searches, refusal: refusal ?? q.refusal });
+    // The whole quote, with the parts a Look up leaves for the next press (Ruling 72).
+    return ok({ ...q, refusal: refusal ?? q.refusal });
   }
 
   /**

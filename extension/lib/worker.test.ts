@@ -1047,8 +1047,8 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
   /** The PBLRC01B title match a Look up makes (B0B6Z2ZGVK); its detail page is recorded. */
   const VERIFY_01B: PaidAction = { kind: 'verify', brand: 'RYOBI', model: 'PBLRC01B', asin: 'B0B6Z2ZGVK' };
   const PRODUCT_25B = 'amazon_domain=amazon.com&asin=B0B3JWF5ZV&engine=amazon_product';
-  /** Ruling 53: the settings allow one search per scan, and the Look up needs two. */
-  const RUN_CAP = 'This needs 2 searches, and a scan may use 1. Raise the searches per scan in settings to do it here.';
+  /** A manual action may use the reserve down to zero: a reserve refusal means the month's searches are used up. */
+  const NONE_LEFT = 'No searches are left this month.';
   /** A refused quote describes the action, not a scan: nothing has stopped. */
   const HOURLY = 'SerpApi allows 50 searches an hour, and they are used. Try again later.';
   const SCANNING = 'A scan is running.';
@@ -1115,11 +1115,27 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
     expect(panelLabels(w)).toHaveLength(2);
   });
 
-  it('a quote above the budget refuses with the budget\'s own sentence, and runPaid then sends nothing', async () => {
+  it('a Look up above searches per scan quotes what fits and the parts left, and runPaid spends only that (Ruling 72)', async () => {
     const w = await waitingWorld();
-    expect(await quote(w, LOOK_BOTH)).toEqual({ ok: true, data: { searches: 2, refusal: RUN_CAP } });
+    expect(await quote(w, LOOK_BOTH)).toEqual({ ok: true, data: { searches: 1, refusal: null, leftWaiting: 1 } });
+    w.clock = T0 + MINUTE;
+    expect(await runPaid(w, LOOK_BOTH)).toEqual({ ok: true, data: null });
+    expect(panelLabels(w)).toHaveLength(1);
+    // The next quote is for what is left: never more than one search, and nothing left over.
+    const next = await quote(w, LOOK_BOTH);
+    expect(next).toMatchObject({ ok: true, data: { refusal: null } });
+    expect((next as { data: Quote }).data.searches).toBeLessThanOrEqual(1);
+    expect((next as { data: Quote }).data.leftWaiting).toBeUndefined();
+  });
+
+  it('a quote above the budget refuses with the budget\'s own sentence, and runPaid then sends nothing', async () => {
+    // Settings never allow fewer than 1 search per scan, so in the extension a Look up is refused by the month or the hour, never by the per-scan limit.
+    const w = await waitingWorld();
+    w.accountOver = { total_searches_left: 0 };
+    w.clock = T0 + 6 * MINUTE;
+    expect(await quote(w, LOOK_BOTH)).toEqual({ ok: true, data: { searches: 1, refusal: NONE_LEFT, leftWaiting: 1 } });
     const requests = w.requests.length;
-    expect(await runPaid(w, LOOK_BOTH)).toEqual({ ok: false, error: RUN_CAP });
+    expect(await runPaid(w, LOOK_BOTH)).toEqual({ ok: false, error: NONE_LEFT });
     // The account is checked (free); no search is sent.
     expect(w.requests.slice(requests)).toEqual(['https://serpapi.com/account.json']);
     expect(w.replay.calls).toEqual([RATCHET]);

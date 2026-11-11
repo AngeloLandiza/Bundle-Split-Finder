@@ -134,8 +134,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const shouldStop = (): boolean => (stopAsked ||= asked());
   const scans = await store.listScans();
   const newest = scans[0];
-  // Rulings 50 and 57: the job before this one (before the job being continued, when one is).
-  const failedBefore = failingPartsOf(newest?.status === 'running' ? scans[1] : newest);
+  const failedBefore = failingBefore(scans);
   const run = (job: ScanJob): Run => ({
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
     readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
@@ -213,6 +212,16 @@ const earlierPageKey = (p: Listing): string => pageKey({ ...p, page: p.page - 1 
 function failingPartsOf(job: ScanJob | undefined): string[] {
   const parts: unknown = Array.isArray(job?.failingParts) ? job.failingParts : job?.setAsideParts;
   return Array.isArray(parts) ? [...new Set(parts.filter((p): p is string => typeof p === 'string'))] : [];
+}
+
+/**
+ * Rulings 50 and 57: the parts failing as of the job before the next one, from the stored jobs,
+ * newest first (listScans): the newest job's, or the one's before it while the newest is still
+ * running and so is the job a scan continues.
+ */
+export function failingBefore(scans: ScanJob[]): string[] {
+  const newest = scans[0];
+  return failingPartsOf(newest?.status === 'running' ? scans[1] : newest);
 }
 
 /** Ruling 57: `job.failingParts` with only the parts `keep` accepts; absent when none is left. */
@@ -1009,6 +1018,22 @@ async function wantedParts(
       }
     }
   }
+  const { byLookup, byRefresh } = lookupOrder(parts, waitingSince, failedBefore);
+  lookups.sort(byLookup);
+  refreshes.sort(byRefresh);
+  // Step 6: kit items take their own rank, below every part above, ordered among themselves the same way.
+  return { lookups, refreshes, items: [...itemLookups.sort(byLookup), ...itemRefreshes.sort(byRefresh)], steps };
+}
+
+/**
+ * The order a scan pays for parts in, best first, as two comparators over part keys of `parts`.
+ * `waitingSince` holds, for each part to look up that has a match record, its waitingSince (0 when
+ * none). The panel's Look up orders its searches by `byLookup` too (Ruling 72); kit items are ranked
+ * below every other part by the caller.
+ */
+export function lookupOrder(
+  parts: Map<string, BundlePart>, waitingSince: Map<string, number>, failedBefore: string[],
+): { byLookup: (a: string, b: string) => number; byRefresh: (a: string, b: string) => number } {
   const bySaving = (a: string, b: string) => parts.get(b)!.saving - parts.get(a)!.saving || (a < b ? -1 : a > b ? 1 : 0);
   // Rulings 50 and 57: a part whose last lookup or refresh failed goes after every other candidate,
   // the least recent failure first, so failing parts cannot take the only slot in turns; each still
@@ -1018,10 +1043,7 @@ async function wantedParts(
   const rank = (k: string) => waitingSince.get(k) ?? Infinity;
   const byLookup = (a: string, b: string) => failed(a) - failed(b) || (rank(a) === rank(b) ? 0 : rank(a) < rank(b) ? -1 : 1) || bySaving(a, b);
   const byRefresh = (a: string, b: string) => failed(a) - failed(b) || bySaving(a, b);
-  lookups.sort(byLookup);
-  refreshes.sort(byRefresh);
-  // Step 6: kit items take their own rank, below every part above, ordered among themselves the same way.
-  return { lookups, refreshes, items: [...itemLookups.sort(byLookup), ...itemRefreshes.sort(byRefresh)], steps };
+  return { byLookup, byRefresh };
 }
 
 /** `listings`: the saved listings, read once for this planning pass. */

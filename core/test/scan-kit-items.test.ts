@@ -279,7 +279,8 @@ describe('the panel\'s Look up on a kit\'s items', () => {
     expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget)).toEqual({ searches: 7, refusal: null });
     const before = w.ledger.length;
     await lookUp(w, parts.map((p) => p.model));
-    expect(w.ledger.slice(before)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').map((m) => `panel:lookup:${m}`));
+    // In a scan's order (Ruling 72): the items tie on waiting and saving, so they go by model.
+    expect(w.ledger.slice(before)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').sort().map((m) => `panel:lookup:${m}`));
   });
 
   it('before the kit is looked up, the quote counts the items no saved listing answers, and P553', async () => {
@@ -378,7 +379,7 @@ describe('Ruling 69: a kit in review holds its items', () => {
     expect(quotePaid({ kind: 'lookUp', parts }, await savedAnswers(w.store), budget).searches).toBe(7);
     const before = w.ledger.length;
     await lookUp(w, KIT_MODELS);
-    expect(w.ledger.slice(before)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').map((m) => `panel:lookup:${m}`));
+    expect(w.ledger.slice(before)).toEqual(KIT_MODELS.filter((m) => m !== 'PBP005').sort().map((m) => `panel:lookup:${m}`));
   });
 });
 

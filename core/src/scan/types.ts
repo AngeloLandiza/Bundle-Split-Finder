@@ -545,4 +545,9 @@ export interface Quote {
   searches: number;
   /** One plain sentence when it may not run now; null when it may. */
   refusal: string | null;
+  /**
+   * Ruling 72: the parts a Look up needs a search for that the per-scan limit leaves out of this
+   * press. They stay waiting, and the next quote is for them. Absent when every part fits.
+   */
+  leftWaiting?: number;
 }

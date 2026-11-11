@@ -64,17 +64,21 @@ export async function answeredKitWorld(answer: 'choice' | 'none' = 'choice', pag
 
 export const kitReport = async (w: KitWorld) => ({ ...(await buildReport(w.store, KIT_SETTINGS)), packaging: {} });
 
-/** What the worker answers to a quote: the store's refusal or the budget's, and the number of searches. Nothing is spent. */
-export async function kitQuote(w: KitWorld, action: PaidAction): Promise<Quote> {
-  const { budget } = paidDeps(w, 20);
+/**
+ * What the worker answers to a quote: the store's refusal or the budget's, the number of searches and
+ * the parts the per-scan limit leaves out (Ruling 72). `perScan` is the settings' searches per scan,
+ * the manual-trigger budget's cap; default 20. Nothing is spent.
+ */
+export async function kitQuote(w: KitWorld, action: PaidAction, perScan = 20): Promise<Quote> {
+  const { budget } = paidDeps(w, perScan);
   const q = quotePaid(action, await savedAnswers(w.store), budget);
-  return { searches: q.searches, refusal: (await refusalFor(w.store, action)) ?? q.refusal };
+  return { ...q, refusal: (await refusalFor(w.store, action)) ?? q.refusal };
 }
 
-/** The panel's Look up as the worker runs it; resolves to the refusal sentence, or null when it ran. */
-export async function kitRunPaid(w: KitWorld, action: PaidAction): Promise<string | null> {
+/** The panel's Look up as the worker runs it, under a per-scan limit of `perScan` (default 20); resolves to the refusal sentence, or null when it ran. */
+export async function kitRunPaid(w: KitWorld, action: PaidAction, perScan = 20): Promise<string | null> {
   try {
-    await runPaid({ ...paidDeps(w, 20), store: w.store, now: () => KIT_T0, settings: KIT_SETTINGS }, action);
+    await runPaid({ ...paidDeps(w, perScan), store: w.store, now: () => KIT_T0, settings: KIT_SETTINGS }, action);
     return null;
   } catch (err) {
     if (err instanceof PaidProblem) return err.message;
