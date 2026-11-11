@@ -95,6 +95,14 @@ test('deals tab, bundles waiting for a lookup', async ({ context, extensionId, o
       }),
     );
     expect(overlaps).toEqual([]);
+    // And never closer than the 12px column gap: no text of the left column comes within 12px of the button.
+    const tooClose = await panel.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.deal-row-lookup')].flatMap((li) => {
+        const button = li.querySelector('.deal-lookup-btn')!.getBoundingClientRect();
+        return [...li.querySelectorAll<HTMLElement>('.deal-sub > span')].filter((el) => el.getBoundingClientRect().bottom > button.top && el.getBoundingClientRect().top < button.bottom && el.getBoundingClientRect().right > button.left - 12 + 0.5).map((el) => el.textContent);
+      }),
+    );
+    expect(tooClose).toEqual([]);
   }
   await shoot(panel, 'waiting');
 });

@@ -172,7 +172,8 @@
   grid-column: 1;
   grid-row: 2;
   min-width: 0;
-  padding: 2px 0 11px 16px;
+  /* 12px on the right is the row's column gap, which the subgrid's column-gap: 0 drops. */
+  padding: 2px 12px 11px 16px;
 }
 /* The left column stops before the button (N9): its lines wrap instead of running on under it. */
 .deal-row-lookup .deal-sub {
@@ -181,6 +182,10 @@
   row-gap: 0;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+/* A text span (the "N parts to look up" one included) may shrink and wrap on its own line, like any other. */
+.deal-row-lookup .deal-sub > span {
+  min-width: 0;
 }
 .deal-row-lookup .deal-link > .deal-figures,
 .deal-row-lookup .deal-link > .deal-tag {
