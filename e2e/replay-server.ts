@@ -34,6 +34,8 @@ export interface ReplayServer {
   pageRequests: string[];
   /** These ids are answered 403 with the recorded refused page, until reset(). '*' refuses every id. */
   refuse(...itemIds: string[]): void;
+  /** Test-only: the recorded page of `recordedId` is served for item `itemId`, until reset(). */
+  servePageAs(itemId: string, recordedId: string): void;
   /** Opt-in: every /search.json answer waits this many ms, so a test can hold a scan in the running state. reset() clears it. */
   delaySearches(ms: number): void;
   reset(): void;
@@ -46,7 +48,13 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   let misses: string[] = [];
   let pageRequests: string[] = [];
   const refused = new Set<string>();
+  const servedAs = new Map<string, string>();
   let searchDelay = 0;
+  // The reader looks up `base-catalog-<itemId>` in the page's state, so a page served under another id carries that id.
+  const pageText = (id: string): string | undefined => {
+    const as = servedAs.get(id);
+    return as === undefined ? recordedPages.get(id) : recordedPages.get(as)?.replaceAll(as, id);
+  };
   const server: Server = createServer((req, res) => {
     void (async () => {
       const url = new URL(req.url ?? '/', 'http://localhost');
@@ -72,7 +80,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
         pageRequests.push(id);
         const page = { 'content-type': 'text/html; charset=utf-8' };
         if (refused.has('*') || refused.has(id)) res.writeHead(403, page).end(refusedPage);
-        else res.writeHead(200, page).end(html(recordedPages.get(id) ?? 'window.__APOLLO_STATE__={}'));
+        else res.writeHead(200, page).end(html(pageText(id) ?? 'window.__APOLLO_STATE__={}'));
       } else {
         res.writeHead(404, headers).end(JSON.stringify({ error: 'Not found' }));
       }
@@ -97,6 +105,9 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     refuse(...ids) {
       for (const id of ids) refused.add(id);
     },
+    servePageAs(itemId, recordedId) {
+      servedAs.set(itemId, recordedId);
+    },
     delaySearches(ms) {
       searchDelay = ms;
     },
@@ -104,6 +115,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       searchDelay = 0;
       pageRequests = [];
       refused.clear();
+      servedAs.clear();
       for (const k of Object.keys(counts)) delete counts[k];
       replay = replayRecorded();
       misses = [];
