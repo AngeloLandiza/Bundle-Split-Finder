@@ -214,7 +214,7 @@ describe('buildReport', () => {
     const store = await scanWorld();
     // Test A's question about PCL280B-PSK005, as the version before step 5 saved it.
     const { choices, ...old } = (await store.getReview('split:homedepot:327939252'))!;
-    expect(choices).toEqual([]);
+    expect(choices).toEqual([['PCL280B', 'PSK005']]); // the reading its model number spells out (Ruling 29)
     await store.putReview(old as ReviewItem);
     const review = (await buildReport(store, RATCHET)).review;
     expect(review.find((r) => r.id === old.id)).toEqual({ ...old, choices: [] });

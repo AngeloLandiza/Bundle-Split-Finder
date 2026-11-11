@@ -190,6 +190,98 @@ describe('applyReviewAnswer: a split question', () => {
   });
 });
 
+describe('a split question offers the reading a RYOBI model number spells out (Ruling 29)', () => {
+  /** The recorded "ryobi 18v combo kit" page: eleven hyphen bundles and special buys, none resolved by the model number. */
+  const RYOBI_COMBO: ScanSettings = { ...STEP2, brands: ['RYOBI'], queries: [{ q: 'ryobi 18v combo kit' }] };
+  /** No Home Depot page and no brand page: only what the store holds is split. */
+  const RYOBI_ONLY: ScanSettings = { ...STEP2, brands: ['RYOBI'], queries: [] };
+  /** Reads the recorded page of each bundle that has one; the others are unreadable, as a page with no data is. */
+  const recordedPages: ReadPages = async (ids) => ids.map((itemId): PageOutcome => {
+    const rec = PAGES.find((p) => p.itemId === itemId);
+    const content = rec ? parseBundlePage(rec.text, itemId) : null;
+    return content ? { itemId, kind: 'read', content } : { itemId, kind: 'unreadable' };
+  });
+  const P553 = 'split:homedepot:320243741';
+  const HYPHEN = 'hyphen split, but a part is not in the catalog';
+
+  it('PCL1600K2-P553 from the recorded search offers PCL1600K2 + P553, with or without its page, which names no models', async () => {
+    for (const readPages of [undefined, recordedPages]) {
+      const w = world();
+      await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH, readPages });
+      expect(w.ledger).toEqual(['scan:listing:ryobi 18v combo kit:p1']);
+      expect(await w.store.getReview(P553)).toMatchObject({
+        model: 'PCL1600K2-P553', reason: readPages ? `${HYPHEN}; page names no models` : HYPHEN, answer: null, choices: [['PCL1600K2', 'P553']],
+      });
+      expect((await w.store.getBundle('homedepot:320243741'))!.split).toMatchObject({ components: ['PCL1600K2', 'P553'], status: 'needs_review' });
+      // An accessory part is offered as the model number writes it.
+      expect(await w.store.getReview('split:homedepot:345178210')).toMatchObject({ model: 'PCL1600K2-A983002', choices: [['PCL1600K2', 'A983002']] });
+    }
+  });
+
+  it('PBLRC2501SB with an empty catalog offers its expansion; read with its page, it resolves and no question remains', async () => {
+    const seed = async (w: World) => w.store.putBundle({
+      key: 'homedepot:328814689', retailer: 'homedepot', itemId: fx.HD_BUNDLE.productID, title: fx.HD_BUNDLE.title, brand: 'RYOBI', model: fx.HD_BUNDLE.model,
+      upc: null, price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0, split: null,
+    });
+    const bare = world();
+    await seed(bare);
+    await scan(bare, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect(await bare.store.listCatalog()).toEqual([]);
+    expect(await bare.store.getReview('split:homedepot:328814689')).toMatchObject({
+      reason: 'special-buy pattern, parts not in catalog', answer: null, choices: [['PBLRC25B', 'PBLRC01B']],
+    });
+
+    const read = world();
+    await seed(read);
+    const job = await scan(read, { settings: RYOBI_ONLY, policy: NO_SEARCH, readPages: reader() });
+    expect((await read.store.getBundle('homedepot:328814689'))!.split).toMatchObject({ status: 'resolved', notes: ['split read from the page'] });
+    expect(await read.store.getReview('split:homedepot:328814689')).toBeUndefined();
+    expect(job.counts.reviewsOpened).toBe(0);
+  });
+
+  it('an open question stored before this change gains the choice on the next scan, and keeps when it was opened', async () => {
+    const w = world();
+    await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    const now = (await w.store.getReview(P553))!;
+    // As the question was stored before Ruling 29: no choices.
+    await w.store.putReview({ ...now, choices: [] });
+
+    w.clock = T0 + DAY;
+    const job = await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    expect(await w.store.getReview(P553)).toEqual({ ...now, choices: [['PCL1600K2', 'P553']], openedAt: T0, answer: null });
+    expect(job.counts.reviewsOpened).toBe(0);
+  });
+
+  it('answering it resolves the bundle to those parts; a later scan keeps them and plans their lookups', async () => {
+    const w = world();
+    await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    await applyReviewAnswer(w.store, P553, await shown(w, P553, { choice: 0 }), T0 + MINUTE);
+    const chosen = { components: ['PCL1600K2', 'P553'], status: 'resolved', notes: [CHOSEN] };
+    expect((await w.store.getBundle('homedepot:320243741'))!.split).toEqual(chosen);
+    const answered = (await w.store.getReview(P553))!;
+    expect(answered).toMatchObject({ answer: 'PCL1600K2,P553', answeredAt: T0 + MINUTE });
+
+    w.clock = T0 + DAY;
+    // Its page, read now, names no models; the owner's answer stands whatever the readings say.
+    const job = await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH, readPages: recordedPages });
+    expect((await w.store.getBundle('homedepot:320243741'))!.page).toBeTruthy();
+    expect((await w.store.getBundle('homedepot:320243741'))!.split).toEqual(chosen);
+    expect(await w.store.getReview(P553)).toEqual(answered);
+    expect(job.counts).toMatchObject({ bundlesResolved: 1, reviewsOpened: 0 });
+    // This budget allows no search, so both parts wait for their lookups.
+    expect(job.deferred).toEqual([{ kind: 'lookup', brand: 'RYOBI', model: 'P553' }, { kind: 'lookup', brand: 'RYOBI', model: 'PCL1600K2' }]);
+    expect(w.ledger).toEqual(['scan:listing:ryobi 18v combo kit:p1']);
+  });
+
+  it('a DEWALT short code that matches nothing still offers no choice: its kit alone is not a whole reading', async () => {
+    const w = world();
+    await scan(w, { settings: COMBO });
+    const nothing = (await w.store.listReview()).filter((r) => r.kind === 'split' && r.reason.endsWith('matches nothing in the catalog'));
+    expect(nothing.map((r) => r.model)).toContain('DCK540D1WCS334B');
+    for (const r of nothing) expect(r.choices, r.model).toEqual([]);
+  });
+});
+
 // ---------------------------------------------------------------- match questions
 
 const MATCH = 'match:DEWALT:DCF891B';

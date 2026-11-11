@@ -63,7 +63,13 @@ export function catalogEntry(brand: string, model: string, title: string): Catal
 
 const RYOBI_MODEL = /^[A-Z]{1,6}\d{2,5}[A-Z0-9]*$/;
 const RYOBI_SB = /^([A-Z]{2,6})(\d{2})(\d{2})SB$/;
+// A hyphen part that can be offered to the owner as a model number: upper-case letters and digits,
+// with at least one of each. Wider than RYOBI_MODEL, which still decides automatic resolution; an
+// empty part, a bare count ("-2") or a word ("-KIT") is not a model, so it offers no reading.
+const OFFERABLE_PART = /^(?=[A-Z0-9]*[A-Z])(?=[A-Z0-9]*\d)[A-Z0-9]+$/;
 
+// A split in review offers, as `alternatives`, the reading its model number spells out (Ruling 29):
+// the owner may confirm it, but only the owner's answer turns it into the split.
 export function decomposeRyobi(bundleModel: string, catalog: Catalog): Decomposition {
   const model = bundleModel.toUpperCase().trim();
 
@@ -73,7 +79,9 @@ export function decomposeRyobi(bundleModel: string, catalog: Catalog): Decomposi
     if (parts.every((p) => RYOBI_MODEL.test(p) && catalog.has(p))) {
       return { components: parts, status: 'resolved', notes: ['hyphen-joined model numbers'] };
     }
-    return { components: parts, status: 'needs_review', notes: ['hyphen split, but a part is not in the catalog'] };
+    const split: Decomposition = { components: parts, status: 'needs_review', notes: ['hyphen split, but a part is not in the catalog'] };
+    if (parts.every((p) => OFFERABLE_PART.test(p))) split.alternatives = [[...parts]];
+    return split;
   }
 
   // Form 2: "PBLRC2501SB" -> shared prefix + two 2-digit numbers + SB.
@@ -84,7 +92,7 @@ export function decomposeRyobi(bundleModel: string, catalog: Catalog): Decomposi
     if (parts.every((p) => catalog.has(p))) {
       return { components: parts, status: 'resolved', notes: ['special-buy model number expanded'] };
     }
-    return { components: [], status: 'needs_review', notes: ['special-buy pattern, parts not in catalog'] };
+    return { components: [], status: 'needs_review', notes: ['special-buy pattern, parts not in catalog'], alternatives: [parts] };
   }
 
   if (catalog.get(model)?.isKit) {

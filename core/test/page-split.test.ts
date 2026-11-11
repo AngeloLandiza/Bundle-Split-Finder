@@ -288,6 +288,47 @@ describe('splitWithPage: the readings the owner can choose from (step 5)', () =>
     });
   });
 
+  describe('a RYOBI model number that spells out its parts keeps that reading with the page read (Ruling 29)', () => {
+    const hyphen = 'hyphen split, but a part is not in the catalog';
+
+    it('320243741 PCL1600K2-P553: the page names no models (R1), the reading stays', () => {
+      const { modelSplit, got } = run({ brand: 'RYOBI', model: 'PCL1600K2-P553', page: p('320243741') });
+      expect(got).toEqual({ ...modelSplit, notes: [hyphen, 'page names no models'], alternatives: [['PCL1600K2', 'P553']] });
+    });
+
+    it('345178210 PCL1600K2-A983002: an accessory part, the page names no models, the literal reading stays', () => {
+      const { got } = run({ brand: 'RYOBI', model: 'PCL1600K2-A983002', page: p('345178210') });
+      expect(got).toMatchObject({ status: 'needs_review', notes: [hyphen, 'page names no models'], alternatives: [['PCL1600K2', 'A983002']] });
+    });
+
+    it('341645081 PCL1600K2-PBP004: the page names models but its split does not resolve (R5), the reading stays', () => {
+      expect(pageCatalog('RYOBI', p('341645081').bullets).size).toBeGreaterThan(0);
+      const { modelSplit, got } = run({ brand: 'RYOBI', model: 'PCL1600K2-PBP004', page: p('341645081') });
+      expect(got).toEqual(modelSplit);
+      expect(got.alternatives).toEqual([['PCL1600K2', 'PBP004']]);
+    });
+
+    it('327939252 PCL280B-PSK005: the merge of the catalog with the page still does not resolve (R5), the reading stays', () => {
+      const { got } = run({ brand: 'RYOBI', model: 'PCL280B-PSK005', known: ['PCL280B'], page: p('327939252') });
+      expect(got).toEqual({ components: ['PCL280B', 'PSK005'], status: 'needs_review', notes: [hyphen], alternatives: [['PCL280B', 'PSK005']] });
+    });
+
+    it('328814689 PBLRC2501SB: with no page, the expansion; with its page, resolved from the page and nothing to offer', () => {
+      expect(run({ brand: 'RYOBI', model: 'PBLRC2501SB', page: null }).got.alternatives).toEqual([['PBLRC25B', 'PBLRC01B']]);
+      const { got } = run({ brand: 'RYOBI', model: 'PBLRC2501SB', page: p('328814689') });
+      expect(got).toMatchObject({ status: 'resolved', notes: ['split read from the page'] });
+      expect(got.alternatives).toBeUndefined();
+    });
+
+    it('a DEWALT short code that matches nothing offers no part reading ([kit] alone is not a whole reading)', () => {
+      for (const page of [null, { ...p('343992133'), bullets: [] }]) {
+        const { got } = run({ brand: 'DEWALT', model: 'DCK540D1WCS334B', page });
+        expect(got.components).toEqual(['DCK540D1']);
+        expect(got.alternatives).toBeUndefined();
+      }
+    });
+  });
+
   it('a resolved split lists no alternatives', () => {
     for (const row of ROWS.filter((r) => r.status === 'resolved')) expect(run(row).got.alternatives, row.item).toBeUndefined();
   });

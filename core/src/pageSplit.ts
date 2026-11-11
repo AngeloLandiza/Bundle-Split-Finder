@@ -8,7 +8,9 @@
 // On a disagreement the split keeps both readings as `alternatives` for the owner to choose
 // from (step 5): the model number's first, then the page's (a DEWALT page's only when it names a
 // kit), then any the model number could not choose between. Only the owner's answer turns one of
-// them into the split.
+// them into the split. A RYOBI split in review carries the reading its model number spells out
+// (decompose.ts, Ruling 29); every RYOBI path that stays in review returns the model split, so
+// that reading reaches the question. A RYOBI page offers no reading of its own.
 
 import { DEWALT_BUNDLE, decompose, reconcile, type Catalog, type CatalogModel, type Decomposition } from './decompose';
 import type { PageContent } from './hdPage';

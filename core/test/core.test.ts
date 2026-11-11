@@ -57,6 +57,42 @@ describe('splitting bundles', () => {
     expect(d).toMatchObject({ status: 'needs_review', components: [] });
   });
 
+  describe('a RYOBI model number that spells out its parts offers that reading, in review (Ruling 29)', () => {
+    const HYPHEN_NOTE = 'hyphen split, but a part is not in the catalog';
+
+    it('hyphen form, a part not in the catalog: today\'s split, plus the reading the model number spells out', () => {
+      // PCL1600K2-P553 is item 320243741 of the recorded "ryobi 18v combo kit" search.
+      expect(decomposeRyobi('PCL1600K2-P553', new Map())).toEqual({
+        components: ['PCL1600K2', 'P553'], status: 'needs_review', notes: [HYPHEN_NOTE], alternatives: [['PCL1600K2', 'P553']],
+      });
+      // An accessory part is still a part the model number names (345178210 in the same search).
+      expect(decomposeRyobi('PCL1600K2-A983002', new Map()).alternatives).toEqual([['PCL1600K2', 'A983002']]);
+      // A special buy inside a hyphen bundle is offered as written; it is not expanded (decisions.md, known gaps).
+      expect(decomposeRyobi('PBLRC2501SB-A13401', new Map()).alternatives).toEqual([['PBLRC2501SB', 'A13401']]);
+    });
+
+    it('hyphen form: a token that is not a model number gives no reading, and the split is as before', () => {
+      // Constructed: an empty part, a pack count, a word, and spaces around the hyphen.
+      for (const model of ['PCL1600K2-', '-P553', 'PCL1600K2--P553', 'DCB205-2', 'PCL1600K2-KIT', 'PCL1600K2 - P553']) {
+        const d = decomposeRyobi(model, new Map());
+        expect(d, model).toEqual({ components: model.toUpperCase().trim().split('-'), status: 'needs_review', notes: [HYPHEN_NOTE] });
+      }
+    });
+
+    it('special-buy form, parts not in the catalog: today\'s split, plus the expansion the rule makes', () => {
+      expect(decomposeRyobi(fx.HD_BUNDLE.model, new Map())).toEqual({
+        components: [], status: 'needs_review', notes: ['special-buy pattern, parts not in catalog'], alternatives: [['PBLRC25B', 'PBLRC01B']],
+      });
+    });
+
+    it('a resolved split, or a model with no pattern, offers nothing', () => {
+      expect(decomposeRyobi(fx.HD_BUNDLE.model, fx.RYOBI_CATALOG).alternatives).toBeUndefined();
+      expect(decomposeRyobi(fx.HD_OLD_BUNDLE_MODEL, fx.RYOBI_CATALOG).alternatives).toBeUndefined();
+      // 328690510's six-digit special buy has no split rule (decisions.md, known gaps).
+      expect(decomposeRyobi('PCL500525SB', new Map())).toEqual({ components: [], status: 'needs_review', notes: ['no known RYOBI bundle pattern'] });
+    });
+  });
+
   test.each(fx.HD_DEWALT_BUNDLES)('splits Home Depot DEWALT bundle %s', (model, title, expected) => {
     const d = decomposeDewalt(model, title, fx.DEWALT_CATALOG);
     expect(d.status, d.notes.join('; ')).toBe('resolved');

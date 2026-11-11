@@ -1953,13 +1953,20 @@ describe('runScan: a split question offers the readings it allows (step 5)', () 
     expect(await w.store.getReview('split:homedepot:337440461')).toEqual({ ...old, choices: [['DCK200D1P1', 'DCF921B']] });
   });
 
-  it('a question with no reading to offer has no choices', async () => {
+  it('a hyphen bundle with a part not in the catalog offers the reading its model number spells out (Ruling 29)', async () => {
     const w = world();
     await scan(w);
-    // Test A's six RYOBI questions: hyphen parts not in the catalog, a special buy in a hyphen bundle.
+    // Test A's six RYOBI questions: hyphen parts not in the catalog, a special buy in a hyphen bundle
+    // (offered as written, not expanded). Before Ruling 29 each offered no choice.
     const items = await w.store.listReview();
-    expect(items).toHaveLength(6);
-    expect(items.map((r) => r.choices)).toEqual([[], [], [], [], [], []]);
+    expect(items.map((r) => [r.model, r.choices])).toEqual([
+      ['PBLRC25B-PBP004', [['PBLRC25B', 'PBP004']]],
+      ['PBLRC01B-PBP004', [['PBLRC01B', 'PBP004']]],
+      ['PCL280B-PSK005', [['PCL280B', 'PSK005']]],
+      ['PCL280B-PSK014', [['PCL280B', 'PSK014']]],
+      ['PBLRC2501SB-A13401', [['PBLRC2501SB', 'A13401']]],
+      ['PCL280B-RHMTS12601', [['PCL280B', 'RHMTS12601']]],
+    ]);
   });
 });
 
