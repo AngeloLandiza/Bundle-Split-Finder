@@ -10,7 +10,7 @@
 
 **Spec:** `docs/design.md` (Side panel, Behaviour, Words, Do not), mockups `Main`, `Detail`, `FirstRun`, `Limit` in `docs/design/mockups/`, `docs/v1-plan.md` ("Direction update", acceptance criteria 1, 9), `docs/decisions.md`, `CLAUDE.md`.
 
-## Where this stands (step 5 complete after five QA walkthroughs, 2026-11-11)
+## Where this stands (step 5 complete after six QA walkthroughs, 2026-11-11)
 
 Branch `step-5-side-panel`, not merged. The controller ran the gate on the final commit (aa4d0d7, plus docs): typecheck clean, 511 core and 472 extension tests, 31 end-to-end tests. No searches were spent: 14 of 250 used this month.
 
@@ -37,7 +37,19 @@ What the walkthroughs found and what was fixed:
 - **Final reviews.** A page 2 could be paid for before its page 1. "Counts at $0" left parts out. Answers were allowed during a Look up.
 - **Walkthrough 5.** Every fix holds, except one case parked for the owner (Ruling 58 in `docs/decisions.md`). A listing page that fails on every scan still holds up the lookups. Fixing it changes step 3's stopping rule.
 
-Rulings 30 to 58 are in the SDD ledger. Each one that the code alone does not explain is in `docs/decisions.md`.
+**After the second report (Nov 11): links to check against.** The owner asked how to verify a screen for themselves. Ruling 59, approved by the owner:
+- Review's parts question links to the bundle's Home Depot page.
+- Amazon links read "<ASIN> on Amazon".
+- A part with no listing gets "Search Amazon for <MODEL>", free and opened in the owner's browser.
+
+Walkthrough 6 (Opus) passed all three across the 11 flows, with no regressions. It also found that Amazon part prices were undated, so Detail now shows "seen <time>" under each part's net (Rulings 60, 63). The gate on 710e9a2: typecheck clean, 512 core and 486 extension tests, 31 end-to-end tests. `ui-reviewer` passed the Review question and Detail at 360 and 480px. No searches spent.
+
+Who did what:
+- Sonnet implemented F12 (links) and F13 (seen line), and Sonnet reviewed both.
+- The Opus QA agent walked the flows and re-shot the screens.
+- `ui-reviewer` (Sonnet) checked them.
+
+Rulings 30 to 63 are in the SDD ledger. Each one that the code alone does not explain is in `docs/decisions.md`.
 
 **Before the first report:** the gate on the commit that ended Task 9 was typecheck clean, 448 core and 372 extension tests, and 30 end-to-end tests. Every screen passed `ui-reviewer` at 360 and 480px: shell, Deals, Detail, Review, first run and the error notice. A final whole-branch review on Opus found five problems that only show when worker and panel run together (progress row, offline at start, unmatched parts, stale quotes, a match answer's price); all were fixed and re-checked. No searches spent; 14 of 250 used this month.
 
@@ -59,6 +71,11 @@ Known and left as is:
 - The account check's own HTTP wording is not put into words.
 - No recorded response produces a match question, an inactive listing or a free Look up, so those paths are covered by unit tests only.
 - The limit notice says "It used 0 of the 1 search allowed" when that one search failed.
+- "No Home Depot page could be read" names no bundle (Ruling 62). Naming them means changing the runner's problem notes.
+- The choices in a split question have no search link per part (Ruling 61). The Home Depot page answers what is in the box.
+- A Title match shows only the cut-off listing title as its basis. Verify, or the Amazon link, settles it.
+- The CSV has no Amazon URLs, price times or fee settings.
+- In one 360px headless shot, a second part's seen line was laid out but not painted. The element shot shows it drawn. To check once in real Chrome.
 
 Open questions for the owner:
 - Should Scan now show its count?
