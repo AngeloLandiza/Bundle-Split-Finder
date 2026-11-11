@@ -25,7 +25,7 @@ export function Header({ scanRunning, noKey, scanBlockedTitle, onScan, onStop, o
             Stop
           </button>
         ) : (
-          <button type="button" id="scan-control" className="btn btn-primary" disabled={noKey || scanBlockedTitle !== undefined} title={scanBlockedTitle} onClick={onScan}>
+          <button type="button" id="scan-control" className="btn btn-primary" disabled={noKey || scanBlockedTitle !== undefined} title={noKey ? 'Add your SerpApi key first.' : scanBlockedTitle} onClick={onScan}>
             Scan now
           </button>
         )}

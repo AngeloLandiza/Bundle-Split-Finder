@@ -222,6 +222,7 @@ describe('side panel shell', () => {
     setup(state({ hasKey: false, account: null }));
     expect(await screen.findByText(/Add your SerpApi key/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Scan now' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Scan now' })).toHaveAttribute('title', 'Add your SerpApi key first.');
     expect(screen.queryByRole('navigation')).toBeNull();
     expect(screen.queryByRole('contentinfo')).toBeNull();
   });
