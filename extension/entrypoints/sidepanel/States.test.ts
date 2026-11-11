@@ -1,0 +1,147 @@
+// @vitest-environment jsdom
+import '@testing-library/jest-dom/vitest';
+import { createElement } from 'react';
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ScanJob } from '@core/scan/types';
+import { DEFAULT_SETTINGS } from '@core/settings';
+import type { AppState, Reply, Request } from '../../lib/messages';
+import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
+import { FirstRun } from './FirstRun';
+import { Notice } from './Notice';
+
+afterEach(cleanup);
+
+const state = (over: Partial<AppState> = {}): AppState => ({
+  hasKey: true, account: null, accountCheckedAt: 1, problem: null, settings: DEFAULT_SETTINGS,
+  scanRunning: false, lastJob: null, nextRunAt: null, ...over,
+});
+
+const job = (over: Partial<ScanJob>): ScanJob => ({ status: 'stopped', stopReason: 'error', stopMessage: 'The listing search failed.', ...over }) as ScanJob;
+
+function makeApi(reply: Reply | Promise<Reply> = { ok: true, data: null }) {
+  const send = vi.fn(async (_r: Request): Promise<Reply> => reply);
+  const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+  return { api, send };
+}
+
+describe('FirstRun', () => {
+  it('shows the intro, three steps and the free-path note, with brands from settings', () => {
+    const { api } = makeApi();
+    render(createElement(FirstRun, { state: state({ hasKey: false, settings: { ...DEFAULT_SETTINGS, brands: ['RYOBI'] } }), api, openSettings: () => {} }));
+    expect(screen.getByRole('heading', { name: 'Find bundles worth splitting' })).toBeInTheDocument();
+    expect(screen.getByText(/checks Home Depot for RYOBI bundles/)).toBeInTheDocument();
+    expect(screen.getByText('Starts with RYOBI, scanning only when you click.')).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    expect(screen.getByText(/Opening a bundle on homedepot.com is free/)).toBeInTheDocument();
+  });
+
+  it('Open settings calls openSettings; Get a free key is a real new-tab link', async () => {
+    const { api } = makeApi();
+    const openSettings = vi.fn();
+    render(createElement(FirstRun, { state: state({ hasKey: false }), api, openSettings }));
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Open settings' }));
+    expect(openSettings).toHaveBeenCalledTimes(1);
+    const link = screen.getByRole('link', { name: 'Get a free key' });
+    expect(link).toHaveAttribute('href', 'https://serpapi.com/users/sign_up');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('sends nothing, even when every control is used', async () => {
+    const { api, send } = makeApi();
+    render(createElement(FirstRun, { state: state({ hasKey: false }), api, openSettings: () => {} }));
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Open settings' }));
+    expect(send).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: /search/i })).toBeNull();
+  });
+});
+
+describe('Notice', () => {
+  const show = (s: AppState, error: string | null = null, api = makeApi()) => {
+    render(createElement(Notice, { state: s, api: api.api, error }));
+    return api;
+  };
+
+  it('shows nothing when there is nothing to say', () => {
+    show(state());
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('prefers the error prop, then problem, then the last scan error', () => {
+    const s = state({ problem: 'Account problem.', lastJob: job({}) });
+    show(s, 'Refused.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Refused.');
+    cleanup();
+    show(s);
+    expect(screen.getByRole('alert')).toHaveTextContent('Account problem.');
+    cleanup();
+    show(state({ lastJob: job({ stopReason: 'rate_limited', stopMessage: 'SerpApi refused the search.' }) }));
+    expect(screen.getByRole('alert')).toHaveTextContent('SerpApi refused the search.');
+    cleanup();
+    show(state({ lastJob: job({}) }));
+    expect(screen.getByRole('alert')).toHaveTextContent('The listing search failed.');
+  });
+
+  it('leaves limit stops and finished scans to other notices', () => {
+    for (const stopReason of ['run_cap', 'reserve', 'hourly_limit'] as const) {
+      show(state({ lastJob: job({ stopReason, stopMessage: 'Stopped.' }) }));
+      expect(screen.queryByRole('alert')).toBeNull();
+      cleanup();
+    }
+    show(state({ lastJob: job({ status: 'done', stopReason: null, stopMessage: 'Note.' }) }));
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('says the offline sentence in place of the worker text', () => {
+    show(state({ problem: 'Network error reaching SerpApi: Failed to fetch' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('SerpApi could not be reached. Check the connection, then retry.');
+    expect(screen.queryByText(/Failed to fetch/)).toBeNull();
+  });
+
+  it('Retry shows its cost, sends scanNow once, and waits for the reply', async () => {
+    let answer!: (r: Reply) => void;
+    const pending = new Promise<Reply>((ok) => (answer = ok));
+    const { send } = show(state({ problem: 'Bad.', settings: { ...DEFAULT_SETTINGS, searchesPerScan: 8 } }), null, makeApi(pending));
+    const retry = screen.getByRole('button', { name: 'Retry · up to 8 searches' });
+    const user = userEvent.setup();
+    await user.click(retry);
+    expect(retry).toBeDisabled();
+    await user.click(retry);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenCalledWith({ type: 'scanNow' });
+    answer({ ok: true, data: null });
+    await vi.waitFor(() => expect(retry).toBeEnabled());
+  });
+
+  it('says one search in the singular', () => {
+    show(state({ problem: 'Bad.', settings: { ...DEFAULT_SETTINGS, searchesPerScan: 1 } }));
+    expect(screen.getByRole('button', { name: 'Retry · up to 1 search' })).toBeInTheDocument();
+  });
+
+  it('shows a refused retry in place of the old sentence', async () => {
+    show(state({ problem: 'Bad.' }), null, makeApi({ ok: false, error: 'A scan is already running.' }));
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Retry/ }));
+    expect(await screen.findByText('A scan is already running.')).toBeInTheDocument();
+  });
+
+  it('shows UNREACHABLE when the retry cannot be delivered', async () => {
+    const send = vi.fn(async () => {
+      throw new Error('gone');
+    });
+    const api = { send, onStateChanged: () => () => {}, download: vi.fn() } as unknown as WorkerApi;
+    render(createElement(Notice, { state: state({ problem: 'Bad.' }), api, error: null }));
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Retry/ }));
+    expect(await screen.findByText(UNREACHABLE)).toBeInTheDocument();
+  });
+
+  it('hides Retry during a scan and when there is no key, keeping the sentence', () => {
+    show(state({ problem: 'Bad.', scanRunning: true }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Bad.');
+    expect(screen.queryByRole('button')).toBeNull();
+    cleanup();
+    show(state({ problem: 'Bad.', hasKey: false }));
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+});

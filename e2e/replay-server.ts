@@ -38,6 +38,8 @@ export interface ReplayServer {
   servePageAs(itemId: string, recordedId: string): void;
   /** Opt-in: every /search.json answer waits this many ms, so a test can hold a scan in the running state. reset() clears it. */
   delaySearches(ms: number): void;
+  /** Test-only: every /search.json is answered 500, as if SerpApi were failing, until reset(). */
+  failSearches(): void;
   reset(): void;
   close(): Promise<void>;
 }
@@ -50,6 +52,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   const refused = new Set<string>();
   const servedAs = new Map<string, string>();
   let searchDelay = 0;
+  let searchesFail = false;
   // The reader looks up `base-catalog-<itemId>` in the page's state, so a page served under another id carries that id.
   const pageText = (id: string): string | undefined => {
     const as = servedAs.get(id);
@@ -64,6 +67,10 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
         res.writeHead(405, headers).end('{}');
       } else if (url.pathname === '/search.json') {
         if (searchDelay > 0) await new Promise((ok) => setTimeout(ok, searchDelay));
+        if (searchesFail) {
+          res.writeHead(500, headers).end(JSON.stringify({ error: 'Internal error.' }));
+          return;
+        }
         const r = await replay.fetchFn(`http://localhost${req.url}`);
         if (r.status === 404) misses.push(url.search);
         res.writeHead(r.status, headers).end(await r.text());
@@ -111,8 +118,12 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     delaySearches(ms) {
       searchDelay = ms;
     },
+    failSearches() {
+      searchesFail = true;
+    },
     reset() {
       searchDelay = 0;
+      searchesFail = false;
       pageRequests = [];
       refused.clear();
       servedAs.clear();
