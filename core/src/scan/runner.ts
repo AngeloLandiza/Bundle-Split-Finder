@@ -9,10 +9,10 @@
 import { type Catalog, catalogEntry, DEWALT_BUNDLE, type Decomposition, decompose, kindsFromTitle } from '../decompose';
 import { type Candidate, pick } from '../match';
 import { splitWithPage } from '../pageSplit';
-import { choicesOf, chosenSplit, NONE, notKnown, ownerSplit, sameChoices, splitChoices } from './answers';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
+import { choicesOf, chosenSplit, NONE, notKnown, ownerSplit, sameChoices, splitChoices } from './answers';
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { bundleKey, partKey } from './types';

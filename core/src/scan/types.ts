@@ -232,7 +232,8 @@ export interface ReviewItem {
   /**
    * The user's answer; null while open. A scan never changes an item the user answered. A split
    * question a scan closed itself ('resolved by a later scan') is opened again when the bundle
-   * needs review again.
+   * needs review again. The user answers a split with the chosen reading's parts joined by ',',
+   * a match with the chosen ASIN, and either with 'none' (answers.ts).
    */
   answer: string | null;
   answeredAt: number | null;
