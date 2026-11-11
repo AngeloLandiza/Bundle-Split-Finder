@@ -254,6 +254,40 @@ describe('splitWithPage: the readings the owner can choose from (step 5)', () =>
     expect(got.alternatives).toEqual([['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']]);
   });
 
+  describe('a page that names no kit is silent about it: its models are not offered as a reading', () => {
+    // Constructed: 337440459's page with only its DCF921B bullets, so no kit model leads a bullet.
+    const noKit: PageContent = { ...p('337440459'), bullets: p('337440459').bullets.filter((b) => b.startsWith('DCF921B:')) };
+    const silent = 'page names DCF921B, which do not fit the model number';
+
+    it('the page has bullets, none naming a kit', () => {
+      expect(noKit.bullets.length).toBeGreaterThan(0);
+      expect([...pageCatalog('DEWALT', noKit.bullets).values()].map((e) => [e.model, e.isKit])).toEqual([['DCF921B', false]]);
+    });
+
+    it('model split resolved (R3): to review with the note, offering the model-number reading only', () => {
+      const { modelSplit, got } = run({ brand: 'DEWALT', model: 'DCK240C2W921B', known: ['DCF921B'], page: noKit });
+      expect(modelSplit.status).toBe('resolved');
+      expect(got).toEqual({
+        components: ['DCK240C2', 'DCF921B'], status: 'needs_review', notes: ['model number says DCF921B, DCK240C2', silent],
+        alternatives: [['DCK240C2', 'DCF921B']],
+      });
+    });
+
+    it('model split unresolved (R5): the note, and no reading to offer', () => {
+      const { modelSplit, got } = run({ brand: 'DEWALT', model: 'DCK240C2W921B', page: noKit });
+      expect(modelSplit.status).toBe('needs_review');
+      expect(got).toEqual({ ...modelSplit, notes: ["'921B' matches nothing in the catalog", silent] });
+      expect(got.alternatives).toBeUndefined();
+    });
+
+    it("model number cannot choose (R5): the note, and only the model number's readings", () => {
+      const [model, title] = fx.HD_DEWALT_AMBIGUOUS;
+      const { modelSplit, got } = run({ brand: 'DEWALT', model, title, known: ['DCF891B', 'DCF921B'], page: noKit });
+      expect(got).toEqual({ ...modelSplit, notes: ["'1B' fits DCF891B and DCF921B", silent] });
+      expect(got.alternatives).toEqual([['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']]);
+    });
+  });
+
   it('a resolved split lists no alternatives', () => {
     for (const row of ROWS.filter((r) => r.status === 'resolved')) expect(run(row).got.alternatives, row.item).toBeUndefined();
   });
