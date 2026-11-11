@@ -6,7 +6,8 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_FEES } from '@core/money';
 import { DEFAULT_SETTINGS } from '@core/settings';
-import type { BundleRow, PartRow, ScanJob } from '@core/scan/types';
+import { reviewSignature } from '@core/scan/answers';
+import type { BundleRow, PartRow, ReviewItem, ScanJob } from '@core/scan/types';
 import type { AppState, PanelReport, Quote, Reply, Request } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import { Detail } from './Detail';
@@ -72,8 +73,24 @@ function fakeApi(handler: (r: Request) => Reply = () => ({ ok: true, data: null 
   return { api, send, download };
 }
 
-function show(r: BundleRow, extra: { packaging?: PanelReport['packaging']; api?: WorkerApi; state?: AppState; onBack?: () => void } = {}) {
-  const report: PanelReport = { bundles: [r], review: [], packaging: extra.packaging ?? {} };
+const question = (over: Partial<ReviewItem> = {}): ReviewItem => ({
+  id: 'split:homedepot:1',
+  kind: 'split',
+  subject: 'homedepot:1',
+  brand: 'RYOBI',
+  model: 'PCL1600K2-P553',
+  title: 'ONE+ 18V Drill and Impact Driver Kit',
+  reason: 'The model number names its parts, but not all of them are known products yet.',
+  candidates: [],
+  choices: [['PCL1600K2', 'P553']],
+  openedAt: 1,
+  answer: null,
+  answeredAt: null,
+  ...over,
+});
+
+function show(r: BundleRow, extra: { packaging?: PanelReport['packaging']; api?: WorkerApi; state?: AppState; onBack?: () => void; review?: ReviewItem[] } = {}) {
+  const report: PanelReport = { bundles: [r], review: extra.review ?? [], packaging: extra.packaging ?? {} };
   const onBack = extra.onBack ?? vi.fn();
   const api = extra.api ?? fakeApi().api;
   render(createElement(Detail, { api, report, state: extra.state ?? state(), bundleKey: r.key, onBack }));
@@ -98,6 +115,18 @@ describe('head and top bar', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ONE+ HP 18V Extended Reach Ratchets (Tools Only)');
     expect(screen.getByText('PBLRC2501SB')).toBeInTheDocument();
     expect(screen.getByText(/^Home Depot · price seen 11:00/)).toBeInTheDocument();
+  });
+
+  it("reads Home Depot's time from the row, not the newest part's", () => {
+    show(row({ seenAt: NOW - 3 * 3_600_000, parts: [part('A1', { priceSeenAt: NOW - 60_000 })] }));
+    expect(screen.getByText(/^Home Depot · price seen 11:00/)).toBeInTheDocument();
+  });
+
+  it('takes focus on its title when it opens, which can be focused but is not a tab stop', () => {
+    show(row());
+    const title = screen.getByRole('heading', { level: 1 });
+    expect(title).toHaveFocus();
+    expect(title).toHaveAttribute('tabindex', '-1');
   });
 
   it('says so when the bundle is no longer in the report', () => {
@@ -182,6 +211,71 @@ describe('headline', () => {
   });
 });
 
+describe('the open question', () => {
+  const noParts = (over: Partial<BundleRow> = {}) => row({ estimate: null, section: 'split', status: 'needs_review', parts: [], ...over });
+
+  it('shows the bundle\'s split question in place of the no-estimate sentence', () => {
+    show(noParts(), { review: [question()] });
+    expect(screen.getByText('Which parts come in this bundle?', { selector: 'legend' })).toBeInTheDocument();
+    expect(screen.queryByText('No estimate: what this bundle contains is not known yet.')).toBeNull();
+    expect(screen.getByRole('radio', { name: 'PCL1600K2 + P553' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Enter the parts' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();
+  });
+
+  it('ignores a question about another bundle and a match question', () => {
+    show(noParts(), { review: [question({ subject: 'homedepot:2' }), question({ id: 'match:x', kind: 'match', subject: 'homedepot:1' })] });
+    expect(screen.getByText('No estimate: what this bundle contains is not known yet.')).toBeInTheDocument();
+    expect(screen.queryByRole('group')).toBeNull();
+  });
+
+  it('saves exactly as the Review tab does, and shows a refusal', async () => {
+    const user = userEvent.setup();
+    const q = question();
+    const { api, send } = fakeApi((r) => (r.type === 'answerReview' ? { ok: false, error: 'That question changed. Choose again.' } : { ok: true, data: null }));
+    show(noParts(), { review: [q], api });
+    await user.click(screen.getByRole('radio', { name: 'PCL1600K2 + P553' }));
+    await user.click(screen.getByRole('button', { name: 'Save answer' }));
+    expect(send).toHaveBeenCalledWith({ type: 'answerReview', id: q.id, answer: { choice: 0, seen: reviewSignature(q) } });
+    expect(await screen.findByRole('alert')).toHaveTextContent('That question changed. Choose again.');
+  });
+
+  it('sends typed parts', async () => {
+    const user = userEvent.setup();
+    const q = question();
+    const { api, send } = fakeApi();
+    show(noParts(), { review: [q], api });
+    await user.click(screen.getByRole('radio', { name: 'Enter the parts' }));
+    await user.type(screen.getByLabelText('Model numbers, separated by commas'), 'PCL1600K2, P553');
+    await user.click(screen.getByRole('button', { name: 'Save answer' }));
+    expect(send).toHaveBeenCalledWith({ type: 'answerReview', id: q.id, answer: { parts: ['PCL1600K2', 'P553'], seen: reviewSignature(q) } });
+  });
+});
+
+describe('a part with no listing', () => {
+  const none = { status: 'none' as const, asin: null, grade: null, price: null, availability: 'missing' as const, title: null };
+
+  it('says which part counts as nothing, and says so on the part', () => {
+    show(row({ status: 'partial', section: 'missing_listing', parts: [part('PCL1201K2', none), part('PCL515B')], uncovered: ['PCL1201K2'] }));
+    expect(screen.getByText('Counts PCL1201K2 at $0: no Amazon listing was found.')).toBeInTheDocument();
+    expect(within(screen.getAllByRole('listitem')[0]!).getByText('No Amazon listing found')).toBeInTheDocument();
+  });
+
+  it('names every such part', () => {
+    show(row({ status: 'partial', section: 'missing_listing', parts: [part('A1', none), part('A2', none)], uncovered: ['A1', 'A2'] }));
+    expect(screen.getByText('Counts A1 and A2 at $0: no Amazon listing was found.')).toBeInTheDocument();
+  });
+
+  it('adds nothing for a part that was never looked up, or when every part has a listing', () => {
+    const waiting = { ...none, status: 'waiting' as const };
+    show(row({ estimate: null, section: 'waiting', parts: [part('A1', waiting)] }));
+    expect(screen.queryByText(/no Amazon listing was found/)).toBeNull();
+    cleanup();
+    show(row());
+    expect(screen.queryByText(/no Amazon listing was found/)).toBeNull();
+  });
+});
+
 describe('parts', () => {
   const blocks = () => screen.getAllByRole('listitem');
 
@@ -215,7 +309,7 @@ describe('parts', () => {
     expect(label({ grade: 'strong' }).getByText('Verified')).toBeInTheDocument();
     expect(label({ grade: 'probable' }).getByText('Title match')).toBeInTheDocument();
     expect(label({ grade: null }).getByText('Chosen by you')).toBeInTheDocument();
-    expect(label({ status: 'none', asin: null, grade: null, price: null, availability: 'missing' }).getByText('No listing')).toBeInTheDocument();
+    expect(label({ status: 'none', asin: null, grade: null, price: null, availability: 'missing' }).getByText('No Amazon listing found')).toBeInTheDocument();
     expect(label({ status: 'waiting', asin: null, grade: null, price: null, availability: 'missing' }).getByText('Not looked up yet')).toBeInTheDocument();
     expect(label({ status: 'unmatched', asin: null, grade: null, price: null, availability: 'missing' }).getByText('Not looked up yet')).toBeInTheDocument();
     expect(label({ availability: 'inactive', price: null }).getByText('Listing inactive')).toBeInTheDocument();
@@ -443,6 +537,18 @@ describe('footer', () => {
     cleanup();
     show(row({ parts: [part('A1', { asin: null, status: 'none', grade: null, availability: 'missing', price: null })] }));
     expect(screen.getByRole('button', { name: 'Copy ASINs' })).toBeDisabled();
+  });
+
+  it('says which part has no ASIN after copying, and nothing more when all have one', async () => {
+    const user = userEvent.setup();
+    const none = (m: string) => part(m, { asin: null, status: 'none', grade: null, availability: 'missing', price: null });
+    show(row({ parts: [part('A1'), none('PCL515B')] }));
+    await user.click(screen.getByRole('button', { name: 'Copy ASINs' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Copied 1 ASIN. PCL515B has none.');
+    cleanup();
+    show(row({ parts: [part('A1'), none('PCL515B'), none('PCL526B'), part('A4', { asin: 'B000000004' })] }));
+    await user.click(screen.getByRole('button', { name: 'Copy both ASINs' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Copied 2 ASINs. PCL515B and PCL526B have none.');
   });
 
   it('downloads this row as CSV with the run file columns', async () => {

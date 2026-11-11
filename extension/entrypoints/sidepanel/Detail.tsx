@@ -2,13 +2,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { amazonNet, type FeeSettings } from '@core/money';
 import { bundlesCsv } from '@core/scan/csv';
-import type { BundleRow, PaidAction, PartRow } from '@core/scan/types';
+import { reviewSignature } from '@core/scan/answers';
+import type { BundleRow, PaidAction, PartRow, ReviewAnswer } from '@core/scan/types';
 import { money, profit, roi, when } from '../../lib/format';
 import type { AppState, Packaging, PanelReport } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { waitingParts } from './dealsModel';
 import { LookUp } from './DealsLookUp';
 import { ProgressRow } from './ProgressRow';
+import { ReviewQuestion } from './ReviewQuestion';
 import { Verify } from './DetailVerify';
 import './Detail.css';
 
@@ -35,11 +37,14 @@ export function feeText(fees: FeeSettings): string {
   return parts.join(', ');
 }
 
-/** The newest time one of the parts' prices was seen; the report row keeps no time of its own for the bundle. */
-function priceSeen(row: BundleRow): number | null {
-  let newest: number | null = null;
-  for (const p of row.parts) if (p.priceSeenAt !== null && (newest === null || p.priceSeenAt > newest)) newest = p.priceSeenAt;
-  return newest;
+/** A part that was looked up and has no listing; one still in review is a question, not a lookup result. */
+function hasNoListing(p: PartRow): boolean {
+  return p.availability === 'missing' && p.status !== 'waiting' && p.status !== 'unmatched' && p.status !== 'review';
+}
+
+/** "A", "A and B", "A, B and C". */
+function listOf(items: string[]): string {
+  return items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 }
 
 function noEstimate(row: BundleRow): string {
@@ -56,7 +61,7 @@ interface Label {
 function labelOf(p: PartRow): Label {
   if (p.status === 'waiting' || p.status === 'unmatched') return { text: 'Not looked up yet', tone: 'plain' };
   if (p.status === 'review') return { text: 'Needs your answer in Review', tone: 'attention' };
-  if (p.status === 'none' || p.asin === null) return { text: 'No listing', tone: 'plain' };
+  if (p.status === 'none' || p.asin === null) return { text: 'No Amazon listing found', tone: 'plain' };
   if (p.availability === 'inactive') return { text: 'Listing inactive', tone: 'plain' };
   if (p.grade === 'exact') return { text: 'Barcode verified', tone: 'verified' };
   if (p.grade === 'strong') return { text: 'Verified', tone: 'plain' };
@@ -212,10 +217,16 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
   const locked = useRef(false);
   const [version, setVersion] = useState(0);
   const [saved, setSaved] = useState<{ model: string; value: Packaging } | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
   const [copyFailed, setCopyFailed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
+  // The title takes focus when Detail opens: the row that opened it is gone from view.
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const present = report !== null && row !== null;
+  useEffect(() => {
+    if (present) titleRef.current?.focus();
+  }, [present]);
 
   const run = useCallback(
     async (action: PaidAction): Promise<string | null> => {
@@ -270,11 +281,23 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
   const fees = state.settings.fees;
   const answer = (saved?.model === row.model ? saved.value : null) ?? report.packaging[row.model.toUpperCase()] ?? null;
   const loose = answer === 'loose';
-  const seen = priceSeen(row);
   const asins = row.parts.map((p) => p.asin).filter((a): a is string => a !== null);
   const e = row.estimate;
   const gross = row.parts.reduce((sum, p) => sum + (p.price !== null ? p.price * p.qty : 0), 0);
   const waiting = waitingParts(row).length;
+  const noListing = row.parts.filter(hasNoListing).map((p) => p.model);
+  const missingAsin = row.parts.filter((p) => p.asin === null).map((p) => p.model);
+  const question = report.review.find((r) => r.kind === 'split' && r.subject === row.key) ?? null;
+
+  const answerQuestion = async (a: ReviewAnswer): Promise<string | null> => {
+    if (!question) return null;
+    try {
+      const reply = await api.send({ type: 'answerReview', id: question.id, answer: a });
+      return reply.ok ? null : reply.error;
+    } catch {
+      return UNREACHABLE;
+    }
+  };
 
   const copy = () => {
     if (asins.length === 0) return;
@@ -282,9 +305,13 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
     navigator.clipboard
       .writeText(asins.join(' '))
       .then(() => {
-        setCopied(true);
+        setCopied(
+          missingAsin.length === 0
+            ? 'Copied'
+            : `Copied ${asins.length} ${asins.length === 1 ? 'ASIN' : 'ASINs'}. ${listOf(missingAsin)} ${missingAsin.length === 1 ? 'has' : 'have'} none.`,
+        );
         clearTimeout(timer.current);
-        timer.current = setTimeout(() => setCopied(false), 2000);
+        timer.current = setTimeout(() => setCopied(null), 2000);
       })
       .catch(() => setCopyFailed(true));
   };
@@ -296,10 +323,10 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
       <main className="detail-body">
         <section className="detail-head">
           <div className="detail-brand">{row.brand}</div>
-          <h1 className="detail-title">{row.title}</h1>
+          <h1 className="detail-title" ref={titleRef} tabIndex={-1}>{row.title}</h1>
           <div className="detail-meta">
             <span className="detail-model">{row.model}</span>
-            <span>Home Depot{seen !== null ? ` · price seen ${when(seen, Date.now())}` : ''}</span>
+            <span>Home Depot{row.seenAt !== null ? ` · price seen ${when(row.seenAt, Date.now())}` : ''}</span>
             {loose ? <span className="detail-tag">Loose</span> : null}
           </div>
         </section>
@@ -331,6 +358,9 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
                   Change
                 </a>
               </p>
+              {noListing.length > 0 ? (
+                <p className="detail-estimate">Counts {listOf(noListing)} at $0: no Amazon listing was found.</p>
+              ) : null}
             </>
           ) : waiting > 0 ? (
             <>
@@ -339,6 +369,8 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
               </p>
               <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts) => run({ kind: 'lookUp', parts })} />
             </>
+          ) : question ? (
+            <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} onSave={answerQuestion} />
           ) : (
             <p className="detail-noestimate">{noEstimate(row)}</p>
           )}
@@ -365,7 +397,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
           Export row
         </button>
         <span role="status" className="detail-copied">
-          {copied ? 'Copied' : ''}
+          {copied ?? ''}
         </span>
         {copyFailed ? (
           <span role="alert" className="detail-copied">
