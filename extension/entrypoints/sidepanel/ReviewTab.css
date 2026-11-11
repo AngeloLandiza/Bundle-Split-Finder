@@ -20,6 +20,7 @@
   --review-radio: 13px;
   --review-gap: 10px;
   --review-indent: calc(var(--review-radio) + var(--review-gap));
+  --review-helper-gap: 2px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -124,7 +125,7 @@
 .review-cand-meta {
   display: flex;
   gap: 12px;
-  margin: 2px 0 0 var(--review-indent);
+  margin: var(--review-helper-gap) 0 0 var(--review-indent);
   color: var(--ink-2);
 }
 .review-cand-meta a {
@@ -137,7 +138,7 @@
   margin-top: 4px;
 }
 .review-none-effect {
-  margin: 2px 0 0 var(--review-indent);
+  margin: var(--review-helper-gap) 0 0 var(--review-indent);
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-2);
@@ -148,6 +149,16 @@
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-2);
+}
+
+/* Said to a screen reader, not shown. */
+.review-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Inside Detail the question is its own section: the head above already says what bundle it is. */

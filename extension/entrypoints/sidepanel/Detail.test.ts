@@ -222,6 +222,8 @@ describe('the open question', () => {
     expect(within(band).getByText('No estimate: what this bundle contains is not known yet.')).toBeInTheDocument();
     expect(band.contains(legend)).toBe(false);
     expect(band.nextElementSibling).toBe(legend.closest('form'));
+    // The group still names its bundle for a screen reader.
+    expect(screen.getByRole('group', { name: /PCL1600K2/ })).toBeInTheDocument();
     // The head says which bundle it is: the question does not say it again.
     expect(screen.queryByText(question().title!)).toBeNull();
     expect(screen.getAllByText(noParts().model)).toHaveLength(1);
