@@ -42,8 +42,12 @@
   pointer-events: none;
   color: var(--ink);
 }
+/* The row link fills the panel's width, so its ring is drawn inside it to stay visible on all four sides. */
+.deal-link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
 .deals-bar select:focus-visible,
-.deal-link:focus-visible,
 .deal-lookup-btn:focus-visible,
 .deal-notice-link:focus-visible {
   outline: 2px solid var(--ink);
