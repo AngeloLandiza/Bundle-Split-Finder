@@ -215,6 +215,21 @@
   padding: 0;
 }
 
+.detail-answer {
+  padding: 0 16px 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.detail-headline .detail-answer {
+  padding: 0;
+}
+.detail-text-btn:disabled {
+  color: var(--ink-3);
+  cursor: default;
+  text-decoration: none;
+}
+
 /* parts */
 .detail-label {
   margin: 0;

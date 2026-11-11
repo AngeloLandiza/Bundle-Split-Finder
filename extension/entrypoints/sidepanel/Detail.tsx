@@ -10,7 +10,7 @@ import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { waitingParts } from './dealsModel';
 import { LookUp } from './DealsLookUp';
 import { ProgressRow } from './ProgressRow';
-import { ReviewQuestion } from './ReviewQuestion';
+import { ReviewQuestion, SCAN_RUNNING } from './ReviewQuestion';
 import { Verify } from './DetailVerify';
 import './Detail.css';
 
@@ -47,7 +47,33 @@ function listOf(items: string[]): string {
   return items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 }
 
+const ANSWER_LINE = {
+  chosen: 'You chose these parts.',
+  entered: 'You entered these parts.',
+  none: 'You said none of the readings is right.',
+} as const;
+
+const SETTLED = "The model number and page now settle this bundle's parts, so there is no question to answer.";
+
+/** Whose answer the split is, with the way to take it back. */
+function AnswerLine({ kind, disabled, scanRunning, error, onChange }: { kind: keyof typeof ANSWER_LINE; disabled: boolean; scanRunning: boolean; error: string | null; onChange: () => void }) {
+  return (
+    <div className="detail-answer">
+      <span>{ANSWER_LINE[kind]}</span>{' '}
+      <button type="button" className="detail-text-btn" disabled={disabled || scanRunning} title={scanRunning ? SCAN_RUNNING : undefined} onClick={onChange}>
+        Change
+      </button>
+      {error ? (
+        <p className="detail-refusal" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function noEstimate(row: BundleRow): string {
+  if (row.answer?.kind === 'none') return 'No estimate: you said none of the readings is right.';
   if (row.section === 'split' || row.status === 'needs_review') return 'No estimate: what this bundle contains is not known yet.';
   if (row.price === null) return 'No estimate: Home Depot shows no price for this bundle.';
   return 'No estimate: a part has not been looked up yet.';
@@ -217,6 +243,11 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
   const locked = useRef(false);
   const [version, setVersion] = useState(0);
   const [saved, setSaved] = useState<{ model: string; value: Packaging } | null>(null);
+  // Change: one request at a time; `reopened` is true once one succeeded on this Detail.
+  const [reopening, setReopening] = useState(false);
+  const reopenLock = useRef(false);
+  const [reopenError, setReopenError] = useState<string | null>(null);
+  const [reopened, setReopened] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [copyFailed, setCopyFailed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -302,6 +333,25 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
     return null;
   };
 
+  const reopen = async () => {
+    if (reopenLock.current || !row?.answer) return;
+    reopenLock.current = true;
+    setReopening(true);
+    setReopenError(null);
+    try {
+      const reply = await api.send({ type: 'reopenReview', id: row.answer.reviewId });
+      if (reply.ok) setReopened(true);
+      else setReopenError(reply.error);
+    } catch {
+      setReopenError(UNREACHABLE);
+    }
+    reopenLock.current = false;
+    setReopening(false);
+  };
+  const answerLine = row.answer ? (
+    <AnswerLine kind={row.answer.kind} disabled={reopening} scanRunning={state.scanRunning} error={reopenError} onChange={() => void reopen()} />
+  ) : null;
+
   const copy = () => {
     if (asins.length === 0) return;
     setCopyFailed(false);
@@ -373,17 +423,22 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
               <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts) => run({ kind: 'lookUp', parts })} />
             </>
           ) : (
-            <p className="detail-noestimate">{noEstimate(row)}</p>
+            <>
+              <p className="detail-noestimate">{noEstimate(row)}</p>
+              {row.answer?.kind === 'none' ? answerLine : null}
+            </>
           )}
+          {reopened && !row.answer && !question ? <p className="detail-noestimate">{SETTLED}</p> : null}
         </section>
 
         {!e && waiting === 0 && question ? (
-          <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} onSave={answerQuestion} compact />
+          <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} focusHeading={reopened} onSave={answerQuestion} compact />
         ) : null}
 
         {row.parts.length > 0 ? (
           <>
             <h2 className="detail-label">PARTS · {row.parts.length}</h2>
+            {row.answer && row.answer.kind !== 'none' ? answerLine : null}
             <ul className="detail-parts">
               {row.parts.map((p) => (
                 <Part key={p.model} part={p} row={row} report={report} fees={fees} api={api} scanRunning={state.scanRunning} version={version} busy={busy} run={run} />

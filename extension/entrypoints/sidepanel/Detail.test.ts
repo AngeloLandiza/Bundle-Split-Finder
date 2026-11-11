@@ -599,3 +599,93 @@ describe('footer', () => {
     );
   });
 });
+
+describe('changing a split answer', () => {
+  const answered = (kind: 'chosen' | 'entered' | 'none', over: Partial<BundleRow> = {}) =>
+    row({ answer: { reviewId: 'split:homedepot:1', kind }, ...over });
+  const none = () => answered('none', { estimate: null, section: 'split', status: 'needs_review', parts: [] });
+
+  it('says whose answer a chosen or entered split is, under the PARTS label before the list', () => {
+    show(answered('chosen'));
+    const line = screen.getByText('You chose these parts.');
+    expect(screen.getByText(/^PARTS · /).nextElementSibling).toBe(line.parentElement);
+    expect(within(line.parentElement!).getByRole('button', { name: 'Change' })).toBeInTheDocument();
+    cleanup();
+    show(answered('entered'));
+    expect(screen.getByText('You entered these parts.')).toBeInTheDocument();
+  });
+
+  it('says none in the estimate band after its changed sentence', () => {
+    show(none());
+    const band = screen.getByRole('region', { name: 'Estimate' });
+    expect(within(band).getByText('No estimate: you said none of the readings is right.')).toBeInTheDocument();
+    expect(within(band).getByText('You said none of the readings is right.')).toBeInTheDocument();
+    expect(within(band).getByRole('button', { name: 'Change' })).toBeInTheDocument();
+    expect(screen.queryByText(/not known yet/)).toBeNull();
+  });
+
+  it('has no line or Change when there is no answer', () => {
+    show(row());
+    expect(screen.queryByText(/^You (chose|entered|said)/)).toBeNull();
+  });
+
+  it('sends reopenReview once with the review id, and is disabled while it runs', async () => {
+    const user = userEvent.setup();
+    let release: (r: Reply) => void = () => {};
+    const { api, send } = fakeApi((r) => (r.type === 'reopenReview' ? (new Promise<Reply>((res) => (release = res)) as unknown as Reply) : { ok: true, data: null }));
+    show(answered('chosen'), { api });
+    const change = screen.getByRole('button', { name: 'Change' });
+    await user.click(change);
+    await user.click(change);
+    expect(send.mock.calls.filter(([r]) => r.type === 'reopenReview')).toEqual([[{ type: 'reopenReview', id: 'split:homedepot:1' }]]);
+    expect(change).toBeDisabled();
+    release({ ok: true, data: null });
+    await waitFor(() => expect(change).toBeEnabled());
+  });
+
+  it('is disabled while a scan runs, and says why', () => {
+    show(answered('chosen'), { state: state({ scanRunning: true }) });
+    const change = screen.getByRole('button', { name: 'Change' });
+    expect(change).toBeDisabled();
+    expect(change).toHaveAttribute('title', 'A scan is running. Answer when it has finished.');
+  });
+
+  it('shows the sentence of a refusal under the line', async () => {
+    const user = userEvent.setup();
+    const { api } = fakeApi((r) => (r.type === 'reopenReview' ? { ok: false, error: 'A scan is running. Answer again when it has finished.' } : { ok: true, data: null }));
+    show(answered('chosen'), { api });
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('A scan is running. Answer again when it has finished.');
+    expect(screen.getByRole('button', { name: 'Change' })).toBeEnabled();
+  });
+
+  function reload(r: BundleRow) {
+    const { api } = fakeApi();
+    const mk = (b: BundleRow, rv: ReviewItem[]) =>
+      createElement(Detail, { api, report: { bundles: [b], review: rv, packaging: {} }, state: state(), bundleKey: b.key, onBack: vi.fn() });
+    const view = render(mk(r, []));
+    return { next: (b: BundleRow, rv: ReviewItem[]) => view.rerender(mk(b, rv)) };
+  }
+
+  it('moves focus to the question legend once it appears after a Change', async () => {
+    const user = userEvent.setup();
+    const { next } = reload(answered('chosen'));
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    next(row({ estimate: null, section: 'split', status: 'needs_review', parts: [], answer: null }), [question()]);
+    const legend = await screen.findByText('Which parts come in this bundle?', { selector: 'legend' });
+    expect(legend).toHaveFocus();
+  });
+
+  it('says the data now settles the bundle when no question comes back, only right after a Change', async () => {
+    const user = userEvent.setup();
+    const settled = "The model number and page now settle this bundle's parts, so there is no question to answer.";
+    const { next } = reload(answered('chosen'));
+    expect(screen.queryByText(settled)).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    next(row({ answer: null }), []);
+    expect(await screen.findByText(settled)).toBeInTheDocument();
+    cleanup();
+    show(row({ answer: null }));
+    expect(screen.queryByText(settled)).toBeNull();
+  });
+});
