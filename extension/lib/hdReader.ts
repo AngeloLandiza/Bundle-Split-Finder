@@ -99,16 +99,28 @@ export async function fetchPagesInTab(itemIds: string[], concurrency: number): P
 
 const LOAD_TIMEOUT_MS = 30_000;
 
+/**
+ * `pauseMs` is waited between two batches, and before a call that starts within `pauseMs` of the
+ * end of this reader's last call (a scan reads bundle pages, then kit pages, at once), only for
+ * what is left of it. `now` is the clock for that, injected in tests.
+ */
 export function createPageReader(
   env: ReaderEnv,
-  opts: { concurrency?: number; batch?: number; pauseMs?: number } = {},
+  opts: { concurrency?: number; batch?: number; pauseMs?: number; now?: () => number } = {},
 ): ReadPages {
   const concurrency = opts.concurrency ?? 3;
   const batch = opts.batch ?? 6;
   const pauseMs = opts.pauseMs ?? 1000;
+  const now = opts.now ?? Date.now;
+  // When this reader's last call ended; null before its first.
+  let lastEnded: number | null = null;
 
   return async (itemIds: string[]): Promise<PageOutcome[]> => {
     if (itemIds.length === 0) return [];
+    if (lastEnded !== null) {
+      const left = pauseMs - (now() - lastEnded);
+      if (left > 0) await env.sleep(left);
+    }
 
     // A doorway left by a worker that was stopped mid-scan.
     const left = await env.remembered();
@@ -161,6 +173,7 @@ export function createPageReader(
     } finally {
       await env.closeTab(tabId).catch(() => undefined);
       await env.remember(null).catch(() => undefined);
+      lastEnded = now();
     }
   };
 }

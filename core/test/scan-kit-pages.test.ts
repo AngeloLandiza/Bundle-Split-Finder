@@ -166,23 +166,35 @@ describe('a plain kit in a scan of the default searches', () => {
   });
 
   it('kit pages share pageReadsPerScan with bundle pages, which go first', async () => {
-    // Scan 1 read no page, so the next scan has 15 bundle pages to read; by key, the first six are recorded.
+    // Scan 1 read no page, so the next scan has 15 bundle pages to read, 11 of them recorded.
     const at = async (pageReadsPerScan: number) => {
       const w = await answered(false);
       w.reads = [];
       const job = await scan(w, { settings: { ...SETTINGS, pageReadsPerScan } });
       return { w, job };
     };
-    const six = await at(6);
-    expect(six.job.counts.pagesRead).toBe(6);
-    expect(six.w.reads).toHaveLength(1);
-    expect(kitReads(six.w)).toEqual([]);
-    expect((await rowOf(six.w, P553)).kitsNotRead).toEqual(['PCL1600K2']);
-    // The seventh bundle page is not recorded: six pages read leave one for the kit.
-    const seven = await at(7);
-    expect(seven.w.reads.at(-1)).toEqual([KIT_ID]);
-    expect(seven.job.counts.pagesRead).toBe(7);
-    expect((await rowOf(seven.w, P553)).options).toHaveLength(2);
+    // Fifteen bundle pages asked for fill the cap, though only 11 were read: the kit waits.
+    const fifteen = await at(15);
+    expect(fifteen.job.counts.pagesRead).toBe(11);
+    expect(fifteen.w.reads).toHaveLength(1);
+    expect(kitReads(fifteen.w)).toEqual([]);
+    expect((await rowOf(fifteen.w, P553)).kitsNotRead).toEqual(['PCL1600K2']);
+    // One more leaves one for the kit.
+    const sixteen = await at(16);
+    expect(sixteen.w.reads.at(-1)).toEqual([KIT_ID]);
+    expect(sixteen.job.counts.pagesRead).toBe(12);
+    expect((await rowOf(sixteen.w, P553)).options).toHaveLength(2);
+  });
+
+  it('the two passes together never ask Home Depot for more than pageReadsPerScan pages', async () => {
+    // The four bundle pages the next scan asks for are not recorded, so none is read; each still counts as asked.
+    for (const [cap, kit] of [[3, false], [4, false], [5, true]] as const) {
+      const w = await answered();
+      w.reads = [];
+      await scan(w, { settings: { ...STORED, pageReadsPerScan: cap }, cap: 0 });
+      expect(w.reads.flat().length).toBeLessThanOrEqual(cap);
+      expect(w.reads.flat()).toEqual(kit ? [...UNRECORDED, KIT_ID] : UNRECORDED.slice(0, cap));
+    }
   });
 
   it('kit pages go newest bundle first', async () => {
@@ -238,6 +250,18 @@ describe('only a kit some resolved split holds, by its own item id', () => {
     await scan(w, { settings: STORED });
     expect(w.reads).toEqual([UNRECORDED]);
     expect((await rowOf(w, P553)).kitsNotRead).toEqual(['PCL1600K2']);
+  });
+
+  it('one item id per kit: a record under the tool-only B form of the same kit is not read too', async () => {
+    const w = await answered();
+    // Hand-made: the recorded entry copied under PCL1600K2B with another item id. sameModel groups the two as one kit.
+    const kit = (await w.store.getCatalogEntry(KIT))!;
+    await w.store.putCatalogEntry({ ...kit, key: partKey('RYOBI', 'PCL1600K2B'), model: 'PCL1600K2B', itemId: '317987592' });
+    w.reads = [];
+    await scan(w, { settings: STORED, cap: 0 });
+    expect(w.reads).toEqual([UNRECORDED, [KIT_ID]]);
+    expect((await w.store.getCatalogEntry(partKey('RYOBI', 'PCL1600K2B')))!.page).toBeUndefined();
+    expect((await rowOf(w, P553)).options).toHaveLength(2);
   });
 
   it('a kit that is also stored as a bundle is read by the bundle phase only, once', async () => {
@@ -299,6 +323,50 @@ describe('stopping and failing', () => {
     expect(job.stopMessage).toContain('Home Depot refused a page; the rest are read next scan.');
     await scan(w);
     expect(w.reads.at(-1)).toEqual([KIT_ID]);
+  });
+});
+
+describe('an interrupted kit pass', () => {
+  it('is continued: the kit page is saved once and pagesRead counts every page read', async () => {
+    // Scan 1 read no page, so the next scan reads 11 bundle pages, then the kit's.
+    const w = await answered(false);
+    w.reads = [];
+    let saves = 0;
+    let fail = true;
+    // The store fails the first time a kit page is saved: the worker stopped after the bundle pages.
+    const store = new Proxy(w.store, {
+      get(target, prop) {
+        if (prop === 'putCatalogEntry') {
+          return async (record: Parameters<MemoryScanStore['putCatalogEntry']>[0]) => {
+            if (record.page) {
+              if (fail) {
+                fail = false;
+                throw new Error('the worker stopped');
+              }
+              saves += 1;
+            }
+            return target.putCatalogEntry(record);
+          };
+        }
+        const value: unknown = Reflect.get(target, prop);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    const run = () => runScan({ ...paid(w, 2), store, settings: SETTINGS, now: () => T0, readPages: reader(w) });
+    await expect(run()).rejects.toThrow('the worker stopped');
+    const interrupted = (await w.store.listScans())[0]!;
+    expect(interrupted).toMatchObject({ status: 'running', phase: 'listing' });
+    expect(interrupted.counts.pagesRead).toBe(11);
+    expect((await w.store.getCatalogEntry(KIT))!.page).toBeUndefined();
+
+    const job = await run();
+    expect(job.id).toBe(interrupted.id);
+    // The continued job asks again only for the pages still unread: the four with no recording, then the kit.
+    expect(w.reads.slice(2)).toEqual([UNRECORDED, [KIT_ID]]);
+    expect(saves).toBe(1);
+    expect(job.counts.pagesRead).toBe(12);
+    expect((await w.store.getCatalogEntry(KIT))!.page).toMatchObject({ readAt: T0 });
+    expect((await rowOf(w, P553)).options).toHaveLength(2);
   });
 });
 

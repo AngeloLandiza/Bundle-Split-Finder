@@ -51,6 +51,31 @@ function fake(opts: {
 }
 
 describe('createPageReader', () => {
+  it('pauses between two calls as it does between batches, only for what is left of the pause', async () => {
+    // A scan reads bundle pages, then (step 6) kit pages, in a second call made at once.
+    const f = fake();
+    let t = 0;
+    const env: ReaderEnv = { ...f.env, sleep: async (ms) => { f.log.push(`sleep ${ms}`); t += ms; } };
+    const read = createPageReader(env, { now: () => t });
+    await read(ids.slice(0, 2));
+    expect(f.log.filter((l) => l.startsWith('sleep'))).toEqual([]);
+    f.log.length = 0;
+    await read(ids.slice(2, 3));
+    expect(f.log.slice(0, 2)).toEqual(['sleep 1000', `open https://www.homedepot.com/p/${ids[2]}`]);
+    f.log.length = 0;
+    t += 400;
+    await read(ids.slice(3, 4));
+    expect(f.log.slice(0, 2)).toEqual(['sleep 600', `open https://www.homedepot.com/p/${ids[3]}`]);
+    f.log.length = 0;
+    t += 5000;
+    await read(ids.slice(4, 5));
+    expect(f.log.filter((l) => l.startsWith('sleep'))).toEqual([]);
+    // No ids: no tab and no pause.
+    f.log.length = 0;
+    expect(await read([])).toEqual([]);
+    expect(f.log).toEqual([]);
+  });
+
   it('opens no tab for no ids', async () => {
     const f = fake();
     expect(await createPageReader(f.env)([])).toEqual([]);

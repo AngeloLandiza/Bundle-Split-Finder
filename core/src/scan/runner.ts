@@ -11,7 +11,7 @@
 // ("Runner reads pages before the split").
 
 import { type Catalog, catalogEntry } from '../decompose';
-import { kitIndex, kitItemParts, kitPageStored, kitRecords } from '../kitContents';
+import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
 import { type Candidate, pick, type Picked } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
@@ -105,14 +105,15 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
     // Amazon brand pages, then Home Depot pages: one queue.
     await runQueue(run);
     // P1: the bundles' own pages, free, once the queue is empty and before the split.
-    const goOn = await readBundlePages(run);
+    const bundlePass = await readBundlePages(run);
     // Read once for the split and the planning pass that follows it.
     const known = await knownModels(run.store);
     run.catalog = known.catalog;
     await splitBundles(run, known.stored);
     // Step 6: then the pages of the plain kits the splits now hold, free, before the planning, which
     // looks up a kit's items only from its page. Not after Home Depot refused a page, or the reader failed.
-    if (goOn) await readKitPages(run);
+    // The bundle pages asked for and not read still count: the two passes never ask for more than the cap.
+    if (bundlePass.goOn) await readKitPages(run, bundlePass.notRead);
     await planParts(run, known.listings);
   } else if (run.job.phase === 'parts') {
     // A continued job: its lookups are judged with the models the split knew.
@@ -708,37 +709,50 @@ interface PageTarget {
 }
 
 /**
+ * How a pass of page reading went. goOn: false when Home Depot refused a page or the reader threw.
+ * notRead: the pages it asked for that were not read (unreadable, refused, skipped or unanswered).
+ */
+interface PassResult {
+  goOn: boolean;
+  notRead: number;
+}
+
+/**
  * P1: bundles with no page yet, newest seenAt first then key, in one call to readPages. The
  * limit is per job: a job continued after its readings were saved reads only what is left of
  * pageReadsPerScan. P2: each page read is saved on its bundle. P3: a refusal, a page that could
  * not be read, or a reader that threw is noted in stopMessage; none of them stops the scan.
- * P4: the bundles are saved, then the job, once, before the split. False when Home Depot refused a
- * page or the reader threw: then no kit page is read this run (step 6).
+ * P4: the bundles are saved, then the job, once, before the split. goOn is false when Home Depot
+ * refused a page or the reader threw: then no kit page is read this run (step 6).
  */
-async function readBundlePages(run: Run): Promise<boolean> {
+async function readBundlePages(run: Run): Promise<PassResult> {
   const { store } = run;
-  if (!run.readPages) return true;
+  if (!run.readPages) return { goOn: true, notRead: 0 };
   const unread = (await store.listBundles())
     .filter((b) => b.page === undefined || b.page === null)
     .sort(newestFirst)
     .slice(0, pagesLeft(run));
-  if (unread.length === 0 || run.shouldStop()) return true;
+  if (unread.length === 0 || run.shouldStop()) return { goOn: true, notRead: 0 };
   return readInto(run, unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle({ ...b, page }) })));
 }
 
 /**
  * Step 6 (Ruling 67): the pages of the plain kits that resolved splits hold, after the bundle pages
- * and from what they left of pageReadsPerScan, read and saved as P1 to P4 read a bundle's. A kit is
+ * and from what they left of pageReadsPerScan, read and saved as P1 to P4 read a bundle's. What they
+ * left counts the bundle pages asked for (`bundleNotRead` of them not read), so one run never asks
+ * Home Depot for more than pageReadsPerScan pages. The reader itself pauses before this second call. A kit is
  * read only when it is a catalog entry marked a kit, with a Home Depot item id from its listing row
  * (an entry saved before step 6 has none, and waits for a row to show it again), no page yet, no
  * stored page under another record of the same kit, and no bundle record of its own (the bundle
  * phase reads that one). Kits go by the bundles that hold them, newest seenAt first then key, as
- * bundle pages do, in each bundle's part order; each once. Never a search.
+ * bundle pages do, in each bundle's part order; each kit once, by one item id: of the records
+ * sameModel groups as one kit (PCL1600K2 and PCL1600K2B), the first in key order that can be read.
+ * Never a search.
  */
-async function readKitPages(run: Run): Promise<void> {
+async function readKitPages(run: Run, bundleNotRead: number): Promise<void> {
   const { store } = run;
   if (!run.readPages) return;
-  const room = pagesLeft(run);
+  const room = Math.max(0, pagesLeft(run) - bundleNotRead);
   if (room === 0 || run.shouldStop()) return;
   const bundles = await store.listBundles();
   const catalog = await store.listCatalog();
@@ -746,16 +760,19 @@ async function readKitPages(run: Run): Promise<void> {
   const kitsOf = kitIndex(catalog.filter((c) => c.isKit === true));
   const allOf = kitIndex(kitRecords(bundles, catalog));
   const wanted: CatalogRecord[] = [];
+  // kitKey of every kit already judged, and every item id already asked for.
+  const judged = new Set<string>();
   const asked = new Set<string>();
   for (const b of [...bundles].sort(newestFirst)) {
     for (const part of resolvedParts(b)) {
+      const kitId = kitKey(part.brand, part.model);
+      if (judged.has(kitId)) continue;
+      judged.add(kitId);
       if (bundlesOf(part.brand, part.model).length > 0 || kitPageStored(allOf(part.brand, part.model), part.brand, part.model)) continue;
-      for (const kit of kitsOf(part.brand, part.model)) {
-        const id = kit.itemId;
-        if (kit.page || typeof id !== 'string' || !ITEM_ID.test(id) || asked.has(id)) continue;
-        asked.add(id);
-        wanted.push(kit);
-      }
+      const kit = kitsOf(part.brand, part.model).find((k) => !k.page && typeof k.itemId === 'string' && ITEM_ID.test(k.itemId) && !asked.has(k.itemId));
+      if (!kit) continue;
+      asked.add(kit.itemId!);
+      wanted.push(kit);
     }
   }
   if (wanted.length === 0) return;
@@ -764,11 +781,8 @@ async function readKitPages(run: Run): Promise<void> {
 
 const newestFirst = (a: BundleRecord, b: BundleRecord): number => b.seenAt - a.seenAt || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
 
-/**
- * P1 to P4 for one list of pages: one call to readPages, each page read saved and counted, problems
- * noted, then the job saved. False when Home Depot refused a page or the reader threw.
- */
-async function readInto(run: Run, targets: PageTarget[]): Promise<boolean> {
+/** P1 to P4 for one list of pages: one call to readPages, each page read saved and counted, problems noted, then the job saved. */
+async function readInto(run: Run, targets: PageTarget[]): Promise<PassResult> {
   const { store, job, readPages } = run;
   // Only the reader is inside the try. An error from the store is not caught: the job stays
   // "running" and the next runScan continues it, reading only the pages still unread.
@@ -778,13 +792,14 @@ async function readInto(run: Run, targets: PageTarget[]): Promise<boolean> {
   } catch (err) {
     noteProblem(job, `Reading Home Depot pages failed: ${(err instanceof Error && err.message) || String(err)}`);
     await store.putScan(job);
-    return false;
+    return { goOn: false, notRead: targets.length };
   }
   const readAt = run.now();
   const asked = new Map(targets.map((t) => [t.itemId, t]));
   let refused = false;
   let unreadable = false;
   let anyRead = false;
+  let read = 0;
   for (const outcome of outcomes) {
     const target = asked.get(outcome.itemId);
     // An outcome for an id that was not asked for, or a second one for the same id, is ignored.
@@ -793,6 +808,7 @@ async function readInto(run: Run, targets: PageTarget[]): Promise<boolean> {
     if (outcome.kind === 'read') {
       await target.save({ ...outcome.content, readAt });
       job.counts.pagesRead += 1;
+      read += 1;
       anyRead = true;
     } else if (outcome.kind === 'refused') {
       refused = true;
@@ -805,7 +821,7 @@ async function readInto(run: Run, targets: PageTarget[]): Promise<boolean> {
     noteProblem(job, anyRead ? 'A Home Depot page could not be read.' : 'No Home Depot page could be read.');
   }
   await store.putScan(job);
-  return !refused;
+  return { goOn: !refused, notRead: targets.length - read };
 }
 
 /**

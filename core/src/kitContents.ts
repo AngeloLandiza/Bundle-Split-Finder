@@ -99,7 +99,7 @@ export function sameModel(brand: string, a: string, b: string): boolean {
 }
 
 /** The key under which sameModel's models meet: brand, and the model without one RYOBI trailing B. */
-const kitKey = (brand: string, model: string): string => {
+export const kitKey = (brand: string, model: string): string => {
   const b = norm(brand);
   return `${b}:${b === 'RYOBI' ? ryobiBase(norm(model)) : norm(model)}`;
 };
