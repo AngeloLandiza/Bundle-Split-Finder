@@ -18,15 +18,21 @@ export interface ReviewTabProps {
  */
 export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const [done, setDone] = useState<ReadonlySet<string>>(new Set());
+  const [focusNext, setFocusNext] = useState(false);
   const emptyRef = useRef<HTMLParagraphElement>(null);
 
   const open = report ? [...report.review].sort((a, b) => a.openedAt - b.openedAt).filter((r) => !done.has(`${r.id}|${reviewSignature(r)}`)) : [];
   const item = open[0];
 
   // After an answer the form is gone: focus goes to the next question's heading (ReviewQuestion), or here.
+  // Keyed on the number answered, so a report reload never takes focus.
   useEffect(() => {
-    if (report && !item && done.size > 0) emptyRef.current?.focus();
-  }, [report, item, done.size]);
+    if (done.size > 0 && emptyRef.current) emptyRef.current.focus();
+  }, [done.size]);
+  // The next question takes focus once, right after Save answer; a remount for another reason does not.
+  useEffect(() => {
+    if (focusNext) setFocusNext(false);
+  }, [focusNext]);
 
   if (!report) return <p className="review-empty">No scan has finished yet.</p>;
   if (!item) {
@@ -46,6 +52,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
       return UNREACHABLE;
     }
     setDone((d) => new Set(d).add(`${item.id}|${answer.seen}`));
+    setFocusNext(true);
     return null;
   };
 
@@ -58,7 +65,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
         key={`${item.id}|${reviewSignature(item)}`}
         item={item}
         scanRunning={state.scanRunning}
-        focusHeading={done.size > 0}
+        focusHeading={focusNext}
         onSave={save}
       />
     </section>

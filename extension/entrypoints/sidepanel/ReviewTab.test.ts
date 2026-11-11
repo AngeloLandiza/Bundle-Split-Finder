@@ -17,6 +17,7 @@ import * as fx from '../../../core/test/fixtures';
 import type { AppState, PanelReport, Reply, Request } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { ReviewTab } from './ReviewTab';
+import { reviewReason } from './reviewReason';
 
 afterEach(cleanup);
 
@@ -74,7 +75,8 @@ describe('ReviewTab: a split question', () => {
     expect(screen.getByText('Which parts come in this bundle?', { selector: 'legend' })).toBeInTheDocument();
     expect(screen.queryByRole('heading')).toBeNull();
     expect(screen.getByText('DEWALT 20V MAX Cordless 2 Tool Combo Kit')).toBeInTheDocument();
-    expect(screen.getByText('DEWALT DCK240C2')).toHaveClass('fig-sm');
+    expect(screen.getByText('DCK240C2')).toHaveClass('figure', 'fig-sm');
+    expect(screen.getByText('DEWALT')).toBeInTheDocument();
     expect(screen.getByText('The kit lists two impact wrenches.')).toBeInTheDocument();
     const group = screen.getByRole('group', { name: 'Which parts come in this bundle?' });
     expect(group.tagName).toBe('FIELDSET');
@@ -133,6 +135,26 @@ describe('ReviewTab: a split question', () => {
     await waitFor(() => expect(screen.getByText('Nothing needs your answer.')).toHaveFocus());
   });
 
+  it('a report reload takes no focus, and neither does a question that remounts because it changed', async () => {
+    const user = userEvent.setup();
+    const { again } = setup(reportOf([SPLIT, MATCH]));
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.click(save());
+    await waitFor(() => expect(screen.getByText('Which Amazon listing is DEWALT DCF891B?', { selector: 'legend' })).toHaveFocus());
+    // The owner moves on to something else; the report reloads and the question changes under them.
+    (document.activeElement as HTMLElement).blur();
+    again(reportOf([{ ...MATCH, reason: 'Another listing appeared.', candidates: [...MATCH.candidates, { asin: 'B0AAAAAAA3', title: 'Third', price: 1, reviews: 1, reasons: [] }] }]));
+    expect(screen.getByText('Another listing appeared.')).toBeInTheDocument();
+    expect(document.body).toHaveFocus();
+    // Answering the last one focuses the empty sentence; a reload afterwards does not move focus again.
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.click(save());
+    await waitFor(() => expect(screen.getByText('Nothing needs your answer.')).toHaveFocus());
+    (document.activeElement as HTMLElement).blur();
+    again(reportOf([]));
+    expect(document.body).toHaveFocus();
+  });
+
   it('None of these sends none', async () => {
     const user = userEvent.setup();
     const { send } = setup(reportOf([SPLIT]));
@@ -143,7 +165,7 @@ describe('ReviewTab: a split question', () => {
 
   it('asks the oldest question first', () => {
     setup(reportOf([item({ id: 'split:new', model: 'NEWER', openedAt: 9 }), item({ id: 'split:old', model: 'OLDER', openedAt: 3 })]));
-    expect(screen.getByText('DEWALT OLDER')).toBeInTheDocument();
+    expect(screen.getByText('OLDER')).toBeInTheDocument();
   });
 });
 
@@ -249,8 +271,10 @@ describe('ReviewTab: a report built on the replayed recordings', () => {
     const user = userEvent.setup();
     const { send } = setup(report);
     expect(screen.getByText(`1 of ${report.review.length}`)).toBeInTheDocument();
-    expect(screen.getByText(first.reason)).toBeInTheDocument();
-    expect(screen.getByText(`${first.brand} ${first.model}`)).toBeInTheDocument();
+    expect(screen.getByText(reviewReason(first.reason))).toBeInTheDocument();
+    expect(first.reason).toContain('hyphen split');
+    expect(screen.getByText('The model number names its parts, but not all of them are known products yet.')).toBeInTheDocument();
+    expect(screen.getByText(first.model)).toBeInTheDocument();
     await user.click(screen.getByRole('radio', { name: 'None of these' }));
     await user.click(save());
     await waitFor(() =>
