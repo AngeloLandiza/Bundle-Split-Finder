@@ -30,8 +30,6 @@ const NOT_THE_MATCH = "This listing is no longer the part's match.";
 const VERIFIED = 'This listing is already verified.';
 const PAGE_UNREADABLE = "Amazon's page for this listing could not be read.";
 const OTHER_LISTING = 'Amazon answered with a different listing.';
-/** shouldStop said so before a search (the worker: Forget key, or a different key saved). */
-const STOPPED = 'Stopped: the key was removed or changed.';
 /** The reason of the match question a Verify opens; a lookup's reasons are written the same way. */
 const NOT_CONFIRMED = "The listing's Amazon page does not confirm the part";
 /** Added to the grading's reasons when the page's title says non-retail packaging, which pick() never uses. */
@@ -83,15 +81,18 @@ export async function refusalFor(store: ScanStore, action: PaidAction): Promise<
 /**
  * Runs one paid action. `settings` gives the Amazon domain and the brands whose listings are saved;
  * default DEFAULT_SCAN_SETTINGS. Ledger labels start with `panel:verify` and `panel:lookup`.
- * `shouldStop` is asked before every search, never during one, as a scan asks it.
+ * `shouldStop` is asked before every search, never during one, as a scan asks it: null goes on,
+ * and a sentence, the caller's own, stops the action.
  *
  * Throws PaidProblem, having written and spent nothing, when refused: refusalFor's sentence, or the
  * budget's own when the whole cost does not fit. A failed search is thrown as the client threw it,
  * never retried. A Verify whose page cannot be used throws PaidProblem after its search. A stop
- * throws PaidProblem; the parts a Look up had not searched for yet wait.
+ * throws PaidProblem with shouldStop's sentence; the parts a Look up had not searched for yet wait.
  */
 export async function runPaid(
-  deps: { client: SearchClient; budget: BudgetView; store: ScanStore; now: () => number; settings?: ScanSettings; shouldStop?: () => boolean },
+  deps: {
+    client: SearchClient; budget: BudgetView; store: ScanStore; now: () => number; settings?: ScanSettings; shouldStop?: () => string | null;
+  },
   action: PaidAction,
 ): Promise<void> {
   const refusal = await refusalFor(deps.store, action);
@@ -101,7 +102,7 @@ export async function runPaid(
     client: deps.client, store: deps.store, settings: deps.settings ?? DEFAULT_SCAN_SETTINGS, now: deps.now, prefix: 'panel', catalog: known.catalog,
     job: { counts: noCounts() },
   };
-  const stop = deps.shouldStop ?? (() => false);
+  const stop = deps.shouldStop ?? (() => null);
   if (action.kind === 'verify') await verify(ctx, deps.budget, action, stop);
   else await lookUp(ctx, deps.budget, known, action.parts, stop);
 }
@@ -113,7 +114,7 @@ export async function runPaid(
  * after it wait, as a scan leaves its queue when it halts.
  */
 async function lookUp(
-  ctx: PartContext, budget: BudgetView, known: KnownModels, asked: { brand: string; model: string }[], stop: () => boolean,
+  ctx: PartContext, budget: BudgetView, known: KnownModels, asked: { brand: string; model: string }[], stop: () => string | null,
 ): Promise<void> {
   const need = await judge(ctx.store, known);
   const parts = partsOf(asked);
@@ -125,9 +126,10 @@ async function lookUp(
     for (const p of searches.slice(i)) await markWaiting(ctx, { kind: 'lookup', brand: p.brand, model: p.model });
   };
   for (const [i, part] of searches.entries()) {
-    if (stop()) {
+    const stopped = stop();
+    if (stopped !== null) {
       await waitFrom(i);
-      throw new PaidProblem(STOPPED);
+      throw new PaidProblem(stopped);
     }
     const step: LookupStep = { kind: 'lookup', brand: part.brand, model: part.model };
     let result: SearchResult;
@@ -149,10 +151,11 @@ async function lookUp(
  * reasons. Either way the page's price is saved, at the time SerpApi answered. A page that cannot
  * be read, or that shows another listing, changes nothing.
  */
-async function verify(ctx: PartContext, budget: BudgetView, action: Extract<PaidAction, { kind: 'verify' }>, stop: () => boolean): Promise<void> {
-  const refusal = overBudget(budget, 1);
+async function verify(
+  ctx: PartContext, budget: BudgetView, action: Extract<PaidAction, { kind: 'verify' }>, stop: () => string | null,
+): Promise<void> {
+  const refusal = overBudget(budget, 1) ?? stop();
   if (refusal !== null) throw new PaidProblem(refusal);
-  if (stop()) throw new PaidProblem(STOPPED);
   const part = partsOf([action])[0]!;
   const asin = action.asin.trim();
   const { data, at } = await ctx.client.search(

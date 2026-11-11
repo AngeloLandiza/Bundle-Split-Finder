@@ -82,6 +82,8 @@ const SCAN_RUNNING = 'A scan is running.';
 /** A scan, or a second Verify or Look up, asked for while one runs. */
 const PAID_RUNNING = 'A Look up or Verify is running.';
 const KEY_CHANGED_PAID = 'The SerpApi key changed. Try again.';
+/** A Look up or Verify stopped before a search because the key it holds was forgotten or replaced. */
+const PAID_STOPPED = 'Stopped: the key was removed or changed.';
 /** A quote reads the account saved this recently; an older one is checked again (free). */
 const ACCOUNT_FRESH_MS = 5 * 60_000;
 /** The budget a quote shows when it is refused before the account is read; the refusal is said instead. */
@@ -534,17 +536,27 @@ export function createWorker(env: WorkerEnv): Worker {
    */
   async function accountForQuote(key: string): Promise<AccountInfo | string> {
     const stored = await prefs.getAccount();
+    // Read again just before the check: a key forgotten or replaced meanwhile is never sent.
+    const moved = await keyMoved(key);
+    if (moved !== null) return moved;
     if (stored !== null && env.now() - stored.at < ACCOUNT_FRESH_MS) return stored.info;
     try {
       const info = await accountOf(key);
-      // The key may have been forgotten or replaced during the check: that key's account is not saved.
-      const keyNow = await prefs.getKey();
-      if (keyNow !== key) return keyNow === null ? NO_KEY : KEY_CHANGED_PAID;
+      // And after it: a key forgotten or replaced during the check does not have its account saved.
+      const movedSince = await keyMoved(key);
+      if (movedSince !== null) return movedSince;
       await prefs.setAccount({ info, at: env.now() });
       return info;
     } catch (err) {
       return accountSentence(err);
     }
+  }
+
+  /** Null while `key` is still the saved key; otherwise the sentence for a key forgotten or replaced since it was read. */
+  async function keyMoved(key: string): Promise<string | null> {
+    const keyNow = await prefs.getKey();
+    if (keyNow === key) return null;
+    return keyNow === null ? NO_KEY : KEY_CHANGED_PAID;
   }
 
   /**
@@ -610,15 +622,15 @@ export function createWorker(env: WorkerEnv): Worker {
         return refuse(problem);
       }
       // Asked again before anything is saved or sent, so a forgetKey sent during the check is not lost.
-      const keyNow = await prefs.getKey();
-      if (keyNow !== key) return refuse(keyNow === null ? NO_KEY : KEY_CHANGED_PAID);
+      const moved = await keyMoved(key);
+      if (moved !== null) return refuse(moved);
       await prefs.setAccount({ info: account, at: env.now() });
       problem = null;
       const s = await settings();
       const budget = new SearchBudget(account, budgetPolicyFor(s, 'manual', 0));
       const client = new SerpApiClient({ apiKey: key, budget, cache: env.cache, fetchFn: env.fetchFn, onSpend: env.ledger, now: env.now, baseUrl });
       try {
-        await runPaid({ client, budget, store, now: env.now, settings: toScanSettings(s), shouldStop: () => paidStop }, action);
+        await runPaid({ client, budget, store, now: env.now, settings: toScanSettings(s), shouldStop: () => (paidStop ? PAID_STOPPED : null) }, action);
         return ok(null);
       } catch (err) {
         if (err instanceof PaidProblem) return refuse(err.message);

@@ -979,6 +979,8 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
   const LOOK_25B: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC25B' }] };
   const LOOK_BOTH: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC01B' }, { brand: 'RYOBI', model: 'PBLRC25B' }] };
   const VERIFY_25B: PaidAction = { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0B3JWF5ZV' };
+  /** The PBLRC01B title match a Look up makes (B0B6Z2ZGVK); its detail page is recorded. */
+  const VERIFY_01B: PaidAction = { kind: 'verify', brand: 'RYOBI', model: 'PBLRC01B', asin: 'B0B6Z2ZGVK' };
   const PRODUCT_25B = 'amazon_domain=amazon.com&asin=B0B3JWF5ZV&engine=amazon_product';
   const RUN_CAP = 'Stopped: this run reached its search limit.';
   const HOURLY = "Stopped: the plan's hourly search limit is reached. Try again next hour.";
@@ -1256,7 +1258,7 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
     for (const [apiKey, stopped] of [['NEWKEY', true], [KEY, false]] as const) {
       const w = await waitingWorld();
       w.prefs.data.settings = { ...ONE, searchesPerScan: 2 };
-      accountKeys(w);
+      const keys = accountKeys(w);
       const search = holdSearch(w, 'RYOBI PBLRC01B');
       const reply = runPaid(w, LOOK_BOTH);
       await search.reached;
@@ -1264,12 +1266,48 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
       search.release();
       expect(await reply, apiKey).toEqual(stopped ? { ok: false, error: STOPPED_KEY } : { ok: true, data: null });
       expect(panelLabels(w), apiKey).toEqual(stopped ? ['panel:lookup:PBLRC01B'] : ['panel:lookup:PBLRC01B', 'panel:lookup:PBLRC25B']);
+      if (!stopped) continue;
+      // The same worker's next action is not stopped: it checks the new key's account and spends.
+      const before = keys.length;
+      expect(await runPaid(w, VERIFY_01B)).toEqual({ ok: true, data: null });
+      expect(panelLabels(w)).toEqual(['panel:lookup:PBLRC01B', 'panel:verify:PBLRC01B']);
+      expect(keys.slice(before)).toEqual(['NEWKEY', 'NEWKEY']);
     }
-    // The next action runs with the new key, unstopped.
+  });
+
+  it('after Forget key stopped a Look up, the same worker refuses without a key, then runs and spends once a key is saved', async () => {
     const w = await waitingWorld();
-    accountKeys(w);
-    expect(await send(w, { type: 'checkKey', apiKey: 'NEWKEY' })).toMatchObject({ ok: true });
-    expect(await runPaid(w, LOOK_01B)).toEqual({ ok: true, data: null });
+    w.prefs.data.settings = { ...ONE, searchesPerScan: 2 };
+    const search = holdSearch(w, 'RYOBI PBLRC01B');
+    const reply = runPaid(w, LOOK_BOTH);
+    await search.reached;
+    await send(w, { type: 'forgetKey' });
+    search.release();
+    expect(await reply).toEqual({ ok: false, error: STOPPED_KEY });
+    expect(await runPaid(w, VERIFY_01B)).toEqual({ ok: false, error: 'Add your SerpApi key in Settings.' });
+    expect(await send(w, { type: 'checkKey', apiKey: KEY })).toMatchObject({ ok: true });
+    expect(await runPaid(w, VERIFY_01B)).toEqual({ ok: true, data: null });
+    expect(panelLabels(w)).toEqual(['panel:lookup:PBLRC01B', 'panel:verify:PBLRC01B']);
+  });
+
+  it('a Forget key between a quote\'s key read and its account check: the forgotten key is not sent', async () => {
+    const w = await waitingWorld();
+    w.clock = T0 + 6 * MINUTE;
+    const keys = accountKeys(w);
+    // The first account read after the quote's key read is where the Forget key lands.
+    const getAccount = w.prefs.getAccount.bind(w.prefs);
+    let first = true;
+    w.prefs.getAccount = async () => {
+      if (first) {
+        first = false;
+        await send(w, { type: 'forgetKey' });
+      }
+      return getAccount();
+    };
+    expect(await quote(w, LOOK_01B)).toEqual({ ok: true, data: { searches: 1, refusal: 'Add your SerpApi key in Settings.' } });
+    expect(first).toBe(false);
+    expect(keys).toEqual([]);
+    expect(w.prefs.data.account ?? null).toBeNull();
   });
 
   it('without a key both say so, and a request that is not a paid action is refused', async () => {

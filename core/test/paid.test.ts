@@ -180,13 +180,17 @@ describe('runPaid lookUp: the scan\'s own lookup step for parts left waiting', (
     expect(await w.store.getMatch('RYOBI:P999')).toBeUndefined();
   });
 
-  it('shouldStop is asked before each lookup: true after the first of two, the second waits, having spent 1', async () => {
+  /** The caller's sentence: core knows nothing of why it stops. */
+  const STOP = 'Stopped for this test.';
+
+  it('shouldStop is asked before each lookup: a sentence after the first of two stops it, the second waits, having spent 1', async () => {
     const w = await waiting();
     const { budget, client } = clientFor(w, MANUAL);
     w.clock = T0 + MINUTE;
     // The ledger holds the scan's listing page; a second entry is the first lookup.
-    const stopped = runPaid({ client, budget, store: w.store, now: () => w.clock, settings: RATCHET, shouldStop: () => w.ledger.length >= 2 }, LOOK_BOTH);
-    await expect(stopped).rejects.toThrow(new PaidProblem('Stopped: the key was removed or changed.'));
+    const shouldStop = () => (w.ledger.length >= 2 ? STOP : null);
+    const stopped = runPaid({ client, budget, store: w.store, now: () => w.clock, settings: RATCHET, shouldStop }, LOOK_BOTH);
+    await expect(stopped).rejects.toThrow(new PaidProblem(STOP));
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B]);
     expect(w.ledger).toEqual(['scan:listing:ryobi extended reach ratchet:p1', 'panel:lookup:PBLRC01B']);
     expect(budget.spentThisRun).toBe(1);
@@ -197,14 +201,14 @@ describe('runPaid lookUp: the scan\'s own lookup step for parts left waiting', (
   it('a stop asked for before the first search sends nothing, and a Verify asks it too', async () => {
     const w = await waiting();
     const { budget, client } = clientFor(w, MANUAL);
-    const deps = { client, budget, store: w.store, now: () => w.clock, settings: RATCHET, shouldStop: () => true };
-    await expect(runPaid(deps, LOOK_BOTH)).rejects.toThrow(new PaidProblem('Stopped: the key was removed or changed.'));
+    const deps = { client, budget, store: w.store, now: () => w.clock, settings: RATCHET, shouldStop: () => STOP };
+    await expect(runPaid(deps, LOOK_BOTH)).rejects.toThrow(new PaidProblem(STOP));
     expect(w.replay.calls).toEqual([LISTING]);
     for (const key of ['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']) expect(await w.store.getMatch(key)).toMatchObject({ status: 'waiting' });
     const matched = await bothMatched();
     const again = clientFor(matched, MANUAL);
-    const verifying = { client: again.client, budget: again.budget, store: matched.store, now: () => matched.clock, settings: RATCHET, shouldStop: () => true };
-    await expect(runPaid(verifying, VERIFY_25B)).rejects.toThrow(new PaidProblem('Stopped: the key was removed or changed.'));
+    const verifying = { client: again.client, budget: again.budget, store: matched.store, now: () => matched.clock, settings: RATCHET, shouldStop: () => STOP };
+    await expect(runPaid(verifying, VERIFY_25B)).rejects.toThrow(new PaidProblem(STOP));
     expect(matched.replay.calls).not.toContain(PRODUCT_25B);
   });
 
