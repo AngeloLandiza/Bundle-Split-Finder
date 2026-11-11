@@ -146,10 +146,16 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   }
   // Ruling 48: the pages the last job deferred go first, in its order, so at a low limit one
   // query cannot hold the only slot on every scan. Only pages the settings still ask for.
-  const pages = deferredFirst(inOrder, newest?.deferred ?? []);
+  // Ruling 52: a page whose search failed in the last job goes after every other page.
+  const failedPages = failedPagesOf(newest);
+  const pages = deferredFirst(inOrder, newest?.deferred ?? [], failedPages);
   const wants = await wantedParts(store, settings, startedAt, undefined, failedBefore);
   const plan = planScan(budget.spendable - catalogPages, { hdPagesWanted: pages.length, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
   const deferred = pages.slice(plan.hdPages);
+  // Ruling 52: a page that failed last job runs only if planning reaches it, never by a top-up:
+  // once the other pages come from the cache, a top-up would reach it on every scan, and its
+  // failure would end the scan before any lookup.
+  const movable = deferred.filter((p) => !failedPages.has(pageKey(p)));
   const job: ScanJob = {
     id: String(startedAt), startedAt, finishedAt: null, status: 'running', stopReason: null, stopMessage: null, phase: 'listing',
     queue: [...catalog.slice(0, catalogPages), ...pages.slice(0, plan.hdPages)], deferred, searchesUsed: 0,
@@ -159,7 +165,16 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     },
   };
   await store.putScan(job);
-  return { ...run(job), movable: [...deferred] };
+  return { ...run(job), movable };
+}
+
+/** A listing page's key in `ScanJob.failedPages` (Ruling 52). */
+const pageKey = (p: Listing): string => JSON.stringify([p.q, p.page, p.filterTokens ?? null]);
+
+/** The pages a stored job's search failed on (Ruling 52). Stored data is untrusted: anything but a list of strings counts as none. */
+function failedPagesOf(job: ScanJob | undefined): Set<string> {
+  const pages: unknown = job?.failedPages;
+  return new Set(Array.isArray(pages) ? pages.filter((p): p is string => typeof p === 'string') : []);
 }
 
 /** The parts a stored job set aside (Ruling 50). Stored data is untrusted: anything but a list of strings counts as none. */
@@ -171,15 +186,20 @@ function setAsidePartsOf(job: ScanJob | undefined): Set<string> {
 const sameListing = (a: Listing, b: Listing): boolean =>
   a.q === b.q && a.page === b.page && (a.filterTokens ?? null) === (b.filterTokens ?? null);
 
-/** `pages` with those that equal a listing step in `earlier` first, in `earlier`'s order; the rest keep their order. */
-function deferredFirst(pages: Listing[], earlier: ScanStep[]): Listing[] {
+/**
+ * `pages` with those that equal a listing step in `earlier` first, in `earlier`'s order; the rest
+ * keep their order; and last, in that same order, the pages in `failed` (Ruling 52).
+ */
+function deferredFirst(pages: Listing[], earlier: ScanStep[], failed: Set<string> = new Set()): Listing[] {
   const first: Listing[] = [];
   for (const step of earlier) {
     if (step.kind !== 'listing') continue;
     const page = pages.find((p) => sameListing(p, step));
     if (page && !first.includes(page)) first.push(page);
   }
-  return [...first, ...pages.filter((p) => !first.includes(p))];
+  const ordered = [...first, ...pages.filter((p) => !first.includes(p))];
+  const isFailed = (p: Listing) => failed.has(pageKey(p));
+  return [...ordered.filter((p) => !isFailed(p)), ...ordered.filter(isFailed)];
 }
 
 /**
@@ -325,6 +345,13 @@ async function setAside(run: Run, step: Lookup | Refresh, message: string): Prom
 async function halt(run: Run, reason: StopReason, message: string | null): Promise<void> {
   const { job } = run;
   for (const step of job.queue) if (step.kind === 'lookup') await markWaiting(run, step);
+  // Ruling 52: a listing page whose own search failed is remembered, so the next job plans it after
+  // the other pages. A 429, a budget refusal or Stop says nothing about the page: it keeps its place.
+  // (A brand page that fails is dropped instead, 2c rule 3, so it never stops here with an error.)
+  const head = job.queue[0];
+  if (reason === 'error' && head?.kind === 'listing' && !(job.failedPages ?? []).includes(pageKey(head))) {
+    job.failedPages = [...(job.failedPages ?? []), pageKey(head)];
+  }
   job.stopReason = reason;
   job.stopMessage = message;
   // After the steps this run set aside (3 rule 2), in front of anything deferred earlier.

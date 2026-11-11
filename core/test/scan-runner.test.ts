@@ -2148,13 +2148,19 @@ describe('runScan: a slot the cache answers is given back (Ruling 48; QA 3, Majo
     expect(Math.max(...spent)).toBe(1);
   });
 
-  it('a page known not to exist leaves the deferred list too, so no later scan pays for it (F6 review)', async () => {
-    const w = world();
-    // The recorded ratchet page, with its pagination saying there is no next page; every other
-    // request is the plain replay (a page 2 has no recording and answers 404).
-    const A2 = 'engine=home_depot&page=2&q=ryobi extended reach ratchet';
+  const A2 = 'engine=home_depot&page=2&q=ryobi extended reach ratchet';
+  const B1 = 'engine=home_depot&page=1&q=dewalt 20v combo kit';
+  const B2 = 'engine=home_depot&page=2&q=dewalt 20v combo kit';
+  /**
+   * The replay, except that the recorded ratchet page's pagination says there is no next page,
+   * and a request `fail` gives a status for gets that HTTP status. A page 2 has no recording, so
+   * it answers 404 every time.
+   */
+  const lastRatchetPage = (w: World, fail: (url: URL) => number | null = () => null) => {
     const fetchFn = (async (input: string | URL | Request) => {
       const url = new URL(String(input instanceof Request ? input.url : input));
+      const status = fail(url);
+      if (status !== null) return new Response(JSON.stringify({ error: 'refused' }), { status });
       const res = await w.replay.fetchFn(input);
       if (url.searchParams.get('q') !== 'ryobi extended reach ratchet' || url.searchParams.get('page') !== '1') return res;
       const body = (await res.json()) as { serpapi_pagination?: Record<string, unknown>; pagination?: Record<string, unknown> };
@@ -2162,9 +2168,17 @@ describe('runScan: a slot the cache answers is given back (Ruling 48; QA 3, Majo
       delete body.pagination;
       return new Response(JSON.stringify(body), { status: 200 });
     }) as typeof fetch;
-    // Two queries of two pages at a limit of 2: one page fits (hdPages 1).
-    const settings: ScanSettings = { ...STEP2, pagesPerQuery: 2, queries: [{ q: 'ryobi extended reach ratchet' }, { q: 'dewalt 20v combo kit' }] };
-    const policy: BudgetPolicy = { reserve: 0, maxPerRun: 2 };
+    return fetchFn;
+  };
+  // Two queries of two pages at a limit of 2: one page fits (hdPages 1).
+  const TWO_PAGES: ScanSettings = { ...STEP2, pagesPerQuery: 2, queries: [{ q: 'ryobi extended reach ratchet' }, { q: 'dewalt 20v combo kit' }] };
+  const LIMIT_2: BudgetPolicy = { reserve: 0, maxPerRun: 2 };
+
+  it('a page known not to exist leaves the deferred list too, so no later scan pays for it (F6 review)', async () => {
+    const w = world();
+    const fetchFn = lastRatchetPage(w);
+    const settings = TWO_PAGES;
+    const policy = LIMIT_2;
 
     const first = await scan(w, { settings, policy, fetchFn });
     // A1 said there is no page 2: A2 is neither queued nor deferred.
@@ -2178,6 +2192,62 @@ describe('runScan: a slot the cache answers is given back (Ruling 48; QA 3, Majo
     // Before the fix, A2 stayed deferred, went first two scans later and was paid for.
     expect(w.replay.calls).not.toContain(A2);
     expect(Math.max(...spent)).toBeLessThanOrEqual(2);
+  });
+
+  it('a page that fails on every scan waits behind the other pages: later scans read pages and run lookups, and it is tried again (Ruling 52)', async () => {
+    const w = world();
+    const fetchFn = lastRatchetPage(w);
+    const spent: number[] = [];
+    const jobs: ScanJob[] = [];
+    const scanAt = async (i: number, policy: BudgetPolicy) => {
+      w.clock = T0 + i * 10 * MINUTE;
+      const before = w.ledger.length;
+      const calls = w.replay.calls.length;
+      jobs.push(await scan(w, { settings: TWO_PAGES, policy, fetchFn }));
+      spent.push(w.ledger.length - before);
+      return w.replay.calls.slice(calls);
+    };
+    // Two scans at a limit of 1 read A1 then B1 and leave both lookups waiting.
+    expect(await scanAt(0, ONE_SEARCH)).toEqual([LISTING]);
+    expect(await scanAt(1, ONE_SEARCH)).toEqual([B1]);
+    // At a limit of 2, B2 was deferred first and fails: the scan stops, with no lookup.
+    expect(await scanAt(2, LIMIT_2)).toEqual([B2]);
+    expect(jobs[2]).toMatchObject({ stopReason: 'error', searchesUsed: 0, failedPages: [JSON.stringify(['dewalt 20v combo kit', 2, null])] });
+    // Before Ruling 52, B2 went first again and every scan stopped the same way. Now it goes
+    // last and no top-up reaches it: A1 and B1 come from the cache and both lookups are paid.
+    expect(await scanAt(3, LIMIT_2)).toEqual([LOOKUP_01B, LOOKUP_25B]);
+    expect(jobs[3]).toMatchObject({ stopReason: 'run_cap', searchesUsed: 2, deferred: [{ ...listing('dewalt 20v combo kit'), page: 2 }] });
+    expect(jobs[3]!.failedPages).toBeUndefined();
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'matched' });
+    // The scan after that tries B2 again.
+    expect(await scanAt(4, LIMIT_2)).toEqual([B2]);
+    expect(spent).toEqual([1, 1, 0, 2, 0]);
+  });
+
+  it('a page refused by a 429 keeps its place: it goes first next scan, where a failed page would wait (Ruling 52)', async () => {
+    const run = async (status: number) => {
+      const w = world();
+      let failing = true;
+      const fetchFn = lastRatchetPage(w, (url) =>
+        failing && url.searchParams.get('q') === 'dewalt 20v combo kit' && url.searchParams.get('page') === '1' ? status : null);
+      await scan(w, { settings: TWO_PAGES, policy: ONE_SEARCH, fetchFn });
+      w.clock = T0 + 10 * MINUTE;
+      // B1 was deferred first and is refused.
+      const refused = await scan(w, { settings: TWO_PAGES, policy: ONE_SEARCH, fetchFn });
+      failing = false;
+      w.clock = T0 + 20 * MINUTE;
+      const calls = w.replay.calls.length;
+      await scan(w, { settings: TWO_PAGES, policy: ONE_SEARCH, fetchFn });
+      return { refused, next: w.replay.calls.slice(calls) };
+    };
+    const limited = await run(429);
+    expect(limited.refused).toMatchObject({ stopReason: 'rate_limited', searchesUsed: 0 });
+    expect(limited.refused.failedPages).toBeUndefined();
+    expect(limited.next).toEqual([B1]);
+    // The same page failing with an HTTP 500 waits: the cached A1 comes first, and B1 is not topped up.
+    const failed = await run(500);
+    expect(failed.refused).toMatchObject({ stopReason: 'error', failedPages: [JSON.stringify(['dewalt 20v combo kit', 1, null])] });
+    expect(failed.next).not.toContain(B1);
   });
 
   it('a listing page planned and answered from the cache gives its slot to the page deferred after it', async () => {
