@@ -1,9 +1,9 @@
-/* Review tab. Hairline rows, tokens only. */
+/* Review tab. Rows follow Limit.dc.html: a white band, hairlines edge to edge, 11px 16px. */
 .review {
-  padding: 12px 16px 16px;
+  padding: 12px 0 16px;
 }
 .review-count {
-  margin: 0 0 8px;
+  margin: 0 16px 8px;
   font-size: 12px;
   color: var(--ink-2);
 }
@@ -24,6 +24,11 @@
   border: 0;
   min-width: 0;
 }
+/* Everything but the white band sits inside the gutter. */
+.review-question > :not(.review-choices) {
+  margin-left: 16px;
+  margin-right: 16px;
+}
 .review-title {
   padding: 0;
   margin-bottom: 8px;
@@ -39,29 +44,42 @@
   outline-offset: 2px;
 }
 .review-bundle,
-.review-model,
+.review-ident,
 .review-reason,
 .review-note {
-  margin: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 .review-bundle {
   overflow-wrap: anywhere;
 }
-.review-model,
+.review-ident {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.review-ident .fig-sm {
+  color: inherit;
+}
 .review-reason,
 .review-note {
+  font-size: 13px;
+  line-height: 18px;
   color: var(--ink-2);
 }
 .review-choices {
   margin-top: 4px;
+  background: var(--surface);
   border-top: 1px solid var(--line);
 }
 .review-choices .review-note {
-  padding: 10px 0;
+  margin: 0;
+  padding: 11px 16px;
   border-bottom: 1px solid var(--line);
 }
 .review-row {
-  padding: 10px 0;
+  padding: 11px 16px;
   border-bottom: 1px solid var(--line);
 }
 .review-choice {
@@ -71,18 +89,22 @@
   cursor: pointer;
 }
 .review-choice input {
-  margin: 3px 0 0;
+  margin: 2px 0 0;
   accent-color: var(--ink);
   flex: none;
 }
 .review-choice:focus-within {
   outline: 2px solid var(--ink);
-  outline-offset: 4px;
+  outline-offset: 2px;
 }
 .review-choice-label {
   min-width: 0;
   flex: 1 1 0;
   overflow-wrap: anywhere;
+}
+.review-choice-label .figure {
+  font-size: 12px;
+  line-height: 16px;
 }
 .review-cand-title {
   display: block;
@@ -104,7 +126,9 @@
   margin-top: 4px;
 }
 .review-sentence {
-  margin: 0;
+  margin-top: 0;
+  margin-bottom: 0;
   font-size: 13px;
+  line-height: 18px;
   color: var(--ink-2);
 }
