@@ -181,26 +181,32 @@ describe('match state', () => {
     expect(matchState([m(), m({ grade: 'strong' })])).toBe('2 parts matched');
     expect(matchState([m()])).toBe('1 part matched');
   });
-  it('counts probable parts to verify', () => {
-    expect(matchState([m(), m({ grade: 'probable' })])).toBe('1 part to verify');
-    expect(matchState([m({ grade: 'probable' }), m({ grade: 'probable' })])).toBe('2 parts to verify');
+  it('confirmed: counts the title matches (probable parts), the owner decides on Detail', () => {
+    expect(matchState([m(), m({ grade: 'probable' })])).toBe('1 title match');
+    expect(matchState([m({ grade: 'probable' }), m({ grade: 'probable' })])).toBe('2 title matches');
   });
-  it('counts waiting and unmatched parts unknown', () => {
-    expect(matchState([m({ status: 'waiting', grade: null }), m({ status: 'unmatched', grade: null })])).toBe('2 parts unknown');
-    expect(matchState([m({ status: 'waiting', grade: null })])).toBe('1 part unknown');
+  it('waiting: counts the parts to look up, waiting or unmatched', () => {
+    const waiting = { section: 'waiting' } as const;
+    expect(matchState([m({ status: 'waiting', grade: null }), m({ status: 'unmatched', grade: null })], waiting)).toBe('2 parts to look up');
+    expect(matchState([m({ status: 'waiting', grade: null }), m()], waiting)).toBe('1 part to look up');
   });
-  it('counts parts with no listing', () => {
-    expect(matchState([m(), m({ status: 'none', grade: null, availability: 'missing' })])).toBe('1 part with no listing');
-    expect(matchState([m({ status: 'none', grade: null, availability: 'missing' }), m({ status: 'none', grade: null, availability: 'missing' })])).toBe(
-      '2 parts with no listing',
-    );
+  it('missing listing: counts the parts with no listing, then the parts to verify', () => {
+    const missing = { section: 'missing_listing' } as const;
+    const none = m({ status: 'none', grade: null, availability: 'missing' });
+    expect(matchState([m(), none], missing)).toBe('1 part with no listing');
+    expect(matchState([none, { ...none, model: 'B' }], missing)).toBe('2 parts with no listing');
+    expect(matchState([none, m({ grade: 'probable' })], missing)).toBe('1 part with no listing · 1 to verify');
+    // The QA case: PCL1201K2-PCL515B after a Look up that found no listing for the saw.
+    const saw = part('PCL515B', { status: 'matched', grade: 'exact' });
+    const lookedUp = part('PCL1201K2', { status: 'none', grade: null, availability: 'missing', asin: null, price: null });
+    expect(matchState([lookedUp, saw], { ...missing, key: 'PCL1201K2-PCL515B', brand: 'RYOBI' })).toBe('1 part with no listing');
   });
-  it('shows the first that applies: to verify, then unknown, then no listing', () => {
+  it('outside a section with its own reason, falls back to to verify, unknown, then no listing', () => {
     const verify = m({ grade: 'probable' });
     const unknown = m({ status: 'waiting', grade: null, availability: 'missing' });
     const none = m({ status: 'none', grade: null, availability: 'missing' });
-    expect(matchState([none, unknown, verify])).toBe('1 part to verify');
-    expect(matchState([none, unknown])).toBe('1 part unknown');
+    expect(matchState([none, unknown, verify], { section: 'split' })).toBe('1 part to verify');
+    expect(matchState([none, unknown], { section: 'split' })).toBe('1 part unknown');
   });
   it('says why a row is in the inactive section, before the other wordings', () => {
     const inactive = (n: number) => Array.from({ length: n }, (_, i) => m({ availability: 'inactive', model: `I${i}` }));

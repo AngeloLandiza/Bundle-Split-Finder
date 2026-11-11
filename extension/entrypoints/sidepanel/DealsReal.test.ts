@@ -89,7 +89,7 @@ describe('Deals on a replayed scan', () => {
     expect(groups.map((g) => `${g.label} · ${g.rows.length}`)).toEqual(['CONFIRMED · 1', 'CONTENTS NOT KNOWN · 3']);
     const kit = groups[0]!.rows[0]!;
     expect(kit.key).toBe('homedepot:343992133');
-    expect(matchState(kit)).toBe('2 parts to verify');
+    expect(matchState(kit)).toBe('2 title matches');
     expect(kit.estimate?.profit).toBe(-12.8);
   });
 
@@ -117,7 +117,7 @@ describe('Deals on a replayed scan', () => {
     expect(waiting).toBeGreaterThan(0);
     const rows = ratchet.report.bundles.filter((b) => b.parts.some((p) => p.status === 'waiting'));
     expect(rows.length).toBeGreaterThan(0);
-    for (const r of rows) expect(matchState(r)).toMatch(/unknown$/);
+    for (const r of rows) expect(matchState(r)).toMatch(/^\d+ parts? to look up$/);
     // Their parts were never looked up: they wait for a lookup, after Confirmed and before the review sections.
     expect(sections(ratchet.report.bundles, 'profit').map((g) => `${g.label} · ${g.rows.length}`)).toEqual([
       `WAITING FOR AN AMAZON LOOKUP · ${rows.length}`,

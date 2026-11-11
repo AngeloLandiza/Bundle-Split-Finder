@@ -20,23 +20,41 @@ const isWaiting = (p: PartRow): boolean => p.status === 'waiting' || p.status ==
 
 /**
  * The match state of a bundle in the fixed vocabulary, or null when its parts are not known.
- * When several apply, the first of: to verify, unknown, no listing.
+ * A row leads with the reason for its section, so it never contradicts the heading it sits under.
  */
 export function matchState(row: BundleRow): string | null {
   const parts = row.parts;
   if (parts.length === 0) return null;
-  // Rows in the inactive section say why they are there, before any other wording.
-  if (row.section === 'inactive_listing') {
-    if (row.price === null) return 'No bundle price';
-    const inactive = parts.filter((p) => p.availability === 'inactive').length;
-    if (inactive > 0) return `${inactive} ${inactive === 1 ? 'listing' : 'listings'} inactive`;
-  }
-  if (parts.every((p) => p.grade === 'exact' || p.grade === 'strong')) return count(parts.length, 'matched');
   // A part left in review has no chosen listing yet: it is still a question, so it counts as one to verify.
   const verify = parts.filter((p) => !isWaiting(p) && (p.grade === 'probable' || p.status === 'review')).length;
+  const toLookUp = parts.filter(isWaiting).length;
+  switch (row.section) {
+    case 'inactive_listing': {
+      if (row.price === null) return 'No bundle price';
+      const inactive = parts.filter((p) => p.availability === 'inactive').length;
+      if (inactive > 0) return `${inactive} ${inactive === 1 ? 'listing' : 'listings'} inactive`;
+      break;
+    }
+    case 'confirmed': {
+      // The owner's decision: a title match is said as one. Verify stays on Detail.
+      const probable = parts.filter((p) => p.grade === 'probable').length;
+      if (probable > 0) return `${probable} title ${probable === 1 ? 'match' : 'matches'}`;
+      break;
+    }
+    case 'waiting':
+      if (toLookUp > 0) return count(toLookUp, 'to look up');
+      break;
+    case 'missing_listing': {
+      const none = parts.filter((p) => p.availability === 'missing').length;
+      if (none > 0) return count(none, 'with no listing') + (verify > 0 ? ` · ${verify} to verify` : '');
+      break;
+    }
+    default:
+      break;
+  }
+  if (parts.every((p) => p.grade === 'exact' || p.grade === 'strong')) return count(parts.length, 'matched');
   if (verify > 0) return count(verify, 'to verify');
-  const unknown = parts.filter(isWaiting).length;
-  if (unknown > 0) return count(unknown, 'unknown');
+  if (toLookUp > 0) return count(toLookUp, 'unknown');
   const missing = parts.filter((p) => p.availability === 'missing').length;
   if (missing > 0) return count(missing, 'with no listing');
   return null;
