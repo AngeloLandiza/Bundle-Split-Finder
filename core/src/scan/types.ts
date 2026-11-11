@@ -25,6 +25,10 @@ export interface BudgetView {
   readonly spendable: number;
   /** Searches this run's own limit still allows (before any spend, the per-scan limit itself). */
   readonly leftThisRun: number;
+  /** Searches left on the account above the reserve (for a manual action, whose reserve is 0, all that is left this month). */
+  readonly leftAboveReserve: number;
+  /** The plan's searches an hour, or null when not known. */
+  readonly hourlyLimit: number | null;
   /** The limit that refuses `n` more searches, or null when they fit. */
   blockReason(n?: number): BlockReason | null;
 }

@@ -34,8 +34,11 @@ const VERIFY_25B: PaidAction = { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25
 
 /** Ruling 53: a paid action that needs more searches than a scan may use says so, and what to do. */
 const RUN_CAP = 'This needs 2 searches, and a scan may use 1. Raise the searches per scan in settings to do it here.';
-const RESERVE = 'Stopped: spending more would dip into the search reserve.';
-const HOURLY = "Stopped: the plan's hourly search limit is reached. Try again next hour.";
+// A refused quote or run describes the action, never a scan: nothing has stopped. A manual action may
+// use the reserve down to zero, so a reserve refusal means the month's searches are used up.
+const RESERVE = 'This needs 2 searches, and 1 is left this month.';
+const NONE_LEFT = 'No searches are left this month.';
+const HOURLY = 'SerpApi allows 50 searches an hour, and they are used. Try again later.';
 
 interface World {
   store: MemoryScanStore;
@@ -378,9 +381,24 @@ describe('quotePaid and runPaid: the manual-trigger budget', () => {
   it('a verify above the budget is refused before its search', async () => {
     const w = await bothMatched();
     const closed = account({ total_searches_left: 0 });
-    expect(await quote(w, VERIFY_25B, MANUAL, closed)).toEqual({ searches: 1, refusal: RESERVE });
-    await expect(paid(w, VERIFY_25B, MANUAL, closed)).rejects.toThrow(new PaidProblem(RESERVE));
+    expect(await quote(w, VERIFY_25B, MANUAL, closed)).toEqual({ searches: 1, refusal: NONE_LEFT });
+    await expect(paid(w, VERIFY_25B, MANUAL, closed)).rejects.toThrow(new PaidProblem(NONE_LEFT));
     expect(w.replay.calls).not.toContain(PRODUCT_25B);
+  });
+
+  it('a refused quote never says "Stopped": the month\'s searches in words, and the hourly limit with or without its number', () => {
+    const none = { listingAnswers: () => false };
+    const LOOK_THREE: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'A1' }, { brand: 'RYOBI', model: 'A2' }, { brand: 'RYOBI', model: 'A3' }] };
+    const quoteOf = (action: PaidAction, policy: BudgetPolicy, over: object) => quotePaid(action, none, new SearchBudget(account(over), policy)).refusal;
+    expect(quoteOf(LOOK_THREE, MANUAL, { total_searches_left: 2 })).toBe('This needs 3 searches, and 2 are left this month.');
+    expect(quoteOf(LOOK_BOTH, MANUAL, { total_searches_left: 1 })).toBe(RESERVE);
+    expect(quoteOf(LOOK_BOTH, MANUAL, { total_searches_left: 0 })).toBe(NONE_LEFT);
+    expect(quoteOf(LOOK_01B, MANUAL, { this_hour_searches: 50 })).toBe(HOURLY);
+    expect(quoteOf(LOOK_01B, MANUAL, { account_rate_limit_per_hour: 1000, this_hour_searches: 1000 })).toBe('SerpApi allows 1000 searches an hour, and they are used. Try again later.');
+    // A budget that does not know the hourly number.
+    const unknown = { spendable: 0, leftThisRun: 5, leftAboveReserve: 100, hourlyLimit: null, blockReason: () => 'hourly_limit' as const };
+    expect(quotePaid(LOOK_01B, none, unknown).refusal).toBe("SerpApi's hourly limit is reached. Try again later.");
+    for (const r of [quoteOf(LOOK_BOTH, MANUAL, { total_searches_left: 1 }), quoteOf(LOOK_01B, MANUAL, { this_hour_searches: 50 })]) expect(r).not.toMatch(/Stopped/);
   });
 
   it('a Verify above a per-scan limit of 0 says it needs 1 search, in the singular (Ruling 53)', async () => {

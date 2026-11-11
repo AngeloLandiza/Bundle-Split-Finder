@@ -89,7 +89,7 @@ const PAID_STOPPED = 'Stopped: the key was removed or changed.';
 /** A quote reads the account saved this recently; an older one is checked again (free). */
 const ACCOUNT_FRESH_MS = 5 * 60_000;
 /** The budget a quote shows when it is refused before the account is read; the refusal is said instead. */
-const CLOSED: BudgetView = { spendable: 0, leftThisRun: 0, blockReason: () => 'reserve' };
+const CLOSED: BudgetView = { spendable: 0, leftThisRun: 0, leftAboveReserve: 0, hourlyLimit: null, blockReason: () => 'reserve' };
 const KEY_CHANGED = 'The SerpApi key changed while the scan was starting. Scan again.';
 /** A job is continued at most this many times in a row without progress. */
 const MAX_TRIES = 2;

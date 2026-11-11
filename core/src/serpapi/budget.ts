@@ -75,6 +75,10 @@ export class SearchBudget {
   get leftThisRun(): number {
     return Math.max(0, this.policy.maxPerRun - this.spent);
   }
+  /** The plan's searches an hour, as the account reported it; null when it is not a positive number. */
+  get hourlyLimit(): number | null {
+    return this.account.rateLimitPerHour > 0 ? this.account.rateLimitPerHour : null;
+  }
   get leftThisHour(): number {
     return Math.max(0, this.account.rateLimitPerHour - this.account.thisHourSearches - this.spent);
   }

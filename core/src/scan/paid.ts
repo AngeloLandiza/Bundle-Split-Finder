@@ -5,7 +5,6 @@
 // before the first search, and never repeat a search that failed.
 
 import { grade, pick } from '../match';
-import { BLOCK_MESSAGE } from '../serpapi/budget';
 import type { SearchResult } from '../serpapi/client';
 import { parseAmazonProduct } from '../serpapi/parsers';
 import { wantedFor } from './classify';
@@ -212,18 +211,30 @@ function verifyRefusal(match: MatchRecord | undefined, asin: string): string | n
 }
 
 /**
- * Why `searches` do not fit, or null when they do, and always for nothing. More than the per-scan
- * limit allows says what the action needs and what to change (Ruling 53): nothing has stopped, so
- * the scan's own "Stopped: this run reached its search limit." would be untrue. The reserve and the
- * hourly limit keep the budget's own sentences.
+ * Why `searches` do not fit, or null when they do, and always for nothing. The sentence describes
+ * the action, never a scan: nothing has stopped, so the scan's "Stopped: …" texts would be untrue.
+ * More than the per-scan limit says what it needs and what to change (Ruling 53). A manual action
+ * may use the reserve down to zero, so a reserve refusal means the month's searches are used up.
+ * The hourly limit names the plan's number when the account gave one.
  */
 function overBudget(budget: BudgetView, searches: number): string | null {
   if (searches === 0) return null;
   const reason = budget.blockReason(searches);
-  if (reason === 'run_cap') {
-    return `This needs ${searches} ${searches === 1 ? 'search' : 'searches'}, and a scan may use ${budget.leftThisRun}. Raise the searches per scan in settings to do it here.`;
+  const needs = `This needs ${searches} ${searches === 1 ? 'search' : 'searches'}`;
+  switch (reason) {
+    case null:
+      return null;
+    case 'run_cap':
+      return `${needs}, and a scan may use ${budget.leftThisRun}. Raise the searches per scan in settings to do it here.`;
+    case 'reserve': {
+      const left = budget.leftAboveReserve;
+      return left <= 0 ? 'No searches are left this month.' : `${needs}, and ${left} ${left === 1 ? 'is' : 'are'} left this month.`;
+    }
+    case 'hourly_limit':
+      return budget.hourlyLimit === null
+        ? "SerpApi's hourly limit is reached. Try again later."
+        : `SerpApi allows ${budget.hourlyLimit} searches an hour, and they are used. Try again later.`;
   }
-  return reason === null ? null : BLOCK_MESSAGE[reason];
 }
 
 /** The parts asked for, each once, in the order asked, brand and model upper case. */

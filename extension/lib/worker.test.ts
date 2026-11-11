@@ -1049,7 +1049,8 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
   const PRODUCT_25B = 'amazon_domain=amazon.com&asin=B0B3JWF5ZV&engine=amazon_product';
   /** Ruling 53: the settings allow one search per scan, and the Look up needs two. */
   const RUN_CAP = 'This needs 2 searches, and a scan may use 1. Raise the searches per scan in settings to do it here.';
-  const HOURLY = "Stopped: the plan's hourly search limit is reached. Try again next hour.";
+  /** A refused quote describes the action, not a scan: nothing has stopped. */
+  const HOURLY = 'SerpApi allows 50 searches an hour, and they are used. Try again later.';
   const SCANNING = 'A scan is running.';
   const PAYING = 'A Look up or Verify is running.';
   /** One search per scan, and so per paid action (the manual-trigger budget: reserve 0, cap searchesPerScan). */
