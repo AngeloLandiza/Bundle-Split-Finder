@@ -9,7 +9,7 @@ import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
 import { runScan } from '../src/scan/runner';
 import {
-  type BundleRecord, bundleKey, DEFAULT_SCAN_SETTINGS, type PageOutcome, type ReadPages, type ScanJob, type ScanSettings, type ScanStore,
+  type BundleRecord, bundleKey, DEFAULT_SCAN_SETTINGS, type PageOutcome, type ReadPages, type ReviewItem, type ScanJob, type ScanSettings, type ScanStore,
 } from '../src/scan/types';
 import { type BudgetPolicy, parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '../src/serpapi/client';
@@ -1891,6 +1891,75 @@ describe('runScan: split review items follow the latest reading (step 4, fix rou
     expect((await w.store.getBundle('homedepot:337440461'))!.split).toMatchObject({ status: 'needs_review', notes: ["'B606' matches nothing in the catalog", MISFIT] });
     expect(await w.store.getReview('split:homedepot:337440461')).toEqual(answered);
     expect(job.counts.reviewsOpened).toBe(0);
+  });
+});
+
+describe('runScan: a split question offers the readings it allows (step 5)', () => {
+  const COMBO_DEWALT: ScanSettings = { ...CATALOG, catalogPagesPerScan: 0 };
+  const DEWALT_ONLY: ScanSettings = { ...STEP2, brands: ['DEWALT'], queries: [] };
+
+  it('the DEWALT short code that fits two models yields two choices', async () => {
+    const w = world();
+    // The real Home Depot bundle whose '1B' fits two impact wrenches (core/test/fixtures.ts).
+    const [model, title] = fx.HD_DEWALT_AMBIGUOUS;
+    await w.store.putBundle({
+      key: 'homedepot:ambiguous', retailer: 'homedepot', itemId: 'ambiguous', title, brand: 'DEWALT', model,
+      upc: null, price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0, split: null,
+    });
+    for (const m of ['DCF891B', 'DCF921B']) {
+      await w.store.putCatalogEntry({ key: `DEWALT:${m}`, brand: 'DEWALT', model: m, title: `${m} (seeded for this test)`, kinds: ['impact wrench'], isKit: false, upc: null, seenAt: T0 - DAY });
+    }
+    const job = await scan(w, { settings: DEWALT_ONLY });
+    expect(w.replay.calls).toEqual([]);
+    expect(job.counts).toMatchObject({ bundlesResolved: 0, reviewsOpened: 1 });
+    expect(await w.store.getReview('split:homedepot:ambiguous')).toMatchObject({
+      reason: "'1B' fits DCF891B and DCF921B", candidates: [], answer: null,
+      choices: [['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']],
+    });
+  });
+
+  it("337440459's page with model DCK200D1P1WB606 yields the model-number and the page readings", async () => {
+    const w = world();
+    // DCB606 as Home Depot's own row would store it, so the model number resolves 337440461 on its own.
+    await w.store.putCatalogEntry({ key: 'DEWALT:DCB606', brand: 'DEWALT', model: 'DCB606', title: 'DCB606 (seeded for this test)', kinds: ['battery'], isKit: false, upc: null, seenAt: T0 - DAY });
+    await scan(w, { settings: COMBO_DEWALT, policy: ONE_SEARCH, readPages: pageReader({ misfit: { '337440461': '337440459' } }).readPages });
+    expect(await w.store.getReview('split:homedepot:337440461')).toMatchObject({
+      reason: 'model number says DCB606, DCK200D1P1; page names DCF921B, DCK200D1P1, which do not fit the model number', answer: null,
+      choices: [['DCK200D1P1', 'DCB606'], ['DCK200D1P1', 'DCF921B']],
+    });
+  });
+
+  it('an open question takes the choices of the latest reading, and keeps when it was opened', async () => {
+    const w = world();
+    await scan(w, { settings: COMBO_DEWALT, policy: OPEN });
+    // 'B606' matches nothing: there is no reading to offer.
+    expect(await w.store.getReview('split:homedepot:337440461')).toMatchObject({ choices: [], openedAt: T0 });
+
+    w.clock = T0 + DAY;
+    await scan(w, { settings: COMBO_DEWALT, policy: ONE_SEARCH, readPages: pageReader({ misfit: { '337440461': '337440459' } }).readPages });
+    expect(await w.store.getReview('split:homedepot:337440461')).toMatchObject({ choices: [['DCK200D1P1', 'DCF921B']], openedAt: T0, answer: null });
+  });
+
+  it('an open question saved before choices existed is given them when the reading has some, though its reason is unchanged', async () => {
+    const w = world();
+    await scan(w, { settings: COMBO_DEWALT, policy: ONE_SEARCH, readPages: pageReader({ misfit: { '337440461': '337440459' } }).readPages });
+    const { choices, ...old } = (await w.store.getReview('split:homedepot:337440461'))!;
+    expect(choices).toEqual([['DCK200D1P1', 'DCF921B']]);
+    await w.store.putReview(old as ReviewItem);
+
+    w.clock = T0 + DAY;
+    // The page was read and kept: the same reading, so the same reason.
+    await scan(w, { settings: COMBO_DEWALT, policy: ONE_SEARCH });
+    expect(await w.store.getReview('split:homedepot:337440461')).toEqual({ ...old, choices: [['DCK200D1P1', 'DCF921B']] });
+  });
+
+  it('a question with no reading to offer has no choices', async () => {
+    const w = world();
+    await scan(w);
+    // Test A's six RYOBI questions: hyphen parts not in the catalog, a special buy in a hyphen bundle.
+    const items = await w.store.listReview();
+    expect(items).toHaveLength(6);
+    expect(items.map((r) => r.choices)).toEqual([[], [], [], [], [], []]);
   });
 });
 

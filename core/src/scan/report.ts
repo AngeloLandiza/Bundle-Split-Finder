@@ -2,6 +2,7 @@
 // Profit figures are estimates from fee settings, not the seller's real fees.
 
 import { evaluateBundle, type PricedListing } from '../scanPlan';
+import { choicesOf } from './answers';
 import { componentCounts } from './classify';
 import {
   type BundleRecord,
@@ -93,6 +94,8 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   });
   const review = (await store.listReview())
     .filter((r) => r.answer === null)
+    // An item saved before step 5 has no choices stored.
+    .map((r) => ({ ...r, choices: choicesOf(r) }))
     .sort((a, b) => a.openedAt - b.openedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   return { bundles, review };
 }

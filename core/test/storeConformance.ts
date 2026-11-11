@@ -71,6 +71,7 @@ const review = (id: string, over: Partial<ReviewItem> = {}): ReviewItem => ({
   title: null,
   reason: 'Two listings fit',
   candidates: [{ asin: 'B0B6Z2ZGVK', title: 'A', price: 20, reviews: 5, reasons: ['model'] }],
+  choices: [],
   openedAt: 1,
   answer: null,
   answeredAt: null,

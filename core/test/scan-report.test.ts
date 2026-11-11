@@ -5,7 +5,7 @@ import { csvLine, REVIEW_COLUMNS, reviewCsv, RUN_COLUMNS, runCsv } from '../src/
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
 import { runScan } from '../src/scan/runner';
-import { bundleKey, DEFAULT_SCAN_SETTINGS, type BundleRecord, partKey, type ScanSettings } from '../src/scan/types';
+import { bundleKey, DEFAULT_SCAN_SETTINGS, type BundleRecord, partKey, type ReviewItem, type ScanSettings } from '../src/scan/types';
 import { type BudgetPolicy, parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '../src/serpapi/client';
 import * as fx from './fixtures';
@@ -189,6 +189,17 @@ describe('buildReport', () => {
     expect(report.bundles).toHaveLength(1);
     expect(report.bundles[0]).toMatchObject({ status: 'partial', estimate: null, uncovered: ['A', 'B'] });
     expect(report.bundles[0]!.parts.map((p) => [p.model, p.qty, p.status])).toEqual([['A', 2, 'unmatched'], ['B', 1, 'unmatched']]);
+  });
+
+  it('reads a review item saved before choices existed as having none', async () => {
+    const store = await scanWorld();
+    // Test A's question about PCL280B-PSK005, as the version before step 5 saved it.
+    const { choices, ...old } = (await store.getReview('split:homedepot:327939252'))!;
+    expect(choices).toEqual([]);
+    await store.putReview(old as ReviewItem);
+    const review = (await buildReport(store, RATCHET)).review;
+    expect(review.find((r) => r.id === old.id)).toEqual({ ...old, choices: [] });
+    expect(review.every((r) => Array.isArray(r.choices))).toBe(true);
   });
 });
 

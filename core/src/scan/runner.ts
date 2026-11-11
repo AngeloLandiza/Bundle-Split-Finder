@@ -9,6 +9,7 @@
 import { type Catalog, catalogEntry, DEWALT_BUNDLE, type Decomposition, decompose, kindsFromTitle } from '../decompose';
 import { type Candidate, pick } from '../match';
 import { splitWithPage } from '../pageSplit';
+import { choicesOf, sameChoices, splitChoices } from './answers';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
@@ -401,7 +402,7 @@ async function applyLookup(run: Run, step: Lookup, data: unknown, at: number): P
       await store.putReview({
         id, kind: 'match', subject: key, brand: step.brand, model: step.model, title: (await store.getCatalogEntry(key))?.title ?? null,
         reason: `${listed.length} listing(s) show the model number, but the brand is not confirmed`,
-        candidates: listed, openedAt: now, answer: null, answeredAt: null,
+        candidates: listed, choices: [], openedAt: now, answer: null, answeredAt: null,
       });
       job.counts.reviewsOpened += 1;
     }
@@ -595,19 +596,20 @@ async function splitBundles(run: Run, stored: Catalog): Promise<void> {
       if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
       continue;
     }
-    // The question follows the latest reading (a page that does not fit names both readings).
-    // An item the user answered is never changed.
+    // The question follows the latest reading (a page that does not fit names both readings), and
+    // offers the readings the split carries (step 5). An item the user answered is never changed.
     const reason = split.notes.join('; ');
+    const choices = splitChoices(split);
     if (!item || item.answer === RESOLVED_BY_SCAN) {
       // A new question, or one a scan closed and must ask again.
       await store.putReview({
         id, kind: 'split', subject: bundle.key, brand: bundle.brand, model: bundle.model, title: bundle.title,
-        reason, candidates: [], openedAt: now, answer: null, answeredAt: null,
+        reason, candidates: [], choices, openedAt: now, answer: null, answeredAt: null,
       });
       job.counts.reviewsOpened += 1;
-    } else if (item.answer === null && item.reason !== reason) {
-      // Still open: a new reason, the same question, so openedAt stays.
-      await store.putReview({ ...item, reason });
+    } else if (item.answer === null && (item.reason !== reason || !sameChoices(choicesOf(item), choices))) {
+      // Still open: a new reading, the same question, so openedAt stays.
+      await store.putReview({ ...item, reason, choices });
     }
   }
   job.counts.bundlesResolved = resolved;

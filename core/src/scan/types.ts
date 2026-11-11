@@ -223,6 +223,11 @@ export interface ReviewItem {
   reason: string;
   /** Listings a person can choose from (match questions only). */
   candidates: ReviewCandidate[];
+  /**
+   * Split questions: the readings the owner can choose from, each a list of parts. Empty for match
+   * questions. An item saved before step 5 has none stored, and reads as [] (see answers.ts).
+   */
+  choices: string[][];
   openedAt: number;
   /**
    * The user's answer; null while open. A scan never changes an item the user answered. A split
