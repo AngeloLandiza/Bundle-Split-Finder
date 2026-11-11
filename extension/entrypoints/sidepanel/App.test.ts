@@ -317,6 +317,18 @@ describe('side panel shell', () => {
     expect(screen.getByRole('button', { name: 'Scan now' })).toBeInTheDocument();
   });
 
+  it('a stop that fails after the scan has ended shows nothing', async () => {
+    const user = userEvent.setup();
+    const { send, emit } = setup(state({ scanRunning: true, lastJob: JOB }));
+    let fail: (r: Reply) => void = () => {};
+    await screen.findByRole('button', { name: 'Stop' });
+    send.mockImplementationOnce(() => new Promise<Reply>((r) => (fail = r)));
+    await user.click(screen.getByRole('button', { name: 'Stop' }));
+    await emit(state({ scanRunning: false, lastJob: { ...JOB, status: 'stopped' } as ScanJob }));
+    await act(async () => fail({ ok: false, error: 'Could not stop.' }));
+    expect(noticeError()).toBeNull();
+  });
+
   it('the screens get the api; FirstRun gets openSettings', async () => {
     const { openSettings } = setup(state({ hasKey: false, account: null }));
     await screen.findByText(/Add your SerpApi key/);

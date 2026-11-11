@@ -2,7 +2,7 @@
 // Focus after Detail closes (QA m6), on the real Deals tab and the real Detail screen.
 import '@testing-library/jest-dom/vitest';
 import { createElement } from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SETTINGS } from '@core/settings';
@@ -33,14 +33,26 @@ const STATE: AppState = {
 };
 
 function setup() {
+  let report = REPORT;
+  let listener: (s: AppState) => void = () => {};
   const send = vi.fn(async (r: Request): Promise<Reply> => {
     if (r.type === 'getState') return { ok: true, data: STATE };
-    if (r.type === 'getReport') return { ok: true, data: REPORT };
+    if (r.type === 'getReport') return { ok: true, data: report };
     if (r.type === 'quote') return { ok: true, data: { searches: 1, refusal: null } };
     return { ok: true, data: null };
   });
-  const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+  const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: (l) => {
+      listener = l;
+      return () => {};
+    }, download: vi.fn() };
   render(createElement(App, { api, openSettings: vi.fn(), now: () => NOW }));
+  return {
+    // The row leaves the report while Detail is open: a state change makes the panel read the report again.
+    drop: (key: string) => {
+      report = { ...REPORT, bundles: REPORT.bundles.filter((b) => b.key !== key) };
+      return act(async () => listener({ ...STATE, accountCheckedAt: 2 }));
+    },
+  };
 }
 
 describe('focus after Detail closes', () => {
@@ -61,5 +73,17 @@ describe('focus after Detail closes', () => {
     await screen.findByRole('button', { name: 'Deals' });
     await user.keyboard('{Escape}');
     expect(await screen.findByRole('link', { name: /Title of first/ })).toHaveFocus();
+  });
+
+  it('moves focus to the Deals tab when the opened row has left the report', async () => {
+    const user = userEvent.setup();
+    const { drop } = setup();
+    await user.click(await screen.findByRole('link', { name: /Title of first/ }));
+    await screen.findByRole('button', { name: 'Deals' });
+    await drop('first');
+    await user.keyboard('{Escape}');
+    expect(await screen.findByRole('link', { name: /Title of second/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Title of first/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /^Deals/ })).toHaveFocus();
   });
 });

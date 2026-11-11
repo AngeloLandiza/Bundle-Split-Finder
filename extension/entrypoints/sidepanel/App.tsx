@@ -38,6 +38,8 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   const [reportError, setReportError] = useState<string | null>(null);
   // Stop was pressed and the scan has not ended: the button reads Stopping… and cannot be pressed twice.
   const [stopping, setStopping] = useState(false);
+  // Whether a scan is running now, read when a stop reply comes back late.
+  const runningNow = useRef(false);
 
   // A refused Scan now or Stop belongs to the moment it was refused in: it goes when a scan starts or ends, when
   // a Look up or Verify on this panel ends, and on the scan control's next success.
@@ -48,6 +50,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     setScanError(null);
     setStopping(false);
   }
+  runningNow.current = running === true;
   const paidEnded = useCallback(() => setScanError(null), []);
 
   // The report is read on mount and after every state change. The last one stays on screen while the next loads.
@@ -86,7 +89,8 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     opened.current = null;
     if (key === null) return;
     const link = [...document.querySelectorAll<HTMLElement>('[data-key]')].find((el) => el.dataset.key === key);
-    link?.focus();
+    // The row is gone (it left the report, or another tab is shown): focus goes to the Deals tab, not <body>.
+    (link ?? document.querySelector<HTMLElement>('nav[aria-label="Views"] button'))?.focus();
   }, [openKey]);
 
   useEffect(() => {
@@ -117,11 +121,13 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
       .send({ type: 'stopScan' })
       .then((reply) => {
         if (!reply.ok) setStopping(false);
+        // A failure that comes after the scan ended no longer applies.
+        if (!reply.ok && !runningNow.current) return;
         setScanError(reply.ok ? null : reply.error);
       })
       .catch(() => {
         setStopping(false);
-        setScanError(UNREACHABLE);
+        if (runningNow.current) setScanError(UNREACHABLE);
       });
   };
 
