@@ -10,7 +10,7 @@ import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { waitingParts } from './dealsModel';
 import { LookUp } from './DealsLookUp';
 import { ProgressRow } from './ProgressRow';
-import { ReviewQuestion, SCAN_RUNNING } from './ReviewQuestion';
+import { ReviewQuestion } from './ReviewQuestion';
 import { Verify } from './DetailVerify';
 import './Detail.css';
 
@@ -60,7 +60,7 @@ function AnswerLine({ kind, disabled, scanRunning, error, onChange }: { kind: ke
   return (
     <div className="detail-answer">
       <span>{ANSWER_LINE[kind]}</span>{' '}
-      <button type="button" className="detail-text-btn" disabled={disabled || scanRunning} title={scanRunning ? SCAN_RUNNING : undefined} onClick={onChange}>
+      <button type="button" className="detail-text-btn" disabled={disabled || scanRunning} title={scanRunning ? 'A scan is running. Change this when it has finished.' : undefined} onClick={onChange}>
         Change
       </button>
       {error ? (
@@ -255,6 +255,11 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
   // The title takes focus when Detail opens: the row that opened it is gone from view.
   const titleRef = useRef<HTMLHeadingElement>(null);
   const present = report !== null && row !== null;
+  // Another bundle starts clean.
+  useEffect(() => {
+    setReopened(false);
+    setReopenError(null);
+  }, [bundleKey]);
   useEffect(() => {
     if (present) titleRef.current?.focus();
   }, [present]);
@@ -328,6 +333,8 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
     } catch {
       return UNREACHABLE;
     }
+    // The reopened question is answered: nothing is pending any more.
+    setReopened(false);
     // The Save button is gone now: focus goes to the title.
     titleRef.current?.focus();
     return null;
@@ -338,12 +345,18 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
     reopenLock.current = true;
     setReopening(true);
     setReopenError(null);
+    // Set before the request: the worker's state change can reload the report before the reply comes, and the
+    // question that mounts then must already know to take focus.
+    setReopened(true);
     try {
       const reply = await api.send({ type: 'reopenReview', id: row.answer.reviewId });
-      if (reply.ok) setReopened(true);
-      else setReopenError(reply.error);
+      if (!reply.ok) {
+        setReopenError(reply.error);
+        setReopened(false);
+      }
     } catch {
       setReopenError(UNREACHABLE);
+      setReopened(false);
     }
     reopenLock.current = false;
     setReopening(false);

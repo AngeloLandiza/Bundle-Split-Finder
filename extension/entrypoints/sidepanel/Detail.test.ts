@@ -647,7 +647,7 @@ describe('changing a split answer', () => {
     show(answered('chosen'), { state: state({ scanRunning: true }) });
     const change = screen.getByRole('button', { name: 'Change' });
     expect(change).toBeDisabled();
-    expect(change).toHaveAttribute('title', 'A scan is running. Answer when it has finished.');
+    expect(change).toHaveAttribute('title', 'A scan is running. Change this when it has finished.');
   });
 
   it('shows the sentence of a refusal under the line', async () => {
@@ -674,6 +674,47 @@ describe('changing a split answer', () => {
     next(row({ estimate: null, section: 'split', status: 'needs_review', parts: [], answer: null }), [question()]);
     const legend = await screen.findByText('Which parts come in this bundle?', { selector: 'legend' });
     expect(legend).toHaveFocus();
+  });
+
+  it('focuses the legend when the report reloads before the reply comes', async () => {
+    const user = userEvent.setup();
+    let release: (r: Reply) => void = () => {};
+    const { api } = fakeApi((r) => (r.type === 'reopenReview' ? (new Promise<Reply>((res) => (release = res)) as unknown as Reply) : { ok: true, data: null }));
+    const mk = (b: BundleRow, rv: ReviewItem[]) =>
+      createElement(Detail, { api, report: { bundles: [b], review: rv, packaging: {} }, state: state(), bundleKey: b.key, onBack: vi.fn() });
+    const view = render(mk(answered('chosen'), []));
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    view.rerender(mk(row({ estimate: null, section: 'split', status: 'needs_review', parts: [], answer: null }), [question()]));
+    const legend = await screen.findByText('Which parts come in this bundle?', { selector: 'legend' });
+    expect(legend).toHaveFocus();
+    release({ ok: true, data: null });
+    await Promise.resolve();
+    expect(legend).toHaveFocus();
+  });
+
+  it('forgets the Change on another bundle and once the reopened question is answered', async () => {
+    const user = userEvent.setup();
+    const settled = "The model number and page now settle this bundle's parts, so there is no question to answer.";
+    const { api } = fakeApi();
+    const mk = (b: BundleRow, rv: ReviewItem[]) =>
+      createElement(Detail, { api, report: { bundles: [b, row({ key: 'other', answer: null })], review: rv, packaging: {} }, state: state(), bundleKey: b.key, onBack: vi.fn() });
+    const noQ = row({ estimate: null, section: 'split', status: 'needs_review', parts: [], answer: null });
+    const view = render(mk(answered('chosen'), []));
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    view.rerender(mk(noQ, []));
+    expect(await screen.findByText(settled)).toBeInTheDocument();
+    // Another bundle starts clean.
+    view.rerender(createElement(Detail, { api, report: { bundles: [noQ, row({ key: 'other', answer: null })], review: [], packaging: {} }, state: state(), bundleKey: 'other', onBack: vi.fn() }));
+    expect(screen.queryByText(settled)).toBeNull();
+    cleanup();
+    // Answered: the question was shown, saved, and a later scan resolves the bundle.
+    const v2 = render(mk(answered('chosen'), []));
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    v2.rerender(mk(noQ, [question()]));
+    await user.click(await screen.findByRole('radio', { name: 'PCL1600K2 + P553' }));
+    await user.click(screen.getByRole('button', { name: 'Save answer' }));
+    v2.rerender(mk(row({ answer: null }), []));
+    expect(screen.queryByText(settled)).toBeNull();
   });
 
   it('says the data now settles the bundle when no question comes back, only right after a Change', async () => {
