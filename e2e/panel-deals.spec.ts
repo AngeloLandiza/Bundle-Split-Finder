@@ -51,7 +51,7 @@ test('deals tab, stopped at the per-scan limit', async ({ context, extensionId, 
   const panel = await context.newPage();
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   await expect(panel.getByText('Scan stopped at your search limit')).toBeVisible();
-  await expect(panel.getByText(/^It used the 1 searches allowed per scan\./)).toBeVisible();
+  await expect(panel.getByText(/^It used the 1 search allowed per scan\./)).toBeVisible();
   await expect(panel.getByRole('link', { name: 'Change the limit' })).toHaveAttribute('target', '_blank');
   // Until the worker answers quotes, a Look up shows its refusal; that is fine for now.
   await shoot(panel, 'limit');

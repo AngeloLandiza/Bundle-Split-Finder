@@ -10,20 +10,23 @@ export function limitCopy(state: AppState, now: number): { title: string; text: 
   const job = state.lastJob;
   if (!job || job.status !== 'stopped') return null;
   const k = lookupsWaiting(job);
-  const parts = `${k} ${k === 1 ? 'part' : 'parts'}`;
+  // Said only when something waits.
+  const waiting = (tail: string) => (k === 0 ? '' : ` ${k} ${k === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup${tail}`);
+  const n = state.settings.searchesPerScan;
   switch (job.stopReason) {
     case 'run_cap':
       return {
         title: 'Scan stopped at your search limit',
-        text: `It used the ${state.settings.searchesPerScan} searches allowed per scan. ${parts} still need an Amazon lookup and go first next time.`,
+        text: `It used the ${n} ${n === 1 ? 'search' : 'searches'} allowed per scan.${waiting(k === 1 ? ' and goes first next time.' : ' and go first next time.')}`,
       };
     case 'reserve':
       return {
         title: 'Scan stopped at your reserve',
-        text: `The rest of this month's searches are kept for scans you start yourself. ${parts} still need an Amazon lookup.`,
+        text: `The rest of this month's searches are kept for scans you start yourself.${waiting('.')}`,
       };
     case 'hourly_limit': {
-      const again = `Try again after ${when((job.finishedAt ?? now) + HOUR, now).replace(/^in /, '')}.`;
+      const until = (job.finishedAt ?? now) + HOUR;
+      const again = until <= now ? 'Try again now.' : `Try again after ${when(until, now).replace(/^in /, '')}.`;
       const limit = state.account?.rateLimitPerHour;
       return { title: 'Scan stopped at the hourly limit', text: limit ? `SerpApi allows ${limit} searches an hour. ${again}` : again };
     }

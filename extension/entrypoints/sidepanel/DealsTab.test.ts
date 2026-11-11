@@ -9,7 +9,7 @@ import type { BundleRow, PartRow, ReviewItem, ScanJob, ScanStep } from '@core/sc
 import type { AppState, PanelReport, Quote, Reply, Request } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import { DealsTab } from './DealsTab';
-import { matchState, sortRows } from './dealsModel';
+import { matchState as matchStateOf, sortRows } from './dealsModel';
 import type { SortKey } from './sort';
 
 afterEach(cleanup);
@@ -120,13 +120,17 @@ describe('sections', () => {
   it('shows the sections in order with their counts, and the line under the tabs', () => {
     show(report(bundles));
     expect(labels().filter((l) => /·/.test(l ?? '') && !/^Scan/.test(l ?? ''))).toEqual([
-      'CONFIRMED · 2Estimated profit',
+      'CONFIRMED · 2',
       'REVIEW: INACTIVE LISTING · 1',
       'REVIEW: MISSING LISTING · 1',
       'CONTENTS NOT KNOWN · 1',
     ]);
     expect(screen.getByText(/^5 bundles · scanned /)).toBeInTheDocument();
-    expect(screen.getAllByText('Estimated profit')).toHaveLength(1);
+    expect(screen.getAllByText('Estimated profit · ROI')).toHaveLength(1);
+    expect(screen.getByText('Estimated profit · ROI').closest('h2')).toBeNull();
+    // The caption is above the first section that has figures.
+    const caption = screen.getByText('Estimated profit · ROI');
+    expect(caption.nextElementSibling).toHaveTextContent('CONFIRMED · 2');
   });
 
   it('hides empty sections', () => {
@@ -170,9 +174,10 @@ describe('sorting', () => {
 
 describe('match state', () => {
   const m = (over: Partial<PartRow> = {}) => part('A', over);
+  const matchState = (parts: PartRow[], over: Partial<BundleRow> = {}) => matchStateOf(row('x', { parts, ...over }));
   it('says matched when every part is exact or strong', () => {
     expect(matchState([m(), m({ grade: 'strong' })])).toBe('2 parts matched');
-    expect(matchState([m()])).toBe('1 parts matched'.replace('1 parts', '1 part'));
+    expect(matchState([m()])).toBe('1 part matched');
   });
   it('counts probable parts to verify', () => {
     expect(matchState([m(), m({ grade: 'probable' })])).toBe('1 part to verify');
@@ -194,6 +199,14 @@ describe('match state', () => {
     const none = m({ status: 'none', grade: null, availability: 'missing' });
     expect(matchState([none, unknown, verify])).toBe('1 part to verify');
     expect(matchState([none, unknown])).toBe('1 part unknown');
+  });
+  it('says why a row is in the inactive section, before the other wordings', () => {
+    const inactive = (n: number) => Array.from({ length: n }, (_, i) => m({ availability: 'inactive', model: `I${i}` }));
+    expect(matchState(inactive(1), { section: 'inactive_listing' })).toBe('1 listing inactive');
+    expect(matchState([...inactive(2), m({ grade: 'probable' })], { section: 'inactive_listing' })).toBe('2 listings inactive');
+    expect(matchState(inactive(1), { section: 'inactive_listing', price: null })).toBe('No bundle price');
+    // Elsewhere the ordinary wording stays.
+    expect(matchState(inactive(2))).toBe('2 parts matched');
   });
   it('has nothing to say about a bundle with no parts', () => {
     expect(matchState([])).toBeNull();
@@ -268,6 +281,19 @@ describe('limit notice', () => {
     expect(screen.getByText(/^Try again after 30 min\.$/)).toBeInTheDocument();
   });
 
+  it('says 1 search, and leaves out the parts clause when none wait', () => {
+    show(report([row('c1')]), { ...stopped('run_cap'), settings: { ...DEFAULT_SETTINGS, searchesPerScan: 1 } });
+    expect(screen.getByText('It used the 1 search allowed per scan.')).toBeInTheDocument();
+    cleanup();
+    show(report([row('c1')]), stopped('reserve'));
+    expect(screen.getByText("The rest of this month's searches are kept for scans you start yourself.")).toBeInTheDocument();
+  });
+
+  it('says Try again now when the hour has passed', () => {
+    show(report([row('c1')]), state({ lastJob: job({ status: 'stopped', stopReason: 'hourly_limit', finishedAt: NOW - 2 * 3_600_000 }) }));
+    expect(screen.getByText('Try again now.')).toBeInTheDocument();
+  });
+
   it('shows the next scan and a real link to the options page', () => {
     show(report([row('c1')]), { ...stopped('run_cap'), nextRunAt: NOW + DAY });
     expect(screen.getByText(/^Next scan tomorrow /)).toBeInTheDocument();
@@ -333,8 +359,79 @@ describe('Look up', () => {
     await user.click(button);
     expect(send.mock.calls.filter((c) => c[0].type === 'runPaid')).toHaveLength(1);
     release({ ok: false, error: 'Not available yet.' });
-    expect(await screen.findByText('Not available yet.')).toBeInTheDocument();
     await waitFor(() => expect(button).toBeEnabled());
+  });
+
+  const waiting2 = { ...waiting, key: 'w2', title: 'Title of w2', parts: [part('DCB3', { status: 'waiting', grade: null, availability: 'missing', asin: null })] };
+  const props = (api: WorkerApi, s: AppState) => ({ api, report: report([waiting]), state: s, sort: 'profit' as const, onSort: vi.fn(), onOpen: vi.fn() });
+
+  it('keeps every Look up disabled while any one is in flight', async () => {
+    const user = userEvent.setup();
+    let release: (r: Reply) => void = () => {};
+    const send = vi.fn((r: Request): Promise<Reply> => {
+      if (r.type === 'quote') return Promise.resolve({ ok: true, data: { searches: 1, refusal: null } });
+      return new Promise((ok) => (release = ok));
+    });
+    const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    show(report([waiting, waiting2]), state(), { api });
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /^Look up · / })).toHaveLength(2));
+    const [first, second] = screen.getAllByRole('button', { name: /^Look up/ });
+    await user.click(first!);
+    expect(first).toBeDisabled();
+    expect(second).toBeDisabled();
+    await user.click(second!);
+    expect(send.mock.calls.filter((c) => c[0].type === 'runPaid')).toHaveLength(1);
+    release({ ok: true, data: null });
+    await waitFor(() => expect(second).toBeEnabled());
+  });
+
+  it('is disabled with a sentence while a scan runs, and asks again when it ends', async () => {
+    const { api } = fakeApi({ searches: 2, refusal: null });
+    const { view } = show(report([waiting]), state({ scanRunning: true }), { api });
+    expect(screen.getByText('A scan is running.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Look up' })).toBeDisabled();
+    view.rerender(createElement(DealsTab, props(api, state({ scanRunning: false }))));
+    expect(await screen.findByRole('button', { name: 'Look up · 2 searches' })).toBeEnabled();
+    expect(screen.queryByText('A scan is running.')).toBeNull();
+  });
+
+  it('a refusal is gone once a later quote succeeds', async () => {
+    let refuse = true;
+    const { api } = fakeApi((r) =>
+      r.type === 'quote' ? { ok: true, data: { searches: 2, refusal: refuse ? 'A scan is already running.' : null } } : { ok: true, data: null },
+    );
+    const { view } = show(report([waiting]), state({ scanRunning: false }), { api });
+    expect(await screen.findByText('A scan is already running.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Look up/ })).toBeDisabled();
+    refuse = false;
+    // A scan starts and ends: the price is asked for again.
+    view.rerender(createElement(DealsTab, props(api, state({ scanRunning: true }))));
+    view.rerender(createElement(DealsTab, props(api, state({ scanRunning: false }))));
+    expect(await screen.findByRole('button', { name: 'Look up · 2 searches' })).toBeEnabled();
+    expect(screen.queryByText('A scan is already running.')).toBeNull();
+  });
+
+  it('asks for the price again after a run, before the button can be pressed again', async () => {
+    const user = userEvent.setup();
+    let searchesLeft = 2;
+    const send = vi.fn(async (r: Request): Promise<Reply> => {
+      if (r.type === 'quote') return { ok: true, data: { searches: searchesLeft, refusal: null } };
+      searchesLeft = 1;
+      return { ok: true, data: null };
+    });
+    const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    show(report([waiting]), state(), { api });
+    await user.click(await screen.findByRole('button', { name: 'Look up · 2 searches' }));
+    expect(await screen.findByRole('button', { name: 'Look up · 1 search' })).toBeEnabled();
+    expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(2);
+  });
+
+  it('does not ask again when only the api object changes', async () => {
+    const { api, send } = fakeApi({ searches: 2, refusal: null });
+    const { view } = show(report([waiting]), state(), { api });
+    await screen.findByRole('button', { name: 'Look up · 2 searches' });
+    view.rerender(createElement(DealsTab, props({ ...api }, state())));
+    expect(send.mock.calls.filter((c) => c[0].type === 'quote')).toHaveLength(1);
   });
 
   it('has no Look up when no part waits', () => {
@@ -352,9 +449,23 @@ describe('empty states', () => {
     show(report([]), state({ lastJob: null }));
     expect(screen.getByText("No scan yet. Scan now looks at Home Depot's DEWALT and RYOBI bundles.")).toBeInTheDocument();
   });
-  it('says the last scan found no bundles when one finished', () => {
+  it('says the last scan found no bundles only when it finished', () => {
     show(report([]));
     expect(screen.getByText('The last scan found no bundles.')).toBeInTheDocument();
+  });
+  it('says the scan did not finish when it stopped or failed with nothing found', () => {
+    show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'error' }) }));
+    expect(screen.getByText('The last scan did not finish.')).toBeInTheDocument();
+    expect(screen.queryByText('The last scan found no bundles.')).toBeNull();
+    cleanup();
+    show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'user' }) }));
+    expect(screen.getByText('The last scan did not finish.')).toBeInTheDocument();
+  });
+  it('under a limit notice, says nothing else', () => {
+    show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'run_cap' }) }));
+    expect(screen.getByText('Scan stopped at your search limit')).toBeInTheDocument();
+    expect(screen.queryByText(/The last scan/)).toBeNull();
+    expect(screen.queryByText(/No scan yet/)).toBeNull();
   });
 });
 

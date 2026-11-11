@@ -21,8 +21,15 @@ const isWaiting = (p: PartRow): boolean => p.status === 'waiting' || p.status ==
  * The match state of a bundle in the fixed vocabulary, or null when its parts are not known.
  * When several apply, the first of: to verify, unknown, no listing.
  */
-export function matchState(parts: PartRow[]): string | null {
+export function matchState(row: BundleRow): string | null {
+  const parts = row.parts;
   if (parts.length === 0) return null;
+  // Rows in the inactive section say why they are there, before any other wording.
+  if (row.section === 'inactive_listing') {
+    if (row.price === null) return 'No bundle price';
+    const inactive = parts.filter((p) => p.availability === 'inactive').length;
+    if (inactive > 0) return `${inactive} ${inactive === 1 ? 'listing' : 'listings'} inactive`;
+  }
   if (parts.every((p) => p.grade === 'exact' || p.grade === 'strong')) return count(parts.length, 'matched');
   // A part left in review has no chosen listing yet: it is still a question, so it counts as one to verify.
   const verify = parts.filter((p) => !isWaiting(p) && (p.grade === 'probable' || p.status === 'review')).length;

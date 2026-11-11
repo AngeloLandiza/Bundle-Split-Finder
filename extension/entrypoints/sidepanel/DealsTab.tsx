@@ -1,10 +1,12 @@
+import { useCallback, useState } from 'react';
 import { DEFAULT_SCAN_SETTINGS, type BundleRow } from '@core/scan/types';
 import { money, profit, roi, when } from '../../lib/format';
 import type { AppState, PanelReport } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import { matchState, sections, staleDays, waitingParts } from './dealsModel';
-import { LimitNotice } from './DealsLimitNotice';
+import { LimitNotice, limitCopy } from './DealsLimitNotice';
 import { LookUp } from './DealsLookUp';
+import { UNREACHABLE } from '../../lib/pageClient';
 import type { SortKey } from './sort';
 import './DealsTab.css';
 
@@ -36,9 +38,20 @@ function Figures({ row }: { row: BundleRow }) {
   );
 }
 
-function Row({ row, asked, api, onOpen }: { row: BundleRow; asked: boolean; api: WorkerApi; onOpen: (key: string) => void }) {
+interface RowProps {
+  row: BundleRow;
+  asked: boolean;
+  api: WorkerApi;
+  scanRunning: boolean;
+  version: number;
+  busy: boolean;
+  onRun: (parts: { brand: string; model: string }[]) => Promise<string | null>;
+  onOpen: (key: string) => void;
+}
+
+function Row({ row, asked, api, scanRunning, version, busy, onRun, onOpen }: RowProps) {
   const split = row.section === 'split';
-  const state = split ? (asked ? null : 'Contents not known') : matchState(row.parts);
+  const state = split ? (asked ? null : 'Contents not known') : matchState(row);
   return (
     <li className="deal-row">
       <a
@@ -65,22 +78,50 @@ function Row({ row, asked, api, onOpen }: { row: BundleRow; asked: boolean; api:
         </div>
         {split ? asked ? <span className="deal-tag">Needs your answer</span> : null : <Figures row={row} />}
       </a>
-      {waitingParts(row).length > 0 ? <LookUp row={row} api={api} /> : null}
+      {waitingParts(row).length > 0 ? <LookUp row={row} api={api} scanRunning={scanRunning} version={version} busy={busy} onRun={onRun} /> : null}
     </li>
   );
 }
 
 export function DealsTab({ report, state, sort, onSort, onOpen, api }: DealsTabProps) {
   const now = Date.now();
+  // One paid request at a time across the whole tab; `version` makes every Look up ask for its price again afterwards.
+  const [busy, setBusy] = useState(false);
+  const [version, setVersion] = useState(0);
+  const run = useCallback(
+    async (parts: { brand: string; model: string }[]): Promise<string | null> => {
+      if (busy) return null;
+      setBusy(true);
+      let error: string | null = null;
+      try {
+        const reply = await api.send({ type: 'runPaid', action: { kind: 'lookUp', parts } });
+        if (!reply.ok) error = reply.error;
+      } catch {
+        error = UNREACHABLE;
+      }
+      setBusy(false);
+      setVersion((v) => v + 1);
+      return error;
+    },
+    [api, busy],
+  );
   if (!report) return null;
   const job = state.lastJob;
 
   if (report.bundles.length === 0) {
-    const finished = job !== null && job.finishedAt !== null;
+    // Say only what the scan established: it found nothing only when it finished.
+    const text =
+      job === null || job.status === 'running'
+        ? "No scan yet. Scan now looks at Home Depot's DEWALT and RYOBI bundles."
+        : job.status === 'done'
+          ? 'The last scan found no bundles.'
+          : limitCopy(state, now)
+            ? null
+            : 'The last scan did not finish.';
     return (
       <>
         <LimitNotice state={state} now={now} />
-        <p className="deals-empty">{finished ? 'The last scan found no bundles.' : "No scan yet. Scan now looks at Home Depot's DEWALT and RYOBI bundles."}</p>
+        {text ? <p className="deals-empty">{text}</p> : null}
       </>
     );
   }
@@ -119,15 +160,13 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api }: DealsTabP
       {days !== null ? <p className="deals-stale">Prices seen {days === 1 ? '1 day' : `${days} days`} ago</p> : null}
       {groups.map((g) => (
         <section key={g.id} aria-label={g.label}>
+          {g.id === labelled ? <p className="deals-caption">Estimated profit · ROI</p> : null}
           <h2 className="deals-label">
-            <span>
-              {g.label} · {g.rows.length}
-            </span>
-            {g.id === labelled ? <span className="deals-estimate">Estimated profit</span> : null}
+            {g.label} · {g.rows.length}
           </h2>
           <ul className="deals-list">
             {g.rows.map((row) => (
-              <Row key={row.key} row={row} asked={asking.has(row.key)} api={api} onOpen={onOpen} />
+              <Row key={row.key} row={row} asked={asking.has(row.key)} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={run} onOpen={onOpen} />
             ))}
           </ul>
         </section>
