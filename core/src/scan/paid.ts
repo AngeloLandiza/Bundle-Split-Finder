@@ -118,7 +118,8 @@ export async function runPaid(
  * for nothing; then one lookup per remaining part, best first in the scan's own order (Ruling 72),
  * through the scan's own step (rule 6). Only what fits the per-scan limit is searched for; the rest
  * wait, as a scan leaves the lookups it defers. A stop before a search, or a failed search, ends
- * the action: that part and the ones after it wait, as a scan leaves its queue when it halts.
+ * the action: that part and the ones after it wait, as a scan leaves its queue when it halts, and a
+ * part whose search failed waits from the failure on (waitsFromNow).
  */
 async function lookUp(
   ctx: PartContext, budget: BudgetView, known: KnownModels, asked: { brand: string; model: string }[], stop: () => string | null,
@@ -130,26 +131,35 @@ async function lookUp(
   const refusal = overBudget(budget, searches.length);
   if (refusal !== null) throw new PaidProblem(refusal);
   for (const part of parts) if (need(part) === 'listing') await matchFromListings(ctx, known.listings, part);
-  for (const p of wanted.slice(searches.length)) await markWaiting(ctx, { kind: 'lookup', brand: p.brand, model: p.model });
-  const waitFrom = async (i: number) => {
-    for (const p of searches.slice(i)) await markWaiting(ctx, { kind: 'lookup', brand: p.brand, model: p.model });
-  };
-  for (const [i, part] of searches.entries()) {
+  // Every part to search for waits from the press on, keeping when it began to wait, as a scan marks
+  // the lookups it defers: the ones past the limit, and any a stop or a failure leaves.
+  for (const p of wanted) await markWaiting(ctx, { kind: 'lookup', brand: p.brand, model: p.model });
+  for (const part of searches) {
     const stopped = stop();
-    if (stopped !== null) {
-      await waitFrom(i);
-      throw new PaidProblem(stopped);
-    }
+    if (stopped !== null) throw new PaidProblem(stopped);
     const step: LookupStep = { kind: 'lookup', brand: part.brand, model: part.model };
     let result: SearchResult;
     try {
       result = await sendLookup(ctx, step);
     } catch (err) {
-      await waitFrom(i);
+      await waitsFromNow(ctx, part);
       throw err;
     }
     await applyLookup(ctx, step, result.data, result.at);
   }
+}
+
+/**
+ * A part whose lookup failed in a press waits from now, so it ranks after the parts that waited
+ * before it, in the next press and the next scan (lookupOrder; the scan sets aside its own failures
+ * in `failingParts`, Rulings 50 and 57). Without this a lookup that keeps failing would come first on
+ * every press and end it each time. Never a part the owner decided.
+ */
+async function waitsFromNow(ctx: PartContext, part: Part): Promise<void> {
+  const match = await ctx.store.getMatch(part.key);
+  if (!match || match.status !== 'waiting' || match.decidedBy === 'user') return;
+  const now = ctx.now();
+  await ctx.store.putMatch({ ...match, waitingSince: now, updatedAt: now });
 }
 
 /**

@@ -234,7 +234,9 @@ describe('runPaid lookUp: the scan\'s own lookup step for parts left waiting', (
     await expect(failed).rejects.toThrow('SerpApi returned HTTP 500.');
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B]);
     expect(w.ledger).toHaveLength(1);
-    for (const key of ['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']) expect(await w.store.getMatch(key)).toMatchObject({ status: 'waiting', waitingSince: T0 });
+    // The failed part waits from the failure on, so it goes after the other next time; the other keeps its time.
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting', waitingSince: T0 + MINUTE });
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'waiting', waitingSince: T0 });
   });
 });
 
@@ -288,6 +290,43 @@ describe('runPaid lookUp above the per-scan limit: what fits is looked up, best 
     const w = await failing();
     await paid(w, LOOK_BOTH, { reserve: 0, maxPerRun: 1 });
     expect(lookups(w, 'panel')).toEqual(scanChoice);
+  });
+
+  it('a part whose lookup failed in a press waits from then on: the next press, and the next scan, take the other part first', async () => {
+    // The part a press at a limit of 1 takes first in this world.
+    const twin = await waiting();
+    twin.clock = T0 + MINUTE;
+    const [first] = await scanPicks(twin);
+    const other = ['PBLRC01B', 'PBLRC25B'].find((m) => m !== first)!;
+    // Its search fails (a hand-made 500 around the replay), a second after the press began, as a search takes time.
+    const failingWorld = async (): Promise<World> => {
+      const w = await waiting();
+      const replay = w.fetchFn;
+      w.fetchFn = (async (input: string | URL | Request, init?: RequestInit) => {
+        const url = new URL(String(input instanceof Request ? input.url : input));
+        if (url.searchParams.get('k') === `RYOBI ${first}`) {
+          w.clock += 1_000;
+          return new Response('{}', { status: 500 });
+        }
+        return replay(input, init);
+      }) as typeof fetch;
+      w.clock = T0 + MINUTE;
+      await expect(paid(w, LOOK_BOTH, { reserve: 0, maxPerRun: 1 })).rejects.toBeInstanceOf(SerpApiError);
+      expect(w.ledger).toHaveLength(1);
+      expect(await w.store.getMatch(`RYOBI:${first}`)).toMatchObject({ status: 'waiting', waitingSince: T0 + MINUTE + 1_000 });
+      expect(await w.store.getMatch(`RYOBI:${other}`)).toMatchObject({ status: 'waiting', waitingSince: T0 });
+      return w;
+    };
+
+    const w = await failingWorld();
+    w.clock = T0 + 2 * MINUTE;
+    await paid(w, LOOK_BOTH, { reserve: 0, maxPerRun: 1 });
+    expect(lookups(w, 'panel')).toEqual([other]);
+
+    // A scan reads the same waiting times: it too takes the other part first.
+    const scanned = await failingWorld();
+    scanned.clock = T0 + 2 * MINUTE;
+    expect(await scanPicks(scanned)).toEqual([other]);
   });
 
   it('the parts left waiting are quoted next, and the next press looks them up', async () => {
