@@ -92,6 +92,20 @@ function setup(initial: AppState, report: PanelReport = REPORT) {
 const stopped = (stopReason: string, finishedAt: number) =>
   ({ ...JOB, status: 'stopped', stopReason, finishedAt, queue: [] }) as unknown as ScanJob;
 
+// The next request of one type gets this reply. A bare mockImplementationOnce goes to whichever request is sent next,
+// and the report read that follows a state change can be that one when the machine is busy.
+function onNext(send: ReturnType<typeof setup>['send'], type: Request['type'], impl: () => Promise<Reply>) {
+  const rest = send.getMockImplementation()!;
+  let used = false;
+  send.mockImplementation((r: Request) => {
+    if (!used && r.type === type) {
+      used = true;
+      return impl();
+    }
+    return rest(r);
+  });
+}
+
 const noticeError = () => vi.mocked(Notice).mock.calls.at(-1)![0].error;
 
 const tab = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) });
@@ -239,7 +253,7 @@ describe('side panel shell', () => {
     const { send } = setup(state());
     await user.click(await screen.findByRole('button', { name: 'Scan now' }));
     expect(noticeError()).toBeNull();
-    send.mockImplementationOnce(async () => ({ ok: false, error: 'No searches left to spend.' }));
+    onNext(send, 'scanNow', async () => ({ ok: false, error: 'No searches left to spend.' }));
     await user.click(screen.getByRole('button', { name: 'Scan now' }));
     await waitFor(() => expect(noticeError()).toBe('No searches left to spend.'));
     await user.click(screen.getByRole('button', { name: 'Scan now' }));
@@ -250,7 +264,7 @@ describe('side panel shell', () => {
     const user = userEvent.setup();
     const { send, emit } = setup(state());
     await user.click(await screen.findByRole('button', { name: 'Scan now' }));
-    send.mockImplementationOnce(async () => ({ ok: false, error: 'No searches left to spend.' }));
+    onNext(send, 'scanNow', async () => ({ ok: false, error: 'No searches left to spend.' }));
     await user.click(screen.getByRole('button', { name: 'Scan now' }));
     await waitFor(() => expect(noticeError()).toBe('No searches left to spend.'));
     send.mockImplementation(async (r) => (r.type === 'getReport' ? { ok: true, data: REPORT } : { ok: true, data: null }));
@@ -263,13 +277,13 @@ describe('side panel shell', () => {
     const user = userEvent.setup();
     const { send, emit } = setup(state());
     await screen.findByText('3 bundles');
-    send.mockImplementationOnce(async () => ({ ok: false, error: 'A Look up or Verify is running.' }));
+    onNext(send, 'scanNow', async () => ({ ok: false, error: 'A Look up or Verify is running.' }));
     await user.click(screen.getByRole('button', { name: 'Scan now' }));
     await waitFor(() => expect(noticeError()).toBe('A Look up or Verify is running.'));
     await emit(state({ scanRunning: true, lastJob: JOB }));
     expect(noticeError()).toBeNull();
 
-    send.mockImplementationOnce(async () => ({ ok: false, error: 'Could not stop.' }));
+    onNext(send, 'stopScan', async () => ({ ok: false, error: 'Could not stop.' }));
     await user.click(screen.getByRole('button', { name: 'Stop' }));
     await waitFor(() => expect(noticeError()).toBe('Could not stop.'));
     // Refused: the button is Stop again, ready to be pressed.
@@ -282,7 +296,7 @@ describe('side panel shell', () => {
     const user = userEvent.setup();
     const { send } = setup(state());
     await screen.findByText('3 bundles');
-    send.mockImplementationOnce(async () => ({ ok: false, error: 'A Look up or Verify is running.' }));
+    onNext(send, 'scanNow', async () => ({ ok: false, error: 'A Look up or Verify is running.' }));
     await user.click(screen.getByRole('button', { name: 'Scan now' }));
     await waitFor(() => expect(noticeError()).toBe('A Look up or Verify is running.'));
     await user.click(screen.getByRole('button', { name: 'A Look up ends' }));
@@ -293,7 +307,7 @@ describe('side panel shell', () => {
     const user = userEvent.setup();
     const { send } = setup(state({ scanRunning: true, lastJob: JOB }));
     await screen.findByRole('button', { name: 'Stop' });
-    send.mockImplementationOnce(async () => {
+    onNext(send, 'stopScan', async () => {
       throw new Error('gone');
     });
     await user.click(screen.getByRole('button', { name: 'Stop' }));
@@ -305,7 +319,7 @@ describe('side panel shell', () => {
     const user = userEvent.setup();
     const { send, emit } = setup(state({ scanRunning: true, lastJob: JOB }));
     let release: (r: Reply) => void = () => {};
-    send.mockImplementationOnce(() => new Promise<Reply>((r) => (release = r)));
+    onNext(send, 'stopScan', () => new Promise<Reply>((r) => (release = r)));
     await user.click(await screen.findByRole('button', { name: 'Stop' }));
     const stopping = screen.getByRole('button', { name: 'Stopping…' });
     expect(stopping).toBeDisabled();
@@ -322,7 +336,7 @@ describe('side panel shell', () => {
     const { send, emit } = setup(state({ scanRunning: true, lastJob: JOB }));
     let fail: (r: Reply) => void = () => {};
     await screen.findByRole('button', { name: 'Stop' });
-    send.mockImplementationOnce(() => new Promise<Reply>((r) => (fail = r)));
+    onNext(send, 'stopScan', () => new Promise<Reply>((r) => (fail = r)));
     await user.click(screen.getByRole('button', { name: 'Stop' }));
     await emit(state({ scanRunning: false, lastJob: { ...JOB, status: 'stopped' } as ScanJob }));
     await act(async () => fail({ ok: false, error: 'Could not stop.' }));
