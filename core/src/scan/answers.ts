@@ -10,7 +10,8 @@
 import { type Decomposition, OFFERABLE_PART } from '../decompose';
 import { DEWALT_PACK } from './classify';
 import { knownModels, readSplit } from './split';
-import type { OwnerAnswer, ReviewAnswer, ReviewCandidate, ReviewItem, ScanStore } from './types';
+import { twinKeys, writeTwins } from './twins';
+import type { MatchRecord, OwnerAnswer, ReviewAnswer, ReviewCandidate, ReviewItem, ScanStore } from './types';
 
 /** The note on a split the owner chose. */
 export const CHOSEN_NOTE = 'parts chosen by you';
@@ -258,10 +259,18 @@ export async function applyReviewAnswer(store: ScanStore, id: string, answer: Re
   const pick = picked(given, item.candidates.length);
   const asin = pick === NONE ? null : item.candidates[pick]!.asin;
   if (pick !== NONE) await saveShownPrice(store, item.candidates[pick]!);
-  await store.putMatch({
+  const decided: MatchRecord = {
     key: item.subject, brand: item.brand, model: item.model, status: asin === null ? 'none' : 'matched', asin, grade: null,
     alternatives: [], decidedBy: 'user', updatedAt: now, waitingSince: null,
-  });
+  };
+  await store.putMatch(decided);
+  // Ruling 70, fix round 1: the answer is also the twin's (PCL430B for PCL430) in place of its automatic
+  // record, and closes any question of the twin's own; an answer the owner gave the twin stays.
+  await writeTwins(store, decided, (twin) => twin.decidedBy === 'auto');
+  for (const key of twinKeys(item.brand, item.model)) {
+    const q = await store.getReview(`match:${key}`);
+    if (q && q.answer === null && (await store.getMatch(key))?.decidedBy === 'user') await store.putReview({ ...q, answer: RESOLVED_BY_SCAN, answeredAt: now });
+  }
   await store.putReview({ ...item, choices, answer: asin ?? NONE, answeredAt: now });
 }
 

@@ -12,6 +12,7 @@ import {
   applyLookup, bundleParts, failingBefore, type KnownModels, knownModels, lookupOrder, type LookupStep, lookupWanted, markWaiting, matchFromListings,
   openMatchReview, type Part, type PartContext, pickFromListings, savePrice, sendLookup, sharedMatch,
 } from './runner';
+import { writeTwins } from './twins';
 import { DEFAULT_SCAN_SETTINGS, partKey } from './types';
 import type { BudgetView, MatchRecord, PaidAction, Quote, ScanCounts, ScanSettings, ScanStore, SearchClient } from './types';
 
@@ -198,10 +199,14 @@ async function verify(
   const want = wantedFor(part.brand, part.model, ctx.catalog);
   const now = ctx.now();
   const chosen = pick(want, [page]).chosen;
+  // Fix round 1, Important 1: the outcome is also the twin's, when the twin holds this listing automatically.
+  const sameListing = (twin: MatchRecord) => twin.decidedBy === 'auto' && twin.status === 'matched' && twin.asin === asin;
   if (chosen) {
     if (chosen.grade === 'exact' || chosen.grade === 'strong') {
       // The listings kept beside it were of its old grade: they are not its alternatives any more.
-      await ctx.store.putMatch({ ...match, grade: chosen.grade, alternatives: [], updatedAt: now });
+      const upgraded: MatchRecord = { ...match, grade: chosen.grade, alternatives: [], updatedAt: now };
+      await ctx.store.putMatch(upgraded);
+      await writeTwins(ctx.store, upgraded, sameListing);
     }
     return;
   }
@@ -209,7 +214,9 @@ async function verify(
   const reasons = graded.packaging === 'bulk' ? [...graded.reasons, BULK] : graded.reasons;
   // The question first, then the match, as a lookup writes them.
   await openMatchReview(ctx, part, NOT_CONFIRMED, [{ asin, title: page.title, price: page.price ?? null, reviews: page.reviews ?? null, reasons, seenAt: at }], now);
-  await ctx.store.putMatch({ ...match, status: 'review', asin: null, grade: null, alternatives: [], updatedAt: now, waitingSince: null });
+  const inReview: MatchRecord = { ...match, status: 'review', asin: null, grade: null, alternatives: [], updatedAt: now, waitingSince: null };
+  await ctx.store.putMatch(inReview);
+  await writeTwins(ctx.store, inReview, sameListing);
 }
 
 // ---------------------------------------------------------------- helpers
@@ -226,7 +233,7 @@ async function judge(store: ScanStore, known: KnownModels): Promise<(part: Part)
     // left waiting, never one the owner decided. The owner asks for a kit's items: not the scan's kit rule.
     if (!wanted.has(part.key) || !lookupWanted(matches.get(part.key))) return 'nothing';
     // Ruling 70: the match of the part's other written form stands for it, free (matchFromListings).
-    if (sharedMatch(part, (key) => matches.get(key))) return 'listing';
+    if (sharedMatch(part, (key) => matches.get(key), matches.get(part.key))) return 'listing';
     return pickFromListings(part, known.catalog, known.listings).chosen ? 'listing' : 'search';
   };
 }

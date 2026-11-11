@@ -504,16 +504,73 @@ describe('Ruling 70: a RYOBI part and its tool-only form are one product, looked
     expect(plan).not.toContain('lookup:PCL430');
   });
 
-  it('the panel\'s Look up of both forms spends one search, the first asked; the other is left as it was when that finds no listing', async () => {
+  it('the panel\'s Look up of both forms spends one search, the first asked; the other takes its result, review included', async () => {
     const w = await answered();
     await lookUp(w, ['PCL1600K2']);
     await answerPCL430B(w);
     const before = w.ledger.length;
     await lookUp(w, ['PCL430', 'PCL430B']);
     expect(w.ledger.slice(before)).toEqual(['panel:lookup:PCL430']);
-    // PCL430's search finds only listings in review: no match to share, so PCL430B is not settled by it.
-    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430'))).toMatchObject({ status: 'review' });
-    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430B'))).toBeUndefined();
+    // PCL430's search finds only listings in review (fix round 1, Important 2): PCL430B is in review with it, asking nothing of its own.
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430'))).toMatchObject({ status: 'review', decidedBy: 'auto' });
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430B'))).toMatchObject({ status: 'review', asin: null, decidedBy: 'auto' });
+    expect(await w.store.getReview(`match:${partKey('RYOBI', 'PCL430B')}`)).toBeUndefined();
+  });
+
+  it('Important 2: PCL430 in automatic review stands for PCL430B: quote 0, no search, and one question in Review', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2', 'PCL430']);
+    await answerPCL430B(w);
+    expect(await quoteFor(w, ['PCL430B'])).toEqual({ searches: 0, refusal: null });
+    const before = w.ledger.length;
+    await lookUp(w, ['PCL430B']);
+    const s = await scan(w, 20);
+    expect([...w.ledger.slice(before)].filter((l) => l.includes('PCL430'))).toEqual([]);
+    expect(s.plan.filter((l) => l.includes('PCL430'))).toEqual([]);
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430B'))).toMatchObject({ status: 'review', decidedBy: 'auto' });
+    const review = (await buildReport(w.store, KITS)).review.filter((r) => r.kind === 'match').map((r) => r.model);
+    expect(review.filter((m) => m.startsWith('PCL430'))).toEqual(['PCL430']);
+  });
+
+  it('Important 2: the question stays in Review while only its twin is held (the kit\'s page read again without PCL430)', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2', 'PCL430']);
+    await answerPCL430B(w);
+    await lookUp(w, ['PCL430B']);
+    await withoutPCL430(w);
+    const review = (await buildReport(w.store, KITS)).review.filter((r) => r.kind === 'match').map((r) => r.model);
+    expect(review).toContain('PCL430');
+  });
+
+  it('Important 1: the owner\'s answer on PCL430 replaces PCL430B\'s automatic record', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2', 'PCL430']);
+    await answerPCL430B(w);
+    // Hand-made: PCL430B in automatic review, as a Look up of it writes it from PCL430's (Important 2).
+    await w.store.putMatch({
+      key: partKey('RYOBI', 'PCL430B'), brand: 'RYOBI', model: 'PCL430B', status: 'review', asin: null, grade: null, alternatives: [],
+      decidedBy: 'auto', updatedAt: T0, waitingSince: null,
+    });
+    const id = `match:${partKey('RYOBI', 'PCL430')}`;
+    const q = (await w.store.getReview(id))!;
+    await applyReviewAnswer(w.store, id, { choice: 1, seen: reviewSignature(q) }, T0 + MINUTE);
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430B'))).toMatchObject({
+      status: 'matched', asin: q.candidates[1]!.asin, decidedBy: 'user', updatedAt: T0 + MINUTE,
+    });
+  });
+
+  it('Important 1: an owner\'s own answer on the twin is never replaced by an answer on the other form', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2', 'PCL430']);
+    // Hand-made: the owner already said PCL430B has no listing.
+    const mine = {
+      key: partKey('RYOBI', 'PCL430B'), brand: 'RYOBI', model: 'PCL430B', status: 'none' as const, asin: null, grade: null, alternatives: [],
+      decidedBy: 'user' as const, updatedAt: T0, waitingSince: null,
+    };
+    await w.store.putMatch(mine);
+    const id = `match:${partKey('RYOBI', 'PCL430')}`;
+    await applyReviewAnswer(w.store, id, { choice: 0, seen: reviewSignature((await w.store.getReview(id))!) }, T0 + MINUTE);
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL430B'))).toEqual(mine);
   });
 
   it('one refresh for the listing two forms share: PCL515B\'s, not PCL515\'s', async () => {
@@ -522,6 +579,105 @@ describe('Ruling 70: a RYOBI part and its tool-only form are one product, looked
     const s = await scan(w, 1, KITS, T0 + 4 * 24 * 60 * MINUTE);
     expect(s.plan).toContain('refresh:PCL515B');
     expect(s.plan).not.toContain('refresh:PCL515');
+  });
+});
+
+/**
+ * Hand-made: the panel's Verify of `model`'s match B0B88R7HWB, answered by the recorded detail page of
+ * B0B3JWF5ZV with its listing changed to B0B88R7HWB, `title`, and `details` as its part numbers. The
+ * replay has no detail page for B0B88R7HWB. Everything else is replayed.
+ */
+async function verifyRecipSaw(w: World, model: string, title: string, details: Record<string, unknown>): Promise<void> {
+  const page = structuredClone(recorded('amazon-product-B0B3JWF5ZV')) as Record<string, Record<string, unknown>>;
+  page.product_results = { ...page.product_results, asin: 'B0B88R7HWB', title };
+  page.product_details = details;
+  page.item_specifications = {};
+  const fetchFn = (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = new URL(String(input instanceof Request ? input.url : input));
+    if (url.searchParams.get('engine') === 'amazon_product') return new Response(JSON.stringify(page), { status: 200 });
+    return w.replay.fetchFn(input, init);
+  }) as typeof fetch;
+  const budget = new SearchBudget(parseAccount({ ...fx.SERPAPI_ACCOUNT_FREE }), { reserve: 0, maxPerRun: 20 });
+  const client = new SerpApiClient({ apiKey: 'TEST', budget, cache: w.cache, fetchFn, now: () => T0, onSpend: (e) => void w.ledger.push(e.label) });
+  await runPaid({ budget, client, store: w.store, now: () => T0 + MINUTE, settings: KITS }, { kind: 'verify', brand: 'RYOBI', model, asin: 'B0B88R7HWB' });
+}
+
+const SAW = 'ONE+ 18V Cordless Reciprocating Saw - 3,400 SPM Variable Speed, 1 in. Stroke Length, Tool Only (Battery Not Included) - PCL515B';
+
+describe('fix round 1, Important 1: a Verify writes its outcome to the twin that holds the same listing', () => {
+  it('a Verify that sends PCL515B to review (non-retail packaging) sends PCL515, matched to the same listing automatically, with it', async () => {
+    const w = await answered();
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toMatchObject({ status: 'matched', asin: 'B0B88R7HWB', decidedBy: 'auto' });
+    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515B'))).toMatchObject({ status: 'review', asin: null });
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toMatchObject({ status: 'review', asin: null, decidedBy: 'auto', updatedAt: T0 + MINUTE });
+    // One question, PCL515B's.
+    expect(await w.store.getReview(`match:${partKey('RYOBI', 'PCL515')}`)).toBeUndefined();
+    const row = (await buildReport(w.store, KITS)).bundles.find((b) => b.key === P553)!;
+    expect(row.options.find((o) => o.id === 'split:PCL1600K2')!.parts.find((p) => p.model === 'PCL515')).toMatchObject({ status: 'review', availability: 'missing' });
+  });
+
+  it('a Verify that finds the part number upgrades PCL515B to strong, and PCL515 with it', async () => {
+    const w = await answered();
+    await verifyRecipSaw(w, 'PCL515B', SAW, { manufacturer_part_number: 'PCL515B' });
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515B'))).toMatchObject({ status: 'matched', asin: 'B0B88R7HWB', grade: 'strong' });
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toMatchObject({ status: 'matched', asin: 'B0B88R7HWB', grade: 'strong', decidedBy: 'auto' });
+  });
+
+  it('the owner\'s own choice on the twin is never changed by a Verify of the other form', async () => {
+    const w = await answered();
+    // Hand-made: the owner chose B0B88R7HWB for PCL515 themselves.
+    const mine = { ...(await w.store.getMatch(partKey('RYOBI', 'PCL515')))!, decidedBy: 'user' as const, grade: null };
+    await w.store.putMatch(mine);
+    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toEqual(mine);
+  });
+});
+
+describe('Ruling 73: every scan judges automatic "none" and "review" again from saved listings, free', () => {
+  /**
+   * Hand-made: the records a lookup wrote before Ruling 70, in the replay world. PCL660's search
+   * found no PCL660 in a title (none); PCL235's showed only brandless accessories (review, with its
+   * question). The owner said none for PCL206 and chose a listing for PCL500.
+   */
+  async function before70(w: World): Promise<void> {
+    const base = { brand: 'RYOBI', grade: null, alternatives: [], updatedAt: T0, waitingSince: null };
+    await w.store.putMatch({ ...base, key: partKey('RYOBI', 'PCL660'), model: 'PCL660', status: 'none', asin: null, decidedBy: 'auto' });
+    await w.store.putMatch({ ...base, key: partKey('RYOBI', 'PCL235'), model: 'PCL235', status: 'review', asin: null, decidedBy: 'auto' });
+    const rows = parseAmazonSearch(recorded('amazon-search-PCL235'));
+    const hardCase = rows.find((r) => r.asin === 'B0HFS4PFLN')!;
+    await w.store.putReview({
+      id: `match:${partKey('RYOBI', 'PCL235')}`, kind: 'match', subject: partKey('RYOBI', 'PCL235'), brand: 'RYOBI', model: 'PCL235', title: null,
+      reason: '1 listing(s) show the model number, but the brand is not confirmed',
+      candidates: [{ asin: hardCase.asin, title: hardCase.title, price: hardCase.price ?? null, reviews: hardCase.reviews ?? null, reasons: ['model number in the title, brand not confirmed'], seenAt: T0 }],
+      choices: [], openedAt: T0, answer: null, answeredAt: null,
+    });
+    await w.store.putMatch({ ...base, key: partKey('RYOBI', 'PCL206'), model: 'PCL206', status: 'none', asin: null, decidedBy: 'user' });
+    await w.store.putMatch({ ...base, key: partKey('RYOBI', 'PCL500'), model: 'PCL500', status: 'matched', asin: 'B0B1GKJXNB', decidedBy: 'user' });
+  }
+
+  it('PCL660\'s automatic none becomes B0B1GKJXNB, PCL235\'s question closes as B0BGYFTPGK, with 0 searches; the owner\'s answers stay', async () => {
+    const w = await answered();
+    await before70(w);
+    const owner = [await w.store.getMatch(partKey('RYOBI', 'PCL206')), await w.store.getMatch(partKey('RYOBI', 'PCL500'))];
+    const s = await scan(w, 1, STORED);
+    expect(s.spent.filter((l) => /PCL(660|235)/.test(l))).toEqual([]);
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL660'))).toMatchObject({ status: 'matched', asin: 'B0B1GKJXNB', grade: 'probable', decidedBy: 'auto' });
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL235'))).toMatchObject({ status: 'matched', asin: 'B0BGYFTPGK', decidedBy: 'auto' });
+    expect(await w.store.getReview(`match:${partKey('RYOBI', 'PCL235')}`)).toMatchObject({ answer: 'resolved by a later scan', answeredAt: T0 + clock * MINUTE });
+    expect([await w.store.getMatch(partKey('RYOBI', 'PCL206')), await w.store.getMatch(partKey('RYOBI', 'PCL500'))]).toEqual(owner);
+    expect((await buildReport(w.store, KITS)).review.map((r) => r.model)).not.toContain('PCL235');
+  });
+
+  it('an automatic review no saved listing answers stays as it was: P553 keeps its question', async () => {
+    const w = await answered();
+    await lookUp(w, ['PCL1600K2', 'P553']);
+    const id = `match:${partKey('RYOBI', 'P553')}`;
+    const q = await w.store.getReview(id);
+    const m = await w.store.getMatch(partKey('RYOBI', 'P553'));
+    await scan(w, 1, STORED);
+    expect(await w.store.getReview(id)).toEqual(q);
+    expect(await w.store.getMatch(partKey('RYOBI', 'P553'))).toEqual(m);
   });
 });
 

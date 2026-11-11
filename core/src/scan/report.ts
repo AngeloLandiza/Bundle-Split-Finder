@@ -5,6 +5,7 @@ import { type KitItem, kitIndex, kitItemParts, kitPageStored, kitPageUnread, typ
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
 import { componentCounts } from './classify';
+import { twinKeysOf } from './twins';
 import {
   type BundleRecord,
   type BundleRow,
@@ -256,7 +257,8 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
     .filter((r) => r.answer === null)
     // A match question whose part no bundle holds now (the owner changed a split) is left out, not
     // closed: it is asked again if the part comes back.
-    .filter((r) => r.kind !== 'match' || held.has(r.subject))
+    // A twin held counts (Ruling 70, fix round 1): PCL430's question stands for PCL430B, which takes its result.
+    .filter((r) => r.kind !== 'match' || held.has(r.subject) || twinKeysOf(r.subject).some((k) => held.has(k)))
     // An item saved before step 5 has no choices stored.
     .map((r) => ({ ...r, choices: choicesOf(r) }))
     .sort((a, b) => a.openedAt - b.openedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));

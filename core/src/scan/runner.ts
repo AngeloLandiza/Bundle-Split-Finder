@@ -12,7 +12,7 @@
 
 import { type Catalog, catalogEntry } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
-import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, maySparePart, modelForms, pick, type Picked } from '../match';
+import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, maySparePart, pick, type Picked } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
@@ -20,6 +20,7 @@ import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, s
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { knownModels, readSplit } from './split';
+import { twinKeys } from './twins';
 import { bundleKey, partKey, priceActive, resolvedParts } from './types';
 import type {
   BudgetView, BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PageOutcome, PageReading, PriceRecord, ReadPages, ReviewCandidate,
@@ -677,12 +678,15 @@ export function matchQuestion(review: Graded[], candidates: Candidate[], at: num
 
 /**
  * The match question for a part, opened at `now` and counted, unless the part already has one
- * (open or answered), which is left as it is. Its title is the catalog's.
+ * (open or answered by the owner), which is left as it is. One a scan closed is replaced. Its title is
+ * the catalog's.
  */
 export async function openMatchReview(ctx: PartContext, part: Part, reason: string, candidates: ReviewCandidate[], now: number): Promise<void> {
   const { store, job } = ctx;
   const id = `match:${part.key}`;
-  if (await store.getReview(id)) return;
+  // A question a scan closed (Ruling 73) is asked again, as a split question is.
+  const old = await store.getReview(id);
+  if (old && old.answer !== RESOLVED_BY_SCAN) return;
   await store.putReview({
     id, kind: 'match', subject: part.key, brand: part.brand, model: part.model, title: (await store.getCatalogEntry(part.key))?.title ?? null,
     reason, candidates, choices: [], openedAt: now, answer: null, answeredAt: null,
@@ -1016,7 +1020,9 @@ async function wantedParts(
   const matches = new Map<string, MatchRecord | undefined>();
   for (const [key, { brand, model }] of parts) {
     let match = await store.getMatch(key);
-    if (fromListings && lookupWanted(match)) match = (await fromListings({ key, brand, model })) ?? match;
+    // Ruling 73: an automatic "none" or "review" is judged again too, as saved listings grow and rules change.
+    const again = match?.decidedBy === 'auto' && (match.status === 'none' || match.status === 'review');
+    if (fromListings && (lookupWanted(match) || again)) match = (await fromListings({ key, brand, model })) ?? match;
     matches.set(key, match);
   }
   // Step 6: per kit, whether a scan may look up its items, read once. A kit is itself a part of a
@@ -1129,41 +1135,53 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
 }
 
 /**
- * Ruling 70: the match a RYOBI part takes from its other written form (PCL515 for PCL515B, or the
- * reverse, by sameModel), which is the same product: that form's record when it holds a listing,
- * matched automatically or chosen by the owner, or the owner's "none". Null otherwise, and always
- * for DEWALT. `matchOf` reads a stored match by part key.
+ * Ruling 70: the match a RYOBI part takes from its twin, its other written form (PCL515 for PCL515B, or
+ * the reverse, by sameModel), which is the same product. `own` is the part's own record.
+ * - The twin's listing, matched automatically or chosen by the owner, or the owner's "none": always.
+ * - The twin's automatic "review" or "none" (fix round 1, Important 2): only while the part has no
+ *   result of its own (lookupWanted), so it is not searched for again; a part with its own automatic
+ *   result keeps it.
+ * Null otherwise, and always for DEWALT. `matchOf` reads a stored match by part key.
  */
-export function sharedMatch(part: Pick<Part, 'key' | 'brand' | 'model'>, matchOf: (key: string) => MatchRecord | undefined): MatchRecord | null {
-  for (const form of modelForms(part.brand, part.model)) {
-    const key = partKey(part.brand, form);
-    if (key === part.key) continue;
+export function sharedMatch(
+  part: Pick<Part, 'key' | 'brand' | 'model'>, matchOf: (key: string) => MatchRecord | undefined, own: MatchRecord | undefined,
+): MatchRecord | null {
+  for (const key of twinKeys(part.brand, part.model)) {
     const m = matchOf(key);
-    if (m && ((m.status === 'matched' && m.asin !== null) || (m.decidedBy === 'user' && m.status === 'none'))) return m;
+    if (!m) continue;
+    if ((m.status === 'matched' && m.asin !== null) || (m.decidedBy === 'user' && m.status === 'none')) return m;
+    if (m.decidedBy === 'auto' && (m.status === 'review' || m.status === 'none') && lookupWanted(own)) return m;
   }
   return null;
 }
 
-/** The part keys of a RYOBI part's other written forms (Ruling 70); none for DEWALT. */
-const otherFormKeys = (part: Pick<Part, 'key' | 'brand' | 'model'>): string[] =>
-  modelForms(part.brand, part.model).map((f) => partKey(part.brand, f)).filter((k) => k !== part.key);
+/** The part's open match question is closed, as a scan closes a question the data settled. */
+async function closeQuestion(ctx: Pick<PartContext, 'store' | 'now'>, key: string): Promise<void> {
+  const q = await ctx.store.getReview(`match:${key}`);
+  if (q && q.answer === null) await ctx.store.putReview({ ...q, answer: RESOLVED_BY_SCAN, answeredAt: ctx.now() });
+}
 
 /**
  * 2c rule 5: the saved listings that carry the part's model, judged by pick() exactly as a
  * lookup's results are. A chosen listing is saved as a lookup saves it, priced from the
  * saved listings. Otherwise null: the part is left to a paid lookup, which alone may open a
- * review item. Before the listings, Ruling 70: a match the part's other written form holds
- * (sharedMatch) is saved as the part's own, decided by whoever decided it, and no lookup is wanted.
+ * review item. Before the listings, Ruling 70: a match the part's twin holds (sharedMatch) is saved
+ * as the part's own, decided by whoever decided it, and no lookup is wanted. Ruling 73: a scan also
+ * judges an automatic "none" or "review" again here; a listing or a twin's settled match then closes
+ * the part's open question. The owner's own answer is never touched (null).
  */
 export async function matchFromListings(ctx: PartContext, listings: ListingRecord[], part: Part): Promise<MatchRecord | null> {
   const { store, job } = ctx;
-  const others = new Map<string, MatchRecord | undefined>();
-  for (const key of otherFormKeys(part)) others.set(key, await store.getMatch(key));
-  const shared = sharedMatch(part, (key) => others.get(key));
+  const own = await store.getMatch(part.key);
+  if (own?.decidedBy === 'user') return null;
+  const twins = new Map<string, MatchRecord | undefined>();
+  for (const key of twinKeys(part.brand, part.model)) twins.set(key, await store.getMatch(key));
+  const shared = sharedMatch(part, (key) => twins.get(key), own);
   if (shared) {
     const copy: MatchRecord = { ...shared, key: part.key, brand: part.brand, model: part.model, updatedAt: ctx.now(), waitingSince: null };
     await store.putMatch(copy);
     if (copy.status === 'matched') job.counts.partsMatched += 1;
+    if (copy.status === 'matched' || copy.decidedBy === 'user') await closeQuestion(ctx, part.key);
     return copy;
   }
   const picked = pickFromListings(part, ctx.catalog, listings);
@@ -1182,6 +1200,7 @@ export async function matchFromListings(ctx: PartContext, listings: ListingRecor
     decidedBy: 'auto', updatedAt: ctx.now(), waitingSince: null,
   };
   await store.putMatch(match);
+  await closeQuestion(ctx, part.key);
   job.counts.partsFromCatalog += 1;
   job.counts.partsMatched += 1;
   return match;
