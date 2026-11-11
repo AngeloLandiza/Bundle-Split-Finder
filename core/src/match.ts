@@ -34,7 +34,8 @@ const PART_NAME = /\b(chute|knob|cap|indicator|pads?|sleeve|wheels?)\b/i;
 // recordings uses either word.
 const MAYBE_SPARE_PART = /\b(OEM|replacement)\b/i;
 const BULK = /(bulk packaged|non-retail packag|no retail packag)/i;
-const MULTI = /\b(\d+)\s*-?\s*pack\b|\bpack of (\d+)\b|\bset of (\d+)\b/i;
+// "2Pk" too (fix round 1): "18V LED Light, PCL660 2Pk - Bulk Packaged" (B0CRSVC28P).
+const MULTI = /\b(\d+)\s*-?\s*pack\b|\bpack of (\d+)\b|\bset of (\d+)\b|\b(\d+)\s*-?\s*pk\b/i;
 const KIT_WORDS = /\b(kit|combo|bundle|with battery|with charger|w\/ battery|and charger)\b/i;
 
 export type Grade = 'exact' | 'strong' | 'probable' | 'review' | 'reject';
@@ -133,7 +134,7 @@ export function grade(want: Wanted, cand: Candidate): Graded {
 
   let qty = cand.packageQty ?? null;
   const multi = MULTI.exec(cand.title);
-  if (multi) qty = Number(multi[1] ?? multi[2] ?? multi[3]);
+  if (multi) qty = Number(multi[1] ?? multi[2] ?? multi[3] ?? multi[4]);
   const wantQty = want.packQty ?? 1;
   if (qty && qty !== wantQty) return out('reject', `pack of ${qty}, component is a pack of ${wantQty}`);
 

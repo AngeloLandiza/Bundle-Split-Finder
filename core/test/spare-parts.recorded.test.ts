@@ -170,12 +170,15 @@ describe('no genuine listing loses its grade', () => {
   it('219 listing and model pairs were probable or better before the rule; the 5 that are spare parts are gone and the other 214 keep their grade', () => {
     // The before-and-after table, row by row, is in the Task 2b report. The rule only rejects or
     // demotes, so a count of 214 means no genuine tool, battery, charger or kit listing lost its grade.
-    // Ruling 70 then adds 3 pairs and changes none of the 214 (q1a report): 217 now.
+    // Ruling 70 then adds 3 pairs and changes none of the 214 (q1a report). Fix round 1 reads "2Pk" as a
+    // pack of 2, which takes out one of the 214: B0CRSVC28P ("PCL660 2Pk - Bulk Packaged") for PCL660, a
+    // non-retail 2-pack, now rejected. 216 now.
     const all = probableOrBetter();
-    expect(all).toHaveLength(217);
+    expect(all).toHaveLength(216);
     expect(all).toEqual(expect.arrayContaining(TOOL_ONLY_B));
+    expect(all).not.toContain('amazon-search-PCL660 B0CRSVC28P PCL660 probable');
     const now = all.filter((k) => !TOOL_ONLY_B.includes(k));
-    expect(now).toHaveLength(214);
+    expect(now).toHaveLength(213);
     for (const asin of ['B08TGP8MGR', 'B08TGW83LC', 'B00DQD7EIE']) expect(now.some((k) => k.includes(` ${asin} `))).toBe(false);
     expect(now).toEqual(expect.arrayContaining([
       'amazon-search-PBLRC25B B0B3JWF5ZV PBLRC25B probable',

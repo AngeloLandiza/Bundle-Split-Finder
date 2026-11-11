@@ -71,6 +71,14 @@ describe('Ruling 70: a lookup\'s results, on the recordings', () => {
     }
   });
 
+  it('fix round 1: "2Pk" is a pack of 2, so B0CRSVC28P is not a single PCL660 or PCL660B', () => {
+    const c = row('amazon-search-PCL660', 'B0CRSVC28P');
+    expect(c.title).toBe('18V LED Light, PCL660 2Pk - Bulk Packaged, Handheld, Green, 2pk-PCL660=BT');
+    for (const model of ['PCL660', 'PCL660B']) {
+      expect(grade({ brand: 'RYOBI', model }, c)).toMatchObject({ grade: 'reject', reasons: ['pack of 2, component is a pack of 1'] });
+    }
+  });
+
   it('DEWALT is unchanged: a DCF891 is not the DCF891B listing B09YXXFPBJ', () => {
     const c = row('amazon-search-DCF891B', 'B09YXXFPBJ');
     expect(grade({ brand: 'DEWALT', model: 'DCF891B' }, c).grade).toBe('probable');
