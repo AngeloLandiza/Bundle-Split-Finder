@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
-import { when } from '../../lib/format';
 import { realWorker, UNREACHABLE, useAppState, type WorkerApi } from '../../lib/pageClient';
 import type { AppState, PanelReport, Request } from '../../lib/messages';
 import { DealsTab } from './DealsTab';
 import { Detail } from './Detail';
 import { FirstRun } from './FirstRun';
 import { Header } from './Header';
+import { hourlyBlockTitle } from './hourlyBlock';
 import { Notice } from './Notice';
 import { ProgressRow } from './ProgressRow';
 import { ReviewTab } from './ReviewTab';
@@ -20,14 +20,6 @@ export interface AppProps {
   /** Opens the settings page. */
   openSettings?: () => void;
   now?: () => number;
-}
-
-/** Scan now waits only after the hourly limit stopped the last scan, and only until an hour has passed. */
-function hourlyBlockTitle(state: AppState, now: number): string | undefined {
-  const job = state.lastJob;
-  if (!job || job.status !== 'stopped' || job.stopReason !== 'hourly_limit' || job.finishedAt === null) return undefined;
-  const until = job.finishedAt + 60 * 60_000;
-  return until > now ? `The hourly search limit is reached. Try again after ${when(until, now).replace(/^in /, '')}.` : undefined;
 }
 
 const defaultOpenSettings = () => {

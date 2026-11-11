@@ -42,6 +42,9 @@ export class BudgetExceededError extends Error {
   }
 }
 
+/** A network failure's message starts with this, then a colon and the reason. */
+export const NETWORK_ERROR_PREFIX = 'Network error reaching SerpApi';
+
 export class SerpApiError extends Error {
   constructor(
     message: string,
@@ -136,7 +139,7 @@ export class SerpApiClient {
     try {
       res = await this.fetchFn(`${this.baseUrl}/search.json?${query.toString()}`);
     } catch (err) {
-      throw new SerpApiError(`Network error reaching SerpApi: ${(err as Error).message}`);
+      throw new SerpApiError(`${NETWORK_ERROR_PREFIX}: ${(err as Error).message}`);
     }
     if (res.status === 429) throw new RateLimitedError('SerpApi refused the search: hourly limit reached or no searches left.');
     if (res.status === 401) throw new SerpApiError('SerpApi did not accept this key.', 401);
