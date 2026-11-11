@@ -91,7 +91,8 @@ describe('buildReport', () => {
     const first = report.bundles.find((b) => b.model === 'PBLRC2501SB')!;
     expect(first.status).toBe('partial');
     expect(first.uncovered).toEqual(['PBLRC25B']);
-    expect(first.estimate!.netRevenue).toBe(124.9);
+    // The waiting part has not been looked up, so there is no estimate (it used to be valued at the liquidation rate).
+    expect(first.estimate).toBeNull();
     expect(first.parts.find((p) => p.model === 'PBLRC25B')).toMatchObject({ status: 'waiting', asin: null });
     expect(first.section).toBe('missing_listing');
     expect(first.parts.find((p) => p.model === 'PBLRC25B')!.availability).toBe('missing');

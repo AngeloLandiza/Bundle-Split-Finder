@@ -72,12 +72,15 @@ async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleReco
     }
   }
   const evaluation = evaluateBundle(b.price, componentCounts(split.components), priced, settings.fees, settings.liquidationRate);
+  // A part not looked up yet has no price, which is not the same as a price of zero: no estimate until it is.
+  // A part that was looked up and has no listing ("none") still counts at the liquidation rate, as the owner set.
+  const unknown = parts.some((p) => p.status === 'waiting' || p.status === 'unmatched');
   return {
     ...base,
     status: evaluation.uncovered.length === 0 ? 'complete' : 'partial',
     section: sectionOf(parts, b.price),
     parts,
-    estimate: evaluation.result,
+    estimate: unknown ? null : evaluation.result,
     uncovered: evaluation.uncovered,
   };
 }
