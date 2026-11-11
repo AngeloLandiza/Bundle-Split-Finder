@@ -9,15 +9,15 @@
 // request, and one failed lookup does not end a scan"); "Pn" to the step 4 plan, Task 4
 // ("Runner reads pages before the split").
 
-import { type Catalog, catalogEntry, DEWALT_BUNDLE, type Decomposition, decompose, kindsFromTitle } from '../decompose';
+import { type Catalog, catalogEntry } from '../decompose';
 import { type Candidate, pick, type Picked } from '../match';
-import { splitWithPage } from '../pageSplit';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
-import { choicesOf, NONE, notKnown, ownerSplit, sameChoices, splitChoices } from './answers';
+import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
+import { knownModels, readSplit } from './split';
 import { bundleKey, partKey } from './types';
 import type {
   BudgetView, BundleRecord, CatalogCursor, ListingRecord, MatchRecord, PageOutcome, PriceRecord, ReadPages, ReviewCandidate, ScanJob, ScanSettings,
@@ -559,67 +559,8 @@ function noteProblem(job: ScanJob, sentence: string): void {
 
 // ---------------------------------------------------------------- rule 4 and 2c rule 4: split (free)
 
-export interface KnownModels {
-  /** The stored catalog alone: the models Home Depot's own rows showed. */
-  stored: Catalog;
-  /** The stored catalog plus an entry for every model in a saved listing's title (2c rule 4). */
-  catalog: Catalog;
-  listings: ListingRecord[];
-}
-
-/**
- * 2c rule 4: the stored catalog, plus an entry for every model in a saved listing's title.
- * A stored entry wins over one read from a listing. A DEWALT model read from a listing that
- * starts with DCK is a kit, whatever its Amazon title says, so the splitter never offers it as
- * a bonus tool. The one source of the catalog for the split, for the parts phase and for the
- * panel's paid actions (paid.ts).
- */
-export async function knownModels(store: ScanStore): Promise<KnownModels> {
-  const listings = await store.listListings();
-  const stored: Catalog = new Map();
-  for (const c of await store.listCatalog()) stored.set(c.model, { model: c.model, brand: c.brand, kinds: c.kinds, isKit: c.isKit });
-  const catalog: Catalog = new Map();
-  // Listings come sorted by ASIN: when two titles name the same model, the first ASIN's is kept.
-  for (const l of listings) {
-    for (const model of l.models) {
-      if (catalog.has(model)) continue;
-      const isKit = (l.brand === 'DEWALT' && model.startsWith('DCK')) || (catalogEntry(l.brand, model, l.title).isKit ?? false);
-      catalog.set(model, { model, brand: l.brand, kinds: kindsFromTitle(l.title), isKit });
-    }
-  }
-  for (const [model, entry] of stored) catalog.set(model, entry);
-  return { stored, catalog, listings };
-}
-
-/**
- * The split of one bundle. Models read from Amazon titles may not make a DEWALT short code
- * resolve by guesswork: the stored catalog is tried alone first, and a resolved split stands.
- * Otherwise the split with the listings' models is taken only for RYOBI, whose patterns spell
- * every part out, or for DEWALT when it names exactly two parts (the kit and one bonus item, so
- * no short code was glued together from pieces). In every other case the first result stands.
- */
-function splitBundle(bundle: BundleRecord, stored: Catalog, catalog: Catalog): Decomposition {
-  const first = decompose(bundle.brand, bundle.model, bundle.title, stored);
-  if (first.status === 'resolved') return first;
-  const second = decompose(bundle.brand, bundle.model, bundle.title, catalog);
-  if (second.status !== 'resolved') return first;
-  const brand = bundle.brand.trim().toUpperCase();
-  if (brand === 'RYOBI') return second;
-  if (brand !== 'DEWALT' || second.components.length !== 2) return first;
-  // DEWALT, one bonus item: only when the stored catalog knew nothing at all for the short
-  // code (not when it found two readings, "fits A and B" or "more than one way", which a title
-  // match must not settle), and only for a short code of three characters or more.
-  const suffix = DEWALT_BUNDLE.exec(bundle.model.toUpperCase().replace(/[-\s]/g, ''))?.[2];
-  if (suffix === undefined || suffix.length < 3) return first;
-  return first.notes.length === 1 && first.notes[0] === `'${suffix}' matches nothing in the catalog` ? second : first;
-}
-
-/**
- * The answer a scan gives a split question when the bundle resolves; any other answer is the
- * user's. Only a user's answer that names one of the item's choices, or 'none', decides the split
- * (answers.ts, ownerSplit).
- */
-const RESOLVED_BY_SCAN = 'resolved by a later scan';
+// knownModels and readSplit live in split.ts, which a reopened split question reads with too.
+export { type KnownModels, knownModels } from './split';
 
 /** `stored`: the stored catalog alone; `run.catalog` adds the listings' models. */
 async function splitBundles(run: Run, stored: Catalog): Promise<void> {
@@ -633,7 +574,7 @@ async function splitBundles(run: Run, stored: Catalog): Promise<void> {
     // and "none" keeps the bundle in review whatever the readings now say. Otherwise P5: the
     // model number's split, then the bundle's own page, when it was read.
     const owner = ownerSplit(item);
-    const read = () => splitWithPage(bundle, splitBundle(bundle, stored, catalog), bundle.page ?? null, catalog);
+    const read = () => readSplit(bundle, { stored, catalog });
     const split = owner === null ? read() : owner === NONE ? notKnown(read()) : owner;
     await store.putBundle({ ...bundle, split });
     if (split.status === 'resolved') {

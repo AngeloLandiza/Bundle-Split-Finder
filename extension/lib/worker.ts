@@ -5,7 +5,7 @@
 // calls onTick, and every tick either continues an interrupted scan or starts one that is due.
 // "Rule n" refers to the step 3 plan, Task 5 ("The service worker").
 
-import { AnswerRefused, applyReviewAnswer } from '@core/scan/answers';
+import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer } from '@core/scan/answers';
 import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
 import { runScan } from '@core/scan/runner';
 import type { BudgetView, BundleRow, PaidAction, Quote, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
@@ -566,6 +566,24 @@ export function createWorker(env: WorkerEnv): Worker {
       return ok(null);
     });
 
+  /**
+   * Opens again a split question the owner answered (answers.ts, reopenReviewAnswer), so it can be
+   * answered again. Gated and refused while a scan runs, for the same reason as answerReview and with
+   * its sentence. The id is untrusted: anything not an answered split question is refused.
+   */
+  const reopenReview = (id: string): Promise<Reply<null>> =>
+    serial(async () => {
+      if (scan !== null) return refuse(ANSWER_LATER);
+      try {
+        await reopenReviewAnswer(store, id, env.now());
+      } catch (err) {
+        if (err instanceof AnswerRefused) return refuse(err.message);
+        throw err;
+      }
+      await broadcast();
+      return ok(null);
+    });
+
   const setPackaging = (model: string, packaging: unknown): Promise<Reply<null>> =>
     serial(async () => {
       if (packaging !== 'retail_boxed' && packaging !== 'loose') return refuse(BAD_PACKAGING);
@@ -740,6 +758,8 @@ export function createWorker(env: WorkerEnv): Worker {
         return setPackaging(request.model, request.packaging);
       case 'answerReview':
         return answerReview(request.id, request.answer);
+      case 'reopenReview':
+        return reopenReview(request.id);
       case 'quote':
         return quote(request.action);
       case 'runPaid':

@@ -1528,4 +1528,56 @@ describe('worker: answerReview', () => {
     });
     expect((await report(w)).review.map((r) => r.id)).not.toContain(AMBIGUOUS);
   });
+
+  it('reopenReview opens an answered split question again, broadcasts, and the report asks it at once (Ruling 42)', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seedAmbiguous(w.store);
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const open = (await w.store.getReview(AMBIGUOUS))!;
+    const split = (await w.store.getBundle('homedepot:ambiguous'))!.split;
+    w.clock = T0 + MINUTE;
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { parts: ['DCKTS650D1P1', 'DCB205'], seen: reviewSignature(open) } })).toEqual({ ok: true, data: null });
+    expect((await report(w)).bundles.find((b) => b.key === 'homedepot:ambiguous')!.answer).toEqual({ reviewId: AMBIGUOUS, kind: 'entered' });
+
+    const before = w.broadcasts.length;
+    w.clock = T0 + 2 * MINUTE;
+    expect(await send(w, { type: 'reopenReview', id: AMBIGUOUS })).toEqual({ ok: true, data: null });
+    expect(w.broadcasts.length).toBe(before + 1);
+    expect(await w.store.getReview(AMBIGUOUS)).toEqual(open);
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual(split);
+    const after = await report(w);
+    expect(after.review.find((r) => r.id === AMBIGUOUS)).toMatchObject({ choices: [['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']], openedAt: open.openedAt });
+    expect(after.bundles.find((b) => b.key === 'homedepot:ambiguous')).toMatchObject({ section: 'split', status: 'needs_review', answer: null });
+
+    // Answered again, as the question now shows.
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: await asShown(w, AMBIGUOUS, { choice: 1 }) })).toEqual({ ok: true, data: null });
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCKTS650D1P1', 'DCF921B'], status: 'resolved', notes: ['parts chosen by you'] });
+  });
+
+  it('reopenReview refuses an unknown id, an open question, and any request while a scan runs, with a plain sentence and nothing written', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seedAmbiguous(w.store);
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const before = w.broadcasts.length;
+    expect(await send(w, { type: 'reopenReview', id: 'split:homedepot:nothing' })).toEqual({ ok: false, error: 'That question was not found.' });
+    expect(await send(w, { type: 'reopenReview', id: 7 } as unknown as Request)).toEqual({ ok: false, error: 'That question was not found.' });
+    expect(await send(w, { type: 'reopenReview', id: AMBIGUOUS })).toEqual({ ok: false, error: 'That question has not been answered yet.' });
+    expect(w.broadcasts.length).toBe(before);
+
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: await asShown(w, AMBIGUOUS, { none: true }) })).toEqual({ ok: true, data: null });
+    const answered = await w.store.getReview(AMBIGUOUS);
+    const gate = held(w);
+    w.clock = T0 + 10 * MINUTE;
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    expect(await send(w, { type: 'reopenReview', id: AMBIGUOUS })).toEqual({ ok: false, error: SCANNING });
+    expect(await w.store.getReview(AMBIGUOUS)).toEqual(answered);
+    gate.release();
+    await untilIdle(w);
+    // The answer stood through the scan; once it has ended the question can be reopened.
+    expect(await w.store.getReview(AMBIGUOUS)).toEqual(answered);
+    expect(await send(w, { type: 'reopenReview', id: AMBIGUOUS })).toEqual({ ok: true, data: null });
+    expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: null, answeredAt: null });
+  });
 });

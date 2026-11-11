@@ -8,6 +8,7 @@
 // decided by the user, which no scan changes.
 
 import { type Decomposition, OFFERABLE_PART } from '../decompose';
+import { knownModels, readSplit } from './split';
 import type { OwnerAnswer, ReviewAnswer, ReviewCandidate, ReviewItem, ScanStore } from './types';
 
 /** The note on a split the owner chose. */
@@ -20,6 +21,12 @@ export const MAX_ENTERED_PARTS = 8;
 export const NONE_NOTE = 'you answered none of these';
 /** The answer saved for "None of these", on split and match questions. */
 export const NONE = 'none';
+/**
+ * The answer a scan gives a split question when the bundle resolves; any other answer is the
+ * user's. Only a user's answer that names one of the item's choices, typed parts, or 'none',
+ * decides the split (ownerSplit).
+ */
+export const RESOLVED_BY_SCAN = 'resolved by a later scan';
 
 /** An answer that is refused. The message is one plain sentence for the owner. */
 export class AnswerRefused extends Error {
@@ -36,6 +43,9 @@ const CHANGED = 'That question changed. Choose again.';
 const INVALID_PARTS = 'Enter model numbers like PCL500B, separated by commas.';
 const NOT_FOR_MATCH = 'Parts can be entered only for a question about what a bundle contains.';
 const SELF_PART = "Enter the parts inside the bundle, not the bundle's own model number.";
+const NOT_ANSWERED = 'That question has not been answered yet.';
+const ONLY_SPLIT = 'Only an answer about what a bundle contains can be changed.';
+const NOT_YOURS = 'That question has no answer of yours to change.';
 
 // ---------------------------------------------------------------- choices
 
@@ -226,6 +236,45 @@ export async function applyReviewAnswer(store: ScanStore, id: string, answer: Re
     alternatives: [], decidedBy: 'user', updatedAt: now, waitingSince: null,
   });
   await store.putReview({ ...item, choices, answer: asin ?? NONE, answeredAt: now });
+}
+
+// ---------------------------------------------------------------- changing an answer
+
+/**
+ * Opens again split question `id`, which the owner answered (a reading chosen, parts typed, or
+ * "none": an answer ownerSplit reads), so it can be answered again (Ruling 42). The item loses its
+ * answer, `answerParts` and `answeredAt`; its choices, reason and `openedAt` stay as the question last
+ * showed them, so a new answer is signed against them as usual. Its bundle is split at once as a scan
+ * splits a bundle no answer decides (split.ts, readSplit, with the store's known models): normally
+ * in review, Contents not known, with the question open. Should that reading now resolve, the item
+ * is closed as a scan closes it (RESOLVED_BY_SCAN, at `now`), as the next scan would. Match records
+ * and prices saved for the old parts stay; nothing reads them for this bundle.
+ *
+ * Refused with AnswerRefused, writing nothing, for an unknown id, a match question, an open
+ * question, and one a scan closed itself or whose stored answer decides nothing. The bundle is
+ * written before the item, so a failure between the two leaves the answer standing, and the next
+ * scan applies it again.
+ */
+export async function reopenReviewAnswer(store: ScanStore, id: string, now: number): Promise<void> {
+  const item = typeof id === 'string' ? await store.getReview(id) : undefined;
+  if (!item) throw new AnswerRefused(NOT_FOUND);
+  if (item.kind !== 'split') throw new AnswerRefused(ONLY_SPLIT);
+  if (item.answer === null) throw new AnswerRefused(NOT_ANSWERED);
+  if (ownerSplit(item) === null) throw new AnswerRefused(NOT_YOURS);
+
+  const { answerParts: _answerParts, ...rest } = item;
+  const open: ReviewItem = { ...rest, choices: choicesOf(item), answer: null, answeredAt: null };
+  const bundle = await store.getBundle(item.subject);
+  // A bundle not stored (never the case after a scan) is split when a scan sees it.
+  if (bundle) {
+    const split = readSplit(bundle, await knownModels(store));
+    await store.putBundle({ ...bundle, split });
+    if (split.status === 'resolved') {
+      await store.putReview({ ...open, answer: RESOLVED_BY_SCAN, answeredAt: now });
+      return;
+    }
+  }
+  await store.putReview(open);
 }
 
 /**

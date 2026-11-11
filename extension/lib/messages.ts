@@ -23,6 +23,8 @@ export type Request =
   | { type: 'getReport' }
   | { type: 'setPackaging'; model: string; packaging: Packaging }
   | { type: 'answerReview'; id: string; answer: ReviewAnswer }
+  /** Opens again a split question the owner answered, so it can be answered again. Reply data: null. */
+  | { type: 'reopenReview'; id: string }
   /** Reply data: Quote, what the action would spend now and why it may not run. Spends nothing. */
   | { type: 'quote'; action: PaidAction }
   /** Spends at most the quote's searches. Replies once the action has ended; a refusal or failure is one sentence. */

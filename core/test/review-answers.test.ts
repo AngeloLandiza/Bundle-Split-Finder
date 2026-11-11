@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { replayRecorded, type Replay } from '../../scripts/replay';
 import { type PageContent, parseBundlePage } from '../src/hdPage';
-import { AnswerRefused, applyReviewAnswer, reviewSignature } from '../src/scan/answers';
+import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer, reviewSignature } from '../src/scan/answers';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
 import { runScan } from '../src/scan/runner';
@@ -543,6 +543,178 @@ describe('BundleRow.answer: the report says when a split is the owner\'s answer'
     w.clock = T0 + DAY;
     await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
     expect((await rowOf(w, RYOBI_ONLY, 'homedepot:328690510')).answer).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------- changing an answer
+
+describe('reopenReviewAnswer: the owner can change a split answer (Ruling 42)', () => {
+  const RYOBI_COMBO: ScanSettings = { ...STEP2, brands: ['RYOBI'], queries: [{ q: 'ryobi 18v combo kit' }] };
+  const RYOBI_ONLY: ScanSettings = { ...STEP2, brands: ['RYOBI'], queries: [] };
+  const SB = 'split:homedepot:328690510';
+  const SB_KEY = 'homedepot:328690510';
+  const P553 = 'split:homedepot:320243741';
+  const P553_KEY = 'homedepot:320243741';
+  const ENTERED = 'parts entered by you';
+  const snapshot = async (w: World) => ({
+    bundles: await w.store.listBundles(), review: await w.store.listReview(), matches: await w.store.listMatches(), catalog: await w.store.listCatalog(),
+  });
+
+  /** The recorded RYOBI search, as a scan leaves it: PCL500525SB offers no reading, PCL1600K2-P553 one. */
+  async function scanned(w: World) {
+    await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    const sb = { item: (await w.store.getReview(SB))!, split: (await w.store.getBundle(SB_KEY))!.split! };
+    const p553 = { item: (await w.store.getReview(P553))!, split: (await w.store.getBundle(P553_KEY))!.split! };
+    expect(sb.item).toMatchObject({ model: 'PCL500525SB', choices: [], answer: null });
+    expect(sb.split.status).toBe('needs_review');
+    expect(p553.item).toMatchObject({ model: 'PCL1600K2-P553', choices: [['PCL1600K2', 'P553']], answer: null });
+    expect(p553.split.status).toBe('needs_review');
+    return { sb, p553 };
+  }
+
+  /** What the report shows for a bundle, and whether its question is asked. */
+  async function shownFor(w: World, key: string, id: string) {
+    const report = await buildReport(w.store, RYOBI_ONLY);
+    const row = report.bundles.find((b) => b.key === key)!;
+    return { section: row.section, status: row.status, answer: row.answer, asked: report.review.some((r) => r.id === id) };
+  }
+  const notKnownYet = { section: 'split', status: 'needs_review', answer: null, asked: true };
+
+  it('PCL500525SB answered PCL500B, PCL526B is reopened: back in Contents not known, its question open, as the scan left it', async () => {
+    const w = world();
+    const { sb } = await scanned(w);
+    await applyReviewAnswer(w.store, SB, { parts: ['PCL500B', 'PCL526B'], seen: reviewSignature(sb.item) }, T0 + MINUTE);
+    expect(await shownFor(w, SB_KEY, SB)).toMatchObject({ section: 'waiting', answer: { reviewId: SB, kind: 'entered' }, asked: false });
+
+    await reopenReviewAnswer(w.store, SB, T0 + 2 * MINUTE);
+    expect(await w.store.getReview(SB)).toEqual(sb.item);
+    expect((await w.store.getBundle(SB_KEY))!.split).toEqual(sb.split);
+    expect(await shownFor(w, SB_KEY, SB)).toEqual(notKnownYet);
+
+    // Answered again, with a part listed twice: the new answer is the split.
+    await applyReviewAnswer(w.store, SB, { parts: ['PCL500B', 'PCL526B', 'PCL526B'], seen: reviewSignature((await w.store.getReview(SB))!) }, T0 + 3 * MINUTE);
+    expect((await w.store.getBundle(SB_KEY))!.split).toEqual({ components: ['PCL500B', 'PCL526B', 'PCL526B'], status: 'resolved', notes: [ENTERED] });
+    expect(await w.store.getReview(SB)).toEqual({ ...sb.item, answer: 'PCL500B,PCL526B,PCL526B', answerParts: ['PCL500B', 'PCL526B', 'PCL526B'], answeredAt: T0 + 3 * MINUTE });
+    expect(await shownFor(w, SB_KEY, SB)).toMatchObject({ answer: { reviewId: SB, kind: 'entered' }, asked: false });
+  });
+
+  it('a None of these answer is reopened the same way, and can then be answered with parts', async () => {
+    const w = world();
+    const { sb } = await scanned(w);
+    await applyReviewAnswer(w.store, SB, { none: true, seen: reviewSignature(sb.item) }, T0 + MINUTE);
+    expect(await shownFor(w, SB_KEY, SB)).toMatchObject({ section: 'split', answer: { reviewId: SB, kind: 'none' }, asked: false });
+
+    await reopenReviewAnswer(w.store, SB, T0 + 2 * MINUTE);
+    expect(await w.store.getReview(SB)).toEqual(sb.item);
+    expect((await w.store.getBundle(SB_KEY))!.split).toEqual(sb.split);
+    expect(await shownFor(w, SB_KEY, SB)).toEqual(notKnownYet);
+
+    await applyReviewAnswer(w.store, SB, { parts: ['PCL500B', 'PCL526B'], seen: reviewSignature((await w.store.getReview(SB))!) }, T0 + 3 * MINUTE);
+    expect((await w.store.getBundle(SB_KEY))!.split).toEqual({ components: ['PCL500B', 'PCL526B'], status: 'resolved', notes: [ENTERED] });
+  });
+
+  it('a chosen reading (PCL1600K2-P553) is reopened with its reading offered again', async () => {
+    const w = world();
+    const { p553 } = await scanned(w);
+    await applyReviewAnswer(w.store, P553, await shown(w, P553, { choice: 0 }), T0 + MINUTE);
+    expect(await shownFor(w, P553_KEY, P553)).toMatchObject({ answer: { reviewId: P553, kind: 'chosen' }, asked: false });
+
+    await reopenReviewAnswer(w.store, P553, T0 + 2 * MINUTE);
+    expect(await w.store.getReview(P553)).toEqual(p553.item);
+    expect((await w.store.getBundle(P553_KEY))!.split).toEqual(p553.split);
+    expect(await shownFor(w, P553_KEY, P553)).toEqual(notKnownYet);
+
+    await applyReviewAnswer(w.store, P553, await shown(w, P553, { none: true }), T0 + 3 * MINUTE);
+    expect(await shownFor(w, P553_KEY, P553)).toMatchObject({ section: 'split', answer: { reviewId: P553, kind: 'none' }, asked: false });
+  });
+
+  it('an answer survives a later scan and can still be reopened; the reopened question stays open across later scans', async () => {
+    const w = world();
+    const { sb } = await scanned(w);
+    await applyReviewAnswer(w.store, SB, { parts: ['PCL500B', 'PCL526B'], seen: reviewSignature(sb.item) }, T0 + MINUTE);
+    w.clock = T0 + DAY;
+    await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect((await w.store.getBundle(SB_KEY))!.split).toEqual({ components: ['PCL500B', 'PCL526B'], status: 'resolved', notes: [ENTERED] });
+    // The scan left the two parts waiting for their lookups: those records stay, unused.
+    expect(await w.store.getMatch('RYOBI:PCL500B')).toMatchObject({ status: 'waiting' });
+
+    await reopenReviewAnswer(w.store, SB, T0 + DAY + MINUTE);
+    expect(await w.store.getReview(SB)).toEqual(sb.item);
+    expect((await w.store.getBundle(SB_KEY))!.split).toEqual(sb.split);
+    expect(await w.store.getMatch('RYOBI:PCL500B')).toMatchObject({ status: 'waiting' });
+
+    for (const day of [2, 3]) {
+      w.clock = T0 + day * DAY;
+      const job = await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+      expect(await w.store.getReview(SB)).toEqual(sb.item);
+      expect((await w.store.getBundle(SB_KEY))!.split).toEqual(sb.split);
+      expect(job.counts.reviewsOpened).toBe(0);
+      // Its old parts are no longer planned for this bundle.
+      expect(job.deferred.filter((s) => s.kind === 'lookup' && s.model.startsWith('PCL5'))).toEqual([]);
+      expect(await shownFor(w, SB_KEY, SB)).toEqual(notKnownYet);
+    }
+    expect(w.ledger).toEqual(['scan:listing:ryobi 18v combo kit:p1']);
+  });
+
+  it('a bundle the data now resolves is split as a scan splits it, and its question closed as a scan closes it', async () => {
+    const w = world();
+    await scanned(w);
+    await applyReviewAnswer(w.store, P553, await shown(w, P553, { choice: 0 }), T0 + MINUTE);
+    // Both parts are now in the stored catalog, as they would be once known.
+    for (const m of ['PCL1600K2', 'P553']) {
+      await w.store.putCatalogEntry({ key: `RYOBI:${m}`, brand: 'RYOBI', model: m, title: `${m} (seeded for this test)`, kinds: [], isKit: false, upc: null, seenAt: T0 });
+    }
+    await reopenReviewAnswer(w.store, P553, T0 + 2 * MINUTE);
+    const split = (await w.store.getBundle(P553_KEY))!.split!;
+    expect(split).toMatchObject({ components: ['PCL1600K2', 'P553'], status: 'resolved' });
+    expect(split.notes).not.toContain(CHOSEN);
+    expect(await w.store.getReview(P553)).toMatchObject({ answer: 'resolved by a later scan', answeredAt: T0 + 2 * MINUTE });
+    expect((await w.store.getReview(P553))!.answerParts).toBeUndefined();
+    expect(await shownFor(w, P553_KEY, P553)).toMatchObject({ answer: null, asked: false });
+  });
+
+  it('refuses an unknown id, an open question, a match question, one a scan closed and an answer that decides nothing, and writes nothing', async () => {
+    const w = world();
+    const { sb } = await scanned(w);
+    const before = await snapshot(w);
+    const refusals: [unknown, string][] = [
+      ['split:homedepot:nothing', NOT_FOUND], [7, NOT_FOUND], [SB, 'That question has not been answered yet.'],
+    ];
+    for (const [id, sentence] of refusals) {
+      const refused = reopenReviewAnswer(w.store, id as string, T0 + MINUTE);
+      await expect(refused, String(id)).rejects.toBeInstanceOf(AnswerRefused);
+      await expect(reopenReviewAnswer(w.store, id as string, T0 + MINUTE), String(id)).rejects.toThrow(sentence);
+    }
+    expect(await snapshot(w)).toEqual(before);
+
+    // A stored answer that names none of the choices (saved before step 5) decides nothing: there is nothing to change.
+    await w.store.putReview({ ...sb.item, answer: 'PCL500B,PCL526B', answeredAt: T0 + MINUTE });
+    const freeText = await snapshot(w);
+    await expect(reopenReviewAnswer(w.store, SB, T0 + 2 * MINUTE)).rejects.toThrow('That question has no answer of yours to change.');
+    expect(await snapshot(w)).toEqual(freeText);
+
+    // A question a scan closed itself.
+    const closed = world();
+    await scan(closed, { settings: COMBO });
+    closed.clock = T0 + DAY;
+    await scan(closed, { settings: COMBO, policy: ONE_SEARCH, readPages: reader() });
+    const id = 'split:homedepot:337440459';
+    expect(await closed.store.getReview(id)).toMatchObject({ answer: 'resolved by a later scan' });
+    const settled = await snapshot(closed);
+    await expect(reopenReviewAnswer(closed.store, id, T0 + DAY + MINUTE)).rejects.toThrow('That question has no answer of yours to change.');
+    expect(await snapshot(closed)).toEqual(settled);
+
+    // A match question, open or answered.
+    const { w: m } = await unconfirmed();
+    const ONLY_SPLIT = 'Only an answer about what a bundle contains can be changed.';
+    const openMatch = await snapshot(m);
+    await expect(reopenReviewAnswer(m.store, MATCH, T0 + MINUTE)).rejects.toThrow(ONLY_SPLIT);
+    expect(await snapshot(m)).toEqual(openMatch);
+    await applyReviewAnswer(m.store, MATCH, await shown(m, MATCH, { choice: 0 }), T0 + MINUTE);
+    const answeredMatch = await snapshot(m);
+    await expect(reopenReviewAnswer(m.store, MATCH, T0 + 2 * MINUTE)).rejects.toBeInstanceOf(AnswerRefused);
+    await expect(reopenReviewAnswer(m.store, MATCH, T0 + 2 * MINUTE)).rejects.toThrow(ONLY_SPLIT);
+    expect(await snapshot(m)).toEqual(answeredMatch);
   });
 });
 
