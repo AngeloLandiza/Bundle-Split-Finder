@@ -1,13 +1,14 @@
 // The scan runner: a few pages of the brands' own Amazon listings, then Home Depot listing
 // pages, then the bundles' own pages (free, never a search), then splits (free), then one
 // Amazon lookup per new part that no saved listing answers and a refresh per stale price.
-// "Rule n" refers to the step 2 plan, Task 4 ("The scan runner"); "2c rule n" to the step 2c
+// The lookup step, matching from saved listings and the match question are shared with the side
+// panel's Look up and Verify (paid.ts), through PartContext. "Rule n" refers to the step 2 plan, Task 4 ("The scan runner"); "2c rule n" to the step 2c
 // plan, Task 2 ("The catalog phase"); "3 rule n" to the step 3 plan, Task 3 ("Runner: stop on
 // request, and one failed lookup does not end a scan"); "Pn" to the step 4 plan, Task 4
 // ("Runner reads pages before the split").
 
 import { type Catalog, catalogEntry, DEWALT_BUNDLE, type Decomposition, decompose, kindsFromTitle } from '../decompose';
-import { type Candidate, pick } from '../match';
+import { type Candidate, pick, type Picked } from '../match';
 import { splitWithPage } from '../pageSplit';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
@@ -17,8 +18,8 @@ import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { bundleKey, partKey } from './types';
 import type {
-  BudgetView, BundleRecord, CatalogCursor, ListingRecord, MatchRecord, PageOutcome, PriceRecord, ReadPages, ScanJob, ScanSettings, ScanStep, ScanStore,
-  SearchClient, StopReason,
+  BudgetView, BundleRecord, CatalogCursor, ListingRecord, MatchRecord, PageOutcome, PriceRecord, ReadPages, ReviewCandidate, ScanJob, ScanSettings,
+  ScanStep, ScanStore, SearchClient, StopReason,
 } from './types';
 
 export interface ScanDeps {
@@ -38,10 +39,28 @@ export interface ScanDeps {
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
 type Listing = Extract<ScanStep, { kind: 'listing' }>;
-type Lookup = Extract<ScanStep, { kind: 'lookup' }>;
+export type LookupStep = Extract<ScanStep, { kind: 'lookup' }>;
+type Lookup = LookupStep;
 type Refresh = Extract<ScanStep, { kind: 'refresh' }>;
 
-interface Run {
+/**
+ * What the lookup step, and matching a part from saved listings, need. A scan's run is one. The
+ * side panel's Look up and Verify build their own (paid.ts), so they apply exactly a scan's rules.
+ */
+export interface PartContext {
+  client: SearchClient;
+  store: ScanStore;
+  settings: ScanSettings;
+  now: () => number;
+  /** First part of every ledger label. */
+  prefix: string;
+  /** The models the split knew (knownModels). */
+  catalog: Catalog;
+  /** Counted as a scan counts. The panel's are not kept. */
+  job: Pick<ScanJob, 'counts'>;
+}
+
+interface Run extends PartContext {
   client: SearchClient;
   budget: BudgetView;
   store: ScanStore;
@@ -271,8 +290,7 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
         { label: `${prefix}:listing:${step.q}:p${step.page}`, maxAgeMs: Math.max(settings.listingMaxAgeMs, run.now() - job.startedAt) },
       );
     case 'lookup':
-      // No maxAgeMs on a lookup: a part is paid for once.
-      return run.client.search(amazonPart(run, step), { label: `${prefix}:lookup:${step.model}` });
+      return sendLookup(run, step);
     case 'refresh':
       return run.client.search(amazonPart(run, step), { label: `${prefix}:refresh:${step.model}`, maxAgeMs: settings.freshnessMs });
     default:
@@ -280,7 +298,12 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
   }
 }
 
-const amazonPart = (run: Run, step: Lookup | Refresh) => ({ engine: 'amazon', k: `${step.brand} ${step.model}`, amazon_domain: run.settings.amazonDomain });
+/** Rule 6: the lookup step's search. No maxAgeMs on a lookup: a part is paid for once. */
+export function sendLookup(ctx: PartContext, step: LookupStep): Promise<SearchResult> {
+  return ctx.client.search(amazonPart(ctx, step), { label: `${ctx.prefix}:lookup:${step.model}` });
+}
+
+const amazonPart = (ctx: PartContext, step: Lookup | Refresh) => ({ engine: 'amazon', k: `${step.brand} ${step.model}`, amazon_domain: ctx.settings.amazonDomain });
 
 /** Rule 3 and 2c rule 2: what a step's response changes in the store. */
 /**
@@ -372,44 +395,52 @@ async function applyListing(run: Run, step: Listing, data: unknown, at: number):
   job.counts.pagesFetched += 1;
 }
 
-async function applyLookup(run: Run, step: Lookup, data: unknown, at: number): Promise<void> {
-  const { store, job } = run;
-  const now = run.now();
+/** Rule 6: what a lookup's response changes in the store. */
+export async function applyLookup(ctx: PartContext, step: LookupStep, data: unknown, at: number): Promise<void> {
+  const { store, job } = ctx;
+  const now = ctx.now();
   const key = partKey(step.brand, step.model);
   job.counts.lookupsDone += 1;
   const candidates = parseAmazonSearch(data);
-  await saveListings(run, candidates, at);
+  await saveListings(ctx, candidates, at);
   // A saved queue can outlive the plan: the user may have decided this part since.
   if ((await store.getMatch(key))?.decidedBy === 'user') return;
-  const picked = pick(wantedFor(step.brand, step.model, run.catalog), candidates);
+  const picked = pick(wantedFor(step.brand, step.model, ctx.catalog), candidates);
   const base = { key, brand: step.brand, model: step.model, decidedBy: 'auto' as const, updatedAt: now, waitingSince: null };
   let match: MatchRecord;
   if (picked.chosen) {
     const asin = picked.chosen.asin;
     const alternatives = unique(picked.alternatives.map((g) => g.asin)).filter((a) => a !== asin);
     match = { ...base, status: 'matched', asin, grade: picked.chosen.grade, alternatives };
-    for (const a of [asin, ...alternatives]) await savePrice(run, a, firstWith(candidates, a), at);
+    for (const a of [asin, ...alternatives]) await savePrice(ctx, a, firstWith(candidates, a), at);
     job.counts.partsMatched += 1;
   } else if (picked.review.length > 0) {
     match = { ...base, status: 'review', asin: null, grade: null, alternatives: [] };
-    const id = `match:${key}`;
-    if (!(await store.getReview(id))) {
-      // One candidate per ASIN: a search can list the same ASIN twice.
-      const listed = unique(picked.review.map((g) => g.asin)).map((a) => {
-        const c = firstWith(candidates, a)!;
-        return { asin: a, title: c.title, price: c.price ?? null, reviews: c.reviews ?? null, reasons: picked.review.find((g) => g.asin === a)!.reasons };
-      });
-      await store.putReview({
-        id, kind: 'match', subject: key, brand: step.brand, model: step.model, title: (await store.getCatalogEntry(key))?.title ?? null,
-        reason: `${listed.length} listing(s) show the model number, but the brand is not confirmed`,
-        candidates: listed, choices: [], openedAt: now, answer: null, answeredAt: null,
-      });
-      job.counts.reviewsOpened += 1;
-    }
+    // One candidate per ASIN: a search can list the same ASIN twice.
+    const listed = unique(picked.review.map((g) => g.asin)).map((a) => {
+      const c = firstWith(candidates, a)!;
+      return { asin: a, title: c.title, price: c.price ?? null, reviews: c.reviews ?? null, reasons: picked.review.find((g) => g.asin === a)!.reasons };
+    });
+    await openMatchReview(ctx, { key, brand: step.brand, model: step.model }, `${listed.length} listing(s) show the model number, but the brand is not confirmed`, listed, now);
   } else {
     match = { ...base, status: 'none', asin: null, grade: null, alternatives: [] };
   }
   await store.putMatch(match);
+}
+
+/**
+ * The match question for a part, opened at `now` and counted, unless the part already has one
+ * (open or answered), which is left as it is. Its title is the catalog's.
+ */
+export async function openMatchReview(ctx: PartContext, part: Part, reason: string, candidates: ReviewCandidate[], now: number): Promise<void> {
+  const { store, job } = ctx;
+  const id = `match:${part.key}`;
+  if (await store.getReview(id)) return;
+  await store.putReview({
+    id, kind: 'match', subject: part.key, brand: part.brand, model: part.model, title: (await store.getCatalogEntry(part.key))?.title ?? null,
+    reason, candidates, choices: [], openedAt: now, answer: null, answeredAt: null,
+  });
+  job.counts.reviewsOpened += 1;
 }
 
 async function applyRefresh(run: Run, step: Refresh, data: unknown, at: number): Promise<void> {
@@ -426,8 +457,8 @@ async function applyRefresh(run: Run, step: Refresh, data: unknown, at: number):
  * as seen at `at`, when SerpApi answered. A listing checked later than that is kept as it is,
  * so an old response never makes an old price look fresh. Every such row is counted.
  */
-async function saveListings(run: Run, candidates: Candidate[], at: number): Promise<void> {
-  const { store, settings, job } = run;
+async function saveListings(ctx: PartContext, candidates: Candidate[], at: number): Promise<void> {
+  const { store, settings, job } = ctx;
   for (const c of candidates) {
     const old = await store.getListing(c.asin);
     const record = listingFrom(c, settings.brands, at, old);
@@ -439,10 +470,10 @@ async function saveListings(run: Run, candidates: Candidate[], at: number): Prom
 }
 
 /** Saves the price an ASIN has in a response received at `at`, unless the stored one was checked later. */
-async function savePrice(run: Run, asin: string, cand: Candidate | undefined, at: number): Promise<void> {
-  const old = await run.store.getPrice(asin);
+export async function savePrice(ctx: Pick<PartContext, 'store'>, asin: string, cand: Candidate | undefined, at: number): Promise<void> {
+  const old = await ctx.store.getPrice(asin);
   if (old && old.checkedAt > at) return;
-  await run.store.putPrice(priceSeen(asin, old, cand, at));
+  await ctx.store.putPrice(priceSeen(asin, old, cand, at));
 }
 
 /** A price record after a response received at `at` was read: `cand` is the ASIN's row in it, if it was there. */
@@ -523,7 +554,7 @@ function noteProblem(job: ScanJob, sentence: string): void {
 
 // ---------------------------------------------------------------- rule 4 and 2c rule 4: split (free)
 
-interface KnownModels {
+export interface KnownModels {
   /** The stored catalog alone: the models Home Depot's own rows showed. */
   stored: Catalog;
   /** The stored catalog plus an entry for every model in a saved listing's title (2c rule 4). */
@@ -535,9 +566,10 @@ interface KnownModels {
  * 2c rule 4: the stored catalog, plus an entry for every model in a saved listing's title.
  * A stored entry wins over one read from a listing. A DEWALT model read from a listing that
  * starts with DCK is a kit, whatever its Amazon title says, so the splitter never offers it as
- * a bonus tool. The one source of the catalog for the split and for the parts phase.
+ * a bonus tool. The one source of the catalog for the split, for the parts phase and for the
+ * panel's paid actions (paid.ts).
  */
-async function knownModels(store: ScanStore): Promise<KnownModels> {
+export async function knownModels(store: ScanStore): Promise<KnownModels> {
   const listings = await store.listListings();
   const stored: Catalog = new Map();
   for (const c of await store.listCatalog()) stored.set(c.model, { model: c.model, brand: c.brand, kinds: c.kinds, isKit: c.isKit });
@@ -632,14 +664,31 @@ interface Wants {
   steps: Map<string, Lookup | Refresh>;
 }
 
-interface Part {
+/** A part of a bundle: partKey(brand, model), brand and model upper case. */
+export interface Part {
   key: string;
   brand: string;
   model: string;
 }
 
 /** Rule 5: a lookup is wanted for a part with no match, or one left waiting, never for a user's decision. */
-const lookupWanted = (match: MatchRecord | undefined): boolean => !match || (match.status === 'waiting' && match.decidedBy !== 'user');
+export const lookupWanted = (match: MatchRecord | undefined): boolean => !match || (match.status === 'waiting' && match.decidedBy !== 'user');
+
+/** Rule 5: the parts of every resolved bundle, by part key, each with the largest saving among its bundles. */
+export async function bundleParts(store: ScanStore): Promise<Map<string, Part & { saving: number }>> {
+  const parts = new Map<string, Part & { saving: number }>();
+  for (const b of await store.listBundles()) {
+    if (b.split?.status !== 'resolved') continue;
+    const saving = (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0);
+    for (const component of b.split.components) {
+      const key = partKey(b.brand, component);
+      const seen = parts.get(key);
+      if (!seen) parts.set(key, { key, brand: b.brand.trim().toUpperCase(), model: component.trim().toUpperCase(), saving });
+      else seen.saving = Math.max(seen.saving, saving);
+    }
+  }
+  return parts;
+}
 
 /**
  * The lookups and refreshes the store asks for right now, most valuable first.
@@ -649,18 +698,7 @@ const lookupWanted = (match: MatchRecord | undefined): boolean => !match || (mat
 async function wantedParts(
   store: ScanStore, settings: ScanSettings, now: number, fromListings?: (part: Part) => Promise<MatchRecord | null>,
 ): Promise<Wants> {
-  // The parts of every resolved bundle, each with the largest saving among its bundles.
-  const parts = new Map<string, { brand: string; model: string; saving: number }>();
-  for (const b of await store.listBundles()) {
-    if (b.split?.status !== 'resolved') continue;
-    const saving = (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0);
-    for (const component of b.split.components) {
-      const key = partKey(b.brand, component);
-      const seen = parts.get(key);
-      if (!seen) parts.set(key, { brand: b.brand.trim().toUpperCase(), model: component.trim().toUpperCase(), saving });
-      else seen.saving = Math.max(seen.saving, saving);
-    }
-  }
+  const parts = await bundleParts(store);
   const lookups: string[] = [];
   const refreshes: string[] = [];
   const waitingSince = new Map<string, number>();
@@ -716,9 +754,9 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
  * saved listings. Otherwise null: the part is left to a paid lookup, which alone may open a
  * review item.
  */
-async function matchFromListings(run: Run, listings: ListingRecord[], part: Part): Promise<MatchRecord | null> {
-  const { store, job } = run;
-  const picked = pick(wantedFor(part.brand, part.model, run.catalog), candidatesFor(part.brand, part.model, listings));
+export async function matchFromListings(ctx: PartContext, listings: ListingRecord[], part: Part): Promise<MatchRecord | null> {
+  const { store, job } = ctx;
+  const picked = pickFromListings(part, ctx.catalog, listings);
   if (!picked.chosen) return null;
   const asin = picked.chosen.asin;
   const alternatives = unique(picked.alternatives.map((g) => g.asin)).filter((a) => a !== asin);
@@ -731,7 +769,7 @@ async function matchFromListings(run: Run, listings: ListingRecord[], part: Part
   }
   const match: MatchRecord = {
     key: part.key, brand: part.brand, model: part.model, status: 'matched', asin, grade: picked.chosen.grade, alternatives,
-    decidedBy: 'auto', updatedAt: run.now(), waitingSince: null,
+    decidedBy: 'auto', updatedAt: ctx.now(), waitingSince: null,
   };
   await store.putMatch(match);
   job.counts.partsFromCatalog += 1;
@@ -739,13 +777,17 @@ async function matchFromListings(run: Run, listings: ListingRecord[], part: Part
   return match;
 }
 
+/** 2c rule 5's judgement, writing nothing: a listing is chosen when matchFromListings would match the part. */
+export const pickFromListings = (part: Pick<Part, 'brand' | 'model'>, catalog: Catalog, listings: ListingRecord[]): Picked =>
+  pick(wantedFor(part.brand, part.model, catalog), candidatesFor(part.brand, part.model, listings));
+
 /** A lookup that did not run: the part goes first next scan. Keeps the first waitingSince. */
-async function markWaiting(run: Run, step: Lookup): Promise<void> {
+export async function markWaiting(ctx: Pick<PartContext, 'store' | 'now'>, step: LookupStep): Promise<void> {
   const key = partKey(step.brand, step.model);
-  const old = await run.store.getMatch(key);
+  const old = await ctx.store.getMatch(key);
   if (old?.decidedBy === 'user') return;
-  const now = run.now();
-  await run.store.putMatch({
+  const now = ctx.now();
+  await ctx.store.putMatch({
     key, brand: step.brand, model: step.model, status: 'waiting', asin: null, grade: null, alternatives: [],
     decidedBy: 'auto', updatedAt: now, waitingSince: old?.waitingSince ?? now,
   });
