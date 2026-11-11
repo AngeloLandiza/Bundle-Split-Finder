@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { amazonNet, type FeeSettings } from '@core/money';
 import { bundlesCsv } from '@core/scan/csv';
@@ -444,7 +444,16 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
                 </a>
               </p>
               {row.uncovered.length > 0 ? (
-                <p className="detail-estimate">Counts {listOf(row.uncovered)} at $0: no priced Amazon listing is chosen.</p>
+                <p className="detail-estimate">
+                  Counts{' '}
+                  {row.uncovered.map((m, i) => (
+                    <Fragment key={m}>
+                      {i === 0 ? '' : i === row.uncovered.length - 1 ? ' and ' : ', '}
+                      <span className="figure fig-sm">{m}</span>
+                    </Fragment>
+                  ))}{' '}
+                  at $0: no priced Amazon listing is chosen.
+                </p>
               ) : null}
             </>
           ) : waiting > 0 ? (

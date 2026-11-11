@@ -282,20 +282,25 @@ describe('a part with no listing', () => {
 
   it('says which part counts as nothing, and says so on the part', () => {
     show(row({ status: 'partial', section: 'missing_listing', parts: [part('PCL1201K2', none), part('PCL515B')], uncovered: ['PCL1201K2'] }));
-    expect(screen.getByText('Counts PCL1201K2 at $0: no priced Amazon listing is chosen.')).toBeInTheDocument();
+    const sentence = screen.getByText(/at \$0: no priced Amazon listing is chosen\./);
+    expect(sentence).toHaveTextContent('Counts PCL1201K2 at $0: no priced Amazon listing is chosen.');
+    // Each model number in it is set in the figure face (design.md), at 12px.
+    expect([...sentence.querySelectorAll('.figure.fig-sm')].map((n) => n.textContent)).toEqual(['PCL1201K2']);
     expect(within(screen.getAllByRole('listitem')[0]!).getByText('No Amazon listing found')).toBeInTheDocument();
   });
 
   it('names every such part', () => {
     show(row({ status: 'partial', section: 'missing_listing', parts: [part('A1', none), part('A2', none)], uncovered: ['A1', 'A2'] }));
-    expect(screen.getByText('Counts A1 and A2 at $0: no priced Amazon listing is chosen.')).toBeInTheDocument();
+    const sentence = screen.getByText(/at \$0: no priced Amazon listing is chosen\./);
+    expect(sentence).toHaveTextContent('Counts A1 and A2 at $0: no priced Amazon listing is chosen.');
+    expect([...sentence.querySelectorAll('.figure.fig-sm')].map((n) => n.textContent)).toEqual(['A1', 'A2']);
   });
 
   it('names an inactive listing and a part left in review too, and leaves their prices out of Parts sell for', () => {
     const inactive = part('A1', { availability: 'inactive', price: 50 });
     const review = part('A2', { status: 'review', asin: null, grade: null, price: null, availability: 'missing', title: null });
     show(row({ status: 'partial', section: 'inactive_listing', parts: [inactive, review, part('A3', { price: 100 })], uncovered: ['A1', 'A2'] }));
-    expect(screen.getByText('Counts A1 and A2 at $0: no priced Amazon listing is chosen.')).toBeInTheDocument();
+    expect(screen.getByText(/at \$0: no priced Amazon listing is chosen\./)).toHaveTextContent('Counts A1 and A2 at $0: no priced Amazon listing is chosen.');
     expect(screen.getByText('Parts sell for').nextElementSibling).toHaveTextContent('$100.00');
     // The part's own label still says only what is true of it.
     expect(within(screen.getAllByRole('listitem')[0]!).getByText('Listing inactive')).toBeInTheDocument();
