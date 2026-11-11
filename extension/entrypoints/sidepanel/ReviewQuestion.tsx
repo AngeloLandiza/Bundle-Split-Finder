@@ -126,8 +126,8 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
           <button type="submit" className="btn btn-primary" disabled={picked === null || scanRunning || saving}>
             Save answer
           </button>
-          <button type="button" className="btn btn-secondary" onClick={onNotNow}>
-            Not now
+          <button type="button" className="btn btn-secondary" onClick={onNotNow} disabled={saving}>
+            Skip for now
           </button>
         </div>
         {scanRunning ? (

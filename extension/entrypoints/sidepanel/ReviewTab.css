@@ -1,5 +1,8 @@
 /* Review tab. Rows follow Limit.dc.html: a white band, hairlines edge to edge, 11px 16px. */
 .review {
+  --review-radio: 13px;
+  --review-gap: 10px;
+  --review-indent: calc(var(--review-radio) + var(--review-gap));
   padding: 12px 0 16px;
 }
 .review-count {
@@ -88,11 +91,13 @@
 .review-choice {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--review-gap);
   cursor: pointer;
 }
 .review-choice input {
   margin: 2px 0 0;
+  width: var(--review-radio);
+  height: var(--review-radio);
   accent-color: var(--ink);
   flex: none;
 }
@@ -118,7 +123,7 @@
 .review-cand-meta {
   display: flex;
   gap: 12px;
-  margin: 2px 0 0 26px;
+  margin: 2px 0 0 var(--review-indent);
   color: var(--ink-2);
 }
 .review-cand-meta a {
@@ -131,7 +136,7 @@
   margin-top: 4px;
 }
 .review-none-effect {
-  margin: 2px 0 0 26px;
+  margin: 2px 0 0 var(--review-indent);
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-2);

@@ -298,8 +298,8 @@ describe('ReviewTab: a report built on the replayed recordings', () => {
   });
 });
 
-describe('ReviewTab: Not now and what None of these does', () => {
-  const notNow = () => screen.getByRole('button', { name: 'Not now' });
+describe('ReviewTab: Skip for now and what None of these does', () => {
+  const skipForNow = () => screen.getByRole('button', { name: 'Skip for now' });
   const legend = (t: string) => screen.getByText(t, { selector: 'legend' });
   const SPLIT_Q = 'Which parts come in this bundle?';
   const MATCH_Q = 'Which Amazon listing is DEWALT DCF891B?';
@@ -307,7 +307,7 @@ describe('ReviewTab: Not now and what None of these does', () => {
   it('sends no message and shows the next question, the count unchanged', async () => {
     const user = userEvent.setup();
     const { send } = setup(reportOf([SPLIT, MATCH]));
-    await user.click(notNow());
+    await user.click(skipForNow());
     expect(send).not.toHaveBeenCalled();
     expect(legend(MATCH_Q)).toBeInTheDocument();
     expect(screen.getByText('1 of 2')).toBeInTheDocument();
@@ -317,13 +317,13 @@ describe('ReviewTab: Not now and what None of these does', () => {
     const user = userEvent.setup();
     const third = item({ id: 'split:c', model: 'DCK999', openedAt: 3, reason: 'Third.', choices: [['DCF891B']] });
     setup(reportOf([SPLIT, MATCH, third]));
-    await user.click(notNow());
-    await user.click(notNow());
+    await user.click(skipForNow());
+    await user.click(skipForNow());
     expect(screen.getByText('Third.')).toBeInTheDocument();
-    await user.click(notNow());
+    await user.click(skipForNow());
     expect(legend(SPLIT_Q)).toBeInTheDocument();
     expect(screen.getByText('DCK240C2')).toBeInTheDocument();
-    await user.click(notNow());
+    await user.click(skipForNow());
     expect(legend(MATCH_Q)).toBeInTheDocument();
     expect(screen.getByText('1 of 3')).toBeInTheDocument();
   });
@@ -331,7 +331,7 @@ describe('ReviewTab: Not now and what None of these does', () => {
   it('keeps a single question on screen', async () => {
     const user = userEvent.setup();
     const { send } = setup(reportOf([SPLIT]));
-    await user.click(notNow());
+    await user.click(skipForNow());
     expect(legend(SPLIT_Q)).toBeInTheDocument();
     expect(send).not.toHaveBeenCalled();
   });
@@ -339,15 +339,28 @@ describe('ReviewTab: Not now and what None of these does', () => {
   it('moves focus to the next question', async () => {
     const user = userEvent.setup();
     setup(reportOf([SPLIT, MATCH]));
-    await user.click(notNow());
+    await user.click(skipForNow());
     await waitFor(() => expect(legend(MATCH_Q)).toHaveFocus());
+  });
+
+  it('is disabled while a Save answer is in flight', async () => {
+    const user = userEvent.setup();
+    let release: (r: Reply) => void = () => {};
+    const send = vi.fn(() => new Promise<Reply>((r) => (release = r)));
+    const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    render(createElement(ReviewTab, { api, report: reportOf([SPLIT, MATCH]), state: state() }));
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.click(save());
+    expect(skipForNow()).toBeDisabled();
+    release({ ok: true, data: null });
+    await waitFor(() => expect(legend(MATCH_Q)).toBeInTheDocument());
   });
 
   it('stays enabled while a scan runs', async () => {
     const user = userEvent.setup();
     const { send } = setup(reportOf([SPLIT, MATCH]), undefined, state({ scanRunning: true }));
-    expect(notNow()).toBeEnabled();
-    await user.click(notNow());
+    expect(skipForNow()).toBeEnabled();
+    await user.click(skipForNow());
     expect(legend(MATCH_Q)).toBeInTheDocument();
     expect(send).not.toHaveBeenCalled();
   });

@@ -18,7 +18,7 @@ export interface ReviewTabProps {
  */
 export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const [done, setDone] = useState<ReadonlySet<string>>(new Set());
-  // Questions put off with Not now, in the order they were put off. Panel session only, never stored.
+  // Questions put off with Skip for now, in the order they were put off. Panel session only, never stored.
   const [skipped, setSkipped] = useState<readonly string[]>([]);
   const [focusNext, setFocusNext] = useState(false);
   const emptyRef = useRef<HTMLParagraphElement>(null);

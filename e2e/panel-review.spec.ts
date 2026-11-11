@@ -57,13 +57,13 @@ test('review tab, a split question after a replayed scan, answered', async ({ co
   await expect(panel.locator('legend', { hasText: 'Which parts come in this bundle?' })).toBeVisible();
   await shoot(panel, 'split');
 
-  // Not now sends nothing: the count stays, and another question is shown.
+  // Skip for now sends nothing: the count stays, and another question is shown.
   const firstTitle = await panel.locator('.review-bundle').textContent();
   const total = Number((await panel.getByText(/^1 of \d+$/).textContent())!.replace('1 of ', ''));
-  await panel.getByRole('button', { name: 'Not now' }).click();
+  await panel.getByRole('button', { name: 'Skip for now' }).click();
   await expect(panel.getByText(`1 of ${total}`)).toBeVisible();
   await expect(panel.locator('.review-bundle')).not.toHaveText(firstTitle ?? '');
-  await shoot(panel, 'not-now');
+  await shoot(panel, 'skip');
 
   const count = Number((await panel.getByText(/^1 of \d+$/).textContent())!.replace('1 of ', ''));
   await panel.getByRole('radio', { name: 'None of these' }).check();
