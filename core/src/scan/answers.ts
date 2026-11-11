@@ -183,8 +183,8 @@ function enteredParts(raw: unknown, item: ReviewItem): string[] {
   if (parts.some(isBundle(item))) throw new AnswerRefused(SELF_PART);
   if (!validParts(parts, item)) {
     // Name the first entry that is not a model number, as typed (trimmed). Only a count problem names none.
-    const bad = parts.findIndex((p) => !validParts([p], item));
-    throw new AnswerRefused(invalidParts(item, bad < 0 ? undefined : raw[bad].trim()));
+    const bad = (parts as string[]).findIndex((p) => !validParts([p], item));
+    throw new AnswerRefused(invalidParts(item, bad < 0 ? undefined : (raw as string[])[bad]!.trim()));
   }
   return parts;
 }
