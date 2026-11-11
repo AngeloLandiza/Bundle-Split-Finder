@@ -66,18 +66,24 @@ test('deals tab, no scan yet', async ({ context, extensionId, options, server: _
   await shoot(panel, 'empty');
 });
 
-test('deals tab, bundles waiting for a lookup', async ({ context, extensionId, options, server: _server }) => {
+test('deals tab, bundles waiting for a lookup', async ({ context, extensionId, options, server }) => {
   await saveKey(options, 'TEST');
   await expect(options.getByTestId('key-result')).toContainText('Key works.');
-  // Just above the catalog and listing pages: bundles resolve, their part lookups are deferred.
-  await configure(options, { searchesPerScan: 4 });
+  // Exactly the two listing pages (a fifth of 2 is no brand page): bundles resolve and every part lookup waits.
+  // With more, the scan would look up parts that have no recording and stop on the replay's 404.
+  await configure(options, { searchesPerScan: 2 });
   await scanAndWait(options);
+  expect(server.misses).toEqual([]);
+  expect((await getState(options)).data.lastJob?.status).toBe('stopped');
 
   const panel = await context.newPage();
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   await expect(panel.getByRole('button', { name: /^Look up/ }).first()).toBeVisible();
+  await expect(panel.getByText('Scan stopped at your search limit')).toBeVisible();
+  await expect(panel.getByRole('region', { name: 'Problem' })).toHaveCount(0);
   // The worker quotes each Look up: the label shows the quoted count.
-  await expect(panel.getByRole('button', { name: /^Look up \d+ search(es)?$/ }).first()).toBeVisible();
+  await expect(panel.getByRole('button', { name: /^Look up \d+ search(es)?$/ }).first()).toBeEnabled();
+  await expect(panel.locator('.deal-refusal')).toHaveCount(0);
   await shoot(panel, 'waiting');
 });
 
