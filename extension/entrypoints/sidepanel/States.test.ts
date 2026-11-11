@@ -9,7 +9,8 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import type { AppState, Reply, Request } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { FirstRun } from './FirstRun';
-import { noticeSentence, Notice, sentenceFor } from './Notice';
+import { noticeSentence, Notice } from './Notice';
+import { sentenceFor } from '../../lib/sentences';
 import { parseAccount, SearchBudget } from '@core/serpapi/budget';
 import { MemoryCache, NETWORK_ERROR_PREFIX, SerpApiClient } from '@core/serpapi/client';
 import * as fx from '../../../core/test/fixtures';
@@ -161,7 +162,10 @@ describe('FirstRun', () => {
     expect(screen.getByText(/checks Home Depot for RYOBI bundles/)).toBeInTheDocument();
     expect(screen.getByText('Starts with RYOBI, scanning only when you click.')).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
-    expect(screen.getByText(/Opening a bundle on homedepot.com is free/)).toBeInTheDocument();
+    expect(
+      screen.getByText('Reading Home Depot pages is free: Split Finder reads them in your browser and only uses a search to look up a part on Amazon.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/reads the page you are on/)).toBeNull();
   });
 
   it('Open settings calls openSettings; Get a free key is a real new-tab link', async () => {

@@ -3,6 +3,7 @@ import type { AccountInfo } from '@core/serpapi/budget';
 import type { AppState } from '../../lib/messages';
 import { Confirm, Section } from './fields';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
+import { sentenceFor } from '../../lib/sentences';
 
 type Result = { ok: true; account: AccountInfo } | { ok: false; message: string };
 
@@ -115,7 +116,7 @@ export function KeySection({ api, state }: { api: WorkerApi; state: AppState }) 
         ) : null}
       </div>
       <div className="key-result" role="status" data-testid="key-result">
-        {shown ? shown.ok ? <KeyWorks account={shown.account} /> : shown.message : null}
+        {shown ? shown.ok ? <KeyWorks account={shown.account} /> : sentenceFor(shown.message, 'try again') : null}
       </div>
       <a href="https://serpapi.com" className="link" target="_blank" rel="noreferrer">
         Get a free key at serpapi.com

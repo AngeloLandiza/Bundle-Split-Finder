@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
 import type { AccountInfo } from '@core/serpapi/budget';
+import { NETWORK_ERROR_PREFIX } from '@core/serpapi/client';
 import type { AppState, Reply, Request } from '../../lib/messages';
 import { SettingsPage } from './SettingsPage';
 import type { WorkerApi } from '../../lib/pageClient';
@@ -101,6 +102,15 @@ describe('SerpApi key', () => {
     await user.click(screen.getByRole('button', { name: 'Check key' }));
     await waitFor(() => expect(keyLine().textContent).toBe('SerpApi did not accept this key.'));
     expect(document.body.innerHTML).not.toContain('nope');
+  });
+
+  it('server unreachable: the same offline sentence as the panel, ending in "try again"', async () => {
+    const { user } = await open(stateWith(), {
+      checkKey: () => ({ ok: false, error: `${NETWORK_ERROR_PREFIX}: the account check got no answer.` }),
+    });
+    await user.type(keyField(), 'abc123');
+    await user.click(screen.getByRole('button', { name: 'Check key' }));
+    await waitFor(() => expect(keyLine().textContent).toBe('SerpApi could not be reached. Check the connection, then try again.'));
   });
 
   it('a saved key is never shown back; Remove key asks once', async () => {
