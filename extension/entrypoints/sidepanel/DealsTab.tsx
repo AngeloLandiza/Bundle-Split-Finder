@@ -1,7 +1,9 @@
 import type { AppState, PanelReport } from '../../lib/messages';
+import type { WorkerApi } from '../../lib/pageClient';
 import type { SortKey } from './sort';
 
 export interface DealsTabProps {
+  api: WorkerApi;
   report: PanelReport | null;
   state: AppState;
   sort: SortKey;

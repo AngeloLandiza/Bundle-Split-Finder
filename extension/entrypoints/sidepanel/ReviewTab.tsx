@@ -1,6 +1,8 @@
 import type { AppState, PanelReport } from '../../lib/messages';
+import type { WorkerApi } from '../../lib/pageClient';
 
 export interface ReviewTabProps {
+  api: WorkerApi;
   report: PanelReport | null;
   state: AppState;
 }

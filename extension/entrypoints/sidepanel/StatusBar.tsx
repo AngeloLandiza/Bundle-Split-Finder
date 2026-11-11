@@ -6,7 +6,11 @@ export function StatusBar({ state, now }: { state: AppState; now: number }) {
   const share = account && account.searchesPerMonth > 0 ? Math.max(0, Math.min(1, account.totalSearchesLeft / account.searchesPerMonth)) : 0;
   return (
     <footer className="statusbar">
-      <span>{state.nextRunAt === null ? 'Scans when you click Scan now' : `Next scan ${when(state.nextRunAt, now)}`}</span>
+      <span>{state.nextRunAt === null
+          ? 'Scans when you click Scan now'
+          : state.nextRunAt < now
+            ? 'Next scan due now'
+            : `Next scan ${when(state.nextRunAt, now)}`}</span>
       {account ? (
         <span className="searches-left">
           <span

@@ -34,7 +34,7 @@ export function when(ms: number, now: number): string {
   const diff = ms - now;
   const minutes = Math.round(Math.abs(diff) / 60_000);
   if (Math.abs(diff) < 60_000) return 'now';
-  if (Math.abs(diff) < 60 * 60_000) return diff > 0 ? `in ${minutes} min` : `${minutes} min ago`;
+  if (minutes < 60) return diff > 0 ? `in ${minutes} min` : `${minutes} min ago`;
   const d = new Date(ms);
   const days = Math.round((dayStart(d) - dayStart(new Date(now))) / 86_400_000);
   if (days === 0) return time(d);

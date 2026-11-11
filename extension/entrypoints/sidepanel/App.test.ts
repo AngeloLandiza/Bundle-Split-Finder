@@ -1,15 +1,19 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
 import { createElement } from 'react';
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SETTINGS } from '@core/settings';
 import type { AccountInfo } from '@core/serpapi/budget';
 import type { ScanJob } from '@core/scan/types';
 import type { AppState, PanelReport, Reply, Request } from '../../lib/messages';
-import type { WorkerApi } from '../../lib/pageClient';
+import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { App } from './App';
+import { Notice } from './Notice';
+import { progressText } from './ProgressRow';
+
+vi.mock('./Notice', () => ({ Notice: vi.fn(() => null) }));
 
 afterEach(cleanup);
 
@@ -77,6 +81,8 @@ function setup(initial: AppState, report: PanelReport = REPORT) {
   return { send, openSettings, emit: (s: AppState) => act(async () => listener(s)) };
 }
 
+const noticeError = () => vi.mocked(Notice).mock.calls.at(-1)![0].error;
+
 const tab = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) });
 
 describe('side panel shell', () => {
@@ -114,7 +120,7 @@ describe('side panel shell', () => {
     await emit(state({ scanRunning: true, lastJob: JOB }));
     const stop = screen.getByRole('button', { name: 'Stop' });
     expect(screen.queryByRole('button', { name: 'Scan now' })).toBeNull();
-    expect(screen.getByText('Scanning · page 3 of 5 · 12 searches used')).toBeInTheDocument();
+    expect(screen.getByText('Scanning · page 4 of 5 · 12 searches used')).toBeInTheDocument();
     await user.click(stop);
     expect(send).toHaveBeenCalledWith({ type: 'stopScan' });
 
@@ -143,6 +149,11 @@ describe('side panel shell', () => {
     expect(footer).toHaveTextContent('Next scan in 12 min');
   });
 
+  it('footer: a next scan time in the past reads due now', async () => {
+    setup(state({ nextRunAt: new Date(2026, 10, 10, 13, 0, 0).getTime() }));
+    expect(await screen.findByRole('contentinfo')).toHaveTextContent('Next scan due now');
+  });
+
   it('footer says so when the account has not been checked', async () => {
     setup(state({ account: null }));
     expect(await screen.findByRole('contentinfo')).toHaveTextContent('Searches left unknown');
@@ -161,5 +172,48 @@ describe('side panel shell', () => {
     const { openSettings } = setup(state());
     await user.click(await screen.findByRole('button', { name: 'Settings' }));
     expect(openSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it('Notice gets the sentence of a refused scanNow, and loses it on the next success', async () => {
+    const user = userEvent.setup();
+    const { send } = setup(state());
+    await user.click(await screen.findByRole('button', { name: 'Scan now' }));
+    expect(noticeError()).toBeNull();
+    send.mockImplementationOnce(async () => ({ ok: false, error: 'No searches left to spend.' }));
+    await user.click(screen.getByRole('button', { name: 'Scan now' }));
+    await waitFor(() => expect(noticeError()).toBe('No searches left to spend.'));
+    await user.click(screen.getByRole('button', { name: 'Scan now' }));
+    await waitFor(() => expect(noticeError()).toBeNull());
+  });
+
+  it('Notice gets the unreachable sentence when stopScan rejects', async () => {
+    const user = userEvent.setup();
+    const { send } = setup(state({ scanRunning: true, lastJob: JOB }));
+    await user.click(await screen.findByRole('button', { name: 'Stop' }));
+    send.mockImplementationOnce(async () => {
+      throw new Error('gone');
+    });
+    await user.click(screen.getByRole('button', { name: 'Stop' }));
+    await waitFor(() => expect(noticeError()).toBe(UNREACHABLE));
+  });
+
+  it('the screens get the api; FirstRun gets openSettings', async () => {
+    const { openSettings } = setup(state({ hasKey: false, account: null }));
+    await screen.findByText(/Add your SerpApi key/);
+    expect(openSettings).not.toHaveBeenCalled();
+  });
+});
+
+describe('progress row', () => {
+  const job = (pagesFetched: number, queue: unknown[]) => ({ ...JOB, counts: { pagesFetched }, queue, searchesUsed: 0 }) as unknown as ScanJob;
+  const listing = { kind: 'listing', q: 'a', page: 1, filterTokens: null, bundlesOnly: true };
+  const catalog = { kind: 'catalog', brand: 'DEWALT', page: 1 };
+  const lookup = { kind: 'lookup', brand: 'DEWALT', model: 'X' };
+
+  it('start of scan: the page being fetched is page 1', () => {
+    expect(progressText(job(0, [listing, catalog]))).toBe('Scanning · page 1 of 2 · 0 searches used');
+  });
+  it('after the pages: the count stops at the pages fetched', () => {
+    expect(progressText(job(2, [lookup]))).toBe('Scanning · page 2 of 2 · 0 searches used');
   });
 });

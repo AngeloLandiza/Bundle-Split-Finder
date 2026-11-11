@@ -60,6 +60,9 @@ describe('when', () => {
     expect(text).toMatch(/13/);
     expect(text).toMatch(/7:00/);
   });
+  it('rounds to a full hour: clock time, never "in 60 min"', () => {
+    expect(when(now + 59.6 * 60_000, now)).not.toMatch(/min/);
+  });
   it('yesterday and earlier also carry the date', () => {
     expect(when(at(7, 0, -1), now)).toMatch(/Nov/);
   });

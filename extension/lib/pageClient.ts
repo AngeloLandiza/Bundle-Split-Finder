@@ -42,7 +42,6 @@ export function download(filename: string, text: string, mimeType: string): void
 
 export const realWorker: WorkerApi = { send, onStateChanged, download };
 
-
 export interface AppStateHook {
   state: AppState | null;
   loading: boolean;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
-import { realWorker, useAppState, type WorkerApi } from '../../lib/pageClient';
-import type { PanelReport } from '../../lib/messages';
+import { realWorker, UNREACHABLE, useAppState, type WorkerApi } from '../../lib/pageClient';
+import type { PanelReport, Request } from '../../lib/messages';
 import { DealsTab } from './DealsTab';
 import { Detail } from './Detail';
 import { FirstRun } from './FirstRun';
@@ -26,12 +26,14 @@ const defaultOpenSettings = () => {
 };
 
 export function App({ api = realWorker, openSettings = defaultOpenSettings, now = Date.now }: AppProps) {
-  const { state, error } = useAppState(api);
+  const { state, error: loadError } = useAppState(api);
   const [report, setReport] = useState<PanelReport | null>(null);
   const [tab, setTab] = useState<TabId>('deals');
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [sort, setSort] = useSort();
   const [clock, setClock] = useState(now);
+  // The sentence of the latest refused or failed scanNow, stopScan or getReport; cleared by the next success.
+  const [error, setError] = useState<string | null>(null);
 
   // The report is read on mount and after every state change. The last one stays on screen while the next loads.
   useEffect(() => {
@@ -40,9 +42,13 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     api
       .send<PanelReport>({ type: 'getReport' })
       .then((reply) => {
-        if (live && reply.ok) setReport(reply.data);
+        if (!live) return;
+        if (reply.ok) setReport(reply.data);
+        setError(reply.ok ? null : reply.error);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (live) setError(UNREACHABLE);
+      });
     return () => {
       live = false;
     };
@@ -63,11 +69,15 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   }, [openKey]);
 
   if (!state) {
-    return <div className="panel">{error ? <p className="load-error">{error}</p> : null}</div>;
+    return <div className="panel">{loadError ? <p className="load-error">{loadError}</p> : null}</div>;
   }
 
   const send = (type: 'scanNow' | 'stopScan') => () => {
-    void api.send({ type }).catch(() => {});
+    const request: Request = { type };
+    api
+      .send(request)
+      .then((reply) => setError(reply.ok ? null : reply.error))
+      .catch(() => setError(UNREACHABLE));
   };
 
   if (!state.hasKey) {
@@ -75,7 +85,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
       <div className="panel">
         <Header scanRunning={false} noKey onScan={send('scanNow')} onStop={send('stopScan')} onSettings={openSettings} />
         <main className="panel-body">
-          <FirstRun state={state} />
+          <FirstRun state={state} api={api} openSettings={openSettings} />
         </main>
       </div>
     );
@@ -84,7 +94,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   if (openKey !== null) {
     return (
       <div className="panel">
-        <Detail report={report} state={state} bundleKey={openKey} onBack={() => setOpenKey(null)} />
+        <Detail api={api} report={report} state={state} bundleKey={openKey} onBack={() => setOpenKey(null)} />
       </div>
     );
   }
@@ -98,7 +108,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
         onStop={send('stopScan')}
         onSettings={openSettings}
       />
-      <Notice state={state} />
+      <Notice state={state} api={api} error={error} />
       <Tabs
         active={tab}
         dealCount={report?.bundles.length ?? 0}
@@ -108,9 +118,9 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
       {state.scanRunning ? <ProgressRow job={state.lastJob} /> : null}
       <main className="panel-body">
         {tab === 'deals' ? (
-          <DealsTab report={report} state={state} sort={sort} onSort={setSort} onOpen={setOpenKey} />
+          <DealsTab api={api} report={report} state={state} sort={sort} onSort={setSort} onOpen={setOpenKey} />
         ) : (
-          <ReviewTab report={report} state={state} />
+          <ReviewTab api={api} report={report} state={state} />
         )}
       </main>
       <StatusBar state={state} now={clock} />
