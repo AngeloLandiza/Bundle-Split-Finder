@@ -1,7 +1,7 @@
 // Turn what a scan left in the store into ranked rows. Reads only; never searches.
 // Profit figures are estimates from fee settings, not the seller's real fees.
 
-import { type KitItem, kitContents, kitPageStored, sameModel } from '../kitContents';
+import { type KitItem, kitContents, kitIndex, kitPageStored, kitPageUnread, sameModel } from '../kitContents';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
 import { componentCounts } from './classify';
@@ -180,7 +180,10 @@ function primaryOf(options: Evaluated[]): number {
   return (clean.length > 0 ? clean : priced).reduce((best, i) => (profit(i) > profit(best) ? i : best));
 }
 
-async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleRecord, bundles: BundleRecord[]): Promise<BundleRow> {
+/** `recordsOf`: the stored records of one kit's brand and model (kitIndex), built once per report. */
+async function bundleRow(
+  store: ScanStore, settings: ScanSettings, b: BundleRecord, recordsOf: (brand: string, model: string) => BundleRecord[],
+): Promise<BundleRow> {
   const base = {
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
     price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff, seenAt: b.seenAt,
@@ -196,11 +199,17 @@ async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleReco
   const kits = new Map<string, KitItem[]>();
   const kitsNotRead: string[] = [];
   for (const model of Object.keys(counts)) {
-    const items = kitContents(bundles, b.brand, model);
+    const records = recordsOf(b.brand, model);
+    const items = kitContents(records, b.brand, model);
     // A list that names the kit itself is not a list of what is inside it: the kit is not split.
     if (items && !items.some((i) => i.model !== null && sameModel(b.brand, i.model, model))) {
       kits.set(model, items);
-    } else if (!kitPageStored(bundles, b.brand, model) && (await store.getCatalogEntry(partKey(b.brand, model)))?.isKit) {
+    } else if (
+      // Not read: no stored record of the kit has its page, and either a record of it is stored with
+      // no page (Ruling 66) or the catalog marks the part a kit.
+      !kitPageStored(records, b.brand, model)
+      && (kitPageUnread(records, b.brand, model) || (await store.getCatalogEntry(partKey(b.brand, model)))?.isKit)
+    ) {
       kitsNotRead.push(model);
     }
   }
@@ -225,8 +234,9 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   // The parts some bundle's split holds now, as the lookups see them (resolved splits only).
   const held = new Set<string>();
   const stored = await store.listBundles();
+  const recordsOf = kitIndex(stored);
   for (const b of stored) {
-    bundles.push(await bundleRow(store, settings, b, stored));
+    bundles.push(await bundleRow(store, settings, b, recordsOf));
     for (const part of resolvedParts(b)) held.add(part.key);
   }
   bundles.sort((a, b) => {

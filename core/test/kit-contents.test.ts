@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseBundlePage, type PageContent } from '../src/hdPage';
-import { kitContents, parseIncludes, type KitItem } from '../src/kitContents';
+import { kitContents, kitIndex, parseIncludes, sameModel, type KitItem } from '../src/kitContents';
 import { bundleKey, type BundleRecord } from '../src/scan/types';
 
 interface Rec { itemId: string; status: number; text: string }
@@ -228,6 +228,24 @@ describe('kitContents', () => {
     expect(models(kitContents([storedWithB], 'RYOBI', 'PCL1600K2')!)).toEqual(PCL1600K2_MODELS);
     // Only one B: PCL1600K2BB is another model.
     expect(kitContents([storedWithB], 'RYOBI', 'PCL1600K2BB')).toBeNull();
+  });
+
+  it('kitIndex returns exactly the records sameModel accepts for a brand and model, in stored order', () => {
+    const records = [
+      record('317987591', { page: reading('317987591', 1) }),
+      record('999999999', { model: 'PCL1600K2B' }),
+      record('888888888', { model: 'PCL1600K2BB' }),
+      record('341645081', { model: 'PCL1600K2-PBP004' }),
+      record('777777777', { brand: 'DEWALT', model: 'DCK240C2' }),
+      record('666666666', { brand: 'DEWALT', model: 'DCK240C2B' }),
+    ];
+    const of = kitIndex(records);
+    for (const [brand, model] of [['RYOBI', 'PCL1600K2'], ['ryobi ', 'pcl1600k2b'], ['RYOBI', 'PCL1600K2BB'], ['DEWALT', 'DCK240C2'], ['DEWALT', 'DCK240C2B'], ['RYOBI', 'P553']]) {
+      const want = records.filter((r) => r.brand.toUpperCase() === brand!.trim().toUpperCase() && sameModel(brand!, r.model, model!));
+      expect(of(brand!, model!)).toEqual(want);
+      expect(kitContents(of(brand!, model!), brand!, model!)).toEqual(kitContents(records, brand!, model!));
+    }
+    expect(of('RYOBI', 'PCL1600K2').map((r) => r.itemId)).toEqual(['317987591', '999999999']);
   });
 
   it("never reads the asking bundle's own page", () => {

@@ -79,11 +79,12 @@ function paid(w: World, policy: BudgetPolicy) {
  * The brand page, then both listing pages with the bundles' recorded pages; every lookup waits. Then the
  * owner answers PCL1600K2-P553's split question, by default with its one choice: PCL1600K2 + P553.
  */
-async function answered(opts: { pages?: boolean; answer?: 'choice' | 'none' | string[] } = {}): Promise<World> {
+async function answered(opts: { pages?: boolean; answer?: 'choice' | 'none' | string[]; settings?: ScanSettings } = {}): Promise<World> {
   const w: World = { store: new MemoryScanStore(), cache: new MemoryCache(), replay: replayRecorded(), ledger: [] };
+  const settings = opts.settings ?? KITS;
   await runScan({ ...paid(w, { reserve: 0, maxPerRun: 5 }), store: w.store, settings: BRAND_PAGE, now: () => T0 });
-  await runScan({ ...paid(w, { reserve: 0, maxPerRun: 2 }), store: w.store, settings: KITS, now: () => T0, readPages: opts.pages === false ? undefined : recordedPages });
-  expect(w.ledger).toEqual(['scan:catalog:RYOBI:p1', 'scan:listing:ryobi 18v combo kit:p1', 'scan:listing:ryobi 18v combo kit:p1']);
+  await runScan({ ...paid(w, { reserve: 0, maxPerRun: settings.queries.length }), store: w.store, settings, now: () => T0, readPages: opts.pages === false ? undefined : recordedPages });
+  expect(w.ledger).toEqual(['scan:catalog:RYOBI:p1', ...settings.queries.map(() => 'scan:listing:ryobi 18v combo kit:p1')]);
   const question = (await w.store.getReview(QUESTION))!;
   expect(question.choices).toEqual([['PCL1600K2', 'P553']]);
   const seen = reviewSignature(question);
@@ -224,6 +225,21 @@ describe('ways to sell: edge cases', () => {
     expect(row.options.map((o) => [o.id, o.label, models(o), o.loose])).toEqual([['whole', '', ['PCL1600K2', 'P553'], false]]);
     expect(row.kitsNotRead).toEqual(['PCL1600K2']);
     expect(row.parts).toBe(row.options[0]!.parts);
+  });
+
+  it('a stored kit record whose page is not read names the kit as unread, even when the catalog does not hold the kit (Ruling 66)', async () => {
+    // Only the bundles-filtered page: PCL1600K2 (317987591) is stored as a bundle record, never as a catalog entry.
+    const BUNDLES_ONLY: ScanSettings = { ...KITS, queries: [KITS.queries[1]!] };
+    for (const unread of [null, undefined]) {
+      const w = await answered({ settings: BUNDLES_ONLY });
+      expect(await w.store.getCatalogEntry(partKey('RYOBI', 'PCL1600K2'))).toBeUndefined();
+      const { page: _read, ...kit } = (await w.store.getBundle(KIT))!;
+      expect(_read).toBeTruthy();
+      await w.store.putBundle(unread === null ? { ...kit, page: null } : kit);
+      const row = await rowOf(w);
+      expect(row.options.map((o) => [o.id, models(o)])).toEqual([['whole', ['PCL1600K2', 'P553']]]);
+      expect(row.kitsNotRead).toEqual(['PCL1600K2']);
+    }
   });
 
   it('a kit page that is read but lists no model: one option, and the kit is not named as unread', async () => {

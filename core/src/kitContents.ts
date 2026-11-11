@@ -77,9 +77,36 @@ export function sameModel(brand: string, a: string, b: string): boolean {
   return x === y || (norm(brand) === 'RYOBI' && ryobiBase(x) === ryobiBase(y));
 }
 
+/** The key under which sameModel's models meet: brand, and the model without one RYOBI trailing B. */
+const kitKey = (brand: string, model: string): string => {
+  const b = norm(brand);
+  return `${b}:${b === 'RYOBI' ? ryobiBase(norm(model)) : norm(model)}`;
+};
+
+/**
+ * The stored records grouped by kitKey, built once per report: `of(brand, model)` returns every
+ * record that sameModel would accept for that kit (and only those), in stored order, so
+ * kitContents and the page checks below give the same answers on it as on all the records.
+ */
+export function kitIndex(bundles: BundleRecord[]): (brand: string, model: string) => BundleRecord[] {
+  const index = new Map<string, BundleRecord[]>();
+  for (const r of bundles) {
+    const key = kitKey(r.brand, r.model);
+    const list = index.get(key);
+    if (list) list.push(r);
+    else index.set(key, [r]);
+  }
+  return (brand, model) => index.get(kitKey(brand, model)) ?? [];
+}
+
 /** Whether a stored record of this kit's own brand and model has its page read, whatever the page says. */
 export function kitPageStored(bundles: BundleRecord[], brand: string, model: string): boolean {
   return bundles.some((r) => norm(r.brand) === norm(brand) && sameModel(brand, r.model, model) && !!r.page);
+}
+
+/** Whether a record of this kit's own brand and model is stored with its page not read (null or undefined). */
+export function kitPageUnread(bundles: BundleRecord[], brand: string, model: string): boolean {
+  return bundles.some((r) => norm(r.brand) === norm(brand) && sameModel(brand, r.model, model) && !r.page);
 }
 
 /**
