@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { realWorker, UNREACHABLE, useAppState, type WorkerApi } from '../../lib/pageClient';
 import type { AppState, PanelReport, Request } from '../../lib/messages';
@@ -73,6 +73,21 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     const id = setInterval(() => setClock(now()), 30_000);
     return () => clearInterval(id);
   }, [now]);
+
+  // When Detail closes, focus goes back to the link of the row that was opened. The row is on screen again by
+  // this effect, because the report on screen is kept while Detail is open.
+  const opened = useRef<string | null>(null);
+  useEffect(() => {
+    if (openKey !== null) {
+      opened.current = openKey;
+      return;
+    }
+    const key = opened.current;
+    opened.current = null;
+    if (key === null) return;
+    const link = [...document.querySelectorAll<HTMLElement>('[data-key]')].find((el) => el.dataset.key === key);
+    link?.focus();
+  }, [openKey]);
 
   useEffect(() => {
     if (openKey === null) return;

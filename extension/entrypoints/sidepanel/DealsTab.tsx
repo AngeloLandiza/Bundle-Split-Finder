@@ -61,6 +61,7 @@ function Row({ row, report, asked, api, scanRunning, version, busy, onRun, onOpe
     <li className="deal-row">
       <a
         className="deal-link"
+        data-key={row.key}
         href="#"
         onClick={(e) => {
           e.preventDefault();
