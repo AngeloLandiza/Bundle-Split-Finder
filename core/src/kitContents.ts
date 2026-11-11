@@ -21,9 +21,13 @@ export interface KitItem {
 const INCLUDES = /^\s*includes\s*:/i;
 // Two lists in one bullet: "... and Operator's Manual : Includes: (1) PBP004 ...".
 const NEXT_LIST = /\s:\s*includes\s*:/i;
-// Items are separated by commas (not a thousands comma), by " and ", and by a "(n)" that starts a
-// new item with no comma before it ("... Ratchet (1) PBLRC25 ...", recorded on 328814689).
-const ITEM_BREAK = /,(?!\d{3}\b)|\s+and\s+|\s+(?=\(\d+\)\s)/i;
+// Items are separated by commas (not a thousands comma), by a "(n)" that starts a new item with no
+// comma before it ("... Ratchet (1) PBLRC25 ...", recorded on 328814689), and by " and " only before
+// the manual: elsewhere "and" belongs to a name ("Reversible 1/4 in. and 3/8 in. Anvil", 327939252).
+const ITEM_BREAK = /,(?!\d{3}\b)|\s+and\s+(?=operator[’']?s\s+manuals?\b)|\s+(?=\(\d+\)\s)/i;
+// One item listing its own parts: "A13401 3/8 in. Deep well, thin wall socket - (1) 1/2 in., ..."
+// (335849279). The text before " - " is the item; the "(n) ..." pieces after it are its parts.
+const OWN_PARTS = /\s+-\s+(?=\(\d+\))/;
 const QTY = /^\((\d+)\)\s*/;
 const PAPERWORK = /^operator[’']?s\s+manuals?$/i;
 
@@ -43,7 +47,10 @@ export function parseIncludes(brand: string, bullets: string[]): KitItem[] {
   for (const bullet of bullets) {
     if (!INCLUDES.test(bullet)) continue;
     for (const list of bullet.split(NEXT_LIST)) {
-      for (const piece of list.replace(INCLUDES, '').split(ITEM_BREAK)) {
+      const text = list.replace(INCLUDES, '');
+      const own = OWN_PARTS.exec(text);
+      const pieces = own ? [text.slice(0, own.index)] : text.split(ITEM_BREAK);
+      for (const piece of pieces) {
         let text = piece.trim().replace(/^and\s+/i, '');
         const qty = QTY.exec(text);
         if (qty) text = text.slice(qty[0].length).trim();
@@ -57,7 +64,10 @@ export function parseIncludes(brand: string, bullets: string[]): KitItem[] {
 }
 
 const norm = (s: string): string => s.toUpperCase().trim();
-// RYOBI writes a tool without its tool-only B (PBLRC25 for PBLRC25B), as pageCatalog allows.
+// RYOBI writes a tool without its tool-only B (PBLRC25 for PBLRC25B). pageCatalog goes one way: a
+// model X on the page also adds XB. Here the rule is two-way: one trailing B is removed from both
+// models before they are compared, so X matches X and XB, XB matches XB and X, and XBB matches
+// neither (it is compared as XB).
 const ryobiBase = (m: string): string => (m.endsWith('B') ? m.slice(0, -1) : m);
 
 /**
@@ -70,12 +80,15 @@ export function kitContents(bundles: BundleRecord[], brand: string, model: strin
   const m = norm(model);
   const same = (other: string): boolean =>
     other === m || (b === 'RYOBI' && ryobiBase(other) === ryobiBase(m));
-  let best: { readAt: number; items: KitItem[] } | null = null;
+  let best: { readAt: number; itemId: string; items: KitItem[] } | null = null;
   for (const r of bundles) {
     if (norm(r.brand) !== b || !same(norm(r.model)) || !r.page) continue;
     const items = parseIncludes(b, r.page.bullets);
     if (!items.some((i) => i.model)) continue;
-    if (!best || r.page.readAt > best.readAt) best = { readAt: r.page.readAt, items };
+    // Newest reading first; on the same readAt the larger item id, so the record order never decides.
+    const newer = !best || r.page.readAt > best.readAt
+      || (r.page.readAt === best.readAt && r.itemId.localeCompare(best.itemId, 'en', { numeric: true }) > 0);
+    if (newer) best = { readAt: r.page.readAt, itemId: r.itemId, items };
   }
   return best?.items ?? null;
 }

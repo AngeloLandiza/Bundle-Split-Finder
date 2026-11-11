@@ -21,44 +21,82 @@ const p = (id: string): PageContent => {
 };
 
 const models = (items: KitItem[]): string[] => items.flatMap((i) => (i.model ? [i.model] : []));
-const unnamed = (items: KitItem[]): KitItem[] => items.filter((i) => i.model === null);
 const PCL1600K2_MODELS = ['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL430', 'PCL660', 'PBP005', 'PBP002'];
 
 describe('parseIncludes, on the recorded pages', () => {
-  it('317987591, the plain kit PCL1600K2: every model once at qty 1, then its unnamed items in page order', () => {
+  // The six tools of PCL1600K2, as both 317987591 and 341645081 write them (Bullet09).
+  const PCL1600K2_TOOLS: KitItem[] = [
+    { model: 'PCL206', name: 'PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver', qty: 1 },
+    { model: 'PCL235', name: 'PCL235 18V ONE+ Cordless 1/4 in. Impact Driver', qty: 1 },
+    { model: 'PCL500', name: 'PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw', qty: 1 },
+    { model: 'PCL515', name: 'PCL515 Reciprocating Saw', qty: 1 },
+    { model: 'PCL430', name: 'PCL430 Multi-Tool', qty: 1 },
+    { model: 'PCL660', name: 'PCL660 18V ONE+ Cordless LED Light', qty: 1 },
+  ];
+  const PCL1600K2_ACCESSORIES: KitItem[] = [
+    { model: null, name: '18T Carbide Blade', qty: 1 },
+    { model: null, name: 'Hex Wrench', qty: 1 },
+    { model: null, name: 'Reciprocating Saw Blade', qty: 1 },
+    { model: null, name: 'Hex Key', qty: 1 },
+    { model: null, name: 'Flush Cut Blade', qty: 1 },
+    { model: null, name: 'Plunge Cut Blade', qty: 1 },
+    { model: null, name: '6 in. Wood Blade', qty: 1 },
+    { model: null, name: 'Sanding Pad', qty: 1 },
+    { model: null, name: '5-Pieces Sandpaper', qty: 1 },
+  ];
+
+  it('317987591, the plain kit PCL1600K2: the whole list in page order, each item once, no "and", no manual', () => {
     const got = parseIncludes('RYOBI', p('317987591').bullets);
-    expect(models(got)).toEqual(PCL1600K2_MODELS);
-    expect(got.filter((i) => i.model).every((i) => i.qty === 1)).toBe(true);
-    expect(got.find((i) => i.model === 'PCL206')?.name).toBe('PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver');
     // This page writes "(1) 18V. Charger"; 341645081 writes "(1) 18V Charger". The name is the page's text.
-    expect(unnamed(got)).toEqual([
-      { model: null, name: '18T Carbide Blade', qty: 1 },
-      { model: null, name: 'Hex Wrench', qty: 1 },
-      { model: null, name: 'Reciprocating Saw Blade', qty: 1 },
-      { model: null, name: 'Hex Key', qty: 1 },
-      { model: null, name: 'Flush Cut Blade', qty: 1 },
-      { model: null, name: 'Plunge Cut Blade', qty: 1 },
-      { model: null, name: '6 in. Wood Blade', qty: 1 },
-      { model: null, name: 'Sanding Pad', qty: 1 },
-      { model: null, name: '5-Pieces Sandpaper', qty: 1 },
+    expect(got).toEqual([
+      ...PCL1600K2_TOOLS,
+      ...PCL1600K2_ACCESSORIES,
+      { model: 'PBP005', name: 'PBP005 18V 4.0 Ah Lithium-Ion Battery', qty: 1 },
+      { model: 'PBP002', name: 'PBP002 18V Compact Lithium-Ion Battery', qty: 1 },
       { model: null, name: '18V. Charger', qty: 1 },
       { model: null, name: 'Tool Bag', qty: 1 },
     ]);
-    expect(got.some((i) => /^and\b/i.test(i.name))).toBe(false);
-    expect(got.some((i) => /operator/i.test(i.name))).toBe(false);
+    expect(models(got)).toEqual(PCL1600K2_MODELS);
     const names = got.map((i) => i.name);
     expect(new Set(names).size).toBe(names.length);
   });
 
-  it('341645081 (PCL1600K2-PBP004) names the same models, and its charger as "18V Charger"', () => {
+  it('341645081 (PCL1600K2-PBP004): the same models, and its charger as "18V Charger"', () => {
     const got = parseIncludes('RYOBI', p('341645081').bullets);
+    expect(got).toEqual([
+      ...PCL1600K2_TOOLS,
+      ...PCL1600K2_ACCESSORIES,
+      { model: 'PBP005', name: 'PBP005 18V 4.0 Ah Lithium Battery', qty: 1 },
+      { model: 'PBP002', name: 'PBP002 18V 1.5 Ah Lithium Battery', qty: 1 },
+      { model: null, name: '18V Charger', qty: 1 },
+      { model: null, name: 'Tool Bag', qty: 1 },
+    ]);
     expect(models(got)).toEqual(PCL1600K2_MODELS);
-    expect(got.filter((i) => i.model).every((i) => i.qty === 1)).toBe(true);
-    const names = unnamed(got).map((i) => i.name);
-    expect(names).toContain('18V Charger');
-    expect(names).toContain('Tool Bag');
-    expect(names).toHaveLength(11);
-    expect(names.some((n) => /^and\b|operator/i.test(n))).toBe(false);
+  });
+
+  it('327939252 (PCL280B-PSK005): "Reversible 1/4 in. and 3/8 in. Anvil" stays one item; both manuals dropped', () => {
+    expect(parseIncludes('RYOBI', p('327939252').bullets)).toEqual([
+      { model: 'PCL280', name: 'PCL280 18V ONE+ Multi-Size Ratchet', qty: 1 },
+      { model: null, name: 'Reversible 1/4 in. and 3/8 in. Anvil', qty: 1 },
+      { model: null, name: '1/2 in. Anvil with 1/4 in. Hex', qty: 1 },
+      { model: 'PBP006', name: 'PBP006 18V ONE+ Lithium 2.0 Ah battery', qty: 1 },
+      { model: 'PCG002', name: 'PCG002 18V charger', qty: 1 },
+    ]);
+  });
+
+  it('335849279 (PBLRC2501SB-A13401): the socket set is one item; its "- (1) 1/2 in., ..." sizes are not items', () => {
+    expect(parseIncludes('RYOBI', p('335849279').bullets)).toEqual([
+      { model: 'PBLRC01', name: 'PBLRC01 18V ONE+ HP Brushless 1/4" Extended Reach Ratchet', qty: 1 },
+      { model: 'PBLRC25', name: 'PBLRC25 18V ONE+ HP Brushless Cordless 3/8 in. Extended Reach Ratchet', qty: 1 },
+      { model: 'A13401', name: 'A13401 3/8 in. Deep well, thin wall socket', qty: 1 },
+    ]);
+  });
+
+  it('a thousands comma does not split an item (hand-made bullet: no recording has one in an Includes list)', () => {
+    expect(parseIncludes('RYOBI', ['Includes: (1) A981001 1,000-Piece Bit Set, Tool Bag, and Operator\'s Manual'])).toEqual([
+      { model: 'A981001', name: 'A981001 1,000-Piece Bit Set', qty: 1 },
+      { model: null, name: 'Tool Bag', qty: 1 },
+    ]);
   });
 
   it('328814689 (PBLRC2501SB): PBLRC01 and PBLRC25, no comma between them, and the manual dropped', () => {
@@ -88,6 +126,7 @@ describe('parseIncludes, on the recorded pages', () => {
 
   it('345178210: "Includes hex shank ..." with no colon is a feature line, not a list; the list names no model', () => {
     const got = parseIncludes('RYOBI', p('345178210').bullets);
+    // This "6 Tools, 2 Batteries" list names no model, so kitContents never returns it.
     expect(models(got)).toEqual([]);
     expect(got.map((i) => i.name)).toEqual([
       '6 Tools', '2 Batteries', 'Charger', 'Bag', 'Accessories',
@@ -166,6 +205,13 @@ describe('kitContents', () => {
     expect(models(kitContents([a(200), b(100)], 'RYOBI', 'PCL1600K2')!)).toEqual(PCL1600K2_MODELS);
     expect(models(kitContents([b(100), a(200)], 'RYOBI', 'PCL1600K2')!)).toEqual(PCL1600K2_MODELS);
     expect(models(kitContents([a(200), b(300)], 'RYOBI', 'PCL1600K2')!)).toEqual(['PBLRC01', 'PBLRC25']);
+  });
+
+  it('breaks a tie of readAt by itemId: the larger item id wins, whatever the order of the records', () => {
+    const a = record('317987591', { page: reading('317987591', 100) });
+    const b = record('999999999', { page: reading('328814689', 100) });
+    expect(models(kitContents([a, b], 'RYOBI', 'PCL1600K2')!)).toEqual(['PBLRC01', 'PBLRC25']);
+    expect(models(kitContents([b, a], 'RYOBI', 'PCL1600K2')!)).toEqual(['PBLRC01', 'PBLRC25']);
   });
 
   it('skips a newer page that names no model for an older one that does', () => {
