@@ -305,6 +305,12 @@ export interface ScanJob {
   queue: ScanStep[];
   /** Steps that did not fit or could not run. Lookups among them are marked "waiting". */
   deferred: ScanStep[];
+  /**
+   * Ruling 50: partKey of every lookup or refresh this job set aside after a failure. The next
+   * job plans them after the steps the budget deferred. Absent on a job that set nothing aside,
+   * and on jobs saved before it existed, which plan as before.
+   */
+  setAsideParts?: string[];
   /** Searches that counted against the quota (responses that came from the network). */
   searchesUsed: number;
   counts: ScanCounts;

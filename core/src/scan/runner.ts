@@ -83,6 +83,8 @@ interface Run extends PartContext {
    * failure. Empty for a continued job, which tops nothing up.
    */
   movable: ScanStep[];
+  /** Ruling 50: the parts the job before this one set aside after a failure; planned after the others. */
+  failedBefore: Set<string>;
 }
 
 /** Start a scan, or continue the newest one whose status is "running". Resolves with the finished job. */
@@ -115,14 +117,17 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const asked = deps.shouldStop ?? (() => false);
   let stopAsked = false;
   const shouldStop = (): boolean => (stopAsked ||= asked());
+  const scans = await store.listScans();
+  const newest = scans[0];
+  // Ruling 50: the job before this one (before the job being continued, when one is).
+  const failedBefore = setAsidePartsOf(newest?.status === 'running' ? scans[1] : newest);
   const run = (job: ScanJob): Run => ({
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
-    readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [],
+    readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
   });
 
   // An interrupted job is continued as saved: no new plan, whatever budget this run has. A job
   // saved before step 4 has no pagesRead: it counts from 0, so its page limit is not NaN (P1).
-  const newest = (await store.listScans())[0];
   if (newest?.status === 'running') return run({ ...newest, counts: { ...newest.counts, pagesRead: newest.counts.pagesRead ?? 0 } });
 
   const startedAt = now();
@@ -140,7 +145,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   // Ruling 48: the pages the last job deferred go first, in its order, so at a low limit one
   // query cannot hold the only slot on every scan. Only pages the settings still ask for.
   const pages = deferredFirst(inOrder, newest?.deferred ?? []);
-  const wants = await wantedParts(store, settings, startedAt);
+  const wants = await wantedParts(store, settings, startedAt, undefined, failedBefore);
   const plan = planScan(budget.spendable - catalogPages, { hdPagesWanted: pages.length, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
   const deferred = pages.slice(plan.hdPages);
   const job: ScanJob = {
@@ -153,6 +158,12 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   };
   await store.putScan(job);
   return { ...run(job), movable: [...deferred] };
+}
+
+/** The parts a stored job set aside (Ruling 50). Stored data is untrusted: anything but a list of strings counts as none. */
+function setAsidePartsOf(job: ScanJob | undefined): Set<string> {
+  const parts: unknown = job?.setAsideParts;
+  return new Set(Array.isArray(parts) ? parts.filter((p): p is string => typeof p === 'string') : []);
 }
 
 const sameListing = (a: Listing, b: Listing): boolean =>
@@ -295,6 +306,9 @@ function stopFor(err: unknown): Stop {
 async function setAside(run: Run, step: Lookup | Refresh, message: string): Promise<void> {
   const { job } = run;
   if (step.kind === 'lookup') await markWaiting(run, step);
+  // Ruling 50: remembered, so the next job plans this part after the others.
+  const key = partKey(step.brand, step.model);
+  if (!(job.setAsideParts ?? []).includes(key)) job.setAsideParts = [...(job.setAsideParts ?? []), key];
   // Ruling 49: the sentence names what failed, so it reads true beside the other sentences here.
   const sentence = `${step.kind === 'lookup' ? 'The lookup' : 'The price check'} of ${step.model} failed: ${message}`;
   if (run.setAside === 0) job.stopMessage = job.stopMessage === null ? sentence : `${job.stopMessage} ${sentence}`;
@@ -694,6 +708,7 @@ export async function bundleParts(store: ScanStore): Promise<Map<string, Part & 
  */
 async function wantedParts(
   store: ScanStore, settings: ScanSettings, now: number, fromListings?: (part: Part) => Promise<MatchRecord | null>,
+  failedBefore: Set<string> = new Set(),
 ): Promise<Wants> {
   const parts = await bundleParts(store);
   const lookups: string[] = [];
@@ -718,11 +733,13 @@ async function wantedParts(
     }
   }
   const bySaving = (a: string, b: string) => parts.get(b)!.saving - parts.get(a)!.saving || (a < b ? -1 : a > b ? 1 : 0);
-  // Waiting parts first, oldest first; then by saving. A part whose lookup failed last scan
-  // takes its place like any other: it was set aside then, so it blocks nothing (3 rule 4).
+  // Ruling 50: a part the last job set aside after a failure goes after every other, so one that
+  // keeps failing cannot take the only slot on every scan; it still runs if the allowance reaches it.
+  const failed = (k: string) => (failedBefore.has(k) ? 1 : 0);
+  // Then waiting parts first, oldest first; then by saving.
   const rank = (k: string) => waitingSince.get(k) ?? Infinity;
-  lookups.sort((a, b) => (rank(a) === rank(b) ? 0 : rank(a) < rank(b) ? -1 : 1) || bySaving(a, b));
-  refreshes.sort(bySaving);
+  lookups.sort((a, b) => failed(a) - failed(b) || (rank(a) === rank(b) ? 0 : rank(a) < rank(b) ? -1 : 1) || bySaving(a, b));
+  refreshes.sort((a, b) => failed(a) - failed(b) || bySaving(a, b));
   return { lookups, refreshes, steps };
 }
 
@@ -730,7 +747,7 @@ async function wantedParts(
 async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   const { job, budget } = run;
   // 2c rule 5 runs even when the listing phase stopped: it spends nothing.
-  const wants = await wantedParts(run.store, run.settings, run.now(), (part) => matchFromListings(run, listings, part));
+  const wants = await wantedParts(run.store, run.settings, run.now(), (part) => matchFromListings(run, listings, part), run.failedBefore);
   // A stop asked for during the last listing search, when the queue emptied as usual (QA M7), is a stop on request too.
   if (job.stopReason === null && run.shouldStop()) job.stopReason = 'user';
   // In the listing phase only rule 8 or a stop on request (3 rule 1) sets a stop reason: then nothing more is spent.

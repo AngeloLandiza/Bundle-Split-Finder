@@ -551,8 +551,9 @@ describe('runScan: brands, the user\'s decision, a listing that disappeared (tes
 });
 
 describe('runScan: a part that always fails does not block the others (test M)', () => {
+  const ONE_SEARCH_CAP: BudgetPolicy = { reserve: 0, maxPerRun: 1 };
   // Step 3 rule 2: a lookup that fails is set aside and the scan goes on, so the other part is
-  // matched in the same scan. Nothing is reordered for the next scan (step 3 rule 4).
+  // matched in the same scan. The next scan plans it after the other parts (Ruling 50).
   it('matches the other part in the same scan; the next scan matches the failing part from a listing the other saved', async () => {
     const w = world();
     const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500 });
@@ -578,7 +579,7 @@ describe('runScan: a part that always fails does not block the others (test M)',
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_25B]);
   });
 
-  it('sets the failed part aside ahead of the work the budget deferred, and tries it again first next scan', async () => {
+  it('sets the failed part aside ahead of the work the budget deferred, and tries it again next scan after the others (Ruling 50)', async () => {
     const w = world();
     const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500 });
     // Room for the page and one lookup: PBLRC25B is deferred by the run cap, then PBLRC01B fails.
@@ -591,8 +592,11 @@ describe('runScan: a part that always fails does not block the others (test M)',
       { kind: 'lookup', brand: 'RYOBI', model: 'PBLRC25B' },
     ]);
 
-    // Ten minutes on, no saved listing names either part. Both have waited since T0, so they go
-    // in saving order: PBLRC01B first, as in test A. It fails again and is set aside; PBLRC25B is matched.
+    expect(first.setAsideParts).toEqual(['RYOBI:PBLRC01B']);
+
+    // Ten minutes on, no saved listing names either part. Both have waited since T0, but PBLRC01B
+    // was set aside last scan, so it goes after PBLRC25B (Ruling 50; before, saving order put it
+    // first). PBLRC25B is matched; PBLRC01B, still reached, fails again and is set aside.
     w.clock = T0 + 10 * MINUTE;
     const second = await scan(w, { fetchFn: amazon.fetchFn });
     expect(second).toMatchObject({ status: 'stopped', stopReason: null, searchesUsed: 1, queue: [] });
@@ -600,8 +604,61 @@ describe('runScan: a part that always fails does not block the others (test M)',
     expect(second.deferred).toEqual([{ kind: 'lookup', brand: 'RYOBI', model: 'PBLRC01B' }]);
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', waitingSince: null });
     expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'waiting', waitingSince: T0 });
-    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
+    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC25B', 'RYOBI PBLRC01B']);
     expect(w.replay.calls).toEqual([LISTING, LOOKUP_25B]);
+  });
+
+  it('at a limit of 1, a lookup that fails on every scan no longer blocks the other waiting part (Ruling 50)', async () => {
+    const w = world();
+    const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500 });
+    const spent: number[] = [];
+    const jobs: ScanJob[] = [];
+    const scanAt = async (at: number) => {
+      w.clock = at;
+      const before = w.ledger.length;
+      jobs.push(await scan(w, { fetchFn: amazon.fetchFn, policy: ONE_SEARCH_CAP }));
+      spent.push(w.ledger.length - before);
+    };
+    // The listing page takes the one search; both parts wait.
+    await scanAt(T0);
+    // PBLRC01B waits first (saving order) and fails: set aside, nothing spent.
+    await scanAt(T0 + 10 * MINUTE);
+    expect(jobs[1]).toMatchObject({ searchesUsed: 0, setAsideParts: ['RYOBI:PBLRC01B'] });
+    // Before Ruling 50 PBLRC01B took the only slot again here, and on every scan after.
+    // Now PBLRC25B goes first and is looked up.
+    await scanAt(T0 + 20 * MINUTE);
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV' });
+    expect(jobs[2]!.setAsideParts).toBeUndefined();
+    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC25B']);
+    // The scan after that tries PBLRC01B again; the PBLRC25B response saved B0B6Z2ZGVK, whose
+    // title carries PBLRC01B, so it is matched from that listing, free.
+    await scanAt(T0 + 30 * MINUTE);
+    expect(await w.store.getMatch('RYOBI:PBLRC01B')).toMatchObject({ status: 'matched', asin: 'B0B6Z2ZGVK' });
+    expect(spent).toEqual([1, 0, 1, 0]);
+    expect(Math.max(...spent)).toBeLessThanOrEqual(1);
+  });
+
+  it('at a limit of 1, the part set aside is still looked up again once nothing else waits (Ruling 50)', async () => {
+    const w = world();
+    const amazon = failingParts(w, { 'RYOBI PBLRC01B': 500 });
+    // The listing page takes the one search; both parts wait.
+    await scan(w, { fetchFn: amazon.fetchFn, policy: ONE_SEARCH_CAP });
+    // The owner decides PBLRC25B, so no lookup is wanted for it (test J) and only PBLRC01B waits.
+    await w.store.putMatch({
+      key: 'RYOBI:PBLRC25B', brand: 'RYOBI', model: 'PBLRC25B', status: 'none', asin: null, grade: null, alternatives: [],
+      decidedBy: 'user', updatedAt: T0, waitingSince: null,
+    });
+    const spent: number[] = [];
+    for (const i of [1, 2]) {
+      w.clock = T0 + i * 10 * MINUTE;
+      const before = w.ledger.length;
+      const job = await scan(w, { fetchFn: amazon.fetchFn, policy: ONE_SEARCH_CAP });
+      spent.push(w.ledger.length - before);
+      expect(job.setAsideParts).toEqual(['RYOBI:PBLRC01B']);
+    }
+    // Tried again on each scan, after nothing: a failure is free, so nothing is spent.
+    expect(amazon.sent).toEqual(['RYOBI PBLRC01B', 'RYOBI PBLRC01B']);
+    expect(spent).toEqual([0, 0]);
   });
 });
 
