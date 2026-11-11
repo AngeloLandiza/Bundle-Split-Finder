@@ -314,8 +314,10 @@
   min-width: 0;
 }
 .detail-asin {
-  font-family: var(--font-figures);
   font-size: 12px;
+  line-height: 16px;
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: var(--link);
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -341,6 +343,7 @@
 }
 
 .detail-verify {
+  margin-left: auto;
   display: flex;
   flex-direction: column;
   align-items: flex-end;

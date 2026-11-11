@@ -3,6 +3,7 @@ import { reviewSignature } from '@core/scan/answers';
 import type { ReviewAnswer, ReviewItem } from '@core/scan/types';
 import { money } from '../../lib/format';
 import { OpenOnHomeDepot } from './OpenOnHomeDepot';
+import { amazonListingUrl, amazonSearchUrl } from '../../lib/links';
 import { reviewReasonParts } from './reviewReason';
 
 const NONE = 'none';
@@ -125,8 +126,8 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
                     <span id={priceId} className={c.price === null ? undefined : 'figure'}>
                       {c.price === null ? 'No price seen' : money(c.price)}
                     </span>
-                    <a className="figure" href={`https://www.amazon.com/dp/${c.asin}`} target="_blank" rel="noreferrer">
-                      {c.asin}
+                    <a href={amazonListingUrl(c.asin)} target="_blank" rel="noopener noreferrer">
+                      <span className="figure">{c.asin}</span> on Amazon
                     </a>
                   </p>,
                   priceId,
@@ -166,6 +167,11 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
             </p>,
             'review-none-effect',
           )}
+          {!split ? (
+            <a className="review-search" href={amazonSearchUrl(item.brand, item.model)} target="_blank" rel="noopener noreferrer">
+              Search Amazon for <span className="figure">{item.model}</span>
+            </a>
+          ) : null}
         </div>
         <div className="review-actions">
           <button type="submit" className="btn btn-primary" disabled={picked === null || (picked === ENTER && typedParts.length === 0) || scanRunning || saving}>

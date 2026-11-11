@@ -88,7 +88,7 @@ describe('Detail on a replayed scan', () => {
       const block = within(blocks[i]!);
       expect(p.title).toEqual(expect.any(String));
       expect(block.getByText(p.title!)).toHaveAttribute('title', p.title!);
-      expect(block.getByRole('link', { name: p.asin! })).toHaveAttribute('href', `https://www.amazon.com/dp/${p.asin}`);
+      expect(block.getByRole('link', { name: `${p.asin} on Amazon` })).toHaveAttribute('href', `https://www.amazon.com/dp/${p.asin}`);
       expect(block.getByText('Title match')).toBeInTheDocument();
       expect(await block.findByRole('button', { name: 'Verify · 1 search' })).not.toHaveAttribute('aria-disabled');
     }
@@ -195,5 +195,23 @@ describe('Detail on a replayed scan', () => {
     expect(screen.getByText('Which parts come in this bundle?', { selector: 'legend' })).toBeInTheDocument();
     // Detail's own bar has the one link; the question adds none.
     expect(screen.getAllByRole('link', { name: 'Open on Home Depot' })).toHaveLength(1);
+  });
+
+  it('gives a part with no listing a link that searches Amazon for it, and a part with one an ASIN link that says so', () => {
+    const row = limited.bundles.find((b) => b.parts.some((p) => p.status === 'waiting'))!;
+    open(limited, row.key);
+    const blocks = screen.getAllByRole('listitem');
+    for (const [i, p] of row.parts.entries()) {
+      const block = within(blocks[i]!);
+      if (p.asin !== null) {
+        expect(block.getByRole('link', { name: `${p.asin} on Amazon` })).toHaveAttribute('href', `https://www.amazon.com/dp/${p.asin}`);
+        continue;
+      }
+      const link = block.getByRole('link', { name: `Search Amazon for ${p.model}` });
+      expect(link).toHaveAttribute('href', `https://www.amazon.com/s?k=${encodeURIComponent(`${row.brand} ${p.model}`)}`);
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    }
+    expect(row.parts.some((p) => p.status === 'waiting' && p.asin === null)).toBe(true);
   });
 });

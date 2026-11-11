@@ -149,6 +149,7 @@ test('review tab, a split question with two real choices', async ({ context, ext
   }
   await expect(panel.getByRole('radio', { name: 'DCK200D1P1 + DCB606' })).toBeVisible();
   await panel.getByRole('radio', { name: 'DCK200D1P1 + DCF921B' }).check();
+  await expect(panel.getByRole('link', { name: 'Open on Home Depot' })).toHaveAttribute('href', /^https:\/\/www\.homedepot\.com\/.*337440461/);
   await shoot(panel, 'choices');
 });
 

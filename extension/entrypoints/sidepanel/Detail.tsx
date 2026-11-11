@@ -6,6 +6,7 @@ import { reviewSignature } from '@core/scan/answers';
 import type { BundleRow, PaidAction, PartRow, ReviewAnswer } from '@core/scan/types';
 import { money, profit, roi, when } from '../../lib/format';
 import type { AppState, Packaging, PanelReport } from '../../lib/messages';
+import { amazonListingUrl, amazonSearchUrl } from '../../lib/links';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { waitingParts } from './dealsModel';
 import { LookUp } from './DealsLookUp';
@@ -151,10 +152,14 @@ function Part({ part, row, report, fees, api, scanRunning, version, busy, run }:
       <div className="detail-part-bottom">
         <div className="detail-part-tags">
           {asin ? (
-            <a className="detail-asin" href={`https://www.amazon.com/dp/${asin}`} target="_blank" rel="noopener noreferrer">
-              {asin}
+            <a className="detail-asin" href={amazonListingUrl(asin)} target="_blank" rel="noopener noreferrer">
+              <span className="figure">{asin}</span> on Amazon
             </a>
-          ) : null}
+          ) : (
+            <a className="detail-asin" href={amazonSearchUrl(row.brand, part.model)} target="_blank" rel="noopener noreferrer">
+              Search Amazon for <span className="figure">{part.model}</span>
+            </a>
+          )}
           <span className="detail-grade" data-tone={label.tone}>
             {label.tone === 'verified' ? <Check /> : null}
             {label.text}

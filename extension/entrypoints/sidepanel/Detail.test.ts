@@ -334,7 +334,7 @@ describe('parts', () => {
     expect(first.getByText('RYOBI ONE+ HP 18V 3/8 in. Extended Reach Ratchet')).toHaveAttribute('title', 'RYOBI ONE+ HP 18V 3/8 in. Extended Reach Ratchet');
     expect(first.getByText('$169.00')).toBeInTheDocument();
     expect(first.getByText('nets $143.65')).toBeInTheDocument();
-    const link = first.getByRole('link', { name: 'B0B3JWF5ZV' });
+    const link = first.getByRole('link', { name: 'B0B3JWF5ZV on Amazon' });
     expect(link).toHaveAttribute('href', 'https://www.amazon.com/dp/B0B3JWF5ZV');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');

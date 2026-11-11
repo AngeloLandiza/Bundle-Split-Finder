@@ -134,8 +134,25 @@
   margin: var(--review-helper-gap) 0 0 var(--review-indent);
   color: var(--ink-2);
 }
-.review-cand-meta a {
+.review-cand-meta {
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 2px;
+}
+.review-cand-meta a,
+.review-search {
   color: var(--link);
+}
+.review-search {
+  display: block;
+  width: fit-content;
+  margin: var(--review-helper-gap) 0 0 var(--review-indent);
+  font-size: 12px;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+.review-search .figure {
+  font-size: 12px;
 }
 .review-actions {
   display: flex;

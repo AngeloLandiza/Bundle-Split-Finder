@@ -248,13 +248,28 @@ describe('ReviewTab: a match question', () => {
     const first = screen.getByText(/very long title/);
     expect(first).toHaveAttribute('title', MATCH.candidates[0]!.title);
     expect(screen.getByText('$189.50')).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: 'B0AAAAAAA1' });
+    const link = screen.getByRole('link', { name: 'B0AAAAAAA1 on Amazon' });
     expect(link).toHaveAttribute('href', 'https://www.amazon.com/dp/B0AAAAAAA1');
     expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(link.querySelector('.figure')).toHaveTextContent('B0AAAAAAA1');
     expect(screen.getAllByRole('radio')).toHaveLength(3);
     // The link is not part of the radio's label: the radio is named by its title alone.
     expect(link.closest('label')).toBeNull();
     expect(screen.getByRole('radio', { name: MATCH.candidates[1]!.title })).toBeInTheDocument();
+  });
+
+  it('puts a search link for the part after None of these, and a split question has none', () => {
+    setup(reportOf([MATCH]));
+    const search = screen.getByRole('link', { name: 'Search Amazon for DCF891B' });
+    expect(search).toHaveAttribute('href', 'https://www.amazon.com/s?k=DEWALT%20DCF891B');
+    expect(search).toHaveAttribute('target', '_blank');
+    expect(search).toHaveAttribute('rel', 'noopener noreferrer');
+    const none = screen.getByRole('radio', { name: 'None of these' }).closest('.review-row')!;
+    expect(none.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    cleanup();
+    setup(reportOf([SPLIT]));
+    expect(screen.queryByRole('link', { name: /Search Amazon/ })).toBeNull();
   });
 
   it('sets real prices in mono and "No price seen" in words', () => {

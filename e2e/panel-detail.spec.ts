@@ -39,6 +39,7 @@ test('detail, priced parts, the packaging question and the answer', async ({ con
   await expect(panel.getByRole('heading', { level: 2, name: /^PARTS · / })).toBeVisible();
   await expect(panel.getByText('Do these arrive individually boxed?')).toBeVisible();
   await expect(panel.getByText(/^Estimate from your fee settings/)).toBeVisible();
+  await expect(panel.getByRole('link', { name: / on Amazon$/ }).first()).toHaveAttribute('href', /^https:\/\/www\.amazon\.com\/dp\/B0/);
   await shoot(panel, 'priced');
 
   await panel.getByRole('button', { name: 'No, loose' }).click();
@@ -69,6 +70,7 @@ test('detail, a bundle whose parts wait for a lookup', async ({ context, extensi
   await panel.locator('.deal-row', { has: panel.getByRole('button', { name: /^Look up/ }) }).first().locator('.deal-link').click();
   await expect(panel.getByText(/^No estimate yet: \d+ parts? still needs? an Amazon lookup\.$/)).toBeVisible();
   await expect(panel.getByRole('button', { name: /^Look up/ })).toBeVisible();
+  await expect(panel.getByRole('link', { name: /^Search Amazon for / }).first()).toHaveAttribute('href', /^https:\/\/www\.amazon\.com\/s\?k=/);
   await shoot(panel, 'waiting');
 });
 
