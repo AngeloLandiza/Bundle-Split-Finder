@@ -137,8 +137,11 @@ describe('runScan: the founder\'s bundle (test A)', () => {
     ]);
     expect(await w.store.getCatalogEntry('RYOBI:PBLRC25B')).toEqual({
       key: 'RYOBI:PBLRC25B', brand: 'RYOBI', model: 'PBLRC25B', title: 'ONE+ HP 18V Brushless Cordless 3/8 in. Extended Reach Ratchet (Tool Only)',
-      kinds: ['ratchet'], isKit: false, upc: null, seenAt: T0,
+      // Step 6: the row's item id, kept on every catalog entry (a kit's page is read by it).
+      kinds: ['ratchet'], isKit: false, upc: null, seenAt: T0, itemId: '316631068',
     });
+    // Of a model listed under two item ids, the entry keeps the last row's.
+    expect((await w.store.getCatalogEntry('RYOBI:PCL280K1'))!.itemId).toBe('339375658');
     expect((await w.store.listReview()).map((r) => r.id)).toEqual([
       'split:homedepot:320683876', 'split:homedepot:320684261', 'split:homedepot:327939252', 'split:homedepot:327939313', 'split:homedepot:335849279', 'split:homedepot:345174262',
     ]);

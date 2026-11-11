@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseBundlePage, type PageContent } from '../src/hdPage';
-import { kitContents, kitIndex, parseIncludes, sameModel, type KitItem } from '../src/kitContents';
-import { bundleKey, type BundleRecord } from '../src/scan/types';
+import { kitContents, kitIndex, kitPageStored, kitPageUnread, kitRecords, parseIncludes, sameModel, type KitItem } from '../src/kitContents';
+import { bundleKey, type BundleRecord, type CatalogRecord } from '../src/scan/types';
 
 interface Rec { itemId: string; status: number; text: string }
 const pages = (
@@ -175,6 +175,33 @@ const record = (itemId: string, over: Partial<BundleRecord> = {}): BundleRecord 
   seenAt: 1,
   split: null,
   ...over,
+});
+
+/** PCL1600K2's catalog entry as a scan of the default searches saves it (317987591's row). */
+const catalogKit = (over: Partial<CatalogRecord> = {}): CatalogRecord => ({
+  key: 'RYOBI:PCL1600K2', brand: 'RYOBI', model: 'PCL1600K2', title: 'ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger',
+  kinds: [], isKit: true, upc: null, seenAt: 1, itemId: '317987591', ...over,
+});
+
+describe('kitRecords (step 6)', () => {
+  it('are the bundle records, then the catalog entries marked a kit', () => {
+    const bundle = record('320243741', { model: 'PCL1600K2-P553' });
+    const kit = catalogKit();
+    const tool = catalogKit({ key: 'RYOBI:PCL206B', model: 'PCL206B', isKit: false });
+    expect(kitRecords([bundle], [tool, kit])).toEqual([bundle, kit]);
+  });
+
+  it("a kit's catalog entry with its page read gives the page's list; with none, it is unread", () => {
+    const read = catalogKit({ page: reading('317987591', 1) });
+    expect(kitContents(kitRecords([], [read]), 'RYOBI', 'PCL1600K2')).toEqual(parseIncludes('RYOBI', p('317987591').bullets));
+    expect(kitPageStored(kitRecords([], [read]), 'RYOBI', 'PCL1600K2')).toBe(true);
+    // Saved before step 6: no item id and no page.
+    const { itemId: _id, ...old } = catalogKit();
+    expect(kitContents(kitRecords([], [old]), 'RYOBI', 'PCL1600K2')).toBeNull();
+    expect(kitPageUnread(kitRecords([], [old]), 'RYOBI', 'PCL1600K2')).toBe(true);
+    // An entry not marked a kit is never a kit record, so never a kit left unread.
+    expect(kitPageUnread(kitRecords([], [{ ...old, isKit: false }]), 'RYOBI', 'PCL1600K2')).toBe(false);
+  });
 });
 
 describe('kitContents', () => {

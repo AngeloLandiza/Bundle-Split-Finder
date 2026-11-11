@@ -1,6 +1,7 @@
 // The scan runner: a few pages of the brands' own Amazon listings, then Home Depot listing
-// pages, then the bundles' own pages (free, never a search), then splits (free), then one
-// Amazon lookup per new part that no saved listing answers and a refresh per stale price.
+// pages, then the bundles' own pages (free, never a search), then splits (free), then the pages of
+// the plain kits those splits hold (free, step 6), then one Amazon lookup per new part that no saved
+// listing answers and a refresh per stale price.
 // The lookup step, matching from saved listings and the match question are shared with the
 // side panel's Look up and Verify (paid.ts), through PartContext.
 //
@@ -10,7 +11,7 @@
 // ("Runner reads pages before the split").
 
 import { type Catalog, catalogEntry } from '../decompose';
-import { kitIndex, kitItemParts } from '../kitContents';
+import { kitIndex, kitItemParts, kitPageStored, kitRecords } from '../kitContents';
 import { type Candidate, pick, type Picked } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
@@ -21,7 +22,8 @@ import { candidatesFor, listingFrom } from './listings';
 import { knownModels, readSplit } from './split';
 import { bundleKey, partKey, priceActive, resolvedParts } from './types';
 import type {
-  BudgetView, BundleRecord, CatalogCursor, ListingRecord, MatchRecord, PageOutcome, PriceRecord, ReadPages, ReviewCandidate, ScanJob, ScanSettings,
+  BudgetView, BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PageOutcome, PageReading, PriceRecord, ReadPages, ReviewCandidate,
+  ScanJob, ScanSettings,
   ScanStep, ScanStore, SearchClient, StopReason,
 } from './types';
 
@@ -36,7 +38,10 @@ export interface ScanDeps {
   labelPrefix?: string;
   /** Checked before every paid step. True ends the scan as stopped by the user. */
   shouldStop?: () => boolean;
-  /** Reads bundle pages in the owner's browser (P1). Without it no page is read; pages read before still count in the split (P5). */
+  /**
+   * Reads Home Depot pages in the owner's browser: bundle pages (P1), then kit pages (step 6). Without
+   * it no page is read; pages read before still count in the split (P5) and in the ways to sell.
+   */
   readPages?: ReadPages;
 }
 
@@ -100,11 +105,14 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
     // Amazon brand pages, then Home Depot pages: one queue.
     await runQueue(run);
     // P1: the bundles' own pages, free, once the queue is empty and before the split.
-    await readBundlePages(run);
+    const goOn = await readBundlePages(run);
     // Read once for the split and the planning pass that follows it.
     const known = await knownModels(run.store);
     run.catalog = known.catalog;
     await splitBundles(run, known.stored);
+    // Step 6: then the pages of the plain kits the splits now hold, free, before the planning, which
+    // looks up a kit's items only from its page. Not after Home Depot refused a page, or the reader failed.
+    if (goOn) await readKitPages(run);
     await planParts(run, known.listings);
   } else if (run.job.phase === 'parts') {
     // A continued job: its lookups are judged with the models the split knew.
@@ -570,6 +578,10 @@ async function applyListing(run: Run, step: Listing, data: unknown, at: number):
         await store.putCatalogEntry({
           key, brand: entry.brand, model: entry.model, title: row.title,
           kinds: entry.kinds, isKit: entry.isKit ?? false, upc: known?.upc ?? null, seenAt: at,
+          // Step 6: the row's own item id, by which a kit's page is read (readKitPages).
+          itemId: row.itemId,
+          // A kit's page is read once, as a bundle's (P1): a row seen again keeps it.
+          ...(known && known.page !== undefined ? { page: known.page } : {}),
         });
       }
     }
@@ -681,47 +693,105 @@ function priceSeen(asin: string, old: PriceRecord | undefined, cand: Candidate |
 const firstWith = (candidates: Candidate[], asin: string): Candidate | undefined => candidates.find((c) => c.asin === asin);
 const unique = (xs: string[]): string[] => [...new Set(xs)];
 
-// ---------------------------------------------------------------- P1 to P4: the bundles' own pages (free)
+// ---------------------------------------------------------------- P1 to P4: the bundles' own pages, then the kits' (free)
+
+/** Ids the reader is given: a Home Depot item id is digits. Stored data is untrusted, and the id goes into a page address. */
+const ITEM_ID = /^\d+$/;
+
+/** What is left of pageReadsPerScan in this job: bundle pages and kit pages read count alike. */
+const pagesLeft = (run: Run): number => Math.max(0, Math.floor(run.settings.pageReadsPerScan) - run.job.counts.pagesRead);
+
+/** A page to read, and where its reading is saved. */
+interface PageTarget {
+  itemId: string;
+  save: (page: PageReading) => Promise<void>;
+}
 
 /**
  * P1: bundles with no page yet, newest seenAt first then key, in one call to readPages. The
  * limit is per job: a job continued after its readings were saved reads only what is left of
  * pageReadsPerScan. P2: each page read is saved on its bundle. P3: a refusal, a page that could
  * not be read, or a reader that threw is noted in stopMessage; none of them stops the scan.
- * P4: the bundles are saved, then the job, once, before the split.
+ * P4: the bundles are saved, then the job, once, before the split. False when Home Depot refused a
+ * page or the reader threw: then no kit page is read this run (step 6).
  */
-async function readBundlePages(run: Run): Promise<void> {
-  const { store, job, readPages } = run;
-  if (!readPages) return;
-  const room = Math.max(0, Math.floor(run.settings.pageReadsPerScan) - job.counts.pagesRead);
+async function readBundlePages(run: Run): Promise<boolean> {
+  const { store } = run;
+  if (!run.readPages) return true;
   const unread = (await store.listBundles())
     .filter((b) => b.page === undefined || b.page === null)
-    .sort((a, b) => b.seenAt - a.seenAt || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
-    .slice(0, room);
-  if (unread.length === 0 || run.shouldStop()) return;
+    .sort(newestFirst)
+    .slice(0, pagesLeft(run));
+  if (unread.length === 0 || run.shouldStop()) return true;
+  return readInto(run, unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle({ ...b, page }) })));
+}
 
+/**
+ * Step 6 (Ruling 67): the pages of the plain kits that resolved splits hold, after the bundle pages
+ * and from what they left of pageReadsPerScan, read and saved as P1 to P4 read a bundle's. A kit is
+ * read only when it is a catalog entry marked a kit, with a Home Depot item id from its listing row
+ * (an entry saved before step 6 has none, and waits for a row to show it again), no page yet, no
+ * stored page under another record of the same kit, and no bundle record of its own (the bundle
+ * phase reads that one). Kits go by the bundles that hold them, newest seenAt first then key, as
+ * bundle pages do, in each bundle's part order; each once. Never a search.
+ */
+async function readKitPages(run: Run): Promise<void> {
+  const { store } = run;
+  if (!run.readPages) return;
+  const room = pagesLeft(run);
+  if (room === 0 || run.shouldStop()) return;
+  const bundles = await store.listBundles();
+  const catalog = await store.listCatalog();
+  const bundlesOf = kitIndex(bundles);
+  const kitsOf = kitIndex(catalog.filter((c) => c.isKit === true));
+  const allOf = kitIndex(kitRecords(bundles, catalog));
+  const wanted: CatalogRecord[] = [];
+  const asked = new Set<string>();
+  for (const b of [...bundles].sort(newestFirst)) {
+    for (const part of resolvedParts(b)) {
+      if (bundlesOf(part.brand, part.model).length > 0 || kitPageStored(allOf(part.brand, part.model), part.brand, part.model)) continue;
+      for (const kit of kitsOf(part.brand, part.model)) {
+        const id = kit.itemId;
+        if (kit.page || typeof id !== 'string' || !ITEM_ID.test(id) || asked.has(id)) continue;
+        asked.add(id);
+        wanted.push(kit);
+      }
+    }
+  }
+  if (wanted.length === 0) return;
+  await readInto(run, wanted.slice(0, room).map((k) => ({ itemId: k.itemId!, save: (page) => store.putCatalogEntry({ ...k, page }) })));
+}
+
+const newestFirst = (a: BundleRecord, b: BundleRecord): number => b.seenAt - a.seenAt || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
+
+/**
+ * P1 to P4 for one list of pages: one call to readPages, each page read saved and counted, problems
+ * noted, then the job saved. False when Home Depot refused a page or the reader threw.
+ */
+async function readInto(run: Run, targets: PageTarget[]): Promise<boolean> {
+  const { store, job, readPages } = run;
   // Only the reader is inside the try. An error from the store is not caught: the job stays
-  // "running" and the next runScan continues it, reading only the bundles still unread.
+  // "running" and the next runScan continues it, reading only the pages still unread.
   let outcomes: PageOutcome[];
   try {
-    outcomes = await readPages(unread.map((b) => b.itemId));
+    outcomes = await readPages!(targets.map((t) => t.itemId));
   } catch (err) {
     noteProblem(job, `Reading Home Depot pages failed: ${(err instanceof Error && err.message) || String(err)}`);
     await store.putScan(job);
-    return;
+    return false;
   }
   const readAt = run.now();
-  const asked = new Map(unread.map((b) => [b.itemId, b]));
+  const asked = new Map(targets.map((t) => [t.itemId, t]));
   let refused = false;
   let unreadable = false;
   let anyRead = false;
   for (const outcome of outcomes) {
-    const bundle = asked.get(outcome.itemId);
+    const target = asked.get(outcome.itemId);
     // An outcome for an id that was not asked for, or a second one for the same id, is ignored.
-    if (!bundle) continue;
+    if (!target) continue;
     asked.delete(outcome.itemId);
     if (outcome.kind === 'read') {
-      await store.putBundle({ ...bundle, page: { ...outcome.content, readAt } });
+      await target.save({ ...outcome.content, readAt });
       job.counts.pagesRead += 1;
       anyRead = true;
     } else if (outcome.kind === 'refused') {
@@ -735,6 +805,7 @@ async function readBundlePages(run: Run): Promise<void> {
     noteProblem(job, anyRead ? 'A Home Depot page could not be read.' : 'No Home Depot page could be read.');
   }
   await store.putScan(job);
+  return !refused;
 }
 
 /**
@@ -837,7 +908,8 @@ export async function bundleParts(store: ScanStore): Promise<Map<string, BundleP
   const parts = new Map<string, BundlePart>();
   const items = new Map<string, BundlePart>();
   const bundles = await store.listBundles();
-  const recordsOf = kitIndex(bundles);
+  // Step 6: a kit's page may be on a bundle record or on its catalog entry (kitRecords).
+  const recordsOf = kitIndex(kitRecords(bundles, await store.listCatalog()));
   const add = (into: Map<string, BundlePart>, part: Part, saving: number, kit: string | null) => {
     const seen = into.get(part.key);
     if (!seen) into.set(part.key, { key: part.key, brand: part.brand, model: part.model, saving, kits: kit === null ? [] : [kit] });

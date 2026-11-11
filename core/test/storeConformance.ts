@@ -119,6 +119,11 @@ describe(`${name} round trips`, () => {
     await s.putCatalogEntry(b);
     expect(await s.getCatalogEntry(a.key)).toEqual(b);
     expect(await s.getCatalogEntry('RYOBI:NOPE')).toBeUndefined();
+    // Step 6: a kit's entry with its item id and page, in the same store, next to one saved before them.
+    const kit = catalog('PCL1600K2', { isKit: true, itemId: '317987591', page: { bullets: ['Includes: (1) PCL206 Drill'], description: null, readAt: 2 } });
+    await s.putCatalogEntry(kit);
+    expect(await s.getCatalogEntry(kit.key)).toEqual(kit);
+    expect(await s.getCatalogEntry(a.key)).toEqual(b);
   });
 
   it('matches: put, get, replace, missing', async () => {

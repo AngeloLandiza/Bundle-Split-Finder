@@ -3,11 +3,32 @@
 // pageCatalog (pageSplit.ts) reads the same bullets for model numbers only. Here every boxed item
 // is kept, with its quantity: an item with no model number ("18V Charger", "Tool Bag") is an
 // unnamed item, and only paperwork (the operator's manual) is dropped. A kit's contents come only
-// from a stored record of that kit's own brand and model, never from another bundle's page.
+// from a stored record of that kit's own brand and model, never from another bundle's page: a bundle
+// record, or (step 6, Ruling 67) a catalog entry marked a kit, whose page the scan read by its item id.
 
 import { OFFERABLE_PART } from './decompose';
 import { DEWALT_LEADING, RYOBI_TOKEN } from './pageSplit';
-import { type BundleRecord, partKey, resolvedParts } from './scan/types';
+import { type BundleRecord, type CatalogRecord, type PageReading, partKey, resolvedParts } from './scan/types';
+
+/**
+ * A stored record that may hold a kit's own page: a bundle record, or a catalog entry marked a kit
+ * (kitRecords). A catalog entry saved before step 6 has no item id and no page.
+ */
+export interface KitRecord {
+  brand: string;
+  model: string;
+  itemId?: string | null;
+  page?: PageReading | null;
+}
+
+/**
+ * The records a kit's page may be stored on: every bundle record, then every catalog entry marked a
+ * kit (step 6). A catalog entry that is not a kit is left out: its page is never read, and it must not
+ * count as a kit whose page is unread.
+ */
+export function kitRecords(bundles: BundleRecord[], catalog: CatalogRecord[]): KitRecord[] {
+  return [...bundles, ...catalog.filter((c) => c.isKit === true)];
+}
 
 export interface KitItem {
   /** The item's model number, or null for an item the page names without one. */
@@ -88,9 +109,9 @@ const kitKey = (brand: string, model: string): string => {
  * record that sameModel would accept for that kit (and only those), in stored order, so
  * kitContents and the page checks below give the same answers on it as on all the records.
  */
-export function kitIndex(bundles: BundleRecord[]): (brand: string, model: string) => BundleRecord[] {
-  const index = new Map<string, BundleRecord[]>();
-  for (const r of bundles) {
+export function kitIndex<R extends KitRecord>(records: R[]): (brand: string, model: string) => R[] {
+  const index = new Map<string, R[]>();
+  for (const r of records) {
     const key = kitKey(r.brand, r.model);
     const list = index.get(key);
     if (list) list.push(r);
@@ -100,12 +121,12 @@ export function kitIndex(bundles: BundleRecord[]): (brand: string, model: string
 }
 
 /** Whether a stored record of this kit's own brand and model has its page read, whatever the page says. */
-export function kitPageStored(bundles: BundleRecord[], brand: string, model: string): boolean {
+export function kitPageStored(bundles: KitRecord[], brand: string, model: string): boolean {
   return bundles.some((r) => norm(r.brand) === norm(brand) && sameModel(brand, r.model, model) && !!r.page);
 }
 
 /** Whether a record of this kit's own brand and model is stored with its page not read (null or undefined). */
-export function kitPageUnread(bundles: BundleRecord[], brand: string, model: string): boolean {
+export function kitPageUnread(bundles: KitRecord[], brand: string, model: string): boolean {
   return bundles.some((r) => norm(r.brand) === norm(brand) && sameModel(brand, r.model, model) && !r.page);
 }
 
@@ -114,7 +135,7 @@ export function kitPageUnread(bundles: BundleRecord[], brand: string, model: str
  * brand and model, whose Includes list names at least one model. Null when there is none. A bundle
  * that holds the kit has another model (PCL1600K2-PBP004), so its page is never read here.
  */
-export function kitContents(bundles: BundleRecord[], brand: string, model: string): KitItem[] | null {
+export function kitContents(bundles: KitRecord[], brand: string, model: string): KitItem[] | null {
   const b = norm(brand);
   const same = (other: string): boolean => sameModel(b, other, model);
   let best: { readAt: number; itemId: string; items: KitItem[] } | null = null;
@@ -123,9 +144,10 @@ export function kitContents(bundles: BundleRecord[], brand: string, model: strin
     const items = parseIncludes(b, r.page.bullets);
     if (!items.some((i) => i.model)) continue;
     // Newest reading first; on the same readAt the larger item id, so the record order never decides.
+    const itemId = r.itemId ?? '';
     const newer = !best || r.page.readAt > best.readAt
-      || (r.page.readAt === best.readAt && r.itemId.localeCompare(best.itemId, 'en', { numeric: true }) > 0);
-    if (newer) best = { readAt: r.page.readAt, itemId: r.itemId, items };
+      || (r.page.readAt === best.readAt && itemId.localeCompare(best.itemId, 'en', { numeric: true }) > 0);
+    if (newer) best = { readAt: r.page.readAt, itemId, items };
   }
   return best?.items ?? null;
 }
@@ -135,7 +157,7 @@ export function kitContents(bundles: BundleRecord[], brand: string, model: strin
  * itself, which is not a list of what is inside it (then null, and the kit is not split). `records`:
  * the stored records of the kit's brand and model (kitIndex), or all of them.
  */
-export function splitItems(records: BundleRecord[], brand: string, model: string): KitItem[] | null {
+export function splitItems(records: KitRecord[], brand: string, model: string): KitItem[] | null {
   const items = kitContents(records, brand, model);
   return items && !items.some((i) => i.model !== null && sameModel(brand, i.model, model)) ? items : null;
 }
@@ -147,7 +169,7 @@ export function splitItems(records: BundleRecord[], brand: string, model: string
  * a part. Shared by the lookups' planning (bundleParts) and the report's Review, so the two agree.
  */
 export function kitItemParts(
-  b: Pick<BundleRecord, 'brand' | 'split'>, recordsOf: (brand: string, model: string) => BundleRecord[],
+  b: Pick<BundleRecord, 'brand' | 'split'>, recordsOf: (brand: string, model: string) => KitRecord[],
 ): { key: string; brand: string; model: string; kit: string }[] {
   const out: { key: string; brand: string; model: string; kit: string }[] = [];
   for (const part of resolvedParts(b)) {

@@ -62,7 +62,7 @@ export interface ScanSettings {
   catalogPagesPerScan: number;
   /** Amazon's brand filter per brand, sent as `rh`. Read from recorded responses. */
   brandFilters: Record<string, string>;
-  /** Bundle pages read at most per scan. */
+  /** Home Depot pages read at most per scan: bundle pages, then (step 6) kit pages, from one count. */
   pageReadsPerScan: number;
 }
 
@@ -157,6 +157,16 @@ export interface CatalogRecord {
   isKit: boolean;
   upc: string | null;
   seenAt: number;
+  /**
+   * Step 6: the Home Depot item id of the listing row the entry was last saved from. Absent on an
+   * entry saved before step 6: its page cannot be read until a listing row shows it again.
+   */
+  itemId?: string | null;
+  /**
+   * Step 6: a kit's own page, read by `itemId` once a resolved split holds the kit, and kept as a
+   * bundle's is (a later listing row keeps it). Undefined or null: not read yet.
+   */
+  page?: PageReading | null;
 }
 
 /**
@@ -299,7 +309,7 @@ export interface ScanCounts {
   listingsSaved: number;
   /** Parts matched from saved listings, with no search. */
   partsFromCatalog: number;
-  /** Bundle pages read and saved on their bundles. Never a search. */
+  /** Home Depot pages read and saved: on their bundles, and (step 6) on their kits' catalog entries. Never a search. */
   pagesRead: number;
 }
 
