@@ -9,7 +9,10 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import type { AppState, Reply, Request } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { FirstRun } from './FirstRun';
-import { Notice } from './Notice';
+import { noticeSentence, Notice, sentenceFor } from './Notice';
+import { parseAccount, SearchBudget } from '@core/serpapi/budget';
+import { MemoryCache, NETWORK_ERROR_PREFIX, SerpApiClient } from '@core/serpapi/client';
+import * as fx from '../../../core/test/fixtures';
 
 afterEach(cleanup);
 
@@ -25,6 +28,90 @@ function makeApi(reply: Reply | Promise<Reply> = { ok: true, data: null }) {
   const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
   return { api, send };
 }
+
+describe('fix round: Notice', () => {
+  const OFFLINE = 'SerpApi could not be reached. Check the connection, then retry.';
+  const network = `${NETWORK_ERROR_PREFIX}: Failed to fetch`;
+
+  it('maps a network failure to the offline sentence from every source', () => {
+    expect(sentenceFor(network)).toBe(OFFLINE);
+    expect(noticeSentence(state(), network)).toBe(OFFLINE);
+    expect(noticeSentence(state({ problem: network }), null)).toBe(OFFLINE);
+    expect(noticeSentence(state({ lastJob: job({ stopMessage: network }) }), null)).toBe(OFFLINE);
+    expect(sentenceFor('Something else.')).toBe('Something else.');
+  });
+
+  it('maps the message the client itself throws', async () => {
+    const client = new SerpApiClient({
+      apiKey: 'K',
+      budget: new SearchBudget(parseAccount(fx.SERPAPI_ACCOUNT_FREE), { reserve: 0, maxPerRun: 5 }),
+      cache: new MemoryCache(),
+      fetchFn: (async () => {
+        throw new TypeError('Failed to fetch');
+      }) as typeof fetch,
+    });
+    const err = await client.search({ engine: 'home_depot', q: 'x' }).catch((e: Error) => e);
+    expect((err as Error).message.startsWith(NETWORK_ERROR_PREFIX)).toBe(true);
+    expect(sentenceFor((err as Error).message)).toBe(OFFLINE);
+  });
+
+  it('shows the offline sentence for a refused retry too', async () => {
+    const api = makeApi({ ok: false, error: network });
+    render(createElement(Notice, { state: state({ problem: 'Bad.' }), api: api.api, error: null }));
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Retry/ }));
+    expect(await screen.findByText(OFFLINE)).toBeInTheDocument();
+  });
+
+  it('drops a refused retry sentence when the state changes', async () => {
+    const api = makeApi({ ok: false, error: 'A scan is already running.' });
+    const view = render(createElement(Notice, { state: state({ problem: 'Bad.' }), api: api.api, error: null }));
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Retry/ }));
+    expect(await screen.findByText('A scan is already running.')).toBeInTheDocument();
+    view.rerender(createElement(Notice, { state: state({ problem: 'Worse.' }), api: api.api, error: null }));
+    expect(screen.queryByText('A scan is already running.')).toBeNull();
+    expect(screen.getByRole('alert')).toHaveTextContent('Worse.');
+  });
+
+  it('disables Retry with the hourly title while the hourly limit blocks scans', () => {
+    const finishedAt = 1_000_000;
+    const s = state({ problem: 'Bad.', lastJob: job({ stopReason: 'hourly_limit', finishedAt }) });
+    render(createElement(Notice, { state: s, api: makeApi().api, error: null, now: () => finishedAt + 60_000 }));
+    const retry = screen.getByRole('button', { name: /^Retry/ });
+    expect(retry).toBeDisabled();
+    expect(retry).toHaveAttribute('title', expect.stringMatching(/^The hourly search limit is reached\. Try again after/));
+  });
+
+  it('moves focus to the sentence when Retry goes away because a scan started', async () => {
+    const api = makeApi();
+    const s = state({ problem: 'Bad.' });
+    const view = render(createElement(Notice, { state: s, api: api.api, error: null }));
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Retry/ }));
+    await vi.waitFor(() => expect(api.send).toHaveBeenCalled());
+    view.rerender(createElement(Notice, { state: { ...s, scanRunning: true }, api: api.api, error: null }));
+    expect(screen.getByRole('alert')).toHaveFocus();
+  });
+});
+
+describe('fix round: FirstRun', () => {
+  const show = (settings: Partial<typeof DEFAULT_SETTINGS>) =>
+    render(createElement(FirstRun, { state: state({ hasKey: false, settings: { ...DEFAULT_SETTINGS, ...settings } }), api: makeApi().api, openSettings: () => {} }));
+
+  it('says the schedule from settings', () => {
+    show({ schedule: { mode: 'interval', hours: 6 } });
+    expect(screen.getByText('Starts with DEWALT and RYOBI, scanning every 6 hours.')).toBeInTheDocument();
+  });
+
+  it('handles no brands without a double space', () => {
+    show({ brands: [] });
+    expect(screen.getByText('Starts with no brands yet.')).toBeInTheDocument();
+    expect(screen.getByText(/checks Home Depot for bundles, matches/)).toBeInTheDocument();
+  });
+
+  it('marks the current step', () => {
+    show({});
+    expect(screen.getAllByRole('listitem').map((li) => li.getAttribute('aria-current'))).toEqual(['step', null, null]);
+  });
+});
 
 describe('FirstRun', () => {
   it('shows the intro, three steps and the free-path note, with brands from settings', () => {
