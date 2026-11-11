@@ -19,7 +19,7 @@ export function limitCopy(state: AppState, now: number, bundles: BundleRow[]): {
   const n = state.settings.searchesPerScan;
   switch (job.stopReason) {
     case 'user':
-      // Not a limit: no link to the settings. A message kept from an earlier failure is not shown.
+      // Not a limit: no link to the settings. A message kept from an earlier failure is said below it (Ruling 44).
       return { title: 'You stopped the last scan', text: `Scan now picks up where it left off.${waiting()}`, limit: false };
     case 'run_cap': {
       const noun = n === 1 ? 'search' : 'searches';
@@ -73,9 +73,9 @@ export function LimitNotice({ state, now, bundles }: { state: AppState; now: num
   if (!copy) return null;
   const aside = setAsideSentence(state, bundles);
   return (
-    <section className="deal-notice" aria-label="Scan limit">
+    <section className="deal-notice" aria-labelledby="deal-notice-title">
       <div className="deal-notice-text">
-        <h2 className="deal-notice-title">{copy.title}</h2>
+        <h2 className="deal-notice-title" id="deal-notice-title">{copy.title}</h2>
         <p className="deal-notice-body">{copy.text}</p>
         {aside ? <p className="deal-notice-body">{aside}</p> : null}
       </div>

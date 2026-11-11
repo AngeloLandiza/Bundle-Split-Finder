@@ -56,6 +56,10 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
     });
   };
 
+  const cost = shown === null ? `at most ${searches(parts.length)}` : shown === 0 ? 'no search' : searches(shown);
+  // The name says what is looked up; the visible label stays short.
+  const what = parts.length === 1 ? parts[0]!.model : `${parts.length} parts of ${row.model}`;
+
   const refusalText = refusal ? (
     <p className="deal-refusal" id={refusalId}>
       {refusal}
@@ -66,6 +70,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
         ref={buttonRef}
         type="button"
         className="deal-lookup-btn"
+        aria-label={running ? undefined : `Look up ${what}, ${cost}`}
         aria-describedby={refusal ? refusalId : undefined}
         disabled={busy || !fresh || fresh.refusal !== null}
         onClick={run}
@@ -74,7 +79,7 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
           'Looking up…'
         ) : (
           <>
-            Look up <span className="deal-lookup-cost">{shown === null ? `at most ${searches(parts.length)}` : shown === 0 ? '· no search' : searches(shown)}</span>
+            Look up <span className="deal-lookup-cost">{shown === 0 ? '· no search' : cost}</span>
           </>
         )}
       </button>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { amazonNet, type FeeSettings } from '@core/money';
 import { bundlesCsv } from '@core/scan/csv';
@@ -56,13 +56,21 @@ const ANSWER_LINE = {
 const SETTLED = "The model number and page now settle this bundle's parts, so there is no question to answer.";
 
 /** Whose answer the split is, with the way to take it back. */
+const CHANGE_BLOCKED = 'A scan is running. Change this when it has finished.';
+
 function AnswerLine({ text, className = 'detail-answer', disabled, scanRunning, error, onChange }: { text: string; className?: string; disabled: boolean; scanRunning: boolean; error: string | null; onChange: () => void }) {
+  const noteId = useId();
   return (
     <div className={className}>
       <span>{text}</span>{' '}
-      <button type="button" className="detail-text-btn" disabled={disabled || scanRunning} title={scanRunning ? 'A scan is running. Change this when it has finished.' : undefined} onClick={onChange}>
+      <button type="button" className="detail-text-btn" disabled={disabled || scanRunning} title={scanRunning ? CHANGE_BLOCKED : undefined} aria-describedby={scanRunning ? noteId : undefined} onClick={onChange}>
         Change
       </button>
+      {scanRunning ? (
+        <p className="detail-refusal" id={noteId}>
+          {CHANGE_BLOCKED}
+        </p>
+      ) : null}
       {error ? (
         <p className="detail-refusal" role="alert">
           {error}

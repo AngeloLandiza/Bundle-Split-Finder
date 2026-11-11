@@ -100,7 +100,7 @@ describe('Detail on a replayed scan', () => {
     expect(row.parts.map((p) => p.status)).toEqual(['unmatched', 'unmatched']);
     open(report, row.key);
     expect(screen.getByText('No estimate yet: 2 parts still need an Amazon lookup.')).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Look up 1 search' })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: `Look up 2 parts of ${row.model}, 1 search` })).toBeEnabled();
     expect(screen.getAllByText('Not looked up yet')).toHaveLength(2);
   });
 
@@ -154,6 +154,21 @@ describe('Detail on a replayed scan', () => {
     expect(screen.getByText('You chose these parts.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Change' }));
     expect(send).toHaveBeenCalledWith({ type: 'reopenReview', id: 'split:homedepot:ambiguous' });
+  });
+
+  it('says why Change is off while a scan runs, as text under the line, for a real chosen reading and a real None', async () => {
+    for (const answer of ['second', 'none'] as const) {
+      cleanup();
+      const report = await ownerChose(answer);
+      const row = report.bundles.find((b) => b.key === 'homedepot:ambiguous')!;
+      render(createElement(Detail, { api, report, state: { ...state, scanRunning: true }, bundleKey: row.key, onBack: vi.fn() }));
+      const change = screen.getByRole('button', { name: 'Change' });
+      expect(change).toBeDisabled();
+      const note = screen.getByText('A scan is running. Change this when it has finished.');
+      expect(note.id).not.toBe('');
+      expect(change).toHaveAttribute('aria-describedby', note.id);
+      expect(change.parentElement).toBe(note.parentElement);
+    }
   });
 
   it('shows the split question of a bundle in Needs your answer, under its no-estimate sentence', () => {

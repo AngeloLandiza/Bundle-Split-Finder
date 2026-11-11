@@ -82,8 +82,20 @@ test('deals tab, bundles waiting for a lookup', async ({ context, extensionId, o
   await expect(panel.getByText('Scan stopped at your search limit')).toBeVisible();
   await expect(panel.getByRole('region', { name: 'Problem' })).toHaveCount(0);
   // The worker quotes each Look up: the label shows the quoted count.
-  await expect(panel.getByRole('button', { name: /^Look up \d+ search(es)?$/ }).first()).toBeEnabled();
+  await expect(panel.getByRole('button', { name: /^Look up .+, \d+ search(es)?$/ }).first()).toBeEnabled();
   await expect(panel.locator('.deal-refusal')).toHaveCount(0);
+  // N9: the left column of a row with a Look up button stops before the button, at both widths.
+  for (const width of WIDTHS) {
+    await panel.setViewportSize({ width, height: 820 });
+    await panel.waitForTimeout(150);
+    const overlaps = await panel.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.deal-row-lookup')].flatMap((li) => {
+        const button = li.querySelector('.deal-lookup-btn')!.getBoundingClientRect();
+        return [...li.querySelectorAll<HTMLElement>('.deal-subs, .deal-sub, .deal-sub > span')].filter((el) => el.getBoundingClientRect().right > button.left + 0.5 && el.getBoundingClientRect().bottom > button.top).map((el) => el.textContent);
+      }),
+    );
+    expect(overlaps).toEqual([]);
+  }
   await shoot(panel, 'waiting');
 });
 

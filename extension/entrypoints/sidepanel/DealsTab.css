@@ -171,7 +171,16 @@
 .deal-row-lookup .deal-subs {
   grid-column: 1;
   grid-row: 2;
+  min-width: 0;
   padding: 2px 0 11px 16px;
+}
+/* The left column stops before the button (N9): its lines wrap instead of running on under it. */
+.deal-row-lookup .deal-sub {
+  flex-wrap: wrap;
+  column-gap: 8px;
+  row-gap: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .deal-row-lookup .deal-link > .deal-figures,
 .deal-row-lookup .deal-link > .deal-tag {

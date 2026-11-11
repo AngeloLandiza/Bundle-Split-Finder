@@ -124,7 +124,7 @@ describe('Deals on a replayed scan', () => {
     const send = vi.fn(async (r: { type: string }) => (r.type === 'quote' ? { ok: true, data: { searches: 2, refusal: null } } : { ok: true, data: null }));
     const quoting: WorkerApi = { ...api, send: send as unknown as WorkerApi['send'] };
     render(createElement(DealsTab, { api: quoting, report, state: appState(ratchet.job), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
-    expect(await screen.findByRole('button', { name: 'Look up 2 searches' })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: `Look up 2 parts of ${row.model}, 2 searches` })).toBeEnabled();
     expect(send).toHaveBeenCalledWith({ type: 'quote', action: { kind: 'lookUp', parts: [{ brand: 'DEWALT', model: 'DCKTS650D1P1' }, { brand: 'DEWALT', model: 'DCF921B' }] } });
   });
 
@@ -142,6 +142,22 @@ describe('Deals on a replayed scan', () => {
     ]);
     render(createElement(DealsTab, { api, report: ratchet.report, state: appState(ratchet.job), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
     expect((await screen.findAllByRole('button', { name: /^Look up/ })).length).toBe(rows.length);
+    // Each button's name says what it looks up; the visible label is short.
+    for (const r of rows) {
+      const parts = r.parts.filter((p) => p.status === 'waiting' || p.status === 'unmatched');
+      const what = parts.length === 1 ? parts[0]!.model : `${parts.length} parts of ${r.model}`;
+      const li = document.querySelector(`a.deal-link[data-key="${r.key}"]`)!.closest('li')!;
+      const button = li.querySelector<HTMLElement>('.deal-lookup-btn')!;
+      expect(button.getAttribute('aria-label')).toMatch(new RegExp(`^Look up ${what.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}, (at most )?\\d+ search(es)?$`));
+      expect(button.textContent).toMatch(/^Look up /);
+      // The layout classes the stylesheet's two-line grid and its wrapping rely on.
+      expect(li).toHaveClass('deal-row', 'deal-row-lookup');
+      expect(button.parentElement).toBe(li);
+      const link = li.querySelector('a.deal-link')!;
+      expect(link.contains(button)).toBe(false);
+      expect(link.querySelector('.deal-title')!.nextElementSibling).toBe(link.querySelector('.deal-subs'));
+      expect(link.querySelectorAll('.deal-subs .deal-sub')).toHaveLength(2);
+    }
     expect(screen.getByText(/^It used the 1 search allowed per scan\./)).toBeInTheDocument();
   });
 });

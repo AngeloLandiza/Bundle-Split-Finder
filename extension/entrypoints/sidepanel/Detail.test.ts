@@ -200,7 +200,7 @@ describe('headline', () => {
     const send = vi.fn(() => new Promise<Reply>(() => {}));
     const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     show(row({ estimate: null, section: 'missing_listing', parts: [part('A1', { status: 'waiting', asin: null, grade: null, price: null, availability: 'missing' })] }), { api });
-    expect(screen.getByRole('button', { name: 'Look up at most 1 search' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Look up .+, at most 1 search$/ })).toBeDisabled();
   });
 
   it('says why when there is no estimate for another reason', () => {
@@ -634,6 +634,18 @@ describe('changing a split answer', () => {
     const change = within(band).getByRole('button', { name: 'Change' });
     expect(change.previousElementSibling ?? change.parentElement?.firstElementChild).toBe(screen.getByText("No estimate: you marked this bundle's parts as not known."));
     expect(screen.queryByText(/not known yet/)).toBeNull();
+  });
+
+  it('says why Change is off while a scan runs, as text under the line and not only as a title', () => {
+    show(answered('chosen'), { state: state({ scanRunning: true }) });
+    const change = screen.getByRole('button', { name: 'Change' });
+    expect(change).toBeDisabled();
+    const note = screen.getByText('A scan is running. Change this when it has finished.');
+    expect(note.parentElement).toBe(change.parentElement);
+    expect(change).toHaveAttribute('aria-describedby', note.id);
+    cleanup();
+    show(answered('chosen'));
+    expect(screen.queryByText('A scan is running. Change this when it has finished.')).toBeNull();
   });
 
   it('has no line or Change when there is no answer', () => {
