@@ -1,4 +1,5 @@
 import '../../styles/tokens.css';
 import { createRoot } from 'react-dom/client';
+import { App } from './App';
 
-createRoot(document.getElementById('root')!).render(<p>Side panel placeholder.</p>);
+createRoot(document.getElementById('root')!).render(<App />);
