@@ -77,6 +77,8 @@ const STOPPED = 'The scan was stopped before it began.';
 const BAD_PACKAGING = 'Choose retail boxed or loose.';
 const NO_MODEL = 'Name the bundle model.';
 const ANSWER_LATER = 'A scan is running. Answer again when it has finished.';
+/** An answer or a Change asked for while a Look up or Verify runs, which reads and writes matches and the answer's parts. */
+const ANSWER_AFTER_SEARCH = 'A search is running. Answer again when it has finished.';
 /** A Verify or Look up asked for while a scan runs. */
 const SCAN_RUNNING = 'A scan is running.';
 /** A scan, or a second Verify or Look up, asked for while one runs. */
@@ -549,13 +551,15 @@ export function createWorker(env: WorkerEnv): Worker {
   /**
    * The owner's answer to a review question (answers.ts). Taken through the start gate, so no
    * scan starts while it is written, and refused while a scan runs: the scan reads and rewrites
-   * splits, matches and questions, and could write over an answer saved in the middle of it. The
-   * request is untrusted: applyReviewAnswer checks its shape (an id, a choice, none or typed parts, and the
+   * splits, matches and questions, and could write over an answer saved in the middle of it. Also
+   * refused while a Look up or Verify runs, which reads and writes the parts' matches and questions.
+   * The request is untrusted: applyReviewAnswer checks its shape (an id, a choice, none or typed parts, and the
    * `seen` signature of the question shown) and refuses anything else with a plain sentence.
    */
   const answerReview = (id: string, answer: ReviewAnswer): Promise<Reply<null>> =>
     serial(async () => {
       if (scan !== null) return refuse(ANSWER_LATER);
+      if (paid !== null) return refuse(ANSWER_AFTER_SEARCH);
       try {
         await applyReviewAnswer(store, id, answer, env.now());
       } catch (err) {
@@ -568,12 +572,13 @@ export function createWorker(env: WorkerEnv): Worker {
 
   /**
    * Opens again a split question the owner answered (answers.ts, reopenReviewAnswer), so it can be
-   * answered again. Gated and refused while a scan runs, for the same reason as answerReview and with
-   * its sentence. The id is untrusted: anything not an answered split question is refused.
+   * answered again. Gated and refused while a scan or a Look up or Verify runs, for the same reasons
+   * as answerReview and with its sentences. The id is untrusted: anything not an answered split question is refused.
    */
   const reopenReview = (id: string): Promise<Reply<null>> =>
     serial(async () => {
       if (scan !== null) return refuse(ANSWER_LATER);
+      if (paid !== null) return refuse(ANSWER_AFTER_SEARCH);
       try {
         await reopenReviewAnswer(store, id, env.now());
       } catch (err) {

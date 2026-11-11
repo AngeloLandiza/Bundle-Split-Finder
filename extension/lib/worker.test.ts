@@ -1580,4 +1580,59 @@ describe('worker: answerReview', () => {
     expect(await send(w, { type: 'reopenReview', id: AMBIGUOUS })).toEqual({ ok: true, data: null });
     expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: null, answeredAt: null });
   });
+
+  it('answerReview and reopenReview refuse while a Look up or Verify runs, writing nothing, and take the request once it has ended (final review)', async () => {
+    const SEARCHING = 'A search is running. Answer again when it has finished.';
+    const LOOK_01B: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC01B' }] };
+    const LOOK_25B: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC25B' }] };
+    const VERIFY_25B: PaidAction = { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0B3JWF5ZV' };
+    // One search per scan: the ratchet page is read, both parts wait, and the ambiguous bundle is asked about.
+    const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 1 } });
+    await seedAmbiguous(w.store);
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    /** Holds the next search of a paid action until the returned release is called. */
+    const holdPaid = async (action: PaidAction) => {
+      let reached!: () => void;
+      const atSearch = new Promise<void>((resolve) => (reached = resolve));
+      let release!: () => void;
+      const open = new Promise<void>((resolve) => (release = resolve));
+      w.beforeSearch = async () => {
+        reached();
+        await open;
+      };
+      const reply = send<null>(w, { type: 'runPaid', action });
+      await atSearch;
+      return async () => {
+        release();
+        w.beforeSearch = () => {};
+        expect(await reply).toEqual({ ok: true, data: null });
+      };
+    };
+
+    // An open question, while a Look up waits on SerpApi.
+    const answer = await asShown(w, AMBIGUOUS, { none: true });
+    const open = await w.store.getReview(AMBIGUOUS);
+    let finish = await holdPaid(LOOK_01B);
+    let before = w.broadcasts.length;
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer })).toEqual({ ok: false, error: SEARCHING });
+    expect(await w.store.getReview(AMBIGUOUS)).toEqual(open);
+    expect(w.broadcasts.length).toBe(before);
+    await finish();
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer })).toEqual({ ok: true, data: null });
+
+    // An answered question, while a Verify waits on SerpApi.
+    expect(await send(w, { type: 'runPaid', action: LOOK_25B })).toEqual({ ok: true, data: null });
+    const answered = await w.store.getReview(AMBIGUOUS);
+    const split = (await w.store.getBundle('homedepot:ambiguous'))!.split;
+    finish = await holdPaid(VERIFY_25B);
+    before = w.broadcasts.length;
+    expect(await send(w, { type: 'reopenReview', id: AMBIGUOUS })).toEqual({ ok: false, error: SEARCHING });
+    expect(await w.store.getReview(AMBIGUOUS)).toEqual(answered);
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual(split);
+    expect(w.broadcasts.length).toBe(before);
+    await finish();
+    expect(await send(w, { type: 'reopenReview', id: AMBIGUOUS })).toEqual({ ok: true, data: null });
+    expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: null, answeredAt: null });
+  });
 });
