@@ -479,7 +479,9 @@ export function createWorker(env: WorkerEnv): Worker {
   /**
    * The owner's answer to a review question (answers.ts). Taken through the start gate, so no
    * scan starts while it is written, and refused while a scan runs: the scan reads and rewrites
-   * splits, matches and questions, and could write over an answer saved in the middle of it.
+   * splits, matches and questions, and could write over an answer saved in the middle of it. The
+   * request is untrusted: applyReviewAnswer checks its shape (an id, a choice or none, and the
+   * `seen` signature of the question shown) and refuses anything else with a plain sentence.
    */
   const answerReview = (id: string, answer: ReviewAnswer): Promise<Reply<null>> =>
     serial(async () => {

@@ -405,8 +405,12 @@ export interface ScanReport {
   review: ReviewItem[];
 }
 
-/** An index into the review item's `choices` (split) or `candidates` (match), or none of them. */
-export type ReviewAnswer = { choice: number } | { none: true };
+/**
+ * An index into the review item's `choices` (split) or `candidates` (match), or none of them.
+ * `seen` is reviewSignature (answers.ts) of the item as it was shown: an answer to a question a
+ * scan has changed since is refused.
+ */
+export type ReviewAnswer = { choice: number; seen: string } | { none: true; seen: string };
 
 /** A paid action the side panel can ask for. */
 export type PaidAction =

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { replayRecorded, type Replay } from '../../scripts/replay';
 import { type PageContent, parseBundlePage } from '../src/hdPage';
-import { AnswerRefused, applyReviewAnswer } from '../src/scan/answers';
+import { AnswerRefused, applyReviewAnswer, reviewSignature } from '../src/scan/answers';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
 import { runScan } from '../src/scan/runner';
@@ -36,6 +36,7 @@ const NONE_NOTE = 'you answered none of these';
 const NOT_FOUND = 'That question was not found.';
 const ANSWERED = 'That question was already answered.';
 const NOT_SHOWN = 'Choose one of the answers shown.';
+const CHANGED = 'That question changed. Choose again.';
 
 interface World {
   store: MemoryScanStore;
@@ -75,6 +76,12 @@ const reader = (as: Record<string, string> = {}): ReadPages => async (ids) =>
 
 const lookup = (model: string) => ({ kind: 'lookup', brand: 'DEWALT', model }) as const;
 
+/** An answer as the panel sends it: signed with the question as stored now, which is what the panel shows. */
+async function shown(w: World, id: string, pick: { choice: number } | { none: true }): Promise<ReviewAnswer> {
+  const item = await w.store.getReview(id);
+  return { ...pick, seen: item ? reviewSignature(item) : '[]' };
+}
+
 // ---------------------------------------------------------------- split questions
 
 const AMBIGUOUS = 'split:homedepot:ambiguous';
@@ -99,7 +106,7 @@ describe('applyReviewAnswer: a split question', () => {
   it('a choice resolves the bundle with the parts chosen and closes the question', async () => {
     const w = world();
     const open = await ambiguous(w);
-    await applyReviewAnswer(w.store, AMBIGUOUS, { choice: 1 }, T0 + MINUTE);
+    await applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { choice: 1 }), T0 + MINUTE);
     expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCKTS650D1P1', 'DCF921B'], status: 'resolved', notes: [CHOSEN] });
     expect(await w.store.getReview(AMBIGUOUS)).toEqual({ ...open, answer: 'DCKTS650D1P1,DCF921B', answeredAt: T0 + MINUTE });
     const report = await buildReport(w.store, DEWALT_ONLY);
@@ -111,7 +118,7 @@ describe('applyReviewAnswer: a split question', () => {
   it('every later scan keeps the chosen split, and plans its parts like any resolved bundle\'s', async () => {
     const w = world();
     await ambiguous(w);
-    await applyReviewAnswer(w.store, AMBIGUOUS, { choice: 1 }, T0 + MINUTE);
+    await applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { choice: 1 }), T0 + MINUTE);
     const answered = await w.store.getReview(AMBIGUOUS);
 
     for (const day of [1, 2]) {
@@ -135,7 +142,7 @@ describe('applyReviewAnswer: a split question', () => {
     expect(await w.store.getReview(id)).toMatchObject({ answer: null, choices: [['DCK200D1P1', 'DCB606'], ['DCK200D1P1', 'DCF921B']] });
 
     // The owner takes the page's reading, which the model number contradicts.
-    await applyReviewAnswer(w.store, id, { choice: 1 }, T0 + MINUTE);
+    await applyReviewAnswer(w.store, id, await shown(w, id, { choice: 1 }), T0 + MINUTE);
     w.clock = T0 + DAY;
     const job = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader() });
     expect((await w.store.getBundle('homedepot:337440461'))!.split).toEqual({ components: ['DCK200D1P1', 'DCF921B'], status: 'resolved', notes: [CHOSEN] });
@@ -152,7 +159,7 @@ describe('applyReviewAnswer: a split question', () => {
     expect(open).toMatchObject({ reason: "'CS334B' matches nothing in the catalog", choices: [], answer: null });
     const before = (await w.store.getBundle('homedepot:343992133'))!.split!;
 
-    await applyReviewAnswer(w.store, id, { none: true }, T0 + MINUTE);
+    await applyReviewAnswer(w.store, id, await shown(w, id, { none: true }), T0 + MINUTE);
     const answered = { ...open, answer: 'none', answeredAt: T0 + MINUTE };
     expect(await w.store.getReview(id)).toEqual(answered);
     expect((await w.store.getBundle('homedepot:343992133'))!.split).toEqual({ ...before, notes: [...before.notes, NONE_NOTE] });
@@ -177,8 +184,8 @@ describe('applyReviewAnswer: a split question', () => {
     const { choices, ...old } = await ambiguous(w);
     expect(choices).toHaveLength(2);
     await w.store.putReview(old as ReviewItem);
-    await expect(applyReviewAnswer(w.store, AMBIGUOUS, { choice: 0 }, T0 + MINUTE)).rejects.toThrow(NOT_SHOWN);
-    await applyReviewAnswer(w.store, AMBIGUOUS, { none: true }, T0 + MINUTE);
+    await expect(applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { choice: 0 }), T0 + MINUTE)).rejects.toThrow(NOT_SHOWN);
+    await applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { none: true }), T0 + MINUTE);
     expect(await w.store.getReview(AMBIGUOUS)).toEqual({ ...old, choices: [], answer: 'none', answeredAt: T0 + MINUTE });
   });
 });
@@ -222,7 +229,7 @@ const userMatch = (over: object) => ({
 describe('applyReviewAnswer: a match question', () => {
   it('a choice saves that listing as the user\'s match, and a later scan keeps it and looks nothing up', async () => {
     const { w, fetchFn, item } = await unconfirmed();
-    await applyReviewAnswer(w.store, MATCH, { choice: 0 }, T0 + MINUTE);
+    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 0 }), T0 + MINUTE);
     const decided = userMatch({ status: 'matched', asin: 'B0HQGDLWH9' });
     expect(await w.store.getMatch('DEWALT:DCF891B')).toEqual(decided);
     expect(await w.store.getReview(MATCH)).toEqual({ ...item, answer: 'B0HQGDLWH9', answeredAt: T0 + MINUTE });
@@ -239,7 +246,7 @@ describe('applyReviewAnswer: a match question', () => {
 
   it('"none" saves that the part has no listing, decided by the user, and a later scan does not look it up', async () => {
     const { w, fetchFn, item } = await unconfirmed();
-    await applyReviewAnswer(w.store, MATCH, { none: true }, T0 + MINUTE);
+    await applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { none: true }), T0 + MINUTE);
     const decided = userMatch({ status: 'none', asin: null });
     expect(await w.store.getMatch('DEWALT:DCF891B')).toEqual(decided);
     expect(await w.store.getReview(MATCH)).toEqual({ ...item, answer: 'none', answeredAt: T0 + MINUTE });
@@ -254,7 +261,7 @@ describe('applyReviewAnswer: a match question', () => {
   it('refuses a choice beyond the listings shown', async () => {
     const { w } = await unconfirmed();
     const before = await w.store.getMatch('DEWALT:DCF891B');
-    await expect(applyReviewAnswer(w.store, MATCH, { choice: 7 }, T0 + MINUTE)).rejects.toThrow(NOT_SHOWN);
+    await expect(applyReviewAnswer(w.store, MATCH, await shown(w, MATCH, { choice: 7 }), T0 + MINUTE)).rejects.toThrow(NOT_SHOWN);
     expect(await w.store.getMatch('DEWALT:DCF891B')).toEqual(before);
     expect((await w.store.getReview(MATCH))!.answer).toBeNull();
   });
@@ -269,18 +276,24 @@ describe('applyReviewAnswer: refusals', () => {
     const snapshot = async () => ({ bundles: await w.store.listBundles(), review: await w.store.listReview(), matches: await w.store.listMatches() });
     const before = await snapshot();
 
-    const unknown = applyReviewAnswer(w.store, 'split:homedepot:nothing', { none: true }, T0 + MINUTE);
+    const unknown = applyReviewAnswer(w.store, 'split:homedepot:nothing', { none: true, seen: '[]' }, T0 + MINUTE);
     await expect(unknown).rejects.toBeInstanceOf(AnswerRefused);
     await expect(unknown).rejects.toThrow(NOT_FOUND);
-    for (const answer of [{ choice: 2 }, { choice: -1 }, { choice: 0.5 }, { choice: '0' }, {}, { none: false }, { none: true, choice: 0 }, null, 'none']) {
+    const seen = reviewSignature((await w.store.getReview(AMBIGUOUS))!);
+    const notShown = [
+      ...[{ choice: 2 }, { choice: -1 }, { choice: 0.5 }, { choice: '0' }, {}, { none: false }, { none: true, choice: 0 }].map((a) => ({ ...a, seen })),
+      // No signature, or one that is not text: not an answer the panel sends.
+      { choice: 0 }, { none: true }, { choice: 0, seen: 7 }, null, 'none',
+    ];
+    for (const answer of notShown) {
       await expect(applyReviewAnswer(w.store, AMBIGUOUS, answer as ReviewAnswer, T0 + MINUTE), JSON.stringify(answer)).rejects.toThrow(NOT_SHOWN);
     }
     expect(await snapshot()).toEqual(before);
 
-    await applyReviewAnswer(w.store, AMBIGUOUS, { choice: 0 }, T0 + MINUTE);
+    await applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { choice: 0 }), T0 + MINUTE);
     const answered = await snapshot();
-    await expect(applyReviewAnswer(w.store, AMBIGUOUS, { choice: 1 }, T0 + 2 * MINUTE)).rejects.toThrow(ANSWERED);
-    await expect(applyReviewAnswer(w.store, AMBIGUOUS, { none: true }, T0 + 2 * MINUTE)).rejects.toThrow(ANSWERED);
+    await expect(applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { choice: 1 }), T0 + 2 * MINUTE)).rejects.toThrow(ANSWERED);
+    await expect(applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { none: true }), T0 + 2 * MINUTE)).rejects.toThrow(ANSWERED);
     expect(await snapshot()).toEqual(answered);
   });
 
@@ -292,7 +305,68 @@ describe('applyReviewAnswer: refusals', () => {
     await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader() });
     const id = 'split:homedepot:337440459';
     expect(await w.store.getReview(id)).toMatchObject({ answer: 'resolved by a later scan' });
-    await expect(applyReviewAnswer(w.store, id, { none: true }, T0 + DAY + MINUTE)).rejects.toThrow(ANSWERED);
+    await expect(applyReviewAnswer(w.store, id, await shown(w, id, { none: true }), T0 + DAY + MINUTE)).rejects.toThrow(ANSWERED);
     expect(await w.store.getReview(id)).toMatchObject({ answer: 'resolved by a later scan', answeredAt: T0 + DAY });
+  });
+});
+
+describe('applyReviewAnswer: an answer to a question as it was shown', () => {
+  const id = 'split:homedepot:337440461';
+
+  /** 337440461's question as first shown (no reading), then rewritten by a scan that reads 337440459's page for it. */
+  async function rewritten(w: World): Promise<{ old: string; now: string }> {
+    await scan(w, { settings: COMBO });
+    const first = (await w.store.getReview(id))!;
+    expect(first.choices).toEqual([]);
+    w.clock = T0 + DAY;
+    await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader({ '337440461': '337440459' }) });
+    const second = (await w.store.getReview(id))!;
+    expect(second).toMatchObject({ answer: null, openedAt: T0, choices: [['DCK200D1P1', 'DCF921B']] });
+    expect(reviewSignature(second)).not.toBe(reviewSignature(first));
+    return { old: reviewSignature(first), now: reviewSignature(second) };
+  }
+
+  const snapshot = async (w: World) => ({ bundles: await w.store.listBundles(), review: await w.store.listReview(), matches: await w.store.listMatches() });
+
+  it('signs a split question with its choices and a match question with its listings', async () => {
+    const w = world();
+    await ambiguous(w);
+    expect(reviewSignature((await w.store.getReview(AMBIGUOUS))!)).toBe('[["DCKTS650D1P1","DCF891B"],["DCKTS650D1P1","DCF921B"]]');
+    const { w: m, item } = await unconfirmed();
+    expect(reviewSignature((await m.store.getReview(MATCH))!)).toBe(JSON.stringify(item.candidates.map((c) => c.asin)));
+  });
+
+  it('refuses a choice made on the question before a scan rewrote its choices, and writes nothing', async () => {
+    const w = world();
+    const { old } = await rewritten(w);
+    const before = await snapshot(w);
+    const stale = applyReviewAnswer(w.store, id, { choice: 0, seen: old }, T0 + DAY + MINUTE);
+    await expect(stale).rejects.toBeInstanceOf(AnswerRefused);
+    await expect(stale).rejects.toThrow(CHANGED);
+    expect(await snapshot(w)).toEqual(before);
+  });
+
+  it('refuses "none" given to the question before it was rewritten, and writes nothing', async () => {
+    const w = world();
+    const { old } = await rewritten(w);
+    const before = await snapshot(w);
+    await expect(applyReviewAnswer(w.store, id, { none: true, seen: old }, T0 + DAY + MINUTE)).rejects.toThrow(CHANGED);
+    expect(await snapshot(w)).toEqual(before);
+  });
+
+  it('accepts the same choice made on the question as it is now', async () => {
+    const w = world();
+    const { now } = await rewritten(w);
+    await applyReviewAnswer(w.store, id, { choice: 0, seen: now }, T0 + DAY + MINUTE);
+    expect((await w.store.getBundle('homedepot:337440461'))!.split).toEqual({ components: ['DCK200D1P1', 'DCF921B'], status: 'resolved', notes: [CHOSEN] });
+    expect(await w.store.getReview(id)).toMatchObject({ answer: 'DCK200D1P1,DCF921B', answeredAt: T0 + DAY + MINUTE });
+  });
+
+  it('refuses a match answer made on other listings', async () => {
+    const { w, item } = await unconfirmed();
+    const before = await snapshot(w);
+    const other = JSON.stringify(item.candidates.slice(1).map((c) => c.asin));
+    await expect(applyReviewAnswer(w.store, MATCH, { choice: 0, seen: other }, T0 + MINUTE)).rejects.toThrow(CHANGED);
+    expect(await snapshot(w)).toEqual(before);
   });
 });

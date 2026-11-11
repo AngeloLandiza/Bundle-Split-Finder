@@ -28,6 +28,7 @@ export class AnswerRefused extends Error {
 const NOT_FOUND = 'That question was not found.';
 const ANSWERED = 'That question was already answered.';
 const NOT_SHOWN = 'Choose one of the answers shown.';
+const CHANGED = 'That question changed. Choose again.';
 
 // ---------------------------------------------------------------- choices
 
@@ -53,6 +54,16 @@ export function splitChoices(split: Decomposition): string[][] {
 
 /** An item's choices. An item saved before step 5 has none stored: it reads as []. */
 export const choicesOf = (item: ReviewItem): string[][] => (Array.isArray(item.choices) ? item.choices : []);
+
+/**
+ * What a question shows the owner to choose from, as text: a split question's choices, a match
+ * question's listings by ASIN. A scan may rewrite an open split question's choices, so an answer
+ * carries the signature of what it was given (ReviewAnswer.seen); the panel computes it with this
+ * same function.
+ */
+export function reviewSignature(item: ReviewItem): string {
+  return item.kind === 'split' ? JSON.stringify(choicesOf(item)) : JSON.stringify(item.candidates.map((c) => c.asin));
+}
 
 /** Two lists of choices, the same in the same order. */
 export const sameChoices = (a: string[][], b: string[][]): boolean =>
@@ -83,14 +94,19 @@ export function ownerSplit(item: ReviewItem | undefined): string[] | typeof NONE
 
 // ---------------------------------------------------------------- applying an answer
 
-/** The index `answer` picks among `count` answers, or NONE. Anything else is refused. */
-function picked(answer: unknown, count: number): number | typeof NONE {
-  if (typeof answer === 'object' && answer !== null) {
-    const a = answer as Record<string, unknown>;
-    if (a.none === true && !('choice' in a)) return NONE;
-    const i = a.choice;
-    if (!('none' in a) && typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < count) return i;
+/** An answer as the panel sends it: an object signed with a text `seen`. Anything else is refused. */
+function signed(answer: unknown): Record<string, unknown> & { seen: string } {
+  if (typeof answer === 'object' && answer !== null && typeof (answer as { seen?: unknown }).seen === 'string') {
+    return answer as Record<string, unknown> & { seen: string };
   }
+  throw new AnswerRefused(NOT_SHOWN);
+}
+
+/** The index `a` picks among `count` answers, or NONE. Anything else is refused. */
+function picked(a: Record<string, unknown>, count: number): number | typeof NONE {
+  if (a.none === true && !('choice' in a)) return NONE;
+  const i = a.choice;
+  if (!('none' in a) && typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < count) return i;
   throw new AnswerRefused(NOT_SHOWN);
 }
 
@@ -104,18 +120,22 @@ function picked(answer: unknown, count: number): number | typeof NONE {
  *        answers the item with its ASIN. `{ none: true }` saves that the part has no listing,
  *        decided by the user, and answers 'none'.
  *
- * Refused with AnswerRefused for an unknown id, an item already answered (by the owner or by a
- * scan), or an answer that is not one the item shows. The record the answer decides is written
- * before the item, so a failure between the two leaves the question open to be answered again.
+ * Refused with AnswerRefused, writing nothing, for an unknown id, an item already answered (by
+ * the owner or by a scan), an answer whose `seen` is not the item's signature now (a scan changed
+ * the question since it was shown; checked before the index), or an answer that is not one the
+ * item shows. The record the answer decides is written before the item, so a failure between the
+ * two leaves the question open to be answered again.
  */
 export async function applyReviewAnswer(store: ScanStore, id: string, answer: ReviewAnswer, now: number): Promise<void> {
   const item = typeof id === 'string' ? await store.getReview(id) : undefined;
   if (!item) throw new AnswerRefused(NOT_FOUND);
   if (item.answer !== null) throw new AnswerRefused(ANSWERED);
+  const given = signed(answer);
+  if (given.seen !== reviewSignature(item)) throw new AnswerRefused(CHANGED);
   const choices = choicesOf(item);
 
   if (item.kind === 'split') {
-    const pick = picked(answer, choices.length);
+    const pick = picked(given, choices.length);
     const parts = pick === NONE ? null : choices[pick]!;
     const bundle = await store.getBundle(item.subject);
     // A bundle not stored (never the case after a scan) takes the answer when a scan sees it.
@@ -124,7 +144,7 @@ export async function applyReviewAnswer(store: ScanStore, id: string, answer: Re
     return;
   }
 
-  const pick = picked(answer, item.candidates.length);
+  const pick = picked(given, item.candidates.length);
   const asin = pick === NONE ? null : item.candidates[pick]!.asin;
   // No price is saved: the candidate's price has no time of its own. The next scan refreshes it.
   await store.putMatch({

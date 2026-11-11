@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { replayRecorded, type Replay } from '../../scripts/replay';
 import * as fx from '../../core/test/fixtures';
+import { reviewSignature } from '@core/scan/answers';
 import { MemoryScanStore } from '@core/scan/memoryStore';
-import type { BundleRow, PageOutcome, ReadPages, ScanJob, ScanStore } from '@core/scan/types';
+import type { BundleRow, PageOutcome, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
 import { parseAccount } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, MemoryCache } from '@core/serpapi/client';
 import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
@@ -1002,6 +1003,12 @@ describe('worker: answerReview', () => {
     return reply.data;
   }
 
+  /** The answer as the panel sends it: signed with the question as getReport shows it ('[]' when it shows no such question). */
+  async function asShown(w: World, id: string, pick: { choice: number } | { none: true }): Promise<ReviewAnswer> {
+    const item = (await report(w)).review.find((r) => r.id === id);
+    return { ...pick, seen: item ? reviewSignature(item) : '[]' };
+  }
+
   it('saves the chosen reading, broadcasts, and the report no longer asks the question', async () => {
     const w = world({ key: KEY, settings: RYOBI });
     await seedAmbiguous(w.store);
@@ -1011,9 +1018,10 @@ describe('worker: answerReview', () => {
       kind: 'split', choices: [['DCKTS650D1P1', 'DCF891B'], ['DCKTS650D1P1', 'DCF921B']],
     });
 
+    const answer = await asShown(w, AMBIGUOUS, { choice: 1 });
     const before = w.broadcasts.length;
     w.clock = T0 + MINUTE;
-    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 1 } })).toEqual({ ok: true, data: null });
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer })).toEqual({ ok: true, data: null });
     expect(w.broadcasts.length).toBe(before + 1);
     expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: 'DCKTS650D1P1,DCF921B', answeredAt: T0 + MINUTE });
     const after = await report(w);
@@ -1029,16 +1037,19 @@ describe('worker: answerReview', () => {
     await send(w, { type: 'scanNow' });
     await untilIdle(w);
     const before = w.broadcasts.length;
-    expect(await send(w, { type: 'answerReview', id: 'split:homedepot:nothing', answer: { none: true } })).toEqual({ ok: false, error: 'That question was not found.' });
-    for (const answer of [{ choice: 2 }, { choice: -1 }, {}, undefined]) {
+    expect(await send(w, { type: 'answerReview', id: 'split:homedepot:nothing', answer: { none: true, seen: '[]' } })).toEqual({ ok: false, error: 'That question was not found.' });
+    const { seen } = await asShown(w, AMBIGUOUS, { none: true });
+    // An index not shown, or a request without the signature of what was shown.
+    for (const answer of [{ choice: 2, seen }, { choice: -1, seen }, { seen }, { choice: 0 }, { none: true }, {}, undefined]) {
       const request = { type: 'answerReview', id: AMBIGUOUS, answer } as unknown as Request;
-      expect(await send(w, request)).toEqual({ ok: false, error: 'Choose one of the answers shown.' });
+      expect(await send(w, request), JSON.stringify(answer)).toEqual({ ok: false, error: 'Choose one of the answers shown.' });
     }
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 0, seen: '[]' } })).toEqual({ ok: false, error: 'That question changed. Choose again.' });
     expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: null });
     expect(w.broadcasts.length).toBe(before);
 
-    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { none: true } })).toEqual({ ok: true, data: null });
-    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 0 } })).toEqual({ ok: false, error: 'That question was already answered.' });
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { none: true, seen } })).toEqual({ ok: true, data: null });
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 0, seen } })).toEqual({ ok: false, error: 'That question was already answered.' });
     expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: 'none' });
   });
 
@@ -1047,10 +1058,10 @@ describe('worker: answerReview', () => {
     await seedAmbiguous(w.store);
     const gate = held(w);
     expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
-    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 0 } })).toEqual({ ok: false, error: SCANNING });
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: await asShown(w, AMBIGUOUS, { choice: 0 }) })).toEqual({ ok: false, error: SCANNING });
     gate.release();
     await untilIdle(w);
-    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 0 } })).toEqual({ ok: true, data: null });
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: await asShown(w, AMBIGUOUS, { choice: 0 }) })).toEqual({ ok: true, data: null });
     expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({
       components: ['DCKTS650D1P1', 'DCF891B'], status: 'resolved', notes: ['parts chosen by you'],
     });
@@ -1061,7 +1072,7 @@ describe('worker: answerReview', () => {
     await seedAmbiguous(w.store);
     await send(w, { type: 'scanNow' });
     await untilIdle(w);
-    await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { choice: 1 } });
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: await asShown(w, AMBIGUOUS, { choice: 1 }) })).toEqual({ ok: true, data: null });
 
     w.worker = workerOver(w);
     w.clock = T0 + 10 * MINUTE;
