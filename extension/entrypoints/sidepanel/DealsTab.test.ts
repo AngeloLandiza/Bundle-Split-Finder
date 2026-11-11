@@ -447,6 +447,23 @@ describe('Look up', () => {
     await waitFor(() => expect(button).toBeEnabled());
   });
 
+  it('reads Looking up… while its request runs, and says a failure in words (QA m4)', async () => {
+    const user = userEvent.setup();
+    let release: (r: Reply) => void = () => {};
+    const send = vi.fn((r: Request): Promise<Reply> => {
+      if (r.type === 'quote') return Promise.resolve({ ok: true, data: { searches: 2, refusal: null } });
+      return new Promise((ok) => (release = ok));
+    });
+    const api: WorkerApi = { send: send as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
+    show(report([waiting]), state(), { api });
+    await user.click(await screen.findByRole('button', { name: 'Look up 2 searches' }));
+    expect(screen.getByRole('button', { name: 'Looking up…' })).toBeDisabled();
+    release({ ok: false, error: 'SerpApi returned HTTP 404.' });
+    expect(await screen.findByText('SerpApi answered with an error (HTTP 404). Try again later.')).toBeInTheDocument();
+    expect(screen.queryByText(/returned HTTP/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Looking up…' })).toBeNull();
+  });
+
   const waiting2 = { ...waiting, key: 'w2', title: 'Title of w2', parts: [part('DCB3', { status: 'waiting', grade: null, availability: 'missing', asin: null })] };
   const props = (api: WorkerApi, s: AppState) => ({ api, report: report([waiting]), state: s, sort: 'profit' as const, onSort: vi.fn(), onOpen: vi.fn() });
 

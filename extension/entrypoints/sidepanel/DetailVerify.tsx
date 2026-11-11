@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import type { WorkerApi } from '../../lib/pageClient';
+import { sentenceFor } from '../../lib/sentences';
 import { SCAN_RUNNING } from './DealsLookUp';
 import { useQuote } from './useQuote';
 
@@ -22,6 +23,8 @@ interface VerifyProps {
 /** Verify for a title-only match. The price is asked for before the click; a refusal disables the button and says why. */
 export function Verify({ brand, model, asin, report, api, scanRunning, version, busy, onRun }: VerifyProps) {
   const [runError, setRunError] = useState<string | null>(null);
+  // True from the press until the request ends: this button says so.
+  const [running, setRunning] = useState(false);
   const refusalId = useId();
   const { fresh, problem } = useQuote(api, { kind: 'verify', brand, model, asin }, `${brand}|${model}|${asin}`, scanRunning, version, report);
 
@@ -29,7 +32,12 @@ export function Verify({ brand, model, asin, report, api, scanRunning, version, 
   const run = () => {
     if (busy || !fresh || fresh.refusal) return;
     setRunError(null);
-    void onRun().then(setRunError);
+    setRunning(true);
+    void onRun().then((error) => {
+      setRunning(false);
+      // Said in words, never as the client's raw text.
+      setRunError(error === null ? null : (sentenceFor(error, 'try again') ?? error));
+    });
   };
 
   return (
@@ -41,7 +49,13 @@ export function Verify({ brand, model, asin, report, api, scanRunning, version, 
         disabled={busy || !fresh || fresh.refusal !== null}
         onClick={run}
       >
-        Verify <span className="detail-verify-cost">· 1 search</span>
+        {running ? (
+          'Verifying…'
+        ) : (
+          <>
+            Verify <span className="detail-verify-cost">· 1 search</span>
+          </>
+        )}
       </button>
       {refusal ? (
         <p className="detail-refusal" id={refusalId}>

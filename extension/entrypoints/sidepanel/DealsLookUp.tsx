@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import type { BundleRow } from '@core/scan/types';
 import type { WorkerApi } from '../../lib/pageClient';
+import { sentenceFor } from '../../lib/sentences';
 import { waitingParts } from './dealsModel';
 import { useQuote } from './useQuote';
 
@@ -30,6 +31,8 @@ interface LookUpProps {
 export function LookUp({ row, report, api, scanRunning, version, busy, onRun }: LookUpProps) {
   // A failed run's sentence is kept apart from the quote, so a later quote cannot wipe it. It belongs to the parts it was for.
   const [runError, setRunError] = useState<{ partKey: string; text: string } | null>(null);
+  // True from the press until the request ends: this button says so.
+  const [running, setRunning] = useState(false);
   const parts = waitingParts(row);
   // The row object changes on every report refresh; the quote only when the waiting parts do.
   const partKey = parts.map((p) => p.model).join(',');
@@ -42,7 +45,12 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun }: 
   const run = () => {
     if (busy || !fresh || fresh.refusal) return;
     setRunError(null);
-    void onRun(parts).then((error) => setRunError(error ? { partKey, text: error } : null));
+    setRunning(true);
+    void onRun(parts).then((error) => {
+      setRunning(false);
+      // Said in words, never as the client's raw text.
+      setRunError(error ? { partKey, text: sentenceFor(error, 'try again') ?? error } : null);
+    });
   };
 
   return (
@@ -59,7 +67,13 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun }: 
         disabled={busy || !fresh || fresh.refusal !== null}
         onClick={run}
       >
-        Look up <span className="deal-lookup-cost">{shown !== null ? searches(shown) : `at most ${searches(parts.length)}`}</span>
+        {running ? (
+          'Looking up…'
+        ) : (
+          <>
+            Look up <span className="deal-lookup-cost">{shown !== null ? searches(shown) : `at most ${searches(parts.length)}`}</span>
+          </>
+        )}
       </button>
     </div>
   );
