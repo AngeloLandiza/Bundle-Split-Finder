@@ -1,0 +1,109 @@
+/* First run. Sizes, spacing and colors come from docs/design/mockups/FirstRun.dc.html. */
+
+.firstrun {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 16px;
+}
+.firstrun-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.firstrun-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
+}
+.firstrun-lead {
+  margin: 0;
+  color: var(--ink-2);
+}
+.firstrun-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.firstrun-step {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  column-gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.firstrun-step:last-child {
+  border-bottom: 0;
+}
+.firstrun-num {
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  color: var(--ink-2);
+  font-family: var(--font-figures);
+  font-size: 12px;
+  font-weight: 600;
+}
+.firstrun-num[data-current='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+}
+.firstrun-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.firstrun-step-title {
+  font-weight: 600;
+}
+.firstrun-later {
+  color: var(--ink-2);
+}
+.firstrun-step-text {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.firstrun-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.firstrun-link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--link);
+}
+.firstrun-link:focus-visible,
+.firstrun-actions .btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.firstrun-note {
+  margin: 0;
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: var(--sunken);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.firstrun-note svg {
+  flex: none;
+  margin-top: 1px;
+}
