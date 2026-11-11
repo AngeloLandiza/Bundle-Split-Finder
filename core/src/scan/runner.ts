@@ -104,8 +104,12 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
 async function startJob(deps: ScanDeps): Promise<Run> {
   const now = deps.now ?? Date.now;
   const { store, settings, budget } = deps;
+  // A stop, once asked for, holds for the rest of the run (finish reads it).
+  const asked = deps.shouldStop ?? (() => false);
+  let stopAsked = false;
+  const shouldStop = (): boolean => (stopAsked ||= asked());
   const run = (job: ScanJob): Run => ({
-    client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop: deps.shouldStop ?? (() => false),
+    client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
     readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0,
   });
 
@@ -735,6 +739,8 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   const { job, budget } = run;
   // 2c rule 5 runs even when the listing phase stopped: it spends nothing.
   const wants = await wantedParts(run.store, run.settings, run.now(), (part) => matchFromListings(run, listings, part));
+  // A stop asked for during the last listing search, when the queue emptied as usual (QA M7), is a stop on request too.
+  if (job.stopReason === null && run.shouldStop()) job.stopReason = 'user';
   // In the listing phase only rule 8 or a stop on request (3 rule 1) sets a stop reason: then nothing more is spent.
   const allowance = job.stopReason === null ? budget.spendable : 0;
   const plan = planScan(allowance, { hdPagesWanted: 0, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
@@ -796,8 +802,14 @@ export async function markWaiting(ctx: Pick<PartContext, 'store' | 'now'>, step:
 
 // ---------------------------------------------------------------- rule 10: finish
 
+/**
+ * A stop asked for at any point of the run ends it stopped by the user, also one that came during
+ * the last search, when the queue emptied as usual (QA M7). A failed search keeps its own reason
+ * ('error', 'rate_limited'), which says more: its message is the job's.
+ */
 async function finish(run: Run): Promise<ScanJob> {
   const { job } = run;
+  if (run.shouldStop() && job.stopReason !== 'error' && job.stopReason !== 'rate_limited') job.stopReason = 'user';
   job.phase = 'finish';
   job.status = job.stopReason !== null || job.deferred.length > 0 ? 'stopped' : 'done';
   job.finishedAt = run.now();

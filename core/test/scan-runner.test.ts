@@ -1129,6 +1129,40 @@ describe('runScan: stop on request (step 3 rule 1)', () => {
       ['RYOBI:PBLRC25B', 'waiting'],
     ]);
   });
+
+  it('a stop asked for during the last search ends the job stopped by the user, not done, though the queue emptied (QA M7)', async () => {
+    const w = world();
+    const stop = stopAfter(w, LOOKUP_25B);
+    const job = await scan(w, { shouldStop: stop.shouldStop });
+    // Asked before the listing page, when planning the parts, before each lookup (false each time), and at the
+    // end, when it is true: the stop came during the last lookup.
+    expect(stop.asked).toEqual([0, 1, 1, 2, 3]);
+    expect(w.replay.calls).toEqual([LISTING, LOOKUP_01B, LOOKUP_25B]);
+    expect(job).toMatchObject({ status: 'stopped', stopReason: 'user', stopMessage: null, phase: 'finish', searchesUsed: 3, queue: [], deferred: [] });
+    expect(job.counts).toMatchObject({ lookupsDone: 2, partsMatched: 2 });
+    expect((await w.store.listScans())[0]).toMatchObject({ status: 'stopped', stopReason: 'user' });
+  });
+
+  it('a stop during the last listing search skips the bundle pages and ends stopped; the next scan is a new job and reads them (QA M7)', async () => {
+    const w = world();
+    const reader = pageReader();
+    const job = await scan(w, { settings: COMBO, readPages: reader.readPages, shouldStop: () => w.replay.calls.includes(DEWALT_COMBO) });
+    expect(w.replay.calls).toEqual([DEWALT_COMBO]);
+    expect(reader.calls).toEqual([]);
+    expect(job).toMatchObject({ id: String(T0), status: 'stopped', stopReason: 'user', stopMessage: null, phase: 'finish', searchesUsed: 1, queue: [] });
+    expect(job.counts).toMatchObject({ pagesFetched: 1, pagesRead: 0 });
+
+    // Scan now, a few minutes later and not stopped: a fresh job, which reads the four pages left unread.
+    w.clock = T0 + 5 * MINUTE;
+    const next = await scan(w, { settings: COMBO, policy: NO_SEARCH, readPages: reader.readPages });
+    expect(next.id).toBe(String(T0 + 5 * MINUTE));
+    expect(next.stopReason).not.toBe('user');
+    expect(reader.calls).toEqual([COMBO_IDS]);
+    expect(next.counts.pagesRead).toBe(4);
+    // The listing page came from the cache: nothing more was sent.
+    expect(w.replay.calls).toEqual([DEWALT_COMBO]);
+    expect((await w.store.listScans()).map((s) => [s.id, s.status])).toEqual([[String(T0 + 5 * MINUTE), next.status], [String(T0), 'stopped']]);
+  });
 });
 
 describe('runScan: a failed lookup or refresh is set aside (step 3 rule 2)', () => {
