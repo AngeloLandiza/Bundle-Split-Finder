@@ -361,6 +361,8 @@ export interface PartRow {
   priceSeenAt: number | null;
   /** Picture of the chosen listing, when it is among the saved listings. */
   image: string | null;
+  /** Title of the chosen listing, when it is among the saved listings. */
+  title: string | null;
 }
 
 /**

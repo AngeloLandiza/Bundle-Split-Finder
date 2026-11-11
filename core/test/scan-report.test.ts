@@ -70,6 +70,18 @@ describe('buildReport', () => {
     }
   });
 
+  it("shows the title of each part's saved listing, and none when the listing is not saved", async () => {
+    const store = await scanWorld();
+    const parts = (await buildReport(store, RATCHET)).bundles[0]!.parts;
+    for (const p of parts) {
+      expect(p.title).toEqual(expect.any(String));
+      expect(p.title!.length).toBeGreaterThan(0);
+      expect(p.title).toBe((await store.getListing(p.asin!))!.title);
+    }
+    const waiting = (await buildReport(await scanWorld({ reserve: 0, maxPerRun: 2 }), RATCHET)).bundles.find((b) => b.model === 'PBLRC2501SB')!;
+    expect(waiting.parts.find((p) => p.model === 'PBLRC25B')!.title).toBeNull();
+  });
+
   it('gives a part no picture when its listing is not saved, or it has no listing', async () => {
     const report = await buildReport(await scanWorld({ reserve: 0, maxPerRun: 2 }), RATCHET);
     const first = report.bundles.find((b) => b.model === 'PBLRC2501SB')!;

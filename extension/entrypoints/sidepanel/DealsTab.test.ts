@@ -32,6 +32,7 @@ const part = (model: string, over: Partial<PartRow> = {}): PartRow => ({
   price: 199,
   priceSeenAt: NOW - DAY,
   image: null,
+  title: null,
   ...over,
 });
 

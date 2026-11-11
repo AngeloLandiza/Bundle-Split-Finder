@@ -39,6 +39,7 @@ async function partRows(store: ScanStore, brand: string, components: string[]): 
       price: price?.price ?? null,
       priceSeenAt: price?.seenAt ?? null,
       image: listing?.image ?? null,
+      title: listing?.title ?? null,
     });
   }
   return rows;
