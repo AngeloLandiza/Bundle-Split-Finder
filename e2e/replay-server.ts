@@ -34,6 +34,8 @@ export interface ReplayServer {
   pageRequests: string[];
   /** These ids are answered 403 with the recorded refused page, until reset(). '*' refuses every id. */
   refuse(...itemIds: string[]): void;
+  /** Opt-in: every /search.json answer waits this many ms, so a test can hold a scan in the running state. reset() clears it. */
+  delaySearches(ms: number): void;
   reset(): void;
   close(): Promise<void>;
 }
@@ -44,6 +46,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   let misses: string[] = [];
   let pageRequests: string[] = [];
   const refused = new Set<string>();
+  let searchDelay = 0;
   const server: Server = createServer((req, res) => {
     void (async () => {
       const url = new URL(req.url ?? '/', 'http://localhost');
@@ -52,6 +55,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       if (req.method !== 'GET') {
         res.writeHead(405, headers).end('{}');
       } else if (url.pathname === '/search.json') {
+        if (searchDelay > 0) await new Promise((ok) => setTimeout(ok, searchDelay));
         const r = await replay.fetchFn(`http://localhost${req.url}`);
         if (r.status === 404) misses.push(url.search);
         res.writeHead(r.status, headers).end(await r.text());
@@ -93,7 +97,11 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     refuse(...ids) {
       for (const id of ids) refused.add(id);
     },
+    delaySearches(ms) {
+      searchDelay = ms;
+    },
     reset() {
+      searchDelay = 0;
       pageRequests = [];
       refused.clear();
       for (const k of Object.keys(counts)) delete counts[k];
