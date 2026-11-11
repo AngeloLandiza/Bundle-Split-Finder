@@ -61,7 +61,7 @@ interface Label {
 function labelOf(p: PartRow): Label {
   if (p.status === 'waiting' || p.status === 'unmatched') return { text: 'Not looked up yet', tone: 'plain' };
   if (p.status === 'review') return { text: 'Needs your answer in Review', tone: 'attention' };
-  if (p.status === 'none' || p.asin === null) return { text: 'No Amazon listing found', tone: 'plain' };
+  if (p.status === 'none' || p.asin === null) return { text: hasNoListing(p) ? 'No Amazon listing found' : 'No listing', tone: 'plain' };
   if (p.availability === 'inactive') return { text: 'Listing inactive', tone: 'plain' };
   if (p.grade === 'exact') return { text: 'Barcode verified', tone: 'verified' };
   if (p.grade === 'strong') return { text: 'Verified', tone: 'plain' };
@@ -293,10 +293,13 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
     if (!question) return null;
     try {
       const reply = await api.send({ type: 'answerReview', id: question.id, answer: a });
-      return reply.ok ? null : reply.error;
+      if (!reply.ok) return reply.error;
     } catch {
       return UNREACHABLE;
     }
+    // The Save button is gone now: focus goes to the title.
+    titleRef.current?.focus();
+    return null;
   };
 
   const copy = () => {
@@ -308,7 +311,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
         setCopied(
           missingAsin.length === 0
             ? 'Copied'
-            : `Copied ${asins.length} ${asins.length === 1 ? 'ASIN' : 'ASINs'}. ${listOf(missingAsin)} ${missingAsin.length === 1 ? 'has' : 'have'} none.`,
+            : `Copied ${asins.length} ${asins.length === 1 ? 'ASIN' : 'ASINs'}. ${listOf(missingAsin)} ${missingAsin.length === 1 ? 'has' : 'have'} no ASIN.`,
         );
         clearTimeout(timer.current);
         timer.current = setTimeout(() => setCopied(null), 2000);

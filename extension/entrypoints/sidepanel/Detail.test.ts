@@ -240,6 +240,22 @@ describe('the open question', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('That question changed. Choose again.');
   });
 
+  it('moves focus to the title after a save, and keeps it where it is after a refusal', async () => {
+    const user = userEvent.setup();
+    const ok = fakeApi();
+    show(noParts(), { review: [question()], api: ok.api });
+    await user.click(screen.getByRole('radio', { name: 'PCL1600K2 + P553' }));
+    await user.click(screen.getByRole('button', { name: 'Save answer' }));
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
+    cleanup();
+    const refused = fakeApi((r) => (r.type === 'answerReview' ? { ok: false, error: 'No.' } : { ok: true, data: null }));
+    show(noParts(), { review: [question()], api: refused.api });
+    await user.click(screen.getByRole('radio', { name: 'PCL1600K2 + P553' }));
+    await user.click(screen.getByRole('button', { name: 'Save answer' }));
+    await screen.findByRole('alert');
+    expect(screen.getByRole('button', { name: 'Save answer' })).toHaveFocus();
+  });
+
   it('sends typed parts', async () => {
     const user = userEvent.setup();
     const q = question();
@@ -264,6 +280,12 @@ describe('a part with no listing', () => {
   it('names every such part', () => {
     show(row({ status: 'partial', section: 'missing_listing', parts: [part('A1', none), part('A2', none)], uncovered: ['A1', 'A2'] }));
     expect(screen.getByText('Counts A1 and A2 at $0: no Amazon listing was found.')).toBeInTheDocument();
+  });
+
+  it('keeps the old label on a part with no ASIN that the sentence does not name', () => {
+    show(row({ parts: [part('A1', { asin: null, status: 'matched', availability: 'active', grade: null, price: null })] }));
+    expect(screen.queryByText('No Amazon listing found')).toBeNull();
+    expect(screen.getByText('No listing')).toBeInTheDocument();
   });
 
   it('adds nothing for a part that was never looked up, or when every part has a listing', () => {
@@ -544,11 +566,11 @@ describe('footer', () => {
     const none = (m: string) => part(m, { asin: null, status: 'none', grade: null, availability: 'missing', price: null });
     show(row({ parts: [part('A1'), none('PCL515B')] }));
     await user.click(screen.getByRole('button', { name: 'Copy ASINs' }));
-    expect(await screen.findByRole('status')).toHaveTextContent('Copied 1 ASIN. PCL515B has none.');
+    expect(await screen.findByRole('status')).toHaveTextContent('Copied 1 ASIN. PCL515B has no ASIN.');
     cleanup();
     show(row({ parts: [part('A1'), none('PCL515B'), none('PCL526B'), part('A4', { asin: 'B000000004' })] }));
     await user.click(screen.getByRole('button', { name: 'Copy both ASINs' }));
-    expect(await screen.findByRole('status')).toHaveTextContent('Copied 2 ASINs. PCL515B and PCL526B have none.');
+    expect(await screen.findByRole('status')).toHaveTextContent('Copied 2 ASINs. PCL515B and PCL526B have no ASIN.');
   });
 
   it('downloads this row as CSV with the run file columns', async () => {

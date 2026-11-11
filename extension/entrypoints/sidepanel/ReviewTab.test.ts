@@ -388,6 +388,21 @@ describe('ReviewTab: Skip for now and what None of these does', () => {
     expect(await screen.findByText('2 of 3')).toBeInTheDocument();
   });
 
+  it('counts skip, skip, answer as 2 of 3, then skip as 3 of 3 and skip as 2 of 3', async () => {
+    const user = userEvent.setup();
+    const third = item({ id: 'split:c', model: 'DCK999', openedAt: 3, reason: 'Third.', choices: [['DCF891B']] });
+    setup(reportOf([SPLIT, MATCH, third]));
+    await user.click(skipForNow());
+    await user.click(skipForNow());
+    await user.click(screen.getAllByRole('radio')[0]!);
+    await user.click(save());
+    expect(await screen.findByText('2 of 3')).toBeInTheDocument();
+    await user.click(skipForNow());
+    expect(screen.getByText('3 of 3')).toBeInTheDocument();
+    await user.click(skipForNow());
+    expect(screen.getByText('2 of 3')).toBeInTheDocument();
+  });
+
   it('brings a skipped question back after the others, and again when only skipped ones remain', async () => {
     const user = userEvent.setup();
     const third = item({ id: 'split:c', model: 'DCK999', openedAt: 3, reason: 'Third.', choices: [['DCF891B']] });

@@ -20,8 +20,8 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const [done, setDone] = useState<ReadonlySet<string>>(new Set());
   // Questions put off with Skip for now, in the order they were put off. Panel session only, never stored.
   const [skipped, setSkipped] = useState<readonly string[]>([]);
-  // Questions put off since the count last wrapped to the start.
-  const [passed, setPassed] = useState(0);
+  // Keys put off since the count last went round.
+  const [pass, setPass] = useState<readonly string[]>([]);
   const [focusNext, setFocusNext] = useState(false);
   const emptyRef = useRef<HTMLParagraphElement>(null);
 
@@ -51,6 +51,8 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
     );
   }
   const total = done.size + open.length;
+  // Questions already passed over in this round come before the one shown; at the start of a new round, none.
+  const ahead = pass.includes(keyOf(item)) ? 0 : open.filter((r) => r !== item && pass.includes(keyOf(r))).length;
 
   const save = async (answer: ReviewAnswer): Promise<string | null> => {
     try {
@@ -68,10 +70,8 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const notNow = () => {
     if (open.length < 2) return;
     const k = keyOf(item);
-    // Once every question has been put off, the questions go round again and the count goes round with them.
-    const again = skipped.includes(k);
-    const fresh = byAge.filter((r) => !skipped.includes(keyOf(r)) && keyOf(r) !== k).length;
-    setPassed((n) => (again ? (n + 1) % open.length : fresh === 0 ? 0 : n + 1));
+    // The question shown being in `pass` means every open one was put off: the count goes round, starting here.
+    setPass((p) => (p.includes(k) ? [k] : [...p, k]));
     setSkipped((s) => [...s.filter((x) => x !== k), k]);
     setFocusNext(true);
   };
@@ -79,7 +79,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   return (
     <section className="review" aria-label="Review">
       <p className="review-count figure" aria-live="polite">
-        {Math.min(done.size + passed + 1, total)} of {total}
+        {done.size + ahead + 1} of {total}
       </p>
       <ReviewQuestion
         key={keyOf(item)}
