@@ -51,7 +51,7 @@ export function setAsideSentence(state: AppState): string | null {
   const job = state.lastJob;
   if (!job || job.stopReason === 'error' || job.stopReason === 'rate_limited') return null;
   const text = sentenceFor(job.stopMessage, 'try again');
-  return text === null ? null : `A search failed and was set aside: ${text}`;
+  return text === null ? null : `Set aside for the next scan: ${text}`;
 }
 
 export function LimitNotice({ state, now }: { state: AppState; now: number }) {
