@@ -15,7 +15,7 @@ import { splitWithPage } from '../pageSplit';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
-import { choicesOf, chosenSplit, NONE, notKnown, ownerSplit, sameChoices, splitChoices } from './answers';
+import { choicesOf, NONE, notKnown, ownerSplit, sameChoices, splitChoices } from './answers';
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { bundleKey, partKey } from './types';
@@ -634,7 +634,7 @@ async function splitBundles(run: Run, stored: Catalog): Promise<void> {
     // model number's split, then the bundle's own page, when it was read.
     const owner = ownerSplit(item);
     const read = () => splitWithPage(bundle, splitBundle(bundle, stored, catalog), bundle.page ?? null, catalog);
-    const split = owner === null ? read() : owner === NONE ? notKnown(read()) : chosenSplit(owner);
+    const split = owner === null ? read() : owner === NONE ? notKnown(read()) : owner;
     await store.putBundle({ ...bundle, split });
     if (split.status === 'resolved') {
       resolved += 1;

@@ -1478,6 +1478,26 @@ describe('worker: answerReview', () => {
     expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: 'none' });
   });
 
+  it('passes parts the owner typed to the split, and refuses an entry that is not model numbers with its sentence', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seedAmbiguous(w.store);
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const { seen } = await asShown(w, AMBIGUOUS, { none: true });
+    const before = w.broadcasts.length;
+    for (const parts of [[], ['KIT'], 'DCKTS650D1P1, DCB205']) {
+      const request = { type: 'answerReview', id: AMBIGUOUS, answer: { parts, seen } } as unknown as Request;
+      expect(await send(w, request), JSON.stringify(parts)).toEqual({ ok: false, error: 'Enter model numbers like PCL500B, separated by commas.' });
+    }
+    expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: null });
+    expect(w.broadcasts.length).toBe(before);
+
+    w.clock = T0 + MINUTE;
+    expect(await send(w, { type: 'answerReview', id: AMBIGUOUS, answer: { parts: ['dckts650d1p1', 'DCB205'], seen } })).toEqual({ ok: true, data: null });
+    expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: 'DCKTS650D1P1,DCB205', answerParts: ['DCKTS650D1P1', 'DCB205'], answeredAt: T0 + MINUTE });
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCKTS650D1P1', 'DCB205'], status: 'resolved', notes: ['parts entered by you'] });
+  });
+
   it('refuses while a scan runs, which reads and rewrites the questions, and takes the answer once it has ended', async () => {
     const w = world({ key: KEY, settings: RYOBI });
     await seedAmbiguous(w.store);

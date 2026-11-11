@@ -7,11 +7,15 @@
 // item before it splits), and "none" keeps the bundle not known. A match answer is a match record
 // decided by the user, which no scan changes.
 
-import type { Decomposition } from '../decompose';
+import { type Decomposition, OFFERABLE_PART } from '../decompose';
 import type { ReviewAnswer, ReviewCandidate, ReviewItem, ScanStore } from './types';
 
 /** The note on a split the owner chose. */
 export const CHOSEN_NOTE = 'parts chosen by you';
+/** The note on a split whose parts the owner typed, when they are not one of the question's choices. */
+export const ENTERED_NOTE = 'parts entered by you';
+/** At most this many parts may be typed for one bundle. */
+export const MAX_ENTERED_PARTS = 8;
 /** The note on a bundle whose split question the owner answered with "None of these". */
 export const NONE_NOTE = 'you answered none of these';
 /** The answer saved for "None of these", on split and match questions. */
@@ -29,6 +33,8 @@ const NOT_FOUND = 'That question was not found.';
 const ANSWERED = 'That question was already answered.';
 const NOT_SHOWN = 'Choose one of the answers shown.';
 const CHANGED = 'That question changed. Choose again.';
+const INVALID_PARTS = 'Enter model numbers like PCL500B, separated by commas.';
+const NOT_FOR_MATCH = 'Parts can be entered only for a question about what a bundle contains.';
 
 // ---------------------------------------------------------------- choices
 
@@ -71,8 +77,8 @@ export const sameChoices = (a: string[][], b: string[][]): boolean =>
 
 // ---------------------------------------------------------------- what an answer fixes
 
-/** The split of a bundle whose parts the owner chose. */
-export const chosenSplit = (parts: string[]): Decomposition => ({ components: [...parts], status: 'resolved', notes: [CHOSEN_NOTE] });
+/** The split of a bundle whose parts the owner chose (`note` CHOSEN_NOTE) or typed (ENTERED_NOTE). */
+export const chosenSplit = (parts: string[], note: string = CHOSEN_NOTE): Decomposition => ({ components: [...parts], status: 'resolved', notes: [note] });
 
 /** The split of a bundle the owner said none of the readings fits: in review, whatever a scan reads. */
 export function notKnown(split: Decomposition | null): Decomposition {
@@ -81,15 +87,42 @@ export function notKnown(split: Decomposition | null): Decomposition {
 }
 
 /**
- * What the owner's answer to a split question fixes: the parts of the reading they chose, or NONE.
- * Null when they have not answered: the item is missing or open, a scan closed it itself, or its
- * answer names none of its choices (an answer saved before step 5).
+ * What the owner's answer to a split question fixes: the split of the parts they chose or typed,
+ * or NONE. An item with `answerParts` (every answer saved since typed parts exist) is decided by
+ * them, when `answer` is them joined; the split is noted as chosen when they are one of the
+ * question's choices, as entered otherwise. An item without them counts as before: only when its
+ * answer equals one of its choices. Null when the owner has not answered: the item is missing or
+ * open, a scan closed it itself, or its answer names none of its choices (an answer saved before
+ * step 5).
  */
-export function ownerSplit(item: ReviewItem | undefined): string[] | typeof NONE | null {
+export function ownerSplit(item: ReviewItem | undefined): Decomposition | typeof NONE | null {
   if (!item || item.kind !== 'split' || item.answer === null) return null;
   if (item.answer === NONE) return NONE;
-  const chosen = choicesOf(item).find((c) => c.join(',') === item.answer);
-  return chosen ? [...chosen] : null;
+  const choices = choicesOf(item);
+  const parts = item.answerParts;
+  if (Array.isArray(parts) && parts.length > 0 && parts.every((p) => typeof p === 'string') && parts.join(',') === item.answer) {
+    return chosenSplit(parts, choices.some((c) => c.join(',') === item.answer) ? CHOSEN_NOTE : ENTERED_NOTE);
+  }
+  const chosen = choices.find((c) => c.join(',') === item.answer);
+  return chosen ? chosenSplit(chosen) : null;
+}
+
+/**
+ * The parts the owner typed, as model numbers: each trimmed and upper-cased, each once, in the
+ * order typed. Each must look like a model number (OFFERABLE_PART), and there must be 1 to
+ * MAX_ENTERED_PARTS of them; anything else is refused. Nothing is guessed from what was typed.
+ */
+function enteredParts(raw: unknown): string[] {
+  if (!Array.isArray(raw)) throw new AnswerRefused(INVALID_PARTS);
+  const parts: string[] = [];
+  for (const p of raw) {
+    if (typeof p !== 'string') throw new AnswerRefused(INVALID_PARTS);
+    const model = p.trim().toUpperCase();
+    if (!OFFERABLE_PART.test(model)) throw new AnswerRefused(INVALID_PARTS);
+    if (!parts.includes(model)) parts.push(model);
+  }
+  if (parts.length === 0 || parts.length > MAX_ENTERED_PARTS) throw new AnswerRefused(INVALID_PARTS);
+  return parts;
 }
 
 // ---------------------------------------------------------------- applying an answer
@@ -114,16 +147,18 @@ function picked(a: Record<string, unknown>, count: number): number | typeof NONE
  * Saves the owner's answer to review item `id`, answered at `now`.
  *
  * split  `{ choice: i }` sets the bundle's split to `choices[i]`, resolved, and answers the item
- *        with those parts joined by ','. `{ none: true }` answers 'none' and leaves the bundle in
- *        review, noted.
+ *        with those parts joined by ',' (and as `answerParts`). `{ parts }` does the same with the
+ *        parts the owner typed (enteredParts), noted as entered by the owner unless they are one of
+ *        the choices. `{ none: true }` answers 'none' and leaves the bundle in review, noted.
  * match  `{ choice: i }` saves `candidates[i]` as the part's match, decided by the user, with the
  *        price the question showed for it (saveShownPrice), and answers the item with its ASIN.
  *        `{ none: true }` saves that the part has no listing, decided by the user, and answers 'none'.
  *
  * Refused with AnswerRefused, writing nothing, for an unknown id, an item already answered (by
  * the owner or by a scan), an answer whose `seen` is not the item's signature now (a scan changed
- * the question since it was shown; checked before the index), or an answer that is not one the
- * item shows. The record the answer decides is written before the item, so a failure between the
+ * the question since it was shown; checked before the index or the parts), an answer that is not
+ * one the item shows, typed parts for a match question, or typed parts that are not 1 to 8 model
+ * numbers. The record the answer decides is written before the item, so a failure between the
  * two leaves the question open to be answered again.
  */
 export async function applyReviewAnswer(store: ScanStore, id: string, answer: ReviewAnswer, now: number): Promise<void> {
@@ -133,14 +168,26 @@ export async function applyReviewAnswer(store: ScanStore, id: string, answer: Re
   const given = signed(answer);
   if (given.seen !== reviewSignature(item)) throw new AnswerRefused(CHANGED);
   const choices = choicesOf(item);
+  const typing = 'parts' in given;
+  if (typing && item.kind !== 'split') throw new AnswerRefused(NOT_FOR_MATCH);
 
   if (item.kind === 'split') {
-    const pick = picked(given, choices.length);
-    const parts = pick === NONE ? null : choices[pick]!;
+    let parts: string[] | null;
+    if (typing) {
+      // Typed parts and a choice or "none" at once is not an answer the panel sends.
+      if ('choice' in given || 'none' in given) throw new AnswerRefused(NOT_SHOWN);
+      parts = enteredParts(given.parts);
+    } else {
+      const pick = picked(given, choices.length);
+      parts = pick === NONE ? null : [...choices[pick]!];
+    }
+    const answered: ReviewItem = { ...item, choices, answer: parts === null ? NONE : parts.join(','), answerParts: parts, answeredAt: now };
+    // The split a later scan reads from the answered item (ownerSplit), so the two never differ.
+    const split = ownerSplit(answered);
     const bundle = await store.getBundle(item.subject);
     // A bundle not stored (never the case after a scan) takes the answer when a scan sees it.
-    if (bundle) await store.putBundle({ ...bundle, split: parts === null ? notKnown(bundle.split) : chosenSplit(parts) });
-    await store.putReview({ ...item, choices, answer: parts === null ? NONE : parts.join(','), answeredAt: now });
+    if (bundle) await store.putBundle({ ...bundle, split: split === NONE || split === null ? notKnown(bundle.split) : split });
+    await store.putReview(answered);
     return;
   }
 

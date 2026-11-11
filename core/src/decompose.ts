@@ -67,8 +67,8 @@ const RYOBI_SB = /^([A-Z]{2,6})(\d{2})(\d{2})SB$/;
 // starting with a letter, with a digit, four characters or more (the shortest recorded part is
 // P553). Wider than RYOBI_MODEL, which still decides automatic resolution. An empty part, a bare
 // count ("-2"), a word ("-KIT"), a pack size ("-2PK"), a voltage ("-18V") or a short tag ("-V2")
-// is not a model, so it offers no reading.
-const OFFERABLE_PART = /^(?=[A-Z0-9]{4,}$)[A-Z][A-Z0-9]*\d[A-Z0-9]*$/;
+// is not a model, so it offers no reading. Also the rule for a part the owner types (answers.ts).
+export const OFFERABLE_PART = /^(?=[A-Z0-9]{4,}$)[A-Z][A-Z0-9]*\d[A-Z0-9]*$/;
 
 // A split in review offers, as `alternatives`, the reading its model number spells out (Ruling 29):
 // the owner may confirm it, but only the owner's answer turns it into the split.

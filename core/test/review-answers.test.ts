@@ -108,7 +108,7 @@ describe('applyReviewAnswer: a split question', () => {
     const open = await ambiguous(w);
     await applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { choice: 1 }), T0 + MINUTE);
     expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCKTS650D1P1', 'DCF921B'], status: 'resolved', notes: [CHOSEN] });
-    expect(await w.store.getReview(AMBIGUOUS)).toEqual({ ...open, answer: 'DCKTS650D1P1,DCF921B', answeredAt: T0 + MINUTE });
+    expect(await w.store.getReview(AMBIGUOUS)).toEqual({ ...open, answer: 'DCKTS650D1P1,DCF921B', answerParts: ['DCKTS650D1P1', 'DCF921B'], answeredAt: T0 + MINUTE });
     const report = await buildReport(w.store, DEWALT_ONLY);
     expect(report.review).toEqual([]);
     // Nothing is matched yet: the bundle has left "Contents not known" for "missing listing".
@@ -160,7 +160,7 @@ describe('applyReviewAnswer: a split question', () => {
     const before = (await w.store.getBundle('homedepot:343992133'))!.split!;
 
     await applyReviewAnswer(w.store, id, await shown(w, id, { none: true }), T0 + MINUTE);
-    const answered = { ...open, answer: 'none', answeredAt: T0 + MINUTE };
+    const answered = { ...open, answer: 'none', answerParts: null, answeredAt: T0 + MINUTE };
     expect(await w.store.getReview(id)).toEqual(answered);
     expect((await w.store.getBundle('homedepot:343992133'))!.split).toEqual({ ...before, notes: [...before.notes, NONE_NOTE] });
 
@@ -186,7 +186,7 @@ describe('applyReviewAnswer: a split question', () => {
     await w.store.putReview(old as ReviewItem);
     await expect(applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { choice: 0 }), T0 + MINUTE)).rejects.toThrow(NOT_SHOWN);
     await applyReviewAnswer(w.store, AMBIGUOUS, await shown(w, AMBIGUOUS, { none: true }), T0 + MINUTE);
-    expect(await w.store.getReview(AMBIGUOUS)).toEqual({ ...old, choices: [], answer: 'none', answeredAt: T0 + MINUTE });
+    expect(await w.store.getReview(AMBIGUOUS)).toEqual({ ...old, choices: [], answer: 'none', answerParts: null, answeredAt: T0 + MINUTE });
   });
 });
 
@@ -279,6 +279,145 @@ describe('a split question offers the reading a RYOBI model number spells out (R
     const nothing = (await w.store.listReview()).filter((r) => r.kind === 'split' && r.reason.endsWith('matches nothing in the catalog'));
     expect(nothing.map((r) => r.model)).toContain('DCK540D1WCS334B');
     for (const r of nothing) expect(r.choices, r.model).toEqual([]);
+  });
+});
+
+describe('applyReviewAnswer: the owner types the parts of a split question (owner\'s decision, Nov 11)', () => {
+  /** The recorded "ryobi 18v combo kit" page: PCL500525SB (328690510) is on it, a special buy with no split rule. */
+  const RYOBI_COMBO: ScanSettings = { ...STEP2, brands: ['RYOBI'], queries: [{ q: 'ryobi 18v combo kit' }] };
+  const RYOBI_ONLY: ScanSettings = { ...STEP2, brands: ['RYOBI'], queries: [] };
+  const recordedPages: ReadPages = async (ids) => ids.map((itemId): PageOutcome => {
+    const rec = PAGES.find((p) => p.itemId === itemId);
+    const content = rec ? parseBundlePage(rec.text, itemId) : null;
+    return content ? { itemId, kind: 'read', content } : { itemId, kind: 'unreadable' };
+  });
+  const SB = 'split:homedepot:328690510';
+  const SB_KEY = 'homedepot:328690510';
+  const ENTERED = 'parts entered by you';
+  const INVALID = 'Enter model numbers like PCL500B, separated by commas.';
+  const NOT_FOR_MATCH = 'Parts can be entered only for a question about what a bundle contains.';
+  const typed = { components: ['PCL500B', 'PCL526B'], status: 'resolved', notes: [ENTERED] };
+
+  /** PCL500525SB from the recorded search: its question offers no reading, only "None of these". */
+  async function special(w: World): Promise<ReviewItem> {
+    await scan(w, { settings: RYOBI_COMBO, policy: ONE_SEARCH });
+    const item = (await w.store.getReview(SB))!;
+    expect(item).toMatchObject({ model: 'PCL500525SB', reason: 'no known RYOBI bundle pattern', choices: [], answer: null });
+    expect((await w.store.getBundle(SB_KEY))!.split).toMatchObject({ status: 'needs_review' });
+    return item;
+  }
+
+  const snapshot = async (w: World) => ({ bundles: await w.store.listBundles(), review: await w.store.listReview(), matches: await w.store.listMatches() });
+
+  it('PCL500525SB answered with PCL500B, PCL526B resolves to those parts, noted as entered by the owner', async () => {
+    const w = world();
+    const open = await special(w);
+    await applyReviewAnswer(w.store, SB, { parts: ['PCL500B', 'PCL526B'], seen: reviewSignature(open) }, T0 + MINUTE);
+    expect((await w.store.getBundle(SB_KEY))!.split).toEqual(typed);
+    expect(await w.store.getReview(SB)).toEqual({ ...open, answer: 'PCL500B,PCL526B', answerParts: ['PCL500B', 'PCL526B'], answeredAt: T0 + MINUTE });
+    const report = await buildReport(w.store, RYOBI_COMBO);
+    expect(report.review.map((r) => r.id)).not.toContain(SB);
+    // Its parts were never looked up: the bundle waits for those lookups.
+    expect(report.bundles.find((b) => b.key === SB_KEY)).toMatchObject({ section: 'waiting', estimate: null, parts: [{ model: 'PCL500B', status: 'unmatched' }, { model: 'PCL526B', status: 'unmatched' }] });
+  });
+
+  it('upper-cases, trims and de-duplicates the parts typed', async () => {
+    const w = world();
+    const open = await special(w);
+    await applyReviewAnswer(w.store, SB, { parts: [' pcl500b ', 'PCL526B', 'Pcl500B'], seen: reviewSignature(open) }, T0 + MINUTE);
+    expect((await w.store.getBundle(SB_KEY))!.split).toEqual(typed);
+    expect(await w.store.getReview(SB)).toMatchObject({ answer: 'PCL500B,PCL526B', answerParts: ['PCL500B', 'PCL526B'] });
+  });
+
+  it('survives later scans, which plan lookups for its parts', async () => {
+    const w = world();
+    const open = await special(w);
+    await applyReviewAnswer(w.store, SB, { parts: ['PCL500B', 'PCL526B'], seen: reviewSignature(open) }, T0 + MINUTE);
+    const answered = await w.store.getReview(SB);
+
+    for (const day of [1, 2]) {
+      w.clock = T0 + day * DAY;
+      // The page is read on the first of these scans; the owner's entry stands whatever it says.
+      const job = await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH, readPages: recordedPages });
+      expect((await w.store.getBundle(SB_KEY))!.split).toEqual(typed);
+      expect(await w.store.getReview(SB)).toEqual(answered);
+      expect(job.counts.reviewsOpened).toBe(0);
+      // This budget allows no search, so both parts wait for their lookups.
+      expect(job.deferred.filter((s) => s.kind === 'lookup' && s.model.startsWith('PCL5'))).toEqual([
+        { kind: 'lookup', brand: 'RYOBI', model: 'PCL500B' },
+        { kind: 'lookup', brand: 'RYOBI', model: 'PCL526B' },
+      ]);
+    }
+    expect((await w.store.getBundle(SB_KEY))!.page).toBeTruthy();
+    expect(await w.store.getMatch('RYOBI:PCL500B')).toMatchObject({ status: 'waiting' });
+    expect(w.ledger).toEqual(['scan:listing:ryobi 18v combo kit:p1']);
+  });
+
+  it('refuses an entry that is not 1 to 8 model numbers, with one plain sentence, and writes nothing', async () => {
+    const w = world();
+    const open = await special(w);
+    const seen = reviewSignature(open);
+    const before = await snapshot(w);
+    const nine = ['PCL500B', 'PCL526B', 'PCL515B', 'PCL430B', 'P553', 'PBP003', 'PBP004', 'A983002', 'PBLRC25B'];
+    const invalid: unknown[] = [
+      [], [''], ['  '], ['KIT'], ['PCL500B', '-2'], ['PCL500B', '18V'], ['PCL500B', 'V2'], ['PCL500B, PCL526B'], ['2PK'], nine,
+      'PCL500B, PCL526B', null, {}, [5], ['PCL500B', null],
+    ];
+    for (const parts of invalid) {
+      const refused = applyReviewAnswer(w.store, SB, { parts, seen } as unknown as ReviewAnswer, T0 + MINUTE);
+      await expect(refused, JSON.stringify(parts)).rejects.toBeInstanceOf(AnswerRefused);
+      await expect(applyReviewAnswer(w.store, SB, { parts, seen } as unknown as ReviewAnswer, T0 + MINUTE), JSON.stringify(parts)).rejects.toThrow(INVALID);
+    }
+    // Typed parts with a choice or "none" as well is not an answer the panel sends.
+    for (const answer of [{ parts: ['PCL500B'], choice: 0, seen }, { parts: ['PCL500B'], none: true, seen }]) {
+      await expect(applyReviewAnswer(w.store, SB, answer as unknown as ReviewAnswer, T0 + MINUTE)).rejects.toThrow(NOT_SHOWN);
+    }
+    expect(await snapshot(w)).toEqual(before);
+    // Eight, one of them typed twice, is fine.
+    await applyReviewAnswer(w.store, SB, { parts: [...nine.slice(0, 8), 'pcl500b'], seen }, T0 + MINUTE);
+    expect((await w.store.getBundle(SB_KEY))!.split!.components).toEqual(nine.slice(0, 8));
+  });
+
+  it('refuses an entry made on the question before a scan changed it', async () => {
+    const w = world();
+    await special(w);
+    const before = await snapshot(w);
+    await expect(applyReviewAnswer(w.store, SB, { parts: ['PCL500B', 'PCL526B'], seen: '[["PCL500B","PCL526B"]]' }, T0 + MINUTE)).rejects.toThrow(CHANGED);
+    expect(await snapshot(w)).toEqual(before);
+  });
+
+  it('refuses typed parts for a match question, and writes nothing', async () => {
+    const { w, item } = await unconfirmed();
+    const before = await snapshot(w);
+    for (const parts of [['DCF891B'], ['KIT']]) {
+      const refused = applyReviewAnswer(w.store, MATCH, { parts, seen: reviewSignature(item) }, T0 + MINUTE);
+      await expect(refused).rejects.toBeInstanceOf(AnswerRefused);
+      await expect(applyReviewAnswer(w.store, MATCH, { parts, seen: reviewSignature(item) }, T0 + MINUTE)).rejects.toThrow(NOT_FOR_MATCH);
+    }
+    expect(await snapshot(w)).toEqual(before);
+  });
+
+  it('an answer stored before typed parts existed behaves as before: a chosen reading stands, free text is ignored', async () => {
+    // A chosen reading stored without answerParts still decides the split.
+    const chose = world();
+    await ambiguous(chose);
+    await applyReviewAnswer(chose.store, AMBIGUOUS, await shown(chose, AMBIGUOUS, { choice: 1 }), T0 + MINUTE);
+    const { answerParts: _parts, ...old } = (await chose.store.getReview(AMBIGUOUS))!;
+    await chose.store.putReview(old as ReviewItem);
+    chose.clock = T0 + DAY;
+    await scan(chose, { settings: DEWALT_ONLY, policy: NO_SEARCH });
+    expect((await chose.store.getBundle('homedepot:ambiguous'))!.split).toEqual({ components: ['DCKTS650D1P1', 'DCF921B'], status: 'resolved', notes: [CHOSEN] });
+    expect(await chose.store.getReview(AMBIGUOUS)).toEqual(old);
+
+    // Free text naming none of the choices, stored without answerParts, decides nothing.
+    const w = world();
+    const open = await special(w);
+    const freeText = { ...open, answer: 'PCL500B,PCL526B', answeredAt: T0 + MINUTE };
+    await w.store.putReview(freeText);
+    w.clock = T0 + DAY;
+    await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect((await w.store.getBundle(SB_KEY))!.split).toMatchObject({ status: 'needs_review', notes: ['no known RYOBI bundle pattern'] });
+    expect(await w.store.getReview(SB)).toEqual(freeText);
   });
 });
 

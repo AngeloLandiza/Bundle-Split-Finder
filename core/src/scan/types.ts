@@ -237,10 +237,16 @@ export interface ReviewItem {
   /**
    * The user's answer; null while open. A scan never changes an item the user answered. A split
    * question a scan closed itself ('resolved by a later scan') is opened again when the bundle
-   * needs review again. The user answers a split with the chosen reading's parts joined by ',',
+   * needs review again. The user answers a split with the chosen or typed parts joined by ',',
    * a match with the chosen ASIN, and either with 'none' (answers.ts).
    */
   answer: string | null;
+  /**
+   * Split questions: the parts the owner's answer fixes, whether chosen from `choices` or typed
+   * ({ parts }); `answer` is them joined by ','. Null for "none" and while open. An item answered
+   * before typed parts existed has none: its answer counts only when it equals one of its choices.
+   */
+  answerParts?: string[] | null;
   answeredAt: number | null;
 }
 
@@ -417,11 +423,12 @@ export interface ScanReport {
 }
 
 /**
- * An index into the review item's `choices` (split) or `candidates` (match), or none of them.
+ * An index into the review item's `choices` (split) or `candidates` (match), none of them, or
+ * (split questions only) the parts the owner typed: 1 to 8 model numbers.
  * `seen` is reviewSignature (answers.ts) of the item as it was shown: an answer to a question a
  * scan has changed since is refused.
  */
-export type ReviewAnswer = { choice: number; seen: string } | { none: true; seen: string };
+export type ReviewAnswer = { choice: number; seen: string } | { none: true; seen: string } | { parts: string[]; seen: string };
 
 /** A paid action the side panel can ask for. */
 export type PaidAction =
