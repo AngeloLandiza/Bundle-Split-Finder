@@ -278,7 +278,7 @@ describe('limit notice', () => {
   it('run_cap names the per-scan limit and the parts waiting', () => {
     show(report([row('c1')]), stopped('run_cap', deferred));
     expect(screen.getByText('Scan stopped at your search limit')).toBeInTheDocument();
-    expect(screen.getByText('It used the 40 searches allowed per scan. 2 parts still need an Amazon lookup and go first next time.')).toBeInTheDocument();
+    expect(screen.getByText('It used 5 of the 40 searches allowed per scan. 2 parts still need an Amazon lookup and go first next time.')).toBeInTheDocument();
   });
 
   it('reserve keeps the rest of the month for the owner', () => {
@@ -298,8 +298,36 @@ describe('limit notice', () => {
     expect(screen.getByText(/^Try again after 30 min\.$/)).toBeInTheDocument();
   });
 
+  it('a stop by the owner is said on the rows too, with the waiting parts and the next scan, and never the earlier failure', () => {
+    const s = state({
+      lastJob: job({ status: 'stopped', stopReason: 'user', stopMessage: 'SerpApi returned HTTP 404.', deferred }),
+      nextRunAt: NOW + 3_600_000,
+    });
+    show(report([row('c1')]), s);
+    expect(screen.getByText('You stopped the last scan')).toBeInTheDocument();
+    expect(screen.getByText('Scan now picks up where it left off. 2 parts still need an Amazon lookup and go first next time.')).toBeInTheDocument();
+    expect(screen.queryByText('Change the limit')).toBeNull();
+    expect(screen.getByText(/^Next scan /)).toBeInTheDocument();
+    expect(screen.queryByText(/404/)).toBeNull();
+  });
+
+  it('run_cap says how many searches the scan used against the limit (QA m7)', () => {
+    const at = (used: number, limit: number) => ({ ...state({ lastJob: job({ status: 'stopped', stopReason: 'run_cap', searchesUsed: used }) }), settings: { ...DEFAULT_SETTINGS, searchesPerScan: limit } });
+    show(report([row('c1')]), at(3, 3));
+    expect(screen.getByText('It used the 3 searches allowed per scan.')).toBeInTheDocument();
+    cleanup();
+    show(report([row('c1')]), at(2, 3));
+    expect(screen.getByText('It used 2 of the 3 searches allowed per scan.')).toBeInTheDocument();
+    cleanup();
+    show(report([row('c1')]), at(0, 1));
+    expect(screen.getByText('It used 0 of the 1 search allowed per scan.')).toBeInTheDocument();
+    cleanup();
+    show(report([row('c1')]), at(1, 1));
+    expect(screen.getByText('It used the 1 search allowed per scan.')).toBeInTheDocument();
+  });
+
   it('says 1 search, and leaves out the parts clause when none wait', () => {
-    show(report([row('c1')]), { ...stopped('run_cap'), settings: { ...DEFAULT_SETTINGS, searchesPerScan: 1 } });
+    show(report([row('c1')]), { ...state({ lastJob: job({ status: 'stopped', stopReason: 'run_cap', searchesUsed: 1 }) }), settings: { ...DEFAULT_SETTINGS, searchesPerScan: 1 } });
     expect(screen.getByText('It used the 1 search allowed per scan.')).toBeInTheDocument();
     cleanup();
     show(report([row('c1')]), stopped('reserve'));
@@ -623,9 +651,12 @@ describe('empty states', () => {
       cleanup();
     }
   });
-  it('says the scan did not finish when the owner stopped it with nothing found', () => {
+  it('says the owner stopped the scan, with no limit link, and not the plain empty-state sentence as well', () => {
     show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'user' }) }));
-    expect(screen.getByText('The last scan did not finish. Scan now tries again.')).toBeInTheDocument();
+    expect(screen.getByText('You stopped the last scan')).toBeInTheDocument();
+    expect(screen.getByText('Scan now picks up where it left off.')).toBeInTheDocument();
+    expect(screen.queryByText('Change the limit')).toBeNull();
+    expect(screen.queryByText(/did not finish/)).toBeNull();
   });
   it('under a limit notice, says nothing else', () => {
     show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'run_cap' }) }));

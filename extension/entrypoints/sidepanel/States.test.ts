@@ -42,6 +42,13 @@ describe('fix round: Notice', () => {
     expect(sentenceFor('Something else.')).toBe('Something else.');
   });
 
+  it('shows nothing above the tabs for a scan the owner stopped, even when it keeps an earlier failure\'s text', () => {
+    const s = state({ lastJob: job({ stopReason: 'user', stopMessage: 'SerpApi returned HTTP 404.' }) });
+    expect(noticeSentence(s, null)).toBeNull();
+    const view = render(createElement(Notice, { state: s, api: makeApi().api, error: null }));
+    expect(view.container).toBeEmptyDOMElement();
+  });
+
   it('maps the message the client itself throws', async () => {
     const client = new SerpApiClient({
       apiKey: 'K',
