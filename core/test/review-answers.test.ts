@@ -1060,3 +1060,45 @@ describe('applyReviewAnswer: an answer to a question as it was shown', () => {
     expect(await snapshot(w)).toEqual(before);
   });
 });
+
+describe('the report leaves out a match question no current split holds (final review)', () => {
+  it('typed parts open a match question; after Change and other parts it leaves Review, kept as it was, and comes back with its part', async () => {
+    const w = world();
+    const split = await ambiguous(w);
+    // The kit is not what this test is about: it was looked up before and nothing was found.
+    await w.store.putMatch({ key: 'DEWALT:DCKTS650D1P1', brand: 'DEWALT', model: 'DCKTS650D1P1', status: 'none', asin: null, grade: null, alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null });
+    const asked = async () => (await buildReport(w.store, DEWALT_ONLY)).review.map((r) => r.id);
+
+    // The owner types the parts; the next scan looks DCF891B up, and the recorded search without its
+    // one confirmed listing opens its match question (as in scan-runner's rule 6 test).
+    await applyReviewAnswer(w.store, AMBIGUOUS, { parts: ['DCKTS650D1P1', 'DCF891B'], seen: reviewSignature(split) }, T0 + MINUTE);
+    const data = recorded('amazon-search-DCF891B') as { organic_results: { asin: string }[] };
+    const response = { ...data, organic_results: data.organic_results.filter((row) => row.asin !== 'B09YXXFPBJ') };
+    const fetchFn = (async (input: string | URL | Request) =>
+      String(input).includes('k=DEWALT+DCF891B') ? new Response(JSON.stringify(response), { status: 200 }) : w.replay.fetchFn(input)) as typeof fetch;
+    w.clock = T0 + 10 * MINUTE;
+    await scan(w, { settings: DEWALT_ONLY, fetchFn });
+    expect(w.ledger).toEqual(['scan:lookup:DCF891B']);
+    const question = (await w.store.getReview(MATCH))!;
+    expect(question).toMatchObject({ kind: 'match', subject: 'DEWALT:DCF891B', answer: null });
+    expect(question.candidates).toHaveLength(7);
+    expect(await asked()).toEqual([MATCH]);
+
+    // Change: the bundle is back in Contents not known, so no bundle holds DCF891B.
+    await reopenReviewAnswer(w.store, AMBIGUOUS, T0 + 11 * MINUTE);
+    expect(await asked()).toEqual([AMBIGUOUS]);
+    // Other parts typed: still no bundle holds DCF891B. Its question is left out of Review and its
+    // count, but stored as it was.
+    await applyReviewAnswer(w.store, AMBIGUOUS, { parts: ['DCKTS650D1P1', 'DCF921B'], seen: reviewSignature((await w.store.getReview(AMBIGUOUS))!) }, T0 + 12 * MINUTE);
+    expect((await w.store.getBundle('homedepot:ambiguous'))!.split).toMatchObject({ components: ['DCKTS650D1P1', 'DCF921B'], status: 'resolved' });
+    expect(await asked()).toEqual([]);
+    expect(await w.store.getReview(MATCH)).toEqual(question);
+
+    // The part comes back: so does its question, as it was.
+    await reopenReviewAnswer(w.store, AMBIGUOUS, T0 + 13 * MINUTE);
+    await applyReviewAnswer(w.store, AMBIGUOUS, { parts: ['DCKTS650D1P1', 'DCF891B'], seen: reviewSignature((await w.store.getReview(AMBIGUOUS))!) }, T0 + 14 * MINUTE);
+    const report = await buildReport(w.store, DEWALT_ONLY);
+    expect(report.review.map((r) => r.id)).toEqual([MATCH]);
+    expect(report.review[0]).toMatchObject({ openedAt: question.openedAt, candidates: question.candidates });
+  });
+});

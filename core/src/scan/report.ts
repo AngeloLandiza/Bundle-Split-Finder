@@ -95,7 +95,12 @@ async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleReco
 
 export async function buildReport(store: ScanStore, settings: ScanSettings): Promise<ScanReport> {
   const bundles: BundleRow[] = [];
-  for (const b of await store.listBundles()) bundles.push(await bundleRow(store, settings, b));
+  // The parts some bundle's split holds now, as the lookups see them (resolved splits only).
+  const held = new Set<string>();
+  for (const b of await store.listBundles()) {
+    bundles.push(await bundleRow(store, settings, b));
+    if (b.split?.status === 'resolved') for (const c of b.split.components) held.add(partKey(b.brand, c));
+  }
   bundles.sort((a, b) => {
     if (a.section !== b.section) return SECTION_RANK[a.section] - SECTION_RANK[b.section];
     const pa = a.estimate?.profit ?? -Infinity;
@@ -105,6 +110,9 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   });
   const review = (await store.listReview())
     .filter((r) => r.answer === null)
+    // A match question whose part no bundle holds now (the owner changed a split) is left out, not
+    // closed: it is asked again if the part comes back.
+    .filter((r) => r.kind !== 'match' || held.has(r.subject))
     // An item saved before step 5 has no choices stored.
     .map((r) => ({ ...r, choices: choicesOf(r) }))
     .sort((a, b) => a.openedAt - b.openedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
