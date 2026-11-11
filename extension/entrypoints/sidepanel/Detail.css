@@ -343,7 +343,6 @@
 }
 
 .detail-verify {
-  margin-left: auto;
   display: flex;
   flex-direction: column;
   align-items: flex-end;

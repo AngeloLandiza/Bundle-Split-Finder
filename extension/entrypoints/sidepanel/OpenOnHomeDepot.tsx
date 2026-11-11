@@ -1,3 +1,5 @@
+import './Detail.css';
+
 /** The link to a bundle's own Home Depot page: Detail's top bar and Review's parts question share it. */
 export function OpenOnHomeDepot({ href, className = '' }: { href: string; className?: string }) {
   return (
