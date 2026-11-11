@@ -322,6 +322,18 @@ describe('parts', () => {
     expect(screen.queryByText(paying)).toBeNull();
   });
 
+  it('tells the panel when its Verify has ended', async () => {
+    const user = userEvent.setup();
+    const onPaidEnd = vi.fn();
+    const { api } = fakeApi();
+    const r = row({ parts: [part('PBLRC25B', { grade: 'probable' })] });
+    render(createElement(Detail, { api, report: { bundles: [r], review: [], packaging: {} }, state: state(), bundleKey: r.key, onBack: vi.fn(), onPaidEnd }));
+    const button = await screen.findByRole('button', { name: /^Verify/ });
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await waitFor(() => expect(onPaidEnd).toHaveBeenCalledTimes(1));
+  });
+
   it('runs one paid request at a time', async () => {
     const user = userEvent.setup();
     let release: (r: Reply) => void = () => {};

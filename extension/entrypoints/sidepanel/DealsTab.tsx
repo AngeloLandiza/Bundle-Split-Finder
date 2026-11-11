@@ -17,6 +17,8 @@ export interface DealsTabProps {
   sort: SortKey;
   onSort: (s: SortKey) => void;
   onOpen: (bundleKey: string) => void;
+  /** Called when a Look up started here has ended, refused or not. */
+  onPaidEnd?: () => void;
 }
 
 const SORTS: { key: SortKey; label: string }[] = [
@@ -86,7 +88,7 @@ function Row({ row, report, asked, api, scanRunning, version, busy, onRun, onOpe
   );
 }
 
-export function DealsTab({ report, state, sort, onSort, onOpen, api }: DealsTabProps) {
+export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }: DealsTabProps) {
   const now = Date.now();
   // One paid request at a time across the whole tab; `version` makes every Look up ask for its price again afterwards.
   const [busy, setBusy] = useState(false);
@@ -104,9 +106,10 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api }: DealsTabP
       }
       setBusy(false);
       setVersion((v) => v + 1);
+      onPaidEnd?.();
       return error;
     },
-    [api, busy],
+    [api, busy, onPaidEnd],
   );
   if (!report) return null;
   const job = state.lastJob;

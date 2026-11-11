@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { realWorker, UNREACHABLE, useAppState, type WorkerApi } from '../../lib/pageClient';
 import type { AppState, PanelReport, Request } from '../../lib/messages';
@@ -33,9 +33,19 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [sort, setSort] = useSort();
   const [clock, setClock] = useState(now);
-  // Two slots, so a report refresh cannot wipe a refused scan's sentence. Each is cleared only by its own next success.
+  // Two slots, so a report refresh cannot wipe a refused scan's sentence. The report's is cleared by its next success.
   const [scanError, setScanError] = useState<string | null>(null);
   const [reportError, setReportError] = useState<string | null>(null);
+
+  // A refused Scan now or Stop belongs to the moment it was refused in: it goes when a scan starts or ends, when
+  // a Look up or Verify on this panel ends, and on the scan control's next success.
+  const running = state?.scanRunning ?? null;
+  const [seenRunning, setSeenRunning] = useState(running);
+  if (seenRunning !== running) {
+    setSeenRunning(running);
+    setScanError(null);
+  }
+  const paidEnded = useCallback(() => setScanError(null), []);
 
   // The report is read on mount and after every state change. The last one stays on screen while the next loads.
   useEffect(() => {
@@ -96,7 +106,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   if (openKey !== null) {
     return (
       <div className="panel">
-        <Detail api={api} report={report} state={state} bundleKey={openKey} onBack={() => setOpenKey(null)} />
+        <Detail api={api} report={report} state={state} bundleKey={openKey} onBack={() => setOpenKey(null)} onPaidEnd={paidEnded} />
       </div>
     );
   }
@@ -121,7 +131,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
       <Notice state={state} api={api} error={scanError ?? reportError} />
       <main className="panel-body">
         {tab === 'deals' ? (
-          <DealsTab api={api} report={report} state={state} sort={sort} onSort={setSort} onOpen={setOpenKey} />
+          <DealsTab api={api} report={report} state={state} sort={sort} onSort={setSort} onOpen={setOpenKey} onPaidEnd={paidEnded} />
         ) : (
           <ReviewTab api={api} report={report} state={state} />
         )}

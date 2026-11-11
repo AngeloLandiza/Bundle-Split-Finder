@@ -450,6 +450,15 @@ describe('Look up', () => {
     expect(screen.queryByText('A scan is already running.')).toBeNull();
   });
 
+  it('tells the panel when its Look up has ended, refused or not', async () => {
+    const user = userEvent.setup();
+    const onPaidEnd = vi.fn();
+    const { api } = fakeApi((r) => (r.type === 'quote' ? { ok: true, data: { searches: 2, refusal: null } } : { ok: false, error: 'Not available yet.' }));
+    render(createElement(DealsTab, { api, report: report([waiting]), state: state(), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn(), onPaidEnd }));
+    await user.click(await screen.findByRole('button', { name: 'Look up 2 searches' }));
+    await waitFor(() => expect(onPaidEnd).toHaveBeenCalledTimes(1));
+  });
+
   it('asks for the price again after a run, before the button can be pressed again', async () => {
     const user = userEvent.setup();
     let searchesLeft = 2;

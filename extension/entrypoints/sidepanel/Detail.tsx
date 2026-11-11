@@ -18,6 +18,8 @@ export interface DetailProps {
   state: AppState;
   bundleKey: string;
   onBack: () => void;
+  /** Called when a Verify or Look up started here has ended, refused or not. */
+  onPaidEnd?: () => void;
 }
 
 const LOOSE_NOTE = 'Loose parts cannot be listed as New on Amazon; this estimate assumes they can.';
@@ -203,7 +205,7 @@ export const BUSY = 'Another search is still running.';
 
 const fileName = (model: string): string => `split-finder-${model.replace(/[^A-Za-z0-9._-]+/g, '-')}.csv`;
 
-export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
+export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: DetailProps) {
   const row = report?.bundles.find((b) => b.key === bundleKey) ?? null;
   // One paid request at a time on this screen; `version` makes every quote ask again afterwards.
   const [busy, setBusy] = useState(false);
@@ -231,9 +233,10 @@ export function Detail({ report, state, bundleKey, onBack, api }: DetailProps) {
       locked.current = false;
       setBusy(false);
       setVersion((v) => v + 1);
+      onPaidEnd?.();
       return error;
     },
-    [api],
+    [api, onPaidEnd],
   );
 
   const top = (

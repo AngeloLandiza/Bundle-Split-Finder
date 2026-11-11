@@ -17,7 +17,10 @@ vi.mock('./Notice', () => ({ Notice: vi.fn(() => null) }));
 // The shell tests need only to know the report arrived; the list has its own tests in DealsTab.test.ts.
 vi.mock('./DealsTab', async () => {
   const { createElement: h } = await import('react');
-  return { DealsTab: ({ report }: { report: PanelReport | null }) => h('p', null, report ? `${report.bundles.length} bundles` : 'No scan has finished yet.') };
+  return {
+    DealsTab: ({ report, onPaidEnd }: { report: PanelReport | null; onPaidEnd?: () => void }) =>
+      h('div', null, h('p', null, report ? `${report.bundles.length} bundles` : 'No scan has finished yet.'), h('button', { type: 'button', onClick: onPaidEnd }, 'A Look up ends')),
+  };
 });
 
 afterEach(cleanup);
@@ -240,6 +243,34 @@ describe('side panel shell', () => {
     await emit(state({ nextRunAt: 5 }));
     await waitFor(() => expect(send.mock.calls.filter((c) => c[0].type === 'getReport').length).toBeGreaterThan(1));
     expect(noticeError()).toBe('No searches left to spend.');
+  });
+
+  it('a refused scanNow sentence goes when a scan starts or ends', async () => {
+    const user = userEvent.setup();
+    const { send, emit } = setup(state());
+    await screen.findByText('3 bundles');
+    send.mockImplementationOnce(async () => ({ ok: false, error: 'A Look up or Verify is running.' }));
+    await user.click(screen.getByRole('button', { name: 'Scan now' }));
+    await waitFor(() => expect(noticeError()).toBe('A Look up or Verify is running.'));
+    await emit(state({ scanRunning: true, lastJob: JOB }));
+    expect(noticeError()).toBeNull();
+
+    send.mockImplementationOnce(async () => ({ ok: false, error: 'Could not stop.' }));
+    await user.click(screen.getByRole('button', { name: 'Stop' }));
+    await waitFor(() => expect(noticeError()).toBe('Could not stop.'));
+    await emit(state({ scanRunning: false, lastJob: { ...JOB, status: 'stopped' } as ScanJob }));
+    expect(noticeError()).toBeNull();
+  });
+
+  it('a refused scanNow sentence goes when a Look up or Verify on the panel ends', async () => {
+    const user = userEvent.setup();
+    const { send } = setup(state());
+    await screen.findByText('3 bundles');
+    send.mockImplementationOnce(async () => ({ ok: false, error: 'A Look up or Verify is running.' }));
+    await user.click(screen.getByRole('button', { name: 'Scan now' }));
+    await waitFor(() => expect(noticeError()).toBe('A Look up or Verify is running.'));
+    await user.click(screen.getByRole('button', { name: 'A Look up ends' }));
+    expect(noticeError()).toBeNull();
   });
 
   it('Notice gets the unreachable sentence when stopScan rejects', async () => {
