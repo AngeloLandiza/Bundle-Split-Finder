@@ -117,7 +117,8 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api }: DealsTabP
         ? "No scan yet. Scan now looks at Home Depot's DEWALT and RYOBI bundles."
         : job.status === 'done'
           ? 'The last scan found no bundles.'
-          : limitCopy(state, now)
+          : // A limit has its own notice, and an error its sentence in the Notice above the tabs.
+            limitCopy(state, now) || job.stopReason === 'error' || job.stopReason === 'rate_limited'
             ? null
             : 'The last scan did not finish. Scan now tries again.';
     return (

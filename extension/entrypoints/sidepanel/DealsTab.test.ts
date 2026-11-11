@@ -511,11 +511,14 @@ describe('empty states', () => {
     show(report([]));
     expect(screen.getByText('The last scan found no bundles.')).toBeInTheDocument();
   });
-  it('says the scan did not finish when it stopped or failed with nothing found', () => {
-    show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'error' }) }));
-    expect(screen.getByText('The last scan did not finish. Scan now tries again.')).toBeInTheDocument();
-    expect(screen.queryByText('The last scan found no bundles.')).toBeNull();
-    cleanup();
+  it('says nothing of its own when an error or rate limit stopped the scan: the notice explains it', () => {
+    for (const stopReason of ['error', 'rate_limited'] as const) {
+      show(report([]), state({ lastJob: job({ status: 'stopped', stopReason }) }));
+      expect(screen.queryByText(/The last scan/)).toBeNull();
+      cleanup();
+    }
+  });
+  it('says the scan did not finish when the owner stopped it with nothing found', () => {
     show(report([]), state({ lastJob: job({ status: 'stopped', stopReason: 'user' }) }));
     expect(screen.getByText('The last scan did not finish. Scan now tries again.')).toBeInTheDocument();
   });
