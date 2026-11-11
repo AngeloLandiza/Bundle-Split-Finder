@@ -215,10 +215,16 @@ describe('headline', () => {
 describe('the open question', () => {
   const noParts = (over: Partial<BundleRow> = {}) => row({ estimate: null, section: 'split', status: 'needs_review', parts: [], ...over });
 
-  it('shows the bundle\'s split question in place of the no-estimate sentence', () => {
+  it('shows the bundle\'s split question as its own section, under the estimate band that keeps its sentence', () => {
     show(noParts(), { review: [question()] });
-    expect(screen.getByText('Which parts come in this bundle?', { selector: 'legend' })).toBeInTheDocument();
-    expect(screen.queryByText('No estimate: what this bundle contains is not known yet.')).toBeNull();
+    const legend = screen.getByText('Which parts come in this bundle?', { selector: 'legend' });
+    const band = screen.getByRole('region', { name: 'Estimate' });
+    expect(within(band).getByText('No estimate: what this bundle contains is not known yet.')).toBeInTheDocument();
+    expect(band.contains(legend)).toBe(false);
+    expect(band.nextElementSibling).toBe(legend.closest('form'));
+    // The head says which bundle it is: the question does not say it again.
+    expect(screen.queryByText(question().title!)).toBeNull();
+    expect(screen.getAllByText(noParts().model)).toHaveLength(1);
     expect(screen.getByRole('radio', { name: 'PCL1600K2 + P553' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Enter the parts' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();

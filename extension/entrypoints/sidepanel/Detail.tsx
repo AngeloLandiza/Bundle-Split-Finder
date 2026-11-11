@@ -372,12 +372,14 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
               </p>
               <LookUp row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} onRun={(parts) => run({ kind: 'lookUp', parts })} />
             </>
-          ) : question ? (
-            <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} onSave={answerQuestion} />
           ) : (
             <p className="detail-noestimate">{noEstimate(row)}</p>
           )}
         </section>
+
+        {!e && waiting === 0 && question ? (
+          <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} onSave={answerQuestion} compact />
+        ) : null}
 
         {row.parts.length > 0 ? (
           <>

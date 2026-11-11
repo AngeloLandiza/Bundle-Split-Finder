@@ -1,8 +1,5 @@
 /* Review tab. Rows follow Limit.dc.html: a white band, hairlines edge to edge, 11px 16px. */
 .review {
-  --review-radio: 13px;
-  --review-gap: 10px;
-  --review-indent: calc(var(--review-radio) + var(--review-gap));
   padding: 12px 0 16px;
 }
 .review-count {
@@ -19,6 +16,10 @@
   outline: none;
 }
 .review-question {
+  /* On the fieldset, so the question looks the same on the Review tab and inside Detail. */
+  --review-radio: 13px;
+  --review-gap: 10px;
+  --review-indent: calc(var(--review-radio) + var(--review-gap));
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -147,6 +148,15 @@
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-2);
+}
+
+/* Inside Detail the question is its own section: the head above already says what bundle it is. */
+.review-compact {
+  padding: 14px 0 16px;
+}
+.review-compact > :not(.review-choices) {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 /* The typed parts: the settings page's input, under its radio row. */

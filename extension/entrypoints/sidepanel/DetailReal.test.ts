@@ -113,12 +113,12 @@ describe('Detail on a replayed scan', () => {
     expect(screen.getAllByText('Not looked up yet').length).toBe(waiting);
   });
 
-  it('shows the split question of a bundle in Needs your answer, in place of the no-estimate sentence', () => {
+  it('shows the split question of a bundle in Needs your answer, under its no-estimate sentence', () => {
     const q = full.review.find((r) => r.kind === 'split' && full.bundles.some((b) => b.key === r.subject))!;
     const row = full.bundles.find((b) => b.key === q.subject)!;
     open(full, row.key);
     expect(screen.getByText('Which parts come in this bundle?', { selector: 'legend' })).toBeInTheDocument();
-    expect(screen.queryByText('No estimate: what this bundle contains is not known yet.')).toBeNull();
+    expect(screen.getByText('No estimate: what this bundle contains is not known yet.')).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Enter the parts' })).toBeInTheDocument();
   });
 });

@@ -18,9 +18,11 @@ export interface ReviewQuestionProps {
   onSave: (answer: ReviewAnswer) => Promise<string | null>;
   /** Put the question off: nothing is sent or stored. */
   onNotNow?: () => void;
+  /** Inside Detail: its head already shows the bundle's title, brand and model, so the question does not repeat them. */
+  compact?: boolean;
 }
 
-export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave, onNotNow }: ReviewQuestionProps) {
+export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave, onNotNow, compact = false }: ReviewQuestionProps) {
   const [picked, setPicked] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -79,15 +81,17 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
         void submit();
       }}
     >
-      <fieldset className="review-question">
+      <fieldset className={compact ? 'review-question review-compact' : 'review-question'}>
         <legend className="review-title" ref={legendRef} tabIndex={-1}>
           {split ? 'Which parts come in this bundle?' : `Which Amazon listing is ${subject}?`}
         </legend>
-        {split && item.title ? <p className="review-bundle">{item.title}</p> : null}
-        <p className="review-ident">
-          <span>{item.brand}</span>
-          <span className="figure fig-sm">{item.model}</span>
-        </p>
+        {!compact && split && item.title ? <p className="review-bundle">{item.title}</p> : null}
+        {!compact ? (
+          <p className="review-ident">
+            <span>{item.brand}</span>
+            <span className="figure fig-sm">{item.model}</span>
+          </p>
+        ) : null}
         <p className="review-reason">
           {reviewReasonParts(item.reason).map((p, i) =>
             'model' in p ? (
