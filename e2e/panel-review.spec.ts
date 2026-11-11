@@ -67,8 +67,8 @@ test('review tab, a split question after a replayed scan, answered', async ({ co
 
   await panel.getByRole('radio', { name: 'None of these' }).check();
   await panel.getByRole('button', { name: 'Save answer' }).click();
-  // One put off and one answered: the third question is next.
-  await expect(panel.getByText(`3 of ${total}`)).toBeVisible();
+  // One put off and one answered: the third question is next, second of the two still open.
+  await expect(panel.getByText(`2 of ${total - 1}`)).toBeVisible();
   await expect(panel.getByRole('button', { name: 'Save answer' })).toBeDisabled();
 
   // This replay leaves no match question, so there is no review-match screenshot.
@@ -93,7 +93,7 @@ test('review tab, an answered question does not come back after the next scan', 
   await expect(panel.getByText(`1 of ${before.length}`)).toBeVisible();
   await panel.getByRole('radio', { name: 'None of these' }).check();
   await panel.getByRole('button', { name: 'Save answer' }).click();
-  await expect(panel.getByText(`2 of ${before.length}`)).toBeVisible();
+  await expect(panel.getByText(`1 of ${before.length - 1}`)).toBeVisible();
 
   const was = await lastJobId(options);
   await panel.getByRole('button', { name: 'Scan now' }).click();
@@ -140,11 +140,12 @@ test('review tab, a split question with two real choices', async ({ context, ext
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   await panel.getByRole('button', { name: /^Review/ }).click();
   // Older questions come first; answer them until this one is shown.
+  const open = Number((await panel.getByText(/^1 of \d+$/).textContent())!.replace('1 of ', ''));
   for (let i = 0; i < 20 && (await panel.getByText('DCK200D1P1 + DCF921B').count()) === 0; i++) {
     await panel.getByRole('radio', { name: 'None of these' }).check();
     await panel.getByRole('button', { name: 'Save answer' }).click();
-    // Wait for the next question before looking again.
-    await expect(panel.getByText(new RegExp(`^${i + 2} of `))).toBeVisible();
+    // Wait for the next question before looking again: the badge falls by one.
+    await expect(panel.getByText(`1 of ${open - i - 1}`)).toBeVisible();
   }
   await expect(panel.getByRole('radio', { name: 'DCK200D1P1 + DCB606' })).toBeVisible();
   await panel.getByRole('radio', { name: 'DCK200D1P1 + DCF921B' }).check();
