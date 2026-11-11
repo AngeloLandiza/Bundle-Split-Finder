@@ -68,6 +68,21 @@ function setup(report: PanelReport | null, reply: Reply = { ok: true, data: null
 
 const save = () => screen.getByRole('button', { name: 'Save answer' });
 
+describe('ReviewTab: links to Home Depot', () => {
+  const rowOf = (link: string | null) => ({ key: 'homedepot:1', brand: 'DEWALT', model: 'DCK240C2', link, parts: [] });
+  it('a split question whose row has no link shows none, and one with no row shows none', () => {
+    setup({ bundles: [rowOf(null)], review: [SPLIT], packaging: {} } as unknown as PanelReport);
+    expect(screen.queryByRole('link')).toBeNull();
+    cleanup();
+    setup({ bundles: [{ ...rowOf('https://www.homedepot.com/p/1'), key: 'homedepot:other' }], review: [SPLIT], packaging: {} } as unknown as PanelReport);
+    expect(screen.queryByRole('link')).toBeNull();
+  });
+  it('a match question gets no Home Depot link even when a row shares its subject', () => {
+    setup({ bundles: [{ ...rowOf('https://www.homedepot.com/p/1'), key: MATCH.subject }], review: [MATCH], packaging: {} } as unknown as PanelReport);
+    expect(screen.queryByRole('link', { name: /Home Depot/ })).toBeNull();
+  });
+});
+
 describe('ReviewTab: a split question', () => {
   it('shows the question, the reading of each choice in order, and None of these', () => {
     setup(reportOf([SPLIT, MATCH]));

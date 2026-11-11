@@ -64,6 +64,12 @@
   font-size: 13px;
   color: var(--ink-2);
 }
+.review .review-open {
+  height: auto;
+  align-self: flex-start;
+  font-size: 13px;
+  line-height: 18px;
+}
 .review-ident .fig-sm {
   color: inherit;
 }

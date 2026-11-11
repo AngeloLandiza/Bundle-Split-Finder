@@ -9,6 +9,7 @@ import type { AppState, Packaging, PanelReport } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { waitingParts } from './dealsModel';
 import { LookUp } from './DealsLookUp';
+import { OpenOnHomeDepot } from './OpenOnHomeDepot';
 import { ProgressRow } from './ProgressRow';
 import { ReviewQuestion } from './ReviewQuestion';
 import { Verify } from './DetailVerify';
@@ -312,14 +313,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
         </svg>
         Deals
       </button>
-      {row?.link ? (
-        <a className="detail-open" href={row.link} target="_blank" rel="noopener noreferrer">
-          Open on Home Depot
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M4.5 2.5h5v5M9.5 2.5l-7 7" />
-          </svg>
-        </a>
-      ) : null}
+      {row?.link ? <OpenOnHomeDepot href={row.link} /> : null}
     </header>
   );
 

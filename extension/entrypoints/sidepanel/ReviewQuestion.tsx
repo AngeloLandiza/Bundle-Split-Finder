@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { reviewSignature } from '@core/scan/answers';
 import type { ReviewAnswer, ReviewItem } from '@core/scan/types';
 import { money } from '../../lib/format';
+import { OpenOnHomeDepot } from './OpenOnHomeDepot';
 import { reviewReasonParts } from './reviewReason';
 
 const NONE = 'none';
@@ -20,9 +21,11 @@ export interface ReviewQuestionProps {
   onNotNow?: () => void;
   /** Inside Detail: its head already shows the bundle's title, brand and model, so the question does not repeat them. */
   compact?: boolean;
+  /** A split question's bundle page on Home Depot; null or absent when the report has none. */
+  homeDepotLink?: string | null;
 }
 
-export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave, onNotNow, compact = false }: ReviewQuestionProps) {
+export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave, onNotNow, compact = false, homeDepotLink = null }: ReviewQuestionProps) {
   const [picked, setPicked] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -93,6 +96,7 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
             <span className="figure fig-sm">{item.model}</span>
           </p>
         ) : null}
+        {!compact && split && homeDepotLink ? <OpenOnHomeDepot href={homeDepotLink} className="review-open" /> : null}
         <p className="review-reason">
           {reviewReasonParts(item.reason).map((p, i) =>
             'model' in p ? (

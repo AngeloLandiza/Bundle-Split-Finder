@@ -19,6 +19,7 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import type { AppState, PanelReport } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import { Detail } from './Detail';
+import { ReviewTab } from './ReviewTab';
 
 afterEach(cleanup);
 
@@ -178,5 +179,21 @@ describe('Detail on a replayed scan', () => {
     expect(screen.getByText('Which parts come in this bundle?', { selector: 'legend' })).toBeInTheDocument();
     expect(screen.getByText('No estimate: what this bundle contains is not known yet.')).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Enter the parts' })).toBeInTheDocument();
+  });
+
+  it("links a split question in the Review tab to the recorded bundle's page, and the compact one in Detail has no such link", () => {
+    const q = full.review.find((r) => r.kind === 'split' && full.bundles.some((b) => b.key === r.subject))!;
+    const row = full.bundles.find((b) => b.key === q.subject)!;
+    expect(row.link).toEqual(expect.stringMatching(/^https:\/\/www\.homedepot\.com\//));
+    render(createElement(ReviewTab, { api, report: { ...full, review: [q] }, state }));
+    const link = screen.getByRole('link', { name: 'Open on Home Depot' });
+    expect(link).toHaveAttribute('href', row.link!);
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    cleanup();
+    open(full, row.key);
+    expect(screen.getByText('Which parts come in this bundle?', { selector: 'legend' })).toBeInTheDocument();
+    // Detail's own bar has the one link; the question adds none.
+    expect(screen.getAllByRole('link', { name: 'Open on Home Depot' })).toHaveLength(1);
   });
 });

@@ -85,6 +85,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
       <ReviewQuestion
         key={keyOf(item)}
         item={item}
+        homeDepotLink={item.kind === 'split' ? (report.bundles.find((b) => b.key === item.subject)?.link ?? null) : null}
         scanRunning={state.scanRunning}
         focusHeading={focusNext}
         onSave={save}
