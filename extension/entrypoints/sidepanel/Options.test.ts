@@ -14,6 +14,7 @@ import { profit } from '../../lib/format';
 import type { AppState, PanelReport } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import { DealsTab } from './DealsTab';
+import { waitingOf } from './dealsModel';
 import { Detail } from './Detail';
 
 afterEach(cleanup);
@@ -91,11 +92,15 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     const row = first.bundles.find((b) => b.key === P553_KEY)!;
     const [whole, split] = blocks();
     expect(within(whole!).queryByText(/^[+−]\$/)).toBeNull();
+    // Nine items, but PBP005 was matched for free from a saved listing: only the rest still wait for a lookup.
     expect(row.options[1]!.parts).toHaveLength(9);
+    expect(row.options[1]!.parts.find((p) => p.model === 'PBP005')!.status).toBe('matched');
+    const waiting = waitingOf('RYOBI', row.options[1]!.parts);
+    expect(waiting).toHaveLength(8);
     // The quote is whatever the worker's quotePaid says (it counts what Look up would search for).
-    const quoted = async (o: number) => (await kitQuote(w, { kind: 'lookUp', parts: row.options[o]!.parts.map((p) => ({ brand: 'RYOBI', model: p.model })) })).searches;
+    const quoted = async (o: number) => (await kitQuote(w, { kind: 'lookUp', parts: o === 1 ? waiting : row.options[o]!.parts.map((p) => ({ brand: 'RYOBI', model: p.model })) })).searches;
     const cost = (n: number) => (n === 0 ? '· no search' : `· ${n} ${n === 1 ? 'search' : 'searches'}`);
-    expect(await within(split!).findByRole('button', { name: `Look up 9 parts ${cost(await quoted(1))}` })).not.toHaveAttribute('aria-disabled');
+    expect(await within(split!).findByRole('button', { name: `Look up ${waiting.length} parts ${cost(await quoted(1))}` })).not.toHaveAttribute('aria-disabled');
     expect(await quoted(0)).toBe(2);
     expect(await within(whole!).findByRole('button', { name: 'Look up 2 parts · 2 searches' })).not.toHaveAttribute('aria-disabled');
     // The estimate band does not repeat them: the options hold the buttons.
@@ -112,12 +117,28 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     expect(within(region()).getByText(/^Estimated profit and ROI/)).toBeInTheDocument();
   });
 
-  it("pressing the split way's Look up sends its nine items, as the worker is asked today", async () => {
+  it("pressing the split way's Look up sends its waiting items and fills them in, leaving the way an estimate or its remaining leftovers", async () => {
     const user = userEvent.setup();
-    const { first, sent } = await openP553();
-    const items = first.bundles.find((b) => b.key === P553_KEY)!.options[1]!.parts.map((p) => ({ brand: 'RYOBI', model: p.model }));
-    await user.click(await within(splitBlock()).findByRole('button', { name: /^Look up 9 parts · / }));
-    expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: items } });
+    const { w, first, sent } = await openP553();
+    const split = first.bundles.find((b) => b.key === P553_KEY)!.options[1]!;
+    const waiting = waitingOf('RYOBI', split.parts);
+    expect(waiting.length).toBeGreaterThan(0);
+    expect(waiting.length).toBeLessThan(split.parts.length);
+    await user.click(await within(splitBlock()).findByRole('button', { name: new RegExp(`^Look up ${waiting.length} parts · `) }));
+    expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: waiting } });
+    // Afterwards the report is read again: the items are no longer waiting, and the button is gone or quoted for what is left.
+    const after = await kitReport(w);
+    const next = after.bundles.find((b) => b.key === P553_KEY)!.options.find((o) => o.id === split.id)!;
+    const left = waitingOf('RYOBI', next.parts);
+    expect(left.length).toBeLessThan(waiting.length);
+    await waitFor(() => {
+      const block = blocks().find((b) => b.textContent!.includes('split into its items'))!;
+      const button = within(block).queryByRole('button', { name: /^Look up/ });
+      if (left.length === 0) expect(button).toBeNull();
+      else expect(button).toHaveAccessibleName(new RegExp(`^Look up ${left.length} parts`));
+      if (next.estimate) expect(within(block).getByText(/^[+−]\$/)).toBeInTheDocument();
+      else expect(within(block).getByText(/^Leaves \d+ parts/)).toBeInTheDocument();
+    });
   });
 
   it('with the items looked up, the split has an estimate, is the primary and is the one shown above', async () => {
