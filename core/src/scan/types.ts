@@ -398,6 +398,8 @@ export interface BundleRow {
   price: number | null;
   regularPrice: number | null;
   percentOff: number | null;
+  /** When Home Depot's price for the bundle was seen: the bundle record's seenAt, the time of the listing response. */
+  seenAt: number;
   status: BundleStatus;
   section: ReportSection;
   parts: PartRow[];

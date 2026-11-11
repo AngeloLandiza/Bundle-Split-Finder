@@ -44,6 +44,7 @@ const row = (over: Partial<BundleRow> = {}): BundleRow => ({
   price: 189,
   regularPrice: 338,
   percentOff: 44,
+  seenAt: NOW - 3 * 3_600_000,
   status: 'complete',
   section: 'confirmed',
   parts: [part('PBLRC25B'), part('PBLRC01B', { asin: 'B0B6Z2ZGVK' })],

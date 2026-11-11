@@ -85,3 +85,24 @@ describe('report: a bundle with a part still waiting for its lookup', () => {
     expect((await buildReport(w.store, RATCHET)).bundles.find((b) => b.key === row.key)).toMatchObject({ section: 'missing_listing', estimate: null });
   });
 });
+
+describe('report: the bundle\'s own price time', () => {
+  it('is the bundle record\'s seenAt, when Home Depot\'s listing page answered, not when a part price was seen', async () => {
+    const { w, scan } = world();
+    // The clock moves a minute with every response: the listing page answers at T0 + 1 minute, the lookups later.
+    const fetchFn = (async (input: string | URL | Request) => {
+      w.clock += MINUTE;
+      return w.replay.fetchFn(input);
+    }) as typeof fetch;
+    expect((await scan(10, fetchFn)).status).toBe('done');
+    const report = await buildReport(w.store, RATCHET);
+    expect(report.bundles.length).toBeGreaterThan(0);
+    for (const row of report.bundles) {
+      expect(row.seenAt).toBe((await w.store.getBundle(row.key))!.seenAt);
+      expect(row.seenAt).toBe(T0 + MINUTE);
+    }
+    const priced = report.bundles.flatMap((b) => b.parts).filter((p) => p.priceSeenAt !== null);
+    expect(priced.length).toBeGreaterThan(0);
+    for (const p of priced) expect(p.priceSeenAt).toBeGreaterThan(T0 + MINUTE);
+  });
+});

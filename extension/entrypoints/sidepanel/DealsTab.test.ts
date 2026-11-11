@@ -46,6 +46,7 @@ const row = (key: string, over: Partial<BundleRow> = {}): BundleRow => ({
   price: 749,
   regularPrice: 1270,
   percentOff: 41,
+  seenAt: NOW - DAY,
   status: 'complete',
   section: 'confirmed',
   parts: [part('DCD791B'), part('DCF891B')],

@@ -61,7 +61,7 @@ function sectionOf(parts: PartRow[], bundlePrice: number | null): ReportSection 
 async function bundleRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
   const base = {
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
-    price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff,
+    price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff, seenAt: b.seenAt,
   };
   const split = b.split;
   if (!split || split.status !== 'resolved') {

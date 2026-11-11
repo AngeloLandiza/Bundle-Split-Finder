@@ -106,6 +106,7 @@ Each entry: **the decision**, why, and *for v2* where there is something to reco
 
 - **Open question for the owner: the forecast meter's order.** It draws scheduled searches, then the reserve, then what is unused, so the unused part after the reserve can read as if the reserve were spent. The mockup never shows an unused part.
 - **Detail: the "price seen" time is the newest part price time.** A report row carries no time for the bundle's own price, so the head says when the newest Amazon part price was seen, and only "Home Depot" when there is none. *For v2:* put the bundle's `seenAt` on `BundleRow`.
+- **`BundleRow.seenAt` is when Home Depot's price was seen** (QA M6): the bundle record's `seenAt`, the time of the listing response that showed it. It is in the report for Detail's head to use instead of the part price time; Detail does not use it yet.
 - **Detail: "Parts sell for" is the sum of listed part prices before fees; "After fees" is the estimate's net revenue**, which also holds any liquidation value of parts with no listing.
 - **Detail: a part left in review is labelled "Needs your answer"**, not "No listing", because a listing exists and is waiting for the owner's choice.
 - **Detail: Export row reuses the run file's columns** (`bundlesCsv` in `core/src/scan/csv.ts`), so one row and the full export never differ.
