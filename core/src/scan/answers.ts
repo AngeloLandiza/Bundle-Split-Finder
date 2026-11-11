@@ -35,6 +35,7 @@ const NOT_SHOWN = 'Choose one of the answers shown.';
 const CHANGED = 'That question changed. Choose again.';
 const INVALID_PARTS = 'Enter model numbers like PCL500B, separated by commas.';
 const NOT_FOR_MATCH = 'Parts can be entered only for a question about what a bundle contains.';
+const SELF_PART = "Enter the parts inside the bundle, not the bundle's own model number.";
 
 // ---------------------------------------------------------------- choices
 
@@ -90,7 +91,8 @@ export function notKnown(split: Decomposition | null): Decomposition {
  * What the owner's answer to a split question fixes: the split of the parts they chose or typed,
  * or NONE. An item with `answerParts` (every answer saved since typed parts exist) is decided by
  * them, when `answer` is them joined and they still pass the typed-parts rule (stored data is
- * untrusted: 1 to MAX_ENTERED_PARTS entries, each OFFERABLE_PART); the split is noted as chosen when
+ * untrusted: 1 to MAX_ENTERED_PARTS entries, each OFFERABLE_PART and none the bundle's own model
+ * number, Ruling 43); the split is noted as chosen when
  * they are one of the question's choices, as entered otherwise. An item without them, or with
  * parts that fail the rule, counts as before: only when its answer equals one of its choices.
  * Null when the owner has not answered: the item is missing or
@@ -102,7 +104,7 @@ export function ownerSplit(item: ReviewItem | undefined): Decomposition | typeof
   if (item.answer === NONE) return NONE;
   const choices = choicesOf(item);
   const parts = item.answerParts;
-  if (validParts(parts) && parts.join(',') === item.answer) {
+  if (validParts(parts) && !parts.some(isBundle(item)) && parts.join(',') === item.answer) {
     return chosenSplit(parts, choices.some((c) => c.join(',') === item.answer) ? CHOSEN_NOTE : ENTERED_NOTE);
   }
   const chosen = choices.find((c) => c.join(',') === item.answer);
@@ -117,15 +119,20 @@ function validParts(parts: unknown): parts is string[] {
   );
 }
 
+/** A part that is the bundle the question is about (its `model`): a bundle is never its own part (Ruling 43). */
+const isBundle = (item: ReviewItem) => (part: string): boolean => part === item.model.trim().toUpperCase();
+
 /**
- * The parts the owner typed, as model numbers: each trimmed and upper-cased, in the order typed.
- * A part typed twice is kept twice: a split lists a part once per unit, so it means two of it.
- * The entries must pass validParts; anything else is refused. Nothing is guessed from what was typed.
+ * The parts the owner typed for `item`, as model numbers: each trimmed and upper-cased, in the order
+ * typed. A part typed twice is kept twice: a split lists a part once per unit, so it means two of it.
+ * The entries must pass validParts, and none may be the bundle's own model number (Ruling 43);
+ * anything else is refused. Nothing is guessed from what was typed.
  */
-function enteredParts(raw: unknown): string[] {
+function enteredParts(raw: unknown, item: ReviewItem): string[] {
   if (!Array.isArray(raw) || !raw.every((p) => typeof p === 'string')) throw new AnswerRefused(INVALID_PARTS);
   const parts = raw.map((p: string) => p.trim().toUpperCase());
   if (!validParts(parts)) throw new AnswerRefused(INVALID_PARTS);
+  if (parts.some(isBundle(item))) throw new AnswerRefused(SELF_PART);
   return parts;
 }
 
@@ -161,8 +168,8 @@ function picked(a: Record<string, unknown>, count: number): number | typeof NONE
  * Refused with AnswerRefused, writing nothing, for an unknown id, an item already answered (by
  * the owner or by a scan), an answer whose `seen` is not the item's signature now (a scan changed
  * the question since it was shown; checked before the index or the parts), an answer that is not
- * one the item shows, typed parts for a match question, or typed parts that are not 1 to 8 model
- * numbers. The record the answer decides is written before the item, so a failure between the
+ * one the item shows, typed parts for a match question, typed parts that are not 1 to 8 model
+ * numbers, or typed parts that name the bundle itself. The record the answer decides is written before the item, so a failure between the
  * two leaves the question open to be answered again.
  */
 export async function applyReviewAnswer(store: ScanStore, id: string, answer: ReviewAnswer, now: number): Promise<void> {
@@ -180,7 +187,7 @@ export async function applyReviewAnswer(store: ScanStore, id: string, answer: Re
     if (typing) {
       // Typed parts and a choice or "none" at once is not an answer the panel sends.
       if ('choice' in given || 'none' in given) throw new AnswerRefused(NOT_SHOWN);
-      parts = enteredParts(given.parts);
+      parts = enteredParts(given.parts, item);
     } else {
       const pick = picked(given, choices.length);
       parts = pick === NONE ? null : [...choices[pick]!];

@@ -296,6 +296,7 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
   const ENTERED = 'parts entered by you';
   const INVALID = 'Enter model numbers like PCL500B, separated by commas.';
   const NOT_FOR_MATCH = 'Parts can be entered only for a question about what a bundle contains.';
+  const SELF = 'Enter the parts inside the bundle, not the bundle\'s own model number.';
   const typed = { components: ['PCL500B', 'PCL526B'], status: 'resolved', notes: [ENTERED] };
 
   /** PCL500525SB from the recorded search: its question offers no reading, only "None of these". */
@@ -392,6 +393,31 @@ describe('applyReviewAnswer: the owner types the parts of a split question (owne
     // Eight entries, one of them typed twice, is fine.
     await applyReviewAnswer(w.store, SB, { parts: [...nine.slice(0, 7), 'pcl500b'], seen }, T0 + MINUTE);
     expect((await w.store.getBundle(SB_KEY))!.split!.components).toEqual([...nine.slice(0, 7), 'PCL500B']);
+  });
+
+  it('refuses the bundle\'s own model number as one of its parts, and writes nothing (Ruling 43)', async () => {
+    const w = world();
+    const open = await special(w);
+    const seen = reviewSignature(open);
+    const before = await snapshot(w);
+    for (const parts of [['PCL500525SB'], [' pcl500525sb '], ['PCL500B', 'PCL500525SB']]) {
+      const refused = applyReviewAnswer(w.store, SB, { parts, seen }, T0 + MINUTE);
+      await expect(refused, JSON.stringify(parts)).rejects.toBeInstanceOf(AnswerRefused);
+      await expect(applyReviewAnswer(w.store, SB, { parts, seen }, T0 + MINUTE), JSON.stringify(parts)).rejects.toThrow(SELF);
+    }
+    expect(await snapshot(w)).toEqual(before);
+    expect((await w.store.getReview(SB))!.answer).toBeNull();
+  });
+
+  it('stored parts holding the bundle\'s own model number are ignored by later scans (Ruling 43)', async () => {
+    const w = world();
+    const open = await special(w);
+    const stored = { ...open, answer: 'PCL500525SB', answerParts: ['PCL500525SB'], answeredAt: T0 + MINUTE };
+    await w.store.putReview(stored);
+    w.clock = T0 + DAY;
+    await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect((await w.store.getBundle(SB_KEY))!.split).toMatchObject({ status: 'needs_review', notes: ['no known RYOBI bundle pattern'] });
+    expect(await w.store.getReview(SB)).toEqual(stored);
   });
 
   it('refuses an entry made on the question before a scan changed it', async () => {
