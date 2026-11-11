@@ -620,8 +620,10 @@ export async function applyLookup(ctx: PartContext, step: LookupStep, data: unkn
   job.counts.lookupsDone += 1;
   const candidates = parseAmazonSearch(data);
   await saveListings(ctx, candidates, at);
-  // A saved queue can outlive the plan: the user may have decided this part since.
-  if ((await store.getMatch(key))?.decidedBy === 'user') return;
+  // A saved queue can outlive the plan: the user may have decided this part since, or (fix round 3) a
+  // Verify sent it to review from the listing's page, which a search pick must not undo.
+  const existing = await store.getMatch(key);
+  if (existing?.decidedBy === 'user' || (await pageEvidence(store, existing)).page) return;
   const picked = pick(wantedFor(step.brand, step.model, ctx.catalog), candidates);
   const base = { key, brand: step.brand, model: step.model, decidedBy: 'auto' as const, updatedAt: now, waitingSince: null };
   let match: MatchRecord;
@@ -1155,6 +1157,25 @@ export function sharedMatch(
   return null;
 }
 
+/** The reason of the match question a Verify opens (paid.ts). Fix round 3 reads it to know a Verify's review. */
+export const NOT_CONFIRMED = "The listing's Amazon page does not confirm the part";
+
+/**
+ * Fix rounds 2 and 3: whether a record's result came from a listing's detail page, and the listings
+ * pages rejected for it. A record Verify wrote since fix round 2 says so (`source`, `rejectedAsins`).
+ * One written before it is read the same way, without being rewritten: an automatic review whose open
+ * match question has Verify's reason (NOT_CONFIRMED), and that question's listings as the rejected ones.
+ */
+export async function pageEvidence(store: ScanStore, rec: MatchRecord | undefined): Promise<{ page: boolean; rejected: string[] }> {
+  const rejected = rejectedOf(rec);
+  if (!rec) return { page: false, rejected };
+  if (rec.source === 'page') return { page: true, rejected };
+  if (rec.decidedBy !== 'auto' || rec.status !== 'review') return { page: false, rejected };
+  const q = await store.getReview(`match:${rec.key}`);
+  if (!q || q.answer !== null || q.reason !== NOT_CONFIRMED) return { page: false, rejected };
+  return { page: true, rejected: [...new Set([...rejected, ...q.candidates.map((c) => c.asin)])] };
+}
+
 /** The part's open match question is closed, as a scan closes a question the data settled. */
 async function closeQuestion(ctx: Pick<PartContext, 'store' | 'now'>, key: string): Promise<void> {
   const q = await ctx.store.getReview(`match:${key}`);
@@ -1178,10 +1199,16 @@ export async function matchFromListings(ctx: PartContext, listings: ListingRecor
   const { store, job } = ctx;
   const own = await store.getMatch(part.key);
   if (own?.decidedBy === 'user') return null;
-  if (own?.source === 'page' && own.status !== 'waiting') return null;
+  const mine = await pageEvidence(store, own);
+  if (mine.page && own!.status !== 'waiting') return null;
   const twins = new Map<string, MatchRecord | undefined>();
-  for (const key of twinKeys(part.brand, part.model)) twins.set(key, await store.getMatch(key));
-  const rejected = rejectedOf(own, ...twins.values());
+  const rejectedSet = new Set(mine.rejected);
+  for (const key of twinKeys(part.brand, part.model)) {
+    const twin = await store.getMatch(key);
+    twins.set(key, twin);
+    for (const a of (await pageEvidence(store, twin)).rejected) rejectedSet.add(a);
+  }
+  const rejected = [...rejectedSet];
   const keep = rejected.length > 0 ? { rejectedAsins: rejected } : {};
   // An automatic twin's match on a rejected listing does not stand for the part; the owner's choice does.
   const twinOf = (key: string): MatchRecord | undefined => {
@@ -1226,7 +1253,8 @@ export const pickFromListings = (part: Pick<Part, 'brand' | 'model'>, catalog: C
 export async function markWaiting(ctx: Pick<PartContext, 'store' | 'now'>, step: LookupStep): Promise<void> {
   const key = partKey(step.brand, step.model);
   const old = await ctx.store.getMatch(key);
-  if (old?.decidedBy === 'user') return;
+  // Fix round 3: nor a result a Verify wrote from the listing's page, whose evidence a waiting record would drop.
+  if (old?.decidedBy === 'user' || (await pageEvidence(ctx.store, old)).page) return;
   const now = ctx.now();
   await ctx.store.putMatch({
     key, brand: step.brand, model: step.model, status: 'waiting', asin: null, grade: null, alternatives: [],

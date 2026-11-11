@@ -647,6 +647,63 @@ describe('fix round 1, Important 1: a Verify writes its outcome to the twin that
     expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toEqual(none);
   });
 
+  /** As a Verify before fix round 2 left PCL515B and PCL515: the same records and question, without `source` or `rejectedAsins`. */
+  async function oldShapeVerify(w: World): Promise<void> {
+    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    for (const model of ['PCL515B', 'PCL515']) {
+      const { source: _s, rejectedAsins: _r, ...old } = (await w.store.getMatch(partKey('RYOBI', model)))!;
+      await w.store.putMatch(old);
+    }
+    expect(await w.store.getReview(`match:${partKey('RYOBI', 'PCL515B')}`)).toMatchObject({
+      answer: null, reason: "The listing's Amazon page does not confirm the part", candidates: [{ asin: 'B0B88R7HWB' }],
+    });
+  }
+
+  it('fix round 3: a Verify review stored before fix round 2 (no source, its NOT_CONFIRMED question open) is not undone by two scans', async () => {
+    const w = await answered();
+    await oldShapeVerify(w);
+    const id = `match:${partKey('RYOBI', 'PCL515B')}`;
+    const question = await w.store.getReview(id);
+    for (let i = 0; i < 2; i++) {
+      const s = await scan(w, 20, KITS);
+      expect(s.ran.filter((l) => l.includes('PCL515'))).toEqual([]);
+      for (const model of ['PCL515B', 'PCL515']) {
+        expect(await w.store.getMatch(partKey('RYOBI', model))).toMatchObject({ status: 'review', asin: null, decidedBy: 'auto' });
+      }
+      expect(await w.store.getReview(id)).toEqual(question);
+    }
+  });
+
+  /** Hand-made: a running job in the parts phase whose saved queue holds `step`, as a job interrupted before it ran. */
+  async function staleQueue(w: World, step: ScanStep): Promise<void> {
+    const last = (await w.store.listScans())[0]!;
+    await w.store.putScan({
+      ...last, id: 'stale', startedAt: T0 + 30 * MINUTE, finishedAt: null, status: 'running', stopReason: null, stopMessage: null,
+      phase: 'parts', queue: [step], deferred: [], searchesUsed: 0,
+    });
+    await runScan({ ...paid(w, { reserve: 0, maxPerRun: 5 }), store: w.store, settings: KITS, now: () => T0 + 31 * MINUTE });
+  }
+
+  it('fix round 3: a stale lookup step (hand-made) does not overwrite a page-written review with a search pick', async () => {
+    const w = await answered();
+    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    const before = await w.store.getMatch(partKey('RYOBI', 'PCL515'));
+    expect(before).toMatchObject({ status: 'review', source: 'page', rejectedAsins: ['B0B88R7HWB'] });
+    // The recorded PCL515 search holds B0B88R7HWB, which a search pick would choose.
+    await staleQueue(w, { kind: 'lookup', brand: 'RYOBI', model: 'PCL515' });
+    expect(w.ledger.at(-1)).toBe('scan:lookup:PCL515');
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toEqual(before);
+  });
+
+  it('fix round 3: a stale lookup step (hand-made) that fails does not mark a page-written review as waiting', async () => {
+    const w = await answered();
+    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    const before = await w.store.getMatch(partKey('RYOBI', 'PCL515B'));
+    // The replay has no PCL515B search: the lookup fails, and the step is set aside.
+    await staleQueue(w, { kind: 'lookup', brand: 'RYOBI', model: 'PCL515B' });
+    expect(await w.store.getMatch(partKey('RYOBI', 'PCL515B'))).toEqual(before);
+  });
+
   it('a Verify that finds the part number upgrades PCL515B to strong, and PCL515 with it', async () => {
     const w = await answered();
     await verifyRecipSaw(w, 'PCL515B', SAW, { manufacturer_part_number: 'PCL515B' });

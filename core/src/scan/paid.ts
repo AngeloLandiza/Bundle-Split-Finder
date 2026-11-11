@@ -10,7 +10,7 @@ import { parseAmazonProduct } from '../serpapi/parsers';
 import { wantedFor } from './classify';
 import {
   applyLookup, bundleParts, failingBefore, type KnownModels, knownModels, lookupOrder, type LookupStep, lookupWanted, markWaiting, matchFromListings,
-  openMatchReview, type Part, type PartContext, pickFromListings, savePrice, sendLookup, sharedMatch,
+  NOT_CONFIRMED, openMatchReview, pageEvidence, type Part, type PartContext, pickFromListings, savePrice, sendLookup, sharedMatch,
 } from './runner';
 import { writeTwins } from './twins';
 import { DEFAULT_SCAN_SETTINGS, partKey } from './types';
@@ -30,8 +30,6 @@ const NOT_THE_MATCH = "This listing is no longer the part's match.";
 const VERIFIED = 'This listing is already verified.';
 const PAGE_UNREADABLE = "Amazon's page for this listing could not be read.";
 const OTHER_LISTING = 'Amazon answered with a different listing.';
-/** The reason of the match question a Verify opens; a lookup's reasons are written the same way. */
-const NOT_CONFIRMED = "The listing's Amazon page does not confirm the part";
 /** Added to the grading's reasons when the page's title says non-retail packaging, which pick() never uses. */
 const BULK = 'the listing says non-retail packaging';
 
@@ -160,11 +158,14 @@ async function lookUp(
  * A part whose lookup failed in a press waits from now, so it ranks after the parts that waited
  * before it, in the next press and the next scan (lookupOrder; the scan sets aside its own failures
  * in `failingParts`, Rulings 50 and 57). Without this a lookup that keeps failing would come first on
- * every press and end it each time. Never a part the owner decided.
+ * every press and end it each time. Never a part the owner decided, nor one whose result came from a
+ * listing's page (pageEvidence).
  */
 async function waitsFromNow(ctx: PartContext, part: Part): Promise<void> {
   const match = await ctx.store.getMatch(part.key);
   if (!match || match.status !== 'waiting' || match.decidedBy === 'user') return;
+  // Q1a fix round 3: nor a result a Verify wrote from the listing's page, as markWaiting and applyLookup skip it.
+  if ((await pageEvidence(ctx.store, match)).page) return;
   const now = ctx.now();
   await ctx.store.putMatch({ ...match, waitingSince: now, updatedAt: now });
 }
