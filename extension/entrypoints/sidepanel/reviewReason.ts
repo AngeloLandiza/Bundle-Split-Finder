@@ -30,9 +30,19 @@ const RULES: Rule[] = [
   [/^page does not name (.+)$/, (m) => [words('The Home Depot page does not name '), ...models(m[1]!), words('.')]],
   [/^1 listing\(s\) show the model number, but the brand is not confirmed$/, plain('One listing shows this model number, but its brand is not confirmed.')],
   [/^(\d+) listing\(s\) show the model number, but the brand is not confirmed$/, (m) => [words(`${m[1]} listings show this model number, but their brand is not confirmed.`)]],
+  [/^title says Replacement or OEM, which often marks a spare part$/, plain("The listing's title says Replacement or OEM, which often means a spare part.")],
 ];
 
+/** A note may end with "(N more not shown)" when the owner was shown only the first few listings. */
+const MORE_NOT_SHOWN = /^(.*?)\s*\((\d+) more not shown\)$/;
+
 function sentence(note: string): ReasonPart[] {
+  const more = MORE_NOT_SHOWN.exec(note);
+  if (more) {
+    const n = Number(more[2]);
+    const tail = words(` ${n} more ${n === 1 ? 'listing is' : 'listings are'} not shown.`);
+    return more[1] === '' ? [tail] : [...sentence(more[1]!), tail];
+  }
   for (const [pattern, say] of RULES) {
     const m = pattern.exec(note);
     if (m) return say(m);

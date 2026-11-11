@@ -16,6 +16,9 @@ describe('reviewReason', () => {
     ['1 listing(s) show the model number, but the brand is not confirmed', 'One listing shows this model number, but its brand is not confirmed.'],
     ['3 listing(s) show the model number, but the brand is not confirmed', '3 listings show this model number, but their brand is not confirmed.'],
     ['page names no models', 'The Home Depot page names no parts.'],
+    ['title says Replacement or OEM, which often marks a spare part', "The listing's title says Replacement or OEM, which often means a spare part."],
+    ['1 listing(s) show the model number, but the brand is not confirmed (3 more not shown)', 'One listing shows this model number, but its brand is not confirmed. 3 more listings are not shown.'],
+    ['title says Replacement or OEM, which often marks a spare part (12 more not shown)', "The listing's title says Replacement or OEM, which often means a spare part. 12 more listings are not shown."],
     ['page does not name DCB606', 'The Home Depot page does not name DCB606.'],
   ];
   it.each(cases)('%s', (note, plain) => {
