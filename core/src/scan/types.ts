@@ -23,6 +23,8 @@ export interface SearchClient {
 export interface BudgetView {
   /** Paid searches that may still happen right now. */
   readonly spendable: number;
+  /** Searches this run's own limit still allows (before any spend, the per-scan limit itself). */
+  readonly leftThisRun: number;
   /** The limit that refuses `n` more searches, or null when they fit. */
   blockReason(n?: number): BlockReason | null;
 }

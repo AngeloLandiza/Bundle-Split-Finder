@@ -1047,7 +1047,8 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
   /** The PBLRC01B title match a Look up makes (B0B6Z2ZGVK); its detail page is recorded. */
   const VERIFY_01B: PaidAction = { kind: 'verify', brand: 'RYOBI', model: 'PBLRC01B', asin: 'B0B6Z2ZGVK' };
   const PRODUCT_25B = 'amazon_domain=amazon.com&asin=B0B3JWF5ZV&engine=amazon_product';
-  const RUN_CAP = 'Stopped: this run reached its search limit.';
+  /** Ruling 53: the settings allow one search per scan, and the Look up needs two. */
+  const RUN_CAP = 'This needs 2 searches, and a scan may use 1. Raise the searches per scan in settings to do it here.';
   const HOURLY = "Stopped: the plan's hourly search limit is reached. Try again next hour.";
   const SCANNING = 'A scan is running.';
   const PAYING = 'A Look up or Verify is running.';

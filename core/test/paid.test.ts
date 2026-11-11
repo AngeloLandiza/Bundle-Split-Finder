@@ -32,7 +32,8 @@ const LOOK_25B: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 
 const LOOK_BOTH: PaidAction = { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC01B' }, { brand: 'RYOBI', model: 'PBLRC25B' }] };
 const VERIFY_25B: PaidAction = { kind: 'verify', brand: 'RYOBI', model: 'PBLRC25B', asin: 'B0B3JWF5ZV' };
 
-const RUN_CAP = 'Stopped: this run reached its search limit.';
+/** Ruling 53: a paid action that needs more searches than a scan may use says so, and what to do. */
+const RUN_CAP = 'This needs 2 searches, and a scan may use 1. Raise the searches per scan in settings to do it here.';
 const RESERVE = 'Stopped: spending more would dip into the search reserve.';
 const HOURLY = "Stopped: the plan's hourly search limit is reached. Try again next hour.";
 
@@ -379,6 +380,14 @@ describe('quotePaid and runPaid: the manual-trigger budget', () => {
     const closed = account({ total_searches_left: 0 });
     expect(await quote(w, VERIFY_25B, MANUAL, closed)).toEqual({ searches: 1, refusal: RESERVE });
     await expect(paid(w, VERIFY_25B, MANUAL, closed)).rejects.toThrow(new PaidProblem(RESERVE));
+    expect(w.replay.calls).not.toContain(PRODUCT_25B);
+  });
+
+  it('a Verify above a per-scan limit of 0 says it needs 1 search, in the singular (Ruling 53)', async () => {
+    const w = await bothMatched();
+    const sentence = 'This needs 1 search, and a scan may use 0. Raise the searches per scan in settings to do it here.';
+    expect(await quote(w, VERIFY_25B, { reserve: 0, maxPerRun: 0 }, account())).toEqual({ searches: 1, refusal: sentence });
+    await expect(paid(w, VERIFY_25B, { reserve: 0, maxPerRun: 0 }, account())).rejects.toThrow(new PaidProblem(sentence));
     expect(w.replay.calls).not.toContain(PRODUCT_25B);
   });
 

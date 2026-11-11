@@ -211,10 +211,18 @@ function verifyRefusal(match: MatchRecord | undefined, asin: string): string | n
   return null;
 }
 
-/** The budget's own sentence when `searches` do not fit; null when they do, and always for nothing. */
+/**
+ * Why `searches` do not fit, or null when they do, and always for nothing. More than the per-scan
+ * limit allows says what the action needs and what to change (Ruling 53): nothing has stopped, so
+ * the scan's own "Stopped: this run reached its search limit." would be untrue. The reserve and the
+ * hourly limit keep the budget's own sentences.
+ */
 function overBudget(budget: BudgetView, searches: number): string | null {
   if (searches === 0) return null;
   const reason = budget.blockReason(searches);
+  if (reason === 'run_cap') {
+    return `This needs ${searches} ${searches === 1 ? 'search' : 'searches'}, and a scan may use ${budget.leftThisRun}. Raise the searches per scan in settings to do it here.`;
+  }
   return reason === null ? null : BLOCK_MESSAGE[reason];
 }
 

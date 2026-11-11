@@ -134,7 +134,7 @@ describe('npm run scan', () => {
     const release = vi.fn();
     deps.openClient = (async () => ({
       client: { search: () => Promise.reject(new Error('boom')) },
-      budget: { spendable: 5, blockReason: () => null },
+      budget: { spendable: 5, leftThisRun: 5, blockReason: () => null },
       account: {},
       allowance: 5,
       release,
