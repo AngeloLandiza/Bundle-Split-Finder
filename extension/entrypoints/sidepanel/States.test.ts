@@ -170,7 +170,7 @@ describe('FirstRun', () => {
     expect(screen.getByText('Starts with RYOBI, scanning only when you click.')).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
     expect(
-      screen.getByText('Searches go to Home Depot and Amazon listing pages and to part lookups. Each bundle\'s own page is read in your browser, free.'),
+      screen.getByText('Searches find bundles on Home Depot and parts on Amazon. Each bundle\'s own page is read in your browser, free.'),
     ).toBeInTheDocument();
     expect(screen.queryByText(/reads the page you are on/)).toBeNull();
   });

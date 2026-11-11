@@ -70,7 +70,7 @@ export function FirstRun({ state, openSettings }: { state: AppState; api: Worker
           <path d="M8 7.25v3.5M8 5.1v.1" />
         </svg>
         <span>
-          Searches go to Home Depot and Amazon listing pages and to part lookups. Each bundle's own page is read in your browser, free.
+          Searches find bundles on Home Depot and parts on Amazon. Each bundle's own page is read in your browser, free.
         </span>
       </p>
     </div>

@@ -491,3 +491,13 @@
     transition: none;
   }
 }
+
+/* The Change beside an answer reads as the mockup link: link colour, weight 500. */
+.detail-answer .detail-text-btn,
+.detail-noestimate .detail-text-btn {
+  color: var(--link);
+}
+.detail-answer .detail-text-btn:disabled,
+.detail-noestimate .detail-text-btn:disabled {
+  color: var(--ink-3);
+}
