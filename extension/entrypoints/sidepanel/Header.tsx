@@ -21,11 +21,11 @@ export function Header({ scanRunning, noKey, scanBlockedTitle, onScan, onStop, o
       </div>
       <div className="header-actions">
         {scanRunning ? (
-          <button type="button" className="btn btn-secondary" onClick={onStop}>
+          <button type="button" id="scan-control" className="btn btn-secondary" onClick={onStop}>
             Stop
           </button>
         ) : (
-          <button type="button" className="btn btn-primary" disabled={noKey || scanBlockedTitle !== undefined} title={scanBlockedTitle} onClick={onScan}>
+          <button type="button" id="scan-control" className="btn btn-primary" disabled={noKey || scanBlockedTitle !== undefined} title={scanBlockedTitle} onClick={onScan}>
             Scan now
           </button>
         )}

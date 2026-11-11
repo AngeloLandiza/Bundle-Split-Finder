@@ -111,7 +111,6 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
         onStop={send('stopScan')}
         onSettings={openSettings}
       />
-      <Notice state={state} api={api} error={scanError ?? reportError} />
       <Tabs
         active={tab}
         dealCount={report?.bundles.length ?? 0}
@@ -119,6 +118,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
         onChange={setTab}
       />
       {state.scanRunning ? <ProgressRow job={state.lastJob} /> : null}
+      <Notice state={state} api={api} error={scanError ?? reportError} />
       <main className="panel-body">
         {tab === 'deals' ? (
           <DealsTab api={api} report={report} state={state} sort={sort} onSort={setSort} onOpen={setOpenKey} />

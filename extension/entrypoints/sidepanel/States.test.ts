@@ -79,16 +79,34 @@ describe('fix round: Notice', () => {
     const retry = screen.getByRole('button', { name: /^Retry/ });
     expect(retry).toBeDisabled();
     expect(retry).toHaveAttribute('title', expect.stringMatching(/^The hourly search limit is reached\. Try again after/));
+    // The reason is on screen as text, not only in the title.
+    expect(screen.getByText(/^The hourly search limit is reached\. Try again after/)).toBeInTheDocument();
   });
 
-  it('moves focus to the sentence when Retry goes away because a scan started', async () => {
+  it('moves focus to the scan control when the scan starts and the whole notice unmounts', async () => {
     const api = makeApi();
     const s = state({ problem: 'Bad.' });
-    const view = render(createElement(Notice, { state: s, api: api.api, error: null }));
+    const tree = (st: AppState) => createElement('div', null, createElement('button', { id: 'scan-control' }, 'Scan now'), createElement(Notice, { state: st, api: api.api, error: null }));
+    const view = render(tree(s));
     await userEvent.setup().click(screen.getByRole('button', { name: /^Retry/ }));
     await vi.waitFor(() => expect(api.send).toHaveBeenCalled());
-    view.rerender(createElement(Notice, { state: { ...s, scanRunning: true }, api: api.api, error: null }));
-    expect(screen.getByRole('alert')).toHaveFocus();
+    view.rerender(tree({ ...s, problem: null, scanRunning: true }));
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Scan now' })).toHaveFocus();
+  });
+
+  it('keeps focus where it is when a scan starts that Retry did not start', () => {
+    const api = makeApi();
+    const s = state({ problem: 'Bad.' });
+    const tree = (st: AppState) => createElement('div', null, createElement('button', { id: 'scan-control' }, 'Scan now'), createElement(Notice, { state: st, api: api.api, error: null }));
+    const view = render(tree(s));
+    view.rerender(tree({ ...s, scanRunning: true }));
+    expect(screen.getByRole('button', { name: 'Scan now' })).not.toHaveFocus();
+  });
+
+  it('puts the cost in its own span', () => {
+    render(createElement(Notice, { state: state({ problem: 'Bad.' }), api: makeApi().api, error: null }));
+    expect(screen.getByText('up to 5 searches')).toHaveClass('notice-cost');
   });
 });
 
@@ -191,7 +209,7 @@ describe('Notice', () => {
     let answer!: (r: Reply) => void;
     const pending = new Promise<Reply>((ok) => (answer = ok));
     const { send } = show(state({ problem: 'Bad.', settings: { ...DEFAULT_SETTINGS, searchesPerScan: 8 } }), null, makeApi(pending));
-    const retry = screen.getByRole('button', { name: 'Retry · up to 8 searches' });
+    const retry = screen.getByRole('button', { name: 'Retry up to 8 searches' });
     const user = userEvent.setup();
     await user.click(retry);
     expect(retry).toBeDisabled();
@@ -204,7 +222,7 @@ describe('Notice', () => {
 
   it('says one search in the singular', () => {
     show(state({ problem: 'Bad.', settings: { ...DEFAULT_SETTINGS, searchesPerScan: 1 } }));
-    expect(screen.getByRole('button', { name: 'Retry · up to 1 search' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry up to 1 search' })).toBeInTheDocument();
   });
 
   it('shows a refused retry in place of the old sentence', async () => {

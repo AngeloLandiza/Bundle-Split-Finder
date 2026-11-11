@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { NETWORK_ERROR_PREFIX } from '../../../core/src/serpapi/client';
+import { NETWORK_ERROR_PREFIX } from '@core/serpapi/client';
 import type { AppState } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { hourlyBlockTitle } from './hourlyBlock';
@@ -27,7 +27,6 @@ const stateKey = (s: AppState) => `${s.scanRunning}|${s.problem ?? ''}|${s.lastJ
 export function Notice({ state, api, error, now = Date.now }: { state: AppState; api: WorkerApi; error: string | null; now?: () => number }) {
   const [busy, setBusy] = useState(false);
   const [refused, setRefused] = useState<{ text: string; key: string } | null>(null);
-  const textRef = useRef<HTMLParagraphElement>(null);
   const clicked = useRef(false);
 
   const key = stateKey(state);
@@ -38,23 +37,27 @@ export function Notice({ state, api, error, now = Date.now }: { state: AppState;
   const canRetry = state.hasKey && !state.scanRunning;
   const blocked = hourlyBlockTitle(state, now());
 
-  // The button unmounts when its scan starts; keyboard focus goes to the sentence rather than to nowhere.
+  // Retry unmounts when its scan starts, and the notice may go with it. Focus moves to the header's scan
+  // control, which stays and now reads Stop.
+  const running = state.scanRunning;
   useEffect(() => {
-    if (!canRetry && clicked.current) {
+    if (running && clicked.current) {
       clicked.current = false;
-      textRef.current?.focus();
+      document.getElementById('scan-control')?.focus();
     }
-  }, [canRetry]);
+  }, [running]);
 
   if (sentence === null) return null;
 
   const retry = () => {
     if (busy) return;
     setBusy(true);
+    clicked.current = true;
     api
       .send({ type: 'scanNow' })
       .then((reply) => {
-        clicked.current = reply.ok;
+        // The scan may start before this reply is handled; the flag was already consumed then.
+        if (!reply.ok) clicked.current = false;
         setRefused(reply.ok ? null : { text: reply.error, key });
       })
       .catch(() => {
@@ -66,12 +69,13 @@ export function Notice({ state, api, error, now = Date.now }: { state: AppState;
 
   return (
     <section className="notice" aria-label="Problem">
-      <p className="notice-text" role="alert" tabIndex={-1} ref={textRef}>
+      <p className="notice-text" role="alert">
         {sentence}
       </p>
+      {canRetry && blocked !== undefined ? <p className="notice-text">{blocked}</p> : null}
       {canRetry ? (
-        <button type="button" className="btn btn-secondary" disabled={busy || blocked !== undefined} title={blocked} onClick={retry}>
-          Retry · up to {n} {n === 1 ? 'search' : 'searches'}
+        <button type="button" className="btn btn-secondary notice-retry" disabled={busy || blocked !== undefined} title={blocked} onClick={retry}>
+          Retry <span className="notice-cost">up to {n} {n === 1 ? 'search' : 'searches'}</span>
         </button>
       ) : null}
     </section>

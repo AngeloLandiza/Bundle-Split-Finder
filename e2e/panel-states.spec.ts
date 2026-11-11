@@ -35,6 +35,6 @@ test('side panel, a failed scan shows its sentence and Retry with its cost', asy
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   const notice = panel.getByRole('region', { name: 'Problem' });
   await expect(notice).toBeVisible();
-  await expect(notice.getByRole('button', { name: 'Retry · up to 5 searches' })).toBeEnabled();
+  await expect(notice.getByRole('button', { name: 'Retry up to 5 searches' })).toBeEnabled();
   await shoot(panel, 'error');
 });
