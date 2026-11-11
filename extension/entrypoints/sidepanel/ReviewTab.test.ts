@@ -156,13 +156,13 @@ describe('ReviewTab: a split question', () => {
     expect(save()).toBeEnabled();
     await user.click(save());
     expect(send).toHaveBeenCalledWith({ type: 'answerReview', id: 'split:a', answer: { choice: 1, seen: reviewSignature(SPLIT) } });
-    // The next question is shown before the report reloads, and the count keeps its place.
-    expect(await screen.findByText('2 of 2')).toBeInTheDocument();
+    // The next question is shown before the report reloads, and the count falls with the badge.
+    expect(await screen.findByText('1 of 1')).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Which Amazon listing is DEWALT DCF891B?' })).toBeInTheDocument();
     expect(save()).toBeDisabled();
-    // The reload drops the answered item: still on the second question, still "2 of 2".
+    // The reload drops the answered item: still on the second question, still "1 of 1".
     again(reportOf([MATCH]));
-    expect(screen.getByText('2 of 2')).toBeInTheDocument();
+    expect(screen.getByText('1 of 1')).toBeInTheDocument();
   });
 
   it('shows a question again when a later scan reopens it with other choices, and not when it is unchanged', async () => {
@@ -351,7 +351,7 @@ describe('ReviewTab: a report built on the replayed recordings', () => {
     await waitFor(() =>
       expect(send).toHaveBeenCalledWith({ type: 'answerReview', id: first.id, answer: { none: true, seen: reviewSignature(first) } }),
     );
-    expect(await screen.findByText(`2 of ${report.review.length}`)).toBeInTheDocument();
+    expect(await screen.findByText(`1 of ${report.review.length - 1}`)).toBeInTheDocument();
   });
 });
 
@@ -370,7 +370,7 @@ describe('ReviewTab: Skip for now and what None of these does', () => {
     expect(screen.getByText('2 of 2')).toBeInTheDocument();
   });
 
-  it('counts three questions through skip, skip, skip, answer', async () => {
+  it('counts three questions through skip, skip, skip, answer: M is the badge, N the place in the round', async () => {
     const user = userEvent.setup();
     const third = item({ id: 'split:c', model: 'DCK999', openedAt: 3, reason: 'Third.', choices: [['DCF891B']] });
     setup(reportOf([SPLIT, MATCH, third]));
@@ -380,27 +380,36 @@ describe('ReviewTab: Skip for now and what None of these does', () => {
     await user.click(skipForNow());
     expect(screen.getByText('3 of 3')).toBeInTheDocument();
     await user.click(skipForNow());
-    // Every question has been put off: back to the first one put off, and its number with it.
+    // Every question has been put off: the round starts again at the first one put off.
     expect(legend(SPLIT_Q)).toBeInTheDocument();
     expect(screen.getByText('1 of 3')).toBeInTheDocument();
     await user.click(screen.getAllByRole('radio')[0]!);
     await user.click(save());
-    expect(await screen.findByText('2 of 3')).toBeInTheDocument();
+    expect(await screen.findByText('1 of 2')).toBeInTheDocument();
   });
 
-  it('counts skip, skip, answer as 2 of 3, then skip as 3 of 3 and skip as 2 of 3', async () => {
+  it('counts skip, skip, answer as 1 of 3, 2 of 3, 3 of 3, then 1 of 2, and a skip as 2 of 2', async () => {
     const user = userEvent.setup();
     const third = item({ id: 'split:c', model: 'DCK999', openedAt: 3, reason: 'Third.', choices: [['DCF891B']] });
     setup(reportOf([SPLIT, MATCH, third]));
+    const shown = () => screen.getByText(/^\d+ of \d+$/).textContent!;
+    const seen: string[] = [shown()];
     await user.click(skipForNow());
+    seen.push(shown());
     await user.click(skipForNow());
+    seen.push(shown());
     await user.click(screen.getAllByRole('radio')[0]!);
     await user.click(save());
-    expect(await screen.findByText('2 of 3')).toBeInTheDocument();
+    await screen.findByText('1 of 2');
+    seen.push(shown());
     await user.click(skipForNow());
-    expect(screen.getByText('3 of 3')).toBeInTheDocument();
-    await user.click(skipForNow());
-    expect(screen.getByText('2 of 3')).toBeInTheDocument();
+    seen.push(shown());
+    expect(seen).toEqual(['1 of 3', '2 of 3', '3 of 3', '1 of 2', '2 of 2']);
+    // N never exceeds M.
+    for (const c of seen) {
+      const [n, m] = c.split(' of ').map(Number);
+      expect(n!).toBeLessThanOrEqual(m!);
+    }
   });
 
   it('brings a skipped question back after the others, and again when only skipped ones remain', async () => {

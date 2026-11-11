@@ -50,7 +50,8 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
       </p>
     );
   }
-  const total = done.size + open.length;
+  // The badge's number: every question still open.
+  const total = open.length;
   // Questions already passed over in this round come before the one shown; at the start of a new round, none.
   const ahead = pass.includes(keyOf(item)) ? 0 : open.filter((r) => r !== item && pass.includes(keyOf(r))).length;
 
@@ -79,7 +80,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   return (
     <section className="review" aria-label="Review">
       <p className="review-count figure" aria-live="polite">
-        {done.size + ahead + 1} of {total}
+        {ahead + 1} of {total}
       </p>
       <ReviewQuestion
         key={keyOf(item)}
