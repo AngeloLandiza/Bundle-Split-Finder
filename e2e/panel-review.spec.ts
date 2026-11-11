@@ -13,9 +13,22 @@ async function shoot(panel: Page, name: string): Promise<void> {
   }
 }
 
+const lastJobId = async (page: Page): Promise<string | null> => (await getState(page)).data.lastJob?.id ?? null;
+
+/** Waits for a scan that is over and is a new one: the last job's id has changed, so a scan that never started cannot pass. */
+async function scanDone(page: Page, was: string | null): Promise<void> {
+  await expect
+    .poll(async () => {
+      const { scanRunning, lastJob } = (await getState(page)).data;
+      return !scanRunning && lastJob?.id !== undefined && lastJob.id !== was;
+    }, { timeout: 60_000, intervals: [100] })
+    .toBe(true);
+}
+
 async function scanAndWait(page: Page): Promise<void> {
+  const was = await lastJobId(page);
   await page.evaluate(() => chrome.runtime.sendMessage({ type: 'scanNow' }));
-  await expect.poll(async () => (await getState(page)).data.scanRunning, { timeout: 60_000, intervals: [250] }).toBe(false);
+  await scanDone(page, was);
 }
 
 test('review tab, empty before any scan', async ({ context, extensionId, options }) => {
@@ -74,8 +87,9 @@ test('review tab, an answered question does not come back after the next scan', 
   await panel.getByRole('button', { name: 'Save answer' }).click();
   await expect(panel.getByText(`2 of ${before.length}`)).toBeVisible();
 
+  const was = await lastJobId(options);
   await panel.getByRole('button', { name: 'Scan now' }).click();
-  await expect.poll(async () => (await getState(options)).data.scanRunning, { timeout: 60_000, intervals: [100] }).toBe(false);
+  await scanDone(options, was);
   const after = await reviewRows(options);
   expect(after.map((r) => r.id)).not.toContain(before[0]!.id);
   // The scan may also close questions of its own, so the count drops by at least the one answered.
@@ -127,4 +141,28 @@ test('review tab, a split question with two real choices', async ({ context, ext
   await expect(panel.getByRole('radio', { name: 'DCK200D1P1 + DCB606' })).toBeVisible();
   await panel.getByRole('radio', { name: 'DCK200D1P1 + DCF921B' }).check();
   await shoot(panel, 'choices');
+});
+
+test('review tab, a scan is running: Save answer is disabled and says why', async ({ context, extensionId, options, server }) => {
+  await saveKey(options, 'TEST');
+  await expect(options.getByTestId('key-result')).toContainText('Key works.');
+  server.refuse('*');
+  await scanAndWait(options);
+
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await panel.getByRole('button', { name: /^Review/ }).click();
+  await panel.getByRole('radio', { name: 'None of these' }).check();
+  await expect(panel.getByRole('button', { name: 'Save answer' })).toBeEnabled();
+
+  // Each search waits, so the scan is still running when the panel is photographed.
+  server.delaySearches(20_000);
+  await options.evaluate(() => chrome.runtime.sendMessage({ type: 'scanNow' }));
+  await expect(panel.getByRole('button', { name: 'Stop' })).toBeVisible();
+  await expect(panel.getByText('A scan is running. Answer when it has finished.')).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Save answer' })).toBeDisabled();
+  await shoot(panel, 'scanning');
+
+  await panel.getByRole('button', { name: 'Stop' }).click();
+  server.delaySearches(0);
 });
