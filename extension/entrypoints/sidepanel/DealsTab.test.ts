@@ -586,6 +586,14 @@ describe('empty states', () => {
     show(report([]), state({ lastJob: null }));
     expect(screen.getByText("No scan yet. Scan now looks at Home Depot's DEWALT and RYOBI bundles.")).toBeInTheDocument();
   });
+  it('says the first scan is running while it runs and none has finished', () => {
+    show(report([]), state({ scanRunning: true, lastJob: null }));
+    expect(screen.getByText('The first scan is running.')).toBeInTheDocument();
+    cleanup();
+    show(report([]), state({ scanRunning: true, lastJob: job({ status: 'running', finishedAt: null }) }));
+    expect(screen.getByText('The first scan is running.')).toBeInTheDocument();
+    expect(screen.queryByText(/No scan yet/)).toBeNull();
+  });
   it('says the last scan found no bundles only when it finished', () => {
     show(report([]));
     expect(screen.getByText('The last scan found no bundles.')).toBeInTheDocument();

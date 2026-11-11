@@ -118,7 +118,9 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
     // Say only what the scan established: it found nothing only when it finished.
     const text =
       job === null || job.status === 'running'
-        ? "No scan yet. Scan now looks at Home Depot's DEWALT and RYOBI bundles."
+        ? state.scanRunning
+          ? 'The first scan is running.'
+          : "No scan yet. Scan now looks at Home Depot's DEWALT and RYOBI bundles."
         : job.status === 'done'
           ? 'The last scan found no bundles.'
           : // A limit has its own notice, and an error its sentence in the Notice above the tabs.
