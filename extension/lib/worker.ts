@@ -667,8 +667,8 @@ export function createWorker(env: WorkerEnv): Worker {
       try {
         account = await accountOf(key);
       } catch (err) {
-        problem = accountSentence(err);
-        return refuse(problem);
+        // The caller's sentence only: `problem` is a scan's, and the Notice would offer a scan's Retry for it.
+        return refuse(accountSentence(err));
       }
       // Asked again before anything is saved or sent, so a forgetKey sent during the check is not lost.
       const moved = await keyMoved(key);

@@ -1375,6 +1375,20 @@ describe('worker: Verify and Look up from the panel (quote, runPaid)', () => {
     expect(w.prefs.data.account ?? null).toBeNull();
   });
 
+  it('a failed account check before a paid action is said to the caller only, not as the scan\'s problem', async () => {
+    const w = await waitingWorld();
+    w.accountApi = () => new Response('{}', { status: 503 });
+    expect(await runPaid(w, LOOK_01B)).toEqual({ ok: false, error: 'SerpApi account check failed (HTTP 503).' });
+    expect((await state(w)).problem).toBeNull();
+    expect(w.broadcasts.at(-1)!.problem).toBeNull();
+    w.accountApi = () => {
+      throw new TypeError('Failed to fetch');
+    };
+    expect(await runPaid(w, LOOK_01B)).toEqual({ ok: false, error: expect.stringMatching(new RegExp(`^${NETWORK_ERROR_PREFIX}: `)) });
+    expect((await state(w)).problem).toBeNull();
+    expect(w.replay.calls).toEqual([RATCHET]);
+  });
+
   it('without a key both say so, and a request that is not a paid action is refused', async () => {
     const w = await waitingWorld();
     await send(w, { type: 'forgetKey' });
