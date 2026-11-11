@@ -1,3 +1,4 @@
+import type { Schedule } from '../../../core/src/schedule';
 import type { AppState } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import './FirstRun.css';
@@ -9,11 +10,20 @@ function list(names: string[]): string {
   return names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
+function schedulePhrase(s: Schedule): string {
+  if (s.mode === 'manual') return 'scanning only when you click';
+  if (s.mode === 'interval') return `scanning every ${s.hours} ${s.hours === 1 ? 'hour' : 'hours'}`;
+  return `scanning daily at ${s.at}`;
+}
+
 /** The first-run body, shown before a key is saved. Nothing here can spend a search; the shell draws the header. */
 export function FirstRun({ state, openSettings }: { state: AppState; api: WorkerApi; openSettings: () => void }) {
   const brands = list(state.settings.brands);
   const later: { title: string; text: string }[] = [
-    { title: 'Choose brands and how often to scan', text: `Starts with ${brands}, scanning only when you click.` },
+    {
+      title: 'Choose brands and how often to scan',
+      text: brands === '' ? 'Starts with no brands yet.' : `Starts with ${brands}, ${schedulePhrase(state.settings.schedule)}.`,
+    },
     { title: 'Run your first scan', text: 'A scan never spends more searches than the limit you set.' },
   ];
   return (
@@ -21,12 +31,11 @@ export function FirstRun({ state, openSettings }: { state: AppState; api: Worker
       <div className="firstrun-intro">
         <h1 className="firstrun-title">Find bundles worth splitting</h1>
         <p className="firstrun-lead">
-          Split Finder checks Home Depot for {brands} bundles, matches each part to its Amazon listing, and ranks the bundles by estimated
-          profit.
+          {`Split Finder checks Home Depot for ${brands === '' ? '' : `${brands} `}bundles, matches each part to its Amazon listing, and ranks the bundles by estimated profit.`}
         </p>
       </div>
       <ol className="firstrun-steps">
-        <li className="firstrun-step">
+        <li className="firstrun-step" aria-current="step">
           <span className="firstrun-num" data-current="true">1</span>
           <div className="firstrun-step-body">
             <div>
