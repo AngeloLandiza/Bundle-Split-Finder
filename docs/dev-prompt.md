@@ -66,7 +66,7 @@ The development key is SerpApi's free plan: **250 searches a month, 50 an hour**
 successful searches count; cached, failed and errored ones are free; the Account API is free.
 
 - Run `npm run budget` at the start of every session and report the numbers to me.
-- The month's plan: 15 to record fixtures, 50 for the validation set, 15 for live tests,
+- The month's plan: 23 to record fixtures, 42 for the validation set (8 moved by the owner on Nov 11), 15 for live tests,
   50 for one real demo run, 100 never touched. The caps are enforced in code
   (`scripts/dev-budget.ts`, `scripts/dev-client.ts`); do not change them without asking.
 - Record each response once (`npm run fixtures:record`), then develop against the files.

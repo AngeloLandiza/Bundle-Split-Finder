@@ -11,10 +11,10 @@ export const DEV_RESERVE = 100;
 
 /** The most each kind of development work may spend in a month. Ledger labels start with these names. */
 export const DEV_ALLOCATION = {
-  /** Record real SerpApi responses once, then replay them forever. */
-  fixtures: 15,
-  /** Amazon lookups for the ~30-bundle validation set. Cached, so paid once. Sized to fit one hour. */
-  validation: 50,
+  /** Record real SerpApi responses once, then replay them forever. 15 + 8 moved from validation (owner, Nov 11: step 6's kit recordings). */
+  fixtures: 23,
+  /** Amazon lookups for the ~30-bundle validation set. Cached, so paid once. Sized to fit one hour. 50 - 8 moved to fixtures (owner, Nov 11). */
+  validation: 42,
   /** Opt-in live smoke tests. Each run spends at most 3. */
   live: 15,
   /** One real "run through what's available today" for the founder. */

@@ -33,7 +33,7 @@ describe('replayRecorded', () => {
 
   it('replays every recorded request', async () => {
     const replay = replayRecorded();
-    const budget = new SearchBudget(account(), { reserve: 0, maxPerRun: 20 });
+    const budget = new SearchBudget(account(), { reserve: 0, maxPerRun: REQUESTS.length });
     const client = new SerpApiClient({ apiKey: 'TEST', budget, fetchFn: replay.fetchFn });
     for (const req of REQUESTS) {
       const { data } = await client.search(req.params);

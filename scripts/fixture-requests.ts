@@ -26,4 +26,10 @@ export const REQUESTS: FixtureRequest[] = [
   { name: 'amazon-brand-dewalt-p1', params: { engine: 'amazon', k: 'DEWALT', rh: 'p_123:195991', amazon_domain: 'amazon.com' } },
   // A kit that is a part of a bundle: the lookup the scan sends for it.
   { name: 'amazon-search-PCL1201K2', params: { engine: 'amazon', k: 'RYOBI PCL1201K2', amazon_domain: 'amazon.com' } },
+  // Step 6: the kit PCL1600K2 and the miter saw of bundle PCL1600K2-P553 (item 320243741), and the items its
+  // own Home Depot page (item 317987591) lists. PBP005 is already in amazon-brand-ryobi-p1. Owner, Nov 11.
+  ...['PCL1600K2', 'P553', 'PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL430', 'PCL660', 'PBP002'].map((model) => ({
+    name: `amazon-search-${model}`,
+    params: { engine: 'amazon', k: `RYOBI ${model}`, amazon_domain: 'amazon.com' } as Params,
+  })),
 ];

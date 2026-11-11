@@ -43,8 +43,8 @@ Only a successful response is charged, matching how SerpApi counts.
 
 | Bucket | Cap | What it pays for |
 | --- | --- | --- |
-| `fixtures` | 15 | Record each request in `scripts/record-fixtures.ts` once |
-| `validation` | 50 | Amazon lookups for the ~30-bundle validation set, cached on disk |
+| `fixtures` | 23 | Record each request in `scripts/record-fixtures.ts` once (15, plus 8 moved from validation by the owner on Nov 11 for step 6's kit recordings) |
+| `validation` | 42 | Amazon lookups for the ~30-bundle validation set, cached on disk (50, less the 8 moved to fixtures) |
 | `live` | 15 | `npm run test:live`, at most 2 a run |
 | `demo` | 50 | One real run over today's Home Depot listings for the founder |
 | reserve | 100 | Never spent in development |
