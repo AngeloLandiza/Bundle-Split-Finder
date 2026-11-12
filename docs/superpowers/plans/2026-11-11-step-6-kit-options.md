@@ -300,5 +300,63 @@ Runs in parallel with Task 3, in its own worktree, once Task 2 is merged.
 - **One Amazon listing that holds several separate parts of a bundle** (the PO's two-batteries example). In the recordings, Amazon titles that name several model numbers are almost all third-party "replaces / compatible with" listings. Reading coverage from a title would be a guess, and confirming a listing's contents takes its detail page, 1 search each. A whole kit sold as one listing is covered by this step.
 - **Lowe's.** SerpApi has no Lowe's search. It needs its own page reader in the owner's browser, like Home Depot's.
 
-## Where this stands
-Not started. The plan was written on Nov 11, 2026, after step 5 merged (main at bfcf676).
+## Where this stands (step 6 complete after two QA walkthroughs, 2026-11-12)
+
+Branch `step-6-kit-options`, not merged. The controller ran the gate on bc2d594 plus docs:
+- typecheck clean
+- 694 core and 521 extension tests
+- 36 end-to-end tests
+
+Searches: 9 spent, for the Task 0 recordings, which the owner approved. That is 23 of 250 this month. The fixtures bucket went to 23 by moving 8 from validation, on the owner's choice.
+
+**Built:**
+- **Task 1.** A kit's own Includes list is parsed: quantities, items with no model, manuals dropped.
+- **Task 2.** Ways to sell per bundle (whole or split), each with its estimate and leftovers. A primary option sets the row.
+- **Task 2b.** Spare parts no longer match as tools.
+- **Task 3.** Kit parts are looked up last, only when the kit has no active listing and no open question.
+- **Task 3b.** A real scan reads a plain kit's own page, for free.
+- **Task 4.** The panel shows Ways to sell, the Deals tag and the CSV columns.
+
+**QA walkthrough 1 led to:**
+- tool-only B matching with twins (Ruling 70)
+- short match questions (Ruling 71)
+- the partial Look up (Ruling 72)
+- free re-judging (Ruling 73)
+- page evidence over search rows (Ruling 73a)
+- three panel minors
+
+**QA walkthrough 2:** every round-1 finding fixed except P553's accessories, which is by design (Ruling 74). Two minors, and the UI review's two, were then fixed.
+
+**The owner's question, for PCL1600K2-P553, on the replay:**
+- Split: −$166.15, ROI −43%.
+- Sold whole: −$388.00. Amazon has no PCL1600K2 listing.
+- 15 parts count at $0:
+  - PCL206: Amazon Renewed only
+  - PCL500: no listing
+  - PCL430 and P553: accessories only
+  - 11 unnamed parts
+
+**Who did what:**
+- Opus implemented Tasks 1, 2, 2b, 3 and 3b, Q1a and Q1b, and the Q1a/Q1b merge.
+- Sonnet implemented Task 4, Q1c, Q2, the Options test fix and the decisions.md draft.
+- Opus reviewed every core, budget and matching change, with independent re-checks: a failing test first, or a recomputed grade table.
+- Sonnet reviewed the panel.
+- `ui-reviewer` (Sonnet) checked the screens three times.
+- The QA walkthroughs ran on Opus.
+
+**Known gaps and lighter paths:**
+- **Parked in decisions.md:**
+  - two-tool listings
+  - "X of N" can overcount in a case no replay reaches
+  - failing parts hold up kit parts (the Ruling 58 class)
+  - DEWALT kit pages: none is recorded with an Includes list
+- **Untested in the replay:**
+  - Verify across scans (no recorded detail page)
+  - kit-part lookups inside a scan (replay DEWALT failures come first)
+  - the band's stacked refusal on screen (unit test only)
+- **Reviewed by the controller, not a separate reviewer:**
+  - Task 2's fix round
+  - Q1c
+  - two test-label reconciliations at merge
+
+**Next:** the owner decides whether to merge, and whether to run the real demo scan before step 7 (the chip).
