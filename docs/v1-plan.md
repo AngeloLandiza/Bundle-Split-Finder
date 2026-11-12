@@ -72,7 +72,7 @@ version 1 does only what finds him a deal he can act on, and nothing is built fo
 | The scan pipeline, budget guard and matching already built | A modular platform, or plug points for other retailers and categories |
 | Results in sections: Confirmed, Review (inactive listing, missing listing), contents not known | Lowe's |
 | Reading Home Depot pages in his browser for the Includes list | Special handling for BOGO deals: each kit-plus-free-tool option is already its own listing and is evaluated as a bundle |
-| The extension: settings, side panel, chip on Home Depot pages | The item-by-item split comparison; boxed items decide the result |
+| The extension: settings, side panel, chip on Home Depot pages | ~~The item-by-item split comparison; boxed items decide the result~~ Brought back by the owner on Nov 11 (step 6): a kit is offered sold whole and split into its parts, see `decisions.md` |
 | Validation set and a build he can load | The paid command-line demo run |
 
 **Amazon catalog (owner's choice, Nov 10): Amazon first, as he described, in a form the free
@@ -99,8 +99,9 @@ the extension can load that page in his browser.
 | 3 | Extension shell: service worker, storage, settings page with key check, frequency and forecast |
 | 4 | Home Depot page reader: loads bundle pages in his browser, reads the Includes list, feeds the splitter |
 | 5 | Side panel: Confirmed, Review, detail, first-run and limit states |
-| 6 | Chip on Home Depot product pages, This page tab |
-| 7 | Validation set, accessibility pass, packaged build he can load |
+| 6 | Kits inside bundles: read each kit's own Includes list, offer ways to sell (kit whole or split), leftovers, tool-only matching |
+| 7 | Chip on Home Depot product pages, This page tab |
+| 8 | Validation set, accessibility pass, packaged build he can load |
 
 ## Scope
 
