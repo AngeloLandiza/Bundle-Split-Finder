@@ -30,7 +30,7 @@ const RULES: Rule[] = [
   [/^page does not name (.+)$/, (m) => [words('The Home Depot page does not name '), ...models(m[1]!), words('.')]],
   [/^1 listing\(s\) show the model number, but the brand is not confirmed$/, plain('One listing shows this model number, but its brand is not confirmed.')],
   [/^(\d+) listing\(s\) show the model number, but the brand is not confirmed$/, (m) => [words(`${m[1]} listings show this model number, but their brand is not confirmed.`)]],
-  [/^title says Replacement or OEM, which often marks a spare part$/, plain("The listing's title says Replacement or OEM, which often means a spare part.")],
+  [/^title says Replacement or OEM, which often marks a spare part$/, plain('Some of these listings say Replacement or OEM in their titles, which often means a spare part.')],
   // Ruling 71: a match question shows at most 5 listings, and the count of the rest is its own note (scan/runner.ts).
   [/^1 more listing\(s\) not shown$/, plain('1 more listing is not shown.')],
   [/^(\d+) more listing\(s\) not shown$/, (m) => [words(`${m[1]} more listings are not shown.`)]],

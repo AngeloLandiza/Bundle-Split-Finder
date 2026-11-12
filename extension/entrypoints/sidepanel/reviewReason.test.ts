@@ -18,9 +18,9 @@ describe('reviewReason', () => {
     ['1 listing(s) show the model number, but the brand is not confirmed', 'One listing shows this model number, but its brand is not confirmed.'],
     ['3 listing(s) show the model number, but the brand is not confirmed', '3 listings show this model number, but their brand is not confirmed.'],
     ['page names no models', 'The Home Depot page names no parts.'],
-    ['title says Replacement or OEM, which often marks a spare part', "The listing's title says Replacement or OEM, which often means a spare part."],
+    ['title says Replacement or OEM, which often marks a spare part', "Some of these listings say Replacement or OEM in their titles, which often means a spare part."],
     ['1 listing(s) show the model number, but the brand is not confirmed (3 more not shown)', 'One listing shows this model number, but its brand is not confirmed. 3 more listings are not shown.'],
-    ['title says Replacement or OEM, which often marks a spare part (12 more not shown)', "The listing's title says Replacement or OEM, which often means a spare part. 12 more listings are not shown."],
+    ['title says Replacement or OEM, which often marks a spare part (12 more not shown)', "Some of these listings say Replacement or OEM in their titles, which often means a spare part. 12 more listings are not shown."],
     ['page does not name DCB606', 'The Home Depot page does not name DCB606.'],
     // Ruling 71: the count of the listings a match question leaves out is its own note.
     ['17 more listing(s) not shown', '17 more listings are not shown.'],
@@ -63,7 +63,7 @@ describe('reviewReason', () => {
       '22 listing(s) show the model number, but the brand is not confirmed; title says Replacement or OEM, which often marks a spare part; 17 more listing(s) not shown',
     );
     expect(reviewReason(reason)).toBe(
-      "22 listings show this model number, but their brand is not confirmed. The listing's title says Replacement or OEM, which often means a spare part. 17 more listings are not shown.",
+      "22 listings show this model number, but their brand is not confirmed. Some of these listings say Replacement or OEM in their titles, which often means a spare part. 17 more listings are not shown.",
     );
   });
 
