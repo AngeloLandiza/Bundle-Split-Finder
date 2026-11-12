@@ -196,6 +196,32 @@ test('deals row at 360px: a Look up that names how many of the parts leaves the 
   }
 });
 
+test('deals row at 360px: "2 ways to sell" shows in full inside the row (QA)', async ({ context, extensionId, options }) => {
+  await saveKey(options, 'TEST');
+  await expect(options.getByTestId('key-result')).toContainText('Key works.');
+  await scanAndWait(options);
+  await storeKitPage(options);
+  await ownerChoosesKit(options);
+
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  const row = panel.locator('.deal-row', { has: panel.locator(`[data-key="${P553}"]`) });
+  const tag = row.locator('.deal-sub span', { hasText: '2 ways to sell' });
+  await expect(tag).toBeVisible();
+  for (const width of WIDTHS) {
+    await panel.setViewportSize({ width, height: 900 });
+    await panel.waitForTimeout(150);
+    const r = (await row.boundingBox())!;
+    const t = (await tag.boundingBox())!;
+    expect(t.x).toBeGreaterThanOrEqual(r.x);
+    expect(t.x + t.width).toBeLessThanOrEqual(r.x + r.width);
+    // The text itself is not cut: the span fits its own content.
+    expect(await tag.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    expect(await tag.evaluate((el) => el.getClientRects().length)).toBe(1);
+    if (DIR) await panel.screenshot({ path: `${DIR}options-deals-ways-${width}.png` });
+  }
+});
+
 test('detail, a kit whose Home Depot page has not been read', async ({ context, extensionId, options, server }) => {
   await saveKey(options, 'TEST');
   await expect(options.getByTestId('key-result')).toContainText('Key works.');

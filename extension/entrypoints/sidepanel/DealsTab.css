@@ -228,7 +228,14 @@
   gap: 8px;
   font-size: 13px;
   color: var(--ink-2);
-  white-space: nowrap;
+  min-width: 0;
+  /* A sub-line wraps at the row's edge rather than cutting its last tag ("2 ways to sell", QA at 360px). */
+  flex-wrap: wrap;
+  column-gap: 8px;
+  row-gap: 0;
+  overflow-wrap: anywhere;
+}
+.deal-sub > span {
   min-width: 0;
 }
 .deal-fig {
