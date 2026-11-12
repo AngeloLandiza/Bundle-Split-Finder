@@ -322,8 +322,10 @@ describe('Deals: a Look up above the searches per scan (Ruling 72)', () => {
     const row = report.bundles.find((b) => b.key === P553_KEY)!;
     expect(waitingOf('RYOBI', row.parts)).toHaveLength(2);
     render(createElement(DealsTab, { api: workerApi(w, [], 1), report, state, sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
-    const button = await screen.findByRole('button', { name: `Look up 1 of 2 parts · 1 search, for ${row.model}` });
-    expect(button).toHaveTextContent(/^Look up 1 of 2 parts · 1 search$/);
+    const button = await screen.findByRole('button', { name: `Look up 1 of 2 parts, 1 search, for ${row.model}` });
+    // The cost is on its own line in this button, so no separator starts that line.
+    expect(button).toHaveTextContent(/^Look up 1 of 2 parts 1 search$/);
+    expect(button.querySelector('.deal-lookup-cost')).toHaveTextContent(/^1 search$/);
     // A label that names how many of the parts may wrap inside the button, so the row's left column keeps its room.
     expect(button).toHaveClass('deal-lookup-btn', 'deal-lookup-btn-long');
   });
@@ -334,6 +336,7 @@ describe('Deals: a Look up above the searches per scan (Ruling 72)', () => {
     render(createElement(DealsTab, { api: workerApi(w), report, state, sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
     const button = await screen.findByRole('button', { name: /^Look up 2 searches, 2 parts of PCL1600K2-P553$/ });
     expect(button).not.toHaveClass('deal-lookup-btn-long');
+    expect(button).toHaveTextContent(/^Look up 2 searches$/);
   });
 });
 

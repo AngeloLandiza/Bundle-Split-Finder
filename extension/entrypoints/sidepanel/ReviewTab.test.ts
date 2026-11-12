@@ -200,7 +200,7 @@ describe('ReviewTab: a split question', () => {
     expect(screen.getByText('1 of 2')).toHaveAttribute('aria-live', 'polite');
     await user.click(screen.getAllByRole('radio')[0]!);
     await user.click(save());
-    await waitFor(() => expect(screen.getByText('Which Amazon listing is DEWALT DCF891B?', { selector: 'legend' })).toHaveFocus());
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Which Amazon listing is DEWALT DCF891B?' }).querySelector('legend')).toHaveFocus());
     again(reportOf([MATCH]));
     await user.click(screen.getAllByRole('radio')[0]!);
     await user.click(save());
@@ -212,7 +212,7 @@ describe('ReviewTab: a split question', () => {
     const { again } = setup(reportOf([SPLIT, MATCH]));
     await user.click(screen.getAllByRole('radio')[0]!);
     await user.click(save());
-    await waitFor(() => expect(screen.getByText('Which Amazon listing is DEWALT DCF891B?', { selector: 'legend' })).toHaveFocus());
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Which Amazon listing is DEWALT DCF891B?' }).querySelector('legend')).toHaveFocus());
     // The owner moves on to something else; the report reloads and the question changes under them.
     (document.activeElement as HTMLElement).blur();
     again(reportOf([{ ...MATCH, reason: 'Another listing appeared.', candidates: [...MATCH.candidates, { asin: 'B0AAAAAAA3', title: 'Third', price: 1, reviews: 1, reasons: [], seenAt: 1 }] }]));
@@ -385,9 +385,20 @@ describe('ReviewTab: a report built on the replayed recordings', () => {
   });
 });
 
+describe('ReviewTab: the model in the question is set in the figure face', () => {
+  it('wraps the model of a match question in a figure span and keeps the accessible text', () => {
+    setup(reportOf([MATCH]));
+    const group = screen.getByRole('group', { name: 'Which Amazon listing is DEWALT DCF891B?' });
+    const legend = group.querySelector('legend')!;
+    expect(legend).toHaveTextContent('Which Amazon listing is DEWALT DCF891B?');
+    const figures = Array.from(legend.querySelectorAll('span.figure'));
+    expect(figures.map((f) => f.textContent)).toEqual(['DCF891B']);
+  });
+});
+
 describe('ReviewTab: Skip for now and what None of these does', () => {
   const skipForNow = () => screen.getByRole('button', { name: 'Skip for now' });
-  const legend = (t: string) => screen.getByText(t, { selector: 'legend' });
+  const legend = (t: string) => screen.getByRole('group', { name: t }).querySelector('legend')!;
   const SPLIT_Q = 'Which parts come in this bundle?';
   const MATCH_Q = 'Which Amazon listing is DEWALT DCF891B?';
 

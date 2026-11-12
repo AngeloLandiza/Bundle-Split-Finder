@@ -87,8 +87,19 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
     >
       <fieldset className={compact ? 'review-question review-compact' : 'review-question'}>
         <legend className="review-title" ref={legendRef} tabIndex={-1}>
-          {split ? 'Which parts come in this bundle?' : `Which Amazon listing is ${subject}?`}
-          {compact && split ? <span className="review-hidden">{` ${subject}`}</span> : null}
+          {split ? (
+            'Which parts come in this bundle?'
+          ) : (
+            <>
+              Which Amazon listing is {item.brand} <span className="figure">{item.model}</span>?
+            </>
+          )}
+          {compact && split ? (
+            <span className="review-hidden">
+              {` ${item.brand} `}
+              <span className="figure">{item.model}</span>
+            </span>
+          ) : null}
         </legend>
         {!compact && split && item.title ? <p className="review-bundle">{item.title}</p> : null}
         {!compact ? (

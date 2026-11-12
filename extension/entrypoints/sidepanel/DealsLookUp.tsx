@@ -80,9 +80,12 @@ export function LookUp({ row, report, api, scanRunning, version, busy, onRun, in
   // A way to sell's button says how many parts: "Look up 8 parts · 8 searches"; above the limit any Look up does:
   // "Look up 5 of 8 parts · 5 searches". Then its name starts with that visible text.
   const partsLabel = fits !== null ? `${fits} of ${count(parts.length)}` : items ? count(items.length) : null;
-  const costLabel = shown === 0 ? '· no search' : `${partsLabel ? '· ' : ''}${cost}`;
+  // In a Deals row a label that names how many of the parts puts its cost on its own line (deal-lookup-btn-long), so
+  // no separator starts that line: "Look up 1 of 2 parts" over "1 search".
+  const ownLine = inRow && fits !== null;
+  const costLabel = shown === 0 ? '· no search' : `${partsLabel && !ownLine ? '· ' : ''}${cost}`;
   // The name starts with the visible label (WCAG 2.5.3) and then says what is looked up.
-  const visible = `Look up${partsLabel ? ` ${partsLabel}` : ''} ${costLabel}`;
+  const visible = ownLine ? `Look up ${partsLabel}, ${costLabel}` : `Look up${partsLabel ? ` ${partsLabel}` : ''} ${costLabel}`;
   const what = fits !== null ? `for ${row.model}` : parts.length === 1 ? parts[0]!.model : `${parts.length} parts of ${row.model}`;
 
   const refusalText = refusal ? (

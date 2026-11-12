@@ -207,6 +207,10 @@ describe('Detail on a replayed scan', () => {
     expect(screen.getByText('Which parts come in this bundle?', { selector: 'legend' })).toBeInTheDocument();
     expect(screen.getByText('No estimate: what this bundle contains is not known yet.')).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Enter the parts' })).toBeInTheDocument();
+    // The hidden text that names the bundle keeps its text and sets the model in the figure face.
+    const hidden = screen.getByText('Which parts come in this bundle?', { selector: 'legend' }).querySelector('.review-hidden')!;
+    expect(hidden).toHaveTextContent(`${q.brand} ${q.model}`);
+    expect(Array.from(hidden.querySelectorAll('span.figure')).map((f) => f.textContent)).toEqual([q.model]);
   });
 
   it("links a split question in the Review tab to the recorded bundle's page, and the compact one in Detail has no such link", () => {

@@ -171,7 +171,7 @@ test('deals row at 360px: a Look up that names how many of the parts leaves the 
   const panel = await context.newPage();
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   const row = panel.locator('.deal-row', { has: panel.locator(`[data-key="${P553}"]`) });
-  const button = row.getByRole('button', { name: 'Look up 1 of 2 parts · 1 search, for PCL1600K2-P553' });
+  const button = row.getByRole('button', { name: 'Look up 1 of 2 parts, 1 search, for PCL1600K2-P553' });
   await expect(button).toBeVisible();
   await expect(button).toHaveClass(/deal-lookup-btn-long/);
   // Hand-made: the longest label a kit split gives at the default limit, written into this real row's button.
@@ -179,9 +179,9 @@ test('deals row at 360px: a Look up that names how many of the parts leaves the 
     const cost = b.querySelector('.deal-lookup-cost')!;
     for (const node of Array.from(b.childNodes)) if (node !== cost) node.remove();
     b.insertBefore(document.createTextNode('Look up 5 of 8 parts '), cost);
-    cost.textContent = '· 5 searches';
+    cost.textContent = '5 searches';
   });
-  await expect(button).toHaveText('Look up 5 of 8 parts · 5 searches');
+  await expect(button).toHaveText('Look up 5 of 8 parts 5 searches');
   for (const width of WIDTHS) {
     await panel.setViewportSize({ width, height: 900 });
     await panel.waitForTimeout(150);
