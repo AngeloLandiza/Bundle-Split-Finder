@@ -88,3 +88,12 @@ Phase A reads Home Depot for free. B2 needs about 10 Amazon lookups; confirming 
 **Task 3 (Sonnet): panel and CSV.** Deals shows the range ("−6% to +183%") with the Amazon New figure as today; Sort gains Lowest ROI and Highest ROI; Detail lists each part's prices with their labels, condition, seller and links ("Amazon · New · featured", "Amazon · lowest of 37+ used & new offers", "Home Depot · New · sold alone", "Amazon Buy Box · Sold by X, ships from Amazon"); Verify's cost line stays; CSV gains `roi_lowest`, `roi_amazon_new`, `roi_highest`. Every figure labelled an estimate.
 
 **Task 4 (controller): validation.** Home Depot standalone prices for the validation parts read in the owner's Chrome into `fixtures/validation/hd-part-prices-2026-11-18.json`; the harness reports positive counts at lowest, Amazon New and highest; QA walkthrough; docs.
+
+## The PO's answers (Nov 18) and what they change
+PO: "1. Depends, I try to not to remove anything from OEM packaging but some tools have listings named (bulk packaging) or state in the description that it is repackaged, so just look for listings that say New, no used or refurbished listings. 2. No, those are usually amazons liquidations so price is way different. 3. I would try to pinpoint the value to eBay or Facebook marketplace (eBay is more helpful at figuring out what price is actually receiving volume)."
+
+- Only New sell prices count. Renewed and the mixed used-and-new "more buying choices" price are dropped from every ROI.
+- "(bulk packaging)" / "repackaged" New listings are acceptable for tools that come loose from a kit; the matcher must not reject them for that wording (to verify).
+- eBay sold-New prices (the price that actually moves) value parts with no Amazon New listing; Facebook Marketplace has no data source and is out. A new task, after the SerpApi eBay engine's sold and condition filters are confirmed from its docs; recording costs one search per part (owner approves the count).
+- Home Depot's price is a labelled reference, never a sell price in an ROI; so is Amazon's list price.
+- Range: lowest = Amazon New only ($0 where none); likely = Amazon New, else eBay sold New; highest = each part's better counting price.
