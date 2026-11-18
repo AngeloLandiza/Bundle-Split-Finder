@@ -17,6 +17,8 @@ test.fixme('the chip sits directly under the price on the founder\'s page, and n
   await expect(chip).toHaveText(/Splits into 2 parts · Look up prices · 2 searches/);
   const sibling = await page.evaluate(() => document.querySelector('[data-component^="price:Price"]')?.nextElementSibling?.localName);
   expect(sibling).toBe('split-finder-chip');
+  // The control is 40px tall and the page moves by no more than that. (The end-to-end build opens the shadow root, which is closed in production, so Playwright can see inside it.)
+  expect((await chip.boundingBox())!.height).toBe(40);
   expect(server.counts['/search.json'] ?? 0).toBe(0);
   expect(server.searches).toEqual([]);
 });
@@ -50,7 +52,7 @@ test.fixme('turning "Show the chip on Home Depot pages" off removes the chip, on
   expect(server.counts['/search.json'] ?? 0).toBe(0);
 });
 
-test.fixme('the chip is drawn in the design\'s fonts, loaded from the extension', async ({ context }) => {
+test.fixme('the chip is drawn in the design\'s fonts, loaded from the extension', async ({ context, server: _server }) => {
   const page = await context.newPage();
   await page.goto(PAGE);
   await expect(page.locator('split-finder-chip').getByRole('button')).toBeVisible();
