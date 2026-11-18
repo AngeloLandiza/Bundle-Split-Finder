@@ -16,3 +16,5 @@ test-results/
 playwright-report/
 qa-shots/
 qa-shots-2/
+audit/*
+!audit/.gitkeep
