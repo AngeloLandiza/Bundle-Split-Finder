@@ -31,8 +31,8 @@ export interface Decomposition {
 
 const norm = (model: string): string => model.toUpperCase().replace(/[-\s]/g, '');
 
-// Longest phrases first, so "hammer drill" wins over "drill".
-const KIND_WORDS = [
+// Longest phrases first, so "hammer drill" wins over "drill". Also read, as whole words, by match.ts (kit extras).
+export const KIND_WORDS: readonly string[] = [
   'impact wrench', 'impact driver', 'hammer drill', 'rotary hammer', 'drill', 'oscillating',
   'reciprocating saw', 'circular saw', 'jig saw', 'jigsaw', 'miter saw', 'table saw', 'band saw',
   'router', 'ratchet', 'blower', 'vac', 'sander', 'grinder', 'nailer', 'stapler', 'planer',

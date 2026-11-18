@@ -5,17 +5,8 @@
 // the test for "same model" (titleHasModel, which adds RYOBI's tool-only B): nothing here makes a
 // match on weaker evidence.
 
-import { type Candidate, titleHasModel } from '../match';
+import { type Candidate, MODEL_PATTERNS, titleHasModel } from '../match';
 import type { ListingRecord } from './types';
-
-// A model must not touch another letter or digit on either side. Titles are upper-cased first.
-const MODEL_PATTERNS: Record<string, RegExp> = {
-  // A P, up to five letters, two to four digits, then letters or digits: PBLRC25B, PCL430B, PSK006, P1819.
-  RYOBI: /(?<![A-Z0-9])P[A-Z]{0,5}[0-9]{2,4}[A-Z0-9]*(?![A-Z0-9])/g,
-  // DC, one to three letters, three or four digits, then letters or digits, with an optional
-  // "-" and one digit: DCK240C2, DCS334B, DCB205-2, DCC020IB.
-  DEWALT: /(?<![A-Z0-9])DC[A-Z]{1,3}[0-9]{3,4}[A-Z0-9]*(?:-[0-9])?(?![A-Z0-9])/g,
-};
 
 const upper = (s: string): string => s.trim().toUpperCase();
 

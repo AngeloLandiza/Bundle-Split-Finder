@@ -83,7 +83,7 @@ describe('guards: a kit\'s own title keeps its grade', () => {
     const add = (where: string, cands: Candidate[]) => {
       for (const c of cands) {
         for (const brand of ['DEWALT', 'RYOBI']) {
-          for (const model of modelsInTitle(brand, c.title).filter((m) => m.startsWith('DCK') || /^(PCL\d+|P\d+)K\d*$/.test(m))) out.push({ where, model, brand, c });
+          for (const model of modelsInTitle(brand, c.title).filter((m) => /^(DCK|PCL\d+K|P\d+K)/.test(m))) out.push({ where, model, brand, c });
         }
       }
     };
@@ -115,6 +115,12 @@ describe('guards: a kit\'s own title keeps its grade', () => {
     ['DCK921P1', '20V MAX 5Ah, Brushless 9 Power Tools with Battery, Charger, Drill, Impact Driver, Reciprocating Saw, Circular Saw, Oscillating Tool, Grinder, Orbit Sander, Impact Wrench, Flashlight (DCK921P1)'],
     // Hand-made: RYOBI's "ONE+" is not a "+" addition.
     ['P215K', 'RYOBI ONE+ 18V Cordless 1/2 in. Drill/Driver Kit with (1) 1.5 Ah Battery and Charger P215K'],
+    // Hand-made (fix round 1): the part's own model after "with" is not an added model.
+    ['DCK240C2', 'DEWALT 20V MAX Drill and Impact Driver Kit with Battery, Charger and Bag (DCK240C2)'],
+    // Hand-made from recorded wording: "Extra Long Run Time" (B079LDT7ML, DCB230C) adds nothing, and
+    // "ONE + (PLUS)" (B0781B4R4C) is RYOBI's ONE+ written out, not two joining words.
+    ['DCK240C2', 'DEWALT 20V MAX Drill and Impact Driver Kit with Battery, Charger, Extra Long Run Time (DCK240C2)'],
+    ['P215K', 'RYOBI ONE + (PLUS) 18V Cordless Drill/Driver Kit with 1.5 Ah Battery and Charger P215K'],
   ])('%s: "%s" stays probable', (model, title) => {
     const brand = model.startsWith('DC') ? 'DEWALT' : 'RYOBI';
     expect(grade({ brand, model, isKit: true }, { asin: 'G', title, brand }).grade).toBe('probable');
@@ -126,10 +132,29 @@ describe('guards: a kit\'s own title keeps its grade', () => {
     'DEWALT 20V MAX Drill and Impact Driver Kit (DCK240C2) plus Reciprocating Saw',
     'DEWALT 20V MAX Drill and Impact Driver Combo Kit (DCK240C2) Bundle with Oscillating Tool',
     'DEWALT 20V MAX Drill and Impact Driver Combo Kit (DCK240C2) and 100-Piece Bit Set',
+    // Fix round 1. Tool words are whole words: "Lightweight" does not name a light, so the light is added.
+    'DEWALT DCK240C2 Lightweight Drill and Impact Driver Kit with LED Work Light',
+    // Every joining word is read, not only the first.
+    'DEWALT 20V MAX Combo Kit with 2 Batteries plus Circular Saw (DCK240C2)',
+    // A battery named by its model after a joining word, and an "extra" one.
+    'DEWALT 20V MAX Drill and Impact Driver Kit (DCK240C2) with 5Ah Battery DCB205',
+    'DEWALT DCK240C2 Combo Kit with Extra 5Ah Battery DCB205',
+    // An accessory count written as Home Depot does: "70PC", "70 PC".
+    'DEWALT 20V MAX Drill and Impact Driver Combo Kit (DCK240C2) and 70PC Drill Bit Kit',
+    'DEWALT 20V MAX Drill and Impact Driver Combo Kit (DCK240C2) and 70 PC Accessories',
   ])('hand-made: "%s" is review', (title) => {
     const g = grade(KIT, { asin: 'H', title, brand: 'DEWALT' });
     expect(g.grade).toBe('review');
     expect(g.reasons[0]).toBe(KIT_WITH_EXTRAS);
+  });
+
+  it('hand-made, a known gap: "&", "and" and a comma are not read as additions (kits list their own tools that way)', () => {
+    // Recorded, the reason: DCK2100P2 names its own tools after "with", joined by "&".
+    const own = 'FLEXVOLT ADVANTAGE 20V MAX* Combo Kit with Hammer Drill & Impact Driver, 5.0-Ah, 2-Tool (DCK2100P2)';
+    expect(grade({ brand: 'DEWALT', model: 'DCK2100P2', isKit: true }, { asin: 'G', title: own, brand: 'DEWALT' }).grade).toBe('probable');
+    // Hand-made, the cost: a saw added with "&" is not seen (docs/decisions.md names this gap).
+    const gap = 'DEWALT 20V MAX Drill and Impact Driver Combo Kit (DCK240C2) & 20V MAX Circular Saw';
+    expect(grade(KIT, { asin: 'H', title: gap, brand: 'DEWALT' }).grade).toBe('probable');
   });
 
   it('a barcode match is the listing itself, whatever its title says', () => {

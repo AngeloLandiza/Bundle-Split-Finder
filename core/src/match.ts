@@ -15,7 +15,7 @@
 // A "probable" match becomes "exact" by loading the listing's detail page
 // (1 search), which carries the barcode.
 
-import { kindsFromTitle } from './decompose';
+import { KIND_WORDS } from './decompose';
 import { toUpc12 } from './identifiers';
 
 const RENEWED = /\b(renewed|refurbished|reconditioned|used|pre-owned|open box)\b/i;
@@ -51,31 +51,83 @@ const NOT_INCLUDED_PHRASE = /\b(?:batter(?:y|ies)|charger)(?:\s+(?:and|&|or)\s+(
 const FOR_BRAND = /\bfor\s+(ryobi|dewalt)\b/i;
 // Step 8b: TTI makes RYOBI; "TTI Ryobi PBP004 …" (B09HDZ5MPV) states the brand with no brand field.
 const MAKER_PREFIX: Record<string, RegExp> = { RYOBI: /^\s*TTI\s+RYOBI\b/i };
+// Model numbers as whole tokens, per brand; titles are upper-cased first (scan/listings.ts modelsInTitle).
+export const MODEL_PATTERNS: Record<string, RegExp> = {
+  // A P, up to five letters, two to four digits, then letters or digits: PBLRC25B, PCL430B, PSK006, P1819.
+  RYOBI: /(?<![A-Z0-9])P[A-Z]{0,5}[0-9]{2,4}[A-Z0-9]*(?![A-Z0-9])/g,
+  // DC, one to three letters, three or four digits, then letters or digits, with an optional
+  // "-" and one digit: DCK240C2, DCS334B, DCB205-2, DCC020IB.
+  DEWALT: /(?<![A-Z0-9])DC[A-Z]{1,3}[0-9]{3,4}[A-Z0-9]*(?:-[0-9])?(?![A-Z0-9])/g,
+};
+
 // Kit extras: for a part that is itself a kit, a title that sells the kit with more. Recorded (DCK240C2,
 // the validation's responses), each labelled not the part:
 //   "DCK240C2 … Drill Driver/Impact Combo Kit (1.3Ah) with 20V MAX Circular Saw"              (B0722GYTWL)
 //   "DCK240C2 … Combo Kit (1.3Ah) with FlexTorq Screw Driving Set, 40-Piece"                   (B072B8GHHL)
 //   "Mechanics Tool Set, Drill/Driver & Impact Driver Combo Kit (DCK240C2)"                    (B08P6NCHMW)
-// Either sign is enough. (1) An accessory set: "set" or "N-Piece". A kit's own title calls the kit a set
-// of tools, counted, powered or multi: "Power Tool Set" (DCK1021D2), "Woodworking 3-Tool Set" (DCK300P1),
-// "2-Tool Set" (DCK202P1), "Oscillating Multi-tool Set" (DCK551D1M1); such a set is not counted.
-// (2) A tool added: the title names tools, then after "with", "w/", "plus", a spaced "+" (RYOBI's "ONE+"
-// is not one) or "bundle" names a tool it did not name before. A title that names no tool before "with"
-// may be listing the kit's own ("Combo Kit with Hammer Drill & Impact Driver", DCK2100P2), and a battery
-// or a charger is what a kit holds.
-const ACCESSORY_SET = /\bset\b|\b\d+\s*-?\s*piece\b/i;
+// Any sign is enough.
+// (1) An accessory set: "set", or a count of pieces ("40-Piece", Home Depot's "70PC", "70 PC"). A kit's own
+//     title calls the kit a set of tools, counted, powered or multi: "Power Tool Set" (DCK1021D2),
+//     "Woodworking 3-Tool Set" (DCK300P1), "2-Tool Set" (DCK202P1), "Oscillating Multi-tool Set"
+//     (DCK551D1M1); such a set is not counted.
+// (2) Something added after a joining word: "with", "w/", "plus", a spaced "+" (RYOBI's "ONE+" is not one)
+//     or "bundle". Every joining word is read. The kit's own tools are those the title names before the
+//     first joining word or, when it names none there, right after it ("Combo Kit with Hammer Drill &
+//     Impact Driver", DCK2100P2, lists the kit's own). After that, a part is added when it names a tool
+//     that is not among them, or a model number that is not the part's ("with 5Ah Battery DCB205"); and
+//     after any joining word, "extra", "additional" or "bonus" with a battery, charger or tool after it adds.
+//     A battery or a charger named by its kind alone is what a kit holds.
+// "&", "and" and a comma are not joining words, on purpose: kits list their own tools that way, so an
+// addition written with them is not seen (a known gap, docs/decisions.md).
+// Tool words are the splitter's kind words (decompose.ts KIND_WORDS) read as whole words, a plural "s"
+// allowed: "Lightweight" names no light. kindsFromTitle, which reads them inside words, is not used here.
+const ACCESSORY_SET = /\bset\b|\b\d+\s*-?\s*(?:pieces?|pcs?)\b/i;
 const POWER_TOOL_SET = /\b(?:power|multi|\d+)\s*-?\s*tools?\s+set\b/gi;
-const ADDITION = /\bwith\b|\bw\/|\bplus\b|\bbundle\b|(?:^|\s)\+/i;
+// RYOBI's line is "ONE+", also written "ONE +" and "ONE + (PLUS)" (B0781B4R4C): neither is a joining word.
+const JOINING = /\bwith\b|\bw\/|(?<!\bone\s*(?:\+\s*)?\(?)\bplus\b|\bbundle\b|(?<!\bone)\s\+|^\+/i;
+// "Extra" adds when a battery, a charger or a tool follows within three words: "Extra 5Ah Battery DCB205",
+// not "Extra Long Run Time" (B079LDT7ML).
+const EXTRA = /\b(?:extra|additional|bonus)\s+(?:\S+\s+){0,3}?(?:batter(?:y|ies)|chargers?|tools?)\b/i;
 const KIT_HOLDS = new Set(['battery', 'batteries', 'charger']);
-const toolsIn = (text: string): string[] => kindsFromTitle(text).filter((k) => !KIT_HOLDS.has(k));
+const TOOL_WORDS: [string, RegExp][] = KIND_WORDS.filter((w) => !KIT_HOLDS.has(w))
+  .map((w) => [w, new RegExp(`\\b${w.replace(/ /g, '\\s+')}s?\\b`, 'gi')]);
 
-/** The title sells the kit with more: an accessory set, or a tool it adds to the tools it names. */
-function addsToKit(title: string): boolean {
+/** The tool words a text names as whole words, longest first, each taken out once found ("hammer drill" is not also "drill"). */
+function toolsIn(text: string): string[] {
+  let rest = text;
+  const found: string[] = [];
+  for (const [word, re] of TOOL_WORDS) {
+    let hit = false;
+    rest = rest.replace(re, () => {
+      hit = true;
+      return ' ';
+    });
+    if (hit) found.push(word);
+  }
+  return found;
+}
+
+/** A model number of the part's brand in the text that is not the part's own. */
+function otherModel(want: Wanted, text: string): boolean {
+  const pattern = MODEL_PATTERNS[want.brand.trim().toUpperCase()];
+  if (!pattern) return false;
+  return Array.from(text.toUpperCase().matchAll(pattern), (m) => m[0]).some((m) => !sameModel(want.brand, m, want.model));
+}
+
+/** The title sells the kit with more: an accessory set, or something added after a joining word. */
+function addsToKit(want: Wanted, title: string): boolean {
   if (ACCESSORY_SET.test(title.replace(POWER_TOOL_SET, ' '))) return true;
-  const at = ADDITION.exec(title);
-  if (!at) return false;
-  const before = new Set(toolsIn(title.slice(0, at.index)));
-  return before.size > 0 && toolsIn(title.slice(at.index + at[0].length)).some((k) => !before.has(k));
+  const [first = '', ...after] = title.split(JOINING);
+  if (after.length === 0) return false;
+  if (after.some((part) => EXTRA.test(part))) return true;
+  let own = toolsIn(first);
+  let added = after;
+  if (own.length === 0) {
+    own = toolsIn(after[0]!);
+    added = after.slice(1);
+  }
+  const kit = new Set(own);
+  return added.some((part) => toolsIn(part).some((k) => !kit.has(k)) || otherModel(want, part));
 }
 
 export type Grade = 'exact' | 'strong' | 'probable' | 'review' | 'reject';
@@ -235,7 +287,7 @@ export function grade(want: Wanted, cand: Candidate): Graded {
   // Kit extras: review at most, never reject. The grade has only the kit's model, not what the kit holds,
   // so it cannot know the saw or the set is not in the box; the owner decides (CLAUDE.md rule 4). A
   // manufacturer part number does not lift it (a seller's bundle page can carry the kit's); a barcode does.
-  if (want.isKit && !upcOk && addsToKit(cand.title)) cap ??= KIT_WITH_EXTRAS;
+  if (want.isKit && !upcOk && addsToKit(want, cand.title)) cap ??= KIT_WITH_EXTRAS;
 
   const graded = ((): Graded => {
     if (upcOk) return out('exact', 'barcode match', ...(partOk || titleOk ? ['model number match'] : []));
