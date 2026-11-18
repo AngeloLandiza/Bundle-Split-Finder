@@ -9,7 +9,7 @@ import { appendLedger } from '../lib/ledger';
 import { CONTENT_REQUESTS, type ChipSetting, type Request, type ShowThisPage, type StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
 import { mayAsk } from '../lib/sender';
-import { createPageReader, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
+import { createPageReader, createPartPriceReader, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
 import { createWorker, type DeferredPage, type PageEnv } from '../lib/worker';
 import type { ProductPage } from '../../core/src/hdPage';
 
@@ -141,7 +141,17 @@ export default defineBackground(() => {
     // The end-to-end build reads from the local replay server, which needs no settling.
     settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50,
   });
+  // Home Depot's standalone price of a part (step 9): the scan's `readPartPrices`. It reads in the same doorway tab,
+  // one call at a time with the page reader, and settles for the same reason.
+  const readPartPrices = createPartPriceReader(chromeReaderEnv(), {
+    settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50,
+  });
   if (__SPLIT_FINDER_DEBUG__) (globalThis as { splitFinderReadPages?: unknown }).splitFinderReadPages = readPages;
+  // The end-to-end build (the only one with a base URL) and a debug build expose the part price reader to the tests
+  // and the console check; the production build has neither, and a test confirms its bundle does not hold the name.
+  if (__SPLIT_FINDER_DEBUG__ || __SPLIT_FINDER_BASE_URL__ !== undefined) {
+    (globalThis as { splitFinderReadPartPrices?: unknown }).splitFinderReadPartPrices = readPartPrices;
+  }
   const worker = createWorker({
     store: new IdbScanStore(),
     cache: new IdbCache(),

@@ -15,6 +15,32 @@ const recordedPages = new Map(
     p.text,
   ]),
 );
+// Home Depot's own search /s/<MODEL> and the product pages it leads to, for the part price reader. SYNTHETIC: see the
+// file's `about` (invented ids, real shapes).
+const partSearch = JSON.parse(readFileSync(new URL('part-search-2026-11-18.json', PAGES_DIR), 'utf8')) as {
+  searches: Record<string, string[]>;
+  products: { itemId: string; brand: string; model: string; title: string; price: number }[];
+};
+const partProducts = new Map(partSearch.products.map((p) => [p.itemId, p]));
+/** A product page's state as the reader sees it: identifiers and a pricing({...}) key, as recorded in pricing-2026-11-17.json. */
+const partProductText = (id: string): string | undefined => {
+  const p = partProducts.get(id);
+  if (!p) return undefined;
+  return (
+    'window.__APOLLO_STATE__=' +
+    JSON.stringify({
+      [`base-catalog-${id}`]: {
+        __typename: 'BaseProduct',
+        itemId: id,
+        identifiers: { __typename: 'Identifiers', brandName: p.brand, itemId: id, modelNumber: p.model, productLabel: p.title },
+        'pricing({"isBrandPricingPolicyCompliant":false,"storeId":"8119"})': { __typename: 'Pricing', value: p.price, original: null },
+      },
+    })
+  );
+};
+// A search for a model with no entry shows unrelated products, as a real search with no exact hit does.
+const OTHER_PRODUCT_LINKS = ['/p/RYOBI-ONE-18V-Cordless-Jig-Saw-Kit-PCL999K1/399000007'];
+
 // The refused page's own scripts are not part of what the reader sees: one loads from Home Depot's CDN, the other is the blanked bot-script path.
 const refusedPage = readFileSync(new URL('refused-2026-11-10.html', PAGES_DIR), 'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '');
 // type="text/plain" so the tab does not run the recorded text: after the state object the fixtures replace every
@@ -38,7 +64,9 @@ export interface ReplayServer {
   misses: string[];
   /** Item ids of the /p/<id> pages requested so far, in order. */
   pageRequests: string[];
-  /** These ids are answered 403 with the recorded refused page, until reset(). '*' refuses every id. */
+  /** Models of the /s/<model> searches requested so far, in order (as requested, not upper-cased). */
+  searchPageRequests: string[];
+  /** These ids are answered 403 with the recorded refused page, until reset(). '*' refuses every id and every /s/ search. */
   refuse(...itemIds: string[]): void;
   /** Test-only: the recorded page of `recordedId` is served for item `itemId`, until reset(). */
   servePageAs(itemId: string, recordedId: string): void;
@@ -55,6 +83,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   const counts: Record<string, number> = {};
   let misses: string[] = [];
   let pageRequests: string[] = [];
+  let searchPageRequests: string[] = [];
   const refused = new Set<string>();
   const servedAs = new Map<string, string>();
   let searchDelay = 0;
@@ -62,7 +91,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   // The reader looks up `base-catalog-<itemId>` in the page's state, so a page served under another id carries that id.
   const pageText = (id: string): string | undefined => {
     const as = servedAs.get(id);
-    return as === undefined ? recordedPages.get(id) : recordedPages.get(as)?.replaceAll(as, id);
+    return as === undefined ? (recordedPages.get(id) ?? partProductText(id)) : recordedPages.get(as)?.replaceAll(as, id);
   };
   const server: Server = createServer((req, res) => {
     void (async () => {
@@ -86,6 +115,16 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       } else if (url.pathname === '/favicon.ico') {
         // Chrome asks for it when the reader's tab loads.
         res.writeHead(204).end();
+      } else if (url.pathname.startsWith('/s/')) {
+        // Home Depot's own search for a model: product links in the page, or the refusal when every id is refused.
+        const model = decodeURIComponent(url.pathname.slice(3));
+        searchPageRequests.push(model);
+        const page = { 'content-type': 'text/html; charset=utf-8' };
+        if (refused.has('*')) res.writeHead(403, page).end(refusedPage);
+        else {
+          const links = partSearch.searches[model.toUpperCase()] ?? OTHER_PRODUCT_LINKS;
+          res.writeHead(200, page).end(`<!doctype html><html><head><title>Search</title></head><body>${links.map((l) => `<a href="${l}">product</a>`).join('')}</body></html>`);
+        }
       } else if (url.pathname.startsWith('/p/')) {
         // Home Depot's product pages. A recorded id answers with its recorded script; a refused id with the
         // recorded refusal; any other id with a page whose state holds no product (the reader calls it unreadable).
@@ -115,6 +154,9 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     get pageRequests() {
       return pageRequests;
     },
+    get searchPageRequests() {
+      return searchPageRequests;
+    },
     refuse(...ids) {
       for (const id of ids) refused.add(id);
     },
@@ -131,6 +173,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       searchDelay = 0;
       searchesFail = false;
       pageRequests = [];
+      searchPageRequests = [];
       refused.clear();
       servedAs.clear();
       for (const k of Object.keys(counts)) delete counts[k];

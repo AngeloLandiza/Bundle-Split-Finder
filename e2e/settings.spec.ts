@@ -75,5 +75,7 @@ test('the built bundle talks only to the local replay server', () => {
   // The page reader's origin is the replay server here, and its debug handle is not in the build.
   expect(manifest.permissions).toContain('scripting');
   expect(background).not.toContain('splitFinderReadPages');
+  // The part price reader's handle is in this build on purpose: part-prices.spec.ts calls it.
+  expect(background).toContain('splitFinderReadPartPrices');
   expect(files(EXTENSION_DIR).length).toBeGreaterThan(0);
 });

@@ -85,6 +85,7 @@ describe('the production build', () => {
       for (const f of code) {
         const text = readFileSync(f, 'utf8');
         expect(text, f).not.toContain('splitFinderReadPages');
+        expect(text, f).not.toContain('splitFinderReadPartPrices');
         expect(text, f).not.toContain('http://localhost');
       }
       expect(readFileSync(join(dir, 'background.js'), 'utf8')).toContain('https://www.homedepot.com');
