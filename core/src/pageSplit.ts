@@ -46,17 +46,26 @@ export function pageCatalog(brand: string, bullets: string[]): Catalog {
   return catalog;
 }
 
+// The count a RYOBI Includes bullet writes just before a model: "(2) PBP005".
+const COUNT_BEFORE = /\((\d+)\)\s*$/;
+
 /**
- * The models a RYOBI page's Includes bullets name, exactly as written (no tool-only B added), each
- * once, in page order, without the bundle's own model (Ruling 76).
+ * The models a RYOBI page's Includes bullets name, exactly as written (no tool-only B added), in
+ * page order, without the bundle's own model (Ruling 76). A model written "(n) MODEL" appears n
+ * times, one with no count once; a model named in two places counts once, at the larger count.
  */
 function includesModels(bundleModel: string, bullets: string[]): string[] {
   const own = bundleModel.toUpperCase().trim();
-  const found = new Set<string>();
+  const counts = new Map<string, number>();
   for (const bullet of bullets.filter((x) => INCLUDES.test(x))) {
-    for (const [model] of bullet.matchAll(RYOBI_TOKEN)) if (model !== own) found.add(model);
+    for (const match of bullet.matchAll(RYOBI_TOKEN)) {
+      const model = match[0];
+      if (model === own) continue;
+      const n = Number(COUNT_BEFORE.exec(bullet.slice(0, match.index))?.[1] ?? 1);
+      counts.set(model, Math.max(counts.get(model) ?? 0, n));
+    }
   }
-  return [...found];
+  return [...counts].flatMap(([model, n]) => Array<string>(n).fill(model));
 }
 
 const list = (models: Iterable<string>): string => [...models].sort().join(', ');

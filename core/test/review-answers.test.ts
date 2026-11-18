@@ -274,6 +274,32 @@ describe('a split question offers the reading a RYOBI model number spells out (R
     expect(w.ledger).toEqual(['scan:listing:ryobi 18v combo kit:p1']);
   });
 
+  it('a page reading with a part written "(2)" is chosen as it is offered: the bundle holds two of it, and the report counts qty 2 (Ruling 76, fix round 1)', async () => {
+    const w = world();
+    const key = 'homedepot:339206615';
+    const id = `split:${key}`;
+    // 339206615 is PSK1212SB (captured Nov 17); the bullet is hand-made, its real page writes "(1)" for
+    // each part. Stored as read, so no page reader runs.
+    await w.store.putBundle({
+      key, retailer: 'homedepot', itemId: '339206615', brand: 'RYOBI', model: 'PSK1212SB',
+      title: 'ONE+ 18V Lithium Starter Kit with (1) 2.0 Ah Battery, (1) 4.0 Ah Battery, and Charger',
+      upc: null, price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0, split: null,
+      page: { bullets: ['Includes: (2) PBP004 18V ONE+ 4Ah Lithium Batteries, (1) PCG002 18V ONE+ Charger'], description: null, readAt: T0 },
+    });
+    await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect(await w.store.getReview(id)).toMatchObject({ choices: [['PBP004', 'PBP004', 'PCG002']], answer: null });
+
+    await applyReviewAnswer(w.store, id, await shown(w, id, { choice: 0 }), T0 + MINUTE);
+    expect((await w.store.getBundle(key))!.split).toEqual({ components: ['PBP004', 'PBP004', 'PCG002'], status: 'resolved', notes: [CHOSEN] });
+    expect(await w.store.getReview(id)).toMatchObject({ answer: 'PBP004,PBP004,PCG002', answeredAt: T0 + MINUTE });
+    const row = (await buildReport(w.store, RYOBI_ONLY)).bundles.find((b) => b.key === key)!;
+    expect(row.parts.map((p) => [p.model, p.qty])).toEqual([['PBP004', 2], ['PCG002', 1]]);
+    // A later scan keeps the repeat.
+    w.clock = T0 + DAY;
+    await scan(w, { settings: RYOBI_ONLY, policy: NO_SEARCH });
+    expect((await w.store.getBundle(key))!.split!.components).toEqual(['PBP004', 'PBP004', 'PCG002']);
+  });
+
   it('a DEWALT short code that matches nothing still offers no choice: its kit alone is not a whole reading', async () => {
     const w = world();
     await scan(w, { settings: COMBO });

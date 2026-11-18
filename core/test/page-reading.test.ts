@@ -78,9 +78,45 @@ describe("Ruling 76: a RYOBI page's Includes models, when the model number offer
     expect(got.notes).toEqual(['no known RYOBI bundle pattern', 'page names PBP004, PCG002, PBP003']);
   });
 
+  it('PSK1212SB catalogued as a kit resolves as a manufacturer kit before any page reading (fix round 1)', () => {
+    const kit: Catalog = new Map([['PSK1212SB', { model: 'PSK1212SB', brand: 'RYOBI', kinds: [], isKit: true }]]);
+    const got = split('PSK1212SB', PSK1212SB_TITLE, PSK1212SB_PAGE, kit);
+    expect(got).toEqual({ components: ['PSK1212SB'], status: 'resolved', notes: ['manufacturer kit', 'page does not name PSK1212SB'] });
+    expect(got.alternatives).toBeUndefined();
+  });
+
   it('a page that names only the bundle own model offers nothing (hand-made)', () => {
     const got = split('PSK1212SB', '', page(['Includes: (1) PSK1212SB Starter Kit']));
     expect(got.alternatives).toBeUndefined();
     expect(got.status).toBe('needs_review');
+  });
+});
+
+describe('Ruling 76, fix round 1: the page reading keeps the counts the page writes', () => {
+  // Captured from Home Depot on Nov 17, 2026: item 320511079, its two Includes bullets ("(2) PBP005").
+  const PAGE_320511079 = page([
+    'Includes: (1) PCL206 18V ONE+ 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ 1/4 in. Impact Driver, (1) PCL515 18V ONE+ Reciprocating Saw, (1) PCL500 18V ONE+ 5-1/2 in. Circular Saw, (1) PCL430 18V ONE+ Multi-Tool, (1) PCL525 18V ONE+ Jig Saw, (1) PCL406 18V ONE+ Random Orbit Sander, (1) PCL660 18V ONE+ LED Light,',
+    'Includes: (2) PBP005 18V ONE+ 4.0 Ah Lithium Batteries, (1) PBP002 18V ONE+ Compact Lithium Battery, (1) PCG002 18V ONE+ Charger, Reciprocating Saw Blade, Circular Saw Blade, Multi-Tool Accessories, Jig Saw Blade, Sandpaper Assortment, (2) Tool Bags and Operator’s Manuals',
+  ]);
+
+  it("320511079's bullets under a special-buy model with equal halves (hand-labelled: PSK0505SB is not that bundle's model): PBP005 twice", () => {
+    const got = split('PSK0505SB', '', PAGE_320511079);
+    const reading = ['PCL206', 'PCL235', 'PCL515', 'PCL500', 'PCL430', 'PCL525', 'PCL406', 'PCL660', 'PBP005', 'PBP005', 'PBP002', 'PCG002'];
+    expect(got).toEqual({
+      components: [], status: 'needs_review',
+      notes: ['no known RYOBI bundle pattern', `page names ${reading.join(', ')}`],
+      alternatives: [reading],
+    });
+    // The question offers it with the repeat: a part listed twice counts twice.
+    expect(splitChoices(got)).toEqual([reading]);
+  });
+
+  // Hand-made: a model with no count, and a model named in two places at different counts.
+  it('a model with no count appears once; one named in two places counts once, at the larger count (hand-made)', () => {
+    const got = split('PSK1212SB', '', page([
+      'Includes: (1) PBP004 Battery, PCG002 Charger',
+      'Includes: (3) PBP004 Batteries and (1) PCG002 Charger',
+    ]));
+    expect(got.alternatives).toEqual([['PBP004', 'PBP004', 'PBP004', 'PCG002']]);
   });
 });
