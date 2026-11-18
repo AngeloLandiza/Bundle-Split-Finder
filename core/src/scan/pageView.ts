@@ -33,8 +33,9 @@ export type PageView =
     /** The bundle's open split question (`split:` and its key) while its split needs an answer; null otherwise. */
     question: ReviewItem | null;
     /**
-     * True when the view's question (if any) is saved in the store, so an answer to it can be taken: always with
-     * write: true, and with write: false once an earlier write saved it. True too when there is no question.
+     * True when the view's question (if any) is saved in the store and open there, so an answer to it can be taken:
+     * always with write: true, and with write: false once an earlier write saved it open. True too when there is no
+     * question.
      */
     questionStored: boolean;
   };
@@ -150,6 +151,6 @@ export async function notePage(
     kind: 'bundle', key, itemId: page.itemId, model: row.model, parts: row.parts.reduce((n, p) => n + p.qty, 0), row,
     lookupParts: waiting.length === 0 ? 0 : lookupsNeeded(waiting, await savedAnswers(store)),
     question: asked && asked.answer === null ? { ...asked, choices: choicesOf(asked) } : null,
-    questionStored: asked === undefined || asked.answer !== null || (await target.getReview(asked.id)) !== undefined,
+    questionStored: asked === undefined || asked.answer !== null || (await target.getReview(asked.id))?.answer === null,
   };
 }

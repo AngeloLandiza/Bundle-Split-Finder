@@ -481,6 +481,23 @@ describe('notePage: whether the view\'s question is stored (fix round 1)', () =>
   });
 });
 
+describe('notePage: a question the store holds closed is not stored as open (final fix round)', () => {
+  it('a question a scan closed and this view asks again is not stored: the stored item is not open, so an answer to it could not be taken', async () => {
+    const asked = unpricedPage('328690510');
+    const store = new MemoryScanStore();
+    await notePage(store, RATCHET, asked, VISIT);
+    const open = (await store.getReview('split:homedepot:328690510'))!;
+    // As a later scan leaves it when it resolves the split: closed, with the scan's own answer.
+    await store.putReview({ ...open, answer: RESOLVED_BY_SCAN, answeredAt: VISIT });
+    const view = asBundle(await notePage(store, RATCHET, asked, VISIT + HOUR, { write: false }));
+    // The view asks it again (a write would reopen it), but the store holds it closed.
+    expect(view.question).toMatchObject({ id: 'split:homedepot:328690510', answer: null });
+    expect(view.questionStored).toBe(false);
+    // Written, it is open in the store, and stored.
+    expect(asBundle(await notePage(store, RATCHET, asked, VISIT + HOUR)).questionStored).toBe(true);
+  });
+});
+
 describe('notePage: a page message is untrusted and has limits (fix round 1)', () => {
   const none = async (page: unknown) => {
     const store = new MemoryScanStore();
