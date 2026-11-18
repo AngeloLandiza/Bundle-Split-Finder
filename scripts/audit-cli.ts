@@ -37,7 +37,7 @@ export interface AuditPart {
   grade: string | null;
   source: string | null;
   /**
-   * Optional, not in the contract's first version: whether the scan asks for this part as a kit
+   * Added to version 1 in step 8c fix round 1 (older files lack it): whether the scan asks for this part as a kit
    * (wantedFor's catalog). Absent: the pair is graded as for a part the catalog does not know.
    */
   isKit?: boolean;
@@ -63,6 +63,8 @@ export interface AuditExport {
   listings: ListingRecord[];
   matches: MatchRecord[];
   answers: ReviewItem[];
+  /** The open review items (answer null), as stored. Added to version 1 in fix round 1; older files lack it. */
+  questions?: ReviewItem[];
 }
 
 /** A problem with the export file: nothing was written. */
@@ -112,6 +114,7 @@ export function readExport(text: string): AuditExport {
   for (const field of ['bundles', 'listings', 'matches', 'answers'] as const) {
     if (!Array.isArray(raw[field])) throw new ExportRefused(`The export has no ${field} list.`);
   }
+  if (raw.questions !== undefined && !Array.isArray(raw.questions)) throw new ExportRefused('The export has a questions field that is not a list.');
   for (const b of raw.bundles as unknown[]) {
     if (!isObject(b) || !isText(b.itemId) || !isText(b.brand) || !isText(b.model) || !Array.isArray(b.parts)) {
       throw new ExportRefused('A bundle in the export needs itemId, brand, model and parts.');
@@ -195,7 +198,7 @@ export const homeDepotLink = (itemId: string): string => `https://www.homedepot.
 
 const BLIND_ABOUT = 'For a blind checker: docs/audit-checker.md says how to label it. Per bundle part, the Amazon listings that may '
   + 'be it: every listing the scan saved whose title names the part\'s model as a whole token (RYOBI: with or without its '
-  + 'tool-only B), the listings of an answered match question, and the listing the tool chose, in ASIN order. Nothing here says '
+  + 'tool-only B), the listings of an answered or open match question, and the listing the tool chose, in ASIN order. Nothing here says '
   + 'which listing the tool chose or how it graded any of them. Write the labels to labels.json in this folder.';
 const TOOL_ABOUT = 'What the tool chose for each part of the audited scan. Never shown to the checker. npm run audit -- score '
   + 'reads it with labels.json.';
@@ -223,7 +226,7 @@ export function prepareAudit(exp: AuditExport): { blind: BlindFile; tool: ToolFi
         if (!titleHasModel(p.brand, l.title, p.model)) continue;
         rows.set(l.asin, { c: { asin: l.asin, title: l.title, brand: l.brand ?? null, price: l.price ?? null, reviews: l.reviews ?? null, link: amazonLink(l.asin) }, from: 'saved listing' });
       }
-      for (const q of exp.answers) {
+      for (const q of [...exp.answers, ...(exp.questions ?? [])]) {
         if (q.kind !== 'match' || q.subject !== key) continue;
         for (const c of q.candidates ?? []) {
           if (rows.has(c.asin)) continue;

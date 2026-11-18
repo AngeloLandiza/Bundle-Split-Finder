@@ -23,7 +23,7 @@ Amazon listings, the match records and the answered review items. It never holds
 writes, under `audit/2026-11-20/` (gitignored):
 
 - `blind.json`, for the checker: per bundle part, every saved listing whose title names the part's model
-  as a whole token (RYOBI: with or without its tool-only B), the listings of an answered match question,
+  as a whole token (RYOBI: with or without its tool-only B), the listings of an answered or open match question,
   and the listing the tool chose, in ASIN order. No grade, no chosen ASIN, no source.
 - `tool.json`, never shown to the checker: per part, the tool's status, listing, grade and source, and
   where each candidate's row came from.
@@ -104,6 +104,9 @@ to the corpus, which already holds those pairs.
 - The extension saves an Amazon row only when its brand field is DEWALT or RYOBI, so a listing with an
   empty brand field (B0BL8BC8MF "Ryobi PCL265 …") never reaches an export unless a match question showed
   it, and even then it does not become a pair.
-- The export's parts do not say whether the scan asked for a part as a kit. Such a pair is graded as for
-  a part the catalog does not know (`isKit: null`); DEWALT `DCK…` is a kit either way.
+- Exports made before step 8c fix round 1 do not say whether the scan asked for a part as a kit. Such a pair is graded as for
+  a part the catalog does not know (`isKit: null`); DEWALT `DCK…` is a kit either way. Newer exports carry `isKit` on every part.
+- Export version 1 also carries `questions`, the open review items. `prepare` shows the candidates of an open match
+  question to the checker like those of an answered one (title, price, reviews; never the reasons or a grade), so a row
+  with an empty brand field that the scan never saved as a listing can still be labelled. Older files lack the field.
 - Only the primary way to sell is exported: the items of a split kit option are not audited.

@@ -232,6 +232,32 @@ describe('the corpus rules', () => {
   });
 });
 
+describe('open questions in the export', () => {
+  const part = { brand: 'RYOBI', model: 'PCL265B', qty: 1, asin: null, grade: null, source: null, isKit: false };
+  const base: AuditExport = {
+    kind: 'split-finder-audit', version: 1, exportedAt: 0, listings: [], matches: [], answers: [],
+    bundles: [{ key: 'homedepot:1', itemId: '1', brand: 'RYOBI', model: 'PCL-X', title: 't', section: 'waiting', split: ['PCL265B'], parts: [part] }],
+  };
+  const open = {
+    id: 'match:RYOBI:PCL265B', kind: 'match' as const, subject: 'RYOBI:PCL265B', brand: 'RYOBI', model: 'PCL265B', title: null, reason: 'two listings', choices: [],
+    openedAt: 0, answer: null, answeredAt: null,
+    candidates: [{ asin: 'B0BL8BC8MF', title: 'Ryobi PCL265 18V Tool ONLY', price: 20, reviews: 3, reasons: ['brand field empty'], seenAt: 0 }],
+  };
+
+  it('shows the candidates of an open match question to the checker, with no grade or choice', () => {
+    const { blind, tool } = prepareAudit({ ...base, questions: [open] });
+    expect(blind.bundles[0]!.parts[0]!.candidates.map((c) => c.asin)).toEqual(['B0BL8BC8MF']);
+    expect(JSON.stringify(blind.bundles)).not.toMatch(/reasons|grade|brand field empty/);
+    expect(tool.bundles[0]!.parts[0]!.candidates).toEqual([{ asin: 'B0BL8BC8MF', from: 'match question' }]);
+  });
+
+  it('still reads a version 1 file with no questions field', () => {
+    const { blind } = prepareAudit(base);
+    expect(blind.bundles[0]!.parts[0]!.candidates).toEqual([]);
+    expect(readExport(JSON.stringify(base)).questions).toBeUndefined();
+  });
+});
+
 describe('the validation seed', () => {
   it('the committed corpus holds every validation pair, labelled as the labels say', async () => {
     const corpus = new Map(readCorpus(CORPUS).pairs.map((p) => [pairKey(p), p]));

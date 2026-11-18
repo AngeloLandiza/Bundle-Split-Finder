@@ -13,11 +13,13 @@
 ```
 { "kind": "split-finder-audit", "version": 1, "exportedAt": <ms>,
   "bundles": [ { "key", "itemId", "brand", "model", "title", "section", "split": string[] | null,
-                 "parts": [ { "brand", "model", "qty", "asin": string | null, "grade": string | null, "source": string | null } ] } ],
+                 "parts": [ { "brand", "model", "qty", "asin": string | null, "grade": string | null, "source": string | null, "isKit": boolean } ] } ],
   "listings": [ ListingRecord as stored (asin, title, brand, model?, price, …) ],
   "matches":  [ MatchRecord as stored ],
-  "answers":  [ answered ReviewItem as stored ] }
+  "answers":  [ answered ReviewItem as stored ],
+  "questions": [ open ReviewItem (answer null) as stored ] }
 ```
+Fix round 1 added `isKit` (what wantedFor asks of the part, from the scan's catalog) and `questions` (open items, whose candidates may be rows the scan never saved as listings) to **version 1**. Both are additive: `prepare` reads a version 1 file without them.
 Never the key, never settings. Parts are the report's rows (primary way to sell).
 
 ## Task 1 (Sonnet): the export

@@ -9,7 +9,9 @@ import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer } from '@core/scan
 import type { ProductPage } from '@core/hdPage';
 import { notePage } from '@core/scan/pageView';
 import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
+import { wantedFor } from '@core/scan/classify';
 import { runScan } from '@core/scan/runner';
+import { knownModels } from '@core/scan/split';
 import { partKey, type BudgetView, type BundleRow, type PaidAction, type Quote, type ReadPages, type ReviewAnswer, type ScanJob, type ScanStore } from '@core/scan/types';
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
@@ -625,13 +627,15 @@ export function createWorker(env: WorkerEnv): Worker {
    */
   async function exportAudit(): Promise<Reply<string>> {
     const report = await buildReport(store, toScanSettings(await settings()));
+    // The catalog the scan's own lookups use (knownModels), so isKit is what wantedFor asks.
+    const { catalog } = await knownModels(store);
     const bundles = [];
     for (const row of report.bundles) {
       const record = await store.getBundle(row.key);
       const parts = [];
       for (const p of row.parts) {
         const match = await store.getMatch(partKey(row.brand, p.model));
-        parts.push({ brand: row.brand, model: p.model, qty: p.qty, asin: p.asin, grade: p.grade, source: match?.source ?? null });
+        parts.push({ brand: row.brand, model: p.model, qty: p.qty, asin: p.asin, grade: p.grade, source: match?.source ?? null, isKit: wantedFor(row.brand, p.model, catalog).isKit === true });
       }
       bundles.push({
         key: row.key, itemId: row.itemId, brand: row.brand, model: row.model, title: row.title, section: row.section,
@@ -639,10 +643,13 @@ export function createWorker(env: WorkerEnv): Worker {
         parts,
       });
     }
-    const answers = (await store.listReview()).filter((r) => r.answer !== null);
+    const review = await store.listReview();
+    const answers = review.filter((r) => r.answer !== null);
+    // Open questions carry candidates the scan never saved as listings (a row with an empty brand field).
+    const questions = review.filter((r) => r.answer === null);
     const audit = {
       kind: 'split-finder-audit', version: 1, exportedAt: env.now(),
-      bundles, listings: await store.listListings(), matches: await store.listMatches(), answers,
+      bundles, listings: await store.listListings(), matches: await store.listMatches(), answers, questions,
     };
     return ok(JSON.stringify(audit, null, 2));
   }
