@@ -31,6 +31,9 @@ reads `docs/orchestration.md`: which model does which task, and what may run in 
     npm run test:live     spends at most 2 searches
     npm run scan -- --fixtures   free: the whole pipeline on recorded responses
     npm run scan -- --limit N    spends up to N searches (demo bucket)
+    npm run package              the versioned zip for the PM, in output/ (see docs/install.md)
+    npm run validate -- --dry-run  free: what the validation run would spend; --replay: no network
+    npm run audit -- prepare <export.json>   an audit from a real scan (see docs/audit.md)
 
 ## Rules that are not negotiable
 

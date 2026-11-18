@@ -33,3 +33,14 @@ Worker message `exportAudit` → the JSON above; Settings → Your data gains **
 
 ## Rules
 No searches; no network in tests; never read .env. Typecheck, npm test, e2e pass.
+
+## Where this stands (2026-11-18)
+
+Done on main. The audit loop: Export for audit (Sonnet; with `isKit` and open questions), `npm run audit -- prepare | score | seed-validation` (Opus), `fixtures/audit/corpus.json` seeded with the validation's 279 labelled pairs, and `core/test/match-corpus.test.ts` grading every pair with the scan's own `grade(wantedFor(…), row)`; docs/audit.md and docs/audit-checker.md.
+
+What it caught and what was fixed (each with an Opus review and an independent re-check):
+- Step 8b, the four misses: PCL265B, PBP004, A986501, PBP2003 now reach the owner as review questions (root causes: "Battery and Charger NOT Included" read as a kit; "TTI Ryobi"; a part that is itself a set or a pack). One fix round kept "Replacement"/OEM titles rejected, read "not included" only with and/&/or, and guarded both written forms of a tool-only model.
+- The corpus's first run: DCK240C2 sold with a saw, a bit set or a mechanics set graded probable as the kit. Now review (`KIT_WITH_EXTRAS`); one fix round closed whole-word, every-joining-word, extra-battery and "70PC" gaps and two false triggers found on the recordings.
+- Throughout: the 216 probable-or-better recorded pairs unchanged; the validation replay unchanged (78 of 78 probable right, no wrong match); no known pair left in the corpus.
+
+Open: the first audit of a real scan (the owner exports; the controller runs the blind checker with docs/audit-checker.md); remaining documented gaps in decisions.md.
