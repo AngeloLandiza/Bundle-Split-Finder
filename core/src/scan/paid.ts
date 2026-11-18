@@ -56,11 +56,21 @@ export function quotePaid(action: PaidAction, saved: { listingAnswers: (brand: s
   if (action.kind === 'verify') return { searches: 1, refusal: overBudget(budget, 1) };
   // Ruling 70: a RYOBI part asked for in both its written forms is one search (onePerProduct); then
   // Ruling 72's cap, exactly as lookUp counts them, so the quote is what a press spends.
-  const needed = onePerProduct(partsOf(action.parts).filter((p) => !saved.listingAnswers(p.brand, p.model))).length;
+  const needed = lookupsNeeded(action.parts, saved);
   const searches = fitting(budget, needed);
   const quote: Quote = { searches, refusal: overBudget(budget, searches) };
   if (searches < needed) quote.leftWaiting = needed - searches;
   return quote;
+}
+
+/**
+ * The searches a Look up of `parts` needs, before any limit or budget: one per part asked for that
+ * `saved` does not answer, a RYOBI part written two ways once (Ruling 70). quotePaid caps it by the
+ * per-scan limit (Ruling 72); a product page the owner has open shows it uncapped (pageView.ts),
+ * since the cap and the budget need the account, and reading a page never checks it.
+ */
+export function lookupsNeeded(parts: { brand: string; model: string }[], saved: Pick<SavedAnswers, 'listingAnswers'>): number {
+  return onePerProduct(partsOf(parts).filter((p) => !saved.listingAnswers(p.brand, p.model))).length;
 }
 
 /** The SavedAnswers of the store as it is now. */
@@ -336,8 +346,8 @@ export function requestProblem(action: unknown): string | null {
   return Array.isArray(parts) && parts.length > 0 && parts.every((p) => isRecord(p) && isText(p.brand) && isText(p.model)) ? null : UNREADABLE_REQUEST;
 }
 
-/** A scan's counts at zero: the panel's steps count into them, and they are not kept. */
-const noCounts = (): ScanCounts => ({
+/** A scan's counts at zero: the panel's steps (and a product page's, pageView.ts) count into them, and they are not kept. */
+export const noCounts =(): ScanCounts => ({
   pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
   catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
 });

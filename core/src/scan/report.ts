@@ -51,7 +51,7 @@ async function partRows(store: ScanStore, brand: string, counts: Record<string, 
 }
 
 /** A part not looked up yet: it has no listing because nobody has looked, not because there is none. */
-const notLookedUp = (p: PartRow): boolean => p.status === 'waiting' || p.status === 'unmatched';
+export const notLookedUp = (p: PartRow): boolean => p.status === 'waiting' || p.status === 'unmatched';
 
 // A bundle with no parts is never confirmed, and neither is one without its own price. A priced
 // bundle with a part not looked up yet waits for that lookup, before any listing says inactive or missing.
@@ -232,6 +232,11 @@ async function bundleRow(
     options: [primary, ...evaluated.filter((_, i) => i !== p)].map((e) => e.option),
     kitsNotRead,
   };
+}
+
+/** One bundle's row, exactly as buildReport builds it. A product page the owner has open shows it (pageView.ts). Reads only. */
+export async function reportRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
+  return bundleRow(store, settings, b, kitIndex(kitRecords(await store.listBundles(), await store.listCatalog())));
 }
 
 export async function buildReport(store: ScanStore, settings: ScanSettings): Promise<ScanReport> {
