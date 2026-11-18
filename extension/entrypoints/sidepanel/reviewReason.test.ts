@@ -23,7 +23,7 @@ describe('reviewReason', () => {
     ['title names a battery or charger only as not included', 'A listing mentions a battery or charger only to say it is not included.'],
     ['title says kit, and a RYOBI model number does not say whether the part is itself a kit', 'A listing says kit. Check whether this part is itself a kit or a set.'],
     ["title says a pack of 2, and a RYOBI model number does not say the part's pack size", 'A listing is a pack of 2. Check whether this part is itself that pack.'],
-    ['title sells the kit with more: another tool or an accessory set', 'A listing sells this kit with another tool or an accessory set. Check whether it is only this kit.'],
+    ['title sells the kit with more: another tool or an accessory set', 'A listing sells this kit with another tool or an accessory set. Check whether it is this kit alone.'],
     ['1 listing(s) show the model number, but the brand is not confirmed (3 more not shown)', 'One listing shows this model number, but its brand is not confirmed. 3 more listings are not shown.'],
     ['title says Replacement or OEM, which often marks a spare part (12 more not shown)', "Some of these listings say Replacement or OEM in their titles, which often means a spare part. 12 more listings are not shown."],
     ['page does not name DCB606', 'The Home Depot page does not name DCB606.'],

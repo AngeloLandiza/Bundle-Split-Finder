@@ -42,7 +42,7 @@ const RULES: Rule[] = [
   [/^title says kit, and a RYOBI model number does not say whether the part is itself a kit$/, plain('A listing says kit. Check whether this part is itself a kit or a set.')],
   [/^title says a pack of (\d+), and a RYOBI model number does not say the part's pack size$/, (m) => [words(`A listing is a pack of ${m[1]}. Check whether this part is itself that pack.`)]],
   // A kit part: a listing that sells the kit with more (core/src/match.ts, KIT_WITH_EXTRAS).
-  [/^title sells the kit with more: another tool or an accessory set$/, plain('A listing sells this kit with another tool or an accessory set. Check whether it is only this kit.')],
+  [/^title sells the kit with more: another tool or an accessory set$/, plain('A listing sells this kit with another tool or an accessory set. Check whether it is this kit alone.')],
   [/^title says Replacement or OEM, which often marks a spare part$/, plain('Some of these listings say Replacement or OEM in their titles, which often means a spare part.')],
   // Ruling 71: a match question shows at most 5 listings, and the count of the rest is its own note (scan/runner.ts).
   [/^1 more listing\(s\) not shown$/, plain('1 more listing is not shown.')],
