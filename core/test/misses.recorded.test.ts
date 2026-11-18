@@ -113,3 +113,55 @@ describe('guards: what stays rejected', () => {
     expect(grade({ brand: 'RYOBI', model: 'PCL540' }, c).grade).toBe('reject');
   });
 });
+
+// Fix round 1 (review of the step 8b fix). Hand-made titles, each labelled: none is recorded.
+describe('fix round 1: the step 8b relaxations stay narrow', () => {
+  it.each([
+    ['empty brand field, title leads with Ryobi', null],
+    ['RYOBI brand field', 'RYOBI'],
+  ])('hand-made: a "Replacement" pack stays rejected exactly as before (%s)', (_name, brand) => {
+    const c: Candidate = { asin: 'H1', title: 'Ryobi P102 2 Pack Replacement Battery', brand };
+    const g = grade({ brand: 'RYOBI', model: 'P102' }, c);
+    expect(g.grade).toBe('reject');
+    expect(g.reasons).toEqual(['pack of 2, component is a pack of 1']);
+  });
+
+  it('hand-made: a "Replacement" title whose kit words are only "not included" stays rejected as a kit', () => {
+    const c: Candidate = { asin: 'H2', title: 'Ryobi PCL265 Replacement Impact Wrench, Battery and Charger Not Included', brand: null };
+    expect(grade({ brand: 'RYOBI', model: 'PCL265' }, c)).toMatchObject({ grade: 'reject', reasons: ['listing is a kit, component is a single item'] });
+  });
+
+  it.each([
+    // "," is not a separator: "with Battery" is left, a kit word.
+    ['RYOBI PCL265 Impact Wrench with Battery, Charger Not Included'],
+    // The rest of the title still names batteries.
+    ['RYOBI PCL265 Impact Wrench, Battery and Charger Not Included, Includes 2 Batteries'],
+  ])('hand-made: "%s" is not read as "only as not included"', (title) => {
+    const g = grade({ brand: 'RYOBI', model: 'PCL265' }, { asin: 'H3', title, brand: 'RYOBI' });
+    expect(g.grade).toBe('reject');
+    expect(g.reasons).not.toContain(NOT_INCLUDED);
+  });
+
+  it('hand-made: "Sold Separately" is not read (conservative): the kit word still rejects', () => {
+    const c: Candidate = { asin: 'H4', title: 'RYOBI PCL265 Impact Wrench, Battery and Charger Sold Separately', brand: 'RYOBI' };
+    expect(grade({ brand: 'RYOBI', model: 'PCL265' }, c).grade).toBe('reject');
+  });
+
+  it.each([
+    // The part written without its tool-only B (Ruling 70 twin) is the same bare tool.
+    ['PCL265', 'RYOBI PCL265 2-Pack'],
+    ['PCL265', 'RYOBI PCL265B 18V Impact Wrench 2-Pack, Battery Not Included'],
+    ['PCL265B', 'RYOBI PCL265 18V Impact Wrench (2-Pack)'],
+  ])('hand-made: part %s against "%s" opens no pack question', (model, title) => {
+    const g = grade({ brand: 'RYOBI', model }, { asin: 'H5', title, brand: 'RYOBI' });
+    expect(g.grade).toBe('reject');
+    expect(g.reasons[0]).toMatch(/^pack of 2, component is a pack of 1$/);
+  });
+
+  it('hand-made: the not-included rule also covers DEWALT (review, never above)', () => {
+    const c: Candidate = { asin: 'H6', title: 'DEWALT 20V MAX Impact Driver DCF887B, Battery and Charger Not Included', brand: 'DEWALT' };
+    const g = grade({ brand: 'DEWALT', model: 'DCF887B' }, c);
+    expect(g.grade).toBe('review');
+    expect(g.reasons[0]).toBe(NOT_INCLUDED);
+  });
+});

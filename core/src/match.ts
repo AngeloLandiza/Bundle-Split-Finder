@@ -42,8 +42,10 @@ const KIT_WORDS = /\b(kit|combo|bundle|with battery|with charger|w\/ battery|and
 // that is itself the part (A986501, a 65-piece accessory kit).
 const KIT_CONTENTS = /\b(combo|bundle|batter(?:y|ies)|chargers?|\d+(?:\.\d+)?\s*ah)\b/i;
 // Step 8b: "Battery and Charger NOT Included" (B0BL8BC8MF, PSBDD01, P2900B) says the opposite of a
-// kit. Only the battery and charger the phrase names are taken out; any other kit word still counts.
-const NOT_INCLUDED_PHRASE = /\b(?:batter(?:y|ies)|charger)(?:\s*(?:,|and|&|or)\s*(?:batter(?:y|ies)|charger))*\s+(?:(?:is|are)\s+)?not\s+included\b/gi;
+// kit. Only the battery and charger the phrase names are taken out, joined by "and", "&" or "or" (a
+// comma may end the list: "with Battery, Charger Not Included"); any other kit word still counts.
+// "Sold Separately" is not read: such a title stays rejected (conservative, fix round 1).
+const NOT_INCLUDED_PHRASE = /\b(?:batter(?:y|ies)|charger)(?:\s+(?:and|&|or)\s+(?:batter(?:y|ies)|charger))*\s+(?:(?:is|are)\s+)?not\s+included\b/gi;
 // Step 8b: a third-party title says what it is for. Never a reason to lift a reject.
 const FOR_BRAND = /\bfor\s+(ryobi|dewalt)\b/i;
 // Step 8b: TTI makes RYOBI; "TTI Ryobi PBP004 …" (B09HDZ5MPV) states the brand with no brand field.
@@ -168,7 +170,11 @@ export function grade(want: Wanted, cand: Candidate): Graded {
   // Step 8b: a RYOBI title with the brand stated and the model as a whole token, not "for Ryobi". RYOBI's
   // model numbers do not say whether a part is a pack or a kit (PBP2003 is a 2-pack, A986501 a 65-piece
   // kit, PCL265B a tool), so a pack or a bare "kit" in such a title is a question, not a reject.
-  const ryobiOwn = brand === 'RYOBI' && titleOk && (brandField || brandPrefix || makerPrefix) && !FOR_BRAND.test(cand.title);
+  // A title that says "Replacement" or "OEM" (MAYBE_SPARE_PART) is rejected by these rules as before.
+  const sparePart = MAYBE_SPARE_PART.test(cand.title);
+  const ryobiOwn = brand === 'RYOBI' && titleOk && (brandField || brandPrefix || makerPrefix) && !FOR_BRAND.test(cand.title) && !sparePart;
+  // The title with the battery and charger it says are not included taken out.
+  const rest = cand.title.replace(NOT_INCLUDED_PHRASE, ' ');
   // Set when a rule below would have rejected the title but cannot know: the grade is review at most.
   let cap: string | null = null;
 
@@ -178,15 +184,20 @@ export function grade(want: Wanted, cand: Candidate): Graded {
   const wantQty = want.packQty ?? 1;
   if (qty && qty !== wantQty) {
     // DEWALT writes a pack in its model (DCB205-2, wantedFor sets packQty). A RYOBI model with the
-    // tool-only B (PBLRC25B) is one bare tool, so its pack stays rejected; so does a bulk pack.
-    const toolOnly = want.model.trim().toUpperCase().endsWith('B');
-    if (want.packQty === undefined && ryobiOwn && !toolOnly && packaging === 'retail') cap = packNotKnown(qty);
+    // tool-only B (PBLRC25B) is one bare tool, so its pack stays rejected, in either written form
+    // (Ruling 70): the part's model or the title's ends in B. So does a bulk pack. Fix round 1: a pack
+    // opens a question only when the title names a battery, as every RYOBI pack model on the
+    // recordings does (PBP2003, PBP2005, P102, P129, P145, P161, P164); "RYOBI PCL265 2-Pack" does not.
+    const m = want.model.trim().toUpperCase();
+    const toolOnly = m.endsWith('B') || (ryobiOwn && hasModelToken(cand.title, `${ryobiBase(m)}B`));
+    const battery = /\bbatter(?:y|ies)\b/i.test(rest);
+    if (want.packQty === undefined && ryobiOwn && !toolOnly && battery && packaging === 'retail') cap = packNotKnown(qty);
     else return out('reject', `pack of ${qty}, component is a pack of ${wantQty}`);
   }
 
   if (!want.isKit && KIT_WORDS.test(cand.title) && !partOk) {
-    const rest = cand.title.replace(NOT_INCLUDED_PHRASE, ' ');
-    if (!KIT_WORDS.test(rest) && !FOR_BRAND.test(cand.title)) cap ??= NOT_INCLUDED;
+    // Fix round 1: and nothing else in the title names a battery or charger ("…, Includes 2 Batteries").
+    if (!KIT_WORDS.test(rest) && !KIT_CONTENTS.test(rest) && !FOR_BRAND.test(cand.title) && !sparePart) cap ??= NOT_INCLUDED;
     else if (ryobiOwn && !KIT_CONTENTS.test(rest)) cap ??= KIT_NOT_KNOWN;
     else return out('reject', 'listing is a kit, component is a single item');
   }
