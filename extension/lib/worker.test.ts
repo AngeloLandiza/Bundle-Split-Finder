@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { replayRecorded, type Replay } from '../../scripts/replay';
 import * as fx from '../../core/test/fixtures';
@@ -10,7 +11,10 @@ import { noticeSentence } from '../entrypoints/sidepanel/Notice';
 import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
 import type { AppState, PanelReport, Reply, Request } from './messages';
 import type { ActiveScan, StoredAccount } from './prefs';
-import { createWorker, type Prefs, type Worker } from './worker';
+import { parseProductPage, type ProductPage } from '@core/hdPage';
+import { notePage, type PageView } from '@core/scan/pageView';
+import { toScanSettings } from '@core/settings';
+import { createWorker, type PageEnv, type Prefs, type Worker } from './worker';
 
 // Every search goes through the real SerpApiClient over replayRecorded(); the Account API
 // is a fake answered from fx.SERPAPI_ACCOUNT_FREE. Nothing reaches the network.
@@ -118,7 +122,42 @@ function clearableCache(): Cache & { clear(): Promise<void> } {
   };
 }
 
+/** The chip's page visits in memory: what chrome.storage.session and chrome.sidePanel give the worker, with a record of every call. */
+class FakePages implements PageEnv {
+  pages = new Map<number, ProductPage>();
+  wantedTabs = new Set<number>();
+  /** Every sidePanel.open call, in order. */
+  opened: number[] = [];
+  /** Every nudge sent to open panels. */
+  told: number[] = [];
+  /** Set to make sidePanel.open refuse, as Chrome does without a user action. */
+  refuseOpen = false;
+  async load(tabId: number) {
+    const p = this.pages.get(tabId);
+    return p ? structuredClone(p) : null;
+  }
+  async save(tabId: number, page: ProductPage | null) {
+    if (page === null) this.pages.delete(tabId);
+    else this.pages.set(tabId, structuredClone(page));
+  }
+  async setWanted(tabId: number, on: boolean) {
+    if (on) this.wantedTabs.add(tabId);
+    else this.wantedTabs.delete(tabId);
+  }
+  async wanted(tabId: number) {
+    return this.wantedTabs.has(tabId);
+  }
+  openPanel(tabId: number) {
+    this.opened.push(tabId);
+    return this.refuseOpen ? Promise.reject(new Error('sidePanel.open() may only be called in response to a user gesture.')) : Promise.resolve();
+  }
+  tell(tabId: number) {
+    this.told.push(tabId);
+  }
+}
+
 interface World {
+  pages: FakePages;
   store: MemoryScanStore;
   cache: Cache & { clear(): Promise<void> };
   prefs: FakePrefs;
@@ -158,6 +197,7 @@ function world(setup: Setup = {}): World {
     ledger: [],
     notified: [],
     broadcasts: [],
+    pages: new FakePages(),
     requests: [],
     accountOver: setup.accountOver ?? {},
     beforeSearch: () => {},
@@ -194,10 +234,11 @@ function workerOver(w: World, store: ScanStore = w.store): Worker {
     notify: (rows) => void w.notified.push(rows),
     broadcast: (state) => void w.broadcasts.push(state),
     readPages: w.readPages,
+    pages: w.pages,
   });
 }
 
-const send = <T = unknown>(w: World, request: Request): Promise<Reply<T>> => w.worker.onMessage(request) as Promise<Reply<T>>;
+const send = <T = unknown>(w: World, request: Request, sender?: { tabId?: number }): Promise<Reply<T>> => w.worker.onMessage(request, sender) as Promise<Reply<T>>;
 
 async function state(w: World): Promise<AppState> {
   const reply = await send<AppState>(w, { type: 'getState' });
@@ -1653,5 +1694,253 @@ describe('worker: answerReview', () => {
     await finish();
     expect(await send(w, { type: 'reopenReview', id: AMBIGUOUS })).toEqual({ ok: true, data: null });
     expect(await w.store.getReview(AMBIGUOUS)).toMatchObject({ answer: null, answeredAt: null });
+  });
+});
+
+// ---------------------------------------------------------------- the chip and This page (step 7)
+
+describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openThisPage)', () => {
+  // The pages are the recorded ones in fixtures/homedepot-pages (328814689, RYOBI PBLRC2501SB, is the founder's bundle);
+  // its price is the shape captured on Nov 17 ($189, was $338), which the Nov 10 recordings cut out.
+  const recorded = (JSON.parse(readFileSync(new URL('../../fixtures/homedepot-pages/pages-2026-11-10.json', import.meta.url), 'utf8')) as {
+    pages: { itemId: string; text: string }[];
+  }).pages;
+  const priced = (itemId: string, value: number, original: number): ProductPage => {
+    const mark = `"base-catalog-${itemId}":{`;
+    const entry = `"pricing({\\"isBrandPricingPolicyCompliant\\":false,\\"storeId\\":\\"8119\\"})":{"value":${value},"original":${original}},`;
+    return parseProductPage(recorded.find((p) => p.itemId === itemId)!.text.replace(mark, mark + entry), itemId)!;
+  };
+  const unpriced = (itemId: string): ProductPage => parseProductPage(recorded.find((p) => p.itemId === itemId)!.text, itemId)!;
+  const FOUNDER = priced('328814689', 189, 338);
+  /** PCL500525SB: no split rule and no Includes list, so its split is a question that offers no reading. */
+  const ASKED = unpriced('328690510');
+  const ASKED_KEY = 'homedepot:328690510';
+  const KIT = unpriced('317987591');
+  const TAB = 7;
+
+  const seen = (w: World, page: ProductPage, tabId: number | undefined = TAB) => send<PageView>(w, { type: 'pageSeen', page }, { tabId });
+  const thisPage = (w: World, tabId = TAB) => send<{ kind: string } & Partial<PageView>>(w, { type: 'getThisPage', tabId });
+  const bundleOf = (reply: Reply<unknown>) => {
+    if (!reply.ok) throw new Error(reply.error);
+    const view = reply.data as PageView;
+    if (view.kind !== 'bundle') throw new Error(`expected a bundle, got ${view.kind}`);
+    return view;
+  };
+  /** Everything the store holds that a visit could write. */
+  async function stored(w: World) {
+    return { bundles: await w.store.listBundles(), review: await w.store.listReview(), matches: await w.store.listMatches(), scans: await w.store.listScans() };
+  }
+  /** The view notePage gives over a store of its own, as the one to compare the worker's with. */
+  async function direct(page: ProductPage, now = T0): Promise<PageView> {
+    return notePage(new MemoryScanStore(), toScanSettings(RYOBI), page, now);
+  }
+
+  it('the founder\'s page: split into PBLRC25B and PBLRC01B from the page, priced at $189, stored, remembered for the tab, and not one request sent', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const before = w.broadcasts.length;
+    const view = bundleOf(await seen(w, FOUNDER));
+    expect(view).toMatchObject({ model: 'PBLRC2501SB', parts: 2, question: null, key: 'homedepot:328814689' });
+    expect(view.row).toMatchObject({ price: 189, regularPrice: 338, parts: [{ model: 'PBLRC25B' }, { model: 'PBLRC01B' }] });
+    // The same view a scan's own steps give over an empty store.
+    expect(view).toEqual(await direct(FOUNDER));
+    expect(await w.store.getBundle('homedepot:328814689')).toMatchObject({ price: 189, seenAt: T0, split: { status: 'resolved', components: ['PBLRC25B', 'PBLRC01B'] } });
+    expect(w.pages.pages.get(TAB)).toEqual(FOUNDER);
+    // The panel hears of it, the key is never asked for, nothing is sent anywhere.
+    expect(w.broadcasts.length).toBe(before + 1);
+    expect(w.requests).toEqual([]);
+    expect(w.replay.calls).toEqual([]);
+    expect(await w.store.listScans()).toEqual([]);
+  });
+
+  it('works with no key at all: a page visit never needs one', async () => {
+    const w = world({ settings: RYOBI });
+    expect(bundleOf(await seen(w, FOUNDER)).parts).toBe(2);
+    expect(w.requests).toEqual([]);
+  });
+
+  it('refuses a page with no tab (an extension page sent it) and stores nothing', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    expect(await send(w, { type: 'pageSeen', page: FOUNDER })).toEqual({ ok: false, error: 'This request needs a browser tab.' });
+    expect(await stored(w)).toMatchObject({ bundles: [], review: [] });
+    expect(w.pages.pages.size).toBe(0);
+  });
+
+  it('a page that is not a bundle (a plain kit) is none: nothing is stored, and the tab no longer holds the page it showed before', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seen(w, FOUNDER);
+    const bundles = await w.store.listBundles();
+    expect(await seen(w, KIT)).toEqual({ ok: true, data: { kind: 'none' } });
+    expect(await w.store.listBundles()).toEqual(bundles);
+    expect(w.pages.pages.has(TAB)).toBe(false);
+    expect(await thisPage(w)).toEqual({ ok: true, data: { kind: 'empty' } });
+  });
+
+  it('a brand turned off in settings, and a page with a price that is not a number, are none and are not remembered', async () => {
+    const w = world({ key: KEY, settings: { ...DEFAULT_SETTINGS, brands: ['DEWALT'] } });
+    expect(await seen(w, FOUNDER)).toEqual({ ok: true, data: { kind: 'none' } });
+    expect(w.pages.pages.size).toBe(0);
+    const v = world({ key: KEY, settings: RYOBI });
+    const bad = { ...FOUNDER, price: 'free' } as unknown as ProductPage;
+    expect(await seen(v, bad)).toEqual({ ok: true, data: { kind: 'none' } });
+    expect(v.pages.pages.size).toBe(0);
+    expect(await v.store.listBundles()).toEqual([]);
+  });
+
+  it('keeps only the fields of a page: what else a script put in the message is not stored', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seen(w, { ...FOUNDER, extra: 'x'.repeat(5000), apiKey: 'nope' } as unknown as ProductPage);
+    expect(w.pages.pages.get(TAB)).toEqual(FOUNDER);
+  });
+
+  it('a page that needs an answer: the view carries the question, and the answer through answerReview shows in the next view', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const view = bundleOf(await seen(w, ASKED));
+    expect(view).toMatchObject({ parts: 0, question: { id: `split:${ASKED_KEY}`, kind: 'split', answer: null, choices: [] } });
+    expect(view.row.status).toBe('needs_review');
+    const answer: ReviewAnswer = { parts: ['PCL500B', 'PBP005'], seen: reviewSignature(view.question!) };
+    expect(await send(w, { type: 'answerReview', id: view.question!.id, answer })).toEqual({ ok: true, data: null });
+    // The page is not sent again: the tab's view is rebuilt from the store, and the question is gone.
+    const after = bundleOf(await thisPage(w));
+    expect(after.question).toBeNull();
+    expect(after.row.parts.map((p) => p.model)).toEqual(['PCL500B', 'PBP005']);
+    expect(after.parts).toBe(2);
+  });
+
+  it('getThisPage rebuilds the same view with no search and no write, and an unseen tab is empty', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const first = bundleOf(await seen(w, FOUNDER));
+    const snapshot = await stored(w);
+    w.clock = T0 + HOUR;
+    const reply = await thisPage(w);
+    expect(reply.ok && reply.data).toMatchObject({ kind: 'bundle', key: first.key, parts: first.parts, model: first.model });
+    expect(await stored(w)).toEqual(snapshot);
+    expect(w.requests).toEqual([]);
+    expect(await thisPage(w, 99)).toEqual({ ok: true, data: { kind: 'empty' } });
+    for (const bad of ['7', 1.5, null, undefined]) {
+      expect(await send(w, { type: 'getThisPage', tabId: bad } as unknown as Request), String(bad)).toEqual({ ok: false, error: 'This request needs a browser tab.' });
+    }
+  });
+
+  it('two tabs hold two pages, and a tab that is closed forgets its own', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seen(w, FOUNDER, 1);
+    await seen(w, ASKED, 2);
+    expect(bundleOf(await thisPage(w, 1)).itemId).toBe('328814689');
+    expect(bundleOf(await thisPage(w, 2)).itemId).toBe('328690510');
+    await w.worker.onTabClosed(1);
+    expect(await thisPage(w, 1)).toEqual({ ok: true, data: { kind: 'empty' } });
+    expect(bundleOf(await thisPage(w, 2)).itemId).toBe('328690510');
+  });
+
+  it('seen again after the owner navigates in the page: the tab shows the new page', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seen(w, FOUNDER);
+    await seen(w, ASKED);
+    expect(bundleOf(await thisPage(w)).itemId).toBe('328690510');
+  });
+
+  it('three pages sent together are taken one after the other: each stored once, one question opened', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const replies = await Promise.all([seen(w, ASKED, 1), seen(w, ASKED, 2), seen(w, FOUNDER, 3)]);
+    expect(replies.every((r) => r.ok)).toBe(true);
+    expect((await w.store.listReview()).map((r) => r.id)).toEqual([`split:${ASKED_KEY}`]);
+    expect((await w.store.listBundles()).map((r) => r.key).sort()).toEqual(['homedepot:328690510', 'homedepot:328814689']);
+  });
+
+  it('while a scan runs the page is shown at once and nothing is written; it is stored when the scan has ended', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const gate = held(w);
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    const scanning = await stored(w);
+    const broadcasts = w.broadcasts.length;
+
+    // Not waited behind the scan, which is parked at its first search.
+    const view = bundleOf(await seen(w, ASKED));
+    expect(view).toMatchObject({ itemId: '328690510', question: { id: `split:${ASKED_KEY}` } });
+    expect(await stored(w)).toEqual(scanning);
+    expect(await w.store.getBundle(ASKED_KEY)).toBeUndefined();
+    expect(w.broadcasts.length).toBeGreaterThan(broadcasts);
+    // This page shows it too, still with nothing written.
+    expect(bundleOf(await thisPage(w)).itemId).toBe('328690510');
+    expect(await w.store.getBundle(ASKED_KEY)).toBeUndefined();
+
+    gate.release();
+    await untilIdle(w);
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toBeDefined());
+    expect(await w.store.getReview(`split:${ASKED_KEY}`)).toMatchObject({ answer: null });
+    // The scan used its own searches; the page used none.
+    expect(w.replay.calls).toEqual([RYOBI_PAGE, RATCHET, LOOKUP_01B, LOOKUP_25B]);
+  });
+
+  it('while a Look up runs the page is shown and not written either, and is stored when it has ended', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 1 } });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    let release!: () => void;
+    const open = new Promise<void>((resolve) => (release = resolve));
+    let reached!: () => void;
+    const atSearch = new Promise<void>((resolve) => (reached = resolve));
+    w.beforeSearch = async () => {
+      reached();
+      await open;
+    };
+    const lookUp = send(w, { type: 'runPaid', action: { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PBLRC01B' }] } });
+    await atSearch;
+    const snapshot = await stored(w);
+    expect(bundleOf(await seen(w, ASKED)).itemId).toBe('328690510');
+    expect(await stored(w)).toEqual(snapshot);
+    release();
+    expect(await lookUp).toEqual({ ok: true, data: null });
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toBeDefined());
+  });
+
+  it('a page seen while a scan runs, in a tab closed before the scan ends, is not stored', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    await seen(w, ASKED);
+    await w.worker.onTabClosed(TAB);
+    gate.release();
+    await untilIdle(w);
+    await w.worker.onTick();
+    expect(await w.store.getBundle(ASKED_KEY)).toBeUndefined();
+  });
+
+  it('openThisPage: Chrome is asked at once, for the sender\'s tab; the panel is told, and takes the answer once', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const reply = send<{ opened: boolean }>(w, { type: 'openThisPage' }, { tabId: TAB });
+    // Before any await: Chrome counts only a call made in answer to the click.
+    expect(w.pages.opened).toEqual([TAB]);
+    expect(await reply).toEqual({ ok: true, data: { opened: true } });
+    expect(w.pages.told).toEqual([TAB]);
+    expect(await send(w, { type: 'takeShowThisPage', tabId: 99 })).toEqual({ ok: true, data: false });
+    expect(await send(w, { type: 'takeShowThisPage', tabId: TAB })).toEqual({ ok: true, data: true });
+    expect(await send(w, { type: 'takeShowThisPage', tabId: TAB })).toEqual({ ok: true, data: false });
+  });
+
+  it('openThisPage when Chrome refuses to open the panel: opened is false, nothing is left for the panel, nobody is told', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.pages.refuseOpen = true;
+    expect(await send(w, { type: 'openThisPage' }, { tabId: TAB })).toEqual({ ok: true, data: { opened: false } });
+    expect(w.pages.told).toEqual([]);
+    expect(await send(w, { type: 'takeShowThisPage', tabId: TAB })).toEqual({ ok: true, data: false });
+  });
+
+  it('openThisPage with no tab is refused and opens nothing; takeShowThisPage refuses a tab id that is not a whole number', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    expect(await send(w, { type: 'openThisPage' })).toEqual({ ok: false, error: 'This request needs a browser tab.' });
+    expect(w.pages.opened).toEqual([]);
+    expect(await send(w, { type: 'takeShowThisPage', tabId: 'x' } as unknown as Request)).toEqual({ ok: false, error: 'This request needs a browser tab.' });
+  });
+
+  it('opening the panel does not wait for a scan, and a tab closed forgets the answer waiting for it', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    expect(await send(w, { type: 'openThisPage' }, { tabId: TAB })).toEqual({ ok: true, data: { opened: true } });
+    await w.worker.onTabClosed(TAB);
+    expect(await send(w, { type: 'takeShowThisPage', tabId: TAB })).toEqual({ ok: true, data: false });
+    gate.release();
+    await untilIdle(w);
   });
 });

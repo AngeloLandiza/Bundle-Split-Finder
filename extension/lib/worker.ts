@@ -6,6 +6,8 @@
 // "Rule n" refers to the step 3 plan, Task 5 ("The service worker").
 
 import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer } from '@core/scan/answers';
+import type { ProductPage } from '@core/hdPage';
+import { notePage } from '@core/scan/pageView';
 import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
 import { runScan } from '@core/scan/runner';
 import type { BudgetView, BundleRow, PaidAction, Quote, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
@@ -17,7 +19,7 @@ import {
 import { runCsv } from '@core/scan/csv';
 import { buildReport } from '@core/scan/report';
 import { nextRun, type Schedule } from '@core/schedule';
-import type { AppState, Packaging, PanelReport, Reply, Request } from './messages';
+import type { AppState, Packaging, PanelReport, Reply, Request, ThisPage } from './messages';
 import type { ActiveScan, StoredAccount } from './prefs';
 
 /** The functions of prefs.ts the worker uses, with the same names and signatures. */
@@ -40,6 +42,37 @@ export interface Prefs {
   setAccount(v: StoredAccount | null): Promise<void>;
 }
 
+/**
+ * What the chip's page visits need from Chrome, and what must outlive the worker (chrome.storage.session in the
+ * extension). Everything is by tab id.
+ */
+export interface PageEnv {
+  /** The Home Depot bundle page the tab last showed, or null. */
+  load(tabId: number): Promise<ProductPage | null>;
+  save(tabId: number, page: ProductPage | null): Promise<void>;
+  /** "Show This page" for the tab: set when the chip opened the panel, cleared when the panel takes it. */
+  setWanted(tabId: number, on: boolean): Promise<void>;
+  wanted(tabId: number): Promise<boolean>;
+  /** chrome.sidePanel.open({ tabId }). Called at once from the click's message, which Chrome counts as the user's action. Rejects when Chrome refuses. */
+  openPanel(tabId: number): Promise<void>;
+  /** Tells every open panel that the chip opened it for this tab. */
+  tell(tabId: number): void;
+}
+
+/** Pages kept in memory, for a worker with no `pages`: lost with the worker, and the side panel cannot be opened. */
+export function memoryPages(): PageEnv {
+  const pages = new Map<number, ProductPage>();
+  const wanted = new Set<number>();
+  return {
+    load: async (tabId) => pages.get(tabId) ?? null,
+    save: async (tabId, page) => void (page === null ? pages.delete(tabId) : pages.set(tabId, page)),
+    setWanted: async (tabId, on) => void (on ? wanted.add(tabId) : wanted.delete(tabId)),
+    wanted: async (tabId) => wanted.has(tabId),
+    openPanel: () => Promise.reject(new Error('No side panel here.')),
+    tell: () => {},
+  };
+}
+
 export interface WorkerEnv {
   store: ScanStore;
   /** The saved SerpApi responses. clear() empties them and nothing else. */
@@ -57,10 +90,19 @@ export interface WorkerEnv {
   baseUrl?: string;
   /** Reads bundle pages in the owner's browser; without it no page is read. */
   readPages?: ReadPages;
+  /** The chip's page visits (step 7). Without it, pages are kept in memory and the panel cannot be opened from the chip. */
+  pages?: PageEnv;
+}
+
+/** Who sent a request: the tab, when it came from a content script. */
+export interface RequestSender {
+  tabId?: number;
 }
 
 export interface Worker {
-  onMessage(request: Request): Promise<Reply>;
+  onMessage(request: Request, sender?: RequestSender): Promise<Reply>;
+  /** A tab was closed: what it showed is forgotten. */
+  onTabClosed(tabId: number): Promise<void>;
   /** The alarm. Resolves when the scan it started or continued has ended. */
   onTick(): Promise<void>;
   /** The worker started. Does what a tick does. */
@@ -91,6 +133,7 @@ const ACCOUNT_FRESH_MS = 5 * 60_000;
 /** The budget a quote shows when it is refused before the account is read; the refusal is said instead. */
 const CLOSED: BudgetView = { spendable: 0, leftThisRun: 0, leftAboveReserve: 0, hourlyLimit: null, blockReason: () => 'reserve' };
 const KEY_CHANGED = 'The SerpApi key changed while the scan was starting. Scan again.';
+const NO_TAB = 'This request needs a browser tab.';
 /** A job is continued at most this many times in a row without progress. */
 const MAX_TRIES = 2;
 /** A running scan's saves are broadcast at most this often; the last save of a burst is broadcast once the time is up. */
@@ -201,6 +244,7 @@ const progressOf = (job: ScanJob): string => `${job.searchesUsed}:${job.phase}:$
 
 export function createWorker(env: WorkerEnv): Worker {
   const { prefs, store } = env;
+  const pages = env.pages ?? memoryPages();
   const baseUrl = env.baseUrl ?? 'https://serpapi.com';
   const accountOf = (key: string) => SerpApiClient.account(key, env.fetchFn, baseUrl);
 
@@ -220,6 +264,8 @@ export function createWorker(env: WorkerEnv): Worker {
   let paidKey: string | null = null;
   /** Set by forgetKey, and by checkKey saving a different key, while a paid action runs. runPaid asks it before every search. */
   let paidStop = false;
+  /** Tabs whose page was seen while a scan or a Look up or Verify ran: not stored then, stored when it has ended. */
+  const deferred = new Set<number>();
 
   const settings = async () => trusted(await prefs.getSettings());
 
@@ -387,6 +433,7 @@ export function createWorker(env: WorkerEnv): Worker {
         scanKey = null;
         endProgress();
         void broadcast();
+        settleDeferred();
       });
     await broadcast();
     return ok(null);
@@ -718,6 +765,7 @@ export function createWorker(env: WorkerEnv): Worker {
       paidKey = null;
       paidStop = false;
       await broadcast();
+      settleDeferred();
     }
   }
 
@@ -736,7 +784,95 @@ export function createWorker(env: WorkerEnv): Worker {
     }
   }
 
-  async function handle(request: Request): Promise<Reply> {
+  // ---------------------------------------------------------------- the chip and This page (step 7)
+
+  /** The page as notePage reads it, and nothing the sender added: it comes from a web page's content script. */
+  const cleanPage = (p: ProductPage): ProductPage => ({
+    itemId: p.itemId, brand: p.brand, model: p.model, title: p.title, price: p.price, wasPrice: p.wasPrice, bullets: [...p.bullets], description: p.description,
+  });
+
+  /**
+   * A Home Depot product page the owner opened, sent by the chip's content script. Taken through the start gate, so two
+   * writes never interleave. While a scan or a Look up or Verify runs, which write the same records, the view is computed
+   * over a layer that is dropped (write: false) and the page is stored when they have ended; the chip never waits for them.
+   * A page that is not a bundle (view none) makes the tab show no page. Never a search.
+   */
+  const pageSeen = (page: ProductPage, tabId: number | undefined): Promise<Reply<ThisPage>> =>
+    serial(async () => {
+      if (tabId === undefined) return refuse(NO_TAB);
+      const write = scan === null && paid === null;
+      const view = await notePage(store, toScanSettings(await settings()), page, env.now(), { write });
+      if (view.kind === 'bundle') {
+        await pages.save(tabId, cleanPage(page));
+        if (write) deferred.delete(tabId);
+        else deferred.add(tabId);
+      } else {
+        await pages.save(tabId, null);
+        deferred.delete(tabId);
+      }
+      await broadcast();
+      return ok(view);
+    });
+
+  /** Stores the pages seen while a scan or a Look up or Verify ran, once none runs. Asked again by whichever ends last. */
+  function settleDeferred(): void {
+    if (deferred.size === 0) return;
+    void serial(async () => {
+      if (scan !== null || paid !== null) return;
+      const tabs = [...deferred];
+      deferred.clear();
+      const s = toScanSettings(await settings());
+      for (const tabId of tabs) {
+        const page = await pages.load(tabId);
+        if (page !== null) await notePage(store, s, page, env.now());
+      }
+      await broadcast();
+    }).catch(() => {
+      // The next visit to the page stores it.
+    });
+  }
+
+  /** The view of the tab's page, rebuilt from the store: never a search and never a write, so it waits for nothing. */
+  async function getThisPage(tabId: unknown): Promise<Reply<ThisPage>> {
+    if (typeof tabId !== 'number' || !Number.isInteger(tabId)) return refuse(NO_TAB);
+    const page = await pages.load(tabId);
+    if (page === null) return ok({ kind: 'empty' });
+    const view = await notePage(store, toScanSettings(await settings()), page, env.now(), { write: false });
+    return ok(view.kind === 'bundle' ? view : { kind: 'empty' });
+  }
+
+  /**
+   * The chip was clicked: the panel opens on This page for that tab. Not taken through the gate: Chrome allows
+   * sidePanel.open only in answer to the click, so it is called before anything is awaited. The panel learns it from
+   * `wanted` (read when it starts) and from tell() (when it is already open).
+   */
+  async function openThisPage(tabId: number | undefined): Promise<Reply<{ opened: boolean }>> {
+    if (tabId === undefined) return refuse(NO_TAB);
+    let opening: Promise<void>;
+    try {
+      opening = pages.openPanel(tabId);
+    } catch (err) {
+      opening = Promise.reject(err);
+    }
+    const opened = opening.then(() => true, () => false);
+    await pages.setWanted(tabId, true);
+    if (!(await opened)) {
+      await pages.setWanted(tabId, false);
+      return ok({ opened: false });
+    }
+    pages.tell(tabId);
+    return ok({ opened: true });
+  }
+
+  /** True once if the chip opened the panel for this tab; the answer is then consumed. */
+  async function takeShowThisPage(tabId: unknown): Promise<Reply<boolean>> {
+    if (typeof tabId !== 'number' || !Number.isInteger(tabId)) return refuse(NO_TAB);
+    if (!(await pages.wanted(tabId))) return ok(false);
+    await pages.setWanted(tabId, false);
+    return ok(true);
+  }
+
+  async function handle(request: Request, sender: RequestSender): Promise<Reply> {
     switch (request.type) {
       case 'getState':
         return ok(await getState());
@@ -770,18 +906,35 @@ export function createWorker(env: WorkerEnv): Worker {
         return quote(request.action);
       case 'runPaid':
         return runPaidAction(request.action);
+      case 'pageSeen':
+        return pageSeen(request.page, sender.tabId);
+      case 'openThisPage':
+        return openThisPage(sender.tabId);
+      case 'getThisPage':
+        return getThisPage(request.tabId);
+      case 'takeShowThisPage':
+        return takeShowThisPage(request.tabId);
       default:
         return refuse(FAILED);
     }
   }
 
   return {
-    async onMessage(request) {
+    async onMessage(request, sender = {}) {
       try {
-        return await scrubbed(await handle(request));
+        return await scrubbed(await handle(request, sender));
       } catch {
         // A storage error: the page still gets an answer.
         return refuse(FAILED);
+      }
+    },
+    async onTabClosed(tabId) {
+      deferred.delete(tabId);
+      try {
+        await pages.save(tabId, null);
+        await pages.setWanted(tabId, false);
+      } catch {
+        // Session storage may be unavailable; a tab id is not reused within a session.
       }
     },
     onTick: tick,

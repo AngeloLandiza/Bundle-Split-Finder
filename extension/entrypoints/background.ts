@@ -6,11 +6,12 @@ import type { BundleRow } from '@core/scan/types';
 import { IdbCache } from '../lib/idbCache';
 import { IdbScanStore } from '../lib/idbStore';
 import { appendLedger } from '../lib/ledger';
-import type { Request, StateChanged } from '../lib/messages';
+import { CONTENT_REQUESTS, type Request, type ShowThisPage, type StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
-import { isOwnPage } from '../lib/sender';
+import { mayAsk } from '../lib/sender';
 import { createPageReader, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
-import { createWorker } from '../lib/worker';
+import { createWorker, type PageEnv } from '../lib/worker';
+import type { ProductPage } from '../../core/src/hdPage';
 
 declare const __SPLIT_FINDER_BASE_URL__: string | undefined;
 declare const __SPLIT_FINDER_HD_ORIGIN__: string;
@@ -50,6 +51,39 @@ function chromeReaderEnv(): ReaderEnv {
   };
 }
 
+/**
+ * What each tab's Home Depot page was, and whether the chip asked for the panel to open on This page, in
+ * chrome.storage.session: it outlives the service worker and is gone when the browser closes. One key per tab and
+ * kind, so no write reads another's value.
+ */
+const pageKey = (tabId: number) => `thisPage:${tabId}`;
+const wantedKey = (tabId: number) => `showThisPage:${tabId}`;
+
+function chromePages(): PageEnv {
+  return {
+    async load(tabId) {
+      const v = (await browser.storage.session.get(pageKey(tabId)))[pageKey(tabId)];
+      return typeof v === 'object' && v !== null ? (v as ProductPage) : null;
+    },
+    async save(tabId, page) {
+      if (page === null) await browser.storage.session.remove(pageKey(tabId));
+      else await browser.storage.session.set({ [pageKey(tabId)]: page });
+    },
+    async setWanted(tabId, on) {
+      if (on) await browser.storage.session.set({ [wantedKey(tabId)]: true });
+      else await browser.storage.session.remove(wantedKey(tabId));
+    },
+    async wanted(tabId) {
+      return (await browser.storage.session.get(wantedKey(tabId)))[wantedKey(tabId)] === true;
+    },
+    // Chrome 116+. Only in answer to a user action, which the chip's click is.
+    openPanel: (tabId) => browser.sidePanel.open({ tabId }),
+    tell(tabId) {
+      browser.runtime.sendMessage({ type: 'showThisPage', tabId } satisfies ShowThisPage).catch(() => {});
+    },
+  };
+}
+
 const TICK = 'tick';
 /** Notifications need an icon; until the extension has one, a plain square in --ink. */
 const ICON = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGOQkpEDAACoAFUlVprSAAAAAElFTkSuQmCC';
@@ -83,6 +117,7 @@ export default defineBackground(() => {
     // Set only in the end-to-end build; undefined means https://serpapi.com.
     baseUrl: __SPLIT_FINDER_BASE_URL__,
     readPages,
+    pages: chromePages(),
     notify,
     broadcast: (state) => {
       // No page may be open to receive it.
@@ -91,13 +126,17 @@ export default defineBackground(() => {
   });
 
   browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // Only this extension's own pages may ask the worker to do anything.
-    if (!isOwnPage(sender, browser.runtime.id)) {
+    // This extension's own pages may ask the worker anything; its content script, only the chip's messages.
+    if (!mayAsk(sender, browser.runtime.id, (request as { type?: unknown } | null)?.type, CONTENT_REQUESTS)) {
       sendResponse({ ok: false, error: 'This request is not allowed from here.' });
       return false;
     }
-    worker.onMessage(request as Request).then(sendResponse);
+    worker.onMessage(request as Request, { tabId: sender.tab?.id }).then(sendResponse);
     return true;
+  });
+
+  browser.tabs.onRemoved.addListener((tabId) => {
+    void worker.onTabClosed(tabId);
   });
 
   browser.alarms.onAlarm.addListener((alarm) => {
