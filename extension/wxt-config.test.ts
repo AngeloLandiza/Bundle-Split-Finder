@@ -10,7 +10,7 @@ async function configFor(e2e: boolean) {
   else vi.stubEnv('SPLIT_FINDER_E2E', '');
   const mod = await import('../wxt.config');
   return mod.default as unknown as {
-    manifest: { host_permissions: string[]; permissions: string[] };
+    manifest: { host_permissions: string[]; permissions: string[]; web_accessible_resources: { resources: string[]; matches: string[] }[] };
     outDir?: string;
     vite: () => { define: Record<string, string> };
   };
@@ -22,6 +22,8 @@ describe('wxt.config', () => {
   it('the production manifest has exactly the two host permissions and no localhost', async () => {
     const c = await configFor(false);
     expect(c.manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*']);
+    // The chip's fonts are fetchable by Home Depot pages only.
+    expect(c.manifest.web_accessible_resources).toEqual([{ resources: ['fonts/*.woff2'], matches: ['https://www.homedepot.com/*'] }]);
     expect(c.manifest.permissions).toEqual(['storage', 'alarms', 'sidePanel', 'notifications', 'scripting']);
     expect(c.outDir).toBeUndefined();
     expect(c.vite().define.__SPLIT_FINDER_BASE_URL__).toBe('undefined');
@@ -33,6 +35,7 @@ describe('wxt.config', () => {
   it('the end-to-end build adds only http://localhost/* and a localhost base URL', async () => {
     const c = await configFor(true);
     expect(c.manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'http://localhost/*']);
+    expect(c.manifest.web_accessible_resources).toEqual([{ resources: ['fonts/*.woff2'], matches: ['https://www.homedepot.com/*', 'http://localhost/*'] }]);
     expect(c.outDir).toBe('.output-e2e');
     expect(c.vite().define.__SPLIT_FINDER_BASE_URL__).toMatch(/^"http:\/\/localhost:\d+"$/);
     expect(c.vite().define.__SPLIT_FINDER_HD_ORIGIN__).toMatch(/^"http:\/\/localhost:\d+"$/);
@@ -63,6 +66,10 @@ describe('the production build', () => {
       expect(manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*']);
       // Settings are a full tab; Chrome's embedded options dialog cut the key field off.
       expect((manifest as unknown as { options_ui: { open_in_tab: boolean } }).options_ui.open_in_tab).toBe(true);
+      // Home Depot pages may fetch the fonts and the chip's stylesheet, and nothing else of the extension's.
+      const war = (manifest as unknown as { web_accessible_resources: { resources: string[]; matches: string[] }[] }).web_accessible_resources;
+      expect(war.flatMap((w) => w.resources).sort()).toEqual(['content-scripts/homedepot.css', 'fonts/*.woff2']);
+      for (const w of war) expect(w.matches).toEqual(['https://www.homedepot.com/*']);
       const files = (d: string): string[] =>
         readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? files(join(d, e.name)) : [join(d, e.name)]));
       const code = files(dir).filter((f) => f.endsWith('.js') || f.endsWith('.html') || f.endsWith('.json'));

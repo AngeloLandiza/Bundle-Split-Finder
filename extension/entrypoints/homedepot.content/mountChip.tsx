@@ -2,11 +2,13 @@
 // The page's styles cannot reach it and its styles cannot leak out (design.md). No price block, no chip.
 
 import { createRoot, type Root } from 'react-dom/client';
+import { browser } from 'wxt/browser';
 import { createShadowRootUi } from 'wxt/utils/content-script-ui/shadow-root';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { Chip } from './Chip';
 import type { ChipModel } from './chipModel';
 import type { PreparedChip } from './controller';
+import { ensureFonts } from './fonts';
 
 /** The price block of a product page (checked Nov 17: data-component="price:Price:v6.41.0"). */
 export const ANCHOR = '[data-component^="price:Price"]';
@@ -15,6 +17,7 @@ export const ANCHOR = '[data-component^="price:Price"]';
 export const HOST_NAME = 'split-finder-chip';
 
 export async function prepareChip(ctx: ContentScriptContext, model: ChipModel, open: () => Promise<boolean>): Promise<PreparedChip> {
+  ensureFonts(document, (path) => browser.runtime.getURL(path as never));
   const ui = await createShadowRootUi<Root>(ctx, {
     name: HOST_NAME,
     position: 'inline',

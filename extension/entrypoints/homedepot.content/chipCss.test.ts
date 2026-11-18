@@ -13,7 +13,11 @@ describe('chip.css', () => {
     const own = declared(chip);
     const design = declared(tokens);
     expect(own.size).toBeGreaterThan(0);
-    for (const [name, value] of own) expect(design.get(name), name).toBe(value);
+    for (const [name, value] of own) {
+      // The font stacks lead with the extension's own family names (fonts.ts) and end with the token's stack.
+      if (name.startsWith('--font-')) expect(value.endsWith(design.get(name)!), name).toBe(true);
+      else expect(design.get(name), name).toBe(value);
+    }
   });
 
   it('writes no colour of its own: hex values are only the token block, and the one shadow is the design\'s', () => {
@@ -23,7 +27,8 @@ describe('chip.css', () => {
   });
 
   it('has no gradient and does not load fonts or images', () => {
-    expect(chip).not.toMatch(/gradient|url\(|@font-face|@import/);
+    // fonts.ts puts the font files in the page's document; this stylesheet declares none.
+    expect(chip.replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/gradient|url\(|@font-face|@import/);
   });
 
   it('is the 40px control the design asks for: white, 1px ink border, 6px radius, light shadow', () => {

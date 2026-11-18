@@ -11,10 +11,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { Chip, COULD_NOT_OPEN } from './Chip';
 import { chipModel } from './chipModel';
+import { fontFaceCss } from './fonts';
 import { estimateView, lookupView, noReadingView, oneReadingView } from './realViews';
 
 const OUT = resolve('qa-shots');
 const css = readFileSync(join(__dirname, 'chip.css'), 'utf8').replaceAll(':root', ':host');
+// The fonts as the extension serves them to the page (fonts.ts), here as data URLs so a blank page can load them.
+const fonts = fontFaceCss((path) => `data:font/woff2;base64,${readFileSync(resolve('public', path.slice(1))).toString('base64')}`);
 
 describe.skipIf(!process.env.SPLIT_FINDER_SHOTS)('chip screenshots', () => {
   it('writes one image per variant into qa-shots/', async () => {
@@ -33,11 +36,13 @@ describe.skipIf(!process.env.SPLIT_FINDER_SHOTS)('chip screenshots', () => {
     try {
       const page = await browser.newPage({ viewport: { width: 520, height: 150 }, deviceScaleFactor: 2 });
       for (const [name, markup] of variants) {
-        await page.setContent(`<body style="margin:0;padding:16px;background:#fff;font-family:system-ui,sans-serif"><div style="font-size:34px;line-height:40px;font-weight:700;color:#1F1F1F" data-component="price:Price:v6.41.0">$189.00</div><div id="h"></div></body>`);
+        await page.setContent(`<style>${fonts}</style><body style="margin:0;padding:16px;background:#fff;font-family:system-ui,sans-serif"><div style="font-size:34px;line-height:40px;font-weight:700;color:#1F1F1F" data-component="price:Price:v6.41.0">$189.00</div><div id="h"></div></body>`);
         await page.evaluate(([c, m]) => {
           const shadow = document.getElementById('h')!.attachShadow({ mode: 'open' });
           shadow.innerHTML = `<style>:host{all:initial !important}${c}</style>${m}`;
         }, [css, markup] as const);
+        await page.evaluate(() => document.fonts.ready);
+        await page.waitForTimeout(300);
         await page.screenshot({ path: join(OUT, `chip-${name}.png`), fullPage: true });
       }
     } finally {

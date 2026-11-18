@@ -1,8 +1,7 @@
 /*
  * The chip, in a shadow root (WXT turns :root into :host here). Colours are docs/design.md's tokens, copied
  * because tokens.css also carries font files a shadow root cannot load; chipCss.test.ts keeps them equal.
- * The page's own fonts do not reach it and Barlow is not loaded on a Home Depot page, so the face falls back
- * to the system stack in the token's list.
+ * The fonts are declared in the page's document by fonts.ts (a shadow root cannot load @font-face).
  */
 :root {
   --surface: #FFFFFF;
@@ -14,8 +13,9 @@
   --loss: #A33A12;
   --radius-notice: 6px;
   --radius-tag: 3px;
-  --font-words: 'Barlow', 'Segoe UI', system-ui, sans-serif;
-  --font-figures: 'JetBrains Mono', Menlo, Consolas, monospace;
+  /* The token faces, under the names fonts.ts declares in the page; the token stacks follow as the fallback. */
+  --font-words: 'Split Finder Barlow', 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  --font-figures: 'Split Finder JetBrains Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
 }
 
 /* WXT resets the host with all: initial !important; the chip sits directly under the price, in flow. */
