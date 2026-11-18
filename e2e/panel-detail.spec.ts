@@ -44,7 +44,7 @@ test('detail, priced parts, the packaging question and the answer', async ({ con
 
   await panel.getByRole('button', { name: 'No, loose' }).click();
   await expect(panel.locator('.detail-tag')).toHaveText('Loose');
-  await expect(panel.getByText(/Loose parts cannot be listed as New on Amazon/)).toBeVisible();
+  await expect(panel.getByText(/Loose parts cannot/)).toHaveCount(0);
   await shoot(panel, 'loose');
 
   // The same bundle once it is answered as boxed.

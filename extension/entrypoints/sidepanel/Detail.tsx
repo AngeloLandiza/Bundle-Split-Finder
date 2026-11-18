@@ -31,8 +31,6 @@ export interface DetailProps {
   onPaidEnd?: () => void;
 }
 
-const LOOSE_NOTE = 'Loose parts cannot be listed as New on Amazon; this estimate assumes they can.';
-
 const percent = (rate: number): string => `${Math.round(rate * 10000) / 100}%`;
 
 /** "15% referral, no fulfillment fee": the fee settings the estimate came from, in words. */
@@ -87,7 +85,7 @@ export function RangeLine({ row }: { row: BundleRow }) {
   if (!ends) return null;
   return (
     <p className="detail-estimate detail-range">
-      {`Estimated range: ROI ${roiSigned(ends.lowest.roi)} to ${roiSigned(ends.highest.roi)}, profit ${profit(ends.lowest.profit)} to ${profit(ends.highest.profit)}, from each part's lowest to highest New price. Reference prices are not counted.`}
+      {`Estimated range: lowest to highest counted price — ROI ${roiSigned(ends.lowest.roi)} to ${roiSigned(ends.highest.roi)}, profit ${profit(ends.lowest.profit)} to ${profit(ends.highest.profit)}`}
     </p>
   );
 }
@@ -127,15 +125,19 @@ function Check() {
 const isWebLink = (link: string | null): link is string => link !== null && /^https?:\/\//i.test(link);
 
 /**
- * One part's prices, highest first, each labelled with where it comes from. The Amazon New price is the featured
- * one (the figure the estimate counts); a reference price says so and that it is not counted. A price with a
- * link opens its page in a new tab.
+ * One part's prices in two groups, each highest first: the counted prices (Amazon New and the Buy Box, the figures
+ * the estimate uses), then a group headed "Reference · not counted" (Amazon's list price, Home Depot's, an older
+ * Buy Box). The Amazon New price is the featured one. A price with a link opens its page in a new tab; a reference
+ * label shows it only on hover and focus.
  */
 function Prices({ model, prices, bulk }: { model: string; prices: PriceOption[]; bulk: boolean }) {
   if (prices.length === 0) return null;
-  return (
-    <dl className="detail-prices" role="group" aria-label={`Prices for ${model}`}>
-      {prices.map((o, i) => {
+  const high = (a: PriceOption, b: PriceOption) => b.price - a.price;
+  const counted = prices.filter((o) => !o.reference).sort(high);
+  const reference = prices.filter((o) => o.reference).sort(high);
+  const rows = (list: PriceOption[]) => (
+    <dl>
+      {list.map((o, i) => {
         const label = priceLabel(o, bulk);
         return (
           <div key={`${o.kind}:${i}`} className="detail-price" data-kind={o.kind} data-featured={o.kind === 'amazon_new' ? 'true' : undefined} data-reference={o.reference ? 'true' : undefined}>
@@ -147,13 +149,25 @@ function Prices({ model, prices, bulk }: { model: string; prices: PriceOption[];
               ) : (
                 <span className="detail-price-label">{label}</span>
               )}
-              {o.reference ? <span className="detail-price-note">not counted</span> : null}
             </dt>
             <dd className="figure">{money(o.price)}</dd>
           </div>
         );
       })}
     </dl>
+  );
+  return (
+    <div className="detail-prices" role="group" aria-label={`Prices for ${model}`}>
+      {counted.length > 0 ? <div className="detail-prices-counted">{rows(counted)}</div> : null}
+      {reference.length > 0 ? (
+        <div className="detail-prices-reference" role="group" aria-labelledby={`detail-ref-${model}`}>
+          <div id={`detail-ref-${model}`} className="detail-prices-heading">
+            Reference · not counted
+          </div>
+          {rows(reference)}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -474,7 +488,7 @@ export function Detail({ report, state, bundleKey, onBack, backLabel = 'Deals', 
                 </div>
               </dl>
               <p className="detail-estimate">
-                Estimate from your fee settings ({feeText(fees)}).{loose ? ` ${LOOSE_NOTE}` : ''}{' '}
+                Estimate from your fee settings ({feeText(fees)}).{' '}
                 <a className="detail-link" href={browser.runtime.getURL('/options.html')} target="_blank" rel="noopener noreferrer">
                   Change
                 </a>

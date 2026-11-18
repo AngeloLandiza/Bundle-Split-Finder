@@ -107,15 +107,15 @@ test('Deals shows the ROI range under the Amazon New figures, and Detail lists e
 
   await deal.click();
   await expect(panel.getByRole('heading', { level: 1 })).toContainText('Combo Kit (5-Tool)');
-  await expect(panel.getByText(/^Estimated range: ROI /)).toBeVisible();
+  await expect(panel.getByText(/^Estimated range: lowest to highest counted price — ROI /)).toBeVisible();
   const prices = panel.getByRole('group', { name: 'Prices for DCS334B' });
   await expect(prices.getByText('Amazon · New', { exact: true })).toBeVisible();
-  await expect(prices.getByText('Amazon · New · Buy Box · sold by Amazon.com, ships from Amazon')).toBeVisible();
-  await expect(prices.getByText('Amazon list price · reference')).toBeVisible();
-  await expect(prices.getByText('Home Depot · sold alone · reference')).toBeVisible();
-  await expect(prices.getByText('not counted')).toHaveCount(2);
+  await expect(prices.getByText('Amazon · Buy Box · sold by Amazon.com, ships from Amazon')).toBeVisible();
+  await expect(prices.getByText('Amazon list price')).toBeVisible();
+  await expect(prices.getByText('Home Depot · sold alone')).toBeVisible();
+  await expect(prices.getByRole('group', { name: 'Reference · not counted' })).toBeVisible();
   // A price with a link opens its own page: Home Depot's is the one the reader found.
-  await expect(prices.getByRole('link', { name: 'Home Depot · sold alone · reference' })).toHaveAttribute('href', /\/p\/DEWALT-.*-DCS334B\/399000010$/);
+  await expect(prices.getByRole('link', { name: 'Home Depot · sold alone' })).toHaveAttribute('href', /\/p\/DEWALT-.*-DCS334B\/399000010$/);
   await expect(prices.getByRole('link', { name: 'Amazon · New', exact: true })).toHaveAttribute('href', /^https:\/\/www\.amazon\.com\/dp\/B/);
   await expect(panel.getByText(/renewed|refurbished/i)).toHaveCount(0);
   // Tall enough for both parts' price lists, as Chrome's side panel is.
@@ -185,8 +185,8 @@ test('Detail says bulk packaging on the Amazon price and the model Home Depot se
   await panel.locator('.deal-link', { hasText: 'PCL1201K2-PCL515B' }).click();
   const prices = panel.getByRole('group', { name: 'Prices for PCL515B' });
   await expect(prices.getByText('Amazon · New · bulk packaging', { exact: true })).toBeVisible();
-  await expect(prices.getByText('Home Depot · sold alone as PCL515 · reference')).toBeVisible();
-  await expect(prices.getByRole('link', { name: 'Home Depot · sold alone as PCL515 · reference' })).toHaveAttribute('href', /\/p\/RYOBI-.*-PCL515\/399000011$/);
+  await expect(prices.getByText('Home Depot · sold alone as PCL515')).toBeVisible();
+  await expect(prices.getByRole('link', { name: 'Home Depot · sold alone as PCL515' })).toHaveAttribute('href', /\/p\/RYOBI-.*-PCL515\/399000011$/);
   await expect(panel.getByText(/no retail box/)).toHaveCount(0);
   await shoot(panel, 'detail-bulk-soldas', 1100, true);
 });

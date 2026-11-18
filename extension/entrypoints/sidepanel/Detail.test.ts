@@ -525,14 +525,34 @@ describe("a part's prices", () => {
   };
   const lines = (group: HTMLElement) => [...group.querySelectorAll('.detail-price')].map((r) => [r.querySelector('dt')!.textContent, r.querySelector('dd')!.textContent]);
 
-  it('lists every price high to low, each with its label and its figure', () => {
+  it('lists the counted prices first, highest first, then the reference prices under their own heading, highest first', () => {
     const group = showPart(prices);
     expect(lines(group)).toEqual([
-      ['Amazon list price · referencenot counted', '$189.00'],
-      ['Home Depot · sold alone · referencenot counted', '$169.00'],
-      ['Amazon · New · Buy Box · sold by ArcianCo, ships from Amazon', '$160.00'],
+      ['Amazon · Buy Box · sold by ArcianCo, ships from Amazon', '$160.00'],
       ['Amazon · New', '$146.94'],
+      ['Amazon list price', '$189.00'],
+      ['Home Depot · sold alone', '$169.00'],
     ]);
+    const counted = group.querySelector('.detail-prices-counted')!;
+    const reference = group.querySelector('.detail-prices-reference')!;
+    expect([...counted.querySelectorAll('dt')].map((d) => d.textContent)).toEqual(['Amazon · Buy Box · sold by ArcianCo, ships from Amazon', 'Amazon · New']);
+    expect([...reference.querySelectorAll('dt')].map((d) => d.textContent)).toEqual(['Amazon list price', 'Home Depot · sold alone']);
+  });
+
+  it('sorts within each group, whatever order the prices arrive in', () => {
+    const group = showPart([option('homedepot', 100, { reference: true }), option('amazon_new', 50), option('amazon_list', 300, { reference: true }), option('amazon_buybox', 80, { seller: 'X' }), option('amazon_buybox', 120, { reference: true })]);
+    expect(lines(group).map((l) => l[1])).toEqual(['$80.00', '$50.00', '$300.00', '$120.00', '$100.00']);
+  });
+
+  it('heads the reference group "Reference · not counted" and says "not counted" nowhere else', () => {
+    const group = showPart(prices);
+    const reference = within(group).getByRole('group', { name: 'Reference · not counted' });
+    expect(reference.querySelectorAll('.detail-price')).toHaveLength(2);
+    expect(within(group).getAllByText(/not counted/)).toHaveLength(1);
+    expect(group.querySelector('.detail-price-note')).toBeNull();
+    // A part with no reference price has no such heading.
+    cleanup();
+    expect(within(showPart([option('amazon_new', 10)])).queryByText(/not counted/)).toBeNull();
   });
 
   it('features the Amazon New price, the one the estimate counts', () => {
@@ -542,21 +562,20 @@ describe("a part's prices", () => {
     expect(featured[0]).toHaveTextContent('Amazon · New$146.94');
   });
 
-  it('marks a reference price as not counted, and a counting price as nothing of the kind', () => {
+  it('marks a reference row, and leaves a counted row unmarked', () => {
     const group = showPart(prices);
-    const reference = [...group.querySelectorAll('.detail-price[data-reference]')].map((r) => r.querySelector('dt')!.textContent);
-    expect(reference).toEqual(['Amazon list price · referencenot counted', 'Home Depot · sold alone · referencenot counted']);
+    expect(group.querySelectorAll('.detail-price[data-reference]')).toHaveLength(2);
     expect(group.querySelectorAll('.detail-price:not([data-reference])')).toHaveLength(2);
-    expect(within(group).getAllByText('not counted')).toHaveLength(2);
+    for (const r of group.querySelectorAll('.detail-prices-reference .detail-price')) expect(r).toHaveAttribute('data-reference', 'true');
   });
 
   it('links each price to its page in a new tab, and leaves a price with no link as text', () => {
     const group = showPart([...prices, option('homedepot', 5, { link: null, reference: true, seller: 'Home Depot' })]);
-    const link = within(group).getByRole('link', { name: 'Home Depot · sold alone · reference' });
+    const link = within(group).getByRole('link', { name: 'Home Depot · sold alone' });
     expect(link).toHaveAttribute('href', 'https://www.homedepot.com/p/320222322');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(within(group).getByRole('link', { name: 'Amazon list price · reference' })).toHaveAttribute('href', AMAZON);
+    expect(within(group).getByRole('link', { name: 'Amazon list price' })).toHaveAttribute('href', AMAZON);
     expect(within(group).getByRole('link', { name: 'Amazon · New' })).toHaveAttribute('href', AMAZON);
     expect(within(group).getAllByRole('link')).toHaveLength(4);
   });
@@ -568,16 +587,16 @@ describe("a part's prices", () => {
   });
 
   it('names a Buy Box seller and where it ships from, whichever it knows', () => {
-    expect(lines(showPart([option('amazon_buybox', 160, { seller: 'ArcianCo', shipsFrom: null })]))[0]![0]).toBe('Amazon · New · Buy Box · sold by ArcianCo');
+    expect(lines(showPart([option('amazon_buybox', 160, { seller: 'ArcianCo', shipsFrom: null })]))[0]![0]).toBe('Amazon · Buy Box · sold by ArcianCo');
     cleanup();
-    expect(lines(showPart([option('amazon_buybox', 160, { seller: null, shipsFrom: 'Amazon' })]))[0]![0]).toBe('Amazon · New · Buy Box · ships from Amazon');
+    expect(lines(showPart([option('amazon_buybox', 160, { seller: null, shipsFrom: 'Amazon' })]))[0]![0]).toBe('Amazon · Buy Box · ships from Amazon');
     cleanup();
-    expect(lines(showPart([option('amazon_buybox', 160)]))[0]![0]).toBe('Amazon · New · Buy Box');
+    expect(lines(showPart([option('amazon_buybox', 160)]))[0]![0]).toBe('Amazon · Buy Box');
   });
 
   it('says bulk packaging on the Amazon New price of a part whose listing is in bulk packaging, and on that listing\'s Buy Box', () => {
     const group = showPart([option('amazon_buybox', 160, { seller: 'ArcianCo', shipsFrom: 'Amazon' }), option('amazon_new', 146.94)], { packaging: 'bulk' });
-    expect(lines(group).map((l) => l[0])).toEqual(['Amazon · New · Buy Box · bulk packaging · sold by ArcianCo, ships from Amazon', 'Amazon · New · bulk packaging']);
+    expect(lines(group).map((l) => l[0])).toEqual(['Amazon · Buy Box · bulk packaging · sold by ArcianCo, ships from Amazon', 'Amazon · New · bulk packaging']);
     cleanup();
     // A retail-boxed listing says nothing of packaging.
     expect(lines(showPart([option('amazon_new', 146.94)]))[0]![0]).toBe('Amazon · New');
@@ -585,21 +604,21 @@ describe("a part's prices", () => {
 
   it("says which model Home Depot sells alone when it is the part's RYOBI twin", () => {
     const group = showPart([option('homedepot', 59, { seller: 'Home Depot', soldAs: 'PCL206B', reference: true, link: 'https://www.homedepot.com/p/399000003' })]);
-    expect(lines(group)[0]).toEqual(['Home Depot · sold alone as PCL206B · referencenot counted', '$59.00']);
-    expect(within(group).getByRole('link', { name: 'Home Depot · sold alone as PCL206B · reference' })).toHaveAttribute('href', 'https://www.homedepot.com/p/399000003');
+    expect(lines(group)[0]).toEqual(['Home Depot · sold alone as PCL206B', '$59.00']);
+    expect(within(group).getByRole('link', { name: 'Home Depot · sold alone as PCL206B' })).toHaveAttribute('href', 'https://www.homedepot.com/p/399000003');
   });
 
   it("labels a one-seller page's only offer, naming the seller once", () => {
     const group = showPart([option('amazon_buybox', 169, { seller: 'thedealvalley', shipsFrom: 'thedealvalley', singleOffer: true })]);
-    expect(lines(group)[0]![0]).toBe('Amazon · New · only offer · sold by thedealvalley');
+    expect(lines(group)[0]![0]).toBe('Amazon · only offer · sold by thedealvalley');
   });
 
-  it('labels a Buy Box older than the featured price as a reference that is not counted', () => {
+  it('puts a Buy Box older than the featured price in the reference group', () => {
     const group = showPart([option('amazon_buybox', 160, { seller: 'ArcianCo', shipsFrom: 'Amazon', reference: true })]);
-    expect(lines(group)[0]).toEqual(['Amazon · New · Buy Box (older) · sold by ArcianCo, ships from Amazon · referencenot counted', '$160.00']);
-    expect(group.querySelector('.detail-price')).toHaveAttribute('data-reference', 'true');
+    expect(lines(group)[0]).toEqual(['Amazon · Buy Box (older) · sold by ArcianCo, ships from Amazon', '$160.00']);
+    expect(group.querySelector('.detail-prices-reference .detail-price')).toHaveAttribute('data-reference', 'true');
     cleanup();
-    expect(lines(showPart([option('amazon_buybox', 160, { reference: true })]))[0]![0]).toBe('Amazon · New · Buy Box (older) · referencenot counted');
+    expect(lines(showPart([option('amazon_buybox', 160, { reference: true })]))[0]![0]).toBe('Amazon · Buy Box (older)');
   });
 
   it('shows no price list for a part with no price, and never a Renewed or used price', () => {
@@ -637,8 +656,9 @@ describe('the estimate range', () => {
   it('says the range under the headline as an estimate, with what its ends mean', () => {
     show(row(ranged));
     expect(screen.getByText('ROI 52%')).toBeInTheDocument();
-    const line = screen.getByText(/^Estimated range: ROI −7% to \+60%, profit −\$14\.00 to \+\$112\.50/);
-    expect(line).toHaveTextContent("from each part's lowest to highest New price. Reference prices are not counted.");
+    const line = screen.getByText(/^Estimated range: lowest to highest counted price — ROI −7% to \+60%, profit −\$14\.00 to \+\$112\.50/);
+    expect(line).toHaveTextContent('Estimated range: lowest to highest counted price — ROI −7% to +60%, profit −$14.00 to +$112.50');
+    expect(line).not.toHaveTextContent(/Reference prices are not counted/);
   });
 
   it('says nothing when the ends read the same, or when there is no range', () => {
@@ -671,13 +691,13 @@ describe('packaging', () => {
     expect(screen.queryByText('Do these arrive individually boxed?')).toBeNull();
   });
 
-  it('shows the Loose tag and note at once after saving Loose', async () => {
+  it('shows the Loose tag at once after saving Loose, with no note that loose parts cannot be New', async () => {
     const user = userEvent.setup();
     show(row());
     expect(document.querySelector('.detail-tag')).toBeNull();
     await user.click(screen.getByRole('button', { name: 'No, loose' }));
     expect(await screen.findByText('Loose', { selector: '.detail-tag' })).toBeInTheDocument();
-    expect(screen.getByText(/Loose parts cannot be listed as New/)).toBeInTheDocument();
+    expect(screen.queryByText(/Loose parts cannot/)).toBeNull();
   });
 
   it('hides the question again with Cancel when it was opened by Change, saving nothing', async () => {
@@ -716,10 +736,10 @@ describe('packaging', () => {
     expect(screen.getByText('Do these arrive individually boxed?')).toBeInTheDocument();
   });
 
-  it('marks a loose bundle with a tag and a note on the estimate', () => {
+  it('marks a loose bundle with a tag, and says nothing about New', () => {
     show(row(), { packaging: { PBLRC2501SB: 'loose' } });
     expect(screen.getByText('Loose', { selector: '.detail-tag' })).toBeInTheDocument();
-    expect(screen.getByText(/Loose parts cannot be listed as New on Amazon; this estimate assumes they can\./)).toBeInTheDocument();
+    expect(screen.queryByText(/Loose parts cannot/)).toBeNull();
   });
 
   it('shows no tag or note for a boxed or unanswered bundle', () => {

@@ -171,9 +171,9 @@ describe('This page: a bundle read from the page', () => {
     const b = browser({ id: 7, url: FOUNDER_URL }, { 7: view });
     renderTab(b, { id: 7, url: FOUNDER_URL }, { report: w.scanned.report });
     const head = await screen.findByRole('region', { name: 'Estimate' });
-    expect(within(head).getByText(/^Estimated range: ROI −7% to \+48%, profit −\$14\.00 to \+\$90\.65/)).toBeInTheDocument();
+    expect(within(head).getByText(/^Estimated range: lowest to highest counted price — ROI −7% to \+48%, profit −\$14\.00 to \+\$90\.65/)).toBeInTheDocument();
     const prices = screen.getByRole('group', { name: 'Prices for PBLRC25B' });
-    expect(within(prices).getByText('Home Depot · sold alone · reference')).toBeInTheDocument();
+    expect(within(prices).getByText('Home Depot · sold alone')).toBeInTheDocument();
     expect(within(prices).getByText('Amazon · New')).toBeInTheDocument();
     expect(b.send.mock.calls.map((c) => c[0].type)).toEqual(['getThisPage']);
   });

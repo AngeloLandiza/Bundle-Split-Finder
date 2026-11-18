@@ -26,6 +26,17 @@ describe('the Change beside an answer (Detail.dc.html line 47: a link, not an un
   });
 });
 
+describe("a reference price's label", () => {
+  it('is ink-2 and not underlined at rest, and a link on hover and focus', () => {
+    const rest = declarations('.detail-price[data-reference] a.detail-price-label');
+    expect(rest).toContain('color: var(--ink-2)');
+    expect(rest).toContain('text-decoration: none');
+    const hover = declarations('.detail-price[data-reference] a.detail-price-label:hover,\n.detail-price[data-reference] a.detail-price-label:focus-visible');
+    expect(hover).toContain('color: var(--link)');
+    expect(hover).toContain('text-decoration: underline');
+  });
+});
+
 describe("a part's seen line", () => {
   it('stays on one line, in the body face', () => {
     const rule = declarations('.detail-part-seen');

@@ -326,8 +326,17 @@
 /* A part's prices, highest first: one row each on a hairline, the label left and the figure right. The Amazon New
    price is the featured one, in weight; a reference price is quieter and says it is not counted. */
 .detail-prices {
+  border-top: 1px solid var(--line);
+}
+.detail-prices dl {
   margin: 0;
   padding: 0;
+}
+.detail-prices-heading {
+  padding: 6px 0 2px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-2);
   border-top: 1px solid var(--line);
 }
 .detail-price {
@@ -336,18 +345,19 @@
   column-gap: 12px;
   align-items: baseline;
   padding: 6px 0;
-  border-bottom: 1px solid var(--line);
 }
-.detail-price:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
+.detail-prices-reference .detail-price {
+  padding: 3px 0;
+}
+.detail-prices dl > .detail-price + .detail-price {
+  border-top: 1px solid var(--line);
+}
+.detail-prices-reference dl > .detail-price + .detail-price {
+  border-top: 0;
 }
 .detail-price dt {
   margin: 0;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
   font-size: 13px;
   line-height: 18px;
   overflow-wrap: anywhere;
@@ -375,12 +385,14 @@ a.detail-price-label {
   color: var(--ink-2);
 }
 .detail-price[data-reference] a.detail-price-label {
-  color: var(--link);
-}
-.detail-price-note {
-  font-size: 12px;
-  line-height: 16px;
   color: var(--ink-2);
+  text-decoration: none;
+}
+.detail-price[data-reference] a.detail-price-label:hover,
+.detail-price[data-reference] a.detail-price-label:focus-visible {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .detail-asin {
   font-size: 12px;
