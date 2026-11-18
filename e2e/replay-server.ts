@@ -19,8 +19,14 @@ const recordedPages = new Map(
 const refusedPage = readFileSync(new URL('refused-2026-11-10.html', PAGES_DIR), 'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '');
 // type="text/plain" so the tab does not run the recorded text: after the state object the fixtures replace every
 // letter and digit with x, which is not valid JavaScript. The reader looks at the text, not at what ran.
-const html = (script: string): string =>
-  `<!doctype html><html><head><title>Product</title></head><body><script type="text/plain">${script}</script></body></html>`;
+const html = (script: string, before = ''): string =>
+  `<!doctype html><html><head><title>Product</title></head><body>${before}<script type="text/plain">${script}</script></body></html>`;
+
+// Home Depot's price block as recorded on Nov 17 (data-component="price:Price:v6.41.0"): the element the chip
+// anchors under. Only the founder's bundle page carries one, so the pages the scan's reader opens for other
+// ids stay as they were and show no chip.
+const PRICE_BLOCK_IDS = new Set(['328814689']);
+const PRICE_BLOCK = '<div data-component="price:Price:v6.41.0">$189.00</div>';
 
 export interface ReplayServer {
   url: string;
@@ -87,7 +93,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
         pageRequests.push(id);
         const page = { 'content-type': 'text/html; charset=utf-8' };
         if (refused.has('*') || refused.has(id)) res.writeHead(403, page).end(refusedPage);
-        else res.writeHead(200, page).end(html(pageText(id) ?? 'window.__APOLLO_STATE__={}'));
+        else res.writeHead(200, page).end(html(pageText(id) ?? 'window.__APOLLO_STATE__={}', PRICE_BLOCK_IDS.has(id) ? PRICE_BLOCK : ''));
       } else {
         res.writeHead(404, headers).end(JSON.stringify({ error: 'Not found' }));
       }
