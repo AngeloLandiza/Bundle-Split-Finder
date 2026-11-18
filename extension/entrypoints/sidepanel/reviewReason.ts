@@ -36,6 +36,11 @@ const RULES: Rule[] = [
   [/^page does not name (.+)$/, (m) => [words('The Home Depot page does not name '), ...models(m[1]!), words('.')]],
   [/^1 listing\(s\) show the model number, but the brand is not confirmed$/, plain('One listing shows this model number, but its brand is not confirmed.')],
   [/^(\d+) listing\(s\) show the model number, but the brand is not confirmed$/, (m) => [words(`${m[1]} listings show this model number, but their brand is not confirmed.`)]],
+  // Step 8b: why a listing shown is a question rather than rejected (core/src/match.ts, isReviewCap).
+  [/^title begins TTI Ryobi \(TTI makes RYOBI\), brand field empty$/, plain('A listing\'s title begins "TTI Ryobi" (TTI makes RYOBI), but the listing gives no brand.')],
+  [/^title names a battery or charger only as not included$/, plain('A listing mentions a battery or charger only to say it is not included.')],
+  [/^title says kit, and a RYOBI model number does not say whether the part is itself a kit$/, plain('A listing says kit. Check whether this part is itself a kit or a set.')],
+  [/^title says a pack of (\d+), and a RYOBI model number does not say the part's pack size$/, (m) => [words(`A listing is a pack of ${m[1]}. Check whether this part is itself that pack.`)]],
   [/^title says Replacement or OEM, which often marks a spare part$/, plain('Some of these listings say Replacement or OEM in their titles, which often means a spare part.')],
   // Ruling 71: a match question shows at most 5 listings, and the count of the rest is its own note (scan/runner.ts).
   [/^1 more listing\(s\) not shown$/, plain('1 more listing is not shown.')],
