@@ -1,0 +1,26 @@
+{
+ "about": "Split answers for the validation set, given by the controller on the owner's behalf (owner, Nov 18: 'do the full 42 search validation too'; earlier: 'do what you recommend'). Each answer is what a person reading the bundle's own Home Depot page and title would choose; the note gives the evidence. Pages: fixtures/validation/pages-2026-11-18.json. Where an answer rests on another page or on reading the model number, the note says so.",
+ "answers": {
+  "PCL1600K2-P553": { "parts": ["PCL1600K2", "P553"], "note": "Title: 6-Tool Combo Kit … and Miter Saw; the page's highlights (Nov 17): Includes ONE+ 18V 6-Tool Combo Kit, Includes 7-1/4 in. Compound Miter Saw." },
+  "PCL1600K2-A986501": { "parts": ["PCL1600K2", "A986501"], "note": "Title: 6-Tool Combo Kit … and 65-Piece Drill and Impact Drive Kit; the model joins the kit and the accessory set." },
+  "PCL1600K2-A963001": { "parts": ["PCL1600K2", "A963001"], "note": "Page: Includes: 6 Tools, 2 Batteries, Charger, Bag … : Includes: (29) Impact Driving Bits And (1) Magnetic Bit Holder." },
+  "PCL1600K2-A971502": { "parts": ["PCL1600K2", "A971502"], "note": "Page: 6 Tools, 2 Batteries, Charger, Bag … : Includes: drill bits (15-piece set)." },
+  "PCL1600K2-A989504": { "parts": ["PCL1600K2", "A989504"], "note": "Page: 6 Tools, 2 Batteries, Charger, Bag … : Includes: 95-piece drill and drive set." },
+  "PCL1600K2-PBP003": { "parts": ["PCL1600K2", "PBP003"], "note": "Title: 6-Tool Combo Kit … & ONE+18V 2.0 Ah Battery; PBP003 is the 2.0 Ah battery (PSK1212SB's page: PBP003 18V ONE+ 2Ah)." },
+  "PCL1600K2-PBP2003": { "parts": ["PCL1600K2", "PBP2003"], "note": "Page: Includes: (2) PBP003 18V ONE+ Lithium 2.0 Ah Batteries; PBP2003 is RYOBI's two-pack of PBP003, as the model number names it." },
+  "PCL1800K3N-A967002": { "parts": ["PCL1800K3N", "A967002"], "note": "Page: 8 Tools, 3 Batteries, Charger, and (2) Tool Bags : Includes: Bits, Nut Drivers … (70-piece set)." },
+  "PCL1800K3N-A964001": { "parts": ["PCL1800K3N", "A964001"], "note": "Page: 8 Tools, 3 Batteries, Charger, and (2) Tool Bags : Includes: Bits, Nut Drivers … (40-piece set)." },
+  "PCL1201K2-PCL515B": { "parts": ["PCL1201K2", "PCL515B"], "note": "Title: 3 Tool Combo Kit With Drill/Driver, Circular Saw, Reciprocating Saw; PCL1201K2's own page: PCL206 drill and PCL500 circular saw; PCL515 is the reciprocating saw." },
+  "PCL1201K2-PCL430B": { "parts": ["PCL1201K2", "PCL430B"], "note": "Title: Drill/Driver, Circular Saw, Multi Tool; PCL430 is the multi-tool (PCL1600K2's page)." },
+  "PCL424B-PCL406B": { "parts": ["PCL424B", "PCL406B"], "note": "Page: Includes: (1) PCL424B … Compact Router, … (1) PCL406 … Random Orbit Sander." },
+  "PCL500B-PCL525B": { "parts": ["PCL500B", "PCL525B"], "note": "Page: Includes: PCL500 … Circular Saw, … PCL525 … Jig Saw." },
+  "PCL500525SB": { "parts": ["PCL500B", "PCL525B"], "note": "Page lists a 5-1/2 in. circular saw and a jig saw (tools only) without models; the same pair is sold as PCL500B-PCL525B (item 324616618), whose page names PCL500 and PCL525, and PCL1800K3N's kit page names PCL525 as the jig saw." },
+  "PCL500525SB-PBP003": { "parts": ["PCL500B", "PCL525B", "PBP003"], "note": "As PCL500525SB, plus the title's ONE+18V 2.0 Ah battery (PBP003)." },
+  "PSBCK102K2-A967002": { "parts": ["PSBCK102K2", "A967002"], "note": "Title: Brushless Compact 2-Tool Combo Kit … w/ 70PC Impact Rated Driving Set; the model joins the kit and the set." },
+  "PSK0114-PCL265B": { "parts": ["PSK0114", "PCL265B"], "note": "Page: Includes: 18V ONE+ 4Ah Lithium Battery & Charger : Includes: (1) PCL265 … 1/2 in. Impact Wrench; PSK0114 is the starter kit (battery and charger)." },
+  "PSK1212SB": { "parts": ["PBP004", "PBP003", "PCG002"], "note": "Page: Includes: (1) PBP004 … 4Ah, (1) PBP003 … 2Ah, (1) PCG002 … Charger." },
+  "PSK1212SB-PCL265B": { "parts": ["PBP004", "PBP003", "PCG002", "PCL265B"], "note": "Page: Includes: PBP004 18V 4Ah, PBP003 18V 2Ah, PCG002 Charger … : Includes: (1) PCL265 … Impact Wrench." },
+  "PSK1200SB": { "parts": ["PBP003", "P119"], "note": "Page: Includes: (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) P119 18V ONE+ Charger. The tool's offered reading PSK12B + PSK00B is wrong." },
+  "DCK940D2W2032": { "parts": ["DCK940D2", "DCB203-2"], "note": "Inferred, labelled: title says (4) 20V 2.0Ah Batteries; DCK940D2 holds two, and Home Depot writes the added DEWALT battery after W without DCB (DCK940D2W240-2 = DCK940D2 + DCB240-2, confirmed by its page on Nov 12), so W2032 = DCB203-2, the 2.0Ah two-pack." }
+ }
+}
