@@ -382,6 +382,20 @@ describe('This page in the panel', () => {
     expect(reads()).toBeGreaterThan(before);
   });
 
+  it('turning the chip off and on again changes This page at once, on the state change the worker broadcasts', async () => {
+    const b = browser({ id: 7, url: FOUNDER_URL }, { 7: w.scanned.view }, w.scanned.report);
+    b.wanted.add(7);
+    mount(b);
+    expect(await screen.findByText('+$79.55')).toBeInTheDocument();
+    b.pages[7] = { kind: 'off' };
+    await b.emit(state());
+    expect(await screen.findByText(CHIP_OFF)).toBeInTheDocument();
+    expect(screen.queryByText('+$79.55')).not.toBeInTheDocument();
+    b.pages[7] = w.scanned.view;
+    await b.emit(state());
+    expect(await screen.findByText('+$79.55')).toBeInTheDocument();
+  });
+
   it('Open full detail goes to Detail, whose Back says This page and returns to it', async () => {
     const user = userEvent.setup();
     const b = browser({ id: 7, url: FOUNDER_URL }, { 7: w.scanned.view }, w.scanned.report);

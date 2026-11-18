@@ -159,13 +159,13 @@ class FakePages implements PageEnv {
     this.told.push(tabId);
   }
   /** The visits not stored yet, as chrome.storage.session keeps them. */
-  deferred = new Map<number, DeferredPage>();
-  async setDeferred(tabId: number, entry: DeferredPage | null) {
-    if (entry === null) this.deferred.delete(tabId);
-    else this.deferred.set(tabId, structuredClone(entry));
+  deferred = new Map<string, DeferredPage & { tabId: number }>();
+  async setDeferred(tabId: number, itemId: string, entry: DeferredPage | null) {
+    if (entry === null) this.deferred.delete(`${tabId}:${itemId}`);
+    else this.deferred.set(`${tabId}:${itemId}`, { tabId, ...structuredClone(entry) });
   }
   async deferredAll() {
-    return [...this.deferred].map(([tabId, e]) => ({ tabId, ...structuredClone(e) }));
+    return [...this.deferred.values()].map((e) => structuredClone(e));
   }
   /** The tab the scan's reader opened. */
   readerTab: number | null = null;
@@ -1928,16 +1928,55 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toBeDefined());
   });
 
-  it('a page seen while a scan runs, in a tab closed before the scan ends, is not stored', async () => {
+  it('a page seen while a scan runs, in a tab closed before the scan ends, is still stored when the scan ends: the visit happened', async () => {
     const w = world({ key: KEY, settings: RYOBI });
     const gate = held(w);
     await send(w, { type: 'scanNow' });
     await seen(w, ASKED);
     await w.worker.onTabClosed(TAB);
+    // The tab forgets its page, but not the visit that is waiting to be stored.
+    expect(w.pages.pages.has(TAB)).toBe(false);
+    expect(w.pages.deferred.size).toBe(1);
     gate.release();
     await untilIdle(w);
-    await w.worker.onTick();
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toBeDefined());
+    expect(await w.store.getReview(`split:${ASKED_KEY}`)).toMatchObject({ answer: null });
+    expect(w.pages.deferred.size).toBe(0);
+  });
+
+  it('two pages opened one after the other in the same tab during a scan are both kept, and stored in the order they were seen', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    w.clock = T0 + 2 * MINUTE;
+    await seen(w, ASKED);
+    w.clock = T0 + 3 * MINUTE;
+    await seen(w, FOUNDER);
+    // The tab shows its last page; both visits wait.
+    expect(w.pages.pages.get(TAB)?.itemId).toBe('328814689');
+    expect([...w.pages.deferred.keys()].sort()).toEqual([`${TAB}:328690510`, `${TAB}:328814689`]);
     expect(await w.store.getBundle(ASKED_KEY)).toBeUndefined();
+
+    gate.release();
+    await untilIdle(w);
+    await vi.waitFor(async () => expect(w.pages.deferred.size).toBe(0));
+    expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ page: { readAt: T0 + 2 * MINUTE } });
+    expect(await w.store.getBundle('homedepot:328814689')).toMatchObject({ page: { readAt: T0 + 3 * MINUTE } });
+    expect(await w.store.getReview(`split:${ASKED_KEY}`)).toMatchObject({ openedAt: T0 + 2 * MINUTE });
+  });
+
+  it('a page that is not a bundle, or the chip turned off, does not drop the visits already waiting in that tab', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    await seen(w, ASKED);
+    await seen(w, KIT);
+    w.prefs.showChip = false;
+    await seen(w, FOUNDER);
+    expect([...w.pages.deferred.keys()]).toEqual([`${TAB}:${ASKED.itemId}`]);
+    gate.release();
+    await untilIdle(w);
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toBeDefined());
   });
 
   it('openThisPage: Chrome is asked at once, for the sender\'s tab; the panel is told, and takes the answer once', async () => {
@@ -2014,6 +2053,22 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     expect(w.pages.chipSent.slice(4)).toEqual([[3, true]]);
   });
 
+  it('a change of the chip setting is broadcast, so an open panel reads This page again at once, off and on', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seen(w, FOUNDER);
+    const before = w.broadcasts.length;
+    w.prefs.showChip = false;
+    await w.worker.onChipSetting(false);
+    expect(w.broadcasts.length).toBe(before + 1);
+    expect(await thisPage(w)).toEqual({ ok: true, data: { kind: 'off' } });
+    w.prefs.showChip = true;
+    await w.worker.onChipSetting(true);
+    expect(w.broadcasts.length).toBe(before + 2);
+    // Back on: the chip's script sends its page again, and the panel hears that too.
+    expect(bundleOf(await seen(w, FOUNDER)).itemId).toBe('328814689');
+    expect(w.broadcasts.length).toBe(before + 3);
+  });
+
   it('the scan\'s reader tab is ignored: none, nothing stored, not remembered, and not told of the chip setting', async () => {
     const w = world({ key: KEY, settings: RYOBI });
     w.pages.readerTab = 21;
@@ -2042,7 +2097,7 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
   /** What a stopped worker left in session storage: the page of a visit that was not stored, and when it was seen. */
   const leave = (w: World, tabId: number, page: ProductPage, seenAt: number) => {
     w.pages.pages.set(tabId, structuredClone(page));
-    w.pages.deferred.set(tabId, { page: structuredClone(page), seenAt });
+    w.pages.deferred.set(`${tabId}:${page.itemId}`, { tabId, page: structuredClone(page), seenAt });
   };
 
   it('a visit during a scan is kept in session storage with its time, and is stored as of the visit (not the time of the store) when the scan ends', async () => {
@@ -2051,7 +2106,7 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     await send(w, { type: 'scanNow' });
     w.clock = T0 + 5 * MINUTE;
     await seen(w, ASKED);
-    expect([...w.pages.deferred]).toEqual([[TAB, { page: ASKED, seenAt: T0 + 5 * MINUTE }]]);
+    expect([...w.pages.deferred]).toEqual([[`${TAB}:${ASKED.itemId}`, { tabId: TAB, page: ASKED, seenAt: T0 + 5 * MINUTE }]]);
     expect(await w.store.getBundle(ASKED_KEY)).toBeUndefined();
 
     w.clock = T0 + HOUR;
@@ -2125,7 +2180,7 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     leave(w, 2, FOUNDER, T0 + 2 * MINUTE);
     await w.worker.onStart();
     await vi.waitFor(async () => expect(await w.store.getBundle('homedepot:328814689')).toBeDefined());
-    expect([...w.pages.deferred.keys()]).toEqual([1]);
+    expect([...w.pages.deferred.keys()]).toEqual([`1:${ASKED.itemId}`]);
     expect(await w.store.getBundle(ASKED_KEY)).toBeUndefined();
 
     failing.on = false;

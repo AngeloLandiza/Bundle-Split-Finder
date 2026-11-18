@@ -32,7 +32,7 @@ export type Request =
   /** Spends at most the quote's searches. Replies once the action has ended; a refusal or failure is one sentence. */
   | { type: 'runPaid'; action: PaidAction }
   /**
-   * From the chip's content script, once per Home Depot product page and again after in-page navigation. Reply data: PageView.
+   * From the chip's content script, once per Home Depot product page and again after in-page navigation.
    * The worker remembers the page for the sender's tab and shows it as a scan would (notePage); it never searches.
    * Reply data: PageSeenReply, which is `off` while the owner has the chip turned off (nothing is read or stored), and
    * `none` for a tab the extension itself opened to read a bundle page for a scan.

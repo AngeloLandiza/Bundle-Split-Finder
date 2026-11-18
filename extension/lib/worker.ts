@@ -55,8 +55,11 @@ export interface DeferredPage {
 }
 
 export interface PageEnv {
-  /** The page of a tab whose visit is not stored yet, kept so that a restarted worker still stores it. */
-  setDeferred(tabId: number, entry: DeferredPage | null): Promise<void>;
+  /**
+   * The page of a visit that is not stored yet, kept so that a restarted worker still stores it. One entry for each tab
+   * and item id, so the pages a tab showed one after the other during a scan are all kept.
+   */
+  setDeferred(tabId: number, itemId: string, entry: DeferredPage | null): Promise<void>;
   deferredAll(): Promise<({ tabId: number } & DeferredPage)[]>;
   /** The Home Depot bundle page the tab last showed, or null. */
   load(tabId: number): Promise<ProductPage | null>;
@@ -82,10 +85,11 @@ export function memoryPages(): PageEnv {
   const pages = new Map<number, ProductPage>();
   const wanted = new Set<number>();
   const chipTabs = new Set<number>();
-  const deferred = new Map<number, DeferredPage>();
+  const deferred = new Map<string, { tabId: number } & DeferredPage>();
   return {
-    setDeferred: async (tabId, entry) => void (entry === null ? deferred.delete(tabId) : deferred.set(tabId, entry)),
-    deferredAll: async () => [...deferred].map(([tabId, e]) => ({ tabId, ...e })),
+    setDeferred: async (tabId, itemId, entry) =>
+      void (entry === null ? deferred.delete(`${tabId}:${itemId}`) : deferred.set(`${tabId}:${itemId}`, { tabId, ...entry })),
+    deferredAll: async () => [...deferred.values()],
     load: async (tabId) => pages.get(tabId) ?? null,
     save: async (tabId, page) => void (page === null ? pages.delete(tabId) : pages.set(tabId, page)),
     setWanted: async (tabId, on) => void (on ? wanted.add(tabId) : wanted.delete(tabId)),
@@ -842,8 +846,8 @@ export function createWorker(env: WorkerEnv): Worker {
       await pages.setChipTab(tabId, true);
       // The chip is turned off: nothing is read or stored, and the tab keeps no page of an earlier visit.
       if (!(await prefs.getShowChip())) {
+        // A visit already waiting to be stored happened while the chip was on: it is kept.
         await pages.save(tabId, null);
-        await pages.setDeferred(tabId, null);
         return ok({ kind: 'off' });
       }
       const write = scan === null && paid === null;
@@ -852,10 +856,9 @@ export function createWorker(env: WorkerEnv): Worker {
       if (view.kind === 'bundle') {
         await pages.save(tabId, page);
         // Not written now: kept with the visit's time, so it is stored as of the visit once the action has ended.
-        await pages.setDeferred(tabId, write ? null : { page, seenAt });
+        await pages.setDeferred(tabId, page.itemId, write ? null : { page, seenAt });
       } else {
         await pages.save(tabId, null);
-        await pages.setDeferred(tabId, null);
       }
       await broadcast();
       return ok(view);
@@ -869,14 +872,14 @@ export function createWorker(env: WorkerEnv): Worker {
   function settleDeferred(): void {
     void serial(async () => {
       if (scan !== null || paid !== null) return;
-      const due = (await pages.deferredAll()).sort((a, b) => a.seenAt - b.seenAt || a.tabId - b.tabId);
+      const due = (await pages.deferredAll()).sort((a, b) => a.seenAt - b.seenAt || a.tabId - b.tabId || a.page.itemId.localeCompare(b.page.itemId));
       if (due.length === 0) return;
       const s = toScanSettings(await settings());
       let stored = false;
       for (const d of due) {
         try {
           await notePage(store, s, d.page, d.seenAt);
-          await pages.setDeferred(d.tabId, null);
+          await pages.setDeferred(d.tabId, d.page.itemId, null);
           stored = true;
         } catch {
           // Stays deferred: the next end of an action, or the next tick, tries again.
@@ -990,8 +993,8 @@ export function createWorker(env: WorkerEnv): Worker {
     onTabClosed: (tabId) =>
       serial(async () => {
         try {
+          // Its visits waiting to be stored are kept: they happened, and are stored when the scan or search ends.
           await pages.save(tabId, null);
-          await pages.setDeferred(tabId, null);
           await pages.setWanted(tabId, false);
           await pages.setChipTab(tabId, false);
         } catch {
@@ -1006,6 +1009,8 @@ export function createWorker(env: WorkerEnv): Worker {
       } catch {
         // Session storage may be unavailable; a tab picks the setting up on its next page.
       }
+      // The panel's This page re-reads on every state change: it says the chip is off, or shows the page, at once.
+      await broadcast();
     },
     onTick: tick,
     onStart: tick,

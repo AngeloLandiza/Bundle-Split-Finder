@@ -64,7 +64,7 @@ function chromeReaderEnv(): ReaderEnv {
 const pageKey = (tabId: number) => `thisPage:${tabId}`;
 const wantedKey = (tabId: number) => `showThisPage:${tabId}`;
 const chipTabKey = (tabId: number) => `chipTab:${tabId}`;
-const deferredKey = (tabId: number) => `deferred:${tabId}`;
+const deferredKey = (tabId: number, itemId: string) => `deferred:${tabId}:${itemId}`;
 
 function chromePages(): PageEnv {
   return {
@@ -76,15 +76,15 @@ function chromePages(): PageEnv {
       if (page === null) await browser.storage.session.remove(pageKey(tabId));
       else await browser.storage.session.set({ [pageKey(tabId)]: page });
     },
-    async setDeferred(tabId, entry) {
-      if (entry === null) await browser.storage.session.remove(deferredKey(tabId));
-      else await browser.storage.session.set({ [deferredKey(tabId)]: entry });
+    async setDeferred(tabId, itemId, entry) {
+      if (entry === null) await browser.storage.session.remove(deferredKey(tabId, itemId));
+      else await browser.storage.session.set({ [deferredKey(tabId, itemId)]: entry });
     },
     async deferredAll() {
       const all = await browser.storage.session.get(null);
       return Object.entries(all)
-        .filter(([k, v]) => k.startsWith('deferred:') && typeof v === 'object' && v !== null)
-        .map(([k, v]) => ({ tabId: Number(k.slice('deferred:'.length)), ...(v as DeferredPage) }))
+        .filter(([k, v]) => /^deferred:\d+:/.test(k) && typeof v === 'object' && v !== null)
+        .map(([k, v]) => ({ tabId: Number(k.split(':')[1]), ...(v as DeferredPage) }))
         .filter((d) => Number.isInteger(d.tabId) && typeof d.seenAt === 'number');
     },
     async setWanted(tabId, on) {
