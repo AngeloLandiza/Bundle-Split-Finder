@@ -117,6 +117,20 @@ describe("a part's labelled prices", () => {
     expect(row.parts[0]!.prices[0]!.seenAt).toBe(row.parts[0]!.priceSeenAt);
   });
 
+  it("a part matched to a bulk-packaged New listing says so (packaging: 'bulk'), so the panel can label it; its price counts as any New price", async () => {
+    const w = await scanned();
+    // Hand-made: the saved B0B3JWF5ZV row given the recorded P102 row's packaging words (B00S022L2A).
+    const saved = (await w.store.getListing('B0B3JWF5ZV'))!;
+    await w.store.putListing({ ...saved, title: `${saved.title} (Bulk Packaged)` });
+    const row = await founderRow(w);
+    const p25 = row.parts.find((p) => p.model === 'PBLRC25B')!;
+    expect(p25).toMatchObject({ packaging: 'bulk', availability: 'active' });
+    expect(p25.prices).toEqual([expect.objectContaining({ kind: 'amazon_new', condition: 'new', price: 169, reference: false })]);
+    // A retail-boxed listing carries no packaging field.
+    expect(row.parts.find((p) => p.model === 'PBLRC01B')).not.toHaveProperty('packaging');
+    expect(row.range.amazonNew).toEqual({ cost: 189, netRevenue: 268.55, profit: 79.55, roi: 0.4209 });
+  });
+
   it('every estimate is unchanged: amazonNew is the estimate, and with one counted price per part each end is it too', async () => {
     const w = await scanned();
     const report = await buildReport(w.store, RATCHET);

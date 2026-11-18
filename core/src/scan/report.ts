@@ -2,6 +2,7 @@
 // Profit figures are estimates from fee settings, not the seller's real fees.
 
 import { type KitItem, kitIndex, kitItemParts, kitPageStored, kitPageUnread, type KitRecord, kitRecords, splitItems } from '../kitContents';
+import { isBulkPackaging } from '../match';
 import type { BundleResult } from '../money';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
@@ -108,6 +109,8 @@ async function partRows(store: ScanStore, settings: ScanSettings, hdOf: HdPriceO
       image: listing?.image ?? null,
       title: listing?.title ?? null,
       prices: priceOptions(settings, matched, match?.asin ?? null, availability === 'active', price, listing, hdOf(brand, model)),
+      // The PO (Nov 18): a New listing in bulk packaging is a place to sell; the panel labels it.
+      ...(listing && isBulkPackaging(listing.title) ? { packaging: 'bulk' as const } : {}),
     });
   }
   return rows;

@@ -506,6 +506,12 @@ export interface PartRow {
   title: string | null;
   /** Step 9: every price known for the part, each labelled, highest first (report.ts priceOptions). */
   prices: PriceOption[];
+  /**
+   * 'bulk' when the chosen listing's saved title says bulk or non-retail packaging, or repackaged
+   * (match.ts isBulkPackaging): still New, so its price counts; the panel says "New · bulk packaging".
+   * Absent for a retail-boxed listing, and when the listing is not saved (no title to read).
+   */
+  packaging?: 'bulk';
 }
 
 /**
