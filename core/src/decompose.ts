@@ -111,9 +111,13 @@ export function decomposeRyobi(bundleModel: string, catalog: Catalog): Decomposi
 // e.g. DCK940D2WCF891B = kit DCK940D2 "with" DCF891B. A kit's name ends in at most two
 // letter-digit groups (DCK200D1P1); a group may have two letters other than W (DCK316ST2M1), so a
 // W is never read into the kit's name.
-export const DEWALT_BUNDLE = /^(DCK[A-Z]{0,2}\d{3,4}(?:[A-Z]\d|[A-VX-Z]{2}\d){0,2})W(.+)$/;
-// The kit and a whole tool model, joined with no W: DCK420D2DCS391B = DCK420D2 + DCS391B.
-const DEWALT_JOINED = /^(DCK[A-Z]{0,2}\d{3,4}(?:[A-Z]\d|[A-VX-Z]{2}\d){0,2})(DC[A-Z]{1,2}\d{3,4}[A-Z]{0,2})$/;
+// One kit-name pattern for both forms, so the two cannot drift.
+const DEWALT_KIT_NAME = String.raw`DCK[A-Z]{0,2}\d{3,4}(?:[A-Z]\d|[A-VX-Z]{2}\d){0,2}`;
+export const DEWALT_BUNDLE = new RegExp(`^(${DEWALT_KIT_NAME})W(.+)$`);
+// The kit and a whole tool model, joined with no W: DCK420D2DCS391B = DCK420D2 + DCS391B. Read with
+// the model's hyphens kept: DCKTS650D1P1-DCB205 is not this form, and DCK420D2DCB205-2 must never
+// offer the model "DCB2052".
+const DEWALT_JOINED = new RegExp(`^(${DEWALT_KIT_NAME})(DC[A-Z]{1,2}\\d{3,4}[A-Z]{0,2})$`);
 // A battery pack as Home Depot writes one (DEWALT_PACK, 2 to 9), W, a short code: DCB346-3WCS334B.
 // Read before hyphens are taken out, since the pack's hyphen is part of its model.
 const DEWALT_PACK_WITH = /^(DCB\d+-[2-9])W(.+)$/;
@@ -129,12 +133,12 @@ export interface DewaltForm {
 
 /** The Home Depot bundle form a DEWALT model number is written in, or null when it has none. */
 export function dewaltBundleForm(bundleModel: string): DewaltForm | null {
-  const pack = DEWALT_PACK_WITH.exec(bundleModel.toUpperCase().replace(/\s/g, ''));
+  const hyphens = bundleModel.toUpperCase().replace(/\s/g, '');
+  const pack = DEWALT_PACK_WITH.exec(hyphens);
   if (pack) return { kind: 'pack', base: pack[1]!, bonus: norm(pack[2]!) };
-  const model = norm(bundleModel);
-  const kit = DEWALT_BUNDLE.exec(model);
+  const kit = DEWALT_BUNDLE.exec(norm(bundleModel));
   if (kit) return { kind: 'kit', base: kit[1]!, bonus: kit[2]! };
-  const joined = DEWALT_JOINED.exec(model);
+  const joined = DEWALT_JOINED.exec(hyphens);
   if (joined) return { kind: 'joined', base: joined[1]!, bonus: joined[2]! };
   return null;
 }

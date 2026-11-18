@@ -100,6 +100,24 @@ describe('a kit and a whole tool model joined without the W (DCK420D2DCS391B, DC
     expect(page(KIT_TOOL_240).bullets[0]).toMatch(/^Includes DCD771 .*DCF885/);
     expect(split(KIT_TOOL_240, FROM_AMAZON).notes).toContain('page names no models');
   });
+
+  // Hand-made models, not from any page: the joined form is read with the model's hyphens kept.
+  it('does not read a kit, a hyphen and a battery (hand-made DCKTS650D1P1-DCB205) as a joined bundle', () => {
+    expect(looksLikeBundle('DEWALT', 'DCKTS650D1P1-DCB205')).toBe(false);
+    expect(decompose('DEWALT', 'DCKTS650D1P1-DCB205', '', fx.DEWALT_CATALOG)).toEqual({
+      components: [], status: 'needs_review', notes: ['no known DEWALT bundle pattern'],
+    });
+  });
+
+  it('never offers a kit followed by a hyphenated pack (hand-made DCK420D2DCB205-2) as the model DCB2052', () => {
+    const withGlued: Catalog = new Map([['DCB2052', catalogEntry('DEWALT', 'DCB2052', 'Battery')]]);
+    expect(looksLikeBundle('DEWALT', 'DCK420D2DCB205-2')).toBe(false);
+    for (const catalog of [new Map(), withGlued]) {
+      expect(decompose('DEWALT', 'DCK420D2DCB205-2', '', catalog)).toEqual({
+        components: [], status: 'needs_review', notes: ['no known DEWALT bundle pattern'],
+      });
+    }
+  });
 });
 
 describe('a battery pack with a bonus tool (DCB346-3WCS334B)', () => {
