@@ -13,6 +13,7 @@
     "scan": "tsx scripts/scan.ts",
     "fixtures:record": "tsx scripts/record-fixtures.ts",
     "test:live": "vitest run --config vitest.live.config.ts",
+    "package": "tsx scripts/package.ts",
     "test:e2e": "SPLIT_FINDER_E2E=1 wxt build && SPLIT_FINDER_E2E=1 playwright test"
   },
   "devDependencies": {

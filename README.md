@@ -15,6 +15,7 @@ tooling, the plan and the design. The extension itself is built next (see `docs/
 
 | Read | For |
 | --- | --- |
+| `docs/install.md` | Installing the packaged extension (`npm run package`) and using it |
 | `docs/v1-plan.md` | Scope, architecture, scan flow, acceptance criteria, build order |
 | `docs/search-budget.md` | How searches are counted and how the free 250 are spent |
 | `docs/design.md` + `docs/design/mockups/` | The extension's design |

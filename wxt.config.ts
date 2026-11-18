@@ -10,7 +10,7 @@ export default defineConfig({
   alias: { '@core': resolve('core/src') },
   modules: ['@wxt-dev/module-react'],
   // Each switch builds into its own folder, so .output/chrome-mv3 (the one loaded in Chrome) is written only by ext:build and ext:dev.
-  ...(e2e ? { outDir: '.output-e2e' } : process.env.SPLIT_FINDER_PROD_CHECK === '1' ? { outDir: '.output-prod-check' } : {}),
+  ...(e2e ? { outDir: '.output-e2e' } : process.env.SPLIT_FINDER_PROD_CHECK === '1' ? { outDir: '.output-prod-check' } : process.env.SPLIT_FINDER_PACKAGE === '1' ? { outDir: '.output-package' } : {}),
   vite: () => ({
     // Undefined in the normal build, so the worker keeps its default https://serpapi.com.
     define: {
