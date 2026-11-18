@@ -70,37 +70,29 @@ const percentOff = (price: number | null, was: number | null): number | null =>
   price !== null && was !== null && was > price ? Math.round(((was - price) / was) * 100) : null;
 
 /**
- * The bundle record after a visit at `now`. The page's content is its reading (P2), unless a reading
- * newer than the visit is stored. Brand and model are the page's. A page that shows a price sets the
- * record's price, was-price, percent off and seenAt (the visit), and its title, only when no listing
- * was seen after the visit (an older sighting never overwrites a newer one); a page with no price
- * leaves them. The barcode, the link and the split (until splitOne) are kept.
+ * The bundle record after a visit at `now`, brand upper case and model trimmed (as a scan stores a
+ * listing row's). The page's content is its reading (P2), unless a reading newer than the visit is
+ * stored. A bundle already stored keeps its title, price, was-price, percent off and seenAt: those are
+ * a listing's, and only a listing response changes them (Review Focus 3); the visit changes its brand
+ * and model when they differ, its reading, and then its split. A new record takes the page's title and
+ * price, seen at the visit; one from a page with no price is seen at 0, so any listing response with
+ * its price replaces it (applyListing keeps a record only when it was seen later than the response).
  */
-function visited(known: BundleRecord | undefined, page: ProductPage, brand: string, now: number): BundleRecord {
+function visited(known: BundleRecord | undefined, page: ProductPage, brand: string, model: string, now: number): BundleRecord {
   const reading = { bullets: [...page.bullets], description: page.description, readAt: now };
   const content = known?.page && known.page.readAt > now ? known.page : reading;
-  const sighting = {
-    title: page.title, price: page.price, regularPrice: page.price === null ? null : page.wasPrice,
-    percentOff: percentOff(page.price, page.wasPrice), seenAt: now,
-  };
-  if (!known) {
-    return {
-      key: bundleKey(page.itemId), retailer: 'homedepot', itemId: page.itemId, brand, model: page.model.trim(), upc: null,
-      link: `https://www.homedepot.com/p/${page.itemId}`, split: null, ...sighting, page: content,
-    };
-  }
-  const newer = known.seenAt <= now;
+  if (known) return { ...known, brand, model, page: content };
   return {
-    ...known, brand, model: page.model.trim(), page: content,
-    ...(newer && page.title.trim() !== '' ? { title: page.title } : {}),
-    ...(newer && page.price !== null ? { price: sighting.price, regularPrice: sighting.regularPrice, percentOff: sighting.percentOff, seenAt: now } : {}),
+    key: bundleKey(page.itemId), retailer: 'homedepot', itemId: page.itemId, title: page.title.trim(), brand, model, upc: null,
+    price: page.price, regularPrice: page.price === null ? null : page.wasPrice, percentOff: percentOff(page.price, page.wasPrice),
+    link: `https://www.homedepot.com/p/${page.itemId}`, seenAt: page.price === null ? 0 : now, split: null, page: content,
   };
 }
 
 /**
  * A product page the owner has open, seen at `now`. None when its brand is not one `settings.brands`
  * scans, or its model has no bundle shape (looksLikeBundle): then nothing is written. Otherwise its
- * bundle record is stored from the page (visited), split as a scan splits it, opening or following its
+ * bundle record is stored from the page (visited: a stored bundle's price and title are never changed), split as a scan splits it, opening or following its
  * split question as a scan would (splitOne), and, when the split is resolved, its parts are matched
  * from saved listings as a scan matches them (savedMatch over bundleParts of this bundle alone). The
  * owner's answers and Verify's results stand, as they do in a scan. Nothing is searched for and no
@@ -112,12 +104,13 @@ export async function notePage(
 ): Promise<PageView> {
   if (!wellFormed(page)) return NONE;
   const brand = page.brand.trim().toUpperCase();
-  if (!settings.brands.some((b) => b.trim().toUpperCase() === brand) || !looksLikeBundle(brand, page.model)) return NONE;
+  const model = page.model.trim();
+  if (!settings.brands.some((b) => b.trim().toUpperCase() === brand) || !looksLikeBundle(brand, model)) return NONE;
   const store = opts.write === false ? new OverlayStore(target) : target;
 
   const key = bundleKey(page.itemId);
   const known = await knownModels(store);
-  const record = visited(await store.getBundle(key), page, brand, now);
+  const record = visited(await store.getBundle(key), page, brand, model, now);
   const { split } = await splitOne(store, record, known, now);
 
   if (split.status === 'resolved') {
@@ -128,7 +121,7 @@ export async function notePage(
   }
 
   const stored = (await store.getBundle(key))!;
-  // The page's price wins for the view, whatever the record keeps: it is the price the owner sees.
+  // The page's price wins for the view only, whatever the record keeps: it is the price the owner sees.
   const shown: BundleRecord = page.price === null
     ? stored
     : { ...stored, price: page.price, regularPrice: page.wasPrice, percentOff: percentOff(page.price, page.wasPrice), seenAt: now };

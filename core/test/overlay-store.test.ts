@@ -34,6 +34,19 @@ describe('OverlayStore over a store with records', () => {
     expect(JSON.stringify([await base.listListings(), await base.listScans()])).toBe(before);
   });
 
+  it('a record read through to the store is a copy too, even from a store that hands out its own objects', async () => {
+    const held = listing('B1', 10);
+    const base = new MemoryScanStore();
+    const aliasing = Object.assign(Object.create(base) as MemoryScanStore, {
+      getListing: async () => held,
+      listListings: async () => [held],
+    });
+    const layer = new OverlayStore(aliasing);
+    (await layer.getListing('B1'))!.price = 98;
+    (await layer.listListings())[0]!.price = 97;
+    expect(held.price).toBe(10);
+  });
+
   it('a record read or written is a copy: changing it changes nothing stored', async () => {
     const layer = new OverlayStore(new MemoryScanStore());
     const l = listing('B1', 10);

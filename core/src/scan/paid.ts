@@ -347,7 +347,7 @@ export function requestProblem(action: unknown): string | null {
 }
 
 /** A scan's counts at zero: the panel's steps (and a product page's, pageView.ts) count into them, and they are not kept. */
-export const noCounts =(): ScanCounts => ({
+export const noCounts = (): ScanCounts => ({
   pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
   catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
 });

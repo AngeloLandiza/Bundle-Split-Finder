@@ -19,9 +19,11 @@ class Layer<T> {
     private readonly order: (a: T, b: T) => number,
   ) {}
 
+  // Every record returned is a copy, the store's too, as MemoryScanStore returns them: a caller that
+  // changes one changes nothing stored, whatever the store underneath does.
   async get(key: string, base: (key: string) => Promise<T | undefined>): Promise<T | undefined> {
-    const own = this.written.get(key);
-    return own !== undefined ? structuredClone(own) : base(key);
+    const found = this.written.get(key) ?? (await base(key));
+    return found === undefined ? undefined : structuredClone(found);
   }
 
   put(record: T): void {
@@ -31,7 +33,7 @@ class Layer<T> {
   /** The base's list with this layer's records in place of the base's of the same key, in the store's order. */
   async list(base: () => Promise<T[]>): Promise<T[]> {
     const under = (await base()).filter((r) => !this.written.has(this.keyOf(r)));
-    return [...under, ...[...this.written.values()].map((r) => structuredClone(r))].sort(this.order);
+    return [...under, ...this.written.values()].map((r) => structuredClone(r)).sort(this.order);
   }
 }
 

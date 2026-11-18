@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { replayRecorded } from '../../scripts/replay';
 import { parseBundlePage, parseProductPage, type ProductPage } from '../src/hdPage';
-import { applyReviewAnswer, reviewSignature } from '../src/scan/answers';
+import { applyReviewAnswer, RESOLVED_BY_SCAN, reviewSignature } from '../src/scan/answers';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { notePage, type PageView } from '../src/scan/pageView';
 import { buildReport } from '../src/scan/report';
@@ -23,7 +23,7 @@ const T0 = Date.UTC(2026, 10, 9, 12);
 const HOUR = 60 * 60 * 1000;
 const VISIT = T0 + 2 * HOUR;
 const KEY = 'homedepot:328814689';
-const RATCHET: ScanSettings ={ ...DEFAULT_SCAN_SETTINGS, catalogPagesPerScan: 0, queries: [{ q: 'ryobi extended reach ratchet' }] };
+const RATCHET: ScanSettings = {...DEFAULT_SCAN_SETTINGS, catalogPagesPerScan: 0, queries: [{ q: 'ryobi extended reach ratchet' }] };
 
 const pages = (JSON.parse(readFileSync(new URL('../../fixtures/homedepot-pages/pages-2026-11-10.json', import.meta.url), 'utf8')) as {
   pages: { itemId: string; text: string }[];
@@ -162,12 +162,13 @@ describe('notePage: the founder\'s bundle, 328814689 (acceptance 4)', () => {
     const before = await rowOf(store, KEY);
     const matches = await store.listMatches();
     const view = asBundle(await notePage(store, RATCHET, founderPage(), VISIT));
-    // The page's price is the listing's ($189, $338): only the time it was seen moves, to the visit.
+    // The page's price is the listing's ($189, $338): the view shows it seen at the visit.
     expect(view.row).toEqual({ ...before, seenAt: VISIT });
     // PBLRC25B's listing at $169 and PBLRC01B's at $146.94, as their lookups priced them.
     expect(view.row).toMatchObject({ section: 'confirmed', estimate: { cost: 189, profit: 79.55 } });
     expect(view.lookupParts).toBe(0);
-    expect(await rowOf(store, KEY)).toEqual(view.row);
+    // The stored row is the scan's, seen when the listing response came.
+    expect(await rowOf(store, KEY)).toEqual(before);
     expect(await store.listMatches()).toEqual(matches);
   });
 
@@ -292,18 +293,17 @@ describe('notePage never disturbs a scan job, an owner\'s answer, a Verify resul
     expect(view.lookupParts).toBe(0);
   });
 
-  it('a listing price seen after the visit stays the record\'s; the view still shows the page\'s price', async () => {
+  it('a stored listing\'s price stands: a visit showing another price leaves the report\'s row as it was, and only the view shows the page\'s', async () => {
     const store = new MemoryScanStore();
     await ratchetScan(store);
-    const later = VISIT + HOUR;
-    const stored = { ...(await store.getBundle(KEY))!, price: 199, regularPrice: 338, percentOff: 41, seenAt: later };
-    await store.putBundle(stored);
-    const view = asBundle(await notePage(store, RATCHET, founderPage(), VISIT));
-    expect(await store.getBundle(KEY)).toMatchObject({ price: 199, regularPrice: 338, percentOff: 41, seenAt: later });
-    expect(view.row).toMatchObject({ price: 189, regularPrice: 338, percentOff: 44, seenAt: VISIT });
-    // The view's estimate is the one at the page's price: the report's for a record at $189.
-    await store.putBundle({ ...(await store.getBundle(KEY))!, price: 189, percentOff: 44, seenAt: VISIT });
-    expect(view.row.estimate).toEqual((await rowOf(store, KEY)).estimate);
+    const before = await rowOf(store, KEY);
+    expect(before).toMatchObject({ price: 189, regularPrice: 338, percentOff: 44, seenAt: T0 });
+    // The captured pricing shape with another price in it (hand-made: $179, was $338).
+    const view = asBundle(await notePage(store, RATCHET, founderPage({ value: 179 }), VISIT));
+    expect(await rowOf(store, KEY)).toEqual(before);
+    expect(view.row).toMatchObject({ price: 179, regularPrice: 338, percentOff: 47, seenAt: VISIT });
+    expect(view.row.estimate).toMatchObject({ cost: 179, profit: 89.55 });
+    expect(before.estimate).toMatchObject({ cost: 189, profit: 79.55 });
   });
 });
 
@@ -311,29 +311,84 @@ describe('notePage: the page\'s price and the stored listing\'s (Review Focus 3)
   const listed = async (): Promise<{ store: MemoryScanStore; stored: BundleRecord }> => {
     const store = new MemoryScanStore();
     await ratchetScan(store);
-    const stored = { ...(await store.getBundle(KEY))!, price: 199, percentOff: 41, upc: '033287232581' };
+    // Hand-made over the recorded scan's record: another price, title and a barcode, to show the visit keeps them.
+    const stored = { ...(await store.getBundle(KEY))!, title: 'A listing title', price: 199, percentOff: 41, upc: '033287232581' };
     await store.putBundle(stored);
     return { store, stored };
   };
 
-  it('a visit after the listing was seen: the page\'s price and was-price become the record\'s, seen at the visit; the rest is kept', async () => {
+  it('a stored bundle keeps its title, price, was-price, percent off and seenAt; the visit writes its page reading and its split', async () => {
     const { store, stored } = await listed();
     const view = asBundle(await notePage(store, RATCHET, founderPage(), VISIT));
     expect(await store.getBundle(KEY)).toEqual({
-      ...stored, title: founderPage().title, price: 189, regularPrice: 338, percentOff: 44, seenAt: VISIT,
-      split: expect.objectContaining({ status: 'resolved', components: ['PBLRC25B', 'PBLRC01B'] }),
+      ...stored,
+      split: { status: 'resolved', components: ['PBLRC25B', 'PBLRC01B'], notes: ['model number and page agree'] },
       page: { bullets: founderPage().bullets, description: founderPage().description, readAt: VISIT },
     });
-    // Kept: the barcode and the listing's own link, which the page does not give.
-    expect(await store.getBundle(KEY)).toMatchObject({ upc: '033287232581', link: stored.link });
-    expect(view.row).toMatchObject({ price: 189, regularPrice: 338, percentOff: 44, seenAt: VISIT });
+    expect(view.row).toMatchObject({ title: 'A listing title', price: 189, regularPrice: 338, percentOff: 44, seenAt: VISIT });
   });
 
-  it('a page that shows no price changes neither the record\'s price nor its time, and the view shows the stored price', async () => {
+  it('a page that shows no price: the record is kept the same way, and the view shows the stored price', async () => {
     const { store, stored } = await listed();
     const view = asBundle(await notePage(store, RATCHET, unpricedPage('328814689'), VISIT));
-    expect(await store.getBundle(KEY)).toMatchObject({ price: 199, regularPrice: 338, percentOff: 41, seenAt: stored.seenAt });
+    expect(await store.getBundle(KEY)).toMatchObject({ title: 'A listing title', price: 199, regularPrice: 338, percentOff: 41, seenAt: stored.seenAt });
     expect(view.row).toMatchObject({ price: 199, regularPrice: 338, percentOff: 41, seenAt: stored.seenAt });
+  });
+
+  it('a new record from a page with no price is seen at 0, so a later scan\'s listing response, older than the visit, fills in its price', async () => {
+    const store = new MemoryScanStore();
+    const view = asBundle(await notePage(store, RATCHET, unpricedPage('328814689'), VISIT));
+    expect(view.row).toMatchObject({ price: null, regularPrice: null, percentOff: null, seenAt: 0 });
+    expect(await store.getBundle(KEY)).toMatchObject({ price: null, seenAt: 0, page: { readAt: VISIT } });
+    // The recorded scan's listing response was received at T0, before the visit.
+    await ratchetScan(store);
+    expect(await store.getBundle(KEY)).toMatchObject({ price: 189, regularPrice: 338, percentOff: 44, seenAt: T0, page: { readAt: VISIT } });
+  });
+});
+
+describe('notePage closes questions as a scan does', () => {
+  it('the bullet-less 328814689\'s question is closed by a scan when the page, seen again with its bullets, resolves the split', async () => {
+    const store = new MemoryScanStore();
+    const first = asBundle(await notePage(store, RATCHET, { ...founderPage(), bullets: [] }, VISIT));
+    const asked = first.question!;
+    const view = asBundle(await notePage(store, RATCHET, founderPage(), VISIT + HOUR));
+    expect(view.question).toBeNull();
+    expect(await store.getReview(asked.id)).toEqual({ ...asked, answer: RESOLVED_BY_SCAN, answeredAt: VISIT + HOUR });
+    expect(view.row.parts.map((p) => p.model)).toEqual(['PBLRC25B', 'PBLRC01B']);
+  });
+
+  it('a lookup\'s open match question is closed when a saved listing now answers the part (Ruling 73), as a scan closes it', async () => {
+    const scanned = new MemoryScanStore();
+    await ratchetScan(scanned);
+    const listings = await scanned.listListings();
+    // A lookup left PBLRC25B in review with its question open (hand-made records in the shape applyLookup writes).
+    const seeded = async () => {
+      const s = new MemoryScanStore();
+      for (const l of listings) await s.putListing(l);
+      await s.putMatch({
+        key: 'RYOBI:PBLRC25B', brand: 'RYOBI', model: 'PBLRC25B', status: 'review', asin: null, grade: null, alternatives: [],
+        decidedBy: 'auto', updatedAt: T0, waitingSince: null,
+      });
+      await s.putReview({
+        id: 'match:RYOBI:PBLRC25B', kind: 'match', subject: 'RYOBI:PBLRC25B', brand: 'RYOBI', model: 'PBLRC25B', title: null,
+        reason: '2 listing(s) show the model number, but the brand is not confirmed', candidates: [], choices: [], openedAt: T0, answer: null, answeredAt: null,
+      });
+      return s;
+    };
+    const visited = await seeded();
+    await notePage(visited, RATCHET, founderPage(), VISIT);
+    expect(await visited.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', decidedBy: 'auto', updatedAt: VISIT });
+    expect(await visited.getReview('match:RYOBI:PBLRC25B')).toMatchObject({ answer: RESOLVED_BY_SCAN, answeredAt: VISIT });
+
+    // A scan that may spend nothing, on the same store with the visit's bundle record, closes it the same way.
+    const scanOnly = await seeded();
+    await scanOnly.putBundle({ ...(await visited.getBundle(KEY))!, split: null });
+    const refuse = (() => {
+      throw new Error('no search');
+    }) as unknown as typeof fetch;
+    await ratchetScan(scanOnly, { reserve: 0, maxPerRun: 0 }, refuse);
+    expect(await visited.getReview('match:RYOBI:PBLRC25B')).toEqual({ ...(await scanOnly.getReview('match:RYOBI:PBLRC25B'))!, answeredAt: VISIT });
+    expect(await visited.getMatch('RYOBI:PBLRC25B')).toEqual({ ...(await scanOnly.getMatch('RYOBI:PBLRC25B'))!, updatedAt: VISIT });
   });
 });
 

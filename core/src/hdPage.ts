@@ -131,11 +131,11 @@ function contentOf(product: Json): PageContent {
 /** A Home Depot product page the owner has open, read from its embedded data (step 7). Never a search. */
 export interface ProductPage {
   itemId: string;
-  /** identifiers.brandName, as the page gives it. */
+  /** identifiers.brandName, trimmed. */
   brand: string;
-  /** identifiers.modelNumber, as the page gives it. */
+  /** identifiers.modelNumber, trimmed. */
   model: string;
-  /** identifiers.productLabel; '' when the page gives none. */
+  /** identifiers.productLabel, trimmed; '' when the page gives none. */
   title: string;
   /** The pricing entry's `value`; null when the page gives none, or two pricing entries disagree. */
   price: number | null;
@@ -166,7 +166,8 @@ function pricingOf(product: Json): { price: number | null; wasPrice: number | nu
   return first;
 }
 
-const nonEmpty = (v: unknown): string | null => (typeof v === 'string' && v.trim() !== '' ? v : null);
+/** Trimmed, as the scan's parser reads a listing row's text; null when empty. */
+const nonEmpty = (v: unknown): string | null => (typeof v === 'string' && v.trim() !== '' ? v.trim() : null);
 
 /**
  * What a product page says about itself, from the embedded data parseBundlePage reads. Null when that
