@@ -3,7 +3,7 @@ import '@testing-library/jest-dom/vitest';
 import { createElement } from 'react';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { Chip, COULD_NOT_OPEN } from './Chip';
 import { chipModel, type ChipModel } from './chipModel';
 import type { BundleView } from '../../lib/messages';
@@ -116,6 +116,86 @@ describe('the chip, one variant per state', () => {
       expect(container.textContent).not.toMatch(/\bitems?\b|component/i);
       unmount();
     }
+  });
+});
+
+// jsdom lays nothing out, so the width a chip needs is simulated: 8px for each character of its words, against a container
+// of the width a test sets. (The real layout is measured in the browser: e2e/chip.spec.ts, at 360, 480 and 1200.)
+describe('a chip wider than its container drops its least important pieces, never the words of its title', () => {
+  let container = 1200;
+  beforeAll(() => {
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.classList.contains('chip') ? (this.textContent ?? '').replace(/\s+/g, ' ').length * 8 : 0;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.classList.contains('chip') ? container : 0;
+      },
+    });
+  });
+  afterEach(() => {
+    container = 1200;
+  });
+  afterAll(() => {
+    delete (HTMLElement.prototype as { scrollWidth?: number }).scrollWidth;
+    delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
+  });
+  const chipText = () => (screen.getByRole('button').textContent ?? '').replace(/\s+/g, ' ').trim();
+  const estimate: ChipModel = { kind: 'estimate', parts: 2, profit: '−$12.80', roi: '−3%', loss: true };
+
+  it('estimate: room for everything shows everything', () => {
+    show(estimate);
+    expect(chipText()).toBe('Splits into 2 parts Est. profit −$12.80 ROI −3%');
+  });
+
+  it('estimate: the ROI goes first, then the "Est. profit" label; the profit and the title stay whole', () => {
+    // Everything needs 47 characters; without the ROI 36; without the label too, 25.
+    container = 40 * 8;
+    show(estimate);
+    expect(chipText()).toBe('Splits into 2 parts Est. profit −$12.80');
+    cleanup();
+    container = 30 * 8;
+    show(estimate);
+    expect(chipText()).toBe('Splits into 2 parts −$12.80');
+    expect(screen.queryByText('Est. profit')).toBeNull();
+    cleanup();
+    // Narrower than that nothing more is dropped: the chip clips (CSS) and is never wider than its container.
+    container = 10 * 8;
+    show(estimate);
+    expect(chipText()).toBe('Splits into 2 parts −$12.80');
+  });
+
+  it('what the chip says changing starts again from the full words, on the same chip', () => {
+    container = 30 * 8;
+    const { rerender } = show(estimate);
+    expect(chipText()).toBe('Splits into 2 parts −$12.80');
+    container = 1200;
+    rerender(createElement(Chip, { model: { ...estimate, profit: '−$12.90' }, open: async () => true }));
+    expect(chipText()).toBe('Splits into 2 parts Est. profit −$12.90 ROI −3%');
+  });
+
+  it('lookup: "Look up prices" goes first, then the searches', () => {
+    const lookup: ChipModel = { kind: 'lookup', parts: 2, searches: 2 };
+    container = 40 * 8;
+    show(lookup);
+    expect(chipText()).toBe('Splits into 2 parts · 2 searches');
+    cleanup();
+    container = 21 * 8;
+    show(lookup);
+    expect(chipText()).toBe('Splits into 2 parts');
+  });
+
+  it('needs your answer and the parts-only chip have nothing to drop', () => {
+    container = 5 * 8;
+    show({ kind: 'question', parts: 2 });
+    expect(chipText()).toBe('Splits into 2 parts · needs your answer');
+    cleanup();
+    show({ kind: 'plain', parts: 2 });
+    expect(chipText()).toBe('Splits into 2 parts');
   });
 });
 

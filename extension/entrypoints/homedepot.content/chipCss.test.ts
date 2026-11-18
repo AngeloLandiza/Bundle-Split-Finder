@@ -40,6 +40,15 @@ describe('chip.css', () => {
     expect(rule).toContain('box-shadow: 0 1px 2px rgba(26, 28, 30, 0.12)');
   });
 
+  it('is never wider than its container: it clips as a last resort, and its title keeps its full words (no ellipsis)', () => {
+    const rule = chip.slice(chip.indexOf('.chip {'), chip.indexOf('}', chip.indexOf('.chip {')));
+    expect(rule).toContain('max-width: 100%');
+    expect(rule).toContain('overflow: hidden');
+    const title = chip.slice(chip.indexOf('.chip-title {'), chip.indexOf('}', chip.indexOf('.chip-title {')));
+    expect(title).toContain('flex: none');
+    expect(title).not.toMatch(/ellipsis|overflow/);
+  });
+
   it('puts the chip in flow under the price with no margin, so the layout moves by its own height', () => {
     const host = chip.slice(chip.indexOf(':host {'), chip.indexOf('}', chip.indexOf(':host {')));
     expect(host).toContain('display: block !important');

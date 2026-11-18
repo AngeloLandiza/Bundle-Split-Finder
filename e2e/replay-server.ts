@@ -23,9 +23,9 @@ const html = (script: string, before = ''): string =>
   `<!doctype html><html><head><title>Product</title></head><body>${before}<script type="text/plain">${script}</script></body></html>`;
 
 // Home Depot's price block as recorded on Nov 17 (data-component="price:Price:v6.41.0"): the element the chip
-// anchors under. Only the founder's bundle page carries one, so the pages the scan's reader opens for other
-// ids stay as they were and show no chip.
-const PRICE_BLOCK_IDS = new Set(['328814689']);
+// anchors under. Only the founder's bundle page and 343992133 (DEWALT, priced by one scan with 10 searches, so its chip
+// shows an estimate) carry one, so the pages the scan's reader opens for other ids stay as they were and show no chip.
+const PRICE_BLOCK_IDS = new Set(['328814689', '343992133']);
 const PRICE_BLOCK = '<div data-component="price:Price:v6.41.0">$189.00</div>';
 
 export interface ReplayServer {

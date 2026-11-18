@@ -47,6 +47,7 @@
   gap: 12px;
   height: 40px;
   max-width: 100%;
+  overflow: hidden;
   padding: 0 10px 0 12px;
   background: var(--surface);
   color: var(--ink);
@@ -68,11 +69,19 @@
   flex: none;
 }
 
+/* The title keeps its full words: when the chip is too narrow, Chip.tsx drops the pieces after it, never these. */
 .chip-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: none;
   font-weight: 500;
+}
+
+/* The could-not-open sentence takes the chip's place; on a narrow window it wraps inside the 40px. */
+.chip-sentence {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: normal;
+  font-size: 13px;
+  line-height: 16px;
 }
 
 .chip-rule {

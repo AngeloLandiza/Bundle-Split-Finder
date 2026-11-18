@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { E2E_PORT } from '../wxt.config';
-import { expect, saveKey, test } from './fixtures';
+import { expect, getState, saveKey, test } from './fixtures';
 
 // Step 7, acceptance 4: on the founder's example page (item 328814689) the chip appears under the price with
 // no search used. The replay server serves the recorded page at /p/328814689 with a price block, the element the
@@ -67,6 +67,7 @@ test('the chip is drawn in the design\'s fonts, loaded from the extension', asyn
 const SHOTS = process.env.SPLIT_FINDER_SHOTS;
 const DIR = SHOTS ? `${SHOTS === '1' ? 'qa-shots' : SHOTS}/` : null;
 const WIDTHS = [360, 480];
+const FIT_WIDTHS = [360, 480, 1200];
 
 async function shoot(page: Page, name: string): Promise<void> {
   for (const width of WIDTHS) {
@@ -101,4 +102,64 @@ test('clicking the chip opens the panel on This page with the founder\'s parts, 
   await expect(parts.nth(1)).toContainText('PBLRC01B');
   await shoot(panel, 'this-page-after-chip');
   expect(server.searches).toEqual([]);
+});
+
+/** The chip is one 40px control, never wider than the space it sits in, with nothing clipped and its title whole. */
+async function expectFits(page: Page, width: number) {
+  await page.setViewportSize({ width, height: 820 });
+  await page.waitForTimeout(300);
+  const box = await page.evaluate(() => {
+    const host = document.querySelector('split-finder-chip')!;
+    const chip = host.shadowRoot!.querySelector('.chip') as HTMLElement;
+    const title = host.shadowRoot!.querySelector('.chip-title') as HTMLElement;
+    return {
+      host: host.getBoundingClientRect().width,
+      chip: chip.getBoundingClientRect().width,
+      height: chip.getBoundingClientRect().height,
+      clipped: chip.scrollWidth > chip.clientWidth,
+      titleWhole: title.scrollWidth <= title.clientWidth && title.getBoundingClientRect().width >= title.scrollWidth,
+      page: document.documentElement.scrollWidth <= window.innerWidth,
+    };
+  });
+  expect(box.chip, `chip ${box.chip} in ${box.host} at ${width}`).toBeLessThanOrEqual(box.host);
+  expect(box).toMatchObject({ height: 40, clipped: false, titleWhole: true, page: true });
+}
+
+test('the chip with prices to look up fits at 360, 480 and 1200 and keeps its title whole', async ({ context, server: _server }) => {
+  const page = await context.newPage();
+  await page.goto(PAGE);
+  const chip = page.locator('split-finder-chip').getByRole('button');
+  await expect(chip).toBeVisible();
+  for (const width of FIT_WIDTHS) {
+    await expectFits(page, width);
+    // The title keeps its words; what goes first is "Look up prices", and the searches stay while they fit.
+    await expect(chip).toContainText('Splits into 2 parts');
+    if (width >= 480) await expect(chip).toHaveText(/Splits into 2 parts · Look up prices · 2 searches/);
+    else await expect(chip).toHaveText(/^Splits into 2 parts · 2 searches$/);
+    if (DIR) await page.screenshot({ path: `${DIR}chip-fit-lookup-${width}.png` });
+  }
+});
+
+test('the chip with an estimate fits at 360, 480 and 1200: the ROI is dropped first, the title and the profit stay', async ({ context, options, server }) => {
+  await saveKey(options, 'TEST');
+  await expect(options.getByTestId('key-result')).toContainText('Key works.');
+  const settings = { ...((await getState(options)).data as unknown as { settings: Record<string, unknown> }).settings, searchesPerScan: 10 };
+  expect(await options.evaluate((s) => chrome.runtime.sendMessage({ type: 'saveSettings', settings: s }), settings)).toMatchObject({ ok: true });
+  // With the bundle pages refused the scan splits from titles alone, as panel-detail.spec does; then the page is served again.
+  server.refuse('*');
+  await options.evaluate(() => chrome.runtime.sendMessage({ type: 'scanNow' }));
+  await expect.poll(async () => (await getState(options)).data.scanRunning, { timeout: 60_000, intervals: [250] }).toBe(false);
+  server.reset();
+
+  const page = await context.newPage();
+  await page.goto(`http://localhost:${E2E_PORT}/p/343992133`);
+  const chip = page.locator('split-finder-chip').getByRole('button');
+  await expect(chip).toContainText('Est. profit');
+  for (const width of FIT_WIDTHS) {
+    await expectFits(page, width);
+    await expect(chip).toContainText('Splits into 2 parts');
+    if (width >= 480) await expect(chip).toHaveText(/^Splits into 2 parts\s+Est\. profit\s+[−+]\$\d+\.\d\d\s+ROI [−+]?\d+%$/);
+    else await expect(chip).toHaveText(/^Splits into 2 parts\s+Est\. profit\s+[−+]\$\d+\.\d\d$/);
+    if (DIR) await page.screenshot({ path: `${DIR}chip-fit-estimate-${width}.png` });
+  }
 });
