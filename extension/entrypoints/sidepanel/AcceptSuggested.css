@@ -1,0 +1,70 @@
+/* Accept all, at the top of Review. Rows follow the Review tab's: a white band, hairlines edge to edge, 11px 16px. */
+.accept {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.accept-title {
+  margin: 0 16px;
+  font-size: 17px;
+  line-height: 23px;
+  font-weight: 600;
+}
+.accept-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.accept-row {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 2px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.accept-row .fig-sm {
+  font-size: 12px;
+  line-height: 16px;
+}
+.accept-parts {
+  min-width: 0;
+  color: var(--ink-2);
+}
+.accept-actions {
+  margin: 4px 16px 0;
+  align-self: flex-start;
+}
+.accept-note {
+  margin: 0 16px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.accept-result {
+  margin: 0 16px 16px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink);
+}
+.accept-result:focus {
+  outline: none;
+}
+.accept-result:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Said to a screen reader, not shown. */
+.accept-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

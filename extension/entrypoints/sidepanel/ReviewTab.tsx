@@ -3,6 +3,7 @@ import { reviewSignature } from '@core/scan/answers';
 import type { ReviewAnswer, ReviewItem } from '@core/scan/types';
 import type { AppState, PanelReport } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
+import { AcceptSuggested, suggestedOf, useAcceptAll } from './AcceptSuggested';
 import { ReviewQuestion } from './ReviewQuestion';
 import './ReviewTab.css';
 
@@ -32,11 +33,24 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const open = [...byAge.filter((r) => !skipped.includes(keyOf(r))), ...later];
   const item = open[0];
 
+  // Accept all: the questions that offer one reading, answered in one press. Each one answered is hidden like a single answer.
+  const acceptAll = useAcceptAll(api, (r, seen) => setDone((d) => new Set(d).add(`${r.id}|${seen}`)));
+  const suggested = suggestedOf(open);
+  const accept = (
+    <AcceptSuggested items={suggested} run={acceptAll.run} result={acceptAll.result} scanRunning={state.scanRunning} onAccept={() => void acceptAll.accept(suggested)} />
+  );
+
   // After an answer the form is gone: focus goes to the next question's heading (ReviewQuestion), or here.
   // Keyed on the number answered, so a report reload never takes focus.
+  // Not when an Accept all has just ended in the same render: its result sentence takes focus then.
+  const resultSeen = useRef(0);
   useEffect(() => {
-    if (done.size > 0 && emptyRef.current) emptyRef.current.focus();
-  }, [done.size]);
+    const fresh = (acceptAll.result?.id ?? 0) !== resultSeen.current;
+    if (done.size > 0 && emptyRef.current && !fresh) emptyRef.current.focus();
+  }, [done.size]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    resultSeen.current = acceptAll.result?.id ?? 0;
+  }, [acceptAll.result?.id]);
   // The next question takes focus once, right after Save answer; a remount for another reason does not.
   useEffect(() => {
     if (focusNext) setFocusNext(false);
@@ -45,9 +59,13 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   if (!report) return <p className="review-empty">No scan has finished yet.</p>;
   if (!item) {
     return (
-      <p className="review-empty" ref={emptyRef} tabIndex={-1}>
-        Nothing needs your answer.
-      </p>
+      <>
+        {/* Only the result sentence can be here: the block needs two questions. */}
+        {accept}
+        <p className="review-empty" ref={emptyRef} tabIndex={-1}>
+          Nothing needs your answer.
+        </p>
+      </>
     );
   }
   // The badge's number: every question still open.
@@ -79,6 +97,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
 
   return (
     <section className="review" aria-label="Review">
+      {accept}
       <p className="review-count figure" aria-live="polite">
         {ahead + 1} of {total}
       </p>

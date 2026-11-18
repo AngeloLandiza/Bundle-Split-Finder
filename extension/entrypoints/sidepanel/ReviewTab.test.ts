@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
 import { createElement } from 'react';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { reviewSignature } from '@core/scan/answers';
@@ -375,7 +375,8 @@ describe('ReviewTab: a report built on the replayed recordings', () => {
     expect(screen.getByText(reviewReason(first.reason))).toBeInTheDocument();
     expect(first.reason).toContain('hyphen split');
     expect(screen.getByText('The model number names its parts, but not all of them are known products yet.')).toBeInTheDocument();
-    expect(screen.getByText(first.model)).toBeInTheDocument();
+    // The model is in the question and, when two bundles have one reading, in the Accept all list as well: look in the question.
+    expect(within(screen.getByRole('group', { name: 'Which parts come in this bundle?' })).getByText(first.model)).toBeInTheDocument();
     await user.click(screen.getByRole('radio', { name: 'None of these' }));
     await user.click(save());
     await waitFor(() =>
