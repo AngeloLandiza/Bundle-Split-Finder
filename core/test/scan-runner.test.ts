@@ -2064,6 +2064,33 @@ describe('runScan: a split question offers the readings it allows (step 5)', () 
     });
   });
 
+  it('an open PSK1212SB question stored with the old PSK12B + PSK12B choice is rewritten to the page reading, keeping when it was opened', async () => {
+    const w = world();
+    const title = 'ONE+ 18V Lithium Starter Kit with (1) 2.0 Ah Battery, (1) 4.0 Ah Battery, and Charger';
+    // Captured from Home Depot on Nov 17, 2026: item 339206615 and the bullet its page shows.
+    await w.store.putBundle({
+      key: 'homedepot:339206615', retailer: 'homedepot', itemId: '339206615', brand: 'RYOBI', model: 'PSK1212SB', title,
+      upc: null, price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0, split: null,
+      page: {
+        bullets: ['Includes: (1) PBP004 18V ONE+ 4Ah Lithium Batteries, (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) PCG002 18V ONE+ Charger, and operator’s manuals'],
+        description: null, readAt: T0 - DAY,
+      },
+    });
+    // The question as the owner's first real scan stored it, before Rulings 75 and 76.
+    const old: ReviewItem = {
+      id: 'split:homedepot:339206615', kind: 'split', subject: 'homedepot:339206615', brand: 'RYOBI', model: 'PSK1212SB', title,
+      reason: 'special-buy pattern, parts not in catalog', candidates: [], choices: [['PSK12B', 'PSK12B']],
+      openedAt: T0 - DAY, answer: null, answeredAt: null,
+    };
+    await w.store.putReview(old);
+    const job = await scan(w, { settings: { ...STEP2, brands: ['RYOBI'], queries: [] } });
+    expect(w.replay.calls).toEqual([]);
+    expect(job.counts.reviewsOpened).toBe(0);
+    expect(await w.store.getReview(old.id)).toEqual({
+      ...old, reason: 'no known RYOBI bundle pattern; page names PBP004, PBP003, PCG002', choices: [['PBP004', 'PBP003', 'PCG002']],
+    });
+  });
+
   it("337440459's page with model DCK200D1P1WB606 yields the model-number and the page readings", async () => {
     const w = world();
     // DCB606 as Home Depot's own row would store it, so the model number resolves 337440461 on its own.

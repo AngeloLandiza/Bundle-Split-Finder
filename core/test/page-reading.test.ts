@@ -104,7 +104,8 @@ describe('Ruling 76, fix round 1: the page reading keeps the counts the page wri
     const reading = ['PCL206', 'PCL235', 'PCL515', 'PCL500', 'PCL430', 'PCL525', 'PCL406', 'PCL660', 'PBP005', 'PBP005', 'PBP002', 'PCG002'];
     expect(got).toEqual({
       components: [], status: 'needs_review',
-      notes: ['no known RYOBI bundle pattern', `page names ${reading.join(', ')}`],
+      // The note names each model once; the reading keeps the repeat (fix round 2).
+      notes: ['no known RYOBI bundle pattern', 'page names PCL206, PCL235, PCL515, PCL500, PCL430, PCL525, PCL406, PCL660, PBP005, PBP002, PCG002'],
       alternatives: [reading],
     });
     // The question offers it with the repeat: a part listed twice counts twice.
@@ -118,5 +119,22 @@ describe('Ruling 76, fix round 1: the page reading keeps the counts the page wri
       'Includes: (3) PBP004 Batteries and (1) PCG002 Charger',
     ]));
     expect(got.alternatives).toEqual([['PBP004', 'PBP004', 'PBP004', 'PCG002']]);
+    expect(got.notes).toEqual(['no known RYOBI bundle pattern', 'page names PBP004, PCG002']);
+  });
+
+  // Hand-made (fix round 2): a count written before something that is not a model stays with it.
+  it('a count on a non-model never carries to the next model (hand-made)', () => {
+    expect(split('PSK1212SB', '', page(['Includes: (2) Hex Wrenches, PBP004'])).alternatives).toEqual([['PBP004']]);
+  });
+
+  // Hand-made (fix round 2): a count outside 1 to 9 before a model is not read as a quantity, and the
+  // page then offers no reading at all; the split stays in review without one.
+  it.each(['(0)', '(50)'])('a count of %s before a model: no reading (hand-made)', (count) => {
+    const got = split('PSK1212SB', '', page([`Includes: ${count} PBP004 Batteries, (1) PCG002 Charger`]));
+    expect(got).toEqual({ components: [], status: 'needs_review', notes: ['no known RYOBI bundle pattern'] });
+  });
+
+  it('a count outside 1 to 9 before a non-model does not stop the reading (hand-made)', () => {
+    expect(split('PSK1212SB', '', page(['Includes: (1) PBP004 Battery, (20) Drive Bits'])).alternatives).toEqual([['PBP004']]);
   });
 });

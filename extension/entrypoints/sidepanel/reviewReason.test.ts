@@ -26,6 +26,11 @@ describe('reviewReason', () => {
     ['page names PBP004, PBP003, PCG002', 'The Home Depot page names PBP004, PBP003 and PCG002.'],
     ['page names PBP004, PCG002', 'The Home Depot page names PBP004 and PCG002.'],
     ['page names PBP004', 'The Home Depot page names PBP004.'],
+    // Fix round 2: the note names each model once, though the reading repeats PBP005 (320511079's page).
+    [
+      'no known RYOBI bundle pattern; page names PCL206, PCL235, PCL515, PCL500, PCL430, PCL525, PCL406, PCL660, PBP005, PBP002, PCG002',
+      'The model number does not show what is inside. The Home Depot page names PCL206, PCL235, PCL515, PCL500, PCL430, PCL525, PCL406, PCL660, PBP005, PBP002 and PCG002.',
+    ],
     // Ruling 71: the count of the listings a match question leaves out is its own note.
     ['17 more listing(s) not shown', '17 more listings are not shown.'],
     ['1 more listing(s) not shown', '1 more listing is not shown.'],

@@ -53,6 +53,7 @@ const COUNT_BEFORE = /\((\d+)\)\s*$/;
  * The models a RYOBI page's Includes bullets name, exactly as written (no tool-only B added), in
  * page order, without the bundle's own model (Ruling 76). A model written "(n) MODEL" appears n
  * times, one with no count once; a model named in two places counts once, at the larger count.
+ * A count outside 1 to 9 before a model is not guessed at: the page then offers no reading (empty).
  */
 function includesModels(bundleModel: string, bullets: string[]): string[] {
   const own = bundleModel.toUpperCase().trim();
@@ -62,6 +63,7 @@ function includesModels(bundleModel: string, bullets: string[]): string[] {
       const model = match[0];
       if (model === own) continue;
       const n = Number(COUNT_BEFORE.exec(bullet.slice(0, match.index))?.[1] ?? 1);
+      if (n < 1 || n > 9) return [];
       counts.set(model, Math.max(counts.get(model) ?? 0, n));
     }
   }
@@ -148,7 +150,8 @@ export function splitWithPage(
     if ((modelSplit.alternatives ?? []).length > 0) return modelSplit;
     const reading = includesModels(bundle.model, page.bullets);
     if (reading.length === 0) return modelSplit;
-    return { ...withNote(modelSplit, `page names ${reading.join(', ')}`), alternatives: [reading] };
+    // The note names each model once; the reading keeps the counts.
+    return { ...withNote(modelSplit, `page names ${[...new Set(reading)].join(', ')}`), alternatives: [reading] };
   }
   // DEWALT here: the page names models beyond the kit and its split is not exactly them. The
   // model number has no single reading: the page's comes first, then any it could not choose between.
