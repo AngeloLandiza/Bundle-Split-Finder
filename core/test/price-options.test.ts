@@ -12,7 +12,7 @@ import {
 } from '../src/scan/types';
 import { type BudgetPolicy, parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '../src/serpapi/client';
-import { parseAmazonSearch, parseBuyNew } from '../src/serpapi/parsers';
+import { parseAmazonSearch, parseBuyBox, parseBuyNew } from '../src/serpapi/parsers';
 import * as fx from './fixtures';
 import { recorded } from './recorded';
 
@@ -110,6 +110,15 @@ describe('the extra figures a response already carries', () => {
     expect(parseBuyNew({})).toBeNull();
     expect(parseBuyNew({ purchase_options: { buy_new: { extracted_price: 0 } } })).toBeNull();
   });
+
+  it("the page's Buy Box: its Buy New box, else its only offer (single_offer) when it names a price and a seller", () => {
+    expect(parseBuyBox(recorded('amazon-product-B0B6Z2ZGVK'))).toEqual({ price: 160, soldBy: 'ArcianCo', shipsFrom: 'Amazon' });
+    // Recorded: "$169.00", features.shipper_seller "thedealvalley" (heading "Shipper / Seller").
+    expect(parseBuyBox(recorded('amazon-product-B0B3JWF5ZV'))).toEqual({ price: 169, soldBy: 'thedealvalley', shipsFrom: 'thedealvalley', singleOffer: true });
+    expect(parseBuyBox({ purchase_options: { single_offer: { extracted_price: 169, features: {} } } })).toBeNull();
+    expect(parseBuyBox({ purchase_options: { single_offer: { extracted_price: 0, features: { shipper_seller: { text: 'x' } } } } })).toBeNull();
+    expect(parseBuyBox({})).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------- the report's prices
@@ -158,7 +167,7 @@ describe("a part's labelled prices", () => {
     expect((await founderRow(w)).range.amazonNew).toEqual({ cost: 189, netRevenue: 268.55, profit: 79.55, roi: 0.4209 });
   });
 
-  it("Verify saves the page's Buy Box on the listing; it is counted, and a later search row keeps it", async () => {
+  it("Verify saves the page's Buy Box on the listing; it is counted while no older than the featured price, and a later search row keeps it", async () => {
     const w = await scanned();
     w.clock = T0 + MINUTE;
     await paid(w, VERIFY_01B);
@@ -171,27 +180,48 @@ describe("a part's labelled prices", () => {
     ]);
 
     // A later search row for the listing (the recorded lookup of PBLRC01B shows $146.94) changes the
-    // featured price and keeps the page's Buy Box. Now the two ends of the range differ.
+    // featured price and keeps the page's Buy Box, now older than it: shown for reference, not counted.
     w.clock = T0 + 2 * MINUTE;
     const row = parseAmazonSearch(recorded('amazon-search-PBLRC01B')).find((c) => c.asin === 'B0B6Z2ZGVK')!;
     await savePrice({ store: w.store }, 'B0B6Z2ZGVK', row, w.clock);
     await w.store.putListing(listingFrom(row, RATCHET.brands, w.clock, await w.store.getListing('B0B6Z2ZGVK'))!);
     expect((await w.store.getListing('B0B6Z2ZGVK'))!.buyBox).toMatchObject({ price: 160, soldBy: 'ArcianCo' });
-    const b = await founderRow(w);
-    expect(b.parts.find((p) => p.model === 'PBLRC01B')!.prices.map((o) => [o.kind, o.price])).toEqual([['amazon_buybox', 160], ['amazon_new', 146.94]]);
+    let b = await founderRow(w);
+    expect(b.parts.find((p) => p.model === 'PBLRC01B')!.prices.map((o) => [o.kind, o.price, o.reference])).toEqual([
+      ['amazon_buybox', 160, true],
+      ['amazon_new', 146.94, false],
+    ]);
+    expect(b.range).toEqual({ lowest: b.estimate, amazonNew: b.estimate, highest: b.estimate });
     expect(b.range.amazonNew).toEqual({ cost: 189, netRevenue: 268.55, profit: 79.55, roi: 0.4209 });
+
+    // Hand-made: the same box seen again with the featured price (as a second Verify would save it). Now it counts,
+    // and the two ends of the range differ.
+    const listing = (await w.store.getListing('B0B6Z2ZGVK'))!;
+    await w.store.putListing({ ...listing, buyBox: { ...listing.buyBox!, seenAt: w.clock } });
+    b = await founderRow(w);
+    expect(b.parts.find((p) => p.model === 'PBLRC01B')!.prices.map((o) => [o.kind, o.price, o.reference])).toEqual([
+      ['amazon_buybox', 160, false],
+      ['amazon_new', 146.94, false],
+    ]);
     expect(b.range.amazonNew).toBe(b.estimate);
     expect(b.range.lowest).toEqual(b.estimate);
     // 160 for PBLRC01B: 169 - 25.35 + 160 - 24 = 279.65.
     expect(b.range.highest).toEqual({ cost: 189, netRevenue: 279.65, profit: 90.65, roi: 0.4796 });
   });
 
-  it('a page with no Buy New box leaves null on the listing, and nothing is counted from it', async () => {
+  it("a page with one seller: its only offer is saved as the Buy Box and labelled so (singleOffer), sold and shipped by that seller", async () => {
     const w = await scanned();
     w.clock = T0 + MINUTE;
     await paid(w, VERIFY_25B);
-    expect((await w.store.getListing('B0B3JWF5ZV'))!.buyBox).toBeNull();
-    expect((await founderRow(w)).parts[0]!.prices.map((o) => o.kind)).toEqual(['amazon_new']);
+    const at = (await w.store.getPrice('B0B3JWF5ZV'))!.checkedAt;
+    expect((await w.store.getListing('B0B3JWF5ZV'))!.buyBox).toEqual({ price: 169, soldBy: 'thedealvalley', shipsFrom: 'thedealvalley', singleOffer: true, seenAt: at });
+    const b = await founderRow(w);
+    expect(b.parts[0]!.prices.map((o) => [o.kind, o.price, o.seller, o.shipsFrom, o.reference, o.singleOffer ?? null])).toEqual([
+      ['amazon_new', 169, null, null, false, null],
+      ['amazon_buybox', 169, 'thedealvalley', 'thedealvalley', false, true],
+    ]);
+    // The same price as the featured one: the range does not move.
+    expect(b.range).toEqual({ lowest: b.estimate, amazonNew: b.estimate, highest: b.estimate });
   });
 
   it("an inactive listing's prices are shown but not counted: no featured price, and its Buy Box is not in the range", async () => {

@@ -54,7 +54,8 @@ const KIND_ORDER: Record<PriceKind, number> = { amazon_new: 0, amazon_buybox: 1,
  * Step 9: every price known for a part, each labelled, highest first. Amazon's only for the part's
  * matched listing: its featured price while active (the estimate's price), the Buy Box a Verify read and
  * its list price; then Home Depot's price for the part sold alone. A listing in review is not the part's,
- * so it gives none. The list price and Home Depot's are for reference: never counted (`reference`).
+ * so it gives none. The list price and Home Depot's are for reference: never counted (`reference`). So is a
+ * Buy Box older than the featured price a later search row saw: it is counted only while no older than it.
  * Home Depot's price read from the RYOBI twin's page says so (`soldAs`).
  */
 function priceOptions(
@@ -69,7 +70,14 @@ function priceOptions(
       out.push({ ...base, kind: 'amazon_new', price: price.price, asin, link, seenAt: price.seenAt, reference: false });
     }
     const box = listing?.buyBox;
-    if (box) out.push({ ...base, kind: 'amazon_buybox', price: box.price, seller: box.soldBy, shipsFrom: box.shipsFrom, asin, link, seenAt: box.seenAt, reference: false });
+    if (box) {
+      // Fix round (Nov 18): as current as the featured price, or not counted. No clock: the report reads only the store.
+      const current = price?.seenAt == null || box.seenAt >= price.seenAt;
+      out.push({
+        ...base, kind: 'amazon_buybox', price: box.price, seller: box.soldBy, shipsFrom: box.shipsFrom, asin, link, seenAt: box.seenAt, reference: !current,
+        ...(box.singleOffer ? { singleOffer: true as const } : {}),
+      });
+    }
     if (typeof listing?.listPrice === 'number') {
       out.push({ ...base, kind: 'amazon_list', price: listing.listPrice, asin, link, seenAt: listing.checkedAt, reference: true });
     }

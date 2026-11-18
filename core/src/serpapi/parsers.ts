@@ -130,7 +130,7 @@ const featureText = (v: unknown): string | null => str(v) ?? str(obj(v).text);
 
 /**
  * Step 9: the listing page's "Buy New" box (`purchase_options.buy_new`): price, sold by, ships from.
- * Null when the page has none: a page with one seller shows `single_offer` instead, which is not read.
+ * Null when the page has none: a page with one seller shows `single_offer` instead (parseBuyBox).
  */
 export function parseBuyNew(json: unknown): { price: number; soldBy: string | null; shipsFrom: string | null } | null {
   const box = obj(obj(obj(json).purchase_options).buy_new);
@@ -138,6 +138,21 @@ export function parseBuyNew(json: unknown): { price: number; soldBy: string | nu
   if (price === null || price <= 0) return null;
   const features = obj(box.features);
   return { price, soldBy: featureText(features.sold_by), shipsFrom: featureText(features.ships_from) };
+}
+
+/**
+ * Step 9: the page's Buy New box (parseBuyNew), else its only offer (`purchase_options.single_offer`) when it
+ * names a price and a seller. The recorded B0B3JWF5ZV page shows one: $169, `features.shipper_seller`
+ * "thedealvalley" (heading "Shipper / Seller"), so that seller both sells and ships it. Null when neither.
+ */
+export function parseBuyBox(json: unknown): { price: number; soldBy: string | null; shipsFrom: string | null; singleOffer?: true } | null {
+  const buyNew = parseBuyNew(json);
+  if (buyNew !== null) return buyNew;
+  const offer = obj(obj(obj(json).purchase_options).single_offer);
+  const price = num(offer.extracted_price) ?? num(offer.price);
+  const seller = featureText(obj(offer.features).shipper_seller)?.trim() || null;
+  if (price === null || price <= 0 || seller === null) return null;
+  return { price, soldBy: seller, shipsFrom: seller, singleOffer: true };
 }
 
 // ---------------------------------------------------------------- Home Depot product (engine=home_depot_product)

@@ -314,18 +314,25 @@ export interface ListingRecord {
    */
   listPrice?: number;
   /**
-   * Step 9: the "Buy New" box on the listing's own page (`purchase_options.buy_new`), read by Verify.
+   * Step 9: the "Buy New" box on the listing's own page (`purchase_options.buy_new`, or a one-seller page's
+   * `single_offer`), read by Verify.
    * Null when the last page read showed none; absent when no page was read. Kept when a search row
    * rewrites the listing.
    */
   buyBox?: BuyBox | null;
 }
 
-/** Step 9: a listing page's "Buy New" box: its price, who sells it and who ships it. */
+/**
+ * Step 9: a listing page's "Buy New" box: its price, who sells it and who ships it. A page with one seller
+ * shows `purchase_options.single_offer` instead: read only when it names a price and a seller ("Shipper /
+ * Seller", so soldBy and shipsFrom are both that seller), and marked `singleOffer`.
+ */
 export interface BuyBox {
   price: number;
   soldBy: string | null;
   shipsFrom: string | null;
+  /** True when the page's only offer was read (single_offer), not a Buy New box. Absent otherwise. */
+  singleOffer?: true;
   /** When SerpApi answered with the page. */
   seenAt: number;
 }
@@ -561,7 +568,8 @@ export interface PartRow {
 /**
  * Step 9: where a part's price comes from. Only amazon_new and amazon_buybox count in an estimate today.
  * amazon_new     the matched New listing's featured price, while the listing is active (the estimate's price)
- * amazon_buybox  the matched listing's "Buy New" box, from its page (Verify)
+ * amazon_buybox  the matched listing's "Buy New" box, or its only offer (singleOffer), from its page (Verify);
+ *                counted only while no older than the featured price, else shown for reference
  * amazon_list    the matched listing's list price (struck through): reference only
  * homedepot      Home Depot's own price for the part sold alone: reference only
  * ebay_sold_new  reserved for eBay sold New listings; nothing produces it yet
@@ -583,13 +591,18 @@ export interface PriceOption {
   link: string | null;
   /** When the figure was seen: the response's time, or the reading's clock time. */
   seenAt: number;
-  /** True for a figure shown for reference only (amazon_list, homedepot): never counted in an estimate or a range. */
+  /**
+   * True for a figure shown for reference only (amazon_list, homedepot, and a Buy Box older than the featured
+   * price): never counted in an estimate or a range.
+   */
   reference: boolean;
   /**
    * homedepot only: the model Home Depot sells alone, when it is not the part's own but its RYOBI twin (the
    * page read for PCL206 is PCL206B's): "Home Depot · sold alone as PCL206B · reference". Absent for an exact match.
    */
   soldAs?: string;
+  /** amazon_buybox only: the page's only offer (single_offer), not a Buy New box. Absent otherwise. */
+  singleOffer?: true;
 }
 
 /**

@@ -6,7 +6,7 @@
 
 import { type Candidate, grade, kitKey, pick } from '../match';
 import type { SearchResult } from '../serpapi/client';
-import { parseAmazonProduct, parseBuyNew } from '../serpapi/parsers';
+import { parseAmazonProduct, parseBuyBox } from '../serpapi/parsers';
 import { wantedFor } from './classify';
 import { listingFrom } from './listings';
 import {
@@ -204,7 +204,7 @@ async function verify(
   if (page === null) throw new PaidProblem(PAGE_UNREADABLE);
   if (page.asin !== asin) throw new PaidProblem(OTHER_LISTING);
   await savePrice(ctx, asin, page, at);
-  await saveBuyBox(ctx, page, parseBuyNew(data), at);
+  await saveBuyBox(ctx, page, parseBuyBox(data), at);
   // As after a lookup: the owner may have decided the part while the page loaded.
   const match = await ctx.store.getMatch(part.key);
   if (!match || verifyRefusal(match, asin) !== null) return;
@@ -239,7 +239,7 @@ async function verify(
  * listing not saved yet is saved from the page as a search row would be (listingFrom: only a scanned
  * brand). A box seen later than `at` is kept.
  */
-async function saveBuyBox(ctx: PartContext, page: Candidate, box: ReturnType<typeof parseBuyNew>, at: number): Promise<void> {
+async function saveBuyBox(ctx: PartContext, page: Candidate, box: ReturnType<typeof parseBuyBox>, at: number): Promise<void> {
   const old = await ctx.store.getListing(page.asin);
   if (old?.buyBox && old.buyBox.seenAt > at) return;
   const listing = old ?? listingFrom(page, ctx.settings.brands, at);
