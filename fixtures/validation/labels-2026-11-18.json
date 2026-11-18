@@ -1,4 +1,983 @@
 {
-  "about": "The right Amazon listing for each part of the validation set, labelled by a checker from results-2026-11-18.json (the candidates each decision saw) and the listings' own Amazon pages, never from the tool's grade. Format: { labels: { \"<bundle model>\": { \"<part model>\": { \"correct\": [\"<ASIN>\", ...] | \"none\", \"note\": \"<one line: why, with the source>\" } } } }. correct lists every ASIN that is that part sold new on its own (more than one when Amazon lists it twice); \"none\" when no listing is it. core/test/validation.test.ts scores acceptance criterion 6 against these and skips while labels is empty.",
-  "labels": {}
+  "about": "The right Amazon listing for each part of the validation set, labelled by an independent checker from the candidates' titles, brands and model numbers in the recorded responses (fixtures/validation/responses/amazon), never from Amazon pages or the tool's grades or chosen listings. Format: { labels: { \"<bundle model>\": { \"<part model>\": { \"correct\": [\"<ASIN>\", ...] | \"none\", \"uncertain\"?: [\"<ASIN>\", ...], \"note\": \"<one line: why, with the source>\" } } } }. correct lists every ASIN whose title names the part's model number (allowing RYOBI's tool-only B twin) from the same brand, sold new and alone (more than one when Amazon lists it twice); \"none\" when no recorded listing could be it; an empty list with uncertain when a listing might be it but its title does not settle it. Renewed, accessory, spare-part, \"for Ryobi\"/\"compatible\" and bundled listings are never the part; a part that is a kit is the kit sold whole, and a tool from a kit is that tool sold alone. core/test/validation.test.ts scores acceptance criterion 6 against correct only; uncertain is for a person to settle.",
+  "labels": {
+    "DCK420D2DCS391B": {
+      "DCK420D2": {
+        "correct": "none",
+        "note": "No DEWALT row names DCK420D2; the search returned other combo kits (DCK421D2, DCK423D2, DCK240C2, ...), each a different model."
+      },
+      "DCS391B": {
+        "correct": [
+          "B007NVSTO8"
+        ],
+        "note": "DEWALT \"20V MAX Circular Saw Cordless, Battery Not Included (DCS391B)\", the only row naming DCS391B."
+      }
+    },
+    "DCK240C2DCS391B": {
+      "DCK240C2": {
+        "correct": [
+          "B00IJ0ALYS"
+        ],
+        "note": "DEWALT \"20V MAX Cordless Drill and Impact Driver (DCK240C2)\". B0722GYTWL (+ circular saw), B072B8GHHL (+ FlexTorq set) and B08P6NCHMW (+ mechanics set) bundle the kit with other items."
+      },
+      "DCS391B": {
+        "correct": [
+          "B007NVSTO8"
+        ],
+        "note": "DEWALT \"20V MAX Circular Saw Cordless, Battery Not Included (DCS391B)\", the only row naming DCS391B."
+      }
+    },
+    "DCK940D2W2032": {
+      "DCK940D2": {
+        "correct": [
+          "B018TM1Q80"
+        ],
+        "note": "DEWALT \"20V MAX Power Tools, 9 Cordless Tool Combo ... (DCK940D2)\", the only row naming DCK940D2."
+      },
+      "DCB203-2": {
+        "correct": [
+          "B00BYKVMSY"
+        ],
+        "note": "DEWALT \"20V MAX Battery, Compact 2.0Ah Double Pack (DCB203-2)\": the 2-pack is the part."
+      }
+    },
+    "PCL1600K2-A986501": {
+      "PCL1600K2": {
+        "correct": [],
+        "note": "No title names PCL1600K2. B0CTHZZTYN (RYOBI) and B0B1G2XRZ5 (no brand, \"ONEAND\", URL slug PCL1600K2) are both titled \"ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, and Charger\": the kit by description, not by model number.",
+        "uncertain": [
+          "B0CTHZZTYN",
+          "B0B1G2XRZ5"
+        ]
+      },
+      "A986501": {
+        "correct": [
+          "B09KHGD84Q"
+        ],
+        "note": "RYOBI \"Drill and Impact Drive KIT 65-Piece A986501\"."
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL235": {
+        "correct": [
+          "B0BGYFTPGK"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless 1/4 in. Impact Driver ... Tool Only ... - PCL235B\", the tool-only twin; B0DND8RPJH is a \"Fits For RYOBI\" listing."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL515": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL430": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL660": {
+        "correct": [
+          "B0B1GKJXNB"
+        ],
+        "note": "RYOBI \"PCL660B ONE+ 18V Cordless LED Flash Light (Tool Only)\", the tool-only twin."
+      },
+      "PBP005": {
+        "correct": [
+          "B09G1WD2CG"
+        ],
+        "note": "RYOBI \"ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery ... PBP005\"."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      }
+    },
+    "PCL1600K2-P553": {
+      "PCL1600K2": {
+        "correct": [],
+        "note": "No title names PCL1600K2. B0CTHZZTYN (RYOBI) and B0B1G2XRZ5 (no brand, \"ONEAND\", URL slug PCL1600K2) are both titled \"ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, and Charger\": the kit by description, not by model number.",
+        "uncertain": [
+          "B0CTHZZTYN",
+          "B0B1G2XRZ5"
+        ]
+      },
+      "P553": {
+        "correct": [],
+        "note": "Every row naming P553 is a spare part or cover. B09SNK2SBL (RYOBI) \"ONE+ 18V Cordless 7-1/4 in. Sliding Compound Miter Saw\" might be it, but the title has no model and does not say tool only.",
+        "uncertain": [
+          "B09SNK2SBL"
+        ]
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL235": {
+        "correct": [
+          "B0BGYFTPGK"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless 1/4 in. Impact Driver ... Tool Only ... - PCL235B\", the tool-only twin; B0DND8RPJH is a \"Fits For RYOBI\" listing."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL515": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL430": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL660": {
+        "correct": [
+          "B0B1GKJXNB"
+        ],
+        "note": "RYOBI \"PCL660B ONE+ 18V Cordless LED Flash Light (Tool Only)\", the tool-only twin."
+      },
+      "PBP005": {
+        "correct": [
+          "B09G1WD2CG"
+        ],
+        "note": "RYOBI \"ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery ... PBP005\"."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      }
+    },
+    "PCL1600K2-PBP2003": {
+      "PCL1600K2": {
+        "correct": [],
+        "note": "No title names PCL1600K2. B0CTHZZTYN (RYOBI) and B0B1G2XRZ5 (no brand, \"ONEAND\", URL slug PCL1600K2) are both titled \"ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, and Charger\": the kit by description, not by model number.",
+        "uncertain": [
+          "B0CTHZZTYN",
+          "B0B1G2XRZ5"
+        ]
+      },
+      "PBP2003": {
+        "correct": [
+          "B0BG5SPWVL"
+        ],
+        "note": "RYOBI \"ONEAND 18V HIGH Performance Lithium-ION 2.0 AH Compact Battery 2-Pack PBP2003\": the 2-pack is the part."
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL235": {
+        "correct": [
+          "B0BGYFTPGK"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless 1/4 in. Impact Driver ... Tool Only ... - PCL235B\", the tool-only twin; B0DND8RPJH is a \"Fits For RYOBI\" listing."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL515": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL430": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL660": {
+        "correct": [
+          "B0B1GKJXNB"
+        ],
+        "note": "RYOBI \"PCL660B ONE+ 18V Cordless LED Flash Light (Tool Only)\", the tool-only twin."
+      },
+      "PBP005": {
+        "correct": [
+          "B09G1WD2CG"
+        ],
+        "note": "RYOBI \"ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery ... PBP005\"."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      }
+    },
+    "DCB346-3WCS334B": {
+      "DCB346-3": {
+        "correct": [
+          "B09CLBM269"
+        ],
+        "note": "DEWALT \"... 6.0Ah Battery, 20V MAX XR 4.0Ah Battery, and 20V MAX 2.0Ah Battery DCB346-3\", the 3-battery pack the part is."
+      },
+      "DCS334B": {
+        "correct": [
+          "B07JPFHQKG",
+          "B0CFYM9L5W"
+        ],
+        "note": "Two DEWALT rows name DCS334B tool only: B07JPFHQKG (DEWALT/p1 catalog row) and B0CFYM9L5W (from the DCS565B search); Amazon lists it twice."
+      }
+    },
+    "PCL424B-PCL406B": {
+      "PCL424B": {
+        "correct": [
+          "B0BNFBL5PR"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Compact Fixed Base Router Tool Only ... - PCL424B\"."
+      },
+      "PCL406B": {
+        "correct": [],
+        "note": "No RYOBI title names PCL406/PCL406B (the rows that do are sander pads and \"Fits for RYOBI\" combos). B0BSJ97BSR (RYOBI) \"18V ONE+ 5\" Random Orbit Sander Cordless\" might be it, but RYOBI also sells the 5 in. P411.",
+        "uncertain": [
+          "B0BSJ97BSR"
+        ]
+      }
+    },
+    "PCL500B-PCL525B": {
+      "PCL500B": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL525B": {
+        "correct": [],
+        "note": "The only row naming PCL525B is B0C6W9534S (Renewed); PCL525K1 is the kit. B0BWZXGS1R (no brand, \"ONEAND\", slug RYOBI) \"ONEAND 18V Cordless JIG Saw Tool ONLY\" might be it; other RYOBI jig saws are P5231, P523, PBLJS01.",
+        "uncertain": [
+          "B0BWZXGS1R"
+        ]
+      }
+    },
+    "PCL1201K2-PCL515B": {
+      "PCL1201K2": {
+        "correct": [],
+        "note": "No title names PCL1201K2 (B0D76ZFRJJ names it but is a \"Fits For RYOBI\" listing of PCL1201K2-PCL515B). B0DSCG26GL (RYOBI) \"ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) 1.5 Ah Batteries, and Charger\" fits the kit by description only.",
+        "uncertain": [
+          "B0DSCG26GL"
+        ]
+      },
+      "PCL515B": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      }
+    },
+    "PCL1201K2-PCL430B": {
+      "PCL1201K2": {
+        "correct": [],
+        "note": "No title names PCL1201K2 (B0D76ZFRJJ names it but is a \"Fits For RYOBI\" listing of PCL1201K2-PCL515B). B0DSCG26GL (RYOBI) \"ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) 1.5 Ah Batteries, and Charger\" fits the kit by description only.",
+        "uncertain": [
+          "B0DSCG26GL"
+        ]
+      },
+      "PCL430B": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      }
+    },
+    "DCK225D2WDCB205": {
+      "DCK225D2": {
+        "correct": [
+          "B0C3YBY7CD"
+        ],
+        "note": "DEWALT \"20V MAX 2-KIT DCK225D2: ... DCD794 Drill, DCF809 Impact Driver, 2 Batteries, Charger, Case\"; the row has no price and 2 reviews."
+      },
+      "DCB205": {
+        "correct": [
+          "B00KWRM5Z4"
+        ],
+        "note": "DEWALT \"20V MAX Battery, Lithium Ion, 5.0Ah (DCB205)\", the single battery; DCB205-2, DCB205-2c, DCB205-2CK and DCB205C are other models."
+      }
+    },
+    "PCL500525SB": {
+      "PCL500B": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL525B": {
+        "correct": [],
+        "note": "The only row naming PCL525B is B0C6W9534S (Renewed); PCL525K1 is the kit. B0BWZXGS1R (no brand, \"ONEAND\", slug RYOBI) \"ONEAND 18V Cordless JIG Saw Tool ONLY\" might be it; other RYOBI jig saws are P5231, P523, PBLJS01.",
+        "uncertain": [
+          "B0BWZXGS1R"
+        ]
+      }
+    },
+    "DCK200D1P1W921B": {
+      "DCK200D1P1": {
+        "correct": [],
+        "note": "No row names DCK200D1P1 (6 results: DCK250QQ2, DCK2101QQ2, DCK240C2, DCK277D2, a WORKPRO drill). B08BF8M7KR is a DEWALT \"20V MAX 2-Tool Combo Kit New\" with no model, price or reviews: it could be any DEWALT 2-tool kit.",
+        "uncertain": [
+          "B08BF8M7KR"
+        ]
+      },
+      "DCF921B": {
+        "correct": [
+          "B09M3TL9BB"
+        ],
+        "note": "DEWALT \"ATOMIC 20V MAX* 1/2 in. Cordless Impact Wrench with Hog Ring Anvil (Tool Only) (DCF921B)\"."
+      }
+    },
+    "DCK200D1P1WB606": {
+      "DCK200D1P1": {
+        "correct": [],
+        "note": "No row names DCK200D1P1 (6 results: DCK250QQ2, DCK2101QQ2, DCK240C2, DCK277D2, a WORKPRO drill). B08BF8M7KR is a DEWALT \"20V MAX 2-Tool Combo Kit New\" with no model, price or reviews: it could be any DEWALT 2-tool kit.",
+        "uncertain": [
+          "B08BF8M7KR"
+        ]
+      },
+      "DCB606": {
+        "correct": [
+          "B01H9BL8EO"
+        ],
+        "note": "DEWALT \"FLEXVOLT 20V/60V MAX Lithium Ion Battery, 6.0-Ah (DCB606)\"; B01H9BL9SE is DCB606-2 and B0GKQNK9VC is DCB606C, other models."
+      }
+    },
+    "PSK1212SB": {
+      "PBP004": {
+        "correct": [
+          "B09HDZ5MPV"
+        ],
+        "note": "\"TTI Ryobi PBP004 ONE+ High Performance 18 Volts Lithium-Ion 4.0 Ah Battery\" (brand field empty; TTI makes Ryobi), the only row naming PBP004 that is not a third-party battery."
+      },
+      "PBP003": {
+        "correct": [
+          "B09BL9VXZX",
+          "B0CHWV4789"
+        ],
+        "note": "Two RYOBI rows name the PBP003 2.0 Ah HIGH Performance battery: B09BL9VXZX and B0CHWV4789."
+      },
+      "PCG002": {
+        "correct": [
+          "B0B1QRQYK2"
+        ],
+        "note": "RYOBI \"ONEAND 18V Lithium-ION Charger PCG002\". B096WHWDNB (brand TTI, bulk packaged) might be the same charger; B0CXFDDZNB is Renewed.",
+        "uncertain": [
+          "B096WHWDNB"
+        ]
+      }
+    },
+    "PCL1600K2-PBP003": {
+      "PCL1600K2": {
+        "correct": [],
+        "note": "No title names PCL1600K2. B0CTHZZTYN (RYOBI) and B0B1G2XRZ5 (no brand, \"ONEAND\", URL slug PCL1600K2) are both titled \"ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, and Charger\": the kit by description, not by model number.",
+        "uncertain": [
+          "B0CTHZZTYN",
+          "B0B1G2XRZ5"
+        ]
+      },
+      "PBP003": {
+        "correct": [
+          "B09BL9VXZX",
+          "B0CHWV4789"
+        ],
+        "note": "Two RYOBI rows name the PBP003 2.0 Ah HIGH Performance battery: B09BL9VXZX and B0CHWV4789."
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL235": {
+        "correct": [
+          "B0BGYFTPGK"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless 1/4 in. Impact Driver ... Tool Only ... - PCL235B\", the tool-only twin; B0DND8RPJH is a \"Fits For RYOBI\" listing."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL515": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL430": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL660": {
+        "correct": [
+          "B0B1GKJXNB"
+        ],
+        "note": "RYOBI \"PCL660B ONE+ 18V Cordless LED Flash Light (Tool Only)\", the tool-only twin."
+      },
+      "PBP005": {
+        "correct": [
+          "B09G1WD2CG"
+        ],
+        "note": "RYOBI \"ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery ... PBP005\"."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      }
+    },
+    "PCL500525SB-PBP003": {
+      "PCL500B": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL525B": {
+        "correct": [],
+        "note": "The only row naming PCL525B is B0C6W9534S (Renewed); PCL525K1 is the kit. B0BWZXGS1R (no brand, \"ONEAND\", slug RYOBI) \"ONEAND 18V Cordless JIG Saw Tool ONLY\" might be it; other RYOBI jig saws are P5231, P523, PBLJS01.",
+        "uncertain": [
+          "B0BWZXGS1R"
+        ]
+      },
+      "PBP003": {
+        "correct": [
+          "B09BL9VXZX",
+          "B0CHWV4789"
+        ],
+        "note": "Two RYOBI rows name the PBP003 2.0 Ah HIGH Performance battery: B09BL9VXZX and B0CHWV4789."
+      }
+    },
+    "PSK1200SB": {
+      "PBP003": {
+        "correct": [
+          "B09BL9VXZX",
+          "B0CHWV4789"
+        ],
+        "note": "Two RYOBI rows name the PBP003 2.0 Ah HIGH Performance battery: B09BL9VXZX and B0CHWV4789."
+      },
+      "P119": {
+        "correct": [
+          "B00HTMLLBE"
+        ],
+        "note": "RYOBI \"18v 18 volt P119 ONE+ NiCad Lithium Ion battery charger New\". B076FMKT2X (RYOBI) \"OEM 140106011 Charger P119 ... Genuine Factory Package\" is sold as an OEM spare part number; it may be the same charger.",
+        "uncertain": [
+          "B076FMKT2X"
+        ]
+      }
+    },
+    "PSBCK102K2-A967002": {
+      "PSBCK102K2": {
+        "correct": [],
+        "note": "The one row, B0FS9YLLJG (RYOBI), is titled \"ONEAND HP 18V BRUSHLESS Cordless Compact 1/2 in. Drill and Impact Driver KIT with\" (cut off): no model number, and RYOBI sells more than one compact brushless drill/impact kit.",
+        "uncertain": [
+          "B0FS9YLLJG"
+        ]
+      },
+      "A967002": {
+        "correct": "none",
+        "note": "No row names A967002 and no RYOBI 70-piece impact rated set new; B0C1PBCR95 is AR2040 70-piece (Renewed), another model."
+      }
+    },
+    "DCK316ST2M1W606": {
+      "DCK316ST2M1": {
+        "correct": "none",
+        "note": "No row names DCK316ST2M1; the search returned other DEWALT kits only."
+      },
+      "DCB606": {
+        "correct": [
+          "B01H9BL8EO"
+        ],
+        "note": "DEWALT \"FLEXVOLT 20V/60V MAX Lithium Ion Battery, 6.0-Ah (DCB606)\"; B01H9BL9SE is DCB606-2 and B0GKQNK9VC is DCB606C, other models."
+      }
+    },
+    "DCK540D1WCS565B": {
+      "DCK540D1": {
+        "correct": [
+          "B0GQ6QKPWF"
+        ],
+        "note": "DEWALT \"20V MAX 5-Tool Power Tools Combo Kit ... (DCK540D1)\", the only row naming DCK540D1."
+      },
+      "DCS565B": {
+        "correct": [
+          "B08KYM6GW6"
+        ],
+        "note": "DEWALT \"20V MAX* 6-1/2 in. Brushless Cordless Circular Saw, Tool Only (DCS565B)\"."
+      }
+    },
+    "DCK540D1WCS334B": {
+      "DCK540D1": {
+        "correct": [
+          "B0GQ6QKPWF"
+        ],
+        "note": "DEWALT \"20V MAX 5-Tool Power Tools Combo Kit ... (DCK540D1)\", the only row naming DCK540D1."
+      },
+      "DCS334B": {
+        "correct": [
+          "B07JPFHQKG",
+          "B0CFYM9L5W"
+        ],
+        "note": "Two DEWALT rows name DCS334B tool only: B07JPFHQKG (DEWALT/p1 catalog row) and B0CFYM9L5W (from the DCS565B search); Amazon lists it twice."
+      }
+    },
+    "DCK540D1WCF921B": {
+      "DCK540D1": {
+        "correct": [
+          "B0GQ6QKPWF"
+        ],
+        "note": "DEWALT \"20V MAX 5-Tool Power Tools Combo Kit ... (DCK540D1)\", the only row naming DCK540D1."
+      },
+      "DCF921B": {
+        "correct": [
+          "B09M3TL9BB"
+        ],
+        "note": "DEWALT \"ATOMIC 20V MAX* 1/2 in. Cordless Impact Wrench with Hog Ring Anvil (Tool Only) (DCF921B)\"."
+      }
+    },
+    "PSK0114-PCL265B": {
+      "PSK0114": {
+        "correct": [],
+        "note": "No title names PSK0114. B0HQZZ578D (RYOBI) \"ONE+ 18V Lithium Starter Kit with 4.0 Ah Battery and Charger\" fits by description only. B0CMZ46Z2H names PSK014 (HIGH Performance) and B0B85RMS5N names PCL104K1: other model numbers.",
+        "uncertain": [
+          "B0HQZZ578D"
+        ]
+      },
+      "PCL265B": {
+        "correct": [
+          "B0BL8BC8MF"
+        ],
+        "note": "\"Ryobi PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench (Tool ONLY...)\" (brand field empty, title leads with Ryobi); B0CC9ZFCP8 is Renewed and B0BPDRSWVL is the PCL265K1 kit."
+      }
+    },
+    "PSK1212SB-PCL265B": {
+      "PBP004": {
+        "correct": [
+          "B09HDZ5MPV"
+        ],
+        "note": "\"TTI Ryobi PBP004 ONE+ High Performance 18 Volts Lithium-Ion 4.0 Ah Battery\" (brand field empty; TTI makes Ryobi), the only row naming PBP004 that is not a third-party battery."
+      },
+      "PBP003": {
+        "correct": [
+          "B09BL9VXZX",
+          "B0CHWV4789"
+        ],
+        "note": "Two RYOBI rows name the PBP003 2.0 Ah HIGH Performance battery: B09BL9VXZX and B0CHWV4789."
+      },
+      "PCG002": {
+        "correct": [
+          "B0B1QRQYK2"
+        ],
+        "note": "RYOBI \"ONEAND 18V Lithium-ION Charger PCG002\". B096WHWDNB (brand TTI, bulk packaged) might be the same charger; B0CXFDDZNB is Renewed.",
+        "uncertain": [
+          "B096WHWDNB"
+        ]
+      },
+      "PCL265B": {
+        "correct": [
+          "B0BL8BC8MF"
+        ],
+        "note": "\"Ryobi PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench (Tool ONLY...)\" (brand field empty, title leads with Ryobi); B0CC9ZFCP8 is Renewed and B0BPDRSWVL is the PCL265K1 kit."
+      }
+    },
+    "PCL1800K3N-A967002": {
+      "PCL1800K3N": {
+        "correct": [],
+        "note": "The search returned one row, B0BL82ZSG1 (RYOBI) \"ONEAND 18V Cordless 8-Tool Combo KIT with 1 1.5 AH Battery and 2 4.0 AH Batteries\": fits the kit by description, no model number.",
+        "uncertain": [
+          "B0BL82ZSG1"
+        ]
+      },
+      "A967002": {
+        "correct": "none",
+        "note": "No row names A967002 and no RYOBI 70-piece impact rated set new; B0C1PBCR95 is AR2040 70-piece (Renewed), another model."
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL235": {
+        "correct": [
+          "B0BGYFTPGK"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless 1/4 in. Impact Driver ... Tool Only ... - PCL235B\", the tool-only twin; B0DND8RPJH is a \"Fits For RYOBI\" listing."
+      },
+      "PCL515": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL430": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL525": {
+        "correct": [],
+        "note": "The only row naming PCL525B is B0C6W9534S (Renewed); PCL525K1 is the kit. B0BWZXGS1R (no brand, \"ONEAND\", slug RYOBI) \"ONEAND 18V Cordless JIG Saw Tool ONLY\" might be it; other RYOBI jig saws are P5231, P523, PBLJS01.",
+        "uncertain": [
+          "B0BWZXGS1R"
+        ]
+      },
+      "PCL406": {
+        "correct": [],
+        "note": "No RYOBI title names PCL406/PCL406B (the rows that do are sander pads and \"Fits for RYOBI\" combos). B0BSJ97BSR (RYOBI) \"18V ONE+ 5\" Random Orbit Sander Cordless\" might be it, but RYOBI also sells the 5 in. P411.",
+        "uncertain": [
+          "B0BSJ97BSR"
+        ]
+      },
+      "PCL660": {
+        "correct": [
+          "B0B1GKJXNB"
+        ],
+        "note": "RYOBI \"PCL660B ONE+ 18V Cordless LED Flash Light (Tool Only)\", the tool-only twin."
+      },
+      "PBP005": {
+        "correct": [
+          "B09G1WD2CG"
+        ],
+        "note": "RYOBI \"ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery ... PBP005\"."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      },
+      "PCG002": {
+        "correct": [
+          "B0B1QRQYK2"
+        ],
+        "note": "RYOBI \"ONEAND 18V Lithium-ION Charger PCG002\". B096WHWDNB (brand TTI, bulk packaged) might be the same charger; B0CXFDDZNB is Renewed.",
+        "uncertain": [
+          "B096WHWDNB"
+        ]
+      }
+    },
+    "PCL1800K3N-A964001": {
+      "PCL1800K3N": {
+        "correct": [],
+        "note": "The search returned one row, B0BL82ZSG1 (RYOBI) \"ONEAND 18V Cordless 8-Tool Combo KIT with 1 1.5 AH Battery and 2 4.0 AH Batteries\": fits the kit by description, no model number.",
+        "uncertain": [
+          "B0BL82ZSG1"
+        ]
+      },
+      "A964001": {
+        "correct": "none",
+        "note": "No row names A964001; the 48 rows are unrelated RYOBI tools, batteries and chargers, and no RYOBI 40-piece impact rated set appears."
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL235": {
+        "correct": [
+          "B0BGYFTPGK"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless 1/4 in. Impact Driver ... Tool Only ... - PCL235B\", the tool-only twin; B0DND8RPJH is a \"Fits For RYOBI\" listing."
+      },
+      "PCL515": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL430": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL525": {
+        "correct": [],
+        "note": "The only row naming PCL525B is B0C6W9534S (Renewed); PCL525K1 is the kit. B0BWZXGS1R (no brand, \"ONEAND\", slug RYOBI) \"ONEAND 18V Cordless JIG Saw Tool ONLY\" might be it; other RYOBI jig saws are P5231, P523, PBLJS01.",
+        "uncertain": [
+          "B0BWZXGS1R"
+        ]
+      },
+      "PCL406": {
+        "correct": [],
+        "note": "No RYOBI title names PCL406/PCL406B (the rows that do are sander pads and \"Fits for RYOBI\" combos). B0BSJ97BSR (RYOBI) \"18V ONE+ 5\" Random Orbit Sander Cordless\" might be it, but RYOBI also sells the 5 in. P411.",
+        "uncertain": [
+          "B0BSJ97BSR"
+        ]
+      },
+      "PCL660": {
+        "correct": [
+          "B0B1GKJXNB"
+        ],
+        "note": "RYOBI \"PCL660B ONE+ 18V Cordless LED Flash Light (Tool Only)\", the tool-only twin."
+      },
+      "PBP005": {
+        "correct": [
+          "B09G1WD2CG"
+        ],
+        "note": "RYOBI \"ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery ... PBP005\"."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      },
+      "PCG002": {
+        "correct": [
+          "B0B1QRQYK2"
+        ],
+        "note": "RYOBI \"ONEAND 18V Lithium-ION Charger PCG002\". B096WHWDNB (brand TTI, bulk packaged) might be the same charger; B0CXFDDZNB is Renewed.",
+        "uncertain": [
+          "B096WHWDNB"
+        ]
+      }
+    },
+    "PCL1600K2-A963001": {
+      "PCL1600K2": {
+        "correct": [],
+        "note": "No title names PCL1600K2. B0CTHZZTYN (RYOBI) and B0B1G2XRZ5 (no brand, \"ONEAND\", URL slug PCL1600K2) are both titled \"ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, and Charger\": the kit by description, not by model number.",
+        "uncertain": [
+          "B0CTHZZTYN",
+          "B0B1G2XRZ5"
+        ]
+      },
+      "A963001": {
+        "correct": "none",
+        "note": "The only row naming A963001 is B0F4K79GVT, \"A963001 Fits For RYOBI ...\" with no brand: a \"for Ryobi\" listing, never the part."
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL235": {
+        "correct": [
+          "B0BGYFTPGK"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless 1/4 in. Impact Driver ... Tool Only ... - PCL235B\", the tool-only twin; B0DND8RPJH is a \"Fits For RYOBI\" listing."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL515": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL430": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL660": {
+        "correct": [
+          "B0B1GKJXNB"
+        ],
+        "note": "RYOBI \"PCL660B ONE+ 18V Cordless LED Flash Light (Tool Only)\", the tool-only twin."
+      },
+      "PBP005": {
+        "correct": [
+          "B09G1WD2CG"
+        ],
+        "note": "RYOBI \"ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery ... PBP005\"."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      }
+    },
+    "PCL1600K2-A971502": {
+      "PCL1600K2": {
+        "correct": [],
+        "note": "No title names PCL1600K2. B0CTHZZTYN (RYOBI) and B0B1G2XRZ5 (no brand, \"ONEAND\", URL slug PCL1600K2) are both titled \"ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, and Charger\": the kit by description, not by model number.",
+        "uncertain": [
+          "B0CTHZZTYN",
+          "B0B1G2XRZ5"
+        ]
+      },
+      "A971502": {
+        "correct": [
+          "B0BL9FMDWC"
+        ],
+        "note": "RYOBI \"Black Oxide Round Shank Drill BIT Set 15-Piece A971502\". B0CCZ3BL9Y (RYOBI) \"15 PC. Round Shank Black Oxide Drill Bit Set\" has no model; B0D7SW8F8L is a \"Fits for RYOBI\" listing.",
+        "uncertain": [
+          "B0CCZ3BL9Y"
+        ]
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL235": {
+        "correct": [
+          "B0BGYFTPGK"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless 1/4 in. Impact Driver ... Tool Only ... - PCL235B\", the tool-only twin; B0DND8RPJH is a \"Fits For RYOBI\" listing."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL515": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL430": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL660": {
+        "correct": [
+          "B0B1GKJXNB"
+        ],
+        "note": "RYOBI \"PCL660B ONE+ 18V Cordless LED Flash Light (Tool Only)\", the tool-only twin."
+      },
+      "PBP005": {
+        "correct": [
+          "B09G1WD2CG"
+        ],
+        "note": "RYOBI \"ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery ... PBP005\"."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      }
+    },
+    "PCL1600K2-A989504": {
+      "PCL1600K2": {
+        "correct": [],
+        "note": "No title names PCL1600K2. B0CTHZZTYN (RYOBI) and B0B1G2XRZ5 (no brand, \"ONEAND\", URL slug PCL1600K2) are both titled \"ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, and Charger\": the kit by description, not by model number.",
+        "uncertain": [
+          "B0CTHZZTYN",
+          "B0B1G2XRZ5"
+        ]
+      },
+      "A989504": {
+        "correct": [],
+        "note": "The only row naming A989504 is B0D7SXRCV7, a \"Fits for RYOBI\" listing. B09MC85SXM (RYOBI) \"Drill and Impact Drive Kit (95-Piece) with Carry CASE\" fits by description, no model.",
+        "uncertain": [
+          "B09MC85SXM"
+        ]
+      },
+      "PCL206": {
+        "correct": "none",
+        "note": "Every row naming PCL206/PCL206B is Amazon Renewed (B0BKTNLS6X, B0BVYFSHXX); the RYOBI drill/drivers that are new name other models (P215BN, PCL201, PSBDD01) or are kits."
+      },
+      "PCL235": {
+        "correct": [
+          "B0BGYFTPGK"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless 1/4 in. Impact Driver ... Tool Only ... - PCL235B\", the tool-only twin; B0DND8RPJH is a \"Fits For RYOBI\" listing."
+      },
+      "PCL500": {
+        "correct": "none",
+        "note": "No RYOBI row names PCL500/PCL500B; rows naming it are third-party rip guides. RYOBI circular saws returned are P505 and P504G, other models."
+      },
+      "PCL515": {
+        "correct": [
+          "B0B88R7HWB"
+        ],
+        "note": "RYOBI \"ONE+ 18V Cordless Reciprocating Saw ... Tool Only ... - PCL515B\"; B0BMKQMHG2 is Renewed."
+      },
+      "PCL430": {
+        "correct": [],
+        "note": "Only B0BML29T2R (Renewed) and spare parts name PCL430/PCL430B in the title. B0B11CJ52Y (RYOBI) \"ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)\" has PCL430B in its URL slug but not its title, and RYOBI sells other multi-tools (P343, PBLMT50B).",
+        "uncertain": [
+          "B0B11CJ52Y"
+        ]
+      },
+      "PCL660": {
+        "correct": [
+          "B0B1GKJXNB"
+        ],
+        "note": "RYOBI \"PCL660B ONE+ 18V Cordless LED Flash Light (Tool Only)\", the tool-only twin."
+      },
+      "PBP005": {
+        "correct": [
+          "B09G1WD2CG"
+        ],
+        "note": "RYOBI \"ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery ... PBP005\"."
+      },
+      "PBP002": {
+        "correct": [
+          "B08L339D94",
+          "B09SV94MBQ"
+        ],
+        "note": "Two RYOBI rows name PBP002 1.5 Ah: B08L339D94 and B09SV94MBQ; every other row naming it is a third-party battery or charger."
+      }
+    }
+  }
 }
