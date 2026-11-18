@@ -36,8 +36,23 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   // Accept all: the questions that offer one reading, answered in one press. Each one answered is hidden like a single answer.
   const acceptAll = useAcceptAll(api, (r, seen) => setDone((d) => new Set(d).add(`${r.id}|${seen}`)));
   const suggested = suggestedOf(open);
+  // The same link the question's own "Open on Home Depot" uses: the report row's, never one built from the model.
+  const homeDepotLinkOf = (r: ReviewItem): string | null => (r.kind === 'split' ? (report?.bundles.find((b) => b.key === r.subject)?.link ?? null) : null);
+  // A result sentence about the questions as they were goes stale when a scan starts.
+  const clearResult = acceptAll.clear;
+  useEffect(() => {
+    if (state.scanRunning) clearResult();
+  }, [state.scanRunning]); // eslint-disable-line react-hooks/exhaustive-deps
   const accept = (
-    <AcceptSuggested items={suggested} run={acceptAll.run} result={acceptAll.result} focusedId={acceptAll.focusedId} scanRunning={state.scanRunning} onAccept={() => void acceptAll.accept(suggested)} />
+    <AcceptSuggested
+      items={suggested}
+      run={acceptAll.run}
+      result={acceptAll.result}
+      focusedId={acceptAll.focusedId}
+      scanRunning={state.scanRunning}
+      onAccept={() => void acceptAll.accept(suggested)}
+      linkOf={homeDepotLinkOf}
+    />
   );
 
   // After an answer the form is gone: focus goes to the next question's heading (ReviewQuestion), or here.
@@ -104,7 +119,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
       <ReviewQuestion
         key={keyOf(item)}
         item={item}
-        homeDepotLink={item.kind === 'split' ? (report.bundles.find((b) => b.key === item.subject)?.link ?? null) : null}
+        homeDepotLink={homeDepotLinkOf(item)}
         scanRunning={state.scanRunning}
         focusHeading={focusNext}
         onSave={save}

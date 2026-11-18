@@ -8,7 +8,8 @@ import { reviewReasonParts } from './reviewReason';
 
 const NONE = 'none';
 const ENTER = 'enter';
-const CHANGED = 'That question changed. Choose again.';
+/** The worker's refusal for a question that changed (core/src/scan/answers.ts). AcceptSuggested's drift test ties it to the worker. */
+export const CHANGED = 'That question changed. Choose again.';
 export const SCAN_RUNNING = 'A scan is running. Answer when it has finished.';
 
 export interface ReviewQuestionProps {

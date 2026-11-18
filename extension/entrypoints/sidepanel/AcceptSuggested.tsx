@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { pageReadingOf } from '@core/pageSplit';
 import { choicesOf, reviewSignature } from '@core/scan/answers';
 import type { ReviewItem } from '@core/scan/types';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
-import { SCAN_RUNNING } from './ReviewQuestion';
+import { CHANGED, SCAN_RUNNING } from './ReviewQuestion';
 import './AcceptSuggested.css';
 
 /**
@@ -10,15 +11,18 @@ import './AcceptSuggested.css';
  * CHANGED, ANSWERED, NOT_FOUND). Such a question is skipped and counted: CHANGED as still open, the others as no longer open. Any other refusal (a scan or a search
  * running, a malformed request) stops the run. AcceptSuggested.test.ts checks these against the worker's own sentences.
  */
-const CHANGED = 'That question changed. Choose again.';
 export const STALE_REFUSALS: readonly string[] = [
   CHANGED,
   'That question was already answered.',
   'That question was not found.',
 ];
 
-/** Open split questions that offer exactly one reading, in the order given. */
-export const suggestedOf = (open: readonly ReviewItem[]): ReviewItem[] => open.filter((r) => r.kind === 'split' && choicesOf(r).length === 1);
+/**
+ * Open split questions that offer exactly one reading, in the order given. Not one whose reading came from the Home
+ * Depot page (Ruling 76): the model number said nothing, so the owner reads those one at a time, with the page's sentence.
+ */
+export const suggestedOf = (open: readonly ReviewItem[]): ReviewItem[] =>
+  open.filter((r) => r.kind === 'split' && choicesOf(r).length === 1 && !pageReadingOf(r.reason));
 
 /** `id` counts the runs, so the same sentence twice is still a new one to focus. */
 export interface AcceptResult {
@@ -45,6 +49,8 @@ export function useAcceptAll(api: WorkerApi, onAccepted: (item: ReviewItem, seen
   const [run, setRun] = useState<AcceptRun | null>(null);
   const [result, setResult] = useState<AcceptResult | null>(null);
   const busy = useRef(false);
+  // Counts the results ever made. Not derived from `result`, which is cleared when a scan starts.
+  const made = useRef(0);
   // The last result id that took focus. Kept here, above the block, which remounts when the tab goes between its states.
   const focusedId = useRef(0);
   // False once the tab is left: the loop stops before its next send.
@@ -93,10 +99,14 @@ export function useAcceptAll(api: WorkerApi, onAccepted: (item: ReviewItem, seen
       gone > 0 ? `${gone} ${gone === 1 ? 'was' : 'were'} no longer open.` : null,
       failure,
     ];
-    setResult((r) => ({ id: (r?.id ?? 0) + 1, text: said.filter((x) => x !== null).join(' ') }));
+    made.current += 1;
+    setResult({ id: made.current, text: said.filter((x) => x !== null).join(' ') });
   };
 
-  return { run, result, accept, focusedId };
+  /** A sentence about the questions as they were is stale once a scan starts. */
+  const clear = () => setResult(null);
+
+  return { run, result, accept, clear, focusedId };
 }
 
 export interface AcceptSuggestedProps {
@@ -108,9 +118,11 @@ export interface AcceptSuggestedProps {
   focusedId: { current: number };
   scanRunning: boolean;
   onAccept: () => void;
+  /** A bundle's page on Home Depot, the link its question shows; null when the report has none. */
+  linkOf: (item: ReviewItem) => string | null;
 }
 
-export function AcceptSuggested({ items, run, result, focusedId, scanRunning, onAccept }: AcceptSuggestedProps) {
+export function AcceptSuggested({ items, run, result, focusedId, scanRunning, onAccept, linkOf }: AcceptSuggestedProps) {
   const resultRef = useRef<HTMLParagraphElement>(null);
   const [expanded, setExpanded] = useState(false);
   // Focus goes to the sentence once per result, whatever remounts the block: it is what the owner pressed the button for.
@@ -132,13 +144,23 @@ export function AcceptSuggested({ items, run, result, focusedId, scanRunning, on
             {shown.length} bundles have one suggested answer
           </h2>
           <ul className="accept-list">
-            {(folded ? shown.slice(0, FOLD) : shown).map((r) => (
-              <li key={r.id} className="accept-row">
-                <span className="figure fig-sm">{r.model}</span>
-                <span className="accept-hidden"> splits into </span>
-                <span className="figure fig-sm accept-parts">{choicesOf(r)[0]!.join(' + ')}</span>
-              </li>
-            ))}
+            {(folded ? shown.slice(0, FOLD) : shown).map((r) => {
+              const href = linkOf(r);
+              return (
+                <li key={r.id} className="accept-row">
+                  {href ? (
+                    <a className="figure fig-sm accept-link" href={href} target="_blank" rel="noopener noreferrer">
+                      {r.model}{' '}
+                      <span className="accept-hidden">on Home Depot</span>
+                    </a>
+                  ) : (
+                    <span className="figure fig-sm">{r.model}</span>
+                  )}
+                  <span className="accept-hidden"> splits into </span>
+                  <span className="figure fig-sm accept-parts">{choicesOf(r)[0]!.join(' + ')}</span>
+                </li>
+              );
+            })}
           </ul>
           {shown.length > FOLD ? (
             <div className="accept-actions">

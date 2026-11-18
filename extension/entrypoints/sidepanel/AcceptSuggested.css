@@ -35,6 +35,15 @@
   font-size: 12px;
   line-height: 16px;
 }
+/* The bundle's Home Depot page: blue is only for links. */
+.accept-link {
+  color: var(--link);
+  width: fit-content;
+}
+.accept-link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
 .accept-parts {
   color: var(--ink-2);
 }

@@ -28,16 +28,19 @@ const state = (over: Partial<AppState> = {}): AppState => ({
 
 // The recorded replay, as the panel's own scan reads it: every split question it opens, with the choices it offered.
 let real: ReviewItem[] = [];
+let realBundles: PanelReport['bundles'] = [];
 beforeAll(async () => {
   const T0 = Date.UTC(2026, 10, 9, 12);
   const store = new MemoryScanStore();
   const budget = new SearchBudget(parseAccount({ ...fx.SERPAPI_ACCOUNT_FREE }), { reserve: 0, maxPerRun: 20 });
   const client = new SerpApiClient({ apiKey: 'TEST', budget, cache: new MemoryCache(), fetchFn: replayRecorded().fetchFn, now: () => T0 });
   await runScan({ client, budget, store, settings: DEFAULT_SCAN_SETTINGS, now: () => T0 });
-  real = ((await buildReport(store, DEFAULT_SCAN_SETTINGS)) as unknown as PanelReport).review;
+  const built = (await buildReport(store, DEFAULT_SCAN_SETTINGS)) as unknown as PanelReport;
+  real = built.review;
+  realBundles = built.bundles;
 }, 60_000);
 
-const reportOf = (review: ReviewItem[]) => ({ bundles: [], review, packaging: {} }) as unknown as PanelReport;
+const reportOf = (review: ReviewItem[], bundles: PanelReport['bundles'] = []) => ({ bundles, review, packaging: {} }) as unknown as PanelReport;
 const oneReading = () => real.filter((r) => r.kind === 'split' && r.choices.length === 1);
 const manyOrNone = () => real.filter((r) => r.kind === 'split' && r.choices.length !== 1);
 
@@ -60,6 +63,45 @@ describe('Accept all: which questions, and what the block says', () => {
   it('lists every open split question with exactly one reading, and none with no reading or a match question', () => {
     const mixed = [...real, { ...oneReading()[0]!, id: 'match:x', kind: 'match' as const }];
     expect(suggestedOf(mixed).map((r) => r.id)).toEqual(oneReading().map((r) => r.id));
+  });
+
+  // Ruling 76: the reading came from the Home Depot page, not from the model number. The owner reads those one at a time.
+  // Hand-labelled shapes of the two real runner questions (the replay holds no such question): PSK1212SB's reason and choice
+  // are what core/test/page-reading.test.ts gets from its captured page; the 320511079 case repeats PBP005.
+  const pageReading = (id: string, reason: string, choice: string[]): ReviewItem => ({
+    ...oneReading()[0]!, id: `split:homedepot:${id}`, subject: `homedepot:${id}`, model: id, reason, choices: [choice],
+  });
+  const PSK1212SB = () => pageReading('PSK1212SB', 'no known RYOBI bundle pattern; page names PBP004, PBP003, PCG002', ['PBP004', 'PBP003', 'PCG002']);
+  const REPEATED = () =>
+    pageReading('PSK0505SB', 'no known RYOBI bundle pattern; page names PCL206, PCL235, PBP005, PBP002, PCG002', ['PCL206', 'PCL235', 'PBP005', 'PBP005', 'PBP002', 'PCG002']);
+
+  it('leaves out a question whose one reading came from the page: PSK1212SB, and the repeated-part case', () => {
+    const mixed = [PSK1212SB(), ...real, REPEATED()];
+    expect(suggestedOf(mixed).map((r) => r.id)).toEqual(oneReading().map((r) => r.id));
+    expect(suggestedOf([PSK1212SB(), REPEATED()])).toEqual([]);
+  });
+
+  it('keeps a one-reading question whose reason holds another "page names" note, which is not a page reading', () => {
+    const q = oneReading()[0]!;
+    expect(suggestedOf([{ ...q, reason: 'no known RYOBI bundle pattern; page names no models' }])).toHaveLength(1);
+    expect(suggestedOf([{ ...q, reason: 'model number says DCB205; page names DCB204, which do not fit the model number' }])).toHaveLength(1);
+  });
+
+  it('a page-reading question is not in the block, is not sent by Accept all, and stays below with its sentence', async () => {
+    const user = userEvent.setup();
+    const pair = oneReading().slice(0, 2);
+    const runner = PSK1212SB();
+    const { send } = setup(reportOf([runner, REPEATED(), ...pair]));
+    const block = screen.getByRole('region', { name: /one suggested answer/ });
+    expect(within(block).getByRole('heading', { name: '2 bundles have one suggested answer' })).toBeInTheDocument();
+    expect(within(block).queryByText('PSK1212SB')).toBeNull();
+    expect(within(block).queryByText('PSK0505SB')).toBeNull();
+    // The question below is the oldest open one, the page reading, with its page sentence.
+    expect(screen.getByText('1 of 4')).toBeInTheDocument();
+    expect(screen.getByText('The Home Depot page names', { exact: false })).toBeInTheDocument();
+    await user.click(acceptButton());
+    expect(await screen.findByText('Accepted 2 of 2.')).toBeInTheDocument();
+    expect(send.mock.calls.map((c) => (c[0] as { id: string }).id)).toEqual(pair.map((r) => r.id));
   });
 
   it('shows the heading, one line per bundle with the model and its parts in the figure face, the button and the note', () => {
@@ -96,6 +138,43 @@ describe('Accept all: which questions, and what the block says', () => {
     const twoReadings = (r: ReviewItem): ReviewItem => ({ ...r, choices: [r.choices[0]!, ['OTHER1', 'OTHER2']] });
     setup(reportOf(oneReading().slice(0, 3).map(twoReadings)));
     expect(screen.queryByRole('button', { name: /^Accept/ })).toBeNull();
+  });
+});
+
+describe('Accept all: every row links to its Home Depot page', () => {
+  const linkOf = (r: ReviewItem) => realBundles.find((b) => b.key === r.subject)?.link ?? null;
+
+  it('the recorded replay has a bundle page link for the one-reading questions', () => {
+    expect(oneReading().slice(0, 3).every((r) => linkOf(r) !== null)).toBe(true);
+  });
+
+  it("the bundle model is a link, in the figure face, to the report row's link, opening in a new tab, named \"<model> on Home Depot\"", () => {
+    const pair = oneReading().slice(0, 2);
+    setup(reportOf(pair, realBundles));
+    const rows = within(screen.getByRole('list')).getAllByRole('listitem');
+    for (const [i, r] of pair.entries()) {
+      const link = within(rows[i]!).getByRole('link', { name: `${r.model} on Home Depot` });
+      expect(link).toHaveAttribute('href', linkOf(r)!);
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link.getAttribute('rel')).toContain('noopener');
+      expect(link).toHaveClass('figure');
+      expect(within(rows[i]!).getByText(r.model)).toBeInTheDocument();
+    }
+  });
+
+  it("is the same URL as the question's own \"Open on Home Depot\" link", () => {
+    const pair = oneReading().slice(0, 2);
+    setup(reportOf(pair, realBundles));
+    const own = screen.getByRole('link', { name: 'Open on Home Depot' }).getAttribute('href');
+    const rowHrefs = within(screen.getByRole('list')).getAllByRole('link').map((a) => a.getAttribute('href'));
+    expect(rowHrefs).toContain(own);
+  });
+
+  it('a bundle the report has no link for shows its model as plain text', () => {
+    const pair = oneReading().slice(0, 2);
+    setup(reportOf(pair, []));
+    expect(within(screen.getByRole('list')).queryAllByRole('link')).toHaveLength(0);
+    expect(within(screen.getByRole('list')).getByText(pair[0]!.model)).toHaveClass('figure');
   });
 });
 
@@ -237,6 +316,22 @@ describe('Accept all: the run', () => {
     expect(within(screen.getByRole('region', { name: /one suggested answer/ })).getByText('A scan is running. Answer when it has finished.')).toBeInTheDocument();
     await user.click(acceptButton());
     expect(send).not.toHaveBeenCalled();
+  });
+
+  it('the result sentence clears when a scan starts, and a later result still takes focus', async () => {
+    const user = userEvent.setup();
+    const [a, b, c, d] = oneReading();
+    const { again } = setup(reportOf([a!, b!]));
+    await user.click(acceptButton());
+    await screen.findByText('Accepted 2 of 2.');
+    again(reportOf([]), state({ scanRunning: true }));
+    expect(screen.queryByText('Accepted 2 of 2.')).toBeNull();
+    // The scan finishes with two new questions: the sentence does not come back.
+    again(reportOf([c!, d!]), state());
+    expect(screen.queryByText('Accepted 2 of 2.')).toBeNull();
+    await user.click(acceptButton());
+    const next = await screen.findByText('Accepted 2 of 2.');
+    await waitFor(() => expect(next).toHaveFocus());
   });
 
   it('the result stays when the block has gone, until the tab is left (the panel unmounts it)', async () => {
