@@ -171,7 +171,7 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
           {job && job.finishedAt !== null ? ` · scanned ${when(job.finishedAt, now)}` : ''}
         </span>
         <span className="deals-controls">
-          <button type="button" className="deals-download" onClick={() => api.download(`split-finder-deals-${localDate(now)}.csv`, bundlesCsv(groups.flatMap((g) => g.rows)), 'text/csv')}>
+          <button type="button" className="deals-download" onClick={() => api.download(`split-finder-deals-${localDate(Date.now())}.csv`, bundlesCsv(groups.flatMap((g) => g.rows)), 'text/csv')}>
             Download CSV
           </button>
           <span className="deals-sort">

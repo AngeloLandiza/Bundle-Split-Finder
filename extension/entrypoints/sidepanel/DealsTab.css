@@ -34,7 +34,7 @@
   background: var(--surface);
   color: var(--ink);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
   cursor: pointer;
 }

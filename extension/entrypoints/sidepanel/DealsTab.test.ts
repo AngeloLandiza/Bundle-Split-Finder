@@ -825,11 +825,13 @@ describe('Download CSV', () => {
   it('saves every bundle in the order Deals shows, named for the local date', async () => {
     const { api } = fakeApi({ searches: 1, refusal: null });
     show(report(bundles), state(), { api });
+    // The clock moves two days between render and click: the click day names the file.
+    vi.setSystemTime(NOW + 2 * DAY);
     await userEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
     const download = api.download as ReturnType<typeof vi.fn>;
     expect(download).toHaveBeenCalledTimes(1);
     const [file, text, type] = download.mock.calls[0] as [string, string, string];
-    expect(file).toBe('split-finder-deals-2026-11-10.csv');
+    expect(file).toBe('split-finder-deals-2026-11-12.csv');
     expect(type).toBe('text/csv');
     const lines = text.trimEnd().split('\n');
     expect(lines).toHaveLength(1 + bundles.length);
