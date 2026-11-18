@@ -31,11 +31,33 @@ test.fixme('clicking the chip asks the worker to open the panel', async ({ conte
   await expect(page.locator('split-finder-chip').getByRole('status')).toHaveText(/^(Open Split Finder from the toolbar to see this bundle\.)?$/);
 });
 
-test.fixme('with "Show the chip on Home Depot pages" off there is no chip', async ({ context, options, server }) => {
-  await options.getByLabel('Show the chip on Home Depot pages').uncheck();
+test.fixme('turning "Show the chip on Home Depot pages" off removes the chip, on brings it back, and it stays off on the next page load', async ({ context, options, server }) => {
+  // The worker answers pageSeen with { kind: 'off' } while the setting is off and sends open Home Depot tabs { type: 'chipSetting', show }.
   const page = await context.newPage();
   await page.goto(PAGE);
+  const chip = page.locator('split-finder-chip');
+  await expect(chip.getByRole('button')).toBeVisible();
+
+  await options.getByLabel('Show the chip on Home Depot pages').uncheck();
+  await expect(chip).toHaveCount(0);
+
+  await page.reload();
   await page.waitForTimeout(1000);
-  await expect(page.locator('split-finder-chip')).toHaveCount(0);
+  await expect(chip).toHaveCount(0);
+
+  await options.getByLabel('Show the chip on Home Depot pages').check();
+  await expect(chip.getByRole('button')).toBeVisible();
   expect(server.counts['/search.json'] ?? 0).toBe(0);
+});
+
+test.fixme('the chip is drawn in the design\'s fonts, loaded from the extension', async ({ context }) => {
+  const page = await context.newPage();
+  await page.goto(PAGE);
+  await expect(page.locator('split-finder-chip').getByRole('button')).toBeVisible();
+  const loaded = await page.evaluate(async () => {
+    await document.fonts.load("600 14px 'Split Finder JetBrains Mono'");
+    await document.fonts.load("500 14px 'Split Finder Barlow'");
+    return [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replaceAll('"', ''));
+  });
+  expect(loaded).toEqual(expect.arrayContaining(['Split Finder Barlow', 'Split Finder JetBrains Mono']));
 });
