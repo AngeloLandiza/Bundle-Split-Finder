@@ -12,6 +12,9 @@ const words = (text: string): ReasonPart => ({ text });
 const models = (list: string): ReasonPart[] =>
   list.split(', ').flatMap((model, i): ReasonPart[] => (i === 0 ? [{ model }] : [words(', '), { model }]));
 const plain = (text: string): Rule[1] => () => [words(text)];
+/** "A, B, C" as models written "A, B and C". */
+const modelsAnd = (list: string): ReasonPart[] =>
+  list.split(', ').flatMap((model, i, all): ReasonPart[] => (i === 0 ? [{ model }] : [words(i === all.length - 1 ? ' and ' : ', '), { model }]));
 
 const RULES: Rule[] = [
   [/^hyphen split, but a part is not in the catalog$/, plain('The model number names its parts, but not all of them are known products yet.')],
@@ -27,6 +30,9 @@ const RULES: Rule[] = [
     /^page names (.+), which do not fit the model number$/,
     (m) => [words('The Home Depot page names '), ...models(m[1]!), words(`, which ${m[1]!.includes(', ') ? 'do' : 'does'} not fit the model number.`)],
   ],
+  // Ruling 76: the models a RYOBI page names, offered when the model number offers no reading (pageSplit.ts R5).
+  // After the two "page names" rules above, which this pattern would also match.
+  [/^page names (.+)$/, (m) => [words('The Home Depot page names '), ...modelsAnd(m[1]!), words('.')]],
   [/^page does not name (.+)$/, (m) => [words('The Home Depot page does not name '), ...models(m[1]!), words('.')]],
   [/^1 listing\(s\) show the model number, but the brand is not confirmed$/, plain('One listing shows this model number, but its brand is not confirmed.')],
   [/^(\d+) listing\(s\) show the model number, but the brand is not confirmed$/, (m) => [words(`${m[1]} listings show this model number, but their brand is not confirmed.`)]],

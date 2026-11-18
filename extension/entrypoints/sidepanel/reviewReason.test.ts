@@ -22,6 +22,10 @@ describe('reviewReason', () => {
     ['1 listing(s) show the model number, but the brand is not confirmed (3 more not shown)', 'One listing shows this model number, but its brand is not confirmed. 3 more listings are not shown.'],
     ['title says Replacement or OEM, which often marks a spare part (12 more not shown)', "Some of these listings say Replacement or OEM in their titles, which often means a spare part. 12 more listings are not shown."],
     ['page does not name DCB606', 'The Home Depot page does not name DCB606.'],
+    // Ruling 76: the models a RYOBI page names, offered when the model number offers no reading.
+    ['page names PBP004, PBP003, PCG002', 'The Home Depot page names PBP004, PBP003 and PCG002.'],
+    ['page names PBP004, PCG002', 'The Home Depot page names PBP004 and PCG002.'],
+    ['page names PBP004', 'The Home Depot page names PBP004.'],
     // Ruling 71: the count of the listings a match question leaves out is its own note.
     ['17 more listing(s) not shown', '17 more listings are not shown.'],
     ['1 more listing(s) not shown', '1 more listing is not shown.'],
@@ -46,6 +50,9 @@ describe('reviewReason', () => {
     ]);
     expect(reviewReasonParts('model number says A1, B2')).toEqual([
       { text: 'The model number says ' }, { model: 'A1' }, { text: ', ' }, { model: 'B2' }, { text: '.' },
+    ]);
+    expect(reviewReasonParts('page names PBP004, PBP003, PCG002')).toEqual([
+      { text: 'The Home Depot page names ' }, { model: 'PBP004' }, { text: ', ' }, { model: 'PBP003' }, { text: ' and ' }, { model: 'PCG002' }, { text: '.' },
     ]);
   });
 
