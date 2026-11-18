@@ -47,6 +47,11 @@ test('review tab, Accept all answers the split questions that offer one reading,
 
   const panel = await context.newPage();
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  // Every page was refused: the Deals tab says so as one sentence, with no "Set aside" in front of it.
+  const refusal = panel.getByText(/^Home Depot refused a page \(HTTP 403\); the rest are read next scan\.$/);
+  await expect(refusal).toBeVisible();
+  await expect(panel.getByText(/^Set aside for the next scan/)).toHaveCount(0);
+  await shoot(panel, 'refusal-notice');
   await panel.getByRole('button', { name: /^Review/ }).click();
   await expect(panel.getByRole('heading', { name: `${suggested.length} bundles have one suggested answer` })).toBeVisible();
   await expect(panel.getByText(`1 of ${before.length}`)).toBeVisible();
@@ -56,6 +61,14 @@ test('review tab, Accept all answers the split questions that offer one reading,
   const accept = panel.getByRole('button', { name: `Accept all ${suggested.length}` });
   await panel.setViewportSize({ width: 360, height: 640 });
   expect(await accept.evaluate((el) => el.getBoundingClientRect().bottom)).toBeLessThan(640);
+  // Each row's bundle model links to its Home Depot page, in a new tab, like the question's own link.
+  const links = panel.locator('.accept-row a');
+  await expect(links).toHaveCount(3);
+  for (const a of await links.all()) {
+    await expect(a).toHaveAttribute('href', /^https:\/\/www\.homedepot\.com\/p\//);
+    await expect(a).toHaveAttribute('target', '_blank');
+  }
+  await expect(panel.getByRole('link', { name: 'Open on Home Depot' })).toHaveAttribute('href', /^https:\/\/www\.homedepot\.com\/p\//);
   await shoot(panel, 'block');
   await panel.getByRole('button', { name: `Show all ${suggested.length}` }).click();
   await expect(panel.locator('.accept-row')).toHaveCount(suggested.length);
