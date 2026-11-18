@@ -2043,6 +2043,27 @@ describe('runScan: a split question offers the readings it allows (step 5)', () 
     });
   });
 
+  it("PSK1212SB, whose model number offers no reading, is offered its page's Includes models (Rulings 75, 76)", async () => {
+    const w = world();
+    // Captured from Home Depot on Nov 17, 2026: item 339206615 and the bullet its page shows.
+    await w.store.putBundle({
+      key: 'homedepot:339206615', retailer: 'homedepot', itemId: '339206615', brand: 'RYOBI', model: 'PSK1212SB',
+      title: 'ONE+ 18V Lithium Starter Kit with (1) 2.0 Ah Battery, (1) 4.0 Ah Battery, and Charger',
+      upc: null, price: null, regularPrice: null, percentOff: null, link: null, seenAt: T0, split: null,
+      page: {
+        bullets: ['Includes: (1) PBP004 18V ONE+ 4Ah Lithium Batteries, (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) PCG002 18V ONE+ Charger, and operator’s manuals'],
+        description: null, readAt: T0,
+      },
+    });
+    const job = await scan(w, { settings: { ...STEP2, brands: ['RYOBI'], queries: [] } });
+    expect(w.replay.calls).toEqual([]);
+    expect(job.counts).toMatchObject({ bundlesResolved: 0, reviewsOpened: 1 });
+    expect(await w.store.getReview('split:homedepot:339206615')).toMatchObject({
+      kind: 'split', reason: 'no known RYOBI bundle pattern; page names PBP004, PBP003, PCG002', answer: null,
+      choices: [['PBP004', 'PBP003', 'PCG002']],
+    });
+  });
+
   it("337440459's page with model DCK200D1P1WB606 yields the model-number and the page readings", async () => {
     const w = world();
     // DCB606 as Home Depot's own row would store it, so the model number resolves 337440461 on its own.

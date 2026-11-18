@@ -10,7 +10,8 @@
 // kit), then any the model number could not choose between. Only the owner's answer turns one of
 // them into the split. A RYOBI split in review carries the reading its model number spells out
 // (decompose.ts, Ruling 29); every RYOBI path that stays in review returns the model split, so
-// that reading reaches the question. A RYOBI page offers no reading of its own.
+// that reading reaches the question. A RYOBI page offers a reading of its own only when the model
+// number offers none: the models its Includes bullets name (R5, Ruling 76).
 
 import { DEWALT_BUNDLE, decompose, reconcile, type Catalog, type CatalogModel, type Decomposition } from './decompose';
 import type { PageContent } from './hdPage';
@@ -43,6 +44,19 @@ export function pageCatalog(brand: string, bullets: string[]): Catalog {
     }
   }
   return catalog;
+}
+
+/**
+ * The models a RYOBI page's Includes bullets name, exactly as written (no tool-only B added), each
+ * once, in page order, without the bundle's own model (Ruling 76).
+ */
+function includesModels(bundleModel: string, bullets: string[]): string[] {
+  const own = bundleModel.toUpperCase().trim();
+  const found = new Set<string>();
+  for (const bullet of bullets.filter((x) => INCLUDES.test(x))) {
+    for (const [model] of bullet.matchAll(RYOBI_TOKEN)) if (model !== own) found.add(model);
+  }
+  return [...found];
 }
 
 const list = (models: Iterable<string>): string => [...models].sort().join(', ');
@@ -120,6 +134,12 @@ export function splitWithPage(
     const merged: Catalog = new Map([...fromPage, ...known]); // on the same model, `known` wins
     const both = decompose(brand, bundle.model, bundle.title, merged);
     if (both.status === 'resolved') return { ...both, notes: ['parts known from the catalog and the page'] };
+    // Ruling 76: a model number that offers no reading leaves the owner nothing to confirm, so the
+    // models the page's Includes bullets name are offered as one. It stays in review.
+    if ((modelSplit.alternatives ?? []).length > 0) return modelSplit;
+    const reading = includesModels(bundle.model, page.bullets);
+    if (reading.length === 0) return modelSplit;
+    return { ...withNote(modelSplit, `page names ${reading.join(', ')}`), alternatives: [reading] };
   }
   // DEWALT here: the page names models beyond the kit and its split is not exactly them. The
   // model number has no single reading: the page's comes first, then any it could not choose between.

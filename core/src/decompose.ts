@@ -86,9 +86,11 @@ export function decomposeRyobi(bundleModel: string, catalog: Catalog): Decomposi
     return split;
   }
 
-  // Form 2: "PBLRC2501SB" -> shared prefix + two 2-digit numbers + SB.
+  // Form 2: "PBLRC2501SB" -> shared prefix + two 2-digit numbers + SB. Two equal halves
+  // (PSK1212SB, a starter kit of batteries and a charger) are not two parts: the model falls
+  // through to the forms below, as if the pattern did not match (Ruling 75).
   const m = RYOBI_SB.exec(model);
-  if (m) {
+  if (m && m[2] !== m[3]) {
     const [, prefix, a, b] = m;
     const parts = [`${prefix}${a}B`, `${prefix}${b}B`];
     if (parts.every((p) => catalog.has(p))) {
