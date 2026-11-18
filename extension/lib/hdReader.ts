@@ -4,7 +4,9 @@
 
 import { parseBundlePage, parseProductPage } from '@core/hdPage';
 import { modelForms, sameModel } from '@core/match';
-import type { PageOutcome, ReadPages } from '@core/scan/types';
+import {
+  PART_PRICE_READS_MAX, type PageOutcome, type PartPriceReading, type ReadPages, type ReadPartPrices as CoreReadPartPrices,
+} from '@core/scan/types';
 
 export interface ReaderEnv {
   /** 'https://www.homedepot.com', or the replay server in the end-to-end build. */
@@ -190,21 +192,18 @@ export function createPageReader(
 // refusal rule as createPageReader; the part's item id comes from Home Depot's own search, never from a guess.
 
 /**
- * What one part's lookup gave. `itemId`, `price`, `title` and `link` are all null when Home Depot's search
- * showed no product whose model is the part's, or when that product's own page did not confirm the model.
- * `price` is null alone when the page names no price.
+ * What one part's lookup gave: core's PartPriceReading.
+ * found      the search showed a product whose address ends with the model (or the RYOBI twin), and its page names
+ *            the part's brand, a sameModel model (`matchedModel`) and a price
+ * not_found  the search answered and showed no such product, or its page named another brand or model (every figure
+ *            null), or the confirmed page named no price (`itemId`, `matchedModel`, `title` and `link` kept, `price` null)
+ * not_read   never looked up: past the cap, after a refusal, a blank model, or a page that could not be parsed (every
+ *            figure null)
  */
-export interface PartPriceRead {
-  brand: string;
-  model: string;
-  itemId: string | null;
-  price: number | null;
-  title: string | null;
-  link: string | null;
-}
+export type PartPriceRead = PartPriceReading;
 
-/** The scan dependency of the step 9 contract: one entry per part asked for, in order. */
-export type ReadPartPrices = (parts: { brand: string; model: string }[]) => Promise<PartPriceRead[]>;
+/** The scan dependency of the step 9 contract (core's ReadPartPrices): one entry per part asked for, in order. */
+export type ReadPartPrices = CoreReadPartPrices;
 
 export interface SearchInTab {
   model: string;
@@ -290,16 +289,19 @@ export function pickPartLink(brand: string, model: string, links: string[]): { i
 }
 
 type PartAsked = { brand: string; model: string };
-const emptyRead = (p: PartAsked): PartPriceRead => ({ brand: p.brand, model: p.model, itemId: null, price: null, title: null, link: null });
+const emptyRead = (p: PartAsked, status: 'not_found' | 'not_read' = 'not_read'): PartPriceRead => ({
+  brand: p.brand, model: p.model, status, itemId: null, matchedModel: null, price: null, title: null, link: null,
+});
 const partKeyOf = (p: PartAsked): string => `${p.brand.trim().toUpperCase()}:${p.model.trim().toUpperCase()}`;
 
 /**
  * Reads Home Depot's standalone price for each part, free, inside one doorway tab: its own search `/s/<MODEL>`,
  * then the chosen product's page `/p/<id>`, read with parseProductPage. A product whose page does not name the
  * part's brand and model (sameModel) gives nothing: an id is never guessed.
- * `cap` is the most distinct parts one call looks up (the rest come back empty); `pauseMs` and `settleMs` as for
- * createPageReader. A non-200 answer, a thrown fetch, or a product page with no embedded data stops the call: that
- * part comes back empty, and so does every part not yet read.
+ * `cap` is the most distinct parts one call looks up, by default PART_PRICE_READS_MAX, the most the scan asks for (the
+ * rest come back not_read); `pauseMs` and `settleMs` as for createPageReader. A non-200 answer, a thrown fetch, or a
+ * product page with no embedded data stops the call: that part comes back not_read, and so does every part not yet
+ * read. Each reading's status says which (PartPriceRead).
  */
 export function createPartPriceReader(
   env: ReaderEnv,
@@ -307,7 +309,7 @@ export function createPartPriceReader(
 ): ReadPartPrices {
   const concurrency = opts.concurrency ?? 2;
   const batch = opts.batch ?? 4;
-  const cap = opts.cap ?? 40;
+  const cap = opts.cap ?? PART_PRICE_READS_MAX;
   const pauseMs = opts.pauseMs ?? 1000;
   const settleMs = opts.settleMs ?? 2500;
   const now = opts.now ?? Date.now;
@@ -324,7 +326,7 @@ export function createPartPriceReader(
     }
     const parts = distinct.slice(0, Math.max(0, cap));
     const first = parts[0];
-    if (first === undefined) return asked.map(emptyRead);
+    if (first === undefined) return asked.map((p) => emptyRead(p));
 
     if (lastEnded !== null) {
       const left = pauseMs - (now() - lastEnded);
@@ -366,7 +368,9 @@ export function createPartPriceReader(
           const s = answeredFor(part);
           if (s && s.status === 200 && s.links !== null) {
             const pick = pickPartLink(part.brand, part.model, s.links);
+            // Home Depot answered and showed no product for the model: not found, even if a later search is refused.
             if (pick) chosen.push({ part, ...pick });
+            else answers.set(partKeyOf(part), emptyRead(part, 'not_found'));
           }
         }
         if (stopped || chosen.length === 0) continue;
@@ -382,11 +386,20 @@ export function createPartPriceReader(
             continue;
           }
           const page = parseProductPage(r.text, c.itemId);
-          if (page === null || page.brand.toUpperCase() !== c.part.brand.trim().toUpperCase() || !sameModel(c.part.brand, page.model, c.part.model)) continue;
+          // A page whose data could not be parsed says nothing: not read.
+          if (page === null) continue;
+          // The product the search showed is not the part (a kit whose address ends with the model, another brand).
+          if (page.brand.toUpperCase() !== c.part.brand.trim().toUpperCase() || !sameModel(c.part.brand, page.model, c.part.model)) {
+            answers.set(partKeyOf(c.part), emptyRead(c.part, 'not_found'));
+            continue;
+          }
           answers.set(partKeyOf(c.part), {
             brand: c.part.brand,
             model: c.part.model,
+            // A confirmed page with no price: Home Depot has no price for the part sold alone.
+            status: page.price === null ? 'not_found' : 'found',
             itemId: c.itemId,
+            matchedModel: page.model.trim(),
             price: page.price,
             title: page.title === '' ? null : page.title,
             link: `${env.origin}${c.path}`,

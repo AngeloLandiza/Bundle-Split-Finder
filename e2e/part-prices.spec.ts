@@ -7,7 +7,9 @@ import { expect, test } from './fixtures';
 interface Read {
   brand: string;
   model: string;
+  status: 'found' | 'not_found' | 'not_read';
   itemId: string | null;
+  matchedModel: string | null;
   price: number | null;
   title: string | null;
   link: string | null;
@@ -34,12 +36,12 @@ test('reads each part\'s Home Depot price through its own search, and gives noth
   ]);
   const origin = `http://localhost:${new URL(server.url).port}`;
   expect(out).toEqual([
-    { brand: 'RYOBI', model: 'PCL265B', itemId: '399000001', price: 99, title: 'ONE+ 18V Cordless Brushless 1/2 in. Impact Wrench (Tool Only)', link: `${origin}/p/RYOBI-ONE-18V-Cordless-Brushless-1-2-in-Impact-Wrench-Tool-Only-PCL265B/399000001` },
-    { brand: 'RYOBI', model: 'PCG002', itemId: '399000002', price: 34.97, title: 'ONE+ 18V Lithium-Ion Charger', link: `${origin}/p/RYOBI-ONE-18V-Lithium-Ion-Charger-PCG002/399000002` },
-    { brand: 'RYOBI', model: 'PCL206', itemId: '399000003', price: 59, title: 'ONE+ 18V Cordless 1/2 in. Drill/Driver (Tool Only)', link: `${origin}/p/RYOBI-ONE-18V-Cordless-1-2-in-Drill-Driver-Tool-Only-PCL206B/399000003` },
-    { brand: 'DEWALT', model: 'DCD791B', itemId: '399000005', price: 159, title: '20V MAX XR Brushless Cordless 1/2 in. Drill/Driver (Tool Only)', link: `${origin}/p/DEWALT-20V-MAX-XR-Brushless-Cordless-1-2-in-Drill-Driver-Tool-Only-DCD791B/399000005` },
-    { brand: 'RYOBI', model: 'PBP004', itemId: null, price: null, title: null, link: null },
-    { brand: 'RYOBI', model: 'PCL999', itemId: null, price: null, title: null, link: null },
+    { brand: 'RYOBI', model: 'PCL265B', status: 'found', itemId: '399000001', matchedModel: 'PCL265B', price: 99, title: 'ONE+ 18V Cordless Brushless 1/2 in. Impact Wrench (Tool Only)', link: `${origin}/p/RYOBI-ONE-18V-Cordless-Brushless-1-2-in-Impact-Wrench-Tool-Only-PCL265B/399000001` },
+    { brand: 'RYOBI', model: 'PCG002', status: 'found', itemId: '399000002', matchedModel: 'PCG002', price: 34.97, title: 'ONE+ 18V Lithium-Ion Charger', link: `${origin}/p/RYOBI-ONE-18V-Lithium-Ion-Charger-PCG002/399000002` },
+    { brand: 'RYOBI', model: 'PCL206', status: 'found', itemId: '399000003', matchedModel: 'PCL206B', price: 59, title: 'ONE+ 18V Cordless 1/2 in. Drill/Driver (Tool Only)', link: `${origin}/p/RYOBI-ONE-18V-Cordless-1-2-in-Drill-Driver-Tool-Only-PCL206B/399000003` },
+    { brand: 'DEWALT', model: 'DCD791B', status: 'found', itemId: '399000005', matchedModel: 'DCD791B', price: 159, title: '20V MAX XR Brushless Cordless 1/2 in. Drill/Driver (Tool Only)', link: `${origin}/p/DEWALT-20V-MAX-XR-Brushless-Cordless-1-2-in-Drill-Driver-Tool-Only-DCD791B/399000005` },
+    { brand: 'RYOBI', model: 'PBP004', status: 'not_found', itemId: null, matchedModel: null, price: null, title: null, link: null },
+    { brand: 'RYOBI', model: 'PCL999', status: 'not_found', itemId: null, matchedModel: null, price: null, title: null, link: null },
   ]);
   // Six searches (one per model, in batches of four) and a product page only for each part that had a matching link.
   // (The doorway tab itself opens on the first model's search, so that one is requested twice.)
@@ -50,14 +52,14 @@ test('reads each part\'s Home Depot price through its own search, and gives noth
   expect(seen.console).toEqual([]);
 });
 
-test('a refused search stops the call: every part is empty, and no product page is read', async ({ worker, server }) => {
+test('a refused search stops the call: every part is not read, with nulls, and no product page is read', async ({ worker, server }) => {
   server.reset();
   server.refuse('*');
   const out = await read(worker, [
     { brand: 'RYOBI', model: 'PCL265B' },
     { brand: 'RYOBI', model: 'PCG002' },
   ]);
-  expect(out.map((o) => [o.itemId, o.price])).toEqual([[null, null], [null, null]]);
+  expect(out.map((o) => [o.status, o.itemId, o.price])).toEqual([['not_read', null, null], ['not_read', null, null]]);
   expect(server.pageRequests).toEqual([]);
   expect(server.searchPageRequests.length).toBeGreaterThan(0);
 });

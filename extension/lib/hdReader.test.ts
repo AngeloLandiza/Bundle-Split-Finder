@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { PART_PRICE_READS_MAX } from '@core/scan/types';
 import {
   createPageReader,
   createPartPriceReader,
@@ -397,7 +398,9 @@ function partFake(opts: {
   return { env, log, searched, fetched };
 }
 
-const nothingFor = (brand: string, model: string) => ({ brand, model, itemId: null, price: null, title: null, link: null });
+const nothingFor = (brand: string, model: string, status: 'not_found' | 'not_read' = 'not_read') => ({
+  brand, model, status, itemId: null, matchedModel: null, price: null, title: null, link: null,
+});
 
 describe('pickPartLink', () => {
   const links = [
@@ -439,15 +442,18 @@ describe('pickPartLink', () => {
 describe('createPartPriceReader', () => {
   const tool = '/p/RYOBI-ONE-18V-Cordless-Impact-Wrench-Tool-Only-PCL265B/300000002';
 
-  it('searches /s/<model> in one doorway tab, reads the product page, and returns brand, model, id, price, title and link', async () => {
+  it('searches /s/<model> in one doorway tab, reads the product page, and returns brand, model, found, id, page model, price, title and link', async () => {
     const f = partFake({
       search: { PCL265B: [tool], DCD791B: ['/p/DEWALT-20V-MAX-XR-Drill-Driver-Tool-Only-DCD791B/300000020'] },
       pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99, 'ONE+ 18V Impact Wrench'), '300000020': productText('300000020', 'DEWALT', 'DCD791B', 159) },
     });
     const out = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }, { brand: 'DEWALT', model: 'DCD791B' }]);
     expect(out).toEqual([
-      { brand: 'RYOBI', model: 'PCL265B', itemId: '300000002', price: 99, title: 'ONE+ 18V Impact Wrench', link: `https://www.homedepot.com${tool}` },
-      { brand: 'DEWALT', model: 'DCD791B', itemId: '300000020', price: 159, title: 'DEWALT DCD791B title', link: 'https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Drill-Driver-Tool-Only-DCD791B/300000020' },
+      { brand: 'RYOBI', model: 'PCL265B', status: 'found', itemId: '300000002', matchedModel: 'PCL265B', price: 99, title: 'ONE+ 18V Impact Wrench', link: `https://www.homedepot.com${tool}` },
+      {
+        brand: 'DEWALT', model: 'DCD791B', status: 'found', itemId: '300000020', matchedModel: 'DCD791B', price: 159, title: 'DEWALT DCD791B title',
+        link: 'https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Drill-Driver-Tool-Only-DCD791B/300000020',
+      },
     ]);
     expect(f.log[0]).toBe('open https://www.homedepot.com/s/PCL265B');
     expect(f.log).toContain('wait 7 30000');
@@ -485,14 +491,14 @@ describe('createPartPriceReader', () => {
     expect(f.log).toEqual([]);
   });
 
-  it('never guesses an id: no link ending with the model gives nulls and fetches no product page', async () => {
+  it('never guesses an id: no link ending with the model is not found, with nulls, and fetches no product page', async () => {
     const f = partFake({ search: { PCL265B: ['/p/RYOBI-Impact-Wrench-Kit-PCL265K1/300000099'] } });
     const out = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }]);
-    expect(out).toEqual([nothingFor('RYOBI', 'PCL265B')]);
+    expect(out).toEqual([nothingFor('RYOBI', 'PCL265B', 'not_found')]);
     expect(f.fetched).toEqual([]);
   });
 
-  it('gives nulls when the product page does not confirm the brand and model (a kit whose address ends with the part)', async () => {
+  it('is not found, with nulls, when the product page does not confirm the brand and model (a kit whose address ends with the part)', async () => {
     const kit = '/p/RYOBI-ONE-18V-Starter-Kit-PSK0114-PCL265B/300000003';
     const f = partFake({
       search: { PCL265B: [kit, tool], PBP004: ['/p/RYOBI-ONE-18V-6-Tool-Combo-Kit-PCL1600K2-PBP004/300000004'] },
@@ -500,33 +506,39 @@ describe('createPartPriceReader', () => {
     });
     const out = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }, { brand: 'RYOBI', model: 'PBP004' }]);
     // One id per model: the first link ends with the model, its page says it is the kit, so nothing, not the next link.
-    expect(out.map((o) => o.itemId)).toEqual([null, null]);
-    expect(out.map((o) => o.price)).toEqual([null, null]);
+    expect(out).toEqual([nothingFor('RYOBI', 'PCL265B', 'not_found'), nothingFor('RYOBI', 'PBP004', 'not_found')]);
     expect(f.fetched).toEqual([['300000003', '300000004']]);
     // Another brand's page for the same model is not the part either.
     const g = partFake({ search: { PCL265B: [tool] }, pages: { '300000002': productText('300000002', 'DEWALT', 'PCL265B', 99) } });
-    expect((await createPartPriceReader(g.env)([{ brand: 'RYOBI', model: 'PCL265B' }]))[0]?.itemId).toBeNull();
+    expect((await createPartPriceReader(g.env)([{ brand: 'RYOBI', model: 'PCL265B' }]))[0]).toEqual(nothingFor('RYOBI', 'PCL265B', 'not_found'));
   });
 
-  it('RYOBI finds the tool-only twin, and its page confirms it by sameModel; DEWALT stays exact', async () => {
+  it('RYOBI finds the tool-only twin, its page confirms it by sameModel, and matchedModel names the model on the page; DEWALT stays exact', async () => {
     const twin = '/p/RYOBI-ONE-18V-Cordless-Drill-Driver-Tool-Only-PCL206B/300000010';
     const f = partFake({
       search: { PCL206: [twin], DCD791: ['/p/DEWALT-20V-Drill-DCD791B/300000012'] },
       pages: { '300000010': productText('300000010', 'RYOBI', 'PCL206B', 59), '300000012': productText('300000012', 'DEWALT', 'DCD791B', 159) },
     });
     const out = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL206' }, { brand: 'DEWALT', model: 'DCD791' }]);
-    expect(out[0]).toMatchObject({ model: 'PCL206', itemId: '300000010', price: 59 });
-    expect(out[1]).toMatchObject({ model: 'DCD791', itemId: null, price: null });
+    expect(out[0]).toMatchObject({ model: 'PCL206', status: 'found', itemId: '300000010', matchedModel: 'PCL206B', price: 59 });
+    expect(out[1]).toEqual(nothingFor('DEWALT', 'DCD791', 'not_found'));
     expect(f.fetched).toEqual([['300000010']]);
     // A page that names a different model (RYOBI PCL206BB) is not the twin.
     const g = partFake({ search: { PCL206: ['/p/RYOBI-Drill-PCL206B/300000010'] }, pages: { '300000010': productText('300000010', 'RYOBI', 'PCL206BB', 59) } });
-    expect((await createPartPriceReader(g.env)([{ brand: 'RYOBI', model: 'PCL206' }]))[0]?.itemId).toBeNull();
+    expect((await createPartPriceReader(g.env)([{ brand: 'RYOBI', model: 'PCL206' }]))[0]).toEqual(nothingFor('RYOBI', 'PCL206', 'not_found'));
   });
 
-  it('keeps the id and link, with a null price, when the page names no price', async () => {
+  it('a confirmed page that names no price is not found; it keeps the id, page model and link, with a null price', async () => {
     const f = partFake({ search: { PCL265B: [tool] }, pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', null) } });
     const [r] = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }]);
-    expect(r).toMatchObject({ itemId: '300000002', price: null, link: `https://www.homedepot.com${tool}` });
+    expect(r).toMatchObject({ status: 'not_found', itemId: '300000002', matchedModel: 'PCL265B', price: null, link: `https://www.homedepot.com${tool}` });
+  });
+
+  it('a 200 page whose data cannot be parsed says nothing: not read', async () => {
+    // Embedded data with no base-catalog entry for the id: parseProductPage reads nothing.
+    const f = partFake({ search: { PCL265B: [tool] }, pages: { '300000002': 'window.__APOLLO_STATE__={}' } });
+    const [r] = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }]);
+    expect(r).toEqual(nothingFor('RYOBI', 'PCL265B'));
   });
 
   it('looks each distinct part up once and answers every part asked, in order', async () => {
@@ -537,17 +549,25 @@ describe('createPartPriceReader', () => {
       { brand: 'RYOBI', model: 'ZZZ1' },
     ]);
     expect(f.searched).toEqual([['PCL265B', 'ZZZ1']]);
-    expect(out.map((o) => [o.model, o.price])).toEqual([['PCL265B', 99], ['pcl265b', 99], ['ZZZ1', null]]);
+    expect(out.map((o) => [o.model, o.status, o.price])).toEqual([['PCL265B', 'found', 99], ['pcl265b', 'found', 99], ['ZZZ1', 'not_found', null]]);
   });
 
-  it('batches the searches, and looks up no more than its cap per call', async () => {
+  it('batches the searches, and looks up no more than its cap per call: the parts past it come back not_read', async () => {
     const models = Array.from({ length: 6 }, (_, i) => `M${i}`);
     const f = partFake({});
     const out = await createPartPriceReader(f.env, { batch: 2, cap: 4, settleMs: 0 })(models.map((model) => ({ brand: 'RYOBI', model })));
     expect(f.searched).toEqual([['M0', 'M1'], ['M2', 'M3']]);
-    expect(out).toHaveLength(6);
+    expect(out.map((o) => o.status)).toEqual(['not_found', 'not_found', 'not_found', 'not_found', 'not_read', 'not_read']);
     expect(out.every((o) => o.itemId === null)).toBe(true);
     expect(f.log.filter((l) => l === 'sleep 1000')).toHaveLength(1);
+  });
+
+  it("its default cap is the core's PART_PRICE_READS_MAX, the most a scan asks for in one call", async () => {
+    const models = Array.from({ length: PART_PRICE_READS_MAX + 2 }, (_, i) => `M${i}`);
+    const f = partFake({});
+    const out = await createPartPriceReader(f.env, { settleMs: 0 })(models.map((model) => ({ brand: 'RYOBI', model })));
+    expect(f.searched.flat()).toEqual(models.slice(0, PART_PRICE_READS_MAX));
+    expect(out.filter((o) => o.status === 'not_read').map((o) => o.model)).toEqual(models.slice(PART_PRICE_READS_MAX));
   });
 
   it('stops at a refused search: no page is fetched after it, and no later search is made', async () => {
@@ -558,6 +578,8 @@ describe('createPartPriceReader', () => {
     });
     const out = await createPartPriceReader(f.env, { batch: 3, settleMs: 0 })(['A1', 'A2', 'A3', 'A4'].map((model) => ({ brand: 'RYOBI', model })));
     expect(out.map((o) => o.price)).toEqual([null, null, null, null]);
+    // Nothing was read: every part is not_read, so the scan saves none of them and asks again.
+    expect(out.map((o) => o.status)).toEqual(['not_read', 'not_read', 'not_read', 'not_read']);
     expect(f.fetched).toEqual([]);
     expect(f.searched).toHaveLength(1);
     expect(f.log.at(-1)).toBe('close 7');
@@ -571,11 +593,13 @@ describe('createPartPriceReader', () => {
     // Batch of 2: A1 read, A2 refused, so A3's search is never made.
     const out = await createPartPriceReader(refused.env, { batch: 2, settleMs: 0 })(parts);
     expect(out.map((o) => o.price)).toEqual([10, null, null]);
+    expect(out.map((o) => o.status)).toEqual(['found', 'not_read', 'not_read']);
     expect(refused.searched).toEqual([['A1', 'A2']]);
     expect(refused.log.at(-1)).toBe('close 7');
     const nodata = partFake({ search, pages: { ...pages, '300000032': '<html>blocked</html>' } });
     const out2 = await createPartPriceReader(nodata.env, { batch: 2, settleMs: 0 })(parts);
     expect(out2.map((o) => o.price)).toEqual([10, null, null]);
+    expect(out2.map((o) => o.status)).toEqual(['found', 'not_read', 'not_read']);
     expect(nodata.searched).toHaveLength(1);
   });
 
@@ -583,7 +607,7 @@ describe('createPartPriceReader', () => {
     const f = partFake({});
     const env: ReaderEnv = { ...f.env, runInTab: (async () => undefined) as ReaderEnv['runInTab'] };
     const out = await createPartPriceReader(env, { settleMs: 0 })([{ brand: 'RYOBI', model: 'A1' }, { brand: 'RYOBI', model: 'A2' }]);
-    expect(out.map((o) => o.itemId)).toEqual([null, null]);
+    expect(out).toEqual([nothingFor('RYOBI', 'A1'), nothingFor('RYOBI', 'A2')]);
     expect(f.log.at(-1)).toBe('close 7');
   });
 
