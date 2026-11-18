@@ -4,12 +4,14 @@
 import '@testing-library/jest-dom/vitest';
 import { createElement } from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { replayRecorded } from '../../../scripts/replay';
 import { HD_DEWALT_AMBIGUOUS, SERPAPI_ACCOUNT_FREE } from '../../../core/test/fixtures';
 import { applyReviewAnswer, reviewSignature } from '@core/scan/answers';
 import { DEFAULT_SCAN_SETTINGS, partKey, type PartRow, type ScanJob, type ScanSettings } from '@core/scan/types';
 import { MemoryScanStore } from '@core/scan/memoryStore';
+import { bundlesCsv } from '@core/scan/csv';
 import { buildReport } from '@core/scan/report';
 import { runPaid } from '@core/scan/paid';
 import { runScan } from '@core/scan/runner';
@@ -123,6 +125,18 @@ describe('Deals on a replayed scan', () => {
     const row = { ...kit, section: 'missing_listing' as const, parts: [{ ...a, ...noListing }, { ...b, ...noListing }, { ...a, model: 'X3' }] };
     expect(matchState(row)).toBe('2 parts with no listing · 1 to verify');
     expect(matchState({ ...row, parts: row.parts.slice(0, 2) })).toBe('2 parts with no listing');
+  });
+
+  it('downloads one line per replayed bundle, in the order Deals shows them', async () => {
+    const download = vi.fn();
+    render(createElement(DealsTab, { api: { ...api, download }, report: dewalt.report, state: appState(dewalt.job), sort: 'profit', onSort: vi.fn(), onOpen: vi.fn() }));
+    await userEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
+    const [file, text, type] = download.mock.calls[0] as [string, string, string];
+    const d = new Date();
+    expect(file).toBe(`split-finder-deals-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.csv`);
+    expect(type).toBe('text/csv');
+    expect(text).toBe(bundlesCsv(sections(dewalt.report.bundles, 'profit').flatMap((g) => g.rows)));
+    expect(text.trimEnd().split('\n')).toHaveLength(1 + dewalt.report.bundles.length);
   });
 
   it('renders that report, a real loss with the real minus, and a tag only where a question is open', () => {

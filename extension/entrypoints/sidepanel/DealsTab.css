@@ -13,11 +13,30 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   padding: 8px 16px;
   font-size: 13px;
   color: var(--ink-2);
   border-bottom: 1px solid var(--line);
+}
+.deals-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.deals-download {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
 }
 .deals-sort {
   position: relative;
@@ -48,6 +67,7 @@
   outline-offset: -2px;
 }
 .deals-bar select:focus-visible,
+.deals-download:focus-visible,
 .deal-lookup-btn:focus-visible,
 .deal-notice-link:focus-visible {
   outline: 2px solid var(--ink);

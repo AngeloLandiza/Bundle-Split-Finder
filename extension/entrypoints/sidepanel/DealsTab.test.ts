@@ -8,6 +8,7 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import type { BundleRow, PartRow, ReviewItem, ScanJob, ScanStep } from '@core/scan/types';
 import type { AppState, PanelReport, Quote, Reply, Request } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
+import { bundlesCsv } from '@core/scan/csv';
 import { DealsTab } from './DealsTab';
 import { matchState as matchStateOf, sortRows } from './dealsModel';
 import type { SortKey } from './sort';
@@ -809,6 +810,36 @@ describe('empty states', () => {
     expect(screen.getByText('Scan stopped at your search limit')).toBeInTheDocument();
     expect(screen.queryByText(/The last scan/)).toBeNull();
     expect(screen.queryByText(/No scan yet/)).toBeNull();
+  });
+});
+
+describe('Download CSV', () => {
+  // Hand-made rows (labelled): they only need distinct sections and profits to show the order.
+  const bundles = [
+    row('s1', { section: 'split', parts: [], estimate: null }),
+    row('c1', { estimate: est(100, 0.1) }),
+    row('c2', { estimate: est(300, 0.3) }),
+    row('m1', { section: 'missing_listing', estimate: null, parts: [part('X1', { status: 'none', availability: 'missing', grade: null })] }),
+  ];
+
+  it('saves every bundle in the order Deals shows, named for the local date', async () => {
+    const { api } = fakeApi({ searches: 1, refusal: null });
+    show(report(bundles), state(), { api });
+    await userEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
+    const download = api.download as ReturnType<typeof vi.fn>;
+    expect(download).toHaveBeenCalledTimes(1);
+    const [file, text, type] = download.mock.calls[0] as [string, string, string];
+    expect(file).toBe('split-finder-deals-2026-11-10.csv');
+    expect(type).toBe('text/csv');
+    const lines = text.trimEnd().split('\n');
+    expect(lines).toHaveLength(1 + bundles.length);
+    expect(lines[0]).toBe(bundlesCsv([]).trimEnd());
+    expect(lines.slice(1).map((l) => bundles.find((b) => l.includes(`Title of ${b.key}`))!.key)).toEqual(['c2', 'c1', 'm1', 's1']);
+  });
+
+  it('is absent with no bundles', () => {
+    show(report([]), state({ lastJob: job() }));
+    expect(screen.queryByRole('button', { name: 'Download CSV' })).toBeNull();
   });
 });
 

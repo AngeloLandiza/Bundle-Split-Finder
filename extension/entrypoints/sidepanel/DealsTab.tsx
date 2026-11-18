@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { bundlesCsv } from '@core/scan/csv';
 import { DEFAULT_SCAN_SETTINGS, type BundleRow } from '@core/scan/types';
 import { money, profit, roi, when } from '../../lib/format';
 import type { AppState, PanelReport } from '../../lib/messages';
@@ -30,6 +31,13 @@ const SORTS: { key: SortKey; label: string }[] = [
 
 // The settings the owner can change hold no freshness period, so the scan's own default applies.
 const FRESHNESS_MS = DEFAULT_SCAN_SETTINGS.freshnessMs;
+
+/** The owner's local date, YYYY-MM-DD, for the file name. */
+function localDate(ms: number): string {
+  const d = new Date(ms);
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+}
 
 function Figures({ row }: { row: BundleRow }) {
   // A waiting part is already said in the match state, so the slot stays empty.
@@ -162,20 +170,25 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
           {n} {n === 1 ? 'bundle' : 'bundles'}
           {job && job.finishedAt !== null ? ` · scanned ${when(job.finishedAt, now)}` : ''}
         </span>
-        <span className="deals-sort">
-          <label className="deals-hidden" htmlFor="deals-sort">
-            Sort by
-          </label>
-          <select id="deals-sort" value={sort} onChange={(e) => onSort(e.target.value as SortKey)}>
-            {SORTS.map((s) => (
-              <option key={s.key} value={s.key}>
-                Sort: {s.label}
-              </option>
-            ))}
-          </select>
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M2 3.5l3 3 3-3" />
-          </svg>
+        <span className="deals-controls">
+          <button type="button" className="deals-download" onClick={() => api.download(`split-finder-deals-${localDate(now)}.csv`, bundlesCsv(groups.flatMap((g) => g.rows)), 'text/csv')}>
+            Download CSV
+          </button>
+          <span className="deals-sort">
+            <label className="deals-hidden" htmlFor="deals-sort">
+              Sort by
+            </label>
+            <select id="deals-sort" value={sort} onChange={(e) => onSort(e.target.value as SortKey)}>
+              {SORTS.map((s) => (
+                <option key={s.key} value={s.key}>
+                  Sort: {s.label}
+                </option>
+              ))}
+            </select>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M2 3.5l3 3 3-3" />
+            </svg>
+          </span>
         </span>
       </div>
       {aside && !limitCopy(state, now, report.bundles) ? <p className="deals-stale">{aside}</p> : null}
