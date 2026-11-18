@@ -76,6 +76,15 @@ const sameSet = (a: string[], b: string[]): boolean => {
   const y = new Set(b);
   return x.size === y.size && [...x].every((m) => y.has(m));
 };
+/** Ruling 76's note: the models a RYOBI page's Includes bullets name, each once, offered as the one reading the model number did not give. */
+const pageReadingNote = (models: Iterable<string>): string => `page names ${[...new Set(models)].join(', ')}`;
+// Exactly that note: model numbers (capitals and digits) joined by ", ", nothing else. "page names no models" and
+// "page names X, which do not fit the model number" are other notes and do not match.
+const PAGE_READING_NOTE = /^page names [A-Z0-9]+(?:, [A-Z0-9]+)*$/;
+
+/** True when a review question's reason (its notes joined by "; ") carries Ruling 76's note: its one reading came from the page. */
+export const pageReadingOf = (reason: string): boolean => reason.split('; ').some((note) => PAGE_READING_NOTE.test(note));
+
 const withNote = (split: Decomposition, note: string): Decomposition => ({ ...split, notes: [...split.notes, note] });
 
 /** The model split standing, with the parts the page does not name; unchanged when it names them all. */
@@ -151,7 +160,7 @@ export function splitWithPage(
     const reading = includesModels(bundle.model, page.bullets);
     if (reading.length === 0) return modelSplit;
     // The note names each model once; the reading keeps the counts.
-    return { ...withNote(modelSplit, `page names ${[...new Set(reading)].join(', ')}`), alternatives: [reading] };
+    return { ...withNote(modelSplit, pageReadingNote(reading)), alternatives: [reading] };
   }
   // DEWALT here: the page names models beyond the kit and its split is not exactly them. The
   // model number has no single reading: the page's comes first, then any it could not choose between.

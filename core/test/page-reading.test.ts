@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { type Catalog, decompose } from '../src/decompose';
 import type { PageContent } from '../src/hdPage';
-import { splitWithPage } from '../src/pageSplit';
+import { pageReadingOf, splitWithPage } from '../src/pageSplit';
 import { splitChoices } from '../src/scan/answers';
 
 const empty: Catalog = new Map();
@@ -92,12 +92,13 @@ describe("Ruling 76: a RYOBI page's Includes models, when the model number offer
   });
 });
 
+// Captured from Home Depot on Nov 17, 2026: item 320511079, its two Includes bullets ("(2) PBP005").
+const PAGE_320511079 = page([
+  'Includes: (1) PCL206 18V ONE+ 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ 1/4 in. Impact Driver, (1) PCL515 18V ONE+ Reciprocating Saw, (1) PCL500 18V ONE+ 5-1/2 in. Circular Saw, (1) PCL430 18V ONE+ Multi-Tool, (1) PCL525 18V ONE+ Jig Saw, (1) PCL406 18V ONE+ Random Orbit Sander, (1) PCL660 18V ONE+ LED Light,',
+  'Includes: (2) PBP005 18V ONE+ 4.0 Ah Lithium Batteries, (1) PBP002 18V ONE+ Compact Lithium Battery, (1) PCG002 18V ONE+ Charger, Reciprocating Saw Blade, Circular Saw Blade, Multi-Tool Accessories, Jig Saw Blade, Sandpaper Assortment, (2) Tool Bags and Operator’s Manuals',
+]);
+
 describe('Ruling 76, fix round 1: the page reading keeps the counts the page writes', () => {
-  // Captured from Home Depot on Nov 17, 2026: item 320511079, its two Includes bullets ("(2) PBP005").
-  const PAGE_320511079 = page([
-    'Includes: (1) PCL206 18V ONE+ 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ 1/4 in. Impact Driver, (1) PCL515 18V ONE+ Reciprocating Saw, (1) PCL500 18V ONE+ 5-1/2 in. Circular Saw, (1) PCL430 18V ONE+ Multi-Tool, (1) PCL525 18V ONE+ Jig Saw, (1) PCL406 18V ONE+ Random Orbit Sander, (1) PCL660 18V ONE+ LED Light,',
-    'Includes: (2) PBP005 18V ONE+ 4.0 Ah Lithium Batteries, (1) PBP002 18V ONE+ Compact Lithium Battery, (1) PCG002 18V ONE+ Charger, Reciprocating Saw Blade, Circular Saw Blade, Multi-Tool Accessories, Jig Saw Blade, Sandpaper Assortment, (2) Tool Bags and Operator’s Manuals',
-  ]);
 
   it("320511079's bullets under a special-buy model with equal halves (hand-labelled: PSK0505SB is not that bundle's model): PBP005 twice", () => {
     const got = split('PSK0505SB', '', PAGE_320511079);
@@ -136,5 +137,44 @@ describe('Ruling 76, fix round 1: the page reading keeps the counts the page wri
 
   it('a count outside 1 to 9 before a non-model does not stop the reading (hand-made)', () => {
     expect(split('PSK1212SB', '', page(['Includes: (1) PBP004 Battery, (20) Drive Bits'])).alternatives).toEqual([['PBP004']]);
+  });
+});
+
+describe('Ruling 76, final fix round: a question whose reading came from the page is recognised by its note, exactly', () => {
+  // The reason a review question carries is the split's notes joined by "; " (scan/runner.ts).
+  const reasonOf = (got: { notes: string[] }) => got.notes.join('; ');
+
+  it("PSK1212SB's runner reason is a page reading", () => {
+    const got = split('PSK1212SB', PSK1212SB_TITLE, PSK1212SB_PAGE);
+    expect(reasonOf(got)).toBe('no known RYOBI bundle pattern; page names PBP004, PBP003, PCG002');
+    expect(pageReadingOf(reasonOf(got))).toBe(true);
+  });
+
+  it("the repeated-part case (item 320511079's bullets, PBP005 twice, named once in the note) is a page reading", () => {
+    const got = split('PSK0505SB', '', PAGE_320511079);
+    expect(got.notes[1]).toContain('PBP005, PBP002');
+    expect(pageReadingOf(reasonOf(got))).toBe(true);
+  });
+
+  it('a single model named is a page reading too', () => {
+    expect(pageReadingOf('no known RYOBI bundle pattern; page names PBP004')).toBe(true);
+  });
+
+  it('the other notes that begin "page names" are not', () => {
+    expect(pageReadingOf('no known RYOBI bundle pattern; page names no models')).toBe(false);
+    expect(pageReadingOf('model number says DCB205; page names DCB204, DCD791, which do not fit the model number')).toBe(false);
+    expect(pageReadingOf('page names PBP004, which does not fit the model number')).toBe(false);
+    expect(pageReadingOf('page does not name PBP004')).toBe(false);
+  });
+
+  it('a reason with no page note, or an empty one, is not', () => {
+    expect(pageReadingOf('no known RYOBI bundle pattern')).toBe(false);
+    expect(pageReadingOf("'ABC' fits PBP004 and PBP003")).toBe(false);
+    expect(pageReadingOf('')).toBe(false);
+  });
+
+  it('a sentence that only contains the words is not', () => {
+    expect(pageReadingOf('the page names PBP004')).toBe(false);
+    expect(pageReadingOf('page names PBP004 and PBP003')).toBe(false);
   });
 });
