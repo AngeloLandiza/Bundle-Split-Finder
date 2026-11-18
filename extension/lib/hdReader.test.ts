@@ -1,7 +1,18 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createPageReader, doorwayLoaded, fetchPagesInTab, type InTabResult, type ReaderEnv, waitForDoorway } from './hdReader';
+import {
+  createPageReader,
+  createPartPriceReader,
+  doorwayLoaded,
+  fetchPagesInTab,
+  fetchSearchesInTab,
+  pickPartLink,
+  type InTabResult,
+  type ReaderEnv,
+  type SearchInTab,
+  waitForDoorway,
+} from './hdReader';
 
 const pages = (JSON.parse(readFileSync('fixtures/homedepot-pages/pages-2026-11-10.json', 'utf8')) as {
   pages: InTabResult[];
@@ -318,5 +329,320 @@ describe('waitForDoorway', () => {
     const getTab = vi.fn(async () => { throw new Error('No tab with id: 7.'); });
     await expect(waitForDoorway(getTab, 7, origin, 1000, sleep, c.now)).rejects.toThrow('No tab with id: 7.');
     expect(sleep).not.toHaveBeenCalled();
+  });
+});
+
+// The part price reader. The page text has the shape of a recorded product page (base-catalog-<id> with identifiers and a
+// `pricing(...)` key, as fixtures/homedepot-pages/pricing-2026-11-17.json shows); the ids and models are made up for the test.
+const productText = (id: string, brand: string, model: string, price: number | null, title = `${brand} ${model} title`): string =>
+  'window.__APOLLO_STATE__=' +
+  JSON.stringify({
+    [`base-catalog-${id}`]: {
+      itemId: id,
+      identifiers: { brandName: brand, itemId: id, modelNumber: model, productLabel: title },
+      ...(price === null ? {} : { 'pricing({"isBrandPricingPolicyCompliant":false,"storeId":"8119"})': { value: price, original: null } }),
+    },
+  });
+
+interface PartFake {
+  env: ReaderEnv;
+  log: string[];
+  searched: string[][];
+  fetched: string[][];
+}
+
+/** `search` gives the links Home Depot's search shows for a model; `pages` the product page text by id. */
+function partFake(opts: {
+  search?: Record<string, string[]>;
+  pages?: Record<string, string>;
+  searchStatus?: (model: string) => number;
+  pageStatus?: (id: string) => number;
+  stored?: number | null;
+}): PartFake {
+  const log: string[] = [];
+  const searched: string[][] = [];
+  const fetched: string[][] = [];
+  let stored: number | null = opts.stored ?? null;
+  const env: ReaderEnv = {
+    origin: 'https://www.homedepot.com',
+    openTab: async (url) => { log.push(`open ${url}`); return 7; },
+    closeTab: async (id) => { log.push(`close ${id}`); },
+    waitForLoad: async (id, ms) => { log.push(`wait ${id} ${ms}`); },
+    runInTab: (async (_tab: number, func: unknown, args: [string[], number]) => {
+      if (func === fetchSearchesInTab) {
+        log.push('search');
+        searched.push(args[0]);
+        const out: SearchInTab[] = args[0].map((model) => {
+          const status = opts.searchStatus?.(model) ?? 200;
+          return { model, status, links: status === 200 ? (opts.search?.[model] ?? []) : null };
+        });
+        const bad = out.findIndex((o) => o.status !== 200);
+        return out.map((o, i) => (bad >= 0 && i > bad ? { model: o.model, status: -1, links: null } : o));
+      }
+      log.push('page');
+      fetched.push(args[0]);
+      const out: InTabResult[] = args[0].map((id) => {
+        const status = opts.pageStatus?.(id) ?? (opts.pages?.[id] === undefined ? 404 : 200);
+        const text = status === 200 ? (opts.pages?.[id] ?? null) : null;
+        // As fetchPagesInTab: a 200 page with no embedded data has no text.
+        return { itemId: id, status, text: text !== null && text.includes('window.__APOLLO_STATE__=') ? text : null };
+      });
+      const bad = out.findIndex((o) => o.status !== 200 || o.text === null);
+      return out.map((o, i) => (bad >= 0 && i > bad ? { itemId: o.itemId, status: -1, text: null } : o));
+    }) as ReaderEnv['runInTab'],
+    remember: async (id) => { stored = id; },
+    remembered: async () => stored,
+    sleep: async (ms) => { log.push(`sleep ${ms}`); },
+  };
+  return { env, log, searched, fetched };
+}
+
+const nothingFor = (brand: string, model: string) => ({ brand, model, itemId: null, price: null, title: null, link: null });
+
+describe('pickPartLink', () => {
+  const links = [
+    '/p/RYOBI-ONE-18V-Cordless-Compact-Drill-Driver-Kit-PSBDD01K/300000001',
+    '/p/RYOBI-ONE-18V-Cordless-Impact-Wrench-Tool-Only-pcl265b/300000002',
+    '/p/RYOBI-ONE-18V-Starter-Kit-PSK0114-PCL265B/300000003',
+  ];
+
+  it('takes the first link whose address ends with the exact model, case-insensitively, and its 9-digit id', () => {
+    expect(pickPartLink('RYOBI', 'PCL265B', links)).toEqual({ itemId: '300000002', path: links[1] });
+    expect(pickPartLink('DEWALT', 'pcl265b', links)).toEqual({ itemId: '300000002', path: links[1] });
+  });
+
+  it('matches nothing when no link ends with the model, and never a model that only contains it', () => {
+    expect(pickPartLink('DEWALT', 'PCL265', links)).toBeNull();
+    // For RYOBI, PCL265 is PCL265B's twin (see below).
+    expect(pickPartLink('RYOBI', 'PSK0114', links)).toBeNull();
+    expect(pickPartLink('RYOBI', 'CL265B', links)).toBeNull();
+    expect(pickPartLink('DEWALT', 'DCD791B', links)).toBeNull();
+    expect(pickPartLink('RYOBI', 'PCL265B', [])).toBeNull();
+    // Not a 9-digit id: not a product address.
+    expect(pickPartLink('RYOBI', 'PCL265B', ['/p/RYOBI-Tool-PCL265B/12345'])).toBeNull();
+  });
+
+  it('RYOBI accepts the one-trailing-B twin, preferring an exact match when both appear; DEWALT stays exact', () => {
+    const twin = '/p/RYOBI-ONE-18V-Drill-Tool-Only-PCL206B/300000010';
+    const exact = '/p/RYOBI-ONE-18V-Drill-PCL206/300000011';
+    expect(pickPartLink('RYOBI', 'PCL206', [twin])).toEqual({ itemId: '300000010', path: twin });
+    expect(pickPartLink('RYOBI', 'PCL206B', [exact])).toEqual({ itemId: '300000011', path: exact });
+    expect(pickPartLink('RYOBI', 'PCL206', [twin, exact])).toEqual({ itemId: '300000011', path: exact });
+    expect(pickPartLink('RYOBI', 'PCL206B', [exact, twin])).toEqual({ itemId: '300000010', path: twin });
+    expect(pickPartLink('DEWALT', 'DCD791', ['/p/DEWALT-20V-Drill-DCD791B/300000012'])).toBeNull();
+    expect(pickPartLink('DEWALT', 'DCD791B', ['/p/DEWALT-20V-Drill-DCD791/300000012'])).toBeNull();
+    // Only one B: PCL206BB is not PCL206B's twin.
+    expect(pickPartLink('RYOBI', 'PCL206B', ['/p/RYOBI-Drill-PCL206BB/300000013'])).toBeNull();
+  });
+});
+
+describe('createPartPriceReader', () => {
+  const tool = '/p/RYOBI-ONE-18V-Cordless-Impact-Wrench-Tool-Only-PCL265B/300000002';
+
+  it('searches /s/<model> in one doorway tab, reads the product page, and returns brand, model, id, price, title and link', async () => {
+    const f = partFake({
+      search: { PCL265B: [tool], DCD791B: ['/p/DEWALT-20V-MAX-XR-Drill-Driver-Tool-Only-DCD791B/300000020'] },
+      pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99, 'ONE+ 18V Impact Wrench'), '300000020': productText('300000020', 'DEWALT', 'DCD791B', 159) },
+    });
+    const out = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }, { brand: 'DEWALT', model: 'DCD791B' }]);
+    expect(out).toEqual([
+      { brand: 'RYOBI', model: 'PCL265B', itemId: '300000002', price: 99, title: 'ONE+ 18V Impact Wrench', link: `https://www.homedepot.com${tool}` },
+      { brand: 'DEWALT', model: 'DCD791B', itemId: '300000020', price: 159, title: 'DEWALT DCD791B title', link: 'https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Drill-Driver-Tool-Only-DCD791B/300000020' },
+    ]);
+    expect(f.log[0]).toBe('open https://www.homedepot.com/s/PCL265B');
+    expect(f.log).toContain('wait 7 30000');
+    expect(f.log.filter((l) => l.startsWith('open'))).toHaveLength(1);
+    expect(f.log.at(-1)).toBe('close 7');
+    expect(f.searched).toEqual([['PCL265B', 'DCD791B']]);
+    expect(f.fetched).toEqual([['300000002', '300000020']]);
+  });
+
+  it('waits settleMs once after the load, and pauses between its calls inside the tab', async () => {
+    const f = partFake({ search: { PCL265B: [tool] }, pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99) } });
+    await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }]);
+    expect(f.log).toEqual(['open https://www.homedepot.com/s/PCL265B', 'wait 7 30000', 'sleep 2500', 'search', 'sleep 1000', 'page', 'close 7']);
+  });
+
+  it('pauses between two calls only for what is left of the pause, like the page reader', async () => {
+    const f = partFake({});
+    let t = 0;
+    const env: ReaderEnv = { ...f.env, sleep: async (ms) => { f.log.push(`sleep ${ms}`); t += ms; } };
+    const read = createPartPriceReader(env, { now: () => t, settleMs: 0 });
+    await read([{ brand: 'RYOBI', model: 'A1' }]);
+    f.log.length = 0;
+    await read([{ brand: 'RYOBI', model: 'A2' }]);
+    expect(f.log.slice(0, 2)).toEqual(['sleep 1000', 'open https://www.homedepot.com/s/A2']);
+    f.log.length = 0;
+    t += 400;
+    await read([{ brand: 'RYOBI', model: 'A3' }]);
+    expect(f.log.slice(0, 2)).toEqual(['sleep 600', 'open https://www.homedepot.com/s/A3']);
+  });
+
+  it('opens no tab for no parts or blank models', async () => {
+    const f = partFake({});
+    expect(await createPartPriceReader(f.env)([])).toEqual([]);
+    expect(await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: ' ' }])).toEqual([nothingFor('RYOBI', ' ')]);
+    expect(f.log).toEqual([]);
+  });
+
+  it('never guesses an id: no link ending with the model gives nulls and fetches no product page', async () => {
+    const f = partFake({ search: { PCL265B: ['/p/RYOBI-Impact-Wrench-Kit-PCL265K1/300000099'] } });
+    const out = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }]);
+    expect(out).toEqual([nothingFor('RYOBI', 'PCL265B')]);
+    expect(f.fetched).toEqual([]);
+  });
+
+  it('gives nulls when the product page does not confirm the brand and model (a kit whose address ends with the part)', async () => {
+    const kit = '/p/RYOBI-ONE-18V-Starter-Kit-PSK0114-PCL265B/300000003';
+    const f = partFake({
+      search: { PCL265B: [kit, tool], PBP004: ['/p/RYOBI-ONE-18V-6-Tool-Combo-Kit-PCL1600K2-PBP004/300000004'] },
+      pages: { '300000003': productText('300000003', 'RYOBI', 'PSK0114-PCL265B', 79), '300000004': productText('300000004', 'RYOBI', 'PCL1600K2-PBP004', 249), '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99) },
+    });
+    const out = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }, { brand: 'RYOBI', model: 'PBP004' }]);
+    // One id per model: the first link ends with the model, its page says it is the kit, so nothing, not the next link.
+    expect(out.map((o) => o.itemId)).toEqual([null, null]);
+    expect(out.map((o) => o.price)).toEqual([null, null]);
+    expect(f.fetched).toEqual([['300000003', '300000004']]);
+    // Another brand's page for the same model is not the part either.
+    const g = partFake({ search: { PCL265B: [tool] }, pages: { '300000002': productText('300000002', 'DEWALT', 'PCL265B', 99) } });
+    expect((await createPartPriceReader(g.env)([{ brand: 'RYOBI', model: 'PCL265B' }]))[0]?.itemId).toBeNull();
+  });
+
+  it('RYOBI finds the tool-only twin, and its page confirms it by sameModel; DEWALT stays exact', async () => {
+    const twin = '/p/RYOBI-ONE-18V-Cordless-Drill-Driver-Tool-Only-PCL206B/300000010';
+    const f = partFake({
+      search: { PCL206: [twin], DCD791: ['/p/DEWALT-20V-Drill-DCD791B/300000012'] },
+      pages: { '300000010': productText('300000010', 'RYOBI', 'PCL206B', 59), '300000012': productText('300000012', 'DEWALT', 'DCD791B', 159) },
+    });
+    const out = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL206' }, { brand: 'DEWALT', model: 'DCD791' }]);
+    expect(out[0]).toMatchObject({ model: 'PCL206', itemId: '300000010', price: 59 });
+    expect(out[1]).toMatchObject({ model: 'DCD791', itemId: null, price: null });
+    expect(f.fetched).toEqual([['300000010']]);
+    // A page that names a different model (RYOBI PCL206BB) is not the twin.
+    const g = partFake({ search: { PCL206: ['/p/RYOBI-Drill-PCL206B/300000010'] }, pages: { '300000010': productText('300000010', 'RYOBI', 'PCL206BB', 59) } });
+    expect((await createPartPriceReader(g.env)([{ brand: 'RYOBI', model: 'PCL206' }]))[0]?.itemId).toBeNull();
+  });
+
+  it('keeps the id and link, with a null price, when the page names no price', async () => {
+    const f = partFake({ search: { PCL265B: [tool] }, pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', null) } });
+    const [r] = await createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'PCL265B' }]);
+    expect(r).toMatchObject({ itemId: '300000002', price: null, link: `https://www.homedepot.com${tool}` });
+  });
+
+  it('looks each distinct part up once and answers every part asked, in order', async () => {
+    const f = partFake({ search: { PCL265B: [tool] }, pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99) } });
+    const out = await createPartPriceReader(f.env)([
+      { brand: 'RYOBI', model: 'PCL265B' },
+      { brand: 'RYOBI', model: 'pcl265b' },
+      { brand: 'RYOBI', model: 'ZZZ1' },
+    ]);
+    expect(f.searched).toEqual([['PCL265B', 'ZZZ1']]);
+    expect(out.map((o) => [o.model, o.price])).toEqual([['PCL265B', 99], ['pcl265b', 99], ['ZZZ1', null]]);
+  });
+
+  it('batches the searches, and looks up no more than its cap per call', async () => {
+    const models = Array.from({ length: 6 }, (_, i) => `M${i}`);
+    const f = partFake({});
+    const out = await createPartPriceReader(f.env, { batch: 2, cap: 4, settleMs: 0 })(models.map((model) => ({ brand: 'RYOBI', model })));
+    expect(f.searched).toEqual([['M0', 'M1'], ['M2', 'M3']]);
+    expect(out).toHaveLength(6);
+    expect(out.every((o) => o.itemId === null)).toBe(true);
+    expect(f.log.filter((l) => l === 'sleep 1000')).toHaveLength(1);
+  });
+
+  it('stops at a refused search: no page is fetched after it, and no later search is made', async () => {
+    const f = partFake({
+      search: { A1: ['/p/RYOBI-X-A1/300000031'], A3: ['/p/RYOBI-X-A3/300000033'] },
+      pages: { '300000031': productText('300000031', 'RYOBI', 'A1', 10), '300000033': productText('300000033', 'RYOBI', 'A3', 30) },
+      searchStatus: (m) => (m === 'A2' ? 403 : 200),
+    });
+    const out = await createPartPriceReader(f.env, { batch: 3, settleMs: 0 })(['A1', 'A2', 'A3', 'A4'].map((model) => ({ brand: 'RYOBI', model })));
+    expect(out.map((o) => o.price)).toEqual([null, null, null, null]);
+    expect(f.fetched).toEqual([]);
+    expect(f.searched).toHaveLength(1);
+    expect(f.log.at(-1)).toBe('close 7');
+  });
+
+  it('stops at a refused product page (non-200) or one with no embedded data, and makes no later call', async () => {
+    const search = { A1: ['/p/RYOBI-X-A1/300000031'], A2: ['/p/RYOBI-X-A2/300000032'], A3: ['/p/RYOBI-X-A3/300000033'] };
+    const pages = { '300000031': productText('300000031', 'RYOBI', 'A1', 10), '300000032': productText('300000032', 'RYOBI', 'A2', 20), '300000033': productText('300000033', 'RYOBI', 'A3', 30) };
+    const parts = ['A1', 'A2', 'A3'].map((model) => ({ brand: 'RYOBI', model }));
+    const refused = partFake({ search, pages, pageStatus: (id) => (id === '300000032' ? 403 : 200) });
+    // Batch of 2: A1 read, A2 refused, so A3's search is never made.
+    const out = await createPartPriceReader(refused.env, { batch: 2, settleMs: 0 })(parts);
+    expect(out.map((o) => o.price)).toEqual([10, null, null]);
+    expect(refused.searched).toEqual([['A1', 'A2']]);
+    expect(refused.log.at(-1)).toBe('close 7');
+    const nodata = partFake({ search, pages: { ...pages, '300000032': '<html>blocked</html>' } });
+    const out2 = await createPartPriceReader(nodata.env, { batch: 2, settleMs: 0 })(parts);
+    expect(out2.map((o) => o.price)).toEqual([10, null, null]);
+    expect(nodata.searched).toHaveLength(1);
+  });
+
+  it('an empty script result (undefined) is a refusal: everything null, tab closed', async () => {
+    const f = partFake({});
+    const env: ReaderEnv = { ...f.env, runInTab: (async () => undefined) as ReaderEnv['runInTab'] };
+    const out = await createPartPriceReader(env, { settleMs: 0 })([{ brand: 'RYOBI', model: 'A1' }, { brand: 'RYOBI', model: 'A2' }]);
+    expect(out.map((o) => o.itemId)).toEqual([null, null]);
+    expect(f.log.at(-1)).toBe('close 7');
+  });
+
+  it('throws when the doorway does not load, closes the tab, and closes a doorway left by a stopped worker first', async () => {
+    const f = partFake({});
+    f.env.waitForLoad = async () => { throw new Error('timeout'); };
+    await expect(createPartPriceReader(f.env)([{ brand: 'RYOBI', model: 'A1' }])).rejects.toThrow('The Home Depot tab did not load.');
+    expect(f.log.at(-1)).toBe('close 7');
+    const g = partFake({ stored: 99 });
+    await createPartPriceReader(g.env, { settleMs: 0 })([{ brand: 'RYOBI', model: 'A1' }]);
+    expect(g.log.slice(0, 2)).toEqual(['close 99', 'open https://www.homedepot.com/s/A1']);
+  });
+});
+
+describe('fetchSearchesInTab', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('runs from its own source: collects the product links of the page in order, once each, and the address a search ended at', async () => {
+    const asked: string[] = [];
+    vi.stubGlobal('location', { href: 'https://www.homedepot.com/s/PCL265B' });
+    vi.stubGlobal('fetch', async (url: string) => {
+      asked.push(url);
+      if (url.includes('NONE')) return { status: 200, url: 'https://www.homedepot.com/s/NONE', text: async () => '<html>no results</html>' };
+      const body =
+        '<a href="/p/RYOBI-Wrench-Tool-Only-PCL265B/300000002">x</a><a href="https://www.homedepot.com/p/RYOBI-Wrench-Tool-Only-PCL265B/300000002?x=1">y</a>' +
+        '<a href="/p/RYOBI-Kit-PSK0114-PCL265B/300000003">z</a> /p/short/123 /p/RYOBI-Too-Long/1234567890';
+      return { status: 200, url: 'https://www.homedepot.com/p/RYOBI-Final-Tool/300000001', text: async () => body };
+    });
+    const rebuilt = new Function(`return (${fetchSearchesInTab.toString()})`)() as typeof fetchSearchesInTab;
+    const out = await rebuilt(['PCL265B', 'NONE'], 2);
+    expect(asked).toEqual(['/s/PCL265B', '/s/NONE']);
+    expect(out[0]).toEqual({
+      model: 'PCL265B',
+      status: 200,
+      links: ['/p/RYOBI-Final-Tool/300000001', '/p/RYOBI-Wrench-Tool-Only-PCL265B/300000002', '/p/RYOBI-Kit-PSK0114-PCL265B/300000003'],
+    });
+    // No product link at all is a search with no result, status 200.
+    expect(out[1]).toEqual({ model: 'NONE', status: 200, links: [] });
+    // The model is encoded into the path.
+    const encoded = await rebuilt(['A B/C'], 1);
+    expect(asked.at(-1)).toBe('/s/A%20B%2FC');
+    expect(encoded[0]?.status).toBe(200);
+  });
+
+  it('starts no fetch after a refusal or a throw; models it never fetched come back with status -1', async () => {
+    vi.stubGlobal('location', { href: 'https://www.homedepot.com/' });
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (url: string) => {
+      asked.push(url);
+      if (url === '/s/B') return { status: 403, url: 'https://www.homedepot.com/s/B', text: async () => 'no' };
+      if (url === '/s/D') throw new Error('network');
+      return { status: 200, url: 'https://www.homedepot.com/s/x', text: async () => '' };
+    });
+    const rebuilt = new Function(`return (${fetchSearchesInTab.toString()})`)() as typeof fetchSearchesInTab;
+    const out = await rebuilt(['A', 'B', 'C', 'D'], 1);
+    expect(asked).toEqual(['/s/A', '/s/B']);
+    expect(out.map((o) => o.status)).toEqual([200, 403, -1, -1]);
+    expect(out[1]).toEqual({ model: 'B', status: 403, links: null });
+    const threw = await rebuilt(['D', 'E'], 1);
+    expect(threw.map((o) => o.status)).toEqual([0, -1]);
   });
 });

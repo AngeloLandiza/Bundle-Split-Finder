@@ -2,7 +2,8 @@
 // refuses the same requests from the service worker. Every Chrome call goes through ReaderEnv,
 // so this file touches no chrome.* and is tested with fakes (see hdReader.test.ts).
 
-import { parseBundlePage } from '@core/hdPage';
+import { parseBundlePage, parseProductPage } from '@core/hdPage';
+import { modelForms, sameModel } from '@core/match';
 import type { PageOutcome, ReadPages } from '@core/scan/types';
 
 export interface ReaderEnv {
@@ -181,5 +182,222 @@ export function createPageReader(
       await env.remember(null).catch(() => undefined);
       lastEnded = now();
     }
+  };
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Part prices (step 9, Phase 1): what Home Depot charges for one part sold alone. Same doorway, same pause, same
+// refusal rule as createPageReader; the part's item id comes from Home Depot's own search, never from a guess.
+
+/**
+ * What one part's lookup gave. `itemId`, `price`, `title` and `link` are all null when Home Depot's search
+ * showed no product whose model is the part's, or when that product's own page did not confirm the model.
+ * `price` is null alone when the page names no price.
+ */
+export interface PartPriceRead {
+  brand: string;
+  model: string;
+  itemId: string | null;
+  price: number | null;
+  title: string | null;
+  link: string | null;
+}
+
+/** The scan dependency of the step 9 contract: one entry per part asked for, in order. */
+export type ReadPartPrices = (parts: { brand: string; model: string }[]) => Promise<PartPriceRead[]>;
+
+export interface SearchInTab {
+  model: string;
+  status: number;
+  /** `/p/<slug>/<9-digit id>` paths on the search page, in page order. Null unless status is 200. */
+  links: string[] | null;
+}
+
+/**
+ * Runs inside the tab. Self-contained, like fetchPagesInTab (serialised by its source). Fetches Home Depot's own
+ * `/s/<model>` same-origin, `concurrency` at a time, and returns the product links each page holds. A search that
+ * Home Depot sent straight to one product also gives that product's own address. A fetch that throws gives status 0.
+ * It starts no new fetch after the first answer that is not 200 (or a thrown fetch); models it never fetched come
+ * back with status -1. A 200 page with no product link is a search with no result, not a refusal.
+ */
+export async function fetchSearchesInTab(models: string[], concurrency: number): Promise<SearchInTab[]> {
+  const results: SearchInTab[] = new Array(models.length);
+  let next = 0;
+  let stopped = false;
+  const worker = async (): Promise<void> => {
+    while (next < models.length) {
+      const i = next++;
+      const model = models[i] as string;
+      if (stopped) {
+        results[i] = { model, status: -1, links: null };
+        continue;
+      }
+      let status = 0;
+      let links: string[] | null = null;
+      try {
+        const res = await fetch(`/s/${encodeURIComponent(model)}`, { credentials: 'include' });
+        status = res.status;
+        const body = await res.text();
+        if (status === 200) {
+          const found: string[] = [];
+          const seen: Record<string, boolean> = {};
+          const pattern = /\/p\/([A-Za-z0-9._~%+-]+)\/(\d{9})(?![0-9])/g;
+          const sources = [new URL(res.url, location.href).pathname, body];
+          for (const source of sources) {
+            pattern.lastIndex = 0;
+            let m = pattern.exec(source);
+            while (m !== null && found.length < 80) {
+              const path = `/p/${m[1]}/${m[2]}`;
+              if (!seen[path]) {
+                seen[path] = true;
+                found.push(path);
+              }
+              m = pattern.exec(source);
+            }
+          }
+          links = found;
+        }
+      } catch {
+        status = 0;
+        links = null;
+      }
+      if (status !== 200) stopped = true;
+      results[i] = { model, status, links };
+    }
+  };
+  const n = Math.max(1, Math.min(concurrency, models.length));
+  const workers: Promise<void>[] = [];
+  for (let k = 0; k < n; k++) workers.push(worker());
+  await Promise.all(workers);
+  return results;
+}
+
+/**
+ * The one product a search shows for a part: the first link whose address ends with `-<MODEL>` (case-insensitive),
+ * as Home Depot writes `/p/<slug>-<MODEL>/<id>`. For RYOBI the model's other form (PCL206 for PCL206B and back, the
+ * rule of core's sameModel and Ruling 70) is accepted too, and an exact match is preferred when both appear. A
+ * longer model that merely ends with this one matches here; the product's own page is what rules it out.
+ */
+export function pickPartLink(brand: string, model: string, links: string[]): { itemId: string; path: string } | null {
+  for (const form of modelForms(brand, model)) {
+    const tail = `-${form}`;
+    for (const path of links) {
+      const m = /^\/p\/([^/]+)\/(\d{9})$/.exec(path);
+      if (m && (m[1] as string).toUpperCase().endsWith(tail)) return { itemId: m[2] as string, path };
+    }
+  }
+  return null;
+}
+
+type PartAsked = { brand: string; model: string };
+const emptyRead = (p: PartAsked): PartPriceRead => ({ brand: p.brand, model: p.model, itemId: null, price: null, title: null, link: null });
+const partKeyOf = (p: PartAsked): string => `${p.brand.trim().toUpperCase()}:${p.model.trim().toUpperCase()}`;
+
+/**
+ * Reads Home Depot's standalone price for each part, free, inside one doorway tab: its own search `/s/<MODEL>`,
+ * then the chosen product's page `/p/<id>`, read with parseProductPage. A product whose page does not name the
+ * part's brand and model (sameModel) gives nothing: an id is never guessed.
+ * `cap` is the most distinct parts one call looks up (the rest come back empty); `pauseMs` and `settleMs` as for
+ * createPageReader. A non-200 answer, a thrown fetch, or a product page with no embedded data stops the call: that
+ * part comes back empty, and so does every part not yet read.
+ */
+export function createPartPriceReader(
+  env: ReaderEnv,
+  opts: { concurrency?: number; batch?: number; cap?: number; pauseMs?: number; settleMs?: number; now?: () => number } = {},
+): ReadPartPrices {
+  const concurrency = opts.concurrency ?? 2;
+  const batch = opts.batch ?? 4;
+  const cap = opts.cap ?? 40;
+  const pauseMs = opts.pauseMs ?? 1000;
+  const settleMs = opts.settleMs ?? 2500;
+  const now = opts.now ?? Date.now;
+  let lastEnded: number | null = null;
+
+  return async (asked) => {
+    // One lookup per distinct part; every part asked for gets its answer back, in order.
+    const distinct: PartAsked[] = [];
+    const seenKeys = new Set<string>();
+    for (const p of asked) {
+      if (p.model.trim() === '' || seenKeys.has(partKeyOf(p))) continue;
+      seenKeys.add(partKeyOf(p));
+      distinct.push(p);
+    }
+    const parts = distinct.slice(0, Math.max(0, cap));
+    const first = parts[0];
+    if (first === undefined) return asked.map(emptyRead);
+
+    if (lastEnded !== null) {
+      const left = pauseMs - (now() - lastEnded);
+      if (left > 0) await env.sleep(left);
+    }
+    const left = await env.remembered();
+    if (left !== null) {
+      await env.closeTab(left).catch(() => undefined);
+      await env.remember(null);
+    }
+
+    const answers = new Map<string, PartPriceRead>();
+    const tabId = await env.openTab(`${env.origin}/s/${encodeURIComponent(first.model)}`);
+    try {
+      await env.remember(tabId);
+      try {
+        await env.waitForLoad(tabId, LOAD_TIMEOUT_MS);
+      } catch {
+        throw new Error('The Home Depot tab did not load.');
+      }
+      if (settleMs > 0) await env.sleep(settleMs);
+
+      let calls = 0;
+      const pause = async (): Promise<void> => {
+        if (calls++ > 0) await env.sleep(pauseMs);
+      };
+      let stopped = false;
+      for (let start = 0; start < parts.length && !stopped; start += batch) {
+        const group = parts.slice(start, start + batch);
+        await pause();
+        const found = await env.runInTab(tabId, fetchSearchesInTab, [group.map((p) => p.model), concurrency]);
+        // An empty script result (undefined, not an array) is a batch with no entries.
+        const searches: SearchInTab[] = Array.isArray(found) ? found : [];
+        const answeredFor = (p: PartAsked) => searches.find((x) => x.model === p.model);
+        // Any part whose search was not answered 200 is a refusal; no page is fetched after it.
+        if (group.some((p) => { const s = answeredFor(p); return !s || (s.status !== 200 && s.status !== -1); })) stopped = true;
+        const chosen: { part: PartAsked; itemId: string; path: string }[] = [];
+        for (const part of group) {
+          const s = answeredFor(part);
+          if (s && s.status === 200 && s.links !== null) {
+            const pick = pickPartLink(part.brand, part.model, s.links);
+            if (pick) chosen.push({ part, ...pick });
+          }
+        }
+        if (stopped || chosen.length === 0) continue;
+
+        await pause();
+        const fetched = await env.runInTab(tabId, fetchPagesInTab, [chosen.map((c) => c.itemId), concurrency]);
+        const pages: InTabResult[] = Array.isArray(fetched) ? fetched : [];
+        for (const c of chosen) {
+          const r = pages.find((x) => x.itemId === c.itemId);
+          if (r && r.status === -1) continue;
+          if (!r || r.status !== 200 || r.text === null) {
+            stopped = true;
+            continue;
+          }
+          const page = parseProductPage(r.text, c.itemId);
+          if (page === null || page.brand.toUpperCase() !== c.part.brand.trim().toUpperCase() || !sameModel(c.part.brand, page.model, c.part.model)) continue;
+          answers.set(partKeyOf(c.part), {
+            brand: c.part.brand,
+            model: c.part.model,
+            itemId: c.itemId,
+            price: page.price,
+            title: page.title === '' ? null : page.title,
+            link: `${env.origin}${c.path}`,
+          });
+        }
+      }
+    } finally {
+      await env.closeTab(tabId).catch(() => undefined);
+      await env.remember(null).catch(() => undefined);
+      lastEnded = now();
+    }
+    return asked.map((p) => ({ ...(answers.get(partKeyOf(p)) ?? emptyRead(p)), brand: p.brand, model: p.model }));
   };
 }
