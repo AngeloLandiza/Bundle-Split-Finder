@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Candidate, grade, isBulkPackaging } from '../src/match';
+import { type Candidate, grade, isBulkPackaging, pick } from '../src/match';
 import { parseAmazonSearch } from '../src/serpapi/parsers';
 import { recorded, type RecordedName } from './recorded';
 
@@ -65,5 +65,47 @@ describe('one test for bulk or non-retail packaging', () => {
     for (const word of ['Renewed', 'Refurbished', 'Used', 'Open Box']) {
       expect(grade({ brand: 'RYOBI', model: 'P102' }, { ...p102, title: `${p102.title} (${word})` }).grade).toBe('reject');
     }
+  });
+});
+
+describe('a New listing in bulk packaging may be chosen', () => {
+  it('P102 on the recorded PBP002 search: the RYOBI bulk-packaged battery is chosen, and labelled bulk', () => {
+    const picked = pick({ brand: 'RYOBI', model: 'P102' }, rows('amazon-search-PBP002'));
+    expect(picked.chosen).toMatchObject({ asin: 'B00S022L2A', grade: 'probable', packaging: 'bulk' });
+  });
+
+  it('P209DCN on the recorded PCL206 search: the bulk-packaged drill/driver is chosen', () => {
+    const picked = pick({ brand: 'RYOBI', model: 'P209DCN' }, rows('amazon-search-PCL206'));
+    expect(picked.chosen).toMatchObject({ asin: 'B09S7MD89M', grade: 'probable', packaging: 'bulk' });
+  });
+
+  // Hand-made: no recorded search shows the same part both retail-boxed and bulk. The bulk row is recorded;
+  // the retail row is its title without the packaging words, fewer reviews, so reviews alone would not choose it.
+  const bulk = row('amazon-search-PBP002', 'B00S022L2A');
+  const retail: Candidate = { asin: 'RETAIL-P102', title: 'P102 18 Volt One Plus Compact Lithium Ion Battery Pack', brand: 'RYOBI', price: 39.97, reviews: 12 };
+
+  it('both active (a price shown): the retail-boxed listing is chosen, whatever the order or reviews', () => {
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [bulk, retail]).chosen).toMatchObject({ asin: 'RETAIL-P102', packaging: 'retail' });
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [retail, bulk]).chosen).toMatchObject({ asin: 'RETAIL-P102', packaging: 'retail' });
+  });
+
+  it('the retail listing shows no price and the bulk one does: the bulk listing is chosen', () => {
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [{ ...retail, price: null }, bulk]).chosen).toMatchObject({ asin: 'B00S022L2A', packaging: 'bulk' });
+  });
+
+  it('neither shows a price: the retail listing; only the bulk one shows none: the retail listing', () => {
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [{ ...retail, price: null }, { ...bulk, price: null }]).chosen?.asin).toBe('RETAIL-P102');
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [retail, { ...bulk, price: null }]).chosen?.asin).toBe('RETAIL-P102');
+  });
+
+  it('grade comes first: packaging is not identity, so a better-graded bulk listing beats a retail one', () => {
+    // Hand-made: the bulk row with a manufacturer part number, as a detail page shows it.
+    const strongBulk = { ...bulk, partNumber: 'P102' };
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [retail, strongBulk]).chosen).toMatchObject({ asin: 'B00S022L2A', grade: 'strong', packaging: 'bulk' });
+  });
+
+  it('alternatives are the chosen listing\'s grade and packaging: a bulk listing is not a retail one\'s second seller', () => {
+    const other = { ...retail, asin: 'RETAIL-P102-2', reviews: 3 };
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [bulk, retail, other]).alternatives.map((g) => g.asin)).toEqual(['RETAIL-P102-2']);
   });
 });

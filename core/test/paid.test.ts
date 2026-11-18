@@ -488,15 +488,27 @@ describe('runPaid verify: one detail page upgrades or rejects a title match', ()
     expect(await w.store.getReview('match:RYOBI:PBLRC25B')).toBeUndefined();
   });
 
-  it('a page that says non-retail packaging goes to review, saying so', async () => {
+  it('a page that says bulk packaging confirms the part as any page does: no review for packaging alone (PO, Nov 18)', async () => {
+    for (const words of ['(Bulk Packaged)', '(Bulk Packaging)', '(Non-Retail Packaging)', '(Repackaged)']) {
+      const w = await bothMatched();
+      productPage(w, (page) => {
+        page.product_results!.title = `${String(page.product_results!.title)} ${words}`;
+      });
+      await paid(w, VERIFY_25B);
+      expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV', grade: 'strong' });
+      expect(await w.store.getReview('match:RYOBI:PBLRC25B')).toBeUndefined();
+    }
+  });
+
+  it('a bulk page that does not confirm the part still goes to review, with the grading\'s reasons only', async () => {
     const w = await bothMatched();
     productPage(w, (page) => {
-      page.product_results!.title = `${String(page.product_results!.title)} (Bulk Packaged)`;
+      page.product_results!.title = `${String(page.product_results!.title)} (Bulk Packaged) (Renewed)`;
     });
     await paid(w, VERIFY_25B);
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'review', asin: null, grade: null });
     expect((await w.store.getReview('match:RYOBI:PBLRC25B'))!.candidates).toEqual([
-      expect.objectContaining({ asin: 'B0B3JWF5ZV', reasons: ['manufacturer part number match', 'the listing says non-retail packaging'] }),
+      expect.objectContaining({ asin: 'B0B3JWF5ZV', reasons: ['renewed or used listing'] }),
     ]);
   });
 

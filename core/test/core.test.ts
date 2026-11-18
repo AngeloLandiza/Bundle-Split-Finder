@@ -183,9 +183,9 @@ describe('matching Amazon listings', () => {
     expect(grade(WANT_3_8, cand).grade).toBe(expected);
   });
 
-  it('labels a bulk-packaged listing and never picks it automatically', () => {
+  it('labels a bulk-packaged listing, which may be chosen when it is the only one (PO, Nov 18: New is enough)', () => {
     expect(grade(WANT_3_8, fx.DECOY_BULK)).toMatchObject({ grade: 'strong', packaging: 'bulk' });
-    expect(pick(WANT_3_8, [fx.DECOY_BULK]).chosen).toBeNull();
+    expect(pick(WANT_3_8, [fx.DECOY_BULK]).chosen).toMatchObject({ asin: 'DECOY-BULK', grade: 'strong', packaging: 'bulk' });
   });
 
   it('matches a 2-pack component to a 2-pack listing only', () => {

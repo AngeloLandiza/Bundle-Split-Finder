@@ -603,12 +603,14 @@ async function verifyRecipSaw(w: World, model: string, title: string, details: R
 }
 
 const SAW = 'ONE+ 18V Cordless Reciprocating Saw - 3,400 SPM Variable Speed, 1 in. Stroke Length, Tool Only (Battery Not Included) - PCL515B';
+/** A page that does not confirm the part: renewed. (Bulk packaging sent a page to review until the PO's answer of Nov 18.) */
+const RENEWED_SAW = `${SAW} (Renewed)`;
 
 describe('fix round 1, Important 1: a Verify writes its outcome to the twin that holds the same listing', () => {
-  it('a Verify that sends PCL515B to review (non-retail packaging) sends PCL515, matched to the same listing automatically, with it', async () => {
+  it('a Verify that sends PCL515B to review (a renewed page) sends PCL515, matched to the same listing automatically, with it', async () => {
     const w = await answered();
     expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toMatchObject({ status: 'matched', asin: 'B0B88R7HWB', decidedBy: 'auto' });
-    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    await verifyRecipSaw(w, 'PCL515B', RENEWED_SAW, {});
     expect(await w.store.getMatch(partKey('RYOBI', 'PCL515B'))).toMatchObject({ status: 'review', asin: null });
     expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toMatchObject({ status: 'review', asin: null, decidedBy: 'auto', updatedAt: T0 + MINUTE });
     // One question, PCL515B's.
@@ -619,7 +621,7 @@ describe('fix round 1, Important 1: a Verify writes its outcome to the twin that
 
   it('fix round 2: no scan undoes it: two scans later both forms are still in review, the question open, nothing searched for them', async () => {
     const w = await answered();
-    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    await verifyRecipSaw(w, 'PCL515B', RENEWED_SAW, {});
     const id = `match:${partKey('RYOBI', 'PCL515B')}`;
     const question = await w.store.getReview(id);
     expect(question).toMatchObject({ answer: null, candidates: [{ asin: 'B0B88R7HWB' }] });
@@ -636,7 +638,7 @@ describe('fix round 1, Important 1: a Verify writes its outcome to the twin that
 
   it('fix round 2: a listing a page rejected for PCL515B is never chosen for its twin from a search row', async () => {
     const w = await answered();
-    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    await verifyRecipSaw(w, 'PCL515B', RENEWED_SAW, {});
     // Hand-made: PCL515 holds an automatic "none" of its own, written from a search, which Ruling 73 judges again.
     const none = {
       key: partKey('RYOBI', 'PCL515'), brand: 'RYOBI', model: 'PCL515', status: 'none' as const, asin: null, grade: null, alternatives: [],
@@ -649,7 +651,7 @@ describe('fix round 1, Important 1: a Verify writes its outcome to the twin that
 
   /** As a Verify before fix round 2 left PCL515B and PCL515: the same records and question, without `source` or `rejectedAsins`. */
   async function oldShapeVerify(w: World): Promise<void> {
-    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    await verifyRecipSaw(w, 'PCL515B', RENEWED_SAW, {});
     for (const model of ['PCL515B', 'PCL515']) {
       const { source: _s, rejectedAsins: _r, ...old } = (await w.store.getMatch(partKey('RYOBI', model)))!;
       await w.store.putMatch(old);
@@ -686,7 +688,7 @@ describe('fix round 1, Important 1: a Verify writes its outcome to the twin that
 
   it('fix round 3: a stale lookup step (hand-made) does not overwrite a page-written review with a search pick', async () => {
     const w = await answered();
-    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    await verifyRecipSaw(w, 'PCL515B', RENEWED_SAW, {});
     const before = await w.store.getMatch(partKey('RYOBI', 'PCL515'));
     expect(before).toMatchObject({ status: 'review', source: 'page', rejectedAsins: ['B0B88R7HWB'] });
     // The recorded PCL515 search holds B0B88R7HWB, which a search pick would choose.
@@ -697,7 +699,7 @@ describe('fix round 1, Important 1: a Verify writes its outcome to the twin that
 
   it('fix round 3: a stale lookup step (hand-made) that fails does not mark a page-written review as waiting', async () => {
     const w = await answered();
-    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    await verifyRecipSaw(w, 'PCL515B', RENEWED_SAW, {});
     const before = await w.store.getMatch(partKey('RYOBI', 'PCL515B'));
     // The replay has no PCL515B search: the lookup fails, and the step is set aside.
     await staleQueue(w, { kind: 'lookup', brand: 'RYOBI', model: 'PCL515B' });
@@ -716,7 +718,7 @@ describe('fix round 1, Important 1: a Verify writes its outcome to the twin that
     // Hand-made: the owner chose B0B88R7HWB for PCL515 themselves.
     const mine = { ...(await w.store.getMatch(partKey('RYOBI', 'PCL515')))!, decidedBy: 'user' as const, grade: null };
     await w.store.putMatch(mine);
-    await verifyRecipSaw(w, 'PCL515B', `${SAW}, Bulk Packaged`, {});
+    await verifyRecipSaw(w, 'PCL515B', RENEWED_SAW, {});
     expect(await w.store.getMatch(partKey('RYOBI', 'PCL515'))).toEqual(mine);
   });
 });

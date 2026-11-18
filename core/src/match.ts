@@ -326,12 +326,18 @@ export interface Picked {
   review: Graded[];
 }
 
-/** Choose one listing per component: best grade first, then most reviews, organic before sponsored. */
+/**
+ * Choose one listing per component: best grade first, then organic before sponsored, then most reviews.
+ * A New listing in bulk packaging may be chosen (PO, Nov 18); packaging is not identity, so it never
+ * outranks a better grade. Among listings of the best grade a retail-boxed one is chosen, unless no
+ * retail-boxed one shows a price (is active) and a bulk one does: then the best bulk one that shows a
+ * price. Alternatives share the chosen listing's grade and packaging.
+ */
 export function pick(want: Wanted, candidates: Candidate[]): Picked {
   const byAsin = new Map(candidates.map((c) => [c.asin, c]));
   const graded = candidates.map((c) => grade(want, c));
   const usable = graded
-    .filter((g) => g.packaging === 'retail' && RANK[g.grade] <= RANK.probable)
+    .filter((g) => RANK[g.grade] <= RANK.probable)
     .sort((a, b) => {
       const ca = byAsin.get(a.asin)!;
       const cb = byAsin.get(b.asin)!;
@@ -341,10 +347,14 @@ export function pick(want: Wanted, candidates: Candidate[]): Picked {
         (cb.reviews ?? 0) - (ca.reviews ?? 0)
       );
     });
-  const chosen = usable[0] ?? null;
+  const best = usable.filter((g) => g.grade === usable[0]?.grade);
+  const active = (g: Graded) => byAsin.get(g.asin)!.price != null;
+  const retail = best.filter((g) => g.packaging === 'retail');
+  const bulk = best.filter((g) => g.packaging === 'bulk');
+  const chosen = retail.length === 0 ? (bulk[0] ?? null) : !retail.some(active) && bulk.some(active) ? bulk.find(active)! : retail[0]!;
   return {
     chosen,
-    alternatives: usable.slice(1).filter((g) => chosen && g.grade === chosen.grade),
+    alternatives: best.filter((g) => chosen && g !== chosen && g.packaging === chosen.packaging),
     review: graded.filter((g) => g.grade === 'review'),
   };
 }

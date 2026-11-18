@@ -31,8 +31,6 @@ const NOT_THE_MATCH = "This listing is no longer the part's match.";
 const VERIFIED = 'This listing is already verified.';
 const PAGE_UNREADABLE = "Amazon's page for this listing could not be read.";
 const OTHER_LISTING = 'Amazon answered with a different listing.';
-/** Added to the grading's reasons when the page's title says non-retail packaging, which pick() never uses. */
-const BULK = 'the listing says non-retail packaging';
 
 /** What the store already answers, read once by savedAnswers, for quotePaid. */
 export interface SavedAnswers {
@@ -184,10 +182,11 @@ async function waitsFromNow(ctx: PartContext, part: Part): Promise<void> {
 /**
  * One detail page (engine amazon_product), graded by the existing grading: pick() over that one
  * listing. Exact or strong: the match takes that grade. Probable: the page confirms no more than
- * the title did, and the match stays as it was. Anything else (review, reject, non-retail
- * packaging): the match goes to review, with a question offering this listing and the grading's
- * reasons. Either way the page's price is saved, at the time SerpApi answered. A page that cannot
- * be read, or that shows another listing, changes nothing.
+ * the title did, and the match stays as it was. Review or reject: the match goes to review, with a
+ * question offering this listing and the grading's reasons. Bulk or non-retail packaging alone sends
+ * nothing to review (PO, Nov 18): pick() may choose a New bulk listing, and packaging is not a grade.
+ * Either way the page's price is saved, at the time SerpApi answered. A page that cannot be read, or
+ * that shows another listing, changes nothing.
  */
 async function verify(
   ctx: PartContext, budget: BudgetView, action: Extract<PaidAction, { kind: 'verify' }>, stop: () => string | null,
@@ -223,8 +222,7 @@ async function verify(
     }
     return;
   }
-  const graded = grade(want, page);
-  const reasons = graded.packaging === 'bulk' ? [...graded.reasons, BULK] : graded.reasons;
+  const { reasons } = grade(want, page);
   // The question first, then the match, as a lookup writes them.
   await openMatchReview(ctx, part, NOT_CONFIRMED, [{ asin, title: page.title, price: page.price ?? null, reviews: page.reviews ?? null, reasons, seenAt: at }], now);
   // Fix round 2: the page's evidence stands; no scan matches the part to this listing again from a search row.
