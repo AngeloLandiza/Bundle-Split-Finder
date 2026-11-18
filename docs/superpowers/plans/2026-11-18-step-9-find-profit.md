@@ -105,3 +105,14 @@ PO: "1. Depends, I try to not to remove anything from OEM packaging but some too
 - Marketplace Insights API (sold prices) is limited release (invitation, business case): the PO's call.
 - **Chosen next:** the owner is applying for an eBay developer account (one business day). Then one test call to the Browse API (open to any developer with a client-credentials token, basic scope — confirmed on its getItem page) to confirm what it returns, especially `estimatedSoldQuantity` (unconfirmed); then design the eBay option on it. The manual "check eBay sold" link with an owner-entered price stays a fallback.
 - The owner's last instruction for this session: "just finish whatever you have now and we can continue later" — phase 1 (Tasks 1–4) and the bulk-packaging wording; eBay after the keys.
+
+## Where this stands (2026-11-18, end of session)
+Phase 1 is on main. Controller gate: typecheck clean, 956 core and 762 extension tests, validation and corpus tests, e2e 53 of 53.
+- Labelled sell prices per part, New only (`amazon_new`, `amazon_buybox` incl. a one-seller page's only offer); Amazon list price and Home Depot's own price as references; ROI range lowest / Amazon New / highest (Opus, Opus review, fix round, re-check).
+- Home Depot part prices read free in the owner's browser, in their own store, never a splitting fact (Sonnet reader; Opus fix round; re-check).
+- New bulk-packaged and repackaged listings may be chosen (Opus, Opus review).
+- Panel: the range under the headline, two range sorts, the grouped price list (counted, then "Reference · not counted"), CSV columns (Sonnet; UI review, fix round).
+- A real defect found and fixed: the reader's tab was sometimes sent to Home Depot while its blank page was still loading, Chrome dropped it, and the scan waited 30 s ("The Home Depot tab did not load."). It now waits for the blank page (Opus, systematic debugging, controlled experiment 3/120 → 0/120).
+- Validation: still 1 of 31 positive at every end of the range on the recorded data — the range opens only where a Buy Box is read, and the parts that hold the value (review answers, the B-form searches, kit contents, eBay) are the next phases.
+
+Next, in order: eBay through the Browse API once the owner's developer keys arrive (one test call first); BOGO promotions (A1–A2) and skipping non-deals (A3); searching the RYOBI tool-only B form (B2) and naming kit contents (B3). Open for the owner: the packaging question still says Amazon's New needs factory packaging and now only sets a tag — keep, reword or remove.
