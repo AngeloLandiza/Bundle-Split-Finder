@@ -56,7 +56,7 @@ describe('createPageReader', () => {
     const f = fake();
     let t = 0;
     const env: ReaderEnv = { ...f.env, sleep: async (ms) => { f.log.push(`sleep ${ms}`); t += ms; } };
-    const read = createPageReader(env, { now: () => t });
+    const read = createPageReader(env, { now: () => t, settleMs: 0 });
     await read(ids.slice(0, 2));
     expect(f.log.filter((l) => l.startsWith('sleep'))).toEqual([]);
     f.log.length = 0;
@@ -74,6 +74,28 @@ describe('createPageReader', () => {
     f.log.length = 0;
     expect(await read([])).toEqual([]);
     expect(f.log).toEqual([]);
+  });
+
+  it('waits settleMs after the tab loads and before the first fetch, and not again between batches', async () => {
+    const f = fake();
+    await createPageReader(f.env, { batch: 2 })(ids.slice(0, 4));
+    const at = (l: string) => f.log.indexOf(l);
+    expect(at('wait 7 30000')).toBeLessThan(at('sleep 2500'));
+    expect(at('sleep 2500')).toBeLessThan(at('run'));
+    expect(f.log.filter((l) => l === 'sleep 2500')).toHaveLength(1);
+    const custom = fake();
+    await createPageReader(custom.env, { settleMs: 400 })(ids.slice(0, 1));
+    expect(custom.log).toContain('sleep 400');
+    expect(custom.log.indexOf('sleep 400')).toBeLessThan(custom.log.indexOf('run'));
+  });
+
+  it('records the status Home Depot answered with, 0 when the fetch threw, and still stops at once', async () => {
+    const f = fake({ respond: (id) => (id === ids[1] ? { itemId: id, status: 403, text: null } : byId.get(id)!) });
+    const out = await createPageReader(f.env, { batch: 2 })(ids.slice(0, 6));
+    expect(out[1]).toEqual({ itemId: ids[1], kind: 'refused', status: 403 });
+    expect(f.batches).toHaveLength(1);
+    const threw = fake({ respond: (id) => ({ itemId: id, status: 0, text: null }) });
+    expect((await createPageReader(threw.env)(ids.slice(0, 2)))[0]).toEqual({ itemId: ids[0], kind: 'refused', status: 0 });
   });
 
   it('opens no tab for no ids', async () => {

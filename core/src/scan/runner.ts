@@ -842,6 +842,8 @@ async function readInto(run: Run, targets: PageTarget[]): Promise<PassResult> {
   const readAt = run.now();
   const asked = new Map(targets.map((t) => [t.itemId, t]));
   let refused = false;
+  // The first refused page's status, said in the note.
+  let refusedStatus: number | undefined;
   let unreadable = false;
   let anyRead = false;
   let read = 0;
@@ -856,12 +858,16 @@ async function readInto(run: Run, targets: PageTarget[]): Promise<PassResult> {
       read += 1;
       anyRead = true;
     } else if (outcome.kind === 'refused') {
+      if (!refused) refusedStatus = outcome.status;
       refused = true;
     } else if (outcome.kind === 'unreadable') {
       unreadable = true;
     }
   }
-  if (refused) noteProblem(job, 'Home Depot refused a page; the rest are read next scan.');
+  if (refused) {
+    const said = refusedStatus === undefined ? '' : refusedStatus === 0 ? ' (no answer)' : ` (HTTP ${refusedStatus})`;
+    noteProblem(job, `Home Depot refused a page${said}; the rest are read next scan.`);
+  }
   else if (unreadable) {
     noteProblem(job, anyRead ? 'A Home Depot page could not be read.' : 'No Home Depot page could be read.');
   }

@@ -315,6 +315,29 @@ describe('stopping and failing', () => {
     expect((await rowOf(w, P553)).options).toHaveLength(2);
   });
 
+  it('the note names the status of the first refused page', async () => {
+    const w = await answered();
+    w.reads = [];
+    const read = reader(w);
+    const job = await scan(w, {
+      settings: STORED, cap: 0,
+      readPages: async (ids) => (await read(ids)).map((o, i) => (i === 0 ? { itemId: o.itemId, kind: 'refused' as const, status: 403 } : i === 1 ? { itemId: o.itemId, kind: 'refused' as const, status: 0 } : o)),
+    });
+    expect(job.stopMessage).toContain('Home Depot refused a page (HTTP 403); the rest are read next scan.');
+    expect(job.stopMessage).not.toContain('no answer');
+  });
+
+  it('a status of 0 is said as no answer', async () => {
+    const w = await answered();
+    w.reads = [];
+    const read = reader(w);
+    const job = await scan(w, {
+      settings: STORED, cap: 0,
+      readPages: async (ids) => (await read(ids)).map((o, i) => (i === 0 ? { itemId: o.itemId, kind: 'refused' as const, status: 0 } : o)),
+    });
+    expect(job.stopMessage).toContain('Home Depot refused a page (no answer); the rest are read next scan.');
+  });
+
   it('a kit page refused by Home Depot is noted, and asked for again next scan', async () => {
     const w = await answered();
     w.reads = [];

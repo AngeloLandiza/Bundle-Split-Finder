@@ -100,17 +100,19 @@ export async function fetchPagesInTab(itemIds: string[], concurrency: number): P
 const LOAD_TIMEOUT_MS = 30_000;
 
 /**
+ * `settleMs` is waited once after the doorway tab has loaded, before the first fetch.
  * `pauseMs` is waited between two batches, and before a call that starts within `pauseMs` of the
  * end of this reader's last call (a scan reads bundle pages, then kit pages, at once), only for
  * what is left of it. `now` is the clock for that, injected in tests.
  */
 export function createPageReader(
   env: ReaderEnv,
-  opts: { concurrency?: number; batch?: number; pauseMs?: number; now?: () => number } = {},
+  opts: { concurrency?: number; batch?: number; pauseMs?: number; settleMs?: number; now?: () => number } = {},
 ): ReadPages {
   const concurrency = opts.concurrency ?? 3;
   const batch = opts.batch ?? 6;
   const pauseMs = opts.pauseMs ?? 1000;
+  const settleMs = opts.settleMs ?? 2500;
   const now = opts.now ?? Date.now;
   // When this reader's last call ended; null before its first.
   let lastEnded: number | null = null;
@@ -137,6 +139,9 @@ export function createPageReader(
       } catch {
         throw new Error('The Home Depot tab did not load.');
       }
+      // Home Depot's own page has not always settled when the tab reports complete (a cold session answered
+      // the first scan's fetches with a refusal). Wait once, then fetch; a refusal is still not retried.
+      if (settleMs > 0) await env.sleep(settleMs);
 
       const outcomes: PageOutcome[] = [];
       let stopped = false;
@@ -162,7 +167,8 @@ export function createPageReader(
           }
           if (!r || r.status !== 200 || r.text === null) {
             stopped = true;
-            outcomes.push({ itemId, kind: 'refused' });
+            // status 0: the fetch threw, or the script gave no answer for this id.
+            outcomes.push({ itemId, kind: 'refused', status: r ? r.status : 0 });
             continue;
           }
           const content = parseBundlePage(r.text, itemId);

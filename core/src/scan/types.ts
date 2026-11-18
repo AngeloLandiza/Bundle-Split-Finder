@@ -141,7 +141,9 @@ export interface PageReading extends PageContent {
  */
 export type PageOutcome =
   | { itemId: string; kind: 'read'; content: PageContent }
-  | { itemId: string; kind: 'unreadable' | 'refused' | 'skipped' };
+  | { itemId: string; kind: 'unreadable' | 'skipped' }
+  /** status: the HTTP status Home Depot answered with; 0 when the request threw; absent when it is not known. */
+  | { itemId: string; kind: 'refused'; status?: number };
 
 /** Reads bundle pages in the owner's browser. Never a search. */
 export type ReadPages = (itemIds: string[]) => Promise<PageOutcome[]>;

@@ -68,7 +68,10 @@ async function notify(rows: BundleRow[]): Promise<void> {
 }
 
 export default defineBackground(() => {
-  const readPages = createPageReader(chromeReaderEnv());
+  const readPages = createPageReader(chromeReaderEnv(), {
+    // The end-to-end build reads from the local replay server, which needs no settling.
+    settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50,
+  });
   if (__SPLIT_FINDER_DEBUG__) (globalThis as { splitFinderReadPages?: unknown }).splitFinderReadPages = readPages;
   const worker = createWorker({
     store: new IdbScanStore(),
