@@ -1,0 +1,6 @@
+{
+ "about": "Captured 2026-11-17 in the owner's Chrome from homedepot.com product pages (fetch('/p/<id>') inside a homedepot.com tab, no SerpApi). The key of the pricing object in base-catalog-<itemId> and its scalar fields.",
+ "328814689": {"key": "pricing({\"isBrandPricingPolicyCompliant\":false,\"storeId\":\"8119\"})", "value": {"__typename": "Pricing", "value": 189, "unitOfMeasure": "each", "alternatePriceDisplay": false, "message": null, "original": 338, "mapAboveOriginalPrice": null, "mapDetail": null, "preferredPriceFlag": false, "specialBuy": null, "clearance": null, "conditionalPromotions": null}},
+ "320243741": {"key": "pricing({\"isBrandPricingPolicyCompliant\":false,\"storeId\":\"8119\"})", "value": {"__typename": "Pricing", "value": 388, "unitOfMeasure": "each", "alternatePriceDisplay": false, "message": null, "original": 488, "mapAboveOriginalPrice": null, "mapDetail": null, "preferredPriceFlag": false, "specialBuy": null, "clearance": null, "conditionalPromotions": null}},
+ "priceBlock": "Both pages: one element matching [data-component^=\"price:Price\"] (data-component=\"price:Price:v6.41.0\") holding the price, was-price and savings."
+}

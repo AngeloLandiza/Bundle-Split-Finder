@@ -94,6 +94,12 @@ function objectEnd(text: string, start: number): number {
 
 /** Null when the text has no `window.__APOLLO_STATE__=` object, it does not parse, or it has no `base-catalog-<itemId>`. */
 export function parseBundlePage(text: string, itemId: string): PageContent | null {
+  const product = productState(text, itemId);
+  return product === null ? null : contentOf(product);
+}
+
+/** The `base-catalog-<itemId>` object of the page's `window.__APOLLO_STATE__=` object; null when there is none or it does not parse. */
+function productState(text: string, itemId: string): Json | null {
   const mark = text.indexOf(STATE_MARK);
   if (mark < 0) return null;
   const start = mark + STATE_MARK.length;
@@ -107,8 +113,12 @@ export function parseBundlePage(text: string, itemId: string): PageContent | nul
     return null;
   }
   const product = asObj(state)[`base-catalog-${itemId}`];
-  if (!product || typeof product !== 'object') return null;
-  const details = asObj(asObj(product).details);
+  return product && typeof product === 'object' ? (product as Json) : null;
+}
+
+/** The bullets and description of a product object, as parseBundlePage gives them. */
+function contentOf(product: Json): PageContent {
+  const details = asObj(product.details);
   const attrs = Array.isArray(details.descriptiveAttributes) ? details.descriptiveAttributes : [];
   const bullets: string[] = [];
   for (const a of attrs) {
@@ -116,4 +126,58 @@ export function parseBundlePage(text: string, itemId: string): PageContent | nul
     if (typeof v === 'string') bullets.push(v);
   }
   return { bullets, description: typeof details.description === 'string' ? details.description : null };
+}
+
+/** A Home Depot product page the owner has open, read from its embedded data (step 7). Never a search. */
+export interface ProductPage {
+  itemId: string;
+  /** identifiers.brandName, as the page gives it. */
+  brand: string;
+  /** identifiers.modelNumber, as the page gives it. */
+  model: string;
+  /** identifiers.productLabel; '' when the page gives none. */
+  title: string;
+  /** The pricing entry's `value`; null when the page gives none, or two pricing entries disagree. */
+  price: number | null;
+  /** The pricing entry's `original`, the was-price; null when the page gives none, or when `price` is null. */
+  wasPrice: number | null;
+  /** As parseBundlePage reads them. */
+  bullets: string[];
+  description: string | null;
+}
+
+/** A price as a pricing entry holds it: a positive number. Anything else is no price. */
+const priceOf = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null);
+
+/**
+ * The price and was-price of a product object, from its keys that start with `pricing(` (captured
+ * Nov 17: `pricing({"isBrandPricingPolicyCompliant":false,"storeId":"8119"})` holding `value` and
+ * `original`). Entries that disagree give no price rather than a guess between them.
+ */
+function pricingOf(product: Json): { price: number | null; wasPrice: number | null } {
+  const seen = Object.keys(product)
+    .filter((k) => k.startsWith('pricing('))
+    .map((k) => asObj(product[k]))
+    .map((p) => ({ price: priceOf(p.value), wasPrice: priceOf(p.original) }));
+  const first = seen[0];
+  if (!first || first.price === null || seen.some((p) => p.price !== first.price || p.wasPrice !== first.wasPrice)) {
+    return { price: null, wasPrice: null };
+  }
+  return first;
+}
+
+const nonEmpty = (v: unknown): string | null => (typeof v === 'string' && v.trim() !== '' ? v : null);
+
+/**
+ * What a product page says about itself, from the embedded data parseBundlePage reads. Null when that
+ * data is missing or does not parse, holds no `base-catalog-<itemId>`, or names no brand or model.
+ */
+export function parseProductPage(text: string, itemId: string): ProductPage | null {
+  const product = productState(text, itemId);
+  if (product === null) return null;
+  const ids = asObj(product.identifiers);
+  const brand = nonEmpty(ids.brandName);
+  const model = nonEmpty(ids.modelNumber);
+  if (brand === null || model === null) return null;
+  return { itemId, brand, model, title: nonEmpty(ids.productLabel) ?? '', ...pricingOf(product), ...contentOf(product) };
 }
