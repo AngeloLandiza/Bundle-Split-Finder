@@ -37,7 +37,7 @@ A search is one request to SerpApi: one page of Home Depot results, or one Amazo
 
 ## 5. On Home Depot product pages
 
-On a bundle's product page a small chip appears under the price: how many parts it splits into, the estimated profit and ROI. Click it to open the **This page** tab in the side panel. If the parts have no prices yet, the chip offers **Look up** and says how many searches that costs. You can turn the chip off in Settings.
+On a bundle's product page a small chip appears under the price: how many parts it splits into, the estimated profit and ROI. Click it to open the **This page** tab in the side panel. If the parts have no prices yet, the chip says how many searches a lookup would cost; the lookup itself is the **Look up** button in the bundle's Detail. Reading the page costs no search. You can turn the chip off in Settings (Alerts).
 
 ## 6. What "Est. profit" means
 
