@@ -15,6 +15,7 @@
 // A "probable" match becomes "exact" by loading the listing's detail page
 // (1 search), which carries the barcode.
 
+import { kindsFromTitle } from './decompose';
 import { toUpc12 } from './identifiers';
 
 const RENEWED = /\b(renewed|refurbished|reconditioned|used|pre-owned|open box)\b/i;
@@ -50,6 +51,32 @@ const NOT_INCLUDED_PHRASE = /\b(?:batter(?:y|ies)|charger)(?:\s+(?:and|&|or)\s+(
 const FOR_BRAND = /\bfor\s+(ryobi|dewalt)\b/i;
 // Step 8b: TTI makes RYOBI; "TTI Ryobi PBP004 …" (B09HDZ5MPV) states the brand with no brand field.
 const MAKER_PREFIX: Record<string, RegExp> = { RYOBI: /^\s*TTI\s+RYOBI\b/i };
+// Kit extras: for a part that is itself a kit, a title that sells the kit with more. Recorded (DCK240C2,
+// the validation's responses), each labelled not the part:
+//   "DCK240C2 … Drill Driver/Impact Combo Kit (1.3Ah) with 20V MAX Circular Saw"              (B0722GYTWL)
+//   "DCK240C2 … Combo Kit (1.3Ah) with FlexTorq Screw Driving Set, 40-Piece"                   (B072B8GHHL)
+//   "Mechanics Tool Set, Drill/Driver & Impact Driver Combo Kit (DCK240C2)"                    (B08P6NCHMW)
+// Either sign is enough. (1) An accessory set: "set" or "N-Piece". A kit's own title calls the kit a set
+// of tools, counted, powered or multi: "Power Tool Set" (DCK1021D2), "Woodworking 3-Tool Set" (DCK300P1),
+// "2-Tool Set" (DCK202P1), "Oscillating Multi-tool Set" (DCK551D1M1); such a set is not counted.
+// (2) A tool added: the title names tools, then after "with", "w/", "plus", a spaced "+" (RYOBI's "ONE+"
+// is not one) or "bundle" names a tool it did not name before. A title that names no tool before "with"
+// may be listing the kit's own ("Combo Kit with Hammer Drill & Impact Driver", DCK2100P2), and a battery
+// or a charger is what a kit holds.
+const ACCESSORY_SET = /\bset\b|\b\d+\s*-?\s*piece\b/i;
+const POWER_TOOL_SET = /\b(?:power|multi|\d+)\s*-?\s*tools?\s+set\b/gi;
+const ADDITION = /\bwith\b|\bw\/|\bplus\b|\bbundle\b|(?:^|\s)\+/i;
+const KIT_HOLDS = new Set(['battery', 'batteries', 'charger']);
+const toolsIn = (text: string): string[] => kindsFromTitle(text).filter((k) => !KIT_HOLDS.has(k));
+
+/** The title sells the kit with more: an accessory set, or a tool it adds to the tools it names. */
+function addsToKit(title: string): boolean {
+  if (ACCESSORY_SET.test(title.replace(POWER_TOOL_SET, ' '))) return true;
+  const at = ADDITION.exec(title);
+  if (!at) return false;
+  const before = new Set(toolsIn(title.slice(0, at.index)));
+  return before.size > 0 && toolsIn(title.slice(at.index + at[0].length)).some((k) => !before.has(k));
+}
 
 export type Grade = 'exact' | 'strong' | 'probable' | 'review' | 'reject';
 
@@ -58,7 +85,8 @@ export const BRAND_NOT_CONFIRMED = 'model number in the title, brand not confirm
 
 // Step 8b: the four reasons a title that the rules below used to reject is review instead. Each caps
 // the grade at review: the owner confirms the listing (CLAUDE.md rule 4). A match question repeats
-// them as its notes (scan/runner.ts matchQuestion), so none contains "; ", which joins notes.
+// them as its notes (scan/runner.ts matchQuestion), so none contains "; ", which joins notes. A fifth,
+// KIT_WITH_EXTRAS, caps a title that was probable.
 /** The title begins with the brand's maker ("TTI Ryobi") and the brand field is empty. */
 export const BRAND_IN_TITLE_ONLY = 'title begins TTI Ryobi (TTI makes RYOBI), brand field empty';
 /** The title's only kit words are a battery or charger it says are not included. */
@@ -68,9 +96,11 @@ export const KIT_NOT_KNOWN = 'title says kit, and a RYOBI model number does not 
 /** A RYOBI title that says a pack of n: the part may itself be the pack. */
 export const packNotKnown = (n: number): string => `title says a pack of ${n}, and a RYOBI model number does not say the part's pack size`;
 const PACK_NOT_KNOWN = /^title says a pack of \d+, and a RYOBI model number does not say the part's pack size$/;
-/** Whether a grade reason is one of the four above. */
+/** For a part that is itself a kit: the title sells the kit with more (addsToKit). Caps a grade at review the same way. */
+export const KIT_WITH_EXTRAS = 'title sells the kit with more: another tool or an accessory set';
+/** Whether a grade reason is one of the four above, or KIT_WITH_EXTRAS. */
 export const isReviewCap = (reason: string): boolean =>
-  reason === BRAND_IN_TITLE_ONLY || reason === NOT_INCLUDED || reason === KIT_NOT_KNOWN || PACK_NOT_KNOWN.test(reason);
+  reason === BRAND_IN_TITLE_ONLY || reason === NOT_INCLUDED || reason === KIT_NOT_KNOWN || PACK_NOT_KNOWN.test(reason) || reason === KIT_WITH_EXTRAS;
 
 export interface Candidate {
   asin: string;
@@ -201,6 +231,11 @@ export function grade(want: Wanted, cand: Candidate): Graded {
     else if (ryobiOwn && !KIT_CONTENTS.test(rest)) cap ??= KIT_NOT_KNOWN;
     else return out('reject', 'listing is a kit, component is a single item');
   }
+
+  // Kit extras: review at most, never reject. The grade has only the kit's model, not what the kit holds,
+  // so it cannot know the saw or the set is not in the box; the owner decides (CLAUDE.md rule 4). A
+  // manufacturer part number does not lift it (a seller's bundle page can carry the kit's); a barcode does.
+  if (want.isKit && !upcOk && addsToKit(cand.title)) cap ??= KIT_WITH_EXTRAS;
 
   const graded = ((): Graded => {
     if (upcOk) return out('exact', 'barcode match', ...(partOk || titleOk ? ['model number match'] : []));

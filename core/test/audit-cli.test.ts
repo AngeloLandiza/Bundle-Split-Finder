@@ -163,8 +163,9 @@ describe('score', () => {
     expect(corpus.pairs.length).toBeGreaterThan(0);
     expect(corpus.pairs.every((p) => p.source === 'audit-2026-11-18')).toBe(true);
     const known = corpus.pairs.filter((p) => p.known);
-    // DCK240C2 bundled with a saw or a bit set grades probable for the kit (validation set): known today.
-    expect(known.length).toBeGreaterThan(0);
+    // DCK240C2 bundled with a saw or a bit set was probable for the kit, the last pair the sample failed; it is
+    // review since the kit-extras rule (core/test/kit-extras.recorded.test.ts), so none is marked known.
+    expect(known).toEqual([]);
     for (const p of corpus.pairs) expect(pairProblem(p) !== null, pairKey(p)).toBe(p.known !== undefined);
     expect(known.every((p) => p.known!.startsWith('audit-2026-11-18: labelled'))).toBe(true);
     expect(lines.join('\n')).toContain(`(${known.length} marked known)`);
@@ -209,6 +210,11 @@ describe('the corpus rules', () => {
     const merged = mergePairs({ about: '', pairs: [] }, [{ ...plain, source: 'audit-z' }]);
     if (pairProblem(plain) === null) expect(merged.added[0]!.known).toBeUndefined();
     else expect(merged.added[0]!.known).toMatch(/^audit-z: labelled the part, graded reject/);
+    // No recorded pair fails today, so a label is flipped by hand: B00IJ0ALYS, the DCK240C2 kit itself
+    // (probable), labelled not the part here only. It must be added marked known, with the reason.
+    const kit = readCorpus(CORPUS).pairs.find((p) => p.part.model === 'DCK240C2' && p.listing.asin === 'B00IJ0ALYS')!;
+    const flipped = mergePairs({ about: '', pairs: [] }, [{ ...kit, label: 'not-part', source: 'audit-z' }]);
+    expect(flipped.added[0]!.known).toMatch(/^audit-z: labelled not the part, graded probable/);
   });
 
   it('never adds a labelled listing whose row is not a saved search row', () => {
