@@ -580,8 +580,12 @@ export type PriceKind = 'amazon_new' | 'amazon_buybox' | 'amazon_list' | 'homede
 export interface PriceOption {
   kind: PriceKind;
   price: number;
-  /** Every kind produced today is 'new'. */
-  condition: 'new' | 'renewed' | 'used_or_new';
+  /**
+   * Only New prices are shown or counted (the PO, Nov 18: "no used or refurbished listings"). Renewed and
+   * the mixed used-and-new offers were dropped before they were built; a later condition is added here
+   * with its producer.
+   */
+  condition: 'new';
   /** Who sells it, when known: the Buy Box's seller, or "Home Depot". */
   seller: string | null;
   shipsFrom: string | null;
