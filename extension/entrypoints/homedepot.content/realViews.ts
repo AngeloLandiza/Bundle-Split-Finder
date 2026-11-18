@@ -14,7 +14,7 @@ import { DEFAULT_SCAN_SETTINGS, type ScanSettings } from '@core/scan/types';
 import { parseAccount, SearchBudget } from '@core/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '@core/serpapi/client';
 import { SERPAPI_ACCOUNT_FREE } from '../../../core/test/fixtures';
-import type { BundleView } from './protocol';
+import type { BundleView } from '../../lib/messages';
 
 const T0 = Date.UTC(2026, 10, 9, 12);
 const VISIT = T0 + 2 * 60 * 60 * 1000;

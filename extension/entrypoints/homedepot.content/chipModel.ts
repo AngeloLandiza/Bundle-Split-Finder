@@ -2,7 +2,7 @@
 // pages") and the step 7 contract's. Nothing here guesses: a bundle the worker could not split says so.
 
 import { profit, roi } from '../../lib/format';
-import type { BundleView } from './protocol';
+import type { BundleView } from '../../lib/messages';
 
 export type ChipModel =
   /** Splits into N parts, with the estimate. */

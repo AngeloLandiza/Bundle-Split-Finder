@@ -1,12 +1,16 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { ChipModel } from './chipModel';
 import { type ChipEnv, createChipController, type PreparedChip } from './controller';
-import { chipSettingOf, type ChipRequest, type PageSeenRequest } from './protocol';
+import type { BundleView, ContentRequest } from '../../lib/messages';
+import { chipSettingOf } from './protocol';
 import { estimateView, lookupView, pricedText, recordedText } from './realViews';
-import type { BundleView } from './protocol';
+
+type ChipRequest = ContentRequest;
+type PageSeenRequest = Extract<ContentRequest, { type: 'pageSeen' }>;
 
 // The content script's behaviour with fakes for the document, storage and the worker. The page texts are the
-// recorded 328814689 and 320243741 pages (priced as captured on Nov 17); the replies are real PageViews.
+// recorded 328814689 and 320243741 pages (priced as captured on Nov 17); the replies are real PageViews, sent back
+// as the worker sends every reply: { ok: true, data } (`wire` hands back a raw reply instead).
 
 let estimate: BundleView;
 let lookup: BundleView;
@@ -22,7 +26,7 @@ interface Fake {
   go(itemId: string | null, text?: string | null): void;
 }
 
-function fake(opts: { reply?: (m: ChipRequest) => unknown | Promise<unknown> } = {}): Fake {
+function fake(opts: { reply?: (m: ChipRequest) => unknown | Promise<unknown>; wire?: (m: ChipRequest) => unknown } = {}): Fake {
   let itemId: string | null = '328814689';
   let text: string | null = pricedText('328814689');
   const sent: ChipRequest[] = [];
@@ -32,7 +36,8 @@ function fake(opts: { reply?: (m: ChipRequest) => unknown | Promise<unknown> } =
     stateText: () => text,
     async send(m) {
       sent.push(m);
-      return opts.reply ? opts.reply(m) : m.type === 'pageSeen' ? estimate : { opened: true };
+      if (opts.wire) return opts.wire(m);
+      return { ok: true, data: await (opts.reply ? opts.reply(m) : m.type === 'pageSeen' ? estimate : { opened: true }) };
     },
     async prepare(model, open) {
       const chip = { model, open, started: false, removed: false };
@@ -73,11 +78,19 @@ describe('the page is read from the document and sent once', () => {
     const g = fake();
     await createChipController(g.env).refresh();
     expect(await live(g)[0]!.open()).toBe(true);
+    // The worker refusing the message is "could not open" too.
+    const h = fake({ wire: (m) => (m.type === 'pageSeen' ? { ok: true, data: lookup } : { ok: false, error: 'This request needs a browser tab.' }) });
+    await createChipController(h.env).refresh();
+    expect(await live(h)[0]!.open()).toBe(false);
   });
 
-  it('a reply that is not a bundle gives no chip: none, an error, or nothing at all', async () => {
-    for (const reply of [{ kind: 'none' }, { ok: false, error: 'This request is not allowed from here.' }, undefined, null, 'x']) {
-      const f = fake({ reply: () => reply });
+  it('a reply that is not a bundle gives no chip: none, off, an error, a view not in a Reply, or nothing at all', async () => {
+    const replies = [
+      { ok: true, data: { kind: 'none' } }, { ok: true, data: { kind: 'off' } }, { ok: false, error: 'This request is not allowed from here.' },
+      estimate, { ok: true, data: { ...estimate, questionStored: undefined } }, undefined, null, 'x',
+    ];
+    for (const reply of replies) {
+      const f = fake({ wire: () => reply });
       await createChipController(f.env).refresh();
       expect(f.chips).toEqual([]);
     }

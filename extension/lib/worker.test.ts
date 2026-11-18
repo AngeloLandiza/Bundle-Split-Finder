@@ -2058,7 +2058,8 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     gate.release();
     await untilIdle(w);
     await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toBeDefined());
-    expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: T0 + 5 * MINUTE });
+    // The page has no price, so the new record is seen at 0 (f4ee8de); its reading is the visit's.
+    expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: 0, page: { readAt: T0 + 5 * MINUTE } });
     expect(await w.store.getReview(`split:${ASKED_KEY}`)).toMatchObject({ openedAt: T0 + 5 * MINUTE, answer: null });
     expect(w.pages.deferred.size).toBe(0);
   });
@@ -2069,20 +2070,22 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     w.clock = T0 + HOUR;
     const before = w.broadcasts.length;
     await w.worker.onStart();
-    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: T0 + 5 * MINUTE }));
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: 0, page: { readAt: T0 + 5 * MINUTE } }));
     expect(await w.store.getReview(`split:${ASKED_KEY}`)).toMatchObject({ openedAt: T0 + 5 * MINUTE });
     expect(w.pages.deferred.size).toBe(0);
     await vi.waitFor(() => expect(w.broadcasts.length).toBeGreaterThan(before));
   });
 
-  it('visits are stored in the order they were seen across tabs: the later price stands, whatever order they were left in', async () => {
+  it('visits are stored in the order they were seen across tabs, whatever order they were left in: the first visit makes the record, the later one reads it again', async () => {
     const w = world({ key: KEY, settings: RYOBI });
     leave(w, 1, { ...ASKED, price: 100, wasPrice: 150 }, T0 + 2 * MINUTE);
     leave(w, 2, { ...ASKED, price: 120, wasPrice: 150 }, T0 + 1 * MINUTE);
     w.clock = T0 + HOUR;
     await w.worker.onStart();
     await vi.waitFor(async () => expect(w.pages.deferred.size).toBe(0));
-    expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ price: 100, seenAt: T0 + 2 * MINUTE });
+    // A visit never changes a stored bundle's price or seenAt (f4ee8de): the earlier visit's stand. Stored the other
+    // way round they would be 100 at T0 + 2 minutes.
+    expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ price: 120, seenAt: T0 + 1 * MINUTE, page: { readAt: T0 + 2 * MINUTE } });
   });
 
   it('a scan that starts before the settle runs leaves the visit deferred; it is stored when that scan ends', async () => {
@@ -2096,7 +2099,7 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     expect(w.pages.deferred.size).toBe(1);
     gate.release();
     await untilIdle(w);
-    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: T0 + MINUTE }));
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: 0, page: { readAt: T0 + MINUTE } }));
     expect(w.pages.deferred.size).toBe(0);
   });
 
@@ -2127,7 +2130,7 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
 
     failing.on = false;
     await w.worker.onTick();
-    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: T0 + MINUTE }));
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: 0, page: { readAt: T0 + MINUTE } }));
     expect(w.pages.deferred.size).toBe(0);
   });
 

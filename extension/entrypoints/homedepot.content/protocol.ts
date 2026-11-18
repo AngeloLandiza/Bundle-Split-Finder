@@ -1,48 +1,27 @@
-// The two messages the chip sends to the service worker (step 7 contract). They are declared here so the
-// content script does not depend on lib/messages.ts, which the worker side owns; the shapes match it.
+// The chip's side of the step 7 messages. The shapes are lib/messages.ts's (the worker's); this file only checks
+// what comes back, because a reply crosses a message boundary and may be anything.
 
-import type { ProductPage } from '@core/hdPage';
-import type { PageView } from '@core/scan/pageView';
-
-/**
- * The page the owner has open, read from its own embedded data. The worker replies with a PageView, or
- * `{ kind: 'off' }` while "Show the chip on Home Depot pages" is off (no chip, like `none`).
- */
-export interface PageSeenRequest {
-  type: 'pageSeen';
-  page: ProductPage;
-}
-
-/** The owner clicked the chip. The worker opens the side panel on This page and replies OpenThisPageReply. */
-export interface OpenThisPageRequest {
-  type: 'openThisPage';
-}
-
-export interface OpenThisPageReply {
-  opened: boolean;
-}
-
-export type ChipRequest = PageSeenRequest | OpenThisPageRequest;
-
-/** What the worker sends a Home Depot tab when the owner changes the setting. */
-export interface ChipSettingMessage {
-  type: 'chipSetting';
-  show: boolean;
-}
-
-/** The setting a worker message carries, or null when it is not a chipSetting message. */
-export function chipSettingOf(message: unknown): boolean | null {
-  return isObject(message) && message.type === 'chipSetting' && typeof message.show === 'boolean' ? message.show : null;
-}
-
-export type BundleView = Extract<PageView, { kind: 'bundle' }>;
+import type { BundleView, ChipSetting, OpenThisPageReply, Reply } from '../../lib/messages';
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
-/** True for a bundle PageView the chip can show. The reply crosses a message boundary, so its shape is checked. */
+/**
+ * The data of a worker reply. The worker answers every message with a Reply ({ ok: true, data } or
+ * { ok: false, error }); a refusal, an error or anything else is undefined.
+ */
+export function dataOf(reply: unknown): unknown {
+  return isObject(reply) && (reply as Partial<Reply>).ok === true ? reply.data : undefined;
+}
+
+/** The setting a worker message carries, or null when it is not a chipSetting message. */
+export function chipSettingOf(message: unknown): ChipSetting['show'] | null {
+  return isObject(message) && message.type === 'chipSetting' && typeof message.show === 'boolean' ? message.show : null;
+}
+
+/** True for a bundle PageView the chip can show (the data of a pageSeen reply). `off` and `none` are not. */
 export function isBundleView(v: unknown): v is BundleView {
   if (!isObject(v) || v.kind !== 'bundle') return false;
-  if (typeof v.parts !== 'number' || typeof v.lookupParts !== 'number') return false;
+  if (typeof v.parts !== 'number' || typeof v.lookupParts !== 'number' || typeof v.questionStored !== 'boolean') return false;
   if (!isObject(v.row)) return false;
   const e = v.row.estimate;
   if (e !== null && !(isObject(e) && Number.isFinite(e.profit) && Number.isFinite(e.roi))) return false;
@@ -50,7 +29,7 @@ export function isBundleView(v: unknown): v is BundleView {
   return q === null || (isObject(q) && (q.choices === undefined || Array.isArray(q.choices)));
 }
 
-/** True only for a reply that says the side panel opened. Anything else (no reply, an error) is "could not open". */
-export function didOpen(reply: unknown): boolean {
-  return isObject(reply) && reply.opened === true;
+/** True only for openThisPage data that says the side panel opened. Anything else (no reply, an error) is "could not open". */
+export function didOpen(data: unknown): boolean {
+  return isObject(data) && (data as Partial<OpenThisPageReply>).opened === true;
 }

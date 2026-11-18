@@ -5,7 +5,8 @@
 
 import { parseProductPage } from '@core/hdPage';
 import { type ChipModel, chipModel } from './chipModel';
-import { type ChipRequest, didOpen, isBundleView } from './protocol';
+import type { ContentRequest } from '../../lib/messages';
+import { dataOf, didOpen, isBundleView } from './protocol';
 
 /** A chip that is built but not on the page yet. */
 export interface PreparedChip {
@@ -20,8 +21,8 @@ export interface ChipEnv {
   itemId(): string | null;
   /** The text of the page's inline script holding its state; null when the document has none. */
   stateText(): string | null;
-  /** One message to the worker; resolves with its reply. */
-  send(message: ChipRequest): Promise<unknown>;
+  /** One message to the worker; resolves with its reply, a Reply ({ ok: true, data } or { ok: false, error }). */
+  send(message: ContentRequest): Promise<unknown>;
   /** Builds the chip. `open` is what a click does; it says whether the side panel opened. */
   prepare(model: ChipModel, open: () => Promise<boolean>): Promise<PreparedChip>;
 }
@@ -60,11 +61,11 @@ export function createChipController(env: ChipEnv): ChipController {
       // The page's state names its own product only; one left over from another product parses to null.
       const page = text === null ? null : parseProductPage(text, itemId);
       if (page === null) return;
-      const reply = await env.send({ type: 'pageSeen', page });
+      const reply = dataOf(await env.send({ type: 'pageSeen', page }));
       if (mine !== latest || !isBundleView(reply)) return;
       const model = chipModel(reply);
       if (model === null) return;
-      const prepared = await env.prepare(model, async () => didOpen(await env.send({ type: 'openThisPage' })));
+      const prepared = await env.prepare(model, async () => didOpen(dataOf(await env.send({ type: 'openThisPage' }))));
       if (mine !== latest) {
         prepared.remove();
         return;

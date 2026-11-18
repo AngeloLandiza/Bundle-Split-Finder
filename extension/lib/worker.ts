@@ -19,7 +19,7 @@ import {
 import { runCsv } from '@core/scan/csv';
 import { buildReport } from '@core/scan/report';
 import { nextRun, type Schedule } from '@core/schedule';
-import type { AppState, Packaging, PageSeenReply, PanelReport, Reply, Request, ThisPage } from './messages';
+import type { AppState, OpenThisPageReply, Packaging, PageSeenReply, PanelReport, Reply, Request, ThisPage } from './messages';
 import type { ActiveScan, StoredAccount } from './prefs';
 
 /** The functions of prefs.ts the worker uses, with the same names and signatures. */
@@ -904,7 +904,7 @@ export function createWorker(env: WorkerEnv): Worker {
    * sidePanel.open only in answer to the click, so it is called before anything is awaited. The panel learns it from
    * `wanted` (read when it starts) and from tell() (when it is already open).
    */
-  async function openThisPage(tabId: number | undefined): Promise<Reply<{ opened: boolean }>> {
+  async function openThisPage(tabId: number | undefined): Promise<Reply<OpenThisPageReply>> {
     if (tabId === undefined) return refuse(NO_TAB);
     let opening: Promise<void>;
     try {

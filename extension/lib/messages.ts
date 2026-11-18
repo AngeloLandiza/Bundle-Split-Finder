@@ -56,6 +56,17 @@ export const CONTENT_REQUESTS: readonly Request['type'][] = ['pageSeen', 'openTh
 /** The reply to pageSeen: the page's view, or `off` when the owner turned the chip off in settings. */
 export type PageSeenReply = PageView | { kind: 'off' };
 
+/** A page's view when it is a bundle: what the chip shows and the This page tab lays out. */
+export type BundleView = Extract<PageView, { kind: 'bundle' }>;
+
+/** The reply to openThisPage: false when Chrome refused to open the side panel. */
+export interface OpenThisPageReply {
+  opened: boolean;
+}
+
+/** The messages a content script sends (CONTENT_REQUESTS). */
+export type ContentRequest = Extract<Request, { type: 'pageSeen' | 'openThisPage' }>;
+
 /** Sent by the worker to a tab's content script (chrome.tabs.sendMessage) when the owner turns the chip on or off. */
 export interface ChipSetting {
   type: 'chipSetting';
