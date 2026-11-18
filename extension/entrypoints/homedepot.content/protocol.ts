@@ -4,7 +4,10 @@
 import type { ProductPage } from '@core/hdPage';
 import type { PageView } from '@core/scan/pageView';
 
-/** The page the owner has open, read from its own embedded data. The worker replies with a PageView. */
+/**
+ * The page the owner has open, read from its own embedded data. The worker replies with a PageView, or
+ * `{ kind: 'off' }` while "Show the chip on Home Depot pages" is off (no chip, like `none`).
+ */
 export interface PageSeenRequest {
   type: 'pageSeen';
   page: ProductPage;
@@ -20,6 +23,17 @@ export interface OpenThisPageReply {
 }
 
 export type ChipRequest = PageSeenRequest | OpenThisPageRequest;
+
+/** What the worker sends a Home Depot tab when the owner changes the setting. */
+export interface ChipSettingMessage {
+  type: 'chipSetting';
+  show: boolean;
+}
+
+/** The setting a worker message carries, or null when it is not a chipSetting message. */
+export function chipSettingOf(message: unknown): boolean | null {
+  return isObject(message) && message.type === 'chipSetting' && typeof message.show === 'boolean' ? message.show : null;
+}
 
 export type BundleView = Extract<PageView, { kind: 'bundle' }>;
 

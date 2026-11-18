@@ -113,14 +113,21 @@ describe('showChip', () => {
     expect(await getShowChip()).toBe(false);
     await setShowChip(true);
     expect(await getShowChip()).toBe(true);
-    await fakeBrowser.storage.sync.set({ showChip: 'junk' });
+    await fakeBrowser.storage.local.set({ showChip: 'junk' });
     expect(await getShowChip()).toBe(true);
   });
 
-  it('is kept in storage.sync, which a content script can read, and never in storage.local beside the key', async () => {
+  it('is kept in storage.local with the other prefs, and nowhere a page could read', async () => {
     await setKey('secret-value');
     await setShowChip(false);
-    expect((await fakeBrowser.storage.sync.get(null))).toEqual({ showChip: false });
-    expect(Object.keys(await fakeBrowser.storage.local.get(null))).toEqual(['apiKey']);
+    expect(Object.keys(await fakeBrowser.storage.local.get(null)).sort()).toEqual(['apiKey', 'showChip']);
+    expect(await fakeBrowser.storage.sync.get(null)).toEqual({});
+  });
+
+  it('does not change the settings or the key', async () => {
+    await saveSettings({ ...DEFAULT_SETTINGS, searchesPerScan: 9 });
+    await setShowChip(false);
+    expect((await getSettings()).searchesPerScan).toBe(9);
+    expect(await getKey()).toBeNull();
   });
 });

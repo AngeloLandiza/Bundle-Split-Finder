@@ -1,5 +1,6 @@
 // The chip's behaviour with the browser taken out: read the page, tell the worker, show what it says, and
-// follow the page when it changes. index.tsx wires the real document, storage, messages and shadow root;
+// follow the page and the owner's setting when they change. The setting is the worker's: with it off, the
+// answer to pageSeen is `off` and there is no chip. index.tsx wires the real document, storage, messages and shadow root;
 // the tests wire fakes.
 
 import { parseProductPage } from '@core/hdPage';
@@ -19,8 +20,6 @@ export interface ChipEnv {
   itemId(): string | null;
   /** The text of the page's inline script holding its state; null when the document has none. */
   stateText(): string | null;
-  /** The owner's "Show the chip" setting. */
-  showChip(): Promise<boolean>;
   /** One message to the worker; resolves with its reply. */
   send(message: ChipRequest): Promise<unknown>;
   /** Builds the chip. `open` is what a click does; it says whether the side panel opened. */
@@ -30,6 +29,8 @@ export interface ChipEnv {
 export interface ChipController {
   /** Read the page again and show what the worker says. */
   refresh(): Promise<void>;
+  /** The owner turned the chip off (false: take it off, ask for nothing) or on (true: read the page again). */
+  setShown(show: boolean): Promise<void>;
   /** The address changed: follow it. The same product again (a hash or a query change) is left alone. */
   navigated(): Promise<void>;
   /** The content script is gone: take the chip off. */
@@ -55,7 +56,6 @@ export function createChipController(env: ChipEnv): ChipController {
     handled = itemId;
     if (itemId === null) return;
     try {
-      if (!(await env.showChip()) || mine !== latest) return;
       const text = env.stateText();
       // The page's state names its own product only; one left over from another product parses to null.
       const page = text === null ? null : parseProductPage(text, itemId);
@@ -78,6 +78,14 @@ export function createChipController(env: ChipEnv): ChipController {
 
   return {
     refresh,
+    async setShown(show) {
+      if (show) await refresh();
+      else {
+        // An answer still on its way is dropped with the chip.
+        latest++;
+        clear();
+      }
+    },
     async navigated() {
       if (env.itemId() === handled) return;
       await refresh();

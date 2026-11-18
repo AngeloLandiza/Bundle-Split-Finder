@@ -3,9 +3,9 @@
 // is in controller.ts, the words in chipModel.ts, the mounting in mountChip.tsx.
 
 import { browser } from 'wxt/browser';
-import { getShowChip } from '../../lib/prefs';
 import './chip.css';
 import { createChipController, type ChipEnv } from './controller';
+import { chipSettingOf } from './protocol';
 import { prepareChip } from './mountChip';
 import { itemIdOf, stateTextOf } from './pageRead';
 
@@ -19,7 +19,6 @@ export default defineContentScript({
     const env: ChipEnv = {
       itemId: () => itemIdOf(location.pathname),
       stateText: () => stateTextOf(document),
-      showChip: getShowChip,
       send: (message) => browser.runtime.sendMessage(message),
       prepare: (model, open) => prepareChip(ctx, model, open),
     };
@@ -27,13 +26,15 @@ export default defineContentScript({
 
     // A full load runs this script once. Moving to another product without one fires wxt:locationchange.
     ctx.addEventListener(window, 'wxt:locationchange', () => void chip.navigated());
-    // The setting is read when the page opens; changing it in Settings shows or removes the chip at once.
-    const onSetting = (changes: Record<string, unknown>, area: string) => {
-      if (area === 'sync' && 'showChip' in changes) void chip.refresh();
+    // The setting is the worker's: it answers pageSeen with `off` while the chip is off, and tells this tab when
+    // the owner changes it. Only this extension's own messages count.
+    const onMessage = (message: unknown, sender: { id?: string }) => {
+      const show = chipSettingOf(message);
+      if (show !== null && sender.id === browser.runtime.id) void chip.setShown(show);
     };
-    browser.storage.onChanged.addListener(onSetting);
+    browser.runtime.onMessage.addListener(onMessage);
     ctx.onInvalidated(() => {
-      browser.storage.onChanged.removeListener(onSetting);
+      browser.runtime.onMessage.removeListener(onMessage);
       chip.stop();
     });
 

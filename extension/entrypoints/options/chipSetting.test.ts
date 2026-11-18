@@ -39,15 +39,16 @@ describe('Show the chip on Home Depot pages', () => {
     await user.click(box);
     expect(box).not.toBeChecked();
     await waitFor(async () => expect(await getShowChip()).toBe(false));
-    // storage.sync, where the content script can read it; the key's storage.local is not touched.
-    expect(await fakeBrowser.storage.local.get('showChip')).toEqual({});
+    // Saved to storage.local with the other prefs, not to a store a page could read.
+    expect(await fakeBrowser.storage.local.get('showChip')).toEqual({ showChip: false });
+    expect(await fakeBrowser.storage.sync.get(null)).toEqual({});
 
     await user.click(box);
     await waitFor(async () => expect(await getShowChip()).toBe(true));
   });
 
   it('shows a stored off', async () => {
-    await fakeBrowser.storage.sync.set({ showChip: false });
+    await fakeBrowser.storage.local.set({ showChip: false });
     render(createElement(SettingsPage, { api }));
     await waitFor(async () => expect(await screen.findByLabelText(LABEL)).not.toBeChecked());
   });

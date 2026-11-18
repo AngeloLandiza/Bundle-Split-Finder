@@ -104,7 +104,7 @@ export function FeesSection({ draft, problems, onChange, onCommit }: Props) {
   );
 }
 
-/** Where the chip setting is read and saved: storage.sync, which the chip's content script can read (prefs.ts). */
+/** Where the chip setting is read and saved: storage.local with the other prefs (prefs.ts). The worker tells open Home Depot tabs. */
 export interface ChipPrefs {
   get(): Promise<boolean>;
   set(on: boolean): Promise<void>;

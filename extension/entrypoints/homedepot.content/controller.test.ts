@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { ChipModel } from './chipModel';
 import { type ChipEnv, createChipController, type PreparedChip } from './controller';
-import type { ChipRequest, PageSeenRequest } from './protocol';
+import { chipSettingOf, type ChipRequest, type PageSeenRequest } from './protocol';
 import { estimateView, lookupView, pricedText, recordedText } from './realViews';
 import type { BundleView } from './protocol';
 
@@ -22,7 +22,7 @@ interface Fake {
   go(itemId: string | null, text?: string | null): void;
 }
 
-function fake(opts: { show?: boolean; reply?: (m: ChipRequest) => unknown | Promise<unknown> } = {}): Fake {
+function fake(opts: { reply?: (m: ChipRequest) => unknown | Promise<unknown> } = {}): Fake {
   let itemId: string | null = '328814689';
   let text: string | null = pricedText('328814689');
   const sent: ChipRequest[] = [];
@@ -30,7 +30,6 @@ function fake(opts: { show?: boolean; reply?: (m: ChipRequest) => unknown | Prom
   const env: ChipEnv = {
     itemId: () => itemId,
     stateText: () => text,
-    showChip: async () => opts.show ?? true,
     async send(m) {
       sent.push(m);
       return opts.reply ? opts.reply(m) : m.type === 'pageSeen' ? estimate : { opened: true };
@@ -91,11 +90,11 @@ describe('the page is read from the document and sent once', () => {
   });
 });
 
-describe('Show the chip turned off (the setting)', () => {
-  it('sends no message and builds no chip', async () => {
-    const f = fake({ show: false });
+describe('Show the chip turned off (the worker answers off)', () => {
+  it('always sends pageSeen, and an off reply gives no chip', async () => {
+    const f = fake({ reply: () => ({ kind: 'off' }) });
     await createChipController(f.env).refresh();
-    expect(f.sent).toEqual([]);
+    expect(f.sent.map((m) => m.type)).toEqual(['pageSeen']);
     expect(f.chips).toEqual([]);
   });
 });
@@ -188,20 +187,50 @@ describe('in-page navigation to another product (Review Focus 4)', () => {
   });
 });
 
-describe('Show the chip changed while the page is open', () => {
-  it('refresh follows the setting: off removes the chip and sends nothing, on shows it again', async () => {
-    let show = true;
-    const f = fake();
-    f.env.showChip = async () => show;
+describe('Show the chip changed while the page is open (the worker\'s chipSetting message)', () => {
+  it('show=false takes the chip off and asks for nothing; show=true reads the page again and shows the reply', async () => {
+    let off = false;
+    const f = fake({ reply: (m) => (m.type === 'pageSeen' ? (off ? { kind: 'off' } : estimate) : { opened: true }) });
     const chip = createChipController(f.env);
     await chip.refresh();
     expect(live(f)).toHaveLength(1);
-    show = false;
-    await chip.refresh();
+
+    off = true;
+    await chip.setShown(false);
     expect(live(f)).toEqual([]);
     expect(f.sent).toHaveLength(1);
-    show = true;
-    await chip.refresh();
+
+    off = false;
+    await chip.setShown(true);
+    expect(f.sent.map((m) => m.type)).toEqual(['pageSeen', 'pageSeen']);
     expect(live(f)).toHaveLength(1);
+  });
+
+  it('show=false drops an answer still on its way', async () => {
+    let release: (v: unknown) => void = () => {};
+    const f = fake({ reply: () => new Promise((ok) => (release = ok)) });
+    const chip = createChipController(f.env);
+    const pending = chip.refresh();
+    await vi.waitFor(() => expect(f.sent).toHaveLength(1));
+    await chip.setShown(false);
+    release(estimate);
+    await pending;
+    expect(f.chips).toEqual([]);
+  });
+
+  it('show=true with the worker still saying off shows nothing', async () => {
+    const f = fake({ reply: () => ({ kind: 'off' }) });
+    await createChipController(f.env).setShown(true);
+    expect(f.chips).toEqual([]);
+  });
+});
+
+describe('chipSettingOf', () => {
+  it('reads only the worker\'s chipSetting message with a boolean', () => {
+    expect(chipSettingOf({ type: 'chipSetting', show: false })).toBe(false);
+    expect(chipSettingOf({ type: 'chipSetting', show: true })).toBe(true);
+    for (const m of [{ type: 'chipSetting' }, { type: 'chipSetting', show: 'no' }, { type: 'stateChanged', show: true }, null, 'x', undefined]) {
+      expect(chipSettingOf(m)).toBeNull();
+    }
   });
 });
