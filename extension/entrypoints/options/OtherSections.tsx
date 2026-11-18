@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KNOWN_BRANDS, type ExtensionSettings, type SettingsField } from '@core/settings';
 import type { FeeSettings } from '@core/money';
 import { Confirm, NumberField, Section } from './fields';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
+import { getShowChip, setShowChip } from '../../lib/prefs';
 
 type Problems = Partial<Record<SettingsField, string>>;
 interface Props {
@@ -103,11 +104,63 @@ export function FeesSection({ draft, problems, onChange, onCommit }: Props) {
   );
 }
 
-export function AlertsSection({ draft, problems, onChange, onCommit }: Props) {
+/** Where the chip setting is read and saved: storage.sync, which the chip's content script can read (prefs.ts). */
+export interface ChipPrefs {
+  get(): Promise<boolean>;
+  set(on: boolean): Promise<void>;
+}
+const realChipPrefs: ChipPrefs = { get: getShowChip, set: setShowChip };
+
+/** "Show the chip on Home Depot pages". Saves on change, like every other setting. */
+function ChipToggle({ prefs }: { prefs: ChipPrefs }) {
+  // Checked until the stored answer arrives: the default is on.
+  const [on, setOn] = useState(true);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let live = true;
+    prefs.get().then(
+      (v) => live && setOn(v),
+      () => {},
+    );
+    return () => {
+      live = false;
+    };
+  }, [prefs]);
+
+  async function change(next: boolean) {
+    setOn(next);
+    setFailed(false);
+    try {
+      await prefs.set(next);
+    } catch {
+      setOn(!next);
+      setFailed(true);
+    }
+  }
+
+  return (
+    <div>
+      <label className="choice">
+        <input type="checkbox" checked={on} onChange={(e) => void change(e.target.checked)} />
+        Show the chip on Home Depot pages
+      </label>
+      {failed ? (
+        <p className="field-error" role="alert">
+          Not saved. Try again.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function AlertsSection({ draft, problems, onChange, onCommit, chip = realChipPrefs }: Props & { chip?: ChipPrefs }) {
   const a = draft.alerts;
   const bad = (v: number) => Boolean(problems.alerts) && (!Number.isFinite(v) || v < 0);
   return (
-    <Section title="Alerts" help="A desktop notification when a scan finds a bundle that clears both estimated numbers.">
+    <Section
+      title="Alerts"
+      help="A desktop notification when a scan finds a bundle that clears both estimated numbers. The chip shows a bundle's estimate under its price on Home Depot."
+    >
       <label className="choice">
         <input type="checkbox" checked={a.enabled} onChange={(e) => onChange({ alerts: { ...a, enabled: e.target.checked } }, true)} />
         Notify me about new deals
@@ -143,6 +196,7 @@ export function AlertsSection({ draft, problems, onChange, onCommit }: Props) {
           {problems.alerts}
         </p>
       ) : null}
+      <ChipToggle prefs={chip} />
     </Section>
   );
 }

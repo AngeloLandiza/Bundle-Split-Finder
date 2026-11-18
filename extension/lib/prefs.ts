@@ -73,6 +73,19 @@ export async function getSettings(): Promise<ExtensionSettings> {
 
 export const saveSettings = (s: ExtensionSettings): Promise<void> => write('settings', s);
 
+// ---------------------------------------------------------------- chip
+
+/**
+ * Whether the chip shows on Home Depot product pages. Default true; only an explicit false turns it off.
+ * It lives in storage.sync, not storage.local: the worker closes storage.local to content scripts
+ * (restrictKeyAccess, so the SerpApi key stays out of reach), and the content script on a Home Depot
+ * page has to read this. It is one non-secret boolean; the key never goes near it.
+ */
+export async function getShowChip(): Promise<boolean> {
+  return (await browser.storage.sync.get('showChip')).showChip !== false;
+}
+export const setShowChip = (on: boolean): Promise<void> => browser.storage.sync.set({ showChip: on });
+
 // ---------------------------------------------------------------- packaging
 
 /** The owner's packaging answers by upper-case bundle model. An entry that is not a known answer is dropped. */
@@ -110,12 +123,3 @@ export async function getAccount(): Promise<StoredAccount | null> {
   return typeof v === 'object' && v !== null ? (v as StoredAccount) : null;
 }
 export const setAccount = (v: StoredAccount | null): Promise<void> => write('account', v);
-
-// ---------------------------------------------------------------- the chip on Home Depot pages
-
-/** True unless the owner turned the chip off. Anything stored that is not `false` is on. */
-export async function getShowChip(): Promise<boolean> {
-  return (await read('showChip')) !== false;
-}
-
-export const setShowChip = (show: boolean): Promise<void> => write('showChip', show);

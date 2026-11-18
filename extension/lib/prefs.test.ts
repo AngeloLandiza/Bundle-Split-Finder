@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { DEFAULT_SETTINGS } from '@core/settings';
 import {
-  forgetKey, getAccount, getActiveScan, getKey, getLastScheduledRunAt, getNotified, getPackaging, getSettings, savePackaging, restrictKeyAccess,
-  saveSettings, setAccount, setActiveScan, setKey, setLastScheduledRunAt, setNotified, getShowChip, setShowChip,
+  forgetKey, getAccount, getActiveScan, getKey, getLastScheduledRunAt, getNotified, getPackaging, getSettings, getShowChip, setShowChip, savePackaging, restrictKeyAccess,
+  saveSettings, setAccount, setActiveScan, setKey, setLastScheduledRunAt, setNotified,
 } from './prefs';
 
 beforeEach(() => fakeBrowser.reset());
@@ -103,5 +103,24 @@ describe('packaging', () => {
     expect(await getPackaging()).toEqual({});
     await fakeBrowser.storage.local.set({ packaging: 'junk' });
     expect(await getPackaging()).toEqual({});
+  });
+});
+
+describe('showChip', () => {
+  it('is on until the owner turns it off, and only an explicit false turns it off', async () => {
+    expect(await getShowChip()).toBe(true);
+    await setShowChip(false);
+    expect(await getShowChip()).toBe(false);
+    await setShowChip(true);
+    expect(await getShowChip()).toBe(true);
+    await fakeBrowser.storage.sync.set({ showChip: 'junk' });
+    expect(await getShowChip()).toBe(true);
+  });
+
+  it('is kept in storage.sync, which a content script can read, and never in storage.local beside the key', async () => {
+    await setKey('secret-value');
+    await setShowChip(false);
+    expect((await fakeBrowser.storage.sync.get(null))).toEqual({ showChip: false });
+    expect(Object.keys(await fakeBrowser.storage.local.get(null))).toEqual(['apiKey']);
   });
 });
