@@ -8,7 +8,7 @@ import {
   scoreAudit, validationPairs,
 } from '../../scripts/audit-cli';
 import { titleHasModel } from '../src/match';
-import { readLabels } from '../../scripts/validate-cli';
+import { type Labels, readLabels } from '../../scripts/validate-cli';
 
 // The audit loop on a hand-made export (fixtures/audit/split-finder-audit-2026-11-18.json): the
 // contract filled from the validation run's replay, with the validation set's blind labels. No network.
@@ -129,11 +129,16 @@ describe('prepare', () => {
 });
 
 describe('score', () => {
-  async function scored(corpusFrom: string | null) {
+  async function scored(corpusFrom: string | null, editLabels?: (labels: { labels: Labels }) => void) {
     const root = tmp();
     const dir = join(root, 'audit', '2026-11-18');
     await runAuditCli(['prepare', EXPORT, '--out', dir], { log: quiet().log, root });
     copyFileSync(LABELS, join(dir, 'labels.json'));
+    if (editLabels) {
+      const labels = JSON.parse(readFileSync(LABELS, 'utf8')) as { labels: Labels };
+      editLabels(labels);
+      writeFileSync(join(dir, 'labels.json'), JSON.stringify(labels));
+    }
     const corpusFile = join(root, 'corpus.json');
     if (corpusFrom) copyFileSync(corpusFrom, corpusFile);
     const q = quiet();
@@ -159,16 +164,24 @@ describe('score', () => {
   });
 
   it('adds every labelled pair to an empty corpus, marking known those the matcher fails today', async () => {
-    const { corpus, lines } = await scored(null);
-    expect(corpus.pairs.length).toBeGreaterThan(0);
+    // The sample's own labels: every pair passes since the kit-extras rule (the DCK240C2 bundles were the
+    // last pairs it failed), so none is marked known.
+    const plain = await scored(null);
+    expect(plain.corpus.pairs.length).toBeGreaterThan(0);
+    expect(plain.corpus.pairs.filter((p) => p.known)).toEqual([]);
+    expect(plain.lines.join('\n')).toContain('(0 marked known)');
+
+    // One label flipped by hand, here only: the correct DCK240C2 listing is said to be the saw bundle
+    // B0722GYTWL, so the kit itself, B00IJ0ALYS (probable), is labelled not the part and must be marked known.
+    const { corpus, lines } = await scored(null, (l) => {
+      l.labels.DCK240C2DCS391B!.DCK240C2!.correct = ['B0722GYTWL'];
+    });
     expect(corpus.pairs.every((p) => p.source === 'audit-2026-11-18')).toBe(true);
     const known = corpus.pairs.filter((p) => p.known);
-    // DCK240C2 bundled with a saw or a bit set was probable for the kit, the last pair the sample failed; it is
-    // review since the kit-extras rule (core/test/kit-extras.recorded.test.ts), so none is marked known.
-    expect(known).toEqual([]);
+    expect(known.map((p) => `${p.part.model} ${p.listing.asin}`)).toEqual(['DCK240C2 B00IJ0ALYS']);
+    expect(known[0]!.known).toMatch(/^audit-2026-11-18: labelled not the part, graded probable/);
     for (const p of corpus.pairs) expect(pairProblem(p) !== null, pairKey(p)).toBe(p.known !== undefined);
-    expect(known.every((p) => p.known!.startsWith('audit-2026-11-18: labelled'))).toBe(true);
-    expect(lines.join('\n')).toContain(`(${known.length} marked known)`);
+    expect(lines.join('\n')).toContain('(1 marked known)');
   });
 
   it('refuses to score without labels', async () => {
