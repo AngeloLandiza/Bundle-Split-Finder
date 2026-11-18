@@ -1,0 +1,236 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=RYOBI PSBCK102K2",
+  "at": 1794973001561,
+  "data": {
+    "search_metadata": {
+      "id": "6afd1d4324ba0aaefbd8b481",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/yjboJ0M_XAzqTsb2fUqcZzOgUV4tvNn2WxBz5YuMMz0/6afd1d4324ba0aaefbd8b481.json",
+      "markdown_endpoint": "https://serpapi.com/searches/yjboJ0M_XAzqTsb2fUqcZzOgUV4tvNn2WxBz5YuMMz0/6afd1d4324ba0aaefbd8b481.md",
+      "created_at": "2026-11-18 03:36:35 UTC",
+      "processed_at": "2026-11-18 03:36:35 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=RYOBI+PSBCK102K2",
+      "raw_html_file": "https://serpapi.com/searches/yjboJ0M_XAzqTsb2fUqcZzOgUV4tvNn2WxBz5YuMMz0/6afd1d4324ba0aaefbd8b481.html",
+      "total_time_taken": 5.75
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "RYOBI PSBCK102K2",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 1,
+      "query_displayed": "RYOBI PSBCK102K2",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B0FS9YLLJG",
+        "brand": "RYOBI",
+        "title": "ONEAND HP 18V BRUSHLESS Cordless Compact 1/2 in. Drill and Impact Driver KIT with",
+        "link": "https://www.amazon.com/RYOBI-ONEAND-BRUSHLESS-Cordless-Compact/dp/B0FS9YLLJG/ref=sr_1_1?dib=eyJ2IjoiMSJ9.4SHoOckaTYbNs9lM2-q_Mw.t_u7o4RhKCGLQY_Ea7F6os-fD9xpHJKKhauwe5cu6-k&dib_tag=se&keywords=RYOBI+PSBCK102K2&qid=1794972996&sr=8-1",
+        "link_clean": "https://www.amazon.com/RYOBI-ONEAND-BRUSHLESS-Cordless-Compact/dp/B0FS9YLLJG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FS9YLLJG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61uLRyz6o3L._AC_UL320_.jpg",
+        "price": "$228.00",
+        "extracted_price": 228,
+        "delivery": [
+          "FREE delivery Fri, Nov 27"
+        ],
+        "more_buying_choices": "$218.19 (2 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FS9YLLJG/ref=sr_1_1_olp?keywords=RYOBI+PSBCK102K2&dib_tag=se&dib=eyJ2IjoiMSJ9.4SHoOckaTYbNs9lM2-q_Mw.t_u7o4RhKCGLQY_Ea7F6os-fD9xpHJKKhauwe5cu6-k&qid=1794972996&sr=8-1",
+        "purchase_options": [
+          {
+            "primary_price": "$228.00",
+            "extracted_primary_price": 228,
+            "more_buying_choices": "$218.19 (2 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FS9YLLJG/ref=sr_1_1_olp?keywords=RYOBI+PSBCK102K2&dib_tag=se&dib=eyJ2IjoiMSJ9.4SHoOckaTYbNs9lM2-q_Mw.t_u7o4RhKCGLQY_Ea7F6os-fD9xpHJKKhauwe5cu6-k&qid=1794972996&sr=8-1"
+          }
+        ]
+      }
+    ],
+    "sponsored_brands": {
+      "title": "Brands related to your search",
+      "brands": [
+        {
+          "position": 1,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/9004e121-ad10-44d1-937b-97746d586647._CR0,0,1600,1600_AC_SX278_SY200_CB1169409_QL70_.jpg",
+          "headline": "DOVOH Professional Laser Level",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUE1u00AYVVsBVSiiyqKVsqoikUXVSWZsJ3aKLOSx3STNn2M7bdrNaGJPEtPEdjzTPxY9ABdA4ghIXIA1m27Ycgi2HAClBSF4eotPeu_7e7lg8-uXn9-f5l8Y_oljtVvtEbRst7iG9ncmLI5uiBv3LiaqyrTKLZ-GgXy4E19xu386nhzPl1QDx4E9e8tvBu5zSSnL9TKCahmer3t4vGnYftN2W15-N_csZPxCJGl-a9hzbbPf6LXObavwcS23uVLIWEzyObqg75K4HCSLwqsZpyBjQbJYsDikIkpiwFl2FQUMcEazYAbGYlJ8wmIy9PalxeVcRGCc0TgEQcaoiK4Y-L0SBDQLOUhpFAuWgSCJBYuFtNfFJvH8vmsTz-n7nVaj6RPZ8TrEsr2233eKWm4Nbn-7__Hh_b1V2P4zbXWYnPJ58aUEIVJkpKGqhmQVSRtDzzrcMB1zv51_bWHDTI9aQDXu8PIRU-MOD4Ry6yXGv7jD0wcaj0Vhy5zaNw3Dni7VgEmf13Of1mdCpPywUrm-vi7_janCRZIxXknplFVwXVVQDRugbkADKBYyAbYsG5iWBauyWlWxdPTmoYFkbKJ7mBiwVkMQIanWG0lNhPtyqz4CBqyqUK0qqDs8OTNHA989ljulNCRZSNL5LMx0UZpxSoKMRKEOS_OUUB7FXMfQHJwNOqda9QBDS2t2te7AOcCw3qi5yOqglXN5ybJb3T3r49ae42GzjaDUllYKnydC_z_kEg9TQkMyzZLLVJchlBSkySqEcg0qpUinKS_R1TfzVMNB6p0so18lQONf&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FB97416BA-9A0A-4D1C-BDDE-CDD053757B2F%3Fstore_ref%3DSB_A066101126NX2H1BO3I9X-A05707541MUVYCXQTRJ3L%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0CQYQLW85%2CB0D8HM8MQP%2CB09G6R1DL1%26lp_query%3DRYOBI%20PSBCK102K2%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300241837003604%26i%3Daps%26aref%3Dlp8BcpSVqi&ref_=sbx_be_s_3psl_mbd_mb0_bkgd&pd_rd_w=Bnujh&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=6YJ3VWTNCSTSGHER96H0&pd_rd_wg=UT5SO&pd_rd_r=97ae3065-46cc-43a2-a060-a3fe4cf8d995",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/9004e121-ad10-44d1-937b-97746d586647._CR0,0,1600,1600_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 2,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/fe4825fd-56d4-464e-a8dc-5446696badf8._CR0,0,3000,600_AC_SX278_SY200_CB1169409_QL70_.jpg",
+          "headline": "Wood Cutting Circular Saw Blade",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkM1u00AUhZVWQBWKqLIoUlZVJLKoNMl4HP-kyEL-maQmbezYLj_djCb2xDFJbMeeNg2LLngLKrHhMVixQOIReBH2oLQgBEd3caWjc-_RVw13vn7-8f1-7ZEevHStgT14DS3sNSrC4f6EpckV8dLhbKIoTG2vyzgKxaP94Tgcmd31CgudmbrkU7A-dvDIe4g6LbHbEqDSgudbvjHe0XFwjD3brz2pPohYOeNZXts9G3rYdPpD-xxb9ZtKdWfjkDGf1Kp0Qd9laSvMFvWn05KCgoXZYsHSiPIkS0HJisskZKBktAinYMwnjXssJWf-IVpczHkCxgVNIxAWjPLkkoHfL0FIi6gEOU1SzgoQZilnKUcHp4ZJ_MDxMPFdJzix-8cBEV3_hFjYHwSO21CrFWHv5sOnb18-WvW9P9c2xcS8nDceixBCKImSKgiqBGW0feZbR9umax4Oas8sQzfzng0U_dpY3inWr40R76z9TP9X10Z8O_rdUt81Y3zV13G8VEKG3m9Vf1amnOflUbu9Wq1afzG1S54VrGznNGZtxUKy3FO7APVwD3QMUwAqNBQgSFA0sNWFWFaf3wZIwSaabxAdoq6siiJCp1Yfy-4LR4UO0KGMJKGjitgN5Fej0blpD5t5RIqI5PNpVGi8OS0pCQuSRBpsznOyvGDFWvPeOIZ94PqGORAgGqCNU84zrv1PrllGOaERiYvsItc2FAVJQjJSVAl2molG87JJNxXX4uxKmLyl_dUvPqHWBQ&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F7D266F89-2FEF-4BC1-80B7-1503BED90E68%3Fstore_ref%3DSB_A029683322MDGE6PJO80O-A06251483EPT6WQQZCIN%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_query%3DRYOBI%20PSBCK102K2%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300015526278504%26i%3Daps%26aref%3Dy3kx1fjaGw&ref_=sbx_be_s_3psl_mbd_mb1_bkgd&pd_rd_w=Bnujh&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=6YJ3VWTNCSTSGHER96H0&pd_rd_wg=UT5SO&pd_rd_r=97ae3065-46cc-43a2-a060-a3fe4cf8d995",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/fe4825fd-56d4-464e-a8dc-5446696badf8._CR0,0,3000,600_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 3,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/40980e26-dad6-4a47-ad26-3c593eebc860._CR0,0,970,600_AC_SX278_SY200_CB1169409_QL70_.jpeg",
+          "headline": "Premium Supplements",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkMtu00AUhtVWQBWKqLIAKasqEllUTDIe27FTZCHfmqQuiWsnvW1GE3sSu01sZ2batF30QdggwTuwYMOGd0DiOdiwQSgtCMGvszjSp3P5_1K0_uXT968Py0_MwaHveF3vGDpuUF2Rtp-NaZZe4SDrnY81jeqNaz6JI3nn2dnVcC5ogg55RhLzbC9VPGotgsdIqcutugS1OjxdDa3RuukOOm7QDcvPS49iys9FXpQ3hr3AtfvtXvfUdSpvV0rrS4JHYlwukRm5ybN6lM8qLxJOAKNRPpvRLCYizTPAKbtMIwo4JSxKwEiMqw9ohofhNppdTEUKRoxkMYgYJSK9pOD3SRARFnNQkDQTlIEozwTNBNp6Y9k4HPQDF4d-f7DfbXcGWPbDfey4oTfo-1W9tII2f377-OPDZ1DZ_LNt-Zhc8Gn1KYIQomZT0hRNRS0drQ1DZ2fN9u1tr_zKsUy72O0Czby15veamLfWgVCuw9z8V7fW5K7M-6ayYU_cq7bpTuZaRNH71dK71USIgu80GovFov43pgYXOaO8UZAJbagqdNCuK4FdTYVAgZYEdEmVwK7qIIQcU9KR_vpuADM6NkILm1DT1KYiy-GRf-IdnaqdA8kBJlyaaSnIlTua1jvuWx3FrxUxZjEupknMDFFLOMERw2lswNq0wISnGTcsqHeCVkvp7b20YMtvd4JDu73E8wvKro3gpG91t_zQsj0JIg8tCZ_mwvg_2RqPC0xiPGH5RWEsU5alpiqjZlNp6bXUIAWvkaWFKLxJFDbjx9NfZBTg9Q&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F550D2FE1-F750-40B1-8151-F5D222DA1828%3Fstore_ref%3DSB_A07756433SWPYKWZ5HQ1D-A02982942E3H77NXOBH4P%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB08HR994NJ%2CB09PGHRVCG%26lp_query%3DRYOBI%20PSBCK102K2%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D200031653266498%26i%3Daps%26aref%3DcSzh4rmsXl&ref_=sbx_be_s_3psl_mbd_mb2_bkgd&pd_rd_w=Bnujh&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=6YJ3VWTNCSTSGHER96H0&pd_rd_wg=UT5SO&pd_rd_r=97ae3065-46cc-43a2-a060-a3fe4cf8d995",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/40980e26-dad6-4a47-ad26-3c593eebc860._CR0,0,970,600_AC_SX278_SY200_CB1169409_QL70_.jpeg"
+        }
+      ]
+    },
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "brands": [
+        {
+          "position": 1,
+          "name": "RYOBI",
+          "rh": "p_123:252605",
+          "link": "https://www.amazon.com/s?k=RYOBI+PSBCK102K2&rh=p_123%3A252605&dc&qid=1794972996&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3Ait%2FQfBYWOhflQWP3O7e6YQ%2F%2B3G0sdHig3iLfvHE5SMk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PSBCK102K2&rh=p_123%3A252605"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PSBCK102K2&rh=p_n_condition-type%3A6358196011&dc&qid=1794972996&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3Aw0zPV88Sgr1SD7BBf89dO67nqvU%2B0hnPYUzRGF7rBqI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PSBCK102K2&rh=p_n_condition-type%3A6358196011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Triplenet Pricing INC",
+          "rh": "p_6:AAZRLVTNON75Z",
+          "link": "https://www.amazon.com/s?k=RYOBI+PSBCK102K2&rh=p_6%3AAAZRLVTNON75Z&dc&qid=1794972996&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3AmAwOCcEGlZE3JhEg7lFVLilBL3%2BCe8Yb49aAMOQoYas",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PSBCK102K2&rh=p_6%3AAAZRLVTNON75Z"
+        },
+        {
+          "position": 2,
+          "name": "JVL TOOLS",
+          "rh": "p_6:A1NW5TBYARKGSA",
+          "link": "https://www.amazon.com/s?k=RYOBI+PSBCK102K2&rh=p_6%3AA1NW5TBYARKGSA&dc&qid=1794972996&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3AgILngErZvqwSXaP5THE82p8uMfhXutlY4qboczvDzyk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PSBCK102K2&rh=p_6%3AA1NW5TBYARKGSA"
+        }
+      ],
+      "all_top_brands": [
+        {
+          "position": 1,
+          "name": "Top Brands",
+          "rh": "p_n_g-101014971069111:119653281011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PSBCK102K2&rh=p_n_g-101014971069111%3A119653281011&dc&qid=1794972996&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3A7Pk3MjEa8Mk7JfQA34cUSw1O%2FZC1J6%2FlKRrlvDTI23E",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PSBCK102K2&rh=p_n_g-101014971069111%3A119653281011"
+        }
+      ],
+      "department": [
+        {
+          "position": 1,
+          "name": "Power Tools",
+          "rh": "n:551236",
+          "link": "https://www.amazon.com/s?k=RYOBI+PSBCK102K2&rh=n%3A551236&dc&qid=1794972996&rnid=2941120011&ref=sr_nr_n_1&ds=v1%3A5F7w16stoFPp9JM65bbnjbX49THu3DJUlKx16IHGVJc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PSBCK102K2&rh=n%3A551236"
+        },
+        {
+          "position": 2,
+          "name": "Power Drill Drivers",
+          "rh": "n:9022404011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PSBCK102K2&rh=n%3A551236%2Cn%3A9022404011&dc&qid=1794972996&rnid=2941120011&ref=sr_nr_n_2&ds=v1%3AdhxAfBdEmUCcagHzDWIW7dEEgE4HFolyCtM34lNN%2FuM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PSBCK102K2&rh=n%3A551236%2Cn%3A9022404011"
+        }
+      ]
+    }
+  }
+}

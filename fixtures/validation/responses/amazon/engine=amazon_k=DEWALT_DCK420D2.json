@@ -1,0 +1,1584 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=DEWALT DCK420D2",
+  "at": 1795001635671,
+  "data": {
+    "search_metadata": {
+      "id": "6afd8d2110ceedee91c9d0b4",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/marQreGSE_xTJucyDz1WN5fRqR-WkUAZ6mOwolpyqx8/6afd8d2110ceedee91c9d0b4.json",
+      "markdown_endpoint": "https://serpapi.com/searches/marQreGSE_xTJucyDz1WN5fRqR-WkUAZ6mOwolpyqx8/6afd8d2110ceedee91c9d0b4.md",
+      "created_at": "2026-11-18 11:33:53 UTC",
+      "processed_at": "2026-11-18 11:33:53 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=DEWALT+DCK420D2",
+      "raw_html_file": "https://serpapi.com/searches/marQreGSE_xTJucyDz1WN5fRqR-WkUAZ6mOwolpyqx8/6afd8d2110ceedee91c9d0b4.html",
+      "total_time_taken": 1.98
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "DEWALT DCK420D2",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 86,
+      "query_displayed": "DEWALT DCK420D2",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B00IJ0ALYS",
+        "badges": [
+          "Overall Pick"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Drill and Impact Driver (DCK240C2)",
+        "link": "https://www.amazon.com/DEWALT-DCK240C2-Lithium-Driver-Impact/dp/B00IJ0ALYS/ref=sr_1_1?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-1",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK240C2-Lithium-Driver-Impact/dp/B00IJ0ALYS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00IJ0ALYS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81XPDrUh9sL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 61400,
+        "bought_last_month": "10K+ bought in past month",
+        "price": "$129.00",
+        "extracted_price": 129,
+        "old_price": "$239.00",
+        "extracted_old_price": 239,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$129.00",
+            "extracted_primary_price": 129,
+            "old_primary_price": "$239.00",
+            "extracted_old_primary_price": 239
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B0C3PQHGR7",
+        "brand": "DEWALT",
+        "title": "20V MAX Drill and Impact Driver (DCK277D2)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Batteries-Included-DCK277D2/dp/B0C3PQHGR7/ref=sr_1_2_mod_primary_new?keywords=DEWALT+DCK420D2&qid=1795001634&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-2",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Batteries-Included-DCK277D2/dp/B0C3PQHGR7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0C3PQHGR7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81u6kH7EgQL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 4800,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$169.00",
+        "extracted_price": 169,
+        "old_price": "$249.00",
+        "extracted_old_price": 249,
+        "delivery": [
+          "FREE delivery Nov 23 - 25",
+          "Or fastest delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$152.96 (15+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0C3PQHGR7/ref=sr_1_2_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-2",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$169.00",
+            "extracted_primary_price": 169,
+            "old_primary_price": "$249.00",
+            "extracted_old_primary_price": 249,
+            "more_buying_choices": "$152.96 (15+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0C3PQHGR7/ref=sr_1_2_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-2"
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$180.18",
+            "extracted_primary_price": 180.18,
+            "old_primary_price": "$249.00",
+            "extracted_old_primary_price": 249
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B0C3PPW4JY",
+        "brand": "DEWALT",
+        "title": "20V MAX Power Tool Combo Kit, 10 Tool Cordless Power Tool Set, 2 Batteries, Charger and 2 Bags Included, Dewalt Brushless Combo Kit (DCK1021D2)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Batteries-Included-DCK1021D2/dp/B0C3PPW4JY/ref=sr_1_3?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-3",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Batteries-Included-DCK1021D2/dp/B0C3PPW4JY/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0C3PPW4JY&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81N5e7J1YJL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 250,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$731.45",
+        "extracted_price": 731.45,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 15 left in stock (more on the way).",
+        "purchase_options": [
+          {
+            "primary_price": "$731.45",
+            "extracted_primary_price": 731.45
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B0FV3SQD4X",
+        "brand": "DEWALT",
+        "title": "20V MAX XR 3-Speed Hammer Drill and Impact Combo Kit with XR POWERPACK Batteries (DCK2101QQ2)",
+        "link": "https://www.amazon.com/DEWALT-3-Speed-POWERPACK-Batteries-DCK2101QQ2/dp/B0FV3SQD4X/ref=sr_1_4?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-4",
+        "link_clean": "https://www.amazon.com/DEWALT-3-Speed-POWERPACK-Batteries-DCK2101QQ2/dp/B0FV3SQD4X/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FV3SQD4X&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71CMR0NURBL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 30,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$297.41",
+        "extracted_price": 297.41,
+        "old_price": "$315.00",
+        "extracted_old_price": 315,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$297.41",
+            "extracted_primary_price": 297.41,
+            "old_primary_price": "$315.00",
+            "extracted_old_primary_price": 315
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B0GQ6QKPWF",
+        "brand": "DEWALT",
+        "title": "20V MAX 5-Tool Power Tools Combo Kit, Includes 1/2 Cordless Drill,1/4 Impact Driver, Reciprocating Saw, Circular Saw, Oscillating Tool, 5Ah Battery and Charger (DCK540D1)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Reciprocating-Oscillating-DCK540D1/dp/B0GQ6QKPWF/ref=sr_1_5?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-5",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Reciprocating-Oscillating-DCK540D1/dp/B0GQ6QKPWF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GQ6QKPWF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71GkL2f0zYL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1100,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$449.00",
+        "extracted_price": 449,
+        "old_price": "$549.00",
+        "extracted_old_price": 549,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$413.08 (3+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0GQ6QKPWF/ref=sr_1_5_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-5",
+        "purchase_options": [
+          {
+            "primary_price": "$449.00",
+            "extracted_primary_price": 449,
+            "old_primary_price": "$549.00",
+            "extracted_old_primary_price": 549,
+            "more_buying_choices": "$413.08 (3+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0GQ6QKPWF/ref=sr_1_5_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-5"
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B0GR1K5HK1",
+        "badges": [
+          "Limited time deal"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX 3-Tool Brushless Power Tool Set, Includes 1/2 Cordless Drill,1/4 Impact Driver, Oscillating Tool, 3 Batteries and a Charger, Extended Runtime, Lightweight (DCK360D3)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Oscillating-Lightweight-DCK360D3/dp/B0GR1K5HK1/ref=sr_1_6?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-6",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Oscillating-Lightweight-DCK360D3/dp/B0GR1K5HK1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GR1K5HK1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61E9t2zAfYL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 952,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$269.00",
+        "extracted_price": 269,
+        "old_price": "$399.00",
+        "extracted_old_price": 399,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$269.00",
+            "extracted_primary_price": 269,
+            "old_primary_price": "$399.00",
+            "extracted_old_primary_price": 399
+          }
+        ]
+      },
+      {
+        "position": 7,
+        "asin": "B0FKKKVN7M",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Impact Driver and Hammer Drill Cordless Power Tool Combo Kit, Includes 2 x 4ah POWERPACK Batteries and a Charger (DCK250QQ2)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-POWERPACK-Batteries-DCK250QQ2/dp/B0FKKKVN7M/ref=sr_1_7?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-7",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-POWERPACK-Batteries-DCK250QQ2/dp/B0FKKKVN7M/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FKKKVN7M&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81vUvizvx4L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 208,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$298.71",
+        "extracted_price": 298.71,
+        "delivery": [
+          "FREE delivery Nov 23 - 25",
+          "Or fastest delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$280.52 (13 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FKKKVN7M/ref=sr_1_7_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-7",
+        "purchase_options": [
+          {
+            "primary_price": "$298.71",
+            "extracted_primary_price": 298.71,
+            "more_buying_choices": "$280.52 (13 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FKKKVN7M/ref=sr_1_7_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-7"
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B0GVVN94T5",
+        "tags": [
+          "Battery Powered"
+        ],
+        "badges": [
+          "Limited time deal"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR Brushless Hammer Drill 1/2 in. and High Torque 1/4 Impact Driver Combo with 2 x 4 Ah Batteries and 4 Amp Charger (DCK2112QQ2)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Batteries-Charger-DCK2112QQ2/dp/B0GVVN94T5/ref=sr_1_8?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-8",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Batteries-Charger-DCK2112QQ2/dp/B0GVVN94T5/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GVVN94T5&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/813DBMuizAL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 32,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$349.00",
+        "extracted_price": 349,
+        "old_price": "$449.00",
+        "extracted_old_price": 449,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$349.00",
+            "extracted_primary_price": 349,
+            "old_primary_price": "$449.00",
+            "extracted_old_primary_price": 449
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B0BZ3VDDBL",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Brushless Drywall Screw Gun and Cut-Out Tool Combo Kit with 2 Batteries and Charger Included (DCK265D2)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Drywall-Screwgun-DCK265D2/dp/B0BZ3VDDBL/ref=sr_1_9?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-9",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Drywall-Screwgun-DCK265D2/dp/B0BZ3VDDBL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BZ3VDDBL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61jmxmIvalL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 416,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$389.99",
+        "extracted_price": 389.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$389.99",
+            "extracted_primary_price": 389.99
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B0F94FMBYW",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR® Brushless Cordless 1/2 in. Drill/Driver (Tool Only) (DCD801B) battery powered, Bright LED Work light",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Driver-DCD801B/dp/B0F94FMBYW/ref=sr_1_10?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-10",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Cordless-Driver-DCD801B/dp/B0F94FMBYW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F94FMBYW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61dB0pP3+tL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 234,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$111.98",
+        "extracted_price": 111.98,
+        "old_price": "$179.00",
+        "extracted_old_price": 179,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "more_buying_choices": "$92.13 (55+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F94FMBYW/ref=sr_1_10_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-10",
+        "purchase_options": [
+          {
+            "primary_price": "$111.98",
+            "extracted_primary_price": 111.98,
+            "old_primary_price": "$179.00",
+            "extracted_old_primary_price": 179,
+            "more_buying_choices": "$92.13 (55+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F94FMBYW/ref=sr_1_10_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-10"
+          }
+        ]
+      },
+      {
+        "position": 11,
+        "asin": "B01DR90MM6",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR Cordless Hammer Drill Driver Brushless, Heavy Duty 1/2\", 3-Speed, Tool Only (DCD996B)",
+        "link": "https://www.amazon.com/DEWALT-DCD996B-Lithium-Brushless-3-Speed/dp/B01DR90MM6/ref=sr_1_11?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-11",
+        "link_clean": "https://www.amazon.com/DEWALT-DCD996B-Lithium-Brushless-3-Speed/dp/B01DR90MM6/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01DR90MM6&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/716BQJbSk8L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 7200,
+        "bought_last_month": "800+ bought in past month",
+        "price": "$199.00",
+        "extracted_price": 199,
+        "old_price": "$209.00",
+        "extracted_old_price": 209,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$199.00",
+            "extracted_primary_price": 199,
+            "old_primary_price": "$209.00",
+            "extracted_old_primary_price": 209
+          }
+        ]
+      },
+      {
+        "position": 12,
+        "asin": "B00EOOZT5E",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR Compact Cordless Drill and Impact Driver with Powerstack Batteries (DCD800D1E1)",
+        "link": "https://www.amazon.com/DEWALT-COMPACT-POWERSTACK-BATTERIES-DCD800D1E1/dp/B00EOOZT5E/ref=sr_1_12_mod_primary_new?keywords=DEWALT+DCK420D2&qid=1795001634&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-12",
+        "link_clean": "https://www.amazon.com/DEWALT-COMPACT-POWERSTACK-BATTERIES-DCD800D1E1/dp/B00EOOZT5E/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00EOOZT5E&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51fSgK6aEuL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 78,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$190.00",
+        "extracted_price": 190,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$183.71 (7 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00EOOZT5E/ref=sr_1_12_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-12",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$190.00",
+            "extracted_primary_price": 190,
+            "more_buying_choices": "$183.71 (7 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00EOOZT5E/ref=sr_1_12_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-12"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$192.91",
+            "extracted_primary_price": 192.91
+          }
+        ]
+      },
+      {
+        "position": 13,
+        "asin": "B0H75VLGKH",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Brushless Grinder Impact Driver Combo (DCK234D1P1)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Brushless-Grinder-DCK234D1P1/dp/B0H75VLGKH/ref=sr_1_13?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-13",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Brushless-Grinder-DCK234D1P1/dp/B0H75VLGKH/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H75VLGKH&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71g7UpHITbL._AC_UL320_.jpg",
+        "price": "$299.00",
+        "extracted_price": 299,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 14 left in stock (more on the way).",
+        "purchase_options": [
+          {
+            "primary_price": "$299.00",
+            "extracted_primary_price": 299
+          }
+        ]
+      },
+      {
+        "position": 14,
+        "asin": "B0DF85XFJ1",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Brushless Cordless Angle Grinder, 4-1/2 in. - 5 in., Variable Speed, Anti-Rotation, Paddle Switch (Tool Only) (DCG410VSB)",
+        "link": "https://www.amazon.com/DEWALT-20V-MAX-Brushless-Cordless/dp/B0DF85XFJ1/ref=sr_1_14?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-14",
+        "link_clean": "https://www.amazon.com/DEWALT-20V-MAX-Brushless-Cordless/dp/B0DF85XFJ1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DF85XFJ1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61vFtaKRFrL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 162,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$218.82",
+        "extracted_price": 218.82,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$207.00 (14 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DF85XFJ1/ref=sr_1_14_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-14",
+        "purchase_options": [
+          {
+            "primary_price": "$218.82",
+            "extracted_primary_price": 218.82,
+            "more_buying_choices": "$207.00 (14 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DF85XFJ1/ref=sr_1_14_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-14"
+          }
+        ]
+      },
+      {
+        "position": 15,
+        "asin": "B0DJCTQFJQ",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Brushless Cordless 4-1/2 in. - 5 in. Angle Grinder Kit with XR POWERPACK (DCG410WW1)",
+        "link": "https://www.amazon.com/DEWALT-20V-MAX-Brushless-Cordless/dp/B0DJCTQFJQ/ref=sr_1_15?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-15",
+        "link_clean": "https://www.amazon.com/DEWALT-20V-MAX-Brushless-Cordless/dp/B0DJCTQFJQ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DJCTQFJQ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/7179qqWOexL._AC_UL320_.jpg",
+        "rating": 4.9,
+        "reviews": 43,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$287.00",
+        "extracted_price": 287,
+        "old_price": "$379.00",
+        "extracted_old_price": 379,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$249.99 (12+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DJCTQFJQ/ref=sr_1_15_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-15",
+        "purchase_options": [
+          {
+            "primary_price": "$287.00",
+            "extracted_primary_price": 287,
+            "old_primary_price": "$379.00",
+            "extracted_old_primary_price": 379,
+            "more_buying_choices": "$249.99 (12+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DJCTQFJQ/ref=sr_1_15_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-15"
+          }
+        ]
+      },
+      {
+        "position": 16,
+        "asin": "B01D94IED8",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-Cordless-Portable-Batteries-Included/dp/B01D94IED8/ref=sr_1_16_so_POWER_TOOL_SET?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-16",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Drill Impact Driver and LED Work Light Portable, Power Tool Combo Kit 3 Tool, 2 Batteries and Charger Included (DCK340C2)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Portable-Batteries-Included/dp/B01D94IED8/ref=sr_1_16?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-16",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Portable-Batteries-Included/dp/B01D94IED8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01D94IED8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61FDG9LmmtL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 952,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 17,
+        "asin": "B01N6JEDYQ",
+        "brand": "DEWALT",
+        "title": "20V MAX Power Tool Combo Kit, 4-Tool Cordless Power Tool Set with 2 Batteries and Charger (DCK423D2)",
+        "link": "https://www.amazon.com/DEWALT-Combo-Compact-4-Tool-DCK423D2/dp/B01N6JEDYQ/ref=sr_1_17?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-17",
+        "link_clean": "https://www.amazon.com/DEWALT-Combo-Compact-4-Tool-DCK423D2/dp/B01N6JEDYQ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01N6JEDYQ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51cWBz1TDaL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 2400,
+        "price": "$499.00",
+        "extracted_price": 499,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 7 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$499.00",
+            "extracted_primary_price": 499
+          }
+        ]
+      },
+      {
+        "position": 18,
+        "asin": "B084379YDH",
+        "brand": "DEWALT",
+        "title": "Compact 4 Tool Combo KIT (DCK421D2)",
+        "link": "https://www.amazon.com/DEWALT-Compact-Tool-Combo-DCK421D2/dp/B084379YDH/ref=sr_1_18?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-18",
+        "link_clean": "https://www.amazon.com/DEWALT-Compact-Tool-Combo-DCK421D2/dp/B084379YDH/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B084379YDH&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/31YVO7i0PoL._AC_UL320_.jpg",
+        "price": "$359.00",
+        "extracted_price": 359,
+        "delivery": [
+          "FREE delivery Nov 24 - 27",
+          "Or fastest delivery Nov 20 - 23"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$359.00",
+            "extracted_primary_price": 359
+          }
+        ]
+      },
+      {
+        "position": 19,
+        "asin": "B018TM1Q80",
+        "brand": "DEWALT",
+        "title": "20V MAX Power Tools, 9 Cordless Tool Combo, Impact and Drill Driver, Oscillating Tool, Grinder,Circular and Reciprocating Saw,Right Angle Drill,Speaker,LED Light, 2 Batteries,Charger (DCK940D2)",
+        "link": "https://www.amazon.com/DEWALT-DCK940D2-Lithium-9-Tool-Combo/dp/B018TM1Q80/ref=sr_1_19?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-19",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK940D2-Lithium-9-Tool-Combo/dp/B018TM1Q80/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B018TM1Q80&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81ZYVwy1KOL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 2900,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$799.00",
+        "extracted_price": 799,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$662.32 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B018TM1Q80/ref=sr_1_19_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-19",
+        "purchase_options": [
+          {
+            "primary_price": "$799.00",
+            "extracted_primary_price": 799,
+            "more_buying_choices": "$662.32 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B018TM1Q80/ref=sr_1_19_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-19"
+          }
+        ]
+      },
+      {
+        "position": 20,
+        "asin": "B0F8P55L5D",
+        "tags": [
+          "Battery Powered"
+        ],
+        "badges": [
+          "Best Seller in Power Hammer Drills"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR® Brushless Cordless 1/2 in. Hammer Drill (Tool Only) (DCD806B)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Hammer-DCD806B/dp/B0F8P55L5D/ref=sr_1_20?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-20",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Cordless-Hammer-DCD806B/dp/B0F8P55L5D/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F8P55L5D&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61YcLROOvHL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 464,
+        "bought_last_month": "2K+ bought in past month",
+        "price": "$110.95",
+        "extracted_price": 110.95,
+        "old_price": "$199.00",
+        "extracted_old_price": 199,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "more_buying_choices": "$104.50 (62+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F8P55L5D/ref=sr_1_20_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-20",
+        "purchase_options": [
+          {
+            "primary_price": "$110.95",
+            "extracted_primary_price": 110.95,
+            "old_primary_price": "$199.00",
+            "extracted_old_primary_price": 199,
+            "more_buying_choices": "$104.50 (62+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F8P55L5D/ref=sr_1_20_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-20"
+          }
+        ]
+      },
+      {
+        "position": 21,
+        "asin": "B08N6K98B9",
+        "brand": "DEWALT",
+        "title": "DCK302P2 20V MAX* XR® 3-Tool Automotive Combo Kit",
+        "link": "https://www.amazon.com/DEWALT-20V-MAX-3-KIT-Automotive/dp/B08N6K98B9/ref=sr_1_21?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-21",
+        "link_clean": "https://www.amazon.com/DEWALT-20V-MAX-3-KIT-Automotive/dp/B08N6K98B9/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08N6K98B9&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61wBMn2J5iL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 21,
+        "price": "$511.06",
+        "extracted_price": 511.06,
+        "old_price": "$568.80",
+        "extracted_old_price": 568.8,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 12 left in stock - order soon.",
+        "more_buying_choices": "$499.99 (2 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08N6K98B9/ref=sr_1_21_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-21",
+        "purchase_options": [
+          {
+            "primary_price": "$511.06",
+            "extracted_primary_price": 511.06,
+            "old_primary_price": "$568.80",
+            "extracted_old_primary_price": 568.8,
+            "more_buying_choices": "$499.99 (2 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08N6K98B9/ref=sr_1_21_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-21"
+          }
+        ]
+      },
+      {
+        "position": 22,
+        "asin": "B09ZHPD5HG",
+        "brand": "DEWALT",
+        "title": "DCK447P2 20V MAX XR Brushless Lithium-Ion 4-Tool Combo Kit with (2) Batteries",
+        "link": "https://www.amazon.com/Dewalt-DCK447P2-Brushless-Lithium-Ion-Batteries/dp/B09ZHPD5HG/ref=sr_1_22?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-22",
+        "link_clean": "https://www.amazon.com/Dewalt-DCK447P2-Brushless-Lithium-Ion-Batteries/dp/B09ZHPD5HG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09ZHPD5HG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51kiiU1KrBL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 3,
+        "price": "$654.47",
+        "extracted_price": 654.47,
+        "delivery": [
+          "FREE delivery Fri, Nov 27"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$654.47",
+            "extracted_primary_price": 654.47
+          }
+        ]
+      },
+      {
+        "position": 23,
+        "asin": "B0CTGNXGSM",
+        "brand": "DEWALT",
+        "title": "20V MAX* 3-Tool Combo Kit, Brushless Cordless Router Tool, Random Orbital Sander, Jig Saw, Battery and Charger Included (DCK307D1P1)",
+        "link": "https://www.amazon.com/DEWALT-20V-3-Tool-Combo-DCK307D1P1/dp/B0CTGNXGSM/ref=sr_1_23?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-23",
+        "link_clean": "https://www.amazon.com/DEWALT-20V-3-Tool-Combo-DCK307D1P1/dp/B0CTGNXGSM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CTGNXGSM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61p0bLHJrbL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 289,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$360.43",
+        "extracted_price": 360.43,
+        "old_price": "$449.00",
+        "extracted_old_price": 449,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$360.43",
+            "extracted_primary_price": 360.43,
+            "old_primary_price": "$449.00",
+            "extracted_old_primary_price": 449
+          }
+        ]
+      },
+      {
+        "position": 24,
+        "asin": "B0722GYTWL",
+        "brand": "DEWALT",
+        "title": "DCK240C2 20v Lithium Drill Driver/Impact Combo Kit (1.3Ah) with 20V MAX Circular Saw",
+        "link": "https://www.amazon.com/DEWALT-DCK240C2-Lithium-Driver-Circular/dp/B0722GYTWL/ref=sr_1_24?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-24",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK240C2-Lithium-Driver-Circular/dp/B0722GYTWL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0722GYTWL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51o1q1JPe7L._AC_UL320_.jpg",
+        "rating": 4.9,
+        "reviews": 37,
+        "delivery": [
+          "Delivery Tomorrow, Nov 19"
+        ],
+        "purchase_options": [
+          {
+            "listen_with_amazon_music": true,
+            "primary_price": "Click to see price"
+          }
+        ]
+      },
+      {
+        "position": 25,
+        "asin": "B0H72KW2Z8",
+        "brand": "DEWALT",
+        "title": "20V MAX 2-Tool Hammer Drill and Impact Combo Kit (DCK203P2)",
+        "link": "https://www.amazon.com/DEWALT-2-Tool-Hammer-Impact-DCK203P2/dp/B0H72KW2Z8/ref=sr_1_25_mod_primary_new?keywords=DEWALT+DCK420D2&qid=1795001634&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-25",
+        "link_clean": "https://www.amazon.com/DEWALT-2-Tool-Hammer-Impact-DCK203P2/dp/B0H72KW2Z8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H72KW2Z8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/817Aw1IdWLL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 20,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$249.00",
+        "extracted_price": 249,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 11 left in stock - order soon.",
+        "more_buying_choices": "$244.99 (12 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0H72KW2Z8/ref=sr_1_25_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-25",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$249.00",
+            "extracted_primary_price": 249,
+            "more_buying_choices": "$244.99 (12 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0H72KW2Z8/ref=sr_1_25_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-25"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$253.00",
+            "extracted_primary_price": 253
+          }
+        ]
+      },
+      {
+        "position": 26,
+        "asin": "B09ZHJDZ11",
+        "title": "20V MAX XR BRUSHLESS 4 TOOL COMBO KIT",
+        "link": "https://www.amazon.com/20V-MAX-BRUSHLESS-TOOL-COMBO/dp/B09ZHJDZ11/ref=sr_1_26?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-26",
+        "link_clean": "https://www.amazon.com/20V-MAX-BRUSHLESS-TOOL-COMBO/dp/B09ZHJDZ11/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09ZHJDZ11&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61atq4xn7lL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 31,
+        "price": "$495.74",
+        "extracted_price": 495.74,
+        "delivery": [
+          "Join Prime to get FREE delivery Sat, Nov 21",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$495.74",
+            "extracted_primary_price": 495.74
+          }
+        ]
+      },
+      {
+        "position": 27,
+        "asin": "B08J8L766B",
+        "brand": "DEWALT",
+        "title": "FLEXVOLT ADVANTAGE 20V MAX* Combo Kit with Hammer Drill & Impact Driver, 5.0-Ah, 2-Tool (DCK2100P2)",
+        "link": "https://www.amazon.com/DEWALT-FLEXVOLT-ADVANTAGE-Hammer-DCK2100P2/dp/B08J8L766B/ref=sr_1_27?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-27",
+        "link_clean": "https://www.amazon.com/DEWALT-FLEXVOLT-ADVANTAGE-Hammer-DCK2100P2/dp/B08J8L766B/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08J8L766B&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61aIHQZscrS._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 747,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$365.00",
+        "extracted_price": 365,
+        "old_price": "$398.00",
+        "extracted_old_price": 398,
+        "delivery": [
+          "FREE delivery Nov 24 - 27",
+          "Or fastest delivery Nov 22 - 25"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$299.38 (9+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08J8L766B/ref=sr_1_27_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-27",
+        "purchase_options": [
+          {
+            "primary_price": "$365.00",
+            "extracted_primary_price": 365,
+            "old_primary_price": "$398.00",
+            "extracted_old_primary_price": 398,
+            "more_buying_choices": "$299.38 (9+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08J8L766B/ref=sr_1_27_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-27"
+          }
+        ]
+      },
+      {
+        "position": 28,
+        "asin": "B0858BQ9DK",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-Cordless-Drill-6-Tool-DCK661D1M1/dp/B0858BQ9DK/ref=sr_1_28_so_POWER_TOOL_SET?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-28",
+        "brand": "DEWALT",
+        "title": "20V MAX Power Tool Combo Kit, 6-Tool Cordless Power Tool Set with Battery and Charger (DCK661D1M1)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Drill-6-Tool-DCK661D1M1/dp/B0858BQ9DK/ref=sr_1_28?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-28",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Drill-6-Tool-DCK661D1M1/dp/B0858BQ9DK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0858BQ9DK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61Cauv-oQmL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 976,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 29,
+        "asin": "B072B8GHHL",
+        "brand": "DEWALT",
+        "title": "DCK240C2 20v Lithium Drill Driver/Impact Combo Kit (1.3Ah) with FlexTorq Screw Driving Set, 40-Piece",
+        "link": "https://www.amazon.com/DEWALT-DCK240C2-Lithium-FlexTorq-40-Piece/dp/B072B8GHHL/ref=sr_1_29?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-29",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK240C2-Lithium-FlexTorq-40-Piece/dp/B072B8GHHL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B072B8GHHL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41wMqCzLl8L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 806,
+        "price": "$148.89",
+        "extracted_price": 148.89,
+        "old_price": "$190.57",
+        "extracted_old_price": 190.57,
+        "delivery": [
+          "Delivery Tomorrow, Nov 19"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$148.89",
+            "extracted_primary_price": 148.89,
+            "old_primary_price": "$190.57",
+            "extracted_old_primary_price": 190.57
+          }
+        ]
+      },
+      {
+        "position": 30,
+        "asin": "B08D542C9N",
+        "brand": "DEWALT",
+        "title": "DCKTS781D2M1 20V MAX Cordless Li-Ion 7 Tool Combo Kit w/Tough System",
+        "link": "https://www.amazon.com/DeWALT-DCKTS781D2M1-Cordless-Li-Ion-System/dp/B08D542C9N/ref=sr_1_30?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-30",
+        "link_clean": "https://www.amazon.com/DeWALT-DCKTS781D2M1-Cordless-Li-Ion-System/dp/B08D542C9N/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08D542C9N&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51ruEjj8L0L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 138,
+        "price": "$879.00",
+        "extracted_price": 879,
+        "delivery": [
+          "FREE delivery Sat, Nov 28"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$879.00",
+            "extracted_primary_price": 879
+          }
+        ]
+      },
+      {
+        "position": 31,
+        "asin": "B0FMNP2LVB",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "DEWALT",
+        "title": "DCD803B ATOMIC 20V MAX 5-in-1 Brushless Cordless Multi-Head Drill/Driver, Tool Only",
+        "link": "https://www.amazon.com/DeWALT-DCD803B-Brushless-Cordless-Multi-Head/dp/B0FMNP2LVB/ref=sr_1_31?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-31",
+        "link_clean": "https://www.amazon.com/DeWALT-DCD803B-Brushless-Cordless-Multi-Head/dp/B0FMNP2LVB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FMNP2LVB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61+MIabrhdL._AC_UL320_.jpg",
+        "rating": 4.9,
+        "reviews": 58,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$199.00",
+        "extracted_price": 199,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$184.99 (22+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FMNP2LVB/ref=sr_1_31_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-31",
+        "purchase_options": [
+          {
+            "primary_price": "$199.00",
+            "extracted_primary_price": 199,
+            "more_buying_choices": "$184.99 (22+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FMNP2LVB/ref=sr_1_31_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-31"
+          }
+        ]
+      },
+      {
+        "position": 32,
+        "asin": "B082G2MKX8",
+        "brand": "DEWALT",
+        "title": "20V MAX Power Tool Combo Kit, 4-Tool Cordless Power Tool Set with 2 Batteries and Charger (DCK444C2)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Drill-4-Tool-DCK444C2/dp/B082G2MKX8/ref=sr_1_32?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-32",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Drill-4-Tool-DCK444C2/dp/B082G2MKX8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B082G2MKX8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71A8lkCCvbL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 1300,
+        "price": "$349.00",
+        "extracted_price": 349,
+        "delivery": [
+          "FREE delivery Fri, Nov 20",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$349.00",
+            "extracted_primary_price": 349
+          }
+        ]
+      },
+      {
+        "position": 33,
+        "asin": "B01KBZGPP2",
+        "brand": "DEWALT",
+        "title": "DCK397HM2 Lithium Ion 3-Tool Combo Kit",
+        "link": "https://www.amazon.com/DEWALT-DCK397HM2-Lithium-3-Tool-Combo/dp/B01KBZGPP2/ref=sr_1_33?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-33",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK397HM2-Lithium-3-Tool-Combo/dp/B01KBZGPP2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01KBZGPP2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71tM0KAIfhL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 165,
+        "price": "$549.99",
+        "extracted_price": 549.99,
+        "delivery": [
+          "$102.83 delivery Tue, Nov 24"
+        ],
+        "stock": "Only 3 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$549.99",
+            "extracted_primary_price": 549.99
+          }
+        ]
+      },
+      {
+        "position": 34,
+        "asin": "B0C6YM53GF",
+        "brand": "DEWALT",
+        "title": "20V MAX Drill And Grinder Kit, Power Tool Set, 2 Batteries and Charger Included (DCK231E2)",
+        "link": "https://www.amazon.com/DEWALT-Grinder-Batteries-Included-DCK231E2/dp/B0C6YM53GF/ref=sr_1_34?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-34",
+        "link_clean": "https://www.amazon.com/DEWALT-Grinder-Batteries-Included-DCK231E2/dp/B0C6YM53GF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0C6YM53GF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61NejAb3qZL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 62,
+        "price": "$349.99",
+        "extracted_price": 349.99,
+        "old_price": "$379.00",
+        "extracted_old_price": 379,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$349.99",
+            "extracted_primary_price": 349.99,
+            "old_primary_price": "$379.00",
+            "extracted_old_primary_price": 379
+          }
+        ]
+      },
+      {
+        "position": 35,
+        "asin": "B0HBZL4D3X",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Oscillating Multitool with Battery and Charger (DCS359E1)",
+        "link": "https://www.amazon.com/DEWALT-Oscillating-Multitool-DCS359E1-vibration/dp/B0HBZL4D3X/ref=sr_1_35?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-35",
+        "link_clean": "https://www.amazon.com/DEWALT-Oscillating-Multitool-DCS359E1-vibration/dp/B0HBZL4D3X/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HBZL4D3X&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71PpuqIy68L._AC_UL320_.jpg",
+        "rating": 4.9,
+        "reviews": 15,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$299.00",
+        "extracted_price": 299,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$299.00",
+            "extracted_primary_price": 299
+          }
+        ]
+      },
+      {
+        "position": 36,
+        "asin": "B0052MIIX2",
+        "brand": "DEWALT",
+        "title": "(DCK280C2) 20V MAX Impact Driver and Drill Combo Kit",
+        "link": "https://www.amazon.com/DEWALT-Impact-Driver-Drill-DCK280C2/dp/B0052MIIX2/ref=sr_1_36?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-36",
+        "link_clean": "https://www.amazon.com/DEWALT-Impact-Driver-Drill-DCK280C2/dp/B0052MIIX2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0052MIIX2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71LLisOc8cL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 907,
+        "price": "$269.99",
+        "extracted_price": 269.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 2 left in stock (more on the way).",
+        "more_buying_choices": "$199.99 (10 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0052MIIX2/ref=sr_1_36_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-36",
+        "purchase_options": [
+          {
+            "primary_price": "$269.99",
+            "extracted_primary_price": 269.99,
+            "more_buying_choices": "$199.99 (10 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0052MIIX2/ref=sr_1_36_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-36"
+          }
+        ]
+      },
+      {
+        "position": 37,
+        "asin": "B09ZH3JG7L",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Cordless Drill/Driver, ATOMIC Impact Driver 2 Tool Combo Kit, (2) 2.0Ah Batteries, Charger, and Bag DCK2051D2",
+        "link": "https://www.amazon.com/DCK2051D2-Brushless-Lithium-Ion-Cordless-Batteries/dp/B09ZH3JG7L/ref=sr_1_37?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-37",
+        "link_clean": "https://www.amazon.com/DCK2051D2-Brushless-Lithium-Ion-Cordless-Batteries/dp/B09ZH3JG7L/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09ZH3JG7L&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61QsDhY-4oL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 38,
+        "price": "$394.80",
+        "extracted_price": 394.8,
+        "delivery": [
+          "FREE delivery Nov 24 - Dec 1",
+          "Or fastest delivery Nov 20 - 24"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$394.80",
+            "extracted_primary_price": 394.8
+          }
+        ]
+      },
+      {
+        "position": 38,
+        "asin": "B0FKCCKXBC",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-DCK227D2R-Cordless-Driver-Renewed/dp/B0FKCCKXBC/ref=sr_1_38_so_TOOLS?keywords=DEWALT+DCK420D2&qid=1795001634&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-38",
+        "brand": "Amazon Renewed",
+        "title": "DCK227D2R 20V MAX 1/2 in. Cordless Drill Driver and 1/4 in. Cordless Impact Driver Combo Kit (2 Ah) (Renewed)",
+        "link": "https://www.amazon.com/DEWALT-DCK227D2R-Cordless-Driver-Renewed/dp/B0FKCCKXBC/ref=sr_1_38?keywords=DEWALT+DCK420D2&qid=1795001634&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-38",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK227D2R-Cordless-Driver-Renewed/dp/B0FKCCKXBC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FKCCKXBC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61lOFf6kEVL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 3,
+        "price": "$174.95",
+        "extracted_price": 174.95,
+        "delivery": [
+          "$11.95 delivery Nov 23 - 24"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$174.95",
+            "extracted_primary_price": 174.95
+          }
+        ]
+      },
+      {
+        "position": 39,
+        "asin": "B08GL2RJYK",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DeWalt-DCK379D2-20V-Brushless-3-tool/dp/B08GL2RJYK/ref=sr_1_39_so_POWER_TOOL_SET?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-39",
+        "brand": "DEWALT",
+        "title": "DCK379D2 20V MAX Brushless 3-tool Kit",
+        "link": "https://www.amazon.com/DeWalt-DCK379D2-20V-Brushless-3-tool/dp/B08GL2RJYK/ref=sr_1_39?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-39",
+        "link_clean": "https://www.amazon.com/DeWalt-DCK379D2-20V-Brushless-3-tool/dp/B08GL2RJYK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08GL2RJYK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61wpWjNtqgL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 15,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 40,
+        "asin": "B08N6JJ7V9",
+        "brand": "DEWALT",
+        "title": "20V MAX Power Tool Combo Kit, Cordless Woodworking 3-Tool Set with 5ah Battery and Charger (DCK300P1)",
+        "link": "https://www.amazon.com/DEWALT-DCK300P1-Brushless-3-Tool-Woodworking/dp/B08N6JJ7V9/ref=sr_1_40?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-40",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK300P1-Brushless-3-Tool-Woodworking/dp/B08N6JJ7V9/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08N6JJ7V9&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61BFBZxrF0L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 519,
+        "price": "$479.00",
+        "extracted_price": 479,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$479.00",
+            "extracted_primary_price": 479
+          }
+        ]
+      },
+      {
+        "position": 41,
+        "asin": "B0BHC6GNTH",
+        "brand": "Amazon Renewed",
+        "title": "DCK447P2 20V MAX XR Brushless Lithium-Ion 4-Tool Combo Kit with (2) Batteries (Renewed)",
+        "link": "https://www.amazon.com/DCK447P2-Brushless-Lithium-Ion-Batteries-Renewed/dp/B0BHC6GNTH/ref=sr_1_41?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-41",
+        "link_clean": "https://www.amazon.com/DCK447P2-Brushless-Lithium-Ion-Batteries-Renewed/dp/B0BHC6GNTH/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BHC6GNTH&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51kiiU1KrBL._AC_UL320_.jpg"
+      },
+      {
+        "position": 42,
+        "asin": "B06XCSZ325",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-DCK494P2-Lithium-4-Tool-Combo/dp/B06XCSZ325/ref=sr_1_42_so_POWER_TOOL_SET?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-42",
+        "title": "DCK494P2",
+        "link": "https://www.amazon.com/DEWALT-DCK494P2-Lithium-4-Tool-Combo/dp/B06XCSZ325/ref=sr_1_42?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-42",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK494P2-Lithium-4-Tool-Combo/dp/B06XCSZ325/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B06XCSZ325&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61TRpRpblrL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 56,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 43,
+        "asin": "B075YLKDN9",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-Combo-Compact-5-Tool-DCK521D2/dp/B075YLKDN9/ref=sr_1_43_so_POWER_TOOL_SET?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-43",
+        "brand": "DEWALT",
+        "title": "20V MAX Combo Kit, Compact 5-Tool (DCK521D2)",
+        "link": "https://www.amazon.com/DEWALT-Combo-Compact-5-Tool-DCK521D2/dp/B075YLKDN9/ref=sr_1_43?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-43",
+        "link_clean": "https://www.amazon.com/DEWALT-Combo-Compact-5-Tool-DCK521D2/dp/B075YLKDN9/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B075YLKDN9&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61sJ1AWcv3L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 606,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 44,
+        "asin": "B0858BQ9DH",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Drill Combo Kit, 4-Tool (DCK466D2)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Drill-4-Tool-DCK466D2/dp/B0858BQ9DH/ref=sr_1_44?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-44",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Drill-4-Tool-DCK466D2/dp/B0858BQ9DH/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0858BQ9DH&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61cMUf7TtZL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 453,
+        "price": "$379.00",
+        "extracted_price": 379,
+        "delivery": [
+          "FREE delivery",
+          "Temporarily out of stock."
+        ],
+        "stock": "Temporarily out of stock.",
+        "purchase_options": [
+          {
+            "primary_price": "$379.00",
+            "extracted_primary_price": 379
+          }
+        ]
+      },
+      {
+        "position": 45,
+        "asin": "B0CPP64G14",
+        "brand": "DEWALT",
+        "title": "20V MAX* Brushless 4-Tool Combo Kit with Medium Site-Ready Storage (DCKSS400D1M1)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Site-Ready-Storage-DCKSS400D1M1/dp/B0CPP64G14/ref=sr_1_45?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-45",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Site-Ready-Storage-DCKSS400D1M1/dp/B0CPP64G14/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CPP64G14&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61bLUOYJW-L._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 3,
+        "price": "$499.00",
+        "extracted_price": 499,
+        "delivery": [
+          "$20.28 delivery Tue, Nov 24"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$499.00",
+            "extracted_primary_price": 499
+          }
+        ]
+      },
+      {
+        "position": 46,
+        "asin": "B01KZNDYT0",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-DCK277C2-Compact-Brushless-Impact/dp/B01KZNDYT0/ref=sr_1_46_so_POWER_TOOL_SET?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-46",
+        "title": "DCK277C2",
+        "link": "https://www.amazon.com/DEWALT-DCK277C2-Compact-Brushless-Impact/dp/B01KZNDYT0/ref=sr_1_46?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-46",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK277C2-Compact-Brushless-Impact/dp/B01KZNDYT0/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01KZNDYT0&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61fhcrX5PVL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 3300,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 47,
+        "asin": "B07QHQ8GHT",
+        "tags": [
+          "Battery Powered"
+        ],
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-ATOMIC-Cordless-Compact-DCK278C2/dp/B07QHQ8GHT/ref=sr_1_47_so_DRILL?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-47",
+        "brand": "DEWALT",
+        "title": "ATOMIC 20V MAX* Cordless Drill Combo Kit, Compact (DCK278C2)",
+        "link": "https://www.amazon.com/DEWALT-ATOMIC-Cordless-Compact-DCK278C2/dp/B07QHQ8GHT/ref=sr_1_47?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-47",
+        "link_clean": "https://www.amazon.com/DEWALT-ATOMIC-Cordless-Compact-DCK278C2/dp/B07QHQ8GHT/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07QHQ8GHT&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/615HfUYRngL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 2700,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$287.80 (2 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07QHQ8GHT/ref=sr_1_47_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-47",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$287.80 (2 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07QHQ8GHT/ref=sr_1_47_olp?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-47"
+          }
+        ]
+      },
+      {
+        "position": 48,
+        "asin": "B01NGWUBM7",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-DCK720D2-Compact-7-Tool-Combo/dp/B01NGWUBM7/ref=sr_1_48_so_POWER_TOOL_SET?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-48",
+        "brand": "DEWALT",
+        "title": "20V MAX Combo Kit, Compact 7-Tool (DCK720D2)",
+        "link": "https://www.amazon.com/DEWALT-DCK720D2-Compact-7-Tool-Combo/dp/B01NGWUBM7/ref=sr_1_48?keywords=DEWALT+DCK420D2&qid=1795001634&sr=8-48",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK720D2-Compact-7-Tool-Combo/dp/B01NGWUBM7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01NGWUBM7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61i0GP3lclL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 543,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249152011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_76%3A1249152011&dc&qid=1795001634&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3A%2FoUBxg8pylYNqtfR%2Fe44j78g8C%2FqbnHarkVlu%2Fs39bQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_76%3A1249152011"
+        }
+      ],
+      "delivery_day": [
+        {
+          "position": 1,
+          "name": "Get It by Tomorrow",
+          "rh": "p_90:8308921011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_90%3A8308921011&dc&qid=1795001634&rnid=8308919011&ref=sr_nr_p_90_1&ds=v1%3AAg4G5UG9A4JekcA1aaBuHdGAIahz%2Bu81nFdssJLuqoI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_90%3A8308921011"
+        }
+      ],
+      "price": [
+        {
+          "position": 1,
+          "name": "All Discounts",
+          "rh": "p_n_deal_type:23566065011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_n_deal_type%3A23566065011&dc&qid=1795001634&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3AIJE2GMCS1yeclVWwAq1NPk7THqPDM2k0fUVoZdVnMrI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_n_deal_type%3A23566065011"
+        },
+        {
+          "position": 2,
+          "name": "Today's Deals",
+          "rh": "p_n_deal_type:23566064011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_n_deal_type%3A23566064011&dc&qid=1795001634&rnid=23566063011&ref=sr_nr_p_n_deal_type_2&ds=v1%3AYyR3UucBB19%2BHzqjioEvRqgGRUX8EJyQeck%2BC2YVQSQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_n_deal_type%3A23566064011"
+        },
+        {
+          "position": 3,
+          "name": "Up to $200",
+          "rh": "p_36:dynamic-picker-0",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_36%3A-20000&dc&qid=1795001634&rnid=1243644011&ref=sr_nr_p_36_1&ds=v1%3AsJX6Q7XeO804VLw2OsHHM719FwOlbRJxDTkODz5tAj4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_36%3A-20000"
+        },
+        {
+          "position": 4,
+          "name": "$200 to $300",
+          "rh": "p_36:dynamic-picker-1",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_36%3A20000-30000&dc&qid=1795001634&rnid=1243644011&ref=sr_nr_p_36_2&ds=v1%3AXklRNUMiX7wByYG0zUB3A5ExZcq0qLfD6DiZItEpcpo",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_36%3A20000-30000"
+        },
+        {
+          "position": 5,
+          "name": "$300 to $500",
+          "rh": "p_36:dynamic-picker-2",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_36%3A30000-50000&dc&qid=1795001634&rnid=1243644011&ref=sr_nr_p_36_3&ds=v1%3AWJj%2B0f9pCb%2B%2BVcYGboE1yBogm8WGSnH2sLUyaCtohJE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_36%3A30000-50000"
+        },
+        {
+          "position": 6,
+          "name": "$500 & above",
+          "rh": "p_36:dynamic-picker-3",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_36%3A50000-&dc&qid=1795001634&rnid=1243644011&ref=sr_nr_p_36_4&ds=v1%3AHpvxr4UgagaMoGZIibKFBfUuo4nhwj%2BdX%2BkXlSDAaJ0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_36%3A50000-"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248909011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_72%3A1248909011&dc&qid=1795001634&rnid=1248907011&ref=sr_nr_p_72_1&ds=v1%3ANu126HiIJ3%2BY4zpuahstK753J1crSQAmvFeZafrPgpE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_72%3A1248909011"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "DEWALT",
+          "rh": "p_123:195991",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_123%3A195991&dc&qid=1795001634&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3AcXh%2BpWcEH8j02f9%2BerKmT3toZYOkX%2Fs7GSuKFeclnb4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_123%3A195991"
+        }
+      ],
+      "premium_brands": [
+        {
+          "position": 1,
+          "name": "Premium Brands",
+          "rh": "p_n_g-101015887018111:204376014011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_n_g-101015887018111%3A204376014011&dc&qid=1795001634&rnid=204376013011&ref=sr_nr_p_n_g-101015887018111_1&ds=v1%3AGCQgMI77BSIE31NdfPmBtcxWzMG0ObUhcE2%2FVlWIKNM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_n_g-101015887018111%3A204376014011"
+        }
+      ],
+      "battery_type": [
+        {
+          "position": 1,
+          "name": "Lithium Ion",
+          "rh": "p_n_g-1001830995111:212445696011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_n_g-1001830995111%3A212445696011&dc&qid=1795001634&rnid=2399136011&ref=sr_nr_p_n_g-1001830995111_1&ds=v1%3AG%2FQUZJBe4RjvtV2kb7Pxrht4Du22duzREg3sEBe6cBU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_n_g-1001830995111%3A212445696011"
+        },
+        {
+          "position": 2,
+          "name": "Other Than Listed",
+          "rh": "p_n_g-1001830995111:212445699011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_n_g-1001830995111%3A212445699011&dc&qid=1795001634&rnid=2399136011&ref=sr_nr_p_n_g-1001830995111_2&ds=v1%3AnzisNcc1IFdMgHUnMJWPb6%2FsRn8OUuwYuqhuTp2mvYw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_n_g-1001830995111%3A212445699011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Amazon.com",
+          "rh": "p_6:ATVPDKIKX0DER",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_6%3AATVPDKIKX0DER&dc&qid=1795001634&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3AoJ%2BlI0pnDVfgBgfLGNwcT25Krb0fwAF5v2GtNFvGy90",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_6%3AATVPDKIKX0DER"
+        },
+        {
+          "position": 2,
+          "name": "Fixite LLC",
+          "rh": "p_6:AAZUYZ1PLEFE3",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_6%3AAAZUYZ1PLEFE3&dc&qid=1795001634&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3AJ7NKl9gaf5rNAU7uMf%2B5qu1tqaJFaYzsaliJjqWKzLk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_6%3AAAZUYZ1PLEFE3"
+        },
+        {
+          "position": 3,
+          "name": "The Factory Depot",
+          "rh": "p_6:A29PHU0KPCGV8S",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_6%3AA29PHU0KPCGV8S&dc&qid=1795001634&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3AYx%2FeI9i32%2B4QhhfkajAKkyy0gmGg60hp7Jpf2aFep8c",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_6%3AA29PHU0KPCGV8S"
+        },
+        {
+          "position": 4,
+          "name": "RFBDirect",
+          "rh": "p_6:A3PFMTE1ETPWWX",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_6%3AA3PFMTE1ETPWWX&dc&qid=1795001634&rnid=339807011&ref=sr_nr_p_6_4&ds=v1%3ANzxvkYssyQngMVDlezSFb2JCQq38soZMRmy2nXTf0PE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_6%3AA3PFMTE1ETPWWX"
+        },
+        {
+          "position": 5,
+          "name": "Alpha Tools INC",
+          "rh": "p_6:A2PAX7A9VNXQTJ",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_6%3AA2PAX7A9VNXQTJ&dc&qid=1795001634&rnid=339807011&ref=sr_nr_p_6_5&ds=v1%3ADoCkxhHlMvSaJ00m0MLTuOLpeczylhREuQcxDQGq3p0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_6%3AA2PAX7A9VNXQTJ"
+        },
+        {
+          "position": 6,
+          "name": "Amazon Resale",
+          "rh": "p_6:A2L77EE7U53NWQ",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_6%3AA2L77EE7U53NWQ&dc&qid=1795001634&rnid=339807011&ref=sr_nr_p_6_6&ds=v1%3Av8yf0pITVP48WiMKeTFHEkqVTRnz1slNdLAspxGat80",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_6%3AA2L77EE7U53NWQ"
+        },
+        {
+          "position": 7,
+          "name": "Craz-DealSeekeR",
+          "rh": "p_6:A1VADQO0CU5CDJ",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK420D2&rh=p_6%3AA1VADQO0CU5CDJ&dc&qid=1795001634&rnid=339807011&ref=sr_nr_p_6_7&ds=v1%3AvVcOIQEDwhTInU7J2hrSctVQPiJMSXOHttpRniQ%2F0mc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&rh=p_6%3AA1VADQO0CU5CDJ"
+        }
+      ]
+    },
+    "serpapi_pagination": {
+      "current": 1,
+      "next": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK420D2&page=2"
+    }
+  }
+}

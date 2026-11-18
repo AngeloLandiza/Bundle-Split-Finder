@@ -1,0 +1,1381 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=RYOBI PCL406B",
+  "at": 1795001643447,
+  "data": {
+    "search_metadata": {
+      "id": "6afd8d2993d35d4d1f08664d",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/I9oUPOPvQtLj3GG8WICb3OMPkB-_OtWM7okeOK4wLSQ/6afd8d2993d35d4d1f08664d.json",
+      "markdown_endpoint": "https://serpapi.com/searches/I9oUPOPvQtLj3GG8WICb3OMPkB-_OtWM7okeOK4wLSQ/6afd8d2993d35d4d1f08664d.md",
+      "created_at": "2026-11-18 11:34:01 UTC",
+      "processed_at": "2026-11-18 11:34:01 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=RYOBI+PCL406B",
+      "raw_html_file": "https://serpapi.com/searches/I9oUPOPvQtLj3GG8WICb3OMPkB-_OtWM7okeOK4wLSQ/6afd8d2993d35d4d1f08664d.html",
+      "total_time_taken": 1.42
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "RYOBI PCL406B",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 41,
+      "query_displayed": "RYOBI PCL406B",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B0BSJ97BSR",
+        "brand": "RYOBI",
+        "title": "18V ONE+ 5\" Random Orbit Sander Cordless",
+        "link": "https://www.amazon.com/RYOBI-Random-Orbit-Sander-CORDLESS/dp/B0BSJ97BSR/ref=sr_1_1?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-1",
+        "link_clean": "https://www.amazon.com/RYOBI-Random-Orbit-Sander-CORDLESS/dp/B0BSJ97BSR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BSJ97BSR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61PTvFvbpXL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 143,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$54.00",
+        "extracted_price": 54,
+        "old_price": "$57.48",
+        "extracted_old_price": 57.48,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$54.00",
+            "extracted_primary_price": 54,
+            "old_primary_price": "$57.48",
+            "extracted_old_primary_price": 57.48
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B09ZBK3BJJ",
+        "title": "ONEAND 18V Cordless 5 in. Random Orbit Sander Tool ONLY",
+        "link": "https://www.amazon.com/ONEAND-Cordless-Battery-Charger-Separately/dp/B09ZBK3BJJ/ref=sr_1_2_mod_primary_new?keywords=RYOBI+PCL406B&qid=1795001642&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-2",
+        "link_clean": "https://www.amazon.com/ONEAND-Cordless-Battery-Charger-Separately/dp/B09ZBK3BJJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09ZBK3BJJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71dYoKIrD9L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 870,
+        "bought_last_month": "600+ bought in past month",
+        "price": "$49.95",
+        "extracted_price": 49.95,
+        "old_price": "$56.20",
+        "extracted_old_price": 56.2,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Nov 20 - 23"
+        ],
+        "stock": "Only 3 left in stock - order soon.",
+        "more_buying_choices": "$48.60 (59+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09ZBK3BJJ/ref=sr_1_2_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-2",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$49.95",
+            "extracted_primary_price": 49.95,
+            "old_primary_price": "$56.20",
+            "extracted_old_primary_price": 56.2,
+            "more_buying_choices": "$48.60 (59+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09ZBK3BJJ/ref=sr_1_2_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-2"
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$53.00",
+            "extracted_primary_price": 53,
+            "old_primary_price": "$56.20",
+            "extracted_old_primary_price": 56.2
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B0CCJRWCLW",
+        "badges": [
+          "Overall Pick"
+        ],
+        "brand": "RYOBI",
+        "title": "ONE+ 18V Cordless 1/4 Sheet Sander (Tool Only), PCL401B, Green",
+        "link": "https://www.amazon.com/RYOBI-Cordless-Sheet-Sander-PCL401B/dp/B0CCJRWCLW/ref=sr_1_3?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-3",
+        "link_clean": "https://www.amazon.com/RYOBI-Cordless-Sheet-Sander-PCL401B/dp/B0CCJRWCLW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CCJRWCLW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/510wSA5zmAL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 238,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$49.99",
+        "extracted_price": 49.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "more_buying_choices": "$44.00 (14 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CCJRWCLW/ref=sr_1_3_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-3",
+        "purchase_options": [
+          {
+            "primary_price": "$49.99",
+            "extracted_primary_price": 49.99,
+            "more_buying_choices": "$44.00 (14 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CCJRWCLW/ref=sr_1_3_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-3"
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B0CLPJSC7C",
+        "brand": "RYOBI",
+        "title": "One+ 18V Cordless 2-Tool Combo Kit w/Multi-Tool & Reciprocating Saw (Tools Only)",
+        "link": "https://www.amazon.com/Ryobi-Cordless-2-Tool-Multi-Tool-Reciprocating/dp/B0CLPJSC7C/ref=sr_1_4_mod_primary_new?keywords=RYOBI+PCL406B&qid=1795001642&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-4",
+        "link_clean": "https://www.amazon.com/Ryobi-Cordless-2-Tool-Multi-Tool-Reciprocating/dp/B0CLPJSC7C/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CLPJSC7C&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41rVMMNfJeL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 95,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$104.50",
+        "extracted_price": 104.5,
+        "delivery": [
+          "FREE delivery Fri, Nov 27",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "stock": "Only 7 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$104.50",
+            "extracted_primary_price": 104.5
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$129.90",
+            "extracted_primary_price": 129.9
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B0DQVRYQMJ",
+        "brand": "RYOBI",
+        "title": "PCL445B 18V Cordless 4-1/2 in. Angle Grinder (Tool Only)",
+        "link": "https://www.amazon.com/RYOBI-PCL445B-Cordless-Angle-Grinder/dp/B0DQVRYQMJ/ref=sr_1_5_mod_primary_new?keywords=RYOBI+PCL406B&qid=1795001642&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-5",
+        "link_clean": "https://www.amazon.com/RYOBI-PCL445B-Cordless-Angle-Grinder/dp/B0DQVRYQMJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DQVRYQMJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61jIrqI3srL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 385,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$54.99",
+        "extracted_price": 54.99,
+        "delivery": [
+          "FREE delivery Nov 19 - 20"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$42.95 (41+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DQVRYQMJ/ref=sr_1_5_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-5",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$54.99",
+            "extracted_primary_price": 54.99,
+            "more_buying_choices": "$42.95 (41+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DQVRYQMJ/ref=sr_1_5_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-5"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$54.99",
+            "extracted_primary_price": 54.99
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B0CL5B9559",
+        "brand": "Amazon Renewed",
+        "title": "Ryobi One+ 18v 5\" Random Orbit Sander (Renewed)",
+        "link": "https://www.amazon.com/Ryobi-Random-Orbit-Sander-Renewed/dp/B0CL5B9559/ref=sr_1_6?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-6",
+        "link_clean": "https://www.amazon.com/Ryobi-Random-Orbit-Sander-Renewed/dp/B0CL5B9559/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CL5B9559&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51hC6GY2s-L._AC_UL320_.jpg",
+        "rating": 1,
+        "reviews": 1
+      },
+      {
+        "position": 7,
+        "asin": "B0BGYFTPGK",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "RYOBI",
+        "title": "ONE+ 18V Cordless 1/4 in. Impact Driver - 1,800 in-lbs Torque, 0-3,400 IPM, Tool Only (Battery Not Included) - PCL235B",
+        "link": "https://www.amazon.com/RYOBI-Cordless-Impact-Driver-Green/dp/B0BGYFTPGK/ref=sr_1_7_mod_primary_new?keywords=RYOBI+PCL406B&qid=1795001642&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-7",
+        "link_clean": "https://www.amazon.com/RYOBI-Cordless-Impact-Driver-Green/dp/B0BGYFTPGK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BGYFTPGK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61Bf2AIwqYL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1400,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$44.90",
+        "extracted_price": 44.9,
+        "old_price": "$48.50",
+        "extracted_old_price": 48.5,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$44.90",
+            "extracted_primary_price": 44.9,
+            "old_primary_price": "$48.50",
+            "extracted_old_primary_price": 48.5
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$48.00",
+            "extracted_primary_price": 48
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B0846DWKZF",
+        "brand": "RYOBI",
+        "title": "P1819 18V One+ Lithium Ion Combo Kit (6 Tools: Drill/Driver, Impact Driver, Reciprocating Saw, Circular Saw, Multi-Tool, LED Worklight, 4.0 Ah & 1.5 Ah Battery, Charger, Bag)",
+        "link": "https://www.amazon.com/Ryobi-P1819-Lithium-Combo-Tools/dp/B0846DWKZF/ref=sr_1_8?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-8",
+        "link_clean": "https://www.amazon.com/Ryobi-P1819-Lithium-Combo-Tools/dp/B0846DWKZF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0846DWKZF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/714Ul96BfnL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 2000,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$270.00",
+        "extracted_price": 270,
+        "old_price": "$294.84",
+        "extracted_old_price": 294.84,
+        "delivery": [
+          "FREE delivery Nov 23 - 25",
+          "Or fastest delivery Nov 20 - 24"
+        ],
+        "more_buying_choices": "$269.99 (12+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0846DWKZF/ref=sr_1_8_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-8",
+        "purchase_options": [
+          {
+            "primary_price": "$270.00",
+            "extracted_primary_price": 270,
+            "old_primary_price": "$294.84",
+            "extracted_old_primary_price": 294.84,
+            "more_buying_choices": "$269.99 (12+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0846DWKZF/ref=sr_1_8_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-8"
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B0B85RMS5N",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "RYOBI",
+        "title": "18V ONE+ 4.0Ah Starter Kit - PCL104K1",
+        "link": "https://www.amazon.com/RYOBI-18V-ONE-4-0Ah-Starter/dp/B0B85RMS5N/ref=sr_1_9?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-9",
+        "link_clean": "https://www.amazon.com/RYOBI-18V-ONE-4-0Ah-Starter/dp/B0B85RMS5N/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B85RMS5N&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/510-3i6b5VL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 46,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$71.89",
+        "extracted_price": 71.89,
+        "old_price": "$76.22",
+        "extracted_old_price": 76.22,
+        "delivery": [
+          "FREE delivery Nov 20 - 23",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$71.88 (16 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B85RMS5N/ref=sr_1_9_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-9",
+        "purchase_options": [
+          {
+            "primary_price": "$71.89",
+            "extracted_primary_price": 71.89,
+            "old_primary_price": "$76.22",
+            "extracted_old_primary_price": 76.22,
+            "more_buying_choices": "$71.88 (16 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B85RMS5N/ref=sr_1_9_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-9"
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B0FD1B8BG5",
+        "brand": "RYOBI",
+        "title": "18V Cordless 3/8 in. Drill/Driver (Tool Only) PCL201",
+        "link": "https://www.amazon.com/Ryobi-Cordless-Drill-Driver-PCL201/dp/B0FD1B8BG5/ref=sr_1_10?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-10",
+        "link_clean": "https://www.amazon.com/Ryobi-Cordless-Drill-Driver-PCL201/dp/B0FD1B8BG5/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FD1B8BG5&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51xJaBkq4yL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 8,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$90.19",
+        "extracted_price": 90.19,
+        "delivery": [
+          "FREE delivery Nov 23 - 25",
+          "Or fastest delivery Tue, Nov 24"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$60.00 (9+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FD1B8BG5/ref=sr_1_10_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-10",
+        "purchase_options": [
+          {
+            "primary_price": "$90.19",
+            "extracted_primary_price": 90.19,
+            "more_buying_choices": "$60.00 (9+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FD1B8BG5/ref=sr_1_10_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-10"
+          }
+        ]
+      },
+      {
+        "position": 11,
+        "asin": "B099NRF98L",
+        "brand": "RYOBI",
+        "title": "PBLMT50B ONE+ HP 18-Volt Brushless Cordless Multi-Tool (Tool Only)",
+        "link": "https://www.amazon.com/RYOBI-PBLMT50B-Brushless-Cordless-Multi-Tool/dp/B099NRF98L/ref=sr_1_11?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-11",
+        "link_clean": "https://www.amazon.com/RYOBI-PBLMT50B-Brushless-Cordless-Multi-Tool/dp/B099NRF98L/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B099NRF98L&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61i1E1K00TL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 638,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$79.99",
+        "extracted_price": 79.99,
+        "old_price": "$84.99",
+        "extracted_old_price": 84.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$79.99",
+            "extracted_primary_price": 79.99,
+            "old_primary_price": "$84.99",
+            "extracted_old_primary_price": 84.99
+          }
+        ]
+      },
+      {
+        "position": 12,
+        "asin": "B0D6ZPQ25M",
+        "brand": "RYOBI",
+        "title": "ONE+ HP 18V Brushless Oscillating Multi-Tool (Tool Only) PBLMT51B",
+        "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Oscillating-Multi-Tool/dp/B0D6ZPQ25M/ref=sr_1_12_mod_primary_new?keywords=RYOBI+PCL406B&qid=1795001642&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-12",
+        "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Oscillating-Multi-Tool/dp/B0D6ZPQ25M/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D6ZPQ25M&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41280BchxLL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 40,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$110.00",
+        "extracted_price": 110,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 7 left in stock - order soon.",
+        "more_buying_choices": "$89.00 (11 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D6ZPQ25M/ref=sr_1_12_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-12",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$110.00",
+            "extracted_primary_price": 110,
+            "more_buying_choices": "$89.00 (11 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D6ZPQ25M/ref=sr_1_12_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-12"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$115.15",
+            "extracted_primary_price": 115.15
+          }
+        ]
+      },
+      {
+        "position": 13,
+        "asin": "B0DNNZ1W52",
+        "brand": "RYOBI",
+        "title": "18V PCL540 Cut-Out Tool Kit with Battery and Charger",
+        "link": "https://www.amazon.com/RYOBI-PCL540-Cut-Out-Battery-Charger/dp/B0DNNZ1W52/ref=sr_1_13?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-13",
+        "link_clean": "https://www.amazon.com/RYOBI-PCL540-Cut-Out-Battery-Charger/dp/B0DNNZ1W52/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DNNZ1W52&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71Hm7hfwQcL._AC_UL320_.jpg",
+        "price": "$99.99",
+        "extracted_price": 99.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$99.99",
+            "extracted_primary_price": 99.99
+          }
+        ]
+      },
+      {
+        "position": 14,
+        "asin": "B07BQC68YC",
+        "brand": "RYOBI",
+        "title": "18-Volt ONE+ Lithium-Ion Cordless (10-Tool) Combo Kit with (1) 4.0 Ah Battery and (1) 1.5 Ah Battery, Charger and Bag",
+        "link": "https://www.amazon.com/Ryobi-Lithium-Ion-P1895-Toucan-City/dp/B07BQC68YC/ref=sr_1_14?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-14",
+        "link_clean": "https://www.amazon.com/Ryobi-Lithium-Ion-P1895-Toucan-City/dp/B07BQC68YC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07BQC68YC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61ikc33VYPL._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 18,
+        "price": "$784.00",
+        "extracted_price": 784,
+        "delivery": [
+          "FREE delivery Fri, Nov 27",
+          "Or fastest delivery Nov 20 - 23"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "more_buying_choices": "$699.63 (4 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07BQC68YC/ref=sr_1_14_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-14",
+        "purchase_options": [
+          {
+            "primary_price": "$784.00",
+            "extracted_primary_price": 784,
+            "more_buying_choices": "$699.63 (4 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07BQC68YC/ref=sr_1_14_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-14"
+          }
+        ]
+      },
+      {
+        "position": 15,
+        "asin": "B0CN3HRKQV",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/RYOBI-PCL733K-06033D1200-Gray/dp/B0CN3HRKQV/ref=sr_1_15_so_VACUUM_CLEANER?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-15",
+        "brand": "RYOBI",
+        "title": "06033D1200, Gray",
+        "link": "https://www.amazon.com/RYOBI-PCL733K-06033D1200-Gray/dp/B0CN3HRKQV/ref=sr_1_15?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-15",
+        "link_clean": "https://www.amazon.com/RYOBI-PCL733K-06033D1200-Gray/dp/B0CN3HRKQV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CN3HRKQV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71At00Icl0L._AC_UL320_.jpg",
+        "rating": 3.7,
+        "reviews": 14,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$229.84 (2 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CN3HRKQV/ref=sr_1_15_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-15",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$229.84 (2 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CN3HRKQV/ref=sr_1_15_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-15"
+          }
+        ]
+      },
+      {
+        "position": 16,
+        "asin": "B0GJR5VS14",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/Anniversary-Ryobi-Compact-Brushless-Drill/dp/B0GJR5VS14/ref=sr_1_16_so_DRILL?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-16",
+        "title": "30th Anniversary Ryobi ONE+ HP 18V Compact Brushless 1/2\" Drill Kit – Blackout Edition with 4.0Ah Battery & Charger",
+        "link": "https://www.amazon.com/Anniversary-Ryobi-Compact-Brushless-Drill/dp/B0GJR5VS14/ref=sr_1_16?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-16",
+        "link_clean": "https://www.amazon.com/Anniversary-Ryobi-Compact-Brushless-Drill/dp/B0GJR5VS14/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GJR5VS14&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61GUprNGphL._AC_UL320_.jpg",
+        "rating": 4.2,
+        "reviews": 9,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$148.42 (7 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0GJR5VS14/ref=sr_1_16_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-16",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$148.42 (7 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0GJR5VS14/ref=sr_1_16_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-16"
+          }
+        ]
+      },
+      {
+        "position": 17,
+        "asin": "B0CFFWTMD2",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/Random-Sander-Reduced-Vibration-Renewed/dp/B0CFFWTMD2/ref=sr_1_17_so_SANDER?keywords=RYOBI+PCL406B&qid=1795001642&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-17",
+        "brand": "Amazon Renewed",
+        "title": "One+ 18v 5\" Random Orbit Sander Reduced Vibration (Renewed)",
+        "link": "https://www.amazon.com/Random-Sander-Reduced-Vibration-Renewed/dp/B0CFFWTMD2/ref=sr_1_17?keywords=RYOBI+PCL406B&qid=1795001642&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-17",
+        "link_clean": "https://www.amazon.com/Random-Sander-Reduced-Vibration-Renewed/dp/B0CFFWTMD2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CFFWTMD2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51hC6GY2s-L._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 38,
+        "price": "$58.95",
+        "extracted_price": 58.95,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$55.02 (3 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CFFWTMD2/ref=sr_1_17_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-17",
+        "purchase_options": [
+          {
+            "primary_price": "$58.95",
+            "extracted_primary_price": 58.95,
+            "more_buying_choices": "$55.02 (3 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CFFWTMD2/ref=sr_1_17_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-17"
+          }
+        ]
+      },
+      {
+        "position": 18,
+        "asin": "B0HF3W3114",
+        "title": "2-Piece 5\" 8 Hole Hook & Loop Designed for Sander Pads Suited for Ryobi PCL406B 5\" Random Orbit Sander",
+        "link": "https://www.amazon.com/Smaeti-2-Piece-Designed-Sander-PCL406B/dp/B0HF3W3114/ref=sr_1_18?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-18",
+        "link_clean": "https://www.amazon.com/Smaeti-2-Piece-Designed-Sander-PCL406B/dp/B0HF3W3114/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HF3W3114&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61ix322nDgL._AC_UL320_.jpg",
+        "price": "$13.99",
+        "extracted_price": 13.99,
+        "price_unit": "$7.00/count",
+        "extracted_price_unit": 7,
+        "delivery": [
+          "FREE delivery Sat, Nov 28"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$13.99",
+            "extracted_primary_price": 13.99
+          }
+        ]
+      },
+      {
+        "position": 19,
+        "asin": "B083S6S7VG",
+        "title": "2Packs 18V Battery and Charger Combo for Ryobi 18 Volt Cordless Tools Battery and P118B Charger, 18V Battery Capacity Output 3.0Ah",
+        "link": "https://www.amazon.com/CELL9102-Battery-Charger-Cordless-Capacity/dp/B083S6S7VG/ref=sr_1_19?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-19",
+        "link_clean": "https://www.amazon.com/CELL9102-Battery-Charger-Cordless-Capacity/dp/B083S6S7VG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B083S6S7VG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71+0zbWSyUL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 678,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$69.99",
+        "extracted_price": 69.99,
+        "price_unit": "$23.33/count",
+        "extracted_price_unit": 23.33,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$49.99 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B083S6S7VG/ref=sr_1_19_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-19",
+        "purchase_options": [
+          {
+            "primary_price": "$69.99",
+            "extracted_primary_price": 69.99,
+            "more_buying_choices": "$49.99 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B083S6S7VG/ref=sr_1_19_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-19"
+          }
+        ]
+      },
+      {
+        "position": 20,
+        "asin": "B017POA9R2",
+        "brand": "RYOBI",
+        "title": "P411 ONE+ 18-Volt 5 in. Cordless Random Orbit Sander (Tool-Only) by Ryobi",
+        "link": "https://www.amazon.com/RROS18-0-Cordless-Random-Orbit-Sander/dp/B017POA9R2/ref=sr_1_20?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-20",
+        "link_clean": "https://www.amazon.com/RROS18-0-Cordless-Random-Orbit-Sander/dp/B017POA9R2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B017POA9R2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61MD1DxmYdL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1800,
+        "price": "$103.27",
+        "extracted_price": 103.27,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 9 left in stock - order soon.",
+        "more_buying_choices": "$79.00 (3 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B017POA9R2/ref=sr_1_20_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-20",
+        "purchase_options": [
+          {
+            "primary_price": "$103.27",
+            "extracted_primary_price": 103.27,
+            "more_buying_choices": "$79.00 (3 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B017POA9R2/ref=sr_1_20_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-20"
+          }
+        ]
+      },
+      {
+        "position": 21,
+        "asin": "B0H8CJ68FJ",
+        "title": "2X Sander Pad 5 inch 8 Hole for RYOBI 5\" Random Orbit Sander RS290 RS290g RS280 RS280VS RS281 RS281VS PCL406B P410 P411",
+        "link": "https://www.amazon.com/Suifaqi-Sander-RS280VS-RS281VS-PCL406B/dp/B0H8CJ68FJ/ref=sr_1_21?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-21",
+        "link_clean": "https://www.amazon.com/Suifaqi-Sander-RS280VS-RS281VS-PCL406B/dp/B0H8CJ68FJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H8CJ68FJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71jcpje66jL._AC_UL320_.jpg",
+        "price": "$13.99",
+        "extracted_price": 13.99,
+        "delivery": [
+          "FREE delivery Tue, Dec 1"
+        ],
+        "stock": "Only 6 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$13.99",
+            "extracted_primary_price": 13.99
+          }
+        ]
+      },
+      {
+        "position": 22,
+        "asin": "B0F3N79KTM",
+        "title": "P326-PCL406B Fits for Ryobi 18V 16-Gauge Cordless AirStrike Finish Nailer with Cordless 5 in. Random Orbit Sander (Tools Only)",
+        "link": "https://www.amazon.com/P326-PCL406B-16-Gauge-Cordless-AirStrike-Finish/dp/B0F3N79KTM/ref=sr_1_22?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-22",
+        "link_clean": "https://www.amazon.com/P326-PCL406B-16-Gauge-Cordless-AirStrike-Finish/dp/B0F3N79KTM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F3N79KTM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/414MEXD-YcL._AC_UL320_.jpg",
+        "price": "$402.93",
+        "extracted_price": 402.93,
+        "delivery": [
+          "$45 delivery Thu, Dec 3"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$402.93",
+            "extracted_primary_price": 402.93
+          }
+        ]
+      },
+      {
+        "position": 23,
+        "asin": "B0HMHB91WS",
+        "title": "2X Sander Pad 5 inch 8 Hole for RYOBI 5\" Random Orbit Sander RS290 RS290g RS280 RS280VS RS281 RS281VS PCL406B P410 P411",
+        "link": "https://www.amazon.com/Bryzantine-Sander-RS280VS-RS281VS-PCL406B/dp/B0HMHB91WS/ref=sr_1_23?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-23",
+        "link_clean": "https://www.amazon.com/Bryzantine-Sander-RS280VS-RS281VS-PCL406B/dp/B0HMHB91WS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HMHB91WS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71jcpje66jL._AC_UL320_.jpg",
+        "price": "$13.99",
+        "extracted_price": 13.99,
+        "delivery": [
+          "FREE delivery Tue, Dec 1"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$13.99",
+            "extracted_primary_price": 13.99
+          }
+        ]
+      },
+      {
+        "position": 24,
+        "asin": "B0HS3K8H35",
+        "title": "2X Sander Pad 5 inch 8 Hole for RYOBI 5\" Random Orbit Sander RS290 RS290g RS280 RS280VS RS281 RS281VS PCL406B P410 P411",
+        "link": "https://www.amazon.com/dp/B0HS3K8H35/ref=sr_1_24?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-24",
+        "link_clean": "https://www.amazon.com/dp/B0HS3K8H35/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HS3K8H35&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71jcpje66jL._AC_UL320_.jpg",
+        "price": "$13.99",
+        "extracted_price": 13.99,
+        "delivery": [
+          "FREE delivery Tue, Dec 1"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$13.99",
+            "extracted_primary_price": 13.99
+          }
+        ]
+      },
+      {
+        "position": 25,
+        "asin": "B0D841HX8C",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/P321-PCL406B-18-Gauge-Cordless-AirStrike-Nailer/dp/B0D841HX8C/ref=sr_1_25_so_TOOLS?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-25",
+        "title": "P321-PCL406B Fits for RYOBI 18V 18-Gauge Cordless AirStrike Brad Nailer with Cordless 5 in. Random Orbit Sander",
+        "link": "https://www.amazon.com/P321-PCL406B-18-Gauge-Cordless-AirStrike-Nailer/dp/B0D841HX8C/ref=sr_1_25?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-25",
+        "link_clean": "https://www.amazon.com/P321-PCL406B-18-Gauge-Cordless-AirStrike-Nailer/dp/B0D841HX8C/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D841HX8C&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61t3qdapePL._AC_UL320_.jpg",
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$303.83 (1 new offer)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D841HX8C/ref=sr_1_25_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-25",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$303.83 (1 new offer)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D841HX8C/ref=sr_1_25_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-25"
+          }
+        ]
+      },
+      {
+        "position": 26,
+        "asin": "B0BHTW8FZ9",
+        "brand": "RYOBI",
+        "title": "40-Volt Lithium-Ion Quick Charger",
+        "link": "https://www.amazon.com/RYOBI-40-Volt-Lithium-Ion-Quick-Charger/dp/B0BHTW8FZ9/ref=sr_1_26?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-26",
+        "link_clean": "https://www.amazon.com/RYOBI-40-Volt-Lithium-Ion-Quick-Charger/dp/B0BHTW8FZ9/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BHTW8FZ9&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61MIXsey6qL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 170,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "old_price": "$32.96",
+        "extracted_old_price": 32.96,
+        "delivery": [
+          "FREE delivery Nov 20 - 23",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$20.39 (13+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BHTW8FZ9/ref=sr_1_26_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-26",
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99,
+            "old_primary_price": "$32.96",
+            "extracted_old_primary_price": 32.96,
+            "more_buying_choices": "$20.39 (13+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BHTW8FZ9/ref=sr_1_26_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-26"
+          }
+        ]
+      },
+      {
+        "position": 27,
+        "asin": "B0HJ8B7TYF",
+        "title": "New 2X Sander Pad 5 inch 8 Hole for RYOBI 5\" Random Orbit Sander RS290 RS290g RS280 RS280VS RS281 RS281VS PCL406B P410 P411",
+        "link": "https://www.amazon.com/Sander-Random-RS280VS-RS281VS-PCL406B/dp/B0HJ8B7TYF/ref=sr_1_27?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-27",
+        "link_clean": "https://www.amazon.com/Sander-Random-RS280VS-RS281VS-PCL406B/dp/B0HJ8B7TYF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HJ8B7TYF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71jcpje66jL._AC_UL320_.jpg",
+        "price": "$13.99",
+        "extracted_price": 13.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 30"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$13.99",
+            "extracted_primary_price": 13.99
+          }
+        ]
+      },
+      {
+        "position": 28,
+        "asin": "B0HK351XSS",
+        "title": "2X Sander Pad 5 inch 8 Hole for RYOBI 5\" Random Orbit Sander RS290 RS290g RS280 RS280VS RS281 RS281VS PCL406B P410 P411",
+        "link": "https://www.amazon.com/Neuroquill-Sander-RS280VS-RS281VS-PCL406B/dp/B0HK351XSS/ref=sr_1_28?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-28",
+        "link_clean": "https://www.amazon.com/Neuroquill-Sander-RS280VS-RS281VS-PCL406B/dp/B0HK351XSS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HK351XSS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71jcpje66jL._AC_UL320_.jpg",
+        "price": "$13.99",
+        "extracted_price": 13.99,
+        "delivery": [
+          "FREE delivery Tue, Dec 1"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$13.99",
+            "extracted_primary_price": 13.99
+          }
+        ]
+      },
+      {
+        "position": 29,
+        "asin": "B0HFZMW8SS",
+        "title": "2X Sander Pad 5 inch 8 Hole for RYOBI 5\" Random Orbit Sander RS290 RS290g RS280 RS280VS RS281 RS281VS PCL406B P410 P411",
+        "link": "https://www.amazon.com/BLUE-ELF-RS280VS-RS281VS-PCL406B/dp/B0HFZMW8SS/ref=sr_1_29?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-29",
+        "link_clean": "https://www.amazon.com/BLUE-ELF-RS280VS-RS281VS-PCL406B/dp/B0HFZMW8SS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HFZMW8SS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71jcpje66jL._AC_UL320_.jpg",
+        "price": "$13.99",
+        "extracted_price": 13.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 30"
+        ],
+        "stock": "Only 6 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$13.99",
+            "extracted_primary_price": 13.99
+          }
+        ]
+      },
+      {
+        "position": 30,
+        "asin": "B07D38V5Y4",
+        "brand": "RYOBI",
+        "title": "P164: 2 Pack of P193 6.0 Amp Hour 18V Lithium Ion Batteries w/ Onboard Fuel Gauge",
+        "link": "https://www.amazon.com/Ryobi-P164-Lithium-Batteries-Onboard/dp/B07D38V5Y4/ref=sr_1_30?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-30",
+        "link_clean": "https://www.amazon.com/Ryobi-P164-Lithium-Batteries-Onboard/dp/B07D38V5Y4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07D38V5Y4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81WuS3fuGIL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 108,
+        "price": "$188.99",
+        "extracted_price": 188.99,
+        "delivery": [
+          "FREE delivery Nov 25 - 30",
+          "Or fastest delivery Nov 24 - 27"
+        ],
+        "more_buying_choices": "$182.30 (3 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07D38V5Y4/ref=sr_1_30_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-30",
+        "purchase_options": [
+          {
+            "primary_price": "$188.99",
+            "extracted_primary_price": 188.99,
+            "more_buying_choices": "$182.30 (3 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07D38V5Y4/ref=sr_1_30_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-30"
+          }
+        ]
+      },
+      {
+        "position": 31,
+        "asin": "B09FZNDPZ7",
+        "brand": "RYOBI",
+        "title": "Lithium-ion 40 Volt 40v Replacement Compact OEM Battery Charger OP404",
+        "link": "https://www.amazon.com/RYOBI-Lithium-ion-Replacement-Compact-OP404/dp/B09FZNDPZ7/ref=sr_1_31?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-31",
+        "link_clean": "https://www.amazon.com/RYOBI-Lithium-ion-Replacement-Compact-OP404/dp/B09FZNDPZ7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09FZNDPZ7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/6193asM51NL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 54,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$27.99",
+        "extracted_price": 27.99,
+        "delivery": [
+          "FREE delivery Nov 23 - 25 on $35 of items shipped by Amazon",
+          "Or fastest delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$27.99",
+            "extracted_primary_price": 27.99
+          }
+        ]
+      },
+      {
+        "position": 32,
+        "asin": "B0DCMK7RHP",
+        "title": "6 Pack PCL704 Filter for Ryobi 18V ONE+ Handheld Vacuum PCL705B PCL700",
+        "link": "https://www.amazon.com/ANBOO-Replacement-Cleaners-A32F05N-Compatible/dp/B0DCMK7RHP/ref=sr_1_32?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-32",
+        "link_clean": "https://www.amazon.com/ANBOO-Replacement-Cleaners-A32F05N-Compatible/dp/B0DCMK7RHP/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DCMK7RHP&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61K8-E208wL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 2,
+        "price": "$14.00",
+        "extracted_price": 14,
+        "price_unit": "$2.00/count",
+        "extracted_price_unit": 2,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 8 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$14.00",
+            "extracted_primary_price": 14
+          }
+        ]
+      },
+      {
+        "position": 33,
+        "asin": "B07V2BTXCF",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/Ryobi-Battery-Charger-Lithium-Ion-OP4040/dp/B07V2BTXCF/ref=sr_1_33_so_BATTERY?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-33",
+        "brand": "RYOBI",
+        "title": "40V Battery and Charger Kit 4.0 Ah Lithium-Ion Battery Set OEM OP4040 + OP403A",
+        "link": "https://www.amazon.com/Ryobi-Battery-Charger-Lithium-Ion-OP4040/dp/B07V2BTXCF/ref=sr_1_33?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-33",
+        "link_clean": "https://www.amazon.com/Ryobi-Battery-Charger-Lithium-Ion-OP4040/dp/B07V2BTXCF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07V2BTXCF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71gG-1Lm+IL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 1000,
+        "bought_last_month": "100+ bought in past month",
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$93.99 (10 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07V2BTXCF/ref=sr_1_33_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-33",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$93.99 (10 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07V2BTXCF/ref=sr_1_33_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-33"
+          }
+        ]
+      },
+      {
+        "position": 34,
+        "asin": "B08NNH38YN",
+        "brand": "RYOBI",
+        "title": "40-Volt Lithium-Ion 4 Ah High Capacity Battery",
+        "link": "https://www.amazon.com/40-Volt-Lithium-Ion-Capacity-Battery-Ryobi/dp/B08NNH38YN/ref=sr_1_34?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-34",
+        "link_clean": "https://www.amazon.com/40-Volt-Lithium-Ion-Capacity-Battery-Ryobi/dp/B08NNH38YN/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08NNH38YN&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61Ulz1r7y1L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 297,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$124.99",
+        "extracted_price": 124.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 27"
+        ],
+        "stock": "Only 6 left in stock - order soon.",
+        "more_buying_choices": "$72.00 (5+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08NNH38YN/ref=sr_1_34_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-34",
+        "purchase_options": [
+          {
+            "primary_price": "$124.99",
+            "extracted_primary_price": 124.99,
+            "more_buying_choices": "$72.00 (5+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08NNH38YN/ref=sr_1_34_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-34"
+          }
+        ]
+      },
+      {
+        "position": 35,
+        "asin": "B0CSHMFQM4",
+        "brand": "RYOBI",
+        "title": "40V Lithium-Ion 6.0 Ah High Capacity Battery and Rapid Charger Kit",
+        "link": "https://www.amazon.com/Lithium-Ion-Capacity-Battery-Charger-Packaged/dp/B0CSHMFQM4/ref=sr_1_35?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-35",
+        "link_clean": "https://www.amazon.com/Lithium-Ion-Capacity-Battery-Charger-Packaged/dp/B0CSHMFQM4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CSHMFQM4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/612xNEF1A5L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 28,
+        "price": "$225.00",
+        "extracted_price": 225,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Fri, Nov 20"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$209.00 (7 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CSHMFQM4/ref=sr_1_35_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-35",
+        "purchase_options": [
+          {
+            "primary_price": "$225.00",
+            "extracted_primary_price": 225,
+            "more_buying_choices": "$209.00 (7 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CSHMFQM4/ref=sr_1_35_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-35"
+          }
+        ]
+      },
+      {
+        "position": 36,
+        "asin": "B09JL3VBD4",
+        "brand": "RYOBI",
+        "title": "40V Battery and Charger Kit 4.0 Ah Lithium-Ion Battery Set OEM OP40404 + OP403A (2021 Redesign with Easy Eject Latch)",
+        "link": "https://www.amazon.com/Battery-Charger-Lithium-Ion-OP40404-Redesign/dp/B09JL3VBD4/ref=sr_1_36?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-36",
+        "link_clean": "https://www.amazon.com/Battery-Charger-Lithium-Ion-OP40404-Redesign/dp/B09JL3VBD4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09JL3VBD4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51v25tXRZWL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 243,
+        "price": "$137.00",
+        "extracted_price": 137,
+        "delivery": [
+          "FREE delivery Mon, Nov 23",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "stock": "Only 17 left in stock - order soon.",
+        "more_buying_choices": "$78.90 (7+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09JL3VBD4/ref=sr_1_36_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-36",
+        "purchase_options": [
+          {
+            "primary_price": "$137.00",
+            "extracted_primary_price": 137,
+            "more_buying_choices": "$78.90 (7+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09JL3VBD4/ref=sr_1_36_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-36"
+          }
+        ]
+      },
+      {
+        "position": 37,
+        "asin": "B087YNCKG7",
+        "brand": "RYOBI",
+        "title": "GEN2 Lithium-ion 40 Volt 40v Slim Line Compact Battery Charger OP404",
+        "link": "https://www.amazon.com/RYOBI-Lithium-ion-Compact-Battery-OP404/dp/B087YNCKG7/ref=sr_1_37?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-37",
+        "link_clean": "https://www.amazon.com/RYOBI-Lithium-ion-Compact-Battery-OP404/dp/B087YNCKG7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B087YNCKG7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61q2wEPSWGL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1100,
+        "price": "$28.99",
+        "extracted_price": 28.99,
+        "delivery": [
+          "FREE delivery Wed, Nov 25"
+        ],
+        "stock": "Only 12 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$28.99",
+            "extracted_primary_price": 28.99
+          }
+        ]
+      },
+      {
+        "position": 38,
+        "asin": "B0896TLNM4",
+        "brand": "RYOBI",
+        "title": "40-Volt 4 Ah High Capacity Combo Kit, No-Retail Packaging, OP4040 + OP401",
+        "link": "https://www.amazon.com/RYOBI-No-Retail-Packaging-OP4040-OP401/dp/B0896TLNM4/ref=sr_1_38?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-38",
+        "link_clean": "https://www.amazon.com/RYOBI-No-Retail-Packaging-OP4040-OP401/dp/B0896TLNM4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0896TLNM4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51J3iaVJxzL._AC_UL320_.jpg",
+        "rating": 3.9,
+        "reviews": 7,
+        "price": "$147.97",
+        "extracted_price": 147.97,
+        "delivery": [
+          "FREE delivery Fri, Nov 27"
+        ],
+        "more_buying_choices": "$99.99 (2 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0896TLNM4/ref=sr_1_38_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-38",
+        "purchase_options": [
+          {
+            "primary_price": "$147.97",
+            "extracted_primary_price": 147.97,
+            "more_buying_choices": "$99.99 (2 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0896TLNM4/ref=sr_1_38_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-38"
+          }
+        ]
+      },
+      {
+        "position": 39,
+        "asin": "B0D76ZFRJJ",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/PCL1201K2-PCL515B-Cordless-Circular-Batteries-Charger/dp/B0D76ZFRJJ/ref=sr_1_39_so_TOOLS?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-39",
+        "title": "PCL1201K2-PCL515B Fits For RYOBI 18V Cordless 2-Tool Combo Kit w/Drill/Driver, Circular Saw, (2) 1.5 Ah Batteries, Charger, & Recip Saw",
+        "link": "https://www.amazon.com/PCL1201K2-PCL515B-Cordless-Circular-Batteries-Charger/dp/B0D76ZFRJJ/ref=sr_1_39?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-39",
+        "link_clean": "https://www.amazon.com/PCL1201K2-PCL515B-Cordless-Circular-Batteries-Charger/dp/B0D76ZFRJJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D76ZFRJJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41HrIrZFPbL._AC_UL320_.jpg",
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$394.67 (1 new offer)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D76ZFRJJ/ref=sr_1_39_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-39",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$394.67 (1 new offer)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D76ZFRJJ/ref=sr_1_39_olp?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-39"
+          }
+        ]
+      },
+      {
+        "position": 40,
+        "asin": "B07QMTZ17L",
+        "brand": "RYOBI",
+        "title": "OP403 Lithium-ion 40 Volt Battery Charger W/USB Plug in",
+        "link": "https://www.amazon.com/Ryobi-OP403-Lithium-ion-Battery-Charger/dp/B07QMTZ17L/ref=sr_1_40?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-40",
+        "link_clean": "https://www.amazon.com/Ryobi-OP403-Lithium-ion-Battery-Charger/dp/B07QMTZ17L/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07QMTZ17L&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81xnIz7mmzL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 268,
+        "price": "$44.63",
+        "extracted_price": 44.63,
+        "delivery": [
+          "$14.33 delivery Fri, Nov 27",
+          "Or fastest delivery Nov 23 - 25"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$44.63",
+            "extracted_primary_price": 44.63
+          }
+        ]
+      },
+      {
+        "position": 41,
+        "asin": "B0BMKQMHG2",
+        "brand": "Amazon Renewed",
+        "title": "RYOBI ONE+ 18V Cordless Reciprocating Saw PCL515B (Tool Only) (Renewed)",
+        "link": "https://www.amazon.com/RYOBI-Cordless-Reciprocating-PCL515B-Renewed/dp/B0BMKQMHG2/ref=sr_1_41?keywords=RYOBI+PCL406B&qid=1795001642&sr=8-41",
+        "link_clean": "https://www.amazon.com/RYOBI-Cordless-Reciprocating-PCL515B-Renewed/dp/B0BMKQMHG2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BMKQMHG2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61m6hem5OtL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 43
+      }
+    ],
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249152011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_76%3A1249152011&dc&qid=1795001642&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3Arm%2B51Y5xeyNP4hI9cT4j1F%2FgiHtkOFIxxB%2BJovHnGwY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_76%3A1249152011"
+        }
+      ],
+      "delivery_day": [
+        {
+          "position": 1,
+          "name": "Get It Today",
+          "rh": "p_90:8308920011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_90%3A8308920011&dc&qid=1795001642&rnid=8308919011&ref=sr_nr_p_90_1&ds=v1%3AkSqwo%2BsURwwYUyXcm3wf6IhhjRKmkYqgqFsrUGCgaac",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_90%3A8308920011"
+        },
+        {
+          "position": 2,
+          "name": "Get It by Tomorrow",
+          "rh": "p_90:8308921011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_90%3A8308921011&dc&qid=1795001642&rnid=8308919011&ref=sr_nr_p_90_2&ds=v1%3AfB5w6mBsDV4rAcfdFJk%2BREd%2FGkRSoYAeXoZYrl6jl44",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_90%3A8308921011"
+        }
+      ],
+      "department": [
+        {
+          "position": 1,
+          "name": "Power Tools",
+          "rh": "n:551236",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=n%3A551236&dc&qid=1795001642&rnid=2941120011&ref=sr_nr_n_1&ds=v1%3AmuZLGiSV3KPZpmxXW0Fffn3m3UATw%2Br1npsGKEtuFOw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=n%3A551236"
+        },
+        {
+          "position": 2,
+          "name": "Power Drill Drivers",
+          "rh": "n:9022404011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=n%3A551236%2Cn%3A9022404011&dc&qid=1795001642&rnid=2941120011&ref=sr_nr_n_2&ds=v1%3A4D3StyTpoi8lgkJOLTmrHnzsyZ%2BJHdyN%2FjtT9taw3pU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=n%3A551236%2Cn%3A9022404011"
+        },
+        {
+          "position": 3,
+          "name": "Power Tool Parts & Accessories",
+          "rh": "n:552262",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=n%3A552262&dc&qid=1795001642&rnid=2941120011&ref=sr_nr_n_3&ds=v1%3Aca%2BUXC2j%2Bng9Xt2WUiNipGE5bzKmF6OnZsF6er%2FYNx8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=n%3A552262"
+        },
+        {
+          "position": 4,
+          "name": "Cordless Tool Battery Packs",
+          "rh": "n:552354",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=n%3A552262%2Cn%3A552354&dc&qid=1795001642&rnid=2941120011&ref=sr_nr_n_4&ds=v1%3AjyNmisrxznFvUNMmmvSyULwGy2fHjHi7lBRFlODH2KU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=n%3A552262%2Cn%3A552354"
+        },
+        {
+          "position": 5,
+          "name": "Outdoor Power & Lawn Equipment",
+          "rh": "n:551242",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=n%3A551242&dc&qid=1795001642&rnid=2941120011&ref=sr_nr_n_5&ds=v1%3AXPg2UtrsgeWjcmWtd624zXUJWZ4T4xPuq6xBBL8WwT0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=n%3A551242"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "RYOBI",
+          "rh": "p_123:252605",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_123%3A252605&dc&qid=1795001642&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3AmPGlkGEpKQYnhGn29vr%2BJp5ikwQniNb9gi%2BXDQblX%2BI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_123%3A252605"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248909011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_72%3A1248909011&dc&qid=1795001642&rnid=1248907011&ref=sr_nr_p_72_1&ds=v1%3ApEI0T92G4rhTrhALjA4lN1LEw%2BT0eNHaKDsk9h%2B%2F6fY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_72%3A1248909011"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_n_condition-type%3A6358196011&dc&qid=1795001642&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3AxyelMybdz%2Fjx1V52HZpaK5MkHmp0MqajPfmhUsGQSbQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_n_condition-type%3A6358196011"
+        },
+        {
+          "position": 2,
+          "name": "Used",
+          "rh": "p_n_condition-type:6358198011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_n_condition-type%3A6358198011&dc&qid=1795001642&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3A0ZIeiH%2BqZHL%2BSiMdXxptjVZv5qhHEbb0N4AyjjmBWzI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_n_condition-type%3A6358198011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Supps Direct LLC",
+          "rh": "p_6:A3O3RXQE8MYLJP",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_6%3AA3O3RXQE8MYLJP&dc&qid=1795001642&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3ATvF0sp7bLCKNCcqeMsBt0ayMrKCNg3QcEDjVBZxDDiQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_6%3AA3O3RXQE8MYLJP"
+        },
+        {
+          "position": 2,
+          "name": "AB BEST DEALs",
+          "rh": "p_6:A2HC63B7SCKUAC",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_6%3AA2HC63B7SCKUAC&dc&qid=1795001642&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3AxYuW9Z5Mb8rYDalLsvxV8TkEr5O%2BZ28ytu%2Fsn8yQFVI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_6%3AA2HC63B7SCKUAC"
+        },
+        {
+          "position": 3,
+          "name": "B2smile",
+          "rh": "p_6:A2XJ57YMOM3BU1",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_6%3AA2XJ57YMOM3BU1&dc&qid=1795001642&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3AZlA%2FE%2Fb%2BlAr1gRHOheRU8Lrm2peSj5fD4hZTDU9bRLA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_6%3AA2XJ57YMOM3BU1"
+        },
+        {
+          "position": 4,
+          "name": "ArcianCo",
+          "rh": "p_6:A1JJ4WCS8TVKMF",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_6%3AA1JJ4WCS8TVKMF&dc&qid=1795001642&rnid=339807011&ref=sr_nr_p_6_4&ds=v1%3A3AalEf2v2pJFq%2BPHZ2uxdbcdsw31DSJ1hqbU1iBFxYU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_6%3AA1JJ4WCS8TVKMF"
+        },
+        {
+          "position": 5,
+          "name": "Akashnil",
+          "rh": "p_6:AWVEFMI4QK3W",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_6%3AAWVEFMI4QK3W&dc&qid=1795001642&rnid=339807011&ref=sr_nr_p_6_5&ds=v1%3AmHWNTbjqVcmRJWYUnE9ZFgGp6ODVdLme8547cJ2jB0o",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_6%3AAWVEFMI4QK3W"
+        },
+        {
+          "position": 6,
+          "name": "Vista Prime (S/N Recorded)",
+          "rh": "p_6:A10PS6ZCVX52P9",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_6%3AA10PS6ZCVX52P9&dc&qid=1795001642&rnid=339807011&ref=sr_nr_p_6_6&ds=v1%3A8rrRwN3cNz50mQH1TsrKIW1M%2BhlZ8CXurKQdsWVeRbg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_6%3AA10PS6ZCVX52P9"
+        },
+        {
+          "position": 7,
+          "name": "escorp",
+          "rh": "p_6:A11P7DRDAPU3UA",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_6%3AA11P7DRDAPU3UA&dc&qid=1795001642&rnid=339807011&ref=sr_nr_p_6_7&ds=v1%3ApiIjHBbGrp%2F4XtuTVsU0g2XDyFzKI73WG%2BxUl23kwjE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_6%3AA11P7DRDAPU3UA"
+        }
+      ],
+      "all_top_brands": [
+        {
+          "position": 1,
+          "name": "Top Brands",
+          "rh": "p_n_g-101014971069111:119653281011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL406B&rh=p_n_g-101014971069111%3A119653281011&dc&qid=1795001642&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3AExHWHLqbxKGRcugoEghSd7V3x1oa%2BxZxYgEPFRm5dew",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL406B&rh=p_n_g-101014971069111%3A119653281011"
+        }
+      ]
+    }
+  }
+}

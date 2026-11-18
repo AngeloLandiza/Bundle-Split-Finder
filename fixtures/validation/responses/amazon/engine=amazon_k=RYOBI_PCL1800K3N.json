@@ -1,0 +1,209 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=RYOBI PCL1800K3N",
+  "at": 1794972984163,
+  "data": {
+    "search_metadata": {
+      "id": "6afd1d37f479a35f05edd8d1",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/bO0ZwD3hnxpXR5KUJSeomNe4PNOUGrngBoh12srLUxc/6afd1d37f479a35f05edd8d1.json",
+      "markdown_endpoint": "https://serpapi.com/searches/bO0ZwD3hnxpXR5KUJSeomNe4PNOUGrngBoh12srLUxc/6afd1d37f479a35f05edd8d1.md",
+      "created_at": "2026-11-18 03:36:23 UTC",
+      "processed_at": "2026-11-18 03:36:23 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=RYOBI+PCL1800K3N",
+      "raw_html_file": "https://serpapi.com/searches/bO0ZwD3hnxpXR5KUJSeomNe4PNOUGrngBoh12srLUxc/6afd1d37f479a35f05edd8d1.html",
+      "total_time_taken": 0.94
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "RYOBI PCL1800K3N",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 1,
+      "query_displayed": "RYOBI PCL1800K3N",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B0BL82ZSG1",
+        "brand": "RYOBI",
+        "title": "ONEAND 18V Cordless 8-Tool Combo KIT with 1 1.5 AH Battery and 2 4.0 AH Batteries",
+        "link": "https://www.amazon.com/RYOBI-ONEAND-Cordless-Battery-Batteries/dp/B0BL82ZSG1/ref=sr_1_1?keywords=RYOBI+PCL1800K3N&qid=1794972983&sr=8-1",
+        "link_clean": "https://www.amazon.com/RYOBI-ONEAND-Cordless-Battery-Batteries/dp/B0BL82ZSG1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BL82ZSG1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51HnN2NneGL._AC_UL320_.jpg",
+        "rating": 3.9,
+        "reviews": 3,
+        "price": "$499.00",
+        "extracted_price": 499,
+        "delivery": [
+          "FREE delivery Nov 23 - 25",
+          "Or fastest delivery Nov 19 - 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$499.00",
+            "extracted_primary_price": 499
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "department": [
+        {
+          "position": 1,
+          "name": "Power Tools",
+          "rh": "n:551236",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL1800K3N&rh=n%3A551236&dc&qid=1794972983&rnid=2941120011&ref=sr_nr_n_1&ds=v1%3AHcl%2Fk2fi6Do%2B%2F0aTBXpl3BFHRRqzdt2xr9dYWZQYNxU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL1800K3N&rh=n%3A551236"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "RYOBI",
+          "rh": "p_123:252605",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL1800K3N&rh=p_123%3A252605&dc&qid=1794972983&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3A6lQx58YR7JNrT4UE1uAjtD%2FN4QT3efhlUk5FgnKygi8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL1800K3N&rh=p_123%3A252605"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL1800K3N&rh=p_n_condition-type%3A6358196011&dc&qid=1794972983&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3A1MT8B2NmttvjOhsHb7dEI6KzSqPiMe76UXVot%2B6LlLU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL1800K3N&rh=p_n_condition-type%3A6358196011"
+        }
+      ],
+      "all_top_brands": [
+        {
+          "position": 1,
+          "name": "Top Brands",
+          "rh": "p_n_g-101014971069111:119653281011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL1800K3N&rh=p_n_g-101014971069111%3A119653281011&dc&qid=1794972983&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3A9DWD5Fv6S2JM%2BSlaixdgAVoxkJlU4cCv07puC3WWDyA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL1800K3N&rh=p_n_g-101014971069111%3A119653281011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Prestige Provision",
+          "rh": "p_6:AV5XB96YDT8C2",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL1800K3N&rh=p_6%3AAV5XB96YDT8C2&dc&qid=1794972983&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3Adc%2BbNGiJfYSdY7ct8BzXOvfN0XI1Y%2FnR2bYh33iIhR0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL1800K3N&rh=p_6%3AAV5XB96YDT8C2"
+        },
+        {
+          "position": 2,
+          "name": "Triplenet Pricing INC",
+          "rh": "p_6:AAZRLVTNON75Z",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL1800K3N&rh=p_6%3AAAZRLVTNON75Z&dc&qid=1794972983&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3AEpzQqKxYgyj2vTNBwvBqyUHIUxDpZQFHvaZ37R%2FjuOs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL1800K3N&rh=p_6%3AAAZRLVTNON75Z"
+        },
+        {
+          "position": 3,
+          "name": "Magiko Storefront Incorporated",
+          "rh": "p_6:A2YGIGEODUOXJZ",
+          "link": "https://www.amazon.com/s?k=RYOBI+PCL1800K3N&rh=p_6%3AA2YGIGEODUOXJZ&dc&qid=1794972983&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3A9y24wwIMy4%2B%2BNDLbh64%2B5u8tTPQrlhhTFSXXHt6Mf8A",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PCL1800K3N&rh=p_6%3AA2YGIGEODUOXJZ"
+        }
+      ]
+    }
+  }
+}

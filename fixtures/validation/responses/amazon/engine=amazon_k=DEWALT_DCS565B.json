@@ -1,0 +1,2435 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=DEWALT DCS565B",
+  "at": 1795001622591,
+  "data": {
+    "search_metadata": {
+      "id": "6afd8d14e976d0e32ebe1267",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/lKVbtPqfYri_E9xenY5lZLpamVDUQsf2sfRp4xhlwog/6afd8d14e976d0e32ebe1267.json",
+      "markdown_endpoint": "https://serpapi.com/searches/lKVbtPqfYri_E9xenY5lZLpamVDUQsf2sfRp4xhlwog/6afd8d14e976d0e32ebe1267.md",
+      "created_at": "2026-11-18 11:33:40 UTC",
+      "processed_at": "2026-11-18 11:33:40 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=DEWALT+DCS565B",
+      "raw_html_file": "https://serpapi.com/searches/lKVbtPqfYri_E9xenY5lZLpamVDUQsf2sfRp4xhlwog/6afd8d14e976d0e32ebe1267.html",
+      "total_time_taken": 1.96
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "DEWALT DCS565B",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 138,
+      "query_displayed": "DEWALT DCS565B",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B08KYM6GW6",
+        "brand": "DEWALT",
+        "title": "20V MAX* 6-1/2 in. Brushless Cordless Circular Saw, Tool Only (DCS565B)",
+        "link": "https://www.amazon.com/DEWALT-Circular-2-Inch-Cordless-DCS565B/dp/B08KYM6GW6/ref=sr_1_1?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-1",
+        "link_clean": "https://www.amazon.com/DEWALT-Circular-2-Inch-Cordless-DCS565B/dp/B08KYM6GW6/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08KYM6GW6&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71H2IMs3YnL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 2300,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$130.49",
+        "extracted_price": 130.49,
+        "delivery": [
+          "FREE delivery Dec 12 - 31",
+          "Or fastest delivery Dec 7 - 29"
+        ],
+        "more_buying_choices": "$111.74 (14 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08KYM6GW6/ref=sr_1_1_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-1",
+        "purchase_options": [
+          {
+            "primary_price": "$130.49",
+            "extracted_primary_price": 130.49,
+            "more_buying_choices": "$111.74 (14 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08KYM6GW6/ref=sr_1_1_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-1"
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B0H69QS1RZ",
+        "sponsored": true,
+        "title": "6-1/2\" Cordless Circular Saw for DeWalt 20V Max Battery, 8000RPM, Brushless",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfYXRmOjMwMTY3OTkwNjg1MTMwMjo6MDo6&url=%2FCordless-Circular-Battery-Brushless-Lightweight%2Fdp%2FB0H69QS1RZ%2Fref%3Dsr_1_2_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-2-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9hdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0H69QS1RZ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H69QS1RZ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71PWJaj1EeL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 1,
+        "price": "$98.99",
+        "extracted_price": 98.99,
+        "save_with_coupon": "You pay $89.09 with coupon",
+        "delivery": [
+          "FREE delivery Wed, Nov 25"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$98.99",
+            "extracted_primary_price": 98.99
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B007NVSTO8",
+        "badges": [
+          "Overall Pick"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX Circular Saw Cordless, Battery Not Included (DCS391B)",
+        "link": "https://www.amazon.com/DEWALT-DCS391B-20-Volt-Li-Ion-Circular/dp/B007NVSTO8/ref=sr_1_3?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-3",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS391B-20-Volt-Li-Ion-Circular/dp/B007NVSTO8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B007NVSTO8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81OS506kRZL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 11200,
+        "bought_last_month": "3K+ bought in past month",
+        "price": "$129.00",
+        "extracted_price": 129,
+        "old_price": "$159.00",
+        "extracted_old_price": 159,
+        "offers": [
+          "$10 Amazon credit when you spend $149.00"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$122.55 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B007NVSTO8/ref=sr_1_3_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-3",
+        "purchase_options": [
+          {
+            "primary_price": "$129.00",
+            "extracted_primary_price": 129,
+            "secondary_price": "$10 Amazon credit when you spend $149.00",
+            "extracted_secondary_price": 10,
+            "old_primary_price": "$159.00",
+            "extracted_old_primary_price": 159,
+            "more_buying_choices": "$122.55 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B007NVSTO8/ref=sr_1_3_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-3"
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B0D4XZWVP3",
+        "brand": "DEWALT",
+        "title": "DCS566 20V Circular Saw, 20V Cordless Brushless 6.5\"\" Circular Saw (Bare Tool Only, Bulk Packed), Yellow",
+        "link": "https://www.amazon.com/DEWALT-DCS566-Circular-Cordless-Brushless/dp/B0D4XZWVP3/ref=sr_1_4?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-4",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS566-Circular-Cordless-Brushless/dp/B0D4XZWVP3/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D4XZWVP3&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51ZIiJ252eL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 331,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$130.80",
+        "extracted_price": 130.8,
+        "old_price": "$145.00",
+        "extracted_old_price": 145,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$127.00 (24 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D4XZWVP3/ref=sr_1_4_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-4",
+        "purchase_options": [
+          {
+            "primary_price": "$130.80",
+            "extracted_primary_price": 130.8,
+            "old_primary_price": "$145.00",
+            "extracted_old_primary_price": 145,
+            "more_buying_choices": "$127.00 (24 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D4XZWVP3/ref=sr_1_4_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-4"
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B08KYNSQSN",
+        "brand": "DEWALT",
+        "title": "20V MAX* Circular Saw, 6-1/2-Inch, Cordless, Battery and Charger Included (DCS565P1)",
+        "link": "https://www.amazon.com/DEWALT-Circular-2-Inch-Cordless-DCS565P1/dp/B08KYNSQSN/ref=sr_1_5?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-5",
+        "link_clean": "https://www.amazon.com/DEWALT-Circular-2-Inch-Cordless-DCS565P1/dp/B08KYNSQSN/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08KYNSQSN&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81JjruJsbXL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 453,
+        "price": "$279.00",
+        "extracted_price": 279,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$279.00",
+            "extracted_primary_price": 279
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B0DDDW9GWK",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Brushless Cordless 7-1/4 in. Circular Saw, Tool Only (DCS590B)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Circular-DCS590B/dp/B0DDDW9GWK/ref=sr_1_6_mod_primary_new?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-6",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Cordless-Circular-DCS590B/dp/B0DDDW9GWK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DDDW9GWK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71ybsgYAstL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 474,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$190.00",
+        "extracted_price": 190,
+        "old_price": "$249.00",
+        "extracted_old_price": 249,
+        "delivery": [
+          "FREE delivery Wed, Nov 25"
+        ],
+        "more_buying_choices": "$161.49 (18+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DDDW9GWK/ref=sr_1_6_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-6",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$190.00",
+            "extracted_primary_price": 190,
+            "old_primary_price": "$249.00",
+            "extracted_old_primary_price": 249,
+            "more_buying_choices": "$161.49 (18+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DDDW9GWK/ref=sr_1_6_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-6"
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$199.49",
+            "extracted_primary_price": 199.49,
+            "old_primary_price": "$249.00",
+            "extracted_old_primary_price": 249
+          }
+        ]
+      },
+      {
+        "position": 7,
+        "asin": "B07VBB55X5",
+        "badges": [
+          "Best Seller in Oscillating Power Tools"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR Oscillating Multi-Tool Cordless, Variable Speed Brushless Motor Multitool with LED Light, Extended Runtime, Includes Two Wood Cutting Blades, Tool Only (DCS356B)",
+        "link": "https://www.amazon.com/DEWALT-DCS356B-Variable-Oscillating-Multi-Tool/dp/B07VBB55X5/ref=sr_1_7_mod_primary_new?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-7",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS356B-Variable-Oscillating-Multi-Tool/dp/B07VBB55X5/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07VBB55X5&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61DExRdcCRL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 14500,
+        "bought_last_month": "4K+ bought in past month",
+        "price": "$91.13",
+        "extracted_price": 91.13,
+        "old_price": "$100.01",
+        "extracted_old_price": 100.01,
+        "top_rated": true,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 8 left in stock - order soon.",
+        "more_buying_choices": "$88.90 (97+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07VBB55X5/ref=sr_1_7_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-7",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$91.13",
+            "extracted_primary_price": 91.13,
+            "old_primary_price": "$100.01",
+            "extracted_old_primary_price": 100.01,
+            "more_buying_choices": "$88.90 (97+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07VBB55X5/ref=sr_1_7_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-7"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$92.09",
+            "extracted_primary_price": 92.09,
+            "old_primary_price": "$100.01",
+            "extracted_old_primary_price": 100.01
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B09CG9J148",
+        "brand": "DEWALT",
+        "title": "XTREME™ 12V MAX BRUSHLESS 5-3/8\" CIRCULAR SAW (Tool Only) (DCS512B)",
+        "link": "https://www.amazon.com/DEWALT-XTREMETM-BRUSHLESS-CIRCULAR-DCS512B/dp/B09CG9J148/ref=sr_1_8_mod_primary_new?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-8",
+        "link_clean": "https://www.amazon.com/DEWALT-XTREMETM-BRUSHLESS-CIRCULAR-DCS512B/dp/B09CG9J148/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09CG9J148&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61Rhkv332jL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 436,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$85.20",
+        "extracted_price": 85.2,
+        "old_price": "$98.13",
+        "extracted_old_price": 98.13,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "more_buying_choices": "$84.99 (44+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09CG9J148/ref=sr_1_8_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-8",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$85.20",
+            "extracted_primary_price": 85.2,
+            "old_primary_price": "$98.13",
+            "extracted_old_primary_price": 98.13,
+            "more_buying_choices": "$84.99 (44+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09CG9J148/ref=sr_1_8_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-8"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$90.67",
+            "extracted_primary_price": 90.67,
+            "old_primary_price": "$98.13",
+            "extracted_old_primary_price": 98.13
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B09NP9H7SG",
+        "brand": "DEWALT",
+        "title": "20V MAX* Reciprocating Saw, Cordless, 2-Finger Variable Trigger, Keyless Blade Clamp, Tool Only (DCS382B)",
+        "link": "https://www.amazon.com/DEWALT-DCS382B-Brushless-Cordless-Reciprocating/dp/B09NP9H7SG/ref=sr_1_9?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-9",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS382B-Brushless-Cordless-Reciprocating/dp/B09NP9H7SG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09NP9H7SG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61rFezS+43L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1200,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$137.95",
+        "extracted_price": 137.95,
+        "old_price": "$154.99",
+        "extracted_old_price": 154.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$120.09 (21+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09NP9H7SG/ref=sr_1_9_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-9",
+        "purchase_options": [
+          {
+            "primary_price": "$137.95",
+            "extracted_primary_price": 137.95,
+            "old_primary_price": "$154.99",
+            "extracted_old_primary_price": 154.99,
+            "more_buying_choices": "$120.09 (21+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09NP9H7SG/ref=sr_1_9_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-9"
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B09TB7M842",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Cut Off Tool, Brushless and Compact, Bare Tool Only (DCS438B)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Difficult-Materials-DCS438B/dp/B09TB7M842/ref=sr_1_10?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-10",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Difficult-Materials-DCS438B/dp/B09TB7M842/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09TB7M842&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51youtERzWL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 3300,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$125.80",
+        "extracted_price": 125.8,
+        "old_price": "$219.00",
+        "extracted_old_price": 219,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$119.00 (53+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09TB7M842/ref=sr_1_10_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-10",
+        "purchase_options": [
+          {
+            "primary_price": "$125.80",
+            "extracted_primary_price": 125.8,
+            "old_primary_price": "$219.00",
+            "extracted_old_primary_price": 219,
+            "more_buying_choices": "$119.00 (53+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09TB7M842/ref=sr_1_10_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-10"
+          }
+        ]
+      },
+      {
+        "position": 11,
+        "asin": "B01M69K91R",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Reciprocating Saw Cordless, Brushless, Compact,Variable Speed, Pivoting Head, LED Light, Tool Only (DCS367B)",
+        "link": "https://www.amazon.com/DEWALT-DCS367B-Brushless-Compact-Reciprocating/dp/B01M69K91R/ref=sr_1_11?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-11",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS367B-Brushless-Compact-Reciprocating/dp/B01M69K91R/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01M69K91R&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71wFpPAEAtL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 10800,
+        "bought_last_month": "600+ bought in past month",
+        "price": "$199.00",
+        "extracted_price": 199,
+        "top_rated": true,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$180.97 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M69K91R/ref=sr_1_11_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-11",
+        "purchase_options": [
+          {
+            "primary_price": "$199.00",
+            "extracted_primary_price": 199,
+            "more_buying_choices": "$180.97 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M69K91R/ref=sr_1_11_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-11"
+          }
+        ]
+      },
+      {
+        "position": 12,
+        "asin": "B07KSS2BGF",
+        "brand": "DEWALT",
+        "title": "20V MAX Jig Saw, Cordless, Barrel Grip, 3,200 Blade Speed, Bare Tool Only (DCS335B)",
+        "link": "https://www.amazon.com/DEWALT-DCS335B-Cordless-Brushless-Barrel/dp/B07KSS2BGF/ref=sr_1_12?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-12",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS335B-Cordless-Brushless-Barrel/dp/B07KSS2BGF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07KSS2BGF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61-xLoJ8HML._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 2400,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$181.00",
+        "extracted_price": 181,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "more_buying_choices": "$146.99 (13+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07KSS2BGF/ref=sr_1_12_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-12",
+        "purchase_options": [
+          {
+            "primary_price": "$181.00",
+            "extracted_primary_price": 181,
+            "more_buying_choices": "$146.99 (13+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07KSS2BGF/ref=sr_1_12_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-12"
+          }
+        ]
+      },
+      {
+        "position": 13,
+        "asin": "B01ALMMKD6",
+        "brand": "DEWALT",
+        "title": "20V MAX* Cordless Reciprocating Saw Kit, Compact, 2-Amp Hour (DCS387D1)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Reciprocating-Compact-DCS387D1/dp/B01ALMMKD6/ref=sr_1_13?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-13",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Reciprocating-Compact-DCS387D1/dp/B01ALMMKD6/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01ALMMKD6&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71x+j8WXx4L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 393,
+        "price": "$199.00",
+        "extracted_price": 199,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$137.30 (9+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01ALMMKD6/ref=sr_1_13_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-13",
+        "purchase_options": [
+          {
+            "primary_price": "$199.00",
+            "extracted_primary_price": 199,
+            "more_buying_choices": "$137.30 (9+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01ALMMKD6/ref=sr_1_13_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-13"
+          }
+        ]
+      },
+      {
+        "position": 14,
+        "asin": "B08K9CXBZJ",
+        "brand": "DEWALT",
+        "title": "20V MAX Orbital Sander and Oscillating Tool, Cordless Woodworking 2-Tool Set with 5ah Battery and Charger (DCK202P1)",
+        "link": "https://www.amazon.com/DEWALT-Sander-Multi-Tool-Woodworking-DCK202P1/dp/B08K9CXBZJ/ref=sr_1_14?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-14",
+        "link_clean": "https://www.amazon.com/DEWALT-Sander-Multi-Tool-Woodworking-DCK202P1/dp/B08K9CXBZJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08K9CXBZJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61MfV3up5SL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 783,
+        "price": "$349.00",
+        "extracted_price": 349,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$242.36 (4 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08K9CXBZJ/ref=sr_1_14_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-14",
+        "purchase_options": [
+          {
+            "primary_price": "$349.00",
+            "extracted_primary_price": 349,
+            "more_buying_choices": "$242.36 (4 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08K9CXBZJ/ref=sr_1_14_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-14"
+          }
+        ]
+      },
+      {
+        "position": 15,
+        "asin": "B0BY1QMH24",
+        "brand": "DEWALT",
+        "title": "ATOMIC 20-Volt MAX Brushless Cordless 1/2 in. Drill Driver (Tool-Only) DCD794B",
+        "link": "https://www.amazon.com/DCD794B-COMPACT-Brushless-Lithium-Ion-Cordless/dp/B0BY1QMH24/ref=sr_1_15_mod_primary_new?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-15",
+        "link_clean": "https://www.amazon.com/DCD794B-COMPACT-Brushless-Lithium-Ion-Cordless/dp/B0BY1QMH24/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BY1QMH24&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51Ia3VPyhzL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 1000,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$89.99",
+        "extracted_price": 89.99,
+        "delivery": [
+          "FREE delivery Tue, Nov 24"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$75.00 (22+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BY1QMH24/ref=sr_1_15_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-15",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$89.99",
+            "extracted_primary_price": 89.99,
+            "more_buying_choices": "$75.00 (22+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BY1QMH24/ref=sr_1_15_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-15"
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$98.00",
+            "extracted_primary_price": 98
+          }
+        ]
+      },
+      {
+        "position": 16,
+        "asin": "B07QKNYTGK",
+        "brand": "DEWALT",
+        "title": "20V MAX Orbital Sander Cordless, 5-Inch Sander Tool, 2.Ah, 8,000-12,000 OPM, Variable Speed Dial, Storage Bag, Battery and Charger Included (DCW210D1)",
+        "link": "https://www.amazon.com/DEWALT-Random-Sander-Cordless-DCW210D1/dp/B07QKNYTGK/ref=sr_1_16?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-16",
+        "link_clean": "https://www.amazon.com/DEWALT-Random-Sander-Cordless-DCW210D1/dp/B07QKNYTGK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07QKNYTGK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71oG26T+vFL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 3400,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$171.11",
+        "extracted_price": 171.11,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$160.24 (6+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07QKNYTGK/ref=sr_1_16_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-16",
+        "purchase_options": [
+          {
+            "primary_price": "$171.11",
+            "extracted_primary_price": 171.11,
+            "more_buying_choices": "$160.24 (6+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07QKNYTGK/ref=sr_1_16_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-16"
+          }
+        ]
+      },
+      {
+        "position": 17,
+        "asin": "B0FNR32LRK",
+        "sponsored": true,
+        "title": "Universal Carry Bag for DEWALT 20V MAX Circular Saw DCS391B/DCS565B",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMDk4NDkwMzk0NzQwMjo6MDo6&url=%2FZIORS-Universal-Circular-DCS391B-Shoulder%2Fdp%2FB0FNR32LRK%2Fref%3Dsr_1_17_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-17-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0FNR32LRK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FNR32LRK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71Sz6WPSG0L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 33,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$32.99",
+        "extracted_price": 32.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$32.99",
+            "extracted_primary_price": 32.99
+          }
+        ]
+      },
+      {
+        "position": 18,
+        "asin": "B0HPT26N4N",
+        "sponsored": true,
+        "title": "618901-00 Circular Saw Shaft Replacement for DeWalt DCS565P1 DCS565B",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMTY4NDY3MDE0MDIwMjo6MDo6&url=%2F618901-00-Circular-Replacement-DCS565P1-DCS565B%2Fdp%2FB0HPT26N4N%2Fref%3Dsr_1_18_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-18-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HPT26N4N/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HPT26N4N&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/31oSQLoh9XL._AC_UL320_.jpg",
+        "price": "$39.55",
+        "extracted_price": 39.55,
+        "delivery": [
+          "FREE delivery Nov 25 - Dec 2",
+          "Or fastest delivery Nov 27 - Dec 1"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$39.55",
+            "extracted_primary_price": 39.55
+          }
+        ]
+      },
+      {
+        "position": 19,
+        "asin": "B0GJM8P2NX",
+        "sponsored": true,
+        "title": "605076-00SV Circular Saw Shoe Assembly DCS566B DCS565P1 DCS565B for DeWalt Measures Approximately 11.25 X 6.15 X 2.00 inches",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMTY0MDQwNTA1MjEwMjo6MDo6&url=%2F605076-00SV-Circular-Assembly-DCS565P1-Approximately%2Fdp%2FB0GJM8P2NX%2Fref%3Dsr_1_19_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-19-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0GJM8P2NX/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GJM8P2NX&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61j6RgkZ40L._AC_UL320_.jpg",
+        "price": "$132.53",
+        "extracted_price": 132.53,
+        "delivery": [
+          "FREE delivery Fri, Nov 27"
+        ],
+        "stock": "Only 20 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$132.53",
+            "extracted_primary_price": 132.53
+          }
+        ]
+      },
+      {
+        "position": 20,
+        "asin": "B0H93YG3M8",
+        "sponsored": true,
+        "title": "396992-02 Circular Saw Guide Screw Parts For DeWalt DC390K, DCS391",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMTUzOTAxMzc0MjQwMjo6MDo6&url=%2FNxvsayy-DC390K-DCS391L1-DCS565B-DCS391B-B3%2Fdp%2FB0H93YG3M8%2Fref%3Dsr_1_20_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-20-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0H93YG3M8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H93YG3M8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51q7A+HsVbL._AC_UL320_.jpg",
+        "price": "$12.92",
+        "extracted_price": 12.92,
+        "delivery": [
+          "FREE delivery Nov 27 - Dec 1 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$12.92",
+            "extracted_primary_price": 12.92
+          }
+        ]
+      },
+      {
+        "position": 21,
+        "asin": "B00M66B2CQ",
+        "brand": "DEWALT",
+        "title": "20V MAX 6-1/2-Inch Circular Saw Kit, with 5.0-Ah Battery and Charger (DCS391P1)",
+        "link": "https://www.amazon.com/DEWALT-DCS391P1-20V-Lithium-Circular/dp/B00M66B2CQ/ref=sr_1_21?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-21",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS391P1-20V-Lithium-Circular/dp/B00M66B2CQ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00M66B2CQ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71oqg4c7TWL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1200,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$199.99",
+        "extracted_price": 199.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$184.99 (12+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00M66B2CQ/ref=sr_1_21_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-21",
+        "purchase_options": [
+          {
+            "primary_price": "$199.99",
+            "extracted_primary_price": 199.99,
+            "more_buying_choices": "$184.99 (12+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00M66B2CQ/ref=sr_1_21_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-21"
+          }
+        ]
+      },
+      {
+        "position": 22,
+        "asin": "B0DJCTZYJF",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Brushless Cordless 7-1/4 in. Circular Saw Kit with Battery and Charger (DCS590WW1)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Circular-DCS590WW1/dp/B0DJCTZYJF/ref=sr_1_22?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-22",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Cordless-Circular-DCS590WW1/dp/B0DJCTZYJF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DJCTZYJF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71Ww8H7pgZL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 224,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$299.00",
+        "extracted_price": 299,
+        "old_price": "$379.00",
+        "extracted_old_price": 379,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$284.05 (15+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DJCTZYJF/ref=sr_1_22_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-22",
+        "purchase_options": [
+          {
+            "primary_price": "$299.00",
+            "extracted_primary_price": 299,
+            "old_primary_price": "$379.00",
+            "extracted_old_primary_price": 379,
+            "more_buying_choices": "$284.05 (15+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DJCTZYJF/ref=sr_1_22_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-22"
+          }
+        ]
+      },
+      {
+        "position": 23,
+        "asin": "B0FNR32LRK",
+        "title": "Universal Carry Bag for DEWALT 20V MAX Circular Saw DCS391B/DCS565B",
+        "link": "https://www.amazon.com/ZIORS-Universal-Circular-DCS391B-Shoulder/dp/B0FNR32LRK/ref=sr_1_23?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-23",
+        "link_clean": "https://www.amazon.com/ZIORS-Universal-Circular-DCS391B-Shoulder/dp/B0FNR32LRK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FNR32LRK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71Sz6WPSG0L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 33,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$32.99",
+        "extracted_price": 32.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$32.99",
+            "extracted_primary_price": 32.99
+          }
+        ]
+      },
+      {
+        "position": 24,
+        "asin": "B086MF32GR",
+        "brand": "DEWALT",
+        "title": "FLEXVOLT 60V MAX* Circular Saw with Brake, 7-1/4-Inch, Tool Only (DCS578B)",
+        "link": "https://www.amazon.com/DEWALT-FLEXVOLT-Circular-4-Inch-DCS578B/dp/B086MF32GR/ref=sr_1_24?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-24",
+        "link_clean": "https://www.amazon.com/DEWALT-FLEXVOLT-Circular-4-Inch-DCS578B/dp/B086MF32GR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B086MF32GR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/611z7Q1alhL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1400,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$189.50",
+        "extracted_price": 189.5,
+        "delivery": [
+          "Join Prime to get FREE delivery Sat, Nov 21",
+          "Or Non-members get FREE delivery Tue, Nov 24"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "more_buying_choices": "$185.00 (20 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B086MF32GR/ref=sr_1_24_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-24",
+        "purchase_options": [
+          {
+            "primary_price": "$189.50",
+            "extracted_primary_price": 189.5,
+            "more_buying_choices": "$185.00 (20 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B086MF32GR/ref=sr_1_24_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-24"
+          }
+        ]
+      },
+      {
+        "position": 25,
+        "asin": "B0GH7JJW2Q",
+        "sponsored": true,
+        "title": "N828879 Circular Saw Upper Guard replaceable for DeWalt DCS565P1 DCS565B",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMTUzNjgyMjE5MDUwMjo6MDo6&url=%2FN828879-Circular-replaceable-DCS565P1-DCS565B%2Fdp%2FB0GH7JJW2Q%2Fref%3Dsr_1_25_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-25-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0GH7JJW2Q/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GH7JJW2Q&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/21199aLRWWL._AC_UL320_.jpg",
+        "price": "$67.77",
+        "extracted_price": 67.77,
+        "delivery": [
+          "FREE delivery Wed, Dec 9",
+          "Or fastest delivery Nov 20 - 23"
+        ],
+        "stock": "Only 20 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$67.77",
+            "extracted_primary_price": 67.77
+          }
+        ]
+      },
+      {
+        "position": 26,
+        "asin": "B0GW43QLBZ",
+        "sponsored": true,
+        "title": "for Dewalt N772413 Circular Saw Tool Bag DCS565B DCG416T2 DCG416B DCS565P1",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMTYzMzk1NjA2NzcwMjo6MDo6&url=%2FN772413-Circular-DCS565B-DCG416T2-DCS565P1%2Fdp%2FB0GW43QLBZ%2Fref%3Dsr_1_26_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-26-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0GW43QLBZ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GW43QLBZ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/210Lq10X8EL._AC_UL320_.jpg",
+        "price": "$58.17",
+        "extracted_price": 58.17,
+        "delivery": [
+          "FREE delivery Nov 25 - Dec 2",
+          "Or fastest delivery Fri, Nov 27"
+        ],
+        "stock": "Only 11 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$58.17",
+            "extracted_primary_price": 58.17
+          }
+        ]
+      },
+      {
+        "position": 27,
+        "asin": "B0BN9RF6L7",
+        "sponsored": true,
+        "title": "# 098128-85 Circular Saw Carriage Bolt DCS565P1 DCS565B DCS373P2 Replacement Part New for DeWalt",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMDA4MTcyNjU0NDEwMjo6MDo6&url=%2FTJPoto-098128-85-Circular-Carriage-Replacement%2Fdp%2FB0BN9RF6L7%2Fref%3Dsr_1_27_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-27-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0BN9RF6L7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BN9RF6L7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/318sjYqJWxL._AC_UL320_.jpg",
+        "price": "$15.99",
+        "extracted_price": 15.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 13 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$15.99",
+            "extracted_primary_price": 15.99
+          }
+        ]
+      },
+      {
+        "position": 28,
+        "asin": "B0GJ5G8LMM",
+        "sponsored": true,
+        "title": "N828879 Circular Saw Upper Guard DCS565P1 DCS565B DCS566B for Dewalt",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMTY0MDQwNTAxMTIwMjo6MDo6&url=%2FN828879-Circular-DCS565P1-DCS565B-DCS566B%2Fdp%2FB0GJ5G8LMM%2Fref%3Dsr_1_28_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-28-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0GJ5G8LMM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GJ5G8LMM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/21T-NBkK9OL._AC_UL320_.jpg",
+        "price": "$67.29",
+        "extracted_price": 67.29,
+        "delivery": [
+          "FREE delivery Fri, Nov 27"
+        ],
+        "stock": "Only 20 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$67.29",
+            "extracted_primary_price": 67.29
+          }
+        ]
+      },
+      {
+        "position": 29,
+        "asin": "B007QUZ16A",
+        "brand": "DEWALT",
+        "title": "Circular Saw, 7-1/4 inch, Pivoting with up to 57 Degree Bevel, Corded (DWE575SB)",
+        "link": "https://www.amazon.com/DEWALT-DWE575SB-Lightweight-Circular-Electric/dp/B007QUZ16A/ref=sr_1_29?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-29",
+        "link_clean": "https://www.amazon.com/DEWALT-DWE575SB-Lightweight-Circular-Electric/dp/B007QUZ16A/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B007QUZ16A&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61UTSfyXCqL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 5200,
+        "bought_last_month": "700+ bought in past month",
+        "price": "$142.00",
+        "extracted_price": 142,
+        "top_rated": true,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$142.00",
+            "extracted_primary_price": 142
+          }
+        ]
+      },
+      {
+        "position": 30,
+        "asin": "B0GQ6SBPN1",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Drill Driver and Circular Saw Combo Kit with 2 x 2 Ah Batteries and Charger, Contractor Bag (DCK252D2)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Batteries-Contractor-DCK252D2/dp/B0GQ6SBPN1/ref=sr_1_30?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-30",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Batteries-Contractor-DCK252D2/dp/B0GQ6SBPN1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GQ6SBPN1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/817B3zXIL6L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 2400,
+        "price": "$299.00",
+        "extracted_price": 299,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$299.00",
+            "extracted_primary_price": 299
+          }
+        ]
+      },
+      {
+        "position": 31,
+        "asin": "B0753QHKW7",
+        "brand": "DEWALT",
+        "title": "FLEXVOLT 60V MAX* Circular Saw for Framing, 7-1/4-Inch, Tool Only (DCS577B)",
+        "link": "https://www.amazon.com/DEWALT-DCS577B-Flexvolt-Framing-Tool/dp/B0753QHKW7/ref=sr_1_31_mod_primary_new?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-31",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS577B-Flexvolt-Framing-Tool/dp/B0753QHKW7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0753QHKW7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51ImmsPGOlL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1300,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$244.98",
+        "extracted_price": 244.98,
+        "old_price": "$264.95",
+        "extracted_old_price": 264.95,
+        "delivery": [
+          "FREE delivery Nov 19 - 20"
+        ],
+        "stock": "Only 9 left in stock - order soon.",
+        "more_buying_choices": "$244.96 (30 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0753QHKW7/ref=sr_1_31_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-31",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$244.98",
+            "extracted_primary_price": 244.98,
+            "old_primary_price": "$264.95",
+            "extracted_old_primary_price": 264.95,
+            "more_buying_choices": "$244.96 (30 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0753QHKW7/ref=sr_1_31_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-31"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$245.99",
+            "extracted_primary_price": 245.99,
+            "old_primary_price": "$264.95",
+            "extracted_old_primary_price": 264.95
+          }
+        ]
+      },
+      {
+        "position": 32,
+        "asin": "B0CZ9XR2Z7",
+        "brand": "DEWALT",
+        "title": "20V MAX Lithium-Ion Battery 2-Pack, 5.0 Ah (DCB205-2c)",
+        "link": "https://www.amazon.com/DEWALT-Lithium-Ion-Battery-Charger-DCB205-2c/dp/B0CZ9XR2Z7/ref=sr_1_32?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-32",
+        "link_clean": "https://www.amazon.com/DEWALT-Lithium-Ion-Battery-Charger-DCB205-2c/dp/B0CZ9XR2Z7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CZ9XR2Z7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/715jriCQl7L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 3800,
+        "bought_last_month": "4K+ bought in past month",
+        "price": "$128.00",
+        "extracted_price": 128,
+        "price_unit": "$64.00/count",
+        "extracted_price_unit": 64,
+        "old_price": "$136.84",
+        "extracted_old_price": 136.84,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "more_buying_choices": "$118.00 (54+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CZ9XR2Z7/ref=sr_1_32_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-32",
+        "purchase_options": [
+          {
+            "primary_price": "$128.00",
+            "extracted_primary_price": 128,
+            "old_primary_price": "$136.84",
+            "extracted_old_primary_price": 136.84,
+            "more_buying_choices": "$118.00 (54+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CZ9XR2Z7/ref=sr_1_32_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-32"
+          }
+        ]
+      },
+      {
+        "position": 33,
+        "asin": "B0FWCD6KYB",
+        "sponsored": true,
+        "title": "2 Pack 65010900 Inner Clamp Washer Compatible with DeWALT Circular Saws",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMTA5MzIzNTY0NDQwMjo6MDo6&url=%2F65010900-650109-00-Compatible-Circular-Replacement%2Fdp%2FB0FWCD6KYB%2Fref%3Dsr_1_33_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-33-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0FWCD6KYB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FWCD6KYB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71B9IYyLHzL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 12,
+        "price": "$9.79",
+        "extracted_price": 9.79,
+        "price_unit": "$4.90/count",
+        "extracted_price_unit": 4.9,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$9.79",
+            "extracted_primary_price": 9.79
+          }
+        ]
+      },
+      {
+        "position": 34,
+        "asin": "B0HJL39MF2",
+        "sponsored": true,
+        "title": "N914936 Circular Saw Dust Port for DeWalt DCS565B, DCS565P1, DCS566B",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMTU1NTkyNjI1ODMwMjo6MDo6&url=%2FN914936-Circular-DCS565B-DCS565P1-DCS566B%2Fdp%2FB0HJL39MF2%2Fref%3Dsr_1_34_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-34-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HJL39MF2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HJL39MF2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41urKSjO7yL._AC_UL320_.jpg",
+        "price": "$37.99",
+        "extracted_price": 37.99,
+        "delivery": [
+          "FREE delivery Nov 27 - Dec 3",
+          "Or fastest delivery Mon, Nov 30"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$37.99",
+            "extracted_primary_price": 37.99
+          }
+        ]
+      },
+      {
+        "position": 35,
+        "asin": "B0G33N4DWR",
+        "sponsored": true,
+        "title": "Portable Carry Bag Compatible with DEWALT 20V MAX Circular Saw",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2ODY4MjM5NTkzNTUxNzU3OjE3OTUwMDE2MjE6c3BfbXRmOjMwMTExMTgwMzY3NDkwMjo6MDo6&url=%2FPortable-Compatible-Circular-Tool-Multi-pocket%2Fdp%2FB0G33N4DWR%2Fref%3Dsr_1_35_sspa%3Fdib%3DeyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc%26dib_tag%3Dse%26keywords%3DDEWALT%2BDCS565B%26qid%3D1795001620%26sr%3D8-35-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0G33N4DWR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0G33N4DWR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/719k7geIA2L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 9,
+        "price": "$31.99",
+        "extracted_price": 31.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$31.99",
+            "extracted_primary_price": 31.99
+          }
+        ]
+      },
+      {
+        "position": 36,
+        "asin": "B09DJ7ZPMT",
+        "badges": [
+          "Best Seller in Oscillating Power Tools"
+        ],
+        "brand": "DEWALT",
+        "title": "20V Oscillating Tool, Cordless, Wood Blades, Sandpaper, Tool Bag, Battery and Charger Included (DCS356SD1)",
+        "link": "https://www.amazon.com/DEWALT-DCS356SD1-3-Speed-Oscillating-Yellow/dp/B09DJ7ZPMT/ref=sr_1_36?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-36",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS356SD1-3-Speed-Oscillating-Yellow/dp/B09DJ7ZPMT/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09DJ7ZPMT&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81KWwgojUxL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 286,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$188.99",
+        "extracted_price": 188.99,
+        "old_price": "$209.99",
+        "extracted_old_price": 209.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$185.95 (13 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09DJ7ZPMT/ref=sr_1_36_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-36",
+        "purchase_options": [
+          {
+            "primary_price": "$188.99",
+            "extracted_primary_price": 188.99,
+            "old_primary_price": "$209.99",
+            "extracted_old_primary_price": 209.99,
+            "more_buying_choices": "$185.95 (13 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09DJ7ZPMT/ref=sr_1_36_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-36"
+          }
+        ]
+      },
+      {
+        "position": 37,
+        "asin": "B0HK7DQ8TD",
+        "title": "Tool Bag Compatible with DEWALT DCS391B/DCS565B, Milwaukee M18 2630-20",
+        "link": "https://www.amazon.com/Compatible-Milwaukee-Circular-Batteries-Multi-Pocket/dp/B0HK7DQ8TD/ref=sr_1_37?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-37",
+        "link_clean": "https://www.amazon.com/Compatible-Milwaukee-Circular-Batteries-Multi-Pocket/dp/B0HK7DQ8TD/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HK7DQ8TD&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71-Je6U6dfL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 6,
+        "bought_last_month": "New on Amazon in past month",
+        "price": "$38.99",
+        "extracted_price": 38.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$38.99",
+            "extracted_primary_price": 38.99
+          }
+        ]
+      },
+      {
+        "position": 38,
+        "asin": "B0FJ1FFQRN",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Circular-DCS590B/dp/B0FJ1FFQRN/ref=sr_1_38_so_SAW?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-38",
+        "brand": "Amazon Renewed",
+        "title": "20V MAX* XR Brushless Cordless 7-1/4 in. Circular Saw (Tool Only) (DCS590B) (Renewed)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Circular-DCS590B/dp/B0FJ1FFQRN/ref=sr_1_38?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-38",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Cordless-Circular-DCS590B/dp/B0FJ1FFQRN/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FJ1FFQRN&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61l2zDbibGL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 16,
+        "price": "$142.95",
+        "extracted_price": 142.95,
+        "old_price": "$199.49",
+        "extracted_old_price": 199.49,
+        "delivery": [
+          "$11.95 delivery Nov 23 - 25"
+        ],
+        "stock": "Only 16 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$142.95",
+            "extracted_primary_price": 142.95,
+            "old_primary_price": "$199.49",
+            "extracted_old_primary_price": 199.49
+          }
+        ]
+      },
+      {
+        "position": 39,
+        "asin": "B06ZZY8KDL",
+        "brand": "DEWALT",
+        "title": "20V MAX Circular Saw Cordless with Brake, 7-1/4 Inch, Tool Only (DCS570B)",
+        "link": "https://www.amazon.com/DEWALT-DCS570B-184mm-Cordless-Circular/dp/B06ZZY8KDL/ref=sr_1_39?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-39",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS570B-184mm-Cordless-Circular/dp/B06ZZY8KDL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B06ZZY8KDL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61GQCdoNo9L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 5500,
+        "price": "$239.99",
+        "extracted_price": 239.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$219.99 (2 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B06ZZY8KDL/ref=sr_1_39_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-39",
+        "purchase_options": [
+          {
+            "primary_price": "$239.99",
+            "extracted_primary_price": 239.99,
+            "more_buying_choices": "$219.99 (2 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B06ZZY8KDL/ref=sr_1_39_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-39"
+          }
+        ]
+      },
+      {
+        "position": 40,
+        "asin": "B0DF86DZLW",
+        "brand": "DEWALT",
+        "title": "20V MAX* XR Brushless Cordless Reciprocating Saw (Tool Only) (DCS384B)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Reciprocating-DCS384B/dp/B0DF86DZLW/ref=sr_1_40?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-40",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Cordless-Reciprocating-DCS384B/dp/B0DF86DZLW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DF86DZLW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61PhjpAlfYL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 99,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$186.99",
+        "extracted_price": 186.99,
+        "old_price": "$249.00",
+        "extracted_old_price": 249,
+        "offers": [
+          "Save 5% on 5 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "more_buying_choices": "$174.99 (21+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DF86DZLW/ref=sr_1_40_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-40",
+        "purchase_options": [
+          {
+            "primary_price": "$186.99",
+            "extracted_primary_price": 186.99,
+            "old_primary_price": "$249.00",
+            "extracted_old_primary_price": 249,
+            "more_buying_choices": "$174.99 (21+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DF86DZLW/ref=sr_1_40_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-40"
+          }
+        ]
+      },
+      {
+        "position": 41,
+        "asin": "B09YXNDBTW",
+        "brand": "DEWALT",
+        "title": "XTREME 12V MAX Brushless Cordless Oscillating Tool with Blades and Adaptor, Bare Tool Only (DCS353B)",
+        "link": "https://www.amazon.com/DEWALT-OSCILLATING-Multi-Tool-Bare/dp/B09YXNDBTW/ref=sr_1_41?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-41",
+        "link_clean": "https://www.amazon.com/DEWALT-OSCILLATING-Multi-Tool-Bare/dp/B09YXNDBTW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09YXNDBTW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51NUTxf2LfL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 408,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$83.40",
+        "extracted_price": 83.4,
+        "old_price": "$88.99",
+        "extracted_old_price": 88.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 6 left in stock - order soon.",
+        "more_buying_choices": "$71.70 (41+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09YXNDBTW/ref=sr_1_41_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-41",
+        "purchase_options": [
+          {
+            "primary_price": "$83.40",
+            "extracted_primary_price": 83.4,
+            "old_primary_price": "$88.99",
+            "extracted_old_primary_price": 88.99,
+            "more_buying_choices": "$71.70 (41+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09YXNDBTW/ref=sr_1_41_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-41"
+          }
+        ]
+      },
+      {
+        "position": 42,
+        "asin": "B00ODN0S70",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Reciprocating Saw, Compact, Variable Speed, LED Light, Bare Tool Only (DCS387B)",
+        "link": "https://www.amazon.com/DEWALT-DCS387B-20-volt-Compact-Reciprocating/dp/B00ODN0S70/ref=sr_1_42?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-42",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS387B-20-volt-Compact-Reciprocating/dp/B00ODN0S70/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00ODN0S70&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51UabQjfSmL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 4500,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$123.39",
+        "extracted_price": 123.39,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$97.87 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00ODN0S70/ref=sr_1_42_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-42",
+        "purchase_options": [
+          {
+            "primary_price": "$123.39",
+            "extracted_primary_price": 123.39,
+            "more_buying_choices": "$97.87 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00ODN0S70/ref=sr_1_42_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-42"
+          }
+        ]
+      },
+      {
+        "position": 43,
+        "asin": "B07VYLSYQ6",
+        "brand": "DEWALT",
+        "title": "ATOMIC 20V MAX* Circular Saw, 4-1/2-Inch, Tool Only (DCS571B)",
+        "link": "https://www.amazon.com/DEWALT-DCS571B-Brushless-Cordless-Circular/dp/B07VYLSYQ6/ref=sr_1_43?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-43",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS571B-Brushless-Cordless-Circular/dp/B07VYLSYQ6/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07VYLSYQ6&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51wewJBNZyL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 7700,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$129.00",
+        "extracted_price": 129,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$129.00",
+            "extracted_primary_price": 129
+          }
+        ]
+      },
+      {
+        "position": 44,
+        "asin": "B099XV8ZCJ",
+        "brand": "Amazon Renewed",
+        "title": "DCS565BR 20V MAX Brushless Lithium-Ion 6-1/2 in. Cordless Circular Saw (Tool Only) (Renewed)",
+        "link": "https://www.amazon.com/Dewalt-DCS565BR-Brushless-Lithium-Ion-Cordless/dp/B099XV8ZCJ/ref=sr_1_44?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-44",
+        "link_clean": "https://www.amazon.com/Dewalt-DCS565BR-Brushless-Lithium-Ion-Cordless/dp/B099XV8ZCJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B099XV8ZCJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71H2IMs3YnL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 85
+      },
+      {
+        "position": 45,
+        "asin": "B096SPK9TM",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DCS578BR-FLEXVOLT-Brushless-Lithium-Ion-Cordless/dp/B096SPK9TM/ref=sr_1_45_so_SAW?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-45",
+        "brand": "Amazon Renewed",
+        "title": "DCS578BR 60V MAX FLEXVOLT Brushless Lithium-Ion 7-1/4 in. Cordless Circular Saw with Brake (Tool Only) (Renewed)",
+        "link": "https://www.amazon.com/DCS578BR-FLEXVOLT-Brushless-Lithium-Ion-Cordless/dp/B096SPK9TM/ref=sr_1_45?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=GW1QB%2BmqAsHTPf1jTZRSDA%3D%3D&sr=8-45",
+        "link_clean": "https://www.amazon.com/DCS578BR-FLEXVOLT-Brushless-Lithium-Ion-Cordless/dp/B096SPK9TM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B096SPK9TM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61JZk09YSVL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 101,
+        "price": "$156.95",
+        "extracted_price": 156.95,
+        "old_price": "$189.50",
+        "extracted_old_price": 189.5,
+        "delivery": [
+          "$11.95 delivery Nov 23 - 25"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$156.95",
+            "extracted_primary_price": 156.95,
+            "old_primary_price": "$189.50",
+            "extracted_old_primary_price": 189.5
+          }
+        ]
+      },
+      {
+        "position": 46,
+        "asin": "B007NVSTCK",
+        "badges": [
+          "Best Seller in Power Reciprocating Saws"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX Reciprocating Saw, 3,000 Strokes Per Minute, Variable Speed Trigger Cordless Saw, Tool Only (DCS380B)",
+        "link": "https://www.amazon.com/DEWALT-Reciprocating-Strokes-Variable-DCS380B/dp/B007NVSTCK/ref=sr_1_46?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-46",
+        "link_clean": "https://www.amazon.com/DEWALT-Reciprocating-Strokes-Variable-DCS380B/dp/B007NVSTCK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B007NVSTCK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61aJg9UdXdL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 8600,
+        "bought_last_month": "2K+ bought in past month",
+        "price": "$129.00",
+        "extracted_price": 129,
+        "old_price": "$159.00",
+        "extracted_old_price": 159,
+        "offers": [
+          "$10 Amazon credit when you spend $149.00"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$115.00 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B007NVSTCK/ref=sr_1_46_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-46",
+        "purchase_options": [
+          {
+            "primary_price": "$129.00",
+            "extracted_primary_price": 129,
+            "secondary_price": "$10 Amazon credit when you spend $149.00",
+            "extracted_secondary_price": 10,
+            "old_primary_price": "$159.00",
+            "extracted_old_primary_price": 159,
+            "more_buying_choices": "$115.00 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B007NVSTCK/ref=sr_1_46_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-46"
+          }
+        ]
+      },
+      {
+        "position": 47,
+        "asin": "B0CFYM9L5W",
+        "brand": "DEWALT",
+        "title": "DCS334B 20V Cordless Brushless Jigsaw (Tool Only)",
+        "link": "https://www.amazon.com/DeWalt-DCS334B-Cordless-Brushless-Jigsaw/dp/B0CFYM9L5W/ref=sr_1_47?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-47",
+        "link_clean": "https://www.amazon.com/DeWalt-DCS334B-Cordless-Brushless-Jigsaw/dp/B0CFYM9L5W/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CFYM9L5W&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61w9llKezpL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 79,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$126.00",
+        "extracted_price": 126,
+        "old_price": "$139.00",
+        "extracted_old_price": 139,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$118.99 (23 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CFYM9L5W/ref=sr_1_47_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-47",
+        "purchase_options": [
+          {
+            "primary_price": "$126.00",
+            "extracted_primary_price": 126,
+            "old_primary_price": "$139.00",
+            "extracted_old_primary_price": 139,
+            "more_buying_choices": "$118.99 (23 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CFYM9L5W/ref=sr_1_47_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-47"
+          }
+        ]
+      },
+      {
+        "position": 48,
+        "asin": "B0H9Z8N9P9",
+        "brand": "DEWALT",
+        "title": "Sander, 20V MAX XR 5 in Random Orbital Sander, Cordless (DCW211B)",
+        "link": "https://www.amazon.com/DEWALT-Sander-Orbital-Cordless-DCW211B/dp/B0H9Z8N9P9/ref=sr_1_48?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-48",
+        "link_clean": "https://www.amazon.com/DEWALT-Sander-Orbital-Cordless-DCW211B/dp/B0H9Z8N9P9/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H9Z8N9P9&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81Y3mAyQ9xL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 39,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$129.49",
+        "extracted_price": 129.49,
+        "old_price": "$199.00",
+        "extracted_old_price": 199,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 18 left in stock - order soon.",
+        "more_buying_choices": "$124.99 (62 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0H9Z8N9P9/ref=sr_1_48_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-48",
+        "purchase_options": [
+          {
+            "primary_price": "$129.49",
+            "extracted_primary_price": 129.49,
+            "old_primary_price": "$199.00",
+            "extracted_old_primary_price": 199,
+            "more_buying_choices": "$124.99 (62 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0H9Z8N9P9/ref=sr_1_48_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-48"
+          }
+        ]
+      },
+      {
+        "position": 49,
+        "asin": "B0C3TGRLLM",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Drill Driver Set with Battery, Charger (DCD777D1)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Battery-Included-DCD777D1/dp/B0C3TGRLLM/ref=sr_1_49?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-49",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Battery-Included-DCD777D1/dp/B0C3TGRLLM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0C3TGRLLM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/715+r4lU6mL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 2500,
+        "bought_last_month": "2K+ bought in past month",
+        "price": "$99.00",
+        "extracted_price": 99,
+        "old_price": "$179.00",
+        "extracted_old_price": 179,
+        "offers": [
+          "$10 Amazon credit when you spend $149.00"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$90.09 (19+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0C3TGRLLM/ref=sr_1_49_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-49",
+        "purchase_options": [
+          {
+            "primary_price": "$99.00",
+            "extracted_primary_price": 99,
+            "secondary_price": "$10 Amazon credit when you spend $149.00",
+            "extracted_secondary_price": 10,
+            "old_primary_price": "$179.00",
+            "extracted_old_primary_price": 179,
+            "more_buying_choices": "$90.09 (19+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0C3TGRLLM/ref=sr_1_49_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-49"
+          }
+        ]
+      },
+      {
+        "position": 50,
+        "asin": "B0G321D38G",
+        "title": "Carry Bag for DEWALT 20V MAX Circular Saw,Universal Tool Bag,Case Only",
+        "link": "https://www.amazon.com/Amotpo-Bag-Saw-Universal-Tool/dp/B0G321D38G/ref=sr_1_50?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-50",
+        "link_clean": "https://www.amazon.com/Amotpo-Bag-Saw-Universal-Tool/dp/B0G321D38G/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0G321D38G&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71zB5upzMXL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 16,
+        "price": "$32.99",
+        "extracted_price": 32.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 7 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$32.99",
+            "extracted_primary_price": 32.99
+          }
+        ]
+      },
+      {
+        "position": 51,
+        "asin": "B0B6T99BQV",
+        "brand": "Amazon Renewed",
+        "title": "DCS512BR 12V MAX XTREME Brushless Lithium-Ion 5-3/8 in. Cordless Circular Saw (Tool Only) (Renewed)",
+        "link": "https://www.amazon.com/DCS512BR-Brushless-Lithium-Ion-Cordless-Circular/dp/B0B6T99BQV/ref=sr_1_51?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-51",
+        "link_clean": "https://www.amazon.com/DCS512BR-Brushless-Lithium-Ion-Cordless-Circular/dp/B0B6T99BQV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B6T99BQV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61Rhkv332jL._AC_UL320_.jpg",
+        "rating": 3.1,
+        "reviews": 5
+      },
+      {
+        "position": 52,
+        "asin": "B0FCBV4YNC",
+        "title": "Tool Bag Compatible with DEWALT 20V MAX Circular Saw DCS391B/DCS565B",
+        "link": "https://www.amazon.com/Bag-Compatible-DCS565B-Milwaukee-Saw/dp/B0FCBV4YNC/ref=sr_1_52?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-52",
+        "link_clean": "https://www.amazon.com/Bag-Compatible-DCS565B-Milwaukee-Saw/dp/B0FCBV4YNC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FCBV4YNC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81WeNglujEL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 103,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$31.99",
+        "extracted_price": 31.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$31.99",
+            "extracted_primary_price": 31.99
+          }
+        ]
+      },
+      {
+        "position": 53,
+        "asin": "B0F21J7C2G",
+        "title": "5-1/2 Inch Cordless Circular Saw for Dewalt 20V Max Battery (No Battery)",
+        "link": "https://www.amazon.com/Cordless-Circular-Battery-Brushless-Cutting/dp/B0F21J7C2G/ref=sr_1_53?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-53",
+        "link_clean": "https://www.amazon.com/Cordless-Circular-Battery-Brushless-Cutting/dp/B0F21J7C2G/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F21J7C2G&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71CIvDGt4GL._AC_UL320_.jpg",
+        "rating": 3.9,
+        "reviews": 129,
+        "price": "$64.95",
+        "extracted_price": 64.95,
+        "offers": [
+          "Save 5% on 2 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$64.95",
+            "extracted_primary_price": 64.95
+          }
+        ]
+      },
+      {
+        "position": 54,
+        "asin": "B0DCGFKY7Y",
+        "variants": {
+          "options": [
+            {
+              "position": 1,
+              "asin": "B0DCGFKY7Y",
+              "title": "Yellow",
+              "link": "https://www.amazon.com/Peciue-Universal-Circular-DCS391B-Milwaukee/dp/B0DCGFKY7Y/ref=cs_sr_dp_loc_1?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-54"
+            },
+            {
+              "position": 2,
+              "asin": "B0F8B6S333",
+              "title": "Blue",
+              "link": "https://www.amazon.com/Peciue-Universal-Circular-DCS391B-Milwaukee/dp/B0F8B6S333/ref=cs_sr_dp_loc_2?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-54"
+            }
+          ]
+        },
+        "title": "Universal Tool Bag for DEWALT 20V MAX Circular Saw DCS391B/DCS565B, for Makita XSS02Z 18V Sierra Circular - Case Only (Black)",
+        "link": "https://www.amazon.com/Peciue-Universal-Circular-DCS391B-Milwaukee/dp/B0DCGFKY7Y/ref=sr_1_54?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-54",
+        "link_clean": "https://www.amazon.com/Peciue-Universal-Circular-DCS391B-Milwaukee/dp/B0DCGFKY7Y/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DCGFKY7Y&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71Nii1+ipxL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 179,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$31.99",
+        "extracted_price": 31.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 2,
+            "name": "Safer chemicals",
+            "snippet": "Made with chemicals safer for human health and the environment.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 3,
+            "name": "Worker well-being",
+            "snippet": "Manufactured on farms or in facilities that protect the rights and/or health of workers.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$31.99",
+            "extracted_primary_price": 31.99
+          }
+        ]
+      },
+      {
+        "position": 55,
+        "asin": "B00ET5VMTU",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "DEWALT",
+        "title": "20V Max XR Drill Driver, Battery and Charger (DCD771C2)",
+        "link": "https://www.amazon.com/DEWALT-Performance-Batteries-Contractor-DCD771C2/dp/B00ET5VMTU/ref=sr_1_55?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-55",
+        "link_clean": "https://www.amazon.com/DEWALT-Performance-Batteries-Contractor-DCD771C2/dp/B00ET5VMTU/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00ET5VMTU&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81dmm7FomNL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 50000,
+        "bought_last_month": "6K+ bought in past month",
+        "price": "$119.00",
+        "extracted_price": 119,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$119.00",
+            "extracted_primary_price": 119
+          }
+        ]
+      },
+      {
+        "position": 56,
+        "asin": "B0D8BKF4HD",
+        "title": "N914936 Circular Saw Dust Port Fits For DeWalt,Compatible With DCS565B DCS565P1 DCS566B DCS565P1-CA DCS566B-CA DCS565B-CA",
+        "link": "https://www.amazon.com/Ammany-N914936-Compatible-DCS565P1-CA-DCS566B-CA/dp/B0D8BKF4HD/ref=sr_1_56?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-56",
+        "link_clean": "https://www.amazon.com/Ammany-N914936-Compatible-DCS565P1-CA-DCS566B-CA/dp/B0D8BKF4HD/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D8BKF4HD&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51-1+jI4zSL._AC_UL320_.jpg",
+        "rating": 1,
+        "reviews": 1,
+        "price": "$32.30",
+        "extracted_price": 32.3,
+        "delivery": [
+          "FREE delivery Nov 23 - 25"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$32.30",
+            "extracted_primary_price": 32.3
+          }
+        ]
+      },
+      {
+        "position": 57,
+        "asin": "B082BTT92H",
+        "brand": "DEWALT",
+        "title": "ATOMIC 20V MAX* Reciprocating Saw, One-Handed, Cordless, Tool Only (DCS369B)",
+        "link": "https://www.amazon.com/DEWALT-DCS369B-Cordless-One-Handed-Reciprocating/dp/B082BTT92H/ref=sr_1_57?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-57",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS369B-Cordless-One-Handed-Reciprocating/dp/B082BTT92H/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B082BTT92H&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/618BvKV5jzL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 8500,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$129.00",
+        "extracted_price": 129,
+        "old_price": "$136.00",
+        "extracted_old_price": 136,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "more_buying_choices": "$127.55 (33 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B082BTT92H/ref=sr_1_57_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-57",
+        "purchase_options": [
+          {
+            "primary_price": "$129.00",
+            "extracted_primary_price": 129,
+            "old_primary_price": "$136.00",
+            "extracted_old_primary_price": 136,
+            "more_buying_choices": "$127.55 (33 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B082BTT92H/ref=sr_1_57_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-57"
+          }
+        ]
+      },
+      {
+        "position": 58,
+        "asin": "B0847NP274",
+        "brand": "DEWALT",
+        "title": "Xtreme 12V MAX* Reciprocating Saw, One-Handed, Cordless, Tool Only (DCS312B)",
+        "link": "https://www.amazon.com/DEWALT-DCS312B-Brushless-One-Handed-Reciprocating/dp/B0847NP274/ref=sr_1_58_mod_primary_new?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-58",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS312B-Brushless-One-Handed-Reciprocating/dp/B0847NP274/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0847NP274&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71xixXNVWdL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 1100,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$94.88",
+        "extracted_price": 94.88,
+        "old_price": "$268.99",
+        "extracted_old_price": 268.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 27",
+          "Or fastest delivery Nov 20 - 24"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$94.88",
+            "extracted_primary_price": 94.88,
+            "old_primary_price": "$268.99",
+            "extracted_old_primary_price": 268.99
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$108.00",
+            "extracted_primary_price": 108,
+            "old_primary_price": "$268.99",
+            "extracted_old_primary_price": 268.99
+          }
+        ]
+      },
+      {
+        "position": 59,
+        "asin": "B0G33N4DWR",
+        "title": "Portable Carry Bag Compatible with DEWALT 20V MAX Circular Saw",
+        "link": "https://www.amazon.com/Portable-Compatible-Circular-Tool-Multi-pocket/dp/B0G33N4DWR/ref=sr_1_59?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-59",
+        "link_clean": "https://www.amazon.com/Portable-Compatible-Circular-Tool-Multi-pocket/dp/B0G33N4DWR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0G33N4DWR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/719k7geIA2L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 9,
+        "price": "$31.99",
+        "extracted_price": 31.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$31.99",
+            "extracted_primary_price": 31.99
+          }
+        ]
+      },
+      {
+        "position": 60,
+        "asin": "B0753PWB8P",
+        "brand": "DEWALT",
+        "title": "FLEXVOLT 60V MAX* Circular Saw Kit, 7-1/4-Inch, Worm Style, 9.0Ah Battery (DCS577X1)",
+        "link": "https://www.amazon.com/DEWALT-DCS577X1-FLEXVOLT-Style-Battery/dp/B0753PWB8P/ref=sr_1_60?dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&dib_tag=se&keywords=DEWALT+DCS565B&qid=1795001620&sr=8-60",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS577X1-FLEXVOLT-Style-Battery/dp/B0753PWB8P/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0753PWB8P&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/610cmhCcBBL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 877,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$479.99",
+        "extracted_price": 479.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 11 left in stock - order soon.",
+        "more_buying_choices": "$454.99 (14 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0753PWB8P/ref=sr_1_60_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-60",
+        "purchase_options": [
+          {
+            "primary_price": "$479.99",
+            "extracted_primary_price": 479.99,
+            "more_buying_choices": "$454.99 (14 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0753PWB8P/ref=sr_1_60_olp?keywords=DEWALT+DCS565B&dib_tag=se&dib=eyJ2IjoiMSJ9.8rpgPT4T6IC5NdKUqTSSyc9JxZ9CjRZyF8EP18-cZYsmc8IQ8aVGVW9mCoZsFvkxAIjq74DSo1h_-VdBRxjlfcDu3AyRhSQl6AePX2gEbsWsZONXtk-zG9lupn9WrhmB4BEPZoXGjV-Re7qQWHbce2e82w-WH1QoymfSSdLyzi0v-3nEb8IjeQ1ncHdsMNUKu_X6OGKT91M-tIdaDQHskcARgrLuu_H6oFRG8NNiaei_137vYmk8xgsWOzd_CcptFJctCjpX9x4f2MdJ0CnUf0NE5JNkIawOT-GuvdbvKB4.SGzOC5dQ4XqauvohsH9wxdYCJHKCCAEo-TwmR_FJWLc&qid=1795001620&sr=8-60"
+          }
+        ]
+      }
+    ],
+    "featured_products": [
+      {
+        "title": "Picks from Amazon Influencers",
+        "description": "From Amazon Influencer storefronts",
+        "products": [
+          {
+            "position": 1,
+            "asin": "B0FL6GRNCP",
+            "sponsored": true,
+            "title": "Portable Storage Bag for DEWALT 20V MAX Circular Saw,Large Space Carry Case",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo0MzE3NDEwMTQ3MDYzNTI2OjE3OTUwMDE2MjE6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDA5NDc0MTYwNzU2MDI6OjA6Og&url=%2FPortable-Storage-Circular-DCS574B-Compatible%2Fdp%2FB0FL6GRNCP%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DDEWALT%2BDCS565B%26keywords%3DDEWALT%2BDCS565B%26pd_rd_i%3DB0FL6GRNCP%26pd_rd_r%3Da0616f94-d4e4-4cc8-a110-4b329fbde864%26pd_rd_w%3DqgjQH%26pd_rd_wg%3D8I6r7%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3D4RZ9V6GCAS52WTJDJY4B%26qid%3D1795001620%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-1-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DCrqJBD0UUS%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=CrqJBD0UUS",
+            "link_clean": "https://www.amazon.com/dp/B0FL6GRNCP/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FL6GRNCP&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/71fssUpiOVL._AC_UL320_.jpg",
+            "rating": 4.8,
+            "reviews": 19,
+            "price": "$33.99",
+            "extracted_price": 33.99,
+            "delivery": [
+              "Join Prime to get FREE delivery Tomorrow, Nov 19Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon",
+              "Join Prime to get FREE delivery Tomorrow, Nov 19",
+              "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$33.99",
+                "extracted_primary_price": 33.99
+              }
+            ]
+          },
+          {
+            "position": 2,
+            "asin": "B0FKM18RRS",
+            "sponsored": true,
+            "title": "Brushless Reciprocating Saw Compatible with Dewalt 20V MAX Battery(Tool Only), 3,000 SPM One-Handed Cordless Sawzall, 1\" Stroke Length, Pivoting Shoe, LED Light, Variable Speed for Wood/Meatl/PVC",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo0MzE3NDEwMTQ3MDYzNTI2OjE3OTUwMDE2MjE6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDExMTQ0MjE3ODE1MDI6OjE6Og&url=%2FBrushless-Reciprocating-Compatible-One-Handed-Cordless%2Fdp%2FB0FKM18RRS%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DDEWALT%2BDCS565B%26keywords%3DDEWALT%2BDCS565B%26pd_rd_i%3DB0FKM18RRS%26pd_rd_r%3Da0616f94-d4e4-4cc8-a110-4b329fbde864%26pd_rd_w%3DqgjQH%26pd_rd_wg%3D8I6r7%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3D4RZ9V6GCAS52WTJDJY4B%26qid%3D1795001620%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-2-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DKemAEDBJ6q%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=KemAEDBJ6q",
+            "link_clean": "https://www.amazon.com/dp/B0FKM18RRS/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FKM18RRS&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/611bOhBHNYL._AC_UL320_.jpg",
+            "rating": 4.6,
+            "reviews": 193,
+            "bought_last_month": "200+ bought in past month",
+            "price": "$65.99",
+            "extracted_price": 65.99,
+            "delivery": [
+              "FREE delivery Nov 27 - 30Or fastest delivery Nov 25 - 28",
+              "FREE delivery Nov 27 - 30",
+              "Or fastest delivery Nov 25 - 28"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$65.99",
+                "extracted_primary_price": 65.99
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "asin": "B0FT77Z3NF",
+            "sponsored": true,
+            "options": "See options",
+            "options_link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo0MzE3NDEwMTQ3MDYzNTI2OjE3OTUwMDE2MjE6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDExNjYwMjg2MzM3MDI6OjI6Og&url=%2FExtbtfor-Circular-4000RPM-Equipped-Blades%25EF%25BC%258CMaximum%2Fdp%2FB0FT77Z3NF%2Fref%3Dsxbs_pa_sp_search_thematic_btf_so_SAW%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DDEWALT%2BDCS565B%26keywords%3DDEWALT%2BDCS565B%26pd_rd_i%3DB0FT77Z3NF%26pd_rd_r%3Da0616f94-d4e4-4cc8-a110-4b329fbde864%26pd_rd_w%3DqgjQH%26pd_rd_wg%3D8I6r7%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3D4RZ9V6GCAS52WTJDJY4B%26qid%3D1795001620%26sbo%3D9ZOMT9Jm0JH%252Ft%252BWi68iDSA%253D%253D%26sr%3D1-3-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DIU5gMd1hTB%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=IU5gMd1hTB",
+            "title": "4.8A Power Circular Saw Corded,4000RPM Laser Guide 45° Max Angle",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo0MzE3NDEwMTQ3MDYzNTI2OjE3OTUwMDE2MjE6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDExNjYwMjg2MzM3MDI6OjI6Og&url=%2FExtbtfor-Circular-4000RPM-Equipped-Blades%25EF%25BC%258CMaximum%2Fdp%2FB0FT77Z3NF%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DDEWALT%2BDCS565B%26keywords%3DDEWALT%2BDCS565B%26pd_rd_i%3DB0FT77Z3NF%26pd_rd_r%3Da0616f94-d4e4-4cc8-a110-4b329fbde864%26pd_rd_w%3DqgjQH%26pd_rd_wg%3D8I6r7%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3D4RZ9V6GCAS52WTJDJY4B%26qid%3D1795001620%26sbo%3D9ZOMT9Jm0JH%252Ft%252BWi68iDSA%253D%253D%26sr%3D1-3-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DIU5gMd1hTB%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=IU5gMd1hTB",
+            "link_clean": "https://www.amazon.com/dp/B0FT77Z3NF/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FT77Z3NF&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/61oSsnaP6tL._AC_UL320_.jpg",
+            "rating": 4.5,
+            "reviews": 197,
+            "bought_last_month": "300+ bought in past month",
+            "price": "$46.99",
+            "extracted_price": 46.99,
+            "old_price": "$59.99",
+            "extracted_old_price": 59.99,
+            "offers": [
+              "Exclusive Prime price"
+            ],
+            "delivery": [
+              "Join Prime to get FREE delivery Tomorrow, Nov 19Or Non-members get FREE delivery Mon, Nov 23",
+              "Join Prime to get FREE delivery Tomorrow, Nov 19",
+              "Or Non-members get FREE delivery Mon, Nov 23"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$46.99",
+                "extracted_primary_price": 46.99,
+                "old_primary_price": "$59.99",
+                "extracted_old_primary_price": 59.99
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "asin": "B0H71KBBZ5",
+            "sponsored": true,
+            "title": "20V Cordless Oscillating Tool with Brake, Low Vibration Design, Brushless",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo0MzE3NDEwMTQ3MDYzNTI2OjE3OTUwMDE2MjE6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDE1MTM5NzQ2MzMwMDI6OjM6Og&url=%2FOscillating-Tool-Vibration-Brushless-3-6%25C2%25B0Oscillation%2Fdp%2FB0H71KBBZ5%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DDEWALT%2BDCS565B%26keywords%3DDEWALT%2BDCS565B%26pd_rd_i%3DB0H71KBBZ5%26pd_rd_r%3Da0616f94-d4e4-4cc8-a110-4b329fbde864%26pd_rd_w%3DqgjQH%26pd_rd_wg%3D8I6r7%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3D4RZ9V6GCAS52WTJDJY4B%26qid%3D1795001620%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-4-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DtJHqvflNcR%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=tJHqvflNcR",
+            "link_clean": "https://www.amazon.com/dp/B0H71KBBZ5/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H71KBBZ5&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/81N1DOaw73L._AC_UL320_.jpg",
+            "rating": 4.8,
+            "reviews": 52,
+            "price": "$85.99",
+            "extracted_price": 85.99,
+            "old_price": "$101.99",
+            "extracted_old_price": 101.99,
+            "delivery": [
+              "Join Prime to get FREE delivery Tomorrow, Nov 19Or Non-members get FREE delivery Mon, Nov 23",
+              "Join Prime to get FREE delivery Tomorrow, Nov 19",
+              "Or Non-members get FREE delivery Mon, Nov 23"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$85.99",
+                "extracted_primary_price": 85.99,
+                "old_primary_price": "$101.99",
+                "extracted_old_primary_price": 101.99
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "asin": "B0C3H6V6DY",
+            "sponsored": true,
+            "options": "See options",
+            "options_link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo0MzE3NDEwMTQ3MDYzNTI2OjE3OTUwMDE2MjE6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDEyNDI3NjA3NDY2MDI6OjQ6Og&url=%2FDOVAMAN-Circular-Auxiliary-Cutting-Tile-MCS01A%2Fdp%2FB0C3H6V6DY%2Fref%3Dsxbs_pa_sp_search_thematic_btf_so_SAW%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DDEWALT%2BDCS565B%26keywords%3DDEWALT%2BDCS565B%26pd_rd_i%3DB0C3H6V6DY%26pd_rd_r%3Da0616f94-d4e4-4cc8-a110-4b329fbde864%26pd_rd_w%3DqgjQH%26pd_rd_wg%3D8I6r7%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3D4RZ9V6GCAS52WTJDJY4B%26qid%3D1795001620%26sbo%3D9ZOMT9Jm0JH%252Ft%252BWi68iDSA%253D%253D%26sr%3D1-5-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DW1h1fqrN1J%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=W1h1fqrN1J",
+            "title": "DOVAMAN Circular Saw, 5.8A 4-1/2\" Circular Saw w/Laser & Auxiliary Handle",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo0MzE3NDEwMTQ3MDYzNTI2OjE3OTUwMDE2MjE6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDEyNDI3NjA3NDY2MDI6OjQ6Og&url=%2FDOVAMAN-Circular-Auxiliary-Cutting-Tile-MCS01A%2Fdp%2FB0C3H6V6DY%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DDEWALT%2BDCS565B%26keywords%3DDEWALT%2BDCS565B%26pd_rd_i%3DB0C3H6V6DY%26pd_rd_r%3Da0616f94-d4e4-4cc8-a110-4b329fbde864%26pd_rd_w%3DqgjQH%26pd_rd_wg%3D8I6r7%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3D4RZ9V6GCAS52WTJDJY4B%26qid%3D1795001620%26sbo%3D9ZOMT9Jm0JH%252Ft%252BWi68iDSA%253D%253D%26sr%3D1-5-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DW1h1fqrN1J%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=W1h1fqrN1J",
+            "link_clean": "https://www.amazon.com/dp/B0C3H6V6DY/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0C3H6V6DY&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/71drWxgpBeL._AC_UL320_.jpg",
+            "rating": 4.4,
+            "reviews": 2400,
+            "bought_last_month": "300+ bought in past month",
+            "price": "$69.97",
+            "extracted_price": 69.97,
+            "old_price": "$79.97",
+            "extracted_old_price": 79.97,
+            "offers": [
+              "Exclusive Prime price"
+            ],
+            "delivery": [
+              "Join Prime to get FREE delivery Tomorrow, Nov 19Or Non-members get FREE delivery Mon, Nov 23",
+              "Join Prime to get FREE delivery Tomorrow, Nov 19",
+              "Or Non-members get FREE delivery Mon, Nov 23"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$69.97",
+                "extracted_primary_price": 69.97,
+                "old_primary_price": "$79.97",
+                "extracted_old_primary_price": 79.97
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "related_searches": [
+      {
+        "position": 1,
+        "query": "dewalt dcs391b",
+        "link": "https://www.amazon.com/s?k=dewalt+dcs391b&ref=rsl_sug_0_0&pd_rd_w=qB0Mq&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=4RZ9V6GCAS52WTJDJY4B&pd_rd_wg=8I6r7&pd_rd_r=a0616f94-d4e4-4cc8-a110-4b329fbde864&qid=1795001620"
+      },
+      {
+        "position": 2,
+        "query": "dewalt dcs574b",
+        "link": "https://www.amazon.com/s?k=dewalt+dcs574b&ref=rsl_sug_0_3&pd_rd_w=qB0Mq&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=4RZ9V6GCAS52WTJDJY4B&pd_rd_wg=8I6r7&pd_rd_r=a0616f94-d4e4-4cc8-a110-4b329fbde864&qid=1795001620"
+      },
+      {
+        "position": 3,
+        "query": "dewalt circular saw",
+        "link": "https://www.amazon.com/s?k=dewalt+circular+saw&ref=rsl_sug_0_1&pd_rd_w=qB0Mq&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=4RZ9V6GCAS52WTJDJY4B&pd_rd_wg=8I6r7&pd_rd_r=a0616f94-d4e4-4cc8-a110-4b329fbde864&qid=1795001620"
+      },
+      {
+        "position": 4,
+        "query": "dewalt circular saw 20v",
+        "link": "https://www.amazon.com/s?k=dewalt+circular+saw+20v&ref=rsl_sug_0_4&pd_rd_w=qB0Mq&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=4RZ9V6GCAS52WTJDJY4B&pd_rd_wg=8I6r7&pd_rd_r=a0616f94-d4e4-4cc8-a110-4b329fbde864&qid=1795001620"
+      },
+      {
+        "position": 5,
+        "query": "dewalt 20v max battery",
+        "link": "https://www.amazon.com/s?k=dewalt+20v+max+battery&ref=rsl_sug_0_2&pd_rd_w=qB0Mq&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=4RZ9V6GCAS52WTJDJY4B&pd_rd_wg=8I6r7&pd_rd_r=a0616f94-d4e4-4cc8-a110-4b329fbde864&qid=1795001620"
+      },
+      {
+        "position": 6,
+        "query": "dewalt dcs565",
+        "link": "https://www.amazon.com/s?k=dewalt+dcs565&ref=rsl_sug_0_5&pd_rd_w=qB0Mq&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=4RZ9V6GCAS52WTJDJY4B&pd_rd_wg=8I6r7&pd_rd_r=a0616f94-d4e4-4cc8-a110-4b329fbde864&qid=1795001620"
+      }
+    ],
+    "sponsored_brands": {
+      "title": "Brands related to your search",
+      "brands": [
+        {
+          "position": 1,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/74e8cec1-9632-4222-8077-6b6476abd2d5._CR0,0,3000,1571_SX920_CB1169409_QL70_.jpg",
+          "name": "HOTECHE",
+          "headline": "Empower your work with HOTECHE",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUE1v00AQVYuAKiqiyqFIOaFI5FCxyfpjY7vIQuu106ap28TOR9uLtbE3idX4o95NW3qoOHPnAH8AiQu_gb8AB_4JZ-QWhOBppHmamaeZeZVo4_3Hnz8eVZ_g4bhv97q9E2g7Xn1N2tmesTS-Diau4kbxRO_1EUxQMtrdnp6f2ePxZGB1Bu1VerNsQrxwB96mhOSmpBlNHTbh2bpvTTewM9x3vK5ffVZ5HDF-LrK8ujk68hxyvHfUPXPs2ru1ykbZCaZiVq3QhN5kaTPMktqLBaegYGGWJCyNqIizFHBWXMYhA5zRIlyAqZjVH7I0GPk7crJaihhMC5pGICwYFfElA79XgpAWEQc5jVPBChBmqWCpkLdciwRK3z8MbMfvDY_7db2yBre-vf3-9cMXu7b1R10eouR8WX-qQAhVpKuoTLAtPxj59u4D0ic7veor28Ik73SBhm-ti3vM8a01EEg97OJ_cWvN7wLfk9ommTvXe9iZcy1k8uf1yqf1hRA53221rq6umn9taXGRFYy3cjpnrbZhqxhhBIyOagNVlXRg6JYKiEbaioYMoqjO6ztBULCZ6VsBhhpUkYGkLhy6WOken8pWG2AoS6oqGR3iep0Duz8YodNGHgVFFOTLRVSYorHgNAiLII5M2FjmAeVxyk0LkhMyObHG45cWJPvu0UTWlZL2T7V9vWOUkxcrVrwxbWeCD4fPbeKjNrLKOl9mwvzf4QaP8oBGwbzIVrlZuq1pElIgRDpUG7FJc96g5SuK55NsdTDxlF-ZEtrN&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F69D4A5A5-9F4D-4418-98B4-C7C63759C34E%3Fstore_ref%3DSB_A07045951I0TMA3IOY2B6-A0214419FCMRFJDPQU5Y%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0CXCWXBVV%2CB0CHMNW283%2CB0CPY7H8F9%26lp_query%3DDEWALT%20DCS565B%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300077153005804%26i%3Daps%26aref%3D3RSCouJWR3&ref_=sbx_be_s_3psl_mbd_mb0_bkgd&pd_rd_w=XVtc6&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=4RZ9V6GCAS52WTJDJY4B&pd_rd_wg=9HZ3t&pd_rd_r=03393ed7-d12f-4a78-bba1-46cc8c319167",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/3c615ac3-617c-4083-9741-149289664c51._CR0,0,400,400_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 2,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/7d22cb83-b787-4fe6-a563-a4165ae77bfc._CR0,0,1200,628_SX920_CB1169409_QL70_.jpg",
+          "name": "NANWEI POWER",
+          "headline": "NANWEI Cordless Reciprocating Saw",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUEtv00AYVFsBVVRElUORcqoikUPFJrt-xE6RhXZtxzFJmjROmqoXa2NvbIv4Ue_2xaEnxIE7F4TEiZ_Bz0Dc-BmcUVoQgtF3GH2j0YymEm5_-Pjz-8PqYzw9GVt9t38KLXtS30AHe0uWJdf-fCgPw2Su98cqTNV0drjnXb-KoZRBO4jmLqEBvQTxKJrsIFVqIq3T1GETnm16ZLGN7WnPnrhe9WnlUcj4a5EX1Z3Z0cQ2R86Re2Zbtfcble214i_EslqhKX2TZ80gT2vPYk5ByYI8TVkWUpHkGeCsvEwCBjijZRCDhVjWH7DMn3kHUnqxEglYlDQLQVAyKpJLBn5HgoCWIQcFTTLBShDkmWCZkHaHxPTlsTfwLdvrT0fjul7ZQLs_3r398u2rVdv9414XkQu-qj-RIIRtRUEdTYOyhqStmWcdbplj86BffWERbBZdF2j4lpzfI8K35FioysDF_-KWRHeH70ltx4zsawfbEdcCJn3erHzajIUo-GGrdXV11fw7S4uLvGS8VdCItew2UmylawJds2SgaBoGWCEIoK6FkIagqWn45Z3BL9nS8IiPYUfSoaqeKnjQm7sy6VoOwFBCSltVEDSx4_Q66pTYw0YR-mXoF6s4LA3RiDn1g9JPQgM2VoVPeZJxg8Cu1HWOpxP1OYGO1TZ7ptNZy-cXrLwxLHuOB9N9y_TUtkrWf77KhfH_rA0eFj4N_ajMLwpDhhCpkqZBKOkdqDQSgxa8Qdf909HJmX7TX83NX1hx170&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FE614E4FC-87D3-477A-A4B1-1FD11710C77A%3Fstore_ref%3DSB_A0928055X4ALHWI3BFDG-A021465410CAGGH95TBEM%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0F2FGQTR5%2CB0GD6CHCG9%26lp_query%3DDEWALT%20DCS565B%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300152770028904%26i%3Daps%26aref%3DmOVZ8yKlWC&ref_=sbx_be_s_3psl_mbd_mb1_bkgd&pd_rd_w=XVtc6&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=4RZ9V6GCAS52WTJDJY4B&pd_rd_wg=9HZ3t&pd_rd_r=03393ed7-d12f-4a78-bba1-46cc8c319167",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/1abd3fac-adca-4bd0-9be4-bff9e366247c._CR0,0,400,400_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 3,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/c469b665-068d-4162-a1c6-12f042ee843d._CR0,0,1200,628_SX920_CB1169409_QL70_.jpg",
+          "name": "DEWALT",
+          "headline": "Be Safe Today. Build For Tomorrow.",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkDtvE0EQx5VEQGQFEbkIkqvIEi6irL17vmfQCd0rycU-5-KzkzjNan23tg98j-xunkU-AD0NnwBEx5egoUei4GNQIycgBH9NMZqZv2bmV0lW373_-e1x9ak1OA7djt85ha7Xry-hrY0JzdNrfBK0gyQ90TuhAjMlG-5sNI3D_LbpHzslPBbnwfjmhtOx1V9DitREmtHUYROeLUf2eNXyBvte34-qzytPEsrfiKKsrg17fc853Ov5Z55be7tUWV108FhMqhWSkdsib8ZFVnsx4wQwGhdZRvOEiLTIAafsMo0p4JSweAbGYlJ_RHM8jLak7GIuUjBmJE9AzCgR6SUFv1eCmLCEg5KkuaAMxEUuaC6k9cB2cDuMutj1os7gMKzrlSVp_ceX7x-_fnZr63_ci0PaJZ_Xn7UhhIquIwTbqgFVaWUYuTsrTuhsdaovXdtyyl0faNadff6gqXVnHwlF7vrWv7qzp_dhPSS1NWfqXe9Z3pRrMZU-LVc-LM-EKPlOq3V1ddX8i6XFRcEob5VkSlsWhI6uuAgoqmwAGckI6EhDAEmubLuKJOtIeXVvwIxOzMjGFpRkTUVI2j_ddRTojyK1i4AFoYR0pEvDSD3wLanr9bTdRplgluByPkuYKRozTnDMcJqYsDEvMeFpzk0bOqMeGoXBwbYN4ejAOOojb9uGbqgER0agLCbPLyi7MV3vxOoONl0nUlTFXtT5vBDm_4gbPCkxSfCUFRelucBtyNAwYFuDUG6kJil5gyx-uaRngZq9vi2TX6Ou2-0&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FA00C85D1-5649-4141-8171-12D4BD524815%3Fstore_ref%3DSB_A02476112HXFC50IYS6L1-A00218182US6JIA2LEN7F%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0CYN1YPMJ%2CB00YJ9QR1E%2CB0DP5MQ9M5%26lp_query%3DDEWALT%20DCS565B%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300094099037004%26i%3Daps%26aref%3DveZM6mjzpd&ref_=sbx_be_s_3psl_mbd_mb2_bkgd&pd_rd_w=XVtc6&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=4RZ9V6GCAS52WTJDJY4B&pd_rd_wg=9HZ3t&pd_rd_r=03393ed7-d12f-4a78-bba1-46cc8c319167",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/6eca9e90-11c0-401f-b2eb-078f04356ca8._CR0,0,1000,1000_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        }
+      ]
+    },
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      },
+      {
+        "position": 14,
+        "name": "Kindle Books",
+        "link": "https://www.amazon.com/Kindle-eBooks/b/?ie=UTF8&node=154606011&ref_=nav_cs_kindle_books",
+        "node": "154606011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=154606011"
+      }
+    ],
+    "filters": {
+      "popular_shopping_ideas": [
+        {
+          "position": 1,
+          "name": "20v Brushless",
+          "link": "https://www.amazon.com/s?k=dewalt+dcs565b+20v+brushless&ref=sr_nr_p_rag_integrated_qb_0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=dewalt+dcs565b+20v+brushless"
+        },
+        {
+          "position": 2,
+          "name": "Circular Saw",
+          "link": "https://www.amazon.com/s?k=dewalt+dcs565b+circular+saw&ref=sr_nr_p_rag_integrated_qb_1",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=dewalt+dcs565b+circular+saw"
+        },
+        {
+          "position": 3,
+          "name": "Cordless",
+          "link": "https://www.amazon.com/s?k=dewalt+dcs565b+cordless&ref=sr_nr_p_rag_integrated_qb_2",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=dewalt+dcs565b+cordless"
+        },
+        {
+          "position": 4,
+          "name": "20v Max",
+          "link": "https://www.amazon.com/s?k=dewalt+dcs565b+20v+max&ref=sr_nr_p_rag_integrated_qb_3",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=dewalt+dcs565b+20v+max"
+        },
+        {
+          "position": 5,
+          "name": "20v Cordless",
+          "link": "https://www.amazon.com/s?k=dewalt+dcs565b+20v+cordless&ref=sr_nr_p_rag_integrated_qb_4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=dewalt+dcs565b+20v+cordless"
+        }
+      ],
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249152011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_76%3A1249152011&dc&qid=1795001620&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3AG2mFn8s%2BKoFMY9KuLAaUygqdZBlVIVddrWQeab2hbHU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_76%3A1249152011"
+        }
+      ],
+      "delivery_day": [
+        {
+          "position": 1,
+          "name": "Get It Today",
+          "rh": "p_90:8308920011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_90%3A8308920011&dc&qid=1795001620&rnid=8308919011&ref=sr_nr_p_90_1&ds=v1%3ALFs84sL4sD3Pzqq0IDbIhoLz3zP034gM8FWZXgB21sw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_90%3A8308920011"
+        },
+        {
+          "position": 2,
+          "name": "Get It by Tomorrow",
+          "rh": "p_90:8308921011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_90%3A8308921011&dc&qid=1795001620&rnid=8308919011&ref=sr_nr_p_90_2&ds=v1%3AWTvQxmqBjwyAjyFNqQXD3UrqI16i9q8vA86qZmUPVG0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_90%3A8308921011"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "DEWALT",
+          "rh": "p_123:195991",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_123%3A195991&dc&qid=1795001620&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3AuqQShR5GrCIvX5KYrbX1s7Cwvj63HKXwGf9h%2BGqf6b8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_123%3A195991"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_condition-type%3A6358196011&dc&qid=1795001620&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3Ad%2FFZk%2FYBEme37S3OB4IfK%2BukJyc6I9KA63FttQ6Qpwc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_condition-type%3A6358196011"
+        },
+        {
+          "position": 2,
+          "name": "Renewed",
+          "rh": "p_n_condition-type:16907721011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_condition-type%3A16907721011&dc&qid=1795001620&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3ApmArKvW9%2BFDC1DOyeEevm41sULr%2BOnalmKOiZlw%2FFKI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_condition-type%3A16907721011"
+        },
+        {
+          "position": 3,
+          "name": "Used",
+          "rh": "p_n_condition-type:6358198011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_condition-type%3A6358198011&dc&qid=1795001620&rnid=6358194011&ref=sr_nr_p_n_condition-type_3&ds=v1%3AE4AoGclhsv40AaZuSiZOLvHrQjBk0dPYE5sw%2BgXt4a4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_condition-type%3A6358198011"
+        }
+      ],
+      "customer_review": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:2661618011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_72%3A2661618011&dc&qid=1795001620&rnid=2661617011&ref=sr_nr_p_72_1&ds=v1%3A9yY8pt158%2FpAZUcS34MVhP9gGjGdPG7jvb7mXo0NOeU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_72%3A2661618011"
+        }
+      ],
+      "power_source": [
+        {
+          "position": 1,
+          "name": "Battery Powered",
+          "rh": "p_n_g-1003561519111:55531370011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1003561519111%3A55531370011&dc&qid=1795001620&rnid=55531367011&ref=sr_nr_p_n_g-1003561519111_1&ds=v1%3AZV%2FAIdoEktxg%2BuKeDeEo%2FnHbeo7HPxCimTEXpgBD4qc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1003561519111%3A55531370011"
+        },
+        {
+          "position": 2,
+          "name": "Corded Electric",
+          "rh": "p_n_g-1003561519111:55531379011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1003561519111%3A55531379011&dc&qid=1795001620&rnid=55531367011&ref=sr_nr_p_n_g-1003561519111_2&ds=v1%3Aflycm5w3LWqVoqP7pe5V1JdVt93LKHuRtD2lOY3tvkc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1003561519111%3A55531379011"
+        }
+      ],
+      "price": [
+        {
+          "position": 1,
+          "name": "All Discounts",
+          "rh": "p_n_deal_type:23566065011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_deal_type%3A23566065011&dc&qid=1795001620&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3AR4B3bPgOsY6eOO%2FTTZRm1WRVcuvUQLD14axsI93qX%2Fg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_deal_type%3A23566065011"
+        }
+      ],
+      "special_features": [
+        {
+          "position": 1,
+          "name": "Brushless",
+          "rh": "p_n_g-1003279370111:23952631011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1003279370111%3A23952631011&dc&qid=1795001620&rnid=23952158011&ref=sr_nr_p_n_g-1003279370111_1&ds=v1%3AqimKUNiEDlwrEbyVVTgEPrRU%2Bb1OwQ2lH%2FSEHF1%2BVi4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1003279370111%3A23952631011"
+        },
+        {
+          "position": 2,
+          "name": "Brake",
+          "rh": "p_n_g-1003279370111:23952629011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1003279370111%3A23952629011&dc&qid=1795001620&rnid=23952158011&ref=sr_nr_p_n_g-1003279370111_2&ds=v1%3A2IVhLYDVVIdAqjmJRCgg5hPw39DHpIkc%2FsjdAbXWAP8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1003279370111%3A23952629011"
+        },
+        {
+          "position": 3,
+          "name": "Keyless Blade Change",
+          "rh": "p_n_g-1003279370111:23952632011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1003279370111%3A23952632011&dc&qid=1795001620&rnid=23952158011&ref=sr_nr_p_n_g-1003279370111_3&ds=v1%3AsNDvVNSPC2wMYByk%2BkrLR4pCJ%2FR%2BecDm2ON%2BHY4MOzI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1003279370111%3A23952632011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Amazon.com",
+          "rh": "p_6:ATVPDKIKX0DER",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_6%3AATVPDKIKX0DER&dc&qid=1795001620&rnid=2661622011&ref=sr_nr_p_6_1&ds=v1%3AQIXwasnvr80NQl6OQQw7n3ruTR8g7e0mxZbHiY%2F1ZWc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_6%3AATVPDKIKX0DER"
+        },
+        {
+          "position": 2,
+          "name": "Triplenet Pricing INC",
+          "rh": "p_6:AAZRLVTNON75Z",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_6%3AAAZRLVTNON75Z&dc&qid=1795001620&rnid=2661622011&ref=sr_nr_p_6_2&ds=v1%3Aqnat9AwUyQaeui3fPOrTnJsLJ6pvf0scXBnUnCAOXqc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_6%3AAAZRLVTNON75Z"
+        },
+        {
+          "position": 3,
+          "name": "Household Trends",
+          "rh": "p_6:A2JH4AOVR29ETC",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_6%3AA2JH4AOVR29ETC&dc&qid=1795001620&rnid=2661622011&ref=sr_nr_p_6_3&ds=v1%3AXf8AOQ2F5q0OBPZvsNzSHfH6AwZGC6BRMq4yoXNr5d4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_6%3AA2JH4AOVR29ETC"
+        },
+        {
+          "position": 4,
+          "name": "Amazon Export Sales LLC",
+          "rh": "p_6:A2XZ7JICGUQ1CX",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_6%3AA2XZ7JICGUQ1CX&dc&qid=1795001620&rnid=2661622011&ref=sr_nr_p_6_4&ds=v1%3A2uaKFIYhBP0B5MElPQ7tj%2F89bKf2BBvUH5O%2BDo8vXjA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_6%3AA2XZ7JICGUQ1CX"
+        },
+        {
+          "position": 5,
+          "name": "Amazon Resale",
+          "rh": "p_6:A2L77EE7U53NWQ",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_6%3AA2L77EE7U53NWQ&dc&qid=1795001620&rnid=2661622011&ref=sr_nr_p_6_5&ds=v1%3ASv%2FeUrStCdoUzp9jNoxo8qW%2FJ6Quutt0L0ASsmH6jfw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_6%3AA2L77EE7U53NWQ"
+        },
+        {
+          "position": 6,
+          "name": "Mel Sale",
+          "rh": "p_6:A2SDNQJBCL9UML",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_6%3AA2SDNQJBCL9UML&dc&qid=1795001620&rnid=2661622011&ref=sr_nr_p_6_6&ds=v1%3AkQVM2jp6l3uCCPOO4ixMPCYDFKewD%2FBVlIwvbIAoBLk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_6%3AA2SDNQJBCL9UML"
+        },
+        {
+          "position": 7,
+          "name": "RFBDirect",
+          "rh": "p_6:A3PFMTE1ETPWWX",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_6%3AA3PFMTE1ETPWWX&dc&qid=1795001620&rnid=2661622011&ref=sr_nr_p_6_7&ds=v1%3AqrP2Lfq1843jakU4lB%2BKO98FyrPU0kej0Azb%2BC4NV2c",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_6%3AA3PFMTE1ETPWWX"
+        }
+      ],
+      "saw_features": [
+        {
+          "position": 1,
+          "name": "Single Bevel",
+          "rh": "p_n_feature_browse-bin:387876011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_feature_browse-bin%3A387876011&dc&qid=1795001620&rnid=387875011&ref=sr_nr_p_n_feature_browse-bin_1&ds=v1%3AlniQ2XoCgnGhxIi9n1oMsyjdlSMJSiyA3VtF%2FavvAvE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_feature_browse-bin%3A387876011"
+        }
+      ],
+      "included_components": [
+        {
+          "position": 1,
+          "name": "Bare Tool",
+          "rh": "p_n_g-1003279851111:23952624011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1003279851111%3A23952624011&dc&qid=1795001620&rnid=23952157011&ref=sr_nr_p_n_g-1003279851111_1&ds=v1%3AvVfPRHYkBDZowjwlkrnyfdeu9E7H3YOllgeMENNQNp8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1003279851111%3A23952624011"
+        }
+      ],
+      "color": [
+        {
+          "position": 1,
+          "name": "Multi",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972990011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1001308742111%3A2972990011&dc&qid=1795001620&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_1&ds=v1%3A9pFAg1iEBBAfa0r1rXA2Ifa7aFl0jJW9Bg%2BlumJobhw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1001308742111%3A2972990011"
+        },
+        {
+          "position": 2,
+          "name": "Yellow",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972997011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1001308742111%3A2972997011&dc&qid=1795001620&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_2&ds=v1%3AwiZpMul%2BAlmMLq5Llxn8yIjefeaqE2UOB8Wnz7Xj8TE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1001308742111%3A2972997011"
+        },
+        {
+          "position": 3,
+          "name": "Black",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972982011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1001308742111%3A2972982011&dc&qid=1795001620&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_3&ds=v1%3AHxO7kIVtCt%2B%2BZa8UkMz%2FjcJdqlYJzBloxVf2wDwWoKw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1001308742111%3A2972982011"
+        },
+        {
+          "position": 4,
+          "name": "Grey",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972988011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1001308742111%3A2972988011&dc&qid=1795001620&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_4&ds=v1%3AxZoHC3KOoaHrFdxTPsT4W3Th4gt6fxVv8b7F6gYRmsA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1001308742111%3A2972988011"
+        }
+      ],
+      "premium_brands": [
+        {
+          "position": 1,
+          "name": "Premium Brands",
+          "rh": "p_n_g-101015887018111:204376014011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-101015887018111%3A204376014011&dc&qid=1795001620&rnid=204376013011&ref=sr_nr_p_n_g-101015887018111_1&ds=v1%3Ami2SneOTfOdSP%2BDM%2B5Wm6%2BYfq8Im3mMTw46jmDGw8yI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-101015887018111%3A204376014011"
+        }
+      ],
+      "saw_blade_size": [
+        {
+          "position": 1,
+          "name": "6.5 in",
+          "rh": "p_n_feature_six_browse-bin:205727243011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_feature_six_browse-bin%3A205727243011&dc&qid=1795001620&rnid=205727241011&ref=sr_nr_p_n_feature_six_browse-bin_1&ds=v1%3Aza1ZkGyg%2FaNX2Vyxv63ozeLWPnh8R7PiIrAherS%2B4qk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_feature_six_browse-bin%3A205727243011"
+        },
+        {
+          "position": 2,
+          "name": "7.25 in",
+          "rh": "p_n_feature_six_browse-bin:205727244011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_feature_six_browse-bin%3A205727244011&dc&qid=1795001620&rnid=205727241011&ref=sr_nr_p_n_feature_six_browse-bin_2&ds=v1%3ATyneEBKLSlNtM9G6lUMGUdnXbBtinvhE1pkQyWqzQ%2Bg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_feature_six_browse-bin%3A205727244011"
+        }
+      ],
+      "surface_recommendation": [
+        {
+          "position": 1,
+          "name": "Wood",
+          "rh": "p_n_g-1003280092111:23952643011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1003280092111%3A23952643011&dc&qid=1795001620&rnid=23952159011&ref=sr_nr_p_n_g-1003280092111_1&ds=v1%3AghvCJ35rWDeB2xSmF8yit1IWCXpn%2Bck0SVe4MpPKw2Q",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1003280092111%3A23952643011"
+        },
+        {
+          "position": 2,
+          "name": "Acrylic",
+          "rh": "p_n_g-1003280092111:23952642011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1003280092111%3A23952642011&dc&qid=1795001620&rnid=23952159011&ref=sr_nr_p_n_g-1003280092111_2&ds=v1%3AwtgocNsYJmnskQkq9VZJbz3Mp%2BC69leXXBVrP6tjccw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1003280092111%3A23952642011"
+        },
+        {
+          "position": 3,
+          "name": "Metal",
+          "rh": "p_n_g-1003280092111:23952655011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCS565B&rh=p_n_g-1003280092111%3A23952655011&dc&qid=1795001620&rnid=23952159011&ref=sr_nr_p_n_g-1003280092111_3&ds=v1%3AUHIWkVWt%2BZkf8abZuqyVxwQCmxInYRMXWIvRM85uh48",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&rh=p_n_g-1003280092111%3A23952655011"
+        }
+      ]
+    },
+    "serpapi_pagination": {
+      "current": 1,
+      "next": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCS565B&page=2"
+    }
+  }
+}

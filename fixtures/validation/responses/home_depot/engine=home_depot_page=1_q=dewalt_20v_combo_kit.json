@@ -1,0 +1,2466 @@
+{
+  "key": "engine=home_depot&page=1&q=dewalt 20v combo kit",
+  "at": 1794972844459,
+  "data": {
+    "search_metadata": {
+      "id": "6afd1cab25c657455d355f63",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/jNtPFYIEPsYXRbJYx08ggrqF_ESi_SFcdWbjDY8whRM/6afd1cab25c657455d355f63.json",
+      "markdown_endpoint": "https://serpapi.com/searches/jNtPFYIEPsYXRbJYx08ggrqF_ESi_SFcdWbjDY8whRM/6afd1cab25c657455d355f63.md",
+      "created_at": "2026-11-18 03:34:03 UTC",
+      "processed_at": "2026-11-18 03:34:03 UTC",
+      "home_depot_url": "https://www.homedepot.com/b/N-5yc1v/Ntt-dewalt+20v+combo+kit?Nao=0",
+      "raw_html_file": "https://serpapi.com/searches/jNtPFYIEPsYXRbJYx08ggrqF_ESi_SFcdWbjDY8whRM/6afd1cab25c657455d355f63.html",
+      "prettify_html_file": "https://serpapi.com/searches/jNtPFYIEPsYXRbJYx08ggrqF_ESi_SFcdWbjDY8whRM/6afd1cab25c657455d355f63.prettify",
+      "total_time_taken": 0.98
+    },
+    "search_parameters": {
+      "q": "dewalt 20v combo kit",
+      "nao": "0",
+      "ps": 24,
+      "page": "1",
+      "delivery_zip": "04401",
+      "store_id": "2414",
+      "country": "us",
+      "engine": "home_depot"
+    },
+    "search_information": {
+      "results_state": "Results for exact spelling",
+      "total_results": 1073,
+      "store_id": "2414",
+      "store_name": "Bangor"
+    },
+    "products": [
+      {
+        "position": 1,
+        "product_id": "324869940",
+        "title": "20-Volt MAX ToughSystem Lithium-Ion 6-Tool Cordless Combo Kit",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/5c304568-16c7-43b2-903d-180a2018a8f3/svn/dewalt-power-tool-combo-kits-dckts681d1p1-64_65.jpg",
+            "https://images.thdstatic.com/productImages/5c304568-16c7-43b2-903d-180a2018a8f3/svn/dewalt-power-tool-combo-kits-dckts681d1p1-64_100.jpg",
+            "https://images.thdstatic.com/productImages/5c304568-16c7-43b2-903d-180a2018a8f3/svn/dewalt-power-tool-combo-kits-dckts681d1p1-64_145.jpg",
+            "https://images.thdstatic.com/productImages/5c304568-16c7-43b2-903d-180a2018a8f3/svn/dewalt-power-tool-combo-kits-dckts681d1p1-64_300.jpg",
+            "https://images.thdstatic.com/productImages/5c304568-16c7-43b2-903d-180a2018a8f3/svn/dewalt-power-tool-combo-kits-dckts681d1p1-64_400.jpg",
+            "https://images.thdstatic.com/productImages/5c304568-16c7-43b2-903d-180a2018a8f3/svn/dewalt-power-tool-combo-kits-dckts681d1p1-64_600.jpg",
+            "https://images.thdstatic.com/productImages/5c304568-16c7-43b2-903d-180a2018a8f3/svn/dewalt-power-tool-combo-kits-dckts681d1p1-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/3b89fc7c-8d34-46f5-82fc-fbf3809d3775/svn/dewalt-power-tool-combo-kits-dckts681d1p1-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/3b89fc7c-8d34-46f5-82fc-fbf3809d3775/svn/dewalt-power-tool-combo-kits-dckts681d1p1-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/3b89fc7c-8d34-46f5-82fc-fbf3809d3775/svn/dewalt-power-tool-combo-kits-dckts681d1p1-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/3b89fc7c-8d34-46f5-82fc-fbf3809d3775/svn/dewalt-power-tool-combo-kits-dckts681d1p1-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/3b89fc7c-8d34-46f5-82fc-fbf3809d3775/svn/dewalt-power-tool-combo-kits-dckts681d1p1-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/3b89fc7c-8d34-46f5-82fc-fbf3809d3775/svn/dewalt-power-tool-combo-kits-dckts681d1p1-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/3b89fc7c-8d34-46f5-82fc-fbf3809d3775/svn/dewalt-power-tool-combo-kits-dckts681d1p1-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20-Volt-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-DCKTS681D1P1/324869940",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=324869940&store_id=2414",
+        "model_number": "DCKTS681D1P1",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com/collection/Tools/DEWALT-Flexvolt-Advantage/Family-315050605?omsid=324869940",
+        "rating": 4.6236,
+        "reviews": 7012,
+        "price": 499,
+        "price_was": 899,
+        "price_saving": 400,
+        "percentage_off": 44,
+        "price_badge": "Special-Buy",
+        "badges": [
+          "top rated"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 2,
+        "product_id": "204373168",
+        "title": "20V MAX Cordless Drill/Impact 2 Tool Combo Kit with (2) 20V 1.3Ah Batteries, Charger, and Bag",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/e42ee762-d50c-4577-93de-c32902ce3f7c/svn/dewalt-power-tool-combo-kits-dck240c2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/e42ee762-d50c-4577-93de-c32902ce3f7c/svn/dewalt-power-tool-combo-kits-dck240c2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/e42ee762-d50c-4577-93de-c32902ce3f7c/svn/dewalt-power-tool-combo-kits-dck240c2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/e42ee762-d50c-4577-93de-c32902ce3f7c/svn/dewalt-power-tool-combo-kits-dck240c2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/e42ee762-d50c-4577-93de-c32902ce3f7c/svn/dewalt-power-tool-combo-kits-dck240c2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/e42ee762-d50c-4577-93de-c32902ce3f7c/svn/dewalt-power-tool-combo-kits-dck240c2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/e42ee762-d50c-4577-93de-c32902ce3f7c/svn/dewalt-power-tool-combo-kits-dck240c2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/c263a92e-9f01-4065-a08e-e73ddfec89dd/svn/dewalt-power-tool-combo-kits-dck240c2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/c263a92e-9f01-4065-a08e-e73ddfec89dd/svn/dewalt-power-tool-combo-kits-dck240c2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/c263a92e-9f01-4065-a08e-e73ddfec89dd/svn/dewalt-power-tool-combo-kits-dck240c2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/c263a92e-9f01-4065-a08e-e73ddfec89dd/svn/dewalt-power-tool-combo-kits-dck240c2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/c263a92e-9f01-4065-a08e-e73ddfec89dd/svn/dewalt-power-tool-combo-kits-dck240c2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/c263a92e-9f01-4065-a08e-e73ddfec89dd/svn/dewalt-power-tool-combo-kits-dck240c2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/c263a92e-9f01-4065-a08e-e73ddfec89dd/svn/dewalt-power-tool-combo-kits-dck240c2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-2-Tool-Combo-Kit-with-2-20V-1-3Ah-Batteries-Charger-and-Bag-DCK240C2/204373168",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=204373168&store_id=2414",
+        "model_number": "DCK240C2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com/collection/Hardware/DEWALT-Garage-Collection/Family-311372814?omsid=204373168",
+        "favorite": 7035,
+        "rating": 4.5728,
+        "reviews": 8493,
+        "price": 149,
+        "price_was": 239,
+        "price_saving": 90,
+        "percentage_off": 38,
+        "price_badge": "Special-Buy",
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 3,
+        "product_id": "322138483",
+        "title": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) with (2) 2.0Ah Batteries, Charger and Bag",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/7250fbc3-5145-466a-b0e7-f1ee5bc53415/svn/dewalt-power-tool-combo-kits-dck225d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/7250fbc3-5145-466a-b0e7-f1ee5bc53415/svn/dewalt-power-tool-combo-kits-dck225d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/7250fbc3-5145-466a-b0e7-f1ee5bc53415/svn/dewalt-power-tool-combo-kits-dck225d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/7250fbc3-5145-466a-b0e7-f1ee5bc53415/svn/dewalt-power-tool-combo-kits-dck225d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/7250fbc3-5145-466a-b0e7-f1ee5bc53415/svn/dewalt-power-tool-combo-kits-dck225d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/7250fbc3-5145-466a-b0e7-f1ee5bc53415/svn/dewalt-power-tool-combo-kits-dck225d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/7250fbc3-5145-466a-b0e7-f1ee5bc53415/svn/dewalt-power-tool-combo-kits-dck225d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/2ff76606-f319-4601-8074-d595ca6594fa/svn/dewalt-power-tool-combo-kits-dck225d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/2ff76606-f319-4601-8074-d595ca6594fa/svn/dewalt-power-tool-combo-kits-dck225d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/2ff76606-f319-4601-8074-d595ca6594fa/svn/dewalt-power-tool-combo-kits-dck225d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/2ff76606-f319-4601-8074-d595ca6594fa/svn/dewalt-power-tool-combo-kits-dck225d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/2ff76606-f319-4601-8074-d595ca6594fa/svn/dewalt-power-tool-combo-kits-dck225d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/2ff76606-f319-4601-8074-d595ca6594fa/svn/dewalt-power-tool-combo-kits-dck225d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/2ff76606-f319-4601-8074-d595ca6594fa/svn/dewalt-power-tool-combo-kits-dck225d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-with-2-2-0Ah-Batteries-Charger-and-Bag-DCK225D2/322138483",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=322138483&store_id=2414",
+        "model_number": "DCK225D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com/collection/Tools/DEWALT-ATOMIC-Compact-20-Volt-Collection/Family-309356054?omsid=322138483",
+        "rating": 4.6923,
+        "reviews": 5196,
+        "price": 169,
+        "price_was": 249,
+        "price_saving": 80,
+        "percentage_off": 32,
+        "price_badge": "New-Lower-Price",
+        "badges": [
+          "exclusive"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "quantity": 43,
+          "store_name": "Bangor",
+          "distance": 0
+        }
+      },
+      {
+        "position": 4,
+        "product_id": "206510146",
+        "title": "20V MAX Cordless 9 Tool Combo Kit with (2) 20V 2.0Ah Batteries and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/8483bb82-8250-4b16-94d2-d52ba0b86ded/svn/dewalt-power-tool-combo-kits-dck940d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/8483bb82-8250-4b16-94d2-d52ba0b86ded/svn/dewalt-power-tool-combo-kits-dck940d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/8483bb82-8250-4b16-94d2-d52ba0b86ded/svn/dewalt-power-tool-combo-kits-dck940d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/8483bb82-8250-4b16-94d2-d52ba0b86ded/svn/dewalt-power-tool-combo-kits-dck940d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/8483bb82-8250-4b16-94d2-d52ba0b86ded/svn/dewalt-power-tool-combo-kits-dck940d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/8483bb82-8250-4b16-94d2-d52ba0b86ded/svn/dewalt-power-tool-combo-kits-dck940d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/8483bb82-8250-4b16-94d2-d52ba0b86ded/svn/dewalt-power-tool-combo-kits-dck940d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/c63014fb-7c3c-4f35-b80b-ea7e21c41e02/svn/dewalt-power-tool-combo-kits-dck940d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/c63014fb-7c3c-4f35-b80b-ea7e21c41e02/svn/dewalt-power-tool-combo-kits-dck940d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/c63014fb-7c3c-4f35-b80b-ea7e21c41e02/svn/dewalt-power-tool-combo-kits-dck940d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/c63014fb-7c3c-4f35-b80b-ea7e21c41e02/svn/dewalt-power-tool-combo-kits-dck940d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/c63014fb-7c3c-4f35-b80b-ea7e21c41e02/svn/dewalt-power-tool-combo-kits-dck940d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/c63014fb-7c3c-4f35-b80b-ea7e21c41e02/svn/dewalt-power-tool-combo-kits-dck940d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/c63014fb-7c3c-4f35-b80b-ea7e21c41e02/svn/dewalt-power-tool-combo-kits-dck940d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-9-Tool-Combo-Kit-with-2-20V-2-0Ah-Batteries-and-Charger-DCK940D2/206510146",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=206510146&store_id=2414",
+        "model_number": "DCK940D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com/collection/Tools/DEWALT-High-Piece-Count-Combo-Kits/Family-318246738?omsid=206510146",
+        "favorite": 3522,
+        "rating": 4.5718,
+        "reviews": 4418,
+        "price": 799,
+        "badges": [
+          "top rated"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 5,
+        "product_id": "336154926",
+        "title": "20V MAX Lithium-Ion Cordless 2-Tool Combo Kit",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/0da6c0c8-5126-47eb-bad1-f8c22e9c6d78/svn/dewalt-power-tool-combo-kits-dck274e2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/0da6c0c8-5126-47eb-bad1-f8c22e9c6d78/svn/dewalt-power-tool-combo-kits-dck274e2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/0da6c0c8-5126-47eb-bad1-f8c22e9c6d78/svn/dewalt-power-tool-combo-kits-dck274e2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/0da6c0c8-5126-47eb-bad1-f8c22e9c6d78/svn/dewalt-power-tool-combo-kits-dck274e2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/0da6c0c8-5126-47eb-bad1-f8c22e9c6d78/svn/dewalt-power-tool-combo-kits-dck274e2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/0da6c0c8-5126-47eb-bad1-f8c22e9c6d78/svn/dewalt-power-tool-combo-kits-dck274e2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/0da6c0c8-5126-47eb-bad1-f8c22e9c6d78/svn/dewalt-power-tool-combo-kits-dck274e2-64_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-DCK274E2/336154926",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=336154926&store_id=2414",
+        "model_number": "DCK274E2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4,
+        "reviews": 2,
+        "price": 309.56,
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 6,
+        "product_id": "324870116",
+        "title": "20-Volt Max Lithium-Ion 10-Tool Cordless Combo Kit with Two 2.0 Ah Batteries, Charger and 2 Bags",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/c863a8f1-1799-4528-9c26-b95548d4fb13/svn/dewalt-power-tool-combo-kits-dck1021d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/c863a8f1-1799-4528-9c26-b95548d4fb13/svn/dewalt-power-tool-combo-kits-dck1021d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/c863a8f1-1799-4528-9c26-b95548d4fb13/svn/dewalt-power-tool-combo-kits-dck1021d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/c863a8f1-1799-4528-9c26-b95548d4fb13/svn/dewalt-power-tool-combo-kits-dck1021d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/c863a8f1-1799-4528-9c26-b95548d4fb13/svn/dewalt-power-tool-combo-kits-dck1021d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/c863a8f1-1799-4528-9c26-b95548d4fb13/svn/dewalt-power-tool-combo-kits-dck1021d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/c863a8f1-1799-4528-9c26-b95548d4fb13/svn/dewalt-power-tool-combo-kits-dck1021d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/50c8bc70-96e1-4a87-b7c9-ba83e8c0c216/svn/dewalt-power-tool-combo-kits-dck1021d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/50c8bc70-96e1-4a87-b7c9-ba83e8c0c216/svn/dewalt-power-tool-combo-kits-dck1021d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/50c8bc70-96e1-4a87-b7c9-ba83e8c0c216/svn/dewalt-power-tool-combo-kits-dck1021d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/50c8bc70-96e1-4a87-b7c9-ba83e8c0c216/svn/dewalt-power-tool-combo-kits-dck1021d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/50c8bc70-96e1-4a87-b7c9-ba83e8c0c216/svn/dewalt-power-tool-combo-kits-dck1021d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/50c8bc70-96e1-4a87-b7c9-ba83e8c0c216/svn/dewalt-power-tool-combo-kits-dck1021d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/50c8bc70-96e1-4a87-b7c9-ba83e8c0c216/svn/dewalt-power-tool-combo-kits-dck1021d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-Lithium-Ion-10-Tool-Cordless-Combo-Kit-with-Two-2-0-Ah-Batteries-Charger-and-2-Bags-DCK1021D2/324870116",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=324870116&store_id=2414",
+        "model_number": "DCK1021D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.4421,
+        "reviews": 5289,
+        "price": 731.45,
+        "badges": [
+          "top rated"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 7,
+        "product_id": "305019249",
+        "title": "20V MAX Cordless 5 Tool Combo Kit with (2) 20V 2.0Ah Batteries and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/4f044189-3c2f-485e-ae6e-3ae58c277143/svn/dewalt-power-tool-combo-kits-dck521d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/4f044189-3c2f-485e-ae6e-3ae58c277143/svn/dewalt-power-tool-combo-kits-dck521d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/4f044189-3c2f-485e-ae6e-3ae58c277143/svn/dewalt-power-tool-combo-kits-dck521d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/4f044189-3c2f-485e-ae6e-3ae58c277143/svn/dewalt-power-tool-combo-kits-dck521d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/4f044189-3c2f-485e-ae6e-3ae58c277143/svn/dewalt-power-tool-combo-kits-dck521d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/4f044189-3c2f-485e-ae6e-3ae58c277143/svn/dewalt-power-tool-combo-kits-dck521d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/4f044189-3c2f-485e-ae6e-3ae58c277143/svn/dewalt-power-tool-combo-kits-dck521d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/fd770b5a-18a3-466a-848d-796d72496647/svn/dewalt-power-tool-combo-kits-dck521d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/fd770b5a-18a3-466a-848d-796d72496647/svn/dewalt-power-tool-combo-kits-dck521d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/fd770b5a-18a3-466a-848d-796d72496647/svn/dewalt-power-tool-combo-kits-dck521d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/fd770b5a-18a3-466a-848d-796d72496647/svn/dewalt-power-tool-combo-kits-dck521d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/fd770b5a-18a3-466a-848d-796d72496647/svn/dewalt-power-tool-combo-kits-dck521d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/fd770b5a-18a3-466a-848d-796d72496647/svn/dewalt-power-tool-combo-kits-dck521d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/fd770b5a-18a3-466a-848d-796d72496647/svn/dewalt-power-tool-combo-kits-dck521d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-5-Tool-Combo-Kit-with-2-20V-2-0Ah-Batteries-and-Charger-DCK521D2/305019249",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=305019249&store_id=2414",
+        "model_number": "DCK521D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "favorite": 635,
+        "rating": 4.4766,
+        "reviews": 1727,
+        "price": 669,
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 8,
+        "product_id": "344068779",
+        "title": "20V Lithium-Ion Cordless Combo Kit (2-Tool) with (2) 2.0 Ah Batteries, Charger and Kitbag",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/e8cd927c-c320-45f5-931c-c2167324fd40/svn/dewalt-power-tool-combo-kits-dck252d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/e8cd927c-c320-45f5-931c-c2167324fd40/svn/dewalt-power-tool-combo-kits-dck252d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/e8cd927c-c320-45f5-931c-c2167324fd40/svn/dewalt-power-tool-combo-kits-dck252d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/e8cd927c-c320-45f5-931c-c2167324fd40/svn/dewalt-power-tool-combo-kits-dck252d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/e8cd927c-c320-45f5-931c-c2167324fd40/svn/dewalt-power-tool-combo-kits-dck252d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/e8cd927c-c320-45f5-931c-c2167324fd40/svn/dewalt-power-tool-combo-kits-dck252d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/e8cd927c-c320-45f5-931c-c2167324fd40/svn/dewalt-power-tool-combo-kits-dck252d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/26513a33-120e-4797-9a31-d35eb0e530d4/svn/dewalt-power-tool-combo-kits-dck252d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/26513a33-120e-4797-9a31-d35eb0e530d4/svn/dewalt-power-tool-combo-kits-dck252d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/26513a33-120e-4797-9a31-d35eb0e530d4/svn/dewalt-power-tool-combo-kits-dck252d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/26513a33-120e-4797-9a31-d35eb0e530d4/svn/dewalt-power-tool-combo-kits-dck252d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/26513a33-120e-4797-9a31-d35eb0e530d4/svn/dewalt-power-tool-combo-kits-dck252d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/26513a33-120e-4797-9a31-d35eb0e530d4/svn/dewalt-power-tool-combo-kits-dck252d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/26513a33-120e-4797-9a31-d35eb0e530d4/svn/dewalt-power-tool-combo-kits-dck252d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-Lithium-Ion-Cordless-Combo-Kit-2-Tool-with-2-2-0-Ah-Batteries-Charger-and-Kitbag-DCK252D2/344068779",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=344068779&store_id=2414",
+        "model_number": "DCK252D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.549,
+        "reviews": 2020,
+        "price": 299,
+        "badges": [
+          "new"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 9,
+        "product_id": "312231698",
+        "title": "20V MAX Cordless Battery Powered String Trimmer and Blower Combo Kit with (1) 4.0 Ah Battery and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/42afae57-ead4-4b3f-b7b8-7086dc205d9c/svn/dewalt-cordless-string-trimmers-dcko222m1-64_65.jpg",
+            "https://images.thdstatic.com/productImages/42afae57-ead4-4b3f-b7b8-7086dc205d9c/svn/dewalt-cordless-string-trimmers-dcko222m1-64_100.jpg",
+            "https://images.thdstatic.com/productImages/42afae57-ead4-4b3f-b7b8-7086dc205d9c/svn/dewalt-cordless-string-trimmers-dcko222m1-64_145.jpg",
+            "https://images.thdstatic.com/productImages/42afae57-ead4-4b3f-b7b8-7086dc205d9c/svn/dewalt-cordless-string-trimmers-dcko222m1-64_300.jpg",
+            "https://images.thdstatic.com/productImages/42afae57-ead4-4b3f-b7b8-7086dc205d9c/svn/dewalt-cordless-string-trimmers-dcko222m1-64_400.jpg",
+            "https://images.thdstatic.com/productImages/42afae57-ead4-4b3f-b7b8-7086dc205d9c/svn/dewalt-cordless-string-trimmers-dcko222m1-64_600.jpg",
+            "https://images.thdstatic.com/productImages/42afae57-ead4-4b3f-b7b8-7086dc205d9c/svn/dewalt-cordless-string-trimmers-dcko222m1-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/d2091530-e343-4a3a-87d9-a8f8a33ff873/svn/dewalt-cordless-string-trimmers-dcko222m1-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/d2091530-e343-4a3a-87d9-a8f8a33ff873/svn/dewalt-cordless-string-trimmers-dcko222m1-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/d2091530-e343-4a3a-87d9-a8f8a33ff873/svn/dewalt-cordless-string-trimmers-dcko222m1-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/d2091530-e343-4a3a-87d9-a8f8a33ff873/svn/dewalt-cordless-string-trimmers-dcko222m1-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/d2091530-e343-4a3a-87d9-a8f8a33ff873/svn/dewalt-cordless-string-trimmers-dcko222m1-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/d2091530-e343-4a3a-87d9-a8f8a33ff873/svn/dewalt-cordless-string-trimmers-dcko222m1-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/d2091530-e343-4a3a-87d9-a8f8a33ff873/svn/dewalt-cordless-string-trimmers-dcko222m1-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Battery-Powered-String-Trimmer-and-Blower-Combo-Kit-with-1-4-0-Ah-Battery-and-Charger-DCKO222M1/312231698",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=312231698&store_id=2414",
+        "model_number": "DCKO222M1",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com/collection/Outdoors/DEWALT-20-Volt-Outdoor-Power/Family-311249002?omsid=312231698",
+        "favorite": 267,
+        "rating": 4.2176,
+        "reviews": 2086,
+        "price": 349,
+        "price_was": 399,
+        "price_saving": 50,
+        "percentage_off": 13,
+        "price_badge": null,
+        "badges": [
+          "exclusive"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "quantity": 7,
+          "store_name": "Bangor",
+          "distance": 0
+        }
+      },
+      {
+        "position": 10,
+        "product_id": "322138552",
+        "title": "ATOMIC 20-Volt Lithium-Ion Cordless Brushless Combo Kit (4-Tool) with (2) 2.0Ah Batteries, Charger and Bag",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/09502607-67b5-4b9b-86ef-3cb3682f38c7/svn/dewalt-power-tool-combo-kits-dck486d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/09502607-67b5-4b9b-86ef-3cb3682f38c7/svn/dewalt-power-tool-combo-kits-dck486d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/09502607-67b5-4b9b-86ef-3cb3682f38c7/svn/dewalt-power-tool-combo-kits-dck486d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/09502607-67b5-4b9b-86ef-3cb3682f38c7/svn/dewalt-power-tool-combo-kits-dck486d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/09502607-67b5-4b9b-86ef-3cb3682f38c7/svn/dewalt-power-tool-combo-kits-dck486d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/09502607-67b5-4b9b-86ef-3cb3682f38c7/svn/dewalt-power-tool-combo-kits-dck486d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/09502607-67b5-4b9b-86ef-3cb3682f38c7/svn/dewalt-power-tool-combo-kits-dck486d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/2a26e9a5-c87b-4c3f-8d07-8cb9476a3bb9/svn/dewalt-power-tool-combo-kits-dck486d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/2a26e9a5-c87b-4c3f-8d07-8cb9476a3bb9/svn/dewalt-power-tool-combo-kits-dck486d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/2a26e9a5-c87b-4c3f-8d07-8cb9476a3bb9/svn/dewalt-power-tool-combo-kits-dck486d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/2a26e9a5-c87b-4c3f-8d07-8cb9476a3bb9/svn/dewalt-power-tool-combo-kits-dck486d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/2a26e9a5-c87b-4c3f-8d07-8cb9476a3bb9/svn/dewalt-power-tool-combo-kits-dck486d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/2a26e9a5-c87b-4c3f-8d07-8cb9476a3bb9/svn/dewalt-power-tool-combo-kits-dck486d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/2a26e9a5-c87b-4c3f-8d07-8cb9476a3bb9/svn/dewalt-power-tool-combo-kits-dck486d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-Brushless-Combo-Kit-4-Tool-with-2-2-0Ah-Batteries-Charger-and-Bag-DCK486D2/322138552",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=322138552&store_id=2414",
+        "model_number": "DCK486D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.5945,
+        "reviews": 1958,
+        "price": 449,
+        "badges": [
+          "top rated",
+          "exclusive"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "quantity": 3,
+          "store_name": "Bangor",
+          "distance": 0
+        }
+      },
+      {
+        "position": 11,
+        "product_id": "337440459",
+        "title": "ATOMIC 20-Volt Lithium-Ion Cordless 2-Tool Combo Kit, Brushless 1/2 in. Impact Wrench w/ 5 Ah, 2 Ah Batteries, Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/3526f9bf-ddf7-4a83-b7a2-d98502cff49f/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-64_65.jpg",
+            "https://images.thdstatic.com/productImages/3526f9bf-ddf7-4a83-b7a2-d98502cff49f/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-64_100.jpg",
+            "https://images.thdstatic.com/productImages/3526f9bf-ddf7-4a83-b7a2-d98502cff49f/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-64_145.jpg",
+            "https://images.thdstatic.com/productImages/3526f9bf-ddf7-4a83-b7a2-d98502cff49f/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-64_300.jpg",
+            "https://images.thdstatic.com/productImages/3526f9bf-ddf7-4a83-b7a2-d98502cff49f/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-64_400.jpg",
+            "https://images.thdstatic.com/productImages/3526f9bf-ddf7-4a83-b7a2-d98502cff49f/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-64_600.jpg",
+            "https://images.thdstatic.com/productImages/3526f9bf-ddf7-4a83-b7a2-d98502cff49f/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/22a3c125-2300-432f-a3f0-9d41ba6e6acc/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/22a3c125-2300-432f-a3f0-9d41ba6e6acc/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/22a3c125-2300-432f-a3f0-9d41ba6e6acc/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/22a3c125-2300-432f-a3f0-9d41ba6e6acc/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/22a3c125-2300-432f-a3f0-9d41ba6e6acc/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/22a3c125-2300-432f-a3f0-9d41ba6e6acc/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/22a3c125-2300-432f-a3f0-9d41ba6e6acc/svn/dewalt-power-tool-combo-kits-dck200d1p1w921b-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-Lithium-Ion-Cordless-2-Tool-Combo-Kit-Brushless-1-2-in-Impact-Wrench-w-5-Ah-2-Ah-Batteries-Charger-DCK200D1P1W921B/337440459",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=337440459&store_id=2414",
+        "model_number": "DCK200D1P1W921B",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.7656,
+        "reviews": 802,
+        "price": 299,
+        "price_was": 538,
+        "price_saving": 239,
+        "percentage_off": 44,
+        "price_badge": "Special-Buy",
+        "badges": [
+          "exclusive"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 12,
+        "product_id": "301295852",
+        "title": "20V MAX Cordless 4 Tool Combo Kit with (2) 20V 2.0Ah Batteries and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/3d03ac87-4e19-41d7-a97f-51e1f9f7915b/svn/dewalt-power-tool-combo-kits-dck423d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/3d03ac87-4e19-41d7-a97f-51e1f9f7915b/svn/dewalt-power-tool-combo-kits-dck423d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/3d03ac87-4e19-41d7-a97f-51e1f9f7915b/svn/dewalt-power-tool-combo-kits-dck423d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/3d03ac87-4e19-41d7-a97f-51e1f9f7915b/svn/dewalt-power-tool-combo-kits-dck423d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/3d03ac87-4e19-41d7-a97f-51e1f9f7915b/svn/dewalt-power-tool-combo-kits-dck423d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/3d03ac87-4e19-41d7-a97f-51e1f9f7915b/svn/dewalt-power-tool-combo-kits-dck423d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/3d03ac87-4e19-41d7-a97f-51e1f9f7915b/svn/dewalt-power-tool-combo-kits-dck423d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/6f8078d0-6c10-4680-8993-c2321814cf74/svn/dewalt-power-tool-combo-kits-dck423d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/6f8078d0-6c10-4680-8993-c2321814cf74/svn/dewalt-power-tool-combo-kits-dck423d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/6f8078d0-6c10-4680-8993-c2321814cf74/svn/dewalt-power-tool-combo-kits-dck423d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/6f8078d0-6c10-4680-8993-c2321814cf74/svn/dewalt-power-tool-combo-kits-dck423d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/6f8078d0-6c10-4680-8993-c2321814cf74/svn/dewalt-power-tool-combo-kits-dck423d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/6f8078d0-6c10-4680-8993-c2321814cf74/svn/dewalt-power-tool-combo-kits-dck423d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/6f8078d0-6c10-4680-8993-c2321814cf74/svn/dewalt-power-tool-combo-kits-dck423d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-4-Tool-Combo-Kit-with-2-20V-2-0Ah-Batteries-and-Charger-DCK423D2/301295852",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=301295852&store_id=2414",
+        "model_number": "DCK423D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "favorite": 1312,
+        "rating": 4.6562,
+        "reviews": 1335,
+        "price": 499,
+        "badges": [
+          "exclusive"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 13,
+        "product_id": "300937285",
+        "title": "20V MAX Cordless 6 Tool Combo Kit with (2) 20V 2.0Ah Batteries and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/24649c60-fe81-4a82-b549-3ebddfcd568a/svn/dewalt-power-tool-combo-kits-dck620d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/24649c60-fe81-4a82-b549-3ebddfcd568a/svn/dewalt-power-tool-combo-kits-dck620d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/24649c60-fe81-4a82-b549-3ebddfcd568a/svn/dewalt-power-tool-combo-kits-dck620d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/24649c60-fe81-4a82-b549-3ebddfcd568a/svn/dewalt-power-tool-combo-kits-dck620d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/24649c60-fe81-4a82-b549-3ebddfcd568a/svn/dewalt-power-tool-combo-kits-dck620d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/24649c60-fe81-4a82-b549-3ebddfcd568a/svn/dewalt-power-tool-combo-kits-dck620d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/24649c60-fe81-4a82-b549-3ebddfcd568a/svn/dewalt-power-tool-combo-kits-dck620d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/605bbd0f-daf5-4d2e-b0f9-b6f4ec74419f/svn/dewalt-power-tool-combo-kits-dck620d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/605bbd0f-daf5-4d2e-b0f9-b6f4ec74419f/svn/dewalt-power-tool-combo-kits-dck620d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/605bbd0f-daf5-4d2e-b0f9-b6f4ec74419f/svn/dewalt-power-tool-combo-kits-dck620d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/605bbd0f-daf5-4d2e-b0f9-b6f4ec74419f/svn/dewalt-power-tool-combo-kits-dck620d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/605bbd0f-daf5-4d2e-b0f9-b6f4ec74419f/svn/dewalt-power-tool-combo-kits-dck620d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/605bbd0f-daf5-4d2e-b0f9-b6f4ec74419f/svn/dewalt-power-tool-combo-kits-dck620d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/605bbd0f-daf5-4d2e-b0f9-b6f4ec74419f/svn/dewalt-power-tool-combo-kits-dck620d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-6-Tool-Combo-Kit-with-2-20V-2-0Ah-Batteries-and-Charger-DCK620D2/300937285",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=300937285&store_id=2414",
+        "model_number": "DCK620D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com/collection/Tools/DEWALT-High-Piece-Count-Combo-Kits/Family-318246738?omsid=300937285",
+        "favorite": 511,
+        "rating": 4.6515,
+        "reviews": 132,
+        "price": 622.92,
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 14,
+        "product_id": "202922456",
+        "title": "20V MAX Cordless 4 Tool Combo Kit with (2) 20V 3.0Ah Batteries and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/27f99f2e-f30f-4ba9-a51e-7bb5fefe6021/svn/dewalt-power-tool-combo-kits-dck490l2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/27f99f2e-f30f-4ba9-a51e-7bb5fefe6021/svn/dewalt-power-tool-combo-kits-dck490l2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/27f99f2e-f30f-4ba9-a51e-7bb5fefe6021/svn/dewalt-power-tool-combo-kits-dck490l2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/27f99f2e-f30f-4ba9-a51e-7bb5fefe6021/svn/dewalt-power-tool-combo-kits-dck490l2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/27f99f2e-f30f-4ba9-a51e-7bb5fefe6021/svn/dewalt-power-tool-combo-kits-dck490l2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/27f99f2e-f30f-4ba9-a51e-7bb5fefe6021/svn/dewalt-power-tool-combo-kits-dck490l2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/27f99f2e-f30f-4ba9-a51e-7bb5fefe6021/svn/dewalt-power-tool-combo-kits-dck490l2-64_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-4-Tool-Combo-Kit-with-2-20V-3-0Ah-Batteries-and-Charger-DCK490L2/202922456",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=202922456&store_id=2414",
+        "model_number": "DCK490L2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "favorite": 174,
+        "rating": 4.7727,
+        "reviews": 22,
+        "price": 529
+      },
+      {
+        "position": 15,
+        "product_id": "344068382",
+        "title": "20V Lithium-Ion Cordless Combo Kit (2-Tool) with (2) 2.0 Ah Batteries, Charger and Kitbag",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/4afe3c92-3761-4fa3-ab6d-b341baa6c08f/svn/dewalt-power-tool-combo-kits-dck251d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/4afe3c92-3761-4fa3-ab6d-b341baa6c08f/svn/dewalt-power-tool-combo-kits-dck251d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/4afe3c92-3761-4fa3-ab6d-b341baa6c08f/svn/dewalt-power-tool-combo-kits-dck251d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/4afe3c92-3761-4fa3-ab6d-b341baa6c08f/svn/dewalt-power-tool-combo-kits-dck251d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/4afe3c92-3761-4fa3-ab6d-b341baa6c08f/svn/dewalt-power-tool-combo-kits-dck251d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/4afe3c92-3761-4fa3-ab6d-b341baa6c08f/svn/dewalt-power-tool-combo-kits-dck251d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/4afe3c92-3761-4fa3-ab6d-b341baa6c08f/svn/dewalt-power-tool-combo-kits-dck251d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/a048a3f1-7a05-48d3-b7e1-d0ea3f542e25/svn/dewalt-power-tool-combo-kits-dck251d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/a048a3f1-7a05-48d3-b7e1-d0ea3f542e25/svn/dewalt-power-tool-combo-kits-dck251d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/a048a3f1-7a05-48d3-b7e1-d0ea3f542e25/svn/dewalt-power-tool-combo-kits-dck251d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/a048a3f1-7a05-48d3-b7e1-d0ea3f542e25/svn/dewalt-power-tool-combo-kits-dck251d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/a048a3f1-7a05-48d3-b7e1-d0ea3f542e25/svn/dewalt-power-tool-combo-kits-dck251d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/a048a3f1-7a05-48d3-b7e1-d0ea3f542e25/svn/dewalt-power-tool-combo-kits-dck251d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/a048a3f1-7a05-48d3-b7e1-d0ea3f542e25/svn/dewalt-power-tool-combo-kits-dck251d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-Lithium-Ion-Cordless-Combo-Kit-2-Tool-with-2-2-0-Ah-Batteries-Charger-and-Kitbag-DCK251D2/344068382",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=344068382&store_id=2414",
+        "model_number": "DCK251D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.6733,
+        "reviews": 655,
+        "price": 299,
+        "badges": [
+          "new"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 16,
+        "product_id": "331253356",
+        "title": "20V MAX Lithium-Ion Cordless 2-Tool Combo Kit with (2) 4.0 Ah Batteries, Charger and Kit Bag",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/099815c5-a9b7-451b-b5f6-e322879e465d/svn/dewalt-power-tool-combo-kits-dck2101qq2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/099815c5-a9b7-451b-b5f6-e322879e465d/svn/dewalt-power-tool-combo-kits-dck2101qq2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/099815c5-a9b7-451b-b5f6-e322879e465d/svn/dewalt-power-tool-combo-kits-dck2101qq2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/099815c5-a9b7-451b-b5f6-e322879e465d/svn/dewalt-power-tool-combo-kits-dck2101qq2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/099815c5-a9b7-451b-b5f6-e322879e465d/svn/dewalt-power-tool-combo-kits-dck2101qq2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/099815c5-a9b7-451b-b5f6-e322879e465d/svn/dewalt-power-tool-combo-kits-dck2101qq2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/099815c5-a9b7-451b-b5f6-e322879e465d/svn/dewalt-power-tool-combo-kits-dck2101qq2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/0982bf9b-6658-4658-9dfd-389dba92ded6/svn/dewalt-power-tool-combo-kits-dck2101qq2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/0982bf9b-6658-4658-9dfd-389dba92ded6/svn/dewalt-power-tool-combo-kits-dck2101qq2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/0982bf9b-6658-4658-9dfd-389dba92ded6/svn/dewalt-power-tool-combo-kits-dck2101qq2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/0982bf9b-6658-4658-9dfd-389dba92ded6/svn/dewalt-power-tool-combo-kits-dck2101qq2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/0982bf9b-6658-4658-9dfd-389dba92ded6/svn/dewalt-power-tool-combo-kits-dck2101qq2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/0982bf9b-6658-4658-9dfd-389dba92ded6/svn/dewalt-power-tool-combo-kits-dck2101qq2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/0982bf9b-6658-4658-9dfd-389dba92ded6/svn/dewalt-power-tool-combo-kits-dck2101qq2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-2-4-0-Ah-Batteries-Charger-and-Kit-Bag-DCK2101QQ2/331253356",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=331253356&store_id=2414",
+        "model_number": "DCK2101QQ2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.6931,
+        "reviews": 303,
+        "price": 299,
+        "price_was": 399,
+        "price_saving": 100,
+        "percentage_off": 25,
+        "price_badge": "New-Lower-Price",
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "quantity": 9,
+          "store_name": "Bangor",
+          "distance": 0
+        }
+      },
+      {
+        "position": 17,
+        "product_id": "335519129",
+        "title": "20V MAX Lithium-Ion Cordless 3-Tool Combo Kit with (2) FLEXVOLT 6.0 Ah Batteries and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/5a9b2068-ec22-4c8d-8bb7-7b32d4da4b06/svn/dewalt-power-tool-combo-kits-dck350t2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/5a9b2068-ec22-4c8d-8bb7-7b32d4da4b06/svn/dewalt-power-tool-combo-kits-dck350t2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/5a9b2068-ec22-4c8d-8bb7-7b32d4da4b06/svn/dewalt-power-tool-combo-kits-dck350t2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/5a9b2068-ec22-4c8d-8bb7-7b32d4da4b06/svn/dewalt-power-tool-combo-kits-dck350t2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/5a9b2068-ec22-4c8d-8bb7-7b32d4da4b06/svn/dewalt-power-tool-combo-kits-dck350t2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/5a9b2068-ec22-4c8d-8bb7-7b32d4da4b06/svn/dewalt-power-tool-combo-kits-dck350t2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/5a9b2068-ec22-4c8d-8bb7-7b32d4da4b06/svn/dewalt-power-tool-combo-kits-dck350t2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/7dc4e4a8-57d7-417b-8db6-5f9f062ad153/svn/dewalt-power-tool-combo-kits-dck350t2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/7dc4e4a8-57d7-417b-8db6-5f9f062ad153/svn/dewalt-power-tool-combo-kits-dck350t2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/7dc4e4a8-57d7-417b-8db6-5f9f062ad153/svn/dewalt-power-tool-combo-kits-dck350t2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/7dc4e4a8-57d7-417b-8db6-5f9f062ad153/svn/dewalt-power-tool-combo-kits-dck350t2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/7dc4e4a8-57d7-417b-8db6-5f9f062ad153/svn/dewalt-power-tool-combo-kits-dck350t2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/7dc4e4a8-57d7-417b-8db6-5f9f062ad153/svn/dewalt-power-tool-combo-kits-dck350t2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/7dc4e4a8-57d7-417b-8db6-5f9f062ad153/svn/dewalt-power-tool-combo-kits-dck350t2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-3-Tool-Combo-Kit-with-2-FLEXVOLT-6-0-Ah-Batteries-and-Charger-DCK350T2/335519129",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=335519129&store_id=2414",
+        "model_number": "DCK350T2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.7787,
+        "reviews": 863,
+        "price": 399,
+        "price_was": 599,
+        "price_saving": 200,
+        "percentage_off": 33,
+        "price_badge": "Special-Buy",
+        "badges": [
+          "top rated"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 18,
+        "product_id": "314718176",
+        "title": "20V MAX Cordless 4 Tool Combo Kit with (2) 20V 2.0Ah Batteries and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/6508c745-bd63-491f-a24d-3791e51a8ba2/svn/dewalt-power-tool-combo-kits-dck466d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/6508c745-bd63-491f-a24d-3791e51a8ba2/svn/dewalt-power-tool-combo-kits-dck466d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/6508c745-bd63-491f-a24d-3791e51a8ba2/svn/dewalt-power-tool-combo-kits-dck466d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/6508c745-bd63-491f-a24d-3791e51a8ba2/svn/dewalt-power-tool-combo-kits-dck466d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/6508c745-bd63-491f-a24d-3791e51a8ba2/svn/dewalt-power-tool-combo-kits-dck466d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/6508c745-bd63-491f-a24d-3791e51a8ba2/svn/dewalt-power-tool-combo-kits-dck466d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/6508c745-bd63-491f-a24d-3791e51a8ba2/svn/dewalt-power-tool-combo-kits-dck466d2-64_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-4-Tool-Combo-Kit-with-2-20V-2-0Ah-Batteries-and-Charger-DCK466D2/314718176",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=314718176&store_id=2414",
+        "model_number": "DCK466D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "favorite": 3,
+        "rating": 4.4815,
+        "reviews": 54,
+        "price": 371.42,
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 19,
+        "product_id": "313794907",
+        "title": "20V MAX Cordless 7 Tool Combo Kit with (1) 20V 4.0Ah Battery, (1) 20V 2.0Ah Battery, and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/9dbbab36-0136-42bb-beb0-1c189717212a/svn/dewalt-power-tool-combo-kits-dck771d1m1-64_65.jpg",
+            "https://images.thdstatic.com/productImages/9dbbab36-0136-42bb-beb0-1c189717212a/svn/dewalt-power-tool-combo-kits-dck771d1m1-64_100.jpg",
+            "https://images.thdstatic.com/productImages/9dbbab36-0136-42bb-beb0-1c189717212a/svn/dewalt-power-tool-combo-kits-dck771d1m1-64_145.jpg",
+            "https://images.thdstatic.com/productImages/9dbbab36-0136-42bb-beb0-1c189717212a/svn/dewalt-power-tool-combo-kits-dck771d1m1-64_300.jpg",
+            "https://images.thdstatic.com/productImages/9dbbab36-0136-42bb-beb0-1c189717212a/svn/dewalt-power-tool-combo-kits-dck771d1m1-64_400.jpg",
+            "https://images.thdstatic.com/productImages/9dbbab36-0136-42bb-beb0-1c189717212a/svn/dewalt-power-tool-combo-kits-dck771d1m1-64_600.jpg",
+            "https://images.thdstatic.com/productImages/9dbbab36-0136-42bb-beb0-1c189717212a/svn/dewalt-power-tool-combo-kits-dck771d1m1-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/38c7ccaf-2f04-4db1-a254-0b09e805c361/svn/dewalt-power-tool-combo-kits-dck771d1m1-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/38c7ccaf-2f04-4db1-a254-0b09e805c361/svn/dewalt-power-tool-combo-kits-dck771d1m1-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/38c7ccaf-2f04-4db1-a254-0b09e805c361/svn/dewalt-power-tool-combo-kits-dck771d1m1-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/38c7ccaf-2f04-4db1-a254-0b09e805c361/svn/dewalt-power-tool-combo-kits-dck771d1m1-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/38c7ccaf-2f04-4db1-a254-0b09e805c361/svn/dewalt-power-tool-combo-kits-dck771d1m1-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/38c7ccaf-2f04-4db1-a254-0b09e805c361/svn/dewalt-power-tool-combo-kits-dck771d1m1-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/38c7ccaf-2f04-4db1-a254-0b09e805c361/svn/dewalt-power-tool-combo-kits-dck771d1m1-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-7-Tool-Combo-Kit-with-1-20V-4-0Ah-Battery-1-20V-2-0Ah-Battery-and-Charger-DCK771D1M1/313794907",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=313794907&store_id=2414",
+        "model_number": "DCK771D1M1",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "favorite": 19,
+        "rating": 4.2857,
+        "reviews": 42,
+        "price": 873.91,
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 20,
+        "product_id": "327276700",
+        "title": "ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit with 2-Batteries, Charger and Bag",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/31170719-ffef-41db-876d-5211c3aecb30/svn/dewalt-power-tool-combo-kits-dck208d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/31170719-ffef-41db-876d-5211c3aecb30/svn/dewalt-power-tool-combo-kits-dck208d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/31170719-ffef-41db-876d-5211c3aecb30/svn/dewalt-power-tool-combo-kits-dck208d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/31170719-ffef-41db-876d-5211c3aecb30/svn/dewalt-power-tool-combo-kits-dck208d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/31170719-ffef-41db-876d-5211c3aecb30/svn/dewalt-power-tool-combo-kits-dck208d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/31170719-ffef-41db-876d-5211c3aecb30/svn/dewalt-power-tool-combo-kits-dck208d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/31170719-ffef-41db-876d-5211c3aecb30/svn/dewalt-power-tool-combo-kits-dck208d2-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/8aa546a5-5567-4f67-81d9-43693233b26a/svn/dewalt-power-tool-combo-kits-dck208d2-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/8aa546a5-5567-4f67-81d9-43693233b26a/svn/dewalt-power-tool-combo-kits-dck208d2-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/8aa546a5-5567-4f67-81d9-43693233b26a/svn/dewalt-power-tool-combo-kits-dck208d2-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/8aa546a5-5567-4f67-81d9-43693233b26a/svn/dewalt-power-tool-combo-kits-dck208d2-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/8aa546a5-5567-4f67-81d9-43693233b26a/svn/dewalt-power-tool-combo-kits-dck208d2-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/8aa546a5-5567-4f67-81d9-43693233b26a/svn/dewalt-power-tool-combo-kits-dck208d2-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/8aa546a5-5567-4f67-81d9-43693233b26a/svn/dewalt-power-tool-combo-kits-dck208d2-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-2-Batteries-Charger-and-Bag-DCK208D2/327276700",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=327276700&store_id=2414",
+        "model_number": "DCK208D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.5476,
+        "reviews": 42,
+        "price": 329.99,
+        "badges": [
+          "exclusive"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 21,
+        "product_id": "341366057",
+        "title": "20V MAX Lithium-Ion Cordless 3-Tool Combo Kit with (2) 2.0 Ah Batteries, Charger and Kitbag",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/17403554-0c8a-452e-97ca-a6d3f24f00b8/svn/dewalt-power-tool-combo-kits-dck360d3-64_65.jpg",
+            "https://images.thdstatic.com/productImages/17403554-0c8a-452e-97ca-a6d3f24f00b8/svn/dewalt-power-tool-combo-kits-dck360d3-64_100.jpg",
+            "https://images.thdstatic.com/productImages/17403554-0c8a-452e-97ca-a6d3f24f00b8/svn/dewalt-power-tool-combo-kits-dck360d3-64_145.jpg",
+            "https://images.thdstatic.com/productImages/17403554-0c8a-452e-97ca-a6d3f24f00b8/svn/dewalt-power-tool-combo-kits-dck360d3-64_300.jpg",
+            "https://images.thdstatic.com/productImages/17403554-0c8a-452e-97ca-a6d3f24f00b8/svn/dewalt-power-tool-combo-kits-dck360d3-64_400.jpg",
+            "https://images.thdstatic.com/productImages/17403554-0c8a-452e-97ca-a6d3f24f00b8/svn/dewalt-power-tool-combo-kits-dck360d3-64_600.jpg",
+            "https://images.thdstatic.com/productImages/17403554-0c8a-452e-97ca-a6d3f24f00b8/svn/dewalt-power-tool-combo-kits-dck360d3-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/46d67945-5465-46cf-8767-c79bb27e5a21/svn/dewalt-power-tool-combo-kits-dck360d3-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/46d67945-5465-46cf-8767-c79bb27e5a21/svn/dewalt-power-tool-combo-kits-dck360d3-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/46d67945-5465-46cf-8767-c79bb27e5a21/svn/dewalt-power-tool-combo-kits-dck360d3-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/46d67945-5465-46cf-8767-c79bb27e5a21/svn/dewalt-power-tool-combo-kits-dck360d3-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/46d67945-5465-46cf-8767-c79bb27e5a21/svn/dewalt-power-tool-combo-kits-dck360d3-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/46d67945-5465-46cf-8767-c79bb27e5a21/svn/dewalt-power-tool-combo-kits-dck360d3-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/46d67945-5465-46cf-8767-c79bb27e5a21/svn/dewalt-power-tool-combo-kits-dck360d3-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-3-Tool-Combo-Kit-with-2-2-0-Ah-Batteries-Charger-and-Kitbag-DCK360D3/341366057",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=341366057&store_id=2414",
+        "model_number": "DCK360D3",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 5,
+        "reviews": 1,
+        "price": 269,
+        "price_was": 399,
+        "price_saving": 130,
+        "percentage_off": 33,
+        "price_badge": "Special-Buy",
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 22,
+        "product_id": "343992133",
+        "title": "20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and 20V MAX XR Cordless Brushless Jigsaw with 2.0 Ah Battery and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/aa887cc9-9d8b-4648-84fe-ddc4f32b2eff/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-64_65.jpg",
+            "https://images.thdstatic.com/productImages/aa887cc9-9d8b-4648-84fe-ddc4f32b2eff/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-64_100.jpg",
+            "https://images.thdstatic.com/productImages/aa887cc9-9d8b-4648-84fe-ddc4f32b2eff/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-64_145.jpg",
+            "https://images.thdstatic.com/productImages/aa887cc9-9d8b-4648-84fe-ddc4f32b2eff/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-64_300.jpg",
+            "https://images.thdstatic.com/productImages/aa887cc9-9d8b-4648-84fe-ddc4f32b2eff/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-64_400.jpg",
+            "https://images.thdstatic.com/productImages/aa887cc9-9d8b-4648-84fe-ddc4f32b2eff/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-64_600.jpg",
+            "https://images.thdstatic.com/productImages/aa887cc9-9d8b-4648-84fe-ddc4f32b2eff/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/70356b03-43d6-4bbe-aa74-ddd04696e176/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/70356b03-43d6-4bbe-aa74-ddd04696e176/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/70356b03-43d6-4bbe-aa74-ddd04696e176/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/70356b03-43d6-4bbe-aa74-ddd04696e176/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/70356b03-43d6-4bbe-aa74-ddd04696e176/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/70356b03-43d6-4bbe-aa74-ddd04696e176/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/70356b03-43d6-4bbe-aa74-ddd04696e176/svn/dewalt-power-tool-combo-kits-dck540d1wcs334b-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-5-Tool-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-with-2-0-Ah-Battery-and-Charger-DCK540D1WCS334B/343992133",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=343992133&store_id=2414",
+        "model_number": "DCK540D1WCS334B",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.6623,
+        "reviews": 3734,
+        "price": 499,
+        "price_was": 738,
+        "price_saving": 239,
+        "percentage_off": 32,
+        "price_badge": "Special-Buy",
+        "badges": [
+          "new",
+          "exclusive"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 23,
+        "product_id": "323152152",
+        "title": "ATOMIC 20-Volt MAX Lithium-Ion Cordless 2-Tool Combo Kit with (2) 2.0Ah Batteries, Charger and Bag",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/01d267d1-c0a6-4ee3-b97f-4b44bc599eb7/svn/dewalt-power-tool-combo-kits-dck226d2-64_65.jpg",
+            "https://images.thdstatic.com/productImages/01d267d1-c0a6-4ee3-b97f-4b44bc599eb7/svn/dewalt-power-tool-combo-kits-dck226d2-64_100.jpg",
+            "https://images.thdstatic.com/productImages/01d267d1-c0a6-4ee3-b97f-4b44bc599eb7/svn/dewalt-power-tool-combo-kits-dck226d2-64_145.jpg",
+            "https://images.thdstatic.com/productImages/01d267d1-c0a6-4ee3-b97f-4b44bc599eb7/svn/dewalt-power-tool-combo-kits-dck226d2-64_300.jpg",
+            "https://images.thdstatic.com/productImages/01d267d1-c0a6-4ee3-b97f-4b44bc599eb7/svn/dewalt-power-tool-combo-kits-dck226d2-64_400.jpg",
+            "https://images.thdstatic.com/productImages/01d267d1-c0a6-4ee3-b97f-4b44bc599eb7/svn/dewalt-power-tool-combo-kits-dck226d2-64_600.jpg",
+            "https://images.thdstatic.com/productImages/01d267d1-c0a6-4ee3-b97f-4b44bc599eb7/svn/dewalt-power-tool-combo-kits-dck226d2-64_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-2-2-0Ah-Batteries-Charger-and-Bag-DCK226D2/323152152",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=323152152&store_id=2414",
+        "model_number": "DCK226D2",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.6765,
+        "reviews": 34,
+        "price": 192,
+        "price_was": 279,
+        "price_saving": 87,
+        "percentage_off": 31,
+        "price_badge": null,
+        "badges": [
+          "exclusive"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      },
+      {
+        "position": 24,
+        "product_id": "337440461",
+        "title": "ATOMIC 20V Lithium-Ion Cordless 2-Tool Combo Kit with FLEXVOLT 20V/60V 6.0Ah, 20V 5 Ah and 2 Ah Batteries and Charger",
+        "thumbnails": [
+          [
+            "https://images.thdstatic.com/productImages/2ea1c9b5-8d77-4b01-a400-2341b33fb64e/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-64_65.jpg",
+            "https://images.thdstatic.com/productImages/2ea1c9b5-8d77-4b01-a400-2341b33fb64e/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-64_100.jpg",
+            "https://images.thdstatic.com/productImages/2ea1c9b5-8d77-4b01-a400-2341b33fb64e/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-64_145.jpg",
+            "https://images.thdstatic.com/productImages/2ea1c9b5-8d77-4b01-a400-2341b33fb64e/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-64_300.jpg",
+            "https://images.thdstatic.com/productImages/2ea1c9b5-8d77-4b01-a400-2341b33fb64e/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-64_400.jpg",
+            "https://images.thdstatic.com/productImages/2ea1c9b5-8d77-4b01-a400-2341b33fb64e/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-64_600.jpg",
+            "https://images.thdstatic.com/productImages/2ea1c9b5-8d77-4b01-a400-2341b33fb64e/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-64_1000.jpg"
+          ],
+          [
+            "https://images.thdstatic.com/productImages/e4b8dee3-03fa-469a-8bc4-d271b2f43df5/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-e4_65.jpg",
+            "https://images.thdstatic.com/productImages/e4b8dee3-03fa-469a-8bc4-d271b2f43df5/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-e4_100.jpg",
+            "https://images.thdstatic.com/productImages/e4b8dee3-03fa-469a-8bc4-d271b2f43df5/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-e4_145.jpg",
+            "https://images.thdstatic.com/productImages/e4b8dee3-03fa-469a-8bc4-d271b2f43df5/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-e4_300.jpg",
+            "https://images.thdstatic.com/productImages/e4b8dee3-03fa-469a-8bc4-d271b2f43df5/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-e4_400.jpg",
+            "https://images.thdstatic.com/productImages/e4b8dee3-03fa-469a-8bc4-d271b2f43df5/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-e4_600.jpg",
+            "https://images.thdstatic.com/productImages/e4b8dee3-03fa-469a-8bc4-d271b2f43df5/svn/dewalt-power-tool-combo-kits-dck200d1p1wb606-e4_1000.jpg"
+          ]
+        ],
+        "link": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-FLEXVOLT-20V-60V-6-0Ah-20V-5-Ah-and-2-Ah-Batteries-and-Charger-DCK200D1P1WB606/337440461",
+        "serpapi_link": "https://serpapi.com/search.json?delivery_zip=04401&engine=home_depot_product&product_id=337440461&store_id=2414",
+        "model_number": "DCK200D1P1WB606",
+        "brand": "DEWALT",
+        "collection": "https://www.homedepot.com",
+        "rating": 4.5822,
+        "reviews": 852,
+        "price": 299,
+        "price_was": 498,
+        "price_saving": 199,
+        "percentage_off": 40,
+        "price_badge": "Special-Buy",
+        "badges": [
+          "exclusive"
+        ],
+        "delivery": {
+          "free": true,
+          "free_delivery_threshold": false
+        },
+        "pickup": {
+          "free_ship_to_store": true
+        }
+      }
+    ],
+    "filters": [
+      {
+        "key": "Category",
+        "value": [
+          {
+            "name": "Tools",
+            "count": "838",
+            "value": "c1xy",
+            "link": "https://www.homedepot.com/b/Tools/N-5yc1vZc1xy/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Outdoors",
+            "count": "290",
+            "value": "bx82",
+            "link": "https://www.homedepot.com/b/Outdoors/N-5yc1vZbx82/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Bundle/Single",
+        "value": [
+          {
+            "name": "Single Product",
+            "count": "1096",
+            "value": "bwo65",
+            "link": "https://www.homedepot.com/b/Single-Product/N-5yc1vZbwo65/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Bundle",
+            "count": "24",
+            "value": "bwo64",
+            "link": "https://www.homedepot.com/b/Bundle/N-5yc1vZbwo64/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Get It Fast",
+        "value": [
+          {
+            "name": "Pick Up Today",
+            "count": "77",
+            "value": "1z175a5",
+            "link": "https://www.homedepot.com/b/Pick-Up-Today/N-5yc1vZ1z175a5/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Next-Day Delivery",
+            "count": "218",
+            "value": "1z175cq",
+            "link": "https://www.homedepot.com/b/Next-Day-Delivery/N-5yc1vZ1z175cq/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Review Rating",
+        "value": [
+          {
+            "name": "5",
+            "count": "144",
+            "value": "bwo5q",
+            "link": "https://www.homedepot.com/b/Best-Rated/N-5yc1vZbwo5q/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "4 & Up",
+            "count": "1036",
+            "value": "bwo5o",
+            "link": "https://www.homedepot.com/b/Highly-Rated/N-5yc1vZbwo5o/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "3 & Up",
+            "count": "1075",
+            "value": "bwo5n",
+            "link": "https://www.homedepot.com/b/N-5yc1vZbwo5n/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "2 & Up",
+            "count": "1078",
+            "value": "bwo5m",
+            "link": "https://www.homedepot.com/b/N-5yc1vZbwo5m/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "1 & Up",
+            "count": "1079",
+            "value": "bwo5l",
+            "link": "https://www.homedepot.com/b/N-5yc1vZbwo5l/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "0",
+            "count": "4",
+            "value": "bwo5r",
+            "link": "https://www.homedepot.com/b/N-5yc1vZbwo5r/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Brand",
+        "value": [
+          {
+            "name": "DEWALT",
+            "count": "308",
+            "value": "4j2",
+            "link": "https://www.homedepot.com/b/DEWALT/N-5yc1vZ4j2/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Milwaukee",
+            "count": "392",
+            "value": "zv",
+            "link": "https://www.homedepot.com/b/Milwaukee/N-5yc1vZzv/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "RYOBI",
+            "count": "207",
+            "value": "m5d",
+            "link": "https://www.homedepot.com/b/RYOBI/N-5yc1vZm5d/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Makita",
+            "count": "68",
+            "value": "yg",
+            "link": "https://www.homedepot.com/b/Makita/N-5yc1vZyg/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "RIDGID",
+            "count": "65",
+            "value": "18g",
+            "link": "https://www.homedepot.com/b/RIDGID/N-5yc1vZ18g/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "BLACK+DECKER",
+            "count": "40",
+            "value": "e7c",
+            "link": "https://www.homedepot.com/b/BLACK-DECKER/N-5yc1vZe7c/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "ECHO",
+            "count": "21",
+            "value": "36i",
+            "link": "https://www.homedepot.com/b/ECHO/N-5yc1vZ36i/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Hilti",
+            "count": "13",
+            "value": "px",
+            "link": "https://www.homedepot.com/b/Hilti/N-5yc1vZpx/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Freeman",
+            "count": "1",
+            "value": "506",
+            "link": "https://www.homedepot.com/b/Freeman/N-5yc1vZ506/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Price",
+        "value": [
+          {
+            "name": "$20 - $30",
+            "count": "4",
+            "value": "12kz",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12kz/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$30 - $40",
+            "count": "3",
+            "value": "12l0",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l0/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$40 - $50",
+            "count": "3",
+            "value": "12l1",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l1/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$50 - $100",
+            "count": "30",
+            "value": "12l2",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l2/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$100 - $150",
+            "count": "59",
+            "value": "12l3",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l3/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$150 - $200",
+            "count": "88",
+            "value": "12l4",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l4/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$200 - $250",
+            "count": "80",
+            "value": "12l5",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l5/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$250 - $300",
+            "count": "91",
+            "value": "12l6",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l6/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$300 - $400",
+            "count": "199",
+            "value": "12l7",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l7/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$400 - $500",
+            "count": "174",
+            "value": "12l8",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l8/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$500 - $600",
+            "count": "97",
+            "value": "12l9",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12l9/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$600 - $700",
+            "count": "66",
+            "value": "12la",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12la/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$700 - $800",
+            "count": "55",
+            "value": "12lb",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12lb/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$800 - $900",
+            "count": "27",
+            "value": "12lc",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12lc/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$900 - $1000",
+            "count": "30",
+            "value": "12ld",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12ld/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$1000 - $2000",
+            "count": "108",
+            "value": "12le",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12le/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "$2000 - $3000",
+            "count": "2",
+            "value": "12lf",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12lf/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Over $5000",
+            "count": "1",
+            "value": "12li",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ12li/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Special Values",
+            "count": "556",
+            "value": "7",
+            "link": "https://www.homedepot.com/b/N-5yc1vZ7/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Clearance",
+        "value": [
+          {
+            "name": "In-Store Clearance",
+            "value": "bwo6v",
+            "link": "https://www.homedepot.com/b/In-Store-Clearance/N-5yc1vZbwo6v/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "The Home Depot Events",
+        "value": [
+          {
+            "name": "Tool Savings",
+            "count": "312",
+            "value": "1z1zuqf",
+            "link": "https://www.homedepot.com/b/Tool-Savings/N-5yc1vZ1z1zuqf/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Tools and Outdoor Power Equipment",
+            "count": "189",
+            "value": "1z1zcb0",
+            "link": "https://www.homedepot.com/b/Tools-and-Outdoor-Power-Equipment/N-5yc1vZ1z1zcb0/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Black Friday Deals",
+            "count": "152",
+            "value": "1z1zdoh",
+            "link": "https://www.homedepot.com/b/Black-Friday-Deals/N-5yc1vZ1z1zdoh/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Featured BOGO",
+            "count": "106",
+            "value": "1z24hvk",
+            "link": "https://www.homedepot.com/b/Featured-BOGO/N-5yc1vZ1z24hvk/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Gifting: Gifts for the Pro",
+            "count": "46",
+            "value": "1z24wjq",
+            "link": "https://www.homedepot.com/b/Gifting-Gifts-for-the-Pro/N-5yc1vZ1z24wjq/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Express Delivery",
+            "count": "38",
+            "value": "1z2658n",
+            "link": "https://www.homedepot.com/b/Express-Delivery/N-5yc1vZ1z2658n/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Gifting: New Homeowner",
+            "count": "10",
+            "value": "1z24wm5",
+            "link": "https://www.homedepot.com/b/Gifting-New-Homeowner/N-5yc1vZ1z24wm5/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Gifting: Top Gifts",
+            "count": "9",
+            "value": "1z24w26",
+            "link": "https://www.homedepot.com/b/Gifting-Top-Gifts/N-5yc1vZ1z24w26/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Gifting: Father's Day",
+            "count": "8",
+            "value": "1z263xz",
+            "link": "https://www.homedepot.com/b/Gifting-Fathers-Day/N-5yc1vZ1z263xz/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Tool Innovation",
+            "count": "7",
+            "value": "1z25ftr",
+            "link": "https://www.homedepot.com/b/Tool-Innovation/N-5yc1vZ1z25ftr/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Gifting: Shop All",
+            "count": "5",
+            "value": "1z24xve",
+            "link": "https://www.homedepot.com/b/Gifting-Shop-All/N-5yc1vZ1z24xve/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Limited Deals",
+            "count": "5",
+            "value": "1z25ebs",
+            "link": "https://www.homedepot.com/b/Limited-Deals/N-5yc1vZ1z25ebs/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Spring Gift Center",
+            "count": "5",
+            "value": "1z25mcu",
+            "link": "https://www.homedepot.com/b/Spring-Gift-Center/N-5yc1vZ1z25mcu/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Gifting: Gardener",
+            "count": "4",
+            "value": "1z24wlu",
+            "link": "https://www.homedepot.com/b/Gifting-Gardener/N-5yc1vZ1z24wlu/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "4th of July Sale",
+            "count": "3",
+            "value": "1z1ze6t",
+            "link": "https://www.homedepot.com/b/4th-of-July-Sale/N-5yc1vZ1z1ze6t/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "The Home Depot Wrapped",
+            "count": "2",
+            "value": "1z27jvy",
+            "link": "https://www.homedepot.com/b/The-Home-Depot-Wrapped/N-5yc1vZ1z27jvy/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Limited Supply",
+            "count": "1",
+            "value": "1z26194",
+            "link": "https://www.homedepot.com/b/Limited-Supply/N-5yc1vZ1z26194/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "New Deals Added",
+            "count": "1",
+            "value": "1z24td9",
+            "link": "https://www.homedepot.com/b/New-Deals-Added/N-5yc1vZ1z24td9/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Tools Included",
+        "value": [
+          {
+            "name": "Impact Driver",
+            "count": "648",
+            "value": "1z0vx9a",
+            "link": "https://www.homedepot.com/b/Impact-Driver/N-5yc1vZ1z0vx9a/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Hammer Driver Drill",
+            "count": "335",
+            "value": "1z0vhng",
+            "link": "https://www.homedepot.com/b/Hammer-Driver-Drill/N-5yc1vZ1z0vhng/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Circular Saw",
+            "count": "282",
+            "value": "1z0vwx8",
+            "link": "https://www.homedepot.com/b/Circular-Saw/N-5yc1vZ1z0vwx8/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Drill Driver",
+            "count": "250",
+            "value": "1z1dhu3",
+            "link": "https://www.homedepot.com/b/Drill-Driver/N-5yc1vZ1z1dhu3/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Reciprocating Saw",
+            "count": "233",
+            "value": "1z0vgsi",
+            "link": "https://www.homedepot.com/b/Reciprocating-Saw/N-5yc1vZ1z0vgsi/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Worklight",
+            "count": "211",
+            "value": "1z0vgu7",
+            "link": "https://www.homedepot.com/b/Worklight/N-5yc1vZ1z0vgu7/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Multi-Tool",
+            "count": "159",
+            "value": "1z0vue4",
+            "link": "https://www.homedepot.com/b/Multi-Tool/N-5yc1vZ1z0vue4/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Angle Grinder",
+            "count": "129",
+            "value": "1z0vgs1",
+            "link": "https://www.homedepot.com/b/Angle-Grinder/N-5yc1vZ1z0vgs1/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Impact Wrench",
+            "count": "123",
+            "value": "1z0vgs0",
+            "link": "https://www.homedepot.com/b/Impact-Wrench/N-5yc1vZ1z0vgs0/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Drill",
+            "count": "110",
+            "value": "1z0vw1s",
+            "link": "https://www.homedepot.com/b/Drill/N-5yc1vZ1z0vw1s/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Sander",
+            "count": "79",
+            "value": "1z0vf5h",
+            "link": "https://www.homedepot.com/b/Sander/N-5yc1vZ1z0vf5h/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Jig Saw",
+            "count": "59",
+            "value": "1z0vgrz",
+            "link": "https://www.homedepot.com/b/Jig-Saw/N-5yc1vZ1z0vgrz/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Ratchet",
+            "count": "36",
+            "value": "1z0vfh1",
+            "link": "https://www.homedepot.com/b/Ratchet/N-5yc1vZ1z0vfh1/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Blower",
+            "count": "25",
+            "value": "1z0vgis",
+            "link": "https://www.homedepot.com/b/Blower/N-5yc1vZ1z0vgis/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "One-Handed Reciprocating Saw",
+            "count": "22",
+            "value": "1z0tyuf",
+            "link": "https://www.homedepot.com/b/One-Handed-Reciprocating-Saw/N-5yc1vZ1z0tyuf/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Router",
+            "count": "21",
+            "value": "1z0pufo",
+            "link": "https://www.homedepot.com/b/Router/N-5yc1vZ1z0pufo/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Nail Gun",
+            "count": "16",
+            "value": "1z0qwz0",
+            "link": "https://www.homedepot.com/b/Nail-Gun/N-5yc1vZ1z0qwz0/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Miter Saw",
+            "count": "14",
+            "value": "1z0l5lv",
+            "link": "https://www.homedepot.com/b/Miter-Saw/N-5yc1vZ1z0l5lv/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Right Angle Drill",
+            "count": "14",
+            "value": "1z0vgjz",
+            "link": "https://www.homedepot.com/b/Right-Angle-Drill/N-5yc1vZ1z0vgjz/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Rotary Tool",
+            "count": "14",
+            "value": "1z0vgry",
+            "link": "https://www.homedepot.com/b/Rotary-Tool/N-5yc1vZ1z0vgry/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Speaker",
+            "count": "14",
+            "value": "1z1c8yq",
+            "link": "https://www.homedepot.com/b/Speaker/N-5yc1vZ1z1c8yq/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Screw Driver",
+            "count": "13",
+            "value": "1z0vgjx",
+            "link": "https://www.homedepot.com/b/Screw-Driver/N-5yc1vZ1z0vgjx/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Wet/Dry Vac",
+            "count": "10",
+            "value": "1z0vflv",
+            "link": "https://www.homedepot.com/b/Wet-Dry-Vac/N-5yc1vZ1z0vflv/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Fan",
+            "count": "9",
+            "value": "1z0m3pw",
+            "link": "https://www.homedepot.com/b/Fan/N-5yc1vZ1z0m3pw/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Impact Driver Bit Set",
+            "count": "9",
+            "value": "1z237kj",
+            "link": "https://www.homedepot.com/b/Impact-Driver-Bit-Set/N-5yc1vZ1z237kj/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Spotlight",
+            "count": "9",
+            "value": "1z1dhx2",
+            "link": "https://www.homedepot.com/b/Spotlight/N-5yc1vZ1z1dhx2/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Cut-Off Tool",
+            "count": "6",
+            "value": "1z233jb",
+            "link": "https://www.homedepot.com/b/Cut-Off-Tool/N-5yc1vZ1z233jb/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Rotary Hammer",
+            "count": "6",
+            "value": "1z0vgjy",
+            "link": "https://www.homedepot.com/b/Rotary-Hammer/N-5yc1vZ1z0vgjy/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Glue Gun",
+            "count": "5",
+            "value": "1z1q45q",
+            "link": "https://www.homedepot.com/b/Glue-Gun/N-5yc1vZ1z1q45q/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Inflator",
+            "count": "5",
+            "value": "1z1drv2",
+            "link": "https://www.homedepot.com/b/Inflator/N-5yc1vZ1z1drv2/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Drywall Screwdriver",
+            "count": "4",
+            "value": "1z0ui2m",
+            "link": "https://www.homedepot.com/b/Drywall-Screwdriver/N-5yc1vZ1z0ui2m/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Radio",
+            "count": "4",
+            "value": "1z0vicv",
+            "link": "https://www.homedepot.com/b/Radio/N-5yc1vZ1z0vicv/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Band Saw",
+            "count": "3",
+            "value": "1z0vflw",
+            "link": "https://www.homedepot.com/b/Band-Saw/N-5yc1vZ1z0vflw/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Power Cutter",
+            "count": "3",
+            "value": "1z233qo",
+            "link": "https://www.homedepot.com/b/Power-Cutter/N-5yc1vZ1z233qo/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Dry Vac",
+            "count": "2",
+            "value": "1z1co5v",
+            "link": "https://www.homedepot.com/b/Dry-Vac/N-5yc1vZ1z1co5v/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "PEX Expander",
+            "count": "2",
+            "value": "1z237l1",
+            "link": "https://www.homedepot.com/b/PEX-Expander/N-5yc1vZ1z237l1/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Power Base",
+            "count": "2",
+            "value": "1z0tyue",
+            "link": "https://www.homedepot.com/b/Power-Base/N-5yc1vZ1z0tyue/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Angle Drill",
+            "count": "1",
+            "value": "1z0ueqj",
+            "link": "https://www.homedepot.com/b/Angle-Drill/N-5yc1vZ1z0ueqj/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Drywall Cut-Out Tool",
+            "count": "1",
+            "value": "1z261lp",
+            "link": "https://www.homedepot.com/b/Drywall-Cut-Out-Tool/N-5yc1vZ1z261lp/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Grease Gun",
+            "count": "1",
+            "value": "1z0r9lm",
+            "link": "https://www.homedepot.com/b/Grease-Gun/N-5yc1vZ1z0r9lm/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Metal Cutting Saw",
+            "count": "1",
+            "value": "1z0vgir",
+            "link": "https://www.homedepot.com/b/Metal-Cutting-Saw/N-5yc1vZ1z0vgir/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "PVC Shear",
+            "count": "1",
+            "value": "1z0k6y1",
+            "link": "https://www.homedepot.com/b/PVC-Shear/N-5yc1vZ1z0k6y1/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "SDS-PLUS Rotary Hammer",
+            "count": "1",
+            "value": "1z0ui32",
+            "link": "https://www.homedepot.com/b/SDS-PLUS-Rotary-Hammer/N-5yc1vZ1z0ui32/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Screw Driver Bit Set",
+            "count": "1",
+            "value": "1z237jx",
+            "link": "https://www.homedepot.com/b/Screw-Driver-Bit-Set/N-5yc1vZ1z237jx/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Soldering Iron",
+            "count": "1",
+            "value": "1z233fm",
+            "link": "https://www.homedepot.com/b/Soldering-Iron/N-5yc1vZ1z233fm/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Number of Tools Included",
+        "value": [
+          {
+            "name": "2",
+            "count": "447",
+            "value": "1z1pnr6",
+            "link": "https://www.homedepot.com/b/2/N-5yc1vZ1z1pnr6/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "3",
+            "count": "98",
+            "value": "1z1pnr8",
+            "link": "https://www.homedepot.com/b/3/N-5yc1vZ1z1pnr8/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "4",
+            "count": "65",
+            "value": "1z1pnr9",
+            "link": "https://www.homedepot.com/b/4/N-5yc1vZ1z1pnr9/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "6",
+            "count": "60",
+            "value": "1z1pnrd",
+            "link": "https://www.homedepot.com/b/6/N-5yc1vZ1z1pnrd/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "7",
+            "count": "46",
+            "value": "1z1pnre",
+            "link": "https://www.homedepot.com/b/7/N-5yc1vZ1z1pnre/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "8",
+            "count": "33",
+            "value": "1z1pnrf",
+            "link": "https://www.homedepot.com/b/8/N-5yc1vZ1z1pnrf/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "5",
+            "count": "29",
+            "value": "1z1pnra",
+            "link": "https://www.homedepot.com/b/5/N-5yc1vZ1z1pnra/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "9",
+            "count": "23",
+            "value": "1z1pnrh",
+            "link": "https://www.homedepot.com/b/9/N-5yc1vZ1z1pnrh/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "10",
+            "count": "7",
+            "value": "1z1pnkp",
+            "link": "https://www.homedepot.com/b/10/N-5yc1vZ1z1pnkp/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "12",
+            "count": "4",
+            "value": "1z1pnkr",
+            "link": "https://www.homedepot.com/b/12/N-5yc1vZ1z1pnkr/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "15",
+            "count": "1",
+            "value": "1z1pnku",
+            "link": "https://www.homedepot.com/b/15/N-5yc1vZ1z1pnku/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Number of Tools (Bonus Tool Not Included)",
+        "value": [
+          {
+            "name": "2",
+            "count": "447",
+            "value": "1z1tiaa",
+            "link": "https://www.homedepot.com/b/2/N-5yc1vZ1z1tiaa/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "3",
+            "count": "98",
+            "value": "1z1tiab",
+            "link": "https://www.homedepot.com/b/3/N-5yc1vZ1z1tiab/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "4",
+            "count": "65",
+            "value": "1z1tiad",
+            "link": "https://www.homedepot.com/b/4/N-5yc1vZ1z1tiad/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "6",
+            "count": "60",
+            "value": "1z1tiah",
+            "link": "https://www.homedepot.com/b/6/N-5yc1vZ1z1tiah/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "7",
+            "count": "46",
+            "value": "1z1tiai",
+            "link": "https://www.homedepot.com/b/7/N-5yc1vZ1z1tiai/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "8",
+            "count": "33",
+            "value": "1z1tiaj",
+            "link": "https://www.homedepot.com/b/8/N-5yc1vZ1z1tiaj/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "5",
+            "count": "29",
+            "value": "1z1tiae",
+            "link": "https://www.homedepot.com/b/5/N-5yc1vZ1z1tiae/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "9",
+            "count": "23",
+            "value": "1z1tiak",
+            "link": "https://www.homedepot.com/b/9/N-5yc1vZ1z1tiak/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "10",
+            "count": "7",
+            "value": "1z1ticc",
+            "link": "https://www.homedepot.com/b/10/N-5yc1vZ1z1ticc/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "12",
+            "count": "4",
+            "value": "1z1tice",
+            "link": "https://www.homedepot.com/b/12/N-5yc1vZ1z1tice/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "15",
+            "count": "1",
+            "value": "1z1ticf",
+            "link": "https://www.homedepot.com/b/15/N-5yc1vZ1z1ticf/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Battery Platform",
+        "value": [
+          {
+            "name": "Milwaukee M18",
+            "count": "261",
+            "value": "1z17rdr",
+            "link": "https://www.homedepot.com/b/Milwaukee-M18/N-5yc1vZ1z17rdr/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Dewalt 20V MAX",
+            "count": "229",
+            "value": "1z235nn",
+            "link": "https://www.homedepot.com/b/Dewalt-20V-MAX/N-5yc1vZ1z235nn/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Ryobi 18V ONE+",
+            "count": "178",
+            "value": "1z2365c",
+            "link": "https://www.homedepot.com/b/Ryobi-18V-ONE/N-5yc1vZ1z2365c/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Milwaukee M12",
+            "count": "133",
+            "value": "1z17rcu",
+            "link": "https://www.homedepot.com/b/Milwaukee-M12/N-5yc1vZ1z17rcu/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "RIDGID 18V",
+            "count": "63",
+            "value": "1z236dm",
+            "link": "https://www.homedepot.com/b/RIDGID-18V/N-5yc1vZ1z236dm/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Makita 18V:36V LXT",
+            "count": "56",
+            "value": "1z2365a",
+            "link": "https://www.homedepot.com/b/Makita-18V36V-LXT/N-5yc1vZ1z2365a/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Dewalt 60V MAX Flexvolt",
+            "count": "55",
+            "value": "1z236d7",
+            "link": "https://www.homedepot.com/b/Dewalt-60V-MAX-Flexvolt/N-5yc1vZ1z236d7/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Black+Decker 20V MAX",
+            "count": "27",
+            "value": "1z235qo",
+            "link": "https://www.homedepot.com/b/Black-Decker-20V-MAX/N-5yc1vZ1z235qo/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "RYOBI USB Lithium",
+            "count": "23",
+            "value": "1z1uvnk",
+            "link": "https://www.homedepot.com/b/RYOBI-USB-Lithium/N-5yc1vZ1z1uvnk/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Ryobi 40V",
+            "count": "11",
+            "value": "1z236qo",
+            "link": "https://www.homedepot.com/b/Ryobi-40V/N-5yc1vZ1z236qo/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Makita 40V:80V max XGT",
+            "count": "10",
+            "value": "1z236j0",
+            "link": "https://www.homedepot.com/b/Makita-40V80V-max-XGT/N-5yc1vZ1z236j0/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Hilti 22V",
+            "count": "8",
+            "value": "1z235iw",
+            "link": "https://www.homedepot.com/b/Hilti-22V/N-5yc1vZ1z235iw/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "ECHO 56V",
+            "count": "7",
+            "value": "1z21rjn",
+            "link": "https://www.homedepot.com/b/ECHO-56V/N-5yc1vZ1z21rjn/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Hilti-NURON",
+            "count": "5",
+            "value": "1z1u4e4",
+            "link": "https://www.homedepot.com/b/Hilti-NURON/N-5yc1vZ1z1u4e4/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Hilti 12V",
+            "count": "4",
+            "value": "1z2367y",
+            "link": "https://www.homedepot.com/b/Hilti-12V/N-5yc1vZ1z2367y/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Black+Decker 40V MAX",
+            "count": "3",
+            "value": "1z235dk",
+            "link": "https://www.homedepot.com/b/Black-Decker-40V-MAX/N-5yc1vZ1z235dk/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Dewalt 12V MAX",
+            "count": "2",
+            "value": "1z236uz",
+            "link": "https://www.homedepot.com/b/Dewalt-12V-MAX/N-5yc1vZ1z236uz/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Black+Decker 12V MAX",
+            "count": "1",
+            "value": "1z236y6",
+            "link": "https://www.homedepot.com/b/Black-Decker-12V-MAX/N-5yc1vZ1z236y6/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Hilti 36V",
+            "count": "1",
+            "value": "1z236wg",
+            "link": "https://www.homedepot.com/b/Hilti-36V/N-5yc1vZ1z236wg/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Cordless/Corded",
+        "value": [
+          {
+            "name": "Cordless",
+            "count": "821",
+            "value": "1z140i3",
+            "link": "https://www.homedepot.com/b/Cordless/N-5yc1vZ1z140i3/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Hybrid",
+            "count": "3",
+            "value": "1z0m3yr",
+            "link": "https://www.homedepot.com/b/Hybrid/N-5yc1vZ1z0m3yr/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Corded",
+            "count": "2",
+            "value": "1z141kh",
+            "link": "https://www.homedepot.com/b/Corded/N-5yc1vZ1z141kh/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Motor Type",
+        "value": [
+          {
+            "name": "Brushless",
+            "count": "551",
+            "value": "1z17tnq",
+            "link": "https://www.homedepot.com/b/Brushless/N-5yc1vZ1z17tnq/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Brushed",
+            "count": "235",
+            "value": "1z17tqc",
+            "link": "https://www.homedepot.com/b/Brushed/N-5yc1vZ1z17tqc/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Both (Brushed + Brushless)",
+            "count": "36",
+            "value": "1z1c5em",
+            "link": "https://www.homedepot.com/b/Both-Brushed-Brushless/N-5yc1vZ1z1c5em/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Power Tool Features",
+        "value": [
+          {
+            "name": "Variable Speed",
+            "count": "619",
+            "value": "1z0o2m7",
+            "link": "https://www.homedepot.com/b/Variable-Speed/N-5yc1vZ1z0o2m7/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "LED Light",
+            "count": "574",
+            "value": "1z0o2lf",
+            "link": "https://www.homedepot.com/b/LED-Light/N-5yc1vZ1z0o2lf/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Keyless Chuck",
+            "count": "414",
+            "value": "1z0nuh2",
+            "link": "https://www.homedepot.com/b/Keyless-Chuck/N-5yc1vZ1z0nuh2/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Built-In Light",
+            "count": "200",
+            "value": "1z1raxs",
+            "link": "https://www.homedepot.com/b/Built-In-Light/N-5yc1vZ1z1raxs/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Forward/Reverse Switch",
+            "count": "175",
+            "value": "1z17tn5",
+            "link": "https://www.homedepot.com/b/Forward-Reverse-Switch/N-5yc1vZ1z17tn5/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Cushioned Grip",
+            "count": "142",
+            "value": "1z0mwtf",
+            "link": "https://www.homedepot.com/b/Cushioned-Grip/N-5yc1vZ1z0mwtf/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Compact",
+            "count": "134",
+            "value": "1z1pkpa",
+            "link": "https://www.homedepot.com/b/Compact/N-5yc1vZ1z1pkpa/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Sub-Compact",
+            "count": "107",
+            "value": "1z1aabc",
+            "link": "https://www.homedepot.com/b/Sub-Compact/N-5yc1vZ1z1aabc/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Heavy Duty",
+            "count": "78",
+            "value": "1z1tiub",
+            "link": "https://www.homedepot.com/b/Heavy-Duty/N-5yc1vZ1z1tiub/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "No Additional Features",
+            "count": "64",
+            "value": "1z0o2lv",
+            "link": "https://www.homedepot.com/b/No-Additional-Features/N-5yc1vZ1z0o2lv/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Worklight",
+            "count": "48",
+            "value": "1z1raxv",
+            "link": "https://www.homedepot.com/b/Worklight/N-5yc1vZ1z1raxv/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Adjustable Handle Position",
+            "count": "40",
+            "value": "1z0o2m5",
+            "link": "https://www.homedepot.com/b/Adjustable-Handle-Position/N-5yc1vZ1z0o2m5/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Dust Collection",
+            "count": "30",
+            "value": "1z1bhq1",
+            "link": "https://www.homedepot.com/b/Dust-Collection/N-5yc1vZ1z1bhq1/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "LED Battery Indicator Light",
+            "count": "30",
+            "value": "1z1bpyc",
+            "link": "https://www.homedepot.com/b/LED-Battery-Indicator-Light/N-5yc1vZ1z1bpyc/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Side Handle",
+            "count": "25",
+            "value": "1z0mgta",
+            "link": "https://www.homedepot.com/b/Side-Handle/N-5yc1vZ1z0mgta/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Reverse",
+            "count": "24",
+            "value": "1z1pxr5",
+            "link": "https://www.homedepot.com/b/Reverse/N-5yc1vZ1z1pxr5/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Keyless Blade Change",
+            "count": "21",
+            "value": "1z1b3q0",
+            "link": "https://www.homedepot.com/b/Keyless-Blade-Change/N-5yc1vZ1z1b3q0/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Blade Guard System",
+            "count": "16",
+            "value": "1z0o2lm",
+            "link": "https://www.homedepot.com/b/Blade-Guard-System/N-5yc1vZ1z0o2lm/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "No Tool Blade Change",
+            "count": "13",
+            "value": "1z0o2lh",
+            "link": "https://www.homedepot.com/b/No-Tool-Blade-Change/N-5yc1vZ1z0o2lh/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Electric Brake",
+            "count": "12",
+            "value": "1z0o2lp",
+            "link": "https://www.homedepot.com/b/Electric-Brake/N-5yc1vZ1z0o2lp/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Spindle Lock",
+            "count": "12",
+            "value": "1z0o2m3",
+            "link": "https://www.homedepot.com/b/Spindle-Lock/N-5yc1vZ1z0o2m3/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Depth Adjustment",
+            "count": "11",
+            "value": "1z0o2lq",
+            "link": "https://www.homedepot.com/b/Depth-Adjustment/N-5yc1vZ1z0o2lq/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Pivot Head",
+            "count": "10",
+            "value": "1z1ray3",
+            "link": "https://www.homedepot.com/b/Pivot-Head/N-5yc1vZ1z1ray3/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Lock On Switch",
+            "count": "9",
+            "value": "1z0o2m4",
+            "link": "https://www.homedepot.com/b/Lock-On-Switch/N-5yc1vZ1z0o2m4/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "No Tool Disc/Pad Change",
+            "count": "8",
+            "value": "1z0o2kx",
+            "link": "https://www.homedepot.com/b/No-Tool-Disc-Pad-Change/N-5yc1vZ1z0o2kx/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Orbital Action",
+            "count": "8",
+            "value": "1z0o2kc",
+            "link": "https://www.homedepot.com/b/Orbital-Action/N-5yc1vZ1z0o2kc/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Scrolling Action",
+            "count": "7",
+            "value": "1z0o2lg",
+            "link": "https://www.homedepot.com/b/Scrolling-Action/N-5yc1vZ1z0o2lg/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Random Orbit",
+            "count": "6",
+            "value": "1z0o2kw",
+            "link": "https://www.homedepot.com/b/Random-Orbit/N-5yc1vZ1z0o2kw/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Adjustable Shoe",
+            "count": "5",
+            "value": "1z0o2li",
+            "link": "https://www.homedepot.com/b/Adjustable-Shoe/N-5yc1vZ1z0o2li/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Multiple Base",
+            "count": "4",
+            "value": "1z1raay",
+            "link": "https://www.homedepot.com/b/Multiple-Base/N-5yc1vZ1z1raay/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Keyed Blade Change",
+            "count": "3",
+            "value": "1z1b3s7",
+            "link": "https://www.homedepot.com/b/Keyed-Blade-Change/N-5yc1vZ1z1b3s7/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Quick Release",
+            "count": "3",
+            "value": "1z1rb0u",
+            "link": "https://www.homedepot.com/b/Quick-Release/N-5yc1vZ1z1rb0u/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "360-Degree Swivel",
+            "count": "2",
+            "value": "1z1raxi",
+            "link": "https://www.homedepot.com/b/360-Degree-Swivel/N-5yc1vZ1z1raxi/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Lockout Power Switch",
+            "count": "2",
+            "value": "1z0o2id",
+            "link": "https://www.homedepot.com/b/Lockout-Power-Switch/N-5yc1vZ1z0o2id/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Positive Stops",
+            "count": "2",
+            "value": "1z0o2l0",
+            "link": "https://www.homedepot.com/b/Positive-Stops/N-5yc1vZ1z0o2l0/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Adjustable Depth Stops",
+            "count": "1",
+            "value": "1z1raxl",
+            "link": "https://www.homedepot.com/b/Adjustable-Depth-Stops/N-5yc1vZ1z1raxl/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "EZ Twist Nose Cap",
+            "count": "1",
+            "value": "1z1bpxd",
+            "link": "https://www.homedepot.com/b/EZ-Twist-Nose-Cap/N-5yc1vZ1z1bpxd/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Mobile App Integrated",
+            "count": "1",
+            "value": "1z0noab",
+            "link": "https://www.homedepot.com/b/Mobile-App-Integrated/N-5yc1vZ1z0noab/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Cordless Tool Type",
+        "value": [
+          {
+            "name": "Combo Kit",
+            "count": "793",
+            "value": "1z1csd9",
+            "link": "https://www.homedepot.com/b/Combo-Kit/N-5yc1vZ1z1csd9/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Reciprocating Saw",
+            "count": "6",
+            "value": "1z1cs7c",
+            "link": "https://www.homedepot.com/b/Reciprocating-Saw/N-5yc1vZ1z1cs7c/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Impact Wrench",
+            "count": "5",
+            "value": "1z1csbe",
+            "link": "https://www.homedepot.com/b/Impact-Wrench/N-5yc1vZ1z1csbe/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Impact Driver",
+            "count": "4",
+            "value": "1z1cs80",
+            "link": "https://www.homedepot.com/b/Impact-Driver/N-5yc1vZ1z1cs80/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Orbit Sander",
+            "count": "4",
+            "value": "1z1yip3",
+            "link": "https://www.homedepot.com/b/Orbit-Sander/N-5yc1vZ1z1yip3/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Specialty",
+            "count": "3",
+            "value": "1z1cs2d",
+            "link": "https://www.homedepot.com/b/Specialty/N-5yc1vZ1z1cs2d/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Drill/Driver",
+            "count": "2",
+            "value": "1z1cs7o",
+            "link": "https://www.homedepot.com/b/Drill-Driver/N-5yc1vZ1z1cs7o/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Screw Gun",
+            "count": "2",
+            "value": "1z1pn6n",
+            "link": "https://www.homedepot.com/b/Screw-Gun/N-5yc1vZ1z1pn6n/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Battery/Charger Set",
+            "count": "1",
+            "value": "1z26b1l",
+            "link": "https://www.homedepot.com/b/Battery-Charger-Set/N-5yc1vZ1z26b1l/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Battery",
+            "count": "1",
+            "value": "1z269fk",
+            "link": "https://www.homedepot.com/b/Battery/N-5yc1vZ1z269fk/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Hammer Drill",
+            "count": "1",
+            "value": "1z1cs2r",
+            "link": "https://www.homedepot.com/b/Hammer-Drill/N-5yc1vZ1z1cs2r/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Jig Saw",
+            "count": "1",
+            "value": "1z1cs8s",
+            "link": "https://www.homedepot.com/b/Jig-Saw/N-5yc1vZ1z1cs8s/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Rotary Tool",
+            "count": "1",
+            "value": "1z1cseb",
+            "link": "https://www.homedepot.com/b/Rotary-Tool/N-5yc1vZ1z1cseb/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Included",
+        "value": [
+          {
+            "name": "Battery Included",
+            "count": "756",
+            "value": "1z23lu3",
+            "link": "https://www.homedepot.com/b/Battery-Included/N-5yc1vZ1z23lu3/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Charger",
+            "count": "746",
+            "value": "1z23lsg",
+            "link": "https://www.homedepot.com/b/Charger/N-5yc1vZ1z23lsg/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Tool Bag",
+            "count": "451",
+            "value": "1z1pkrm",
+            "link": "https://www.homedepot.com/b/Tool-Bag/N-5yc1vZ1z1pkrm/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Blade(s)",
+            "count": "168",
+            "value": "1z1s7f7",
+            "link": "https://www.homedepot.com/b/Blades/N-5yc1vZ1z1s7f7/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Bits",
+            "count": "110",
+            "value": "1z1pkxc",
+            "link": "https://www.homedepot.com/b/Bits/N-5yc1vZ1z1pkxc/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Tool Case",
+            "count": "53",
+            "value": "1z1pkrj",
+            "link": "https://www.homedepot.com/b/Tool-Case/N-5yc1vZ1z1pkrj/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Other Accessories",
+            "count": "34",
+            "value": "1z23lrz",
+            "link": "https://www.homedepot.com/b/Other-Accessories/N-5yc1vZ1z23lrz/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "Tool Only",
+            "count": "15",
+            "value": "1z23lsz",
+            "link": "https://www.homedepot.com/b/Tool-Only/N-5yc1vZ1z23lsz/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          },
+          {
+            "name": "No Additional Items Included",
+            "count": "7",
+            "value": "1z17pql",
+            "link": "https://www.homedepot.com/b/No-Additional-Items-Included/N-5yc1vZ1z17pql/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "Battery Power Type",
+        "value": [
+          {
+            "name": "Lithium Ion",
+            "count": "900",
+            "value": "1z0v1k4",
+            "link": "https://www.homedepot.com/b/Lithium-Ion/N-5yc1vZ1z0v1k4/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      },
+      {
+        "key": "New Arrival",
+        "value": [
+          {
+            "name": "Recently Added",
+            "count": "84",
+            "value": "1z179pc",
+            "link": "https://www.homedepot.com/b/Recently-Added/N-5yc1vZ1z179pc/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5"
+          }
+        ]
+      }
+    ],
+    "related_products": [
+      "dewalt 20 volt battery",
+      "dewalt 20v",
+      "dewalt power tool combo kit",
+      "dewalt 20 volt xr combo kit",
+      "dewalt 20 volt reciprocating saw",
+      "dewalt 20v tools",
+      "dewalt 20 volt circular saw",
+      "dewalt 20 volt impact driver"
+    ],
+    "pagination": {
+      "current": 1,
+      "next": "https://www.homedepot.com/b/N-5yc1v/Ntt-dewalt+20v+combo+kit?Nao=24",
+      "other_pages": {
+        "2": "https://www.homedepot.com/b/N-5yc1v/Ntt-dewalt+20v+combo+kit?Nao=24",
+        "3": "https://www.homedepot.com/b/N-5yc1v/Ntt-dewalt+20v+combo+kit?Nao=48",
+        "4": "https://www.homedepot.com/b/N-5yc1v/Ntt-dewalt+20v+combo+kit?Nao=72",
+        "5": "https://www.homedepot.com/b/N-5yc1v/Ntt-dewalt+20v+combo+kit?Nao=96"
+      }
+    },
+    "serpapi_pagination": {
+      "current": 1,
+      "next_link": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=24&page=1&ps=24&q=dewalt+20v+combo+kit&store_id=2414",
+      "next": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=24&page=1&ps=24&q=dewalt+20v+combo+kit&store_id=2414",
+      "other_pages": {
+        "2": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=24&page=1&ps=24&q=dewalt+20v+combo+kit&store_id=2414",
+        "3": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=48&page=1&ps=24&q=dewalt+20v+combo+kit&store_id=2414",
+        "4": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=72&page=1&ps=24&q=dewalt+20v+combo+kit&store_id=2414",
+        "5": "https://serpapi.com/search.json?country=us&delivery_zip=04401&engine=home_depot&nao=96&page=1&ps=24&q=dewalt+20v+combo+kit&store_id=2414"
+      }
+    }
+  }
+}

@@ -1,0 +1,2416 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=RYOBI PBP004",
+  "at": 1795001624836,
+  "data": {
+    "search_metadata": {
+      "id": "6afd8d164bd8571354a73dfb",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/369uN9PepwMktUQniORhHHc6f6fv78vSzx5tSggAU2s/6afd8d164bd8571354a73dfb.json",
+      "markdown_endpoint": "https://serpapi.com/searches/369uN9PepwMktUQniORhHHc6f6fv78vSzx5tSggAU2s/6afd8d164bd8571354a73dfb.md",
+      "created_at": "2026-11-18 11:33:42 UTC",
+      "processed_at": "2026-11-18 11:33:42 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=RYOBI+PBP004",
+      "raw_html_file": "https://serpapi.com/searches/369uN9PepwMktUQniORhHHc6f6fv78vSzx5tSggAU2s/6afd8d164bd8571354a73dfb.html",
+      "total_time_taken": 2.05
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "RYOBI PBP004",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 156,
+      "query_displayed": "RYOBI PBP004",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B09HDZ5MPV",
+        "title": "TTI Ryobi PBP004 ONE+ High Performance 18 Volts Lithium-Ion 4.0 Ah Battery",
+        "link": "https://www.amazon.com/TTI-PBP004-Performance-Lithium-Ion-Battery/dp/B09HDZ5MPV/ref=sr_1_1?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-1",
+        "link_clean": "https://www.amazon.com/TTI-PBP004-Performance-Lithium-Ion-Battery/dp/B09HDZ5MPV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09HDZ5MPV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61Jf2k9IURL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1500,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$56.82",
+        "extracted_price": 56.82,
+        "delivery": [
+          "FREE delivery Mon, Nov 23",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "stock": "Only 3 left in stock - order soon.",
+        "more_buying_choices": "$47.79 (40+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HDZ5MPV/ref=sr_1_1_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-1",
+        "purchase_options": [
+          {
+            "primary_price": "$56.82",
+            "extracted_primary_price": 56.82,
+            "more_buying_choices": "$47.79 (40+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09HDZ5MPV/ref=sr_1_1_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-1"
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B0GGGN8ZLL",
+        "sponsored": true,
+        "title": "2Packs 8.0Ah P108 Replacement for Ryobi 18V Battery Compatible with Ryobi Battery P107 P104 P105 P102 P103 P122 P109 PBP004 PBP005, with P117 18 Volt Charger",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9hdGY6MzAxMzg3MDE5NDUyNDAyOjowOjo&url=%2FANTRobut-Replacement-Battery-Compatible-Charger%2Fdp%2FB0GGGN8ZLL%2Fref%3Dsr_1_2_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-2-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9hdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0GGGN8ZLL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GGGN8ZLL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71GXgCphHkL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 2,
+        "price": "$58.99",
+        "extracted_price": 58.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$58.99",
+            "extracted_primary_price": 58.99
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B0H8NDDV1Z",
+        "sponsored": true,
+        "brand": "Bonacell",
+        "title": "2Pack 8.0Ah Replacement for Ryobi 18V Battery Compatible with Ryobi 18 Volt Battery ONE+ P102 P103 P104 P105 P107 P109 P122 PBP005 PBP004 PBP003 PBP002 RB18L50 BPL1820 Cordless Power Tools",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9hdGY6MzAxNjIzNjYzNDkwMDAyOjowOjo&url=%2FBonacell-Replacement-Battery-Compatible-Cordless%2Fdp%2FB0H8NDDV1Z%2Fref%3Dsr_1_3_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-3-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9hdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0H8NDDV1Z/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H8NDDV1Z&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71l0VOFzolL._AC_UL320_.jpg",
+        "rating": 4.2,
+        "reviews": 97,
+        "price": "$42.99",
+        "extracted_price": 42.99,
+        "price_unit": "$21.50/count",
+        "extracted_price_unit": 21.5,
+        "old_price": "$49.99",
+        "extracted_old_price": 49.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 23",
+          "Or fastest delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$42.99",
+            "extracted_primary_price": 42.99,
+            "old_primary_price": "$49.99",
+            "extracted_old_primary_price": 49.99
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B0G43M2G62",
+        "sponsored": true,
+        "title": "3.0Ah Replacement for Ryobi 18V Battery Compatible with Ryobi 18 Volt Lithium Battery ONE+ Plus P102 P103 P104 P105 P107 P108 P109 PBP002 PBP003 PBP004 PBP005 Cordless Tools",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9hdGY6MzAxMzM1NzQwMDkxNjAyOjowOjo&url=%2FKoedsion-Replacement-Compatible-P103-Cordless%2Fdp%2FB0G43M2G62%2Fref%3Dsr_1_4_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-4-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9hdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0G43M2G62/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0G43M2G62&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61r+vKpOYrL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 88,
+        "price": "$28.99",
+        "extracted_price": 28.99,
+        "price_unit": "$14.50/count",
+        "extracted_price_unit": 14.5,
+        "delivery": [
+          "FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$28.99",
+            "extracted_primary_price": 28.99
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B07RNMR33J",
+        "badges": [
+          "Overall Pick"
+        ],
+        "brand": "RYOBI",
+        "title": "P129 18V ONE+ High Capacity 4.0 Ah Battery (2-Pack)",
+        "link": "https://www.amazon.com/RYOBI-P129-Capacity-Battery-2-Pack/dp/B07RNMR33J/ref=sr_1_5?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-5",
+        "link_clean": "https://www.amazon.com/RYOBI-P129-Capacity-Battery-2-Pack/dp/B07RNMR33J/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07RNMR33J&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71lTkLXGX7L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 128,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$125.00",
+        "extracted_price": 125,
+        "delivery": [
+          "FREE delivery Wed, Nov 25"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "more_buying_choices": "$113.00 (14+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07RNMR33J/ref=sr_1_5_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-5",
+        "purchase_options": [
+          {
+            "primary_price": "$125.00",
+            "extracted_primary_price": 125,
+            "more_buying_choices": "$113.00 (14+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07RNMR33J/ref=sr_1_5_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-5"
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B0184Y2GSM",
+        "brand": "RYOBI",
+        "title": "P108 18V High Capacity Lithium Ion Battery",
+        "link": "https://www.amazon.com/Ryobi-P108-Capacity-Lithium-Battery/dp/B0184Y2GSM/ref=sr_1_6?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-6",
+        "link_clean": "https://www.amazon.com/Ryobi-P108-Capacity-Lithium-Battery/dp/B0184Y2GSM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0184Y2GSM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61wdlnJe8zL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 73,
+        "price": "$64.00",
+        "extracted_price": 64,
+        "delivery": [
+          "FREE delivery Fri, Nov 27",
+          "Or fastest delivery Fri, Nov 20"
+        ],
+        "stock": "Only 12 left in stock - order soon.",
+        "more_buying_choices": "$58.36 (10 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0184Y2GSM/ref=sr_1_6_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-6",
+        "purchase_options": [
+          {
+            "primary_price": "$64.00",
+            "extracted_primary_price": 64,
+            "more_buying_choices": "$58.36 (10 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0184Y2GSM/ref=sr_1_6_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-6"
+          }
+        ]
+      },
+      {
+        "position": 7,
+        "asin": "B09G1WD2CG",
+        "brand": "RYOBI",
+        "title": "ONE+ 18V Lithium-Ion 4.0 Ah Rechargeable Battery, ABS Plastic, Up to 3X Runtime vs 1.5Ah, LED Fuel Gauge, Black, PBP005",
+        "link": "https://www.amazon.com/Ryobi-PBP005-ONE-Lithium-Ion-Battery/dp/B09G1WD2CG/ref=sr_1_7?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-7",
+        "link_clean": "https://www.amazon.com/Ryobi-PBP005-ONE-Lithium-Ion-Battery/dp/B09G1WD2CG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09G1WD2CG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51ZWjIiSBCL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 5900,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$72.00",
+        "extracted_price": 72,
+        "delivery": [
+          "FREE delivery Sat, Nov 21"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "more_buying_choices": "$61.99 (19 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09G1WD2CG/ref=sr_1_7_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-7",
+        "purchase_options": [
+          {
+            "primary_price": "$72.00",
+            "extracted_primary_price": 72,
+            "more_buying_choices": "$61.99 (19 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09G1WD2CG/ref=sr_1_7_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-7"
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B0HJ5BLNJV",
+        "title": "8Ah 18V P108 Replacement for Ryobi 18V Battery (2 Pack)",
+        "link": "https://www.amazon.com/KEKTVIP-P108-Replacement-Battery-Capacity/dp/B0HJ5BLNJV/ref=sr_1_8?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-8",
+        "link_clean": "https://www.amazon.com/KEKTVIP-P108-Replacement-Battery-Capacity/dp/B0HJ5BLNJV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HJ5BLNJV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61f6Px73hBL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 28,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$45.99",
+        "extracted_price": 45.99,
+        "price_unit": "$23.00/count",
+        "extracted_price_unit": 23,
+        "old_price": "$69.99",
+        "extracted_old_price": 69.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$45.99",
+            "extracted_primary_price": 45.99,
+            "old_primary_price": "$69.99",
+            "extracted_old_primary_price": 69.99
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B071G7ZGQV",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/Biswaye-Chemistry-Battery-Charger-P117/dp/B071G7ZGQV/ref=sr_1_9_so_BATTERY_CHARGER?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-9",
+        "title": "P117 18V Battery Fast Charger Compatible with Ryobi 12V-18V One+ Battery",
+        "link": "https://www.amazon.com/Biswaye-Chemistry-Battery-Charger-P117/dp/B071G7ZGQV/ref=sr_1_9?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-9",
+        "link_clean": "https://www.amazon.com/Biswaye-Chemistry-Battery-Charger-P117/dp/B071G7ZGQV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B071G7ZGQV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/616behv7U6L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 1600,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$19.99",
+        "extracted_price": 19.99,
+        "old_price": "$21.99",
+        "extracted_old_price": 21.99,
+        "offers": [
+          "Exclusive Prime price"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$19.99",
+            "extracted_primary_price": 19.99,
+            "old_primary_price": "$21.99",
+            "extracted_old_primary_price": 21.99
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B0H1VT5QBW",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/GloryTask-90000mWh-Capacity-Replacement-%EF%BC%8CCompatible/dp/B0H1VT5QBW/ref=sr_1_10_so_BATTERY?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-10",
+        "title": "2Pack Upgrade 90000mWh High Capacity Replacement for Ryobi 18V Battery ，Compatible with Ryobi 18V ONE+ System Cordless Power Tools and Charger",
+        "link": "https://www.amazon.com/GloryTask-90000mWh-Capacity-Replacement-%EF%BC%8CCompatible/dp/B0H1VT5QBW/ref=sr_1_10?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-10",
+        "link_clean": "https://www.amazon.com/GloryTask-90000mWh-Capacity-Replacement-%EF%BC%8CCompatible/dp/B0H1VT5QBW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H1VT5QBW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71yFxoNvVBL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 193,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$37.99",
+        "extracted_price": 37.99,
+        "price_unit": "$19.00/count",
+        "extracted_price_unit": 19,
+        "old_price": "$40.99",
+        "extracted_old_price": 40.99,
+        "offers": [
+          "Exclusive Prime price"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$37.99",
+            "extracted_primary_price": 37.99,
+            "old_primary_price": "$40.99",
+            "extracted_old_primary_price": 40.99
+          }
+        ]
+      },
+      {
+        "position": 11,
+        "asin": "B0H1DG24VR",
+        "sponsored": true,
+        "title": "Battery Charger for Ryobi 18V Battery(Tool Only) Dual Port Station",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9tdGY6MzAxMzM0ODY2NTk1NjAyOjowOjo&url=%2FBattery-Charger-Station-Compatible-Batteries%2Fdp%2FB0H1DG24VR%2Fref%3Dsr_1_11_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-11-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0H1DG24VR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H1DG24VR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71dLARRLP8L._AC_UL320_.jpg",
+        "rating": 3.8,
+        "reviews": 39,
+        "price": "$26.99",
+        "extracted_price": 26.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$26.99",
+            "extracted_primary_price": 26.99
+          }
+        ]
+      },
+      {
+        "position": 12,
+        "asin": "B0GCZXRL1D",
+        "sponsored": true,
+        "title": "Upgraded 3A Fast Charger P117 12-18V Replacement for Ryobi 18V Battery Charger P117 P118 P135 PCG002 for Ryobi Battery P100 P102 P105 P107 P108 P109 PBP004 One+ Lithium NiCad NiMh with LED Indicator",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9tdGY6MzAxNDM1NDE4NzE0ODAyOjowOjo&url=%2FUpgraded-Charger-Replacement-Battery-Indicator%2Fdp%2FB0GCZXRL1D%2Fref%3Dsr_1_12_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-12-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0GCZXRL1D/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GCZXRL1D&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/610P89pEnmL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 28,
+        "price": "$22.99",
+        "extracted_price": 22.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$22.99",
+            "extracted_primary_price": 22.99
+          }
+        ]
+      },
+      {
+        "position": 13,
+        "asin": "B0FMRJ2TBG",
+        "sponsored": true,
+        "title": "7.0Ah 18V 2 Pack Replacement for Ryobi 18V Battery P108",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9tdGY6MzAxNTE1NTE5MDE1OTAyOjowOjo&url=%2FTHISSENERGYSYSTEM-P108-Replacement-Battery-Indicator%2Fdp%2FB0FMRJ2TBG%2Fref%3Dsr_1_13_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-13-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0FMRJ2TBG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FMRJ2TBG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61ItxnQPjFL._AC_UL320_.jpg",
+        "rating": 4.2,
+        "reviews": 88,
+        "price": "$39.99",
+        "extracted_price": 39.99,
+        "price_unit": "$20.00/count",
+        "extracted_price_unit": 20,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$39.99",
+            "extracted_primary_price": 39.99
+          }
+        ]
+      },
+      {
+        "position": 14,
+        "asin": "B0GZNSL4DP",
+        "sponsored": true,
+        "title": "2-Pack 8.0Ah Replacement for Ryobi 18V Battery and Charger Combo, Compatible with ONE+ 18V Lithium Battery P102 P103 P104 P105 P107 P108 P109 P122 P190 PBP004 PBP005 RB18L50 Cordless Power Tools",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9tdGY6MzAxNTM2MDkyNTM4MDAyOjowOjo&url=%2FReplacement-Battery-Compatible-P108-Cordless%2Fdp%2FB0GZNSL4DP%2Fref%3Dsr_1_14_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-14-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0GZNSL4DP/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GZNSL4DP&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71XCixD5M1L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 13,
+        "price": "$66.49",
+        "extracted_price": 66.49,
+        "price_unit": "$33.25/count",
+        "extracted_price_unit": 33.25,
+        "old_price": "$69.99",
+        "extracted_old_price": 69.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$66.49",
+            "extracted_primary_price": 66.49,
+            "old_primary_price": "$69.99",
+            "extracted_old_primary_price": 69.99
+          }
+        ]
+      },
+      {
+        "position": 15,
+        "asin": "B0HF765SL8",
+        "title": "Replace Ryobi 18V Battery Charger,4-Port Fast Multi-Battery Charging Station, Fits Ryobi 12V-18V One+ Batteries P102 P103 P105 P107 P108 P109 P189 P197 PBP002 PBP005",
+        "link": "https://www.amazon.com/Replace-Battery-Multi-Battery-Charging-Batteries/dp/B0HF765SL8/ref=sr_1_15?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-15",
+        "link_clean": "https://www.amazon.com/Replace-Battery-Multi-Battery-Charging-Batteries/dp/B0HF765SL8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HF765SL8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61pSW--ejrL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 117,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$59.99",
+        "extracted_price": 59.99,
+        "offers": [
+          "Save 5% on 2 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$59.99",
+            "extracted_primary_price": 59.99
+          }
+        ]
+      },
+      {
+        "position": 16,
+        "asin": "B09ZBK3BJJ",
+        "title": "ONEAND 18V Cordless 5 in. Random Orbit Sander Tool ONLY",
+        "link": "https://www.amazon.com/ONEAND-Cordless-Battery-Charger-Separately/dp/B09ZBK3BJJ/ref=sr_1_16?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-16",
+        "link_clean": "https://www.amazon.com/ONEAND-Cordless-Battery-Charger-Separately/dp/B09ZBK3BJJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09ZBK3BJJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71dYoKIrD9L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 870,
+        "bought_last_month": "600+ bought in past month",
+        "price": "$52.18",
+        "extracted_price": 52.18,
+        "old_price": "$56.20",
+        "extracted_old_price": 56.2,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "more_buying_choices": "$48.60 (59+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09ZBK3BJJ/ref=sr_1_16_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-16",
+        "purchase_options": [
+          {
+            "primary_price": "$52.18",
+            "extracted_primary_price": 52.18,
+            "old_primary_price": "$56.20",
+            "extracted_old_primary_price": 56.2,
+            "more_buying_choices": "$48.60 (59+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09ZBK3BJJ/ref=sr_1_16_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-16"
+          }
+        ]
+      },
+      {
+        "position": 17,
+        "asin": "B0BRL8B6DC",
+        "brand": "RYOBI",
+        "title": "ONE+ HP 18V Brushless Cordless 4-Mode 1/2 in. Impact Wrench Kit with Sockets, 4.0 Ah Battery, and Charger",
+        "link": "https://www.amazon.com/RYOBI-Brushless-Cordless-Sockets-Battery/dp/B0BRL8B6DC/ref=sr_1_17?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-17",
+        "link_clean": "https://www.amazon.com/RYOBI-Brushless-Cordless-Sockets-Battery/dp/B0BRL8B6DC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BRL8B6DC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41pJIlyIFvL._AC_UL320_.jpg",
+        "rating": 3.5,
+        "reviews": 6,
+        "price": "$325.00",
+        "extracted_price": 325,
+        "delivery": [
+          "FREE delivery Nov 27 - Dec 1",
+          "Or fastest delivery Nov 25 - 30"
+        ],
+        "stock": "Only 3 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$325.00",
+            "extracted_primary_price": 325
+          }
+        ]
+      },
+      {
+        "position": 18,
+        "asin": "B01LPCPBQ4",
+        "brand": "RYOBI",
+        "title": "18V ONE+ Blower (Battery & Charger Excluded)",
+        "link": "https://www.amazon.com/Ryobi-OBL1820S-Cordless-Blower-Speed/dp/B01LPCPBQ4/ref=sr_1_18?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-18",
+        "link_clean": "https://www.amazon.com/Ryobi-OBL1820S-Cordless-Blower-Speed/dp/B01LPCPBQ4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01LPCPBQ4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61ibf20KRLL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 4100,
+        "price": "$132.00",
+        "extracted_price": 132,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$127.99 (5+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01LPCPBQ4/ref=sr_1_18_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-18",
+        "purchase_options": [
+          {
+            "primary_price": "$132.00",
+            "extracted_primary_price": 132,
+            "more_buying_choices": "$127.99 (5+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01LPCPBQ4/ref=sr_1_18_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-18"
+          }
+        ]
+      },
+      {
+        "position": 19,
+        "asin": "B07GV9JQDT",
+        "sponsored": true,
+        "brand": "DTK",
+        "title": "Upgraded 2Packs P108 18V Battery Replacement for Ryobi 18V ONE+ Battery Fit P102 P103 P104 P105 P107 P109 P122 PBP002 PBP003 PBP004 PBP005 RB18L50 Cordless Tool 6.2Ah Batteries with Indicator",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9tdGY6MzAwMDAxOTk1ODE4MjAyOjowOjo&url=%2FDTK-Battery-Replacement-Lithium-ion-Cordless%2Fdp%2FB07GV9JQDT%2Fref%3Dsr_1_19_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-19-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B07GV9JQDT/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07GV9JQDT&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/7133B1MqCkL._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 1400,
+        "price": "$39.90",
+        "extracted_price": 39.9,
+        "price_unit": "$19.95/count",
+        "extracted_price_unit": 19.95,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Mon, Nov 23"
+        ],
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51-XBqrXUyL._SS200_FMpng_.png",
+            "certified_by": "Recycled Claim Standard Blended",
+            "certified_info": "Recycled Claim Standard (RCS Blended) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product. The purchase of Recycled Claim Standard (RCS) certified products demonstrates demand for recycled materials. Climate Pledge Friendly requires the product contain at least 50% certified RCS Blended material by weight."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$39.90",
+            "extracted_primary_price": 39.9
+          }
+        ]
+      },
+      {
+        "position": 20,
+        "asin": "B0D41NRZFR",
+        "sponsored": true,
+        "brand": "Bonacell",
+        "title": "2Pack Replacement for Ryobi 18V Battery Lithium Compatible with 18 Volt Battery ONE+ Plus P102 P103 P104 P105 P106 P108 P107 P109 P190 PBP002 PBP003 PBP004 PBP005 Cordless Power Tools",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9tdGY6MzAxNjg2MTQxNDg1OTAyOjowOjo&url=%2FBonacell-Replacement-Compatible-P107-Cordless%2Fdp%2FB0D41NRZFR%2Fref%3Dsr_1_20_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-20-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0D41NRZFR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D41NRZFR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/7115ceFzzDL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 872,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "price_unit": "$15.00/count",
+        "extracted_price_unit": 15,
+        "delivery": [
+          "FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 8 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99
+          }
+        ]
+      },
+      {
+        "position": 21,
+        "asin": "B0GQ62XV3Q",
+        "sponsored": true,
+        "badges": [
+          "Save 5%"
+        ],
+        "title": "2Pack 8.0Ah Replacement for Ryobi 18V Battery and Charger Combo Compatible with Ryobi 18 Volt Lithium Battery ONE+ Plus P102 P103 P104 P105 P106 P108 P107 P109 P190 PBP003 PBP004 Cordless Power Tools",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9tdGY6MzAxMzQ0NjAzMTY0MDAyOjowOjo&url=%2FEliemppin-Replacement-Batteries-Compatible-P108%2Fdp%2FB0GQ62XV3Q%2Fref%3Dsr_1_21_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-21-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0GQ62XV3Q/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GQ62XV3Q&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71WiYT4b3mL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 27,
+        "price": "$86.63",
+        "extracted_price": 86.63,
+        "old_price": "$91.19",
+        "extracted_old_price": 91.19,
+        "offers": [
+          "Lowest price in 30 days"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$86.63",
+            "extracted_primary_price": 86.63,
+            "old_primary_price": "$91.19",
+            "extracted_old_primary_price": 91.19
+          }
+        ]
+      },
+      {
+        "position": 22,
+        "asin": "B0BXKKP71K",
+        "sponsored": true,
+        "brand": "Lizone",
+        "title": "P117 P193 18V Battery Charger Compatible with Ryobi 18V Battery",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9tdGY6MzAxNTI5OTc4MTk4MDAyOjowOjo&url=%2FLizone-PBP005-Battery-Charger-Replacement%2Fdp%2FB0BXKKP71K%2Fref%3Dsr_1_22_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-22-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0BXKKP71K/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BXKKP71K&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/515dnXawLOL._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 16,
+        "price": "$31.99",
+        "extracted_price": 31.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "small_business": true,
+        "purchase_options": [
+          {
+            "primary_price": "$31.99",
+            "extracted_primary_price": 31.99
+          }
+        ]
+      },
+      {
+        "position": 23,
+        "asin": "B01KE6FV7G",
+        "brand": "Ryobi",
+        "title": "Expand-It 40-Volt Lithium-Ion Cordless Attachment Capable Power Head (Battery and Charger is not Included)",
+        "link": "https://www.amazon.com/Ryobi-Lithium-Ion-Cordless-Attachment-included/dp/B01KE6FV7G/ref=sr_1_23?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-23",
+        "link_clean": "https://www.amazon.com/Ryobi-Lithium-Ion-Cordless-Attachment-included/dp/B01KE6FV7G/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01KE6FV7G&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61UO0OWh9fL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 95,
+        "price": "$75.00",
+        "extracted_price": 75,
+        "delivery": [
+          "FREE delivery Nov 27 - Dec 1",
+          "Or fastest delivery Nov 25 - 30"
+        ],
+        "more_buying_choices": "$74.99 (3+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01KE6FV7G/ref=sr_1_23_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-23",
+        "purchase_options": [
+          {
+            "primary_price": "$75.00",
+            "extracted_primary_price": 75,
+            "more_buying_choices": "$74.99 (3+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01KE6FV7G/ref=sr_1_23_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-23"
+          }
+        ]
+      },
+      {
+        "position": 24,
+        "asin": "B0H1S2BGF6",
+        "brand": "RYOBI",
+        "title": "ONEAND 18V Lithium-ION Starter High Performance KIT with 2.0 AH Battery, 4.0 AH Battery, and Charger",
+        "link": "https://www.amazon.com/RYOBI-Lithium-ION-Starter-Performance-Battery/dp/B0H1S2BGF6/ref=sr_1_24?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-24",
+        "link_clean": "https://www.amazon.com/RYOBI-Lithium-ION-Starter-Performance-Battery/dp/B0H1S2BGF6/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H1S2BGF6&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51I6ZJC9TKL._AC_UL320_.jpg",
+        "rating": 4.9,
+        "reviews": 36,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$89.99",
+        "extracted_price": 89.99,
+        "old_price": "$94.99",
+        "extracted_old_price": 94.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Sat, Nov 21",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$84.59 (33+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0H1S2BGF6/ref=sr_1_24_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-24",
+        "purchase_options": [
+          {
+            "primary_price": "$89.99",
+            "extracted_primary_price": 89.99,
+            "old_primary_price": "$94.99",
+            "extracted_old_primary_price": 94.99,
+            "more_buying_choices": "$84.59 (33+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0H1S2BGF6/ref=sr_1_24_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-24"
+          }
+        ]
+      },
+      {
+        "position": 25,
+        "asin": "B00CN2ZH8I",
+        "brand": "RYOBI",
+        "title": "P108 4AH One+ High Capacity Lithium Ion Battery For RYOBI Power Tools (Single Battery)",
+        "link": "https://www.amazon.com/Ryobi-Capacity-Lithium-Battery-Single/dp/B00CN2ZH8I/ref=sr_1_25?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-25",
+        "link_clean": "https://www.amazon.com/Ryobi-Capacity-Lithium-Battery-Single/dp/B00CN2ZH8I/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00CN2ZH8I&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71Ajyf-PLhL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1800,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$72.99",
+        "extracted_price": 72.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "more_buying_choices": "$49.53 (13+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00CN2ZH8I/ref=sr_1_25_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-25",
+        "purchase_options": [
+          {
+            "primary_price": "$72.99",
+            "extracted_primary_price": 72.99,
+            "more_buying_choices": "$49.53 (13+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00CN2ZH8I/ref=sr_1_25_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-25"
+          }
+        ]
+      },
+      {
+        "position": 26,
+        "asin": "B07N54F9PL",
+        "brand": "RYOBI",
+        "title": "P192 Lithium+HP High performance battery 3X",
+        "link": "https://www.amazon.com/Ryobi-P192-Lithium-performance-battery/dp/B07N54F9PL/ref=sr_1_26?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-26",
+        "link_clean": "https://www.amazon.com/Ryobi-P192-Lithium-performance-battery/dp/B07N54F9PL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07N54F9PL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61wdlnJe8zL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 336,
+        "price": "$72.99",
+        "extracted_price": 72.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "more_buying_choices": "$59.99 (11 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07N54F9PL/ref=sr_1_26_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-26",
+        "purchase_options": [
+          {
+            "primary_price": "$72.99",
+            "extracted_primary_price": 72.99,
+            "more_buying_choices": "$59.99 (11 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07N54F9PL/ref=sr_1_26_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-26"
+          }
+        ]
+      },
+      {
+        "position": 27,
+        "asin": "B09XGFJZL2",
+        "sponsored": true,
+        "brand": "SKYON",
+        "title": "18V P117 Rapid Charger for P117 P118 P131 Battery Charger Compatible with Ryobi One+ P193 P192 P191 P190 P189 P194 P145 P102 P107 P108 PBP007 PBP005 PBP006 PBP004 PBP003 PBP002 RB18L50 Battery",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo3NDY3NjY5MjI5NjQ2NDY6MTc5NTAwMTYyMzpzcF9tdGY6MzAxNTQwNDk1MDAwMDAyOjowOjo&url=%2FSKYON-12V-18V-Chemistry-Compatible-TCP117%2Fdp%2FB09XGFJZL2%2Fref%3Dsr_1_27_sspa%3Fdib%3DeyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c%26dib_tag%3Dse%26keywords%3DRYOBI%2BPBP004%26qid%3D1795001623%26sr%3D8-27-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B09XGFJZL2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09XGFJZL2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/611gH8N5iDL._AC_UL320_.jpg",
+        "rating": 4.9,
+        "reviews": 24,
+        "price": "$30.99",
+        "extracted_price": 30.99,
+        "delivery": [
+          "FREE delivery Nov 30 - Dec 4",
+          "Or fastest delivery Wed, Nov 25"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$30.99",
+            "extracted_primary_price": 30.99
+          }
+        ]
+      },
+      {
+        "position": 28,
+        "asin": "B0GZNSL4DP",
+        "title": "2-Pack 8.0Ah Replacement for Ryobi 18V Battery and Charger Combo, Compatible with ONE+ 18V Lithium Battery P102 P103 P104 P105 P107 P108 P109 P122 P190 PBP004 PBP005 RB18L50 Cordless Power Tools",
+        "link": "https://www.amazon.com/Replacement-Battery-Compatible-P108-Cordless/dp/B0GZNSL4DP/ref=sr_1_28?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-28",
+        "link_clean": "https://www.amazon.com/Replacement-Battery-Compatible-P108-Cordless/dp/B0GZNSL4DP/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GZNSL4DP&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71XCixD5M1L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 13,
+        "price": "$66.49",
+        "extracted_price": 66.49,
+        "price_unit": "$33.25/count",
+        "extracted_price_unit": 33.25,
+        "old_price": "$69.99",
+        "extracted_old_price": 69.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$66.49",
+            "extracted_primary_price": 66.49,
+            "old_primary_price": "$69.99",
+            "extracted_old_primary_price": 69.99
+          }
+        ]
+      },
+      {
+        "position": 29,
+        "asin": "B09BL9VXZX",
+        "brand": "RYOBI",
+        "title": "ONE+ 18V HIGH Performance Lithium-Ion Compact Battery PBP003",
+        "link": "https://www.amazon.com/RYOBI-Performance-Lithium-Ion-Compact-Battery/dp/B09BL9VXZX/ref=sr_1_29?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-29",
+        "link_clean": "https://www.amazon.com/RYOBI-Performance-Lithium-Ion-Compact-Battery/dp/B09BL9VXZX/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09BL9VXZX&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61v2wCIZ91L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 908,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$39.90",
+        "extracted_price": 39.9,
+        "delivery": [
+          "FREE delivery Tue, Nov 24"
+        ],
+        "stock": "Only 18 left in stock - order soon.",
+        "more_buying_choices": "$29.63 (25 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09BL9VXZX/ref=sr_1_29_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-29",
+        "purchase_options": [
+          {
+            "primary_price": "$39.90",
+            "extracted_primary_price": 39.9,
+            "more_buying_choices": "$29.63 (25 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09BL9VXZX/ref=sr_1_29_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-29"
+          }
+        ]
+      },
+      {
+        "position": 30,
+        "asin": "B0HKC3KFNH",
+        "title": "2Pack 8.0Ah P108 Replacement for Ryobi 18V Battery Compatible with Ryobi ONE+ 18V Battery P102 P103 P104 P105 P107 P108 PBP002 PBP003 PBP004 PBP005 P190 P191 P192 P193 Cordless Power Tools",
+        "link": "https://www.amazon.com/JUNWOOD-Replacement-Battery-Compatible-Cordless/dp/B0HKC3KFNH/ref=sr_1_30?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-30",
+        "link_clean": "https://www.amazon.com/JUNWOOD-Replacement-Battery-Compatible-Cordless/dp/B0HKC3KFNH/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HKC3KFNH&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71hL04+C6XL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 12,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$49.99",
+        "extracted_price": 49.99,
+        "old_price": "$55.99",
+        "extracted_old_price": 55.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$49.99",
+            "extracted_primary_price": 49.99,
+            "old_primary_price": "$55.99",
+            "extracted_old_primary_price": 55.99
+          }
+        ]
+      },
+      {
+        "position": 31,
+        "asin": "B0FF2BM1SM",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/%E3%80%90Upgraded%E3%80%916-0Ah-Replacement-Battery-Compatible-Cordless/dp/B0FF2BM1SM/ref=sr_1_31_so_BATTERY_CHARGER?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-31",
+        "title": "【Upgraded】 6.0Ah Replacement for Ryobi 18V Battery PBP005 PBP006 PBP004 PBP007 PBP003 PBP002 PBP1104 PBP1008 PBP1012 P108 P102 P103 P104 P105, Compatible with Ryobi ONE+ Cordless Power Tool & Charger",
+        "link": "https://www.amazon.com/%E3%80%90Upgraded%E3%80%916-0Ah-Replacement-Battery-Compatible-Cordless/dp/B0FF2BM1SM/ref=sr_1_31?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-31",
+        "link_clean": "https://www.amazon.com/%E3%80%90Upgraded%E3%80%916-0Ah-Replacement-Battery-Compatible-Cordless/dp/B0FF2BM1SM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FF2BM1SM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61kj1X3wFZL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 734,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 32,
+        "asin": "B0DQL12XL4",
+        "title": "2Pack 8.0Ah Replacement for Ryobi 18V Lithium Battey Compatible with Robi 18 Volt Battery ONE+ Plus P102 P103 P104 P105 P106 P108 P107 P109 P190 PBP002 PBP003 PBP004 PBP005 Cordless Power Tools",
+        "link": "https://www.amazon.com/Battery-Compatible-Ryobi-Replacement-Rechargeable/dp/B0DQL12XL4/ref=sr_1_32?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-32",
+        "link_clean": "https://www.amazon.com/Battery-Compatible-Ryobi-Replacement-Rechargeable/dp/B0DQL12XL4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DQL12XL4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71Cc04vPNjL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 1200,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$56.99",
+        "extracted_price": 56.99,
+        "price_unit": "$28.50/count",
+        "extracted_price_unit": 28.5,
+        "delivery": [
+          "Join Prime to get FREE delivery Sat, Nov 21",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$56.99",
+            "extracted_primary_price": 56.99
+          }
+        ]
+      },
+      {
+        "position": 33,
+        "asin": "B0DT15YRZZ",
+        "brand": "TenHutt",
+        "title": "P118 Replacement for Ryobi 18V Battery Charger PCG002 PCG004C PCG008, Compatible with Ryobi ONE+ 18 Volt Lithium-Ion Batteries PBP002 PBP003 PBP004 PBP005 PBP006 PBP007 PBP1008 PBP1012 PBP1104",
+        "link": "https://www.amazon.com/TenHutt-Replacement-Compatible-Lithium-Ion-Batteries/dp/B0DT15YRZZ/ref=sr_1_33?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-33",
+        "link_clean": "https://www.amazon.com/TenHutt-Replacement-Compatible-Lithium-Ion-Batteries/dp/B0DT15YRZZ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DT15YRZZ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/7107WpwzWML._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 71,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$17.99",
+        "extracted_price": 17.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "more_buying_choices": "$16.19 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DT15YRZZ/ref=sr_1_33_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-33",
+        "purchase_options": [
+          {
+            "primary_price": "$17.99",
+            "extracted_primary_price": 17.99,
+            "more_buying_choices": "$16.19 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DT15YRZZ/ref=sr_1_33_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-33"
+          }
+        ]
+      },
+      {
+        "position": 34,
+        "asin": "B07TTJ2T3W",
+        "title": "18V Battery and Charger Combo for Ryobi 18 Volt Cordless Tools Battery and P118B Charger, 18V Battery Capacity Output 5.0Ah",
+        "link": "https://www.amazon.com/CELL9102-Battery-Charger-Cordless-Capacity/dp/B07TTJ2T3W/ref=sr_1_34?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-34",
+        "link_clean": "https://www.amazon.com/CELL9102-Battery-Charger-Cordless-Capacity/dp/B07TTJ2T3W/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07TTJ2T3W&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71B4d++MDXL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 570,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$59.99",
+        "extracted_price": 59.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$49.99 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07TTJ2T3W/ref=sr_1_34_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-34",
+        "purchase_options": [
+          {
+            "primary_price": "$59.99",
+            "extracted_primary_price": 59.99,
+            "more_buying_choices": "$49.99 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07TTJ2T3W/ref=sr_1_34_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-34"
+          }
+        ]
+      },
+      {
+        "position": 35,
+        "asin": "B0G43M2G62",
+        "title": "3.0Ah Replacement for Ryobi 18V Battery Compatible with Ryobi 18 Volt Lithium Battery ONE+ Plus P102 P103 P104 P105 P107 P108 P109 PBP002 PBP003 PBP004 PBP005 Cordless Tools",
+        "link": "https://www.amazon.com/Koedsion-Replacement-Compatible-P103-Cordless/dp/B0G43M2G62/ref=sr_1_35?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-35",
+        "link_clean": "https://www.amazon.com/Koedsion-Replacement-Compatible-P103-Cordless/dp/B0G43M2G62/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0G43M2G62&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61r+vKpOYrL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 88,
+        "price": "$28.99",
+        "extracted_price": 28.99,
+        "price_unit": "$14.50/count",
+        "extracted_price_unit": 14.5,
+        "delivery": [
+          "FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$28.99",
+            "extracted_primary_price": 28.99
+          }
+        ]
+      },
+      {
+        "position": 36,
+        "asin": "B0GGGN8ZLL",
+        "title": "2Packs 8.0Ah P108 Replacement for Ryobi 18V Battery Compatible with Ryobi Battery P107 P104 P105 P102 P103 P122 P109 PBP004 PBP005, with P117 18 Volt Charger",
+        "link": "https://www.amazon.com/ANTRobut-Replacement-Battery-Compatible-Charger/dp/B0GGGN8ZLL/ref=sr_1_36?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-36",
+        "link_clean": "https://www.amazon.com/ANTRobut-Replacement-Battery-Compatible-Charger/dp/B0GGGN8ZLL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GGGN8ZLL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71GXgCphHkL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 2,
+        "price": "$58.99",
+        "extracted_price": 58.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$58.99",
+            "extracted_primary_price": 58.99
+          }
+        ]
+      },
+      {
+        "position": 37,
+        "asin": "B0D41NRZFR",
+        "brand": "Bonacell",
+        "title": "2Pack Replacement for Ryobi 18V Battery Lithium Compatible with 18 Volt Battery ONE+ Plus P102 P103 P104 P105 P106 P108 P107 P109 P190 PBP002 PBP003 PBP004 PBP005 Cordless Power Tools",
+        "link": "https://www.amazon.com/Bonacell-Replacement-Compatible-P107-Cordless/dp/B0D41NRZFR/ref=sr_1_37?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-37",
+        "link_clean": "https://www.amazon.com/Bonacell-Replacement-Compatible-P107-Cordless/dp/B0D41NRZFR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D41NRZFR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/7115ceFzzDL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 872,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "price_unit": "$15.00/count",
+        "extracted_price_unit": 15,
+        "delivery": [
+          "FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 8 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99
+          }
+        ]
+      },
+      {
+        "position": 38,
+        "asin": "B0H8NDDV1Z",
+        "brand": "Bonacell",
+        "title": "2Pack 8.0Ah Replacement for Ryobi 18V Battery Compatible with Ryobi 18 Volt Battery ONE+ P102 P103 P104 P105 P107 P109 P122 PBP005 PBP004 PBP003 PBP002 RB18L50 BPL1820 Cordless Power Tools",
+        "link": "https://www.amazon.com/Bonacell-Replacement-Battery-Compatible-Cordless/dp/B0H8NDDV1Z/ref=sr_1_38?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-38",
+        "link_clean": "https://www.amazon.com/Bonacell-Replacement-Battery-Compatible-Cordless/dp/B0H8NDDV1Z/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H8NDDV1Z&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71l0VOFzolL._AC_UL320_.jpg",
+        "rating": 4.2,
+        "reviews": 97,
+        "price": "$42.99",
+        "extracted_price": 42.99,
+        "price_unit": "$21.50/count",
+        "extracted_price_unit": 21.5,
+        "old_price": "$49.99",
+        "extracted_old_price": 49.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 23",
+          "Or fastest delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$42.99",
+            "extracted_primary_price": 42.99,
+            "old_primary_price": "$49.99",
+            "extracted_old_primary_price": 49.99
+          }
+        ]
+      },
+      {
+        "position": 39,
+        "asin": "B07J5WJF1C",
+        "brand": "RYOBI",
+        "title": "18-Volt ONE+ Lithium-Ion 4.0 Ah High Capacity Battery (2-Pack)",
+        "link": "https://www.amazon.com/Ryobi-18-Volt-Lithium-Ion-Capacity-Battery/dp/B07J5WJF1C/ref=sr_1_39?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-39",
+        "link_clean": "https://www.amazon.com/Ryobi-18-Volt-Lithium-Ion-Capacity-Battery/dp/B07J5WJF1C/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07J5WJF1C&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/719k9QHwN3L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 2800,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$129.94",
+        "extracted_price": 129.94,
+        "price_unit": "$64.97/count",
+        "extracted_price_unit": 64.97,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$99.99 (21+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07J5WJF1C/ref=sr_1_39_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-39",
+        "purchase_options": [
+          {
+            "primary_price": "$129.94",
+            "extracted_primary_price": 129.94,
+            "more_buying_choices": "$99.99 (21+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07J5WJF1C/ref=sr_1_39_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-39"
+          }
+        ]
+      },
+      {
+        "position": 40,
+        "asin": "B0GQ62XV3Q",
+        "badges": [
+          "Save 5%"
+        ],
+        "title": "2Pack 8.0Ah Replacement for Ryobi 18V Battery and Charger Combo Compatible with Ryobi 18 Volt Lithium Battery ONE+ Plus P102 P103 P104 P105 P106 P108 P107 P109 P190 PBP003 PBP004 Cordless Power Tools",
+        "link": "https://www.amazon.com/Eliemppin-Replacement-Batteries-Compatible-P108/dp/B0GQ62XV3Q/ref=sr_1_40?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-40",
+        "link_clean": "https://www.amazon.com/Eliemppin-Replacement-Batteries-Compatible-P108/dp/B0GQ62XV3Q/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GQ62XV3Q&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71WiYT4b3mL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 27,
+        "price": "$86.63",
+        "extracted_price": 86.63,
+        "old_price": "$91.19",
+        "extracted_old_price": 91.19,
+        "offers": [
+          "Lowest price in 30 days"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$86.63",
+            "extracted_primary_price": 86.63,
+            "old_primary_price": "$91.19",
+            "extracted_old_primary_price": 91.19
+          }
+        ]
+      },
+      {
+        "position": 41,
+        "asin": "B0F833QDTM",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/18V-RYOBI-Brushless-Whisper-Blower/dp/B0F833QDTM/ref=sr_1_41_so_LEAF_BLOWER?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-41",
+        "brand": "RYOBI",
+        "title": "18V ONEAND HP BRUSHLESS Cordless 130 MPH 510 CFM Blower Tool ONLY PBLLB01B",
+        "link": "https://www.amazon.com/18V-RYOBI-Brushless-Whisper-Blower/dp/B0F833QDTM/ref=sr_1_41?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-41",
+        "link_clean": "https://www.amazon.com/18V-RYOBI-Brushless-Whisper-Blower/dp/B0F833QDTM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F833QDTM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71IkFvoR-XL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 4,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$159.00 (6 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F833QDTM/ref=sr_1_41_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-41",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$159.00 (6 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F833QDTM/ref=sr_1_41_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-41"
+          }
+        ]
+      },
+      {
+        "position": 42,
+        "asin": "B0DQVMDGPR",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/Cordless-Brushless-Variable-Stroke-Length/dp/B0DQVMDGPR/ref=sr_1_42_so_SAW?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-42",
+        "brand": "RYOBI",
+        "title": "ONE+ HP 18V Cordless Brushless Jig Saw, Variable Speed, 1\" Stroke Length",
+        "link": "https://www.amazon.com/Cordless-Brushless-Variable-Stroke-Length/dp/B0DQVMDGPR/ref=sr_1_42?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-42",
+        "link_clean": "https://www.amazon.com/Cordless-Brushless-Variable-Stroke-Length/dp/B0DQVMDGPR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DQVMDGPR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51xoeBA+lLL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 31,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$175.00 (2 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DQVMDGPR/ref=sr_1_42_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-42",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$175.00 (2 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DQVMDGPR/ref=sr_1_42_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-42"
+          }
+        ]
+      },
+      {
+        "position": 43,
+        "asin": "B09N3MTWBG",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/RYOBI-ONE-Cordless-Backpack-P2860/dp/B09N3MTWBG/ref=sr_1_43_so_PUMP_SPRAYER?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-43",
+        "brand": "RYOBI",
+        "title": "ONEAND 18V Cordless Battery 4 GAL. Backpack Chemical Sprayer with 2.0 AH Battery and C",
+        "link": "https://www.amazon.com/RYOBI-ONE-Cordless-Backpack-P2860/dp/B09N3MTWBG/ref=sr_1_43?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-43",
+        "link_clean": "https://www.amazon.com/RYOBI-ONE-Cordless-Backpack-P2860/dp/B09N3MTWBG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09N3MTWBG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/5155ZRSVXxL._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 38,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$230.58 (2 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09N3MTWBG/ref=sr_1_43_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-43",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$230.58 (2 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09N3MTWBG/ref=sr_1_43_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-43"
+          }
+        ]
+      },
+      {
+        "position": 44,
+        "asin": "B0DRVYGZRJ",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/RYOBI-BRUSHLESS-Cordless-Tool-ONLY-PSBLB01B/dp/B0DRVYGZRJ/ref=sr_1_44_so_LEAF_BLOWER?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-44",
+        "brand": "RYOBI",
+        "title": "ONEAND HP 18V BRUSHLESS Cordless 220 CFM 140 MPH Compact Blower Tool-ONLY PSBLB01B",
+        "link": "https://www.amazon.com/RYOBI-BRUSHLESS-Cordless-Tool-ONLY-PSBLB01B/dp/B0DRVYGZRJ/ref=sr_1_44?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-44",
+        "link_clean": "https://www.amazon.com/RYOBI-BRUSHLESS-Cordless-Tool-ONLY-PSBLB01B/dp/B0DRVYGZRJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DRVYGZRJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/419YwGDM9HL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 1,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$144.82 (3 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DRVYGZRJ/ref=sr_1_44_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-44",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$144.82 (3 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DRVYGZRJ/ref=sr_1_44_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-44"
+          }
+        ]
+      },
+      {
+        "position": 45,
+        "asin": "B0GVCPP12Q",
+        "title": "4 Packs Upgraded 6000mAh P108 Replacement for Ryobi 18V Battery, Compatible with Ryobi 18V ONE+ System Cordless Power Tools and Charger",
+        "link": "https://www.amazon.com/GloryTask-Upgraded-P108-Replacement-Compatible/dp/B0GVCPP12Q/ref=sr_1_45?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-45",
+        "link_clean": "https://www.amazon.com/GloryTask-Upgraded-P108-Replacement-Compatible/dp/B0GVCPP12Q/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GVCPP12Q&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71OgwQsdvIL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 193,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$84.99",
+        "extracted_price": 84.99,
+        "price_unit": "$21.25/count",
+        "extracted_price_unit": 21.25,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$84.99",
+            "extracted_primary_price": 84.99
+          }
+        ]
+      },
+      {
+        "position": 46,
+        "asin": "B0FH9M1GMV",
+        "badges": [
+          "Save 5%"
+        ],
+        "title": "2Pack Upgrade 108000mWh High Capacity Replacement for Ryobi 18V Battery ，Compatible with Ryobi 18V ONE+ System Cordless Power Tools and Charger",
+        "link": "https://www.amazon.com/GloryTask-Replacement-Batteries-P108-Indicator/dp/B0FH9M1GMV/ref=sr_1_46?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-46",
+        "link_clean": "https://www.amazon.com/GloryTask-Replacement-Batteries-P108-Indicator/dp/B0FH9M1GMV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FH9M1GMV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/715P3yUNjzL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 193,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$40.84",
+        "extracted_price": 40.84,
+        "price_unit": "$20.42/count",
+        "extracted_price_unit": 20.42,
+        "old_price": "$42.99",
+        "extracted_old_price": 42.99,
+        "offers": [
+          "Lowest price in 30 days"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$40.84",
+            "extracted_primary_price": 40.84,
+            "old_primary_price": "$42.99",
+            "extracted_old_primary_price": 42.99
+          }
+        ]
+      },
+      {
+        "position": 47,
+        "asin": "B0F2B48QHB",
+        "title": "New P108 4AH Replacement for Ryobi 18V ONE + Battery P108 P102 P103 P104 P105 P107 P109 P122 Compatible with All Ryobi 18V ONE + Cordless Power Tools",
+        "link": "https://www.amazon.com/ELECtrysium-Replacement-Battery-Compatible-Cordless/dp/B0F2B48QHB/ref=sr_1_47?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-47",
+        "link_clean": "https://www.amazon.com/ELECtrysium-Replacement-Battery-Compatible-Cordless/dp/B0F2B48QHB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F2B48QHB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71lR4kp29HL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 281,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$39.99",
+        "extracted_price": 39.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$39.99",
+            "extracted_primary_price": 39.99
+          }
+        ]
+      },
+      {
+        "position": 48,
+        "asin": "B0HFMJXH8G",
+        "title": "2Packs 8000mAh P108 High-Capacity Replacement for Ryobi 18V Battery",
+        "link": "https://www.amazon.com/High-Capacity-Replacement-Compatible-Batteries-Indicator/dp/B0HFMJXH8G/ref=sr_1_48?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-48",
+        "link_clean": "https://www.amazon.com/High-Capacity-Replacement-Compatible-Batteries-Indicator/dp/B0HFMJXH8G/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HFMJXH8G&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71xuzs7Ti5L._AC_UL320_.jpg",
+        "rating": 4.9,
+        "reviews": 18,
+        "price": "$49.99",
+        "extracted_price": 49.99,
+        "price_unit": "$25.00/count",
+        "extracted_price_unit": 25,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$49.99",
+            "extracted_primary_price": 49.99
+          }
+        ]
+      },
+      {
+        "position": 49,
+        "asin": "B0B88PWMPW",
+        "brand": "RYOBI",
+        "title": "ONE+ 18V Lithium-Ion HIGH Performance Starter Kit with 2.0 Ah Battery, 4.0 Ah Battery, 6.0 Ah Battery, Charger, and Bag",
+        "link": "https://www.amazon.com/RYOBI-Lithium-Ion-Performance-Starter-Battery/dp/B0B88PWMPW/ref=sr_1_49?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-49",
+        "link_clean": "https://www.amazon.com/RYOBI-Lithium-Ion-Performance-Starter-Battery/dp/B0B88PWMPW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B88PWMPW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51oeXJ516sL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 199,
+        "price": "$214.99",
+        "extracted_price": 214.99,
+        "delivery": [
+          "FREE delivery Sat, Nov 28"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$214.99",
+            "extracted_primary_price": 214.99
+          }
+        ]
+      },
+      {
+        "position": 50,
+        "asin": "B0F3XJ6SS1",
+        "title": "Replacement for Ryobi 18V Battery: 18V 4.0Ah Lithium-ion Compatible with Ryobi P102 P103 P105 P107 P108 P109 P122 Cordless Power Tools 2 Pack",
+        "link": "https://www.amazon.com/ANTOOLOCKER-Replacement-Ryobi-18V-Battery/dp/B0F3XJ6SS1/ref=sr_1_50?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-50",
+        "link_clean": "https://www.amazon.com/ANTOOLOCKER-Replacement-Ryobi-18V-Battery/dp/B0F3XJ6SS1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F3XJ6SS1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71TIur6gOQL._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 254,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$30.99",
+        "extracted_price": 30.99,
+        "price_unit": "$15.50/count",
+        "extracted_price_unit": 15.5,
+        "offers": [
+          "Save 5% on 2 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$30.99",
+            "extracted_primary_price": 30.99
+          }
+        ]
+      },
+      {
+        "position": 51,
+        "asin": "B0DQXTYM37",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/Upgrade-Capacity-Replacement-Compatible-Cordless/dp/B0DQXTYM37/ref=sr_1_51_so_BATTERY?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-51",
+        "title": "Replacement for Ryobi 18V Battery 6.0Ah, 2-Pack P108 Battery Compatible with Ryobi ONE+ System, 6000mAh Li-Ion Power Tool Battery Pack for P102 P103 P104 P105 P107 P109 P122",
+        "link": "https://www.amazon.com/Upgrade-Capacity-Replacement-Compatible-Cordless/dp/B0DQXTYM37/ref=sr_1_51?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-51",
+        "link_clean": "https://www.amazon.com/Upgrade-Capacity-Replacement-Compatible-Cordless/dp/B0DQXTYM37/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DQXTYM37&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71BI0zQp5EL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 934,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$42.99",
+        "extracted_price": 42.99,
+        "price_unit": "$21.50/count",
+        "extracted_price_unit": 21.5,
+        "old_price": "$49.99",
+        "extracted_old_price": 49.99,
+        "offers": [
+          "Exclusive Prime price"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$42.99",
+            "extracted_primary_price": 42.99,
+            "old_primary_price": "$49.99",
+            "extracted_old_primary_price": 49.99
+          }
+        ]
+      },
+      {
+        "position": 52,
+        "asin": "B0GCZXRL1D",
+        "title": "Upgraded 3A Fast Charger P117 12-18V Replacement for Ryobi 18V Battery Charger P117 P118 P135 PCG002 for Ryobi Battery P100 P102 P105 P107 P108 P109 PBP004 One+ Lithium NiCad NiMh with LED Indicator",
+        "link": "https://www.amazon.com/Upgraded-Charger-Replacement-Battery-Indicator/dp/B0GCZXRL1D/ref=sr_1_52?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-52",
+        "link_clean": "https://www.amazon.com/Upgraded-Charger-Replacement-Battery-Indicator/dp/B0GCZXRL1D/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GCZXRL1D&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/610P89pEnmL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 28,
+        "price": "$22.99",
+        "extracted_price": 22.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$22.99",
+            "extracted_primary_price": 22.99
+          }
+        ]
+      },
+      {
+        "position": 53,
+        "asin": "B0FMRJ2TBG",
+        "title": "7.0Ah 18V 2 Pack Replacement for Ryobi 18V Battery P108",
+        "link": "https://www.amazon.com/THISSENERGYSYSTEM-P108-Replacement-Battery-Indicator/dp/B0FMRJ2TBG/ref=sr_1_53?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-53",
+        "link_clean": "https://www.amazon.com/THISSENERGYSYSTEM-P108-Replacement-Battery-Indicator/dp/B0FMRJ2TBG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FMRJ2TBG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61ItxnQPjFL._AC_UL320_.jpg",
+        "rating": 4.2,
+        "reviews": 88,
+        "price": "$39.99",
+        "extracted_price": 39.99,
+        "price_unit": "$20.00/count",
+        "extracted_price_unit": 20,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$39.99",
+            "extracted_primary_price": 39.99
+          }
+        ]
+      },
+      {
+        "position": 54,
+        "asin": "B07D38V5Y4",
+        "brand": "RYOBI",
+        "title": "P164: 2 Pack of P193 6.0 Amp Hour 18V Lithium Ion Batteries w/ Onboard Fuel Gauge",
+        "link": "https://www.amazon.com/Ryobi-P164-Lithium-Batteries-Onboard/dp/B07D38V5Y4/ref=sr_1_54?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-54",
+        "link_clean": "https://www.amazon.com/Ryobi-P164-Lithium-Batteries-Onboard/dp/B07D38V5Y4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07D38V5Y4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81WuS3fuGIL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 108,
+        "price": "$188.99",
+        "extracted_price": 188.99,
+        "delivery": [
+          "FREE delivery Nov 25 - 30",
+          "Or fastest delivery Nov 24 - 27"
+        ],
+        "more_buying_choices": "$182.30 (3 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07D38V5Y4/ref=sr_1_54_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-54",
+        "purchase_options": [
+          {
+            "primary_price": "$188.99",
+            "extracted_primary_price": 188.99,
+            "more_buying_choices": "$182.30 (3 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07D38V5Y4/ref=sr_1_54_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-54"
+          }
+        ]
+      },
+      {
+        "position": 55,
+        "asin": "B07GV9JQDT",
+        "brand": "DTK",
+        "title": "Upgraded 2Packs P108 18V Battery Replacement for Ryobi 18V ONE+ Battery Fit P102 P103 P104 P105 P107 P109 P122 PBP002 PBP003 PBP004 PBP005 RB18L50 Cordless Tool 6.2Ah Batteries with Indicator",
+        "link": "https://www.amazon.com/DTK-Battery-Replacement-Lithium-ion-Cordless/dp/B07GV9JQDT/ref=sr_1_55?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-55",
+        "link_clean": "https://www.amazon.com/DTK-Battery-Replacement-Lithium-ion-Cordless/dp/B07GV9JQDT/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07GV9JQDT&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/7133B1MqCkL._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 1400,
+        "price": "$39.90",
+        "extracted_price": 39.9,
+        "price_unit": "$19.95/count",
+        "extracted_price_unit": 19.95,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$31.92 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07GV9JQDT/ref=sr_1_55_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-55",
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51-XBqrXUyL._SS200_FMpng_.png",
+            "certified_by": "Recycled Claim Standard Blended",
+            "certified_info": "Recycled Claim Standard (RCS Blended) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product. The purchase of Recycled Claim Standard (RCS) certified products demonstrates demand for recycled materials. Climate Pledge Friendly requires the product contain at least 50% certified RCS Blended material by weight."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$39.90",
+            "extracted_primary_price": 39.9,
+            "more_buying_choices": "$31.92 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07GV9JQDT/ref=sr_1_55_olp?keywords=RYOBI+PBP004&dib_tag=se&dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&qid=1795001623&sr=8-55"
+          }
+        ]
+      },
+      {
+        "position": 56,
+        "asin": "B0FPQMVGS2",
+        "title": "2 Packs 18V 3.0Ah Battery Replacement for Ryobi 18V Lithium Batteries ONE+ Plus P109 P108 P107 P106 P105 P104 P103 P102 P190, Compatible with Ryobi 18 Volts Cordless Power Tools PBP005 PBP004 PBP003",
+        "link": "https://www.amazon.com/Replacement-Batteries-P103-Compatible-Cordless/dp/B0FPQMVGS2/ref=sr_1_56?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-56",
+        "link_clean": "https://www.amazon.com/Replacement-Batteries-P103-Compatible-Cordless/dp/B0FPQMVGS2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FPQMVGS2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/618-kxjkXyL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 86,
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "price_unit": "$15.00/count",
+        "extracted_price_unit": 15,
+        "old_price": "$31.99",
+        "extracted_old_price": 31.99,
+        "offers": [
+          "Save 5% on 2 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99,
+            "old_primary_price": "$31.99",
+            "extracted_old_primary_price": 31.99
+          }
+        ]
+      },
+      {
+        "position": 57,
+        "asin": "B0HHSTKVK1",
+        "title": "2 Packs P108 18 Volt Battery Replacement for Ryobi 18V Battery 8ah(Green)",
+        "link": "https://www.amazon.com/P108-Battery-Replacement-Compatible-PBP005/dp/B0HHSTKVK1/ref=sr_1_57?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-57",
+        "link_clean": "https://www.amazon.com/P108-Battery-Replacement-Compatible-PBP005/dp/B0HHSTKVK1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HHSTKVK1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/611ivVj+SzL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 50,
+        "price": "$50.57",
+        "extracted_price": 50.57,
+        "price_unit": "$25.29/count",
+        "extracted_price_unit": 25.29,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$50.57",
+            "extracted_primary_price": 50.57
+          }
+        ]
+      },
+      {
+        "position": 58,
+        "asin": "B0DHGLT48V",
+        "title": "P103 18V 3000mAh Replacement Battery and P117 12V-18V Battery Replacement Charger, Compatible with Ryobi P100 P102 P104 P105 P107 P108 P109 P190",
+        "link": "https://www.amazon.com/Stairlie-Replacement-Battery-Compatible-Lithium-Ion/dp/B0DHGLT48V/ref=sr_1_58?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-58",
+        "link_clean": "https://www.amazon.com/Stairlie-Replacement-Battery-Compatible-Lithium-Ion/dp/B0DHGLT48V/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DHGLT48V&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71ltS1xhj4L._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 159,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$38.99",
+        "extracted_price": 38.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$38.99",
+            "extracted_primary_price": 38.99
+          }
+        ]
+      },
+      {
+        "position": 59,
+        "asin": "B0HHHKYXQ2",
+        "badges": [
+          "Ends in 20:26:14"
+        ],
+        "title": "2 Pack 4000mAh Replacement for Ryobi P102 18V Battery and Charger(Green)",
+        "link": "https://www.amazon.com/4000mAh-Replacement-P102-Compatible-P117/dp/B0HHHKYXQ2/ref=sr_1_59?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-59",
+        "link_clean": "https://www.amazon.com/4000mAh-Replacement-P102-Compatible-P117/dp/B0HHHKYXQ2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HHHKYXQ2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71LqnRmx2vL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 422,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$50.97",
+        "extracted_price": 50.97,
+        "old_price": "$58.99",
+        "extracted_old_price": 58.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$50.97",
+            "extracted_primary_price": 50.97,
+            "old_primary_price": "$58.99",
+            "extracted_old_primary_price": 58.99
+          }
+        ]
+      },
+      {
+        "position": 60,
+        "asin": "B0CGTNFRG1",
+        "title": "2PACK 8.0Ah Replacement for Ryobi 18V Battery and P117 Dual Charger Compatible with 18 Volt Battery ONE+ Plus and Charger P102 P103 P104 P107 P108 P109 PBP004 PBP005 PBP003 Cordless Power Tools",
+        "link": "https://www.amazon.com/POWTREE-P108-Battery-Charger-Channel/dp/B0CGTNFRG1/ref=sr_1_60?dib=eyJ2IjoiMSJ9.vjaRiRPr02QEv6zdv1NJ5RVl8kQ_aPqM_Xe183yf24vYKrkEo3DMj71TGtrGDw-ZerhF39DLvye741KQUsZw9mrcJSWvIOP76-YcsFqPBwu3XHNbqJ7n20jKALiuuRPXwB_p9_kghcFsTr0-OwJnYsS2UBy37epYOHbTMvAFHGMN66ADzbRLVdVvVr0reuyyegzUZyC90Y9N8LxM8wAZyMtw-zbjQs_J_-paN2wyL7VYnhCZ8LZwk28llF5GnGnepoMU-XEabnj9h8rV71NDNAVDSJgyQUfgD6I1O6piqAg.1x3UYnsWGwM3ACMIRXY-OeJ384w5oSymR1Cg-1L108c&dib_tag=se&keywords=RYOBI+PBP004&qid=1795001623&sr=8-60",
+        "link_clean": "https://www.amazon.com/POWTREE-P108-Battery-Charger-Channel/dp/B0CGTNFRG1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CGTNFRG1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61M8OI1uAAL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 1200,
+        "price": "$99.00",
+        "extracted_price": 99,
+        "delivery": [
+          "FREE delivery Nov 25 - 28",
+          "Or fastest delivery Nov 22 - 25"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$99.00",
+            "extracted_primary_price": 99
+          }
+        ]
+      }
+    ],
+    "featured_products": [
+      {
+        "title": "Customers frequently viewed",
+        "products": [
+          {
+            "position": 1,
+            "asin": "B0H8NDDV1Z",
+            "sponsored": true,
+            "title": "Bonacell 2Pack 8.0Ah Replacement for Ryobi 18V Battery Compatible with Ryobi 18 Volt Battery ONE+ P102 P103 P104 P105 P107 P109 P122 PBP005 PBP004 PBP003 PBP002 RB18L50 BPL1820 Cordless Power Tools",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo1NDY1MTkwMjE3NzY1MzA5OjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljOjMwMTYyMzY2MzQ5MDAwMjo6MDo6&url=%2FBonacell-Replacement-Battery-Compatible-Cordless%2Fdp%2FB0H8NDDV1Z%2Fref%3Dsxin_15_pa_sp_search_thematic_sspa%3Fcontent-id%3Damzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%253Aamzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB0H8NDDV1Z%26pd_rd_r%3D609d2c78-4d10-4840-b1c5-f64e4db8dcb3%26pd_rd_w%3D8FrA0%26pd_rd_wg%3DZ4Uzn%26pf_rd_p%3D7bc47535-f9ae-40a7-8852-938638102a8b%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-1-6024b2a3-78e4-4fed-8fed-e1613be3bcce-spons%26aref%3Dc7yKnhCMlQ%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWM%26psc%3D1&aref=c7yKnhCMlQ",
+            "link_clean": "https://www.amazon.com/dp/B0H8NDDV1Z/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H8NDDV1Z&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/71l0VOFzolL._AC_UL320_.jpg",
+            "rating": 4.2,
+            "reviews": 97,
+            "price": "$42.99",
+            "extracted_price": 42.99,
+            "price_unit": "$21.50/count",
+            "extracted_price_unit": 21.5,
+            "old_price": "$49.99",
+            "extracted_old_price": 49.99,
+            "delivery": [
+              "FREE delivery Mon, Nov 23Or fastest delivery Sun, Nov 22",
+              "FREE delivery Mon, Nov 23",
+              "Or fastest delivery Sun, Nov 22"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$42.99",
+                "extracted_primary_price": 42.99,
+                "old_primary_price": "$49.99",
+                "extracted_old_primary_price": 49.99
+              }
+            ]
+          },
+          {
+            "position": 2,
+            "asin": "B0G43M2G62",
+            "sponsored": true,
+            "title": "3.0Ah Replacement for Ryobi 18V Battery Compatible with Ryobi 18 Volt Lithium Battery ONE+ Plus P102 P103 P104 P105 P107 P108 P109 PBP002 PBP003 PBP004 PBP005 Cordless Tools",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo1NDY1MTkwMjE3NzY1MzA5OjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljOjMwMTMzNTc0MDA5MTYwMjo6MTo6&url=%2FKoedsion-Replacement-Compatible-P103-Cordless%2Fdp%2FB0G43M2G62%2Fref%3Dsxin_15_pa_sp_search_thematic_sspa%3Fcontent-id%3Damzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%253Aamzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB0G43M2G62%26pd_rd_r%3D609d2c78-4d10-4840-b1c5-f64e4db8dcb3%26pd_rd_w%3D8FrA0%26pd_rd_wg%3DZ4Uzn%26pf_rd_p%3D7bc47535-f9ae-40a7-8852-938638102a8b%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-2-6024b2a3-78e4-4fed-8fed-e1613be3bcce-spons%26aref%3DbIXZ0h3WI6%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWM%26psc%3D1&aref=bIXZ0h3WI6",
+            "link_clean": "https://www.amazon.com/dp/B0G43M2G62/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0G43M2G62&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/61r+vKpOYrL._AC_UL320_.jpg",
+            "rating": 4.5,
+            "reviews": 88,
+            "price": "$28.99",
+            "extracted_price": 28.99,
+            "price_unit": "$14.50/count",
+            "extracted_price_unit": 14.5,
+            "delivery": [
+              "FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$28.99",
+                "extracted_primary_price": 28.99
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "asin": "B07GV9JQDT",
+            "sponsored": true,
+            "title": "DTK Upgraded 2Packs P108 18V Battery Replacement for Ryobi 18V ONE+ Battery Fit P102 P103 P104 P105 P107 P109 P122 PBP002 PBP003 PBP004 PBP005 RB18L50 Cordless Tool 6.2Ah Batteries with Indicator",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo1NDY1MTkwMjE3NzY1MzA5OjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljOjMwMDAwMTk5NTgxODIwMjo6Mjo6&url=%2FDTK-Battery-Replacement-Lithium-ion-Cordless%2Fdp%2FB07GV9JQDT%2Fref%3Dsxin_15_pa_sp_search_thematic_sspa%3Fcontent-id%3Damzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%253Aamzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB07GV9JQDT%26pd_rd_r%3D609d2c78-4d10-4840-b1c5-f64e4db8dcb3%26pd_rd_w%3D8FrA0%26pd_rd_wg%3DZ4Uzn%26pf_rd_p%3D7bc47535-f9ae-40a7-8852-938638102a8b%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-3-6024b2a3-78e4-4fed-8fed-e1613be3bcce-spons%26aref%3D7HcX81m34w%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWM%26psc%3D1&aref=7HcX81m34w",
+            "link_clean": "https://www.amazon.com/dp/B07GV9JQDT/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07GV9JQDT&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/7133B1MqCkL._AC_UL320_.jpg",
+            "rating": 4,
+            "reviews": 1400,
+            "price": "$39.90",
+            "extracted_price": 39.9,
+            "price_unit": "$19.95/count",
+            "extracted_price_unit": 19.95,
+            "delivery": [
+              "FREE delivery Tue, Nov 24Or fastest delivery Mon, Nov 23",
+              "FREE delivery Tue, Nov 24",
+              "Or fastest delivery Mon, Nov 23"
+            ],
+            "climate_pledge_friendly": true,
+            "sustainability_features": [
+              {
+                "position": 1,
+                "name": "Recycled materials",
+                "snippet": "Contains at least 50% recycled material.",
+                "thumbnail": "https://m.media-amazon.com/images/I/51-XBqrXUyL._SS200_FMpng_.png",
+                "certified_by": "Recycled Claim Standard Blended",
+                "certified_info": "Recycled Claim Standard (RCS Blended) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product. The purchase of Recycled Claim Standard (RCS) certified products demonstrates demand for recycled materials. Climate Pledge Friendly requires the product contain at least 50% certified RCS Blended material by weight."
+              }
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$39.90",
+                "extracted_primary_price": 39.9
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "asin": "B0FMRJ2TBG",
+            "sponsored": true,
+            "title": "7.0Ah 18V 2 Pack Replacement for Ryobi 18V Battery P108",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo1NDY1MTkwMjE3NzY1MzA5OjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljOjMwMTUxNTUxOTAxNTkwMjo6Mzo6&url=%2FTHISSENERGYSYSTEM-P108-Replacement-Battery-Indicator%2Fdp%2FB0FMRJ2TBG%2Fref%3Dsxin_15_pa_sp_search_thematic_sspa%3Fcontent-id%3Damzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%253Aamzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB0FMRJ2TBG%26pd_rd_r%3D609d2c78-4d10-4840-b1c5-f64e4db8dcb3%26pd_rd_w%3D8FrA0%26pd_rd_wg%3DZ4Uzn%26pf_rd_p%3D7bc47535-f9ae-40a7-8852-938638102a8b%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-4-6024b2a3-78e4-4fed-8fed-e1613be3bcce-spons%26aref%3Dc5VtqYGEfN%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWM%26psc%3D1&aref=c5VtqYGEfN",
+            "link_clean": "https://www.amazon.com/dp/B0FMRJ2TBG/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FMRJ2TBG&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/61ItxnQPjFL._AC_UL320_.jpg",
+            "rating": 4.2,
+            "reviews": 88,
+            "price": "$39.99",
+            "extracted_price": 39.99,
+            "price_unit": "$20.00/count",
+            "extracted_price_unit": 20,
+            "delivery": [
+              "Join Prime to get FREE delivery Fri, Nov 20Or Non-members get FREE delivery Mon, Nov 23",
+              "Join Prime to get FREE delivery Fri, Nov 20",
+              "Or Non-members get FREE delivery Mon, Nov 23"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$39.99",
+                "extracted_primary_price": 39.99
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "asin": "B0D41NRZFR",
+            "sponsored": true,
+            "title": "Bonacell 2Pack Replacement for Ryobi 18V Battery Lithium Compatible with 18 Volt Battery ONE+ Plus P102 P103 P104 P105 P106 P108 P107 P109 P190 PBP002 PBP003 PBP004 PBP005 Cordless Power Tools",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo1NDY1MTkwMjE3NzY1MzA5OjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljOjMwMTY4NjE0MTQ4NTkwMjo6NDo6&url=%2FBonacell-Replacement-Compatible-P107-Cordless%2Fdp%2FB0D41NRZFR%2Fref%3Dsxin_15_pa_sp_search_thematic_sspa%3Fcontent-id%3Damzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%253Aamzn1.sym.7bc47535-f9ae-40a7-8852-938638102a8b%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB0D41NRZFR%26pd_rd_r%3D609d2c78-4d10-4840-b1c5-f64e4db8dcb3%26pd_rd_w%3D8FrA0%26pd_rd_wg%3DZ4Uzn%26pf_rd_p%3D7bc47535-f9ae-40a7-8852-938638102a8b%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-5-6024b2a3-78e4-4fed-8fed-e1613be3bcce-spons%26aref%3DtJXfpA70iq%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWM%26psc%3D1&aref=tJXfpA70iq",
+            "link_clean": "https://www.amazon.com/dp/B0D41NRZFR/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D41NRZFR&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/7115ceFzzDL._AC_UL320_.jpg",
+            "rating": 4.1,
+            "reviews": 872,
+            "bought_last_month": "50+ bought in past month",
+            "price": "$29.99",
+            "extracted_price": 29.99,
+            "price_unit": "$15.00/count",
+            "extracted_price_unit": 15,
+            "delivery": [
+              "FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$29.99",
+                "extracted_primary_price": 29.99
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Picks from Amazon Influencers",
+        "description": "From Amazon Influencer storefronts",
+        "products": [
+          {
+            "position": 1,
+            "asin": "B0H8NDDV1Z",
+            "sponsored": true,
+            "title": "Bonacell 2Pack 8.0Ah Replacement for Ryobi 18V Battery Compatible with Ryobi 18 Volt Battery ONE+ P102 P103 P104 P105 P107 P109 P122 PBP005 PBP004 PBP003 PBP002 RB18L50 BPL1820 Cordless Power Tools",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2MTY4MzQxMTEyMjQzMzUxOjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDE2MjM2NjM0OTAwMDI6OjA6Og&url=%2FBonacell-Replacement-Battery-Compatible-Cordless%2Fdp%2FB0H8NDDV1Z%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB0H8NDDV1Z%26pd_rd_r%3D08e1a753-c861-4ac8-a37e-926b85f25037%26pd_rd_w%3DyYWdE%26pd_rd_wg%3DvTP5P%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-1-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3Dc7yKnhCMlQ%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=c7yKnhCMlQ",
+            "link_clean": "https://www.amazon.com/dp/B0H8NDDV1Z/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H8NDDV1Z&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/71l0VOFzolL._AC_UL320_.jpg",
+            "rating": 4.2,
+            "reviews": 97,
+            "price": "$42.99",
+            "extracted_price": 42.99,
+            "price_unit": "$21.50/count",
+            "extracted_price_unit": 21.5,
+            "old_price": "$49.99",
+            "extracted_old_price": 49.99,
+            "delivery": [
+              "FREE delivery Mon, Nov 23Or fastest delivery Sun, Nov 22",
+              "FREE delivery Mon, Nov 23",
+              "Or fastest delivery Sun, Nov 22"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$42.99",
+                "extracted_primary_price": 42.99,
+                "old_primary_price": "$49.99",
+                "extracted_old_primary_price": 49.99
+              }
+            ]
+          },
+          {
+            "position": 2,
+            "asin": "B0G43M2G62",
+            "sponsored": true,
+            "title": "3.0Ah Replacement for Ryobi 18V Battery Compatible with Ryobi 18 Volt Lithium Battery ONE+ Plus P102 P103 P104 P105 P107 P108 P109 PBP002 PBP003 PBP004 PBP005 Cordless Tools",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2MTY4MzQxMTEyMjQzMzUxOjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDEzMzU3NDAwOTE2MDI6OjE6Og&url=%2FKoedsion-Replacement-Compatible-P103-Cordless%2Fdp%2FB0G43M2G62%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB0G43M2G62%26pd_rd_r%3D08e1a753-c861-4ac8-a37e-926b85f25037%26pd_rd_w%3DyYWdE%26pd_rd_wg%3DvTP5P%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-2-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DbIXZ0h3WI6%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=bIXZ0h3WI6",
+            "link_clean": "https://www.amazon.com/dp/B0G43M2G62/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0G43M2G62&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/61r+vKpOYrL._AC_UL320_.jpg",
+            "rating": 4.5,
+            "reviews": 88,
+            "price": "$28.99",
+            "extracted_price": 28.99,
+            "price_unit": "$14.50/count",
+            "extracted_price_unit": 14.5,
+            "delivery": [
+              "FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$28.99",
+                "extracted_primary_price": 28.99
+              }
+            ]
+          },
+          {
+            "position": 3,
+            "asin": "B0H865Y871",
+            "sponsored": true,
+            "badges": [
+              "Save 5%"
+            ],
+            "title": "2 Pack 8.0Ah Replacement for Ryobi 18V Battery and Charger Combo P107 P108",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2MTY4MzQxMTEyMjQzMzUxOjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDE0MzMxMzI5NTgwMDI6OjI6Og&url=%2FReplacement-Battery-P108-Compatible-Cordless%2Fdp%2FB0H865Y871%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB0H865Y871%26pd_rd_r%3D08e1a753-c861-4ac8-a37e-926b85f25037%26pd_rd_w%3DyYWdE%26pd_rd_wg%3DvTP5P%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-3-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DmYpTjPmz8p%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=mYpTjPmz8p",
+            "link_clean": "https://www.amazon.com/dp/B0H865Y871/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H865Y871&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/71cqOdRdHUL._AC_UL320_.jpg",
+            "rating": 4.3,
+            "reviews": 27,
+            "price": "$55.56",
+            "extracted_price": 55.56,
+            "old_price": "$58.49",
+            "extracted_old_price": 58.49,
+            "offers": [
+              "Lowest price in 30 days"
+            ],
+            "delivery": [
+              "FREE delivery Mon, Nov 23"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$55.56",
+                "extracted_primary_price": 55.56,
+                "old_primary_price": "$58.49",
+                "extracted_old_primary_price": 58.49
+              }
+            ]
+          },
+          {
+            "position": 4,
+            "asin": "B07GV9JQDT",
+            "sponsored": true,
+            "title": "DTK Upgraded 2Packs P108 18V Battery Replacement for Ryobi 18V ONE+ Battery Fit P102 P103 P104 P105 P107 P109 P122 PBP002 PBP003 PBP004 PBP005 RB18L50 Cordless Tool 6.2Ah Batteries with Indicator",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2MTY4MzQxMTEyMjQzMzUxOjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDAwMDE5OTU4MTgyMDI6OjM6Og&url=%2FDTK-Battery-Replacement-Lithium-ion-Cordless%2Fdp%2FB07GV9JQDT%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB07GV9JQDT%26pd_rd_r%3D08e1a753-c861-4ac8-a37e-926b85f25037%26pd_rd_w%3DyYWdE%26pd_rd_wg%3DvTP5P%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-4-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3D7HcX81m34w%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=7HcX81m34w",
+            "link_clean": "https://www.amazon.com/dp/B07GV9JQDT/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07GV9JQDT&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/7133B1MqCkL._AC_UL320_.jpg",
+            "rating": 4,
+            "reviews": 1400,
+            "price": "$39.90",
+            "extracted_price": 39.9,
+            "price_unit": "$19.95/count",
+            "extracted_price_unit": 19.95,
+            "delivery": [
+              "FREE delivery Tue, Nov 24Or fastest delivery Mon, Nov 23",
+              "FREE delivery Tue, Nov 24",
+              "Or fastest delivery Mon, Nov 23"
+            ],
+            "climate_pledge_friendly": true,
+            "sustainability_features": [
+              {
+                "position": 1,
+                "name": "Recycled materials",
+                "snippet": "Contains at least 50% recycled material.",
+                "thumbnail": "https://m.media-amazon.com/images/I/51-XBqrXUyL._SS200_FMpng_.png",
+                "certified_by": "Recycled Claim Standard Blended",
+                "certified_info": "Recycled Claim Standard (RCS Blended) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product. The purchase of Recycled Claim Standard (RCS) certified products demonstrates demand for recycled materials. Climate Pledge Friendly requires the product contain at least 50% certified RCS Blended material by weight."
+              }
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$39.90",
+                "extracted_primary_price": 39.9
+              }
+            ]
+          },
+          {
+            "position": 5,
+            "asin": "B0GZNSL4DP",
+            "sponsored": true,
+            "title": "2-Pack 8.0Ah Replacement for Ryobi 18V Battery and Charger Combo, Compatible with ONE+ 18V Lithium Battery P102 P103 P104 P105 P107 P108 P109 P122 P190 PBP004 PBP005 RB18L50 Cordless Power Tools",
+            "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MTo2MTY4MzQxMTEyMjQzMzUxOjE3OTUwMDE2MjM6c3Bfc2VhcmNoX3RoZW1hdGljX2J0ZjozMDE1MzYwOTI1MzgwMDI6OjQ6Og&url=%2FReplacement-Battery-Compatible-P108-Cordless%2Fdp%2FB0GZNSL4DP%2Fref%3Dsxbs_pa_sp_search_thematic_btf_sspa%3Fcontent-id%3Damzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%253Aamzn1.sym.3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26cv_ct_cx%3DRYOBI%2BPBP004%26keywords%3DRYOBI%2BPBP004%26pd_rd_i%3DB0GZNSL4DP%26pd_rd_r%3D08e1a753-c861-4ac8-a37e-926b85f25037%26pd_rd_w%3DyYWdE%26pd_rd_wg%3DvTP5P%26pf_rd_p%3D3b3ab630-25b6-4e2e-83b0-1bdbe008f411%26pf_rd_r%3DTTWTRP51G5JZY4M18XXN%26qid%3D1795001623%26sbo%3DRZvfv%252F%252FHxDF%252BO5021pAnSA%253D%253D%26sr%3D1-5-fb395260-7243-4e30-82ce-3176e35831b6-spons%26aref%3DQZzD83ODI9%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWNfYnRm%26psc%3D1&aref=QZzD83ODI9",
+            "link_clean": "https://www.amazon.com/dp/B0GZNSL4DP/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GZNSL4DP&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/71XCixD5M1L._AC_UL320_.jpg",
+            "rating": 4.6,
+            "reviews": 13,
+            "price": "$66.49",
+            "extracted_price": 66.49,
+            "price_unit": "$33.25/count",
+            "extracted_price_unit": 33.25,
+            "old_price": "$69.99",
+            "extracted_old_price": 69.99,
+            "delivery": [
+              "Join Prime to get FREE delivery Tomorrow, Nov 19Or Non-members get FREE delivery Mon, Nov 23",
+              "Join Prime to get FREE delivery Tomorrow, Nov 19",
+              "Or Non-members get FREE delivery Mon, Nov 23"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$66.49",
+                "extracted_primary_price": 66.49,
+                "old_primary_price": "$69.99",
+                "extracted_old_primary_price": 69.99
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "video_results": [
+      {
+        "block_position": "top",
+        "video_thumbnail": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/f2303197-7705-4945-ae67-3caf61358d37.mp4/r/THUMBNAIL_360P_FRAME_3_CAPTURE_2.JPG",
+        "video_src": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/f2303197-7705-4945-ae67-3caf61358d37.mp4/productVideoOptimized.mp4",
+        "video_link": "https://aax-us-east-retail-direct.amazon.com/x/c/JLI3KUSGa4igwKWPgrNFOzQAAAGh7m8kRwEAAAH2AQBvbm9fdHhuX2JpZDIgICBvbm9fdHhuX2ltcDEgICDtdgfB/clv1c_ek-YBHf2VcbW3jI2mwVnnqCao2xAnzj_TQ_sLKWZyyE3u2zwiJ4xls2uetEtc9bdvENezCfKIlI3hj0UdPrrZtkAymOMIyNEKILNU6Wdw--yulPjCbbX5_YgnLjyr1qJB3l_Wl1z53r0MQndCzq-2cqlPV-SrsWqk8Lc3D6o0OZP2OsYBUbP4P-BqNZ8J3HpaVXaYENyuMRM1ePH63L0EgpCr_MVJO0WPPbEY2-JEmusZAtqR5PEH2tPs_kkUJ1cR27szxJ3sPUjzRN7ltVd8LkpoBhBY6DR7dErrRY4jiPfuuskeXM7Z2q7n3RR1IQeIsEytcldoLJ2l1l_ExZW5x53yK72w-8XxOLv-nWbqF0s1l--ANpYBEZ7xSg8vHyP-StWfBk9oWdZ628xzYFJN8OE-rRdstL72SdDzG8wgIr-Wlxum7amVtGFSxz8rndDrrmlX1hzZ8z8wAnvGX7_SreT3G03J420OOaBGDm9uOmuqBWHu_hg5i759k-jm2Z8ONhzYl04qe-T-2MR5tM7Tkmgj-rst0Q0KOrPLXS5Bus3tdGO-eEKtObPoQXP3UClRGlGO3x4s2R668j39JNE8t8uwZDvPzHkda9ZvalGhsXaFJLkfsLUZgXKnPOGoeXppsBHLb3xb_C_Ivr2tvgRoLiGbEe5LNAU8Mid3r3BcX8Go-tUPDeS4HPvAY9dN20Koa92vDkm6vTDUT-gdC3MF55-bOSUrQKhtX0JJH0BU8eZt5OqPQ3AwwK_NxmmO3qHNNgpKUKC9gYRyRCOb1JnVWLWahgVWelboklE4pVRUpbvlG7-FLBNai-u_ZO3HSDFS4XLm5ql_KHFL4fRZNDRKTsUZY3SSlsHo3AFX86h13BQvoyki5kMaBR7Yv-Ypfm3IUfi96ZJE7-GLaTy5ExfEIvlapmIJV3GM8hNbA-EMi21nWXIWdFvfHctvwNu6gAOlUL2n6JIkMWaxFddcEwK3u9LOYzFytASA-o-tgl6bVvLCBjbd1iCSHGb_kG8FXwn-CNHx46bt6Yk9LU6F0VxV07rMTQ27IxkqGxginPA4c9b7shzsntzjSlhenTCzD6BNv6LN8RJyeGK9F8bLr6_Bqo2khzk1mZXNVzkxkQteaTywgAwqbf2_kKqv98VANRhJWegsEJk0W-Bt1Ox9TDez5ccMx3dcCqaTwMGxpyqEyPx_t-E6q6CJwXriMoQydocWRoG1Sy30d6RrCIsj_YmkRf4BzYtqjHDqom0d37YchnUmqXyaIb5bj0h1CA5KCPO5pU-PqRFjhOlMdLIgS-GMZ9ZyUSDkbGdA_HGcWTeCMQEVb1yveIdYl0WjXJgPIr70nNXIIwcMj1PS6wnjdW_GFLdaj-8fj2Se8xI-GqMvFA_lOqGDcpPZ_QHNmrGszqCyZzjv7i0n6hU1_UTqYg3-7LD0H_efhSHZXbzD3w_cd-ArOdIdt7X3qq3gOZ9vNdRVAXi8tSm1k9jDMMbbtXGSwLNeqtxlaoi2M7RKECiCegM7B91_LNAeNSe8LIJxV6Jt665D9HDbPznkcf7N_i0VC5N8hJyKBRgepxOIN9vEj9BZZf1MvbZlwgK1pKdxBAe9q6goy88yTBQRkH3iODIGUxcvg4VNuya6E78v5Y0zI-Qxas97P4kDZX57U_7RvejBgmI--R-fQnPwfAOHD13K_of2nWjOHpa2Oxck8F4Hg4tcX6N6KeUog/https://www.amazon.com/dp/B07GV9JQDT?pd_rd_i=B07GV9JQDT&pf_rd_p=a120b15e-b9f5-458c-b2ab-4fe23ec1befc&pf_rd_r=TTWTRP51G5JZY4M18XXN&pd_rd_wg=Z4Uzn&pd_rd_w=GhrOc&pd_rd_r=609d2c78-4d10-4840-b1c5-f64e4db8dcb3",
+        "products": [
+          {
+            "position": 1,
+            "asin": "B07GV9JQDT",
+            "sponsored": true,
+            "title": "DTK Upgraded 2Packs P108 18V Battery Replacement for Ryobi 18V ONE+ Battery Fit P102 P103 P104 P105 P107 P109 P122 PBP002 PBP003 PBP004 PBP005 RB18L50 Cordless Tool 6.2Ah Batteries with Indicator",
+            "link": "https://aax-us-east-retail-direct.amazon.com/x/c/JLI3KUSGa4igwKWPgrNFOzQAAAGh7m8kRwEAAAH2AQBvbm9fdHhuX2JpZDIgICBvbm9fdHhuX2ltcDEgICDtdgfB/clv1c_ek-YBHf2VcbW3jI2mwVnnqCao2xAnzj_TQ_sLKWZyyE3u2zwiJ4xls2uetEtc9bdvENezCfKIlI3hj0UdPrrZtkAymOMIyNEKILNU6Wdw--yulPjCbbX5_YgnLjyr1qJB3l_Wl1z53r0MQndCzq-2cqlPV-SrsWqk8Lc3D6o0OZP2OsYBUbP4P-BqNZ8J3HpaVXaYENyuMRM1ePH63L0EgpCr_MVJO0WPPbEY2-JEmusZAtqR5PEH2tPs_kkUJ1cR27szxJ3sPUjzRN7ltVd8LkpoBhBY6DR7dErrRY4jiPfuuskeXM7Z2q7n3RR1IQeIsEytcldoLJ2l1l_ExZW5x53yK72w-8XxOLv-nWbqF0s1l--ANpYBEZ7xSg8vHyP-StWfBk9oWdZ628xzYFJN8OE-rRdstL72SdDzG8wgIr-Wlxum7amVtGFSxz8rndDrrmlX1hzZ8z8wAnvGX7_SreT3G03J420OOaBGDm9uOmuqBWHu_hg5i759k-jm2Z8ONhzYl04qe-T-2MR5tM7Tkmgj-rst0Q0KOrPLXS5Bus3tdGO-eEKtObPoQXP3UClRGlGO3x4s2R668j39JNE8t8uwZDvPzHkda9ZvalGhsXaFJLkfsLUZgXKnPOGoeXppsBHLb3xb_C_Ivr2tvgRoLiGbEe5LNAU8Mid3r3BcX8Go-tUPDeS4HPvAY9dN20Koa92vDkm6vTDUT-gdC3MF55-bOSUrQKhtX0JJH0BU8eZt5OqPQ3AwwK_NxmmO3qHNNgpKUKC9gYRyRCOb1JnVWLWahgVWelboklE4pVRUpbvlG7-FLBNai-u_ZO3HSDFS4XLm5ql_KHFL4fRZNDRKTsUZY3SSlsHo3AFX86h13BQvoyki5kMaBR7Yv-Ypfm3IUfi96ZJE7-GLaTy5ExfEIvlapmIJV3GM8hNbA-EMi21nWXIWdFvfHctvwNu6gAOlUL2n6JIkMWaxFddcEwK3u9LOYzFytASA-o-tgl6bVvLCBjbd1iCSHGb_kG8FXwn-CNHx46bt6Yk9LU6F0VxV07rMTQ27IxkqGxginPA4c9b7shzsntzjSlhenTCzD6BNv6LN8RJyeGK9F8bLr6_Bqo2khzk1mZXNVzkxkQteaTywgAwqbf2_kKqv98VANRhJWegsEJk0W-Bt1Ox9TDez5ccMx3dcCqaTwMGxpyqEyPx_t-E6q6CJwXriMoQydocWRoG1Sy30d6RrCIsj_YmkRf4BzYtqjHDqom0d37YchnUmqXyaIb5bj0h1CA5KCPO5pU-PqRFjhOlMdLIgS-GMZ9ZyUSDkbGdA_HGcWTeCMQEVb1yveIdYl0WjXJgPIr70nNXIIwcMj1PS6wnjdW_GFLdaj-8fj2Se8xI-GqMvFA_lOqGDcpPZ_QHNmrGszqCyZzjv7i0n6hU1_UTqYg3-7LD0H_efhSHZXbzD3w_cd-ArOdIdt7X3qq3gOZ9vNdRVAXi8tSm1k9jDMMbbtXGSwLNeqtxlaoi2M7RKECiCegM7B91_LNAeNSe8LIJxV6Jt665D9HDbPznkcf7N_i0VC5N8hJyKBRgepxOIN9vEj9BZZf1MvbZlwgK1pKdxBAe9q6goy88yTBQRkH3iODIGUxcvg4VNuya6E78v5Y0zI-Qxas97P4kDZX57U_7RvejBgmI--R-fQnPwfAOHD13K_of2nWjOHpa2Oxck8F4Hg4tcX6N6KeUog/https://www.amazon.com/DTK-Battery-Replacement-Lithium-ion-Cordless/dp/B07GV9JQDT/ref=sxin_26_sbv_search_btf?content-id=amzn1.sym.a120b15e-b9f5-458c-b2ab-4fe23ec1befc%3Aamzn1.sym.a120b15e-b9f5-458c-b2ab-4fe23ec1befc&cv_ct_cx=RYOBI+PBP004&keywords=RYOBI+PBP004&pd_rd_i=B07GV9JQDT&pd_rd_r=609d2c78-4d10-4840-b1c5-f64e4db8dcb3&pd_rd_w=GhrOc&pd_rd_wg=Z4Uzn&pf_rd_p=a120b15e-b9f5-458c-b2ab-4fe23ec1befc&pf_rd_r=TTWTRP51G5JZY4M18XXN&qid=1795001623&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=1-1-b8f34313-536f-475f-9207-a7c427a641c1",
+            "link_clean": "https://www.amazon.com/dp/B07GV9JQDT/",
+            "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07GV9JQDT&device=desktop&engine=amazon_product",
+            "thumbnail": "https://m.media-amazon.com/images/I/7133B1MqCkL._AC_UL640_QL65_.jpg",
+            "rating": 4,
+            "reviews": 1400,
+            "price": "$39.90",
+            "extracted_price": 39.9,
+            "price_unit": "$19.95/count",
+            "extracted_price_unit": 19.95,
+            "delivery": [
+              "FREE delivery Tue, Nov 24",
+              "Or fastest delivery Mon, Nov 23"
+            ],
+            "purchase_options": [
+              {
+                "primary_price": "$39.90",
+                "extracted_primary_price": 39.9
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sponsored_brands": {
+      "title": "Brands related to your search",
+      "brands": [
+        {
+          "position": 1,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/de23950e-f58d-49d2-8fce-3b4f8f5ef783._CR0,0,1200,628_SX920_CB1169409_QL70_.jpg",
+          "name": "DTK",
+          "headline": "DTK Battery Replacement for Ryobi 18V Battery",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkMFu00AURdVWQGUVUWVRpKxQJLKomGTsSey4yEIe203TtKljO1XJxprYE8clsd2ZSZNm0Q9A7JFA8DnsWfEXLLtGaUEIrt7i6V1dvasjjbY_frr78bj01AzOXbvb6V5A2_EqG_L-3phm6TI89QarODleQax5WL-0D_bm0wuPH93k50u71RlNxLBY5b2FJ8lKDdUUpNbgcNPHo23TCY4cr-OXnktPYsrfibwo7Qx6nmOdtXudoWOX329I22snHIlxSSIzssqzWpTPyi8nnABGo3w2o1lMRJpngFN2nUYUcEpYNAEjMa48olk48PeV2XwqUjBiJItBxCgR6TUFv1-CiLCYg4KkmaAMRHkmaCaU3VNshcj1T0Lb8bvBmVtpSRtw9-77t58fvtjl3T_pdRFU8GnlGYIQwgbSNSirGlSVrYFvH2xZrrXfLb22sWkVhx2gmbf46kGJeYv7otk4mZn_6hYn92M-LOUdK3GWbdNJuBZR5eum9HlzIkTBD-r1xWJR-4ulzkXOKK8XJKF1dKioTRU1AcLNBmgcOgjoMnSArFsKhFA1kWq_uQ-EjI4NH4cmlHVV13S5azu99sVAhqo7ACZsQlnTmwrqm_h0eKI7RwhWizhkcVhMJzEzRHXCSRixMI0NWJ0WIeFpxg0Mtfa5fty3g1cYasMAecdBsLav5pTdGN7bM9x54WIXwsb6yqe5MP6nWuVxEZI4TFg-L4w1YRlBhHQoq7BRTQ1S8CpZ118q8eWyp_eV1i-Vudjo&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F3F265635-3B54-4FE3-910E-19C20006A36D%3Fstore_ref%3DSB_A01969791KDENGXU106PU-A050179523QABMZL9EH30%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB07GV9JQDT%2CB07ZT3RJTT%26lp_query%3DRYOBI%20PBP004%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300013033901604%26i%3Daps%26aref%3Dx2djxN9Q28&ref_=sbx_be_s_3psl_mbd_mb0_bkgd&pd_rd_w=ODDTr&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=TTWTRP51G5JZY4M18XXN&pd_rd_wg=N4Ebb&pd_rd_r=99bd386c-29a4-452c-9c8f-1114dd3f44e5",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/becffb85-e23a-4d96-bba2-8aa71b263190._CR0,0,1000,492_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 2,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/aec1e9d1-6d91-4c36-a800-7b2f2f3e1139._CR0,0,1200,628_SX920_CB1169409_QL70_.jpg",
+          "name": "Bosch",
+          "headline": "Hardest hitting hammers",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkM1q20AUhUlC2yBSGrxIwatiqBehY49-LFkpomj0EyuOHVWyk9ibYSyNbSW2pGgmsetFHqAvUGihj9AH6HMU-hKl0E3XxUlLaQ93cbmHwz18wmj73fufXx-WHpu9U99ue-1zaDtBZUPc3xvTNFniTtBfxZOjFURagPQL-2AvFM-7w3wM3eZZkscdlSwHyzMzEESpJtckWa3B4WaIRtum02s5gReWngqPYsoueZaXdvrdwLFODrve0LHLbzeE7bWDR3xcEsicrLK0FmXz8vMpI6CgUTaf0zQmPMlSwGhxk0QUMEqKaApGfFx5QFPcD_el-fWMJ2BUkDQGUUEJT24o-P0SRKSIGchJknJagChLOU25tNtBFpb98BjbTtjunfiVprAh7n7__O3Lj092efdPel1Eztms8kSGECqKrElQ0ptQlbb6oX2wZfnWfrv00kamlbse0MxbdHWviXmLXvOGcjw3_9UtmtyNeb-Ud6yJszw0nQnTIip93BQ-bE45z9lBvb5YLGp_sdQZzwrK6jmZ0Looqq6DtCZoIlUCiuxaACHXBQpCrgVFWxJ1-dVdABd0bIQIm1BpSLKmi-FRyx6c6UPb73WAKUKoixoUh6d923Nl2XOlbjWPcRHjfDaNC4NXp4zgqMBJbMDqLMeEJSkzEIQS7ByrevsFgmJXCcJ22FrbV9e0eGMEgxPkPfORD6GyvrJZxo3_qVZZnGMS40mRXefGmrDWgKoKNbkBlWpikJxVybr-ZSubrS7MxYX7Cwwg2U0&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F116FEB78-8B62-43FC-BBFF-4BBFC01D2193%3Fstore_ref%3DSB_A04523791SJHDYW9ZDPTM-A10091701ZVUDIF33IF2N%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0020ML69K%2CB01N4RSKSH%26lp_query%3DRYOBI%20PBP004%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300075066073504%26i%3Daps%26aref%3DkHolzjAwjF&ref_=sbx_be_s_3psl_mbd_mb1_bkgd&pd_rd_w=ODDTr&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=TTWTRP51G5JZY4M18XXN&pd_rd_wg=N4Ebb&pd_rd_r=99bd386c-29a4-452c-9c8f-1114dd3f44e5",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/24beb41a-6764-4d48-8847-f7c261752a7c._CR0,0,2333,932_AC_SX278_SY200_CB1169409_QL70_.png"
+        },
+        {
+          "position": 3,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/3ea1ad97-cd32-4152-95f5-49253ae9383b._CR0,0,1200,628_SX920_CB1169409_QL70_.jpg",
+          "name": "SEDY",
+          "headline": "Professional Insulated Screwdriver Tool Sets",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkM9u00AQxtVWQGUVUeVQpJxQJHKousl67XidIgt5bbf518S1k9L2Ym3sjWOa2K53k5Ye-gDwAEg8ABIvwIUHQeIxOHBDQmlBCD7NYTQzP83MJ40333_48fVh6bE5PHHtbrt7Cm3Hq6zJuzsTlibXwZE3uonizg0k2CPN1_b-zqtF55WCNXAxaMPFeJQMOjnSYk-SUU2pIUWrwfN1n4w3TWfYcry2X3oqPYoYvxBZXtoa9T3HGhz22-eOXX67Jm2uOsFYTEoSndObLK2F2bz8fMopKFiYzecsjahIshRwViyTkAHOaBFOwVhMKg9YGoz8XTRfzEQCxgVNIxAWjIpkycDvlSCkRcRBTpNUsAKEWSpYKtD2EbECxfV7ge343eHArejSGtr-9u7zz-9f7PL2H3p1iJLzWeWJAiFsagqWkSzLUEMbI9_e37Bca7dbemET08oP2gCbt-TyXrF5S45FQ-3NzX91S-K7MO-T8pYVO9eHphNzHDL0aV36uD4VIuf79frV1VXtry11LrKC8XpOY1ZHio6sg6YNVKTLQJUdDHQNQ0Cwo-iOaemaBl_eAUHBJoZPAhOquIFxAw1PvBbue2fy2UAFJpRRQ8ZIcZDd6vtyr3WKRtU8CoooyGfTqDBEdcppEBZBEhmwOssDypOUGwTqGKmN41O0R2DTcsnRScvfI9C2XZecdw5Wk5cLVrwxvLMBaT9ziQuhuqryWSaM_w2u8igPaBTERbbIDQVCWYVNtSE3misqMWjOq3T1SbQM_dzuLR3yCyXf2t0&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F2382CF9D-4281-41E7-8670-B7E38EAC8660%3Fstore_ref%3DSB_A04757752TVRH7NRY1YO4-A01251723E2DHNS1LHX2U%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB087245QX2%2CB09CPBMVHS%2CB0DDPPBZJF%26lp_query%3DRYOBI%20PBP004%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300140945159004%26i%3Daps%26aref%3DdvcSpDLvEB&ref_=sbx_be_s_3psl_mbd_mb2_bkgd&pd_rd_w=ODDTr&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=TTWTRP51G5JZY4M18XXN&pd_rd_wg=N4Ebb&pd_rd_r=99bd386c-29a4-452c-9c8f-1114dd3f44e5",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/16bd817c-b3f1-4089-8620-dc4e66607e25._CR0,0,1000,1000_AC_SX278_SY200_CB1169409_QL70_.png"
+        }
+      ]
+    },
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "popular_shopping_ideas": [
+        {
+          "position": 1,
+          "name": "Charger",
+          "link": "https://www.amazon.com/s?k=ryobi+pbp004+charger&ref=sr_nr_p_rag_integrated_qb_0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+pbp004+charger"
+        },
+        {
+          "position": 2,
+          "name": "One+",
+          "link": "https://www.amazon.com/s?k=ryobi+pbp004+one%2B&ref=sr_nr_p_rag_integrated_qb_1",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+pbp004+one%2B"
+        },
+        {
+          "position": 3,
+          "name": "Cordless",
+          "link": "https://www.amazon.com/s?k=ryobi+pbp004+cordless&ref=sr_nr_p_rag_integrated_qb_2",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+pbp004+cordless"
+        },
+        {
+          "position": 4,
+          "name": "Replacement",
+          "link": "https://www.amazon.com/s?k=ryobi+pbp004+replacement&ref=sr_nr_p_rag_integrated_qb_3",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+pbp004+replacement"
+        },
+        {
+          "position": 5,
+          "name": "18v",
+          "link": "https://www.amazon.com/s?k=ryobi+pbp004+18v&ref=sr_nr_p_rag_integrated_qb_4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+pbp004+18v"
+        }
+      ],
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249149011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_76%3A1249149011&dc&qid=1795001623&rnid=1249147011&ref=sr_nr_p_76_1&ds=v1%3AAjxtjy4BWrhT%2Fkl2IJ6k4E3qO5aAXxb5bQN6y8nOPBk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_76%3A1249149011"
+        }
+      ],
+      "delivery_day": [
+        {
+          "position": 1,
+          "name": "Get It by Tomorrow",
+          "rh": "p_90:8308921011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_90%3A8308921011&dc&qid=1795001623&rnid=8308919011&ref=sr_nr_p_90_1&ds=v1%3AlUy3VK5HMjRd%2FLwREShL2z3udlMIipc9%2FB52WK6XWVI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_90%3A8308921011"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "RYOBI",
+          "rh": "p_123:252605",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_123%3A252605&dc&qid=1795001623&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3AgPY3bt7EfiTtMvqSTFxPKhLHRHnMX5wg37OXg0N41wI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_123%3A252605"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_condition-type%3A6358196011&dc&qid=1795001623&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3A0JVS%2BvW6SDZX%2Ba79a868Ic3iBSQijrZA5x9sjX%2Bo0hU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_condition-type%3A6358196011"
+        },
+        {
+          "position": 2,
+          "name": "Renewed",
+          "rh": "p_n_condition-type:16907721011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_condition-type%3A16907721011&dc&qid=1795001623&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3AotP14Of2rA%2FI3sh9xE5RMjhn45GtzyTbC%2FJmqY%2Bt4tw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_condition-type%3A16907721011"
+        },
+        {
+          "position": 3,
+          "name": "Used",
+          "rh": "p_n_condition-type:6358198011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_condition-type%3A6358198011&dc&qid=1795001623&rnid=6358194011&ref=sr_nr_p_n_condition-type_3&ds=v1%3AmtZLndH46HvB%2F4J%2Bx4stdamjwDsGps3qi9Wz8H%2BCMyY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_condition-type%3A6358198011"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248903011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_72%3A1248903011&dc&qid=1795001623&rnid=1248901011&ref=sr_nr_p_72_1&ds=v1%3Aoifke2qW39Zo%2FcR4vpxXY51tOcnS%2BaPlTAXcM%2BBEtcM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_72%3A1248903011"
+        }
+      ],
+      "battery_cell_composition": [
+        {
+          "position": 1,
+          "name": "Lithium Ion",
+          "rh": "p_n_g-101015850560111:204067613011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_g-101015850560111%3A204067613011&dc&qid=1795001623&rnid=204067512011&ref=sr_nr_p_n_g-101015850560111_1&ds=v1%3Ae%2F6g9iJTs%2BhT1CvaUSC21oqqB517RdUOAt7fCmnTmYg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_g-101015850560111%3A204067613011"
+        }
+      ],
+      "voltage": [
+        {
+          "position": 1,
+          "name": "18 V",
+          "rh": "p_n_g-1004214698091:10467362011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_g-1004214698091%3A10467362011&dc&qid=1795001623&rnid=10467359011&ref=sr_nr_p_n_g-1004214698091_1&ds=v1%3AFWKWMY0xa3v9rZXT5xzRbopGWErtq%2FIgxUaMMcZhm30",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_g-1004214698091%3A10467362011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Triplenet Pricing INC",
+          "rh": "p_6:AAZRLVTNON75Z",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_6%3AAAZRLVTNON75Z&dc&qid=1795001623&rnid=2661622011&ref=sr_nr_p_6_1&ds=v1%3AxIGiu3sTkXtxMbu59SFkY%2Bwxoe3JCyQ65EMIIlXCxNA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_6%3AAAZRLVTNON75Z"
+        },
+        {
+          "position": 2,
+          "name": "Embie Industries- Serial Numbers Recorded",
+          "rh": "p_6:A3KG0Q7QL544HL",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_6%3AA3KG0Q7QL544HL&dc&qid=1795001623&rnid=2661622011&ref=sr_nr_p_6_2&ds=v1%3AHgzB8DAORe%2BlQ25nwh%2B3%2FsqS6T%2BVTHQkTFKkpL%2Fwu5M",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_6%3AA3KG0Q7QL544HL"
+        },
+        {
+          "position": 3,
+          "name": "Akashnil",
+          "rh": "p_6:AWVEFMI4QK3W",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_6%3AAWVEFMI4QK3W&dc&qid=1795001623&rnid=2661622011&ref=sr_nr_p_6_3&ds=v1%3ASLg%2FPx1u0Cw5bYTJqKjqEecNlgCPZpA0IyCMPNs1BsM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_6%3AAWVEFMI4QK3W"
+        },
+        {
+          "position": 4,
+          "name": "HUAn",
+          "rh": "p_6:A1SA2RTJIQ1Z77",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_6%3AA1SA2RTJIQ1Z77&dc&qid=1795001623&rnid=2661622011&ref=sr_nr_p_6_4&ds=v1%3ABMJbfa%2FxKglM0aUHaeWe4QOpyYjYfNCLNKKX%2FJeYyic",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_6%3AA1SA2RTJIQ1Z77"
+        },
+        {
+          "position": 5,
+          "name": "Supps Direct LLC",
+          "rh": "p_6:A3O3RXQE8MYLJP",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_6%3AA3O3RXQE8MYLJP&dc&qid=1795001623&rnid=2661622011&ref=sr_nr_p_6_5&ds=v1%3AgxNp7CWRO2mmbg95T04bfdqYAgBSPDJRL0XijEuFZdw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_6%3AA3O3RXQE8MYLJP"
+        },
+        {
+          "position": 6,
+          "name": "ruixin-us",
+          "rh": "p_6:A3GJS6BDMZ9KXT",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_6%3AA3GJS6BDMZ9KXT&dc&qid=1795001623&rnid=2661622011&ref=sr_nr_p_6_6&ds=v1%3ATe%2FovYqjndZ3CEio85GIO7XYwE%2F5blRgmKm4yk5czuQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_6%3AA3GJS6BDMZ9KXT"
+        }
+      ],
+      "deals_discounts": [
+        {
+          "position": 1,
+          "name": "All Discounts",
+          "rh": "p_n_deal_type:23566065011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_deal_type%3A23566065011&dc&qid=1795001623&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3AiB4qkuf0psuYeHUs1zWJtoRDY%2Fm10PvyuCMbG4HqaU0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_deal_type%3A23566065011"
+        }
+      ],
+      "power_source": [
+        {
+          "position": 1,
+          "name": "Battery",
+          "rh": "p_n_g-1001549225111:492226011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_g-1001549225111%3A492226011&dc&qid=1795001623&rnid=492225011&ref=sr_nr_p_n_g-1001549225111_1&ds=v1%3AAbx3ACdMsE1h56Rj1uPwP6hutgV9BI6EMvyOk3QsXVw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_g-1001549225111%3A492226011"
+        }
+      ],
+      "reusability": [
+        {
+          "position": 1,
+          "name": "Rechargeable",
+          "rh": "p_n_g-1003247105111:23876358011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_g-1003247105111%3A23876358011&dc&qid=1795001623&rnid=23876347011&ref=sr_nr_p_n_g-1003247105111_1&ds=v1%3A%2FHzY9l65JXTViBzvF7uabNzlcE0150kceG4Z0bKMZEM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_g-1003247105111%3A23876358011"
+        }
+      ],
+      "quantity": [
+        {
+          "position": 1,
+          "name": "Up to 3 Batteries",
+          "rh": "p_n_g-1002806120111:23555310011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_g-1002806120111%3A23555310011&dc&qid=1795001623&rnid=23555274011&ref=sr_nr_p_n_g-1002806120111_1&ds=v1%3AFJHrXJGLciI%2BuZQpjOzoGXVXS4MXC%2FrffMtR7fmOASg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_g-1002806120111%3A23555310011"
+        }
+      ],
+      "color": [
+        {
+          "position": 1,
+          "name": "Black",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972982011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_g-1001308742111%3A2972982011&dc&qid=1795001623&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_1&ds=v1%3AQb9WieOokWlmMBPXVl6cmhE74TsKoOc%2BgS0kT90DBos",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_g-1001308742111%3A2972982011"
+        },
+        {
+          "position": 2,
+          "name": "Green",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972987011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_g-1001308742111%3A2972987011&dc&qid=1795001623&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_2&ds=v1%3A6X0E7jTfnuiEHLY6dmw1r1yV9EArGPfK5WZi5HITDHE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_g-1001308742111%3A2972987011"
+        },
+        {
+          "position": 3,
+          "name": "Grey",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972988011",
+          "link": "https://www.amazon.com/s?k=RYOBI+PBP004&rh=p_n_g-1001308742111%3A2972988011&dc&qid=1795001623&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_3&ds=v1%3A%2BysJUhhaDCIORwuLSkheufBQzhltRu8%2FHK7kAmyfhY8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&rh=p_n_g-1001308742111%3A2972988011"
+        }
+      ]
+    },
+    "serpapi_pagination": {
+      "current": 1,
+      "next": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+PBP004&page=2"
+    }
+  }
+}

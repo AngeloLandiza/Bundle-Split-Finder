@@ -1,0 +1,1791 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=RYOBI P119",
+  "at": 1795001640391,
+  "data": {
+    "search_metadata": {
+      "id": "6afd8d26074be2ba11e42f0d",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/15AbsJBbUb0-RT7YnP1xwUtF9QyBaAG977SwH6JlLRg/6afd8d26074be2ba11e42f0d.json",
+      "markdown_endpoint": "https://serpapi.com/searches/15AbsJBbUb0-RT7YnP1xwUtF9QyBaAG977SwH6JlLRg/6afd8d26074be2ba11e42f0d.md",
+      "created_at": "2026-11-18 11:33:58 UTC",
+      "processed_at": "2026-11-18 11:33:58 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=RYOBI+P119",
+      "raw_html_file": "https://serpapi.com/searches/15AbsJBbUb0-RT7YnP1xwUtF9QyBaAG977SwH6JlLRg/6afd8d26074be2ba11e42f0d.html",
+      "total_time_taken": 1.63
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "RYOBI P119",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 69,
+      "query_displayed": "RYOBI P119",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B00HTMLLBE",
+        "brand": "RYOBI",
+        "title": "18v 18 volt P119 ONE+ NiCad Lithium Ion battery charger New P100 P101",
+        "link": "https://www.amazon.com/Ryobi-P119-Lithium-battery-charger/dp/B00HTMLLBE/ref=sr_1_1_mod_primary_new?keywords=RYOBI+P119&qid=1795001639&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-1",
+        "link_clean": "https://www.amazon.com/Ryobi-P119-Lithium-battery-charger/dp/B00HTMLLBE/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00HTMLLBE&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/616ufH9t5vL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 834,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$16.00",
+        "extracted_price": 16,
+        "old_price": "$16.94",
+        "extracted_old_price": 16.94,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$8.90 (15+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00HTMLLBE/ref=sr_1_1_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-1",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$16.00",
+            "extracted_primary_price": 16,
+            "old_primary_price": "$16.94",
+            "extracted_old_primary_price": 16.94,
+            "more_buying_choices": "$8.90 (15+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00HTMLLBE/ref=sr_1_1_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-1"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$16.76",
+            "extracted_primary_price": 16.76
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B08HCGYS45",
+        "title": "2Pack Replacement for Ryobi 18V Battery Li-ion + P119 Charger for Ryobi 18v Oneplus Lithium Battery P100 P102 P103 P105 P107 P108 P118",
+        "link": "https://www.amazon.com/YTPowerPal-Replacement-Lithium-Battery-Charger/dp/B08HCGYS45/ref=sr_1_2?keywords=RYOBI+P119&qid=1795001639&sr=8-2",
+        "link_clean": "https://www.amazon.com/YTPowerPal-Replacement-Lithium-Battery-Charger/dp/B08HCGYS45/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08HCGYS45&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71rWEXjvpCL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 561,
+        "price": "$37.99",
+        "extracted_price": 37.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$37.99",
+            "extracted_primary_price": 37.99
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B0CLPJSC7C",
+        "brand": "RYOBI",
+        "title": "One+ 18V Cordless 2-Tool Combo Kit w/Multi-Tool & Reciprocating Saw (Tools Only)",
+        "link": "https://www.amazon.com/Ryobi-Cordless-2-Tool-Multi-Tool-Reciprocating/dp/B0CLPJSC7C/ref=sr_1_3_mod_primary_new?keywords=RYOBI+P119&qid=1795001639&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-3",
+        "link_clean": "https://www.amazon.com/Ryobi-Cordless-2-Tool-Multi-Tool-Reciprocating/dp/B0CLPJSC7C/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CLPJSC7C&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41rVMMNfJeL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 95,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$104.50",
+        "extracted_price": 104.5,
+        "delivery": [
+          "FREE delivery Fri, Nov 27",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "stock": "Only 7 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$104.50",
+            "extracted_primary_price": 104.5
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$129.90",
+            "extracted_primary_price": 129.9
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B00EV95EJI",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/Ryobi-P515-Reciprocating-Anti-Vibration-Batteries/dp/B00EV95EJI/ref=sr_1_4_so_SAW?keywords=RYOBI+P119&qid=1795001639&sr=8-4",
+        "brand": "RYOBI",
+        "title": "P515 One+ 18V 7/8 Inch Stroke Length 3,100 RPM Lithium Ion Cordless Reciprocating Saw with Anti-Vibration Handle (Batteries Not Included, Power Tool Only)",
+        "link": "https://www.amazon.com/Ryobi-P515-Reciprocating-Anti-Vibration-Batteries/dp/B00EV95EJI/ref=sr_1_4?keywords=RYOBI+P119&qid=1795001639&sr=8-4",
+        "link_clean": "https://www.amazon.com/Ryobi-P515-Reciprocating-Anti-Vibration-Batteries/dp/B00EV95EJI/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00EV95EJI&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61sVK9WEj8L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 523,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B09RZQSLFL",
+        "title": "Replacement Ryobi P117 P118 P119 Dual Chemistry Charger Li-ion & Ni-cad Ni-Mh Battery Charger 12V 18V MAX for Ryobi One+ Plus Battery 1400670 P122 P161 P162 P164 P189 P190 P191 P192 P193 P194 P197",
+        "link": "https://www.amazon.com/Replacement-Chemistry-Charger-Battery-1400670/dp/B09RZQSLFL/ref=sr_1_5?keywords=RYOBI+P119&qid=1795001639&sr=8-5",
+        "link_clean": "https://www.amazon.com/Replacement-Chemistry-Charger-Battery-1400670/dp/B09RZQSLFL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09RZQSLFL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71bKBboBMIL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 191,
+        "price": "$23.69",
+        "extracted_price": 23.69,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$23.69",
+            "extracted_primary_price": 23.69
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B08P9CJMW2",
+        "title": "Replace ryobi 18v Battery Charger P117 P118 P119 Dual Chemistry to Charge Ryobi Battery Lithium ion & Ni-cad Ni-Mh 12V 14.4V 18V Such as P100 P102 P102 P105 P107 P108…",
+        "link": "https://www.amazon.com/ANOPIW-Replace-Charger-Battery-1400670/dp/B08P9CJMW2/ref=sr_1_6?keywords=RYOBI+P119&qid=1795001639&sr=8-6",
+        "link_clean": "https://www.amazon.com/ANOPIW-Replace-Charger-Battery-1400670/dp/B08P9CJMW2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08P9CJMW2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61yYU-FBooL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 476,
+        "price": "$23.96",
+        "extracted_price": 23.96,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$23.96",
+            "extracted_primary_price": 23.96
+          }
+        ]
+      },
+      {
+        "position": 7,
+        "asin": "B096WHWDNB",
+        "brand": "TTI",
+        "title": "18-Volt Ryobi Charger PCG002, (NO Retail Packaging, Bulk Packaged)",
+        "link": "https://www.amazon.com/18-Volt-Charger-PCG002-Packaging-Packaged/dp/B096WHWDNB/ref=sr_1_7?keywords=RYOBI+P119&qid=1795001639&sr=8-7",
+        "link_clean": "https://www.amazon.com/18-Volt-Charger-PCG002-Packaging-Packaged/dp/B096WHWDNB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B096WHWDNB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51LaEciCZAL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 5400,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$17.94",
+        "extracted_price": 17.94,
+        "old_price": "$19.00",
+        "extracted_old_price": 19,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 3 left in stock - order soon.",
+        "more_buying_choices": "$12.99 (37+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B096WHWDNB/ref=sr_1_7_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-7",
+        "purchase_options": [
+          {
+            "primary_price": "$17.94",
+            "extracted_primary_price": 17.94,
+            "old_primary_price": "$19.00",
+            "extracted_old_primary_price": 19,
+            "more_buying_choices": "$12.99 (37+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B096WHWDNB/ref=sr_1_7_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-7"
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B0BL88ZSSB",
+        "brand": "RYOBI",
+        "title": "ONE+ 18V Dual-Port Simultaneous Charger - Charges 2 Batteries at Once, 2X Faster Charging, LED Indicators - PCG005",
+        "link": "https://www.amazon.com/Ryobi-Dual-Port-Simultaneous-Charger-PCG005/dp/B0BL88ZSSB/ref=sr_1_8?keywords=RYOBI+P119&qid=1795001639&sr=8-8",
+        "link_clean": "https://www.amazon.com/Ryobi-Dual-Port-Simultaneous-Charger-PCG005/dp/B0BL88ZSSB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BL88ZSSB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61HTEhTEbfL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 153,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$74.99",
+        "extracted_price": 74.99,
+        "delivery": [
+          "FREE delivery Sat, Nov 21",
+          "Or fastest delivery Nov 19 - 20"
+        ],
+        "more_buying_choices": "$74.98 (10 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BL88ZSSB/ref=sr_1_8_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-8",
+        "purchase_options": [
+          {
+            "primary_price": "$74.99",
+            "extracted_primary_price": 74.99,
+            "more_buying_choices": "$74.98 (10 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BL88ZSSB/ref=sr_1_8_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-8"
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B01EU6ADQK",
+        "badges": [
+          "Overall Pick"
+        ],
+        "brand": "RYOBI",
+        "title": "P2008A 18V. Lithium-Ion Cordless String Trimmer/Edger - Battery and Charger Not Included",
+        "link": "https://www.amazon.com/18-Volt-Lithium-Ion-Cordless-String-Trimmer/dp/B01EU6ADQK/ref=sr_1_9?keywords=RYOBI+P119&qid=1795001639&sr=8-9",
+        "link_clean": "https://www.amazon.com/18-Volt-Lithium-Ion-Cordless-String-Trimmer/dp/B01EU6ADQK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01EU6ADQK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51882ZSUOcL._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 399,
+        "price": "$95.99",
+        "extracted_price": 95.99,
+        "old_price": "$108.99",
+        "extracted_old_price": 108.99,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "more_buying_choices": "$77.50 (9+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01EU6ADQK/ref=sr_1_9_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-9",
+        "purchase_options": [
+          {
+            "primary_price": "$95.99",
+            "extracted_primary_price": 95.99,
+            "old_primary_price": "$108.99",
+            "extracted_old_primary_price": 108.99,
+            "more_buying_choices": "$77.50 (9+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01EU6ADQK/ref=sr_1_9_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-9"
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B074MNSTQN",
+        "brand": "RYOBI",
+        "title": "R18TB-0 18V ONE+ Cordless Toolshop Blower (Zero Tool)",
+        "link": "https://www.amazon.com/Ryobi-R18TB-0-Cordless-Toolshop-Blower/dp/B074MNSTQN/ref=sr_1_10_mod_primary_new?keywords=RYOBI+P119&qid=1795001639&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-10",
+        "link_clean": "https://www.amazon.com/Ryobi-R18TB-0-Cordless-Toolshop-Blower/dp/B074MNSTQN/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B074MNSTQN&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51QQsg5XSoL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 1000,
+        "price": "$72.25",
+        "extracted_price": 72.25,
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$49.00 (8 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B074MNSTQN/ref=sr_1_10_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-10",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$72.25",
+            "extracted_primary_price": 72.25,
+            "more_buying_choices": "$49.00 (8 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B074MNSTQN/ref=sr_1_10_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-10"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$76.96",
+            "extracted_primary_price": 76.96
+          }
+        ]
+      },
+      {
+        "position": 11,
+        "asin": "B0CMDHGT3L",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/RYOBI-Cordless-Battery-String-Trimmer/dp/B0CMDHGT3L/ref=sr_1_11_so_STRING_TRIMMER?keywords=RYOBI+P119&qid=1795001639&sr=8-11",
+        "brand": "RYOBI",
+        "title": "ONE+ 18V 13 in. Cordless Battery String Trimmer/Edger (Tool Only)",
+        "link": "https://www.amazon.com/RYOBI-Cordless-Battery-String-Trimmer/dp/B0CMDHGT3L/ref=sr_1_11?keywords=RYOBI+P119&qid=1795001639&sr=8-11",
+        "link_clean": "https://www.amazon.com/RYOBI-Cordless-Battery-String-Trimmer/dp/B0CMDHGT3L/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CMDHGT3L&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41cxND8FGzL._AC_UL320_.jpg",
+        "rating": 3.8,
+        "reviews": 63,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$75.00 (8 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CMDHGT3L/ref=sr_1_11_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-11",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$75.00 (8 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CMDHGT3L/ref=sr_1_11_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-11"
+          }
+        ]
+      },
+      {
+        "position": 12,
+        "asin": "B07J5QJGFD",
+        "brand": "RYOBI",
+        "title": "ZRP2008A ONE+ 18-Volt Lithium-Ion Cordless String Trimmer/Edger (Tool Only - Battery and Charger NOT Included)",
+        "link": "https://www.amazon.com/Ryobi-ZRP2008A-18-Volt-Lithium-Ion-Cordless/dp/B07J5QJGFD/ref=sr_1_12?keywords=RYOBI+P119&qid=1795001639&sr=8-12",
+        "link_clean": "https://www.amazon.com/Ryobi-ZRP2008A-18-Volt-Lithium-Ion-Cordless/dp/B07J5QJGFD/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07J5QJGFD&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41Tg2xa6nfL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 146,
+        "price": "$119.99",
+        "extracted_price": 119.99,
+        "delivery": [
+          "FREE delivery Tue, Nov 24"
+        ],
+        "stock": "Only 6 left in stock - order soon.",
+        "more_buying_choices": "$79.00 (3+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07J5QJGFD/ref=sr_1_12_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-12",
+        "purchase_options": [
+          {
+            "primary_price": "$119.99",
+            "extracted_primary_price": 119.99,
+            "more_buying_choices": "$79.00 (3+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07J5QJGFD/ref=sr_1_12_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-12"
+          }
+        ]
+      },
+      {
+        "position": 13,
+        "asin": "B00AESM7KO",
+        "tags": [
+          "Battery Powered"
+        ],
+        "options": "See options",
+        "options_link": "https://www.amazon.com/Ryobi-P271-Lithium-Batteries-Included/dp/B00AESM7KO/ref=sr_1_13_so_DRILL?keywords=RYOBI+P119&qid=1795001639&sr=8-13",
+        "brand": "RYOBI",
+        "title": "P271 One+ 18 Volt Lithium Ion 1/2 Inch 2-Speed Drill Driver (Batteries Not Included / Power Tool Only)",
+        "link": "https://www.amazon.com/Ryobi-P271-Lithium-Batteries-Included/dp/B00AESM7KO/ref=sr_1_13?keywords=RYOBI+P119&qid=1795001639&sr=8-13",
+        "link_clean": "https://www.amazon.com/Ryobi-P271-Lithium-Batteries-Included/dp/B00AESM7KO/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00AESM7KO&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71krRsgGyoL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 601,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 14,
+        "asin": "B07B6FS2Z1",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/18-Volt-Lithium-Ion-Cordless-Battery-Included/dp/B07B6FS2Z1/ref=sr_1_14_so_STRING_TRIMMER?keywords=RYOBI+P119&qid=1795001639&sr=8-14",
+        "brand": "RYOBI",
+        "title": "ONE+ 9 in. 18-Volt Lithium-Ion Cordless Edger, 1.3 Ah Battery and Charger Included",
+        "link": "https://www.amazon.com/18-Volt-Lithium-Ion-Cordless-Battery-Included/dp/B07B6FS2Z1/ref=sr_1_14?keywords=RYOBI+P119&qid=1795001639&sr=8-14",
+        "link_clean": "https://www.amazon.com/18-Volt-Lithium-Ion-Cordless-Battery-Included/dp/B07B6FS2Z1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07B6FS2Z1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/510jUp5owmL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 271,
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 15,
+        "asin": "B00F9LEJDY",
+        "brand": "RYOBI",
+        "title": "P504G One+ 18 V Lithium Ion Cordless 5 1/2 Inch Circular Saw w/ Carbide Tip Blade (Battery Not Included, Power Tool Only)",
+        "link": "https://www.amazon.com/Ryobi-P504G-Cordless-Circular-Included/dp/B00F9LEJDY/ref=sr_1_15?keywords=RYOBI+P119&qid=1795001639&sr=8-15",
+        "link_clean": "https://www.amazon.com/Ryobi-P504G-Cordless-Circular-Included/dp/B00F9LEJDY/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00F9LEJDY&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/91-vyc4Zt4L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 159,
+        "price": "$65.00",
+        "extracted_price": 65,
+        "delivery": [
+          "FREE delivery Nov 25 - Dec 2",
+          "Or fastest delivery Nov 20 - 23"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "more_buying_choices": "$57.81 (2 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00F9LEJDY/ref=sr_1_15_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-15",
+        "purchase_options": [
+          {
+            "primary_price": "$65.00",
+            "extracted_primary_price": 65,
+            "more_buying_choices": "$57.81 (2 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00F9LEJDY/ref=sr_1_15_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-15"
+          }
+        ]
+      },
+      {
+        "position": 16,
+        "asin": "B09SN6Y6TS",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/RYOBI-Cordless-Drill-Driver-P215BN/dp/B09SN6Y6TS/ref=sr_1_16_so_DRILL?keywords=RYOBI+P119&qid=1795001639&sr=8-16",
+        "brand": "RYOBI",
+        "title": "ONE+ 18V Cordless 1/2 in. Drill/Driver (Tool Only) P215BN",
+        "link": "https://www.amazon.com/RYOBI-Cordless-Drill-Driver-P215BN/dp/B09SN6Y6TS/ref=sr_1_16?keywords=RYOBI+P119&qid=1795001639&sr=8-16",
+        "link_clean": "https://www.amazon.com/RYOBI-Cordless-Drill-Driver-P215BN/dp/B09SN6Y6TS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09SN6Y6TS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51a7EtuY33L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1800,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$63.67 (6 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09SN6Y6TS/ref=sr_1_16_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-16",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$63.67 (6 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09SN6Y6TS/ref=sr_1_16_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-16"
+          }
+        ]
+      },
+      {
+        "position": 17,
+        "asin": "B076FMKT2X",
+        "brand": "RYOBI",
+        "title": "OEM 140106011 Charger P119 18V Li-ion Dual C in Genuine Factory Package",
+        "link": "https://www.amazon.com/RIDGID-RYOBI-OEM-140106011-Charger/dp/B076FMKT2X/ref=sr_1_17?keywords=RYOBI+P119&qid=1795001639&sr=8-17",
+        "link_clean": "https://www.amazon.com/RIDGID-RYOBI-OEM-140106011-Charger/dp/B076FMKT2X/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B076FMKT2X&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71vg8d3xiFL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 13,
+        "price": "$54.94",
+        "extracted_price": 54.94,
+        "delivery": [
+          "$1.99 delivery Tue, Dec 1"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$54.94",
+            "extracted_primary_price": 54.94
+          }
+        ]
+      },
+      {
+        "position": 18,
+        "asin": "B0HHHWW6LW",
+        "title": "2 Packs Replacement for Ryobi P108 18V Battery 8ah and P117 Charger(Green)",
+        "link": "https://www.amazon.com/Replacement-P108-Battery-P117-Compatible/dp/B0HHHWW6LW/ref=sr_1_18?keywords=RYOBI+P119&qid=1795001639&sr=8-18",
+        "link_clean": "https://www.amazon.com/Replacement-P108-Battery-P117-Compatible/dp/B0HHHWW6LW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HHHWW6LW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71vSwTw+FEL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 50,
+        "price": "$73.99",
+        "extracted_price": 73.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$73.99",
+            "extracted_primary_price": 73.99
+          }
+        ]
+      },
+      {
+        "position": 19,
+        "asin": "B088N9Z1M5",
+        "brand": "Powilling",
+        "title": "P102 Compatible with Ryobi 18V Battery and P119 Charger Combo",
+        "link": "https://www.amazon.com/Powilling-Lithium-Replacement-P107-Cordless/dp/B088N9Z1M5/ref=sr_1_19?keywords=RYOBI+P119&qid=1795001639&sr=8-19",
+        "link_clean": "https://www.amazon.com/Powilling-Lithium-Replacement-P107-Cordless/dp/B088N9Z1M5/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B088N9Z1M5&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71LzJ+e6QnL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 1600,
+        "price": "$42.99",
+        "extracted_price": 42.99,
+        "save_with_coupon": "You pay $40.84 with coupon",
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$42.99",
+            "extracted_primary_price": 42.99
+          }
+        ]
+      },
+      {
+        "position": 20,
+        "asin": "B0H8QK7PWR",
+        "title": "Dual-Port 18V Battery Charger Compatible with Ryobi ONE+ 14.4V-18V Li-Ion Batteries, Replacement for P117 P118 P119 P135 P166, LED Indicators and Safety Protection",
+        "link": "https://www.amazon.com/Dual-Port-Compatible-Replacement-Indicators-Protection/dp/B0H8QK7PWR/ref=sr_1_20?keywords=RYOBI+P119&qid=1795001639&sr=8-20",
+        "link_clean": "https://www.amazon.com/Dual-Port-Compatible-Replacement-Indicators-Protection/dp/B0H8QK7PWR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H8QK7PWR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/719OJIGxMSL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 25,
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "save_with_coupon": "You pay $26.99 with coupon",
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99
+          }
+        ]
+      },
+      {
+        "position": 21,
+        "asin": "B0HHHYFH7X",
+        "badges": [
+          "Ends in 20:25:59"
+        ],
+        "title": "2 Pack 8.0Ah Long Runtime Replacement for Ryobi 18V Battery and Charger Kit",
+        "link": "https://www.amazon.com/Runtime-Replacement-Battery-Compatible-Cordless/dp/B0HHHYFH7X/ref=sr_1_21?keywords=RYOBI+P119&qid=1795001639&sr=8-21",
+        "link_clean": "https://www.amazon.com/Runtime-Replacement-Battery-Compatible-Cordless/dp/B0HHHYFH7X/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HHHYFH7X&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71ATJfPtYWL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 60,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$59.98",
+        "extracted_price": 59.98,
+        "price_unit": "$29.99/count",
+        "extracted_price_unit": 29.99,
+        "old_price": "$74.10",
+        "extracted_old_price": 74.1,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 2,
+            "name": "Safer chemicals",
+            "snippet": "Made with chemicals safer for human health and the environment.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 3,
+            "name": "Worker well-being",
+            "snippet": "Manufactured on farms or in facilities that protect the rights and/or health of workers.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$59.98",
+            "extracted_primary_price": 59.98,
+            "old_primary_price": "$74.10",
+            "extracted_old_primary_price": 74.1
+          }
+        ]
+      },
+      {
+        "position": 22,
+        "asin": "B0H5BWTTNV",
+        "title": "2 Pack P103 Replace for Ryobi 18V ONE+ Battery and 2 Port P117 Charger Kit",
+        "link": "https://www.amazon.com/Replace-Battery-Charger-Compatible-Cordless/dp/B0H5BWTTNV/ref=sr_1_22?keywords=RYOBI+P119&qid=1795001639&sr=8-22",
+        "link_clean": "https://www.amazon.com/Replace-Battery-Charger-Compatible-Cordless/dp/B0H5BWTTNV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H5BWTTNV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71I2CBI2qkL._AC_UL320_.jpg",
+        "rating": 3.7,
+        "reviews": 8,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$65.99",
+        "extracted_price": 65.99,
+        "save_with_coupon": "You pay $52.79 with coupon",
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$65.99",
+            "extracted_primary_price": 65.99
+          }
+        ]
+      },
+      {
+        "position": 23,
+        "asin": "B0H8JB8JXY",
+        "title": "2 Packs P108 18 Volt Battery Replacement for Ryobi 18V Battery 8Ah(Green)",
+        "link": "https://www.amazon.com/P108-Battery-Replacement-Compatible-Batteries/dp/B0H8JB8JXY/ref=sr_1_23?keywords=RYOBI+P119&qid=1795001639&sr=8-23",
+        "link_clean": "https://www.amazon.com/P108-Battery-Replacement-Compatible-Batteries/dp/B0H8JB8JXY/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H8JB8JXY&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/611ivVj+SzL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 42,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$42.99",
+        "extracted_price": 42.99,
+        "price_unit": "$21.50/count",
+        "extracted_price_unit": 21.5,
+        "old_price": "$47.77",
+        "extracted_old_price": 47.77,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$42.99",
+            "extracted_primary_price": 42.99,
+            "old_primary_price": "$47.77",
+            "extracted_old_primary_price": 47.77
+          }
+        ]
+      },
+      {
+        "position": 24,
+        "asin": "B0HF765SL8",
+        "title": "Replace Ryobi 18V Battery Charger,4-Port Fast Multi-Battery Charging Station, Fits Ryobi 12V-18V One+ Batteries P102 P103 P105 P107 P108 P109 P189 P197 PBP002 PBP005",
+        "link": "https://www.amazon.com/Replace-Battery-Multi-Battery-Charging-Batteries/dp/B0HF765SL8/ref=sr_1_24?keywords=RYOBI+P119&qid=1795001639&sr=8-24",
+        "link_clean": "https://www.amazon.com/Replace-Battery-Multi-Battery-Charging-Batteries/dp/B0HF765SL8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HF765SL8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61pSW--ejrL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 117,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$59.99",
+        "extracted_price": 59.99,
+        "offers": [
+          "Save 5% on 2 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$59.99",
+            "extracted_primary_price": 59.99
+          }
+        ]
+      },
+      {
+        "position": 25,
+        "asin": "B0H1Q7LLLS",
+        "title": "Rapid Charger Replacement for P118 18V Battery Charger P118 P119 Non-OEM",
+        "link": "https://www.amazon.com/Charger-Replacement-Battery-Batteries-Compatible/dp/B0H1Q7LLLS/ref=sr_1_25?keywords=RYOBI+P119&qid=1795001639&sr=8-25",
+        "link_clean": "https://www.amazon.com/Charger-Replacement-Battery-Batteries-Compatible/dp/B0H1Q7LLLS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H1Q7LLLS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61mnQjnTKeL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 14,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$16.99",
+        "extracted_price": 16.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$16.99",
+            "extracted_primary_price": 16.99
+          }
+        ]
+      },
+      {
+        "position": 26,
+        "asin": "B0D4TQ15VW",
+        "title": "Dual Ports 18Volts Battery Charger Replacement for Ryobi 12V-18V Charger ONE+ P117 P118 P119 P100 P101 P102 Lithium-Ion NiCd NiMh Battery",
+        "link": "https://www.amazon.com/18Volts-Battery-Charger-Replacement-Lithium-Ion/dp/B0D4TQ15VW/ref=sr_1_26?keywords=RYOBI+P119&qid=1795001639&sr=8-26",
+        "link_clean": "https://www.amazon.com/18Volts-Battery-Charger-Replacement-Lithium-Ion/dp/B0D4TQ15VW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D4TQ15VW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61OWiaj-rNL._AC_UL320_.jpg",
+        "rating": 4.2,
+        "reviews": 19,
+        "price": "$74.00",
+        "extracted_price": 74,
+        "delivery": [
+          "FREE delivery Fri, Dec 4",
+          "Or fastest delivery Dec 1 - 3"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$74.00",
+            "extracted_primary_price": 74
+          }
+        ]
+      },
+      {
+        "position": 27,
+        "asin": "B010C7L87Y",
+        "brand": "RYOBI",
+        "title": "OEM 140173019 Charger",
+        "link": "https://www.amazon.com/Ryobi-Dual-chemistry-Battery-Charger-140173019/dp/B010C7L87Y/ref=sr_1_27?keywords=RYOBI+P119&qid=1795001639&sr=8-27",
+        "link_clean": "https://www.amazon.com/Ryobi-Dual-chemistry-Battery-Charger-140173019/dp/B010C7L87Y/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B010C7L87Y&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81CFlBMdvIL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 193,
+        "price": "$49.99",
+        "extracted_price": 49.99,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Fri, Nov 20"
+        ],
+        "more_buying_choices": "$49.95 (6 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B010C7L87Y/ref=sr_1_27_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-27",
+        "purchase_options": [
+          {
+            "primary_price": "$49.99",
+            "extracted_primary_price": 49.99,
+            "more_buying_choices": "$49.95 (6 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B010C7L87Y/ref=sr_1_27_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-27"
+          }
+        ]
+      },
+      {
+        "position": 28,
+        "asin": "B0D4TSJJ8P",
+        "title": "18V Rapid Charger Replacement for Ryobi P117 12V-18V Battery One+ Battery P102 P108 P189 P197 P103 P105 P107 P190 P191 PBP002 PBP005",
+        "link": "https://www.amazon.com/Futurebatt-Charger-Replacement-12V-18V-Lithium-Ion/dp/B0D4TSJJ8P/ref=sr_1_28?keywords=RYOBI+P119&qid=1795001639&sr=8-28",
+        "link_clean": "https://www.amazon.com/Futurebatt-Charger-Replacement-12V-18V-Lithium-Ion/dp/B0D4TSJJ8P/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D4TSJJ8P&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/613XT8hB2LL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 163,
+        "price": "$23.21",
+        "extracted_price": 23.21,
+        "delivery": [
+          "FREE delivery Nov 25 - 28 on $35 of items shipped by Amazon",
+          "Or fastest delivery Nov 22 - 25"
+        ],
+        "more_buying_choices": "$22.05 (2 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D4TSJJ8P/ref=sr_1_28_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-28",
+        "purchase_options": [
+          {
+            "primary_price": "$23.21",
+            "extracted_primary_price": 23.21,
+            "more_buying_choices": "$22.05 (2 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D4TSJJ8P/ref=sr_1_28_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-28"
+          }
+        ]
+      },
+      {
+        "position": 29,
+        "asin": "B0DK34YYVB",
+        "brand": "Powilling",
+        "title": "Upgraded 4.0Ah 2Packs P189 Compatible with Ryobi 18V Battery",
+        "link": "https://www.amazon.com/Powilling-Replacement-P102-Compatible-Cordless/dp/B0DK34YYVB/ref=sr_1_29?keywords=RYOBI+P119&qid=1795001639&sr=8-29",
+        "link_clean": "https://www.amazon.com/Powilling-Replacement-P102-Compatible-Cordless/dp/B0DK34YYVB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DK34YYVB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71HMqcyrKKL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 113,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$30.99",
+        "extracted_price": 30.99,
+        "price_unit": "$15.50/count",
+        "extracted_price_unit": 15.5,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$30.99",
+            "extracted_primary_price": 30.99
+          }
+        ]
+      },
+      {
+        "position": 30,
+        "asin": "B0H9476RJX",
+        "title": "P117 Replacement for Ryobi 18V Battery Charger P118 P119",
+        "link": "https://www.amazon.com/Replacement-Battery-Charger-Compatible-Batteries/dp/B0H9476RJX/ref=sr_1_30?keywords=RYOBI+P119&qid=1795001639&sr=8-30",
+        "link_clean": "https://www.amazon.com/Replacement-Battery-Charger-Compatible-Batteries/dp/B0H9476RJX/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H9476RJX&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61wkrCmP7AL._AC_UL320_.jpg",
+        "price": "$199.99",
+        "extracted_price": 199.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$199.99",
+            "extracted_primary_price": 199.99
+          }
+        ]
+      },
+      {
+        "position": 31,
+        "asin": "B0D28HJVNR",
+        "title": "Compatible with Ryobi 12V 14.4V 18V NiCD NiMH and Lithium-ion Battery Charger 110V-240V P113 P114 P116 P117 P118 P119 P125, RYO-CH01",
+        "link": "https://www.amazon.com/Taurus-King-Compatible-Lithium-ion-RYO-CH01/dp/B0D28HJVNR/ref=sr_1_31?keywords=RYOBI+P119&qid=1795001639&sr=8-31",
+        "link_clean": "https://www.amazon.com/Taurus-King-Compatible-Lithium-ion-RYO-CH01/dp/B0D28HJVNR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D28HJVNR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51NT2jKnUaL._AC_UL320_.jpg",
+        "price": "$85.09",
+        "extracted_price": 85.09,
+        "delivery": [
+          "FREE delivery Dec 4 - 14"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$85.09",
+            "extracted_primary_price": 85.09
+          }
+        ]
+      },
+      {
+        "position": 32,
+        "asin": "B07N97B2NR",
+        "brand": "RYOBI",
+        "title": "P118B 18V Battery Charger",
+        "link": "https://www.amazon.com/Ryobi-P118B-18V-Battery-Charger/dp/B07N97B2NR/ref=sr_1_32?keywords=RYOBI+P119&qid=1795001639&sr=8-32",
+        "link_clean": "https://www.amazon.com/Ryobi-P118B-18V-Battery-Charger/dp/B07N97B2NR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07N97B2NR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71ZlYYjroXL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 8700,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$19.00",
+        "extracted_price": 19,
+        "delivery": [
+          "FREE delivery Nov 27 - Dec 1 on $35 of items shipped by Amazon",
+          "Or fastest delivery Nov 25 - 28"
+        ],
+        "stock": "Only 12 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$19.00",
+            "extracted_primary_price": 19
+          }
+        ]
+      },
+      {
+        "position": 33,
+        "asin": "B0FWXS18LT",
+        "title": "3.5Ah 18V Batteries with Charger Combo for Ryobi, 2 Packs 18V Battery and Dual Slot 18 Volt Charger Station",
+        "link": "https://www.amazon.com/REACELL-Batteries-Charger-Battery-Station/dp/B0FWXS18LT/ref=sr_1_33?keywords=RYOBI+P119&qid=1795001639&sr=8-33",
+        "link_clean": "https://www.amazon.com/REACELL-Batteries-Charger-Battery-Station/dp/B0FWXS18LT/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FWXS18LT&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61IvFLaG9eL._AC_UL320_.jpg",
+        "price": "$62.98",
+        "extracted_price": 62.98,
+        "delivery": [
+          "Delivery Fri, Nov 20"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$62.98",
+            "extracted_primary_price": 62.98
+          }
+        ]
+      },
+      {
+        "position": 34,
+        "asin": "B0H8S76PP8",
+        "title": "2Packs Upgraded 4.0Ah Replacement for Ryobi 18V Battery and Charger Combo",
+        "link": "https://www.amazon.com/Upgraded-Replacement-Battery-Charger-Compatible/dp/B0H8S76PP8/ref=sr_1_34?keywords=RYOBI+P119&qid=1795001639&sr=8-34",
+        "link_clean": "https://www.amazon.com/Upgraded-Replacement-Battery-Charger-Compatible/dp/B0H8S76PP8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H8S76PP8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71kepg5eK-L._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 2100,
+        "price": "$62.34",
+        "extracted_price": 62.34,
+        "price_unit": "$31.17/count",
+        "extracted_price_unit": 31.17,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 2,
+            "name": "Safer chemicals",
+            "snippet": "Made with chemicals safer for human health and the environment.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 3,
+            "name": "Worker well-being",
+            "snippet": "Manufactured on farms or in facilities that protect the rights and/or health of workers.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$62.34",
+            "extracted_primary_price": 62.34
+          }
+        ]
+      },
+      {
+        "position": 35,
+        "asin": "B0BL87MVMD",
+        "brand": "RYOBI",
+        "title": "ONEAND 18V Cordless Compact Area Light Tool ONLY P796B",
+        "link": "https://www.amazon.com/Compact-Area-Light-Tool-Only/dp/B0BL87MVMD/ref=sr_1_35?keywords=RYOBI+P119&qid=1795001639&sr=8-35",
+        "link_clean": "https://www.amazon.com/Compact-Area-Light-Tool-Only/dp/B0BL87MVMD/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BL87MVMD&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41JwluW91sL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 25,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$28.98",
+        "extracted_price": 28.98,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 3 left in stock - order soon.",
+        "more_buying_choices": "$27.99 (8 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BL87MVMD/ref=sr_1_35_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-35",
+        "purchase_options": [
+          {
+            "primary_price": "$28.98",
+            "extracted_primary_price": 28.98,
+            "more_buying_choices": "$27.99 (8 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BL87MVMD/ref=sr_1_35_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-35"
+          }
+        ]
+      },
+      {
+        "position": 36,
+        "asin": "B0781B4R4C",
+        "brand": "RYOBI",
+        "title": "P197 Battery ONE + (PLUS) Compatible Replaces P108 Rechargeable Lithium Ion 18 v Volt 4.0 Ah / 72 Wh UL Listed Faster Recharge Single Battery with Fuel Gage",
+        "link": "https://www.amazon.com/Ryobi-Compatible-Replaces-Rechargeable-Recharge/dp/B0781B4R4C/ref=sr_1_36?keywords=RYOBI+P119&qid=1795001639&sr=8-36",
+        "link_clean": "https://www.amazon.com/Ryobi-Compatible-Replaces-Rechargeable-Recharge/dp/B0781B4R4C/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0781B4R4C&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/518yAHNT4dL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 2800,
+        "price": "$82.99",
+        "extracted_price": 82.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 27"
+        ],
+        "more_buying_choices": "$74.04 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0781B4R4C/ref=sr_1_36_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-36",
+        "purchase_options": [
+          {
+            "primary_price": "$82.99",
+            "extracted_primary_price": 82.99,
+            "more_buying_choices": "$74.04 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0781B4R4C/ref=sr_1_36_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-36"
+          }
+        ]
+      },
+      {
+        "position": 37,
+        "asin": "B0FJM33QBL",
+        "title": "P117 Rapid Charger Compatible with Ryobi 18V Lithium & NiCd/NiMH Batteries | for P102, P105, P107, P108, P189, PBP005 | Replacement for P118B/P118/P119 Chargers | Dual Voltage & Fast Charging",
+        "link": "https://www.amazon.com/Compatible-Batteries-Replacement-Chargers-Charging/dp/B0FJM33QBL/ref=sr_1_37?keywords=RYOBI+P119&qid=1795001639&sr=8-37",
+        "link_clean": "https://www.amazon.com/Compatible-Batteries-Replacement-Chargers-Charging/dp/B0FJM33QBL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FJM33QBL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51TGgM8LLnL._AC_UL320_.jpg",
+        "price": "$49.77",
+        "extracted_price": 49.77,
+        "delivery": [
+          "FREE delivery Dec 11 - 21"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$49.77",
+            "extracted_primary_price": 49.77
+          }
+        ]
+      },
+      {
+        "position": 38,
+        "asin": "B0CLS4TB2C",
+        "title": "Compatible with Ryobi 12V 14.4V 18V NiCD NiMH and Lithium-ion Batteries Charger 110V-240V P113 P114 P116 P117 P118 P119 P125, CA-RYO-CH01",
+        "link": "https://www.amazon.com/TAURUSKING-Compatible-Lithium-ion-Batteries-CA-RYO-CH01/dp/B0CLS4TB2C/ref=sr_1_38?keywords=RYOBI+P119&qid=1795001639&sr=8-38",
+        "link_clean": "https://www.amazon.com/TAURUSKING-Compatible-Lithium-ion-Batteries-CA-RYO-CH01/dp/B0CLS4TB2C/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CLS4TB2C&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51ZnWOsPf4L._AC_UL320_.jpg",
+        "price": "$68.27",
+        "extracted_price": 68.27,
+        "delivery": [
+          "FREE delivery Thu, Dec 10"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$68.27",
+            "extracted_primary_price": 68.27
+          }
+        ]
+      },
+      {
+        "position": 39,
+        "asin": "B0HHSTKVK1",
+        "title": "2 Packs P108 18 Volt Battery Replacement for Ryobi 18V Battery 8ah(Green)",
+        "link": "https://www.amazon.com/P108-Battery-Replacement-Compatible-PBP005/dp/B0HHSTKVK1/ref=sr_1_39?keywords=RYOBI+P119&qid=1795001639&sr=8-39",
+        "link_clean": "https://www.amazon.com/P108-Battery-Replacement-Compatible-PBP005/dp/B0HHSTKVK1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HHSTKVK1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/611ivVj+SzL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 50,
+        "price": "$50.57",
+        "extracted_price": 50.57,
+        "price_unit": "$25.29/count",
+        "extracted_price_unit": 25.29,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$50.57",
+            "extracted_primary_price": 50.57
+          }
+        ]
+      },
+      {
+        "position": 40,
+        "asin": "B0HHDZVWZC",
+        "title": "2Packs Upgraded 3.6Ah Replacement for Ryobi 18V Battery and Charger Combo",
+        "link": "https://www.amazon.com/Upgraded-Replacement-Battery-Charger-Compatible/dp/B0HHDZVWZC/ref=sr_1_40?keywords=RYOBI+P119&qid=1795001639&sr=8-40",
+        "link_clean": "https://www.amazon.com/Upgraded-Replacement-Battery-Charger-Compatible/dp/B0HHDZVWZC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HHDZVWZC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71sIhkekbJL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 60,
+        "price": "$58.81",
+        "extracted_price": 58.81,
+        "price_unit": "$29.41/count",
+        "extracted_price_unit": 29.41,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 2,
+            "name": "Safer chemicals",
+            "snippet": "Made with chemicals safer for human health and the environment.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 3,
+            "name": "Worker well-being",
+            "snippet": "Manufactured on farms or in facilities that protect the rights and/or health of workers.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$58.81",
+            "extracted_primary_price": 58.81
+          }
+        ]
+      },
+      {
+        "position": 41,
+        "asin": "B08P82K1T9",
+        "title": "Ryobi P118B 18V Battery Charger and Ryobi P189 18V 1.5 Ah Battery Combo Pack",
+        "link": "https://www.amazon.com/Ryobi-P118B-Battery-Charger-P189/dp/B08P82K1T9/ref=sr_1_41?keywords=RYOBI+P119&qid=1795001639&sr=8-41",
+        "link_clean": "https://www.amazon.com/Ryobi-P118B-Battery-Charger-P189/dp/B08P82K1T9/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08P82K1T9&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71V-DLHpEGL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 1300,
+        "price": "$77.80",
+        "extracted_price": 77.8,
+        "delivery": [
+          "FREE delivery Fri, Nov 27"
+        ],
+        "stock": "Only 8 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$77.80",
+            "extracted_primary_price": 77.8
+          }
+        ]
+      },
+      {
+        "position": 42,
+        "asin": "B0HHF24G89",
+        "title": "2Packs Upgraded 8.0Ah Replacement for Ryobi 18V Battery and Charger Combo",
+        "link": "https://www.amazon.com/Upgraded-Replacement-Battery-Compatible-Cordless/dp/B0HHF24G89/ref=sr_1_42?keywords=RYOBI+P119&qid=1795001639&sr=8-42",
+        "link_clean": "https://www.amazon.com/Upgraded-Replacement-Battery-Compatible-Cordless/dp/B0HHF24G89/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HHF24G89&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71ATJfPtYWL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 2100,
+        "price": "$74.99",
+        "extracted_price": 74.99,
+        "price_unit": "$37.50/count",
+        "extracted_price_unit": 37.5,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 95% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/61O0PhdcAdL._SS200_FMpng_.png",
+            "certified_by": "Recycled Claim Standard 100",
+            "certified_info": "Recycled Claim Standard 100 (RCS100) certified products contain recycled content (>95%) that has been independently verified at each stage of the supply chain, from the source to the final product. The purchase of Recycled Claim Standard (RCS) certified products demonstrates demand for recycled materials."
+          },
+          {
+            "position": 2,
+            "name": "Safer chemicals",
+            "snippet": "Made with chemicals safer for human health and the environment.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 3,
+            "name": "Worker well-being",
+            "snippet": "Manufactured on farms or in facilities that protect the rights and/or health of workers.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$74.99",
+            "extracted_primary_price": 74.99
+          }
+        ]
+      },
+      {
+        "position": 43,
+        "asin": "B0HJQF6XX8",
+        "title": "18V5.0AH Replacement for Ryobi 18V Battery with 65W Type-C Input/Output Port, Compatible with Ryobi ONE+ Plus 18V Battery P108 P102 P103 P104 P105 P107 P109",
+        "link": "https://www.amazon.com/clevabie-18V5-0AH-Replacement-Compatible-P108/dp/B0HJQF6XX8/ref=sr_1_43?keywords=RYOBI+P119&qid=1795001639&sr=8-43",
+        "link_clean": "https://www.amazon.com/clevabie-18V5-0AH-Replacement-Compatible-P108/dp/B0HJQF6XX8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HJQF6XX8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61bLzUk9S9L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 3,
+        "bought_last_month": "New on Amazon in past month",
+        "price": "$52.99",
+        "extracted_price": 52.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$52.99",
+            "extracted_primary_price": 52.99
+          }
+        ]
+      },
+      {
+        "position": 44,
+        "asin": "B0HPDMZDBW",
+        "title": "2Pack 8.0Ah 18V P108 Replacement Battery for Ryobi 18V with Charger",
+        "link": "https://www.amazon.com/Nonbliep-2Pack-Replacement-Battery-Charger/dp/B0HPDMZDBW/ref=sr_1_44?keywords=RYOBI+P119&qid=1795001639&sr=8-44",
+        "link_clean": "https://www.amazon.com/Nonbliep-2Pack-Replacement-Battery-Charger/dp/B0HPDMZDBW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HPDMZDBW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71D9ImVcGVL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 17,
+        "bought_last_month": "New on Amazon in past month",
+        "price": "$66.49",
+        "extracted_price": 66.49,
+        "price_unit": "$4.43/count",
+        "extracted_price_unit": 4.43,
+        "old_price": "$69.99",
+        "extracted_old_price": 69.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$66.49",
+            "extracted_primary_price": 66.49,
+            "old_primary_price": "$69.99",
+            "extracted_old_primary_price": 69.99
+          }
+        ]
+      },
+      {
+        "position": 45,
+        "asin": "B0184Y2GSM",
+        "brand": "RYOBI",
+        "title": "P108 18V High Capacity Lithium Ion Battery",
+        "link": "https://www.amazon.com/Ryobi-P108-Capacity-Lithium-Battery/dp/B0184Y2GSM/ref=sr_1_45?keywords=RYOBI+P119&qid=1795001639&sr=8-45",
+        "link_clean": "https://www.amazon.com/Ryobi-P108-Capacity-Lithium-Battery/dp/B0184Y2GSM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0184Y2GSM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61wdlnJe8zL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 73,
+        "price": "$65.00",
+        "extracted_price": 65,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Nov 19 - 23"
+        ],
+        "more_buying_choices": "$58.36 (10 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0184Y2GSM/ref=sr_1_45_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-45",
+        "purchase_options": [
+          {
+            "primary_price": "$65.00",
+            "extracted_primary_price": 65,
+            "more_buying_choices": "$58.36 (10 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0184Y2GSM/ref=sr_1_45_olp?keywords=RYOBI+P119&qid=1795001639&sr=8-45"
+          }
+        ]
+      },
+      {
+        "position": 46,
+        "asin": "B091GWMVNL",
+        "title": "Smart P117 Quick Charger (Multi-Chemistry) for Ryobi 12V-18V ONE+ NiCd/NiMh/Lithium Tools Battery Charger fit P100 P101 P102 P103 P105 P107 P108 P122 P189 P191 P197 P200",
+        "link": "https://www.amazon.com/Replacement-Charger-Version-12V-18V-Battery/dp/B091GWMVNL/ref=sr_1_46?keywords=RYOBI+P119&qid=1795001639&sr=8-46",
+        "link_clean": "https://www.amazon.com/Replacement-Charger-Version-12V-18V-Battery/dp/B091GWMVNL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B091GWMVNL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71bKBboBMIL._AC_UL320_.jpg",
+        "rating": 4.2,
+        "reviews": 285,
+        "price": "$35.00",
+        "extracted_price": 35,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$35.00",
+            "extracted_primary_price": 35
+          }
+        ]
+      },
+      {
+        "position": 47,
+        "asin": "B0GGGN8ZLL",
+        "title": "2Packs 8.0Ah P108 Replacement for Ryobi 18V Battery Compatible with Ryobi Battery P107 P104 P105 P102 P103 P122 P109 PBP004 PBP005, with P117 18 Volt Charger",
+        "link": "https://www.amazon.com/ANTRobut-Replacement-Battery-Compatible-Charger/dp/B0GGGN8ZLL/ref=sr_1_47?keywords=RYOBI+P119&qid=1795001639&sr=8-47",
+        "link_clean": "https://www.amazon.com/ANTRobut-Replacement-Battery-Compatible-Charger/dp/B0GGGN8ZLL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GGGN8ZLL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71GXgCphHkL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 2,
+        "price": "$58.99",
+        "extracted_price": 58.99,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$58.99",
+            "extracted_primary_price": 58.99
+          }
+        ]
+      },
+      {
+        "position": 48,
+        "asin": "B0HP9R4VYM",
+        "title": "P117B Charger Compatible with Ryobi 18V Battery Charger, Compatible with Ryobi 12V-18V Lithium NiCad NiMh Battery P102 P103 P107 P108 P109 PBP002 PBP005",
+        "link": "https://www.amazon.com/LUMSING-Charger-Compatible-Battery-12V-18V/dp/B0HP9R4VYM/ref=sr_1_48?keywords=RYOBI+P119&qid=1795001639&sr=8-48",
+        "link_clean": "https://www.amazon.com/LUMSING-Charger-Compatible-Battery-12V-18V/dp/B0HP9R4VYM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HP9R4VYM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61q+jml4f1L._AC_UL320_.jpg",
+        "price": "$27.99",
+        "extracted_price": 27.99,
+        "delivery": [
+          "FREE delivery Dec 1 - 10"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$27.99",
+            "extracted_primary_price": 27.99
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "popular_shopping_ideas": [
+        {
+          "position": 1,
+          "name": "Charger",
+          "link": "https://www.amazon.com/s?k=ryobi+p119+charger&ref=sr_nr_p_rag_integrated_qb_0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+p119+charger"
+        },
+        {
+          "position": 2,
+          "name": "One+",
+          "link": "https://www.amazon.com/s?k=ryobi+p119+one%2B&ref=sr_nr_p_rag_integrated_qb_1",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+p119+one%2B"
+        },
+        {
+          "position": 3,
+          "name": "Battery",
+          "link": "https://www.amazon.com/s?k=ryobi+p119+battery&ref=sr_nr_p_rag_integrated_qb_2",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+p119+battery"
+        },
+        {
+          "position": 4,
+          "name": "Kit",
+          "link": "https://www.amazon.com/s?k=ryobi+p119+kit&ref=sr_nr_p_rag_integrated_qb_3",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+p119+kit"
+        },
+        {
+          "position": 5,
+          "name": "Replacement",
+          "link": "https://www.amazon.com/s?k=ryobi+p119+replacement&ref=sr_nr_p_rag_integrated_qb_4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+p119+replacement"
+        },
+        {
+          "position": 6,
+          "name": "18v",
+          "link": "https://www.amazon.com/s?k=ryobi+p119+18v&ref=sr_nr_p_rag_integrated_qb_5",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=ryobi+p119+18v"
+        }
+      ],
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249149011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_76%3A1249149011&dc&qid=1795001639&rnid=1249147011&ref=sr_nr_p_76_1&ds=v1%3AT52qb3mXcjKkPS8UTQanUyXy2km4WxCaX%2BsbRNTAYxE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_76%3A1249149011"
+        }
+      ],
+      "delivery_day": [
+        {
+          "position": 1,
+          "name": "Get It Today",
+          "rh": "p_90:8308920011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_90%3A8308920011&dc&qid=1795001639&rnid=8308919011&ref=sr_nr_p_90_1&ds=v1%3AvIqDxXYoDnBLHAnc2o2oPlxF4kJlXtRhZPHT74G97J8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_90%3A8308920011"
+        },
+        {
+          "position": 2,
+          "name": "Get It by Tomorrow",
+          "rh": "p_90:8308921011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_90%3A8308921011&dc&qid=1795001639&rnid=8308919011&ref=sr_nr_p_90_2&ds=v1%3AjYtt4BAsmd11iaLd3gJ7DqIFuVZWSaO5HvSdD60b16w",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_90%3A8308921011"
+        }
+      ],
+      "price": [
+        {
+          "position": 1,
+          "name": "All Discounts",
+          "rh": "p_n_deal_type:23566065011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_deal_type%3A23566065011&dc&qid=1795001639&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3ASWaJsdkLHfHwm9qjPIhfM%2FsBYos3L2W00n2Qg894V8c",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_deal_type%3A23566065011"
+        },
+        {
+          "position": 2,
+          "name": "Coupons",
+          "rh": "p_n_deal_type:210906366011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_deal_type%3A210906366011&dc&qid=1795001639&rnid=23566063011&ref=sr_nr_p_n_deal_type_2&ds=v1%3A%2BMbU2WrCYqfWcJbZYj8HftdV0sNqyMQjRAPG1QKHc%2FE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_deal_type%3A210906366011"
+        },
+        {
+          "position": 3,
+          "name": "Today's Deals",
+          "rh": "p_n_deal_type:23566064011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_deal_type%3A23566064011&dc&qid=1795001639&rnid=23566063011&ref=sr_nr_p_n_deal_type_3&ds=v1%3AnUmeTBkr7y1fZo4wG3Dh5xuXW%2Bwi0ePs%2BFjUvZRqJ9Y",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_deal_type%3A23566064011"
+        },
+        {
+          "position": 4,
+          "name": "Up to $40",
+          "rh": "p_36:dynamic-picker-0",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_36%3A-4000&dc&qid=1795001639&rnid=386636011&ref=sr_nr_p_36_1&ds=v1%3ASmrPxzqfSdyM0pcl6TPDwltCF2mk41ikoEz%2FKsLJLeQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_36%3A-4000"
+        },
+        {
+          "position": 5,
+          "name": "$40 to $60",
+          "rh": "p_36:dynamic-picker-1",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_36%3A4000-6000&dc&qid=1795001639&rnid=386636011&ref=sr_nr_p_36_2&ds=v1%3AzTatOdcvJI8NyI9y%2FNpQqWAeB66rZ52NXvHZokvT9EQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_36%3A4000-6000"
+        },
+        {
+          "position": 6,
+          "name": "$60 to $80",
+          "rh": "p_36:dynamic-picker-2",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_36%3A6000-8000&dc&qid=1795001639&rnid=386636011&ref=sr_nr_p_36_3&ds=v1%3A4g76eSao04cCJqg4MqqfKmtzfwSRQsPc%2B8oqXd%2Bkkro",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_36%3A6000-8000"
+        },
+        {
+          "position": 7,
+          "name": "$80 & above",
+          "rh": "p_36:dynamic-picker-3",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_36%3A8000-&dc&qid=1795001639&rnid=386636011&ref=sr_nr_p_36_4&ds=v1%3AIzirX2zwkin4lwBVMp5t36sXsnqzNRaQqy1jrSnOT1g",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_36%3A8000-"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "RYOBI",
+          "rh": "p_123:252605",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_123%3A252605&dc&qid=1795001639&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3A%2FUWRzYj4BdDMdqyPWlug6KNapSZWzsYnc7Dlkn3hW%2B0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_123%3A252605"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_condition-type%3A6358196011&dc&qid=1795001639&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3AJFhCttmds%2BDpVtPKDka0T0WrddIcQN3zKak8w5upXA4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_condition-type%3A6358196011"
+        },
+        {
+          "position": 2,
+          "name": "Used",
+          "rh": "p_n_condition-type:6358198011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_condition-type%3A6358198011&dc&qid=1795001639&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3As3rPO7QZtbLwts70QnVQ8qr2iFha8kH231vViln1TBU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_condition-type%3A6358198011"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248903011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_72%3A1248903011&dc&qid=1795001639&rnid=1248901011&ref=sr_nr_p_72_1&ds=v1%3A8VP15vsbS5yo4Iv3%2BFeLSqUfF%2BLl2JF%2FvgXN8pBkfhs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_72%3A1248903011"
+        }
+      ],
+      "reusability": [
+        {
+          "position": 1,
+          "name": "Rechargeable",
+          "rh": "p_n_g-1003247105111:23876358011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-1003247105111%3A23876358011&dc&qid=1795001639&rnid=23876347011&ref=sr_nr_p_n_g-1003247105111_1&ds=v1%3AlOoulm3BhVVw6ZX%2Bx1plctppM3QnJOlP4VbseBNWcz0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-1003247105111%3A23876358011"
+        }
+      ],
+      "power_source": [
+        {
+          "position": 1,
+          "name": "Battery",
+          "rh": "p_n_g-1001549225111:492226011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-1001549225111%3A492226011&dc&qid=1795001639&rnid=492225011&ref=sr_nr_p_n_g-1001549225111_1&ds=v1%3Af%2FCK1%2BJOfoxlNM%2FdR2XHCJeseai1lUZrzaZjyYr78v4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-1001549225111%3A492226011"
+        }
+      ],
+      "quantity": [
+        {
+          "position": 1,
+          "name": "Up to 3 Batteries",
+          "rh": "p_n_g-1002806120111:23555310011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-1002806120111%3A23555310011&dc&qid=1795001639&rnid=23555274011&ref=sr_nr_p_n_g-1002806120111_1&ds=v1%3A1VpMJXQOrWGyf%2FQDIGhQXvGMd61QWlmsPc3fwhHCT4k",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-1002806120111%3A23555310011"
+        }
+      ],
+      "battery_cell_composition": [
+        {
+          "position": 1,
+          "name": "Lithium Ion",
+          "rh": "p_n_g-101015850560111:204067613011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-101015850560111%3A204067613011&dc&qid=1795001639&rnid=204067512011&ref=sr_nr_p_n_g-101015850560111_1&ds=v1%3A1nuzyFLcCLb8qYCYYscPhX9TZhULtF7xEU%2BXxoopwAc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-101015850560111%3A204067613011"
+        },
+        {
+          "position": 2,
+          "name": "NiMH",
+          "rh": "p_n_g-101015850560111:204067608011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-101015850560111%3A204067608011&dc&qid=1795001639&rnid=204067512011&ref=sr_nr_p_n_g-101015850560111_2&ds=v1%3Aw0z81Zt88gwe5TQ1OdPiNJIwb1%2BtGKJEgP32pMUanac",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-101015850560111%3A204067608011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Embie Industries- Serial Numbers Recorded",
+          "rh": "p_6:A3KG0Q7QL544HL",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_6%3AA3KG0Q7QL544HL&dc&qid=1795001639&rnid=2661622011&ref=sr_nr_p_6_1&ds=v1%3ADccK67DuUNESEIOFNoxjvQZ7tVzxdcYszD29C2ktJUs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_6%3AA3KG0Q7QL544HL"
+        },
+        {
+          "position": 2,
+          "name": "OHYES BAT-US",
+          "rh": "p_6:A3EHFB9DKFB9VK",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_6%3AA3EHFB9DKFB9VK&dc&qid=1795001639&rnid=2661622011&ref=sr_nr_p_6_2&ds=v1%3ArFnkMu4CcuufJNR5893e6OtXaP1ySi2sCrN%2F62W4M8k",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_6%3AA3EHFB9DKFB9VK"
+        },
+        {
+          "position": 3,
+          "name": "Supps Direct LLC",
+          "rh": "p_6:A3O3RXQE8MYLJP",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_6%3AA3O3RXQE8MYLJP&dc&qid=1795001639&rnid=2661622011&ref=sr_nr_p_6_3&ds=v1%3AcxIwavs85QcgbxQnKrgiYn3aY6hEFYdG8fLSI5mXfps",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_6%3AA3O3RXQE8MYLJP"
+        },
+        {
+          "position": 4,
+          "name": "Yuanqi-US",
+          "rh": "p_6:ARXK0BEU1FK0K",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_6%3AARXK0BEU1FK0K&dc&qid=1795001639&rnid=2661622011&ref=sr_nr_p_6_4&ds=v1%3AAP%2B2EJPMqHT7N6pPb7M0DotjRXhlAOfWUgrCDdrPygY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_6%3AARXK0BEU1FK0K"
+        },
+        {
+          "position": 5,
+          "name": "AB BEST DEALs",
+          "rh": "p_6:A2HC63B7SCKUAC",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_6%3AA2HC63B7SCKUAC&dc&qid=1795001639&rnid=2661622011&ref=sr_nr_p_6_5&ds=v1%3AKg5r%2BR9E0bgsOGmN7gg%2FInku2fR6xHONRxZewyVspy0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_6%3AA2HC63B7SCKUAC"
+        },
+        {
+          "position": 6,
+          "name": "XNJTG",
+          "rh": "p_6:A102QGBK2VCI2D",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_6%3AA102QGBK2VCI2D&dc&qid=1795001639&rnid=2661622011&ref=sr_nr_p_6_6&ds=v1%3AYIh%2FVcEiK15zghFwv1RWny9fFuzB3zq73fSjML0Pk64",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_6%3AA102QGBK2VCI2D"
+        },
+        {
+          "position": 7,
+          "name": "ZENTROM- (WE PICTURE RECORD ALL SERIAL NUMBERS)",
+          "rh": "p_6:A26DZ2Z2Q01ZME",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_6%3AA26DZ2Z2Q01ZME&dc&qid=1795001639&rnid=2661622011&ref=sr_nr_p_6_7&ds=v1%3AuZUMn6t3JsESt6sHfh3tcOsA1G9cyznch3FudG84TkA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_6%3AA26DZ2Z2Q01ZME"
+        }
+      ],
+      "color": [
+        {
+          "position": 1,
+          "name": "Black",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972982011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-1001308742111%3A2972982011&dc&qid=1795001639&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_1&ds=v1%3AUZZLQLaQ4Y9UPEblg5PCExcHXpACikZri%2B5l9bnHEZc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-1001308742111%3A2972982011"
+        },
+        {
+          "position": 2,
+          "name": "Green",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972987011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-1001308742111%3A2972987011&dc&qid=1795001639&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_2&ds=v1%3AITtrix19sJgII7nkLhChUepM48ZqSQp2KhHCmLbotxc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-1001308742111%3A2972987011"
+        }
+      ],
+      "sustainability_features": [
+        {
+          "position": 1,
+          "name": "Any Feature",
+          "rh": "p_n_cpf_labels:121136630011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_cpf_labels%3A121136630011&dc&qid=1795001639&rnid=116845681011&ref=sr_nr_p_n_cpf_labels_1&ds=v1%3ABszkDhyWqCPcgsMq%2FKnpEYP4YQ1mSJ%2BKE%2Bn9DlAJyj4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_cpf_labels%3A121136630011"
+        },
+        {
+          "position": 2,
+          "name": "Recycled Materials",
+          "rh": "p_n_cpf_labels:116845689011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_cpf_labels%3A116845689011&dc&qid=1795001639&rnid=116845681011&ref=sr_nr_p_n_cpf_labels_2&ds=v1%3AJOAMGbIvWJZnin08GecgSNDbPC0UFtwgRKjh7bJXxgE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_cpf_labels%3A116845689011"
+        },
+        {
+          "position": 3,
+          "name": "Safer Chemicals",
+          "rh": "p_n_cpf_labels:116845683011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_cpf_labels%3A116845683011&dc&qid=1795001639&rnid=116845681011&ref=sr_nr_p_n_cpf_labels_3&ds=v1%3AxHN5%2FqKFmoDEb4K8l7Igbv%2F9IpBvGrZuSjx6X4o1yhs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_cpf_labels%3A116845683011"
+        },
+        {
+          "position": 4,
+          "name": "Worker Wellbeing",
+          "rh": "p_n_cpf_labels:116845686011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_cpf_labels%3A116845686011&dc&qid=1795001639&rnid=116845681011&ref=sr_nr_p_n_cpf_labels_4&ds=v1%3APvy84P%2BbuIQtIMk5VRcECCB8A2g%2BygMaSLpzilwVijU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_cpf_labels%3A116845686011"
+        }
+      ],
+      "battery_capacity": [
+        {
+          "position": 1,
+          "name": "Up to 3,789 mAh",
+          "rh": "p_n_g-101013567651111:64613661011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-101013567651111%3A64613661011&dc&qid=1795001639&rnid=64613658011&ref=sr_nr_p_n_g-101013567651111_1&ds=v1%3AKeKxSGMFOJ4JOP2gkAu3aBmESkA1QX1hRTlRDDwB5Ys",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-101013567651111%3A64613661011"
+        },
+        {
+          "position": 2,
+          "name": "3,790 to 4,499 mAh",
+          "rh": "p_n_g-101013567651111:64613662011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-101013567651111%3A64613662011&dc&qid=1795001639&rnid=64613658011&ref=sr_nr_p_n_g-101013567651111_2&ds=v1%3Aaf5TB0kVGZPKhUKnku%2FRdGuBUeeltLkQaUVv77ZAW%2BM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-101013567651111%3A64613662011"
+        },
+        {
+          "position": 3,
+          "name": "4,500 to 5,209 mAh",
+          "rh": "p_n_g-101013567651111:64613660011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-101013567651111%3A64613660011&dc&qid=1795001639&rnid=64613658011&ref=sr_nr_p_n_g-101013567651111_3&ds=v1%3AnCtaJLUixmJGSrWhzOM9UPUhrGrqO1XnQFTkmkn4wdk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-101013567651111%3A64613660011"
+        },
+        {
+          "position": 4,
+          "name": "5,210 mAh & above",
+          "rh": "p_n_g-101013567651111:64613659011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P119&rh=p_n_g-101013567651111%3A64613659011&dc&qid=1795001639&rnid=64613658011&ref=sr_nr_p_n_g-101013567651111_4&ds=v1%3AtRyTPaUN1yjouMqYZbCXetKd%2FgOlctjx00TVzQjjoIs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&rh=p_n_g-101013567651111%3A64613659011"
+        }
+      ]
+    },
+    "serpapi_pagination": {
+      "current": 1,
+      "next": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P119&page=2"
+    }
+  }
+}

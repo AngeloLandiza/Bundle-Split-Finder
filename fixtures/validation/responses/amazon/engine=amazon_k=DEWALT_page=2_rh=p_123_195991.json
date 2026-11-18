@@ -1,0 +1,2228 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=DEWALT&page=2&rh=p_123:195991",
+  "at": 1794973077018,
+  "data": {
+    "search_metadata": {
+      "id": "6afd1d91ee072e2ff6ad69e8",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/DL2lI709o9CjjjuQdEMV_N_fCeHLMdNCpr0oWxo5tC0/6afd1d91ee072e2ff6ad69e8.json",
+      "markdown_endpoint": "https://serpapi.com/searches/DL2lI709o9CjjjuQdEMV_N_fCeHLMdNCpr0oWxo5tC0/6afd1d91ee072e2ff6ad69e8.md",
+      "created_at": "2026-11-18 03:37:53 UTC",
+      "processed_at": "2026-11-18 03:37:53 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=DEWALT&page=2&rh=p_123:195991",
+      "raw_html_file": "https://serpapi.com/searches/DL2lI709o9CjjjuQdEMV_N_fCeHLMdNCpr0oWxo5tC0/6afd1d91ee072e2ff6ad69e8.html",
+      "total_time_taken": 3.3
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "DEWALT",
+      "amazon_domain": "amazon.com",
+      "rh": "p_123:195991",
+      "page": "2",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 5859,
+      "query_displayed": "DEWALT",
+      "store": "gateway",
+      "page": 2
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B0FYB341GK",
+        "brand": "DEWALT",
+        "title": "20 -Volt 2 -Pack Lithium-ion (8 Ah 8 Ah Battery and Charger)",
+        "link": "https://www.amazon.com/DEWALT-Volt-Lithium-ion-Battery-Charger/dp/B0FYB341GK/ref=sr_1_49?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-49",
+        "link_clean": "https://www.amazon.com/DEWALT-Volt-Lithium-ion-Battery-Charger/dp/B0FYB341GK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FYB341GK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51xCc2MWO7L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 100,
+        "bought_last_month": "600+ bought in past month",
+        "price": "$244.93",
+        "extracted_price": 244.93,
+        "old_price": "$258.99",
+        "extracted_old_price": 258.99,
+        "delivery": [
+          "FREE delivery Thu, Nov 19"
+        ],
+        "more_buying_choices": "$229.99 (62+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FYB341GK/ref=sr_1_49_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-49&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$244.93",
+            "extracted_primary_price": 244.93,
+            "old_primary_price": "$258.99",
+            "extracted_old_primary_price": 258.99,
+            "more_buying_choices": "$229.99 (62+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FYB341GK/ref=sr_1_49_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-49&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B0DSCM3XFR",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless GRABO Suction Lifter, Bare Tool Only, Lift-load Capacity of Up to 265 lbs. (DCE592B)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Lift-load-Capacity-DCE592B/dp/B0DSCM3XFR/ref=sr_1_50?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-50",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Lift-load-Capacity-DCE592B/dp/B0DSCM3XFR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DSCM3XFR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71YrGPJjaUL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 281,
+        "price": "$180.99",
+        "extracted_price": 180.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$180.99",
+            "extracted_primary_price": 180.99
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B00KWRM78E",
+        "brand": "DEWALT",
+        "title": "20V MAX LED Work Light, Rechargeable Flashlight, Pivoting Head, Bare Tool Only (DCL050)",
+        "link": "https://www.amazon.com/DEWALT-DCL050-Hand-Held-Light/dp/B00KWRM78E/ref=sr_1_51?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-51",
+        "link_clean": "https://www.amazon.com/DEWALT-DCL050-Hand-Held-Light/dp/B00KWRM78E/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00KWRM78E&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61+g2mB4OWL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 13700,
+        "bought_last_month": "3K+ bought in past month",
+        "price": "$49.99",
+        "extracted_price": 49.99,
+        "old_price": "$89.00",
+        "extracted_old_price": 89,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$48.99 (29+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KWRM78E/ref=sr_1_51_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-51&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$49.99",
+            "extracted_primary_price": 49.99,
+            "old_primary_price": "$89.00",
+            "extracted_old_primary_price": 89,
+            "more_buying_choices": "$48.99 (29+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KWRM78E/ref=sr_1_51_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-51&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B0C3TGRLLM",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Drill Driver Set with Battery, Charger (DCD777D1)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Battery-Included-DCD777D1/dp/B0C3TGRLLM/ref=sr_1_52?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-52",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Battery-Included-DCD777D1/dp/B0C3TGRLLM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0C3TGRLLM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/715+r4lU6mL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 2500,
+        "bought_last_month": "2K+ bought in past month",
+        "price": "$99.00",
+        "extracted_price": 99,
+        "old_price": "$179.00",
+        "extracted_old_price": 179,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$90.09 (19+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0C3TGRLLM/ref=sr_1_52_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-52&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$99.00",
+            "extracted_primary_price": 99,
+            "old_primary_price": "$179.00",
+            "extracted_old_primary_price": 179,
+            "more_buying_choices": "$90.09 (19+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0C3TGRLLM/ref=sr_1_52_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-52&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B0F94FMBYW",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR® Brushless Cordless 1/2 in. Drill/Driver (Tool Only) (DCD801B) battery powered, Bright LED Work light",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Driver-DCD801B/dp/B0F94FMBYW/ref=sr_1_53?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-53",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Cordless-Driver-DCD801B/dp/B0F94FMBYW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F94FMBYW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61dB0pP3+tL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 233,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$110.00",
+        "extracted_price": 110,
+        "old_price": "$179.00",
+        "extracted_old_price": 179,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$92.13 (54+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F94FMBYW/ref=sr_1_53_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-53&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$110.00",
+            "extracted_primary_price": 110,
+            "old_primary_price": "$179.00",
+            "extracted_old_primary_price": 179,
+            "more_buying_choices": "$92.13 (54+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F94FMBYW/ref=sr_1_53_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-53&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B07VYLSYQ6",
+        "brand": "DEWALT",
+        "title": "ATOMIC 20V MAX* Circular Saw, 4-1/2-Inch, Tool Only (DCS571B)",
+        "link": "https://www.amazon.com/DEWALT-DCS571B-Brushless-Cordless-Circular/dp/B07VYLSYQ6/ref=sr_1_54?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-54",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS571B-Brushless-Cordless-Circular/dp/B07VYLSYQ6/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07VYLSYQ6&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51wewJBNZyL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 7700,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$129.00",
+        "extracted_price": 129,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$129.00",
+            "extracted_primary_price": 129
+          }
+        ]
+      },
+      {
+        "position": 7,
+        "asin": "B01CKIZ8BA",
+        "brand": "DEWALT",
+        "title": "20V MAX Hand Vacuum, Cordless, for Wet or Dry Surfaces, 1/2-Gallon Tank, Washable Filter, Portable, Bare Tool Only (DCV517B)",
+        "link": "https://www.amazon.com/DEWALT-DCV517B-Baretool-Cordless-Portable/dp/B01CKIZ8BA/ref=sr_1_55?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-55",
+        "link_clean": "https://www.amazon.com/DEWALT-DCV517B-Baretool-Cordless-Portable/dp/B01CKIZ8BA/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01CKIZ8BA&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71A9XoSkGGL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 8800,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$88.08",
+        "extracted_price": 88.08,
+        "old_price": "$159.00",
+        "extracted_old_price": 159,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$88.08",
+            "extracted_primary_price": 88.08,
+            "old_primary_price": "$159.00",
+            "extracted_old_primary_price": 159
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B0D8TR2DGX",
+        "brand": "DEWALT",
+        "title": "20V MAX XR POWERPACK 8.0 Ah Power Tool Battery (DCB2108)",
+        "link": "https://www.amazon.com/DEWALT-POWERPACK-Power-Battery-DCB2108/dp/B0D8TR2DGX/ref=sr_1_56?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-56",
+        "link_clean": "https://www.amazon.com/DEWALT-POWERPACK-Power-Battery-DCB2108/dp/B0D8TR2DGX/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D8TR2DGX&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71JqCdBCVrL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 483,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$112.99",
+        "extracted_price": 112.99,
+        "old_price": "$130.00",
+        "extracted_old_price": 130,
+        "delivery": [
+          "FREE delivery Tue, Nov 24"
+        ],
+        "stock": "Only 16 left in stock - order soon.",
+        "more_buying_choices": "$98.90 (70+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D8TR2DGX/ref=sr_1_56_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-56&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$112.99",
+            "extracted_primary_price": 112.99,
+            "old_primary_price": "$130.00",
+            "extracted_old_primary_price": 130,
+            "more_buying_choices": "$98.90 (70+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0D8TR2DGX/ref=sr_1_56_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-56&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B00G1X2HPG",
+        "brand": "DEWALT",
+        "title": "Grease Gun 20V MAX, Cordless Electric Grease Gun 42” Hose, 10,000 PSI, Variable Speed Triggers, Tool Only (DCGG571B)",
+        "link": "https://www.amazon.com/DEWALT-DCGG571B-20-volt-Lithium-Grease/dp/B00G1X2HPG/ref=sr_1_57?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-57",
+        "link_clean": "https://www.amazon.com/DEWALT-DCGG571B-20-volt-Lithium-Grease/dp/B00G1X2HPG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00G1X2HPG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71pg9Lk08qL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 6400,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$190.15",
+        "extracted_price": 190.15,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$190.14 (7 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00G1X2HPG/ref=sr_1_57_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-57&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$190.15",
+            "extracted_primary_price": 190.15,
+            "more_buying_choices": "$190.14 (7 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00G1X2HPG/ref=sr_1_57_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-57&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B079VJMH6T",
+        "brand": "DEWALT",
+        "title": "Drill Bit Set, 21 Pc High Speed Steel DEWALT Bits, Black and Gold Oxide Coated, 135 Degree Split Point, 31 Degree Helix (DWA1181)",
+        "link": "https://www.amazon.com/DEWALT-Drill-Coated-Degree-DWA1181/dp/B079VJMH6T/ref=sr_1_58?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-58",
+        "link_clean": "https://www.amazon.com/DEWALT-Drill-Coated-Degree-DWA1181/dp/B079VJMH6T/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B079VJMH6T&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61xXO-uUZ2L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 6000,
+        "bought_last_month": "3K+ bought in past month",
+        "price": "$23.28",
+        "extracted_price": 23.28,
+        "old_price": "$39.57",
+        "extracted_old_price": 39.57,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$23.28",
+            "extracted_primary_price": 23.28,
+            "old_primary_price": "$39.57",
+            "extracted_old_primary_price": 39.57
+          }
+        ]
+      },
+      {
+        "position": 11,
+        "asin": "B00U0P0GHM",
+        "brand": "DEWALT",
+        "title": "Mechanics Tools Kit and Socket Set, 1/4\" & 3/8\" Drive, SAE, 108-Piece (DWMT73801)",
+        "link": "https://www.amazon.com/DEWALT-Mechanics-Socket-108-Piece-DWMT73801/dp/B00U0P0GHM/ref=sr_1_59?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-59",
+        "link_clean": "https://www.amazon.com/DEWALT-Mechanics-Socket-108-Piece-DWMT73801/dp/B00U0P0GHM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00U0P0GHM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71BInqYbT-L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 7500,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$72.99",
+        "extracted_price": 72.99,
+        "old_price": "$79.97",
+        "extracted_old_price": 79.97,
+        "offers": [
+          "$10 Amazon credit when you spend $149.00"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$71.95 (15 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00U0P0GHM/ref=sr_1_59_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-59&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$72.99",
+            "extracted_primary_price": 72.99,
+            "secondary_price": "$10 Amazon credit when you spend $149.00",
+            "extracted_secondary_price": 10,
+            "old_primary_price": "$79.97",
+            "extracted_old_primary_price": 79.97,
+            "more_buying_choices": "$71.95 (15 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00U0P0GHM/ref=sr_1_59_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-59&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 12,
+        "asin": "B08J8L766B",
+        "brand": "DEWALT",
+        "title": "FLEXVOLT ADVANTAGE 20V MAX* Combo Kit with Hammer Drill & Impact Driver, 5.0-Ah, 2-Tool (DCK2100P2)",
+        "link": "https://www.amazon.com/DEWALT-FLEXVOLT-ADVANTAGE-Hammer-DCK2100P2/dp/B08J8L766B/ref=sr_1_60?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-60",
+        "link_clean": "https://www.amazon.com/DEWALT-FLEXVOLT-ADVANTAGE-Hammer-DCK2100P2/dp/B08J8L766B/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08J8L766B&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61aIHQZscrS._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 747,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$299.38",
+        "extracted_price": 299.38,
+        "old_price": "$398.00",
+        "extracted_old_price": 398,
+        "delivery": [
+          "FREE delivery Nov 27 - Dec 1",
+          "Or fastest delivery Nov 24 - 28"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$299.38",
+            "extracted_primary_price": 299.38,
+            "old_primary_price": "$398.00",
+            "extracted_old_primary_price": 398
+          }
+        ]
+      },
+      {
+        "position": 13,
+        "asin": "B09YTM4F26",
+        "brand": "DEWALT",
+        "title": "20V MAX Pruning Shears Garden Tool, Cordless, Bare Tool Only (DCPR320B)",
+        "link": "https://www.amazon.com/DEWALT-DCPR320B-20V-PRUNER-BARE/dp/B09YTM4F26/ref=sr_1_61?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-61",
+        "link_clean": "https://www.amazon.com/DEWALT-DCPR320B-20V-PRUNER-BARE/dp/B09YTM4F26/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09YTM4F26&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51vYHetld9L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 4100,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$99.00",
+        "extracted_price": 99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$99.00",
+            "extracted_primary_price": 99
+          }
+        ]
+      },
+      {
+        "position": 14,
+        "asin": "B07GLCD1LF",
+        "brand": "DEWALT",
+        "title": "FLEXVOLT 20V/60V MAX* Battery, 12.0-Ah (DCB612)",
+        "link": "https://www.amazon.com/DeWalt-DCB612-Flexvolt-12-0-Battery/dp/B07GLCD1LF/ref=sr_1_62?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-62",
+        "link_clean": "https://www.amazon.com/DeWalt-DCB612-Flexvolt-12-0-Battery/dp/B07GLCD1LF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07GLCD1LF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61WQUIYtfNL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 1600,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$248.95",
+        "extracted_price": 248.95,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$224.96 (22+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07GLCD1LF/ref=sr_1_62_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-62&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$248.95",
+            "extracted_primary_price": 248.95,
+            "more_buying_choices": "$224.96 (22+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07GLCD1LF/ref=sr_1_62_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-62&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 15,
+        "asin": "B0FGQYN63F",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery XR POWERPACK™ 4Ah Lithium Ion, 50% More Power, Dewalt Battery Compatible with 20V MAX Tools (DCB2104)",
+        "link": "https://www.amazon.com/DEWALT-Battery-POWERPACKTM-Compatible-DCB2104/dp/B0FGQYN63F/ref=sr_1_63?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-63",
+        "link_clean": "https://www.amazon.com/DEWALT-Battery-POWERPACKTM-Compatible-DCB2104/dp/B0FGQYN63F/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FGQYN63F&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71PLQW5WYJL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 204,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$59.94",
+        "extracted_price": 59.94,
+        "old_price": "$169.00",
+        "extracted_old_price": 169,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$52.00 (51+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FGQYN63F/ref=sr_1_63_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-63&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$59.94",
+            "extracted_primary_price": 59.94,
+            "old_primary_price": "$169.00",
+            "extracted_old_primary_price": 169,
+            "more_buying_choices": "$52.00 (51+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FGQYN63F/ref=sr_1_63_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-63&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 16,
+        "asin": "B0DDDW9GWK",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Brushless Cordless 7-1/4 in. Circular Saw, Tool Only (DCS590B)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Circular-DCS590B/dp/B0DDDW9GWK/ref=sr_1_64_mod_primary_new?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-64",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Cordless-Circular-DCS590B/dp/B0DDDW9GWK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DDDW9GWK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71ybsgYAstL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 473,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$190.00",
+        "extracted_price": 190,
+        "old_price": "$249.00",
+        "extracted_old_price": 249,
+        "delivery": [
+          "FREE delivery Tue, Nov 24"
+        ],
+        "more_buying_choices": "$161.49 (18+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DDDW9GWK/ref=sr_1_64_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-64&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$190.00",
+            "extracted_primary_price": 190,
+            "old_primary_price": "$249.00",
+            "extracted_old_primary_price": 249,
+            "more_buying_choices": "$161.49 (18+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DDDW9GWK/ref=sr_1_64_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-64&refinements=p_123%3A195991"
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$199.49",
+            "extracted_primary_price": 199.49,
+            "old_primary_price": "$249.00",
+            "extracted_old_primary_price": 249
+          }
+        ]
+      },
+      {
+        "position": 17,
+        "asin": "B007NVSTCK",
+        "badges": [
+          "Best Seller in Power Reciprocating Saws"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX Reciprocating Saw, 3,000 Strokes Per Minute, Variable Speed Trigger Cordless Saw, Tool Only (DCS380B)",
+        "link": "https://www.amazon.com/DEWALT-Reciprocating-Strokes-Variable-DCS380B/dp/B007NVSTCK/ref=sr_1_65?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-65",
+        "link_clean": "https://www.amazon.com/DEWALT-Reciprocating-Strokes-Variable-DCS380B/dp/B007NVSTCK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B007NVSTCK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61aJg9UdXdL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 8600,
+        "bought_last_month": "2K+ bought in past month",
+        "price": "$129.00",
+        "extracted_price": 129,
+        "old_price": "$159.00",
+        "extracted_old_price": 159,
+        "offers": [
+          "$10 Amazon credit when you spend $149.00"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$115.00 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B007NVSTCK/ref=sr_1_65_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-65&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$129.00",
+            "extracted_primary_price": 129,
+            "secondary_price": "$10 Amazon credit when you spend $149.00",
+            "extracted_secondary_price": 10,
+            "old_primary_price": "$159.00",
+            "extracted_old_primary_price": 159,
+            "more_buying_choices": "$115.00 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B007NVSTCK/ref=sr_1_65_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-65&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 18,
+        "asin": "B00M9ZSMZY",
+        "brand": "DEWALT",
+        "title": "20V/12V MAX Bare Hooded Heated Jacket",
+        "link": "https://www.amazon.com/DEWALT-DCHJ067B-L-Hooded-Heated-Jacket/dp/B00M9ZSMZY/ref=sr_1_66?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-66",
+        "link_clean": "https://www.amazon.com/DEWALT-DCHJ067B-L-Hooded-Heated-Jacket/dp/B00M9ZSMZY/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00M9ZSMZY&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51q3rldaJcL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 1500,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$108.83",
+        "extracted_price": 108.83,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$108.83",
+            "extracted_primary_price": 108.83
+          }
+        ]
+      },
+      {
+        "position": 19,
+        "asin": "B00VEA2904",
+        "badges": [
+          "Best Seller in Band Saws"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX Band Saw, 5\" Cutting Capacity, Integrated Hang Hooks, Portable, For Deep Cuts, Bare Tool Only (DCS374B)",
+        "link": "https://www.amazon.com/DEWALT-DCS374B-Deep-Band-Tool/dp/B00VEA2904/ref=sr_1_67?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-67",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS374B-Deep-Band-Tool/dp/B00VEA2904/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00VEA2904&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/615-LtWbWpL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 1700,
+        "bought_last_month": "700+ bought in past month",
+        "price": "$281.02",
+        "extracted_price": 281.02,
+        "top_rated": true,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$267.05 (11+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00VEA2904/ref=sr_1_67_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-67&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$281.02",
+            "extracted_primary_price": 281.02,
+            "more_buying_choices": "$267.05 (11+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00VEA2904/ref=sr_1_67_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-67&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 20,
+        "asin": "B00B6K4V80",
+        "brand": "DEWALT",
+        "title": "Tool Box TSTAK II, 13 In. Flat Top Tool Storage Case, Stackable Organizer Hard Case Portable Toolbox, Heavy Duty, Holds Up To 66 lbs (DWST17807)",
+        "link": "https://www.amazon.com/DEWALT-DWST17807-TSTAK-Toolbox-Organizer/dp/B00B6K4V80/ref=sr_1_68?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-68",
+        "link_clean": "https://www.amazon.com/DEWALT-DWST17807-TSTAK-Toolbox-Organizer/dp/B00B6K4V80/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00B6K4V80&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/714dvNVi2DL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 12000,
+        "bought_last_month": "3K+ bought in past month",
+        "price": "$19.97",
+        "extracted_price": 19.97,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$19.97",
+            "extracted_primary_price": 19.97
+          }
+        ]
+      },
+      {
+        "position": 21,
+        "asin": "B01M751WC3",
+        "brand": "DEWALT",
+        "title": "20V MAX Premium Lithium-Ion 6.0Ah Battery Pack (2 Pack)",
+        "link": "https://www.amazon.com/DEWALT-Battery-Premium-Double-DCB206-2/dp/B01M751WC3/ref=sr_1_69?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-69",
+        "link_clean": "https://www.amazon.com/DEWALT-Battery-Premium-Double-DCB206-2/dp/B01M751WC3/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01M751WC3&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/712inJGv3jL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 9200,
+        "bought_last_month": "2K+ bought in past month",
+        "price": "$279.00",
+        "extracted_price": 279,
+        "price_unit": "$139.50/count",
+        "extracted_price_unit": 139.5,
+        "save_with_coupon": "You pay $269.10 with coupon",
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$114.94 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M751WC3/ref=sr_1_69_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-69&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$279.00",
+            "extracted_primary_price": 279,
+            "more_buying_choices": "$114.94 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M751WC3/ref=sr_1_69_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-69&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 22,
+        "asin": "B00SOU6LR4",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-Oscillating-Multi-Tool-Variable-DCS356D1/dp/B00SOU6LR4/ref=sr_1_70_so_POWER_TOOL_SET?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-70",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Oscillating Tool, Battery and Charger Included (DCS356D1)",
+        "link": "https://www.amazon.com/DEWALT-Oscillating-Multi-Tool-Variable-DCS356D1/dp/B00SOU6LR4/ref=sr_1_70?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-70",
+        "link_clean": "https://www.amazon.com/DEWALT-Oscillating-Multi-Tool-Variable-DCS356D1/dp/B00SOU6LR4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00SOU6LR4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/716To-rxGLL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 5700,
+        "bought_last_month": "1K+ bought in past month",
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$117.00 (81 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00SOU6LR4/ref=sr_1_70_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-70&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$117.00 (81 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00SOU6LR4/ref=sr_1_70_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-70&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 23,
+        "asin": "B085DYPC1D",
+        "brand": "DEWALT",
+        "title": "20V MAX* XR Leaf Blower, Cordless, Handheld, 125-MPH, 450-CFM (Tool Only-Battery & Charger not Included) (DCBL722B)",
+        "link": "https://www.amazon.com/DEWALT-DCBL722B-Lithium-Ion-Brushless-Handheld/dp/B085DYPC1D/ref=sr_1_71?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-71",
+        "link_clean": "https://www.amazon.com/DEWALT-DCBL722B-Lithium-Ion-Brushless-Handheld/dp/B085DYPC1D/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B085DYPC1D&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/611u2SM0naL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 10400,
+        "bought_last_month": "600+ bought in past month",
+        "price": "$172.99",
+        "extracted_price": 172.99,
+        "delivery": [
+          "FREE delivery Nov 20 - 24"
+        ],
+        "more_buying_choices": "$165.00 (27+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B085DYPC1D/ref=sr_1_71_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-71&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$172.99",
+            "extracted_primary_price": 172.99,
+            "more_buying_choices": "$165.00 (27+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B085DYPC1D/ref=sr_1_71_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-71&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 24,
+        "asin": "B0GVPZJ5R2",
+        "brand": "DEWALT",
+        "title": "2-in-1 Portable MagSafe Wireless Charger Stand, iPhone & Apple Watch",
+        "link": "https://www.amazon.com/DEWALT-Magnetic-Wireless-Charger-Phone/dp/B0GVPZJ5R2/ref=sr_1_72?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-72",
+        "link_clean": "https://www.amazon.com/DEWALT-Magnetic-Wireless-Charger-Phone/dp/B0GVPZJ5R2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GVPZJ5R2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61EYRUJ0WoL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 37,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$59.99",
+        "extracted_price": 59.99,
+        "offers": [
+          "Save 5% on 2 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$59.99",
+            "extracted_primary_price": 59.99
+          }
+        ]
+      },
+      {
+        "position": 25,
+        "asin": "B01DR90MM6",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR Cordless Hammer Drill Driver Brushless, Heavy Duty 1/2\", 3-Speed, Tool Only (DCD996B)",
+        "link": "https://www.amazon.com/DEWALT-DCD996B-Lithium-Brushless-3-Speed/dp/B01DR90MM6/ref=sr_1_73?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-73",
+        "link_clean": "https://www.amazon.com/DEWALT-DCD996B-Lithium-Brushless-3-Speed/dp/B01DR90MM6/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01DR90MM6&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/716BQJbSk8L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 7200,
+        "bought_last_month": "900+ bought in past month",
+        "price": "$208.38",
+        "extracted_price": 208.38,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$199.00 (13 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01DR90MM6/ref=sr_1_73_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-73&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$208.38",
+            "extracted_primary_price": 208.38,
+            "more_buying_choices": "$199.00 (13 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01DR90MM6/ref=sr_1_73_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-73&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 26,
+        "asin": "B0F8P55L5D",
+        "tags": [
+          "Battery Powered"
+        ],
+        "badges": [
+          "Best Seller in Power Hammer Drills"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR® Brushless Cordless 1/2 in. Hammer Drill (Tool Only) (DCD806B)",
+        "link": "https://www.amazon.com/DEWALT-Brushless-Cordless-Hammer-DCD806B/dp/B0F8P55L5D/ref=sr_1_74?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-74",
+        "link_clean": "https://www.amazon.com/DEWALT-Brushless-Cordless-Hammer-DCD806B/dp/B0F8P55L5D/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F8P55L5D&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61YcLROOvHL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 464,
+        "bought_last_month": "2K+ bought in past month",
+        "price": "$111.00",
+        "extracted_price": 111,
+        "old_price": "$199.00",
+        "extracted_old_price": 199,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$99.00 (62+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F8P55L5D/ref=sr_1_74_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-74&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$111.00",
+            "extracted_primary_price": 111,
+            "old_primary_price": "$199.00",
+            "extracted_old_primary_price": 199,
+            "more_buying_choices": "$99.00 (62+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0F8P55L5D/ref=sr_1_74_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-74&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 27,
+        "asin": "B0HFMB486C",
+        "brand": "DEWALT",
+        "title": "Rechargeable Hand Warmers, Dual-Sided Heating, 4 Heat Settings, 2PK",
+        "link": "https://www.amazon.com/DEWALT-Rechargeable-Dual-Sided-Pocket-Sized-Essentials/dp/B0HFMB486C/ref=sr_1_75?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-75",
+        "link_clean": "https://www.amazon.com/DEWALT-Rechargeable-Dual-Sided-Pocket-Sized-Essentials/dp/B0HFMB486C/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HFMB486C&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71hHt+A4XWL._AC_UL320_.jpg",
+        "price": "$79.99",
+        "extracted_price": 79.99,
+        "save_with_coupon": "You pay $71.99 with coupon",
+        "top_rated": true,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$79.99",
+            "extracted_primary_price": 79.99
+          }
+        ]
+      },
+      {
+        "position": 28,
+        "asin": "B0989YML7R",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Jobsite Fan, Tool Only (DCE512B)",
+        "link": "https://www.amazon.com/DEWALT-Jobsite-Tool-Only-DCE512B/dp/B0989YML7R/ref=sr_1_76?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-76",
+        "link_clean": "https://www.amazon.com/DEWALT-Jobsite-Tool-Only-DCE512B/dp/B0989YML7R/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0989YML7R&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71axgOKVIQL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 8500,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$95.00",
+        "extracted_price": 95,
+        "top_rated": true,
+        "delivery": [
+          "FREE delivery Tue, Nov 24"
+        ],
+        "more_buying_choices": "$84.30 (27+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0989YML7R/ref=sr_1_76_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-76&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$95.00",
+            "extracted_primary_price": 95,
+            "more_buying_choices": "$84.30 (27+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0989YML7R/ref=sr_1_76_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-76&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 29,
+        "asin": "B0CF3ZC3SV",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Impact Wrench, 1/2\" Hog Ring, High Torque, Brushless, Bare Tool Only (DCF961B)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Impact-Brushless-DCF961B/dp/B0CF3ZC3SV/ref=sr_1_77?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-77",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Impact-Brushless-DCF961B/dp/B0CF3ZC3SV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CF3ZC3SV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/515fcjiST0L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1000,
+        "bought_last_month": "800+ bought in past month",
+        "price": "$269.90",
+        "extracted_price": 269.9,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$255.99 (37+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CF3ZC3SV/ref=sr_1_77_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-77&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$269.90",
+            "extracted_primary_price": 269.9,
+            "more_buying_choices": "$255.99 (37+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CF3ZC3SV/ref=sr_1_77_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-77&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 30,
+        "asin": "B0DQYLSHKF",
+        "badges": [
+          "Best Seller in Power Angle Grinders"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless 4 1/2 Inch Paddle-Switch Grinder, Bare Tool Only (DCG408B)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Paddle-Switch-Grinder-DCG408B/dp/B0DQYLSHKF/ref=sr_1_78?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-78",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Paddle-Switch-Grinder-DCG408B/dp/B0DQYLSHKF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DQYLSHKF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/616ydJM28IL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 391,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$117.00",
+        "extracted_price": 117,
+        "old_price": "$199.00",
+        "extracted_old_price": 199,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$111.15 (20 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DQYLSHKF/ref=sr_1_78_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-78&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$117.00",
+            "extracted_primary_price": 117,
+            "old_primary_price": "$199.00",
+            "extracted_old_primary_price": 199,
+            "more_buying_choices": "$111.15 (20 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DQYLSHKF/ref=sr_1_78_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-78&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 31,
+        "asin": "B0BPY8L57P",
+        "badges": [
+          "Best Seller in Power Screw Guns"
+        ],
+        "brand": "DEWALT",
+        "title": "20V Max Drywall Screwgun, Tool Only (DCF630B)",
+        "link": "https://www.amazon.com/DEWALT-Drywall-Screwgun-Tool-DCF630B/dp/B0BPY8L57P/ref=sr_1_79_mod_primary_new?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-79",
+        "link_clean": "https://www.amazon.com/DEWALT-Drywall-Screwgun-Tool-DCF630B/dp/B0BPY8L57P/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BPY8L57P&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51FsCRlKaBL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 2200,
+        "bought_last_month": "900+ bought in past month",
+        "price": "$126.45",
+        "extracted_price": 126.45,
+        "old_price": "$179.00",
+        "extracted_old_price": 179,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$115.99 (44+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BPY8L57P/ref=sr_1_79_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-79&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$126.45",
+            "extracted_primary_price": 126.45,
+            "old_primary_price": "$179.00",
+            "extracted_old_primary_price": 179,
+            "more_buying_choices": "$115.99 (44+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BPY8L57P/ref=sr_1_79_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-79&refinements=p_123%3A195991"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$128.75",
+            "extracted_primary_price": 128.75,
+            "old_primary_price": "$179.00",
+            "extracted_old_primary_price": 179
+          }
+        ]
+      },
+      {
+        "position": 32,
+        "asin": "B0FV3SQD4X",
+        "brand": "DEWALT",
+        "title": "20V MAX XR 3-Speed Hammer Drill and Impact Combo Kit with XR POWERPACK Batteries (DCK2101QQ2)",
+        "link": "https://www.amazon.com/DEWALT-3-Speed-POWERPACK-Batteries-DCK2101QQ2/dp/B0FV3SQD4X/ref=sr_1_80?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-80",
+        "link_clean": "https://www.amazon.com/DEWALT-3-Speed-POWERPACK-Batteries-DCK2101QQ2/dp/B0FV3SQD4X/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FV3SQD4X&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71CMR0NURBL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 30,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$297.41",
+        "extracted_price": 297.41,
+        "old_price": "$315.00",
+        "extracted_old_price": 315,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$297.41",
+            "extracted_primary_price": 297.41,
+            "old_primary_price": "$315.00",
+            "extracted_old_primary_price": 315
+          }
+        ]
+      },
+      {
+        "position": 33,
+        "asin": "B0BY2T3XVT",
+        "brand": "DEWALT",
+        "title": "20V MAX* Belt Sander, Cordless, Brushless, Tool Only (DCW220B)",
+        "link": "https://www.amazon.com/DEWALT-Sander-Cordless-Brushless-DCW220B/dp/B0BY2T3XVT/ref=sr_1_81_mod_primary_new?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-81",
+        "link_clean": "https://www.amazon.com/DEWALT-Sander-Cordless-Brushless-DCW220B/dp/B0BY2T3XVT/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BY2T3XVT&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51FYEfPQBuL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1000,
+        "bought_last_month": "600+ bought in past month",
+        "price": "$219.99",
+        "extracted_price": 219.99,
+        "old_price": "$329.00",
+        "extracted_old_price": 329,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$209.99 (24+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BY2T3XVT/ref=sr_1_81_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-81&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$219.99",
+            "extracted_primary_price": 219.99,
+            "old_primary_price": "$329.00",
+            "extracted_old_primary_price": 329,
+            "more_buying_choices": "$209.99 (24+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BY2T3XVT/ref=sr_1_81_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-81&refinements=p_123%3A195991"
+          },
+          {
+            "type": "Get it faster",
+            "primary_price": "$227.84",
+            "extracted_primary_price": 227.84,
+            "old_primary_price": "$329.00",
+            "extracted_old_primary_price": 329
+          }
+        ]
+      },
+      {
+        "position": 34,
+        "asin": "B01J6KTBI6",
+        "brand": "DEWALT",
+        "title": "20V MAX Caulking Gun, Cordless, 10oz, Variable Speed Trigger, Interchangeable Canister Trays, Bare Tool Only (DCE560B)",
+        "link": "https://www.amazon.com/DEWALT-DCE560B-10oz-300ml-Adhesive/dp/B01J6KTBI6/ref=sr_1_82_mod_primary_new?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-82",
+        "link_clean": "https://www.amazon.com/DEWALT-DCE560B-10oz-300ml-Adhesive/dp/B01J6KTBI6/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01J6KTBI6&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51JxyRebKCL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 1800,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$191.99",
+        "extracted_price": 191.99,
+        "delivery": [
+          "FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$176.63 (21+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01J6KTBI6/ref=sr_1_82_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-82&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$191.99",
+            "extracted_primary_price": 191.99,
+            "more_buying_choices": "$176.63 (21+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01J6KTBI6/ref=sr_1_82_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-82&refinements=p_123%3A195991"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$199.00",
+            "extracted_primary_price": 199
+          }
+        ]
+      },
+      {
+        "position": 35,
+        "asin": "B0H74VRWX2",
+        "brand": "DEWALT",
+        "title": "Tire Inflator, Portable Air Compressor with Digital Display Pressure Gauge & Auto Shut Off, 150 PSI 12V DC Corded & Battery Powered Air Pump with LED Light for Car, Motorcycle, Bike, Balls",
+        "link": "https://www.amazon.com/DEWALT-Inflator-Portable-Compressor-Motorcycle/dp/B0H74VRWX2/ref=sr_1_83?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-83",
+        "link_clean": "https://www.amazon.com/DEWALT-Inflator-Portable-Compressor-Motorcycle/dp/B0H74VRWX2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H74VRWX2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81JtepEpDtL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 20,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$99.99",
+        "extracted_price": 99.99,
+        "old_price": "$109.99",
+        "extracted_old_price": 109.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$99.99",
+            "extracted_primary_price": 99.99,
+            "old_primary_price": "$109.99",
+            "extracted_old_primary_price": 109.99
+          }
+        ]
+      },
+      {
+        "position": 36,
+        "asin": "B01M69K91R",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Reciprocating Saw Cordless, Brushless, Compact,Variable Speed, Pivoting Head, LED Light, Tool Only (DCS367B)",
+        "link": "https://www.amazon.com/DEWALT-DCS367B-Brushless-Compact-Reciprocating/dp/B01M69K91R/ref=sr_1_84?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-84",
+        "link_clean": "https://www.amazon.com/DEWALT-DCS367B-Brushless-Compact-Reciprocating/dp/B01M69K91R/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01M69K91R&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71wFpPAEAtL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 10800,
+        "bought_last_month": "600+ bought in past month",
+        "price": "$199.00",
+        "extracted_price": 199,
+        "top_rated": true,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$184.99 (2 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M69K91R/ref=sr_1_84_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-84&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$199.00",
+            "extracted_primary_price": 199,
+            "more_buying_choices": "$184.99 (2 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M69K91R/ref=sr_1_84_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-84&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 37,
+        "asin": "B0GVJ6MNXX",
+        "variants": {
+          "more_variants": "+3 other colors/patterns",
+          "more_variants_link": "https://www.amazon.com/DEWALT-Wearable-Bluetooth-Speaker-Model/dp/B0GVJ6MNXX/ref=cs_sr_dp?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-85"
+        },
+        "brand": "DEWALT",
+        "title": "Mini Wearable Bluetooth Speaker Pro Max (New Model)",
+        "link": "https://www.amazon.com/DEWALT-Wearable-Bluetooth-Speaker-Model/dp/B0GVJ6MNXX/ref=sr_1_85?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-85",
+        "link_clean": "https://www.amazon.com/DEWALT-Wearable-Bluetooth-Speaker-Model/dp/B0GVJ6MNXX/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GVJ6MNXX&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71p+7hSFQgL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 3600,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$75.99",
+        "extracted_price": 75.99,
+        "offers": [
+          "Save 5% on 2 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$75.99",
+            "extracted_primary_price": 75.99
+          }
+        ]
+      },
+      {
+        "position": 38,
+        "asin": "B0DVJ7ZRXR",
+        "brand": "DEWALT",
+        "title": "20V MAX 12\" Cordless Chainsaw Kit with Battery and Charger Included (DCCS621P1)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Chainsaw-Included-DCCS621P1/dp/B0DVJ7ZRXR/ref=sr_1_86?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-86",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Chainsaw-Included-DCCS621P1/dp/B0DVJ7ZRXR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DVJ7ZRXR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61Ak8M8RFbL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 193,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$199.00",
+        "extracted_price": 199,
+        "delivery": [
+          "FREE delivery Sun, Nov 22",
+          "Or fastest delivery Sat, Nov 21"
+        ],
+        "more_buying_choices": "$189.99 (21+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DVJ7ZRXR/ref=sr_1_86_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-86&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$199.00",
+            "extracted_primary_price": 199,
+            "more_buying_choices": "$189.99 (21+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DVJ7ZRXR/ref=sr_1_86_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-86&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 39,
+        "asin": "B004AJ95DA",
+        "brand": "DEWALT",
+        "title": "Plunge Base For Compact Router, Steel Rods for Smooth Plunge Stroke (DNP612)",
+        "link": "https://www.amazon.com/DEWALT-DNP612-Plunge-Compact-Router/dp/B004AJ95DA/ref=sr_1_87?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-87",
+        "link_clean": "https://www.amazon.com/DEWALT-DNP612-Plunge-Compact-Router/dp/B004AJ95DA/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B004AJ95DA&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81QQ3mapXAL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 3500,
+        "bought_last_month": "700+ bought in past month",
+        "price": "$87.99",
+        "extracted_price": 87.99,
+        "save_with_coupon": "You pay $79.19 with coupon",
+        "top_rated": true,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$82.71 (7+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B004AJ95DA/ref=sr_1_87_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-87&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$87.99",
+            "extracted_primary_price": 87.99,
+            "more_buying_choices": "$82.71 (7+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B004AJ95DA/ref=sr_1_87_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-87&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 40,
+        "asin": "B0BPK4RBNZ",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery, POWERSTACK, More Power More Compact, Rechargeable 5Ah Lithium Ion Battery (DCBP520)",
+        "link": "https://www.amazon.com/DEWALT-Powerstack-Battery-Rechargeable-Lithium/dp/B0BPK4RBNZ/ref=sr_1_88?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-88",
+        "link_clean": "https://www.amazon.com/DEWALT-Powerstack-Battery-Rechargeable-Lithium/dp/B0BPK4RBNZ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BPK4RBNZ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61aR4u8nA6L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 871,
+        "price": "$108.99",
+        "extracted_price": 108.99,
+        "old_price": "$229.00",
+        "extracted_old_price": 229,
+        "delivery": [
+          "FREE delivery Nov 20 - 24"
+        ],
+        "more_buying_choices": "$102.37 (30+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BPK4RBNZ/ref=sr_1_88_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-88&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$108.99",
+            "extracted_primary_price": 108.99,
+            "old_primary_price": "$229.00",
+            "extracted_old_primary_price": 229,
+            "more_buying_choices": "$102.37 (30+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BPK4RBNZ/ref=sr_1_88_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-88&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 41,
+        "asin": "B09M3TL9BB",
+        "brand": "DEWALT",
+        "title": "ATOMIC 20V MAX* 1/2 in. Cordless Impact Wrench with Hog Ring Anvil (Tool Only) (DCF921B)",
+        "link": "https://www.amazon.com/DEWALT-ATOMIC-Cordless-Impact-DCF921B/dp/B09M3TL9BB/ref=sr_1_89?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-89",
+        "link_clean": "https://www.amazon.com/DEWALT-ATOMIC-Cordless-Impact-DCF921B/dp/B09M3TL9BB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09M3TL9BB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51pa9bfvqyL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 1000,
+        "bought_last_month": "700+ bought in past month",
+        "price": "$170.91",
+        "extracted_price": 170.91,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$159.00 (33 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09M3TL9BB/ref=sr_1_89_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-89&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$170.91",
+            "extracted_primary_price": 170.91,
+            "more_buying_choices": "$159.00 (33 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09M3TL9BB/ref=sr_1_89_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-89&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 42,
+        "asin": "B0858C7X3M",
+        "brand": "DEWALT",
+        "title": "Random Orbit Sander, Variable Speed, 5-Inch (DWE6423), Power Source Corded Electric",
+        "link": "https://www.amazon.com/DEWALT-Random-Sander-Variable-DWE6423/dp/B0858C7X3M/ref=sr_1_90?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-90",
+        "link_clean": "https://www.amazon.com/DEWALT-Random-Sander-Variable-DWE6423/dp/B0858C7X3M/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0858C7X3M&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51TWESR+NsL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 3600,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$99.00",
+        "extracted_price": 99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$94.05 (6+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0858C7X3M/ref=sr_1_90_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-90&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$99.00",
+            "extracted_primary_price": 99,
+            "more_buying_choices": "$94.05 (6+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0858C7X3M/ref=sr_1_90_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-90&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 43,
+        "asin": "B01H9BL8EO",
+        "brand": "DEWALT",
+        "title": "FLEXVOLT 20V/60V MAX Lithium Ion Battery, 6.0-Ah (DCB606)",
+        "link": "https://www.amazon.com/DEWALT-DCB606-FLEXVOLT-Battery-Pack/dp/B01H9BL8EO/ref=sr_1_91?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-91",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB606-FLEXVOLT-Battery-Pack/dp/B01H9BL8EO/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01H9BL8EO&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61EK3h1McDL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 9500,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$125.00",
+        "extracted_price": 125,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$117.00 (51+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01H9BL8EO/ref=sr_1_91_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-91&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$125.00",
+            "extracted_primary_price": 125,
+            "more_buying_choices": "$117.00 (51+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01H9BL8EO/ref=sr_1_91_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-91&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 44,
+        "asin": "B00G9CL83Q",
+        "brand": "DEWALT",
+        "title": "Screwdriver Bit Set, Impact Driver Bit Set, FlexTorq, 35-Piece (DWA2T35IR)",
+        "link": "https://www.amazon.com/DEWALT-DWA2T35IR-FlexTorq-Screwdriving-35-Piece/dp/B00G9CL83Q/ref=sr_1_92?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-92",
+        "link_clean": "https://www.amazon.com/DEWALT-DWA2T35IR-FlexTorq-Screwdriving-35-Piece/dp/B00G9CL83Q/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00G9CL83Q&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81bLlAQqLOL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 4800,
+        "bought_last_month": "900+ bought in past month",
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "price_unit": "$0.86/count",
+        "extracted_price_unit": 0.86,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 18",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "more_buying_choices": "$29.00 (16 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00G9CL83Q/ref=sr_1_92_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-92&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99,
+            "more_buying_choices": "$29.00 (16 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00G9CL83Q/ref=sr_1_92_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-92&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 45,
+        "asin": "B00CP8DF3O",
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Shop Vac, Wet Dry Vacuum Cleaner, Portable 2 Gallon Wet Dry Vac, Strong Suction Shop Vacuum with Hepa Filter, Battery Not Included (DCV580H), Black, Yellow",
+        "link": "https://www.amazon.com/Dewalt-DCV580H-Cordless-Wet-Dry-Vacuum/dp/B00CP8DF3O/ref=sr_1_93?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-93",
+        "link_clean": "https://www.amazon.com/Dewalt-DCV580H-Cordless-Wet-Dry-Vacuum/dp/B00CP8DF3O/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00CP8DF3O&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/7135p5xrtwL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 8800,
+        "bought_last_month": "2K+ bought in past month",
+        "price": "$128.98",
+        "extracted_price": 128.98,
+        "old_price": "$199.00",
+        "extracted_old_price": 199,
+        "offers": [
+          "$10 Amazon credit when you spend $149.00"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$115.73 (14+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00CP8DF3O/ref=sr_1_93_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-93&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$128.98",
+            "extracted_primary_price": 128.98,
+            "secondary_price": "$10 Amazon credit when you spend $149.00",
+            "extracted_secondary_price": 10,
+            "old_primary_price": "$199.00",
+            "extracted_old_primary_price": 199,
+            "more_buying_choices": "$115.73 (14+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00CP8DF3O/ref=sr_1_93_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-93&refinements=p_123%3A195991"
+          }
+        ]
+      },
+      {
+        "position": 46,
+        "asin": "B0BY184ZY2",
+        "tags": [
+          "Battery Powered"
+        ],
+        "brand": "DEWALT",
+        "title": "DCD799B 20V MAX* ATOMIC COMPACT SERIES Brushless Lithium-Ion 1/2 in. Cordless Hammer Drill (Tool Only)",
+        "link": "https://www.amazon.com/DEWALT-DCD799B-Brushless-Lithium-Ion-Cordless/dp/B0BY184ZY2/ref=sr_1_94_mod_primary_new?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-94",
+        "link_clean": "https://www.amazon.com/DEWALT-DCD799B-Brushless-Lithium-Ion-Cordless/dp/B0BY184ZY2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BY184ZY2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51RIdUo8EFL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 756,
+        "bought_last_month": "900+ bought in past month",
+        "price": "$79.50",
+        "extracted_price": 79.5,
+        "old_price": "$84.00",
+        "extracted_old_price": 84,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "stock": "Only 8 left in stock - order soon.",
+        "more_buying_choices": "$74.99 (38+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BY184ZY2/ref=sr_1_94_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-94&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$79.50",
+            "extracted_primary_price": 79.5,
+            "old_primary_price": "$84.00",
+            "extracted_old_primary_price": 84,
+            "more_buying_choices": "$74.99 (38+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BY184ZY2/ref=sr_1_94_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-94&refinements=p_123%3A195991"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$79.70",
+            "extracted_primary_price": 79.7,
+            "old_primary_price": "$84.00",
+            "extracted_old_primary_price": 84
+          }
+        ]
+      },
+      {
+        "position": 47,
+        "asin": "B01H9BL9SE",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-DCB606-2-Lithium-Premium-Battery/dp/B01H9BL9SE/ref=sr_1_95_so_BATTERY?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-95",
+        "brand": "DEWALT",
+        "title": "20V MAX* Batteries, Premium, 6.0-Ah, 2-Pack (DCB606-2)",
+        "link": "https://www.amazon.com/DEWALT-DCB606-2-Lithium-Premium-Battery/dp/B01H9BL9SE/ref=sr_1_95?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-95",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB606-2-Lithium-Premium-Battery/dp/B01H9BL9SE/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01H9BL9SE&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/517A7M3fjyL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 9500,
+        "bought_last_month": "100+ bought in past month",
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 48,
+        "asin": "B01KAG1818",
+        "brand": "DEWALT",
+        "title": "20V MAX LED Work Light Rechargeable, LED Flashlight, Magnetic Flashlight, Freestanding and Clip-On Light, 360 Degree Pivoting Head, Tool Only (DCL044)",
+        "link": "https://www.amazon.com/DEWALT-DCL044-Hand-Held-Light/dp/B01KAG1818/ref=sr_1_96?dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&dib_tag=se&keywords=DEWALT&qid=1794973074&refinements=p_123%3A195991&sr=8-96",
+        "link_clean": "https://www.amazon.com/DEWALT-DCL044-Hand-Held-Light/dp/B01KAG1818/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01KAG1818&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/7115xh+WGCL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 3200,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$53.59",
+        "extracted_price": 53.59,
+        "old_price": "$59.00",
+        "extracted_old_price": 59,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 12 left in stock - order soon.",
+        "more_buying_choices": "$52.61 (10 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01KAG1818/ref=sr_1_96_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-96&refinements=p_123%3A195991",
+        "purchase_options": [
+          {
+            "primary_price": "$53.59",
+            "extracted_primary_price": 53.59,
+            "old_primary_price": "$59.00",
+            "extracted_old_primary_price": 59,
+            "more_buying_choices": "$52.61 (10 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01KAG1818/ref=sr_1_96_olp?keywords=DEWALT&dib_tag=se&dib=eyJ2IjoiMSJ9.wZtIis_xVD3kxtdGVK-OVvFKGz3BoTCAGIXgG4YcR5hSPIM2C12VdbrIP4U5BEEcldr7UUApwebMQH_suzgS3A0hnUd0QgJ8PsDFO6T--caAHpViMNwW_fqaxKt8yur4ze9xGsoAx-TBmZpqQFznwEGFCa04NepA03c4ZJUYMOgVlOYdceFc3V1YK3WB9_1GUufGvjrZ9IjhKv88prx-gJ62EoJqURMCQFOpXZQBCnGjo5rF83NuhvgKMqYd2TLFcnZS1px_mJhrKHOlIickcz5zvl5ev_lOcp1R2Ot3rcM.GaHRSIroyOtZey4pZaTLJ8oMvVt6adBeo8hti9RAbJA&qid=1794973074&sr=8-96&refinements=p_123%3A195991"
+          }
+        ]
+      }
+    ],
+    "related_searches": [
+      {
+        "position": 1,
+        "query": "dewalt battery",
+        "link": "https://www.amazon.com/s?k=dewalt+battery&ref=rsl_sug_0_0&pd_rd_w=XhBjD&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=KNRPBZCQ5XRW1VZ1DGRM&pd_rd_wg=WJTnC&pd_rd_r=7094f26a-14e2-41fe-afbe-2359eb7ec5eb&qid=1794973074"
+      },
+      {
+        "position": 2,
+        "query": "dewalt drill",
+        "link": "https://www.amazon.com/s?k=dewalt+drill&ref=rsl_sug_0_3&pd_rd_w=XhBjD&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=KNRPBZCQ5XRW1VZ1DGRM&pd_rd_wg=WJTnC&pd_rd_r=7094f26a-14e2-41fe-afbe-2359eb7ec5eb&qid=1794973074"
+      },
+      {
+        "position": 3,
+        "query": "dewalt tools",
+        "link": "https://www.amazon.com/s?k=dewalt+tools&ref=rsl_sug_0_1&pd_rd_w=XhBjD&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=KNRPBZCQ5XRW1VZ1DGRM&pd_rd_wg=WJTnC&pd_rd_r=7094f26a-14e2-41fe-afbe-2359eb7ec5eb&qid=1794973074"
+      },
+      {
+        "position": 4,
+        "query": "dewalt saw",
+        "link": "https://www.amazon.com/s?k=dewalt+saw&ref=rsl_sug_0_4&pd_rd_w=XhBjD&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=KNRPBZCQ5XRW1VZ1DGRM&pd_rd_wg=WJTnC&pd_rd_r=7094f26a-14e2-41fe-afbe-2359eb7ec5eb&qid=1794973074"
+      },
+      {
+        "position": 5,
+        "query": "milwaukee",
+        "link": "https://www.amazon.com/s?k=milwaukee&ref=rsl_sug_0_2&pd_rd_w=XhBjD&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=KNRPBZCQ5XRW1VZ1DGRM&pd_rd_wg=WJTnC&pd_rd_r=7094f26a-14e2-41fe-afbe-2359eb7ec5eb&qid=1794973074"
+      },
+      {
+        "position": 6,
+        "query": "milwaukee tools",
+        "link": "https://www.amazon.com/s?k=milwaukee+tools&ref=rsl_sug_0_5&pd_rd_w=XhBjD&content-id=amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871:amzn1.sym.3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_p=3be64970-3b95-4a6d-a45d-78077a3ff871&pf_rd_r=KNRPBZCQ5XRW1VZ1DGRM&pd_rd_wg=WJTnC&pd_rd_r=7094f26a-14e2-41fe-afbe-2359eb7ec5eb&qid=1794973074"
+      }
+    ],
+    "sponsored_brands": {
+      "title": "Brands related to your search",
+      "brands": [
+        {
+          "position": 1,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/a13d874d-cd4c-4417-ae12-70cfdcbfa0fa._CR0,0,1200,628_SX920_CB1169409_QL70_.png",
+          "name": "DeWalt",
+          "headline": "Shop DeWalt Socks and Hats Combo",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkL1uE0EQx5VEQGQFEbkIkktLuAhZe3fvfB9BJ7T34dhyHH-c7SRuTuu7tX1g351313FCkYKSlhegRuIJaHgDyrwEJQ-AnIAQ_DXFjGb-mplfLtr9-PXn3eP8U9Ifdtxmo3kBXa9X3MKHBxOWxNeBMa6YdWK8rESL0YDUW8cHszAcXzGfLKcsdfRuf7DyVL7u7Zl6GWFcRppahqNt3x7vEq9f93oNP_889yRi4q1Ms_ze4KznOe2Ts8bIcwsftnK7m04wlpN8ji7ouzQph-mi8GImKOAsTBcLlkRUxmkCBONXcciAYJSHMzCWk-IjlgQD_xAvVnMZgzGnSQRCzqiMrxj4vRKElEcCZDROJOMgTBPJEon3W7YTKB3_NHA9v9lvd4pGbgvuv7_79OP7N1DY_-PeHKJkYl58hiGE2KzqVaMKoWngnYHvHu84HeewmX_l2sTJag2gk1t7-aApubW7Ur1hkPyrW3t6H-QhKew5U-_6hHjTpR4y_GU793l7JmUmjiuV9Xpd_oulImTKmahkdMoquuHp2DY1YEDDAKrquoDYSg04roF0p6YoNVN9fW8IOJtYvh0QiJCBoaoMW512rT9sKq5eAwQirCNFwedOHbeGZyaqV0kpiwIeBdl8FnFLlmaCBiEP4shCZlVVkaaZEJXmWUBFnAjLhrpWv7w87WpHNtQVVTO7qHdkQ9TCjkM67c3kcsX4jeV65-S0v6nFPJXW_5BLIsoCGgVTnq4yawNcRQZCCGqGaZRii2aiRDffvFGJeZE2shH6BVB526A&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F78E72B96-8088-44DD-AB3F-CD817CF33F94%3Fstore_ref%3DSB_A01182043VMPOFTVK3D7F-A01271332WCH2MVN91H5A%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D19544166901%26lp_asins%3DB076HYYLQ6%2CB073469Q1R%2CB01M2CCAPO%26lp_query%3DDEWALT%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D200041811106898%26i%3Daps%26aref%3Dj4A9XoIpZ1&ref_=sbx_be_s_3psl_mbd_mb0_bkgd&pd_rd_w=AkODG&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=KNRPBZCQ5XRW1VZ1DGRM&pd_rd_wg=rU2Gp&pd_rd_r=f3d2002d-9b02-49e5-81f7-9440de5ee964",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/d1e50649-3c8d-42ef-9933-58c515c22be3._AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 2,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/a2f9f5ef-bf2f-4640-9254-d5a36fda04ef._CR0,0,1200,628_SX920_CB1169409_QL70_.jpg",
+          "name": "FOXBC",
+          "headline": "FOXBC 12-1/2\" Planer Blade for DeWalt DW734 Planer",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUMtu00AUVVsBVVRElUWRsoxEFoWJx49k7CILjR-J0_QR4qQl2VgTe-IY4kdnpk3bRT-AHeIHkPgHNqzgJ9jxD0h8AHILQnB0F-fq3qNz76lEm-8___x2v_oQj04GTr_XfwUdd1hfU3Z35jRLLgN9Jhke1p9KUTodY-9wb6edH6sXMWCvKU6bE7rk-2DQWQ23DNSUFaUpt7UmnK771mwTuyPPHfb86uPKg4jyNyIvqlvjo6FrH3ePelPXqb1dq2yWk2Am5tUKScl1njXDPK09WXACGA3zNKVZRESSZ4BTdpGEFHBKWLgAMzGv36NZMPZ3lfR8KRIwYySLQMgoEckFBb8tQUhYxEFBkkxQBsI8EzQTyvahZQfqwD8IHNfvj44Hdb2yJm9__f7j3acvoLb9R10eohZ8WX-kQAhViIyWoam6oSsbY9_Z27AH9m6_-tyxsF10egDhG-vsDjG-sV4K7YpC_C9urPi28B2pbdmxe9nFbnyGQqp8XK98WF8IUfA9SVqtVs2_sUhc5IxyqSAxlSDCliurGnDlVgdostsBumVoAGlYcQwFKbprvLgVBIzOTd8KMEQtFRqyMoTdiTbQTn1dOwEYqrAlI11pd4zWpPcKDmUDNYooYFFQLBcRM0VjwUkQsiCJTNhYFgHhScZNCyLHazvoaPKspK39rifLJfU0u3046JSbZ-eUXZmOe4oPRmXPl7kw_4-2waMiIFEQs_y8MMuYNR21VRlqyNAbiUkK3iDlDyutj67DaejFvwDkntkD&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F07ABE134-E15F-41EF-8B94-74A2D92728E9%3Fstore_ref%3DSB_A07530912R0GY4P4WS84V-A030517826F95YIX0R197%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB07DH6D7NY%2CB07D5JGH11%2CB07H4C6MPF%26lp_query%3DDEWALT%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D200048763104798%26i%3Daps%26aref%3Dw4K7zcZcHg&ref_=sbx_be_s_3psl_mbd_mb1_bkgd&pd_rd_w=AkODG&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=KNRPBZCQ5XRW1VZ1DGRM&pd_rd_wg=rU2Gp&pd_rd_r=f3d2002d-9b02-49e5-81f7-9440de5ee964",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/583e8678-1fb5-4e81-93fb-9bcc46e7fed2._CR0,0,800,800_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 3,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/e65d545a-30f5-4a15-809f-201cb7d553a9._CR0,0,1200,628_SX920_CB1169409_QL70_.png",
+          "name": "DTK",
+          "headline": "Replacement for Dewalt 40V Battery",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkM1u00AUhdVWQBUVUWVRpCwjkUVh4vG_XWShGY-bpO5PGjttycaa2JPEamK7nknTsOiODVuExIoVK14BiddgzzPwACgtCMHRXdyro6N79FWSzfdff35_WH2MwrMu8Tv-BSRer76m7O6MWJbeRNZQstvIei4ls0EftY_2dtA51VRtkGkG7bzW2WFwuZyHi96WbTZlRWnKhtaEg_UADzeRF7a9XieoPq08Shi_FHlR3eof9zz3pHXcGXik9m6tsrlyoqEYVSt0Rt_kWTPOZ7VnE05ByeJ8NmNZQkWaZ4Cz8jqNGeCMlvEEDMWo_oBlUT_YVWbzqUjBsKRZAuKSUZFeM_D7JYhpmXBQ0DQTrARxngmWCWX7CLuR2g0OI-IFfnjSrVuVNWX70-cf395-IbXtP-lVEbXg0_oTFUKoWKZtQ90woaFs9AOyt-F23V2_-pJg5Bb7HWCiW3x1rzG6xadCWzKI_tUtHt8Nul9qW-7Yu2khb3xlxkz5uF75sD4RouB7krRYLJp_sUhc5CXjUkHHTNq3sKEZxAQecTHQCMIAEd0FJpQVxTU0S7PIq7tAVLKRE-AIQVnXoQJlzXdDT_HlQCU2QFC1FNnQZFvtuG180HPbZ2GjSKIyiYrpJCkd0ZhwGsVllCYObEyLiPI04w6GZldtXRyR1gsM3TbeP2jJ6sq-mrNy6RDvHB2Gq5tPc-H8z7PBkyKiSTQu83nhrNjqhgxlaMg21BqpQwveoKviftHS-qeqvgx_AbD71XQ&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FF8B646D7-EDCB-4DAB-AD5C-70122C64848D%3Fstore_ref%3DSB_A015502014KCTE2K1S3D9-A0382164193ICHBJRCHVT%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB07P3GXMDG%2CB0CHBFJG13%26lp_query%3DDEWALT%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300056101061904%26i%3Daps%26aref%3DKpG4UQ35yT&ref_=sbx_be_s_3psl_mbd_mb2_bkgd&pd_rd_w=AkODG&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=KNRPBZCQ5XRW1VZ1DGRM&pd_rd_wg=rU2Gp&pd_rd_r=f3d2002d-9b02-49e5-81f7-9440de5ee964",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/a2ecc0b0-2535-4f62-9d11-f72d35e4b106._CR0,0,600,600_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        }
+      ]
+    },
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "popular_shopping_ideas": [
+        {
+          "position": 1,
+          "name": "Batteries",
+          "link": "https://www.amazon.com/s?k=dewalt+batteries&ref=sr_nr_p_rag_integrated_qb_0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=dewalt+batteries&page=2&rh=p_123%3A195991"
+        },
+        {
+          "position": 2,
+          "name": "Cordless",
+          "link": "https://www.amazon.com/s?k=dewalt+cordless+tools&ref=sr_nr_p_rag_integrated_qb_1",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=dewalt+cordless+tools&page=2&rh=p_123%3A195991"
+        },
+        {
+          "position": 3,
+          "name": "Power Tool Set",
+          "link": "https://www.amazon.com/s?k=dewalt+power+tool+set&ref=sr_nr_p_rag_integrated_qb_2",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=dewalt+power+tool+set&page=2&rh=p_123%3A195991"
+        },
+        {
+          "position": 4,
+          "name": "Voltage Adapter",
+          "link": "https://www.amazon.com/s?k=dewalt+18v+to+20v+adapter&ref=sr_nr_p_rag_integrated_qb_3",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=dewalt+18v+to+20v+adapter&page=2&rh=p_123%3A195991"
+        }
+      ],
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249152011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_76%3A1249152011&dc&qid=1794973074&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3Ac3HdiH3D8JffhDTMBAzvuwA%2Bp%2BQ9BJZOTaZfEMA4yrM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_76%3A1249152011"
+        }
+      ],
+      "delivery_day": [
+        {
+          "position": 1,
+          "name": "Get It by Tomorrow",
+          "rh": "p_90:8308921011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_90%3A8308921011&dc&qid=1794973074&rnid=8308919011&ref=sr_nr_p_90_1&ds=v1%3AOW11PCmqDc2B9vSIXccelpizttewGOika80JtmXi87Y",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_90%3A8308921011"
+        }
+      ],
+      "price": [
+        {
+          "position": 1,
+          "name": "All Discounts",
+          "rh": "p_n_deal_type:23566065011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_deal_type%3A23566065011&dc&qid=1794973074&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3A5y0u3Y5aqjDUOgkMj07eGekRjXcRPfLweTCOkRY6Fjo",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_deal_type%3A23566065011"
+        },
+        {
+          "position": 2,
+          "name": "Buy More, Save More",
+          "rh": "p_n_deal_type:210906365011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_deal_type%3A210906365011&dc&qid=1794973074&rnid=23566063011&ref=sr_nr_p_n_deal_type_2&ds=v1%3AvZSDen6w1GyxFv3h20iS6%2FR1hdTnZAZgyOukLIoY4H8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_deal_type%3A210906365011"
+        },
+        {
+          "position": 3,
+          "name": "Coupons",
+          "rh": "p_n_deal_type:210906366011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_deal_type%3A210906366011&dc&qid=1794973074&rnid=23566063011&ref=sr_nr_p_n_deal_type_3&ds=v1%3AUcwgVGU6t6wlmZ18S%2BGWJhi0%2B%2BZzMfLUfvk%2FERW7f2E",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_deal_type%3A210906366011"
+        },
+        {
+          "position": 4,
+          "name": "Today's Deals",
+          "rh": "p_n_deal_type:23566064011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_deal_type%3A23566064011&dc&qid=1794973074&rnid=23566063011&ref=sr_nr_p_n_deal_type_4&ds=v1%3A9kJtKRad9Ovg4RvpWfpxDLiyavne%2FJbKYnwoiuDPCp4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_deal_type%3A23566064011"
+        },
+        {
+          "position": 5,
+          "name": "Up to $60",
+          "rh": "p_36:dynamic-picker-0",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_36%3A-6000&dc&qid=1794973074&rnid=1243644011&ref=sr_nr_p_36_1&ds=v1%3A4PVoheFlwsnPwoMG4Zp08PCqtzQ9Pm%2BZ0%2BfPXwMcuLw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_36%3A-6000"
+        },
+        {
+          "position": 6,
+          "name": "$60 to $150",
+          "rh": "p_36:dynamic-picker-1",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_36%3A6000-15000&dc&qid=1794973074&rnid=1243644011&ref=sr_nr_p_36_2&ds=v1%3A22JJMsiJRf9ttbD1t65QVkhO6fjEduxmCHFRX5EJ0u0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_36%3A6000-15000"
+        },
+        {
+          "position": 7,
+          "name": "$150 to $200",
+          "rh": "p_36:dynamic-picker-2",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_36%3A15000-20000&dc&qid=1794973074&rnid=1243644011&ref=sr_nr_p_36_3&ds=v1%3ApkjYsgrbJAx9O1cVR4zWvbiWJPWW7%2FvmY11xvY23lC4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_36%3A15000-20000"
+        },
+        {
+          "position": 8,
+          "name": "$200 to $300",
+          "rh": "p_36:dynamic-picker-3",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_36%3A20000-30000&dc&qid=1794973074&rnid=1243644011&ref=sr_nr_p_36_4&ds=v1%3AlDQoC21udWlWs2Ty2AfKwQ5w7aakUvpcTOzgJ419%2BD8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_36%3A20000-30000"
+        },
+        {
+          "position": 9,
+          "name": "$300 & above",
+          "rh": "p_36:dynamic-picker-4",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_36%3A30000-&dc&qid=1794973074&rnid=1243644011&ref=sr_nr_p_36_5&ds=v1%3A15sPtmWesQ1JvjKAvmrdPSnXjlDqotVlQ1X8cIGL7qI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_36%3A30000-"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "DEWALT",
+          "rh": "p_123:195991",
+          "link": "https://www.amazon.com/s?k=DEWALT&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3A3Hen0SsUjOwwlqTBx%2BLbF1%2ByJueYfyqKbFhcBS1L3qg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991",
+          "used": true
+        },
+        {
+          "position": 2,
+          "name": "CRAFTSMAN",
+          "rh": "p_123:304445",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C304445&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_2&ds=v1%3AR2v2E8uPstL84FeDHZJDJsTKgqvEPnhXgWMRH6kABPg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C304445"
+        },
+        {
+          "position": 3,
+          "name": "Greenworks",
+          "rh": "p_123:229357",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C229357&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_3&ds=v1%3AOhSDDPYLpXP2Q%2B7y%2FDQhUmF3%2FQpTwV0%2BW6ndSmqjn6M",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C229357"
+        },
+        {
+          "position": 4,
+          "name": "Bosch",
+          "rh": "p_123:46644",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C46644&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_4&ds=v1%3A%2B9VJx3GEKQatnjlLDEIDX%2B69OcNQWZ5UJkrzsiw6FOI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C46644"
+        },
+        {
+          "position": 5,
+          "name": "Metabo HPT",
+          "rh": "p_123:461881",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C461881&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_5&ds=v1%3Ak8G%2BX0lgb%2B2eJbPojAylmQZ6%2F%2B55B7J8dORlMWucg9Q",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C461881"
+        },
+        {
+          "position": 6,
+          "name": "Ingersoll Rand",
+          "rh": "p_123:358878",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C358878&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_6&ds=v1%3AChGsGUEY1XOG3GwgLwmV3DS7Dv7EbkIb38q1PDXlhuc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C358878"
+        },
+        {
+          "position": 7,
+          "name": "GEARWRENCH",
+          "rh": "p_123:311653",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C311653&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_7&ds=v1%3AgmCQe6kFdWHM9cVIWlLmvuYNANonJz7cKDFaFL3kPzU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C311653"
+        },
+        {
+          "position": 8,
+          "name": "LIVOWALNY",
+          "rh": "p_123:1147714",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A1147714%257C195991&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_8&ds=v1%3APQLwKA9p02pmVgTuZGuQtrEnOB5cUEAjMyIq%2BrIsLZs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A1147714%257C195991"
+        },
+        {
+          "position": 9,
+          "name": "Fanttik",
+          "rh": "p_123:902734",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C902734&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_9&ds=v1%3APQkEejNRWbQ1IPKYSf68xGujp7legZG%2BNF4XqYKVyZg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C902734"
+        },
+        {
+          "position": 10,
+          "name": "Saker",
+          "rh": "p_123:545544",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C545544&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_10&ds=v1%3AKNkM0tt7OO3ZoGicpaFd9%2BjUX5giEHGw%2BZOILQwA%2B44",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C545544"
+        },
+        {
+          "position": 11,
+          "name": "Ecarke",
+          "rh": "p_123:800230",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C800230&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_11&ds=v1%3AF8kPtnu5GhLQBbSg5LuhdtIgWYYtwLhc0mSQdjtq65Q",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C800230"
+        },
+        {
+          "position": 12,
+          "name": "Mellif",
+          "rh": "p_123:752380",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C752380&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_12&ds=v1%3AVf2J0kxF3biW8QgPKVlaqDSPGy1RXjzP2H3Wl63cY5w",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C752380"
+        },
+        {
+          "position": 13,
+          "name": "DIYtoolifz",
+          "rh": "p_123:4651813",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C4651813&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_13&ds=v1%3A8T5U2GYD8dKcjg79y8HAIEoK6cSdwR8bk5bGxMPYmcw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C4651813"
+        },
+        {
+          "position": 14,
+          "name": "FOXBC",
+          "rh": "p_123:732983",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C732983&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_14&ds=v1%3AYkQ1Ce%2FdhSe0HtVAmMSkp04Zq7zxLtC9cl%2FXHSjSt3Y",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C732983"
+        },
+        {
+          "position": 15,
+          "name": "Jet",
+          "rh": "p_123:250700",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C250700&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_15&ds=v1%3A7sLTuywSXBcRvTNHZ5ZJRBevVGEiuSLY0QQAKxwXTFA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C250700"
+        },
+        {
+          "position": 16,
+          "name": "Huepar",
+          "rh": "p_123:308235",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C308235&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_16&ds=v1%3ADkMKGx0KuC09Yki34d2TphVAaQy3oGmKycqb4V9BZtE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C308235"
+        },
+        {
+          "position": 17,
+          "name": "Seesii",
+          "rh": "p_123:311000",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C311000&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_17&ds=v1%3A5s%2BuydiiFKTTgMtm30nIZY6bxrEXPMGI3jXNiNIoh8g",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C311000"
+        },
+        {
+          "position": 18,
+          "name": "TOLESA",
+          "rh": "p_123:736171",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C736171&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_18&ds=v1%3AcahwoADxgNNdfkYhSAlnuYLY0iinfYhxZsTDIfZAV2c",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C736171"
+        },
+        {
+          "position": 19,
+          "name": "WORKPRO",
+          "rh": "p_123:76419",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C76419&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_19&ds=v1%3ASqIdsCN5TAqV8zCG0zPGyhe9Q0eLFTUK4G8XqUdnSwM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C76419"
+        },
+        {
+          "position": 20,
+          "name": "Spider",
+          "rh": "p_123:443253",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C443253&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_20&ds=v1%3ANByGH58DVnZ6U5CoEgFH55bku5Sb953ZytjP2U3HUiw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C443253"
+        },
+        {
+          "position": 21,
+          "name": "MtiolHig",
+          "rh": "p_123:1919240",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A1919240%257C195991&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_21&ds=v1%3AJvYqf90ekKYF1hrhEmSosxr0RQqOsGhFKPFvtbUhnpg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A1919240%257C195991"
+        },
+        {
+          "position": 22,
+          "name": "GEINXURN",
+          "rh": "p_123:1912429",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A1912429%257C195991&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_22&ds=v1%3AKMAZ6Y1EARZzOBYkyZ%2FhL%2F8%2FL7r0h6riC25S%2BYBShd0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A1912429%257C195991"
+        },
+        {
+          "position": 23,
+          "name": "WEP",
+          "rh": "p_123:1199274",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A1199274%257C195991&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_23&ds=v1%3AM%2Bl0fBN4wWmPIkBLnQrk3bYhBMg1YoifdzYpm0KZpD8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A1199274%257C195991"
+        },
+        {
+          "position": 24,
+          "name": "DEKOPRO",
+          "rh": "p_123:334890",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C334890&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_24&ds=v1%3ASavZM%2FvLKp%2Ft8wvxiMHo2Aw8r6blGcL%2FjEfUM5KlEvc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C334890"
+        },
+        {
+          "position": 25,
+          "name": "LEXIVON",
+          "rh": "p_123:615235",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C615235&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_25&ds=v1%3A6459cQY6hck%2BYQfnLVf64oCJ3du6zjuhGSAH8DUG5zk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C615235"
+        },
+        {
+          "position": 26,
+          "name": "ToolCurve",
+          "rh": "p_123:1557621",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A1557621%257C195991&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_26&ds=v1%3Anc9LiIt%2B7m9zY1Fm%2FpfwwuC1e5Dpk5x2F0ulDmodD4g",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A1557621%257C195991"
+        },
+        {
+          "position": 27,
+          "name": "Cerycose",
+          "rh": "p_123:4530201",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C4530201&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_27&ds=v1%3A20IoCnJpDSxlNb1Tckq5w9WdH8psYUC2%2B0IECsolqnU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C4530201"
+        },
+        {
+          "position": 28,
+          "name": "EVOLUTION",
+          "rh": "p_123:254219",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C254219&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_28&ds=v1%3AfKM7eyAJ2Rwvdc3v2wAHInVoCsjdA%2Bo6XfBR%2B4DeaQs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C254219"
+        },
+        {
+          "position": 29,
+          "name": "Topline",
+          "rh": "p_123:463561",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C463561&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_29&ds=v1%3AwSKq6%2BvrZQhtEyzYK4yUrQwlkF2sg4G3%2FPGE3Ep80HE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C463561"
+        },
+        {
+          "position": 30,
+          "name": "Amartisan",
+          "rh": "p_123:570709",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C570709&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_30&ds=v1%3AuI%2F5JcibdDB18miUmXM9GsO%2Fpm9TG5UWLPlkvmHT%2FAw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C570709"
+        },
+        {
+          "position": 31,
+          "name": "EZARC",
+          "rh": "p_123:187483",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A187483%257C195991&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_31&ds=v1%3AlpUA8XoLDuKItvO7XLmGpjrvIqhQJEejPIR6P6kQed4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A187483%257C195991"
+        },
+        {
+          "position": 32,
+          "name": "Bonacell",
+          "rh": "p_123:320961",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C320961&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_32&ds=v1%3ArTrUdlmLnqbc03%2BpNNnZkYfi99HGjTHYxIH13l9LChk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C320961"
+        },
+        {
+          "position": 33,
+          "name": "NordWolf",
+          "rh": "p_123:936098",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C936098&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_33&ds=v1%3AKY5aKl3F%2F%2BZeSxG1gQMORT96reGygm2p7TmHrmtsvTs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C936098"
+        },
+        {
+          "position": 34,
+          "name": "CIGMAN",
+          "rh": "p_123:955897",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C955897&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_34&ds=v1%3A5eQjaPeRe%2BAFmcWsOvmZuJpifwnCXD%2BOtfoxSQFI%2FSY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C955897"
+        },
+        {
+          "position": 35,
+          "name": "SEDY",
+          "rh": "p_123:262821",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%257C262821&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_35&ds=v1%3AatBBZN2S2HBQ%2FHYBNa1xRIuFHbQ5eOvfcRgNjhrSFAI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%257C262821"
+        },
+        {
+          "position": 36,
+          "name": "VERVEWAVE",
+          "rh": "p_123:15335042",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A15335042%257C195991&dc&qid=1794973074&rnid=85457740011&ref=sr_nr_p_123_36&ds=v1%3AhDb82cdyQSyZuf1%2FYL9OJ%2FGBd5KSRR6hCKtQqkXTIvc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A15335042%257C195991"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_condition-type%3A6358196011&dc&qid=1794973074&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3A%2FEFdYloQC0QzLGeyXeNwhSgFD4iUmfo%2FtB31nbAfwIY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_condition-type%3A6358196011"
+        },
+        {
+          "position": 2,
+          "name": "Renewed",
+          "rh": "p_n_condition-type:16907721011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_condition-type%3A16907721011&dc&qid=1794973074&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3AQFEFyK8oISlTXKXox4Oj%2FgzwfECXu%2FnYOOtmXKZpMVU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_condition-type%3A16907721011"
+        },
+        {
+          "position": 3,
+          "name": "Used",
+          "rh": "p_n_condition-type:6358198011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_condition-type%3A6358198011&dc&qid=1794973074&rnid=6358194011&ref=sr_nr_p_n_condition-type_3&ds=v1%3AooL1okoW12wn1PGc79aakJBRn07%2FhVC7Ee8TcU8MHJo",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_condition-type%3A6358198011"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248909011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_72%3A1248909011&dc&qid=1794973074&rnid=1248907011&ref=sr_nr_p_72_1&ds=v1%3AQwRxXdEdEeph1WuR0dL5IfO4kM0R4ADRqgGkV11YPVI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_72%3A1248909011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Amazon.com",
+          "rh": "p_6:ATVPDKIKX0DER",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_6%3AATVPDKIKX0DER&dc&qid=1794973074&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3AbuoZZsrN8mJYDRBNY3vCax7T5XKdwETZ2%2BvsY64UfrE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_6%3AATVPDKIKX0DER"
+        },
+        {
+          "position": 2,
+          "name": "Homestead Supply & More ✅",
+          "rh": "p_6:AKDENCFW3A9SI",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_6%3AAKDENCFW3A9SI&dc&qid=1794973074&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3ARTek%2BWDNLr3u9%2FowKjieP4WFyDD%2FsZ249VG5BrGp3hA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_6%3AAKDENCFW3A9SI"
+        },
+        {
+          "position": 3,
+          "name": "Triplenet Pricing INC",
+          "rh": "p_6:AAZRLVTNON75Z",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_6%3AAAZRLVTNON75Z&dc&qid=1794973074&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3A3KHorrKUhACy19zbWxkDLn6c9kd3%2BZvL%2FkXl%2BtKbc4Y",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_6%3AAAZRLVTNON75Z"
+        },
+        {
+          "position": 4,
+          "name": "The Factory Depot",
+          "rh": "p_6:A29PHU0KPCGV8S",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_6%3AA29PHU0KPCGV8S&dc&qid=1794973074&rnid=339807011&ref=sr_nr_p_6_4&ds=v1%3AbRFDMiakJNf9WyeRKlbc1rHLqw1T4XVYA%2BroJBakSqw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_6%3AA29PHU0KPCGV8S"
+        },
+        {
+          "position": 5,
+          "name": "PowerToolReplacementParts",
+          "rh": "p_6:A2DZURMCIZCVX6",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_6%3AA2DZURMCIZCVX6&dc&qid=1794973074&rnid=339807011&ref=sr_nr_p_6_5&ds=v1%3ABlIwqJVKB92XmYS4SPRREaKvnySnEvRhNhIbKIxJMyQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_6%3AA2DZURMCIZCVX6"
+        },
+        {
+          "position": 6,
+          "name": "Voomi Supply",
+          "rh": "p_6:A1FEBFZ5BY5ZT8",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_6%3AA1FEBFZ5BY5ZT8&dc&qid=1794973074&rnid=339807011&ref=sr_nr_p_6_6&ds=v1%3AqwEPxExyV%2BfKvzkQyFYAH7E85JDbgE%2FOU04Ol6nRoLQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_6%3AA1FEBFZ5BY5ZT8"
+        },
+        {
+          "position": 7,
+          "name": "AvantGarde Flex Shop",
+          "rh": "p_6:AB87CDXOA11T3",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_6%3AAB87CDXOA11T3&dc&qid=1794973074&rnid=339807011&ref=sr_nr_p_6_7&ds=v1%3AJO8wYO39sXkx4gKTjTYjfsR3ZazEZzVYxonUEEqKsvg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_6%3AAB87CDXOA11T3"
+        }
+      ],
+      "all_top_brands": [
+        {
+          "position": 1,
+          "name": "Top Brands",
+          "rh": "p_n_g-101014971069111:119653281011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_g-101014971069111%3A119653281011&dc&qid=1794973074&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3Au2hMxTHiuLzfpj2i4I5SIIKav9R4cQYVoO%2Fds%2F6MClg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_g-101014971069111%3A119653281011"
+        }
+      ],
+      "subscription_options": [
+        {
+          "position": 1,
+          "name": "Subscribe & Save Eligible",
+          "rh": "p_n_is_sns_available:2617006011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_is_sns_available%3A2617006011&dc&qid=1794973074&rnid=2617005011&ref=sr_nr_p_n_is_sns_available_1&ds=v1%3AqnraUczfOJZqmwcRnRioqnyNM01XCYO%2F1QgdoMTT34w",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_is_sns_available%3A2617006011"
+        }
+      ],
+      "premium_brands": [
+        {
+          "position": 1,
+          "name": "Premium Brands",
+          "rh": "p_n_g-101015887018111:204376014011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=p_123%3A195991%2Cp_n_g-101015887018111%3A204376014011&dc&qid=1794973074&rnid=204376013011&ref=sr_nr_p_n_g-101015887018111_1&ds=v1%3AaHsmFNvdj7b56Ulw3uJ1d0xwWRHB%2Bm7G2N3MzMdYmns",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=p_123%3A195991%2Cp_n_g-101015887018111%3A204376014011"
+        }
+      ],
+      "department": [
+        {
+          "position": 1,
+          "name": "Tools & Home Improvement",
+          "rh": "n:228013",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=n%3A228013%2Cp_123%3A195991&dc&qid=1794973074&rnid=2941120011&ref=sr_nr_n_1&ds=v1%3AI8jaAmwRRUXhrfGIXXmKD4KVkN2VdJVkJbxyT%2Bh0txc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=n%3A228013%2Cp_123%3A195991"
+        },
+        {
+          "position": 2,
+          "name": "Power Tools",
+          "rh": "n:551236",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=n%3A228013%2Cn%3A551236%2Cp_123%3A195991&dc&qid=1794973074&rnid=2941120011&ref=sr_nr_n_2&ds=v1%3AEvHfM6P%2Fnd0ICAwvhrGkJj3VuJj8eyEhcS%2BL8ctqa7U",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=n%3A228013%2Cn%3A551236%2Cp_123%3A195991"
+        },
+        {
+          "position": 3,
+          "name": "Power Tool Parts & Accessories",
+          "rh": "n:552262",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=n%3A228013%2Cn%3A552262%2Cp_123%3A195991&dc&qid=1794973074&rnid=2941120011&ref=sr_nr_n_3&ds=v1%3AQXnpnONfqd6pZYQXxqao0Tx%2B3Xz9Gy9qW8d5WMpF700",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=n%3A228013%2Cn%3A552262%2Cp_123%3A195991"
+        },
+        {
+          "position": 4,
+          "name": "Eye Protection Equipment",
+          "rh": "n:553560",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=n%3A228013%2Cn%3A553560%2Cp_123%3A195991&dc&qid=1794973074&rnid=2941120011&ref=sr_nr_n_4&ds=v1%3ADIIp0ZkByrIabPMQB2RG%2FDcywo0Li%2B%2FaHUtgEgLR97I",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=n%3A228013%2Cn%3A553560%2Cp_123%3A195991"
+        },
+        {
+          "position": 5,
+          "name": "Sockets & Socket Sets",
+          "rh": "n:553350",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=n%3A228013%2Cn%3A553350%2Cp_123%3A195991&dc&qid=1794973074&rnid=2941120011&ref=sr_nr_n_5&ds=v1%3AfYMhmAWBgN%2Fqzf1%2FlAC7SVmR9bVMJOJybh4rTzwiu8M",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=n%3A228013%2Cn%3A553350%2Cp_123%3A195991"
+        },
+        {
+          "position": 6,
+          "name": "Outdoor Power & Lawn Equipment",
+          "rh": "n:551242",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=n%3A551242%2Cp_123%3A195991&dc&qid=1794973074&rnid=2941120011&ref=sr_nr_n_6&ds=v1%3ApZ81rbjPC%2FbaUnF0gbKD5If6tHkGpg9EmVeFUyRNKlk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=n%3A551242%2Cp_123%3A195991"
+        },
+        {
+          "position": 7,
+          "name": "Leaf Blowers, Vacuums & Accessories",
+          "rh": "n:23779792011",
+          "link": "https://www.amazon.com/s?k=DEWALT&rh=n%3A551242%2Cn%3A23779792011%2Cp_123%3A195991&dc&qid=1794973074&rnid=2941120011&ref=sr_nr_n_7&ds=v1%3A4gV1KzQMh8FqgW%2FCek6GnWKLOmjEDKmzug6u4Jcayic",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=2&rh=n%3A551242%2Cn%3A23779792011%2Cp_123%3A195991"
+        }
+      ]
+    },
+    "serpapi_pagination": {
+      "current": 2,
+      "previous": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=1&rh=p_123%3A195991",
+      "next": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT&page=3&rh=p_123%3A195991"
+    }
+  }
+}

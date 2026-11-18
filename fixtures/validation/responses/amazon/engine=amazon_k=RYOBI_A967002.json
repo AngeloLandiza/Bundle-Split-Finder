@@ -1,0 +1,814 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=RYOBI A967002",
+  "at": 1794972983134,
+  "data": {
+    "search_metadata": {
+      "id": "6afd1d36368070d42feafe9c",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/9EVFM9FhN4DccHBEpC_hB6jKe11Y_d7kRa4fM_Wvxzc/6afd1d36368070d42feafe9c.json",
+      "markdown_endpoint": "https://serpapi.com/searches/9EVFM9FhN4DccHBEpC_hB6jKe11Y_d7kRa4fM_Wvxzc/6afd1d36368070d42feafe9c.md",
+      "created_at": "2026-11-18 03:36:22 UTC",
+      "processed_at": "2026-11-18 03:36:22 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=RYOBI+A967002",
+      "raw_html_file": "https://serpapi.com/searches/9EVFM9FhN4DccHBEpC_hB6jKe11Y_d7kRa4fM_Wvxzc/6afd1d36368070d42feafe9c.html",
+      "total_time_taken": 0.84
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "RYOBI A967002",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 20,
+      "query_displayed": "RYOBI A967002",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B08PVZQMM2",
+        "badges": [
+          "Overall Pick"
+        ],
+        "title": "Parts New 310982003 Genuine Ryobi Bar & Chain Combo for Ryobi P4360; Compatible with 310987002 & 580699010",
+        "link": "https://www.amazon.com/310982003-Genuine-Compatible-310987002-580699010/dp/B08PVZQMM2/ref=sr_1_1?keywords=RYOBI+A967002&qid=1794972982&sr=8-1",
+        "link_clean": "https://www.amazon.com/310982003-Genuine-Compatible-310987002-580699010/dp/B08PVZQMM2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08PVZQMM2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51NLsUXemwL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 207,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$23.79",
+        "extracted_price": 23.79,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 6 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$23.79",
+            "extracted_primary_price": 23.79
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B0HCV19GVL",
+        "title": "308563013 Pull Starter Replacement Kit for Ryobi RY42BP 42cc Backpack Blower, Fits Engine Cover RY08420 RY08420A RY42BPEMC",
+        "link": "https://www.amazon.com/308563013-Replacement-Backpack-RY08420A-RY42BPEMC/dp/B0HCV19GVL/ref=sr_1_2?keywords=RYOBI+A967002&qid=1794972982&sr=8-2",
+        "link_clean": "https://www.amazon.com/308563013-Replacement-Backpack-RY08420A-RY42BPEMC/dp/B0HCV19GVL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HCV19GVL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61U1FLB+27L._AC_UL320_.jpg",
+        "rating": 2.3,
+        "reviews": 3,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$19.99",
+        "extracted_price": 19.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$19.99",
+            "extracted_primary_price": 19.99
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B07DD28SSF",
+        "title": "Genuine Ryobi Pull Starter 307157002 for RY251PH, RY252CS, RY253SS, RY254BC String Trimmer",
+        "link": "https://www.amazon.com/Genuine-Ryobi-Starter-307157002-RY251PH/dp/B07DD28SSF/ref=sr_1_3?keywords=RYOBI+A967002&qid=1794972982&sr=8-3",
+        "link_clean": "https://www.amazon.com/Genuine-Ryobi-Starter-307157002-RY251PH/dp/B07DD28SSF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07DD28SSF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71v6CbEmTXL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 667,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$21.78",
+        "extracted_price": 21.78,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "more_buying_choices": "$20.35 (7+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07DD28SSF/ref=sr_1_3_olp?keywords=RYOBI+A967002&qid=1794972982&sr=8-3",
+        "purchase_options": [
+          {
+            "primary_price": "$21.78",
+            "extracted_primary_price": 21.78,
+            "more_buying_choices": "$20.35 (7+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07DD28SSF/ref=sr_1_3_olp?keywords=RYOBI+A967002&qid=1794972982&sr=8-3"
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B0F4K53R52",
+        "title": "A32BR720 Fits For RYOBI Replacement Roller Bar for Stick Vacuum (PCL720)",
+        "link": "https://www.amazon.com/A32BR720-Replacement-Roller-Vacuum-PCL720/dp/B0F4K53R52/ref=sr_1_4?keywords=RYOBI+A967002&qid=1794972982&sr=8-4",
+        "link_clean": "https://www.amazon.com/A32BR720-Replacement-Roller-Vacuum-PCL720/dp/B0F4K53R52/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F4K53R52&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/31Bq1ATZobL._AC_UL320_.jpg",
+        "rating": 3.6,
+        "reviews": 3,
+        "price": "$14.62",
+        "extracted_price": 14.62,
+        "delivery": [
+          "$15 delivery Wed, Dec 2"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$14.62",
+            "extracted_primary_price": 14.62
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B0781B4R4C",
+        "brand": "RYOBI",
+        "title": "P197 Battery ONE + (PLUS) Compatible Replaces P108 Rechargeable Lithium Ion 18 v Volt 4.0 Ah / 72 Wh UL Listed Faster Recharge Single Battery with Fuel Gage",
+        "link": "https://www.amazon.com/Ryobi-Compatible-Replaces-Rechargeable-Recharge/dp/B0781B4R4C/ref=sr_1_5?keywords=RYOBI+A967002&qid=1794972982&sr=8-5",
+        "link_clean": "https://www.amazon.com/Ryobi-Compatible-Replaces-Rechargeable-Recharge/dp/B0781B4R4C/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0781B4R4C&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/518yAHNT4dL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 2800,
+        "price": "$82.99",
+        "extracted_price": 82.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 27"
+        ],
+        "more_buying_choices": "$74.04 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0781B4R4C/ref=sr_1_5_olp?keywords=RYOBI+A967002&qid=1794972982&sr=8-5",
+        "purchase_options": [
+          {
+            "primary_price": "$82.99",
+            "extracted_primary_price": 82.99,
+            "more_buying_choices": "$74.04 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0781B4R4C/ref=sr_1_5_olp?keywords=RYOBI+A967002&qid=1794972982&sr=8-5"
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B07KFG7ZX2",
+        "brand": "Powtol",
+        "title": "308054043 Carburetor for Ryobi CS26 SS26 RY09056 CS30 SS30 Trimmer",
+        "link": "https://www.amazon.com/Mckin-308054043-Carburetor-RY28000-Brushcutter/dp/B07KFG7ZX2/ref=sr_1_6?keywords=RYOBI+A967002&qid=1794972982&sr=8-6",
+        "link_clean": "https://www.amazon.com/Mckin-308054043-Carburetor-RY28000-Brushcutter/dp/B07KFG7ZX2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07KFG7ZX2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81wK2heKXYL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1000,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$16.99",
+        "extracted_price": 16.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 2,
+            "name": "Safer chemicals",
+            "snippet": "Made with chemicals safer for human health and the environment.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 3,
+            "name": "Worker well-being",
+            "snippet": "Manufactured on farms or in facilities that protect the rights and/or health of workers.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$16.99",
+            "extracted_primary_price": 16.99
+          }
+        ]
+      },
+      {
+        "position": 7,
+        "asin": "B0DP9BGTSB",
+        "title": "313867001 Starter Housing for Homelite Ryobi RY3818 18\" 38cc Chainsaw",
+        "link": "https://www.amazon.com/313867001-Starter-RY3818-Chainsaw-RY3714/dp/B0DP9BGTSB/ref=sr_1_7?keywords=RYOBI+A967002&qid=1794972982&sr=8-7",
+        "link_clean": "https://www.amazon.com/313867001-Starter-RY3818-Chainsaw-RY3714/dp/B0DP9BGTSB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DP9BGTSB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61D9pqAgmLL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 49,
+        "price": "$21.99",
+        "extracted_price": 21.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 17 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$21.99",
+            "extracted_primary_price": 21.99
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B0DKXK1CH8",
+        "title": "AC14RL3A Line String Trimmer Replacement Spool For Ryobi One+18v P2000 P2002 P2003 P2004 P2006 P2006A P20103 P2200 24v RY24021 RY24200 40v RY40021 RY40022 Cordless String Trimmer 11FT 0.065 Inch",
+        "link": "https://www.amazon.com/AC14RL3A-Trimmer-Replacement-RY24021-Cordless/dp/B0DKXK1CH8/ref=sr_1_8?keywords=RYOBI+A967002&qid=1794972982&sr=8-8",
+        "link_clean": "https://www.amazon.com/AC14RL3A-Trimmer-Replacement-RY24021-Cordless/dp/B0DKXK1CH8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DKXK1CH8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71M7iR3T6YL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 199,
+        "price": "$14.99",
+        "extracted_price": 14.99,
+        "old_price": "$16.99",
+        "extracted_old_price": 16.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$14.99",
+            "extracted_primary_price": 14.99,
+            "old_primary_price": "$16.99",
+            "extracted_old_primary_price": 16.99
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B0DNXVSF3N",
+        "title": "Dust Cup 204908001 Replacement for Ryobi P718 P718K P718B ONE+ 18V Evercharge Stick Vacuum OEM",
+        "link": "https://www.amazon.com/204908001-Replacement-Evercharge-Vacuum-OEM/dp/B0DNXVSF3N/ref=sr_1_9?keywords=RYOBI+A967002&qid=1794972982&sr=8-9",
+        "link_clean": "https://www.amazon.com/204908001-Replacement-Evercharge-Vacuum-OEM/dp/B0DNXVSF3N/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DNXVSF3N&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61pgesJkjyL._AC_UL320_.jpg",
+        "rating": 3.5,
+        "reviews": 3,
+        "price": "$36.99",
+        "extracted_price": 36.99,
+        "delivery": [
+          "FREE delivery Nov 20 - 24"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "more_buying_choices": "$35.90 (8 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DNXVSF3N/ref=sr_1_9_olp?keywords=RYOBI+A967002&qid=1794972982&sr=8-9",
+        "purchase_options": [
+          {
+            "primary_price": "$36.99",
+            "extracted_primary_price": 36.99,
+            "more_buying_choices": "$35.90 (8 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0DNXVSF3N/ref=sr_1_9_olp?keywords=RYOBI+A967002&qid=1794972982&sr=8-9"
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B0F1CSGBGJ",
+        "title": "8\" Chainsaw Chain Fit for Ryobi P4360,RY43160,RY43160A,P4360BTL 33DL",
+        "link": "https://www.amazon.com/THTEN-Chainsaw-Chain-P5452BTL-33DL/dp/B0F1CSGBGJ/ref=sr_1_10?keywords=RYOBI+A967002&qid=1794972982&sr=8-10",
+        "link_clean": "https://www.amazon.com/THTEN-Chainsaw-Chain-P5452BTL-33DL/dp/B0F1CSGBGJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F1CSGBGJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61ktZND7KpL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 3,
+        "price": "$17.99",
+        "extracted_price": 17.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$17.99",
+            "extracted_primary_price": 17.99
+          }
+        ]
+      },
+      {
+        "position": 11,
+        "asin": "B08TGCYVTL",
+        "title": "OEM 360897002 Replacement for Ryobi Vacuum Bowl Dust R860902",
+        "link": "https://www.amazon.com/Generic-360897002-OEM-Bowl-Dust/dp/B08TGCYVTL/ref=sr_1_11?keywords=RYOBI+A967002&qid=1794972982&sr=8-11",
+        "link_clean": "https://www.amazon.com/Generic-360897002-OEM-Bowl-Dust/dp/B08TGCYVTL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08TGCYVTL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71mx2WOeDHL._AC_UL320_.jpg",
+        "price": "$21.50",
+        "extracted_price": 21.5,
+        "delivery": [
+          "FREE delivery Mon, Nov 30"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$21.50",
+            "extracted_primary_price": 21.5
+          }
+        ]
+      },
+      {
+        "position": 12,
+        "asin": "B0BZGF5NCF",
+        "title": "OEM 307157002 for Ryobi Pull Starter RY251PH, RY252CS, RY253SS String Trimmer",
+        "link": "https://www.amazon.com/307157002-Starter-RY251PH-RY252CS-RY253SS/dp/B0BZGF5NCF/ref=sr_1_12?keywords=RYOBI+A967002&qid=1794972982&sr=8-12",
+        "link_clean": "https://www.amazon.com/307157002-Starter-RY251PH-RY252CS-RY253SS/dp/B0BZGF5NCF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BZGF5NCF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41ZMq24mI1L._AC_UL320_.jpg",
+        "price": "$38.65",
+        "extracted_price": 38.65,
+        "delivery": [
+          "FREE delivery Wed, Nov 25"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$38.65",
+            "extracted_primary_price": 38.65
+          }
+        ]
+      },
+      {
+        "position": 13,
+        "asin": "B0DK2PCPB3",
+        "title": "Pull Starter 307157002 for Ryobi RY251PH RY252CS RY253SS String Trimmer",
+        "link": "https://www.amazon.com/307157002-Starter-308682055-Compatible-RY251PH/dp/B0DK2PCPB3/ref=sr_1_13?keywords=RYOBI+A967002&qid=1794972982&sr=8-13",
+        "link_clean": "https://www.amazon.com/307157002-Starter-308682055-Compatible-RY251PH/dp/B0DK2PCPB3/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DK2PCPB3&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71vO0Km5pzL._AC_UL320_.jpg",
+        "rating": 3.2,
+        "reviews": 4,
+        "price": "$22.99",
+        "extracted_price": 22.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$22.99",
+            "extracted_primary_price": 22.99
+          }
+        ]
+      },
+      {
+        "position": 14,
+        "asin": "B0FFT6J1MZ",
+        "title": "311759008 Trimmer Head Replacement fits for Ryobi P2009 RY15523A RY40006",
+        "link": "https://www.amazon.com/texasrun-311759008-Trimmer-Replacement-311759013/dp/B0FFT6J1MZ/ref=sr_1_14?keywords=RYOBI+A967002&qid=1794972982&sr=8-14",
+        "link_clean": "https://www.amazon.com/texasrun-311759008-Trimmer-Replacement-311759013/dp/B0FFT6J1MZ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FFT6J1MZ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51UhlGrSUSL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 8,
+        "price": "$21.99",
+        "extracted_price": 21.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$21.99",
+            "extracted_primary_price": 21.99
+          }
+        ]
+      },
+      {
+        "position": 15,
+        "asin": "B0DWDZLGMZ",
+        "title": "RY3716 Carburetor for Ryobi RY3714 Chainsaw Replace Ruixing 309376002",
+        "link": "https://www.amazon.com/RY3714-Carburetor-chainsaw-Replace-309376002/dp/B0DWDZLGMZ/ref=sr_1_15?keywords=RYOBI+A967002&qid=1794972982&sr=8-15",
+        "link_clean": "https://www.amazon.com/RY3714-Carburetor-chainsaw-Replace-309376002/dp/B0DWDZLGMZ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DWDZLGMZ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81U+a6cH0xL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 31,
+        "price": "$17.99",
+        "extracted_price": 17.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 2,
+            "name": "Safer chemicals",
+            "snippet": "Made with chemicals safer for human health and the environment.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 3,
+            "name": "Worker well-being",
+            "snippet": "Manufactured on farms or in facilities that protect the rights and/or health of workers.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$17.99",
+            "extracted_primary_price": 17.99
+          }
+        ]
+      },
+      {
+        "position": 16,
+        "asin": "B0D3F4VRC3",
+        "title": "OEM Pull Starter 307157002 for RY251PH, RY252CS, RY253SS String Trimmer, replacement for Ryobi OEM",
+        "link": "https://www.amazon.com/MAABKL-OEM-Starter-307157002-replacement/dp/B0D3F4VRC3/ref=sr_1_16?keywords=RYOBI+A967002&qid=1794972982&sr=8-16",
+        "link_clean": "https://www.amazon.com/MAABKL-OEM-Starter-307157002-replacement/dp/B0D3F4VRC3/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D3F4VRC3&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61a7NTEQrxL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 1,
+        "price": "$45.20",
+        "extracted_price": 45.2,
+        "delivery": [
+          "FREE delivery Mon, Nov 30"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$45.20",
+            "extracted_primary_price": 45.2
+          }
+        ]
+      },
+      {
+        "position": 17,
+        "asin": "B0CHYGM2S6",
+        "title": "RY38BP Carburetor for Ryobi 308054129 RY 38BP 38cc 175 MPH 760 CFM 2 Cycle Backpack Blower RY38BP Parts with Air Filter Kit",
+        "link": "https://www.amazon.com/SIMPERAC-RY38BP-Carburetor-308054129-Backpack/dp/B0CHYGM2S6/ref=sr_1_17?keywords=RYOBI+A967002&qid=1794972982&sr=8-17",
+        "link_clean": "https://www.amazon.com/SIMPERAC-RY38BP-Carburetor-308054129-Backpack/dp/B0CHYGM2S6/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CHYGM2S6&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71+uPVdL+ZL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 43,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$17.98",
+        "extracted_price": 17.98,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$17.98",
+            "extracted_primary_price": 17.98
+          }
+        ]
+      },
+      {
+        "position": 18,
+        "asin": "B0GZDG85QC",
+        "title": "307157002 Pull Starter Replacement for Ryobi RY251PH RY252CS RY254BC RY253SS String Trimmer",
+        "link": "https://www.amazon.com/CrestWeld-307157002-Starter-Replacement-RY251PH/dp/B0GZDG85QC/ref=sr_1_18?keywords=RYOBI+A967002&qid=1794972982&sr=8-18",
+        "link_clean": "https://www.amazon.com/CrestWeld-307157002-Starter-Replacement-RY251PH/dp/B0GZDG85QC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GZDG85QC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71Z68owYjrL._AC_UL320_.jpg",
+        "rating": 2.5,
+        "reviews": 3,
+        "price": "$14.99",
+        "extracted_price": 14.99,
+        "delivery": [
+          "FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon",
+          "Or fastest delivery Sat, Nov 21"
+        ],
+        "stock": "Only 3 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$14.99",
+            "extracted_primary_price": 14.99
+          }
+        ]
+      },
+      {
+        "position": 19,
+        "asin": "B0B6F62ZQM",
+        "brand": "ANTO",
+        "title": "WYC-12-1 Carburetor for Ryobi RY08510 RY08570 Blowers RY60511A RY60511B RY60512 RY60514 Cultivators",
+        "link": "https://www.amazon.com/ANTO-WYC-12-1-Carburetor-RY60511A-Cultivators/dp/B0B6F62ZQM/ref=sr_1_19?keywords=RYOBI+A967002&qid=1794972982&sr=8-19",
+        "link_clean": "https://www.amazon.com/ANTO-WYC-12-1-Carburetor-RY60511A-Cultivators/dp/B0B6F62ZQM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0B6F62ZQM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61ULK96c7GL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 18,
+        "price": "$25.99",
+        "extracted_price": 25.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 16 left in stock - order soon.",
+        "more_buying_choices": "$23.70 (2 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B6F62ZQM/ref=sr_1_19_olp?keywords=RYOBI+A967002&qid=1794972982&sr=8-19",
+        "purchase_options": [
+          {
+            "primary_price": "$25.99",
+            "extracted_primary_price": 25.99,
+            "more_buying_choices": "$23.70 (2 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0B6F62ZQM/ref=sr_1_19_olp?keywords=RYOBI+A967002&qid=1794972982&sr=8-19"
+          }
+        ]
+      },
+      {
+        "position": 20,
+        "asin": "B0BYZJ6C4Y",
+        "title": "CS26 Carburetor for Ryobi SS26 RY28000 RY28020 RY28040 RY09053 RY28021 RY28025 RY09056 RY09055 RY34440 26CC Trimmer Brushcutter Weed Wacker Parts",
+        "link": "https://www.amazon.com/CS26-SS26-RY28000-RY28020-Brushcutter/dp/B0BYZJ6C4Y/ref=sr_1_20?keywords=RYOBI+A967002&qid=1794972982&sr=8-20",
+        "link_clean": "https://www.amazon.com/CS26-SS26-RY28000-RY28020-Brushcutter/dp/B0BYZJ6C4Y/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BYZJ6C4Y&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71UstrwDL8L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 128,
+        "price": "$16.98",
+        "extracted_price": 16.98,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 2,
+            "name": "Safer chemicals",
+            "snippet": "Made with chemicals safer for human health and the environment.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 3,
+            "name": "Worker well-being",
+            "snippet": "Manufactured on farms or in facilities that protect the rights and/or health of workers.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$16.98",
+            "extracted_primary_price": 16.98
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249152011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_76%3A1249152011&dc&qid=1794972982&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3AlfNmueFpv2%2B7aLb8W0RI6kCKbC%2FeS53poyaCUcLsEr8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_76%3A1249152011"
+        }
+      ],
+      "department": [
+        {
+          "position": 1,
+          "name": "Power Tool Parts & Accessories",
+          "rh": "n:552262",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=n%3A552262&dc&qid=1794972982&rnid=2941120011&ref=sr_nr_n_1&ds=v1%3A9llZdlI7302Tc9veg4NT0U28dbC0l7pfiewhvw2nqWA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=n%3A552262"
+        },
+        {
+          "position": 2,
+          "name": "Power Tool Replacement Parts",
+          "rh": "n:9022420011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=n%3A552262%2Cn%3A9022420011&dc&qid=1794972982&rnid=2941120011&ref=sr_nr_n_2&ds=v1%3AEi0jYlIh97vORedzKLaAlKivso6amKZ2lXJ%2B3k8xfF8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=n%3A552262%2Cn%3A9022420011"
+        },
+        {
+          "position": 3,
+          "name": "Cordless Tool Battery Packs",
+          "rh": "n:552354",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=n%3A552262%2Cn%3A552354&dc&qid=1794972982&rnid=2941120011&ref=sr_nr_n_3&ds=v1%3ABo0EgjOcAmVSBJQFLJVyAACNVK1GtLXrzwTmO3IglSU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=n%3A552262%2Cn%3A552354"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "RYOBI",
+          "rh": "p_123:252605",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_123%3A252605&dc&qid=1794972982&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3AN2lU6D1CA7F6lH7KRDH%2BLO%2FuB6Eu5oGvZ5HD5ihXmOs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_123%3A252605"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248909011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_72%3A1248909011&dc&qid=1794972982&rnid=1248907011&ref=sr_nr_p_72_1&ds=v1%3ArzEIlb5GEeZPngfiFrNorc%2BByunXWYbyPm%2B%2FpVoKyjM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_72%3A1248909011"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_n_condition-type%3A6358196011&dc&qid=1794972982&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3AnHDLups1MpPTJJ23hLUikSx0n5ZhqOcoJUI%2F4UQNBXo",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_n_condition-type%3A6358196011"
+        },
+        {
+          "position": 2,
+          "name": "Used",
+          "rh": "p_n_condition-type:6358198011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_n_condition-type%3A6358198011&dc&qid=1794972982&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3AkQp3MeKybjp5B17oTdSdouoJVJzBgBBWu31xdcCigds",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_n_condition-type%3A6358198011"
+        }
+      ],
+      "all_top_brands": [
+        {
+          "position": 1,
+          "name": "Top Brands",
+          "rh": "p_n_g-101014971069111:119653281011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_n_g-101014971069111%3A119653281011&dc&qid=1794972982&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3Ao1UGE3gkIo8czSSVX7NhFwpFi8rJpQi4lsUM4%2FIaiFY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_n_g-101014971069111%3A119653281011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "PowerToolReplacementParts",
+          "rh": "p_6:A2DZURMCIZCVX6",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_6%3AA2DZURMCIZCVX6&dc&qid=1794972982&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3A3PzCvCurMom9pOvgQEyOXGDuJMBZiyppNWMpLWm3t84",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_6%3AA2DZURMCIZCVX6"
+        },
+        {
+          "position": 2,
+          "name": "Yerbay-direct",
+          "rh": "p_6:A1AQLB5YMYHJPI",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_6%3AA1AQLB5YMYHJPI&dc&qid=1794972982&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3ARyrKm5Pq6VVie4%2BVLb0b6e0UfpTmwQE9B%2FHB95BLitk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_6%3AA1AQLB5YMYHJPI"
+        },
+        {
+          "position": 3,
+          "name": "3WayMarket",
+          "rh": "p_6:A2H6OQKA6GUASE",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_6%3AA2H6OQKA6GUASE&dc&qid=1794972982&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3AteSZfX%2Bvi0crLyRSOhU46ncjuStgnQldS43ZP9SfR3Q",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_6%3AA2H6OQKA6GUASE"
+        },
+        {
+          "position": 4,
+          "name": "LIIIV",
+          "rh": "p_6:A2412XAYS1L958",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_6%3AA2412XAYS1L958&dc&qid=1794972982&rnid=339807011&ref=sr_nr_p_6_4&ds=v1%3A8h9P56j04gRNmvHqicE1IQ0E1fXAaf9K8JBoo5oXdyI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_6%3AA2412XAYS1L958"
+        },
+        {
+          "position": 5,
+          "name": "CUSHYBITE",
+          "rh": "p_6:A2WJECKVD69FO2",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_6%3AA2WJECKVD69FO2&dc&qid=1794972982&rnid=339807011&ref=sr_nr_p_6_5&ds=v1%3ADxZoLZ6PUhOp2akGIvKwoBwo2ykl0nyt39TBrDRX2bc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_6%3AA2WJECKVD69FO2"
+        },
+        {
+          "position": 6,
+          "name": "EVERYTHINGFINE LLC",
+          "rh": "p_6:A2DEZVNDTBX36L",
+          "link": "https://www.amazon.com/s?k=RYOBI+A967002&rh=p_6%3AA2DEZVNDTBX36L&dc&qid=1794972982&rnid=339807011&ref=sr_nr_p_6_6&ds=v1%3AYxU%2BRv4ddeefRUWItKwMBw8lMqVqA2WsNsL2ErOrXLs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A967002&rh=p_6%3AA2DEZVNDTBX36L"
+        }
+      ]
+    }
+  }
+}

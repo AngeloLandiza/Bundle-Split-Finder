@@ -1,0 +1,490 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=RYOBI A963001",
+  "at": 1794972989409,
+  "data": {
+    "search_metadata": {
+      "id": "6afd1d3c9b4f1fbe6ec0280b",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/wsAVmnEGcUI1vcHvUFgaUS0AxNoSV9kFf08UzcU_0as/6afd1d3c9b4f1fbe6ec0280b.json",
+      "markdown_endpoint": "https://serpapi.com/searches/wsAVmnEGcUI1vcHvUFgaUS0AxNoSV9kFf08UzcU_0as/6afd1d3c9b4f1fbe6ec0280b.md",
+      "created_at": "2026-11-18 03:36:28 UTC",
+      "processed_at": "2026-11-18 03:36:28 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=RYOBI+A963001",
+      "raw_html_file": "https://serpapi.com/searches/wsAVmnEGcUI1vcHvUFgaUS0AxNoSV9kFf08UzcU_0as/6afd1d3c9b4f1fbe6ec0280b.html",
+      "total_time_taken": 1.11
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "RYOBI A963001",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 10,
+      "query_displayed": "RYOBI A963001",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B0F4K79GVT",
+        "title": "A963001 Fits For RYOBI Impact Rated Driving Set (30-Piece)",
+        "link": "https://www.amazon.com/A963001-RYOBI-Impact-Driving-30-Piece/dp/B0F4K79GVT/ref=sr_1_1?keywords=RYOBI+A963001&qid=1794972988&sr=8-1",
+        "link_clean": "https://www.amazon.com/A963001-RYOBI-Impact-Driving-30-Piece/dp/B0F4K79GVT/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F4K79GVT&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41L9FnYAQyL._AC_UL320_.jpg",
+        "price": "$9.67",
+        "extracted_price": 9.67,
+        "delivery": [
+          "$15 delivery Wed, Dec 2"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$9.67",
+            "extracted_primary_price": 9.67
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B0FS7BVY4M",
+        "title": "580473001 Blower Bellows Flex Tube Mix Flow Blower Compatible with Ryobi RY38BP, RY38BPVNM 38cc, RY38BPEMCVNM 38cc,RY404017VNM 40 Volt Backpack Blower",
+        "link": "https://www.amazon.com/Mizoneparts-580473001-Compatible-RY38BPEMCVNM-RY404017VNM/dp/B0FS7BVY4M/ref=sr_1_2?keywords=RYOBI+A963001&qid=1794972988&sr=8-2",
+        "link_clean": "https://www.amazon.com/Mizoneparts-580473001-Compatible-RY38BPEMCVNM-RY404017VNM/dp/B0FS7BVY4M/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FS7BVY4M&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51l8+Jw1hSL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 10,
+        "price": "$16.99",
+        "extracted_price": 16.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$16.99",
+            "extracted_primary_price": 16.99
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B09C3JBR9T",
+        "title": "Ryobi RY38BP 2 Pack of Genuine OEM Replacement Flex Tubes - 580473001-2PK",
+        "link": "https://www.amazon.com/RY38BP-Genuine-Replacement-Tubes-580473001-2PK/dp/B09C3JBR9T/ref=sr_1_3?keywords=RYOBI+A963001&qid=1794972988&sr=8-3",
+        "link_clean": "https://www.amazon.com/RY38BP-Genuine-Replacement-Tubes-580473001-2PK/dp/B09C3JBR9T/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09C3JBR9T&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61JnPgPDKeL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 3,
+        "price": "$26.98",
+        "extracted_price": 26.98,
+        "price_unit": "$13.49/count",
+        "extracted_price_unit": 13.49,
+        "delivery": [
+          "FREE delivery Mon, Nov 30"
+        ],
+        "stock": "Only 13 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$26.98",
+            "extracted_primary_price": 26.98
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B0FRLWKMCD",
+        "title": "560873001 Air Filter Primer Bulb Replacement Kit Fit for Ryobi RY30060A, RY30060B and RY30063 Brushcutters",
+        "link": "https://www.amazon.com/WELURE-560873001-Replacement-RY30060A-Brushcutters/dp/B0FRLWKMCD/ref=sr_1_4?keywords=RYOBI+A963001&qid=1794972988&sr=8-4",
+        "link_clean": "https://www.amazon.com/WELURE-560873001-Replacement-RY30060A-Brushcutters/dp/B0FRLWKMCD/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FRLWKMCD&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/717RlLMzhNL._AC_UL320_.jpg",
+        "price": "$13.99",
+        "extracted_price": 13.99,
+        "delivery": [
+          "FREE delivery Sat, Nov 28"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$13.99",
+            "extracted_primary_price": 13.99
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B09TFVRWN4",
+        "badges": [
+          "Overall Pick"
+        ],
+        "title": "RY80940B Carburetor for Ryobi RY803001 RY802800 RY803000 Pressure Washer",
+        "link": "https://www.amazon.com/Carburetor-RY80940B-RY802800-RY803001-RY803000E/dp/B09TFVRWN4/ref=sr_1_5?keywords=RYOBI+A963001&qid=1794972988&sr=8-5",
+        "link_clean": "https://www.amazon.com/Carburetor-RY80940B-RY802800-RY803001-RY803000E/dp/B09TFVRWN4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09TFVRWN4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81rRyS1N2TL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 240,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$19.98",
+        "extracted_price": 19.98,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "small_business": true,
+        "purchase_options": [
+          {
+            "primary_price": "$19.98",
+            "extracted_primary_price": 19.98
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B0GX197X2Y",
+        "title": "RY80940B Air Filter Tune Up Kits For Ryobi RY803001 RY802800 RY803000 RY803000E 2800 PSI 3100 PSI Pressure Washer",
+        "link": "https://www.amazon.com/RY80940B-Air-Filter-RY803001-RY803000E/dp/B0GX197X2Y/ref=sr_1_6?keywords=RYOBI+A963001&qid=1794972988&sr=8-6",
+        "link_clean": "https://www.amazon.com/RY80940B-Air-Filter-RY803001-RY803000E/dp/B0GX197X2Y/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GX197X2Y&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61zJwFa3f4L._AC_UL320_.jpg",
+        "price": "$21.99",
+        "extracted_price": 21.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$21.99",
+            "extracted_primary_price": 21.99
+          }
+        ]
+      },
+      {
+        "position": 7,
+        "asin": "B0BYZJ6C4Y",
+        "title": "CS26 Carburetor for Ryobi SS26 RY28000 RY28020 RY28040 RY09053 RY28021 RY28025 RY09056 RY09055 RY34440 26CC Trimmer Brushcutter Weed Wacker Parts",
+        "link": "https://www.amazon.com/CS26-SS26-RY28000-RY28020-Brushcutter/dp/B0BYZJ6C4Y/ref=sr_1_7?keywords=RYOBI+A963001&qid=1794972988&sr=8-7",
+        "link_clean": "https://www.amazon.com/CS26-SS26-RY28000-RY28020-Brushcutter/dp/B0BYZJ6C4Y/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BYZJ6C4Y&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71UstrwDL8L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 128,
+        "price": "$16.98",
+        "extracted_price": 16.98,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "climate_pledge_friendly": true,
+        "sustainability_features": [
+          {
+            "position": 1,
+            "name": "Recycled materials",
+            "snippet": "Contains at least 50% recycled material.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 2,
+            "name": "Safer chemicals",
+            "snippet": "Made with chemicals safer for human health and the environment.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          },
+          {
+            "position": 3,
+            "name": "Worker well-being",
+            "snippet": "Manufactured on farms or in facilities that protect the rights and/or health of workers.",
+            "thumbnail": "https://m.media-amazon.com/images/I/51IhSrucIyL._SS200_FMpng_.png",
+            "certified_by": "Global Recycled Standard",
+            "certified_info": "Global Recycled Standard (GRS) certified products contain recycled content (>50%) that has been independently verified at each stage of the supply chain, from the source to the final product and meet social, environmental, and chemical requirements. The purchase of Global Recycled Standard (GRS) certified products supports the use of recycled content in the supply chain."
+          }
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$16.98",
+            "extracted_primary_price": 16.98
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B0H32YNTSC",
+        "title": "RY80940B Carburetor for Ryobi RY803001 RY802800 RY803000 RY803000E 2800 PSI 3100 PSI Pressure Washer With Air Filter Kit",
+        "link": "https://www.amazon.com/RY80940B-Carburetor-RY803001-RY802800-RY803000E/dp/B0H32YNTSC/ref=sr_1_8?keywords=RYOBI+A963001&qid=1794972988&sr=8-8",
+        "link_clean": "https://www.amazon.com/RY80940B-Carburetor-RY803001-RY802800-RY803000E/dp/B0H32YNTSC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H32YNTSC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71mXUIp464L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 2,
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B0DLVWHXVC",
+        "title": "RY803001 Carburetor for Ryobi RY80940B RY802800 RY803000 RY803000E",
+        "link": "https://www.amazon.com/RY803001-Carburetor-RY80940B-RY802800-RY803000E/dp/B0DLVWHXVC/ref=sr_1_9?keywords=RYOBI+A963001&qid=1794972988&sr=8-9",
+        "link_clean": "https://www.amazon.com/RY803001-Carburetor-RY80940B-RY802800-RY803000E/dp/B0DLVWHXVC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DLVWHXVC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71cV8jFu9HL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 17,
+        "price": "$19.99",
+        "extracted_price": 19.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$19.99",
+            "extracted_primary_price": 19.99
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B0FPHMPH13",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/30-PC-IMPACT-DRIVING-SET/dp/B0FPHMPH13/ref=sr_1_10_so_FASTENER_DRIVE_BIT?keywords=RYOBI+A963001&qid=1794972988&sr=8-10",
+        "title": "Driving Set (8 PC.)",
+        "link": "https://www.amazon.com/30-PC-IMPACT-DRIVING-SET/dp/B0FPHMPH13/ref=sr_1_10?keywords=RYOBI+A963001&qid=1794972988&sr=8-10",
+        "link_clean": "https://www.amazon.com/30-PC-IMPACT-DRIVING-SET/dp/B0FPHMPH13/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FPHMPH13&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41uYgs8vkFL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 3,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$19.98 (2 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FPHMPH13/ref=sr_1_10_olp?keywords=RYOBI+A963001&qid=1794972988&sr=8-10",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$19.98 (2 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FPHMPH13/ref=sr_1_10_olp?keywords=RYOBI+A963001&qid=1794972988&sr=8-10"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249152011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_76%3A1249152011&dc&qid=1794972988&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3AdYGOXmsP4K9MiuoGlMoLQHRIDf0mkhHmci%2FXvK5bywE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_76%3A1249152011"
+        }
+      ],
+      "department": [
+        {
+          "position": 1,
+          "name": "Power Tool Parts & Accessories",
+          "rh": "n:552262",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=n%3A552262&dc&qid=1794972988&rnid=2941120011&ref=sr_nr_n_1&ds=v1%3AbnInKJnRDq8pHPgFqazoylRVVihYC%2F8wjJP%2BitsHC4U",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=n%3A552262"
+        },
+        {
+          "position": 2,
+          "name": "Power Tool Replacement Parts",
+          "rh": "n:9022420011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=n%3A552262%2Cn%3A9022420011&dc&qid=1794972988&rnid=2941120011&ref=sr_nr_n_2&ds=v1%3A%2BboAwBaJHY0fsGer12WITQOkmNFjaWJPXZbnV1dhBAQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=n%3A552262%2Cn%3A9022420011"
+        },
+        {
+          "position": 3,
+          "name": "Patio, Lawn & Garden",
+          "rh": "n:2972638011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=n%3A2972638011&dc&qid=1794972988&rnid=2941120011&ref=sr_nr_n_3&ds=v1%3Ak56sfWB0G%2BFQEOOSkZSVWRQuateC5EUdEUkAU9P4KIQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=n%3A2972638011"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "RYOBI",
+          "rh": "p_123:252605",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_123%3A252605&dc&qid=1794972988&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3A7FZlcTmkRC2J11YjGiM9H6tqhCXWTbORdE8codKwkb4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_123%3A252605"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248909011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_72%3A1248909011&dc&qid=1794972988&rnid=1248907011&ref=sr_nr_p_72_1&ds=v1%3AWyyrSh0GnOy0tdaCz451hb%2BVD2QMimBTcTwpZ3cvs%2FY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_72%3A1248909011"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_n_condition-type%3A6358196011&dc&qid=1794972988&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3AjPTQHrVvgdHDywZ%2Frq3zpkYy7RmdkmWPTp%2BLAbOt2lw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_n_condition-type%3A6358196011"
+        }
+      ],
+      "all_top_brands": [
+        {
+          "position": 1,
+          "name": "Top Brands",
+          "rh": "p_n_g-101014971069111:119653281011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_n_g-101014971069111%3A119653281011&dc&qid=1794972988&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3ABWNLJNp8BRTwdSSCKr%2B%2F8dbYcQRRkKLWGANap6t3Ws4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_n_g-101014971069111%3A119653281011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Protouch Products",
+          "rh": "p_6:A2946YJ2ZTKLDB",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_6%3AA2946YJ2ZTKLDB&dc&qid=1794972988&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3AZrQgX7UWNLcUqKE5UkWTq9qL3gRcvPVlOA9Cx%2BN4U9I",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_6%3AA2946YJ2ZTKLDB"
+        },
+        {
+          "position": 2,
+          "name": "ChuYu",
+          "rh": "p_6:A18EBIJNJTFHSA",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_6%3AA18EBIJNJTFHSA&dc&qid=1794972988&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3A2fRqMdEfsr2NQ2%2Byd%2BwFFNa8xngp02CjQJ0iTyTN4to",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_6%3AA18EBIJNJTFHSA"
+        },
+        {
+          "position": 3,
+          "name": "Hardware & Garden Supplies",
+          "rh": "p_6:A29YHE8OKANI0B",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_6%3AA29YHE8OKANI0B&dc&qid=1794972988&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3A0hS2NK9gwRHEx0sucHMqlridD%2FD0Xuk0RkhO8b1zkkA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_6%3AA29YHE8OKANI0B"
+        },
+        {
+          "position": 4,
+          "name": "CUSHYBITE",
+          "rh": "p_6:A2WJECKVD69FO2",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_6%3AA2WJECKVD69FO2&dc&qid=1794972988&rnid=339807011&ref=sr_nr_p_6_4&ds=v1%3ABTaKYMqcE0VbhiLx2MfyRTVUYaaZTOQVamnbgSfosjw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_6%3AA2WJECKVD69FO2"
+        },
+        {
+          "position": 5,
+          "name": "Koubliztic",
+          "rh": "p_6:A3OC1LPYDVJHE5",
+          "link": "https://www.amazon.com/s?k=RYOBI+A963001&rh=p_6%3AA3OC1LPYDVJHE5&dc&qid=1794972988&rnid=339807011&ref=sr_nr_p_6_5&ds=v1%3A8SFOcDxi2L%2FvgKJgkeTvIN%2BWsUmltxMKDTZBbK4rxtw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A963001&rh=p_6%3AA3OC1LPYDVJHE5"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,523 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=DEWALT DCK200D1P1",
+  "at": 1794972975580,
+  "data": {
+    "search_metadata": {
+      "id": "6afd1d2d6a5e3ae96de6220e",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/iUUbmg2xSdXzniK7C8OGa0c0mcDWddP2__p58KtXXDM/6afd1d2d6a5e3ae96de6220e.json",
+      "markdown_endpoint": "https://serpapi.com/searches/iUUbmg2xSdXzniK7C8OGa0c0mcDWddP2__p58KtXXDM/6afd1d2d6a5e3ae96de6220e.md",
+      "created_at": "2026-11-18 03:36:13 UTC",
+      "processed_at": "2026-11-18 03:36:13 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1",
+      "raw_html_file": "https://serpapi.com/searches/iUUbmg2xSdXzniK7C8OGa0c0mcDWddP2__p58KtXXDM/6afd1d2d6a5e3ae96de6220e.html",
+      "total_time_taken": 2.05
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "DEWALT DCK200D1P1",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 6,
+      "query_displayed": "DEWALT DCK200D1P1",
+      "store": "gateway",
+      "page": 1
+    },
+    "product_ads": {
+      "headline": "Ultra Light, Super Powerful Drill.",
+      "video_thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='9' /%3E",
+      "video_src": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/cf1924b0-0468-497e-a520-37e689840517.mp4/productVideoOptimized.mp4",
+      "video_link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFVUMtu00AUVVsBVVQeyoJKWVVBilDFJDOO40eRhcaecRrsxm7spFU2I8d2nQg3du1p0rLo57BAgiULFnwAP8CGP2CH-ACUpgj16C6OdM59nYq9_fnrnx8Pq4-xP3KJ1bNOIaGD-gY6eE6vlWMxmFJn3Mey7QSLZKEeJYOdDmoiUWoiRW3C8aanT7Yx9Q_poOdVdyuPorh8x7O8ujPsD6jhdPu9MSW1LxuVF3cKK-OgCKcsj4swSwMes0nGeXbOJvysWgnOg_fZvBlm57XdcrIAazNYW0DJsyKuP4jnbOjtq-UELGZRnIG8yKLLkIMwS9M45LNsDu6WgTAoohLkwWzO4wKE2ZzHcy68HPUIdZg7cMjQ8Jnh2DY1_J7T95ju-L5zxAj1LN9x61JlAz77_uHnr9_fSO3Jv6nrc-pPBQihpKpQlSUVyUjYGnrkYMtwjX2r-pro2MjNHpDxjX6xRoJv9GMuXrtH-D5u9OS28JrUdoyEXnUxTS7kMBY-bVY-bk45z8uDVmu5XDb_p9S6jaRs5UEStzBViIHNNlB0LAFRQArAOlQAoiLqdLBqtjF-c9vAivhM8_QRwxCJUJGgcCi4pixap-ZY6AAMBUGROhAJw57pdSWR6Cf9Rh6xImJ5Oo0KjTemZcDCgs0iDTbSnAXlbF5qOuxaZhuN5fYrHXbfioI_UuwVtciJ0lftlfPiMi6uNUJPsO3vEcMSICTIRSupTDOu3Q-5UUY5CyKWFNllrrUhRBKEigiRKkKxMdOCvGwEq28Kx0jTjne1tP8C2fvlRg&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FAE8DCAF3-8BA6-4218-AB08-1E4155A9F3AA%3Fstore_ref%3DSBV_A01408602H2PF74KXFZ25-A022865012UIFSG64DBWN%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0GKF31Z73%2CB0GJ42TV8L%2CB0GKDW8N9L%26lp_query%3DDEWALT%20DCK200D1P1%26lp_slot%3Ddesktop-bottom%26sdp_ad_group%3D300160084019404%26i%3Daps%26aref%3DrOCll5SxwL&pd_rd_i=B0GKF31Z73&ref_=sbx_be_s_sparkle_ssd_vid&store_ref=SBV_A01408602H2PF74KXFZ25-A022865012UIFSG64DBWN&lp_asins=B0GKF31Z73%2CB0GJ42TV8L%2CB0GKDW8N9L&pd_rd_w=lTGo3&content-id=amzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea%3Aamzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_p=b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=HszGO&pd_rd_r=b703f19d-8293-4f41-8e9b-02ad213d3c84",
+      "store_page": "Shop NANWEI",
+      "store_page_link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFVUMtu00AUVVsBVVQeyoJKWVVBilDFJDOO40eRhcaecRrsxm7spFU2I8d2nQg3du1p0rLo57BAgiULFnwAP8CGP2CH-ACUpgj16C6OdM59nYq9_fnrnx8Pq4-xP3KJ1bNOIaGD-gY6eE6vlWMxmFJn3Mey7QSLZKEeJYOdDmoiUWoiRW3C8aanT7Yx9Q_poOdVdyuPorh8x7O8ujPsD6jhdPu9MSW1LxuVF3cKK-OgCKcsj4swSwMes0nGeXbOJvysWgnOg_fZvBlm57XdcrIAazNYW0DJsyKuP4jnbOjtq-UELGZRnIG8yKLLkIMwS9M45LNsDu6WgTAoohLkwWzO4wKE2ZzHcy68HPUIdZg7cMjQ8Jnh2DY1_J7T95ju-L5zxAj1LN9x61JlAz77_uHnr9_fSO3Jv6nrc-pPBQihpKpQlSUVyUjYGnrkYMtwjX2r-pro2MjNHpDxjX6xRoJv9GMuXrtH-D5u9OS28JrUdoyEXnUxTS7kMBY-bVY-bk45z8uDVmu5XDb_p9S6jaRs5UEStzBViIHNNlB0LAFRQArAOlQAoiLqdLBqtjF-c9vAivhM8_QRwxCJUJGgcCi4pixap-ZY6AAMBUGROhAJw57pdSWR6Cf9Rh6xImJ5Oo0KjTemZcDCgs0iDTbSnAXlbF5qOuxaZhuN5fYrHXbfioI_UuwVtciJ0lftlfPiMi6uNUJPsO3vEcMSICTIRSupTDOu3Q-5UUY5CyKWFNllrrUhRBKEigiRKkKxMdOCvGwEq28Kx0jTjne1tP8C2fvlRg&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FAE8DCAF3-8BA6-4218-AB08-1E4155A9F3AA%3Fstore_ref%3DSBV_A01408602H2PF74KXFZ25-A022865012UIFSG64DBWN%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0GKF31Z73%2CB0GJ42TV8L%2CB0GKDW8N9L%26lp_query%3DDEWALT%20DCK200D1P1%26lp_slot%3Ddesktop-bottom%26sdp_ad_group%3D300160084019404%26i%3Daps%26aref%3DrOCll5SxwL&pd_rd_i=B0GKF31Z73&ref_=sbx_be_s_sparkle_ssd_cta&store_ref=SBV_A01408602H2PF74KXFZ25-A022865012UIFSG64DBWN&lp_asins=B0GKF31Z73%2CB0GJ42TV8L%2CB0GKDW8N9L&pd_rd_w=lTGo3&content-id=amzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea%3Aamzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_p=b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=HszGO&pd_rd_r=b703f19d-8293-4f41-8e9b-02ad213d3c84",
+      "products": [
+        {
+          "position": 1,
+          "asin": "B0GKF31Z73",
+          "sponsored": true,
+          "title": "NANWEI Hammer Drill,1100 in-lbs, 26000BPM, 2x4.0Ah Batteries, Brushless | Drills into Concrete, Brick, Metal & Wood | 1/2\" Keyless Metal Chuck | 20+1 Position Clutch",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFVkM2K01AYhqmDOoT6QxcOdFmhyMBpkjZNeipB8jc19CedJh2km8PJOadpMU3Sk2M746JXIXgHLl26cOEFeANuvAN34gUIdkR8-RYvvA_f9_FKo9OPn399u1d7YEVXU3foD18prjdrVNT-E--md6nhlRcsJpYxCvAu2cFxMqt21Zaq6S21B1vK4k5ox6eWF730Zn5YO5PuU1a-FnlRq84nM88JBhN_4bn1TxXp6W2CSoY5WaGCcZKnWDAU50LkGxSLZU3CG_w2z1ok39TPyngHjjA4IqAUOWeNuyxD8_AcljHYrSnLQcFz-oYIQPI0ZUSs8wzcHgMEc1qCAq8zwTggeSZYJtrPrnzXC9B0FrhzJ0JOMBp5TuQHkxDZQRQFY-R64TAKpg1dqiiPv374_uPnF7f-8O_W4zuNR21FUXQIFWjoUDXU9sk8dPsnztQ5H9aeu7blFBc-MKyDvT0qsQ72pdBupmPrfx3s5M9YR1OvOol3PbC8ZGsQ1n5fkd5VVkIUZV-W9_t9619LclLIeC9T2VYGw4uOujA6LwqKOEVFuqLcFM1ViRHhaE1NpbldU1M1oAaNNjS0ZslNFaiAYKpjxgiAOqVA6xoEwFjXQY_ijkLjpaZ1YXNt4qJsYs6WJg-cNO2G1_vRb0LPuHo&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fgp%2Faw%2Fd%2FB0GKF31Z73%3Fpd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26qid%3D1794972974%26sr%3D1-1-cad6aeec-96dd-457c-9b66-8da30dbf4459%26i%3Daps%26aref%3DrOCll5SxwL&pd_rd_i=B0GKF31Z73&ref_=sbx_be_s_sparkle_ssd_img&qid=&pd_rd_w=lTGo3&content-id=amzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea%3Aamzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_p=b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=HszGO&pd_rd_r=b703f19d-8293-4f41-8e9b-02ad213d3c84",
+          "link_clean": "https://www.amazon.com/dp/B0GKF31Z73/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GKF31Z73&device=desktop&engine=amazon_product",
+          "thumbnail": "https://m.media-amazon.com/images/I/51OLeZ0L+LL._AC_SR250,250_QL65_.jpg",
+          "rating": 4.5,
+          "reviews": 56
+        },
+        {
+          "position": 2,
+          "asin": "B0GJ42TV8L",
+          "sponsored": true,
+          "title": "NANWEI Brushless Hammer Drill for Makita 18V Battery,1100in-lbs,Tool Only | Drills into Concrete, Brick, Metal & Wood | 1/2\" Keyless Metal Chuck | 20+1 Position Clutch",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFVkM-K01AUxqmDOoT6hy4c6LJCkYHbJjFNeitB8s8amzadJi3SzeXm3ts0TJqkybWdcdGnEHwDly5duPABfAE3voE78QEEOyJ-nMUH349zDp_gnX78_OvbncY9I1xM7ZE7ei3azqxVkwaPnOv-hYLXjr-cGJrn4128g-N4Vu9JHUlRO1IfdsTlrcCMTg0nfOnM3KBxJtylrLrkedGozyczx_KHE3fp2M1PNeHxTYIqhkuyRgUrSZ5izlCUc55vUMRXDQFv8Ns865B80zyroh04wuCIgIrnJWvdZhmaB-ewisAuoSwHRZnTN4QDkqcpIzzJM3BzDBBc0goUOMk4KwHJM84yLj9ZuLbjo-nMt-dWiCzf8xwrdP1JgEw_DP0xsp1gFPrTlirUxIdfP3z_8fOL3bz_d-vxndYDWRRFFUIRaiqUNEk-mQf24MSaWuejxjPbNKzihQs042Buj4qNg3nBlevp2PhfBzP-M8bRNOtW7FwNDSfeaoTJ72vCu9qa86IadLv7_b7zr6VuXHTxvku7pjh8pcjhou89LygqKSrSNS113l5XGJESJVQX29uE6pIGFajJUFPaValLQAYEUxUzRgBUKQVKTyMARqoK-hQ_FWm0UpQebCc6Lqo2LtlKL30rTXvB1d77DVKluKA&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fgp%2Faw%2Fd%2FB0GJ42TV8L%3Fpd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26qid%3D1794972974%26sr%3D1-2-cad6aeec-96dd-457c-9b66-8da30dbf4459%26i%3Daps%26aref%3DrOCll5SxwL&pd_rd_i=B0GJ42TV8L&ref_=sbx_be_s_sparkle_ssd_img&qid=&pd_rd_w=lTGo3&content-id=amzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea%3Aamzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_p=b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=HszGO&pd_rd_r=b703f19d-8293-4f41-8e9b-02ad213d3c84",
+          "link_clean": "https://www.amazon.com/dp/B0GJ42TV8L/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GJ42TV8L&device=desktop&engine=amazon_product",
+          "thumbnail": "https://m.media-amazon.com/images/I/31atUsWSgWL._AC_SR250,250_QL65_.jpg",
+          "rating": 4.5,
+          "reviews": 56
+        },
+        {
+          "position": 3,
+          "asin": "B0GKDW8N9L",
+          "sponsored": true,
+          "title": "NANWEI Hammer Drill,1450in-lbs,26000BPM,1/2\" Keyless Metal Chuck,20+3 Clutch,2x4.0Ah Batteries,20V Brushless Cordless Impact Drill Kit for Drilling Brick Wall, Metal, Wood,Concrete",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFVkM-K01AUxqmDOoT6hy4c6LJCkYHbJJ006a0UyT9raNp0mnSU2Vxu7r1Ng2mS3lzbGRd9CsE3cOnShQsfwBdw4xu4Ex9AsCPix1l88P045_BJ_vHHz7--3WncM6OLmTP2xq8Ux523aurgkXvdP9fwyg0up6bhB3ibbOEkmdd7akfV9I7ahx3l8lZoxcemG71w517YOJHuUla9FkXZqC-mc9cORlPv0nWan2rS45sEVQxzskIl46TIsGAoLoQo1igWy4aE1_htkXdIsW6eVPEWHGBwQEAlCs5at1mOFuEprGKwTSkrQMkL-oYIQIosY0SkRQ5ujgGCOa1AidNcMA5IkQuWi-6TC89xAzSbB87CjpAd-L5rR14wDZEVRFEwQY4bjqNg1tKlmvLw64fvP35-cZr3_249vNN60FUURYdQgYYOVUPtHi1CZ3Bkz-zTceOpY5l2-dwDhrm3Ngcl5t46F9r1bGL-r72V_BnzYJp1O3GvRqabbAzCuu9r0rvaSoiyGsjybrfr_GtJTkoZ72QqW8po7LzsT6H_rKSIU1RmK8qHor2qMCIcpXSotDcpHaoG1KDRhYbWrvhQBWeAYKpjxgiAOqVA6xkEwFjXQZ_iM4XGS03rwXY6xGXVxpwthzyws6wXXu3831tsuLQ&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fgp%2Faw%2Fd%2FB0GKDW8N9L%3Fpd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26qid%3D1794972974%26sr%3D1-3-cad6aeec-96dd-457c-9b66-8da30dbf4459%26i%3Daps%26aref%3DrOCll5SxwL&pd_rd_i=B0GKDW8N9L&ref_=sbx_be_s_sparkle_ssd_img&qid=&pd_rd_w=lTGo3&content-id=amzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea%3Aamzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_p=b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=HszGO&pd_rd_r=b703f19d-8293-4f41-8e9b-02ad213d3c84",
+          "link_clean": "https://www.amazon.com/dp/B0GKDW8N9L/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GKDW8N9L&device=desktop&engine=amazon_product",
+          "thumbnail": "https://m.media-amazon.com/images/I/512Vq8B0SEL._AC_SR250,250_QL65_.jpg",
+          "rating": 4.5,
+          "reviews": 56
+        },
+        {
+          "position": 4,
+          "asin": "B0GKF31Z73",
+          "sponsored": true,
+          "title": "NANWEI Hammer Drill,1100 in-lbs, 26000BPM, 2x4.0Ah Batteries, Brushless | Drills into Concrete, Brick, Metal & Wood | 1/2\" Keyless Metal Chuck | 20+1 Position Clutch",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFVkM2K01AYhqmDOoT6QxcOdFmhyMBpkjZNeipB8jc19CedJh2km8PJOadpMU3Sk2M746JXIXgHLl26cOEFeANuvAN34gUIdkR8-RYvvA_f9_FKo9OPn399u1d7YEVXU3foD18prjdrVNT-E--md6nhlRcsJpYxCvAu2cFxMqt21Zaq6S21B1vK4k5ox6eWF730Zn5YO5PuU1a-FnlRq84nM88JBhN_4bn1TxXp6W2CSoY5WaGCcZKnWDAU50LkGxSLZU3CG_w2z1ok39TPyngHjjA4IqAUOWeNuyxD8_AcljHYrSnLQcFz-oYIQPI0ZUSs8wzcHgMEc1qCAq8zwTggeSZYJtrPrnzXC9B0FrhzJ0JOMBp5TuQHkxDZQRQFY-R64TAKpg1dqiiPv374_uPnF7f-8O_W4zuNR21FUXQIFWjoUDXU9sk8dPsnztQ5H9aeu7blFBc-MKyDvT0qsQ72pdBupmPrfx3s5M9YR1OvOol3PbC8ZGsQ1n5fkd5VVkIUZV-W9_t9619LclLIeC9T2VYGw4uOujA6LwqKOEVFuqLcFM1ViRHhaE1NpbldU1M1oAaNNjS0ZslNFaiAYKpjxgiAOqVA6xoEwFjXQY_ijkLjpaZ1YXNt4qJsYs6WJg-cNO2G1_vRb0LPuHo&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fgp%2Faw%2Fd%2FB0GKF31Z73%3Fpd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26qid%3D1794972974%26sr%3D1-1-cad6aeec-96dd-457c-9b66-8da30dbf4459%26i%3Daps%26aref%3DrOCll5SxwL&pd_rd_i=B0GKF31Z73&ref_=sbx_be_s_sparkle_ssd_img&qid=&pd_rd_w=lTGo3&content-id=amzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea%3Aamzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_p=b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=HszGO&pd_rd_r=b703f19d-8293-4f41-8e9b-02ad213d3c84",
+          "link_clean": "https://www.amazon.com/dp/B0GKF31Z73/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GKF31Z73&device=desktop&engine=amazon_product",
+          "thumbnail": "https://m.media-amazon.com/images/I/51OLeZ0L+LL._AC_SR250,250_QL65_.jpg",
+          "rating": 4.5,
+          "reviews": 56
+        },
+        {
+          "position": 5,
+          "asin": "B0GJ42TV8L",
+          "sponsored": true,
+          "title": "NANWEI Brushless Hammer Drill for Makita 18V Battery,1100in-lbs,Tool Only | Drills into Concrete, Brick, Metal & Wood | 1/2\" Keyless Metal Chuck | 20+1 Position Clutch",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFVkM-K01AUxqmDOoT6hy4c6LJCkYHbJjFNeitB8s8amzadJi3SzeXm3ts0TJqkybWdcdGnEHwDly5duPABfAE3voE78QEEOyJ-nMUH349zDp_gnX78_OvbncY9I1xM7ZE7ei3azqxVkwaPnOv-hYLXjr-cGJrn4128g-N4Vu9JHUlRO1IfdsTlrcCMTg0nfOnM3KBxJtylrLrkedGozyczx_KHE3fp2M1PNeHxTYIqhkuyRgUrSZ5izlCUc55vUMRXDQFv8Ns865B80zyroh04wuCIgIrnJWvdZhmaB-ewisAuoSwHRZnTN4QDkqcpIzzJM3BzDBBc0goUOMk4KwHJM84yLj9ZuLbjo-nMt-dWiCzf8xwrdP1JgEw_DP0xsp1gFPrTlirUxIdfP3z_8fOL3bz_d-vxndYDWRRFFUIRaiqUNEk-mQf24MSaWuejxjPbNKzihQs042Buj4qNg3nBlevp2PhfBzP-M8bRNOtW7FwNDSfeaoTJ72vCu9qa86IadLv7_b7zr6VuXHTxvku7pjh8pcjhou89LygqKSrSNS113l5XGJESJVQX29uE6pIGFajJUFPaValLQAYEUxUzRgBUKQVKTyMARqoK-hQ_FWm0UpQebCc6Lqo2LtlKL30rTXvB1d77DVKluKA&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fgp%2Faw%2Fd%2FB0GJ42TV8L%3Fpd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26qid%3D1794972974%26sr%3D1-2-cad6aeec-96dd-457c-9b66-8da30dbf4459%26i%3Daps%26aref%3DrOCll5SxwL&pd_rd_i=B0GJ42TV8L&ref_=sbx_be_s_sparkle_ssd_img&qid=&pd_rd_w=lTGo3&content-id=amzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea%3Aamzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_p=b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=HszGO&pd_rd_r=b703f19d-8293-4f41-8e9b-02ad213d3c84",
+          "link_clean": "https://www.amazon.com/dp/B0GJ42TV8L/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GJ42TV8L&device=desktop&engine=amazon_product",
+          "thumbnail": "https://m.media-amazon.com/images/I/31atUsWSgWL._AC_SR250,250_QL65_.jpg",
+          "rating": 4.5,
+          "reviews": 56
+        },
+        {
+          "position": 6,
+          "asin": "B0GKDW8N9L",
+          "sponsored": true,
+          "title": "NANWEI Hammer Drill,1450in-lbs,26000BPM,1/2\" Keyless Metal Chuck,20+3 Clutch,2x4.0Ah Batteries,20V Brushless Cordless Impact Drill Kit for Drilling Brick Wall, Metal, Wood,Concrete",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFVkM-K01AUxqmDOoT6hy4c6LJCkYHbJJ006a0UyT9raNp0mnSU2Vxu7r1Ng2mS3lzbGRd9CsE3cOnShQsfwBdw4xu4Ex9AsCPix1l88P045_BJ_vHHz7--3WncM6OLmTP2xq8Ux523aurgkXvdP9fwyg0up6bhB3ibbOEkmdd7akfV9I7ahx3l8lZoxcemG71w517YOJHuUla9FkXZqC-mc9cORlPv0nWan2rS45sEVQxzskIl46TIsGAoLoQo1igWy4aE1_htkXdIsW6eVPEWHGBwQEAlCs5at1mOFuEprGKwTSkrQMkL-oYIQIosY0SkRQ5ujgGCOa1AidNcMA5IkQuWi-6TC89xAzSbB87CjpAd-L5rR14wDZEVRFEwQY4bjqNg1tKlmvLw64fvP35-cZr3_249vNN60FUURYdQgYYOVUPtHi1CZ3Bkz-zTceOpY5l2-dwDhrm3Ngcl5t46F9r1bGL-r72V_BnzYJp1O3GvRqabbAzCuu9r0rvaSoiyGsjybrfr_GtJTkoZ72QqW8po7LzsT6H_rKSIU1RmK8qHor2qMCIcpXSotDcpHaoG1KDRhYbWrvhQBWeAYKpjxgiAOqVA6xkEwFjXQZ_iM4XGS03rwXY6xGXVxpwthzyws6wXXu3831tsuLQ&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fgp%2Faw%2Fd%2FB0GKDW8N9L%3Fpd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26qid%3D1794972974%26sr%3D1-3-cad6aeec-96dd-457c-9b66-8da30dbf4459%26i%3Daps%26aref%3DrOCll5SxwL&pd_rd_i=B0GKDW8N9L&ref_=sbx_be_s_sparkle_ssd_img&qid=&pd_rd_w=lTGo3&content-id=amzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea%3Aamzn1.sym.b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_p=b1ba2c44-5810-447c-bf42-50658e4ec1ea&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=HszGO&pd_rd_r=b703f19d-8293-4f41-8e9b-02ad213d3c84",
+          "link_clean": "https://www.amazon.com/dp/B0GKDW8N9L/",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GKDW8N9L&device=desktop&engine=amazon_product",
+          "thumbnail": "https://m.media-amazon.com/images/I/512Vq8B0SEL._AC_SR250,250_QL65_.jpg",
+          "rating": 4.5,
+          "reviews": 56
+        }
+      ],
+      "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/1abd3fac-adca-4bd0-9be4-bff9e366247c._CR0,0,400,400_AC_SX175_SY100_QL70_.jpg"
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B0FKKKVN7M",
+        "badges": [
+          "Overall Pick"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX XR Impact Driver and Hammer Drill Cordless Power Tool Combo Kit, Includes 2 x 4ah POWERPACK Batteries and a Charger (DCK250QQ2)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-POWERPACK-Batteries-DCK250QQ2/dp/B0FKKKVN7M/ref=sr_1_1?dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&dib_tag=se&keywords=DEWALT+DCK200D1P1&qid=1794972974&sr=8-1",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-POWERPACK-Batteries-DCK250QQ2/dp/B0FKKKVN7M/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FKKKVN7M&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81vUvizvx4L._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 208,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$321.13",
+        "extracted_price": 321.13,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$298.86 (12 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FKKKVN7M/ref=sr_1_1_olp?keywords=DEWALT+DCK200D1P1&dib_tag=se&dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&qid=1794972974&sr=8-1",
+        "purchase_options": [
+          {
+            "primary_price": "$321.13",
+            "extracted_primary_price": 321.13,
+            "more_buying_choices": "$298.86 (12 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FKKKVN7M/ref=sr_1_1_olp?keywords=DEWALT+DCK200D1P1&dib_tag=se&dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&qid=1794972974&sr=8-1"
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B0FV3SQD4X",
+        "brand": "DEWALT",
+        "title": "20V MAX XR 3-Speed Hammer Drill and Impact Combo Kit with XR POWERPACK Batteries (DCK2101QQ2)",
+        "link": "https://www.amazon.com/DEWALT-3-Speed-POWERPACK-Batteries-DCK2101QQ2/dp/B0FV3SQD4X/ref=sr_1_2?dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&dib_tag=se&keywords=DEWALT+DCK200D1P1&qid=1794972974&sr=8-2",
+        "link_clean": "https://www.amazon.com/DEWALT-3-Speed-POWERPACK-Batteries-DCK2101QQ2/dp/B0FV3SQD4X/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FV3SQD4X&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71CMR0NURBL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 30,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$297.41",
+        "extracted_price": 297.41,
+        "old_price": "$315.00",
+        "extracted_old_price": 315,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$297.41",
+            "extracted_primary_price": 297.41,
+            "old_primary_price": "$315.00",
+            "extracted_old_primary_price": 315
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B00IJ0ALYS",
+        "badges": [
+          "Best Seller in Power Tool Combo Kits"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX Cordless Drill and Impact Driver (DCK240C2)",
+        "link": "https://www.amazon.com/DEWALT-DCK240C2-Lithium-Driver-Impact/dp/B00IJ0ALYS/ref=sr_1_3?dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&dib_tag=se&keywords=DEWALT+DCK200D1P1&qid=1794972974&sr=8-3",
+        "link_clean": "https://www.amazon.com/DEWALT-DCK240C2-Lithium-Driver-Impact/dp/B00IJ0ALYS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00IJ0ALYS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81XPDrUh9sL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 61400,
+        "bought_last_month": "10K+ bought in past month",
+        "price": "$129.00",
+        "extracted_price": 129,
+        "old_price": "$239.00",
+        "extracted_old_price": 239,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$129.00",
+            "extracted_primary_price": 129,
+            "old_primary_price": "$239.00",
+            "extracted_old_primary_price": 239
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B0C3PQHGR7",
+        "brand": "DEWALT",
+        "title": "20V MAX Drill and Impact Driver (DCK277D2)",
+        "link": "https://www.amazon.com/DEWALT-Cordless-Batteries-Included-DCK277D2/dp/B0C3PQHGR7/ref=sr_1_4?dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&dib_tag=se&keywords=DEWALT+DCK200D1P1&qid=1794972974&sr=8-4",
+        "link_clean": "https://www.amazon.com/DEWALT-Cordless-Batteries-Included-DCK277D2/dp/B0C3PQHGR7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0C3PQHGR7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81u6kH7EgQL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 4800,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$180.18",
+        "extracted_price": 180.18,
+        "old_price": "$249.00",
+        "extracted_old_price": 249,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$152.96 (15+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0C3PQHGR7/ref=sr_1_4_olp?keywords=DEWALT+DCK200D1P1&dib_tag=se&dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&qid=1794972974&sr=8-4",
+        "purchase_options": [
+          {
+            "primary_price": "$180.18",
+            "extracted_primary_price": 180.18,
+            "old_primary_price": "$249.00",
+            "extracted_old_primary_price": 249,
+            "more_buying_choices": "$152.96 (15+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0C3PQHGR7/ref=sr_1_4_olp?keywords=DEWALT+DCK200D1P1&dib_tag=se&dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&qid=1794972974&sr=8-4"
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B0CZCKR65M",
+        "brand": "WORKPRO",
+        "title": "8V Power Drill, Pink Tool Kit Set for Women, Cordless Drill Driver",
+        "link": "https://www.amazon.com/WORKPRO-Drill-43PCS-Power-Toolbox/dp/B0CZCKR65M/ref=sr_1_5?dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&dib_tag=se&keywords=DEWALT+DCK200D1P1&qid=1794972974&sr=8-5",
+        "link_clean": "https://www.amazon.com/WORKPRO-Drill-43PCS-Power-Toolbox/dp/B0CZCKR65M/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CZCKR65M&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81qRb-y24dL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 552,
+        "price": "$59.99",
+        "extracted_price": 59.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$59.99",
+            "extracted_primary_price": 59.99
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B08BF8M7KR",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-20V-MAX-2-Tool-Combo/dp/B08BF8M7KR/ref=sr_1_6_so_POWER_TOOL_SET?dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&dib_tag=se&keywords=DEWALT+DCK200D1P1&qid=1794972974&sr=8-6",
+        "brand": "DEWALT",
+        "title": "20V MAX 2-Tool Combo Kit New",
+        "link": "https://www.amazon.com/DEWALT-20V-MAX-2-Tool-Combo/dp/B08BF8M7KR/ref=sr_1_6?dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&dib_tag=se&keywords=DEWALT+DCK200D1P1&qid=1794972974&sr=8-6",
+        "link_clean": "https://www.amazon.com/DEWALT-20V-MAX-2-Tool-Combo/dp/B08BF8M7KR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08BF8M7KR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51h-alF415L._AC_UL320_.jpg",
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$199.00 (1 new offer)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08BF8M7KR/ref=sr_1_6_olp?keywords=DEWALT+DCK200D1P1&dib_tag=se&dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&qid=1794972974&sr=8-6",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$199.00 (1 new offer)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08BF8M7KR/ref=sr_1_6_olp?keywords=DEWALT+DCK200D1P1&dib_tag=se&dib=eyJ2IjoiMSJ9.-RKhfGyAfwIV4tgmUMk43qrv4eaF7QpBkyCbmHUCK2pPJknoUvfu_Tx7lbvbgddrvciicQ719WHAXM8-XLGQAuAAWTJyW9idmKxIIFSxmJU.hSEt80KfHw64ocD_dr80fxh-33Ftjf1DflLNV4EjF1k&qid=1794972974&sr=8-6"
+          }
+        ]
+      }
+    ],
+    "sponsored_brands": {
+      "title": "Brands related to your search",
+      "brands": [
+        {
+          "position": 1,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/a13d874d-cd4c-4417-ae12-70cfdcbfa0fa._CR0,0,1200,628_SX920_CB1169409_QL70_.png",
+          "name": "DeWalt",
+          "headline": "Shop DeWalt Socks and Hats Combo",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkMtu00AUhtVWQBUVUWVRpKxQJLKoOsmM7fhSZCFfk9RN4sRJetlYE3uSmCb2ZMZt0y66YMlT8AaskBAr3oBlX4IlD4DSghD8OosjnfOfy1eItz99_Xn_tPjcGIx822t5p9B2-uUNtL83IWmyCld06DWc1arbuLlwOu7R4V6Pten4iB_dpr2gISznmdefdXv9nTqqIkmuIlWrwvPNwBxvG86g6fRbQfFl4VlM-EWe0eLOsNN3rG6j0zp37NKHjcL2uhKO80mxgBf4NkurUbYovZ5xDBiJssWCpDHOkywFnLCrJCKAE8yiGRjnk_ITkobDYF9YXM7zBIwZTmMQMYLz5IqA3ytBhFnMAcVJmhMGoizNSZoLu23TCkU_OA5tJ_AGXb-sFjbg7vv7jz--fwOl3T_u9SEi5fPyCwFCKGh1pa7WIdRUYWsY2Idblm_te8U3tmlY1G0Bxbgzl4-aGndmL5du_Lbxr-7M6UMYj0lpx5o6q4bhTJdKRIQvm4XPm7M8p_ywVru-vq7-xVLjecYIr1E8JTVFdRTB1GSgQlUFkmTbwDBFF1i2ihTLFUVXk94-GEJGJnpghgZESBWgJI7aftcdjDzRVlxgQCQoSBSFE6sptEcdDTXrRoXGIYtDOp_FTM8rM47DiIVJrCOtLklIljWIKnMaYp6kXDehIjfPzo578oEJFVGStR7qH5gQtQXLMvzuunN5SdiNbjsnxvHglW15AoQ28h-G8HmW6__zrvCYhjgOpyy7pPqavYRUhBCUVU2tJDqmvILXj72TDO00a9Fz9AvVNd9s&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F78E72B96-8088-44DD-AB3F-CD817CF33F94%3Fstore_ref%3DSB_A01182043VMPOFTVK3D7F-A01271332WCH2MVN91H5A%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D19544166901%26lp_asins%3DB076HYYLQ6%2CB073469Q1R%2CB01M2CCAPO%26lp_query%3DDEWALT%20DCK200D1P1%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D200041811106898%26i%3Daps%26aref%3Dj4A9XoIpZ1&ref_=sbx_be_s_3psl_mbd_mb0_bkgd&pd_rd_w=pmpWd&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=fJ4rS&pd_rd_r=2673b995-b672-464e-918a-26c90f58b951",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/d1e50649-3c8d-42ef-9933-58c515c22be3._AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 2,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/57471374-63f0-4329-b2a0-142c8457fec5._CR1,0,2399,1256_SX920_CB1169409_QL70_.jpg",
+          "name": "HOTO Tools",
+          "headline": "Smart Torque, Visible Precision.",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUMFu2kAUVBK1jVCqRhxSiVOEVA5RFnZtY5tUVrVrGwKGQDAEkotl7AWsgG12NwFyyAf01O-oVPXeS6Ve-gftj-QDKpJWVTuaw5NmRu-9yYS7n788_HyefYl7Fx3LqTtDaNnd_BY6OhjTOFp5q7Tv1OzVql1bX9tn1cbJAV60tOpCCVvBgkv0ClXFnMFld6-MikhRi0ivFOHVtktGu9jundrdupt9nXkRUn4tkjS71z_r2ma7dla_sq3c-63M7kbxRmKczfhz_y6Ji0Eyz72Zch8wGiTzOY1DX0RJDDhlt1FAAac-C6ZgJMb5ZzT2-u6RNL-ZiQiMmB-HIGDUF9EtBb9XgsBnIQepH8WCMhAksaCxkPZbxPTkjtv0LNt1eu1OXs9sof1vDz8-fP9q5fb_pDeHyCmf5V9JEEJNliVZVxRZQ9JO37VOdsyOeeRk31oEm2m1DjR8TxZPmOB7ci6UdaeF_8U9mTwSPw25PXNir2rYniy0gEqftjMft6dCpPykVFoul8W_tZS4SBjlpdSf0BIkZaQTWwMElglQlIoJCLIlUMVmRYUKUUwNvXsMeIyODZd4GEJdg7KKcLeK1LY1UBxtCDCs6Fq5guzmoK8Puv3LYd8ppKHHQi-dTUNmiMKU-17AvCg0YGGWej6PYm4QWHVIo6nqp8cEkmbrXCdDckxgrUFctXGpbpyLG8rWhmUPcLN3aJmOBKGFOmgj8VkijP9LLvAw9fzQm7DkJjVkCJEqQ0lDKpShUogMP-UFf_NNepesO1354gL_AqJ_3hQ&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F0B518BE7-B05B-449C-B1E2-FAC9604B4C71%3Fstore_ref%3DSB_A00870361ARF16ODW4K7X-A0987591ELWU8WRUYXUK%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0FKBJL68H%2CB0BLMQ8BXB%2CB0GJBS6JY6%26lp_query%3DDEWALT%20DCK200D1P1%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300163027160304%26i%3Daps%26aref%3DpzoyPR3VVA&ref_=sbx_be_s_3psl_mbd_mb1_bkgd&pd_rd_w=pmpWd&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=fJ4rS&pd_rd_r=2673b995-b672-464e-918a-26c90f58b951",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/5808503e-fb2f-4994-aa55-fc557ae40120._CR0,0,400,400_AC_SX278_SY200_CB1169409_QL70_.jpeg"
+        },
+        {
+          "position": 3,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/c19f75ea-4dde-4bc6-bbfb-76c1f398698f._CR0,83,1380,723_SX920_CB1169409_QL70_.png",
+          "name": "BESWELL",
+          "headline": "Professional Tools",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdkMtu00AUhtVWQBUVUWVRpKxQJLKomGR8i-0iC_kyueA2cW2nF2-siT1xrCa245mmCYs-AEt4AVRWrBBbXoQX4QFQWhCCX2dxpE-_zvn_Srz79fvPH4-rT3X_zLHsvn0BLeTWt7jDgwnJ0lW4KkZ2F61Ww-76Cg06b48OFlQ9KxzrzJ8F3pgG1vpqeGwn7p7ENTmx3eQUtQmDbc8Y7-rI7yG371WfV57EhF6xvKjujQYuMofdQT9AVu39VmV3Q8Ixm1QreI7f5Vkzyue1l1OKQUmifD4nWYxZmmeAknKZRgRQgstoCsZsUn9EsnDkHfLz6xlLwbjEWQyikmCWLgn4fRJEuIwpKHCaMVKCKM8YyRi_f2KYoeB4x6GFPNsfOnWlssXv3334ePflm1Xb_-PePCIUdFZ_JkAIJVGBMuRlFbb5nZFnHe2YjnloV19bhm4WnT6Q9Vtj8aBEvzVOmbh2TvR_dWsk96M_LLU9M0Grro6ShRwR_vN25dP2lLGCHrVaNzc3zb-1tCjLS0JbBU5IyzRlU1IECKCJeCDysggMCaqg3e6IqqDKyGx33twbwpJMNM8IddhWoSy1BV8QhcHpuSAFFy7QoQIFToa8F_SQ5XX6vUtPbhRxWMZhMZvGpcYaU4rDqAzTWIONWRFimmZUM6DhO5Ls9k5fGdAyOq7vnAcbvLgm5Vqz0Ll-7L-wTJuH0OIcboPoLGfa_9U2aFyEOA6TMr8utE3NiiJJIhSgDMVGquGCNvAmw7zXW5pLqBvKL6ln2os&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FCC7C5830-0CE2-4274-B509-66F49397EC6F%3Fstore_ref%3DSB_A06907563T343NQW35ZXR-A08031702SZHEDSFIHYS7%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0BTP57RHQ%2CB0DBFRTPWZ%26lp_query%3DDEWALT%20DCK200D1P1%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300088554030704%26i%3Daps%26aref%3DmHHvCv0AB8&ref_=sbx_be_s_3psl_mbd_mb2_bkgd&pd_rd_w=pmpWd&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=QPH3HPJYWYT7JPPX144F&pd_rd_wg=fJ4rS&pd_rd_r=2673b995-b672-464e-918a-26c90f58b951",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/051546d2-c54b-48ac-874b-5f129957ad18._CR0,0,1524,475_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        }
+      ]
+    },
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249152011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_76%3A1249152011&dc&qid=1794972974&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3A2gZaJyeSxPM2kHz6lW6oK8BcJ4fKWeazCO0BpF81ZAU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_76%3A1249152011"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "DEWALT",
+          "rh": "p_123:195991",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_123%3A195991&dc&qid=1794972974&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3Adr1pESrTkD2qK02NuV9aAZ%2FbAis58Lu%2FUadUdCOnvYU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_123%3A195991"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248909011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_72%3A1248909011&dc&qid=1794972974&rnid=1248907011&ref=sr_nr_p_72_1&ds=v1%3AKq%2BFmirawCznGhk5huqejDIjDmxiPMkvFfTUze1w6bw",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_72%3A1248909011"
+        }
+      ],
+      "battery_type": [
+        {
+          "position": 1,
+          "name": "Lithium Ion",
+          "rh": "p_n_g-1001830995111:212445696011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_n_g-1001830995111%3A212445696011&dc&qid=1794972974&rnid=2399136011&ref=sr_nr_p_n_g-1001830995111_1&ds=v1%3AsgiWSXiPf3MSBsmJ41UqBs32zTPmeFXTssI0HNR1we8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_n_g-1001830995111%3A212445696011"
+        }
+      ],
+      "price": [
+        {
+          "position": 1,
+          "name": "All Discounts",
+          "rh": "p_n_deal_type:23566065011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_n_deal_type%3A23566065011&dc&qid=1794972974&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3AOQv8vv5FZCIEuXKwMG1iiwkvg3zz%2FzC9yT1GQ5cPuzk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_n_deal_type%3A23566065011"
+        },
+        {
+          "position": 2,
+          "name": "Today's Deals",
+          "rh": "p_n_deal_type:23566064011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_n_deal_type%3A23566064011&dc&qid=1794972974&rnid=23566063011&ref=sr_nr_p_n_deal_type_2&ds=v1%3AVZ3qJe4HoXZycerGxP7MNsEXvUYl4il2zv7QkOtazbA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_n_deal_type%3A23566064011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Amazon.com",
+          "rh": "p_6:ATVPDKIKX0DER",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_6%3AATVPDKIKX0DER&dc&qid=1794972974&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3A0RGlabrq8q7I4%2BYD%2FTd0KVQm8WQwiAfG8A9fgR3oSUo",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_6%3AATVPDKIKX0DER"
+        },
+        {
+          "position": 2,
+          "name": "Triplenet Pricing INC",
+          "rh": "p_6:AAZRLVTNON75Z",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_6%3AAAZRLVTNON75Z&dc&qid=1794972974&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3A%2BCYxv6bRDuHmrZLM4xwb5SKkHSm68pOzODZoarXufG0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_6%3AAAZRLVTNON75Z"
+        },
+        {
+          "position": 3,
+          "name": "Homestead Supply & More ✅",
+          "rh": "p_6:AKDENCFW3A9SI",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_6%3AAKDENCFW3A9SI&dc&qid=1794972974&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3AeUwmtgIMYK9%2FDC8%2FFB5h9IdqE6PCmI1uj0Hcw%2BMveBE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_6%3AAKDENCFW3A9SI"
+        },
+        {
+          "position": 4,
+          "name": "Amazon Export Sales LLC",
+          "rh": "p_6:A2XZ7JICGUQ1CX",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_6%3AA2XZ7JICGUQ1CX&dc&qid=1794972974&rnid=339807011&ref=sr_nr_p_6_4&ds=v1%3ARNrh15zuxVMAZlEzrtFSGoXq6he1DtFJWpm%2BvEN%2BkgY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_6%3AA2XZ7JICGUQ1CX"
+        },
+        {
+          "position": 5,
+          "name": "Outlet Tools",
+          "rh": "p_6:A19CJB9LGVPOMP",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_6%3AA19CJB9LGVPOMP&dc&qid=1794972974&rnid=339807011&ref=sr_nr_p_6_5&ds=v1%3Abe73sbhsMJATFIVDbKhinPdYvWUmJmKQ6kD%2BP4aWYlI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_6%3AA19CJB9LGVPOMP"
+        },
+        {
+          "position": 6,
+          "name": "Rancho Supply",
+          "rh": "p_6:A1C9KMZOAZ6RIY",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_6%3AA1C9KMZOAZ6RIY&dc&qid=1794972974&rnid=339807011&ref=sr_nr_p_6_6&ds=v1%3AMqnIoivJzOGoFrGg%2F1M4jeXhiBABEHjwJwXYhA7%2BWsg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_6%3AA1C9KMZOAZ6RIY"
+        },
+        {
+          "position": 7,
+          "name": "Craz-DealSeekeR",
+          "rh": "p_6:A1VADQO0CU5CDJ",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_6%3AA1VADQO0CU5CDJ&dc&qid=1794972974&rnid=339807011&ref=sr_nr_p_6_7&ds=v1%3Au5UkCDiM%2BltXNi3Gp9ml%2FCXRaLgHtkdwQPrkH5yrVOA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_6%3AA1VADQO0CU5CDJ"
+        }
+      ],
+      "premium_brands": [
+        {
+          "position": 1,
+          "name": "Premium Brands",
+          "rh": "p_n_g-101015887018111:204376014011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCK200D1P1&rh=p_n_g-101015887018111%3A204376014011&dc&qid=1794972974&rnid=204376013011&ref=sr_nr_p_n_g-101015887018111_1&ds=v1%3AuwzP4pC605Q1dcjy2T8KXNLyetuiCwCQgskz5LvYtLU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCK200D1P1&rh=p_n_g-101015887018111%3A204376014011"
+        }
+      ]
+    }
+  }
+}

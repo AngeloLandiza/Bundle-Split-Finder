@@ -1,0 +1,328 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=RYOBI A971502",
+  "at": 1794972990457,
+  "data": {
+    "search_metadata": {
+      "id": "6afd1d3deabc4d8fa50269d6",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/EW_avjC4AWoP6BZ6lmDy0V1x92tpm2_dKIPHgwv9iXk/6afd1d3deabc4d8fa50269d6.json",
+      "markdown_endpoint": "https://serpapi.com/searches/EW_avjC4AWoP6BZ6lmDy0V1x92tpm2_dKIPHgwv9iXk/6afd1d3deabc4d8fa50269d6.md",
+      "created_at": "2026-11-18 03:36:29 UTC",
+      "processed_at": "2026-11-18 03:36:29 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=RYOBI+A971502",
+      "raw_html_file": "https://serpapi.com/searches/EW_avjC4AWoP6BZ6lmDy0V1x92tpm2_dKIPHgwv9iXk/6afd1d3deabc4d8fa50269d6.html",
+      "total_time_taken": 0.91
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "RYOBI A971502",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 5,
+      "query_displayed": "RYOBI A971502",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B0D7SW8F8L",
+        "title": "A971502 Fits for RYOBI Black Oxide Round Shank Drill Bit Set (15-Piece)",
+        "link": "https://www.amazon.com/A971502-RYOBI-Black-Oxide-15-Piece/dp/B0D7SW8F8L/ref=sr_1_1?keywords=RYOBI+A971502&qid=1794972989&sr=8-1",
+        "link_clean": "https://www.amazon.com/A971502-RYOBI-Black-Oxide-15-Piece/dp/B0D7SW8F8L/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D7SW8F8L&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41GzU4+rKlL._AC_UL320_.jpg",
+        "price": "$12.97",
+        "extracted_price": 12.97,
+        "delivery": [
+          "$15 delivery Wed, Dec 2"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$12.97",
+            "extracted_primary_price": 12.97
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B0FFT6J1MZ",
+        "title": "311759008 Trimmer Head Replacement fits for Ryobi P2009 RY15523A RY40006",
+        "link": "https://www.amazon.com/texasrun-311759008-Trimmer-Replacement-311759013/dp/B0FFT6J1MZ/ref=sr_1_2?keywords=RYOBI+A971502&qid=1794972989&sr=8-2",
+        "link_clean": "https://www.amazon.com/texasrun-311759008-Trimmer-Replacement-311759013/dp/B0FFT6J1MZ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FFT6J1MZ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51UhlGrSUSL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 8,
+        "price": "$21.99",
+        "extracted_price": 21.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Thu, Nov 19",
+          "Or Non-members get FREE delivery Sun, Nov 22 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$21.99",
+            "extracted_primary_price": 21.99
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B0BL9FMDWC",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/RYOBI-Black-Oxide-15-Piece-A971502/dp/B0BL9FMDWC/ref=sr_1_3_so_DRILL_BITS?keywords=RYOBI+A971502&qid=1794972989&sr=8-3",
+        "brand": "RYOBI",
+        "title": "Black Oxide Round Shank Drill BIT Set 15-Piece A971502",
+        "link": "https://www.amazon.com/RYOBI-Black-Oxide-15-Piece-A971502/dp/B0BL9FMDWC/ref=sr_1_3?keywords=RYOBI+A971502&qid=1794972989&sr=8-3",
+        "link_clean": "https://www.amazon.com/RYOBI-Black-Oxide-15-Piece-A971502/dp/B0BL9FMDWC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BL9FMDWC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41FgWZYIMVL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 4,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$14.99 (1 new offer)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BL9FMDWC/ref=sr_1_3_olp?keywords=RYOBI+A971502&qid=1794972989&sr=8-3",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$14.99 (1 new offer)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BL9FMDWC/ref=sr_1_3_olp?keywords=RYOBI+A971502&qid=1794972989&sr=8-3"
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B0CCZ3BL9Y",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/RYOBI-Round-Shank-Black-Oxide/dp/B0CCZ3BL9Y/ref=sr_1_4_so_DRILL_BITS?keywords=RYOBI+A971502&qid=1794972989&sr=8-4",
+        "brand": "RYOBI",
+        "title": "15 PC. Round Shank Black Oxide Drill Bit Set",
+        "link": "https://www.amazon.com/RYOBI-Round-Shank-Black-Oxide/dp/B0CCZ3BL9Y/ref=sr_1_4?keywords=RYOBI+A971502&qid=1794972989&sr=8-4",
+        "link_clean": "https://www.amazon.com/RYOBI-Round-Shank-Black-Oxide/dp/B0CCZ3BL9Y/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CCZ3BL9Y&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61iD5iHujmL._AC_UL320_.jpg",
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$16.99 (2 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CCZ3BL9Y/ref=sr_1_4_olp?keywords=RYOBI+A971502&qid=1794972989&sr=8-4",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$16.99 (2 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CCZ3BL9Y/ref=sr_1_4_olp?keywords=RYOBI+A971502&qid=1794972989&sr=8-4"
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B09SN6Y6TS",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/RYOBI-Cordless-Drill-Driver-P215BN/dp/B09SN6Y6TS/ref=sr_1_5_so_DRILL?keywords=RYOBI+A971502&qid=1794972989&sr=8-5",
+        "brand": "RYOBI",
+        "title": "ONE+ 18V Cordless 1/2 in. Drill/Driver (Tool Only) P215BN",
+        "link": "https://www.amazon.com/RYOBI-Cordless-Drill-Driver-P215BN/dp/B09SN6Y6TS/ref=sr_1_5?keywords=RYOBI+A971502&qid=1794972989&sr=8-5",
+        "link_clean": "https://www.amazon.com/RYOBI-Cordless-Drill-Driver-P215BN/dp/B09SN6Y6TS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09SN6Y6TS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51a7EtuY33L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1800,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$63.67 (6 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09SN6Y6TS/ref=sr_1_5_olp?keywords=RYOBI+A971502&qid=1794972989&sr=8-5",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$63.67 (6 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09SN6Y6TS/ref=sr_1_5_olp?keywords=RYOBI+A971502&qid=1794972989&sr=8-5"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "department": [
+        {
+          "position": 1,
+          "name": "Power Tool Parts & Accessories",
+          "rh": "n:552262",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=n%3A552262&dc&qid=1794972989&rnid=2941120011&ref=sr_nr_n_1&ds=v1%3AvFnQ4dzb9ZC9Jd8XaIxVEFpTPen7EsR30XBLFYV%2F49Y",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=n%3A552262"
+        },
+        {
+          "position": 2,
+          "name": "Power Tool Replacement Parts",
+          "rh": "n:9022420011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=n%3A552262%2Cn%3A9022420011&dc&qid=1794972989&rnid=2941120011&ref=sr_nr_n_2&ds=v1%3A790nPLIMYCz0aGQ0I7GWA6jLGKw1noG%2BNfi5vUDcS0U",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=n%3A552262%2Cn%3A9022420011"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "RYOBI",
+          "rh": "p_123:252605",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=p_123%3A252605&dc&qid=1794972989&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3A6ORpkkw9yzXyPTD37yZglKUmHcgPC%2BXWWliP1cshCns",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=p_123%3A252605"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248909011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=p_72%3A1248909011&dc&qid=1794972989&rnid=1248907011&ref=sr_nr_p_72_1&ds=v1%3ANOEklvWgKXagcauNs25VMqL7Y3HF%2B2Yw1MyXkyY7rNQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=p_72%3A1248909011"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=p_n_condition-type%3A6358196011&dc&qid=1794972989&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3A5ThVgjCzLCdl0kvcaQLb9u43Olqr8TSeX9O%2FFjiKAxg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=p_n_condition-type%3A6358196011"
+        },
+        {
+          "position": 2,
+          "name": "Used",
+          "rh": "p_n_condition-type:6358198011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=p_n_condition-type%3A6358198011&dc&qid=1794972989&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3A8%2FNX4q8hsMqQnbxOxgsCj9VxTaXm6FmQZ1y0cHWAGjM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=p_n_condition-type%3A6358198011"
+        }
+      ],
+      "all_top_brands": [
+        {
+          "position": 1,
+          "name": "Top Brands",
+          "rh": "p_n_g-101014971069111:119653281011",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=p_n_g-101014971069111%3A119653281011&dc&qid=1794972989&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3ATmJ384ZjPe6SSYZf2Fa1yPVS42tS4eDDMScB7Xw8qZc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=p_n_g-101014971069111%3A119653281011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Embie Industries- Serial Numbers Recorded",
+          "rh": "p_6:A3KG0Q7QL544HL",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=p_6%3AA3KG0Q7QL544HL&dc&qid=1794972989&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3AYuwZcyhhFR9BP4Wf6nn0SoftENpji3qBA7zH%2F%2BcfSc8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=p_6%3AA3KG0Q7QL544HL"
+        },
+        {
+          "position": 2,
+          "name": "CUSHYBITE",
+          "rh": "p_6:A2WJECKVD69FO2",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=p_6%3AA2WJECKVD69FO2&dc&qid=1794972989&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3Af4mzbWlFXP5xwj5jg0gwok2uL2a1Ktf4mifES2bCkfc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=p_6%3AA2WJECKVD69FO2"
+        },
+        {
+          "position": 3,
+          "name": "Akashnil",
+          "rh": "p_6:AWVEFMI4QK3W",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=p_6%3AAWVEFMI4QK3W&dc&qid=1794972989&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3A1OyJdtUSjeDX4mis1SgDG%2FeclxaAi0QKFvq%2BqzSncw4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=p_6%3AAWVEFMI4QK3W"
+        },
+        {
+          "position": 4,
+          "name": "State 48 Distributors LLC",
+          "rh": "p_6:AR9NATIXBE4Z1",
+          "link": "https://www.amazon.com/s?k=RYOBI+A971502&rh=p_6%3AAR9NATIXBE4Z1&dc&qid=1794972989&rnid=339807011&ref=sr_nr_p_6_4&ds=v1%3AiQ%2B7C%2F4P9MxcXXPazOpA8BOwMLq2zffpHesSsjYYaTM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+A971502&rh=p_6%3AAR9NATIXBE4Z1"
+        }
+      ]
+    }
+  }
+}

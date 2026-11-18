@@ -1,0 +1,1775 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=DEWALT DCB346-3",
+  "at": 1795001633507,
+  "data": {
+    "search_metadata": {
+      "id": "6afd8d1f4f19ee3ec3f91364",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/ib0CvSgkr3ck1K_MjzSdvG-S1PgzFqAvKY0vysmxfso/6afd8d1f4f19ee3ec3f91364.json",
+      "markdown_endpoint": "https://serpapi.com/searches/ib0CvSgkr3ck1K_MjzSdvG-S1PgzFqAvKY0vysmxfso/6afd8d1f4f19ee3ec3f91364.md",
+      "created_at": "2026-11-18 11:33:51 UTC",
+      "processed_at": "2026-11-18 11:33:51 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=DEWALT+DCB346-3",
+      "raw_html_file": "https://serpapi.com/searches/ib0CvSgkr3ck1K_MjzSdvG-S1PgzFqAvKY0vysmxfso/6afd8d1f4f19ee3ec3f91364.html",
+      "total_time_taken": 1.5
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "DEWALT DCB346-3",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 72,
+      "query_displayed": "DEWALT DCB346-3",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B09CLBM269",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Premium Lithium-Ion 6.0Ah Battery, 20V MAX XR 4.0Ah Battery, and 20V MAX 2.0Ah Battery DCB346-3",
+        "link": "https://www.amazon.com/Dewalt-Premium-Lithium-Ion-6-0Ah-Battery/dp/B09CLBM269/ref=sr_1_1?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-1",
+        "link_clean": "https://www.amazon.com/Dewalt-Premium-Lithium-Ion-6-0Ah-Battery/dp/B09CLBM269/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09CLBM269&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/612pvGknpkL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 18,
+        "price": "$219.99",
+        "extracted_price": 219.99,
+        "delivery": [
+          "FREE delivery Sat, Nov 21"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$219.99",
+            "extracted_primary_price": 219.99
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B0CZ9XR2Z7",
+        "badges": [
+          "Overall Pick"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX Lithium-Ion Battery 2-Pack, 5.0 Ah (DCB205-2c)",
+        "link": "https://www.amazon.com/DEWALT-Lithium-Ion-Battery-Charger-DCB205-2c/dp/B0CZ9XR2Z7/ref=sr_1_2?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-2",
+        "link_clean": "https://www.amazon.com/DEWALT-Lithium-Ion-Battery-Charger-DCB205-2c/dp/B0CZ9XR2Z7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CZ9XR2Z7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/715jriCQl7L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 3800,
+        "bought_last_month": "4K+ bought in past month",
+        "price": "$128.00",
+        "extracted_price": 128,
+        "price_unit": "$64.00/count",
+        "extracted_price_unit": 64,
+        "old_price": "$136.84",
+        "extracted_old_price": 136.84,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "more_buying_choices": "$118.00 (54+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CZ9XR2Z7/ref=sr_1_2_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-2",
+        "purchase_options": [
+          {
+            "primary_price": "$128.00",
+            "extracted_primary_price": 128,
+            "old_primary_price": "$136.84",
+            "extracted_old_primary_price": 136.84,
+            "more_buying_choices": "$118.00 (54+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CZ9XR2Z7/ref=sr_1_2_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-2"
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B00BQHOI6S",
+        "brand": "DEWALT",
+        "title": "20V MAX* XR Battery, 4.0-Ah, 2-Pack (DCB204-2), Black",
+        "link": "https://www.amazon.com/DEWALT-DCB204-2-Premium-Li-Ion-Battery/dp/B00BQHOI6S/ref=sr_1_3?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-3",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB204-2-Premium-Li-Ion-Battery/dp/B00BQHOI6S/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00BQHOI6S&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71FXsUse9JL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 3200,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$102.00",
+        "extracted_price": 102,
+        "price_unit": "$51.00/count",
+        "extracted_price_unit": 51,
+        "old_price": "$109.99",
+        "extracted_old_price": 109.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "more_buying_choices": "$92.34 (20+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00BQHOI6S/ref=sr_1_3_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-3",
+        "purchase_options": [
+          {
+            "primary_price": "$102.00",
+            "extracted_primary_price": 102,
+            "old_primary_price": "$109.99",
+            "extracted_old_primary_price": 109.99,
+            "more_buying_choices": "$92.34 (20+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00BQHOI6S/ref=sr_1_3_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-3"
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B08MZ2991W",
+        "badges": [
+          "Save 9%"
+        ],
+        "brand": "DEWALT",
+        "title": "DCB246CK 20-Volt Max Lithium-Ion Battery Compact Starter Kit",
+        "link": "https://www.amazon.com/Dewalt-Lithium-Ion-Battery-Charger-Starter/dp/B08MZ2991W/ref=sr_1_4?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-4",
+        "link_clean": "https://www.amazon.com/Dewalt-Lithium-Ion-Battery-Charger-Starter/dp/B08MZ2991W/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08MZ2991W&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41E50regFbL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 2600,
+        "price": "$114.99",
+        "extracted_price": 114.99,
+        "old_price": "$127.00",
+        "extracted_old_price": 127,
+        "offers": [
+          "Lowest price in 30 days"
+        ],
+        "delivery": [
+          "FREE delivery Nov 23 - 25",
+          "Or fastest delivery Nov 20 - 23"
+        ],
+        "more_buying_choices": "$110.00 (19+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08MZ2991W/ref=sr_1_4_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-4",
+        "purchase_options": [
+          {
+            "primary_price": "$114.99",
+            "extracted_primary_price": 114.99,
+            "old_primary_price": "$127.00",
+            "extracted_old_primary_price": 127,
+            "more_buying_choices": "$110.00 (19+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08MZ2991W/ref=sr_1_4_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-4"
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B072K35B3L",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery Pack, 3.0-Ah, 2-Pack (DCB230-2)",
+        "link": "https://www.amazon.com/DEWALT-DCB230-2-Lithium-Battery-3-0Ah/dp/B072K35B3L/ref=sr_1_5?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-5",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB230-2-Lithium-Battery-3-0Ah/dp/B072K35B3L/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B072K35B3L&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61RfgOVqwwL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1900,
+        "price": "$122.54",
+        "extracted_price": 122.54,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "more_buying_choices": "$112.31 (8 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B072K35B3L/ref=sr_1_5_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-5",
+        "purchase_options": [
+          {
+            "primary_price": "$122.54",
+            "extracted_primary_price": 122.54,
+            "more_buying_choices": "$112.31 (8 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B072K35B3L/ref=sr_1_5_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-5"
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B07WRDX8CM",
+        "brand": "DEWALT",
+        "title": "12V MAX* Batteries, 3.0-Ah, 2-Pack (DCB124-2)",
+        "link": "https://www.amazon.com/DeWALT-DCB124-2-Capacity-Lithium-Battery/dp/B07WRDX8CM/ref=sr_1_6?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-6",
+        "link_clean": "https://www.amazon.com/DeWALT-DCB124-2-Capacity-Lithium-Battery/dp/B07WRDX8CM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07WRDX8CM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61tFd-CL4tL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1800,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$118.44",
+        "extracted_price": 118.44,
+        "old_price": "$209.99",
+        "extracted_old_price": 209.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 9 left in stock - order soon.",
+        "more_buying_choices": "$118.39 (12 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07WRDX8CM/ref=sr_1_6_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-6",
+        "purchase_options": [
+          {
+            "primary_price": "$118.44",
+            "extracted_primary_price": 118.44,
+            "old_primary_price": "$209.99",
+            "extracted_old_primary_price": 209.99,
+            "more_buying_choices": "$118.39 (12 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07WRDX8CM/ref=sr_1_6_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-6"
+          }
+        ]
+      },
+      {
+        "position": 7,
+        "asin": "B09KKXPDJ5",
+        "brand": "DEWALT",
+        "title": "20V MAX POWERSTACK Lithium Ion Battery 2 Pack (DCBP034-2)",
+        "link": "https://www.amazon.com/DEWALT-POWERSTACKTM-Compact-Battery-DCBP034-2/dp/B09KKXPDJ5/ref=sr_1_7?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-7",
+        "link_clean": "https://www.amazon.com/DEWALT-POWERSTACKTM-Compact-Battery-DCBP034-2/dp/B09KKXPDJ5/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09KKXPDJ5&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71MD2OJR+0L._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 2700,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$122.80",
+        "extracted_price": 122.8,
+        "price_unit": "$61.40/count",
+        "extracted_price_unit": 61.4,
+        "old_price": "$219.00",
+        "extracted_old_price": 219,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "more_buying_choices": "$115.95 (18+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09KKXPDJ5/ref=sr_1_7_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-7",
+        "purchase_options": [
+          {
+            "primary_price": "$122.80",
+            "extracted_primary_price": 122.8,
+            "old_primary_price": "$219.00",
+            "extracted_old_primary_price": 219,
+            "more_buying_choices": "$115.95 (18+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09KKXPDJ5/ref=sr_1_7_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-7"
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B0CR1NQCDV",
+        "brand": "DEWALT",
+        "title": "20V MAX 5 Ah Lithium-Ion Battery and Charger Starter Kit (DCB205C)",
+        "link": "https://www.amazon.com/DEWALT-Lithium-Ion-Battery-Charger-DCB205C/dp/B0CR1NQCDV/ref=sr_1_8_mod_primary_new?keywords=DEWALT+DCB346-3&qid=1795001632&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-8",
+        "link_clean": "https://www.amazon.com/DEWALT-Lithium-Ion-Battery-Charger-DCB205C/dp/B0CR1NQCDV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CR1NQCDV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71MbrI6Yb4L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1100,
+        "bought_last_month": "900+ bought in past month",
+        "price": "$84.00",
+        "extracted_price": 84,
+        "old_price": "$93.47",
+        "extracted_old_price": 93.47,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$68.34 (41+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CR1NQCDV/ref=sr_1_8_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-8",
+        "purchase_options": [
+          {
+            "type": "One-time purchase",
+            "primary_price": "$84.00",
+            "extracted_primary_price": 84,
+            "old_primary_price": "$93.47",
+            "extracted_old_primary_price": 93.47,
+            "more_buying_choices": "$68.34 (41+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0CR1NQCDV/ref=sr_1_8_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-8"
+          },
+          {
+            "type": "Another way to buy",
+            "primary_price": "$86.00",
+            "extracted_primary_price": 86,
+            "old_primary_price": "$93.47",
+            "extracted_old_primary_price": 93.47
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B0D8TMVR55",
+        "brand": "DEWALT",
+        "title": "20V MAX XR 8Ah POWERPACK Lithium Ion Battery, 2-Pack (DCB2108-2)",
+        "link": "https://www.amazon.com/DEWALT-POWERPACK-Lithium-Battery-DCB2108-2/dp/B0D8TMVR55/ref=sr_1_9?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-9",
+        "link_clean": "https://www.amazon.com/DEWALT-POWERPACK-Lithium-Battery-DCB2108-2/dp/B0D8TMVR55/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D8TMVR55&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/712inJGv3jL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 178,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$224.00",
+        "extracted_price": 224,
+        "price_unit": "$112.00/count",
+        "extracted_price_unit": 112,
+        "old_price": "$329.00",
+        "extracted_old_price": 329,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$224.00",
+            "extracted_primary_price": 224,
+            "old_primary_price": "$329.00",
+            "extracted_old_primary_price": 329
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B0FFXQCLTJ",
+        "brand": "DEWALT",
+        "title": "20V MAX Lithium-Ion 6.0Ah and 4.0Ah Battery and Charger Starter Kit",
+        "link": "https://www.amazon.com/Dewalt-Lithium-Ion-Battery-Charger-Starter/dp/B0FFXQCLTJ/ref=sr_1_10?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-10",
+        "link_clean": "https://www.amazon.com/Dewalt-Lithium-Ion-Battery-Charger-Starter/dp/B0FFXQCLTJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FFXQCLTJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/516c5BUX7fL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 122,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$119.30",
+        "extracted_price": 119.3,
+        "old_price": "$134.90",
+        "extracted_old_price": 134.9,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$98.35 (23 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FFXQCLTJ/ref=sr_1_10_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-10",
+        "purchase_options": [
+          {
+            "primary_price": "$119.30",
+            "extracted_primary_price": 119.3,
+            "old_primary_price": "$134.90",
+            "extracted_old_primary_price": 134.9,
+            "more_buying_choices": "$98.35 (23 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FFXQCLTJ/ref=sr_1_10_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-10"
+          }
+        ]
+      },
+      {
+        "position": 11,
+        "asin": "B08Y97QT9P",
+        "brand": "DEWALT",
+        "title": "20V MAX 10 Ah Lithium Ion Battery 2-Pack (DCB210-2)",
+        "link": "https://www.amazon.com/DEWALT-DCB210-2-10-0Ah-Lithium-Battery/dp/B08Y97QT9P/ref=sr_1_11?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-11",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB210-2-10-0Ah-Lithium-Battery/dp/B08Y97QT9P/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08Y97QT9P&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51z-C2KMtuL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 485,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$314.69",
+        "extracted_price": 314.69,
+        "price_unit": "$157.35/count",
+        "extracted_price_unit": 157.35,
+        "delivery": [
+          "Join Prime to get FREE delivery Sat, Nov 21",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$298.96 (10+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08Y97QT9P/ref=sr_1_11_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-11",
+        "purchase_options": [
+          {
+            "primary_price": "$314.69",
+            "extracted_primary_price": 314.69,
+            "more_buying_choices": "$298.96 (10+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08Y97QT9P/ref=sr_1_11_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-11"
+          }
+        ]
+      },
+      {
+        "position": 12,
+        "asin": "B01M19SKOP",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery Charging Kit, Includes Charger and 2 Batteries, 5Ah, Includes Small Storage Bag (DCB205-2CK)",
+        "link": "https://www.amazon.com/DEWALT-DCB205-2CK-5-0Ah-Starter-Batteries/dp/B01M19SKOP/ref=sr_1_12?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-12",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB205-2CK-5-0Ah-Starter-Batteries/dp/B01M19SKOP/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01M19SKOP&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71XJY-qWwKL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 13900,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$168.99",
+        "extracted_price": 168.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 11 left in stock - order soon.",
+        "more_buying_choices": "$162.00 (12+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M19SKOP/ref=sr_1_12_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-12",
+        "purchase_options": [
+          {
+            "primary_price": "$168.99",
+            "extracted_primary_price": 168.99,
+            "more_buying_choices": "$162.00 (12+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01M19SKOP/ref=sr_1_12_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-12"
+          }
+        ]
+      },
+      {
+        "position": 13,
+        "asin": "B00BQHLJ4M",
+        "brand": "DEWALT",
+        "title": "20V MAX Lithium Ion Battery (DCB204)",
+        "link": "https://www.amazon.com/DEWALT-DCB204-Premium-Li-Ion-Battery/dp/B00BQHLJ4M/ref=sr_1_13?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-13",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB204-Premium-Li-Ion-Battery/dp/B00BQHLJ4M/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00BQHLJ4M&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61o2B9f1kHL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 4600,
+        "bought_last_month": "600+ bought in past month",
+        "price": "$55.00",
+        "extracted_price": 55,
+        "old_price": "$58.49",
+        "extracted_old_price": 58.49,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$48.51 (42+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00BQHLJ4M/ref=sr_1_13_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-13",
+        "purchase_options": [
+          {
+            "primary_price": "$55.00",
+            "extracted_primary_price": 55,
+            "old_primary_price": "$58.49",
+            "extracted_old_primary_price": 58.49,
+            "more_buying_choices": "$48.51 (42+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00BQHLJ4M/ref=sr_1_13_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-13"
+          }
+        ]
+      },
+      {
+        "position": 14,
+        "asin": "B0052MIN3W",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery, Compact 1.5Ah (DCB201)",
+        "link": "https://www.amazon.com/DEWALT-Battery-Compact-1-5Ah-DCB201/dp/B0052MIN3W/ref=sr_1_14?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-14",
+        "link_clean": "https://www.amazon.com/DEWALT-Battery-Compact-1-5Ah-DCB201/dp/B0052MIN3W/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0052MIN3W&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/710Svz5W-1L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 5700,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$27.99",
+        "extracted_price": 27.99,
+        "old_price": "$35.00",
+        "extracted_old_price": 35,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "more_buying_choices": "$25.78 (47+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0052MIN3W/ref=sr_1_14_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-14",
+        "purchase_options": [
+          {
+            "primary_price": "$27.99",
+            "extracted_primary_price": 27.99,
+            "old_primary_price": "$35.00",
+            "extracted_old_primary_price": 35,
+            "more_buying_choices": "$25.78 (47+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0052MIN3W/ref=sr_1_14_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-14"
+          }
+        ]
+      },
+      {
+        "position": 15,
+        "asin": "B01HD4E0LK",
+        "brand": "DEWALT",
+        "title": "20V MAX/FLEXVOLT Lithium-Ion, Fan Cooled Rapid Battery Charger (DCB118)",
+        "link": "https://www.amazon.com/DEWALT-DCB118-FLEXVOLT-Fast-Charger/dp/B01HD4E0LK/ref=sr_1_15?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-15",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB118-FLEXVOLT-Fast-Charger/dp/B01HD4E0LK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01HD4E0LK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61jJOLmYiEL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 4700,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$148.00",
+        "extracted_price": 148,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$49.99 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01HD4E0LK/ref=sr_1_15_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-15",
+        "purchase_options": [
+          {
+            "primary_price": "$148.00",
+            "extracted_primary_price": 148,
+            "more_buying_choices": "$49.99 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B01HD4E0LK/ref=sr_1_15_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-15"
+          }
+        ]
+      },
+      {
+        "position": 16,
+        "asin": "B07RD6BSF3",
+        "title": "De-Walt DCB207 20V 20 Volt MAX Lithium-Ion Battery Pack, Black",
+        "link": "https://www.amazon.com/Walt-DCB207-Lithium-Ion-Battery-Black/dp/B07RD6BSF3/ref=sr_1_16?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-16",
+        "link_clean": "https://www.amazon.com/Walt-DCB207-Lithium-Ion-Battery-Black/dp/B07RD6BSF3/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07RD6BSF3&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61HPIzuCkYL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1400,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$46.47",
+        "extracted_price": 46.47,
+        "old_price": "$48.99",
+        "extracted_old_price": 48.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$46.00 (13+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07RD6BSF3/ref=sr_1_16_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-16",
+        "purchase_options": [
+          {
+            "primary_price": "$46.47",
+            "extracted_primary_price": 46.47,
+            "old_primary_price": "$48.99",
+            "extracted_old_primary_price": 48.99,
+            "more_buying_choices": "$46.00 (13+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07RD6BSF3/ref=sr_1_16_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-16"
+          }
+        ]
+      },
+      {
+        "position": 17,
+        "asin": "B00KQU1ENG",
+        "badges": [
+          "Best Seller in Cordless Tool Battery Packs"
+        ],
+        "brand": "DEWALT",
+        "title": "20V MAX 5 Ah Lithium Ion Battery 2-Pack (DCB205-2)",
+        "link": "https://www.amazon.com/DEWALT-DCB205-2-Lithium-Battery-2-Pack/dp/B00KQU1ENG/ref=sr_1_17?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-17",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB205-2-Lithium-Battery-2-Pack/dp/B00KQU1ENG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00KQU1ENG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71aPjRXbBCL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 22000,
+        "bought_last_month": "7K+ bought in past month",
+        "price": "$101.27",
+        "extracted_price": 101.27,
+        "price_unit": "$50.64/count",
+        "extracted_price_unit": 50.64,
+        "old_price": "$169.99",
+        "extracted_old_price": 169.99,
+        "top_rated": true,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Sun, Nov 22"
+        ],
+        "more_buying_choices": "$88.40 (2+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KQU1ENG/ref=sr_1_17_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-17",
+        "purchase_options": [
+          {
+            "primary_price": "$101.27",
+            "extracted_primary_price": 101.27,
+            "old_primary_price": "$169.99",
+            "extracted_old_primary_price": 169.99,
+            "more_buying_choices": "$88.40 (2+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KQU1ENG/ref=sr_1_17_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-17"
+          }
+        ]
+      },
+      {
+        "position": 18,
+        "asin": "B07YKX1GRN",
+        "brand": "DEWALT",
+        "title": "12V MAX* Battery, 3.0-Ah (DCB124)",
+        "link": "https://www.amazon.com/DEWALT-DCB124-12V-Lithium-Battery/dp/B07YKX1GRN/ref=sr_1_18?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-18",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB124-12V-Lithium-Battery/dp/B07YKX1GRN/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07YKX1GRN&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61CDizkbkDL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1800,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$53.44",
+        "extracted_price": 53.44,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$53.44",
+            "extracted_primary_price": 53.44
+          }
+        ]
+      },
+      {
+        "position": 19,
+        "asin": "B0GWG79F5V",
+        "title": "2x 3.0Ah 20V Max Battery Replacement for Dewalt with DCB112 Charger",
+        "link": "https://www.amazon.com/TENMOER-2-Pack-Compatible-Battery-Charger/dp/B0GWG79F5V/ref=sr_1_19?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-19",
+        "link_clean": "https://www.amazon.com/TENMOER-2-Pack-Compatible-Battery-Charger/dp/B0GWG79F5V/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GWG79F5V&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71q3eReAMqL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 85,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$49.95",
+        "extracted_price": 49.95,
+        "save_with_coupon": "You pay $44.95 with coupon",
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$49.95",
+            "extracted_primary_price": 49.95
+          }
+        ]
+      },
+      {
+        "position": 20,
+        "asin": "B079LDT7ML",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery Pack with Charger, 3 Ah, Extra Long Run Time (DCB230C)",
+        "link": "https://www.amazon.com/DEWALT-DCB230C-20V-Battery-Pack/dp/B079LDT7ML/ref=sr_1_20?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-20",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB230C-20V-Battery-Pack/dp/B079LDT7ML/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B079LDT7ML&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/713ED01HrtL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 5700,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$71.99",
+        "extracted_price": 71.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$61.16 (10+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B079LDT7ML/ref=sr_1_20_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-20",
+        "purchase_options": [
+          {
+            "primary_price": "$71.99",
+            "extracted_primary_price": 71.99,
+            "more_buying_choices": "$61.16 (10+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B079LDT7ML/ref=sr_1_20_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-20"
+          }
+        ]
+      },
+      {
+        "position": 21,
+        "asin": "B071G8R4SP",
+        "brand": "DEWALT",
+        "title": "20V MAX* Lithium Ion Battery Pack 3.0Ah (DCB230)",
+        "link": "https://www.amazon.com/DEWALT-DCB230-Lithium-Battery-Pack/dp/B071G8R4SP/ref=sr_1_21?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-21",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB230-Lithium-Battery-Pack/dp/B071G8R4SP/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B071G8R4SP&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61opplPA-DL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 541,
+        "price": "$59.00",
+        "extracted_price": 59,
+        "old_price": "$149.00",
+        "extracted_old_price": 149,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 16 left in stock - order soon.",
+        "more_buying_choices": "$49.66 (13+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B071G8R4SP/ref=sr_1_21_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-21",
+        "purchase_options": [
+          {
+            "primary_price": "$59.00",
+            "extracted_primary_price": 59,
+            "old_primary_price": "$149.00",
+            "extracted_old_primary_price": 149,
+            "more_buying_choices": "$49.66 (13+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B071G8R4SP/ref=sr_1_21_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-21"
+          }
+        ]
+      },
+      {
+        "position": 22,
+        "asin": "B0GX654KQF",
+        "title": "2Pack 3.0Ah DCB201 Battery Replacement for Dewalt 20V Battery",
+        "link": "https://www.amazon.com/2Pack-DCB201-Battery-Replacement-Dewalt/dp/B0GX654KQF/ref=sr_1_22?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-22",
+        "link_clean": "https://www.amazon.com/2Pack-DCB201-Battery-Replacement-Dewalt/dp/B0GX654KQF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GX654KQF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61mWIDZjYbL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 39,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$30.99",
+        "extracted_price": 30.99,
+        "price_unit": "$15.50/count",
+        "extracted_price_unit": 15.5,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$30.99",
+            "extracted_primary_price": 30.99
+          }
+        ]
+      },
+      {
+        "position": 23,
+        "asin": "B00BYKVMES",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery, Compact 2.0Ah (DCB203)",
+        "link": "https://www.amazon.com/DEWALT-Battery-Compact-2-0Ah-DCB203/dp/B00BYKVMES/ref=sr_1_23?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-23",
+        "link_clean": "https://www.amazon.com/DEWALT-Battery-Compact-2-0Ah-DCB203/dp/B00BYKVMES/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00BYKVMES&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51J4JhLwZJL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 5600,
+        "bought_last_month": "1K+ bought in past month",
+        "price": "$36.79",
+        "extracted_price": 36.79,
+        "old_price": "$40.00",
+        "extracted_old_price": 40,
+        "delivery": [
+          "Join Prime to get FREE delivery Sat, Nov 21",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 3 left in stock - order soon.",
+        "more_buying_choices": "$32.58 (43+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00BYKVMES/ref=sr_1_23_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-23",
+        "purchase_options": [
+          {
+            "primary_price": "$36.79",
+            "extracted_primary_price": 36.79,
+            "old_primary_price": "$40.00",
+            "extracted_old_primary_price": 40,
+            "more_buying_choices": "$32.58 (43+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00BYKVMES/ref=sr_1_23_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-23"
+          }
+        ]
+      },
+      {
+        "position": 24,
+        "asin": "B0DC6VSYZ1",
+        "title": "Replace for DEWALT 20V MAX Battery Pack, 3.0-Ah, 2-Pack, Compatible with Dewalt DCB200 DCD DCF DCG Series Cordless Power Tools",
+        "link": "https://www.amazon.com/LONG-FIT-Replace-Compatible-Cordless/dp/B0DC6VSYZ1/ref=sr_1_24?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-24",
+        "link_clean": "https://www.amazon.com/LONG-FIT-Replace-Compatible-Cordless/dp/B0DC6VSYZ1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DC6VSYZ1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/611mFael9-L._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 268,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$35.99",
+        "extracted_price": 35.99,
+        "price_unit": "$18.00/count",
+        "extracted_price_unit": 18,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$35.99",
+            "extracted_primary_price": 35.99
+          }
+        ]
+      },
+      {
+        "position": 25,
+        "asin": "B07VZPC78Q",
+        "brand": "DEWALT",
+        "title": "20V MAX Lithium Ion Battery, 2 Ah and 4 Ah, 4-Pack, Fuel Gauge LED Charge Indicators (DCB324-4)",
+        "link": "https://www.amazon.com/DEWALT-Battery-Lithium-4-Pack-DCB3244/dp/B07VZPC78Q/ref=sr_1_25?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-25",
+        "link_clean": "https://www.amazon.com/DEWALT-Battery-Lithium-4-Pack-DCB3244/dp/B07VZPC78Q/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07VZPC78Q&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/711eFCx84RL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 5100,
+        "bought_last_month": "200+ bought in past month",
+        "price": "$182.75",
+        "extracted_price": 182.75,
+        "price_unit": "$45.69/count",
+        "extracted_price_unit": 45.69,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$178.85 (4 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07VZPC78Q/ref=sr_1_25_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-25",
+        "purchase_options": [
+          {
+            "primary_price": "$182.75",
+            "extracted_primary_price": 182.75,
+            "more_buying_choices": "$178.85 (4 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07VZPC78Q/ref=sr_1_25_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-25"
+          }
+        ]
+      },
+      {
+        "position": 26,
+        "asin": "B0866BYSLM",
+        "brand": "DEWALT",
+        "title": "20V MAX 4 Ah Lithium Ion Battery 2-Pack (DCB240-2)",
+        "link": "https://www.amazon.com/DEWALT-DCB240-2-Compact-Lithium-Battery/dp/B0866BYSLM/ref=sr_1_26?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-26",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB240-2-Compact-Lithium-Battery/dp/B0866BYSLM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0866BYSLM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/611v3ohtubL._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 1000,
+        "price": "$120.09",
+        "extracted_price": 120.09,
+        "price_unit": "$60.05/count",
+        "extracted_price_unit": 60.05,
+        "old_price": "$219.00",
+        "extracted_old_price": 219,
+        "delivery": [
+          "FREE delivery Tue, Nov 24"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$120.09",
+            "extracted_primary_price": 120.09,
+            "old_primary_price": "$219.00",
+            "extracted_old_primary_price": 219
+          }
+        ]
+      },
+      {
+        "position": 27,
+        "asin": "B0DZHCC74X",
+        "title": "DCB201 20V Tools Battery 3.0Ah Replacement for DeWalt 20V Battery DCB201 DCB203 DCB206 DCB207 Cordless Power Tools",
+        "link": "https://www.amazon.com/GHU-Upgraded-Compatible-Charging-Discharge/dp/B0DZHCC74X/ref=sr_1_27?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-27",
+        "link_clean": "https://www.amazon.com/GHU-Upgraded-Compatible-Charging-Discharge/dp/B0DZHCC74X/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DZHCC74X&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/718BQ9JNAiL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 81,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$31.66",
+        "extracted_price": 31.66,
+        "save_with_coupon": "You pay $29.12 with coupon",
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "small_business": true,
+        "purchase_options": [
+          {
+            "primary_price": "$31.66",
+            "extracted_primary_price": 31.66
+          }
+        ]
+      },
+      {
+        "position": 28,
+        "asin": "B06XF6PLWS",
+        "brand": "DEWALT",
+        "title": "60V MAX* FLEXVOLT Lithium Battery with Charger, 9-Ah (DCB118X1)",
+        "link": "https://www.amazon.com/DEWALT-DCB118X1-FLEXVOLT-Lithium-Ion-Fan-Cooled/dp/B06XF6PLWS/ref=sr_1_28?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-28",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB118X1-FLEXVOLT-Lithium-Ion-Fan-Cooled/dp/B06XF6PLWS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B06XF6PLWS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61+uMpwER3L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 810,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$249.00",
+        "extracted_price": 249,
+        "delivery": [
+          "FREE delivery Wed, Nov 25",
+          "Or fastest delivery Fri, Nov 20"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$249.00",
+            "extracted_primary_price": 249
+          }
+        ]
+      },
+      {
+        "position": 29,
+        "asin": "B0H24X9D26",
+        "title": "4-Pack 8.0Ah Replacement Battery for Dewalt 20V Max Battery,Compatible with DCB200 DCB201 DCB204 DCB206 DCB208",
+        "link": "https://www.amazon.com/COOMYXIN-4-Pack-Replacement-Battery-Compatible/dp/B0H24X9D26/ref=sr_1_29?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-29",
+        "link_clean": "https://www.amazon.com/COOMYXIN-4-Pack-Replacement-Battery-Compatible/dp/B0H24X9D26/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H24X9D26&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71PBMl+mzGL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 135,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$76.99",
+        "extracted_price": 76.99,
+        "price_unit": "$19.25/count",
+        "extracted_price_unit": 19.25,
+        "delivery": [
+          "FREE delivery Tue, Nov 24",
+          "Or fastest delivery Sun, Nov 22"
+        ],
+        "stock": "Only 18 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$76.99",
+            "extracted_primary_price": 76.99
+          }
+        ]
+      },
+      {
+        "position": 30,
+        "asin": "B0FPCPDH6V",
+        "title": "8.0Ah Compatible with DeWalt 20V Max Battery",
+        "link": "https://www.amazon.com/Jnfkldsb-Compatible-Battery-Cordless-Indicator/dp/B0FPCPDH6V/ref=sr_1_30?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-30",
+        "link_clean": "https://www.amazon.com/Jnfkldsb-Compatible-Battery-Cordless-Indicator/dp/B0FPCPDH6V/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FPCPDH6V&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71VW-3Uv2NL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 286,
+        "bought_last_month": "800+ bought in past month",
+        "price": "$42.99",
+        "extracted_price": 42.99,
+        "old_price": "$47.49",
+        "extracted_old_price": 47.49,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$42.99",
+            "extracted_primary_price": 42.99,
+            "old_primary_price": "$47.49",
+            "extracted_old_primary_price": 47.49
+          }
+        ]
+      },
+      {
+        "position": 31,
+        "asin": "B00KWRM5Z4",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery, Lithium Ion, 5.0Ah (DCB205)",
+        "link": "https://www.amazon.com/DEWALT-DCB205-5-0Ah-Lithium-Battery-Pack/dp/B00KWRM5Z4/ref=sr_1_31?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-31",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB205-5-0Ah-Lithium-Battery-Pack/dp/B00KWRM5Z4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00KWRM5Z4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71oo7Zwya0L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 20800,
+        "bought_last_month": "2K+ bought in past month",
+        "price": "$65.92",
+        "extracted_price": 65.92,
+        "old_price": "$71.99",
+        "extracted_old_price": 71.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 17 left in stock - order soon.",
+        "more_buying_choices": "$60.98 (82+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KWRM5Z4/ref=sr_1_31_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-31",
+        "purchase_options": [
+          {
+            "primary_price": "$65.92",
+            "extracted_primary_price": 65.92,
+            "old_primary_price": "$71.99",
+            "extracted_old_primary_price": 71.99,
+            "more_buying_choices": "$60.98 (82+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KWRM5Z4/ref=sr_1_31_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-31"
+          }
+        ]
+      },
+      {
+        "position": 32,
+        "asin": "B0GKQNK9VC",
+        "brand": "DEWALT",
+        "title": "DCB606C FLEXVOLT 20V/60V MAX Lithium-Ion Battery and Charger",
+        "link": "https://www.amazon.com/DCB606C-FLEXVOLT-Lithium-Ion-Battery-Charger/dp/B0GKQNK9VC/ref=sr_1_32?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-32",
+        "link_clean": "https://www.amazon.com/DCB606C-FLEXVOLT-Lithium-Ion-Battery-Charger/dp/B0GKQNK9VC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GKQNK9VC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61-gdBwI5nL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 58,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$153.49",
+        "extracted_price": 153.49,
+        "delivery": [
+          "FREE delivery Nov 20 - 23",
+          "Or fastest delivery Tomorrow, Nov 19"
+        ],
+        "more_buying_choices": "$152.79 (10 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0GKQNK9VC/ref=sr_1_32_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-32",
+        "purchase_options": [
+          {
+            "primary_price": "$153.49",
+            "extracted_primary_price": 153.49,
+            "more_buying_choices": "$152.79 (10 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0GKQNK9VC/ref=sr_1_32_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-32"
+          }
+        ]
+      },
+      {
+        "position": 33,
+        "asin": "B00KXR97HM",
+        "brand": "DEWALT",
+        "title": "DCB615 FLEXVOLT® 20V/60V Max* 15.0Ah Battery, Color Multi, Battery Cell Composition Lithium Ion, Compatible with 20V MAX*, 60V MAX* and 120V MAX* Tools and All 20V MAX* Chargers",
+        "link": "https://www.amazon.com/DEWALT-DCB615-FLEXVOLT-15-0Ah-Battery/dp/B00KXR97HM/ref=sr_1_33?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-33",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB615-FLEXVOLT-15-0Ah-Battery/dp/B00KXR97HM/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00KXR97HM&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51KWyAiGZpL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 283,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$409.99",
+        "extracted_price": 409.99,
+        "delivery": [
+          "FREE delivery Sat, Nov 21"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$408.83 (7 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KXR97HM/ref=sr_1_33_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-33",
+        "purchase_options": [
+          {
+            "primary_price": "$409.99",
+            "extracted_primary_price": 409.99,
+            "more_buying_choices": "$408.83 (7 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KXR97HM/ref=sr_1_33_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-33"
+          }
+        ]
+      },
+      {
+        "position": 34,
+        "asin": "B08XWR11X2",
+        "brand": "DEWALT",
+        "title": "20V MAX XR Battery 2-Pack (DCB205-2) FLEXVOLT 20V MAX* Charger (DCB118)",
+        "link": "https://www.amazon.com/DEWALT-Battery-DCB205-2-FLEXVOLT-Charger/dp/B08XWR11X2/ref=sr_1_34?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-34",
+        "link_clean": "https://www.amazon.com/DEWALT-Battery-DCB205-2-FLEXVOLT-Charger/dp/B08XWR11X2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08XWR11X2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41AWhZ--HXL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 85,
+        "price": "$249.27",
+        "extracted_price": 249.27,
+        "old_price": "$317.99",
+        "extracted_old_price": 317.99,
+        "delivery": [
+          "Delivery Sun, Nov 22"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$249.27",
+            "extracted_primary_price": 249.27,
+            "old_primary_price": "$317.99",
+            "extracted_old_primary_price": 317.99
+          }
+        ]
+      },
+      {
+        "position": 35,
+        "asin": "B0BHM5X19S",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery Pack with Charger, 3-Ah (DCB230C), Black 20V MAX* Jobsite Fan, Tool Only",
+        "link": "https://www.amazon.com/DEWALT-Battery-Charger-DCB230C-Jobsite/dp/B0BHM5X19S/ref=sr_1_35?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-35",
+        "link_clean": "https://www.amazon.com/DEWALT-Battery-Charger-DCB230C-Jobsite/dp/B0BHM5X19S/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BHM5X19S&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61mXMpV2VVL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 9,
+        "price": "$215.17",
+        "extracted_price": 215.17,
+        "delivery": [
+          "Delivery Fri, Nov 20"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$215.17",
+            "extracted_primary_price": 215.17
+          }
+        ]
+      },
+      {
+        "position": 36,
+        "asin": "B07GLCD1LF",
+        "brand": "DEWALT",
+        "title": "FLEXVOLT 20V/60V MAX* Battery, 12.0-Ah (DCB612)",
+        "link": "https://www.amazon.com/DeWalt-DCB612-Flexvolt-12-0-Battery/dp/B07GLCD1LF/ref=sr_1_36?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-36",
+        "link_clean": "https://www.amazon.com/DeWalt-DCB612-Flexvolt-12-0-Battery/dp/B07GLCD1LF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B07GLCD1LF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61WQUIYtfNL._AC_UL320_.jpg",
+        "rating": 4.3,
+        "reviews": 1600,
+        "bought_last_month": "500+ bought in past month",
+        "price": "$248.95",
+        "extracted_price": 248.95,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$199.00 (22+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07GLCD1LF/ref=sr_1_36_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-36",
+        "purchase_options": [
+          {
+            "primary_price": "$248.95",
+            "extracted_primary_price": 248.95,
+            "more_buying_choices": "$199.00 (22+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B07GLCD1LF/ref=sr_1_36_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-36"
+          }
+        ]
+      },
+      {
+        "position": 37,
+        "asin": "B01H9BL9SE",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-DCB606-2-Lithium-Premium-Battery/dp/B01H9BL9SE/ref=sr_1_37_so_BATTERY?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-37",
+        "brand": "DEWALT",
+        "title": "20V MAX* Batteries, Premium, 6.0-Ah, 2-Pack (DCB606-2)",
+        "link": "https://www.amazon.com/DEWALT-DCB606-2-Lithium-Premium-Battery/dp/B01H9BL9SE/ref=sr_1_37?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-37",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB606-2-Lithium-Premium-Battery/dp/B01H9BL9SE/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B01H9BL9SE&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/517A7M3fjyL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 9500,
+        "bought_last_month": "100+ bought in past month",
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 38,
+        "asin": "B08XLJVWW8",
+        "brand": "DEWALT",
+        "title": "Battery Charger, 20V + Flexvolt Fast Charger (DCB1112)",
+        "link": "https://www.amazon.com/DEWALT-DCB1112-Amp-Fast-Charger/dp/B08XLJVWW8/ref=sr_1_38?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-38",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB1112-Amp-Fast-Charger/dp/B08XLJVWW8/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08XLJVWW8&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/5162fSo9JqL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 634,
+        "bought_last_month": "300+ bought in past month",
+        "price": "$74.98",
+        "extracted_price": 74.98,
+        "old_price": "$100.55",
+        "extracted_old_price": 100.55,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "more_buying_choices": "$69.99 (49+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08XLJVWW8/ref=sr_1_38_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-38",
+        "purchase_options": [
+          {
+            "primary_price": "$74.98",
+            "extracted_primary_price": 74.98,
+            "old_primary_price": "$100.55",
+            "extracted_old_primary_price": 100.55,
+            "more_buying_choices": "$69.99 (49+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08XLJVWW8/ref=sr_1_38_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-38"
+          }
+        ]
+      },
+      {
+        "position": 39,
+        "asin": "B06WP6GJ4M",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-DCB609-2-FLEXVOLT-Battery-Pack/dp/B06WP6GJ4M/ref=sr_1_39_so_BATTERY?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-39",
+        "brand": "DEWALT",
+        "title": "FLEXVOLT 20V/60V MAX* Batteries, 9.0-Ah, 2-Pack (DCB609-2)",
+        "link": "https://www.amazon.com/DEWALT-DCB609-2-FLEXVOLT-Battery-Pack/dp/B06WP6GJ4M/ref=sr_1_39?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-39",
+        "link_clean": "https://www.amazon.com/DEWALT-DCB609-2-FLEXVOLT-Battery-Pack/dp/B06WP6GJ4M/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B06WP6GJ4M&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51I5WvMeoDL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 4900,
+        "bought_last_month": "300+ bought in past month",
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 40,
+        "asin": "B0HCP3LF1D",
+        "title": "Replacement for Dewalt 20V MAX Battery 2Pack 8000mAh Compatible with Dewalt 20 Volt Battery and Charger DCB200 DCB201 DCB203 DCB204 DCB206 DCB208 DCB210 DCB240 for Cordless Power Tools",
+        "link": "https://www.amazon.com/Surkibat-Replacement-Battery-Compatible-Cordless/dp/B0HCP3LF1D/ref=sr_1_40?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-40",
+        "link_clean": "https://www.amazon.com/Surkibat-Replacement-Battery-Compatible-Cordless/dp/B0HCP3LF1D/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HCP3LF1D&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71STr3Uig0L._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 31,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$65.99",
+        "extracted_price": 65.99,
+        "old_price": "$69.99",
+        "extracted_old_price": 69.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$65.99",
+            "extracted_primary_price": 65.99,
+            "old_primary_price": "$69.99",
+            "extracted_old_primary_price": 69.99
+          }
+        ]
+      },
+      {
+        "position": 41,
+        "asin": "B0FH7G1XSQ",
+        "brand": "DEWALT",
+        "title": "20V MAX Battery and Dewalt Battery Charger Combo XR POWERPACK™ 4Ah, LED Charge Indicator (DCB2104C)",
+        "link": "https://www.amazon.com/DEWALT-Battery-POWERPACKTM-Indicator-DCB2104C/dp/B0FH7G1XSQ/ref=sr_1_41?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-41",
+        "link_clean": "https://www.amazon.com/DEWALT-Battery-POWERPACKTM-Indicator-DCB2104C/dp/B0FH7G1XSQ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FH7G1XSQ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71s-PEiJNnL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 33,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$120.00",
+        "extracted_price": 120,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "more_buying_choices": "$105.00 (9+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FH7G1XSQ/ref=sr_1_41_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-41",
+        "purchase_options": [
+          {
+            "primary_price": "$120.00",
+            "extracted_primary_price": 120,
+            "more_buying_choices": "$105.00 (9+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0FH7G1XSQ/ref=sr_1_41_olp?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-41"
+          }
+        ]
+      },
+      {
+        "position": 42,
+        "asin": "B0DHRR2Q9V",
+        "title": "2Packs 3.0Ah DCB120 Replacement for Dewalt 12V Battery DCB121 DCB122 DCB123",
+        "link": "https://www.amazon.com/DCB120-Replacement-Battery-Compatible-Lithium/dp/B0DHRR2Q9V/ref=sr_1_42?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-42",
+        "link_clean": "https://www.amazon.com/DCB120-Replacement-Battery-Compatible-Lithium/dp/B0DHRR2Q9V/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DHRR2Q9V&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61yvZruLjrL._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 78,
+        "price": "$30.99",
+        "extracted_price": 30.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$30.99",
+            "extracted_primary_price": 30.99
+          }
+        ]
+      },
+      {
+        "position": 43,
+        "asin": "B0052MIMQU",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/DEWALT-Li-Ion-Premium-Battery-DCB200/dp/B0052MIMQU/ref=sr_1_43_so_BATTERY?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-43",
+        "brand": "DEWALT",
+        "title": "3.0 Ah 20V Li-Ion Premium Battery (DCB200)",
+        "link": "https://www.amazon.com/DEWALT-Li-Ion-Premium-Battery-DCB200/dp/B0052MIMQU/ref=sr_1_43?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-43",
+        "link_clean": "https://www.amazon.com/DEWALT-Li-Ion-Premium-Battery-DCB200/dp/B0052MIMQU/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0052MIMQU&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61hSpLQKG3L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 442,
+        "delivery": [
+          "Currently unavailable."
+        ],
+        "stock": "Currently unavailable.",
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 44,
+        "asin": "B0HD7FBGF7",
+        "brand": "SANIU",
+        "title": "8.0Ah Replacement for Dewalt 20V Battery Compatible with Dewalt DCB208 DCB207 DCB206 DCB204 DCB201 DCB203 DCB180 2Packs",
+        "link": "https://www.amazon.com/SANIU-Replacement-Dewalt-Battery-Compatible/dp/B0HD7FBGF7/ref=sr_1_44?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-44",
+        "link_clean": "https://www.amazon.com/SANIU-Replacement-Dewalt-Battery-Compatible/dp/B0HD7FBGF7/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HD7FBGF7&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/7142xQYLN+L._AC_UL320_.jpg",
+        "rating": 4.6,
+        "reviews": 27,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$44.99",
+        "extracted_price": 44.99,
+        "price_unit": "$22.50/count",
+        "extracted_price_unit": 22.5,
+        "save_with_coupon": "You pay $40.49 with coupon",
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$44.99",
+            "extracted_primary_price": 44.99
+          }
+        ]
+      },
+      {
+        "position": 45,
+        "asin": "B0H7VPVWZR",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/12000mAh-Replacement-Battery-Compatible-Cordless/dp/B0H7VPVWZR/ref=sr_1_45_so_BATTERY_CHARGER?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-45",
+        "title": "2Pack 12000mAh Replacement for Dewalt 20V Max Battery and Charger DCB107",
+        "link": "https://www.amazon.com/12000mAh-Replacement-Battery-Compatible-Cordless/dp/B0H7VPVWZR/ref=sr_1_45?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-45",
+        "link_clean": "https://www.amazon.com/12000mAh-Replacement-Battery-Compatible-Cordless/dp/B0H7VPVWZR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0H7VPVWZR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71hz8bGcdzL._AC_UL320_.jpg",
+        "rating": 3.7,
+        "reviews": 5,
+        "delivery": [
+          "Currently unavailable."
+        ],
+        "stock": "Currently unavailable.",
+        "purchase_options": [
+          {
+            "no_featured_offers": true
+          }
+        ]
+      },
+      {
+        "position": 46,
+        "asin": "B0HDY8H493",
+        "title": "8.0Ah Replacement for DeWalt 20V Battery DCB200",
+        "link": "https://www.amazon.com/Replacement-DCB200-Compatible-Batteries-Cordless/dp/B0HDY8H493/ref=sr_1_46?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-46",
+        "link_clean": "https://www.amazon.com/Replacement-DCB200-Compatible-Batteries-Cordless/dp/B0HDY8H493/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HDY8H493&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71uOWptIMQL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 26,
+        "bought_last_month": "100+ bought in past month",
+        "price": "$44.99",
+        "extracted_price": 44.99,
+        "price_unit": "$22.50/count",
+        "extracted_price_unit": 22.5,
+        "offers": [
+          "Save 5% on 2 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 19",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$44.99",
+            "extracted_primary_price": 44.99
+          }
+        ]
+      },
+      {
+        "position": 47,
+        "asin": "B0CYNRT6MH",
+        "title": "DCB203-2 3Ah 2Pack 20V Battery Replace for Dewalt 20V MAX Battery 20Volt Lithium-ion Battery DCB200 DCB201 DCB205 DCV580 DCB180 Compatible with Dewalt 20V Cordless Tools",
+        "link": "https://www.amazon.com/Simple-Plus-Replacement-Compatible-Cordless/dp/B0CYNRT6MH/ref=sr_1_47?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-47",
+        "link_clean": "https://www.amazon.com/Simple-Plus-Replacement-Compatible-Cordless/dp/B0CYNRT6MH/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0CYNRT6MH&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71J4-+Keb0L._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 221,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$35.99",
+        "extracted_price": 35.99,
+        "price_unit": "$18.00/count",
+        "extracted_price_unit": 18,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$35.99",
+            "extracted_primary_price": 35.99
+          }
+        ]
+      },
+      {
+        "position": 48,
+        "asin": "B0BHX64SSB",
+        "title": "N412223 N234763 Replace for DeWALT DCF889 DCG412 DCS361 DCS372",
+        "link": "https://www.amazon.com/replace-N412223-N2347632202-DW059HB-DW059HK/dp/B0BHX64SSB/ref=sr_1_48?keywords=DEWALT+DCB346-3&qid=1795001632&sr=8-48",
+        "link_clean": "https://www.amazon.com/replace-N412223-N2347632202-DW059HB-DW059HK/dp/B0BHX64SSB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BHX64SSB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71qiF8FOikL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 45,
+        "price": "$21.58",
+        "extracted_price": 21.58,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 20",
+          "Or Non-members get FREE delivery Mon, Nov 23 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 17 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$21.58",
+            "extracted_primary_price": 21.58
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "position": 1,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 2,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      }
+    ],
+    "filters": {
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249149011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_76%3A1249149011&dc&qid=1795001632&rnid=1249147011&ref=sr_nr_p_76_1&ds=v1%3AbPriBDbMIO%2B5%2Bd17cS1Za%2Fnwcx9tFzSjir7Wet9nomk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_76%3A1249149011"
+        }
+      ],
+      "delivery_day": [
+        {
+          "position": 1,
+          "name": "Get It Today",
+          "rh": "p_90:8308920011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_90%3A8308920011&dc&qid=1795001632&rnid=8308919011&ref=sr_nr_p_90_1&ds=v1%3Ayt8ImrTuA1lBxk3LQQx7A9f4AEJZ4HW9H%2FXsPmJzYek",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_90%3A8308920011"
+        },
+        {
+          "position": 2,
+          "name": "Get It by Tomorrow",
+          "rh": "p_90:8308921011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_90%3A8308921011&dc&qid=1795001632&rnid=8308919011&ref=sr_nr_p_90_2&ds=v1%3ATtXyoqzyGdaI%2F5bd0OSy2DNL4dVHAuWBieOUeQUoneg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_90%3A8308921011"
+        }
+      ],
+      "price": [
+        {
+          "position": 1,
+          "name": "All Discounts",
+          "rh": "p_n_deal_type:23566065011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_deal_type%3A23566065011&dc&qid=1795001632&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3A24L3pUD9TCqEuHrDdWvuctq8PfRKjyxZpMLmNfHKmks",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_deal_type%3A23566065011"
+        },
+        {
+          "position": 2,
+          "name": "Up to $35",
+          "rh": "p_36:dynamic-picker-0",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_36%3A-3500&dc&qid=1795001632&rnid=386636011&ref=sr_nr_p_36_1&ds=v1%3AhAcRxBXSgQ%2FQInLQPdapAyHgdVh%2FrcmBwohiLiwxRxE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_36%3A-3500"
+        },
+        {
+          "position": 3,
+          "name": "$35 to $50",
+          "rh": "p_36:dynamic-picker-1",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_36%3A3500-5000&dc&qid=1795001632&rnid=386636011&ref=sr_nr_p_36_2&ds=v1%3AHYXumYYoUGw0bDeMBkre0Fu8rjkReeWSCioTGVQVXCY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_36%3A3500-5000"
+        },
+        {
+          "position": 4,
+          "name": "$50 & above",
+          "rh": "p_36:dynamic-picker-2",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_36%3A5000-&dc&qid=1795001632&rnid=386636011&ref=sr_nr_p_36_3&ds=v1%3Al%2FWBCMKlxBELGMLZG3slLMg%2BJXnfA6mEQrjq85KNWSk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_36%3A5000-"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "DEWALT",
+          "rh": "p_123:195991",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_123%3A195991&dc&qid=1795001632&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3AqO3jvkVxZYRHNWgjFQCUDujYFKtXG%2FUE74LEYoY8yY4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_123%3A195991"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_condition-type%3A6358196011&dc&qid=1795001632&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3A2NWFBUOeqrKJhi3%2B5yuATuxN%2BzKj%2B65DN%2FKDRjfNef8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_condition-type%3A6358196011"
+        },
+        {
+          "position": 2,
+          "name": "Used",
+          "rh": "p_n_condition-type:6358198011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_condition-type%3A6358198011&dc&qid=1795001632&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3AstkLexLvKjvx%2BiIvnsffBgFqhBj3mIGysJJgrocs49A",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_condition-type%3A6358198011"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248903011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_72%3A1248903011&dc&qid=1795001632&rnid=1248901011&ref=sr_nr_p_72_1&ds=v1%3AHhWNaDsK0sTTkgTkNUGVONLe8Mb%2BCx3Af9G%2F0eeaWAQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_72%3A1248903011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "Corner Suite",
+          "rh": "p_6:A2W7XA3NFY1GCV",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_6%3AA2W7XA3NFY1GCV&dc&qid=1795001632&rnid=2661622011&ref=sr_nr_p_6_1&ds=v1%3A59XK5unExgJR5p%2FiF01Va0OHJmY9gICIReqV2%2BVyL0M",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_6%3AA2W7XA3NFY1GCV"
+        },
+        {
+          "position": 2,
+          "name": "Progress Matters",
+          "rh": "p_6:A2AV30PH7FEPU3",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_6%3AA2AV30PH7FEPU3&dc&qid=1795001632&rnid=2661622011&ref=sr_nr_p_6_2&ds=v1%3Ayp%2BI4dbfasiwI4UuEUmbhsDfYEW0q3yzko1VElRRi84",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_6%3AA2AV30PH7FEPU3"
+        },
+        {
+          "position": 3,
+          "name": "The Factory Depot",
+          "rh": "p_6:A29PHU0KPCGV8S",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_6%3AA29PHU0KPCGV8S&dc&qid=1795001632&rnid=2661622011&ref=sr_nr_p_6_3&ds=v1%3AjCDW0gaQiIcyf0f8A1%2FsCEn%2BrE0YmoR%2B%2B7jgZ%2B4uDlM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_6%3AA29PHU0KPCGV8S"
+        },
+        {
+          "position": 4,
+          "name": "Hevelle LLC",
+          "rh": "p_6:A2Y64ATJCECFJD",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_6%3AA2Y64ATJCECFJD&dc&qid=1795001632&rnid=2661622011&ref=sr_nr_p_6_4&ds=v1%3ACiK1mk6TuMYWxQPwQk9mIfyr0iF5aE2bvJQowJJhGg0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_6%3AA2Y64ATJCECFJD"
+        },
+        {
+          "position": 5,
+          "name": "Rancho Supply",
+          "rh": "p_6:A1C9KMZOAZ6RIY",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_6%3AA1C9KMZOAZ6RIY&dc&qid=1795001632&rnid=2661622011&ref=sr_nr_p_6_5&ds=v1%3AAsz54dCEissMm5KtuOHqPHuuwqDZI3I%2BTy489TSnQvY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_6%3AA1C9KMZOAZ6RIY"
+        },
+        {
+          "position": 6,
+          "name": "Swift Solutions US",
+          "rh": "p_6:A274TGWGEZIJ8Y",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_6%3AA274TGWGEZIJ8Y&dc&qid=1795001632&rnid=2661622011&ref=sr_nr_p_6_6&ds=v1%3A8aHGA%2FY6zzF8gKpeOoTwRSxjIamZPKcANqHLREtSE2I",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_6%3AA274TGWGEZIJ8Y"
+        },
+        {
+          "position": 7,
+          "name": "ArcianCo",
+          "rh": "p_6:A1JJ4WCS8TVKMF",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_6%3AA1JJ4WCS8TVKMF&dc&qid=1795001632&rnid=2661622011&ref=sr_nr_p_6_7&ds=v1%3AyF1ktwfd%2FNntQbRZTzhZZrHGW5h%2FtfVId8it0FqsOHg",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_6%3AA1JJ4WCS8TVKMF"
+        }
+      ],
+      "color": [
+        {
+          "position": 1,
+          "name": "Multi",
+          "image": "https://m.media-amazon.com/images/G/01/nav2/images/gui/clothingcolorsprite._CB437558320_.png",
+          "rh": "p_n_g-1001308742111:2972990011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-1001308742111%3A2972990011&dc&qid=1795001632&rnid=2972980011&ref=sr_nr_p_n_g-1001308742111_1&ds=v1%3AaLNElpSYGEGUbr3kZuQnt9k2lKA%2BdExx08kz8yVsf8g",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-1001308742111%3A2972990011"
+        }
+      ],
+      "premium_brands": [
+        {
+          "position": 1,
+          "name": "Premium Brands",
+          "rh": "p_n_g-101015887018111:204376014011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-101015887018111%3A204376014011&dc&qid=1795001632&rnid=204376013011&ref=sr_nr_p_n_g-101015887018111_1&ds=v1%3AmPpUn8d%2FBIsgBW2CJQWwdGND89ahkk8azbWcQFxnNUk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-101015887018111%3A204376014011"
+        }
+      ],
+      "voltage": [
+        {
+          "position": 1,
+          "name": "12 V",
+          "rh": "p_n_g-1004214698091:10467361011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-1004214698091%3A10467361011&dc&qid=1795001632&rnid=10467359011&ref=sr_nr_p_n_g-1004214698091_1&ds=v1%3AyiCZBvsOcbJZHWNuiDlTRtDnxBJhpz5x0BinIpQng5U",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-1004214698091%3A10467361011"
+        },
+        {
+          "position": 2,
+          "name": "20 V",
+          "rh": "p_n_g-1004214698091:23568368011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-1004214698091%3A23568368011&dc&qid=1795001632&rnid=10467359011&ref=sr_nr_p_n_g-1004214698091_2&ds=v1%3AaaJ0WmJK5JYqUEqhYq3h0WVo8NUCqVvCUqBzXjDWswk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-1004214698091%3A23568368011"
+        }
+      ],
+      "power_source": [
+        {
+          "position": 1,
+          "name": "Battery",
+          "rh": "p_n_g-1001549225111:492226011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-1001549225111%3A492226011&dc&qid=1795001632&rnid=492225011&ref=sr_nr_p_n_g-1001549225111_1&ds=v1%3AymM%2B2zH8kRo9scR%2B4MuxU5TMk8BXuz%2FAny9B7HTMkSA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-1001549225111%3A492226011"
+        },
+        {
+          "position": 2,
+          "name": "Corded Electric",
+          "rh": "p_n_g-1001549225111:492227011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-1001549225111%3A492227011&dc&qid=1795001632&rnid=492225011&ref=sr_nr_p_n_g-1001549225111_2&ds=v1%3AVKdMHDY8JDby2k9dFZAMvj5Nkho7Qbf6nJtzRkROxnc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-1001549225111%3A492227011"
+        }
+      ],
+      "reusability": [
+        {
+          "position": 1,
+          "name": "Rechargeable",
+          "rh": "p_n_g-1003247105111:23876358011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-1003247105111%3A23876358011&dc&qid=1795001632&rnid=23876347011&ref=sr_nr_p_n_g-1003247105111_1&ds=v1%3AKEcY4uoDN4MdmADrP5XT5jKngiyRBNKpkTaVmHSwrrk",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-1003247105111%3A23876358011"
+        }
+      ],
+      "quantity": [
+        {
+          "position": 1,
+          "name": "Up to 3 Batteries",
+          "rh": "p_n_g-1002806120111:23555310011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-1002806120111%3A23555310011&dc&qid=1795001632&rnid=23555274011&ref=sr_nr_p_n_g-1002806120111_1&ds=v1%3AHxyoz6sf0USZeaQSkuV0L%2BrrMYVoduMVHq2b8b76xzU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-1002806120111%3A23555310011"
+        }
+      ],
+      "battery_cell_composition": [
+        {
+          "position": 1,
+          "name": "Lithium Ion",
+          "rh": "p_n_g-101015850560111:204067613011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-101015850560111%3A204067613011&dc&qid=1795001632&rnid=204067512011&ref=sr_nr_p_n_g-101015850560111_1&ds=v1%3AivgqeMWRTnOQEeOlT6UkPg9lRqBasfcompXMbOe%2BTFA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-101015850560111%3A204067613011"
+        }
+      ],
+      "subscribe_save": [
+        {
+          "position": 1,
+          "name": "Subscribe & Save Eligible",
+          "rh": "p_n_is_sns_available:2617006011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_is_sns_available%3A2617006011&dc&qid=1795001632&rnid=2617005011&ref=sr_nr_p_n_is_sns_available_1&ds=v1%3Ax6qt6rG6YThGF%2F79E32PapfTl%2FoTGL7sF2e3Fd3lsLM",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_is_sns_available%3A2617006011"
+        }
+      ],
+      "battery_capacity": [
+        {
+          "position": 1,
+          "name": "5,210 mAh & above",
+          "rh": "p_n_g-101013567651111:64613659011",
+          "link": "https://www.amazon.com/s?k=DEWALT+DCB346-3&rh=p_n_g-101013567651111%3A64613659011&dc&qid=1795001632&rnid=64613658011&ref=sr_nr_p_n_g-101013567651111_1&ds=v1%3AYnJqqxwQljAzCzsSsUVdM%2Bw975J3AwXBwnMPOWx9BaU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&rh=p_n_g-101013567651111%3A64613659011"
+        }
+      ]
+    },
+    "serpapi_pagination": {
+      "current": 1,
+      "next": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=DEWALT+DCB346-3&page=2"
+    }
+  }
+}

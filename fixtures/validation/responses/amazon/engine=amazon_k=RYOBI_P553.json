@@ -1,0 +1,1715 @@
+{
+  "key": "amazon_domain=amazon.com&engine=amazon&k=RYOBI P553",
+  "at": 1794418325135,
+  "data": {
+    "search_metadata": {
+      "id": "6af4a69335db2be9d1fe4882",
+      "status": "Success",
+      "json_endpoint": "https://serpapi.com/searches/jWcJKZJRYbmrzJDltRk5KutTf-3gs0hEnU8WHBzT6og/6af4a69335db2be9d1fe4882.json",
+      "markdown_endpoint": "https://serpapi.com/searches/jWcJKZJRYbmrzJDltRk5KutTf-3gs0hEnU8WHBzT6og/6af4a69335db2be9d1fe4882.md",
+      "created_at": "2026-11-11 17:32:03 UTC",
+      "processed_at": "2026-11-11 17:32:03 UTC",
+      "amazon_url": "https://www.amazon.com/s?k=RYOBI+P553",
+      "raw_html_file": "https://serpapi.com/searches/jWcJKZJRYbmrzJDltRk5KutTf-3gs0hEnU8WHBzT6og/6af4a69335db2be9d1fe4882.html",
+      "total_time_taken": 1.17
+    },
+    "search_parameters": {
+      "engine": "amazon",
+      "k": "RYOBI P553",
+      "amazon_domain": "amazon.com",
+      "device": "desktop"
+    },
+    "search_information": {
+      "total_results": 115,
+      "query_displayed": "RYOBI P553",
+      "store": "gateway",
+      "page": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "asin": "B081LNF6VF",
+        "title": "ONEAND 18V Cordless 7-1/4 in. Compound Miter Saw Tool ONLY",
+        "link": "https://www.amazon.com/ONEAND-Cordless-Compound-Miter-Tool/dp/B081LNF6VF/ref=sr_1_1?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-1",
+        "link_clean": "https://www.amazon.com/ONEAND-Cordless-Compound-Miter-Tool/dp/B081LNF6VF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B081LNF6VF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41V8oMuf5LL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 418,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$165.00",
+        "extracted_price": 165,
+        "delivery": [
+          "FREE delivery Wed, Nov 18",
+          "Or fastest delivery Mon, Nov 16"
+        ],
+        "stock": "Only 1 left in stock - order soon.",
+        "more_buying_choices": "$139.99 (12+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B081LNF6VF/ref=sr_1_1_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-1",
+        "purchase_options": [
+          {
+            "primary_price": "$165.00",
+            "extracted_primary_price": 165,
+            "more_buying_choices": "$139.99 (12+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B081LNF6VF/ref=sr_1_1_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-1"
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "asin": "B09SNK2SBL",
+        "brand": "RYOBI",
+        "title": "ONE+ 18V Cordless 7-1/4 in. Sliding Compound Miter Saw",
+        "link": "https://www.amazon.com/RYOBI-Cordless-Sliding-Compound-Miter/dp/B09SNK2SBL/ref=sr_1_2?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-2",
+        "link_clean": "https://www.amazon.com/RYOBI-Cordless-Sliding-Compound-Miter/dp/B09SNK2SBL/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09SNK2SBL&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61rE0aaz+nL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 92,
+        "price": "$238.99",
+        "extracted_price": 238.99,
+        "delivery": [
+          "FREE delivery Wed, Nov 18"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$238.99",
+            "extracted_primary_price": 238.99
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "asin": "B09J44NQPG",
+        "brand": "RYOBI",
+        "title": "ONEAND 18V Cordless 3-3/8 in. Multi-Material Plunge Saw Tool ONLY P555",
+        "link": "https://www.amazon.com/18V-ONE-3-3-Multi-Material-Plunge/dp/B09J44NQPG/ref=sr_1_3?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-3",
+        "link_clean": "https://www.amazon.com/18V-ONE-3-3-Multi-Material-Plunge/dp/B09J44NQPG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09J44NQPG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/412yBw8Pm+L._AC_UL320_.jpg",
+        "rating": 1,
+        "reviews": 1,
+        "price": "$94.99",
+        "extracted_price": 94.99,
+        "delivery": [
+          "FREE delivery Wed, Nov 18",
+          "Or fastest delivery Nov 13 - 16"
+        ],
+        "stock": "Only 14 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$94.99",
+            "extracted_primary_price": 94.99
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "asin": "B00KZ6Z4RS",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/Ryobi-P523-Lithium-Cordless-Included/dp/B00KZ6Z4RS/ref=sr_1_4_so_SAW?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-4",
+        "brand": "RYOBI",
+        "title": "One+ P523 18V Lithium Ion Cordless Orbital T Shank 3,000 SPM Jigsaw (Battery Not Included, Power Tool and T Shank Wood Cutting Blade Only)",
+        "link": "https://www.amazon.com/Ryobi-P523-Lithium-Cordless-Included/dp/B00KZ6Z4RS/ref=sr_1_4?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-4",
+        "link_clean": "https://www.amazon.com/Ryobi-P523-Lithium-Cordless-Included/dp/B00KZ6Z4RS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00KZ6Z4RS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/81GmLClVqxL._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 294,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$95.07 (3 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KZ6Z4RS/ref=sr_1_4_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-4",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$95.07 (3 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00KZ6Z4RS/ref=sr_1_4_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-4"
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "asin": "B08TGSJH2C",
+        "title": "OEM 089240027716 Replacement for Ryobi Miter Saw Lower Guard TS1144 P553",
+        "link": "https://www.amazon.com/089240027716-Replacement-Ryobi-Lower-Guard/dp/B08TGSJH2C/ref=sr_1_5?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-5",
+        "link_clean": "https://www.amazon.com/089240027716-Replacement-Ryobi-Lower-Guard/dp/B08TGSJH2C/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08TGSJH2C&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71xO2lA3gbL._AC_UL320_.jpg",
+        "price": "$32.09",
+        "extracted_price": 32.09,
+        "delivery": [
+          "FREE delivery Thu, Nov 19"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$32.09",
+            "extracted_primary_price": 32.09
+          }
+        ]
+      },
+      {
+        "position": 6,
+        "asin": "B0GY3L2LFP",
+        "title": "89240034007 Miter Saw Blade Screw P553 PBT01 TS1144 TSS702 for Ryobi",
+        "link": "https://www.amazon.com/89240034007-Miter-Blade-TS1144-TSS702/dp/B0GY3L2LFP/ref=sr_1_6?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-6",
+        "link_clean": "https://www.amazon.com/89240034007-Miter-Blade-TS1144-TSS702/dp/B0GY3L2LFP/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GY3L2LFP&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51CuJLjbE7L._AC_UL320_.jpg",
+        "price": "$24.31",
+        "extracted_price": 24.31,
+        "delivery": [
+          "FREE delivery Nov 20 - 27",
+          "Or fastest delivery Tue, Nov 24"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$24.31",
+            "extracted_primary_price": 24.31
+          }
+        ]
+      },
+      {
+        "position": 7,
+        "asin": "B00F9LEJDY",
+        "badges": [
+          "Overall Pick"
+        ],
+        "brand": "RYOBI",
+        "title": "P504G One+ 18 V Lithium Ion Cordless 5 1/2 Inch Circular Saw w/ Carbide Tip Blade (Battery Not Included, Power Tool Only)",
+        "link": "https://www.amazon.com/Ryobi-P504G-Cordless-Circular-Included/dp/B00F9LEJDY/ref=sr_1_7?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-7",
+        "link_clean": "https://www.amazon.com/Ryobi-P504G-Cordless-Circular-Included/dp/B00F9LEJDY/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00F9LEJDY&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/91-vyc4Zt4L._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 159,
+        "price": "$65.00",
+        "extracted_price": 65,
+        "delivery": [
+          "FREE delivery Nov 18 - 24",
+          "Or fastest delivery Fri, Nov 13"
+        ],
+        "stock": "Only 20 left in stock - order soon.",
+        "more_buying_choices": "$57.81 (2 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00F9LEJDY/ref=sr_1_7_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-7",
+        "purchase_options": [
+          {
+            "primary_price": "$65.00",
+            "extracted_primary_price": 65,
+            "more_buying_choices": "$57.81 (2 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B00F9LEJDY/ref=sr_1_7_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-7"
+          }
+        ]
+      },
+      {
+        "position": 8,
+        "asin": "B0HP6GFW3H",
+        "title": "89240034007 Miter Saw Blade Screw for Ryobi P553, PBT01, TS1144, TSS702",
+        "link": "https://www.amazon.com/89240034007-Miter-TS1144-TSS702-Replacement/dp/B0HP6GFW3H/ref=sr_1_8?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-8",
+        "link_clean": "https://www.amazon.com/89240034007-Miter-TS1144-TSS702-Replacement/dp/B0HP6GFW3H/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HP6GFW3H&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/516HQ2A+EdL._AC_UL320_.jpg",
+        "price": "$31.99",
+        "extracted_price": 31.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 30"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$31.99",
+            "extracted_primary_price": 31.99
+          }
+        ]
+      },
+      {
+        "position": 9,
+        "asin": "B0HL81J9GN",
+        "title": "89240034007 Miter Saw Blade Screw for Ryobi P553, PBT01, TS1144, TSS702",
+        "link": "https://www.amazon.com/89240034007-TS1144-replaces-restore-mounting/dp/B0HL81J9GN/ref=sr_1_9?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-9",
+        "link_clean": "https://www.amazon.com/89240034007-TS1144-replaces-restore-mounting/dp/B0HL81J9GN/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HL81J9GN&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51GlsxKxtbL._AC_UL320_.jpg",
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 20 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99
+          }
+        ]
+      },
+      {
+        "position": 10,
+        "asin": "B0HN1FZ74T",
+        "title": "89240034007 Miter Saw Blade Screw for New Ryobi P553 PBT01 TS1144 TSS702",
+        "link": "https://www.amazon.com/89240034007-Miter-Blade-TS1144-TSS702/dp/B0HN1FZ74T/ref=sr_1_10?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-10",
+        "link_clean": "https://www.amazon.com/89240034007-Miter-Blade-TS1144-TSS702/dp/B0HN1FZ74T/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HN1FZ74T&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51U8Z0UUYCL._AC_UL320_.jpg",
+        "price": "$29.90",
+        "extracted_price": 29.9,
+        "delivery": [
+          "FREE delivery Mon, Nov 30"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$29.90",
+            "extracted_primary_price": 29.9
+          }
+        ]
+      },
+      {
+        "position": 11,
+        "asin": "B0GHPG72HY",
+        "sponsored": true,
+        "title": "89240027010 Miter Saw Inlet Dust Chute - Compatible with Ryobi P553 TS1144",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTE0NzEzNTExODIwMjo6MDo6&url=%2F89240027010-Miter-Inlet-Dust-Chute%2Fdp%2FB0GHPG72HY%2Fref%3Dsr_1_11_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-11-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0GHPG72HY/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GHPG72HY&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51dRvq-GsPL._AC_UL320_.jpg",
+        "price": "$22.35",
+        "extracted_price": 22.35,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$22.35",
+            "extracted_primary_price": 22.35
+          }
+        ]
+      },
+      {
+        "position": 12,
+        "asin": "B0F297GF5T",
+        "title": "for Ryobi 89240027010 r Saw Inlet Chute P553 TS1144",
+        "link": "https://www.amazon.com/BEAR-FLAG-Ryobi-89240027010-TS1144/dp/B0F297GF5T/ref=sr_1_12?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-12",
+        "link_clean": "https://www.amazon.com/BEAR-FLAG-Ryobi-89240027010-TS1144/dp/B0F297GF5T/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F297GF5T&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61keI2C9pFL._AC_UL320_.jpg",
+        "price": "$21.32",
+        "extracted_price": 21.32,
+        "delivery": [
+          "$10 delivery Wed, Nov 25"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$21.32",
+            "extracted_primary_price": 21.32
+          }
+        ]
+      },
+      {
+        "position": 13,
+        "asin": "B0HN4JHCM1",
+        "title": "for Ryobi 89240034007 Miter Saw Blade Screw P553 PBT01 TS1144 TSS702",
+        "link": "https://www.amazon.com/Ryobi-89240034007-Miter-TS1144-TSS702/dp/B0HN4JHCM1/ref=sr_1_13?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-13",
+        "link_clean": "https://www.amazon.com/Ryobi-89240034007-Miter-TS1144-TSS702/dp/B0HN4JHCM1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HN4JHCM1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/21J8r0KSu5L._AC_UL320_.jpg",
+        "price": "$25.90",
+        "extracted_price": 25.9,
+        "delivery": [
+          "FREE delivery Nov 23 - Dec 3",
+          "Or fastest delivery Nov 17 - 19"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$25.90",
+            "extracted_primary_price": 25.9
+          }
+        ]
+      },
+      {
+        "position": 14,
+        "asin": "B0HHR455HW",
+        "title": "Miter Saw Cover for RYOBI P553 2020–2026, Black Oxford Cloth Cover with Full Coverage Design, Adjustable Bottom Drawstring, Top Carry Handle, Foldable Fit",
+        "link": "https://www.amazon.com/DEQNBNVF-2020-2026-Coverage-Adjustable-Drawstring/dp/B0HHR455HW/ref=sr_1_14?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-14",
+        "link_clean": "https://www.amazon.com/DEQNBNVF-2020-2026-Coverage-Adjustable-Drawstring/dp/B0HHR455HW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HHR455HW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61VMicNCP8L._AC_UL320_.jpg",
+        "price": "$52.99",
+        "extracted_price": 52.99,
+        "delivery": [
+          "FREE delivery Nov 24 - Dec 4"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$52.99",
+            "extracted_primary_price": 52.99
+          }
+        ]
+      },
+      {
+        "position": 15,
+        "asin": "B0HDY4HMRG",
+        "title": "Miter Saw Cover for Ryobi P553 2018-Present, Oxford Fabric Dust Protection with Bottom Drawstring, Sliding Compound Saw Storage Cover",
+        "link": "https://www.amazon.com/nhuycka-2018-Present-Protection-Drawstring-Compound/dp/B0HDY4HMRG/ref=sr_1_15?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-15",
+        "link_clean": "https://www.amazon.com/nhuycka-2018-Present-Protection-Drawstring-Compound/dp/B0HDY4HMRG/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HDY4HMRG&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61UErTsNMQL._AC_UL320_.jpg",
+        "price": "$52.99",
+        "extracted_price": 52.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 30"
+        ],
+        "stock": "Only 19 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$52.99",
+            "extracted_primary_price": 52.99
+          }
+        ]
+      },
+      {
+        "position": 16,
+        "asin": "B0HCJR59V2",
+        "sponsored": true,
+        "title": "P553 Blade Guard Assembly For Ryobi 7-1/4 Inch Miter Saw",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTQ4ODIxMTA4NDUwMjo6MDo6&url=%2FP553-Blade-Guard-Assembly-Ryobi%2Fdp%2FB0HCJR59V2%2Fref%3Dsr_1_16_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-16-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HCJR59V2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HCJR59V2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51tZdymUdzL._AC_UL320_.jpg",
+        "price": "$52.99",
+        "extracted_price": 52.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 7 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$52.99",
+            "extracted_primary_price": 52.99
+          }
+        ]
+      },
+      {
+        "position": 17,
+        "asin": "B0HFVQXF27",
+        "sponsored": true,
+        "title": "089240027716 Miter Saw Lower Guard Compatible for Ryobi Miter Saw",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTQ3NDQ4MDMxNDAwMjo6MDo6&url=%2F089240027716-Miter-Lower-Guard-Compatible%2Fdp%2FB0HFVQXF27%2Fref%3Dsr_1_17_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-17-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HFVQXF27/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HFVQXF27&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61Xkabn+lSL._AC_UL320_.jpg",
+        "price": "$83.57",
+        "extracted_price": 83.57,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$83.57",
+            "extracted_primary_price": 83.57
+          }
+        ]
+      },
+      {
+        "position": 18,
+        "asin": "B0HL81J9GN",
+        "sponsored": true,
+        "title": "89240034007 Miter Saw Blade Screw for Ryobi P553, PBT01, TS1144, TSS702",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTU2MDgyNTg1NzYwMjo6MDo6&url=%2F89240034007-TS1144-replaces-restore-mounting%2Fdp%2FB0HL81J9GN%2Fref%3Dsr_1_18_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-18-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HL81J9GN/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HL81J9GN&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51GlsxKxtbL._AC_UL320_.jpg",
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 20 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99
+          }
+        ]
+      },
+      {
+        "position": 19,
+        "asin": "B0HCJ47J9M",
+        "sponsored": true,
+        "title": "P553 Work Clamp Fits Ryobi Miter Saw Replaces TS1144，Hold Down Clamp",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTQ4ODIxMTAyNjYwMjo6MDo6&url=%2FP553-Clamp-Ryobi-Replaces-TS1144%25EF%25BC%258CHold%2Fdp%2FB0HCJ47J9M%2Fref%3Dsr_1_19_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-19-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HCJ47J9M/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HCJ47J9M&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51dBm8mGlGL._AC_UL320_.jpg",
+        "price": "$45.99",
+        "extracted_price": 45.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$45.99",
+            "extracted_primary_price": 45.99
+          }
+        ]
+      },
+      {
+        "position": 20,
+        "asin": "B0F241Z1S2",
+        "title": "for Ryobi 89240034007 r Saw Blade Screw P553 PBT01 TS1144 TSS702",
+        "link": "https://www.amazon.com/Ryobi-89240034007-Blade-TS1144-TSS702/dp/B0F241Z1S2/ref=sr_1_20?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-20",
+        "link_clean": "https://www.amazon.com/Ryobi-89240034007-Blade-TS1144-TSS702/dp/B0F241Z1S2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F241Z1S2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51fa9yRgIdL._AC_UL320_.jpg",
+        "price": "$23.16",
+        "extracted_price": 23.16,
+        "delivery": [
+          "$10 delivery Wed, Nov 25"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$23.16",
+            "extracted_primary_price": 23.16
+          }
+        ]
+      },
+      {
+        "position": 21,
+        "asin": "B09SN6Y6TS",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/RYOBI-Cordless-Drill-Driver-P215BN/dp/B09SN6Y6TS/ref=sr_1_21_so_DRILL?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-21",
+        "brand": "RYOBI",
+        "title": "ONE+ 18V Cordless 1/2 in. Drill/Driver (Tool Only) P215BN",
+        "link": "https://www.amazon.com/RYOBI-Cordless-Drill-Driver-P215BN/dp/B09SN6Y6TS/ref=sr_1_21?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-21",
+        "link_clean": "https://www.amazon.com/RYOBI-Cordless-Drill-Driver-P215BN/dp/B09SN6Y6TS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09SN6Y6TS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51a7EtuY33L._AC_UL320_.jpg",
+        "rating": 4.7,
+        "reviews": 1800,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$63.67 (6 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09SN6Y6TS/ref=sr_1_21_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-21",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$63.67 (6 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09SN6Y6TS/ref=sr_1_21_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-21"
+          }
+        ]
+      },
+      {
+        "position": 22,
+        "asin": "B08TGP8MGR",
+        "brand": "RYOBI",
+        "title": "OEM 89240027010 Replacement Miter Saw Inlet Dust Chute P553 TS1144",
+        "link": "https://www.amazon.com/89240027010-Replacement-Ryobi-Miter-TS1144/dp/B08TGP8MGR/ref=sr_1_22?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-22",
+        "link_clean": "https://www.amazon.com/89240027010-Replacement-Ryobi-Miter-TS1144/dp/B08TGP8MGR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08TGP8MGR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71gg-TLQgcL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 27,
+        "price": "$11.33",
+        "extracted_price": 11.33,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 13",
+          "Or Non-members get FREE delivery Mon, Nov 16 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "more_buying_choices": "$10.77 (3+ used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08TGP8MGR/ref=sr_1_22_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-22",
+        "purchase_options": [
+          {
+            "primary_price": "$11.33",
+            "extracted_primary_price": 11.33,
+            "more_buying_choices": "$10.77 (3+ used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08TGP8MGR/ref=sr_1_22_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-22"
+          }
+        ]
+      },
+      {
+        "position": 23,
+        "asin": "B08TGW83LC",
+        "brand": "RYOBI",
+        "title": "OEM 089240026711 Replacement Miter Saw Bevel Lock Knob W/Washer P553 TS1144",
+        "link": "https://www.amazon.com/OEM-089240026711-AssY-Bevel-Knob/dp/B08TGW83LC/ref=sr_1_23?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-23",
+        "link_clean": "https://www.amazon.com/OEM-089240026711-AssY-Bevel-Knob/dp/B08TGW83LC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08TGW83LC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61arUmCKUqL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 4,
+        "price": "$13.98",
+        "extracted_price": 13.98,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 13",
+          "Or Non-members get FREE delivery Mon, Nov 16 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 17 left in stock - order soon.",
+        "more_buying_choices": "$12.58 (5 used & new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08TGW83LC/ref=sr_1_23_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-23",
+        "purchase_options": [
+          {
+            "primary_price": "$13.98",
+            "extracted_primary_price": 13.98,
+            "more_buying_choices": "$12.58 (5 used & new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08TGW83LC/ref=sr_1_23_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-23"
+          }
+        ]
+      },
+      {
+        "position": 24,
+        "asin": "B0HJNLH3LC",
+        "sponsored": true,
+        "title": "89240034007 Miter Saw Blade Screw for Ryobi P553, PBT01, TS1144, TSS702",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTU1NTkyNjI3NTEwMjo6MDo6&url=%2F89240034007-Miter-Blade-TS1144-TSS702%2Fdp%2FB0HJNLH3LC%2Fref%3Dsr_1_24_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-24-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HJNLH3LC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HJNLH3LC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51umbtPONZL._AC_UL320_.jpg",
+        "price": "$30.99",
+        "extracted_price": 30.99,
+        "delivery": [
+          "FREE delivery Mon, Nov 30",
+          "Or fastest delivery Nov 18 - 20"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$30.99",
+            "extracted_primary_price": 30.99
+          }
+        ]
+      },
+      {
+        "position": 25,
+        "asin": "B0F8TL3D4Z",
+        "sponsored": true,
+        "title": "P553 Miter Saw Dust Bag for Ryobi ﻿",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMDc3MjM5NjQwMzgwMjo6MDo6&url=%2FP553-Replacement-TS101L-TS1344L-TS1142L%2Fdp%2FB0F8TL3D4Z%2Fref%3Dsr_1_25_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-25-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0F8TL3D4Z/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F8TL3D4Z&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61I76JbHPyL._AC_UL320_.jpg",
+        "price": "$31.99",
+        "extracted_price": 31.99,
+        "delivery": [
+          "FREE delivery Nov 18 - 24",
+          "Or fastest delivery Fri, Nov 20"
+        ],
+        "stock": "Only 8 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$31.99",
+            "extracted_primary_price": 31.99
+          }
+        ]
+      },
+      {
+        "position": 26,
+        "asin": "B0HFPLY2FZ",
+        "sponsored": true,
+        "title": "089240027716 Miter Saw Lower Guard Compatible with Ryobi TS1144 P553",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTQ3NjY3MDQ1MDQwMjo6MDo6&url=%2F089240027716-Miter-Lower-Compatible-TS1144%2Fdp%2FB0HFPLY2FZ%2Fref%3Dsr_1_26_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-26-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HFPLY2FZ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HFPLY2FZ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61de35wiBfL._AC_UL320_.jpg",
+        "price": "$62.99",
+        "extracted_price": 62.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 27",
+          "Or fastest delivery Nov 17 - 19"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$62.99",
+            "extracted_primary_price": 62.99
+          }
+        ]
+      },
+      {
+        "position": 27,
+        "asin": "B0FT77Z3NF",
+        "sponsored": true,
+        "options": "See options",
+        "options_link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTUxNzM3MjU5MjAwMjo6MDo6&url=%2FExtbtfor-Circular-4000RPM-Equipped-Blades%25EF%25BC%258CMaximum%2Fdp%2FB0FT77Z3NF%2Fref%3Dsr_1_27_so_SAW%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-27-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "title": "4.8A Power Circular Saw Corded,4000RPM Laser Guide 45° Max Angle",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTUxNzM3MjU5MjAwMjo6MDo6&url=%2FExtbtfor-Circular-4000RPM-Equipped-Blades%25EF%25BC%258CMaximum%2Fdp%2FB0FT77Z3NF%2Fref%3Dsr_1_27_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-27-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0FT77Z3NF/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FT77Z3NF&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61oSsnaP6tL._AC_UL320_.jpg",
+        "rating": 4.5,
+        "reviews": 193,
+        "bought_last_month": "400+ bought in past month",
+        "price": "$46.99",
+        "extracted_price": 46.99,
+        "old_price": "$59.99",
+        "extracted_old_price": 59.99,
+        "offers": [
+          "Exclusive Prime price"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 12",
+          "Or Non-members get FREE delivery Mon, Nov 16"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$46.99",
+            "extracted_primary_price": 46.99,
+            "old_primary_price": "$59.99",
+            "extracted_old_primary_price": 59.99
+          }
+        ]
+      },
+      {
+        "position": 28,
+        "asin": "B08TG9VTGS",
+        "title": "OEM 89240034007 Replacement for Ryobi Miter Saw Blade Screw P553 PBT01 TS1144 TSS702",
+        "link": "https://www.amazon.com/89240034007-Replacement-Ryobi-TS1144-TSS702/dp/B08TG9VTGS/ref=sr_1_28?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-28",
+        "link_clean": "https://www.amazon.com/89240034007-Replacement-Ryobi-TS1144-TSS702/dp/B08TG9VTGS/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08TG9VTGS&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61fNTDnBi0L._AC_UL320_.jpg",
+        "rating": 4.1,
+        "reviews": 48,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$9.99",
+        "extracted_price": 9.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 13",
+          "Or Non-members get FREE delivery Mon, Nov 16 on $35 of items shipped by Amazon"
+        ],
+        "more_buying_choices": "$9.79 (5 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08TG9VTGS/ref=sr_1_28_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-28",
+        "purchase_options": [
+          {
+            "primary_price": "$9.99",
+            "extracted_primary_price": 9.99,
+            "more_buying_choices": "$9.79 (5 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B08TG9VTGS/ref=sr_1_28_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-28"
+          }
+        ]
+      },
+      {
+        "position": 29,
+        "asin": "B09Q1P9G9B",
+        "title": "Dust Bag for Ryobi Miter Saws with 1-1/2\" Dust Port, Fits Models P553, P552, TS100L, TS101L, TS1344L, TS1142L, TS1345L",
+        "link": "https://www.amazon.com/models-TS100L-TS1344L-TS1142L-TS1345L/dp/B09Q1P9G9B/ref=sr_1_29?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-29",
+        "link_clean": "https://www.amazon.com/models-TS100L-TS1344L-TS1142L-TS1345L/dp/B09Q1P9G9B/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09Q1P9G9B&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71tvE9vB6AL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 218,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$12.99",
+        "extracted_price": 12.99,
+        "delivery": [
+          "FREE delivery Wed, Nov 18"
+        ],
+        "more_buying_choices": "$12.95 (2 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09Q1P9G9B/ref=sr_1_29_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-29",
+        "purchase_options": [
+          {
+            "primary_price": "$12.99",
+            "extracted_primary_price": 12.99,
+            "more_buying_choices": "$12.95 (2 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B09Q1P9G9B/ref=sr_1_29_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-29"
+          }
+        ]
+      },
+      {
+        "position": 30,
+        "asin": "B0D3DZ7GW1",
+        "title": "Blade Guard for 7-1/4\"\" Miter Saw Fits Model P553 & TS1144, replacement for Ryobi OEM",
+        "link": "https://www.amazon.com/MAABKL-Blade-TS1144-replacement-OEM/dp/B0D3DZ7GW1/ref=sr_1_30?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-30",
+        "link_clean": "https://www.amazon.com/MAABKL-Blade-TS1144-replacement-OEM/dp/B0D3DZ7GW1/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0D3DZ7GW1&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51OtV3bT9NL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 2,
+        "price": "$55.95",
+        "extracted_price": 55.95,
+        "delivery": [
+          "FREE delivery Nov 16 - 18"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$55.95",
+            "extracted_primary_price": 55.95
+          }
+        ]
+      },
+      {
+        "position": 31,
+        "asin": "B0DFCNG16Y",
+        "title": "Blade Guard for RyobiOEM 7-1/4\" Miter Saw Fits Model P553 & TS1144",
+        "link": "https://www.amazon.com/Blade-Guard-RyobiOEM-Miter-TS1144/dp/B0DFCNG16Y/ref=sr_1_31?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-31",
+        "link_clean": "https://www.amazon.com/Blade-Guard-RyobiOEM-Miter-TS1144/dp/B0DFCNG16Y/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DFCNG16Y&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51jNhCWMeOL._AC_UL320_.jpg",
+        "price": "$39.99",
+        "extracted_price": 39.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$39.99",
+            "extracted_primary_price": 39.99
+          }
+        ]
+      },
+      {
+        "position": 32,
+        "asin": "B0HC39Y82V",
+        "sponsored": true,
+        "title": "89240027010 Miter Saw Inlet Dust Chut Compatible for Ryobi Miter Saw",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTY1NTMwOTkwNjAwMjo6MDo6&url=%2F89240027010-Compatible-Replacement-Models-TS1144%2Fdp%2FB0HC39Y82V%2Fref%3Dsr_1_32_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-32-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HC39Y82V/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HC39Y82V&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/516R8uXHgYL._AC_UL320_.jpg",
+        "price": "$36.57",
+        "extracted_price": 36.57,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$36.57",
+            "extracted_primary_price": 36.57
+          }
+        ]
+      },
+      {
+        "position": 33,
+        "asin": "B0HKJDDHRB",
+        "sponsored": true,
+        "title": "089240027717 Work Clamp Miter Saw For Ryobi Brand",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTU0ODM0Mzc0ODkwMjo6MDo6&url=%2F089240027717-Clamp-Miter-Ryobi-Brand%2Fdp%2FB0HKJDDHRB%2Fref%3Dsr_1_33_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-33-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B0HKJDDHRB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HKJDDHRB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/518BQKqS1SL._AC_UL320_.jpg",
+        "price": "$47.47",
+        "extracted_price": 47.47,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 3 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$47.47",
+            "extracted_primary_price": 47.47
+          }
+        ]
+      },
+      {
+        "position": 34,
+        "asin": "B08TGW83LC",
+        "sponsored": true,
+        "brand": "RYOBI",
+        "title": "OEM 089240026711 Replacement Miter Saw Bevel Lock Knob W/Washer P553 TS1144",
+        "link": "https://www.amazon.com/sspa/click?ie=UTF8&spc=MToyODY2NTAxOTIyMDc2MTYxOjE3OTQ0MTgzMjM6c3BfbXRmOjMwMTYzMDUzNTM3MzkwMjo6MDo6&url=%2FOEM-089240026711-AssY-Bevel-Knob%2Fdp%2FB08TGW83LC%2Fref%3Dsr_1_34_sspa%3Fdib%3DeyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI%26dib_tag%3Dse%26keywords%3DRYOBI%2BP553%26qid%3D1794418323%26sr%3D8-34-spons%26sp_csd%3Dd2lkZ2V0TmFtZT1zcF9tdGY%26psc%3D1",
+        "link_clean": "https://www.amazon.com/dp/B08TGW83LC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08TGW83LC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61arUmCKUqL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 4,
+        "price": "$13.98",
+        "extracted_price": 13.98,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 13",
+          "Or Non-members get FREE delivery Mon, Nov 16 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 17 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$13.98",
+            "extracted_primary_price": 13.98
+          }
+        ]
+      },
+      {
+        "position": 35,
+        "asin": "B0FXB4R6XD",
+        "title": "Replacement for Ryobi Blade Guard for 7-1/4\" Miter Saw Fits P553 & TS1144 OEM",
+        "link": "https://www.amazon.com/Replacement-Ryobi-Blade-TS1144-OEM/dp/B0FXB4R6XD/ref=sr_1_35?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-35",
+        "link_clean": "https://www.amazon.com/Replacement-Ryobi-Blade-TS1144-OEM/dp/B0FXB4R6XD/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FXB4R6XD&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51nRM405oIL._AC_UL320_.jpg",
+        "price": "$44.88",
+        "extracted_price": 44.88,
+        "delivery": [
+          "FREE delivery Mon, Nov 30",
+          "Or fastest delivery Nov 16 - 17"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$44.88",
+            "extracted_primary_price": 44.88
+          }
+        ]
+      },
+      {
+        "position": 36,
+        "asin": "B08TGMGJPK",
+        "title": "OEM 089240027099 Replacement for Ryobi Miter Saw Indicator Miter P553 TS1144",
+        "link": "https://www.amazon.com/Generic-089240027099-OEM-Indicator-Miter/dp/B08TGMGJPK/ref=sr_1_36?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-36",
+        "link_clean": "https://www.amazon.com/Generic-089240027099-OEM-Indicator-Miter/dp/B08TGMGJPK/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B08TGMGJPK&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51g-O51SDgL._AC_UL320_.jpg",
+        "rating": 3.7,
+        "reviews": 4,
+        "price": "$7.83",
+        "extracted_price": 7.83,
+        "delivery": [
+          "Join Prime to get FREE delivery Sat, Nov 14",
+          "Or Non-members get FREE delivery Mon, Nov 16 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$7.83",
+            "extracted_primary_price": 7.83
+          }
+        ]
+      },
+      {
+        "position": 37,
+        "asin": "B0GHPG72HY",
+        "title": "89240027010 Miter Saw Inlet Dust Chute - Compatible with Ryobi P553 TS1144",
+        "link": "https://www.amazon.com/89240027010-Miter-Inlet-Dust-Chute/dp/B0GHPG72HY/ref=sr_1_37?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-37",
+        "link_clean": "https://www.amazon.com/89240027010-Miter-Inlet-Dust-Chute/dp/B0GHPG72HY/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GHPG72HY&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51dRvq-GsPL._AC_UL320_.jpg",
+        "price": "$22.35",
+        "extracted_price": 22.35,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$22.35",
+            "extracted_primary_price": 22.35
+          }
+        ]
+      },
+      {
+        "position": 38,
+        "asin": "B0HCJR59V2",
+        "title": "P553 Blade Guard Assembly For Ryobi 7-1/4 Inch Miter Saw",
+        "link": "https://www.amazon.com/P553-Blade-Guard-Assembly-Ryobi/dp/B0HCJR59V2/ref=sr_1_38?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-38",
+        "link_clean": "https://www.amazon.com/P553-Blade-Guard-Assembly-Ryobi/dp/B0HCJR59V2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HCJR59V2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51tZdymUdzL._AC_UL320_.jpg",
+        "price": "$52.99",
+        "extracted_price": 52.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 7 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$52.99",
+            "extracted_primary_price": 52.99
+          }
+        ]
+      },
+      {
+        "position": 39,
+        "asin": "B0DXK73C59",
+        "title": "Replacement 89240027010 Miter Saw Inlet Dust Chute for Ryobi P553 TS1144",
+        "link": "https://www.amazon.com/Eopzol-Replacement-89240027010-Miter-TS1144/dp/B0DXK73C59/ref=sr_1_39?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-39",
+        "link_clean": "https://www.amazon.com/Eopzol-Replacement-89240027010-Miter-TS1144/dp/B0DXK73C59/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DXK73C59&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71gg-TLQgcL._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 1,
+        "price": "$24.99",
+        "extracted_price": 24.99,
+        "delivery": [
+          "FREE delivery Tue, Nov 24"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$24.99",
+            "extracted_primary_price": 24.99
+          }
+        ]
+      },
+      {
+        "position": 40,
+        "asin": "B0HDKCY9N2",
+        "title": "Replacement Miter Saw Inlet Dust Chute P553 TS1144 For Ryobi 89240027010",
+        "link": "https://www.amazon.com/Replacement-Miter-Inlet-TS1144-89240027010/dp/B0HDKCY9N2/ref=sr_1_40?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-40",
+        "link_clean": "https://www.amazon.com/Replacement-Miter-Inlet-TS1144-89240027010/dp/B0HDKCY9N2/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HDKCY9N2&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/31cMwA1hexL._AC_UL320_.jpg",
+        "price": "$29.54",
+        "extracted_price": 29.54,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$29.54",
+            "extracted_primary_price": 29.54
+          }
+        ]
+      },
+      {
+        "position": 41,
+        "asin": "B0FR8RZD1Q",
+        "title": "Abrasive Chop Saw, 2200W 3800RPM Steel Cutting Machine, Metal Cutting Saw with 14in Blade for Rebar, Angle Steel, Hollow Pipe Cutting",
+        "link": "https://www.amazon.com/Yumark-Abrasive-3800RPM-Cutting-Machine/dp/B0FR8RZD1Q/ref=sr_1_41?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-41",
+        "link_clean": "https://www.amazon.com/Yumark-Abrasive-3800RPM-Cutting-Machine/dp/B0FR8RZD1Q/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FR8RZD1Q&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61S3XAi2aHL._AC_UL320_.jpg",
+        "rating": 4.4,
+        "reviews": 50,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$109.99",
+        "extracted_price": 109.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Sat, Nov 14",
+          "Or Non-members get FREE delivery Mon, Nov 16"
+        ],
+        "stock": "Only 11 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$109.99",
+            "extracted_primary_price": 109.99
+          }
+        ]
+      },
+      {
+        "position": 42,
+        "asin": "B0BZG7CGJD",
+        "title": "089240027702 for Ryobi Miter Saw Dust Bag Fits P553 P552 TS100L TS101L TS1344L TS1142L TS1345L",
+        "link": "https://www.amazon.com/089240027702-TS100L-TS1344L-TS1142L-TS1345L/dp/B0BZG7CGJD/ref=sr_1_42?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-42",
+        "link_clean": "https://www.amazon.com/089240027702-TS100L-TS1344L-TS1142L-TS1345L/dp/B0BZG7CGJD/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BZG7CGJD&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/21Bzo2+UoyL._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 1,
+        "price": "$26.75",
+        "extracted_price": 26.75,
+        "delivery": [
+          "FREE delivery Thu, Nov 19"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$26.75",
+            "extracted_primary_price": 26.75
+          }
+        ]
+      },
+      {
+        "position": 43,
+        "asin": "B09LSHVNJC",
+        "title": "OEM Ryobi Dust Bag 089240027702 Fits P553 7-1/4\" 18V Cordless Miter Saw",
+        "link": "https://www.amazon.com/Ryobi-Dust-089240027702-Cordless-Miter/dp/B09LSHVNJC/ref=sr_1_43?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-43",
+        "link_clean": "https://www.amazon.com/Ryobi-Dust-089240027702-Cordless-Miter/dp/B09LSHVNJC/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B09LSHVNJC&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61-pkpBDkCL._AC_UL320_.jpg",
+        "rating": 3.3,
+        "reviews": 3,
+        "price": "$15.99",
+        "extracted_price": 15.99,
+        "delivery": [
+          "FREE delivery Fri, Nov 20"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$15.99",
+            "extracted_primary_price": 15.99
+          }
+        ]
+      },
+      {
+        "position": 44,
+        "asin": "B0HPK9J1WQ",
+        "title": "89240027010 Miter Saw Inlet Dust Chute for Ryobi P553 TS1144",
+        "link": "https://www.amazon.com/89240027010-Miter-Inlet-Chute-TS1144/dp/B0HPK9J1WQ/ref=sr_1_44?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-44",
+        "link_clean": "https://www.amazon.com/89240027010-Miter-Inlet-Chute-TS1144/dp/B0HPK9J1WQ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HPK9J1WQ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51SMhJ4cSTL._AC_UL320_.jpg",
+        "price": "$29.99",
+        "extracted_price": 29.99,
+        "delivery": [
+          "FREE delivery Nov 18 - 24",
+          "Or fastest delivery Fri, Nov 20"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$29.99",
+            "extracted_primary_price": 29.99
+          }
+        ]
+      },
+      {
+        "position": 45,
+        "asin": "B0HC39Y82V",
+        "title": "89240027010 Miter Saw Inlet Dust Chut Compatible for Ryobi Miter Saw",
+        "link": "https://www.amazon.com/89240027010-Compatible-Replacement-Models-TS1144/dp/B0HC39Y82V/ref=sr_1_45?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-45",
+        "link_clean": "https://www.amazon.com/89240027010-Compatible-Replacement-Models-TS1144/dp/B0HC39Y82V/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HC39Y82V&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/516R8uXHgYL._AC_UL320_.jpg",
+        "price": "$36.57",
+        "extracted_price": 36.57,
+        "delivery": [
+          "FREE delivery Mon, Nov 23"
+        ],
+        "stock": "Only 4 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$36.57",
+            "extracted_primary_price": 36.57
+          }
+        ]
+      },
+      {
+        "position": 46,
+        "asin": "B0GRVD35NW",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/REACELL-Replace-RYOBI-Battery-Charger/dp/B0GRVD35NW/ref=sr_1_46_so_BATTERY_CHARGER?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-46",
+        "title": "2 Pack P197 Replace for RYOBI 18V Battery with P117 Charger Combo",
+        "link": "https://www.amazon.com/REACELL-Replace-RYOBI-Battery-Charger/dp/B0GRVD35NW/ref=sr_1_46?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-46",
+        "link_clean": "https://www.amazon.com/REACELL-Replace-RYOBI-Battery-Charger/dp/B0GRVD35NW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0GRVD35NW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/71WfxIHrwvL._AC_UL320_.jpg",
+        "rating": 4.2,
+        "reviews": 19,
+        "bought_last_month": "50+ bought in past month",
+        "price": "$51.29",
+        "extracted_price": 51.29,
+        "old_price": "$53.99",
+        "extracted_old_price": 53.99,
+        "offers": [
+          "Save 5% on 2 select item(s)"
+        ],
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 12",
+          "Or Non-members get FREE delivery Mon, Nov 16"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$51.29",
+            "extracted_primary_price": 51.29,
+            "old_primary_price": "$53.99",
+            "extracted_old_primary_price": 53.99
+          }
+        ]
+      },
+      {
+        "position": 47,
+        "asin": "B0FJM7MT77",
+        "title": "Replacement Miter Saw Inlet Dust Chute for Ryobi P553 TS1144，Replaces Part # 89240027010",
+        "link": "https://www.amazon.com/Replacement-Miter-Inlet-TS1144%EF%BC%8CReplaces-89240027010/dp/B0FJM7MT77/ref=sr_1_47?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-47",
+        "link_clean": "https://www.amazon.com/Replacement-Miter-Inlet-TS1144%EF%BC%8CReplaces-89240027010/dp/B0FJM7MT77/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FJM7MT77&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/313c6hSRWTL._AC_UL320_.jpg",
+        "price": "$29.98",
+        "extracted_price": 29.98,
+        "delivery": [
+          "FREE delivery Thu, Nov 19"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$29.98",
+            "extracted_primary_price": 29.98
+          }
+        ]
+      },
+      {
+        "position": 48,
+        "asin": "B0BL8H41LW",
+        "options": "See options",
+        "options_link": "https://www.amazon.com/18V-ONE-12-Tool-Combo-Kit/dp/B0BL8H41LW/ref=sr_1_48_so_POWER_TOOL_SET?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-48",
+        "title": "18V ONE+ 12-Tool Combo Kit",
+        "link": "https://www.amazon.com/18V-ONE-12-Tool-Combo-Kit/dp/B0BL8H41LW/ref=sr_1_48?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-48",
+        "link_clean": "https://www.amazon.com/18V-ONE-12-Tool-Combo-Kit/dp/B0BL8H41LW/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0BL8H41LW&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/5162ilv++1L._AC_UL320_.jpg",
+        "rating": 5,
+        "reviews": 5,
+        "no_featured_offers_available": true,
+        "more_buying_choices": "$1,029.00 (3 new offers)",
+        "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BL8H41LW/ref=sr_1_48_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-48",
+        "purchase_options": [
+          {
+            "no_featured_offers": true,
+            "more_buying_choices": "$1,029.00 (3 new offers)",
+            "more_buying_choices_link": "https://www.amazon.com/gp/offer-listing/B0BL8H41LW/ref=sr_1_48_olp?keywords=RYOBI+P553&dib_tag=se&dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&qid=1794418323&sr=8-48"
+          }
+        ]
+      },
+      {
+        "position": 49,
+        "asin": "B0HJCTL5JZ",
+        "title": "Miter Saw Cover for RYOBI P553 2018-2026, 420D Oxford Dust Cover for Sliding Compound Miter Saws with Adjustable Drawstring Hem and Top Carry Handle",
+        "link": "https://www.amazon.com/KWBQCQX-2018-2026-Compound-Adjustable-Drawstring/dp/B0HJCTL5JZ/ref=sr_1_49?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-49",
+        "link_clean": "https://www.amazon.com/KWBQCQX-2018-2026-Compound-Adjustable-Drawstring/dp/B0HJCTL5JZ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HJCTL5JZ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61mY3CQdWmL._AC_UL320_.jpg",
+        "price": "$35.98",
+        "extracted_price": 35.98,
+        "delivery": [
+          "FREE delivery Nov 20 - 30"
+        ],
+        "stock": "Only 19 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$35.98",
+            "extracted_primary_price": 35.98
+          }
+        ]
+      },
+      {
+        "position": 50,
+        "asin": "B0F8TL3D4Z",
+        "title": "P553 Miter Saw Dust Bag for Ryobi ﻿",
+        "link": "https://www.amazon.com/P553-Replacement-TS101L-TS1344L-TS1142L/dp/B0F8TL3D4Z/ref=sr_1_50?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-50",
+        "link_clean": "https://www.amazon.com/P553-Replacement-TS101L-TS1344L-TS1142L/dp/B0F8TL3D4Z/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0F8TL3D4Z&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/61I76JbHPyL._AC_UL320_.jpg",
+        "price": "$31.99",
+        "extracted_price": 31.99,
+        "delivery": [
+          "FREE delivery Nov 18 - 24",
+          "Or fastest delivery Fri, Nov 20"
+        ],
+        "stock": "Only 8 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$31.99",
+            "extracted_primary_price": 31.99
+          }
+        ]
+      },
+      {
+        "position": 51,
+        "asin": "B0HNVBFQJV",
+        "title": "for Ryobi 089240026051 Miter Saw Switch P553 P553 PBT01 PBT01",
+        "link": "https://www.amazon.com/Ryobi-089240026051-Miter-Switch-PBT01/dp/B0HNVBFQJV/ref=sr_1_51?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-51",
+        "link_clean": "https://www.amazon.com/Ryobi-089240026051-Miter-Switch-PBT01/dp/B0HNVBFQJV/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HNVBFQJV&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/11T7jXuYDpL._AC_UL320_.jpg",
+        "price": "$83.90",
+        "extracted_price": 83.9,
+        "delivery": [
+          "FREE delivery Nov 23 - Dec 3",
+          "Or fastest delivery Nov 17 - 19"
+        ],
+        "stock": "Only 5 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$83.90",
+            "extracted_primary_price": 83.9
+          }
+        ]
+      },
+      {
+        "position": 52,
+        "asin": "B0HP992VYB",
+        "title": "89240034007 Miter Saw Blade Screw for Ryobi P553, PBT01, TS1144, TSS702",
+        "link": "https://www.amazon.com/89240034007-Miter-TS1144-TSS702-replacement/dp/B0HP992VYB/ref=sr_1_52?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-52",
+        "link_clean": "https://www.amazon.com/89240034007-Miter-TS1144-TSS702-replacement/dp/B0HP992VYB/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HP992VYB&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/515zPXehwvL._AC_UL320_.jpg",
+        "price": "$28.99",
+        "extracted_price": 28.99,
+        "delivery": [
+          "FREE delivery Nov 19 - 25",
+          "Or fastest delivery Fri, Nov 20"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$28.99",
+            "extracted_primary_price": 28.99
+          }
+        ]
+      },
+      {
+        "position": 53,
+        "asin": "B0HQNK22F4",
+        "title": "Miter Saw Cover for RYOBI P553 2018-2026",
+        "link": "https://www.amazon.com/2018-2026-Heavy-duty-adjustable-drawstring-workshop/dp/B0HQNK22F4/ref=sr_1_53?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-53",
+        "link_clean": "https://www.amazon.com/2018-2026-Heavy-duty-adjustable-drawstring-workshop/dp/B0HQNK22F4/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HQNK22F4&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/411b9d4G-KL._AC_UL320_.jpg",
+        "price": "$39.98",
+        "extracted_price": 39.98,
+        "delivery": [
+          "FREE delivery Nov 24 - Dec 4"
+        ],
+        "stock": "Only 20 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$39.98",
+            "extracted_primary_price": 39.98
+          }
+        ]
+      },
+      {
+        "position": 54,
+        "asin": "B0FJMCB1LJ",
+        "title": "Replacement Miter Saw Indicator Miter for Ryobi P553 TS1144，Replaces Part # 089240027099",
+        "link": "https://www.amazon.com/Replacement-Miter-Indicator-TS1144%EF%BC%8CReplaces-089240027099/dp/B0FJMCB1LJ/ref=sr_1_54?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-54",
+        "link_clean": "https://www.amazon.com/Replacement-Miter-Indicator-TS1144%EF%BC%8CReplaces-089240027099/dp/B0FJMCB1LJ/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0FJMCB1LJ&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/11pDNjNC8TL._AC_UL320_.jpg",
+        "price": "$23.46",
+        "extracted_price": 23.46,
+        "delivery": [
+          "FREE delivery Thu, Nov 19"
+        ],
+        "stock": "Only 2 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$23.46",
+            "extracted_primary_price": 23.46
+          }
+        ]
+      },
+      {
+        "position": 55,
+        "asin": "B0HQNTNM25",
+        "title": "Miter Saw Cover for RYOBI P553 2018-2026",
+        "link": "https://www.amazon.com/2018-2026-Heavy-duty-adjustable-drawstring-workshop/dp/B0HQNTNM25/ref=sr_1_55?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-55",
+        "link_clean": "https://www.amazon.com/2018-2026-Heavy-duty-adjustable-drawstring-workshop/dp/B0HQNTNM25/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HQNTNM25&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/41Z35bYaT8L._AC_UL320_.jpg",
+        "price": "$39.98",
+        "extracted_price": 39.98,
+        "delivery": [
+          "FREE delivery Nov 24 - Dec 4"
+        ],
+        "stock": "Only 20 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$39.98",
+            "extracted_primary_price": 39.98
+          }
+        ]
+      },
+      {
+        "position": 56,
+        "asin": "B00KB7LA0Q",
+        "brand": "RYOBI",
+        "title": "RY29550/RY30530 Trimmer (4 Pack) Replacement Storage Cap # 518019002-4pk",
+        "link": "https://www.amazon.com/Ryobi-RY29550-RY30530-Replacement-518019002-4pk/dp/B00KB7LA0Q/ref=sr_1_56?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-56",
+        "link_clean": "https://www.amazon.com/Ryobi-RY29550-RY30530-Replacement-518019002-4pk/dp/B00KB7LA0Q/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B00KB7LA0Q&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51+2Z-x8CvL._AC_UL320_.jpg",
+        "rating": 4.8,
+        "reviews": 1000,
+        "price": "$9.99",
+        "extracted_price": 9.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Tomorrow, Nov 12",
+          "Or Non-members get FREE delivery Mon, Nov 16 on $35 of items shipped by Amazon"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$9.99",
+            "extracted_primary_price": 9.99
+          }
+        ]
+      },
+      {
+        "position": 57,
+        "asin": "B0HPPZBS5S",
+        "title": "#US Replace Tool Parts for Ryobi OEM 89240027010 Miter Saw Inlet Dust Chute P553 TS1144 - (dvuipart.191026.29529)",
+        "link": "https://www.amazon.com/Replace-Parts-89240027010-TS1144-dvuipart-191026-29529/dp/B0HPPZBS5S/ref=sr_1_57?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-57",
+        "link_clean": "https://www.amazon.com/Replace-Parts-89240027010-TS1144-dvuipart-191026-29529/dp/B0HPPZBS5S/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HPPZBS5S&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/31JUEUiiocL._AC_UL320_.jpg",
+        "price": "$25.99",
+        "extracted_price": 25.99,
+        "delivery": [
+          "$5 delivery Nov 24 - Dec 1"
+        ],
+        "purchase_options": [
+          {
+            "primary_price": "$25.99",
+            "extracted_primary_price": 25.99
+          }
+        ]
+      },
+      {
+        "position": 58,
+        "asin": "B0HPFRR831",
+        "title": "Blade Guard for Ryobi 7-1/4\" Miter Saw Fits Model P553 & TS1144",
+        "link": "https://www.amazon.com/Blade-Guard-Ryobi-Miter-TS1144/dp/B0HPFRR831/ref=sr_1_58?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-58",
+        "link_clean": "https://www.amazon.com/Blade-Guard-Ryobi-Miter-TS1144/dp/B0HPFRR831/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0HPFRR831&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51Ji-yARIhL._AC_UL320_.jpg",
+        "price": "$53.99",
+        "extracted_price": 53.99,
+        "delivery": [
+          "FREE delivery Nov 18 - 24",
+          "Or fastest delivery Fri, Nov 20"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$53.99",
+            "extracted_primary_price": 53.99
+          }
+        ]
+      },
+      {
+        "position": 59,
+        "asin": "B0DX5R7Q1G",
+        "brand": "WKZO",
+        "title": "89240027010 Miter Saw Inlet Dust Chute for Ryobi P553 TS1144",
+        "link": "https://www.amazon.com/WKZO-89240027010-Miter-Inlet-TS1144/dp/B0DX5R7Q1G/ref=sr_1_59?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-59",
+        "link_clean": "https://www.amazon.com/WKZO-89240027010-Miter-Inlet-TS1144/dp/B0DX5R7Q1G/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B0DX5R7Q1G&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/51UzGW4xFPL._AC_UL320_.jpg",
+        "price": "$27.99",
+        "extracted_price": 27.99,
+        "delivery": [
+          "FREE delivery Nov 18 - 24",
+          "Or fastest delivery Thu, Nov 19"
+        ],
+        "stock": "Only 10 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$27.99",
+            "extracted_primary_price": 27.99
+          }
+        ]
+      },
+      {
+        "position": 60,
+        "asin": "B087Z99HHR",
+        "brand": "RYOBI",
+        "title": "2-in-1 Fixed Line and Bladed Head AC052N1 - Accessory for Auto Feed String Trimmers",
+        "link": "https://www.amazon.com/RYOBI-Fixed-Line-Bladed-AC052N1/dp/B087Z99HHR/ref=sr_1_60?dib=eyJ2IjoiMSJ9.BDBFM0b523bLZA0FmTbLuNxWTPPVqV4XtRkULzVBwNHPc3ltWDAedchFlU_l-axW6mNn9RwM2Wey1zNKO3j_jPYNpFrDSPa3vVXaBF0Wcjr9AgFG68NxEwJAtb6ULaBr-cP3AFtoRECJDtXG_2M6U-cXMEmQ0d1vk8PkVLOXyYNEIu-wNFJMET2b4FuXMnHiD5JTAfbKd3HwA6Kh0Jcg_Bu6bkqLKwSIf2BGpwXAJR_GmKkZmxVdzuZ0Mp6RymgrJJRdkwkClnIHlZiZmTu-F7M5VPKuHxG8R2G71tgNVCo.bFtulIBFJ0L6SafcU5_9mM9CFleiLajF_LUR6k_CmDI&dib_tag=se&keywords=RYOBI+P553&qid=1794418323&sr=8-60",
+        "link_clean": "https://www.amazon.com/RYOBI-Fixed-Line-Bladed-AC052N1/dp/B087Z99HHR/",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&asin=B087Z99HHR&device=desktop&engine=amazon_product",
+        "thumbnail": "https://m.media-amazon.com/images/I/715sV+2FfCL._AC_UL320_.jpg",
+        "rating": 4,
+        "reviews": 891,
+        "price": "$26.99",
+        "extracted_price": 26.99,
+        "delivery": [
+          "Join Prime to get FREE delivery Fri, Nov 13",
+          "Or Non-members get FREE delivery Mon, Nov 16 on $35 of items shipped by Amazon"
+        ],
+        "stock": "Only 15 left in stock - order soon.",
+        "purchase_options": [
+          {
+            "primary_price": "$26.99",
+            "extracted_primary_price": 26.99
+          }
+        ]
+      }
+    ],
+    "sponsored_brands": {
+      "title": "Brands related to your search",
+      "brands": [
+        {
+          "position": 1,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/37438b32-079c-4666-b8ba-594e8275493c._CR0,0,1920,1080_AC_SX278_SY200_CB1169409_QL70_.jpg",
+          "headline": "Flouritech-Reliable Garden & Lawn Care Power Tools",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUMtu00AUVVsBVVRElUWRsqoikUVhkhk_YrfIQnbGeTdxbKevzWhsTxK3ie2OJ21hUYl_QCxYI_EvSLBgg8RH8A0oLQjB0V0c3ce5955CtPnuy7fvD4uPTf_Iwb1O7wRi2y2vob2dCUviG-IgHz8_n6QXLBj6XXZ8sJMq7aCL8L4XoDSDVBFLS0cjdwtpSlWSq0iWqvBs3bOCTdP227bb8YpPC48ill-INCtujQeu3Ri2Bp0zG5c-rBU2VxUSiEmxQBf0TZpUw3RRejbLKeAsTBcLlkRUxGkCcsav4pCBnFEezkAgJuUHLCFjb09aLOciBgGnSQRCzqiIrxj4vRKElEc5yGicCMZBmCaCJULaPbQaxPOHrk08Z-j3O622T2TH6xNsez1_6JT1whrc_vrz_dsfn3Fp-4_a6jA5y-flJxKEqK5Bva7qOtKQtDH28MFGw2ns9YovsWU2smYHaOatdXmPqXlrjcR52gLmv7i1pndh3pPSVmNq37RMe3oRnDLp03rh4_pMiCw_qNWur6-rf22q5SLlLK9ldMpqWh1jGZl1oNZlCBQNYWDCpgSaWJIVaEEFN9VXdwOEs4nhWcSE6r6CoC61eu6R0u6Nu-6xDUwIkQ4RlKyzY30sjZz9LjqqZBHhEcnms4gbojLLKQk5iSMDVuYZoXmc5IYF29hpqVoDvbBgu3WIrcFgtKJd1B3VncGq83LJ-GvDPR1anV1HVeVVLp-nwvjf3koeZYRGZMrTZWbIEEp1TdJkiHQFKpXYoFleoas_1Lg_GvJpX27_AlBn37w&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F76DD31A6-5630-471D-A0F2-FD2340B04DF5%3Fstore_ref%3DSB_A05941082GKRV4HKUJRWE-A00180102BZW8U2QP9J1V%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0HDPG57C1%2CB0HGMDBNNQ%2CB0HJ1JQ6PN%26lp_query%3DRYOBI%20P553%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300267273018404%26i%3Daps%26aref%3D5iLQOrgL3H&ref_=sbx_be_s_3psl_mbd_mb0_bkgd&pd_rd_w=txfSu&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=SQBSSEB9QV8JX4FKHK53&pd_rd_wg=cOdDV&pd_rd_r=76520514-fb4c-4470-89ec-71176bbd3a7e",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/37438b32-079c-4666-b8ba-594e8275493c._CR0,0,1920,1080_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 2,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/3c615ac3-617c-4083-9741-149289664c51._CR0,0,400,400_AC_SX278_SY200_CB1169409_QL70_.jpg",
+          "headline": "Empower your work with HOTECHE",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUMtu00AUVVsBVVRElUWRsqoikUVhkrFnEsdFFvKraeo8nNjNo5vRxJ4kbhPb9UybwqJfwQqxBCE-gw9g0w1bPgWlBSE4uouj-zj33pMLt99_v_vxOP9U9weu5TSdEbTsfnFDOtibsji6Ia7kWy_Pp8kFm3T9EzY83Bv4ql3rBOZJT7UnwwSGo-uwP-vvSAouy6gsIbkMzzY9Y7Kt2_6x3W96-ee5JyHjFyJJ8zunnb5tdhud5pltFT5s5LbXFTIR03yOLum7JC4HybLwYs4pyFiQLJcsDqmIkhhwll1HAQOc0SyYg4mYFh-xmJx6B_LyaiEiMMloHIIgY1RE1wz8XgkCmoUcpDSKBctAkMSCxULebxsm8fxu3yae2_VbzcaxT5DrtYhle47fdYv13Ia0e_fx28-vn63C7h-19WEo5YviMwQhlFQV1WVZwbAmb5161uGW6ZoHTv61ZehmetQEin5rXD5gpt8aPXGeNID-L26N2X3oD6SwY87sm4Zuzy4mYyZ_2cx92pwLkfLDSmW1WpX_2lThIskYr6R0xio11cJ6Va8C9QhbAGOpDtS6gYGpmDWkVFUTYfvN_QDJ2FTzDKJDRVLqGEoN80TujbA1VDwEdFiVEKxiaWCcqWPDahm-MyilIclCki7mYaaJ0pxTEmQkCjVYWqSE8ijmmgHN43ZnKNfRKwOafg-7DVddU7PTbjmOu-68vGLZW60_7hrNfbdaRescXyRC-9_eEg9TQkMyy5KrVFtbjZGMagjXEcSlSKMpL9H1H8FKklttJxrNfwEat-A8&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2F69D4A5A5-9F4D-4418-98B4-C7C63759C34E%3Fstore_ref%3DSB_A07178401GCJ2QX4DW7S3-A05130541VBZ9YBDLBTKV%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0CHMNW283%2CB0CTQ4PGP9%2CB0CCNMLKKP%26lp_query%3DRYOBI%20P553%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300043236348304%26i%3Daps%26aref%3Dcw12LMKiXh&ref_=sbx_be_s_3psl_mbd_mb1_bkgd&pd_rd_w=txfSu&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=SQBSSEB9QV8JX4FKHK53&pd_rd_wg=cOdDV&pd_rd_r=76520514-fb4c-4470-89ec-71176bbd3a7e",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/3c615ac3-617c-4083-9741-149289664c51._CR0,0,400,400_AC_SX278_SY200_CB1169409_QL70_.jpg"
+        },
+        {
+          "position": 3,
+          "image": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/16bd817c-b3f1-4089-8620-dc4e66607e25._CR0,0,1000,1000_AC_SX278_SY200_CB1169409_QL70_.png",
+          "headline": "Premium Reciprocating Saw Blade Set",
+          "link": "https://sponsored-ads.amazon.com/clk/?_encoding=UTF8&p=eAFdUMtu00AUVVsBVVRElUWRsqoikUVhnPEjsVtkIdvjuKmbxI3dtOlmNLEnidvEdmemTWHRL2DJqmskPoJvYMMGPoAv4AtQWhCCo7s4uo9z7z2lZP3Dl6_fHpefWtEgQH7bP4XI7VdX5J2tMc3SGxzIEXp5Ps4v6KgXHdCTvS2rNdYkejMIMubp7uxcRAsuTfobsq5JiirJqiLBs9XQHq1bbrTv9tth-XnpSUL5hciL8sZxt-86Pa_bPnNR5W6ltL6s4JEYl0tkTt7lmRTn88qLKSeA0Tifz2mWEJHmGeCUXacxBZwSFk_BSIyrj2iGj8MdZX41EykYMZIlIGaUiPSagt8rQUxYwkFB0kxQBuI8EzQTynbHdnAY9fouDoNedNj29iOsBuEhRm7oR72gapRWlM27H99_vv-MKpt_1JaHqQWfVZ-pEMJdGULYUDUNNpW14xDtrTmBs-OXXyPbcopWG-jWrX35gIl1ax-J89wD1r-4tSf3YT2QyoYzcW88y51cjIZU-bRa-rg6FaLge_X6YrGQ_tpU5yJnlNcLMqF1GzYcebelAwvZCGgN1QK247oAIa1pIQM6DYTe3A9gRsdmaGMLQqjIWlPxg05L7RjDrhqdAgsaUFGaTbnl9n390EXG0emgViSYJbiYTRNmitqUExwznCYmrM0KTHiacdOGyDk42h10jVc2NPyzbuApwyX1fFWOToxl5-UVZW_N_rBnt7eDRkNd5vgsF-b_9tZ4UmCS4AnLrwpThVBWVUPXDCjrUKulJil4jSz_6HamSSym8xn8BQGJ4aY&v=c1&r=https%3A%2F%2Fwww.amazon.com%2Fstores%2Fpage%2FB05C19F7-ADBD-453A-BCEE-DD46AD80C5DD%3Fstore_ref%3DSB_A00021462KPMF3M8YN3TX-A08022661FERK7LED8QXV%26pd_rd_plhdr%3Dt%26hsa_cr_id%3D0%26lp_asins%3DB0DCJQ9VN8%2CB08KZNPG2Y%2CB08GK31TW8%26lp_query%3DRYOBI%20P553%26lp_slot%3Ddesktop-hsa-3psl%26sdp_ad_group%3D300133874801704%26i%3Daps%26aref%3DNMhdcthml0&ref_=sbx_be_s_3psl_mbd_mb2_bkgd&pd_rd_w=txfSu&content-id=amzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463%3Aamzn1.sym.dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_p=dc82d3ee-4909-44d1-b96c-93b0e5479463&pf_rd_r=SQBSSEB9QV8JX4FKHK53&pd_rd_wg=cOdDV&pd_rd_r=76520514-fb4c-4470-89ec-71176bbd3a7e",
+          "logo": "https://m.media-amazon.com/images/S/al-na-9d5791cf-3faf/16bd817c-b3f1-4089-8620-dc4e66607e25._CR0,0,1000,1000_AC_SX278_SY200_CB1169409_QL70_.png"
+        }
+      ]
+    },
+    "categories": [
+      {
+        "position": 1,
+        "name": "Custom Products",
+        "link": "https://www.amazon.com/Amazon-Custom/b/?ie=UTF8&node=11032013011&ref_=nav_cs_custom",
+        "node": "11032013011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=11032013011"
+      },
+      {
+        "position": 2,
+        "name": "Toys & Games",
+        "link": "https://www.amazon.com/toys/b/?ie=UTF8&node=165793011&ref_=nav_cs_toys",
+        "node": "165793011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165793011"
+      },
+      {
+        "position": 3,
+        "name": "Home Improvement",
+        "link": "https://www.amazon.com/Tools-and-Home-Improvement/b/?ie=UTF8&node=228013&ref_=nav_cs_hi",
+        "node": "228013",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=228013"
+      },
+      {
+        "position": 4,
+        "name": "Pet Supplies",
+        "link": "https://www.amazon.com/pet-shops-dogs-cats-hamsters-kittens/b/?ie=UTF8&node=2619533011&ref_=nav_cs_pets",
+        "node": "2619533011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2619533011"
+      },
+      {
+        "position": 5,
+        "name": "Gift Cards",
+        "link": "https://www.amazon.com/gift-cards/b/?ie=UTF8&node=2238192011&ref_=nav_cs_gc",
+        "node": "2238192011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=2238192011"
+      },
+      {
+        "position": 6,
+        "name": "Amazon Home",
+        "link": "https://www.amazon.com/home-garden-kitchen-furniture-bedding/b/?ie=UTF8&node=1055398&ref_=nav_cs_home",
+        "node": "1055398",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=1055398"
+      },
+      {
+        "position": 7,
+        "name": "Audible",
+        "link": "https://www.amazon.com/Audible-Books-and-Originals/b/?ie=UTF8&node=18145289011&ref_=nav_cs_audible",
+        "node": "18145289011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=18145289011"
+      },
+      {
+        "position": 8,
+        "name": "Beauty & Personal Care",
+        "link": "https://www.amazon.com/Beauty-Makeup-Skin-Hair-Products/b/?ie=UTF8&node=3760911&ref_=nav_cs_beauty",
+        "node": "3760911",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=3760911"
+      },
+      {
+        "position": 9,
+        "name": "Fashion",
+        "link": "https://www.amazon.com/amazon-fashion/b/?ie=UTF8&node=7141123011&ref_=nav_cs_fashion",
+        "node": "7141123011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=7141123011"
+      },
+      {
+        "position": 10,
+        "name": "Automotive",
+        "link": "https://www.amazon.com/automotive-auto-truck-replacements-parts/b/?ie=UTF8&node=15684181&ref_=nav_cs_automotive",
+        "node": "15684181",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=15684181"
+      },
+      {
+        "position": 11,
+        "name": "Video Games",
+        "link": "https://www.amazon.com/computer-video-games-hardware-accessories/b/?ie=UTF8&node=468642&ref_=nav_cs_video_games",
+        "node": "468642",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=468642"
+      },
+      {
+        "position": 12,
+        "name": "Baby",
+        "link": "https://www.amazon.com/baby-car-seats-strollers-bedding/b/?ie=UTF8&node=165796011&ref_=nav_cs_baby",
+        "node": "165796011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=165796011"
+      },
+      {
+        "position": 13,
+        "name": "Smart Home",
+        "link": "https://www.amazon.com/Smart-Home/b/?ie=UTF8&node=6563140011&ref_=nav_cs_smart_home",
+        "node": "6563140011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=6563140011"
+      },
+      {
+        "position": 14,
+        "name": "Kindle Books",
+        "link": "https://www.amazon.com/Kindle-eBooks/b/?ie=UTF8&node=154606011&ref_=nav_cs_kindle_books",
+        "node": "154606011",
+        "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&node=154606011"
+      }
+    ],
+    "filters": {
+      "eligible_for_free_shipping": [
+        {
+          "position": 1,
+          "name": "Free Shipping by Amazon",
+          "description": "Get FREE Shipping on eligible orders shipped by Amazon",
+          "rh": "p_76:1249152011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_76%3A1249152011&dc&qid=1794418323&rnid=1249150011&ref=sr_nr_p_76_1&ds=v1%3AEFJXSMEWg3AXyggoSmPeKPrbj7Kt%2BvCgGu%2By5mt4UTs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_76%3A1249152011"
+        }
+      ],
+      "delivery_day": [
+        {
+          "position": 1,
+          "name": "Get It by Tomorrow",
+          "rh": "p_90:8308921011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_90%3A8308921011&dc&qid=1794418323&rnid=8308919011&ref=sr_nr_p_90_1&ds=v1%3ArFIa%2Be789xfynH32l0vXLdHaCVBHsQbIasOay8UCRx4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_90%3A8308921011"
+        }
+      ],
+      "brands": [
+        {
+          "position": 1,
+          "name": "RYOBI",
+          "rh": "p_123:252605",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_123%3A252605&dc&qid=1794418323&rnid=85457740011&ref=sr_nr_p_123_1&ds=v1%3AV5Ahbb4AvvO28I4P%2BrdD%2F%2BmroM7sNfV0pvNbr%2F4lInU",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_123%3A252605"
+        }
+      ],
+      "customer_reviews": [
+        {
+          "position": 1,
+          "name": "4 Stars & Up",
+          "rh": "p_72:1248909011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_72%3A1248909011&dc&qid=1794418323&rnid=1248907011&ref=sr_nr_p_72_1&ds=v1%3AnTntFyRbnnYhQ7DFw3H6UhM%2FxZv7SwLHMtGCI3oyqKs",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_72%3A1248909011"
+        }
+      ],
+      "condition": [
+        {
+          "position": 1,
+          "name": "New",
+          "rh": "p_n_condition-type:6358196011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_n_condition-type%3A6358196011&dc&qid=1794418323&rnid=6358194011&ref=sr_nr_p_n_condition-type_1&ds=v1%3AuD6exXXi7NRdHZ8KL13GZtfePIym3J5AQh0SF5aTrbo",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_n_condition-type%3A6358196011"
+        },
+        {
+          "position": 2,
+          "name": "Used",
+          "rh": "p_n_condition-type:6358198011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_n_condition-type%3A6358198011&dc&qid=1794418323&rnid=6358194011&ref=sr_nr_p_n_condition-type_2&ds=v1%3AodZnXlG12imUOMede6HVqtv3skkt5s6SKIZo266ZfOc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_n_condition-type%3A6358198011"
+        }
+      ],
+      "seller": [
+        {
+          "position": 1,
+          "name": "REACELL",
+          "rh": "p_6:A3MIUV6APQ3QXD",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_6%3AA3MIUV6APQ3QXD&dc&qid=1794418323&rnid=339807011&ref=sr_nr_p_6_1&ds=v1%3A64C8jnT8nvVl%2FbmL9nYFuYk3eAo%2F6bwRYdGEhHg2PUE",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_6%3AA3MIUV6APQ3QXD"
+        },
+        {
+          "position": 2,
+          "name": "YNHome Engineer USA",
+          "rh": "p_6:A1HSMCVKDDB6BM",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_6%3AA1HSMCVKDDB6BM&dc&qid=1794418323&rnid=339807011&ref=sr_nr_p_6_2&ds=v1%3Axb9j3LrQD7vEg63TAA3U2sjsrzJjWKoGp23KYjrze0k",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_6%3AA1HSMCVKDDB6BM"
+        },
+        {
+          "position": 3,
+          "name": "XXHKJYXGS",
+          "rh": "p_6:A1ZZR0QCU60PPP",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_6%3AA1ZZR0QCU60PPP&dc&qid=1794418323&rnid=339807011&ref=sr_nr_p_6_3&ds=v1%3AZHK4iYNe0F0uKEIfQQSRsdyKs6%2BvjErY4gTNjavMjs0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_6%3AA1ZZR0QCU60PPP"
+        },
+        {
+          "position": 4,
+          "name": "liqinggongfeucen5dis",
+          "rh": "p_6:A2CNGYTVKBYLEC",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_6%3AA2CNGYTVKBYLEC&dc&qid=1794418323&rnid=339807011&ref=sr_nr_p_6_4&ds=v1%3AjCqHvFiVVOqwB3RpIKrv01F4hFaSxbLCKgQeB1Bhty8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_6%3AA2CNGYTVKBYLEC"
+        },
+        {
+          "position": 5,
+          "name": "shanxijinwuxinnengyuankejiyouxianzerengongsi",
+          "rh": "p_6:A2NZZP7AO1WI29",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_6%3AA2NZZP7AO1WI29&dc&qid=1794418323&rnid=339807011&ref=sr_nr_p_6_5&ds=v1%3AJJAriyqtsTj0wh%2FV8Yds9ugmhVRA6dtpGK%2BasjXozQ8",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_6%3AA2NZZP7AO1WI29"
+        },
+        {
+          "position": 6,
+          "name": "Urparts Store",
+          "rh": "p_6:A1QSJMJYWKAFHH",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_6%3AA1QSJMJYWKAFHH&dc&qid=1794418323&rnid=339807011&ref=sr_nr_p_6_6&ds=v1%3AnPC%2BhH2Qf5%2F7MPpfi1Amtd4wSwZWrsJAt0VnE0jqDBI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_6%3AA1QSJMJYWKAFHH"
+        },
+        {
+          "position": 7,
+          "name": "jiyanguang001",
+          "rh": "p_6:A1BVPAXTWNDPF2",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_6%3AA1BVPAXTWNDPF2&dc&qid=1794418323&rnid=339807011&ref=sr_nr_p_6_7&ds=v1%3A655D9xCFLv80BJ9bVYLSlWSmXc6cB13e9EV5ErkLfZc",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_6%3AA1BVPAXTWNDPF2"
+        }
+      ],
+      "all_top_brands": [
+        {
+          "position": 1,
+          "name": "Top Brands",
+          "rh": "p_n_g-101014971069111:119653281011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_n_g-101014971069111%3A119653281011&dc&qid=1794418323&rnid=119653280011&ref=sr_nr_p_n_g-101014971069111_1&ds=v1%3AOYSkdr%2BddYPA7FgaC5fgf3mDkhs6RcNOlR8hYAW6bns",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_n_g-101014971069111%3A119653281011"
+        }
+      ],
+      "price": [
+        {
+          "position": 1,
+          "name": "All Discounts",
+          "rh": "p_n_deal_type:23566065011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_n_deal_type%3A23566065011&dc&qid=1794418323&rnid=23566063011&ref=sr_nr_p_n_deal_type_1&ds=v1%3ALTrIsZSmACD9xyP1k5%2ButHDqTVqG%2FZvuBQdLN94HEZA",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_n_deal_type%3A23566065011"
+        },
+        {
+          "position": 2,
+          "name": "Buy More, Save More",
+          "rh": "p_n_deal_type:210906365011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=p_n_deal_type%3A210906365011&dc&qid=1794418323&rnid=23566063011&ref=sr_nr_p_n_deal_type_2&ds=v1%3AN95OR3QT7hnaTKOldms%2FHGAeQCxqTU2Bu%2BS%2BB3xmzl0",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=p_n_deal_type%3A210906365011"
+        }
+      ],
+      "department": [
+        {
+          "position": 1,
+          "name": "Tools & Home Improvement",
+          "rh": "n:228013",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=n%3A228013&dc&qid=1794418323&rnid=2941120011&ref=sr_nr_n_1&ds=v1%3AVzJVVlz6Ey8nBFJ6hLQnYmAdGznUNB%2BfLThHMbFtO%2B4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=n%3A228013"
+        },
+        {
+          "position": 2,
+          "name": "Power Tools",
+          "rh": "n:551236",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=n%3A228013%2Cn%3A551236&dc&qid=1794418323&rnid=2941120011&ref=sr_nr_n_2&ds=v1%3Amwmj2c6wDJH5lV4PbvnKRFINxdNMMUCccErAtyOJSmQ",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=n%3A228013%2Cn%3A551236"
+        },
+        {
+          "position": 3,
+          "name": "Cordless Tool Battery Packs",
+          "rh": "n:552354",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=n%3A228013%2Cn%3A552354&dc&qid=1794418323&rnid=2941120011&ref=sr_nr_n_3&ds=v1%3Ao%2FWvMTRAFVpTn8JwAhQa4fad%2B%2B6ni6iTW0fNcHBm9j4",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=n%3A228013%2Cn%3A552354"
+        },
+        {
+          "position": 4,
+          "name": "Patio, Lawn & Garden",
+          "rh": "n:2972638011",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=n%3A2972638011&dc&qid=1794418323&rnid=2941120011&ref=sr_nr_n_4&ds=v1%3ABXHnlH9uVApHAwKtYEnHOJFN4dG3V0g%2FR85QTxy1UWI",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=n%3A2972638011"
+        },
+        {
+          "position": 5,
+          "name": "Outdoor Power & Lawn Equipment",
+          "rh": "n:551242",
+          "link": "https://www.amazon.com/s?k=RYOBI+P553&rh=n%3A2972638011%2Cn%3A551242&dc&qid=1794418323&rnid=2941120011&ref=sr_nr_n_5&ds=v1%3AQlEDD7pnkox5AlDj3KGDC%2FtFNKunKKgvXDpp0MDbHCY",
+          "serpapi_link": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&rh=n%3A2972638011%2Cn%3A551242"
+        }
+      ]
+    },
+    "serpapi_pagination": {
+      "current": 1,
+      "next": "https://serpapi.com/search.json?amazon_domain=amazon.com&device=desktop&engine=amazon&k=RYOBI+P553&page=2"
+    }
+  }
+}
