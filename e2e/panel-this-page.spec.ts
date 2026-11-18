@@ -129,3 +129,25 @@ test('this page: a bundle that needs an answer, the answer, and a tab that moves
   await expect(panel.getByText('Open a Home Depot bundle page to see it here.')).toBeVisible();
   expect(server.searches).toEqual([]);
 });
+
+test('this page: turning the chip off in settings says so at once, with the panel open; turning it on shows the bundle at once', async ({ context, extensionId, options, server }) => {
+  const panel = await setUp(context, extensionId, options);
+  const hd = await context.newPage();
+  await hd.goto(`${server.url}/p/328814689`);
+  await hd.bringToFront();
+  // The real content script reads the page and sends it; the panel shows the bundle.
+  await expect(hd.locator('split-finder-chip').getByRole('button')).toBeVisible();
+  await expect(panel.getByText('read from this page · no search used')).toBeVisible();
+
+  // The owner unchecks the setting (in the settings tab; the panel stays on the Home Depot tab's page): no tab switch, no reload.
+  await options.getByLabel('Show the chip on Home Depot pages').uncheck();
+  await expect(hd.locator('split-finder-chip')).toHaveCount(0);
+  await expect(panel.getByText('The chip is off. Turn it on in settings to read this page.')).toBeVisible();
+  await expect(panel.getByText('read from this page · no search used')).toHaveCount(0);
+  await shoot(panel, 'chip-off');
+
+  await options.getByLabel('Show the chip on Home Depot pages').check();
+  await expect(panel.getByText('read from this page · no search used')).toBeVisible();
+  await expect(panel.getByText('The chip is off. Turn it on in settings to read this page.')).toHaveCount(0);
+  expect(server.searches).toEqual([]);
+});
