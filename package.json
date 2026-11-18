@@ -11,6 +11,7 @@
     "postinstall": "wxt prepare",
     "budget": "tsx scripts/budget.ts",
     "scan": "tsx scripts/scan.ts",
+    "validate": "tsx scripts/validate.ts",
     "fixtures:record": "tsx scripts/record-fixtures.ts",
     "test:live": "vitest run --config vitest.live.config.ts",
     "package": "tsx scripts/package.ts",
