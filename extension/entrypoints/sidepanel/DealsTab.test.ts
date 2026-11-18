@@ -34,6 +34,7 @@ const part = (model: string, over: Partial<PartRow> = {}): PartRow => ({
   priceSeenAt: NOW - DAY,
   image: null,
   title: null,
+  prices: [],
   ...over,
 });
 
@@ -56,6 +57,7 @@ const row = (key: string, over: Partial<BundleRow> = {}): BundleRow => ({
   answer: null,
   options: [],
   kitsNotRead: [],
+  range: { lowest: null, amazonNew: null, highest: null },
   ...over,
 });
 

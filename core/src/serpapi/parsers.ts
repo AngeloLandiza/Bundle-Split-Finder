@@ -67,6 +67,8 @@ export function parseAmazonSearch(json: unknown): Candidate[] {
     const asin = str(r.asin);
     const title = str(r.title);
     if (!asin || !title) continue;
+    // Step 9: the struck-through list price, only as its extracted number (recorded rows always carry both).
+    const listPrice = num(r.extracted_old_price);
     out.push({
       asin,
       title,
@@ -75,6 +77,7 @@ export function parseAmazonSearch(json: unknown): Candidate[] {
       reviews: num(r.reviews),
       sponsored: r.sponsored === true,
       image: str(r.thumbnail),
+      ...(listPrice !== null && listPrice > 0 ? { listPrice } : {}),
     });
   }
   return out;
@@ -120,6 +123,21 @@ export function parseAmazonProduct(json: unknown, asin: string): Candidate | nul
     price: num(product.extracted_price) ?? num(product.price),
     reviews: num(product.reviews),
   };
+}
+
+/** A feature of the "Buy New" box: `{ text }` on recorded pages, a bare string in `buy_used`. */
+const featureText = (v: unknown): string | null => str(v) ?? str(obj(v).text);
+
+/**
+ * Step 9: the listing page's "Buy New" box (`purchase_options.buy_new`): price, sold by, ships from.
+ * Null when the page has none: a page with one seller shows `single_offer` instead, which is not read.
+ */
+export function parseBuyNew(json: unknown): { price: number; soldBy: string | null; shipsFrom: string | null } | null {
+  const box = obj(obj(obj(json).purchase_options).buy_new);
+  const price = num(box.extracted_price) ?? num(box.price);
+  if (price === null || price <= 0) return null;
+  const features = obj(box.features);
+  return { price, soldBy: featureText(features.sold_by), shipsFrom: featureText(features.ships_from) };
 }
 
 // ---------------------------------------------------------------- Home Depot product (engine=home_depot_product)

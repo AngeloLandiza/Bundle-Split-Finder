@@ -83,12 +83,12 @@ describe('parseAmazonSearch: pictures', () => {
 });
 
 describe('listingFrom', () => {
-  it('saves a row of a scanned brand, with its picture', () => {
+  it('saves a row of a scanned brand, with its picture and its list price (step 9)', () => {
     const c = row(dewaltPage(), 'B00IJ0ALYS');
     const saved = listingFrom(c, BRANDS, NOW);
     expect(saved).toEqual({
       asin: 'B00IJ0ALYS', brand: 'DEWALT', title: '20V MAX Cordless Drill and Impact Driver (DCK240C2)', models: ['DCK240C2'],
-      image: expect.any(String), price: 149, reviews: 61300, seenAt: NOW, checkedAt: NOW,
+      image: expect.any(String), price: 149, reviews: 61300, seenAt: NOW, checkedAt: NOW, listPrice: 239,
     });
     expect(saved!.image!.length).toBeGreaterThan(0);
   });

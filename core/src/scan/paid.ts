@@ -4,10 +4,11 @@
 // only through the client and budget they are given, check their whole cost against that budget
 // before the first search, and never repeat a search that failed.
 
-import { grade, kitKey, pick } from '../match';
+import { type Candidate, grade, kitKey, pick } from '../match';
 import type { SearchResult } from '../serpapi/client';
-import { parseAmazonProduct } from '../serpapi/parsers';
+import { parseAmazonProduct, parseBuyNew } from '../serpapi/parsers';
 import { wantedFor } from './classify';
+import { listingFrom } from './listings';
 import {
   applyLookup, bundleParts, failingBefore, type KnownModels, knownModels, lookupOrder, type LookupStep, lookupWanted, markWaiting, matchFromListings,
   NOT_CONFIRMED, openMatchReview, pageEvidence, type Part, type PartContext, pickFromListings, savePrice, sendLookup, sharedMatch,
@@ -204,6 +205,7 @@ async function verify(
   if (page === null) throw new PaidProblem(PAGE_UNREADABLE);
   if (page.asin !== asin) throw new PaidProblem(OTHER_LISTING);
   await savePrice(ctx, asin, page, at);
+  await saveBuyBox(ctx, page, parseBuyNew(data), at);
   // As after a lookup: the owner may have decided the part while the page loaded.
   const match = await ctx.store.getMatch(part.key);
   if (!match || verifyRefusal(match, asin) !== null) return;
@@ -232,6 +234,19 @@ async function verify(
   };
   await ctx.store.putMatch(inReview);
   await writeTwins(ctx.store, inReview, sameListing);
+}
+
+/**
+ * Step 9: the page's "Buy New" box, on the listing, as seen at `at`; null when the page shows none. A
+ * listing not saved yet is saved from the page as a search row would be (listingFrom: only a scanned
+ * brand). A box seen later than `at` is kept.
+ */
+async function saveBuyBox(ctx: PartContext, page: Candidate, box: ReturnType<typeof parseBuyNew>, at: number): Promise<void> {
+  const old = await ctx.store.getListing(page.asin);
+  if (old?.buyBox && old.buyBox.seenAt > at) return;
+  const listing = old ?? listingFrom(page, ctx.settings.brands, at);
+  if (listing === null) return;
+  await ctx.store.putListing({ ...listing, buyBox: box === null ? null : { ...box, seenAt: at } });
 }
 
 // ---------------------------------------------------------------- helpers

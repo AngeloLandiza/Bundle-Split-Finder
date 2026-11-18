@@ -23,7 +23,8 @@ import { type KnownModels, knownModels, readSplit } from './split';
 import { rejectedOf, twinKeys } from './twins';
 import { bundleKey, partKey, priceActive, resolvedParts } from './types';
 import type {
-  BudgetView, BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PageOutcome, PageReading, PriceRecord, ReadPages, ReviewCandidate,
+  BudgetView, BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PageOutcome, PageReading, PriceRecord, ReadPages, ReadPartPrices,
+  ReviewCandidate,
   ScanJob, ScanSettings,
   ScanStep, ScanStore, SearchClient, StopReason,
 } from './types';
@@ -44,6 +45,11 @@ export interface ScanDeps {
    * it no page is read; pages read before still count in the split (P5) and in the ways to sell.
    */
   readPages?: ReadPages;
+  /**
+   * Step 9: reads Home Depot's own price for parts sold alone, in the owner's browser, after the kit
+   * pages (readPartPricesPass). Without it no price is read; prices read before are still shown.
+   */
+  readPartPrices?: ReadPartPrices;
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -76,6 +82,7 @@ interface Run extends PartContext {
   budget: BudgetView;
   shouldStop: () => boolean;
   readPages: ReadPages | null;
+  readPartPrices: ReadPartPrices | null;
   job: ScanJob;
   /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
@@ -114,7 +121,9 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
     // Step 6: then the pages of the plain kits the splits now hold, free, before the planning, which
     // looks up a kit's items only from its page. Not after Home Depot refused a page, or the reader failed.
     // The bundle pages asked for and not read still count: the two passes never ask for more than the cap.
-    if (bundlePass.goOn) await readKitPages(run, bundlePass.notRead);
+    const kitPass = bundlePass.goOn ? await readKitPages(run, bundlePass.notRead) : bundlePass;
+    // Step 9: then Home Depot's prices for the parts sold alone, free, unless Home Depot refused a page.
+    if (kitPass.goOn) await readPartPricesPass(run);
     await planParts(run, known.listings);
   } else if (run.job.phase === 'parts') {
     // A continued job: its lookups are judged with the models the split knew.
@@ -138,7 +147,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const failedBefore = failingBefore(scans);
   const run = (job: ScanJob): Run => ({
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
-    readPages: deps.readPages ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
+    readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
   });
 
   // An interrupted job is continued as saved: no new plan, whatever budget this run has. A job
@@ -593,6 +602,8 @@ async function applyListing(run: Run, step: Listing, data: unknown, at: number):
           itemId: row.itemId,
           // A kit's page is read once, as a bundle's (P1): a row seen again keeps it.
           ...(known && known.page !== undefined ? { page: known.page } : {}),
+          // Step 9: so is Home Depot's price for the part sold alone, which has its own time.
+          ...(known?.hdPrice !== undefined ? { hdPrice: known.hdPrice } : {}),
         });
       }
     }
@@ -797,11 +808,12 @@ async function readBundlePages(run: Run): Promise<PassResult> {
  * sameModel groups as one kit (PCL1600K2 and PCL1600K2B), the first in key order that can be read.
  * Never a search.
  */
-async function readKitPages(run: Run, bundleNotRead: number): Promise<void> {
+async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult> {
   const { store } = run;
-  if (!run.readPages) return;
+  const none = { goOn: true, notRead: 0 };
+  if (!run.readPages) return none;
   const room = Math.max(0, pagesLeft(run) - bundleNotRead);
-  if (room === 0 || run.shouldStop()) return;
+  if (room === 0 || run.shouldStop()) return none;
   const bundles = await store.listBundles();
   const catalog = await store.listCatalog();
   const bundlesOf = kitIndex(bundles);
@@ -823,8 +835,93 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<void> {
       wanted.push(kit);
     }
   }
-  if (wanted.length === 0) return;
-  await readInto(run, wanted.slice(0, room).map((k) => ({ itemId: k.itemId!, save: (page) => store.putCatalogEntry({ ...k, page }) })));
+  if (wanted.length === 0) return none;
+  return readInto(run, wanted.slice(0, room).map((k) => ({ itemId: k.itemId!, save: (page) => store.putCatalogEntry({ ...k, page }) })));
+}
+
+// ---------------------------------------------------------------- step 9: Home Depot's prices for the parts (free)
+
+/**
+ * Step 9: the parts whose Home Depot price (sold alone) a scan reads now: every part bundleParts plans
+ * for (kit items included) whose catalog entry, or a twin's (Ruling 70), holds no reading, or one older
+ * than freshnessMs. A reading that found nothing counts as a reading, so a part Home Depot does not sell
+ * alone is not asked for on every scan. Largest saving first, then key; a RYOBI part written two ways once.
+ */
+export async function partPricesWanted(store: ScanStore, settings: ScanSettings, now: number): Promise<Part[]> {
+  const parts = [...(await bundleParts(store)).values()];
+  const readAt = new Map<string, number>();
+  for (const c of await store.listCatalog()) if (c.hdPrice) readAt.set(partKey(c.brand, c.model), c.hdPrice.readAt);
+  const fresh = (p: Part): boolean => [p.key, ...twinKeys(p.brand, p.model)].some((k) => {
+    const at = readAt.get(k);
+    return at !== undefined && now - at <= settings.freshnessMs;
+  });
+  const seen = new Set<string>();
+  return parts
+    .filter((p) => !fresh(p))
+    .sort((a, b) => b.saving - a.saving || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+    .filter((p) => once(seen, kitKey(p.brand, p.model)))
+    .map(({ key, brand, model }) => ({ key, brand, model }));
+}
+
+/** A Home Depot link the panel may open: http or https only. Stored data and the reader's answer are untrusted. */
+const webLink = (v: unknown): string | null => (typeof v === 'string' && /^https?:\/\/[^\s]+$/i.test(v.trim()) ? v.trim() : null);
+
+/**
+ * Step 9: each reading of a part asked for is saved on the part's catalog entry, read at `readAt` (the
+ * clock: the owner's browser read it now). A reading for a part not asked for, a second one for the same
+ * part, or one that is not a reading is ignored. A price that is not a positive number is none; an item
+ * id that is not digits is none. A part with no catalog entry gets one only when Home Depot found it,
+ * built from the title its reading carries as applyListing builds one from a listing row; a part with no
+ * entry that Home Depot did not find is left as it is, and asked for again next scan.
+ */
+export async function savePartPrices(store: ScanStore, asked: Pick<Part, 'brand' | 'model'>[], readings: unknown, readAt: number): Promise<number> {
+  const want = new Set(asked.map((p) => partKey(p.brand, p.model)));
+  let saved = 0;
+  for (const r of Array.isArray(readings) ? readings : []) {
+    if (typeof r !== 'object' || r === null || typeof r.brand !== 'string' || typeof r.model !== 'string') continue;
+    const key = partKey(r.brand, r.model);
+    if (!want.delete(key)) continue;
+    const price = typeof r.price === 'number' && Number.isFinite(r.price) && r.price > 0 ? r.price : null;
+    const itemId = typeof r.itemId === 'string' && ITEM_ID.test(r.itemId) ? r.itemId : null;
+    const title = typeof r.title === 'string' && r.title.trim() !== '' ? r.title.trim() : null;
+    const hdPrice = { itemId, price, title, link: webLink(r.link), readAt };
+    const entry = await store.getCatalogEntry(key);
+    if (entry) {
+      await store.putCatalogEntry({ ...entry, hdPrice });
+    } else if (itemId !== null && title !== null) {
+      const made = catalogEntry(r.brand, r.model, title);
+      await store.putCatalogEntry({
+        key, brand: made.brand, model: made.model, title, kinds: made.kinds, isKit: made.isKit ?? false, upc: null, seenAt: readAt, itemId, hdPrice,
+      });
+    } else {
+      continue;
+    }
+    saved += 1;
+  }
+  return saved;
+}
+
+/**
+ * Step 9: one call to readPartPrices for at most partPriceReadsPerScan parts (partPricesWanted), each
+ * reading saved (savePartPrices). Never a search, and never stops the scan: a reader that throws is noted
+ * in stopMessage, as a page reader that throws is, and the scan goes on to its lookups. Not run after
+ * Home Depot refused a page in this run (the caller), nor once a stop was asked for.
+ */
+async function readPartPricesPass(run: Run): Promise<void> {
+  const { store, job } = run;
+  if (!run.readPartPrices || run.shouldStop()) return;
+  const cap = Math.max(0, Math.floor(run.settings.partPriceReadsPerScan));
+  const asked = (await partPricesWanted(store, run.settings, run.now())).slice(0, cap);
+  if (asked.length === 0) return;
+  let readings: unknown;
+  try {
+    readings = await run.readPartPrices(asked.map(({ brand, model }) => ({ brand, model })));
+  } catch (err) {
+    noteProblem(job, `Reading Home Depot prices failed: ${(err instanceof Error && err.message) || String(err)}`);
+    await store.putScan(job);
+    return;
+  }
+  await savePartPrices(store, asked, readings, run.now());
 }
 
 const newestFirst = (a: BundleRecord, b: BundleRecord): number => b.seenAt - a.seenAt || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);

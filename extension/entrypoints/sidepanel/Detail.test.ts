@@ -32,6 +32,7 @@ const part = (model: string, over: Partial<PartRow> = {}): PartRow => ({
   priceSeenAt: NOW - 3 * 3_600_000,
   image: null,
   title: 'RYOBI ONE+ HP 18V 3/8 in. Extended Reach Ratchet',
+  prices: [],
   ...over,
 });
 
@@ -54,6 +55,7 @@ const row = (over: Partial<BundleRow> = {}): BundleRow => ({
   answer: null,
   options: [],
   kitsNotRead: [],
+  range: { lowest: null, amazonNew: null, highest: null },
   ...over,
 });
 

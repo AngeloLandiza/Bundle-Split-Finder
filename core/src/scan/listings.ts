@@ -35,6 +35,9 @@ export function listingFrom(c: Candidate, brands: string[], now: number, old?: L
     reviews: c.reviews ?? null,
     seenAt: price === null ? (old?.seenAt ?? null) : now,
     checkedAt: now,
+    // Step 9: the row's own list price, or none; a row never carries a Buy Box, so the page's is kept.
+    ...(typeof c.listPrice === 'number' ? { listPrice: c.listPrice } : {}),
+    ...(old?.buyBox !== undefined ? { buyBox: old.buyBox } : {}),
   };
 }
 

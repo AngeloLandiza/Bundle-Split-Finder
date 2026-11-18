@@ -64,6 +64,11 @@ export interface ScanSettings {
   brandFilters: Record<string, string>;
   /** Home Depot pages read at most per scan: bundle pages, then (step 6) kit pages, from one count. */
   pageReadsPerScan: number;
+  /**
+   * Step 9: parts whose Home Depot price (sold alone) is read at most per scan, in the owner's browser
+   * (readPartPrices). Never a search.
+   */
+  partPriceReadsPerScan: number;
 }
 
 const HOUR = 60 * 60 * 1000;
@@ -81,6 +86,7 @@ export const DEFAULT_SCAN_SETTINGS: ScanSettings = {
   catalogPagesPerScan: 1,
   brandFilters: { DEWALT: 'p_123:195991', RYOBI: 'p_123:252605' },
   pageReadsPerScan: 60,
+  partPriceReadsPerScan: 60,
 };
 
 // ---------------------------------------------------------------- records
@@ -148,6 +154,33 @@ export type PageOutcome =
 /** Reads bundle pages in the owner's browser. Never a search. */
 export type ReadPages = (itemIds: string[]) => Promise<PageOutcome[]>;
 
+/**
+ * Step 9: what Home Depot sells one part for on its own, read in the owner's browser: Home Depot's
+ * search for the model, then the product's page. Nulls when it was not found. One per part asked.
+ */
+export interface PartPriceReading {
+  brand: string;
+  model: string;
+  /** Home Depot's item id of the product sold alone; null when none was found. */
+  itemId: string | null;
+  price: number | null;
+  title: string | null;
+  link: string | null;
+}
+
+/** Step 9: reads Home Depot's own price for parts sold alone, in the owner's browser. Never a search. */
+export type ReadPartPrices = (parts: { brand: string; model: string }[]) => Promise<PartPriceReading[]>;
+
+/** Step 9: a part's Home Depot price as stored on its catalog entry, with the clock time of the reading. */
+export interface HdPartPrice {
+  itemId: string | null;
+  /** Null when Home Depot showed no price, or the part was not found. */
+  price: number | null;
+  title: string | null;
+  link: string | null;
+  readAt: number;
+}
+
 export interface CatalogRecord {
   /** partKey(brand, model) */
   key: string;
@@ -169,6 +202,11 @@ export interface CatalogRecord {
    * bundle's is (a later listing row keeps it). Undefined or null: not read yet.
    */
   page?: PageReading | null;
+  /**
+   * Step 9: Home Depot's own price for the part sold alone (readPartPrices), kept as a page is (a later
+   * listing row keeps it). Undefined: not read yet. A reference figure, never counted in an estimate.
+   */
+  hdPrice?: HdPartPrice;
 }
 
 /**
@@ -236,6 +274,26 @@ export interface ListingRecord {
   seenAt: number | null;
   /** When a response last showed this listing at all. */
   checkedAt: number;
+  /**
+   * Step 9: the list price the last row showed (`extracted_old_price`, Amazon's struck-through price),
+   * as of checkedAt. Absent when that row showed none. A reference figure, never counted in an estimate.
+   */
+  listPrice?: number;
+  /**
+   * Step 9: the "Buy New" box on the listing's own page (`purchase_options.buy_new`), read by Verify.
+   * Null when the last page read showed none; absent when no page was read. Kept when a search row
+   * rewrites the listing.
+   */
+  buyBox?: BuyBox | null;
+}
+
+/** Step 9: a listing page's "Buy New" box: its price, who sells it and who ships it. */
+export interface BuyBox {
+  price: number;
+  soldBy: string | null;
+  shipsFrom: string | null;
+  /** When SerpApi answered with the page. */
+  seenAt: number;
 }
 
 /** How far the crawl of one brand's Amazon listings has got. It continues across scans. */
@@ -446,6 +504,49 @@ export interface PartRow {
   image: string | null;
   /** Title of the chosen listing, when it is among the saved listings. */
   title: string | null;
+  /** Step 9: every price known for the part, each labelled, highest first (report.ts priceOptions). */
+  prices: PriceOption[];
+}
+
+/**
+ * Step 9: where a part's price comes from. Only amazon_new and amazon_buybox count in an estimate today.
+ * amazon_new     the matched New listing's featured price, while the listing is active (the estimate's price)
+ * amazon_buybox  the matched listing's "Buy New" box, from its page (Verify)
+ * amazon_list    the matched listing's list price (struck through): reference only
+ * homedepot      Home Depot's own price for the part sold alone: reference only
+ * ebay_sold_new  reserved for eBay sold New listings; nothing produces it yet
+ */
+export type PriceKind = 'amazon_new' | 'amazon_buybox' | 'amazon_list' | 'homedepot' | 'ebay_sold_new';
+
+/** Step 9: one labelled price for a part. */
+export interface PriceOption {
+  kind: PriceKind;
+  price: number;
+  /** Every kind produced today is 'new'. */
+  condition: 'new' | 'renewed' | 'used_or_new';
+  /** Who sells it, when known: the Buy Box's seller, or "Home Depot". */
+  seller: string | null;
+  shipsFrom: string | null;
+  /** How many offers the figure stands for; null for every kind produced today. */
+  offers: number | null;
+  asin: string | null;
+  link: string | null;
+  /** When the figure was seen: the response's time, or the reading's clock time. */
+  seenAt: number;
+  /** True for a figure shown for reference only (amazon_list, homedepot): never counted in an estimate or a range. */
+  reference: boolean;
+}
+
+/**
+ * Step 9: a way to sell's estimate at each end of its parts' counting prices (estimates from fee
+ * settings, like `estimate`). lowest: each part at its lowest counting price, $0 where it has none.
+ * amazonNew: exactly `estimate`. highest: each part at its highest counting price, a part with none at
+ * the liquidation rate as in `estimate`. All null when `estimate` is.
+ */
+export interface PriceRange {
+  lowest: BundleResult | null;
+  amazonNew: BundleResult | null;
+  highest: BundleResult | null;
 }
 
 /**
@@ -503,6 +604,8 @@ export interface BundleRow {
   options: SaleOption[];
   /** Parts the stored catalog marks as kits whose own Home Depot page is not stored, in part order. */
   kitsNotRead: string[];
+  /** Step 9: the primary option's range; all null while the split is not resolved. */
+  range: PriceRange;
 }
 
 /** One way to sell a bundle: each kit inside it sold whole, or split into the items its page lists. */
@@ -525,6 +628,8 @@ export interface SaleOption {
   leftovers: string[];
   /** True when a kit is split: its items have no retail box of their own. */
   loose: boolean;
+  /** Step 9: the estimate at each end of the parts' counting prices; `range.amazonNew` is `estimate`. */
+  range: PriceRange;
 }
 
 /** Which of the owner's answers decides a bundle's split, and the question it answered. */

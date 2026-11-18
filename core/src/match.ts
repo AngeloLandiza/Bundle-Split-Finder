@@ -163,6 +163,8 @@ export interface Candidate {
   upcs?: string[];
   packageQty?: number | null;
   price?: number | null;
+  /** Step 9: a search row's list price (`extracted_old_price`). Never read by the grading. */
+  listPrice?: number | null;
   reviews?: number | null;
   sponsored?: boolean;
   image?: string | null;
