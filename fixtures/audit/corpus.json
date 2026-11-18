@@ -801,8 +801,7 @@
       },
       "label": "part",
       "source": "validation-2026-11-18",
-      "note": "RYOBI \"Drill and Impact Drive KIT 65-Piece A986501\".",
-      "known": "validation-2026-11-18: labelled the part, graded reject (listing is a kit, component is a single item)"
+      "note": "RYOBI \"Drill and Impact Drive KIT 65-Piece A986501\"."
     },
     {
       "part": {
@@ -3182,8 +3181,7 @@
       },
       "label": "part",
       "source": "validation-2026-11-18",
-      "note": "RYOBI \"ONEAND 18V HIGH Performance Lithium-ION 2.0 AH Compact Battery 2-Pack PBP2003\": the 2-pack is the part.",
-      "known": "validation-2026-11-18: labelled the part, graded reject (pack of 2, component is a pack of 1)"
+      "note": "RYOBI \"ONEAND 18V HIGH Performance Lithium-ION 2.0 AH Compact Battery 2-Pack PBP2003\": the 2-pack is the part."
     },
     {
       "part": {
@@ -3506,8 +3504,7 @@
       },
       "label": "part",
       "source": "validation-2026-11-18",
-      "note": "\"Ryobi PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench (Tool ONLY...)\" (brand field empty, title leads with Ryobi); B0CC9ZFCP8 is Renewed and B0BPDRSWVL is the PCL265K1 kit.",
-      "known": "validation-2026-11-18: labelled the part, graded reject (listing is a kit, component is a single item)"
+      "note": "\"Ryobi PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench (Tool ONLY...)\" (brand field empty, title leads with Ryobi); B0CC9ZFCP8 is Renewed and B0BPDRSWVL is the PCL265K1 kit."
     },
     {
       "part": {
