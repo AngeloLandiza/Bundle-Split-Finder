@@ -311,6 +311,35 @@ describe('a failure set aside (N4)', () => {
     expect(screen.getByText('Set aside for the next scan. A Home Depot page could not be read.')).toBeInTheDocument();
   });
 
+  // The runner's refusal note already says what happens next (core/src/scan/runner.ts; core/test/scan-kit-pages.test.ts has its three forms).
+  it('says a page refusal as its own sentence, without "Set aside for the next scan."', () => {
+    for (const said of [
+      'Home Depot refused a page (HTTP 403); the rest are read next scan.',
+      'Home Depot refused a page (no answer); the rest are read next scan.',
+      'Home Depot refused a page; the rest are read next scan.',
+    ]) {
+      show(report([row('c1')]), failed({ status: 'done', stopMessage: said }));
+      expect(screen.getByText(said)).toBeInTheDocument();
+      expect(screen.queryByText(/Set aside for the next scan/)).toBeNull();
+      cleanup();
+    }
+  });
+
+  it('keeps the prefix for what follows a refusal: its lookup failure', () => {
+    show(
+      report([row('c1', { estimate: null, parts: [part('PCL526B', { status: 'waiting', grade: null, availability: 'missing', asin: null })] })]),
+      failed({
+        status: 'done',
+        stopMessage: 'Home Depot refused a page (HTTP 403); the rest are read next scan. The lookup of PCL526B failed: SerpApi returned HTTP 404.',
+      }),
+    );
+    expect(
+      screen.getByText(
+        'Home Depot refused a page (HTTP 403); the rest are read next scan. Set aside for the next scan. The lookup of PCL526B failed: SerpApi answered with an error (HTTP 404).',
+      ),
+    ).toBeInTheDocument();
+  });
+
   it('says a joined lookup failure as sentences with SerpApi\'s text mapped', () => {
     show(
       report([row('c1', { estimate: null, parts: [part('PCL526B', { status: 'waiting', grade: null, availability: 'missing', asin: null })] })]),

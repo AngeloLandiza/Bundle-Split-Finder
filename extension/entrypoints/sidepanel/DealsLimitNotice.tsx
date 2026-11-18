@@ -47,6 +47,9 @@ export function limitCopy(state: AppState, now: number, bundles: BundleRow[]): {
 /** The sentence a failed lookup leaves in the job's message (core/src/scan/runner.ts, setAside). */
 const LOOKUP_FAILED = /The lookup of (\S+) failed: /;
 
+/** The runner's note when Home Depot refused a page (core/src/scan/runner.ts): "(HTTP 403)" or "(no answer)" may follow "a page". */
+const REFUSED_PAGE = /Home Depot refused a page(?: \([^)]*\))?; the rest are read next scan\./;
+
 /**
  * A step that failed and was set aside leaves its message on the job while the scan goes on. An error or a rate limit
  * is shown by the Notice above the tabs; every other job that kept a message says it here. A lookup's sentence is said
@@ -65,7 +68,12 @@ export function setAsideSentence(state: AppState, bundles: BundleRow[]): string 
     if (!still) message = message.slice(0, lookup.index).trim();
   }
   const text = sentenceFor(message, 'try again');
-  return text === null ? null : `Set aside for the next scan. ${text}`;
+  if (text === null) return null;
+  // A refusal's own sentence already says the rest are read next scan: it is said as it is, and only what follows it is "set aside".
+  const refusal = REFUSED_PAGE.exec(text);
+  if (!refusal) return `Set aside for the next scan. ${text}`;
+  const rest = `${text.slice(0, refusal.index)}${text.slice(refusal.index + refusal[0].length)}`.trim();
+  return rest === '' ? refusal[0] : `${refusal[0]} Set aside for the next scan. ${rest}`;
 }
 
 export function LimitNotice({ state, now, bundles }: { state: AppState; now: number; bundles: BundleRow[] }) {
