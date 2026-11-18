@@ -17,6 +17,8 @@
 //      a page visit does); the owner's split answers through applyReviewAnswer; then the side
 //      panel's Look up (runPaid, lookUp) for every part still waiting, kit items included, in one
 //      press, which orders them by lookupOrder. Passes go on while a pass gets a new answer.
+//      Before each Look up, as a scan reads them before its lookups (step 9), Home Depot's own prices
+//      for the parts sold alone, from hd-part-prices-<date>.json through the scan's own savePartPrices.
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -33,10 +35,10 @@ import { notePage } from '../core/src/scan/pageView';
 import { PaidProblem, runPaid } from '../core/src/scan/paid';
 import { notLookedUp } from '../core/src/scan/report';
 import { buildReport } from '../core/src/scan/report';
-import { bundleParts, knownModels, runScan } from '../core/src/scan/runner';
+import { bundleParts, knownModels, partPricesWanted, runScan, savePartPrices } from '../core/src/scan/runner';
 import { twinKeys } from '../core/src/scan/twins';
 import {
-  type BudgetView, type BundleRecord, type BundleRow, bundleKey, DEFAULT_SCAN_SETTINGS, type MatchRecord, type MatchStatus, partKey, resolvedParts,
+  type BudgetView, type BundleRecord, type BundleRow, bundleKey, DEFAULT_SCAN_SETTINGS, type MatchRecord, type MatchStatus, type PartPriceReading, partKey, resolvedParts,
   type ScanReport, type ScanSettings, type ScanStore, type SearchClient,
 } from '../core/src/scan/types';
 import { SearchBudget } from '../core/src/serpapi/budget';
@@ -70,6 +72,7 @@ export function validationFiles(dir: string) {
     pages: join(dir, `pages-${VALIDATION_DATE}.json`),
     kitPages: join(dir, `kit-pages-${VALIDATION_DATE}.json`),
     answers: join(dir, `answers-${VALIDATION_DATE}.json`),
+    partPrices: join(dir, `hd-part-prices-${VALIDATION_DATE}.json`),
     labels: join(dir, `labels-${VALIDATION_DATE}.json`),
     results: join(dir, `results-${VALIDATION_DATE}.json`),
     responses: join(dir, 'responses'),
@@ -98,6 +101,11 @@ export interface Inputs {
   kitPages: Map<string, KitPageInput>;
   /** Split answers by bundle model, upper case. */
   answers: Map<string, AnswerInput>;
+  /**
+   * Step 9: Home Depot's prices for parts sold alone, read in the owner's Chrome, by partKey. Empty when
+   * the file is absent: then no part has a Home Depot price.
+   */
+  partPrices: Map<string, PartPriceReading>;
   /** Problems reading the optional files: each one is reported, never guessed around. */
   problems: string[];
 }
@@ -139,7 +147,25 @@ export function loadInputs(dir: string): Inputs {
       answers.set(model.trim().toUpperCase(), { parts: parts as string[] | 'none', note: (v as { note: string }).note });
     }
   }
-  return { pages, kitPages, answers, problems };
+  const partPrices = new Map<string, PartPriceReading>();
+  if (existsSync(files.partPrices)) {
+    const raw = (readJson(files.partPrices) as { prices?: unknown }).prices;
+    const textOrNull = (v: unknown): v is string | null | undefined => v === undefined || v === null || typeof v === 'string';
+    for (const [model, v] of Object.entries(isObject(raw) ? raw : {})) {
+      if (!isObject(v) || !isText(v.brand) || !isText(v.model) || v.model.trim().toUpperCase() !== model.trim().toUpperCase()
+        || !(v.price === null || typeof v.price === 'number') || !textOrNull(v.itemId) || !textOrNull(v.title)) {
+        problems.push(`Home Depot price for ${model}: not used; it needs brand, model, itemId, price and title`);
+        continue;
+      }
+      const itemId = (v.itemId ?? null) as string | null;
+      partPrices.set(partKey(v.brand, v.model), {
+        brand: v.brand.trim(), model: v.model.trim(), itemId, price: v.price as number | null, title: (v.title ?? null) as string | null,
+        // The file keeps the item id; the link is Home Depot's address for it.
+        link: itemId === null ? null : `https://www.homedepot.com/p/${itemId}`,
+      });
+    }
+  }
+  return { pages, kitPages, answers, partPrices, problems };
 }
 
 // ---------------------------------------------------------------- clients
@@ -465,7 +491,16 @@ export async function runValidationPipeline(deps: PipelineDeps): Promise<Pipelin
     return applied;
   };
 
-  // 3. Passes: the pages, the answers, then one Look up press for every part still waiting.
+  // Step 9: Home Depot's prices for the parts sold alone, as a scan reads them after its pages and before
+  // its lookups: the parts it would ask for (partPricesWanted), answered from the file as the owner's
+  // browser read them, each saved by the scan's own savePartPrices. A part the file does not hold is not
+  // answered, as a reader that did not get to it.
+  const readPrices = async () => {
+    const asked = await partPricesWanted(store, SETTINGS, now);
+    await savePartPrices(store, asked, asked.flatMap((p) => deps.inputs.partPrices.get(p.key) ?? []), now);
+  };
+
+  // 3. Passes: the pages, the answers, Home Depot's prices, then one Look up press for every part still waiting.
   const missedLookups = new Map<string, { brand: string; model: string }>();
   const failedLookups = new Map<string, { brand: string; model: string; message: string }>();
   /** kitKey of every part whose lookup was not answered: its other written form would ask the same. */
@@ -482,6 +517,7 @@ export async function runValidationPipeline(deps: PipelineDeps): Promise<Pipelin
     passes = pass;
     await visitAll();
     if ((await applyAnswers()) > 0) await visitAll();
+    await readPrices();
     const waiting = (await waitingParts(store, validation)).filter((p) => !missedProducts.has(kitKey(p.brand, p.model)));
     if (waiting.length === 0) break;
     const before = lookups.lookups;
@@ -527,6 +563,7 @@ export async function runValidationPipeline(deps: PipelineDeps): Promise<Pipelin
   // The pages once more, so every split and saved-listing match reads the last answers.
   await visitAll();
   if ((await applyAnswers()) > 0) await visitAll();
+  await readPrices();
   return { store, report: await buildReport(store, SETTINGS), passes, stop, capReached, missedLookups, failedLookups, refusedLookups, answered, problems, kitsStored, validation, notBundles: [...notBundles.values()] };
 }
 
@@ -630,6 +667,8 @@ export interface PartResult {
   twin?: string;
   /** The listings the decision saw: the lookup's results, or the saved listings that carry the model. */
   candidates: CandidateRow[];
+  /** Step 9: Home Depot's price for the part sold alone (reference only, never in an ROI); null when none is stored. */
+  hdPrice: number | null;
 }
 
 export interface BundleResult {
@@ -654,6 +693,8 @@ export interface BundleResult {
   options: { id: string; label: string; profit: number | null; roi: number | null; leftovers: string[]; parts: string[] }[];
   kitsNotRead: string[];
   parts: PartResult[];
+  /** Step 9: the row's ROI at each end of its primary way to sell's range (BundleRow.range); amazonNew is its estimate's. */
+  roiRange: { lowest: number | null; amazonNew: number | null; highest: number | null };
 }
 
 export interface ValidationResults {
@@ -670,6 +711,10 @@ export interface ValidationResults {
     parts: number;
     byGrade: Record<string, number>;
     notLookedUp: number;
+    /** Step 9: bundles whose ROI is above 0 at each end of the range (estimates from fee settings). */
+    positive: { lowest: number; amazonNew: number; highest: number };
+    /** Step 9: parts with a Home Depot price stored (reference only). */
+    hdPrices: number;
   };
   bundles: BundleResult[];
   /**
@@ -715,6 +760,7 @@ export async function buildResults(run: PipelineRun): Promise<ValidationResults>
           source: p.status === 'waiting' || p.status === 'unmatched' ? null : (decision?.source ?? null),
           ...(decision?.twin ? { twin: decision.twin } : {}),
           candidates: decision?.candidates ?? [],
+          hdPrice: p.prices.find((o) => o.kind === 'homedepot')?.price ?? null,
         });
       }
     }
@@ -730,6 +776,7 @@ export async function buildResults(run: PipelineRun): Promise<ValidationResults>
       })),
       kitsNotRead: b.kitsNotRead,
       parts: [...parts.values()],
+      roiRange: { lowest: b.range.lowest?.roi ?? null, amazonNew: b.range.amazonNew?.roi ?? null, highest: b.range.highest?.roi ?? null },
     });
   }
   const all = bundles.flatMap((b) => b.parts);
@@ -754,6 +801,12 @@ export async function buildResults(run: PipelineRun): Promise<ValidationResults>
       parts: all.length,
       byGrade,
       notLookedUp: all.filter((p) => p.status === 'waiting' || p.status === 'unmatched').length,
+      positive: {
+        lowest: bundles.filter((b) => (b.roiRange.lowest ?? 0) > 0).length,
+        amazonNew: bundles.filter((b) => (b.roiRange.amazonNew ?? 0) > 0).length,
+        highest: bundles.filter((b) => (b.roiRange.highest ?? 0) > 0).length,
+      },
+      hdPrices: all.filter((p) => p.hdPrice !== null).length,
     },
     bundles,
     notReadAsBundle: run.notBundles,
@@ -966,6 +1019,8 @@ function logSummary(log: (line: string) => void, results: ValidationResults): vo
   }
   log(`Bundles ${s.bundles} of ${s.pages} pages: split resolved ${s.splitResolved} (by an answer ${s.splitByAnswer}), in review ${s.splitInReview}`);
   log(`Parts ${s.parts}: ${Object.entries(s.byGrade).map(([k, v]) => `${k} ${v}`).join(', ')}`);
+  log(`Positive ROI (estimates from fee settings): lowest ${s.positive.lowest}, Amazon New ${s.positive.amazonNew}, highest ${s.positive.highest} of ${s.bundles} bundles`);
+  log(`Parts with a Home Depot price (reference only, never in an ROI): ${s.hdPrices} of ${s.parts}`);
 }
 
 export async function runValidateCli(args: string[], deps: ValidateDeps): Promise<number> {
