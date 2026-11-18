@@ -97,3 +97,11 @@ PO: "1. Depends, I try to not to remove anything from OEM packaging but some too
 - eBay sold-New prices (the price that actually moves) value parts with no Amazon New listing; Facebook Marketplace has no data source and is out. A new task, after the SerpApi eBay engine's sold and condition filters are confirmed from its docs; recording costs one search per part (owner approves the count).
 - Home Depot's price is a labelled reference, never a sell price in an ROI; so is Amazon's list price.
 - Range: lowest = Amazon New only ($0 where none); likely = Amazon New, else eBay sold New; highest = each part's better counting price.
+
+## eBay: where it stands (Nov 18)
+- SerpApi's eBay engine no longer filters to sold listings (`show_only` Sold/Complete deprecated).
+- eBay's website shows sold listings only signed in, and showed a "verify yourself" check to automated reading: not used (no bot-check evasion).
+- eBay Finding API (`findCompletedItems`) was decommissioned in Feb 2025 (secondary sources).
+- Marketplace Insights API (sold prices) is limited release (invitation, business case): the PO's call.
+- **Chosen next:** the owner is applying for an eBay developer account (one business day). Then one test call to the Browse API (open to any developer with a client-credentials token, basic scope — confirmed on its getItem page) to confirm what it returns, especially `estimatedSoldQuantity` (unconfirmed); then design the eBay option on it. The manual "check eBay sold" link with an owner-entered price stays a fallback.
+- The owner's last instruction for this session: "just finish whatever you have now and we can continue later" — phase 1 (Tasks 1–4) and the bulk-packaging wording; eBay after the keys.
