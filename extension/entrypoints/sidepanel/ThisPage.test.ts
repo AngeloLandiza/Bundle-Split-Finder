@@ -23,7 +23,7 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import type { AppState, PanelReport, Reply, Request, ThisPage } from '../../lib/messages';
 import type { ActiveTab, PanelTabs, WorkerApi } from '../../lib/pageClient';
 import { App } from './App';
-import { CHIP_OFF, NO_PAGE, SAVED_LATER, ThisPageTab } from './ThisPageTab';
+import { CHIP_OFF, NO_PAGE, SAVED_LATER_SCAN, SAVED_LATER_SEARCH, ThisPageTab } from './ThisPageTab';
 
 afterEach(cleanup);
 
@@ -212,24 +212,31 @@ describe('This page: a bundle read from the page', () => {
     expect(screen.getByText('A scan is running. Answer when it has finished.')).toBeInTheDocument();
   });
 
-  it('a question the worker has not saved yet (a scan holds the write back) cannot be saved, and says when it can', async () => {
+  it('a question the worker has not saved yet cannot be saved, and names what it waits for: the scan, or the Look up or Verify', async () => {
     const user = userEvent.setup();
     const view = { ...(w.asked.view as Extract<ThisPage, { kind: 'bundle' }>), questionStored: false };
     const b = browser({ id: 4, url: ASKED_URL }, { 4: view });
-    // Even in a panel that does not know of a scan (a Look up or Verify holds the write back too).
+    // No scan in the panel's state: a Look up or Verify holds the write back.
     renderTab(b, { id: 4, url: ASKED_URL }, { report: EMPTY_REPORT });
     await user.click(await screen.findByRole('radio', { name: 'None of these' }));
     expect(screen.getByRole('button', { name: 'Save answer' })).toBeDisabled();
-    expect(screen.getByText(SAVED_LATER)).toBeInTheDocument();
-    expect(SAVED_LATER).toBe('Saved when the scan ends.');
+    expect(screen.getByText(SAVED_LATER_SEARCH)).toBeInTheDocument();
+    expect(SAVED_LATER_SEARCH).toBe('Saved when the search ends.');
     expect(b.send).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'answerReview' }));
+    // A scan: it names the scan.
+    cleanup();
+    const scanning = browser({ id: 4, url: ASKED_URL }, { 4: view });
+    renderTab(scanning, { id: 4, url: ASKED_URL }, { state: state({ scanRunning: true }) });
+    await user.click(await screen.findByRole('radio', { name: 'None of these' }));
+    expect(screen.getByText(SAVED_LATER_SCAN)).toBeInTheDocument();
+    expect(SAVED_LATER_SCAN).toBe('Saved when the scan ends.');
     // Stored: the answer can be saved.
     cleanup();
     const stored = browser({ id: 4, url: ASKED_URL }, { 4: { ...view, questionStored: true } });
     renderTab(stored, { id: 4, url: ASKED_URL });
     await user.click(await screen.findByRole('radio', { name: 'None of these' }));
     expect(screen.getByRole('button', { name: 'Save answer' })).toBeEnabled();
-    expect(screen.queryByText(SAVED_LATER)).toBeNull();
+    expect(screen.queryByText(SAVED_LATER_SEARCH)).toBeNull();
   });
 
   it('Open full detail opens Detail for the bundle; Copy ASINs copies both', async () => {

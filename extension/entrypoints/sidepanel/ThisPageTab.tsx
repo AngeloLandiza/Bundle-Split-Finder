@@ -18,8 +18,12 @@ import './ThisPageTab.css';
 
 export const NO_PAGE = 'Open a Home Depot bundle page to see it here.';
 export const CHIP_OFF = 'The chip is off. Turn it on in settings to read this page.';
-/** A question the worker has not saved yet (a scan, a Look up or a Verify holds the write back) cannot be answered. */
-export const SAVED_LATER = 'Saved when the scan ends.';
+/**
+ * A question the worker has not saved yet (a scan, a Look up or a Verify holds the write back) cannot be answered. The
+ * sentence names what is running: the panel knows of a scan; any other write held back is a Look up or Verify.
+ */
+export const SAVED_LATER_SCAN = 'Saved when the scan ends.';
+export const SAVED_LATER_SEARCH = 'Saved when the search ends.';
 
 const sameTab = (a: ActiveTab | null, b: ActiveTab | null): boolean => a === b || (a !== null && b !== null && a.id === b.id && a.url === b.url);
 
@@ -120,7 +124,7 @@ function Bundle({ view, report, state, api, onOpenDetail }: { view: Extract<Page
       </section>
 
       {question ? (
-        <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} blocked={view.questionStored ? null : SAVED_LATER} onSave={answer} compact />
+        <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} blocked={view.questionStored ? null : state.scanRunning ? SAVED_LATER_SCAN : SAVED_LATER_SEARCH} onSave={answer} compact />
       ) : null}
 
       {row.parts.length > 0 ? (
