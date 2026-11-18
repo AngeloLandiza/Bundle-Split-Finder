@@ -10,7 +10,7 @@ import { CONTENT_REQUESTS, type ChipSetting, type Request, type ShowThisPage, ty
 import * as prefs from '../lib/prefs';
 import { mayAsk } from '../lib/sender';
 import { createPageReader, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
-import { createWorker, type PageEnv } from '../lib/worker';
+import { createWorker, type DeferredPage, type PageEnv } from '../lib/worker';
 import type { ProductPage } from '../../core/src/hdPage';
 
 declare const __SPLIT_FINDER_BASE_URL__: string | undefined;
@@ -24,8 +24,13 @@ function chromeReaderEnv(): ReaderEnv {
   return {
     origin: __SPLIT_FINDER_HD_ORIGIN__,
     async openTab(url) {
-      const tab = await browser.tabs.create({ url, active: false });
+      // Opened blank and remembered before it goes to the page, so the chip's content script (which runs on that page)
+      // finds the tab already named as the reader's when it sends its first pageSeen. waitForDoorway never takes the
+      // blank start page for the loaded one (doorwayLoaded).
+      const tab = await browser.tabs.create({ url: 'about:blank', active: false });
       if (typeof tab.id !== 'number') throw new Error('Chrome opened no tab.');
+      await browser.storage.session.set({ [DOORWAY_KEY]: tab.id });
+      await browser.tabs.update(tab.id, { url });
       return tab.id;
     },
     async closeTab(tabId) {
@@ -59,6 +64,7 @@ function chromeReaderEnv(): ReaderEnv {
 const pageKey = (tabId: number) => `thisPage:${tabId}`;
 const wantedKey = (tabId: number) => `showThisPage:${tabId}`;
 const chipTabKey = (tabId: number) => `chipTab:${tabId}`;
+const deferredKey = (tabId: number) => `deferred:${tabId}`;
 
 function chromePages(): PageEnv {
   return {
@@ -69,6 +75,17 @@ function chromePages(): PageEnv {
     async save(tabId, page) {
       if (page === null) await browser.storage.session.remove(pageKey(tabId));
       else await browser.storage.session.set({ [pageKey(tabId)]: page });
+    },
+    async setDeferred(tabId, entry) {
+      if (entry === null) await browser.storage.session.remove(deferredKey(tabId));
+      else await browser.storage.session.set({ [deferredKey(tabId)]: entry });
+    },
+    async deferredAll() {
+      const all = await browser.storage.session.get(null);
+      return Object.entries(all)
+        .filter(([k, v]) => k.startsWith('deferred:') && typeof v === 'object' && v !== null)
+        .map(([k, v]) => ({ tabId: Number(k.slice('deferred:'.length)), ...(v as DeferredPage) }))
+        .filter((d) => Number.isInteger(d.tabId) && typeof d.seenAt === 'number');
     },
     async setWanted(tabId, on) {
       if (on) await browser.storage.session.set({ [wantedKey(tabId)]: true });

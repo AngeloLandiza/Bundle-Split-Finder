@@ -82,9 +82,10 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     const tabs = api.tabs;
     if (!tabs) return;
     let live = true;
-    const take = async (known?: number) => {
-      const id = known ?? (await tabs.active())?.id;
-      if (id === undefined) return;
+    const take = async (named?: number) => {
+      const id = (await tabs.active())?.id;
+      // The answer is for one tab: only the panel showing that tab takes it.
+      if (id === undefined || (named !== undefined && named !== id)) return;
       const reply = await api.send<boolean>({ type: 'takeShowThisPage', tabId: id });
       if (live && reply.ok && reply.data === true) {
         setOpenKey(null);

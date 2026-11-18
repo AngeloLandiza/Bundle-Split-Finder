@@ -454,7 +454,8 @@ describe('notePage with write: false (fix round 1)', () => {
       const view = await notePage(store, RATCHET, page(), VISIT, { write: false });
       expect(JSON.stringify(await snapshot(store))).toBe(before);
       const written = await notePage(await make(), RATCHET, page(), VISIT, { write: true });
-      expect(view).toEqual(written);
+      // The one difference: a question the write saved is stored, and over a dropped layer it is not (unless it already was).
+      expect(view).toEqual(asBundle(written).question === null ? written : { ...asBundle(written), questionStored: asBundle(view).questionStored });
       expect(view.kind).toBe('bundle');
     });
   }
@@ -463,6 +464,52 @@ describe('notePage with write: false (fix round 1)', () => {
     const store = new MemoryScanStore();
     await notePage(store, RATCHET, founderPage(), VISIT);
     expect(await store.listBundles()).toHaveLength(1);
+  });
+});
+
+describe('notePage: whether the view\'s question is stored (fix round 1)', () => {
+  it('written: stored. Over a dropped layer on an empty store: not stored. Once an earlier write saved it: stored. No question: stored', async () => {
+    const asked = unpricedPage('328690510');
+    const store = new MemoryScanStore();
+    const dropped = asBundle(await notePage(store, RATCHET, asked, VISIT, { write: false }));
+    expect(dropped).toMatchObject({ question: { id: 'split:homedepot:328690510' }, questionStored: false });
+    expect(await store.getReview('split:homedepot:328690510')).toBeUndefined();
+    expect(asBundle(await notePage(store, RATCHET, asked, VISIT)).questionStored).toBe(true);
+    expect(asBundle(await notePage(store, RATCHET, asked, VISIT + HOUR, { write: false }))).toMatchObject({ question: { id: 'split:homedepot:328690510' }, questionStored: true });
+    const settled = asBundle(await notePage(new MemoryScanStore(), RATCHET, founderPage(), VISIT, { write: false }));
+    expect(settled).toMatchObject({ question: null, questionStored: true });
+  });
+});
+
+describe('notePage: a page message is untrusted and has limits (fix round 1)', () => {
+  const none = async (page: unknown) => {
+    const store = new MemoryScanStore();
+    expect(await notePage(store, RATCHET, page as ProductPage, VISIT)).toEqual({ kind: 'none' });
+    expect(await snapshot(store)).toEqual(await snapshot(new MemoryScanStore()));
+  };
+
+  it('a page over a limit is refused whole and nothing is stored: title, brand, model, a bullet, the bullet count, the description, the item id', async () => {
+    const page = founderPage();
+    await none({ ...page, title: 'T'.repeat(301) });
+    await none({ ...page, brand: 'RYOBI'.padEnd(61, ' x') });
+    await none({ ...page, model: 'PBLRC2501SB'.padEnd(61, '0') });
+    await none({ ...page, bullets: [...page.bullets, 'x'.repeat(2_001)] });
+    await none({ ...page, bullets: Array.from({ length: 101 }, () => 'x') });
+    await none({ ...page, description: 'd'.repeat(10_001) });
+    await none({ ...page, itemId: '1'.repeat(21) });
+    // A hostile one: megabytes in every field.
+    await none({ ...page, title: 'T'.repeat(5_000_000), bullets: Array.from({ length: 100_000 }, () => 'x'.repeat(100)), description: 'd'.repeat(5_000_000) });
+  });
+
+  it('prices must be finite and under $100,000; at the limits a page is read', async () => {
+    const page = founderPage();
+    for (const bad of [Infinity, -Infinity, NaN, 100_000, 1e9, 0, -1]) {
+      await none({ ...page, price: bad });
+      await none({ ...page, wasPrice: bad });
+    }
+    const store = new MemoryScanStore();
+    const edge = { ...page, price: 99_999.99, wasPrice: 99_999.99, title: 'T'.repeat(300), bullets: Array.from({ length: 100 }, () => 'x'.repeat(2_000)), description: 'd'.repeat(10_000) };
+    expect(asBundle(await notePage(store, RATCHET, edge, VISIT)).kind).toBe('bundle');
   });
 });
 

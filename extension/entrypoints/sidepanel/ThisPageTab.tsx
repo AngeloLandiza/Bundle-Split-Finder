@@ -17,6 +17,9 @@ import './ReviewTab.css';
 import './ThisPageTab.css';
 
 export const NO_PAGE = 'Open a Home Depot bundle page to see it here.';
+export const CHIP_OFF = 'The chip is off. Turn it on in settings to read this page.';
+/** A question the worker has not saved yet (a scan, a Look up or a Verify holds the write back) cannot be answered. */
+export const SAVED_LATER = 'Saved when the scan ends.';
 
 const sameTab = (a: ActiveTab | null, b: ActiveTab | null): boolean => a === b || (a !== null && b !== null && a.id === b.id && a.url === b.url);
 
@@ -117,7 +120,7 @@ function Bundle({ view, report, state, api, onOpenDetail }: { view: Extract<Page
       </section>
 
       {question ? (
-        <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} onSave={answer} compact />
+        <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} blocked={view.questionStored ? null : SAVED_LATER} onSave={answer} compact />
       ) : null}
 
       {row.parts.length > 0 ? (
@@ -176,6 +179,8 @@ export function ThisPageTab({ api, report, state, tab, onOpenDetail }: ThisPageT
   if (read === null || read.tabId !== tab.id) return null;
   if ('error' in read) return <p className="thispage-empty" role="alert">{read.error}</p>;
   const view = read.view;
+  // The owner turned the chip off, which stops pages being read: on a product page, say so rather than "open a page".
+  if (view.kind === 'off') return <p className="thispage-empty">{itemIdOfUrl(tab.url) !== null ? CHIP_OFF : NO_PAGE}</p>;
   // The tab has moved on to another address (a page the chip does not read) and nothing has said so yet.
   const addressed = itemIdOfUrl(tab.url);
   if (view.kind !== 'bundle' || (tab.url !== null && addressed !== view.itemId)) return <p className="thispage-empty">{NO_PAGE}</p>;

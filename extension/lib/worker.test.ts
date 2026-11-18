@@ -14,7 +14,7 @@ import type { ActiveScan, StoredAccount } from './prefs';
 import { parseProductPage, type ProductPage } from '@core/hdPage';
 import { notePage, type PageView } from '@core/scan/pageView';
 import { toScanSettings } from '@core/settings';
-import { createWorker, type PageEnv, type Prefs, type Worker } from './worker';
+import { createWorker, type DeferredPage, type PageEnv, type Prefs, type Worker } from './worker';
 
 // Every search goes through the real SerpApiClient over replayRecorded(); the Account API
 // is a fake answered from fx.SERPAPI_ACCOUNT_FREE. Nothing reaches the network.
@@ -157,6 +157,15 @@ class FakePages implements PageEnv {
   }
   tell(tabId: number) {
     this.told.push(tabId);
+  }
+  /** The visits not stored yet, as chrome.storage.session keeps them. */
+  deferred = new Map<number, DeferredPage>();
+  async setDeferred(tabId: number, entry: DeferredPage | null) {
+    if (entry === null) this.deferred.delete(tabId);
+    else this.deferred.set(tabId, structuredClone(entry));
+  }
+  async deferredAll() {
+    return [...this.deferred].map(([tabId, e]) => ({ tabId, ...structuredClone(e) }));
   }
   /** The tab the scan's reader opened. */
   readerTab: number | null = null;
@@ -1981,7 +1990,8 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     expect(await w.store.getReview(`split:${ASKED_KEY}`)).toBeUndefined();
     expect(w.pages.pages.has(TAB)).toBe(false);
     expect(w.broadcasts.length).toBe(broadcasts);
-    expect(await thisPage(w)).toEqual({ ok: true, data: { kind: 'empty' } });
+    // This page says the chip is off, and shows no page read before it was turned off.
+    expect(await thisPage(w)).toEqual({ ok: true, data: { kind: 'off' } });
     // Turned on again: the same page is read as before.
     w.prefs.showChip = true;
     expect(bundleOf(await seen(w, ASKED)).itemId).toBe('328690510');
@@ -2025,5 +2035,141 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     expect(w.pages.pages.get(TAB)).toEqual(ASKED);
     // A message that is no page at all is none, not an error.
     expect(await seen(w, null as unknown as ProductPage)).toEqual({ ok: true, data: { kind: 'none' } });
+  });
+
+  // ------------------------------------------------ fix round 1
+
+  /** What a stopped worker left in session storage: the page of a visit that was not stored, and when it was seen. */
+  const leave = (w: World, tabId: number, page: ProductPage, seenAt: number) => {
+    w.pages.pages.set(tabId, structuredClone(page));
+    w.pages.deferred.set(tabId, { page: structuredClone(page), seenAt });
+  };
+
+  it('a visit during a scan is kept in session storage with its time, and is stored as of the visit (not the time of the store) when the scan ends', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    w.clock = T0 + 5 * MINUTE;
+    await seen(w, ASKED);
+    expect([...w.pages.deferred]).toEqual([[TAB, { page: ASKED, seenAt: T0 + 5 * MINUTE }]]);
+    expect(await w.store.getBundle(ASKED_KEY)).toBeUndefined();
+
+    w.clock = T0 + HOUR;
+    gate.release();
+    await untilIdle(w);
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toBeDefined());
+    expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: T0 + 5 * MINUTE });
+    expect(await w.store.getReview(`split:${ASKED_KEY}`)).toMatchObject({ openedAt: T0 + 5 * MINUTE, answer: null });
+    expect(w.pages.deferred.size).toBe(0);
+  });
+
+  it('a worker restarted with a visit left deferred stores it at its start, as of the visit', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    leave(w, TAB, ASKED, T0 + 5 * MINUTE);
+    w.clock = T0 + HOUR;
+    const before = w.broadcasts.length;
+    await w.worker.onStart();
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: T0 + 5 * MINUTE }));
+    expect(await w.store.getReview(`split:${ASKED_KEY}`)).toMatchObject({ openedAt: T0 + 5 * MINUTE });
+    expect(w.pages.deferred.size).toBe(0);
+    await vi.waitFor(() => expect(w.broadcasts.length).toBeGreaterThan(before));
+  });
+
+  it('visits are stored in the order they were seen across tabs: the later price stands, whatever order they were left in', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    leave(w, 1, { ...ASKED, price: 100, wasPrice: 150 }, T0 + 2 * MINUTE);
+    leave(w, 2, { ...ASKED, price: 120, wasPrice: 150 }, T0 + 1 * MINUTE);
+    w.clock = T0 + HOUR;
+    await w.worker.onStart();
+    await vi.waitFor(async () => expect(w.pages.deferred.size).toBe(0));
+    expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ price: 100, seenAt: T0 + 2 * MINUTE });
+  });
+
+  it('a scan that starts before the settle runs leaves the visit deferred; it is stored when that scan ends', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    leave(w, TAB, ASKED, T0 + MINUTE);
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    await w.worker.onTick();
+    // The settle found a scan running: nothing was written, and the visit is still kept.
+    expect(await w.store.getBundle(ASKED_KEY)).toBeUndefined();
+    expect(w.pages.deferred.size).toBe(1);
+    gate.release();
+    await untilIdle(w);
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: T0 + MINUTE }));
+    expect(w.pages.deferred.size).toBe(0);
+  });
+
+  it('a visit whose store fails stays deferred while the others are stored, and is stored by a later tick', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const failing = { on: true };
+    w.worker = workerOver(
+      w,
+      new Proxy(w.store, {
+        get(t, prop) {
+          if (prop === 'putBundle') {
+            return async (b: Parameters<ScanStore['putBundle']>[0]) => {
+              if (failing.on && b.key === ASKED_KEY) throw new Error('The disk is full.');
+              return t.putBundle(b);
+            };
+          }
+          const v: unknown = Reflect.get(t, prop, t);
+          return typeof v === 'function' ? v.bind(t) : v;
+        },
+      }) as ScanStore,
+    );
+    leave(w, 1, ASKED, T0 + MINUTE);
+    leave(w, 2, FOUNDER, T0 + 2 * MINUTE);
+    await w.worker.onStart();
+    await vi.waitFor(async () => expect(await w.store.getBundle('homedepot:328814689')).toBeDefined());
+    expect([...w.pages.deferred.keys()]).toEqual([1]);
+    expect(await w.store.getBundle(ASKED_KEY)).toBeUndefined();
+
+    failing.on = false;
+    await w.worker.onTick();
+    await vi.waitFor(async () => expect(await w.store.getBundle(ASKED_KEY)).toMatchObject({ seenAt: T0 + MINUTE }));
+    expect(w.pages.deferred.size).toBe(0);
+  });
+
+  it('a page over the limits is answered none and is not stored, kept or deferred (hostile sizes)', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const hostile = [
+      { ...FOUNDER, title: 'T'.repeat(5_000_000) },
+      { ...FOUNDER, bullets: Array.from({ length: 100_000 }, () => 'x'.repeat(100)) },
+      { ...FOUNDER, bullets: ['x'.repeat(2_001)] },
+      { ...FOUNDER, description: 'd'.repeat(10_001) },
+      { ...FOUNDER, model: 'PBLRC2501SB'.padEnd(61, '0') },
+      { ...FOUNDER, price: 1e12 },
+      { ...FOUNDER, wasPrice: Infinity },
+    ];
+    for (const page of hostile) {
+      expect(await seen(w, page as ProductPage)).toEqual({ ok: true, data: { kind: 'none' } });
+    }
+    expect(await stored(w)).toMatchObject({ bundles: [], review: [] });
+    expect(w.pages.pages.size).toBe(0);
+    expect(w.pages.deferred.size).toBe(0);
+    // A real page is far under them.
+    expect(bundleOf(await seen(w, FOUNDER)).itemId).toBe('328814689');
+  });
+
+  it('a tab closed while its visit is still being stored is forgotten after it, not before', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await Promise.all([seen(w, FOUNDER, 9), w.worker.onTabClosed(9)]);
+    expect(w.pages.pages.has(9)).toBe(false);
+    expect(w.pages.chipTabSet.has(9)).toBe(false);
+    expect(await thisPage(w, 9)).toEqual({ ok: true, data: { kind: 'empty' } });
+  });
+
+  it('the view says whether its question is stored: not while a scan holds the write back, stored once it ends', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    expect(bundleOf(await seen(w, ASKED, 1)).questionStored).toBe(true);
+    const v = world({ key: KEY, settings: RYOBI });
+    const gate = held(v);
+    await send(v, { type: 'scanNow' });
+    expect(bundleOf(await seen(v, ASKED)).questionStored).toBe(false);
+    expect(bundleOf(await thisPage(v)).questionStored).toBe(false);
+    gate.release();
+    await untilIdle(v);
+    await vi.waitFor(async () => expect(bundleOf(await thisPage(v)).questionStored).toBe(true));
   });
 });

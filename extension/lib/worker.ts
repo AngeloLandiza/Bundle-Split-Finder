@@ -48,7 +48,16 @@ export interface Prefs {
  * What the chip's page visits need from Chrome, and what must outlive the worker (chrome.storage.session in the
  * extension). Everything is by tab id.
  */
+export interface DeferredPage {
+  page: ProductPage;
+  /** env.now() at the visit. */
+  seenAt: number;
+}
+
 export interface PageEnv {
+  /** The page of a tab whose visit is not stored yet, kept so that a restarted worker still stores it. */
+  setDeferred(tabId: number, entry: DeferredPage | null): Promise<void>;
+  deferredAll(): Promise<({ tabId: number } & DeferredPage)[]>;
   /** The Home Depot bundle page the tab last showed, or null. */
   load(tabId: number): Promise<ProductPage | null>;
   save(tabId: number, page: ProductPage | null): Promise<void>;
@@ -73,7 +82,10 @@ export function memoryPages(): PageEnv {
   const pages = new Map<number, ProductPage>();
   const wanted = new Set<number>();
   const chipTabs = new Set<number>();
+  const deferred = new Map<number, DeferredPage>();
   return {
+    setDeferred: async (tabId, entry) => void (entry === null ? deferred.delete(tabId) : deferred.set(tabId, entry)),
+    deferredAll: async () => [...deferred].map(([tabId, e]) => ({ tabId, ...e })),
     load: async (tabId) => pages.get(tabId) ?? null,
     save: async (tabId, page) => void (page === null ? pages.delete(tabId) : pages.set(tabId, page)),
     setWanted: async (tabId, on) => void (on ? wanted.add(tabId) : wanted.delete(tabId)),
@@ -280,8 +292,6 @@ export function createWorker(env: WorkerEnv): Worker {
   let paidKey: string | null = null;
   /** Set by forgetKey, and by checkKey saving a different key, while a paid action runs. runPaid asks it before every search. */
   let paidStop = false;
-  /** Tabs whose page was seen while a scan or a Look up or Verify ran: not stored then, stored when it has ended. */
-  const deferred = new Set<number>();
 
   const settings = async () => trusted(await prefs.getSettings());
 
@@ -534,6 +544,8 @@ export function createWorker(env: WorkerEnv): Worker {
       // A storage error before the scan started: nothing was spent, and the next tick tries again.
     }
     await started;
+    // Pages seen while a scan ran that a restarted worker still holds, or whose store failed: stored now, if nothing runs.
+    settleDeferred();
   }
 
   /** Rule 3. A job left running is continued with the trigger it was saved with. */
@@ -831,44 +843,56 @@ export function createWorker(env: WorkerEnv): Worker {
       // The chip is turned off: nothing is read or stored, and the tab keeps no page of an earlier visit.
       if (!(await prefs.getShowChip())) {
         await pages.save(tabId, null);
-        deferred.delete(tabId);
+        await pages.setDeferred(tabId, null);
         return ok({ kind: 'off' });
       }
       const write = scan === null && paid === null;
-      const view = await notePage(store, toScanSettings(await settings()), page, env.now(), { write });
+      const seenAt = env.now();
+      const view = await notePage(store, toScanSettings(await settings()), page, seenAt, { write });
       if (view.kind === 'bundle') {
         await pages.save(tabId, page);
-        if (write) deferred.delete(tabId);
-        else deferred.add(tabId);
+        // Not written now: kept with the visit's time, so it is stored as of the visit once the action has ended.
+        await pages.setDeferred(tabId, write ? null : { page, seenAt });
       } else {
         await pages.save(tabId, null);
-        deferred.delete(tabId);
+        await pages.setDeferred(tabId, null);
       }
       await broadcast();
       return ok(view);
     });
 
-  /** Stores the pages seen while a scan or a Look up or Verify ran, once none runs. Asked again by whichever ends last. */
+  /**
+   * Stores the pages seen while a scan or a Look up or Verify ran, once none runs, in the order they were seen and as of
+   * the time each was seen. Asked again by whichever ends last and by every tick (so after a restart too), and left alone
+   * while something runs. A page whose store fails stays deferred, and the others go on.
+   */
   function settleDeferred(): void {
-    if (deferred.size === 0) return;
     void serial(async () => {
       if (scan !== null || paid !== null) return;
-      const tabs = [...deferred];
-      deferred.clear();
+      const due = (await pages.deferredAll()).sort((a, b) => a.seenAt - b.seenAt || a.tabId - b.tabId);
+      if (due.length === 0) return;
       const s = toScanSettings(await settings());
-      for (const tabId of tabs) {
-        const page = await pages.load(tabId);
-        if (page !== null) await notePage(store, s, page, env.now());
+      let stored = false;
+      for (const d of due) {
+        try {
+          await notePage(store, s, d.page, d.seenAt);
+          await pages.setDeferred(d.tabId, null);
+          stored = true;
+        } catch {
+          // Stays deferred: the next end of an action, or the next tick, tries again.
+        }
       }
-      await broadcast();
+      if (stored) await broadcast();
     }).catch(() => {
-      // The next visit to the page stores it.
+      // The next tick tries again.
     });
   }
 
   /** The view of the tab's page, rebuilt from the store: never a search and never a write, so it waits for nothing. */
   async function getThisPage(tabId: unknown): Promise<Reply<ThisPage>> {
     if (typeof tabId !== 'number' || !Number.isInteger(tabId)) return refuse(NO_TAB);
+    // A page read before the chip was turned off is not shown: the owner has stopped pages being read.
+    if (!(await prefs.getShowChip())) return ok({ kind: 'off' });
     const page = await pages.load(tabId);
     if (page === null) return ok({ kind: 'empty' });
     const view = await notePage(store, toScanSettings(await settings()), page, env.now(), { write: false });
@@ -962,16 +986,18 @@ export function createWorker(env: WorkerEnv): Worker {
         return refuse(FAILED);
       }
     },
-    async onTabClosed(tabId) {
-      deferred.delete(tabId);
-      try {
-        await pages.save(tabId, null);
-        await pages.setWanted(tabId, false);
-        await pages.setChipTab(tabId, false);
-      } catch {
-        // Session storage may be unavailable; a tab id is not reused within a session.
-      }
-    },
+    // Through the gate, so a visit still being stored is not left behind by the tab's closing.
+    onTabClosed: (tabId) =>
+      serial(async () => {
+        try {
+          await pages.save(tabId, null);
+          await pages.setDeferred(tabId, null);
+          await pages.setWanted(tabId, false);
+          await pages.setChipTab(tabId, false);
+        } catch {
+          // Session storage may be unavailable; a tab id is not reused within a session.
+        }
+      }),
     async onChipSetting(show) {
       try {
         const tabs = await pages.chipTabs();

@@ -15,6 +15,8 @@ export const SCAN_RUNNING = 'A scan is running. Answer when it has finished.';
 export interface ReviewQuestionProps {
   item: ReviewItem;
   scanRunning: boolean;
+  /** A sentence that stops the answer being saved now, said in place of the scan one (This page: the question is not saved yet). */
+  blocked?: string | null;
   /** Move focus to the question when it appears: the one before it was just answered. */
   focusHeading?: boolean;
   /** Resolves to a sentence when the answer was refused, null when it was saved. */
@@ -27,7 +29,7 @@ export interface ReviewQuestionProps {
   homeDepotLink?: string | null;
 }
 
-export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave, onNotNow, compact = false, homeDepotLink = null }: ReviewQuestionProps) {
+export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading = false, onSave, onNotNow, compact = false, homeDepotLink = null }: ReviewQuestionProps) {
   const [picked, setPicked] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -186,7 +188,7 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
           ) : null}
         </div>
         <div className="review-actions">
-          <button type="submit" className="btn btn-primary" disabled={picked === null || (picked === ENTER && typedParts.length === 0) || scanRunning || saving}>
+          <button type="submit" className="btn btn-primary" disabled={picked === null || (picked === ENTER && typedParts.length === 0) || scanRunning || blocked !== null || saving}>
             Save answer
           </button>
           {onNotNow ? (
@@ -195,7 +197,9 @@ export function ReviewQuestion({ item, scanRunning, focusHeading = false, onSave
             </button>
           ) : null}
         </div>
-        {scanRunning ? (
+        {blocked !== null ? (
+          <p className="review-sentence">{blocked}</p>
+        ) : scanRunning ? (
           <p className="review-sentence">{SCAN_RUNNING}</p>
         ) : error ? (
           <p className="review-sentence" role="alert">

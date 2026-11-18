@@ -62,8 +62,11 @@ export interface ChipSetting {
   show: boolean;
 }
 
-/** What the This page tab shows: the page's bundle, or `empty` when that tab has no Home Depot product page seen. */
-export type ThisPage = PageView | { kind: 'empty' };
+/**
+ * What the This page tab shows: the page's bundle; `empty` when that tab has no Home Depot product page seen; `off` when
+ * the owner turned the chip off, which stops pages being read (the panel says so on a Home Depot product page).
+ */
+export type ThisPage = PageView | { kind: 'empty' } | { kind: 'off' };
 
 export type { PageView, ProductPage };
 

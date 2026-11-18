@@ -23,7 +23,7 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import type { AppState, PanelReport, Reply, Request, ThisPage } from '../../lib/messages';
 import type { ActiveTab, PanelTabs, WorkerApi } from '../../lib/pageClient';
 import { App } from './App';
-import { NO_PAGE, ThisPageTab } from './ThisPageTab';
+import { CHIP_OFF, NO_PAGE, SAVED_LATER, ThisPageTab } from './ThisPageTab';
 
 afterEach(cleanup);
 
@@ -212,6 +212,26 @@ describe('This page: a bundle read from the page', () => {
     expect(screen.getByText('A scan is running. Answer when it has finished.')).toBeInTheDocument();
   });
 
+  it('a question the worker has not saved yet (a scan holds the write back) cannot be saved, and says when it can', async () => {
+    const user = userEvent.setup();
+    const view = { ...(w.asked.view as Extract<ThisPage, { kind: 'bundle' }>), questionStored: false };
+    const b = browser({ id: 4, url: ASKED_URL }, { 4: view });
+    // Even in a panel that does not know of a scan (a Look up or Verify holds the write back too).
+    renderTab(b, { id: 4, url: ASKED_URL }, { report: EMPTY_REPORT });
+    await user.click(await screen.findByRole('radio', { name: 'None of these' }));
+    expect(screen.getByRole('button', { name: 'Save answer' })).toBeDisabled();
+    expect(screen.getByText(SAVED_LATER)).toBeInTheDocument();
+    expect(SAVED_LATER).toBe('Saved when the scan ends.');
+    expect(b.send).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'answerReview' }));
+    // Stored: the answer can be saved.
+    cleanup();
+    const stored = browser({ id: 4, url: ASKED_URL }, { 4: { ...view, questionStored: true } });
+    renderTab(stored, { id: 4, url: ASKED_URL });
+    await user.click(await screen.findByRole('radio', { name: 'None of these' }));
+    expect(screen.getByRole('button', { name: 'Save answer' })).toBeEnabled();
+    expect(screen.queryByText(SAVED_LATER)).toBeNull();
+  });
+
   it('Open full detail opens Detail for the bundle; Copy ASINs copies both', async () => {
     const user = userEvent.setup();
     const b = browser({ id: 7, url: FOUNDER_URL }, { 7: w.scanned.view });
@@ -252,6 +272,18 @@ describe('This page: no bundle to show', () => {
     cleanup();
     renderTab(b, { id: 7, url: ASKED_URL }, { report: w.scanned.report });
     expect(await screen.findByText(NO_PAGE)).toBeInTheDocument();
+  });
+
+  it('with the chip off: on a Home Depot product page it says so; on another address it says to open a bundle page', async () => {
+    const off = browser({ id: 7, url: FOUNDER_URL }, { 7: { kind: 'off' } });
+    renderTab(off, { id: 7, url: FOUNDER_URL });
+    expect(await screen.findByText(CHIP_OFF)).toBeInTheDocument();
+    expect(CHIP_OFF).toBe('The chip is off. Turn it on in settings to read this page.');
+    cleanup();
+    const elsewhere = browser({ id: 7, url: 'https://www.homedepot.com/' }, { 7: { kind: 'off' } });
+    renderTab(elsewhere, { id: 7, url: 'https://www.homedepot.com/' });
+    expect(await screen.findByText(NO_PAGE)).toBeInTheDocument();
+    expect(screen.queryByText(CHIP_OFF)).toBeNull();
   });
 
   it('an unreachable worker says so in one sentence', async () => {
@@ -305,6 +337,18 @@ describe('This page in the panel', () => {
     expect(await screen.findByText('read from this page · no search used')).toBeInTheDocument();
     expect(tab('This page')).toHaveAttribute('aria-current', 'true');
     expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
+  });
+
+  it('a chip click in a tab other than the one the panel shows is not taken: no switch, and the answer is left for the panel showing that tab', async () => {
+    const b = browser({ id: 7, url: FOUNDER_URL }, { 7: w.scanned.view }, w.scanned.report);
+    mount(b);
+    await screen.findByRole('navigation', { name: 'Views' });
+    await waitFor(() => expect(b.send).toHaveBeenCalledWith({ type: 'takeShowThisPage', tabId: 7 }));
+    b.send.mockClear();
+    await b.chipClicked(9);
+    expect(b.send).not.toHaveBeenCalledWith({ type: 'takeShowThisPage', tabId: 9 });
+    expect(b.wanted.has(9)).toBe(true);
+    expect(tab('Deals')).toHaveAttribute('aria-current', 'true');
   });
 
   it('follows the owner: another tab shows its own page, a tab with none says to open one, and the last page is not left on screen', async () => {

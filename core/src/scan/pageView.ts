@@ -32,6 +32,11 @@ export type PageView =
     lookupParts: number;
     /** The bundle's open split question (`split:` and its key) while its split needs an answer; null otherwise. */
     question: ReviewItem | null;
+    /**
+     * True when the view's question (if any) is saved in the store, so an answer to it can be taken: always with
+     * write: true, and with write: false once an earlier write saved it. True too when there is no question.
+     */
+    questionStored: boolean;
   };
 
 export interface NotePageOptions {
@@ -53,16 +58,28 @@ const NO_SEARCH: SearchClient = {
   search: () => Promise.reject(new Error('A product page is never searched for.')),
 };
 
-const isText = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
-const isPrice = (v: unknown): v is number | null => v === null || (typeof v === 'number' && Number.isFinite(v) && v > 0);
+/**
+ * What a page may hold, as a page message is untrusted and goes into the store. A page over any of these is refused
+ * (read as none), never cut: a cut Includes list would be a split that is not certain (rule 4). A real page is far under them.
+ */
+export const PAGE_LIMITS = {
+  itemId: 20, brand: 60, model: 60, title: 300, bullets: 100, bullet: 2_000, description: 10_000, maxPrice: 100_000,
+} as const;
+
+const isText = (v: unknown, max: number): v is string => typeof v === 'string' && v.trim() !== '' && v.length <= max;
+const isPrice = (v: unknown): v is number | null =>
+  v === null || (typeof v === 'number' && Number.isFinite(v) && v > 0 && v < PAGE_LIMITS.maxPrice);
 
 /** True for a ProductPage as parseProductPage gives one. Anything else (the message is untrusted) is no page. */
 function wellFormed(page: unknown): page is ProductPage {
   if (typeof page !== 'object' || page === null) return false;
   const p = page as Record<string, unknown>;
-  return typeof p.itemId === 'string' && ITEM_ID.test(p.itemId) && isText(p.brand) && isText(p.model) && typeof p.title === 'string'
-    && isPrice(p.price) && isPrice(p.wasPrice) && Array.isArray(p.bullets) && p.bullets.every((b) => typeof b === 'string')
-    && (p.description === null || typeof p.description === 'string');
+  const { itemId, title, bullets, description } = p;
+  return typeof itemId === 'string' && itemId.length <= PAGE_LIMITS.itemId && ITEM_ID.test(itemId)
+    && isText(p.brand, PAGE_LIMITS.brand) && isText(p.model, PAGE_LIMITS.model) && typeof title === 'string' && title.length <= PAGE_LIMITS.title
+    && isPrice(p.price) && isPrice(p.wasPrice)
+    && Array.isArray(bullets) && bullets.length <= PAGE_LIMITS.bullets && bullets.every((b) => typeof b === 'string' && b.length <= PAGE_LIMITS.bullet)
+    && (description === null || (typeof description === 'string' && description.length <= PAGE_LIMITS.description));
 }
 
 /** Percent off the was-price, rounded to a whole percent; null without a was-price above the price. */
@@ -133,5 +150,6 @@ export async function notePage(
     kind: 'bundle', key, itemId: page.itemId, model: row.model, parts: row.parts.reduce((n, p) => n + p.qty, 0), row,
     lookupParts: waiting.length === 0 ? 0 : lookupsNeeded(waiting, await savedAnswers(store)),
     question: asked && asked.answer === null ? { ...asked, choices: choicesOf(asked) } : null,
+    questionStored: asked === undefined || asked.answer !== null || (await target.getReview(asked.id)) !== undefined,
   };
 }
