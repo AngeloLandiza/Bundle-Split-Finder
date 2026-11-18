@@ -34,7 +34,15 @@ const PART_NAME = /\b(chute|knob|cap|indicator|pads?|sleeve|wheels?)\b/i;
 // listing "probable"; the owner decides. No genuine tool, battery, charger or kit row in the
 // recordings uses either word.
 const MAYBE_SPARE_PART = /\b(OEM|replacement)\b/i;
-const BULK = /(bulk packaged|non-retail packag|no retail packag)/i;
+// Bulk or non-retail packaging: the listing is New but not in the retail box (PO, Nov 18: "(bulk
+// packaging)", "repackaged"). Recorded forms: "Bulk Packaged", "Bulk Packed" (B0D4XZWVP3), "NO Retail
+// Packaging", "No-Retail Packaging" (B0896TLNM4), "Non-Retail Packaging" (B07RB2ZC6H). "Bulk" is read as
+// packaging only when a packing word follows it ("packed", "packaged", "packaging") or it stands alone in
+// brackets, "(Bulk)". "Bulk Pack", "Bulk 25-Pack" or "Bulk Pack of 10" say a quantity, which the pack
+// rules (MULTI) read; they are not packaging.
+const BULK = /\bbulk[\s-]+pack(?:ed|aged|aging)\b|\bnon?[\s-]*retail[\s-]+packag|\bre-?packaged\b|\(\s*bulk\s*\)/i;
+/** The title says the listing is New in bulk or non-retail packaging, or repackaged (BULK). Packaging is not identity: never a grade. */
+export const isBulkPackaging = (title: string): boolean => BULK.test(title);
 // "2Pk" too (fix round 1): "18V LED Light, PCL660 2Pk - Bulk Packaged" (B0CRSVC28P).
 const MULTI = /\b(\d+)\s*-?\s*pack\b|\bpack of (\d+)\b|\bset of (\d+)\b|\b(\d+)\s*-?\s*pk\b/i;
 const KIT_WORDS = /\b(kit|combo|bundle|with battery|with charger|w\/ battery|and charger)\b/i;
@@ -173,7 +181,7 @@ export interface Candidate {
 export interface Graded {
   asin: string;
   grade: Grade;
-  /** "bulk" when the listing itself says non-retail packaging. */
+  /** "bulk" when the listing's title says bulk or non-retail packaging, or repackaged (isBulkPackaging). Never part of the grade. */
   packaging: 'retail' | 'bulk';
   reasons: string[];
 }
@@ -233,7 +241,7 @@ export function titleHasModel(brand: string, title: string, model: string): bool
 export const maySparePart = (title: string): boolean => MAYBE_SPARE_PART.test(title);
 
 export function grade(want: Wanted, cand: Candidate): Graded {
-  const packaging = BULK.test(cand.title) ? 'bulk' : 'retail';
+  const packaging = isBulkPackaging(cand.title) ? 'bulk' : 'retail';
   const out = (g: Grade, ...reasons: string[]): Graded => ({ asin: cand.asin, grade: g, packaging, reasons });
   const brand = want.brand.trim().toUpperCase();
 
