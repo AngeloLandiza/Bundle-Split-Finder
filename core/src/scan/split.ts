@@ -3,7 +3,7 @@
 // every bundle with it (rule 4, 2c rule 4, P5), and a reopened split question (answers.ts) reads
 // its bundle with it, so the two never differ.
 
-import { type Catalog, catalogEntry, DEWALT_BUNDLE, type Decomposition, decompose, kindsFromTitle } from '../decompose';
+import { type Catalog, catalogEntry, type Decomposition, decompose, dewaltBundleForm, kindsFromTitle, PACK_WITH_NOTE } from '../decompose';
 import { splitWithPage } from '../pageSplit';
 import type { BundleRecord, ListingRecord, ScanStore } from './types';
 
@@ -52,20 +52,32 @@ export function readSplit(bundle: BundleRecord, known: Pick<KnownModels, 'stored
  * short code resolve by guesswork: the stored catalog is tried alone first, and a resolved split stands.
  * Otherwise the split with the listings' models is taken only for RYOBI, whose patterns spell
  * every part out, or for DEWALT when it names exactly two parts (the kit and one bonus item, so
- * no short code was glued together from pieces). In every other case the first result stands.
+ * no short code was glued together from pieces). A DEWALT battery pack + bonus item never resolves;
+ * its one reading of two parts may come from the listings' models on the same terms, as a choice for
+ * the owner. In every other case the first result stands.
  */
 function splitBundle(bundle: BundleRecord, stored: Catalog, catalog: Catalog): Decomposition {
   const first = decompose(bundle.brand, bundle.model, bundle.title, stored);
   if (first.status === 'resolved') return first;
   const second = decompose(bundle.brand, bundle.model, bundle.title, catalog);
-  if (second.status !== 'resolved') return first;
   const brand = bundle.brand.trim().toUpperCase();
+  const form = brand === 'DEWALT' ? dewaltBundleForm(bundle.model) : null;
+  if (form?.kind === 'pack') {
+    const one = second.alternatives?.length === 1 && second.alternatives[0]!.length === 2;
+    return one && knewNothing(first, form.bonus) ? second : first;
+  }
+  if (second.status !== 'resolved') return first;
   if (brand === 'RYOBI') return second;
-  if (brand !== 'DEWALT' || second.components.length !== 2) return first;
-  // DEWALT, one bonus item: only when the stored catalog knew nothing at all for the short
-  // code (not when it found two readings, "fits A and B" or "more than one way", which a title
-  // match must not settle), and only for a short code of three characters or more.
-  const suffix = DEWALT_BUNDLE.exec(bundle.model.toUpperCase().replace(/[-\s]/g, ''))?.[2];
-  if (suffix === undefined || suffix.length < 3) return first;
-  return first.notes.length === 1 && first.notes[0] === `'${suffix}' matches nothing in the catalog` ? second : first;
+  if (form === null || second.components.length !== 2) return first;
+  return knewNothing(first, form.bonus) ? second : first;
+}
+
+/**
+ * DEWALT, one bonus item: true only when the stored catalog knew nothing at all for the short code
+ * (not when it found two readings, "fits A and B" or "more than one way", which a title match must
+ * not settle), and only for a short code of three characters or more.
+ */
+function knewNothing(first: Decomposition, suffix: string): boolean {
+  return suffix.length >= 3 && first.notes[0] === `'${suffix}' matches nothing in the catalog` &&
+    first.notes.every((n, i) => i === 0 || n === PACK_WITH_NOTE);
 }

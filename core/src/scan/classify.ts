@@ -4,11 +4,8 @@
 // resolves is decompose()'s job: a row with a bundle shape that the splitter cannot
 // resolve goes to the review queue, not to the catalog.
 
-import { DEWALT_BUNDLE, type Catalog } from '../decompose';
+import { type Catalog, dewaltBundleForm } from '../decompose';
 import type { Wanted } from '../match';
-
-// Same normalisation decompose() applies before testing DEWALT_BUNDLE.
-const norm = (model: string): string => model.toUpperCase().replace(/[-\s]/g, '');
 
 // "PBLRC2501SB", "PCL500525SB": four or more digits, then SB.
 const RYOBI_SPECIAL_BUY = /\d{4,}SB$/;
@@ -21,7 +18,7 @@ export function looksLikeBundle(brand: string, model: string): boolean {
   const b = brand.trim().toUpperCase();
   const m = model.trim().toUpperCase();
   if (b === 'RYOBI') return m.includes('-') || RYOBI_SPECIAL_BUY.test(m);
-  if (b === 'DEWALT') return DEWALT_BUNDLE.test(norm(m));
+  if (b === 'DEWALT') return dewaltBundleForm(m) !== null;
   return false;
 }
 

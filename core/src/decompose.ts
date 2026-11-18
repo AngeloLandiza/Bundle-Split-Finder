@@ -108,8 +108,39 @@ export function decomposeRyobi(bundleModel: string, catalog: Catalog): Decomposi
 // ---------------------------------------------------------------- DEWALT
 
 // Home Depot writes DEWALT bundles as <kit model>W<short code for the bonus item>,
-// e.g. DCK940D2WCF891B = kit DCK940D2 "with" DCF891B.
-export const DEWALT_BUNDLE = /^(DCK[A-Z]{0,2}\d{3,4}(?:[A-Z]\d){0,2})W(.+)$/;
+// e.g. DCK940D2WCF891B = kit DCK940D2 "with" DCF891B. A kit's name ends in at most two
+// letter-digit groups (DCK200D1P1); a group may have two letters other than W (DCK316ST2M1), so a
+// W is never read into the kit's name.
+export const DEWALT_BUNDLE = /^(DCK[A-Z]{0,2}\d{3,4}(?:[A-Z]\d|[A-VX-Z]{2}\d){0,2})W(.+)$/;
+// The kit and a whole tool model, joined with no W: DCK420D2DCS391B = DCK420D2 + DCS391B.
+const DEWALT_JOINED = /^(DCK[A-Z]{0,2}\d{3,4}(?:[A-Z]\d|[A-VX-Z]{2}\d){0,2})(DC[A-Z]{1,2}\d{3,4}[A-Z]{0,2})$/;
+// A battery pack as Home Depot writes one (DEWALT_PACK, 2 to 9), W, a short code: DCB346-3WCS334B.
+// Read before hyphens are taken out, since the pack's hyphen is part of its model.
+const DEWALT_PACK_WITH = /^(DCB\d+-[2-9])W(.+)$/;
+
+export interface DewaltForm {
+  /** kit: <kit>W<short code>. joined: <kit><whole tool model>. pack: <battery pack>W<short code>. */
+  kind: 'kit' | 'joined' | 'pack';
+  /** The kit or battery pack the model number starts with. */
+  base: string;
+  /** The bonus item as written: a short code, or a whole model for `joined`; hyphens taken out. */
+  bonus: string;
+}
+
+/** The Home Depot bundle form a DEWALT model number is written in, or null when it has none. */
+export function dewaltBundleForm(bundleModel: string): DewaltForm | null {
+  const pack = DEWALT_PACK_WITH.exec(bundleModel.toUpperCase().replace(/\s/g, ''));
+  if (pack) return { kind: 'pack', base: pack[1]!, bonus: norm(pack[2]!) };
+  const model = norm(bundleModel);
+  const kit = DEWALT_BUNDLE.exec(model);
+  if (kit) return { kind: 'kit', base: kit[1]!, bonus: kit[2]! };
+  const joined = DEWALT_JOINED.exec(model);
+  if (joined) return { kind: 'joined', base: joined[1]!, bonus: joined[2]! };
+  return null;
+}
+
+/** The note on a battery pack + bonus item split, which only the owner's answer resolves. */
+export const PACK_WITH_NOTE = 'a battery pack with a bonus item is asked, never resolved';
 
 function suffixCandidates(suffix: string, title: string, catalog: Catalog): string[] {
   const hits = [...catalog.values()]
@@ -152,16 +183,50 @@ const byParts = (a: string[], b: string[]): number => {
   return x < y ? -1 : x > y ? 1 : 0;
 };
 
+/**
+ * A kit and a whole tool model (DEWALT_JOINED). The model number spells the tool out, so it is
+ * matched whole, never by its ending, and resolves only when the catalog holds exactly that model;
+ * otherwise the reading as written is offered (Ruling 29's rule for a RYOBI hyphen bundle).
+ */
+function decomposeJoined(base: string, tool: string, catalog: Catalog): Decomposition {
+  const hits = [...catalog.values()]
+    .filter((m) => m.brand === 'DEWALT' && !m.isKit && norm(m.model) === tool)
+    .map((m) => m.model)
+    .sort();
+  if (hits.length === 1) {
+    const notes = ['kit + tool, joined without W'];
+    if (!catalog.has(base)) notes.push(`kit ${base} is new to the catalog`);
+    return { components: [base, hits[0]!], status: 'resolved', notes };
+  }
+  if (hits.length > 1) {
+    return { components: [base], status: 'needs_review', notes: [`'${tool}' fits ${hits.join(' and ')}`], alternatives: hits.map((h) => [base, h]) };
+  }
+  return { components: [base], status: 'needs_review', notes: [`'${tool}' matches nothing in the catalog`], alternatives: [[base, tool]] };
+}
+
+/**
+ * A battery pack and a bonus item (DEWALT_PACK_WITH). The short code is read as a kit's is, but the
+ * split is never resolved by the model number: no tested rule says a pack base is a product sold on
+ * its own. The reading the short code gives is offered for the owner to confirm.
+ */
+function decomposePackWith(base: string, suffix: string, title: string, catalog: Catalog): Decomposition {
+  const { models, problem, readings } = resolveSuffix(suffix, title, catalog);
+  const alternatives = problem ? (readings ?? []).map((r) => [base, ...r]).sort(byParts) : [[base, ...models]];
+  const split: Decomposition = { components: [base], status: 'needs_review', notes: [problem || 'battery pack + bonus item', PACK_WITH_NOTE] };
+  if (alternatives.length > 0) split.alternatives = alternatives;
+  return split;
+}
+
 export function decomposeDewalt(bundleModel: string, title: string, catalog: Catalog): Decomposition {
-  const model = norm(bundleModel);
-  const m = DEWALT_BUNDLE.exec(model);
-  if (!m) {
+  const form = dewaltBundleForm(bundleModel);
+  if (!form) {
     const upper = bundleModel.toUpperCase().trim();
     if (catalog.get(upper)?.isKit) return { components: [upper], status: 'resolved', notes: ['manufacturer kit'] };
     return { components: [], status: 'needs_review', notes: ['no known DEWALT bundle pattern'] };
   }
-  const base = m[1]!;
-  const suffix = m[2]!;
+  const { base, bonus: suffix } = form;
+  if (form.kind === 'joined') return decomposeJoined(base, suffix, catalog);
+  if (form.kind === 'pack') return decomposePackWith(base, suffix, title, catalog);
   const { models, problem, readings } = resolveSuffix(suffix, title, catalog);
   if (problem) {
     const split: Decomposition = { components: [base], status: 'needs_review', notes: [problem] };

@@ -13,7 +13,7 @@
 // that reading reaches the question. A RYOBI page offers a reading of its own only when the model
 // number offers none: the models its Includes bullets name (R5, Ruling 76).
 
-import { DEWALT_BUNDLE, decompose, reconcile, type Catalog, type CatalogModel, type Decomposition } from './decompose';
+import { decompose, dewaltBundleForm, reconcile, type Catalog, type CatalogModel, type Decomposition } from './decompose';
 import type { PageContent } from './hdPage';
 
 // DEWALT writes each bullet as "<model>: <text>", and a tool inside a kit as "<kit>: <tool>: <text>".
@@ -109,8 +109,8 @@ export function splitWithPage(
 
   if (fromPage.size === 0) return withNote(modelSplit, 'page names no models'); // R1, every brand
   if (brand === 'DEWALT') {
-    // A page that names only the bundle's own kit says nothing about the bonus item.
-    const kit = DEWALT_BUNDLE.exec(bundle.model.toUpperCase().replace(/[-\s]/g, ''))?.[1];
+    // A page that names only the bundle's own kit (or battery pack) says nothing about the bonus item.
+    const kit = dewaltBundleForm(bundle.model)?.base;
     if (named.length === 1 && named[0] === kit) return modelResolved ? standsUnnamed(modelSplit, fromPage) : modelSplit;
   }
 
