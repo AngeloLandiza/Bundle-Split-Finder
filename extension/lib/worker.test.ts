@@ -108,6 +108,10 @@ class FakePrefs implements Prefs {
   async setAccount(v: StoredAccount | null) {
     this.data.account = structuredClone(v);
   }
+  showChip = true;
+  async getShowChip() {
+    return this.showChip;
+  }
 }
 
 /** MemoryCache with the clear() the worker needs. */
@@ -153,6 +157,27 @@ class FakePages implements PageEnv {
   }
   tell(tabId: number) {
     this.told.push(tabId);
+  }
+  /** The tab the scan's reader opened. */
+  readerTab: number | null = null;
+  chipTabSet = new Set<number>();
+  /** Every chipSetting sent, as [tabId, show]. */
+  chipSent: [number, boolean][] = [];
+  /** Tabs that have no content script to receive a chipSetting. */
+  deafTabs = new Set<number>();
+  async isReaderTab(tabId: number) {
+    return this.readerTab === tabId;
+  }
+  async chipTabs() {
+    return [...this.chipTabSet];
+  }
+  async setChipTab(tabId: number, on: boolean) {
+    if (on) this.chipTabSet.add(tabId);
+    else this.chipTabSet.delete(tabId);
+  }
+  async sendChipSetting(tabId: number, show: boolean) {
+    if (this.deafTabs.has(tabId)) throw new Error('Could not establish connection. Receiving end does not exist.');
+    this.chipSent.push([tabId, show]);
   }
 }
 
@@ -1942,5 +1967,63 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     expect(await send(w, { type: 'takeShowThisPage', tabId: TAB })).toEqual({ ok: true, data: false });
     gate.release();
     await untilIdle(w);
+  });
+
+  it('with the chip turned off a page is answered off: nothing is read, stored or remembered, and an earlier page of the tab is forgotten', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seen(w, FOUNDER);
+    expect(w.pages.pages.has(TAB)).toBe(true);
+    w.prefs.showChip = false;
+    const bundles = await w.store.listBundles();
+    const broadcasts = w.broadcasts.length;
+    expect(await seen(w, ASKED)).toEqual({ ok: true, data: { kind: 'off' } });
+    expect(await w.store.listBundles()).toEqual(bundles);
+    expect(await w.store.getReview(`split:${ASKED_KEY}`)).toBeUndefined();
+    expect(w.pages.pages.has(TAB)).toBe(false);
+    expect(w.broadcasts.length).toBe(broadcasts);
+    expect(await thisPage(w)).toEqual({ ok: true, data: { kind: 'empty' } });
+    // Turned on again: the same page is read as before.
+    w.prefs.showChip = true;
+    expect(bundleOf(await seen(w, ASKED)).itemId).toBe('328690510');
+  });
+
+  it('a change of the chip setting reaches every tab that sent a page, including one with the chip off; a tab with no script is ignored', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await seen(w, FOUNDER, 1);
+    await seen(w, KIT, 2);
+    w.prefs.showChip = false;
+    await seen(w, ASKED, 3);
+    w.pages.deafTabs.add(2);
+    await w.worker.onChipSetting(false);
+    expect(w.pages.chipSent).toEqual([[1, false], [3, false]]);
+    await w.worker.onChipSetting(true);
+    expect(w.pages.chipSent.slice(2)).toEqual([[1, true], [3, true]]);
+    // A closed tab is no longer told.
+    await w.worker.onTabClosed(1);
+    await w.worker.onChipSetting(true);
+    expect(w.pages.chipSent.slice(4)).toEqual([[3, true]]);
+  });
+
+  it('the scan\'s reader tab is ignored: none, nothing stored, not remembered, and not told of the chip setting', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.pages.readerTab = 21;
+    const before = await stored(w);
+    expect(await seen(w, FOUNDER, 21)).toEqual({ ok: true, data: { kind: 'none' } });
+    expect(await stored(w)).toEqual(before);
+    expect(w.pages.pages.has(21)).toBe(false);
+    expect(await thisPage(w, 21)).toEqual({ ok: true, data: { kind: 'empty' } });
+    await w.worker.onChipSetting(true);
+    expect(w.pages.chipSent).toEqual([]);
+    // The owner's own tab is still read.
+    expect(bundleOf(await seen(w, FOUNDER, 22)).itemId).toBe('328814689');
+  });
+
+  it('a page whose empty price and was-price arrive as missing keys (what a message may carry) is read as null, and is stored whole', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const { price: _p, wasPrice: _w, ...bare } = ASKED;
+    expect(bundleOf(await seen(w, bare as unknown as ProductPage))).toMatchObject({ itemId: '328690510', question: { kind: 'split' } });
+    expect(w.pages.pages.get(TAB)).toEqual(ASKED);
+    // A message that is no page at all is none, not an error.
+    expect(await seen(w, null as unknown as ProductPage)).toEqual({ ok: true, data: { kind: 'none' } });
   });
 });

@@ -3,7 +3,7 @@ import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { DEFAULT_SETTINGS } from '@core/settings';
 import {
   forgetKey, getAccount, getActiveScan, getKey, getLastScheduledRunAt, getNotified, getPackaging, getSettings, savePackaging, restrictKeyAccess,
-  saveSettings, setAccount, setActiveScan, setKey, setLastScheduledRunAt, setNotified,
+  saveSettings, setAccount, setActiveScan, setKey, setLastScheduledRunAt, setNotified, getShowChip, setShowChip,
 } from './prefs';
 
 beforeEach(() => fakeBrowser.reset());

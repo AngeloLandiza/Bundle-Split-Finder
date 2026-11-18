@@ -19,7 +19,7 @@ import {
 import { runCsv } from '@core/scan/csv';
 import { buildReport } from '@core/scan/report';
 import { nextRun, type Schedule } from '@core/schedule';
-import type { AppState, Packaging, PanelReport, Reply, Request, ThisPage } from './messages';
+import type { AppState, Packaging, PageSeenReply, PanelReport, Reply, Request, ThisPage } from './messages';
 import type { ActiveScan, StoredAccount } from './prefs';
 
 /** The functions of prefs.ts the worker uses, with the same names and signatures. */
@@ -40,6 +40,8 @@ export interface Prefs {
   savePackaging(v: Record<string, Packaging>): Promise<void>;
   getAccount(): Promise<StoredAccount | null>;
   setAccount(v: StoredAccount | null): Promise<void>;
+  /** Whether the chip shows on Home Depot pages (chrome.storage.local `showChip`); true unless the owner turned it off. */
+  getShowChip(): Promise<boolean>;
 }
 
 /**
@@ -57,12 +59,20 @@ export interface PageEnv {
   openPanel(tabId: number): Promise<void>;
   /** Tells every open panel that the chip opened it for this tab. */
   tell(tabId: number): void;
+  /** True for the tab the reader opened to read a bundle page for a scan (hdReader's remembered doorway tab). */
+  isReaderTab(tabId: number): Promise<boolean>;
+  /** The tabs whose content script has sent a page, so a change of the chip setting reaches them. */
+  chipTabs(): Promise<number[]>;
+  setChipTab(tabId: number, on: boolean): Promise<void>;
+  /** chrome.tabs.sendMessage(tabId, { type: 'chipSetting', show }). Rejects when the tab has no content script. */
+  sendChipSetting(tabId: number, show: boolean): Promise<void>;
 }
 
 /** Pages kept in memory, for a worker with no `pages`: lost with the worker, and the side panel cannot be opened. */
 export function memoryPages(): PageEnv {
   const pages = new Map<number, ProductPage>();
   const wanted = new Set<number>();
+  const chipTabs = new Set<number>();
   return {
     load: async (tabId) => pages.get(tabId) ?? null,
     save: async (tabId, page) => void (page === null ? pages.delete(tabId) : pages.set(tabId, page)),
@@ -70,6 +80,10 @@ export function memoryPages(): PageEnv {
     wanted: async (tabId) => wanted.has(tabId),
     openPanel: () => Promise.reject(new Error('No side panel here.')),
     tell: () => {},
+    isReaderTab: async () => false,
+    chipTabs: async () => [...chipTabs],
+    setChipTab: async (tabId, on) => void (on ? chipTabs.add(tabId) : chipTabs.delete(tabId)),
+    sendChipSetting: () => Promise.reject(new Error('No tabs here.')),
   };
 }
 
@@ -103,6 +117,8 @@ export interface Worker {
   onMessage(request: Request, sender?: RequestSender): Promise<Reply>;
   /** A tab was closed: what it showed is forgotten. */
   onTabClosed(tabId: number): Promise<void>;
+  /** The owner changed the chip setting: every tab that has sent a page is told. */
+  onChipSetting(show: boolean): Promise<void>;
   /** The alarm. Resolves when the scan it started or continued has ended. */
   onTick(): Promise<void>;
   /** The worker started. Does what a tick does. */
@@ -786,10 +802,18 @@ export function createWorker(env: WorkerEnv): Worker {
 
   // ---------------------------------------------------------------- the chip and This page (step 7)
 
-  /** The page as notePage reads it, and nothing the sender added: it comes from a web page's content script. */
-  const cleanPage = (p: ProductPage): ProductPage => ({
-    itemId: p.itemId, brand: p.brand, model: p.model, title: p.title, price: p.price, wasPrice: p.wasPrice, bullets: [...p.bullets], description: p.description,
-  });
+  /**
+   * The page as notePage reads it, and nothing the sender added: it comes from a web page's content script. A price or
+   * description a message left out (null is not always kept on the way) is null, as parseProductPage gives it; notePage
+   * checks everything else, so a message that is not a page is passed on as it is and read as none.
+   */
+  function cleanPage(p: ProductPage): ProductPage {
+    if (typeof p !== 'object' || p === null) return p;
+    return {
+      itemId: p.itemId, brand: p.brand, model: p.model, title: p.title, price: p.price ?? null, wasPrice: p.wasPrice ?? null,
+      bullets: Array.isArray(p.bullets) ? [...p.bullets] : p.bullets, description: p.description ?? null,
+    };
+  }
 
   /**
    * A Home Depot product page the owner opened, sent by the chip's content script. Taken through the start gate, so two
@@ -797,13 +821,23 @@ export function createWorker(env: WorkerEnv): Worker {
    * over a layer that is dropped (write: false) and the page is stored when they have ended; the chip never waits for them.
    * A page that is not a bundle (view none) makes the tab show no page. Never a search.
    */
-  const pageSeen = (page: ProductPage, tabId: number | undefined): Promise<Reply<ThisPage>> =>
+  const pageSeen = (sent: ProductPage, tabId: number | undefined): Promise<Reply<PageSeenReply>> =>
     serial(async () => {
+      const page = cleanPage(sent);
       if (tabId === undefined) return refuse(NO_TAB);
+      // The tab a scan's reader opened runs the content script too: its pages are the scan's, not the owner's.
+      if (await pages.isReaderTab(tabId)) return ok({ kind: 'none' });
+      await pages.setChipTab(tabId, true);
+      // The chip is turned off: nothing is read or stored, and the tab keeps no page of an earlier visit.
+      if (!(await prefs.getShowChip())) {
+        await pages.save(tabId, null);
+        deferred.delete(tabId);
+        return ok({ kind: 'off' });
+      }
       const write = scan === null && paid === null;
       const view = await notePage(store, toScanSettings(await settings()), page, env.now(), { write });
       if (view.kind === 'bundle') {
-        await pages.save(tabId, cleanPage(page));
+        await pages.save(tabId, page);
         if (write) deferred.delete(tabId);
         else deferred.add(tabId);
       } else {
@@ -933,8 +967,18 @@ export function createWorker(env: WorkerEnv): Worker {
       try {
         await pages.save(tabId, null);
         await pages.setWanted(tabId, false);
+        await pages.setChipTab(tabId, false);
       } catch {
         // Session storage may be unavailable; a tab id is not reused within a session.
+      }
+    },
+    async onChipSetting(show) {
+      try {
+        const tabs = await pages.chipTabs();
+        // A tab that has no content script any more (closed, or navigated off Home Depot) refuses: nothing to do.
+        await Promise.allSettled(tabs.map((tabId) => pages.sendChipSetting(tabId, show)));
+      } catch {
+        // Session storage may be unavailable; a tab picks the setting up on its next page.
       }
     },
     onTick: tick,

@@ -110,3 +110,12 @@ export async function getAccount(): Promise<StoredAccount | null> {
   return typeof v === 'object' && v !== null ? (v as StoredAccount) : null;
 }
 export const setAccount = (v: StoredAccount | null): Promise<void> => write('account', v);
+
+// ---------------------------------------------------------------- the chip on Home Depot pages
+
+/** True unless the owner turned the chip off. Anything stored that is not `false` is on. */
+export async function getShowChip(): Promise<boolean> {
+  return (await read('showChip')) !== false;
+}
+
+export const setShowChip = (show: boolean): Promise<void> => write('showChip', show);

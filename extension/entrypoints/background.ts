@@ -6,7 +6,7 @@ import type { BundleRow } from '@core/scan/types';
 import { IdbCache } from '../lib/idbCache';
 import { IdbScanStore } from '../lib/idbStore';
 import { appendLedger } from '../lib/ledger';
-import { CONTENT_REQUESTS, type Request, type ShowThisPage, type StateChanged } from '../lib/messages';
+import { CONTENT_REQUESTS, type ChipSetting, type Request, type ShowThisPage, type StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
 import { mayAsk } from '../lib/sender';
 import { createPageReader, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
@@ -58,6 +58,7 @@ function chromeReaderEnv(): ReaderEnv {
  */
 const pageKey = (tabId: number) => `thisPage:${tabId}`;
 const wantedKey = (tabId: number) => `showThisPage:${tabId}`;
+const chipTabKey = (tabId: number) => `chipTab:${tabId}`;
 
 function chromePages(): PageEnv {
   return {
@@ -80,6 +81,23 @@ function chromePages(): PageEnv {
     openPanel: (tabId) => browser.sidePanel.open({ tabId }),
     tell(tabId) {
       browser.runtime.sendMessage({ type: 'showThisPage', tabId } satisfies ShowThisPage).catch(() => {});
+    },
+    async isReaderTab(tabId) {
+      return (await browser.storage.session.get(DOORWAY_KEY))[DOORWAY_KEY] === tabId;
+    },
+    async chipTabs() {
+      const all = await browser.storage.session.get(null);
+      return Object.keys(all)
+        .filter((k) => k.startsWith('chipTab:'))
+        .map((k) => Number(k.slice('chipTab:'.length)))
+        .filter((n) => Number.isInteger(n));
+    },
+    async setChipTab(tabId, on) {
+      if (on) await browser.storage.session.set({ [chipTabKey(tabId)]: true });
+      else await browser.storage.session.remove(chipTabKey(tabId));
+    },
+    async sendChipSetting(tabId, show) {
+      await browser.tabs.sendMessage(tabId, { type: 'chipSetting', show } satisfies ChipSetting);
     },
   };
 }
@@ -133,6 +151,11 @@ export default defineBackground(() => {
     }
     worker.onMessage(request as Request, { tabId: sender.tab?.id }).then(sendResponse);
     return true;
+  });
+
+  // The owner turned the chip on or off (the settings page writes storage.local): tabs showing a page are told.
+  browser.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.showChip) void worker.onChipSetting(changes.showChip.newValue !== false);
   });
 
   browser.tabs.onRemoved.addListener((tabId) => {

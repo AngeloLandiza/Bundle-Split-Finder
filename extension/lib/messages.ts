@@ -34,6 +34,8 @@ export type Request =
   /**
    * From the chip's content script, once per Home Depot product page and again after in-page navigation. Reply data: PageView.
    * The worker remembers the page for the sender's tab and shows it as a scan would (notePage); it never searches.
+   * Reply data: PageSeenReply, which is `off` while the owner has the chip turned off (nothing is read or stored), and
+   * `none` for a tab the extension itself opened to read a bundle page for a scan.
    */
   | { type: 'pageSeen'; page: ProductPage }
   /** From the chip's content script. Reply data: { opened }, false when Chrome refused to open the panel. */
@@ -50,6 +52,15 @@ export type { PaidAction, Quote, ReviewAnswer };
 
 /** The messages a content script on a Home Depot page may send; everything else is for the extension's own pages. */
 export const CONTENT_REQUESTS: readonly Request['type'][] = ['pageSeen', 'openThisPage'];
+
+/** The reply to pageSeen: the page's view, or `off` when the owner turned the chip off in settings. */
+export type PageSeenReply = PageView | { kind: 'off' };
+
+/** Sent by the worker to a tab's content script (chrome.tabs.sendMessage) when the owner turns the chip on or off. */
+export interface ChipSetting {
+  type: 'chipSetting';
+  show: boolean;
+}
 
 /** What the This page tab shows: the page's bundle, or `empty` when that tab has no Home Depot product page seen. */
 export type ThisPage = PageView | { kind: 'empty' };
