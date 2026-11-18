@@ -1,0 +1,4 @@
+{
+  "about": "The right Amazon listing for each part of the validation set, labelled by a checker from results-2026-11-18.json (the candidates each decision saw) and the listings' own Amazon pages, never from the tool's grade. Format: { labels: { \"<bundle model>\": { \"<part model>\": { \"correct\": [\"<ASIN>\", ...] | \"none\", \"note\": \"<one line: why, with the source>\" } } } }. correct lists every ASIN that is that part sold new on its own (more than one when Amazon lists it twice); \"none\" when no listing is it. core/test/validation.test.ts scores acceptance criterion 6 against these and skips while labels is empty.",
+  "labels": {}
+}
