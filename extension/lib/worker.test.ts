@@ -5,7 +5,7 @@ import * as fx from '../../core/test/fixtures';
 import { reviewSignature } from '@core/scan/answers';
 import { MemoryScanStore } from '@core/scan/memoryStore';
 import { buildReport } from '@core/scan/report';
-import type { BundleRow, PageOutcome, PaidAction, Quote, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
+import type { BundleRow, PageOutcome, PaidAction, Quote, ReadPages, ReadPartPrices, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
 import { parseAccount } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, MemoryCache, NETWORK_ERROR_PREFIX } from '@core/serpapi/client';
 import { noticeSentence } from '../entrypoints/sidepanel/Notice';
@@ -211,6 +211,7 @@ interface World {
   beforeSearch: (url: URL) => void | Promise<void>;
   fetchFn: typeof fetch;
   readPages?: ReadPages;
+  readPartPrices?: ReadPartPrices;
   worker: Worker;
 }
 
@@ -220,6 +221,7 @@ interface Setup {
   lastScheduledRunAt?: number | null;
   accountOver?: Record<string, unknown>;
   readPages?: ReadPages;
+  readPartPrices?: ReadPartPrices;
 }
 
 function world(setup: Setup = {}): World {
@@ -237,6 +239,7 @@ function world(setup: Setup = {}): World {
     accountOver: setup.accountOver ?? {},
     beforeSearch: () => {},
     readPages: setup.readPages,
+    readPartPrices: setup.readPartPrices,
   } as unknown as World;
   if (setup.key !== undefined) w.prefs.data.apiKey = setup.key;
   if (setup.settings !== undefined) w.prefs.data.settings = structuredClone(setup.settings);
@@ -269,6 +272,7 @@ function workerOver(w: World, store: ScanStore = w.store): Worker {
     notify: (rows) => void w.notified.push(rows),
     broadcast: (state) => void w.broadcasts.push(state),
     readPages: w.readPages,
+    readPartPrices: w.readPartPrices,
     pages: w.pages,
   });
 }
@@ -401,6 +405,29 @@ describe('worker: reading bundle pages', () => {
     expect(asked).toHaveLength(1);
     expect(asked[0]!.length).toBeGreaterThan(0);
     expect((await lastJob(w)).counts.pagesRead).toBe(0);
+  });
+});
+
+describe('worker: reading Home Depot prices of parts', () => {
+  it('a scan hands the part price reader to runScan, which asks it for the parts it has split, and no search pays for it', async () => {
+    const asked: { brand: string; model: string }[][] = [];
+    const readPartPrices: ReadPartPrices = async (parts) => {
+      asked.push(parts);
+      return parts.map((p) => ({ ...p, itemId: null, price: null, title: null, link: null }));
+    };
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR, readPartPrices });
+    await w.worker.onTick();
+    expect(asked).toHaveLength(1);
+    expect(asked[0]!.length).toBeGreaterThan(0);
+    expect(asked[0]!.every((p) => p.brand === 'RYOBI' && p.model !== '')).toBe(true);
+    // A reading is free: the searches counted are the scan's own lookups.
+    expect(w.ledger.length).toBe((await lastJob(w)).searchesUsed);
+  });
+
+  it('without a reader, no price is read and the scan runs as before', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    await w.worker.onTick();
+    expect((await lastJob(w)).status).not.toBe('running');
   });
 });
 

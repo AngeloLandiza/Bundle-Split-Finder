@@ -12,7 +12,7 @@ import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswe
 import { wantedFor } from '@core/scan/classify';
 import { runScan } from '@core/scan/runner';
 import { knownModels } from '@core/scan/split';
-import { partKey, type BudgetView, type BundleRow, type PaidAction, type Quote, type ReadPages, type ReviewAnswer, type ScanJob, type ScanStore } from '@core/scan/types';
+import { partKey, type BudgetView, type BundleRow, type PaidAction, type Quote, type ReadPages, type ReadPartPrices, type ReviewAnswer, type ScanJob, type ScanStore } from '@core/scan/types';
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
 import {
@@ -122,6 +122,8 @@ export interface WorkerEnv {
   baseUrl?: string;
   /** Reads bundle pages in the owner's browser; without it no page is read. */
   readPages?: ReadPages;
+  /** Reads Home Depot's own price of parts sold alone in the owner's browser (step 9); without it none is read. */
+  readPartPrices?: ReadPartPrices;
   /** The chip's page visits (step 7). Without it, pages are kept in memory and the panel cannot be opened from the chip. */
   pages?: PageEnv;
 }
@@ -449,7 +451,7 @@ export function createWorker(env: WorkerEnv): Worker {
     scanKey = key;
     scan = (async () => {
       try {
-        await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages });
+        await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages, readPartPrices: env.readPartPrices });
       } catch {
         // The job stays "running" and activeScan keeps naming it: the next tick continues it.
         return;

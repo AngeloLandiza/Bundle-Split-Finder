@@ -162,6 +162,7 @@ export default defineBackground(() => {
     // Set only in the end-to-end build; undefined means https://serpapi.com.
     baseUrl: __SPLIT_FINDER_BASE_URL__,
     readPages,
+    readPartPrices,
     pages: chromePages(),
     notify,
     broadcast: (state) => {
