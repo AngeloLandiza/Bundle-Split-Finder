@@ -12,10 +12,9 @@ import {
   type BundleRecord,
   type BundleRow,
   type BundleStatus,
-  type CatalogRecord,
-  type HdPartPrice,
   type ListingRecord,
   type PartAvailability,
+  type PartPriceRecord,
   type PartRow,
   type PriceKind,
   type PriceOption,
@@ -33,12 +32,12 @@ import {
 
 const SECTION_RANK: Record<ReportSection, number> = { confirmed: 0, waiting: 1, inactive_listing: 2, missing_listing: 3, split: 4 };
 
-/** A part's stored Home Depot price (step 9), read from its catalog entry, else a twin's (Ruling 70). */
-type HdPriceOf = (brand: string, model: string) => HdPartPrice | undefined;
+/** A part's stored Home Depot price (step 9): its own part price record with a price, else a twin's (Ruling 70). */
+type HdPriceOf = (brand: string, model: string) => PartPriceRecord | undefined;
 
-/** The HdPriceOf of a stored catalog, read once per report. */
-function hdPrices(catalog: CatalogRecord[]): HdPriceOf {
-  const byKey = new Map(catalog.flatMap((c) => (c.hdPrice ? [[partKey(c.brand, c.model), c.hdPrice] as const] : [])));
+/** The HdPriceOf of the part price store, read once per report. Never the catalog: a price is not a splitting fact. */
+async function hdPrices(store: ScanStore): Promise<HdPriceOf> {
+  const byKey = new Map((await store.listPartPrices()).filter((r) => r.price !== null).map((r) => [r.key, r] as const));
   return (brand, model) => {
     for (const key of [partKey(brand, model), ...twinKeys(brand, model)]) {
       const hd = byKey.get(key);
@@ -56,10 +55,11 @@ const KIND_ORDER: Record<PriceKind, number> = { amazon_new: 0, amazon_buybox: 1,
  * matched listing: its featured price while active (the estimate's price), the Buy Box a Verify read and
  * its list price; then Home Depot's price for the part sold alone. A listing in review is not the part's,
  * so it gives none. The list price and Home Depot's are for reference: never counted (`reference`).
+ * Home Depot's price read from the RYOBI twin's page says so (`soldAs`).
  */
 function priceOptions(
-  settings: ScanSettings, matched: boolean, asin: string | null, active: boolean, price: PriceRecord | undefined, listing: ListingRecord | undefined,
-  hd: HdPartPrice | undefined,
+  settings: ScanSettings, model: string, matched: boolean, asin: string | null, active: boolean, price: PriceRecord | undefined, listing: ListingRecord | undefined,
+  hd: PartPriceRecord | undefined,
 ): PriceOption[] {
   const out: PriceOption[] = [];
   const base = { condition: 'new' as const, seller: null, shipsFrom: null, offers: null };
@@ -74,8 +74,12 @@ function priceOptions(
       out.push({ ...base, kind: 'amazon_list', price: listing.listPrice, asin, link, seenAt: listing.checkedAt, reference: true });
     }
   }
-  if (hd && hd.price !== null) {
-    out.push({ ...base, kind: 'homedepot', price: hd.price, seller: 'Home Depot', asin: null, link: hd.link, seenAt: hd.readAt, reference: true });
+  if (hd && hd.price !== null && hd.seenAt !== null) {
+    const soldAs = hd.matchedModel ?? hd.model;
+    out.push({
+      ...base, kind: 'homedepot', price: hd.price, seller: 'Home Depot', asin: null, link: hd.link, seenAt: hd.seenAt, reference: true,
+      ...(soldAs.toUpperCase() !== model.trim().toUpperCase() ? { soldAs } : {}),
+    });
   }
   return out.sort((a, b) => b.price - a.price || KIND_ORDER[a.kind] - KIND_ORDER[b.kind]);
 }
@@ -108,7 +112,7 @@ async function partRows(store: ScanStore, settings: ScanSettings, hdOf: HdPriceO
       priceSeenAt: price?.seenAt ?? null,
       image: listing?.image ?? null,
       title: listing?.title ?? null,
-      prices: priceOptions(settings, matched, match?.asin ?? null, availability === 'active', price, listing, hdOf(brand, model)),
+      prices: priceOptions(settings, model, matched, match?.asin ?? null, availability === 'active', price, listing, hdOf(brand, model)),
       // The PO (Nov 18): a New listing in bulk packaging is a place to sell; the panel labels it.
       ...(listing && isBulkPackaging(listing.title) ? { packaging: 'bulk' as const } : {}),
     });
@@ -326,7 +330,7 @@ async function bundleRow(
 /** One bundle's row, exactly as buildReport builds it. A product page the owner has open shows it (pageView.ts). Reads only. */
 export async function reportRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
   const catalog = await store.listCatalog();
-  return bundleRow(store, settings, b, kitIndex(kitRecords(await store.listBundles(), catalog)), hdPrices(catalog));
+  return bundleRow(store, settings, b, kitIndex(kitRecords(await store.listBundles(), catalog)), await hdPrices(store));
 }
 
 export async function buildReport(store: ScanStore, settings: ScanSettings): Promise<ScanReport> {
@@ -338,7 +342,7 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   const stored = await store.listBundles();
   const catalog = await store.listCatalog();
   const recordsOf = kitIndex(kitRecords(stored, catalog));
-  const hdOf = hdPrices(catalog);
+  const hdOf = await hdPrices(store);
   for (const b of stored) {
     bundles.push(await bundleRow(store, settings, b, recordsOf, hdOf));
     for (const part of [...resolvedParts(b), ...kitItemParts(b, recordsOf)]) held.add(part.key);

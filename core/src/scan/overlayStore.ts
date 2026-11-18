@@ -2,7 +2,9 @@
 // in this layer's memory and are dropped with it. The store underneath is never written. A product
 // page's view is computed over one while a scan or a panel action runs (pageView.ts, write: false).
 
-import type { BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PriceRecord, ReviewItem, ScanJob, ScanStore } from './types';
+import type {
+  BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+} from './types';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
   const x = key(a);
@@ -45,6 +47,7 @@ export class OverlayStore implements ScanStore {
   private readonly listings = new Layer<ListingRecord>((r) => r.asin, byKey((r) => r.asin));
   private readonly cursors = new Layer<CatalogCursor>((r) => r.brand, byKey((r) => r.brand));
   private readonly reviews = new Layer<ReviewItem>((r) => r.id, byKey((r) => r.id));
+  private readonly partPrices = new Layer<PartPriceRecord>((r) => r.key, byKey((r) => r.key));
   private readonly scans = new Layer<ScanJob>((r) => r.id, (a, b) => b.startedAt - a.startedAt);
 
   constructor(private readonly base: ScanStore) {}
@@ -111,6 +114,16 @@ export class OverlayStore implements ScanStore {
   }
   listReview() {
     return this.reviews.list(() => this.base.listReview());
+  }
+
+  getPartPrice(key: string) {
+    return this.partPrices.get(key, (k) => this.base.getPartPrice(k));
+  }
+  async putPartPrice(record: PartPriceRecord) {
+    this.partPrices.put(record);
+  }
+  listPartPrices() {
+    return this.partPrices.list(() => this.base.listPartPrices());
   }
 
   getScan(id: string) {

@@ -158,10 +158,15 @@ export function loadInputs(dir: string): Inputs {
         continue;
       }
       const itemId = (v.itemId ?? null) as string | null;
+      const price = v.price as number | null;
+      // The owner's browser read every model in the file: a product and a price is found, anything else not found.
+      const found = itemId !== null && price !== null;
       partPrices.set(partKey(v.brand, v.model), {
-        brand: v.brand.trim(), model: v.model.trim(), itemId, price: v.price as number | null, title: (v.title ?? null) as string | null,
+        brand: v.brand.trim(), model: v.model.trim(), status: found ? 'found' : 'not_found', itemId: found ? itemId : null,
+        matchedModel: found && isText(v.matchedModel) ? v.matchedModel.trim() : null,
+        price: found ? price : null, title: found ? ((v.title ?? null) as string | null) : null,
         // The file keeps the item id; the link is Home Depot's address for it.
-        link: itemId === null ? null : `https://www.homedepot.com/p/${itemId}`,
+        link: found ? `https://www.homedepot.com/p/${itemId}` : null,
       });
     }
   }
@@ -344,6 +349,9 @@ export class WatchedStore implements ScanStore {
   getReview: ScanStore['getReview'] = (id) => this.inner.getReview(id);
   putReview: ScanStore['putReview'] = (item) => this.inner.putReview(item);
   listReview: ScanStore['listReview'] = () => this.inner.listReview();
+  getPartPrice: ScanStore['getPartPrice'] = (key) => this.inner.getPartPrice(key);
+  putPartPrice: ScanStore['putPartPrice'] = (r) => this.inner.putPartPrice(r);
+  listPartPrices: ScanStore['listPartPrices'] = () => this.inner.listPartPrices();
   getScan: ScanStore['getScan'] = (id) => this.inner.getScan(id);
   putScan: ScanStore['putScan'] = (job) => this.inner.putScan(job);
   listScans: ScanStore['listScans'] = () => this.inner.listScans();

@@ -66,12 +66,19 @@ export interface ScanSettings {
   pageReadsPerScan: number;
   /**
    * Step 9: parts whose Home Depot price (sold alone) is read at most per scan, in the owner's browser
-   * (readPartPrices). Never a search.
+   * (readPartPrices). Never a search. A value above PART_PRICE_READS_MAX counts as it.
    */
   partPriceReadsPerScan: number;
 }
 
 const HOUR = 60 * 60 * 1000;
+
+/**
+ * Step 9: the most parts one call to readPartPrices is asked for, and the most the extension's reader reads in
+ * one call (two Home Depot fetches each: the search and the product page). One number for both, so the scan
+ * never asks for a part the reader would leave unread.
+ */
+export const PART_PRICE_READS_MAX = 40;
 
 export const DEFAULT_SCAN_SETTINGS: ScanSettings = {
   brands: ['DEWALT', 'RYOBI'],
@@ -86,7 +93,7 @@ export const DEFAULT_SCAN_SETTINGS: ScanSettings = {
   catalogPagesPerScan: 1,
   brandFilters: { DEWALT: 'p_123:195991', RYOBI: 'p_123:252605' },
   pageReadsPerScan: 60,
-  partPriceReadsPerScan: 60,
+  partPriceReadsPerScan: PART_PRICE_READS_MAX,
 };
 
 // ---------------------------------------------------------------- records
@@ -155,14 +162,31 @@ export type PageOutcome =
 export type ReadPages = (itemIds: string[]) => Promise<PageOutcome[]>;
 
 /**
+ * Step 9: what one lookup of a part's Home Depot price gave.
+ * found      Home Depot's search showed the part sold alone, and its page confirmed the brand and model and named a price
+ * not_found  Home Depot answered and has no price for the part sold alone: its search showed no product for the model,
+ *            the product it showed was not confirmed by its page (a kit whose address ends with the model), or the
+ *            confirmed page named no price
+ * not_read   the part was never looked up, or Home Depot refused or the page could not be read: it says nothing
+ */
+export type PartPriceStatus = 'found' | 'not_found' | 'not_read';
+
+/**
  * Step 9: what Home Depot sells one part for on its own, read in the owner's browser: Home Depot's
- * search for the model, then the product's page. Nulls when it was not found. One per part asked.
+ * search for the model, then the product's page. One per part asked, in order.
  */
 export interface PartPriceReading {
   brand: string;
   model: string;
-  /** Home Depot's item id of the product sold alone; null when none was found. */
+  status: PartPriceStatus;
+  /** Home Depot's item id of the product sold alone; null unless the product was found. */
   itemId: string | null;
+  /**
+   * The model the product's own page names: the part's, or for RYOBI its one-trailing-B twin (PCL206B for
+   * PCL206, Ruling 70). Null unless the page was read and confirmed.
+   */
+  matchedModel: string | null;
+  /** Null unless status is found. */
   price: number | null;
   title: string | null;
   link: string | null;
@@ -171,14 +195,29 @@ export interface PartPriceReading {
 /** Step 9: reads Home Depot's own price for parts sold alone, in the owner's browser. Never a search. */
 export type ReadPartPrices = (parts: { brand: string; model: string }[]) => Promise<PartPriceReading[]>;
 
-/** Step 9: a part's Home Depot price as stored on its catalog entry, with the clock time of the reading. */
-export interface HdPartPrice {
+/**
+ * Step 9: a part's Home Depot price (sold alone), in its own store keyed by the part, so the splitter, the
+ * known models and the kit pages never read it: a price reading is never a fact about what a bundle holds.
+ * Only a found or not_found reading is saved. A not_found keeps an earlier found price with its time
+ * (`seenAt`) and moves `checkedAt` only, as an Amazon price record keeps its last seen price.
+ */
+export interface PartPriceRecord {
+  /** partKey(brand, model) of the part asked for. */
+  key: string;
+  brand: string;
+  model: string;
+  /** Null when no reading has found the part. */
   itemId: string | null;
-  /** Null when Home Depot showed no price, or the part was not found. */
+  /** The model on the page read (PartPriceReading.matchedModel); null when none was found. */
+  matchedModel: string | null;
   price: number | null;
   title: string | null;
+  /** Home Depot's address of the product; null when none was found. */
   link: string | null;
-  readAt: number;
+  /** When `price` was read; null if never. */
+  seenAt: number | null;
+  /** When the part was last read, found or not. Freshness is measured from here. */
+  checkedAt: number;
 }
 
 export interface CatalogRecord {
@@ -202,11 +241,6 @@ export interface CatalogRecord {
    * bundle's is (a later listing row keeps it). Undefined or null: not read yet.
    */
   page?: PageReading | null;
-  /**
-   * Step 9: Home Depot's own price for the part sold alone (readPartPrices), kept as a page is (a later
-   * listing row keeps it). Undefined: not read yet. A reference figure, never counted in an estimate.
-   */
-  hdPrice?: HdPartPrice;
 }
 
 /**
@@ -382,6 +416,11 @@ export interface ScanCounts {
   partsFromCatalog: number;
   /** Home Depot pages read and saved: on their bundles, and (step 6) on their kits' catalog entries. Never a search. */
   pagesRead: number;
+  /**
+   * Step 9: parts whose Home Depot price (sold alone) was read and saved, found or not found. Never a search.
+   * Absent on a job saved before step 9; it reads as 0.
+   */
+  partPricesRead?: number;
 }
 
 /**
@@ -475,6 +514,11 @@ export interface ScanStore {
   putReview(item: ReviewItem): Promise<void>;
   listReview(): Promise<ReviewItem[]>;
 
+  /** Step 9: Home Depot's prices of parts sold alone, by partKey. Never read by the splitter. */
+  getPartPrice(key: string): Promise<PartPriceRecord | undefined>;
+  putPartPrice(record: PartPriceRecord): Promise<void>;
+  listPartPrices(): Promise<PartPriceRecord[]>;
+
   getScan(id: string): Promise<ScanJob | undefined>;
   putScan(job: ScanJob): Promise<void>;
   listScans(): Promise<ScanJob[]>;
@@ -541,6 +585,11 @@ export interface PriceOption {
   seenAt: number;
   /** True for a figure shown for reference only (amazon_list, homedepot): never counted in an estimate or a range. */
   reference: boolean;
+  /**
+   * homedepot only: the model Home Depot sells alone, when it is not the part's own but its RYOBI twin (the
+   * page read for PCL206 is PCL206B's): "Home Depot · sold alone as PCL206B · reference". Absent for an exact match.
+   */
+  soldAs?: string;
 }
 
 /**

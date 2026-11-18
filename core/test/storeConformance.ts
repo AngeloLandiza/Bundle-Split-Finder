@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import type { BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PriceRecord, ReviewItem, ScanJob, ScanStore } from '../src/scan/types';
+import type {
+  BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+} from '../src/scan/types';
 
 const bundle = (itemId: string, over: Partial<BundleRecord> = {}): BundleRecord => ({
   key: `homedepot:${itemId}`,
@@ -96,6 +98,21 @@ const scan = (startedAt: number, over: Partial<ScanJob> = {}): ScanJob => ({
   ...over,
 });
 
+// Step 9: the PCL206 drill as Home Depot sells it alone, under its tool-only twin's page (hd-part-prices-2026-11-18.json shape).
+const partPrice = (model: string, over: Partial<PartPriceRecord> = {}): PartPriceRecord => ({
+  key: `RYOBI:${model}`,
+  brand: 'RYOBI',
+  model,
+  itemId: '317987588',
+  matchedModel: `${model}B`,
+  price: 89,
+  title: 'ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)',
+  link: 'https://www.homedepot.com/p/317987588',
+  seenAt: 1,
+  checkedAt: 1,
+  ...over,
+});
+
 export function storeConformance(name: string, make: () => Promise<ScanStore>): void {
 describe(`${name} round trips`, () => {
   it('bundles: put, get, replace, missing', async () => {
@@ -180,6 +197,23 @@ describe(`${name} round trips`, () => {
     await s.putReview(b);
     expect(await s.getReview(a.id)).toEqual(b);
     expect(await s.getReview('match:nope')).toBeUndefined();
+  });
+
+  it('part prices (step 9): put, get, replace, missing, listed by key; the catalog is untouched', async () => {
+    const s = await make();
+    const a = partPrice('PCL500');
+    await s.putPartPrice(a);
+    expect(await s.getPartPrice(a.key)).toEqual(a);
+    const b = partPrice('PCL500', { checkedAt: 2 });
+    await s.putPartPrice(b);
+    expect(await s.getPartPrice(a.key)).toEqual(b);
+    await s.putPartPrice(partPrice('PCL206', { itemId: null, matchedModel: null, price: null, title: null, link: null, seenAt: null }));
+    expect((await s.listPartPrices()).map((r) => r.key)).toEqual(['RYOBI:PCL206', 'RYOBI:PCL500']);
+    expect(await s.getPartPrice('RYOBI:NOPE')).toBeUndefined();
+    expect(await s.listCatalog()).toEqual([]);
+    const got = (await s.getPartPrice(a.key))!;
+    got.price = 1;
+    expect((await s.getPartPrice(a.key))!.price).toBe(89);
   });
 
   it('scans: put, get, replace, missing', async () => {

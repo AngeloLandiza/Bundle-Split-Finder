@@ -40,6 +40,39 @@ describe('the validation set, replayed with the Home Depot prices read on Nov 18
     for (const o of b.options) expect([o.range.lowest, o.range.highest]).toEqual([o.estimate, o.estimate]);
   });
 
+  it('price readings are never splitting facts: the catalog, every split and every other results field are as with no readings', async () => {
+    const dir = 'fixtures/validation';
+    const inputs = loadInputs(dir);
+    const cache = new ResponsesCache(validationFiles(dir).responses);
+    const without = await runValidationPipeline({
+      inputs: { ...inputs, partPrices: new Map() }, scanClient: new CacheOnlyClient(cache), lookupClient: new CacheOnlyClient(cache), continuePastMisses: true,
+    });
+    const withPrices = await replay();
+    // Found readings were saved, among them parts the catalog has no entry for: the old code made one from each.
+    const stored = await withPrices.store.listPartPrices();
+    const catalogKeys = new Set((await withPrices.store.listCatalog()).map((c) => c.key));
+    expect(stored.filter((r) => r.price !== null).length).toBeGreaterThan(0);
+    expect(stored.filter((r) => r.price !== null && !catalogKeys.has(r.key)).length).toBeGreaterThan(0);
+    expect(await without.store.listPartPrices()).toEqual([]);
+    // The catalog and the splits are exactly what a replay with no readings leaves.
+    expect(await withPrices.store.listCatalog()).toEqual(await without.store.listCatalog());
+    const splits = async (run: typeof without) => (await run.store.listBundles()).map((b) => [b.key, b.split]);
+    expect(await splits(withPrices)).toEqual(await splits(without));
+    // Every results field but the Home Depot price itself is the same.
+    const noHd = (r: Awaited<ReturnType<typeof buildResults>>) => ({
+      ...r, summary: { ...r.summary, hdPrices: 0 }, bundles: r.bundles.map((b) => ({ ...b, parts: b.parts.map((p) => ({ ...p, hdPrice: null })) })),
+    });
+    expect(noHd(await buildResults(withPrices))).toEqual(noHd(await buildResults(without)));
+  });
+
+  it('a part read from its RYOBI twin\'s page is labelled with the model Home Depot sells (PCL500 as PCL500B); an exact one is plain', async () => {
+    const run = await replay();
+    const options = run.report.bundles.flatMap((b) => b.options.flatMap((o) => o.parts)).flatMap((p) => p.prices.filter((x) => x.kind === 'homedepot').map((x) => [p.model, x.price, x.soldAs ?? null] as const));
+    expect(options).toContainEqual(['PCL500', 89, 'PCL500B']);
+    expect(options).toContainEqual(['PCL265B', 99, null]);
+    expect(options.filter(([model, , soldAs]) => soldAs !== null && soldAs === model)).toEqual([]);
+  });
+
   it('the summary counts positive bundles at each end, and the parts with a Home Depot price', async () => {
     const results = await buildResults(await replay());
     expect(results.summary.positive).toEqual({ lowest: 1, amazonNew: 1, highest: 1 });

@@ -107,7 +107,7 @@ describe('runScan: the founder\'s bundle (test A)', () => {
     expect(job).toMatchObject({ id: String(T0), startedAt: T0, finishedAt: T0, status: 'done', stopReason: null, stopMessage: null, phase: 'finish', searchesUsed: 3, queue: [], deferred: [] });
     expect(job.counts).toEqual({
       pagesFetched: 1, productsSeen: 18, bundlesSeen: 8, bundlesResolved: 2, reviewsOpened: 6, lookupsDone: 2, refreshesDone: 0, partsMatched: 2,
-      catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0, pagesRead: 0,
+      catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0, pagesRead: 0, partPricesRead: 0,
     });
     // Every RYOBI row of both lookups is saved: 41 + 9 rows, 44 ASINs. Rows with no brand or
     // with brand "Amazon Renewed" are not.
@@ -161,7 +161,7 @@ describe('runScan: a page of kits and unresolved bundles (test B)', () => {
     expect(job).toMatchObject({ status: 'done', stopReason: null, searchesUsed: 1, queue: [], deferred: [] });
     expect(job.counts).toEqual({
       pagesFetched: 1, productsSeen: 24, bundlesSeen: 4, bundlesResolved: 0, reviewsOpened: 4, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
-      catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
+      catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0, partPricesRead: 0,
     });
     expect(await w.store.listListings()).toEqual([]);
     expect(await w.store.listCatalog()).toHaveLength(20);
@@ -250,7 +250,7 @@ describe('runScan: an interruption is continued without paying twice (test E)', 
     // the continued job counts the rows it saved, 41 + 9.
     expect(job.counts).toEqual({
       pagesFetched: 1, productsSeen: 18, bundlesSeen: 8, bundlesResolved: 2, reviewsOpened: 6, lookupsDone: 2, refreshesDone: 0, partsMatched: 2,
-      catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0, pagesRead: 0,
+      catalogPages: 0, listingsSaved: 50, partsFromCatalog: 0, pagesRead: 0, partPricesRead: 0,
     });
     expect(await w.store.listListings()).toHaveLength(44);
     expect(await w.store.listScans()).toHaveLength(1);

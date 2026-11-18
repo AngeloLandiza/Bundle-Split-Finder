@@ -1,7 +1,9 @@
 // A ScanStore that lives in memory. Records are copied on the way in and on the way
 // out, so neither the caller's object nor a returned one aliases what is stored.
 
-import type { BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PriceRecord, ReviewItem, ScanJob, ScanStore } from './types';
+import type {
+  BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+} from './types';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
   const x = key(a);
@@ -17,6 +19,7 @@ export class MemoryScanStore implements ScanStore {
   private readonly listings = new Map<string, ListingRecord>();
   private readonly cursors = new Map<string, CatalogCursor>();
   private readonly reviews = new Map<string, ReviewItem>();
+  private readonly partPrices = new Map<string, PartPriceRecord>();
   private readonly scans = new Map<string, ScanJob>();
 
   private get<T>(map: Map<string, T>, key: string): T | undefined {
@@ -90,6 +93,16 @@ export class MemoryScanStore implements ScanStore {
   }
   async listReview() {
     return this.list(this.reviews, byKey((r) => r.id));
+  }
+
+  async getPartPrice(key: string) {
+    return this.get(this.partPrices, key);
+  }
+  async putPartPrice(record: PartPriceRecord) {
+    this.partPrices.set(record.key, structuredClone(record));
+  }
+  async listPartPrices() {
+    return this.list(this.partPrices, byKey((r) => r.key));
   }
 
   async getScan(id: string) {
