@@ -8,6 +8,7 @@ import {
   doorwayLoaded,
   fetchPagesInTab,
   fetchSearchesInTab,
+  openDoorway,
   pickPartLink,
   type InTabResult,
   type ReaderEnv,
@@ -288,6 +289,71 @@ describe('doorwayLoaded', () => {
     expect(doorwayLoaded({ status: 'loading', url: 'https://www.homedepot.com/p/1' }, origin)).toBe(false);
     expect(doorwayLoaded({ status: 'complete', url: 'https://www.homedepot.com.example.test/p/1' }, origin)).toBe(false);
     expect(doorwayLoaded({ status: 'complete', url: 'https://www.homedepot.com/p/RYOBI-x/328814689' }, origin)).toBe(true);
+  });
+});
+
+// What Chrome did in the end-to-end runs of 2026-11-18 (debug-report): a tab created on about:blank reports `loading` until its
+// blank page has loaded. Navigated in that window, the tab dropped the navigation and settled on `unloaded`, with no
+// URL, and never loaded (5 of 34 doorways under load). Navigated after it, it loaded the page.
+function chromeTabs(opts: { blankMs: number | null }) {
+  let t = 0;
+  let state: { status: string; url?: string } = { status: 'loading' };
+  const blankDone = () => opts.blankMs !== null && t >= opts.blankMs;
+  const calls: string[] = [];
+  return {
+    calls,
+    now: () => t,
+    sleep: async (ms: number) => { t += ms; },
+    tabs: {
+      create: async (url: string) => { calls.push(`create ${url}`); return { id: 7, status: 'loading' }; },
+      get: async (_id: number) => {
+        if (state.status === 'loading' && state.url === undefined && blankDone()) state = { status: 'complete' };
+        return { ...state };
+      },
+      update: async (_id: number, url: string) => {
+        calls.push(`update ${url}`);
+        const blankLoading = state.status === 'loading' && state.url === undefined && !blankDone();
+        state = blankLoading ? { status: 'unloaded' } : { status: 'complete', url };
+        return {};
+      },
+    },
+  };
+}
+
+describe('openDoorway', () => {
+  const origin = 'https://www.homedepot.com';
+  const url = `${origin}/s/DCF921B`;
+
+  it('names the blank tab, then sends it to the page only once its blank page has loaded, so the page loads', async () => {
+    const c = chromeTabs({ blankMs: 40 });
+    const named: number[] = [];
+    const id = await openDoorway(c.tabs, url, async (tabId) => { c.calls.push(`name ${tabId}`); named.push(tabId); }, c.sleep);
+    expect(id).toBe(7);
+    expect(c.calls).toEqual(['create about:blank', 'name 7', `update ${url}`]);
+    await waitForDoorway(c.tabs.get, id, origin, 30_000, c.sleep, c.now);
+    expect(await c.tabs.get(id)).toEqual({ status: 'complete', url });
+  });
+
+  it('a blank page already loaded is sent to the page at once', async () => {
+    const c = chromeTabs({ blankMs: 0 });
+    await openDoorway(c.tabs, url, async () => undefined, c.sleep);
+    expect(c.now()).toBe(0);
+    expect(await c.tabs.get(7)).toEqual({ status: 'complete', url });
+  });
+
+  it('a blank page that never loads is still sent to the page after 5 s, and waitForDoorway reports it', async () => {
+    const c = chromeTabs({ blankMs: null });
+    await openDoorway(c.tabs, url, async () => undefined, c.sleep);
+    expect(c.calls).toEqual(['create about:blank', `update ${url}`]);
+    expect(c.now()).toBeGreaterThanOrEqual(5000);
+    expect(c.now()).toBeLessThan(5100);
+    await expect(waitForDoorway(c.tabs.get, 7, origin, 1000, c.sleep, c.now)).rejects.toThrow('timeout');
+  });
+
+  it('throws when Chrome gives no tab id', async () => {
+    const tabs = { create: async () => ({}), get: async () => ({}), update: vi.fn(async () => ({})) };
+    await expect(openDoorway(tabs, url, async () => undefined, async () => undefined)).rejects.toThrow('Chrome opened no tab.');
+    expect(tabs.update).not.toHaveBeenCalled();
   });
 });
 

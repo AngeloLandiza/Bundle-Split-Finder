@@ -53,6 +53,41 @@ export async function waitForDoorway(
   }
 }
 
+/** The three chrome.tabs calls openDoorway makes. */
+export interface DoorwayTabs {
+  /** chrome.tabs.create({ url, active: false }). */
+  create(url: string): Promise<{ id?: number; status?: string }>;
+  get(tabId: number): Promise<{ status?: string; url?: string }>;
+  update(tabId: number, url: string): Promise<unknown>;
+}
+
+const BLANK_WAIT_MS = 5000;
+const BLANK_EVERY_MS = 25;
+
+/**
+ * Opens the doorway tab: blank, named as the reader's (`name`), then sent to `url`. The blank tab is named first so the
+ * chip's content script, which runs on the page, finds the tab already named as the reader's.
+ * It is sent to `url` only once its blank page has loaded (status complete), checked every 25 ms for at most 5 s: a tab
+ * sent elsewhere while Chrome is still loading its blank page can drop the navigation and stay `unloaded`, never loading
+ * (docs/decisions.md). After 5 s it is sent anyway, and waitForDoorway says whether the page loaded.
+ */
+export async function openDoorway(
+  tabs: DoorwayTabs,
+  url: string,
+  name: (tabId: number) => Promise<void>,
+  sleep: (ms: number) => Promise<void>,
+): Promise<number> {
+  const tab = await tabs.create('about:blank');
+  if (typeof tab.id !== 'number') throw new Error('Chrome opened no tab.');
+  await name(tab.id);
+  for (let waited = 0; waited < BLANK_WAIT_MS; waited += BLANK_EVERY_MS) {
+    if ((await tabs.get(tab.id)).status === 'complete') break;
+    await sleep(BLANK_EVERY_MS);
+  }
+  await tabs.update(tab.id, url);
+  return tab.id;
+}
+
 /**
  * Runs inside the tab. Self-contained: no imports, no outside variables, no nested named
  * functions (it is serialised by its source). Fetches `/p/<id>` same-origin, `concurrency` at a

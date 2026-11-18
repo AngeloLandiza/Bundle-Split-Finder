@@ -9,7 +9,7 @@ import { appendLedger } from '../lib/ledger';
 import { CONTENT_REQUESTS, type ChipSetting, type Request, type ShowThisPage, type StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
 import { mayAsk } from '../lib/sender';
-import { createPageReader, createPartPriceReader, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
+import { createPageReader, createPartPriceReader, openDoorway, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
 import { createWorker, type DeferredPage, type PageEnv } from '../lib/worker';
 import type { ProductPage } from '../../core/src/hdPage';
 
@@ -21,23 +21,29 @@ const DOORWAY_KEY = 'hdReaderTab';
 
 /** The reader's Chrome calls. Opening a background tab needs no permission. */
 function chromeReaderEnv(): ReaderEnv {
+  const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
   return {
     origin: __SPLIT_FINDER_HD_ORIGIN__,
-    async openTab(url) {
+    openTab(url) {
       // Opened blank and remembered before it goes to the page, so the chip's content script (which runs on that page)
       // finds the tab already named as the reader's when it sends its first pageSeen. waitForDoorway never takes the
-      // blank start page for the loaded one (doorwayLoaded).
-      const tab = await browser.tabs.create({ url: 'about:blank', active: false });
-      if (typeof tab.id !== 'number') throw new Error('Chrome opened no tab.');
-      await browser.storage.session.set({ [DOORWAY_KEY]: tab.id });
-      await browser.tabs.update(tab.id, { url });
-      return tab.id;
+      // blank start page for the loaded one (doorwayLoaded). openDoorway waits for the blank page before it navigates.
+      return openDoorway(
+        {
+          create: (blank) => browser.tabs.create({ url: blank, active: false }),
+          get: (tabId) => browser.tabs.get(tabId),
+          update: (tabId, to) => browser.tabs.update(tabId, { url: to }),
+        },
+        url,
+        (tabId) => browser.storage.session.set({ [DOORWAY_KEY]: tabId }),
+        sleep,
+      );
     },
     async closeTab(tabId) {
       await browser.tabs.remove(tabId);
     },
     waitForLoad(tabId, timeoutMs) {
-      return waitForDoorway((id) => browser.tabs.get(id), tabId, __SPLIT_FINDER_HD_ORIGIN__, timeoutMs, (ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+      return waitForDoorway((id) => browser.tabs.get(id), tabId, __SPLIT_FINDER_HD_ORIGIN__, timeoutMs, sleep);
     },
     async runInTab(tabId, func, args) {
       const results = await browser.scripting.executeScript({ target: { tabId }, world: 'ISOLATED', func, args });
@@ -52,7 +58,7 @@ function chromeReaderEnv(): ReaderEnv {
       const v = got[DOORWAY_KEY];
       return typeof v === 'number' ? v : null;
     },
-    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    sleep,
   };
 }
 
