@@ -10,7 +10,7 @@
 // request, and one failed lookup does not end a scan"); "Pn" to the step 4 plan, Task 4
 // ("Runner reads pages before the split").
 
-import { type Catalog, catalogEntry } from '../decompose';
+import { type Catalog, catalogEntry, type Decomposition } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
 import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, maySparePart, pick, type Picked } from '../match';
 import { planScan } from '../scanPlan';
@@ -19,7 +19,7 @@ import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../s
 import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
-import { knownModels, readSplit } from './split';
+import { type KnownModels, knownModels, readSplit } from './split';
 import { rejectedOf, twinKeys } from './twins';
 import { bundleKey, partKey, priceActive, resolvedParts } from './types';
 import type {
@@ -896,37 +896,52 @@ async function splitBundles(run: Run, stored: Catalog): Promise<void> {
   const now = run.now();
   let resolved = 0;
   for (const bundle of await store.listBundles()) {
-    const id = `split:${bundle.key}`;
-    const item = await store.getReview(id);
-    // The owner's answer comes first (step 5): parts the owner chose stand instead of any reading,
-    // and "none" keeps the bundle in review whatever the readings now say. Otherwise P5: the
-    // model number's split, then the bundle's own page, when it was read.
-    const owner = ownerSplit(item);
-    const read = () => readSplit(bundle, { stored, catalog });
-    const split = owner === null ? read() : owner === NONE ? notKnown(read()) : owner;
-    await store.putBundle({ ...bundle, split });
-    if (split.status === 'resolved') {
-      resolved += 1;
-      if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
-      continue;
-    }
-    // The question follows the latest reading (a page that does not fit names both readings), and
-    // offers the readings the split carries (step 5). An item the user answered is never changed.
-    const reason = split.notes.join('; ');
-    const choices = splitChoices(split);
-    if (!item || item.answer === RESOLVED_BY_SCAN) {
-      // A new question, or one a scan closed and must ask again.
-      await store.putReview({
-        id, kind: 'split', subject: bundle.key, brand: bundle.brand, model: bundle.model, title: bundle.title,
-        reason, candidates: [], choices, openedAt: now, answer: null, answeredAt: null,
-      });
-      job.counts.reviewsOpened += 1;
-    } else if (item.answer === null && (item.reason !== reason || !sameChoices(choicesOf(item), choices))) {
-      // Still open: a new reading, the same question, so openedAt stays.
-      await store.putReview({ ...item, reason, choices });
-    }
+    const { split, opened } = await splitOne(store, bundle, { stored, catalog }, now);
+    if (split.status === 'resolved') resolved += 1;
+    if (opened) job.counts.reviewsOpened += 1;
   }
   job.counts.bundlesResolved = resolved;
+}
+
+/**
+ * Rule 4, P5 and step 5 for one bundle, as a scan splits each: the split is saved on the bundle, and
+ * its split question (`split:` and the bundle key) is closed, opened, or made to follow the latest
+ * reading. `opened`: a question was opened, new or asked again. A product page the owner has open is
+ * split by it too (pageView.ts), so the two never differ. Never a search.
+ */
+export async function splitOne(
+  store: ScanStore, bundle: BundleRecord, known: Pick<KnownModels, 'stored' | 'catalog'>, now: number,
+): Promise<{ split: Decomposition; opened: boolean }> {
+  const id = `split:${bundle.key}`;
+  const item = await store.getReview(id);
+  // The owner's answer comes first (step 5): parts the owner chose stand instead of any reading,
+  // and "none" keeps the bundle in review whatever the readings now say. Otherwise P5: the
+  // model number's split, then the bundle's own page, when it was read.
+  const owner = ownerSplit(item);
+  const read = () => readSplit(bundle, known);
+  const split = owner === null ? read() : owner === NONE ? notKnown(read()) : owner;
+  await store.putBundle({ ...bundle, split });
+  if (split.status === 'resolved') {
+    if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
+    return { split, opened: false };
+  }
+  // The question follows the latest reading (a page that does not fit names both readings), and
+  // offers the readings the split carries (step 5). An item the user answered is never changed.
+  const reason = split.notes.join('; ');
+  const choices = splitChoices(split);
+  if (!item || item.answer === RESOLVED_BY_SCAN) {
+    // A new question, or one a scan closed and must ask again.
+    await store.putReview({
+      id, kind: 'split', subject: bundle.key, brand: bundle.brand, model: bundle.model, title: bundle.title,
+      reason, candidates: [], choices, openedAt: now, answer: null, answeredAt: null,
+    });
+    return { split, opened: true };
+  }
+  if (item.answer === null && (item.reason !== reason || !sameChoices(choicesOf(item), choices))) {
+    // Still open: a new reading, the same question, so openedAt stays.
+    await store.putReview({ ...item, reason, choices });
+  }
+  return { split, opened: false };
 }
 
 // ---------------------------------------------------------------- rule 5: plan the parts
@@ -969,14 +984,16 @@ export interface BundlePart extends Part {
  * Rule 5: the parts of every resolved bundle, by part key, each with the largest saving among its
  * bundles; then (step 6) the items with a model number of every kit those bundles' options split,
  * that no split holds itself, with the kits that hold them. A kit item that is also a part of some
- * split is that part.
+ * split is that part. `only`, when given, keeps the parts of the bundles it accepts (a product page
+ * the owner has open asks for its own bundle's); kits are still read from every stored record.
  */
-export async function bundleParts(store: ScanStore): Promise<Map<string, BundlePart>> {
+export async function bundleParts(store: ScanStore, only?: (b: BundleRecord) => boolean): Promise<Map<string, BundlePart>> {
   const parts = new Map<string, BundlePart>();
   const items = new Map<string, BundlePart>();
-  const bundles = await store.listBundles();
+  const stored = await store.listBundles();
   // Step 6: a kit's page may be on a bundle record or on its catalog entry (kitRecords).
-  const recordsOf = kitIndex(kitRecords(bundles, await store.listCatalog()));
+  const recordsOf = kitIndex(kitRecords(stored, await store.listCatalog()));
+  const bundles = only ? stored.filter(only) : stored;
   const add = (into: Map<string, BundlePart>, part: Part, saving: number, kit: string | null) => {
     const seen = into.get(part.key);
     if (!seen) into.set(part.key, { key: part.key, brand: part.brand, model: part.model, saving, kits: kit === null ? [] : [kit] });
@@ -1009,11 +1026,11 @@ async function itemsWanted(store: ScanStore, kit: MatchRecord | undefined): Prom
 
 /**
  * The lookups and refreshes the store asks for right now, most valuable first.
- * `fromListings` (2c rule 5) is tried first for every part that would need a lookup; the
- * match it returns, if any, stands in for one.
+ * `fromListings` (2c rule 5, savedMatch) gives each part's match after its saved listings were
+ * tried; without it the stored match is read.
  */
 async function wantedParts(
-  store: ScanStore, settings: ScanSettings, now: number, fromListings?: (part: Part) => Promise<MatchRecord | null>,
+  store: ScanStore, settings: ScanSettings, now: number, fromListings?: (part: Part) => Promise<MatchRecord | undefined>,
   failedBefore: string[] = [],
 ): Promise<Wants> {
   const parts = await bundleParts(store);
@@ -1027,11 +1044,7 @@ async function wantedParts(
   // nothing. The kits' own matches are final before any kit's items are judged below.
   const matches = new Map<string, MatchRecord | undefined>();
   for (const [key, { brand, model }] of parts) {
-    let match = await store.getMatch(key);
-    // Ruling 73: an automatic "none" or "review" is judged again too, as saved listings grow and rules change.
-    const again = match?.decidedBy === 'auto' && (match.status === 'none' || match.status === 'review');
-    if (fromListings && (lookupWanted(match) || again)) match = (await fromListings({ key, brand, model })) ?? match;
-    matches.set(key, match);
+    matches.set(key, fromListings ? await fromListings({ key, brand, model }) : await store.getMatch(key));
   }
   // Step 6: per kit, whether a scan may look up its items, read once. A kit is itself a part of a
   // resolved split (kitItemParts), so its match was read above.
@@ -1118,7 +1131,7 @@ function once(seen: Set<string>, id: string): boolean {
 async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   const { job, budget } = run;
   // 2c rule 5 runs even when the listing phase stopped: it spends nothing.
-  const wants = await wantedParts(run.store, run.settings, run.now(), (part) => matchFromListings(run, listings, part), run.failedBefore);
+  const wants = await wantedParts(run.store, run.settings, run.now(), (part) => savedMatch(run, listings, part), run.failedBefore);
   // A stop asked for during the last listing search, when the queue emptied as usual (QA M7), is a stop on request too.
   if (job.stopReason === null && run.shouldStop()) job.stopReason = 'user';
   // In the listing phase only rule 8 or a stop on request (3 rule 1) sets a stop reason: then nothing more is spent.
@@ -1249,6 +1262,20 @@ export async function matchFromListings(ctx: PartContext, listings: ListingRecor
   job.counts.partsFromCatalog += 1;
   job.counts.partsMatched += 1;
   return match;
+}
+
+/**
+ * 2c rule 5 for one part, as a scan plans its parts: a part that would need a lookup (lookupWanted),
+ * or whose automatic "none" or "review" is judged again (Ruling 73), is tried against the saved
+ * listings (matchFromListings). The part's match after that, or the stored one. A product page the
+ * owner has open matches its bundle's parts with it too (pageView.ts). Never a search.
+ */
+export async function savedMatch(ctx: PartContext, listings: ListingRecord[], part: Part): Promise<MatchRecord | undefined> {
+  const match = await ctx.store.getMatch(part.key);
+  // Ruling 73: an automatic "none" or "review" is judged again too, as saved listings grow and rules change.
+  const again = match?.decidedBy === 'auto' && (match.status === 'none' || match.status === 'review');
+  if (!lookupWanted(match) && !again) return match;
+  return (await matchFromListings(ctx, listings, part)) ?? match;
 }
 
 /** 2c rule 5's judgement, writing nothing: a listing is chosen when matchFromListings would match the part. */
