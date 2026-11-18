@@ -9,7 +9,7 @@ import { money, profit, roi } from '../../lib/format';
 import type { AppState, PageView, PanelReport, ThisPage } from '../../lib/messages';
 import { type ActiveTab, UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { waitingParts } from './dealsModel';
-import { feeText, noEstimate, Part } from './Detail';
+import { feeText, noEstimate, Part, RangeLine } from './Detail';
 import { ReviewQuestion } from './ReviewQuestion';
 import { useCopyAsins } from './useCopyAsins';
 import './Detail.css';
@@ -111,6 +111,7 @@ function Bundle({ view, report, state, api, onOpenDetail }: { view: Extract<Page
               Costs <span className="figure fig-sm">{money(e.cost)}</span> · parts net <span className="figure fig-sm">{money(e.netRevenue)}</span> after fees
             </div>
             <p className="detail-estimate">Estimate from your fee settings ({feeText(state.settings.fees)}).</p>
+            <RangeLine row={row} />
           </>
         ) : question ? (
           <p className="detail-noestimate">{noEstimate(row)}</p>

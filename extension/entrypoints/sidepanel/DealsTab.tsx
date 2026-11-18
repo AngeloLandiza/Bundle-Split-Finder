@@ -4,7 +4,7 @@ import { DEFAULT_SCAN_SETTINGS, type BundleRow } from '@core/scan/types';
 import { money, profit, roi, when } from '../../lib/format';
 import type { AppState, PanelReport } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
-import { matchState, sections, staleDays, waitingParts } from './dealsModel';
+import { matchState, RANGE_MEANING, roiRangeText, sections, staleDays, waitingParts } from './dealsModel';
 import { LimitNotice, limitCopy, setAsideSentence } from './DealsLimitNotice';
 import { LookUp } from './DealsLookUp';
 import { rowLinkOrTab, usePaidFocus } from './paidFocus';
@@ -26,6 +26,8 @@ export interface DealsTabProps {
 const SORTS: { key: SortKey; label: string }[] = [
   { key: 'profit', label: 'Profit' },
   { key: 'roi', label: 'ROI' },
+  { key: 'roiLowest', label: 'Lowest ROI' },
+  { key: 'roiHighest', label: 'Highest ROI' },
   { key: 'discount', label: 'Discount' },
 ];
 
@@ -39,6 +41,16 @@ function localDate(ms: number): string {
   return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
 }
 
+/** The ROI at each end of the part prices, under the headline: "ROI −6% to +12%". Nothing when the ends read the same. */
+function RoiRange({ row }: { row: BundleRow }) {
+  const text = roiRangeText(row.estimate, row.range);
+  return text ? (
+    <div className="deal-roi-range" title={RANGE_MEANING}>
+      {text}
+    </div>
+  ) : null;
+}
+
 function Figures({ row }: { row: BundleRow }) {
   // A waiting part is already said in the match state, so the slot stays empty.
   if (!row.estimate && row.parts.some((p) => p.status === 'waiting' || p.status === 'unmatched')) return null;
@@ -47,6 +59,7 @@ function Figures({ row }: { row: BundleRow }) {
     <div className="deal-figures" data-loss={row.estimate.profit < 0 ? 'true' : undefined}>
       <div className="deal-profit">{profit(row.estimate.profit)}</div>
       <div className="deal-roi">ROI {roi(row.estimate.roi)}</div>
+      <RoiRange row={row} />
     </div>
   );
 }

@@ -51,6 +51,7 @@
 .detail-open:focus-visible,
 .detail-link:focus-visible,
 .detail-asin:focus-visible,
+.detail-price-label:focus-visible,
 .detail-btn:focus-visible,
 .detail-copy:focus-visible,
 .detail-verify-btn:focus-visible,
@@ -321,6 +322,65 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+/* A part's prices, highest first: one row each on a hairline, the label left and the figure right. The Amazon New
+   price is the featured one, in weight; a reference price is quieter and says it is not counted. */
+.detail-prices {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.detail-price {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.detail-price:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.detail-price dt {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.detail-price dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+.detail-price-label {
+  color: var(--ink);
+}
+a.detail-price-label {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.detail-price[data-featured] dt,
+.detail-price[data-featured] dd {
+  font-weight: 600;
+}
+.detail-price[data-reference] .detail-price-label,
+.detail-price[data-reference] dd {
+  color: var(--ink-2);
+}
+.detail-price[data-reference] a.detail-price-label {
+  color: var(--link);
+}
+.detail-price-note {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-2);
 }
 .detail-asin {
   font-size: 12px;

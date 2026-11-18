@@ -74,10 +74,15 @@ All text pairs meet 4.5:1. Do not introduce new colors; ask first.
 - **Deals row** (a link to the detail): title, then brand and model, then price, discount
   and match state; profit and ROI right aligned. Loss rows use the loss color with a real
   minus sign (−). Bundles that need an answer show an amber tag instead of numbers and sort last.
-- **Sort**: Profit, ROI, Discount. A real `<select>` or menu button; remember the choice.
+  Under the ROI, a line of the range of the part prices, "ROI −6% to +12%", only when its two ends read
+  differently; the headline stays the Amazon New figure.
+- **Sort**: Profit, ROI, Lowest ROI, Highest ROI, Discount. ROI is the Amazon New figure; the two others
+  are the ends of the range. A real `<select>` or menu button; remember the choice.
 - **Detail**: headline profit, then cost, sells-for, after-fees; the estimate line with a
   link to fee settings; one block per part with model, short name, price, net, ASIN link,
-  grade, and Verify when the grade is "Title match"; the packaging question until answered;
+  grade, and Verify when the grade is "Title match"; under each part its prices, highest first, each
+  labelled with where it comes from ("Amazon · New" in weight, the Buy Box with its seller, reference prices
+  such as Amazon's list price and Home Depot's own price marked "not counted"); the packaging question until answered;
   **Copy ASINs** as the primary action.
 - **Review**: one question at a time with real choices, for example "Which impact wrench
   comes with this kit?" with DCF891B and DCF921B as radio options. Answering saves and moves on.

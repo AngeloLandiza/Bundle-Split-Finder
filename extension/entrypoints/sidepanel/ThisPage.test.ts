@@ -160,6 +160,24 @@ describe('This page: a bundle read from the page', () => {
     expect(screen.queryByRole('button', { name: /^Look up/ })).toBeNull();
   });
 
+  it("shows the estimate's range and each part's prices, as Detail does, and still spends nothing", async () => {
+    const view = structuredClone(w.scanned.view) as Extract<ThisPage, { kind: 'bundle' }>;
+    const e = view.row.estimate!;
+    view.row.range = { lowest: { ...e, profit: -14, roi: -0.0741 }, amazonNew: e, highest: { ...e, profit: 90.65, roi: 0.4796 } };
+    view.row.parts[0]!.prices = [
+      ...view.row.parts[0]!.prices,
+      { kind: 'homedepot', price: 99, condition: 'new', seller: 'Home Depot', shipsFrom: null, offers: null, asin: null, link: 'https://www.homedepot.com/p/320222321', seenAt: 1, reference: true },
+    ];
+    const b = browser({ id: 7, url: FOUNDER_URL }, { 7: view });
+    renderTab(b, { id: 7, url: FOUNDER_URL }, { report: w.scanned.report });
+    const head = await screen.findByRole('region', { name: 'Estimate' });
+    expect(within(head).getByText(/^Estimated range: ROI −7% to \+48%, profit −\$14\.00 to \+\$90\.65/)).toBeInTheDocument();
+    const prices = screen.getByRole('group', { name: 'Prices for PBLRC25B' });
+    expect(within(prices).getByText('Home Depot · sold alone · reference')).toBeInTheDocument();
+    expect(within(prices).getByText('Amazon · New')).toBeInTheDocument();
+    expect(b.send.mock.calls.map((c) => c[0].type)).toEqual(['getThisPage']);
+  });
+
   it('a loss is a real minus in the loss colour and still says it is an estimate', async () => {
     const view = structuredClone(w.scanned.view) as Extract<ThisPage, { kind: 'bundle' }>;
     view.row.estimate = { ...view.row.estimate!, profit: -22.7, roi: -0.06 };

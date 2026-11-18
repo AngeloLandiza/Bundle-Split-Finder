@@ -165,6 +165,41 @@ describe('sorting', () => {
     expect(order('discount')).toEqual(['mid', 'high', 'low', 'loss', 'none']);
   });
 
+  describe('by the ends of the ROI range', () => {
+    const ranged = (low: number, amazon: number, high: number) => ({
+      estimate: est(100 * amazon, amazon),
+      range: { lowest: est(100 * low, low), amazonNew: est(100 * amazon, amazon), highest: est(100 * high, high) },
+    });
+    const r = [
+      row('none', { estimate: null }),
+      // Amazon New alone ranks a first, b second, c third; the lowest end ranks c, b, a; the highest ranks b, a, c.
+      row('a', ranged(-0.5, 0.3, 0.4)),
+      row('b', ranged(-0.2, 0.2, 0.9)),
+      row('c', ranged(0.1, 0.1, 0.2)),
+    ];
+    it('Lowest ROI puts the best worst case first and a row with no estimate last', () => {
+      expect(sortRows(r, 'roiLowest').map((x) => x.key)).toEqual(['c', 'b', 'a', 'none']);
+    });
+    it('Highest ROI puts the best best case first and a row with no estimate last', () => {
+      expect(sortRows(r, 'roiHighest').map((x) => x.key)).toEqual(['b', 'a', 'c', 'none']);
+    });
+    it('ROI stays the Amazon New figure', () => {
+      expect(sortRows(r, 'roi').map((x) => x.key)).toEqual(['a', 'b', 'c', 'none']);
+    });
+    it('is offered in the select as Lowest ROI and Highest ROI, after ROI, and reports the choice', async () => {
+      const user = userEvent.setup();
+      const { onSort } = show(report(r));
+      const select = screen.getByLabelText('Sort by');
+      expect([...select.querySelectorAll('option')].map((o) => o.textContent)).toEqual([
+        'Sort: Profit', 'Sort: ROI', 'Sort: Lowest ROI', 'Sort: Highest ROI', 'Sort: Discount',
+      ]);
+      await user.selectOptions(select, 'roiLowest');
+      expect(onSort).toHaveBeenCalledWith('roiLowest');
+      await user.selectOptions(select, 'roiHighest');
+      expect(onSort).toHaveBeenCalledWith('roiHighest');
+    });
+  });
+
   it('applies within each section on screen', () => {
     show(report(rows), state(), { sort: 'roi' });
     expect(titles()).toEqual(['mid', 'high', 'low', 'loss', 'none'].map((k) => `Title of ${k}`));
@@ -250,6 +285,48 @@ describe('rows', () => {
     expect(loss.parentElement).toHaveAttribute('data-loss', 'true');
     expect(screen.getByText('ROI −6%')).toBeInTheDocument();
     expect(screen.getByText('+$337.30').parentElement).not.toHaveAttribute('data-loss');
+  });
+
+  describe('the ROI range', () => {
+    const withRange = (low: number, high: number, amazon = 0.08) => ({
+      estimate: est(100 * amazon, amazon),
+      range: { lowest: est(100 * low, low), amazonNew: est(100 * amazon, amazon), highest: est(100 * high, high) },
+    });
+
+    it('keeps the Amazon New profit and ROI as the headline and puts the range under it', () => {
+      show(report([row('r', withRange(-0.0613, 0.1249))]));
+      const figures = document.querySelector('.deal-figures')!;
+      expect(figures.querySelector('.deal-profit')).toHaveTextContent('+$8.00');
+      expect(figures.querySelector('.deal-roi')).toHaveTextContent('ROI 8%');
+      const range = figures.querySelector('.deal-roi-range')!;
+      expect(range).toHaveTextContent('ROI −6% to +12%');
+      expect(range.compareDocumentPosition(figures.querySelector('.deal-roi')!) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+      // Said as an estimate: the caption over the figures names it, and the range line explains its ends.
+      expect(screen.getByText('Estimated profit · ROI')).toBeInTheDocument();
+      expect(range).toHaveAttribute('title', expect.stringMatching(/^Estimated ROI from the lowest to the highest counted price/));
+    });
+
+    it('is one figure, the headline, when both ends are the same', () => {
+      show(report([row('r', withRange(0.08, 0.08))]));
+      expect(document.querySelector('.deal-roi-range')).toBeNull();
+      expect(screen.getAllByText(/^ROI /)).toHaveLength(1);
+    });
+
+    it('is one figure when the ends differ by less than a whole percent', () => {
+      show(report([row('r', withRange(0.0801, 0.0849))]));
+      expect(document.querySelector('.deal-roi-range')).toBeNull();
+    });
+
+    it('writes a range that is all loss with the real minus and the loss color', () => {
+      show(report([row('r', withRange(-0.5, -0.1, -0.3))]));
+      expect(document.querySelector('.deal-roi-range')).toHaveTextContent('ROI −50% to −10%');
+      expect(document.querySelector('.deal-figures')).toHaveAttribute('data-loss', 'true');
+    });
+
+    it('is left out where a row has no estimate or no range', () => {
+      show(report([row('none', { estimate: null }), row('plain')]));
+      expect(document.querySelector('.deal-roi-range')).toBeNull();
+    });
   });
 
   it('says No estimate when a row has none', () => {

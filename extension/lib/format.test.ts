@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { money, profit, roi, when } from './format';
+import { money, profit, roi, roiSigned, when } from './format';
 
 describe('money', () => {
   it('two decimals and thousands separators', () => {
@@ -33,6 +33,19 @@ describe('roi', () => {
   });
   it('never shows a negative zero', () => {
     expect(roi(-0.001)).toBe('0%');
+  });
+});
+
+describe('roiSigned', () => {
+  it('a whole percent with its sign: a plus for a gain, the real minus for a loss', () => {
+    expect(roiSigned(0.1249)).toBe('+12%');
+    expect(roiSigned(-0.0613)).toBe('−6%');
+    expect(roiSigned(1.234)).toBe('+123%');
+  });
+  it('shows no sign on zero, and never a negative zero', () => {
+    expect(roiSigned(0)).toBe('0%');
+    expect(roiSigned(0.001)).toBe('0%');
+    expect(roiSigned(-0.001)).toBe('0%');
   });
 });
 

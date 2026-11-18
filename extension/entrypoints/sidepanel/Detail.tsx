@@ -3,12 +3,12 @@ import { browser } from 'wxt/browser';
 import { amazonNet, type FeeSettings } from '@core/money';
 import { bundlesCsv } from '@core/scan/csv';
 import { reviewSignature } from '@core/scan/answers';
-import type { BundleRow, PaidAction, PartRow, ReviewAnswer } from '@core/scan/types';
-import { money, profit, roi, when } from '../../lib/format';
+import type { BundleRow, PaidAction, PartRow, PriceOption, ReviewAnswer } from '@core/scan/types';
+import { money, profit, roi, roiSigned, when } from '../../lib/format';
 import type { AppState, Packaging, PanelReport } from '../../lib/messages';
 import { amazonListingUrl, amazonSearchUrl } from '../../lib/links';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
-import { waitingParts } from './dealsModel';
+import { priceLabel, spread, waitingParts } from './dealsModel';
 import { LookUp } from './DealsLookUp';
 import { OpenOnHomeDepot } from './OpenOnHomeDepot';
 import { ProgressRow } from './ProgressRow';
@@ -81,6 +81,17 @@ function AnswerLine({ text, className = 'detail-answer', disabled, scanRunning, 
   );
 }
 
+/** "Estimated range: ROI −7% to +60%, profit −$14.00 to +$112.50, from ..." under a headline; nothing when the ends read the same. */
+export function RangeLine({ row }: { row: BundleRow }) {
+  const ends = spread(row.estimate, row.range);
+  if (!ends) return null;
+  return (
+    <p className="detail-estimate detail-range">
+      {`Estimated range: ROI ${roiSigned(ends.lowest.roi)} to ${roiSigned(ends.highest.roi)}, profit ${profit(ends.lowest.profit)} to ${profit(ends.highest.profit)}, from each part's lowest to highest New price. Reference prices are not counted.`}
+    </p>
+  );
+}
+
 /** Why a row has no estimate, in a sentence. Detail and the This page tab say it alike. */
 export function noEstimate(row: BundleRow): string {
   if (row.answer?.kind === 'none') return "No estimate: you marked this bundle's parts as not known.";
@@ -110,6 +121,39 @@ function Check() {
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M2.5 6.5l2.25 2.25L9.5 3.5" />
     </svg>
+  );
+}
+
+const isWebLink = (link: string | null): link is string => link !== null && /^https?:\/\//i.test(link);
+
+/**
+ * One part's prices, highest first, each labelled with where it comes from. The Amazon New price is the featured
+ * one (the figure the estimate counts); a reference price says so and that it is not counted. A price with a
+ * link opens its page in a new tab.
+ */
+function Prices({ model, prices }: { model: string; prices: PriceOption[] }) {
+  if (prices.length === 0) return null;
+  return (
+    <dl className="detail-prices" role="group" aria-label={`Prices for ${model}`}>
+      {prices.map((o, i) => {
+        const label = priceLabel(o);
+        return (
+          <div key={`${o.kind}:${i}`} className="detail-price" data-kind={o.kind} data-featured={o.kind === 'amazon_new' ? 'true' : undefined} data-reference={o.reference ? 'true' : undefined}>
+            <dt>
+              {isWebLink(o.link) ? (
+                <a className="detail-price-label" href={o.link} target="_blank" rel="noopener noreferrer">
+                  {label}
+                </a>
+              ) : (
+                <span className="detail-price-label">{label}</span>
+              )}
+              {o.reference ? <span className="detail-price-note">not counted</span> : null}
+            </dt>
+            <dd className="figure">{money(o.price)}</dd>
+          </div>
+        );
+      })}
+    </dl>
   );
 }
 
@@ -191,6 +235,7 @@ export function Part({ part, row, fees, verify, now }: PartProps) {
           />
         ) : null}
       </div>
+      <Prices model={part.model} prices={part.prices} />
     </li>
   );
 }
@@ -434,6 +479,7 @@ export function Detail({ report, state, bundleKey, onBack, backLabel = 'Deals', 
                   Change
                 </a>
               </p>
+              <RangeLine row={row} />
               {row.uncovered.length > 0 ? (
                 <p className="detail-estimate">
                   {/* Only a model number is set in the figure face; an unnamed part such as "Hex Wrench" is words. */}

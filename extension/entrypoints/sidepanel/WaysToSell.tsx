@@ -2,7 +2,7 @@ import { Fragment, useId, type ReactNode } from 'react';
 import type { BundleRow, PaidAction, SaleOption } from '@core/scan/types';
 import { profit, roi } from '../../lib/format';
 import type { WorkerApi } from '../../lib/pageClient';
-import { waitingOf } from './dealsModel';
+import { RANGE_MEANING, roiRangeText, waitingOf } from './dealsModel';
 import { LookUp } from './DealsLookUp';
 
 export const LOOSE_PARTS_NOTE = 'Parts from a kit have no retail box of their own.';
@@ -63,6 +63,7 @@ function Way({ option, primary, kits, row, report, api, scanRunning, version, bu
   const e = option.estimate;
   const items = waitingOf(row.brand, option.parts);
   const labelId = useId();
+  const range = roiRangeText(e, option.range);
   return (
     <li className="detail-way">
       <div className="detail-part-top">
@@ -76,6 +77,11 @@ function Way({ option, primary, kits, row, report, api, scanRunning, version, bu
             <>
               <div className="detail-part-price detail-way-profit">{profit(e.profit)}</div>
               <div className="detail-part-net">ROI {roi(e.roi)}</div>
+              {range ? (
+                <div className="detail-part-net detail-way-range" title={RANGE_MEANING}>
+                  {range}
+                </div>
+              ) : null}
             </>
           ) : (
             <div className="detail-part-net detail-way-none">No estimate yet</div>

@@ -1,7 +1,9 @@
 // What the Deals list shows, worked out from the report: the match state of a row, the order within a
 // section, the sections themselves. No React here, so the rules can be tested on their own.
 
-import { partKey, type BundleRow, type PartRow, type ReportSection, type ScanJob } from '@core/scan/types';
+import type { BundleResult } from '@core/money';
+import { partKey, type BundleRow, type PartRow, type PriceOption, type PriceRange, type ReportSection, type ScanJob } from '@core/scan/types';
+import { roi, roiSigned } from '../../lib/format';
 import type { SortKey } from './sort';
 
 export const SECTION_ORDER: readonly ReportSection[] = ['confirmed', 'waiting', 'inactive_listing', 'missing_listing', 'split'];
@@ -78,6 +80,8 @@ export function waitingOf(brand: string, parts: PartRow[]): { brand: string; mod
 const metric = (row: BundleRow, sort: SortKey): number | null => {
   if (sort === 'discount') return row.percentOff;
   if (!row.estimate) return null;
+  if (sort === 'roiLowest') return row.range.lowest?.roi ?? null;
+  if (sort === 'roiHighest') return row.range.highest?.roi ?? null;
   return sort === 'roi' ? row.estimate.roi : row.estimate.profit;
 };
 
@@ -123,4 +127,41 @@ export function staleDays(bundles: BundleRow[], now: number, freshnessMs: number
   for (const b of bundles) for (const p of b.parts) if (p.priceSeenAt !== null && (oldest === null || p.priceSeenAt < oldest)) oldest = p.priceSeenAt;
   if (oldest === null || now - oldest <= freshnessMs) return null;
   return Math.max(1, Math.floor((now - oldest) / 86_400_000));
+}
+
+/**
+ * The two ends of an estimate's range, when they read differently as a whole percent ROI: both results, lowest and
+ * highest. Null with no estimate, no range, or ends that read the same (the headline is then the one figure).
+ */
+export function spread(estimate: BundleResult | null, range: PriceRange): { lowest: BundleResult; highest: BundleResult } | null {
+  const { lowest, highest } = range;
+  if (!estimate || !lowest || !highest || roi(lowest.roi) === roi(highest.roi)) return null;
+  return { lowest, highest };
+}
+
+/** "ROI −6% to +12%": the range's ends as the Deals row and a way to sell say them; null when `spread` is. */
+export function roiRangeText(estimate: BundleResult | null, range: PriceRange): string | null {
+  const ends = spread(estimate, range);
+  return ends ? `ROI ${roiSigned(ends.lowest.roi)} to ${roiSigned(ends.highest.roi)}` : null;
+}
+
+/** What the range's ends stand for, for a hover or a line of help. */
+export const RANGE_MEANING = 'Estimated ROI from the lowest to the highest counted price of its parts, from your fee settings. Reference prices are not counted.';
+
+/** A price's label as the panel writes it, without the "reference" note: "Amazon · New · Buy Box · sold by X, ships from Amazon". */
+export function priceLabel(o: PriceOption): string {
+  switch (o.kind) {
+    case 'amazon_new':
+      return 'Amazon · New';
+    case 'amazon_buybox': {
+      const who = [o.seller ? `sold by ${o.seller}` : null, o.shipsFrom ? `ships from ${o.shipsFrom}` : null].filter((x) => x !== null);
+      return ['Amazon · New · Buy Box', ...(who.length > 0 ? [who.join(', ')] : [])].join(' · ');
+    }
+    case 'amazon_list':
+      return 'Amazon list price · reference';
+    case 'homedepot':
+      return 'Home Depot · sold alone · reference';
+    case 'ebay_sold_new':
+      return `eBay · sold New${o.reference ? ' · reference' : ''}`;
+  }
 }

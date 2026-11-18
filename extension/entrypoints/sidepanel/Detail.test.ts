@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_FEES } from '@core/money';
 import { DEFAULT_SETTINGS } from '@core/settings';
 import { reviewSignature } from '@core/scan/answers';
-import type { BundleRow, PartRow, ReviewItem, ScanJob } from '@core/scan/types';
+import type { BundleRow, PartRow, PriceOption, ReviewItem, ScanJob } from '@core/scan/types';
 import type { AppState, PanelReport, Quote, Reply, Request } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import { Detail } from './Detail';
@@ -507,6 +507,131 @@ describe('parts', () => {
   });
 });
 
+const option = (kind: PriceOption['kind'], price: number, over: Partial<PriceOption> = {}): PriceOption => ({
+  kind, price, condition: 'new', seller: null, shipsFrom: null, offers: null, asin: null, link: null, seenAt: NOW - 3_600_000, reference: false, ...over,
+});
+
+describe("a part's prices", () => {
+  const AMAZON = 'https://www.amazon.com/dp/B0B6Z2ZGVK';
+  const prices = [
+    option('amazon_list', 189, { asin: 'B0B6Z2ZGVK', link: AMAZON, reference: true }),
+    option('homedepot', 169, { seller: 'Home Depot', link: 'https://www.homedepot.com/p/320222322', reference: true }),
+    option('amazon_buybox', 160, { seller: 'ArcianCo', shipsFrom: 'Amazon', asin: 'B0B6Z2ZGVK', link: AMAZON }),
+    option('amazon_new', 146.94, { asin: 'B0B6Z2ZGVK', link: AMAZON }),
+  ];
+  const showPart = (p: PriceOption[], over: Partial<PartRow> = {}) => {
+    show(row({ parts: [part('PBLRC01B', { asin: 'B0B6Z2ZGVK', price: 146.94, prices: p, ...over })] }));
+    return screen.getByRole('group', { name: 'Prices for PBLRC01B' });
+  };
+  const lines = (group: HTMLElement) => [...group.querySelectorAll('.detail-price')].map((r) => [r.querySelector('dt')!.textContent, r.querySelector('dd')!.textContent]);
+
+  it('lists every price high to low, each with its label and its figure', () => {
+    const group = showPart(prices);
+    expect(lines(group)).toEqual([
+      ['Amazon list price · referencenot counted', '$189.00'],
+      ['Home Depot · sold alone · referencenot counted', '$169.00'],
+      ['Amazon · New · Buy Box · sold by ArcianCo, ships from Amazon', '$160.00'],
+      ['Amazon · New', '$146.94'],
+    ]);
+  });
+
+  it('features the Amazon New price, the one the estimate counts', () => {
+    const group = showPart(prices);
+    const featured = group.querySelectorAll('[data-featured]');
+    expect(featured).toHaveLength(1);
+    expect(featured[0]).toHaveTextContent('Amazon · New$146.94');
+  });
+
+  it('marks a reference price as not counted, and a counting price as nothing of the kind', () => {
+    const group = showPart(prices);
+    const reference = [...group.querySelectorAll('.detail-price[data-reference]')].map((r) => r.querySelector('dt')!.textContent);
+    expect(reference).toEqual(['Amazon list price · referencenot counted', 'Home Depot · sold alone · referencenot counted']);
+    expect(group.querySelectorAll('.detail-price:not([data-reference])')).toHaveLength(2);
+    expect(within(group).getAllByText('not counted')).toHaveLength(2);
+  });
+
+  it('links each price to its page in a new tab, and leaves a price with no link as text', () => {
+    const group = showPart([...prices, option('homedepot', 5, { link: null, reference: true, seller: 'Home Depot' })]);
+    const link = within(group).getByRole('link', { name: 'Home Depot · sold alone · reference' });
+    expect(link).toHaveAttribute('href', 'https://www.homedepot.com/p/320222322');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(within(group).getByRole('link', { name: 'Amazon list price · reference' })).toHaveAttribute('href', AMAZON);
+    expect(within(group).getByRole('link', { name: 'Amazon · New' })).toHaveAttribute('href', AMAZON);
+    expect(within(group).getAllByRole('link')).toHaveLength(4);
+  });
+
+  it('does not make a link of an address that is not http or https', () => {
+    const group = showPart([option('amazon_new', 10, { link: 'javascript:alert(1)' })]);
+    expect(within(group).queryByRole('link')).toBeNull();
+    expect(within(group).getByText('Amazon · New')).toBeInTheDocument();
+  });
+
+  it('names a Buy Box seller and where it ships from, whichever it knows', () => {
+    expect(lines(showPart([option('amazon_buybox', 160, { seller: 'ArcianCo', shipsFrom: null })]))[0]![0]).toBe('Amazon · New · Buy Box · sold by ArcianCo');
+    cleanup();
+    expect(lines(showPart([option('amazon_buybox', 160, { seller: null, shipsFrom: 'Amazon' })]))[0]![0]).toBe('Amazon · New · Buy Box · ships from Amazon');
+    cleanup();
+    expect(lines(showPart([option('amazon_buybox', 160)]))[0]![0]).toBe('Amazon · New · Buy Box');
+  });
+
+  it('shows no price list for a part with no price, and never a Renewed or used price', () => {
+    show(row({ parts: [part('A1', { price: null, prices: [] })] }));
+    expect(screen.queryByRole('group', { name: /^Prices for/ })).toBeNull();
+    cleanup();
+    expect(showPart(prices)).not.toHaveTextContent(/renewed|used|refurbished/i);
+  });
+
+  it('writes every figure with two decimals in the figure face, and the label in the body face', () => {
+    const group = showPart(prices);
+    for (const dd of group.querySelectorAll('dd')) {
+      expect(dd).toHaveClass('figure');
+      expect(dd.textContent).toMatch(/^\$\d+\.\d{2}$/);
+    }
+    expect(group.querySelector('dt')).not.toHaveClass('figure');
+  });
+
+  it('offers no search for a price', () => {
+    showPart(prices);
+    expect(screen.queryByRole('button', { name: /^Look up/ })).toBeNull();
+  });
+});
+
+describe('the estimate range', () => {
+  const ranged = {
+    estimate: { cost: 189, netRevenue: 287.3, profit: 98.3, roi: 0.52 },
+    range: {
+      lowest: { cost: 189, netRevenue: 175, profit: -14, roi: -0.0741 },
+      amazonNew: { cost: 189, netRevenue: 287.3, profit: 98.3, roi: 0.52 },
+      highest: { cost: 189, netRevenue: 301.5, profit: 112.5, roi: 0.5952 },
+    },
+  };
+
+  it('says the range under the headline as an estimate, with what its ends mean', () => {
+    show(row(ranged));
+    expect(screen.getByText('ROI 52%')).toBeInTheDocument();
+    const line = screen.getByText(/^Estimated range: ROI −7% to \+60%, profit −\$14\.00 to \+\$112\.50/);
+    expect(line).toHaveTextContent("from each part's lowest to highest New price. Reference prices are not counted.");
+  });
+
+  it('says nothing when the ends read the same, or when there is no range', () => {
+    show(row());
+    expect(screen.queryByText(/^Estimated range/)).toBeNull();
+    cleanup();
+    show(row({ estimate: ranged.estimate, range: { lowest: ranged.estimate, amazonNew: ranged.estimate, highest: ranged.estimate } }));
+    expect(screen.queryByText(/^Estimated range/)).toBeNull();
+  });
+
+  it("shows each way to sell's own range, under its profit and ROI", () => {
+    const way = (id: string, label: string, over: object) => ({ id, label, splitKits: [], parts: [part('PBLRC25B')], estimate: ranged.estimate, leftovers: [], loose: false, range: ranged.range, ...over });
+    show(row({ options: [way('whole', 'PCL1600K2 sold whole', {}), way('split:PCL1600K2', 'PCL1600K2 split into its parts', { range: { lowest: null, amazonNew: null, highest: null } })] }));
+    const ways = within(screen.getByRole('region', { name: 'Ways to sell' })).getAllByRole('listitem');
+    expect(ways[0]).toHaveTextContent('ROI −7% to +60%');
+    expect(ways[1]).not.toHaveTextContent(' to ');
+    expect(ways[0]!.querySelector('.detail-way-range')).toHaveTextContent('ROI −7% to +60%');
+  });
+});
+
 describe('packaging', () => {
   it('asks until answered, and saves the answer for the model', async () => {
     const user = userEvent.setup();
@@ -627,7 +752,7 @@ describe('footer', () => {
     expect(lines).toHaveLength(2);
     expect(lines[0]).toMatch(/^section,brand,bundle_model,bundle_title,/);
     expect(lines[1]).toBe(
-      'confirmed,RYOBI,PBLRC2501SB,ONE+ HP 18V Extended Reach Ratchets (Tools Only),1,189,338,44,PBLRC25B | PBLRC01B,B0B3JWF5ZV | B0B6Z2ZGVK,exact | exact,169 | 169,287.3,189,98.3,0.52,,https://www.homedepot.com/p/328814689,,',
+      'confirmed,RYOBI,PBLRC2501SB,ONE+ HP 18V Extended Reach Ratchets (Tools Only),1,189,338,44,PBLRC25B | PBLRC01B,B0B3JWF5ZV | B0B6Z2ZGVK,exact | exact,169 | 169,287.3,189,98.3,0.52,,https://www.homedepot.com/p/328814689,,,,,,',
     );
   });
 });

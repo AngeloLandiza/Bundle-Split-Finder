@@ -23,6 +23,12 @@ export function roi(fraction: number): string {
   return `${fraction < 0 && pct > 0 ? MINUS : ''}${pct}%`;
 }
 
+/** A fraction as a whole percent with its sign: +12%, −6%, 0%. For the two ends of a range. */
+export function roiSigned(fraction: number): string {
+  const pct = Math.round(Math.abs(fraction) * 100);
+  return `${pct === 0 ? '' : fraction < 0 ? MINUS : '+'}${pct}%`;
+}
+
 const time = (d: Date): string => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 const dayStart = (d: Date): number => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 

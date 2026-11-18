@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
 
-export type SortKey = 'profit' | 'roi' | 'discount';
+/** roi is the Amazon New ROI (the row's headline); roiLowest and roiHighest are the two ends of its range (step 9). */
+export type SortKey = 'profit' | 'roi' | 'roiLowest' | 'roiHighest' | 'discount';
 
 const KEY = 'splitFinder.sort';
-const KEYS: readonly SortKey[] = ['profit', 'roi', 'discount'];
+const KEYS: readonly SortKey[] = ['profit', 'roi', 'roiLowest', 'roiHighest', 'discount'];
 
 function read(): SortKey {
   try {

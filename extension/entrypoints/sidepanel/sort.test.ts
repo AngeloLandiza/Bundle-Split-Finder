@@ -20,6 +20,14 @@ describe('useSort', () => {
     expect(renderHook(() => useSort()).result.current[0]).toBe('profit');
   });
 
+  it('remembers the two range sorts, and still ignores a value it does not know', () => {
+    const first = renderHook(() => useSort());
+    act(() => first.result.current[1]('roiLowest'));
+    expect(renderHook(() => useSort()).result.current[0]).toBe('roiLowest');
+    act(() => first.result.current[1]('roiHighest'));
+    expect(renderHook(() => useSort()).result.current[0]).toBe('roiHighest');
+  });
+
   it('works when storage throws', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('blocked');
