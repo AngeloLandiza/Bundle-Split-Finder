@@ -371,6 +371,10 @@ export interface PipelineRun {
   passes: number;
   /** Why the paid run ended early, or null. */
   stop: string | null;
+  /** The budget's limit that refused a search (run_cap, reserve, hourly_limit); the run then went on with cached answers only. */
+  capReached: string | null;
+  /** Lookups the cap refused (never sent): their parts wait. */
+  refusedLookups: Map<string, { brand: string; model: string }>;
   /** Lookups no cached or recorded response answered (dry run, replay), by cache key, with the part. */
   missedLookups: Map<string, { brand: string; model: string }>;
   /** Paid lookups SerpApi answered with an error (not charged), by cache key: set aside, never retried. */
@@ -470,6 +474,9 @@ export async function runValidationPipeline(deps: PipelineDeps): Promise<Pipelin
   let failedInARow = 0;
   let answeredAtFailure = -1;
   let stop: string | null = null;
+  let capReached: string | null = null;
+  /** Lookups the paid client's budget refused, never sent. */
+  const refusedLookups = new Map<string, { brand: string; model: string }>();
   let passes = 0;
   for (let pass = 1; pass <= MAX_PASSES && stop === null; pass++) {
     passes = pass;
@@ -486,11 +493,16 @@ export async function runValidationPipeline(deps: PipelineDeps): Promise<Pipelin
       } catch (err) {
         const asked = lookups.lastAsked;
         const message = (err instanceof Error && err.message) || String(err);
-        if (err instanceof BudgetExceededError || err instanceof RateLimitedError || err instanceof PaidProblem || asked === null) {
+        if (err instanceof RateLimitedError || err instanceof PaidProblem || asked === null) {
           stop = message;
           break;
         }
-        if (err instanceof NotCached) {
+        if (err instanceof BudgetExceededError) {
+          // The cap refused the search before sending it. Nothing more is paid for in this run, but what
+          // the cache already holds still answers the parts after it, for nothing.
+          capReached ??= err.reason;
+          refusedLookups.set(asked.key, { brand: asked.brand, model: asked.model });
+        } else if (err instanceof NotCached) {
           if (!deps.continuePastMisses) {
             stop = message;
             break;
@@ -515,7 +527,7 @@ export async function runValidationPipeline(deps: PipelineDeps): Promise<Pipelin
   // The pages once more, so every split and saved-listing match reads the last answers.
   await visitAll();
   if ((await applyAnswers()) > 0) await visitAll();
-  return { store, report: await buildReport(store, SETTINGS), passes, stop, missedLookups, failedLookups, answered, problems, kitsStored, validation, notBundles: [...notBundles.values()] };
+  return { store, report: await buildReport(store, SETTINGS), passes, stop, capReached, missedLookups, failedLookups, refusedLookups, answered, problems, kitsStored, validation, notBundles: [...notBundles.values()] };
 }
 
 /**
@@ -1021,6 +1033,10 @@ export async function runValidateCli(args: string[], deps: ValidateDeps): Promis
     writeResults(files.results, results);
     log(`Searches spent: ${paid.spent} (passes ${run.passes})`);
     if (run.stop !== null) log(`Stopped: ${run.stop}`);
+    if (run.capReached !== null) {
+      log(`Spending stopped at a limit (${run.capReached}); cached answers went on. Not sent, so their parts wait: ${run.refusedLookups.size}`);
+      for (const [key] of run.refusedLookups) log(missLine(key, ''));
+    }
     log(`Responses written: ${written} to ${files.responses}`);
     log(`Results: ${files.results}`);
     for (const p of run.problems) log(`Problem: ${p}`);

@@ -153,13 +153,25 @@ describe('npm run validate -- --dry-run', () => {
 });
 
 describe('npm run validate -- --max N', () => {
-  it('never spends past N: the client refuses the next search and the run stops there', async () => {
+  it('never spends past N: the client refuses every later search, which waits, and nothing is sent for it', async () => {
     writeSet({ answers: true, kitPages: true });
     deps.cache = await cacheOf(LISTING_PHASE);
+    const sent = vi.fn();
+    const replay = replayRecorded();
     const { ledger } = paidClient(2);
+    const budget = new SearchBudget(ACCOUNT, { reserve: 0, maxPerRun: 2 });
+    const fetchFn = (async (input: string | URL | Request) => {
+      sent();
+      return replay.fetchFn(input);
+    }) as typeof fetch;
+    const client = new SerpApiClient({ apiKey: 'TEST', budget, cache: new MemoryCache(), fetchFn, now: () => RECORDED_AT, onSpend: (e) => void ledger.push(e) });
+    deps.openClient = (async () => ({ client, budget, account: ACCOUNT, allowance: 2, release: vi.fn() })) as unknown as ValidateDeps['openClient'];
     expect(await runValidateCli(['--max', '2'], deps)).toBe(0);
     expect(ledger).toHaveLength(2);
-    expect(logs.some((l) => l.startsWith('Stopped: '))).toBe(true);
+    expect(sent).toHaveBeenCalledTimes(2);
+    expect(logs).toContain('Searches spent: 2 (passes 2)');
+    expect(logs.some((l) => l.startsWith('Spending stopped at a limit (run_cap); cached answers went on. Not sent, so their parts wait: '))).toBe(true);
+    expect(readResults().summary.notLookedUp).toBeGreaterThan(0);
   });
 
   it('writes every response it used, key-free, and a replay of them gives the same results with no network', async () => {
