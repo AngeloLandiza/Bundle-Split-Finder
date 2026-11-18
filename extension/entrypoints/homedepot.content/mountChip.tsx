@@ -13,13 +13,29 @@ import { ensureFonts } from './fonts';
 /** The price block of a product page (checked Nov 17: data-component="price:Price:v6.41.0"). */
 export const ANCHOR = '[data-component^="price:Price"]';
 
+// Set only in the end-to-end build (the replay server's origin). Not declared in the unit tests, hence the typeof.
+declare const __SPLIT_FINDER_BASE_URL__: string | undefined;
+
+/**
+ * Closed, so a script on the Home Depot page cannot read the estimate or click the button through
+ * `host.shadowRoot`. The end-to-end build opens it, because Playwright cannot see inside a closed root; the
+ * production build folds this to 'closed' (wxt-config.test.ts checks the built script).
+ */
+const MODE: 'open' | 'closed' = typeof __SPLIT_FINDER_BASE_URL__ === 'string' ? 'open' : 'closed';
+
 /** The shadow host's tag name (WXT: kebab-case). */
 export const HOST_NAME = 'split-finder-chip';
 
-export async function prepareChip(ctx: ContentScriptContext, model: ChipModel, open: () => Promise<boolean>): Promise<PreparedChip> {
+/**
+ * `onShadow` hands a test the shadow root, which a closed root does not give through its host. Production passes none.
+ */
+export async function prepareChip(
+  ctx: ContentScriptContext, model: ChipModel, open: () => Promise<boolean>, onShadow?: (shadow: ShadowRoot) => void,
+): Promise<PreparedChip> {
   ensureFonts(document, (path) => browser.runtime.getURL(path as never));
   const ui = await createShadowRootUi<Root>(ctx, {
     name: HOST_NAME,
+    mode: MODE,
     position: 'inline',
     anchor: ANCHOR,
     append: 'after',
@@ -34,5 +50,6 @@ export async function prepareChip(ctx: ContentScriptContext, model: ChipModel, o
       root?.unmount();
     },
   });
+  onShadow?.(ui.shadow);
   return { start: () => ui.autoMount(), remove: () => ui.remove() };
 }

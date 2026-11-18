@@ -15,8 +15,9 @@ afterEach(() => {
   for (const chip of made.splice(0)) chip.remove();
   document.body.innerHTML = '';
 });
+let shadow: ShadowRoot | undefined;
 const build = async () => {
-  const chip = await prepareChip(ctx, model, async () => true);
+  const chip = await prepareChip(ctx, model, async () => true, (s) => (shadow = s));
   made.push(chip);
   return chip;
 };
@@ -34,9 +35,21 @@ describe('the chip on the page', () => {
     expect(host()!.nextElementSibling).toBe(document.getElementById('after'));
     // The page's own queries and styles do not see inside it.
     expect(document.querySelector('button')).toBeNull();
-    const buttons = host()!.shadowRoot!.querySelectorAll('button');
+    const buttons = shadow!.querySelectorAll('button');
     expect(buttons).toHaveLength(1);
     expect(buttons[0]).toHaveTextContent('Splits into 2 parts');
+  });
+
+  it('the shadow root is closed: a page script cannot reach the estimate or the button through the host', async () => {
+    document.body.innerHTML = `<main>${PRICE}</main>`;
+    const chip = await build();
+    chip.start();
+    await settle();
+    expect(host()!.shadowRoot).toBeNull();
+    expect(host()!.textContent).toBe('');
+    // The handle the test was given is the real root, and the chip is in it.
+    expect(shadow!.querySelector('button')).not.toBeNull();
+    expect(shadow!.host).toBe(host());
   });
 
   it('does not inject when the price block is not there, and mounts when it appears', async () => {

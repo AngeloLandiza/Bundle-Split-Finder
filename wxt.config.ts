@@ -26,7 +26,8 @@ export default defineConfig({
     permissions: ['storage', 'alarms', 'sidePanel', 'notifications', 'scripting'],
     host_permissions: ['https://serpapi.com/*', 'https://www.homedepot.com/*', ...(e2e ? ['http://localhost/*'] : [])],
     // The chip's fonts are declared in the Home Depot page's own document (a shadow root cannot load @font-face),
-    // so only Home Depot pages may fetch them. The content script's stylesheet is added by WXT.
-    web_accessible_resources: [{ resources: ['fonts/*.woff2'], matches: ['https://www.homedepot.com/*', ...(e2e ? ['http://localhost/*'] : [])] }],
+    // so only Home Depot pages may fetch them. use_dynamic_url gives the files a per-session address, so a page cannot
+    // probe for the extension by a fixed URL. The content script's stylesheet is added by WXT.
+    web_accessible_resources: [{ resources: ['fonts/*.woff2'], use_dynamic_url: true, matches: ['https://www.homedepot.com/*', ...(e2e ? ['http://localhost/*'] : [])] }],
   },
 });
