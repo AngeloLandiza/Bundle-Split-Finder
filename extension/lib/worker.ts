@@ -10,7 +10,7 @@ import type { ProductPage } from '@core/hdPage';
 import { notePage } from '@core/scan/pageView';
 import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
 import { runScan } from '@core/scan/runner';
-import type { BudgetView, BundleRow, PaidAction, Quote, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
+import { partKey, type BudgetView, type BundleRow, type PaidAction, type Quote, type ReadPages, type ReviewAnswer, type ScanJob, type ScanStore } from '@core/scan/types';
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
 import {
@@ -619,6 +619,34 @@ export function createWorker(env: WorkerEnv): Worker {
     return ok(JSON.stringify({ matches, answers }, null, 2));
   }
 
+  /**
+   * The audit file (docs step 8c): what the scan chose, with every saved listing, so a blind checker
+   * can label the right ones. Parts are the report's primary rows. Never the key, never settings.
+   */
+  async function exportAudit(): Promise<Reply<string>> {
+    const report = await buildReport(store, toScanSettings(await settings()));
+    const bundles = [];
+    for (const row of report.bundles) {
+      const record = await store.getBundle(row.key);
+      const parts = [];
+      for (const p of row.parts) {
+        const match = await store.getMatch(partKey(row.brand, p.model));
+        parts.push({ brand: row.brand, model: p.model, qty: p.qty, asin: p.asin, grade: p.grade, source: match?.source ?? null });
+      }
+      bundles.push({
+        key: row.key, itemId: row.itemId, brand: row.brand, model: row.model, title: row.title, section: row.section,
+        split: record?.split?.status === 'resolved' ? [...record.split.components] : null,
+        parts,
+      });
+    }
+    const answers = (await store.listReview()).filter((r) => r.answer !== null);
+    const audit = {
+      kind: 'split-finder-audit', version: 1, exportedAt: env.now(),
+      bundles, listings: await store.listListings(), matches: await store.listMatches(), answers,
+    };
+    return ok(JSON.stringify(audit, null, 2));
+  }
+
   async function getReport(): Promise<Reply<PanelReport>> {
     const report = await buildReport(store, toScanSettings(await settings()));
     // Validated on read, like settings: prefs drops entries that are not a known answer.
@@ -949,6 +977,8 @@ export function createWorker(env: WorkerEnv): Worker {
         return exportDeals();
       case 'exportMatches':
         return exportMatches();
+      case 'exportAudit':
+        return exportAudit();
       case 'stopScan':
         if (scan !== null || starting) stopRequested = true;
         return ok(null);

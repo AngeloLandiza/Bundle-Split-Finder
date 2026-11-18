@@ -19,6 +19,8 @@ export type Request =
   | { type: 'exportDeals' }
   /** Reply data: JSON text of every match and every answered review item. */
   | { type: 'exportMatches' }
+  /** Reply data: JSON text of the audit file (bundles, parts, listings, matches, answers). Never the key or settings. */
+  | { type: 'exportAudit' }
   /** Empties the saved SerpApi responses. Nothing else is deleted. */
   | { type: 'clearSavedSearches' }
   /** Reply data: PanelReport. */

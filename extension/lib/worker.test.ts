@@ -4,6 +4,7 @@ import { replayRecorded, type Replay } from '../../scripts/replay';
 import * as fx from '../../core/test/fixtures';
 import { reviewSignature } from '@core/scan/answers';
 import { MemoryScanStore } from '@core/scan/memoryStore';
+import { buildReport } from '@core/scan/report';
 import type { BundleRow, PageOutcome, PaidAction, Quote, ReadPages, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
 import { parseAccount } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, MemoryCache, NETWORK_ERROR_PREFIX } from '@core/serpapi/client';
@@ -841,6 +842,37 @@ describe('worker: exports and saved searches (rule 6)', () => {
     const data = JSON.parse(reply.ok ? reply.data : '{}');
     expect(data.matches.map((m: { key: string }) => m.key)).toEqual(['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']);
     expect(data.answers).toEqual([{ ...first, answer: 'not a bundle', answeredAt: T0 }]);
+  });
+
+  it('exportAudit replies with the contract: bundles with primary parts, listings, matches, answered items; no key, no settings', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    const [first] = await w.store.listReview();
+    await w.store.putReview({ ...first!, answer: 'not a bundle', answeredAt: T0 });
+    const reply = await send<string>(w, { type: 'exportAudit' });
+    expect(reply.ok).toBe(true);
+    const text = reply.ok ? reply.data : '{}';
+    const data = JSON.parse(text);
+    expect(Object.keys(data)).toEqual(['kind', 'version', 'exportedAt', 'bundles', 'listings', 'matches', 'answers']);
+    expect(data).toMatchObject({ kind: 'split-finder-audit', version: 1, exportedAt: w.clock });
+    expect(data.matches.map((m: { key: string }) => m.key)).toEqual(['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']);
+    expect(data.listings).toEqual(await w.store.listListings());
+    expect(data.listings.length).toBeGreaterThan(0);
+    expect(data.answers).toEqual([{ ...first, answer: 'not a bundle', answeredAt: T0 }]);
+    expect(data.bundles.length).toBeGreaterThan(0);
+    const report = await buildReport(w.store, toScanSettings(RYOBI));
+    for (const b of data.bundles) {
+      expect(Object.keys(b)).toEqual(['key', 'itemId', 'brand', 'model', 'title', 'section', 'split', 'parts']);
+      const row = report.bundles.find((r) => r.key === b.key)!;
+      expect(b.parts).toEqual(
+        row.parts.map((p) => ({ brand: row.brand, model: p.model, qty: p.qty, asin: p.asin, grade: p.grade, source: null })),
+      );
+    }
+    expect(data.bundles.some((b: { parts: unknown[] }) => b.parts.length > 0)).toBe(true);
+    expect(text).not.toContain(KEY);
+    expect(text).not.toContain('apiKey');
+    expect(text).not.toContain('"settings"');
   });
 
   it('clearSavedSearches empties the cache only: the next scan pays for its pages again, the store keeps its records', async () => {

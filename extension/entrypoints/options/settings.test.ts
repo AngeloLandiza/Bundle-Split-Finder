@@ -190,6 +190,16 @@ describe('Your data', () => {
     await waitFor(() => expect(api.download).toHaveBeenCalledWith('split-finder-deals.csv', 'a,b\n1,2', 'text/csv'));
   });
 
+  it('Export for audit downloads the audit file named for the local date of the click', async () => {
+    const { user, api } = await open(stateWith(), { exportAudit: () => ({ ok: true, data: '{"kind":"split-finder-audit"}' }) });
+    const d = new Date();
+    const local = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    await user.click(screen.getByRole('button', { name: 'Export for audit' }));
+    await waitFor(() =>
+      expect(api.download).toHaveBeenCalledWith(`split-finder-audit-${local}.json`, '{"kind":"split-finder-audit"}', 'application/json'),
+    );
+  });
+
   it('clearing saved searches asks once', async () => {
     const { user, send } = await open(stateWith());
     await user.click(screen.getByRole('button', { name: 'Clear saved searches' }));

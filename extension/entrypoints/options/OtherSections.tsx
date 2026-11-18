@@ -201,10 +201,14 @@ export function AlertsSection({ draft, problems, onChange, onCommit, chip = real
   );
 }
 
+/** The local calendar date, YYYY-MM-DD. */
+const localDate = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 export function DataSection({ api }: { api: WorkerApi }) {
   const [note, setNote] = useState<string | null>(null);
 
-  async function exportFile(type: 'exportDeals' | 'exportMatches', filename: string, mime: string) {
+  async function exportFile(type: 'exportDeals' | 'exportMatches' | 'exportAudit', filename: string, mime: string) {
     setNote(null);
     try {
       const reply = await api.send<string>({ type });
@@ -237,6 +241,13 @@ export function DataSection({ api }: { api: WorkerApi }) {
           onClick={() => exportFile('exportMatches', 'split-finder-matches.json', 'application/json')}
         >
           Export matches and answers
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => exportFile('exportAudit', `split-finder-audit-${localDate(new Date())}.json`, 'application/json')}
+        >
+          Export for audit
         </button>
         <Confirm
           label="Clear saved searches"
