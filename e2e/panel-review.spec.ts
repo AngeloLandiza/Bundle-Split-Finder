@@ -169,7 +169,8 @@ test('review tab, a scan is running: Save answer is disabled and says why', asyn
   server.delaySearches(20_000);
   await options.evaluate(() => chrome.runtime.sendMessage({ type: 'scanNow' }));
   await expect(panel.getByRole('button', { name: 'Stop' })).toBeVisible();
-  await expect(panel.getByText('A scan is running. Answer when it has finished.')).toBeVisible();
+  // Said under Accept all as well when the replay leaves two one-reading questions, so look at the question's own line.
+  await expect(panel.locator('.review-question').getByText('A scan is running. Answer when it has finished.')).toBeVisible();
   await expect(panel.getByRole('button', { name: 'Save answer' })).toBeDisabled();
   await shoot(panel, 'scanning');
 

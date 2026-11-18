@@ -19,10 +19,10 @@
   border-top: 1px solid var(--line);
 }
 .accept-row {
-  display: flex;
-  flex-wrap: wrap;
+  /* The bundle and its parts in two columns, so the parts line up down the list. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 12px;
-  row-gap: 2px;
   padding: 11px 16px;
   border-bottom: 1px solid var(--line);
   overflow-wrap: anywhere;
@@ -32,7 +32,6 @@
   line-height: 16px;
 }
 .accept-parts {
-  min-width: 0;
   color: var(--ink-2);
 }
 .accept-actions {
