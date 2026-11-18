@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { itemIdOf, stateTextOf } from './pageRead';
-import { pricedText } from './realViews';
+import { pricedText } from '../../test-helpers/realViews';
 
 describe('itemIdOf', () => {
   it('reads the item id from a Home Depot product path and from the replay server\'s', () => {

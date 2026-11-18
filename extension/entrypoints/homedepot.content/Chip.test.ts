@@ -7,7 +7,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { Chip, COULD_NOT_OPEN } from './Chip';
 import { chipModel, type ChipModel } from './chipModel';
 import type { BundleView } from '../../lib/messages';
-import { estimateView, lookupView, noReadingView, oneReadingView } from './realViews';
+import { estimateView, lookupView, noReadingView, oneReadingView } from '../../test-helpers/realViews';
 
 afterEach(cleanup);
 

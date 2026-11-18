@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 import { Chip, COULD_NOT_OPEN } from './Chip';
 import { chipModel } from './chipModel';
 import { fontFaceCss } from './fonts';
-import { estimateView, lookupView, noReadingView, oneReadingView } from './realViews';
+import { estimateView, lookupView, noReadingView, oneReadingView } from '../../test-helpers/realViews';
 
 const OUT = resolve('qa-shots');
 const css = readFileSync(join(__dirname, 'chip.css'), 'utf8').replaceAll(':root', ':host');

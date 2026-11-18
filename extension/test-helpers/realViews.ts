@@ -5,7 +5,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { replayRecorded } from '../../../scripts/replay';
+import { replayRecorded } from '../../scripts/replay';
 import { parseProductPage, type ProductPage } from '@core/hdPage';
 import { MemoryScanStore } from '@core/scan/memoryStore';
 import { notePage } from '@core/scan/pageView';
@@ -13,8 +13,8 @@ import { runScan } from '@core/scan/runner';
 import { DEFAULT_SCAN_SETTINGS, type ScanSettings } from '@core/scan/types';
 import { parseAccount, SearchBudget } from '@core/serpapi/budget';
 import { MemoryCache, SerpApiClient } from '@core/serpapi/client';
-import { SERPAPI_ACCOUNT_FREE } from '../../../core/test/fixtures';
-import type { BundleView } from '../../lib/messages';
+import { SERPAPI_ACCOUNT_FREE } from '../../core/test/fixtures';
+import type { BundleView } from '../lib/messages';
 
 const T0 = Date.UTC(2026, 10, 9, 12);
 const VISIT = T0 + 2 * 60 * 60 * 1000;

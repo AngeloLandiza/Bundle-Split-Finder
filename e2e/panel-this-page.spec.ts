@@ -123,8 +123,9 @@ test('this page: a bundle that needs an answer, the answer, and a tab that moves
   await expect(panel.getByRole('group', { name: /Which parts come in this bundle\?/ })).toHaveCount(0);
   await shoot(panel, 'answered');
 
-  // The tab goes on to another address the chip did not send: the panel does not keep showing the last page.
-  await hd.goto(`${server.url}/p/328814689`);
+  // The tab goes on to an address the content script does not match (only /p/ pages run it), so nothing is sent for it
+  // and the outcome does not depend on a race: the panel does not keep showing the last page.
+  await hd.goto(`${server.url}/b/ratchets`);
   await expect(panel.getByText('Open a Home Depot bundle page to see it here.')).toBeVisible();
   expect(server.searches).toEqual([]);
 });

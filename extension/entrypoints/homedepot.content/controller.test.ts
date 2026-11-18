@@ -3,7 +3,7 @@ import type { ChipModel } from './chipModel';
 import { type ChipEnv, createChipController, type PreparedChip } from './controller';
 import type { BundleView, ContentRequest } from '../../lib/messages';
 import { chipSettingOf } from './protocol';
-import { estimateView, lookupView, pricedText, recordedText } from './realViews';
+import { estimateView, lookupView, pricedText, recordedText } from '../../test-helpers/realViews';
 
 type ChipRequest = ContentRequest;
 type PageSeenRequest = Extract<ContentRequest, { type: 'pageSeen' }>;
