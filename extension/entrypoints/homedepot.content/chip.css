@@ -31,10 +31,9 @@
 }
 
 .chip-wrap {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
   max-width: 100%;
   font-family: var(--font-words);
   font-size: 14px;
@@ -109,6 +108,10 @@
   color: var(--ink-2);
 }
 
+.chip-roi--loss {
+  color: var(--loss);
+}
+
 .chip-attention {
   padding: 1px 6px;
   border-radius: var(--radius-tag);
@@ -122,15 +125,17 @@
   font-variant-numeric: tabular-nums;
 }
 
-.chip-note {
+/* The announcement for a screen reader (the could-not-open sentence); it takes no room. */
+.chip-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   margin: 0;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
-}
-
-.chip-note:empty {
-  display: none;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {

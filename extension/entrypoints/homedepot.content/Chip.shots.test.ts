@@ -6,6 +6,8 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
@@ -30,7 +32,7 @@ describe.skipIf(!process.env.SPLIT_FINDER_SHOTS)('chip screenshots', () => {
       ['lookup', html(chipModel(await lookupView())!)],
       ['needs-answer', html(chipModel(await oneReadingView())!)],
       ['needs-answer-no-reading', html(chipModel(await noReadingView())!)],
-      ['could-not-open', html(chipModel(estimate)!).replace('<p class="chip-note" role="status"></p>', `<p class="chip-note" role="status">${COULD_NOT_OPEN}</p>`)],
+      ['could-not-open', await couldNotOpen(chipModel(estimate)!)],
     ];
     const browser = await chromium.launch({ channel: 'chromium' });
     try {
@@ -43,6 +45,29 @@ describe.skipIf(!process.env.SPLIT_FINDER_SHOTS)('chip screenshots', () => {
         }, [css, markup] as const);
         await page.evaluate(() => document.fonts.ready);
         await page.waitForTimeout(300);
+        await page.evaluate(() => Promise.all([400, 500, 600].map((w) => document.fonts.load(`${w} 14px 'Split Finder Barlow'`))));
+        await page.waitForTimeout(300);
+        // The title is weight 500 in the loaded Barlow face (its width is the 500 face's, not the 400 face's or a fallback's), and the chip is 40px tall.
+        const drawn = await page.evaluate(() => {
+          const host = document.getElementById('h')!;
+          const title = host.shadowRoot!.querySelector('.chip-title')!;
+          const width = (w: number) => {
+            const probe = document.createElement('span');
+            probe.style.cssText = `font:${w} 14px 'Split Finder Barlow';position:absolute;white-space:nowrap`;
+            probe.textContent = title.textContent;
+            document.body.append(probe);
+            const x = probe.getBoundingClientRect().width;
+            probe.remove();
+            return x;
+          };
+          return {
+            weight: getComputedStyle(title).fontWeight,
+            as500: Math.abs(title.getBoundingClientRect().width - width(500)) < 0.5,
+            differsFrom400: width(500) !== width(400),
+            height: host.getBoundingClientRect().height,
+          };
+        });
+        expect(drawn, name).toEqual({ weight: '500', as500: true, differsFrom400: true, height: 40 });
         await page.screenshot({ path: join(OUT, `chip-${name}.png`), fullPage: true });
       }
     } finally {
@@ -54,4 +79,14 @@ describe.skipIf(!process.env.SPLIT_FINDER_SHOTS)('chip screenshots', () => {
 
 function html(model: NonNullable<ReturnType<typeof chipModel>>): string {
   return renderToStaticMarkup(createElement(Chip, { model, open: async () => true }));
+}
+
+/** The chip after a click the worker could not honour: what the owner sees when the panel would not open. */
+async function couldNotOpen(model: NonNullable<ReturnType<typeof chipModel>>): Promise<string> {
+  const { container } = render(createElement(Chip, { model, open: async () => false }));
+  await userEvent.click(screen.getByRole('button'));
+  await screen.findByRole('button', { name: COULD_NOT_OPEN });
+  const out = container.innerHTML;
+  cleanup();
+  return out;
 }

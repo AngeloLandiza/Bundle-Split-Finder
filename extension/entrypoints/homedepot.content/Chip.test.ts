@@ -74,9 +74,15 @@ describe('the chip, one variant per state', () => {
     expect(screen.getByText('Est. profit')).toBeInTheDocument();
   });
 
-  it('a loss is coloured as one', () => {
+  it('a loss is coloured as one, the ROI with it (as Deals rows do)', () => {
     show({ kind: 'estimate', parts: 2, profit: '−$12.40', roi: '−6%', loss: true });
     expect(screen.getByText('−$12.40')).toHaveClass('chip-profit--loss');
+    expect(screen.getByText('ROI −6%')).toHaveClass('chip-roi--loss');
+  });
+
+  it('a gain leaves the ROI in the quiet colour', () => {
+    show({ kind: 'estimate', parts: 2, profit: '+$79.55', roi: '42%', loss: false });
+    expect(screen.getByText('ROI 42%')).not.toHaveClass('chip-roi--loss');
   });
 
   it('unknown prices: look up prices, with the searches it would take', () => {
@@ -122,19 +128,31 @@ describe('clicking the chip', () => {
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
-  it('says in one sentence, under the chip, when the panel could not be opened', async () => {
-    show({ kind: 'plain', parts: 2 }, async () => false);
+  it('says in one sentence, inside the chip, when the panel could not be opened: still one 40px button, nothing added below', async () => {
+    const { container } = show({ kind: 'plain', parts: 2 }, async () => false);
     await userEvent.click(screen.getByRole('button'));
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(COULD_NOT_OPEN));
+    const button = await screen.findByRole('button', { name: COULD_NOT_OPEN });
     expect(COULD_NOT_OPEN).toBe('Open Split Finder from the toolbar to see this bundle.');
-    // The chip is still the one button; the sentence is not part of it.
-    expect(screen.getByRole('button')).not.toHaveTextContent('toolbar');
+    // The chip's content is replaced by the sentence: no other words, and the same single control.
+    expect(button).toHaveTextContent(/^Open Split Finder from the toolbar to see this bundle\.$/);
+    expect(button).not.toHaveTextContent('Splits into');
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    // The announcement region is always there; it holds the sentence and takes no room of its own.
+    expect(screen.getByRole('status')).toHaveTextContent(COULD_NOT_OPEN);
+    expect(screen.getByRole('status')).toHaveClass('chip-status');
+    expect(container.querySelectorAll('.chip-wrap > *')).toHaveLength(2);
+  });
+
+  it('the announcement region is rendered from the start, empty', () => {
+    show({ kind: 'plain', parts: 2 });
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   it('says the same when the worker does not answer', async () => {
     show({ kind: 'plain', parts: 2 }, () => Promise.reject(new Error('Extension context invalidated.')));
     await userEvent.click(screen.getByRole('button'));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(COULD_NOT_OPEN));
+    expect(screen.getByRole('button', { name: COULD_NOT_OPEN })).toBeInTheDocument();
   });
 
   it('clears the sentence when the next click opens the panel, and ignores a click while one is pending', async () => {
@@ -152,5 +170,6 @@ describe('clicking the chip', () => {
     await userEvent.click(button);
     release();
     await waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement());
+    expect(screen.getByRole('button', { name: 'Splits into 2 parts' })).toBeInTheDocument();
   });
 });

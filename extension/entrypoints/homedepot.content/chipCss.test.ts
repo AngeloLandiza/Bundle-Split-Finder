@@ -46,6 +46,19 @@ describe('chip.css', () => {
     expect(host).not.toMatch(/margin|position/);
   });
 
+  it('a loss colours the ROI as well as the profit', () => {
+    expect(chip).toMatch(/\.chip-roi--loss\s*\{[^}]*color: var\(--loss\)/);
+  });
+
+  it('the announcement region takes no room: clipped to nothing, out of flow', () => {
+    const rule = chip.slice(chip.indexOf('.chip-status {'), chip.indexOf('}', chip.indexOf('.chip-status {')));
+    expect(rule).toContain('position: absolute');
+    expect(rule).toContain('width: 1px');
+    expect(rule).toContain('height: 1px');
+    expect(rule).toContain('overflow: hidden');
+    expect(rule).toContain('clip');
+  });
+
   it('keeps the visible focus ring', () => {
     expect(chip).toContain('.chip:focus-visible');
     expect(chip).toContain('outline: 2px solid var(--ink)');

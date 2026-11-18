@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { type ChipModel, searchesText, splitsInto } from './chipModel';
 
-/** Said under the chip when the side panel could not be opened from the page. */
+/** Said in the chip's own place when the side panel could not be opened from the page. */
 export const COULD_NOT_OPEN = 'Open Split Finder from the toolbar to see this bundle.';
 
 /**
@@ -33,12 +33,20 @@ export function Chip({ model, open }: { model: ChipModel; open(): Promise<boolea
           <rect x="2.75" y="2.75" width="14.5" height="14.5" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
           <path d="M10 2.75h4.75a2.5 2.5 0 0 1 2.5 2.5v9.5a2.5 2.5 0 0 1-2.5 2.5H10z" fill="currentColor" />
         </svg>
-        <Words model={model} />
-        <svg className="chip-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M4.5 2.5L8 6l-3.5 3.5" />
-        </svg>
+        {couldNotOpen ? (
+          // The sentence takes the chip's content, so the control keeps its 40px and the page's layout does not move.
+          <span className="chip-title">{COULD_NOT_OPEN}</span>
+        ) : (
+          <>
+            <Words model={model} />
+            <svg className="chip-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4.5 2.5L8 6l-3.5 3.5" />
+            </svg>
+          </>
+        )}
       </button>
-      <p className="chip-note" role="status">
+      {/* Always rendered, so a screen reader hears the sentence when it appears; visually hidden. */}
+      <p className="chip-status" role="status">
         {couldNotOpen ? COULD_NOT_OPEN : null}
       </p>
     </div>
@@ -57,7 +65,7 @@ function Words({ model }: { model: ChipModel }) {
             <span className="chip-label">Est. profit</span>{' '}
             <span className={`chip-profit figure${model.loss ? ' chip-profit--loss' : ''}`}>{model.profit}</span>
           </span>{' '}
-          <span className="chip-roi figure">ROI {model.roi}</span>
+          <span className={`chip-roi figure${model.loss ? ' chip-roi--loss' : ''}`}>ROI {model.roi}</span>
         </>
       );
     case 'lookup':
