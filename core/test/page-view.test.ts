@@ -23,7 +23,7 @@ const T0 = Date.UTC(2026, 10, 9, 12);
 const HOUR = 60 * 60 * 1000;
 const VISIT = T0 + 2 * HOUR;
 const KEY = 'homedepot:328814689';
-const RATCHET: ScanSettings = { ...DEFAULT_SCAN_SETTINGS, catalogPagesPerScan: 0, queries: [{ q: 'ryobi extended reach ratchet' }] };
+const RATCHET: ScanSettings ={ ...DEFAULT_SCAN_SETTINGS, catalogPagesPerScan: 0, queries: [{ q: 'ryobi extended reach ratchet' }] };
 
 const pages = (JSON.parse(readFileSync(new URL('../../fixtures/homedepot-pages/pages-2026-11-10.json', import.meta.url), 'utf8')) as {
   pages: { itemId: string; text: string }[];
@@ -334,6 +334,80 @@ describe('notePage: the page\'s price and the stored listing\'s (Review Focus 3)
     const view = asBundle(await notePage(store, RATCHET, unpricedPage('328814689'), VISIT));
     expect(await store.getBundle(KEY)).toMatchObject({ price: 199, regularPrice: 338, percentOff: 41, seenAt: stored.seenAt });
     expect(view.row).toMatchObject({ price: 199, regularPrice: 338, percentOff: 41, seenAt: stored.seenAt });
+  });
+});
+
+describe('notePage: the open split question (fix round 1)', () => {
+  it('328814689 on an empty store: the page names both parts, so the split is read from the page and there is no question', async () => {
+    const store = new MemoryScanStore();
+    const view = asBundle(await notePage(store, RATCHET, founderPage(), VISIT));
+    expect(view.question).toBeNull();
+    // With no catalog the model number alone cannot resolve PBLRC2501SB; its Includes list (PBLRC01, PBLRC25) does.
+    expect((await store.getBundle(KEY))!.split).toEqual({ status: 'resolved', components: ['PBLRC25B', 'PBLRC01B'], notes: ['split read from the page'] });
+    expect(await store.getReview(`split:${KEY}`)).toBeUndefined();
+  });
+
+  it('328814689 with its bullets taken out (hand-made from the recording) on an empty store: one question, offering one reading', async () => {
+    const store = new MemoryScanStore();
+    const view = asBundle(await notePage(store, RATCHET, { ...founderPage(), bullets: [] }, VISIT));
+    expect(view.row.status).toBe('needs_review');
+    expect(view.question).toEqual(await store.getReview(`split:${KEY}`));
+    expect(view.question).toMatchObject({ kind: 'split', subject: KEY, answer: null, openedAt: VISIT, choices: [['PBLRC25B', 'PBLRC01B']] });
+  });
+
+  it('328690510 (PCL500525SB, no split rule): the view carries the stored open question, which offers no reading', async () => {
+    const store = new MemoryScanStore();
+    const view = asBundle(await notePage(store, RATCHET, unpricedPage('328690510'), VISIT));
+    expect(view.question).toEqual(await store.getReview('split:homedepot:328690510'));
+    expect(view.question).toMatchObject({ kind: 'split', subject: 'homedepot:328690510', answer: null, openedAt: VISIT, choices: [] });
+  });
+
+  it('once the owner answers, the split is resolved and the view has no question', async () => {
+    const store = new MemoryScanStore();
+    const page = unpricedPage('328690510');
+    const first = asBundle(await notePage(store, RATCHET, page, VISIT));
+    await applyReviewAnswer(store, first.question!.id, { parts: ['PCL500B', 'PBP005'], seen: reviewSignature(first.question!) }, VISIT + 1);
+    expect(asBundle(await notePage(store, RATCHET, page, VISIT + HOUR)).question).toBeNull();
+  });
+});
+
+describe('notePage with write: false (fix round 1)', () => {
+  const listingsOnly = async (): Promise<MemoryScanStore> => {
+    const scanned = new MemoryScanStore();
+    await ratchetScan(scanned);
+    const s = new MemoryScanStore();
+    for (const l of await scanned.listListings()) await s.putListing(l);
+    return s;
+  };
+
+  const cases: [string, () => Promise<MemoryScanStore>, () => ProductPage][] = [
+    ['parts matched from saved listings', listingsOnly, () => founderPage()],
+    ['a new bundle and its split question', async () => new MemoryScanStore(), () => unpricedPage('328690510')],
+    ['after the recorded scan, with a running job', async () => {
+      const s = new MemoryScanStore();
+      await ratchetScan(s, { reserve: 0, maxPerRun: 1 });
+      const stopped = (await s.listScans())[0]!;
+      await s.putScan({ ...stopped, id: String(T0 + HOUR), startedAt: T0 + HOUR, finishedAt: null, status: 'running' });
+      return s;
+    }, () => founderPage()],
+  ];
+
+  for (const [name, make, page] of cases) {
+    it(`${name}: writes nothing, and gives the view a write would`, async () => {
+      const store = await make();
+      const before = JSON.stringify(await snapshot(store));
+      const view = await notePage(store, RATCHET, page(), VISIT, { write: false });
+      expect(JSON.stringify(await snapshot(store))).toBe(before);
+      const written = await notePage(await make(), RATCHET, page(), VISIT, { write: true });
+      expect(view).toEqual(written);
+      expect(view.kind).toBe('bundle');
+    });
+  }
+
+  it('the default writes', async () => {
+    const store = new MemoryScanStore();
+    await notePage(store, RATCHET, founderPage(), VISIT);
+    expect(await store.listBundles()).toHaveLength(1);
   });
 });
 

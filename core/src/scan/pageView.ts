@@ -4,12 +4,14 @@
 // scan never differ. Never a search: the only client here refuses, and no scan job is read or written.
 
 import type { ProductPage } from '../hdPage';
+import { choicesOf } from './answers';
 import { looksLikeBundle } from './classify';
+import { OverlayStore } from './overlayStore';
 import { lookupsNeeded, noCounts, savedAnswers } from './paid';
 import { notLookedUp, reportRow } from './report';
 import { bundleParts, type PartContext, savedMatch, splitOne } from './runner';
 import { knownModels } from './split';
-import { type BundleRecord, type BundleRow, bundleKey, type ScanSettings, type ScanStore, type SearchClient } from './types';
+import { type BundleRecord, type BundleRow, bundleKey, type ReviewItem, type ScanSettings, type ScanStore, type SearchClient } from './types';
 
 export type PageView =
   | { kind: 'none' }
@@ -28,7 +30,18 @@ export type PageView =
      * per-scan limit and the account's budget, which a page visit never checks; 0 when none waits.
      */
     lookupParts: number;
+    /** The bundle's open split question (`split:` and its key) while its split needs an answer; null otherwise. */
+    question: ReviewItem | null;
   };
+
+export interface NotePageOptions {
+  /**
+   * Default true. False: the same view, computed over a copy-on-write layer on the store (OverlayStore),
+   * whose writes are dropped, so the store is not written at all. The worker asks for it while a scan or
+   * a panel action runs, as those write the same records.
+   */
+  write?: boolean;
+}
 
 const NONE: PageView = { kind: 'none' };
 
@@ -91,12 +104,16 @@ function visited(known: BundleRecord | undefined, page: ProductPage, brand: stri
  * split question as a scan would (splitOne), and, when the split is resolved, its parts are matched
  * from saved listings as a scan matches them (savedMatch over bundleParts of this bundle alone). The
  * owner's answers and Verify's results stand, as they do in a scan. Nothing is searched for and no
- * scan job is touched; counts are not kept.
+ * scan job is touched; counts are not kept. With `write: false` all of it runs over an OverlayStore on
+ * `target`, so the view is the same and `target` is not written.
  */
-export async function notePage(store: ScanStore, settings: ScanSettings, page: ProductPage, now: number): Promise<PageView> {
+export async function notePage(
+  target: ScanStore, settings: ScanSettings, page: ProductPage, now: number, opts: NotePageOptions = {},
+): Promise<PageView> {
   if (!wellFormed(page)) return NONE;
   const brand = page.brand.trim().toUpperCase();
   if (!settings.brands.some((b) => b.trim().toUpperCase() === brand) || !looksLikeBundle(brand, page.model)) return NONE;
+  const store = opts.write === false ? new OverlayStore(target) : target;
 
   const key = bundleKey(page.itemId);
   const known = await knownModels(store);
@@ -117,8 +134,11 @@ export async function notePage(store: ScanStore, settings: ScanSettings, page: P
     : { ...stored, price: page.price, regularPrice: page.wasPrice, percentOff: percentOff(page.price, page.wasPrice), seenAt: now };
   const row = await reportRow(store, settings, shown);
   const waiting = row.parts.filter(notLookedUp).map((p) => ({ brand: row.brand, model: p.model }));
+  // The question splitOne left open, with its readings as Review shows them (an item saved before step 5 has none stored).
+  const asked = split.status === 'resolved' ? undefined : await store.getReview(`split:${key}`);
   return {
     kind: 'bundle', key, itemId: page.itemId, model: row.model, parts: row.parts.reduce((n, p) => n + p.qty, 0), row,
     lookupParts: waiting.length === 0 ? 0 : lookupsNeeded(waiting, await savedAnswers(store)),
+    question: asked && asked.answer === null ? { ...asked, choices: choicesOf(asked) } : null,
   };
 }
