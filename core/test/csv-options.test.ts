@@ -5,11 +5,13 @@ import { answeredKitWorld, KIT_KEY, kitReport, kitRunPaid, P553_KEY } from './ki
 
 // The ways to sell of a bundle that holds a kit, in the run file. Replayed data; nothing reaches the network.
 
-const lineOf = (csv: string): string[] => csv.trimEnd().split('\n');
+// The four columns of step 9 follow other_options; these tests are about the two before them, so the line is cut
+// before them (their cells are numbers or empty, never a comma).
+const lineOf = (csv: string): string[] => csv.trimEnd().split('\n').map((l, i) => (i === 0 ? l : l.split(',').slice(0, -4).join(',')));
 
 describe('CSV: sold_as and other_options', () => {
   it('ends the header with the two columns', () => {
-    expect(RUN_COLUMNS.slice(-3)).toEqual(['hd_link', 'sold_as', 'other_options']);
+    expect(RUN_COLUMNS.slice(-7, -4)).toEqual(['hd_link', 'sold_as', 'other_options']);
   });
 
   it('writes the primary label and, while no option has an estimate, an empty other_options', async () => {
@@ -40,7 +42,7 @@ describe('CSV: sold_as and other_options', () => {
     const row = (await kitReport(w)).bundles.find((b) => b.key === P553_KEY)!;
     expect(row.options).toEqual([]);
     const [header, cells] = lineOf(bundlesCsv([row]));
-    expect(header!.endsWith(',sold_as,other_options')).toBe(true);
+    expect(header!.includes(',sold_as,other_options,roi_lowest,')).toBe(true);
     expect(cells!.endsWith(',,')).toBe(true);
     const kit = (await kitReport(w)).bundles.find((b) => b.key === KIT_KEY)!;
     expect(kit.options.length).toBeGreaterThan(0);

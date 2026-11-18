@@ -230,7 +230,7 @@ describe('CSV', () => {
     expect(lines[0]).toBe(RUN_COLUMNS.join(','));
     expect(RUN_COLUMNS[0]).toBe('section');
     expect(lines[0]!.startsWith('section,brand,')).toBe(true);
-    expect(lines[1]).toBe('confirmed,RYOBI,PBLRC2501SB,ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only),328814689,189,338,44,PBLRC25B | PBLRC01B,B0B3JWF5ZV | B0B6Z2ZGVK,probable | probable,169 | 146.94,268.55,189,79.55,0.4209,,https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-and-3-8-in-Extended-Reach-Ratchets-Tools-Only-PBLRC2501SB/328814689,,');
+    expect(lines[1]).toBe('confirmed,RYOBI,PBLRC2501SB,ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only),328814689,189,338,44,PBLRC25B | PBLRC01B,B0B3JWF5ZV | B0B6Z2ZGVK,probable | probable,169 | 146.94,268.55,189,79.55,0.4209,,https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-and-3-8-in-Extended-Reach-Ratchets-Tools-Only-PBLRC2501SB/328814689,,,0.4209,0.4209,0.4209,');
     expect(lines).toHaveLength(10); // header, 8 bundles, and the empty string after the last \n
   });
 

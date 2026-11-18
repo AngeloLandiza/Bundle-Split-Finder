@@ -7,6 +7,8 @@ export const RUN_COLUMNS: readonly string[] = [
   'section', 'brand', 'bundle_model', 'bundle_title', 'hd_item_id', 'hd_price', 'hd_was_price', 'hd_percent_off',
   'parts', 'asins', 'match_grades', 'amazon_prices', 'est_net_revenue', 'est_cost', 'est_profit', 'est_roi',
   'uncovered_parts', 'hd_link', 'sold_as', 'other_options',
+  // Step 9: the ROI at each end of the part prices, and what Home Depot charges for the parts sold alone.
+  'roi_lowest', 'roi_amazon_new', 'roi_highest', 'hd_price_total',
 ];
 
 export const REVIEW_COLUMNS: readonly string[] = ['kind', 'brand', 'model', 'title', 'reason', 'candidates', 'opened_at'];
@@ -34,12 +36,30 @@ function otherOptions(b: BundleRow): string {
   return join(b.options.slice(1).filter((o) => o.estimate).map((o) => `${o.label}: ${o.estimate!.profit}`));
 }
 
+/**
+ * What Home Depot charges for the bundle's parts sold alone: each part's Home Depot price times its quantity,
+ * for reference (never counted in an estimate). Null unless every part has one: a sum of some of the parts
+ * would read as the total of them all.
+ */
+function hdPriceTotal(b: BundleRow): number | null {
+  if (b.parts.length === 0) return null;
+  let cents = 0;
+  for (const p of b.parts) {
+    const hd = p.prices.find((o) => o.kind === 'homedepot');
+    if (!hd) return null;
+    cents += Math.round(hd.price * 100) * p.qty;
+  }
+  return cents / 100;
+}
+
 function runRow(b: BundleRow): (string | number | null)[] {
   const head = [b.section, b.brand, b.model, b.title, b.itemId, b.price, b.regularPrice, b.percentOff];
   // sold_as is the primary's label, which the row's figures are; '' when the bundle has one way to sell.
   const tail = [b.link, b.options[0]?.label ?? '', otherOptions(b)];
-  if (b.section === 'split') return [...head, '', '', '', '', null, null, null, null, '', ...tail];
+  if (b.section === 'split') return [...head, '', '', '', '', null, null, null, null, '', ...tail, null, null, null, null];
   const e = b.estimate;
+  // Where the estimate is null, every end of the range is.
+  const range = [b.range.lowest?.roi ?? null, b.range.amazonNew?.roi ?? null, b.range.highest?.roi ?? null, hdPriceTotal(b)];
   return [
     ...head,
     join(b.parts.map(partName)),
@@ -49,6 +69,7 @@ function runRow(b: BundleRow): (string | number | null)[] {
     e ? e.netRevenue : null, e ? e.cost : null, e ? e.profit : null, e ? e.roi : null,
     join(b.uncovered),
     ...tail,
+    ...range,
   ];
 }
 
