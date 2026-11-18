@@ -5,11 +5,15 @@
   gap: 8px;
   margin: 0 0 16px;
 }
+/* A section label, so it does not compete with the question's own 17px title below it. */
 .accept-title {
   margin: 0 16px;
-  font-size: 17px;
-  line-height: 23px;
+  font-size: 12px;
+  line-height: 16px;
   font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
 }
 .accept-list {
   list-style: none;
@@ -37,6 +41,24 @@
 .accept-actions {
   margin: 4px 16px 0;
   align-self: flex-start;
+}
+.accept-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.accept-toggle:hover {
+  text-decoration-thickness: 2px;
+}
+.accept-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 .accept-note {
   margin: 0 16px;

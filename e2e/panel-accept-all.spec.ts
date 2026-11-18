@@ -51,10 +51,18 @@ test('review tab, Accept all answers the split questions that offer one reading,
   await expect(panel.getByRole('heading', { name: `${suggested.length} bundles have one suggested answer` })).toBeVisible();
   await expect(panel.getByText(`1 of ${before.length}`)).toBeVisible();
   await expect(panel.getByText('Each bundle gets the parts shown. Questions with more than one answer stay below.')).toBeVisible();
-  await expect(panel.locator('.accept-row')).toHaveCount(suggested.length);
+  // Three rows and Show all, so Accept all is near the top at 360px.
+  await expect(panel.locator('.accept-row')).toHaveCount(3);
+  const accept = panel.getByRole('button', { name: `Accept all ${suggested.length}` });
+  await panel.setViewportSize({ width: 360, height: 640 });
+  expect(await accept.evaluate((el) => el.getBoundingClientRect().bottom)).toBeLessThan(640);
   await shoot(panel, 'block');
+  await panel.getByRole('button', { name: `Show all ${suggested.length}` }).click();
+  await expect(panel.locator('.accept-row')).toHaveCount(suggested.length);
+  await expect(panel.getByRole('button', { name: 'Show fewer' })).toHaveAttribute('aria-expanded', 'true');
+  await shoot(panel, 'expanded');
 
-  await panel.getByRole('button', { name: `Accept all ${suggested.length}` }).click();
+  await accept.click();
   const result = panel.getByText(`Accepted ${suggested.length} of ${suggested.length}.`);
   await expect(result).toBeVisible();
   await expect(result).toBeFocused();

@@ -7,11 +7,12 @@ import './AcceptSuggested.css';
 
 /**
  * The worker's refusals that mean "this question is not the one the panel showed" (core/src/scan/answers.ts:
- * CHANGED, ANSWERED, NOT_FOUND). Such a question is skipped and counted. Any other refusal (a scan or a search
+ * CHANGED, ANSWERED, NOT_FOUND). Such a question is skipped and counted: CHANGED as still open, the others as no longer open. Any other refusal (a scan or a search
  * running, a malformed request) stops the run. AcceptSuggested.test.ts checks these against the worker's own sentences.
  */
+const CHANGED = 'That question changed. Choose again.';
 export const STALE_REFUSALS: readonly string[] = [
-  'That question changed. Choose again.',
+  CHANGED,
   'That question was already answered.',
   'That question was not found.',
 ];
@@ -24,6 +25,9 @@ export interface AcceptResult {
   id: number;
   text: string;
 }
+
+/** Rows shown before the rest are folded away, so Accept all stays above the fold at 360px. */
+const FOLD = 3;
 
 export interface AcceptRun {
   /** 1-based place of the question being sent. */
@@ -41,14 +45,26 @@ export function useAcceptAll(api: WorkerApi, onAccepted: (item: ReviewItem, seen
   const [run, setRun] = useState<AcceptRun | null>(null);
   const [result, setResult] = useState<AcceptResult | null>(null);
   const busy = useRef(false);
+  // The last result id that took focus. Kept here, above the block, which remounts when the tab goes between its states.
+  const focusedId = useRef(0);
+  // False once the tab is left: the loop stops before its next send.
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const accept = async (items: readonly ReviewItem[]): Promise<void> => {
     if (busy.current || items.length === 0) return;
     busy.current = true;
     let accepted = 0;
-    let skipped = 0;
+    let changed = 0;
+    let gone = 0;
     let failure: string | null = null;
     for (let i = 0; i < items.length && failure === null; i++) {
+      if (!mounted.current) break;
       setRun({ index: i + 1, items });
       const item = items[i]!;
       const seen = reviewSignature(item);
@@ -57,8 +73,10 @@ export function useAcceptAll(api: WorkerApi, onAccepted: (item: ReviewItem, seen
         if (reply.ok) {
           accepted++;
           onAccepted(item, seen);
+        } else if (reply.error === CHANGED) {
+          changed++;
         } else if (STALE_REFUSALS.includes(reply.error)) {
-          skipped++;
+          gone++;
         } else {
           failure = reply.error;
         }
@@ -67,11 +85,18 @@ export function useAcceptAll(api: WorkerApi, onAccepted: (item: ReviewItem, seen
       }
     }
     busy.current = false;
+    if (!mounted.current) return;
     setRun(null);
-    setResult((r) => ({ id: (r?.id ?? 0) + 1, text: failure ?? `Accepted ${accepted} of ${items.length}.${skipped > 0 ? ` ${skipped} had changed and are still open.` : ''}` }));
+    const said = [
+      `Accepted ${accepted} of ${items.length}.`,
+      changed > 0 ? `${changed} had changed and ${changed === 1 ? 'is' : 'are'} still open.` : null,
+      gone > 0 ? `${gone} ${gone === 1 ? 'was' : 'were'} no longer open.` : null,
+      failure,
+    ];
+    setResult((r) => ({ id: (r?.id ?? 0) + 1, text: said.filter((x) => x !== null).join(' ') }));
   };
 
-  return { run, result, accept };
+  return { run, result, accept, focusedId };
 }
 
 export interface AcceptSuggestedProps {
@@ -79,18 +104,25 @@ export interface AcceptSuggestedProps {
   items: readonly ReviewItem[];
   run: AcceptRun | null;
   result: AcceptResult | null;
+  /** The id of the last result that took focus; the block sets it, so a remount does not focus the same result again. */
+  focusedId: { current: number };
   scanRunning: boolean;
   onAccept: () => void;
 }
 
-export function AcceptSuggested({ items, run, result, scanRunning, onAccept }: AcceptSuggestedProps) {
+export function AcceptSuggested({ items, run, result, focusedId, scanRunning, onAccept }: AcceptSuggestedProps) {
   const resultRef = useRef<HTMLParagraphElement>(null);
-  // Focus goes to the sentence once, when it first says something: it is what the owner pressed the button for.
+  const [expanded, setExpanded] = useState(false);
+  // Focus goes to the sentence once per result, whatever remounts the block: it is what the owner pressed the button for.
   useEffect(() => {
-    if (result !== null) resultRef.current?.focus();
+    if (result !== null && focusedId.current !== result.id) {
+      focusedId.current = result.id;
+      resultRef.current?.focus();
+    }
   }, [result?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const shown = run ? run.items : items;
+  const folded = shown.length > FOLD && !expanded;
   const block = run !== null || shown.length >= 2;
   return (
     <>
@@ -100,7 +132,7 @@ export function AcceptSuggested({ items, run, result, scanRunning, onAccept }: A
             {shown.length} bundles have one suggested answer
           </h2>
           <ul className="accept-list">
-            {shown.map((r) => (
+            {(folded ? shown.slice(0, FOLD) : shown).map((r) => (
               <li key={r.id} className="accept-row">
                 <span className="figure fig-sm">{r.model}</span>
                 <span className="accept-hidden"> splits into </span>
@@ -108,6 +140,13 @@ export function AcceptSuggested({ items, run, result, scanRunning, onAccept }: A
               </li>
             ))}
           </ul>
+          {shown.length > FOLD ? (
+            <div className="accept-actions">
+              <button type="button" className="accept-toggle" aria-expanded={!folded} onClick={() => setExpanded(folded)}>
+                {folded ? `Show all ${shown.length}` : 'Show fewer'}
+              </button>
+            </div>
+          ) : null}
           <div className="accept-actions">
             <button type="button" className="btn btn-primary" disabled={run !== null || scanRunning} onClick={onAccept}>
               {run ? `Accepting ${run.index} of ${run.items.length}…` : `Accept all ${shown.length}`}

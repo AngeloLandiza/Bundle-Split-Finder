@@ -165,7 +165,7 @@ describe('Accept all: the run', () => {
       r.id === b!.id ? { ok: false, error: 'That question changed. Choose again.' } : { ok: true, data: null },
     );
     await user.click(acceptButton());
-    expect(await screen.findByText('Accepted 2 of 3. 1 had changed and are still open.')).toBeInTheDocument();
+    expect(await screen.findByText('Accepted 2 of 3. 1 had changed and is still open.')).toBeInTheDocument();
     expect(send).toHaveBeenCalledTimes(3);
     // Only the stale one is still open: one question is not a block, so the question below is that bundle.
     expect(screen.queryByRole('button', { name: /^Accept/ })).toBeNull();
@@ -173,7 +173,7 @@ describe('Accept all: the run', () => {
     expect(screen.getByText(b!.model)).toBeInTheDocument();
     // The report reloads as the worker would have it: only the stale one remains.
     again(reportOf([b!]));
-    expect(screen.getByText('Accepted 2 of 3. 1 had changed and are still open.')).toBeInTheDocument();
+    expect(screen.getByText('Accepted 2 of 3. 1 had changed and is still open.')).toBeInTheDocument();
   });
 
   it('counts a question already answered or gone as skipped too', async () => {
@@ -183,7 +183,21 @@ describe('Accept all: the run', () => {
       r.id === a!.id ? { ok: false, error: 'That question was already answered.' } : r.id === b!.id ? { ok: false, error: 'That question was not found.' } : { ok: true, data: null },
     );
     await user.click(acceptButton());
-    expect(await screen.findByText('Accepted 1 of 3. 2 had changed and are still open.')).toBeInTheDocument();
+    expect(await screen.findByText('Accepted 1 of 3. 2 were no longer open.')).toBeInTheDocument();
+  });
+
+  it('says is/was for one and are/were for several, changed ones first, then the ones no longer open', async () => {
+    const user = userEvent.setup();
+    const four = oneReading().slice(0, 4);
+    setup(reportOf(four), (r) =>
+      r.id === four[0]!.id || r.id === four[1]!.id
+        ? { ok: false, error: 'That question changed. Choose again.' }
+        : r.id === four[2]!.id
+          ? { ok: false, error: 'That question was already answered.' }
+          : { ok: true, data: null },
+    );
+    await user.click(acceptButton());
+    expect(await screen.findByText('Accepted 1 of 4. 2 had changed and are still open. 1 was no longer open.')).toBeInTheDocument();
   });
 
   it('any other refusal stops the run and shows its sentence, leaving the rest unanswered', async () => {
@@ -193,7 +207,7 @@ describe('Accept all: the run', () => {
       r.id === b!.id ? { ok: false, error: 'A scan is running. Answer again when it has finished.' } : { ok: true, data: null },
     );
     await user.click(acceptButton());
-    const sentence = await screen.findByText('A scan is running. Answer again when it has finished.');
+    const sentence = await screen.findByText('Accepted 1 of 3. A scan is running. Answer again when it has finished.');
     expect(sentence).toHaveFocus();
     expect(send).toHaveBeenCalledTimes(2);
     expect(send.mock.calls.map((x) => (x[0] as { id: string }).id)).toEqual([a!.id, b!.id]);
@@ -211,7 +225,7 @@ describe('Accept all: the run', () => {
     const api: WorkerApi = { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() };
     render(createElement(ReviewTab, { api, report: reportOf(pair), state: state() }));
     await user.click(acceptButton());
-    expect(await screen.findByText(UNREACHABLE)).toHaveFocus();
+    expect(await screen.findByText(`Accepted 0 of 2. ${UNREACHABLE}`)).toHaveFocus();
     expect(send).toHaveBeenCalledTimes(1);
   });
 
@@ -236,6 +250,70 @@ describe('Accept all: the run', () => {
     cleanup();
     setup(reportOf([]));
     expect(screen.queryByText('Accepted 3 of 3.')).toBeNull();
+  });
+});
+
+describe('Accept all: focus, leaving, and the fold', () => {
+  it('the result takes focus once: a report reload that remounts the block does not take it back', async () => {
+    const user = userEvent.setup();
+    const pair = oneReading().slice(0, 2);
+    const { again } = setup(reportOf(pair));
+    await user.click(acceptButton());
+    const sentence = await screen.findByText('Accepted 2 of 2.');
+    await waitFor(() => expect(sentence).toHaveFocus());
+    (document.activeElement as HTMLElement).blur();
+    // A scan brings new questions: the tab goes from the empty state to a question, and the block remounts.
+    again(reportOf(manyOrNone().slice(0, 1)));
+    expect(screen.getByText('Accepted 2 of 2.')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Which parts come in this bundle?' })).toBeInTheDocument();
+    expect(document.body).toHaveFocus();
+    // Back to a block with the result still on screen: still not focused.
+    again(reportOf([...manyOrNone().slice(0, 1), ...oneReading().slice(0, 2)]));
+    expect(document.body).toHaveFocus();
+  });
+
+  it('leaving the tab mid-run stops the loop before the next send', async () => {
+    const user = userEvent.setup();
+    const trio = oneReading().slice(0, 3);
+    const gates: ((r: Reply) => void)[] = [];
+    const { send } = setup(reportOf(trio), () => new Promise<Reply>((r) => gates.push(r)));
+    await user.click(acceptButton());
+    expect(send).toHaveBeenCalledTimes(1);
+    cleanup();
+    gates[0]!({ ok: true, data: null });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows three rows and Show all N when there are more; Show all N and Show fewer toggle, with aria-expanded', async () => {
+    const user = userEvent.setup();
+    const n = oneReading().length;
+    setup(reportOf(real));
+    expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(3);
+    const toggle = screen.getByRole('button', { name: `Show all ${n}` });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    // The toggle is under the rows and above Accept all, so the button stays near the top.
+    expect(toggle.compareDocumentPosition(acceptButton()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await user.click(toggle);
+    expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(n);
+    expect(screen.getByRole('button', { name: 'Show fewer' })).toHaveAttribute('aria-expanded', 'true');
+    await user.click(screen.getByRole('button', { name: 'Show fewer' }));
+    expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(3);
+  });
+
+  it('has no toggle for three rows or fewer', () => {
+    setup(reportOf(oneReading().slice(0, 3)));
+    expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(3);
+    expect(screen.queryByRole('button', { name: /^Show/ })).toBeNull();
+  });
+
+  it('Accept all N accepts every question, not only the rows shown', async () => {
+    const user = userEvent.setup();
+    const all = oneReading();
+    const { send } = setup(reportOf(all));
+    await user.click(acceptButton());
+    expect(await screen.findByText(`Accepted ${all.length} of ${all.length}.`)).toBeInTheDocument();
+    expect(send.mock.calls.map((c) => (c[0] as { id: string }).id)).toEqual(all.map((r) => r.id));
   });
 });
 

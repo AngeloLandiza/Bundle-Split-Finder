@@ -37,7 +37,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const acceptAll = useAcceptAll(api, (r, seen) => setDone((d) => new Set(d).add(`${r.id}|${seen}`)));
   const suggested = suggestedOf(open);
   const accept = (
-    <AcceptSuggested items={suggested} run={acceptAll.run} result={acceptAll.result} scanRunning={state.scanRunning} onAccept={() => void acceptAll.accept(suggested)} />
+    <AcceptSuggested items={suggested} run={acceptAll.run} result={acceptAll.result} focusedId={acceptAll.focusedId} scanRunning={state.scanRunning} onAccept={() => void acceptAll.accept(suggested)} />
   );
 
   // After an answer the form is gone: focus goes to the next question's heading (ReviewQuestion), or here.
