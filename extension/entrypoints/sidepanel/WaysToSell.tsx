@@ -5,8 +5,6 @@ import type { WorkerApi } from '../../lib/pageClient';
 import { RANGE_MEANING, roiRangeText, waitingOf } from './dealsModel';
 import { LookUp } from './DealsLookUp';
 
-export const LOOSE_PARTS_NOTE = 'Parts from a kit have no retail box of their own.';
-
 const escape = (m: string): string => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** `text` with each of `models` set in the figure face: every model number is JetBrains Mono (docs/design.md). */
@@ -92,7 +90,6 @@ function Way({ option, primary, kits, row, report, api, scanRunning, version, bu
       <p className="detail-way-line">
         <Leaves leftovers={option.leftovers} models={option.parts.map((p) => p.model)} />
       </p>
-      {option.loose ? <p className="detail-way-line">{LOOSE_PARTS_NOTE}</p> : null}
       {items.length > 0 ? (
         <LookUp
           row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} items={items} describedBy={labelId} stacked

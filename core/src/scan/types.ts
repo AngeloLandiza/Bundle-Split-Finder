@@ -559,7 +559,7 @@ export interface PartRow {
   prices: PriceOption[];
   /**
    * 'bulk' when the chosen listing's saved title says bulk or non-retail packaging, or repackaged
-   * (match.ts isBulkPackaging): still New, so its price counts; the panel says "New · bulk packaging".
+   * (match.ts isBulkPackaging): still New, so its price counts; the panel says "Amazon · New · bulk packaging" on its price.
    * Absent for a retail-boxed listing, and when the listing is not saved (no title to read).
    */
   packaging?: 'bulk';

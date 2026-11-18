@@ -1,5 +1,6 @@
 import type { Page, Worker } from '@playwright/test';
-import type { BundleRow } from '../core/src/scan/types';
+import { reviewSignature } from '../core/src/scan/answers';
+import type { BundleRow, ReviewItem } from '../core/src/scan/types';
 import { expect, getState, saveKey, test } from './fixtures';
 
 // Step 9, Task 3: the ROI range in Deals and each part's prices in Detail, in the built extension. A real scan of the
@@ -129,4 +130,63 @@ test('Deals shows the ROI range under the Amazon New figures, and Detail lists e
   expect(header).toMatch(/,roi_lowest,roi_amazon_new,roi_highest,hd_price_total$/);
   const mine = lines.find((l) => l.includes('343992133'))!;
   expect(mine).toMatch(/,-?[\d.]+,-?[\d.]+,-?[\d.]+,648$/);
+});
+
+// RYOBI PCL1201K2-PCL515B (recorded bundle 324903619, split by the owner's answer): its saw PCL515B has a recorded Amazon listing ($57.99, list $65).
+// Home Depot's search page for it (synthetic, see the fixture) links only its twin PCL515, so the reader's price is
+// "sold alone as PCL515". No recording shows a bulk-packaged listing for a part of a bundle the replay scans, so the
+// test writes "(Bulk Packaged)" into that listing's saved title, as a search row for such a listing would carry it.
+function markBulk(worker: Worker, asin: string): Promise<void> {
+  return worker.evaluate(
+    (key) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('split-finder');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const store = open.result.transaction('listings', 'readwrite').objectStore('listings');
+          const get = store.get(key);
+          get.onerror = () => reject(get.error);
+          get.onsuccess = () => {
+            const put = store.put({ ...get.result, title: `${get.result.title} (Bulk Packaged)` });
+            put.onerror = () => reject(put.error);
+            put.onsuccess = () => resolve();
+          };
+        };
+      }),
+    asin,
+  );
+}
+
+test('Detail says bulk packaging on the Amazon price and the model Home Depot sells alone when it is the twin', async ({ context, extensionId, options, server, worker }) => {
+  await saveKey(options, 'TEST');
+  await expect(options.getByTestId('key-result')).toContainText('Key works.');
+  await configure(options, { searchesPerScan: 10 });
+  server.reset();
+  await scanAndWait(options);
+  // With its page read, the bundle's contents are a question. The owner's answer (the one reading offered) makes its
+  // parts known, and the next scan reads their Home Depot prices and looks them up.
+  const asked = await options.evaluate(() => chrome.runtime.sendMessage({ type: 'getReport' }));
+  const question = (asked as { data: { review: ReviewItem[] } }).data.review.find((r) => r.kind === 'split' && r.subject === 'homedepot:324903619')!;
+  expect(question.choices.length).toBe(1);
+  expect(await options.evaluate((a) => chrome.runtime.sendMessage({ type: 'answerReview', id: a.id, answer: { choice: 0, seen: a.seen } }), { id: question.id, seen: reviewSignature(question) })).toMatchObject({ ok: true });
+  // A scan that ends early is continued by the next one, which does not read prices; the one after it starts afresh.
+  await scanAndWait(options);
+  await scanAndWait(options);
+  const reply = await options.evaluate(() => chrome.runtime.sendMessage({ type: 'getReport' }));
+  const row = (reply as { data: { bundles: BundleRow[] } }).data.bundles.find((b) => b.key === 'homedepot:324903619')!;
+  const saw = row.parts.find((p) => p.model === 'PCL515B')!;
+  expect(saw.prices.map((o) => o.kind)).toEqual(['homedepot', 'amazon_list', 'amazon_new']);
+  expect(saw.prices[0]).toMatchObject({ price: 79, soldAs: 'PCL515', reference: true });
+  expect(saw.packaging).toBeUndefined();
+  await markBulk(worker, saw.asin!);
+
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await panel.locator('.deal-link', { hasText: 'PCL1201K2-PCL515B' }).click();
+  const prices = panel.getByRole('group', { name: 'Prices for PCL515B' });
+  await expect(prices.getByText('Amazon · New · bulk packaging', { exact: true })).toBeVisible();
+  await expect(prices.getByText('Home Depot · sold alone as PCL515 · reference')).toBeVisible();
+  await expect(prices.getByRole('link', { name: 'Home Depot · sold alone as PCL515 · reference' })).toHaveAttribute('href', /\/p\/RYOBI-.*-PCL515\/399000011$/);
+  await expect(panel.getByText(/no retail box/)).toHaveCount(0);
+  await shoot(panel, 'detail-bulk-soldas', 1100, true);
 });

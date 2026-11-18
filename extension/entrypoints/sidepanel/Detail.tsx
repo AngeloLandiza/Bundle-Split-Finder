@@ -131,12 +131,12 @@ const isWebLink = (link: string | null): link is string => link !== null && /^ht
  * one (the figure the estimate counts); a reference price says so and that it is not counted. A price with a
  * link opens its page in a new tab.
  */
-function Prices({ model, prices }: { model: string; prices: PriceOption[] }) {
+function Prices({ model, prices, bulk }: { model: string; prices: PriceOption[]; bulk: boolean }) {
   if (prices.length === 0) return null;
   return (
     <dl className="detail-prices" role="group" aria-label={`Prices for ${model}`}>
       {prices.map((o, i) => {
-        const label = priceLabel(o);
+        const label = priceLabel(o, bulk);
         return (
           <div key={`${o.kind}:${i}`} className="detail-price" data-kind={o.kind} data-featured={o.kind === 'amazon_new' ? 'true' : undefined} data-reference={o.reference ? 'true' : undefined}>
             <dt>
@@ -235,7 +235,7 @@ export function Part({ part, row, fees, verify, now }: PartProps) {
           />
         ) : null}
       </div>
-      <Prices model={part.model} prices={part.prices} />
+      <Prices model={part.model} prices={part.prices} bulk={part.packaging === 'bulk'} />
     </li>
   );
 }

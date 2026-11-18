@@ -123,10 +123,15 @@ test('a refused page does not stop the scan, and its bundle is left unread', asy
 // Step 9: after the bundle pages are read and split, the scan asks the part price reader (extension/lib/hdReader.ts)
 // for the parts it has split: Home Depot's own /s/<model> search in the same background tab, then the product page.
 // No search is spent on it. The replay server's search pages are synthetic (part-search-2026-11-18.json): a model it
-// has no entry for shows an unrelated product, so that part is read as not found.
+// has no entry for shows an unrelated product, so that part is read as not found. A reading is saved in its own store
+// (partPrices), never on a catalog entry.
 interface StoredPart {
   key: string;
-  hdPrice?: { itemId: string | null; price: number | null; link: string | null; readAt: number };
+  itemId: string | null;
+  matchedModel: string | null;
+  price: number | null;
+  link: string | null;
+  seenAt: number;
 }
 
 function storedCatalog(worker: Worker): Promise<StoredPart[]> {
@@ -136,7 +141,7 @@ function storedCatalog(worker: Worker): Promise<StoredPart[]> {
         const open = indexedDB.open('split-finder');
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {
-          const all = open.result.transaction('catalog').objectStore('catalog').getAll();
+          const all = open.result.transaction('partPrices').objectStore('partPrices').getAll();
           all.onerror = () => reject(all.error);
           all.onsuccess = () => resolve(all.result as StoredPart[]);
         };
@@ -156,15 +161,15 @@ test("a scan reads each split part's Home Depot price from the search pages, sav
   const searched = [...new Set(server.searchPageRequests.map((m) => m.toUpperCase()))];
   expect(searched).toEqual(expect.arrayContaining(['DCF921B', 'DCK200D1P1']));
   // The replay's search pages hold DCF921B, DCK540D1 and DCS334B (invented prices); DCK200D1P1 and the other models are
-  // not found, and a part not found with no catalog entry saves nothing.
-  const saved = (await storedCatalog(worker)).filter((c) => c.hdPrice !== undefined);
-  expect(saved.map((c) => [c.key, c.hdPrice!.itemId, c.hdPrice!.price])).toEqual([
-    ['DEWALT:DCF921B', '399000008', 199],
-    ['DEWALT:DCK540D1', '399000009', 479],
-    ['DEWALT:DCS334B', '399000010', 169],
+  // not found, which is saved as a check with no price.
+  const saved = (await storedCatalog(worker)).filter((c) => c.price !== null);
+  expect(saved.map((c) => [c.key, c.itemId, c.matchedModel, c.price])).toEqual([
+    ['DEWALT:DCF921B', '399000008', 'DCF921B', 199],
+    ['DEWALT:DCK540D1', '399000009', 'DCK540D1', 479],
+    ['DEWALT:DCS334B', '399000010', 'DCS334B', 169],
   ]);
-  expect(saved[0]!.hdPrice!.link).toMatch(/\/p\/DEWALT-.*-DCF921B\/399000008$/);
-  expect(typeof saved[0]!.hdPrice!.readAt).toBe('number');
+  expect(saved[0]!.link).toMatch(/\/p\/DEWALT-.*-DCF921B\/399000008$/);
+  expect(typeof saved[0]!.seenAt).toBe('number');
   // A reading never goes to SerpApi: no /search.json request names a Home Depot search page.
   expect(server.searches.some((s) => s.includes('/s/'))).toBe(false);
   expect(await strayTabs(worker)).toEqual(before);

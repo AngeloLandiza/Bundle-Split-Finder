@@ -98,6 +98,19 @@ describe('a New listing in bulk packaging may be chosen', () => {
     expect(pick({ brand: 'RYOBI', model: 'P102' }, [retail, { ...bulk, price: null }]).chosen?.asin).toBe('RETAIL-P102');
   });
 
+  it('no retail listing at all: the bulk listing that shows a price is chosen over a better-ranked one that shows none', () => {
+    // Hand-made from the recorded bulk row: the first has more reviews (ranks first) but shows no price.
+    const noPrice = { ...bulk, asin: 'BULK-NO-PRICE', price: null, reviews: (bulk.reviews ?? 0) + 100 };
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [noPrice, bulk]).chosen?.asin).toBe('B00S022L2A');
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [bulk, noPrice]).chosen?.asin).toBe('B00S022L2A');
+    // None shows a price: the best-ranked one, as before.
+    expect(pick({ brand: 'RYOBI', model: 'P102' }, [noPrice, { ...bulk, price: null }]).chosen?.asin).toBe('BULK-NO-PRICE');
+  });
+
+  it('packaging does not change the grade, but a pack of a battery stays rejected even when it says bulk', () => {
+    expect(grade({ brand: 'RYOBI', model: 'P102' }, { ...bulk, title: `${bulk.title} 2-Pack` })).toMatchObject({ grade: 'reject', packaging: 'bulk' });
+  });
+
   it('grade comes first: packaging is not identity, so a better-graded bulk listing beats a retail one', () => {
     // Hand-made: the bulk row with a manufacturer part number, as a detail page shows it.
     const strongBulk = { ...bulk, partNumber: 'P102' };

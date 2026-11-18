@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { replayRecorded } from '../../scripts/replay';
 import { bundlesCsv, RUN_COLUMNS } from '../src/scan/csv';
-import { listingFrom } from '../src/scan/listings';
 import { MemoryScanStore } from '../src/scan/memoryStore';
-import { runPaid } from '../src/scan/paid';
 import { buildReport } from '../src/scan/report';
 import { runScan, savePrice } from '../src/scan/runner';
 import { bundleKey, DEFAULT_SCAN_SETTINGS, partKey, type PartPriceReading, type ReadPartPrices, type ScanSettings } from '../src/scan/types';
@@ -22,8 +20,8 @@ const RATCHET: ScanSettings = { ...DEFAULT_SCAN_SETTINGS, catalogPagesPerScan: 0
 const FOUNDER = bundleKey('328814689');
 
 const HD: Record<string, Omit<PartPriceReading, 'brand' | 'model'>> = {
-  'RYOBI:PBLRC25B': { itemId: '320222321', price: 99, title: 'Ratchet 3/8 (Tool Only)', link: 'https://www.homedepot.com/p/320222321' },
-  'RYOBI:PBLRC01B': { itemId: '320222322', price: 89, title: 'Ratchet 1/4 (Tool Only)', link: 'https://www.homedepot.com/p/320222322' },
+  'RYOBI:PBLRC25B': { status: 'found', matchedModel: 'PBLRC25B', itemId: '320222321', price: 99, title: 'Ratchet 3/8 (Tool Only)', link: 'https://www.homedepot.com/p/320222321' },
+  'RYOBI:PBLRC01B': { status: 'found', matchedModel: 'PBLRC01B', itemId: '320222322', price: 89, title: 'Ratchet 1/4 (Tool Only)', link: 'https://www.homedepot.com/p/320222322' },
 };
 const reader =
   (prices: typeof HD): ReadPartPrices =>
@@ -59,14 +57,12 @@ describe('CSV: roi_lowest, roi_amazon_new, roi_highest, hd_price_total', () => {
 
   it("writes the range's three ROIs and the sum of the parts' Home Depot prices", async () => {
     const w = await world(reader(HD));
-    // Verify reads PBLRC01B's Buy Box ($160); a later search row shows $146.94 again: the two ends now differ.
+    // A Buy Box read after PBLRC01B's last featured price ($146.94) counts: here $160, so the two ends now differ.
     w.clock = T0 + MINUTE;
-    const { budget, client } = w.clientFor();
-    await runPaid({ client, budget, store: w.store, now: () => w.clock, settings: RATCHET }, { kind: 'verify', brand: 'RYOBI', model: 'PBLRC01B', asin: 'B0B6Z2ZGVK' });
-    w.clock = T0 + 2 * MINUTE;
     const row = parseAmazonSearch(recorded('amazon-search-PBLRC01B')).find((c) => c.asin === 'B0B6Z2ZGVK')!;
     await savePrice({ store: w.store }, 'B0B6Z2ZGVK', row, w.clock);
-    await w.store.putListing(listingFrom(row, RATCHET.brands, w.clock, await w.store.getListing('B0B6Z2ZGVK'))!);
+    const listing = (await w.store.getListing('B0B6Z2ZGVK'))!;
+    await w.store.putListing({ ...listing, buyBox: { price: 160, soldBy: 'ArcianCo', shipsFrom: 'Amazon', seenAt: T0 + 2 * MINUTE } });
 
     const founder = await founderOf(w.store);
     const csv = bundlesCsv([founder]);

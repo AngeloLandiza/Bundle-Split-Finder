@@ -1,5 +1,5 @@
 {
-  "about": "SYNTHETIC, for the replay server only (e2e/replay-server.ts), not a recording. Home Depot's own search /s/<MODEL> and the product pages it leads to, as the part price reader (extension/lib/hdReader.ts, createPartPriceReader) sees them. Built from shapes seen in the owner's browser: a product link is /p/<slug>-<MODEL>/<9-digit item id>, and a product page holds base-catalog-<itemId> with identifiers (brandName, modelNumber, productLabel) and a pricing({...}) key whose value is the price (see pricing-2026-11-17.json). The item ids and slugs below are INVENTED, except 341645081, the recorded RYOBI PCL1600K2-PBP004 kit page in pages-2026-11-10.json. Prices: PCL265B 99, PBP004 129 and PCG002 34.97 are the Home Depot prices of Nov 18 quoted in docs/superpowers/plans/2026-11-18-step-9-find-profit.md; the others are invented. Cases: PCG002 and DCD791B are found exactly; PCL206 is written without RYOBI's tool-only B and found as PCL206B; PBP004's first link ends with its model but is the kit (its page says PCL1600K2-PBP004), so it is rejected; PCL999 has no link ending with it. DCF921B (a part of the recorded bundle 337440459, scanned in e2e/scan.spec.ts) is found with the invented price 199.00. DCK540D1 and DCS334B (the parts of the recorded bundle 343992133, which e2e/panel-prices.spec.ts shows in Deals and Detail) are found with the invented prices 479.00 and 169.00.",
+  "about": "SYNTHETIC, for the replay server only (e2e/replay-server.ts), not a recording. Home Depot's own search /s/<MODEL> and the product pages it leads to, as the part price reader (extension/lib/hdReader.ts, createPartPriceReader) sees them. Built from shapes seen in the owner's browser: a product link is /p/<slug>-<MODEL>/<9-digit item id>, and a product page holds base-catalog-<itemId> with identifiers (brandName, modelNumber, productLabel) and a pricing({...}) key whose value is the price (see pricing-2026-11-17.json). The item ids and slugs below are INVENTED, except 341645081, the recorded RYOBI PCL1600K2-PBP004 kit page in pages-2026-11-10.json. Prices: PCL265B 99, PBP004 129 and PCG002 34.97 are the Home Depot prices of Nov 18 quoted in docs/superpowers/plans/2026-11-18-step-9-find-profit.md; the others are invented. Cases: PCG002 and DCD791B are found exactly; PCL206 is written without RYOBI's tool-only B and found as PCL206B; PBP004's first link ends with its model but is the kit (its page says PCL1600K2-PBP004), so it is rejected; PCL999 has no link ending with it. DCF921B (a part of the recorded bundle 337440459, scanned in e2e/scan.spec.ts) is found with the invented price 199.00. DCK540D1 and DCS334B (the parts of the recorded bundle 343992133, which e2e/panel-prices.spec.ts shows in Deals and Detail) are found with the invented prices 479.00 and 169.00. PCL515B (a part of the recorded bundle 324903619) is found only as its twin: the one link ends with PCL515 and its page names PCL515, so the part is shown as sold alone as PCL515 (invented price 79.00).",
   "searches": {
     "PCL265B": [
       "/p/RYOBI-ONE-18V-Cordless-Brushless-1-2-in-Impact-Wrench-Tool-Only-PCL265B/399000001"
@@ -27,6 +27,9 @@
     "DCK540D1": [
       "/p/DEWALT-20V-MAX-Cordless-Brushless-5-Tool-Combo-Kit-with-2-2-0-Ah-Batteries-Charger-and-Bag-DCK540D1/399000009"
     ],
+    "PCL515B": [
+      "/p/RYOBI-ONE-18V-Cordless-Reciprocating-Saw-Tool-Only-PCL515/399000011"
+    ],
     "DCS334B": [
       "/p/DEWALT-20V-MAX-XR-Brushless-Cordless-Jig-Saw-Tool-Only-DCS334B/399000010"
     ]
@@ -41,6 +44,7 @@
     { "itemId": "399000007", "brand": "RYOBI", "model": "PCL999K1", "title": "ONE+ 18V Cordless Jig Saw Kit", "price": 119 },
     { "itemId": "399000008", "brand": "DEWALT", "model": "DCF921B", "title": "20V MAX XR Brushless Cordless 1/2 in. Impact Wrench (Tool Only)", "price": 199 },
     { "itemId": "399000009", "brand": "DEWALT", "model": "DCK540D1", "title": "20V MAX Cordless Brushless 5-Tool Combo Kit with (2) 2.0 Ah Batteries, Charger and Bag", "price": 479 },
-    { "itemId": "399000010", "brand": "DEWALT", "model": "DCS334B", "title": "20V MAX XR Brushless Cordless Jig Saw (Tool Only)", "price": 169 }
+    { "itemId": "399000010", "brand": "DEWALT", "model": "DCS334B", "title": "20V MAX XR Brushless Cordless Jig Saw (Tool Only)", "price": 169 },
+    { "itemId": "399000011", "brand": "RYOBI", "model": "PCL515", "title": "ONE+ 18V Cordless Reciprocating Saw (Tool Only)", "price": 79 }
   ]
 }

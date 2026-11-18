@@ -41,7 +41,11 @@ const MAYBE_SPARE_PART = /\b(OEM|replacement)\b/i;
 // brackets, "(Bulk)". "Bulk Pack", "Bulk 25-Pack" or "Bulk Pack of 10" say a quantity, which the pack
 // rules (MULTI) read; they are not packaging.
 const BULK = /\bbulk[\s-]+pack(?:ed|aged|aging)\b|\bnon?[\s-]*retail[\s-]+packag|\bre-?packaged\b|\(\s*bulk\s*\)/i;
-/** The title says the listing is New in bulk or non-retail packaging, or repackaged (BULK). Packaging is not identity: never a grade. */
+/**
+ * The title says the listing is New in bulk or non-retail packaging, or repackaged (BULK). The words are not
+ * identity and never raise or lower a grade by themselves; a pack of n (a RYOBI bulk battery 2-pack) is still
+ * rejected by the pack rules, bulk or not.
+ */
 export const isBulkPackaging = (title: string): boolean => BULK.test(title);
 // "2Pk" too (fix round 1): "18V LED Light, PCL660 2Pk - Bulk Packaged" (B0CRSVC28P).
 const MULTI = /\b(\d+)\s*-?\s*pack\b|\bpack of (\d+)\b|\bset of (\d+)\b|\b(\d+)\s*-?\s*pk\b/i;
@@ -181,7 +185,7 @@ export interface Candidate {
 export interface Graded {
   asin: string;
   grade: Grade;
-  /** "bulk" when the listing's title says bulk or non-retail packaging, or repackaged (isBulkPackaging). Never part of the grade. */
+  /** "bulk" when the listing's title says bulk or non-retail packaging, or repackaged (isBulkPackaging). The label is not part of the grade; the pack rules still apply to a bulk title. */
   packaging: 'retail' | 'bulk';
   reasons: string[];
 }
@@ -329,7 +333,7 @@ export interface Picked {
 /**
  * Choose one listing per component: best grade first, then organic before sponsored, then most reviews.
  * A New listing in bulk packaging may be chosen (PO, Nov 18); packaging is not identity, so it never
- * outranks a better grade. Among listings of the best grade a retail-boxed one is chosen, unless no
+ * outranks a better grade. With no retail-boxed listing, the bulk one that shows a price is chosen over one that does not. Among listings of the best grade a retail-boxed one is chosen, unless no
  * retail-boxed one shows a price (is active) and a bulk one does: then the best bulk one that shows a
  * price. Alternatives share the chosen listing's grade and packaging.
  */
@@ -351,7 +355,7 @@ export function pick(want: Wanted, candidates: Candidate[]): Picked {
   const active = (g: Graded) => byAsin.get(g.asin)!.price != null;
   const retail = best.filter((g) => g.packaging === 'retail');
   const bulk = best.filter((g) => g.packaging === 'bulk');
-  const chosen = retail.length === 0 ? (bulk[0] ?? null) : !retail.some(active) && bulk.some(active) ? bulk.find(active)! : retail[0]!;
+  const chosen = retail.length === 0 ? (bulk.find(active) ?? bulk[0] ?? null) : !retail.some(active) && bulk.some(active) ? bulk.find(active)! : retail[0]!;
   return {
     chosen,
     alternatives: best.filter((g) => chosen && g !== chosen && g.packaging === chosen.packaging),

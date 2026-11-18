@@ -84,13 +84,12 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     expect(screen.getAllByText('Shown above')).toHaveLength(1);
   });
 
-  it('says what each leaves: nothing, or the count and the items, and the loose note only on the split', async () => {
+  it('says what each leaves: nothing, or the count and the items, and no note about a retail box (the PO sells loose kit tools as New)', async () => {
     await openP553();
     const [whole, split] = blocks();
     expect(within(whole!).getByText('Leaves nothing')).toBeInTheDocument();
     expect(within(split!).getByText(`Leaves ${UNNAMED.length} parts: ${UNNAMED.join(', ')}`)).toBeInTheDocument();
-    expect(within(whole!).queryByText('Parts from a kit have no retail box of their own.')).toBeNull();
-    expect(within(split!).getByText('Parts from a kit have no retail box of their own.')).toBeInTheDocument();
+    expect(screen.queryByText(/no retail box/)).toBeNull();
   });
 
   it("has no figure for either way yet, and offers Look up N parts with the worker's own quote", async () => {

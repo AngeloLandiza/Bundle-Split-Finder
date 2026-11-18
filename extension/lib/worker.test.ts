@@ -5,7 +5,7 @@ import * as fx from '../../core/test/fixtures';
 import { reviewSignature } from '@core/scan/answers';
 import { MemoryScanStore } from '@core/scan/memoryStore';
 import { buildReport } from '@core/scan/report';
-import type { BundleRow, PageOutcome, PaidAction, Quote, ReadPages, ReadPartPrices, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
+import type { BundleRow, PageOutcome, PaidAction, PartPriceReading, Quote, ReadPages, ReadPartPrices, ReviewAnswer, ScanJob, ScanStore } from '@core/scan/types';
 import { parseAccount } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, MemoryCache, NETWORK_ERROR_PREFIX } from '@core/serpapi/client';
 import { noticeSentence } from '../entrypoints/sidepanel/Notice';
@@ -413,7 +413,7 @@ describe('worker: reading Home Depot prices of parts', () => {
     const asked: { brand: string; model: string }[][] = [];
     const readPartPrices: ReadPartPrices = async (parts) => {
       asked.push(parts);
-      return parts.map((p) => ({ ...p, itemId: null, price: null, title: null, link: null }));
+      return parts.map((p): PartPriceReading => ({ ...p, status: 'not_found', matchedModel: null, itemId: null, price: null, title: null, link: null }));
     };
     const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR, readPartPrices });
     await w.worker.onTick();

@@ -575,6 +575,33 @@ describe("a part's prices", () => {
     expect(lines(showPart([option('amazon_buybox', 160)]))[0]![0]).toBe('Amazon · New · Buy Box');
   });
 
+  it('says bulk packaging on the Amazon New price of a part whose listing is in bulk packaging, and on that listing\'s Buy Box', () => {
+    const group = showPart([option('amazon_buybox', 160, { seller: 'ArcianCo', shipsFrom: 'Amazon' }), option('amazon_new', 146.94)], { packaging: 'bulk' });
+    expect(lines(group).map((l) => l[0])).toEqual(['Amazon · New · Buy Box · bulk packaging · sold by ArcianCo, ships from Amazon', 'Amazon · New · bulk packaging']);
+    cleanup();
+    // A retail-boxed listing says nothing of packaging.
+    expect(lines(showPart([option('amazon_new', 146.94)]))[0]![0]).toBe('Amazon · New');
+  });
+
+  it("says which model Home Depot sells alone when it is the part's RYOBI twin", () => {
+    const group = showPart([option('homedepot', 59, { seller: 'Home Depot', soldAs: 'PCL206B', reference: true, link: 'https://www.homedepot.com/p/399000003' })]);
+    expect(lines(group)[0]).toEqual(['Home Depot · sold alone as PCL206B · referencenot counted', '$59.00']);
+    expect(within(group).getByRole('link', { name: 'Home Depot · sold alone as PCL206B · reference' })).toHaveAttribute('href', 'https://www.homedepot.com/p/399000003');
+  });
+
+  it("labels a one-seller page's only offer, naming the seller once", () => {
+    const group = showPart([option('amazon_buybox', 169, { seller: 'thedealvalley', shipsFrom: 'thedealvalley', singleOffer: true })]);
+    expect(lines(group)[0]![0]).toBe('Amazon · New · only offer · sold by thedealvalley');
+  });
+
+  it('labels a Buy Box older than the featured price as a reference that is not counted', () => {
+    const group = showPart([option('amazon_buybox', 160, { seller: 'ArcianCo', shipsFrom: 'Amazon', reference: true })]);
+    expect(lines(group)[0]).toEqual(['Amazon · New · Buy Box (older) · sold by ArcianCo, ships from Amazon · referencenot counted', '$160.00']);
+    expect(group.querySelector('.detail-price')).toHaveAttribute('data-reference', 'true');
+    cleanup();
+    expect(lines(showPart([option('amazon_buybox', 160, { reference: true })]))[0]![0]).toBe('Amazon · New · Buy Box (older) · referencenot counted');
+  });
+
   it('shows no price list for a part with no price, and never a Renewed or used price', () => {
     show(row({ parts: [part('A1', { price: null, prices: [] })] }));
     expect(screen.queryByRole('group', { name: /^Prices for/ })).toBeNull();

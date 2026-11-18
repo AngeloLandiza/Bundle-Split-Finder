@@ -148,19 +148,28 @@ export function roiRangeText(estimate: BundleResult | null, range: PriceRange): 
 /** What the range's ends stand for, for a hover or a line of help. */
 export const RANGE_MEANING = 'Estimated ROI from the lowest to the highest counted price of its parts, from your fee settings. Reference prices are not counted.';
 
-/** A price's label as the panel writes it, without the "reference" note: "Amazon · New · Buy Box · sold by X, ships from Amazon". */
-export function priceLabel(o: PriceOption): string {
+/**
+ * A price's label as the panel writes it, without the "not counted" note. `bulk`: the part's listing is New in
+ * bulk packaging (PartRow.packaging), said on that listing's prices.
+ * "Amazon · New", "Amazon · New · bulk packaging", "Amazon · New · Buy Box · sold by X, ships from Amazon",
+ * "Amazon · New · only offer · sold by X", "Amazon · New · Buy Box (older) · reference", "Amazon list price · reference",
+ * "Home Depot · sold alone · reference", "Home Depot · sold alone as PCL206B · reference".
+ */
+export function priceLabel(o: PriceOption, bulk = false): string {
+  const packaging = bulk ? ['bulk packaging'] : [];
   switch (o.kind) {
     case 'amazon_new':
-      return 'Amazon · New';
+      return ['Amazon · New', ...packaging].join(' · ');
     case 'amazon_buybox': {
+      if (o.singleOffer) return ['Amazon · New', 'only offer', ...packaging, ...(o.seller ? [`sold by ${o.seller}`] : [])].join(' · ');
       const who = [o.seller ? `sold by ${o.seller}` : null, o.shipsFrom ? `ships from ${o.shipsFrom}` : null].filter((x) => x !== null);
-      return ['Amazon · New · Buy Box', ...(who.length > 0 ? [who.join(', ')] : [])].join(' · ');
+      // An older Buy Box is shown for reference: it can have changed since the featured price was seen.
+      return ['Amazon · New', o.reference ? 'Buy Box (older)' : 'Buy Box', ...packaging, ...(who.length > 0 ? [who.join(', ')] : []), ...(o.reference ? ['reference'] : [])].join(' · ');
     }
     case 'amazon_list':
       return 'Amazon list price · reference';
     case 'homedepot':
-      return 'Home Depot · sold alone · reference';
+      return `Home Depot · sold alone${o.soldAs ? ` as ${o.soldAs}` : ''} · reference`;
     case 'ebay_sold_new':
       return `eBay · sold New${o.reference ? ' · reference' : ''}`;
   }
