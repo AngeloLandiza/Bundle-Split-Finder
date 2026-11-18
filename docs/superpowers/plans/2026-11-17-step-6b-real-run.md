@@ -78,3 +78,15 @@
 ### Task 5 (controller): merge, docs, QA, real-browser proof
 
 - Cherry-pick the four after the controller's own typecheck, test and e2e. Rulings 75, 76 and the Task 2–4 decisions into `docs/decisions.md`. A QA walkthrough by a subagent on the replay, ui-reviewer on the new screens, then the owner reloads the extension and scans once in his Chrome.
+
+## Where this stands (2026-11-17)
+
+Built and merged on `step-6b-real-run`, not yet on main. Controller's gate on the merged branch: typecheck clean, 721 core and 563 extension tests, 38 of 38 end-to-end.
+
+- Task 1 (Opus): Rulings 75 and 76, with counts; two fix rounds; Opus review and an independent re-check.
+- Task 2 (Sonnet): the reader's settle wait and the refusal's HTTP status; Sonnet review.
+- Task 3 (Sonnet): Accept all; Opus review, UI review, one fix round, independent re-check.
+- Task 4 (Sonnet): Download CSV; Sonnet review, UI review, one fix round checked by the controller.
+- QA walkthrough (Opus): all six flows pass; its Major (no source link in Accept all rows) and the whole-branch review's Important (page readings bulk-accepted) fixed in one final round (Sonnet), reviewed by Opus and the UI reviewer.
+
+Open: the real-browser check in the owner's Chrome (reload, scan, Accept all, Download CSV). Whether the settle wait cures the cold-start refusal is unproven until a refusal is seen with its status, or not seen again.
