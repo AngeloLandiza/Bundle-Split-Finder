@@ -14,9 +14,9 @@
     "splitInReview": 0,
     "parts": 150,
     "byGrade": {
-      "none": 56,
+      "none": 52,
       "probable": 78,
-      "review": 16
+      "review": 20
     },
     "notLookedUp": 0
   },
@@ -1516,7 +1516,7 @@
             "whole",
             "split:PCL1600K2"
           ],
-          "status": "none",
+          "status": "review",
           "asin": null,
           "grade": null,
           "listingTitle": null,
@@ -5972,7 +5972,7 @@
             "whole",
             "split:PCL1600K2"
           ],
-          "status": "none",
+          "status": "review",
           "asin": null,
           "grade": null,
           "listingTitle": null,
@@ -21620,7 +21620,7 @@
           "options": [
             "whole"
           ],
-          "status": "none",
+          "status": "review",
           "asin": null,
           "grade": null,
           "listingTitle": null,
@@ -22706,7 +22706,7 @@
           "options": [
             "whole"
           ],
-          "status": "none",
+          "status": "review",
           "asin": null,
           "grade": null,
           "listingTitle": null,
@@ -33805,6 +33805,13 @@
   ],
   "reviewQueue": [
     {
+      "id": "match:RYOBI:A986501",
+      "kind": "match",
+      "brand": "RYOBI",
+      "model": "A986501",
+      "reason": "title says kit, and a RYOBI model number does not say whether the part is itself a kit"
+    },
+    {
       "id": "match:RYOBI:P553",
       "kind": "match",
       "brand": "RYOBI",
@@ -33816,7 +33823,21 @@
       "kind": "match",
       "brand": "RYOBI",
       "model": "PBP004",
-      "reason": "1 listing(s) show the model number, but the brand is not confirmed"
+      "reason": "title begins TTI Ryobi (TTI makes RYOBI), brand field empty"
+    },
+    {
+      "id": "match:RYOBI:PBP2003",
+      "kind": "match",
+      "brand": "RYOBI",
+      "model": "PBP2003",
+      "reason": "title says a pack of 2, and a RYOBI model number does not say the part's pack size"
+    },
+    {
+      "id": "match:RYOBI:PCL265B",
+      "kind": "match",
+      "brand": "RYOBI",
+      "model": "PCL265B",
+      "reason": "title names a battery or charger only as not included"
     },
     {
       "id": "match:RYOBI:PCL406B",

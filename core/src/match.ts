@@ -37,11 +37,38 @@ const BULK = /(bulk packaged|non-retail packag|no retail packag)/i;
 // "2Pk" too (fix round 1): "18V LED Light, PCL660 2Pk - Bulk Packaged" (B0CRSVC28P).
 const MULTI = /\b(\d+)\s*-?\s*pack\b|\bpack of (\d+)\b|\bset of (\d+)\b|\b(\d+)\s*-?\s*pk\b/i;
 const KIT_WORDS = /\b(kit|combo|bundle|with battery|with charger|w\/ battery|and charger)\b/i;
+// What says a listing carries more than a tool: a combo or bundle, or any battery, charger or amp-hours
+// ("Inflator Kit with 4Ah Battery", B0DY31QJ4Q). A title that says "kit" with none of these may be a kit
+// that is itself the part (A986501, a 65-piece accessory kit).
+const KIT_CONTENTS = /\b(combo|bundle|batter(?:y|ies)|chargers?|\d+(?:\.\d+)?\s*ah)\b/i;
+// Step 8b: "Battery and Charger NOT Included" (B0BL8BC8MF, PSBDD01, P2900B) says the opposite of a
+// kit. Only the battery and charger the phrase names are taken out; any other kit word still counts.
+const NOT_INCLUDED_PHRASE = /\b(?:batter(?:y|ies)|charger)(?:\s*(?:,|and|&|or)\s*(?:batter(?:y|ies)|charger))*\s+(?:(?:is|are)\s+)?not\s+included\b/gi;
+// Step 8b: a third-party title says what it is for. Never a reason to lift a reject.
+const FOR_BRAND = /\bfor\s+(ryobi|dewalt)\b/i;
+// Step 8b: TTI makes RYOBI; "TTI Ryobi PBP004 …" (B09HDZ5MPV) states the brand with no brand field.
+const MAKER_PREFIX: Record<string, RegExp> = { RYOBI: /^\s*TTI\s+RYOBI\b/i };
 
 export type Grade = 'exact' | 'strong' | 'probable' | 'review' | 'reject';
 
 /** The reason a listing showing the model is review when nothing confirms its brand. */
 export const BRAND_NOT_CONFIRMED = 'model number in the title, brand not confirmed';
+
+// Step 8b: the four reasons a title that the rules below used to reject is review instead. Each caps
+// the grade at review: the owner confirms the listing (CLAUDE.md rule 4). A match question repeats
+// them as its notes (scan/runner.ts matchQuestion), so none contains "; ", which joins notes.
+/** The title begins with the brand's maker ("TTI Ryobi") and the brand field is empty. */
+export const BRAND_IN_TITLE_ONLY = 'title begins TTI Ryobi (TTI makes RYOBI), brand field empty';
+/** The title's only kit words are a battery or charger it says are not included. */
+export const NOT_INCLUDED = 'title names a battery or charger only as not included';
+/** A RYOBI title that says "kit" and nothing more: the part may itself be a kit or an accessory set. */
+export const KIT_NOT_KNOWN = 'title says kit, and a RYOBI model number does not say whether the part is itself a kit';
+/** A RYOBI title that says a pack of n: the part may itself be the pack. */
+export const packNotKnown = (n: number): string => `title says a pack of ${n}, and a RYOBI model number does not say the part's pack size`;
+const PACK_NOT_KNOWN = /^title says a pack of \d+, and a RYOBI model number does not say the part's pack size$/;
+/** Whether a grade reason is one of the four above. */
+export const isReviewCap = (reason: string): boolean =>
+  reason === BRAND_IN_TITLE_ONLY || reason === NOT_INCLUDED || reason === KIT_NOT_KNOWN || PACK_NOT_KNOWN.test(reason);
 
 export interface Candidate {
   asin: string;
@@ -132,33 +159,52 @@ export function grade(want: Wanted, cand: Candidate): Graded {
   if (!upcOk && OEM_PART_NUMBER.test(cand.title) && PART_NAME.test(cand.title)) return out('reject', 'spare part');
   if (RENEWED.test(cand.title)) return out('reject', 'renewed or used listing');
 
+  const partOk = !!cand.partNumber && clean(cand.partNumber) === clean(want.model);
+  // Ruling 70: a RYOBI part written without its tool-only B (PCL206) is its Amazon listing's PCL206B.
+  const titleOk = titleHasModel(want.brand, cand.title, want.model);
+  const brandField = !!cand.brand && cand.brand.trim().toUpperCase() === brand;
+  const brandPrefix = cand.title.trim().toUpperCase().startsWith(brand);
+  const makerPrefix = !cand.brand && !brandPrefix && (MAKER_PREFIX[brand]?.test(cand.title) ?? false);
+  // Step 8b: a RYOBI title with the brand stated and the model as a whole token, not "for Ryobi". RYOBI's
+  // model numbers do not say whether a part is a pack or a kit (PBP2003 is a 2-pack, A986501 a 65-piece
+  // kit, PCL265B a tool), so a pack or a bare "kit" in such a title is a question, not a reject.
+  const ryobiOwn = brand === 'RYOBI' && titleOk && (brandField || brandPrefix || makerPrefix) && !FOR_BRAND.test(cand.title);
+  // Set when a rule below would have rejected the title but cannot know: the grade is review at most.
+  let cap: string | null = null;
+
   let qty = cand.packageQty ?? null;
   const multi = MULTI.exec(cand.title);
   if (multi) qty = Number(multi[1] ?? multi[2] ?? multi[3] ?? multi[4]);
   const wantQty = want.packQty ?? 1;
-  if (qty && qty !== wantQty) return out('reject', `pack of ${qty}, component is a pack of ${wantQty}`);
-
-  const partOk = !!cand.partNumber && clean(cand.partNumber) === clean(want.model);
-  // Ruling 70: a RYOBI part written without its tool-only B (PCL206) is its Amazon listing's PCL206B.
-  const titleOk = titleHasModel(want.brand, cand.title, want.model);
+  if (qty && qty !== wantQty) {
+    // DEWALT writes a pack in its model (DCB205-2, wantedFor sets packQty). A RYOBI model with the
+    // tool-only B (PBLRC25B) is one bare tool, so its pack stays rejected; so does a bulk pack.
+    const toolOnly = want.model.trim().toUpperCase().endsWith('B');
+    if (want.packQty === undefined && ryobiOwn && !toolOnly && packaging === 'retail') cap = packNotKnown(qty);
+    else return out('reject', `pack of ${qty}, component is a pack of ${wantQty}`);
+  }
 
   if (!want.isKit && KIT_WORDS.test(cand.title) && !partOk) {
-    return out('reject', 'listing is a kit, component is a single item');
+    const rest = cand.title.replace(NOT_INCLUDED_PHRASE, ' ');
+    if (!KIT_WORDS.test(rest) && !FOR_BRAND.test(cand.title)) cap ??= NOT_INCLUDED;
+    else if (ryobiOwn && !KIT_CONTENTS.test(rest)) cap ??= KIT_NOT_KNOWN;
+    else return out('reject', 'listing is a kit, component is a single item');
   }
 
-  if (upcOk) return out('exact', 'barcode match', ...(partOk || titleOk ? ['model number match'] : []));
-  if (partOk) return out('strong', 'manufacturer part number match');
-  if (titleOk) {
-    const brandConfirmed =
-      (!!cand.brand && cand.brand.trim().toUpperCase() === brand) ||
-      cand.title.trim().toUpperCase().startsWith(brand);
-    if (!brandConfirmed) return out('review', BRAND_NOT_CONFIRMED);
-    if (MAYBE_SPARE_PART.test(cand.title)) {
-      return out('review', 'brand and model number in the title, but the title may name a spare part (OEM or Replacement)');
+  const graded = ((): Graded => {
+    if (upcOk) return out('exact', 'barcode match', ...(partOk || titleOk ? ['model number match'] : []));
+    if (partOk) return out('strong', 'manufacturer part number match');
+    if (titleOk) {
+      if (makerPrefix) return out('review', BRAND_IN_TITLE_ONLY);
+      if (!brandField && !brandPrefix) return out('review', BRAND_NOT_CONFIRMED);
+      if (MAYBE_SPARE_PART.test(cand.title)) {
+        return out('review', 'brand and model number in the title, but the title may name a spare part (OEM or Replacement)');
+      }
+      return out('probable', 'brand and model number in the title; barcode not checked yet');
     }
-    return out('probable', 'brand and model number in the title; barcode not checked yet');
-  }
-  return out('reject', 'no identifier matches');
+    return out('reject', 'no identifier matches');
+  })();
+  return cap && graded.grade !== 'reject' ? out('review', cap, ...graded.reasons) : graded;
 }
 
 const RANK: Record<Grade, number> = { exact: 0, strong: 1, probable: 2, review: 3, reject: 4 };

@@ -12,7 +12,7 @@
 
 import { type Catalog, catalogEntry, type Decomposition } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
-import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, maySparePart, pick, type Picked } from '../match';
+import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, isReviewCap, maySparePart, pick, type Picked } from '../match';
 import { planScan } from '../scanPlan';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
@@ -655,8 +655,9 @@ const GRADE_RANK: Record<Grade, number> = { exact: 0, strong: 1, probable: 2, re
  * Ruling 71: the listings a lookup's match question offers, and its reason. One candidate per ASIN (a
  * search can list the same ASIN twice), best first: grade, then most reviews, then a price shown; then
  * as the response listed them. At most MATCH_CHOICES are kept. The reason's notes, joined by "; ":
- * how many of all the listings show the model with the brand not confirmed; SPARE_PART_NOTE when a
- * listing kept says "Replacement" or "OEM"; and how many were left out.
+ * how many of all the listings show the model with the brand not confirmed; each step 8b reason a listing
+ * kept is review rather than rejected (isReviewCap); SPARE_PART_NOTE when a listing kept says
+ * "Replacement" or "OEM"; and how many were left out.
  */
 export function matchQuestion(review: Graded[], candidates: Candidate[], at: number): { reason: string; listed: ReviewCandidate[] } {
   const all = unique(review.map((g) => g.asin)).map((asin) => {
@@ -673,6 +674,8 @@ export function matchQuestion(review: Graded[], candidates: Candidate[], at: num
   const notes: string[] = [];
   const unconfirmed = all.filter((x) => x.candidate.reasons.includes(BRAND_NOT_CONFIRMED)).length;
   if (unconfirmed > 0) notes.push(`${unconfirmed} listing(s) show the model number, but the brand is not confirmed`);
+  // Step 8b: why a listing shown is review rather than rejected (isReviewCap), once each.
+  for (const cap of unique(listed.flatMap((c) => c.reasons.filter(isReviewCap)))) notes.push(cap);
   if (listed.some((c) => maySparePart(c.title))) notes.push(SPARE_PART_NOTE);
   if (all.length > listed.length) notes.push(`${all.length - listed.length} more listing(s) not shown`);
   return { reason: notes.join('; '), listed };
