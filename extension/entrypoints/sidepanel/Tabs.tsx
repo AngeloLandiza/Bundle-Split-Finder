@@ -1,4 +1,4 @@
-export type TabId = 'deals' | 'review';
+export type TabId = 'deals' | 'this-page' | 'review';
 
 export interface TabsProps {
   active: TabId;
@@ -13,6 +13,9 @@ export function Tabs({ active, dealCount, reviewCount, onChange }: TabsProps) {
     <nav aria-label="Views" className="tabs">
       <button type="button" className="tab" aria-current={current('deals')} onClick={() => onChange('deals')}>
         Deals <span className="count">{dealCount}</span>
+      </button>
+      <button type="button" className="tab" aria-current={current('this-page')} onClick={() => onChange('this-page')}>
+        This page
       </button>
       <button type="button" className="tab" aria-current={current('review')} onClick={() => onChange('review')}>
         Review{' '}

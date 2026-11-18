@@ -117,7 +117,9 @@ describe('side panel shell', () => {
     expect(within(tab('Deals')).getByText('3')).toBeInTheDocument();
     const review = within(tab('Review')).getByText('1');
     expect(review).toHaveAttribute('data-tag', 'attention');
-    expect(screen.queryByRole('button', { name: /This page/ })).toBeNull();
+    // The tabs in the spec's order, and This page carries no count.
+    expect([...document.querySelectorAll('nav[aria-label="Views"] button')].map((b) => b.firstChild!.textContent!.trim())).toEqual(['Deals', 'This page', 'Review']);
+    expect(tab('This page')).toHaveTextContent(/^This page$/);
   });
 
   it('a Review count of zero is plain text, not a tag', async () => {

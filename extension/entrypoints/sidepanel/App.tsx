@@ -11,6 +11,7 @@ import { Notice } from './Notice';
 import { ProgressRow } from './ProgressRow';
 import { ReviewTab } from './ReviewTab';
 import { StatusBar } from './StatusBar';
+import { ThisPageTab, useActiveTab } from './ThisPageTab';
 import { Tabs, type TabId } from './Tabs';
 import { useSort } from './sort';
 import './sidepanel.css';
@@ -31,6 +32,9 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   const [report, setReport] = useState<PanelReport | null>(null);
   const [tab, setTab] = useState<TabId>('deals');
   const [openKey, setOpenKey] = useState<string | null>(null);
+  const activeTab = useActiveTab(api);
+  // The tab Detail was opened from, so Back returns there and says its name.
+  const [openedFrom, setOpenedFrom] = useState<TabId>('deals');
   const [sort, setSort] = useSort();
   const [clock, setClock] = useState(now);
   // Two slots, so a report refresh cannot wipe a refused scan's sentence. The report's is cleared by its next success.
@@ -71,6 +75,29 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
       live = false;
     };
   }, [api, state]);
+
+  // The chip opened the panel on This page: the worker keeps that for the tab until the panel takes it, here when the panel
+  // starts, and again when it hears of a click while already open. The listener is set before the first take.
+  useEffect(() => {
+    const tabs = api.tabs;
+    if (!tabs) return;
+    let live = true;
+    const take = async (known?: number) => {
+      const id = known ?? (await tabs.active())?.id;
+      if (id === undefined) return;
+      const reply = await api.send<boolean>({ type: 'takeShowThisPage', tabId: id });
+      if (live && reply.ok && reply.data === true) {
+        setOpenKey(null);
+        setTab('this-page');
+      }
+    };
+    const stop = tabs.onShowThisPage((id) => void take(id).catch(() => {}));
+    void take().catch(() => {});
+    return () => {
+      live = false;
+      stop();
+    };
+  }, [api]);
 
   useEffect(() => {
     const id = setInterval(() => setClock(now()), 30_000);
@@ -145,7 +172,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   if (openKey !== null) {
     return (
       <div className="panel">
-        <Detail api={api} report={report} state={state} bundleKey={openKey} onBack={() => setOpenKey(null)} onPaidEnd={paidEnded} />
+        <Detail api={api} report={report} state={state} bundleKey={openKey} backLabel={openedFrom === 'this-page' ? 'This page' : 'Deals'} onBack={() => setOpenKey(null)} onPaidEnd={paidEnded} />
       </div>
     );
   }
@@ -171,7 +198,29 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
       <Notice state={state} api={api} error={scanError ?? reportError} />
       <main className="panel-body">
         {tab === 'deals' ? (
-          <DealsTab api={api} report={report} state={state} sort={sort} onSort={setSort} onOpen={setOpenKey} onPaidEnd={paidEnded} />
+          <DealsTab
+            api={api}
+            report={report}
+            state={state}
+            sort={sort}
+            onSort={setSort}
+            onOpen={(key) => {
+              setOpenedFrom('deals');
+              setOpenKey(key);
+            }}
+            onPaidEnd={paidEnded}
+          />
+        ) : tab === 'this-page' ? (
+          <ThisPageTab
+            api={api}
+            report={report}
+            state={state}
+            tab={activeTab}
+            onOpenDetail={(key) => {
+              setOpenedFrom('this-page');
+              setOpenKey(key);
+            }}
+          />
         ) : (
           <ReviewTab api={api} report={report} state={state} />
         )}

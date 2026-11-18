@@ -16,6 +16,7 @@ import { ReviewQuestion } from './ReviewQuestion';
 import { Verify } from './DetailVerify';
 import { KitNotRead, WaysToSell } from './WaysToSell';
 import { usePaidFocus } from './paidFocus';
+import { useCopyAsins } from './useCopyAsins';
 import './Detail.css';
 
 export interface DetailProps {
@@ -24,6 +25,8 @@ export interface DetailProps {
   state: AppState;
   bundleKey: string;
   onBack: () => void;
+  /** What the back button says: the tab Detail was opened from. */
+  backLabel?: string;
   /** Called when a Verify or Look up started here has ended, refused or not. */
   onPaidEnd?: () => void;
 }
@@ -44,11 +47,6 @@ export function feeText(fees: FeeSettings): string {
 /** A part that was looked up and has no listing; one still in review is a question, not a lookup result. */
 function hasNoListing(p: PartRow): boolean {
   return p.availability === 'missing' && p.status !== 'waiting' && p.status !== 'unmatched' && p.status !== 'review';
-}
-
-/** "A", "A and B", "A, B and C". */
-function listOf(items: string[]): string {
-  return items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 }
 
 const ANSWER_LINE = {
@@ -83,7 +81,8 @@ function AnswerLine({ text, className = 'detail-answer', disabled, scanRunning, 
   );
 }
 
-function noEstimate(row: BundleRow): string {
+/** Why a row has no estimate, in a sentence. Detail and the This page tab say it alike. */
+export function noEstimate(row: BundleRow): string {
   if (row.answer?.kind === 'none') return "No estimate: you marked this bundle's parts as not known.";
   if (row.section === 'split' || row.status === 'needs_review') return 'No estimate: what this bundle contains is not known yet.';
   if (row.price === null) return 'No estimate: Home Depot shows no price for this bundle.';
@@ -114,12 +113,9 @@ function Check() {
   );
 }
 
-interface PartProps {
-  now: number;
-  part: PartRow;
-  row: BundleRow;
+/** What Verify needs; a Part given none offers no Verify (the This page tab spends no search). */
+export interface VerifyProps {
   report: PanelReport;
-  fees: FeeSettings;
   api: WorkerApi;
   scanRunning: boolean;
   version: number;
@@ -127,7 +123,16 @@ interface PartProps {
   run: (action: PaidAction, button: HTMLButtonElement | null) => Promise<string | null>;
 }
 
-function Part({ part, row, report, fees, api, scanRunning, version, busy, run, now }: PartProps) {
+export interface PartProps {
+  now: number;
+  part: PartRow;
+  row: BundleRow;
+  fees: FeeSettings;
+  verify?: VerifyProps;
+}
+
+/** One part's block: model, name, price, net, ASIN link and grade. Detail's and This page's. */
+export function Part({ part, row, fees, verify, now }: PartProps) {
   const label = labelOf(part);
   const asin = part.asin;
   return (
@@ -172,17 +177,17 @@ function Part({ part, row, report, fees, api, scanRunning, version, busy, run, n
             {label.text}
           </span>
         </div>
-        {label.text === 'Title match' && asin ? (
+        {label.text === 'Title match' && asin && verify ? (
           <Verify
             brand={row.brand}
             model={part.model}
             asin={asin}
-            report={report}
-            api={api}
-            scanRunning={scanRunning}
-            version={version}
-            busy={busy}
-            onRun={(button) => run({ kind: 'verify', brand: row.brand, model: part.model, asin }, button)}
+            report={verify.report}
+            api={verify.api}
+            scanRunning={verify.scanRunning}
+            version={verify.version}
+            busy={verify.busy}
+            onRun={(button) => verify.run({ kind: 'verify', brand: row.brand, model: part.model, asin }, button)}
           />
         ) : null}
       </div>
@@ -257,7 +262,7 @@ export const BUSY = 'Another search is still running.';
 
 const fileName = (model: string): string => `split-finder-${model.replace(/[^A-Za-z0-9._-]+/g, '-')}.csv`;
 
-export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: DetailProps) {
+export function Detail({ report, state, bundleKey, onBack, backLabel = 'Deals', api, onPaidEnd }: DetailProps) {
   const row = report?.bundles.find((b) => b.key === bundleKey) ?? null;
   // One paid request at a time on this screen; `version` makes every quote ask again afterwards.
   const [busy, setBusy] = useState(false);
@@ -269,10 +274,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
   const reopenLock = useRef(false);
   const [reopenError, setReopenError] = useState<string | null>(null);
   const [reopened, setReopened] = useState(false);
-  const [copied, setCopied] = useState<string | null>(null);
-  const [copyFailed, setCopyFailed] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(() => () => clearTimeout(timer.current), []);
+  const { asins, copy, copied, copyFailed } = useCopyAsins(row);
   // The title takes focus when Detail opens: the row that opened it is gone from view.
   const titleRef = useRef<HTMLHeadingElement>(null);
   const present = report !== null && row !== null;
@@ -323,7 +325,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M8.5 3L4.5 7l4 4" />
         </svg>
-        Deals
+        {backLabel}
       </button>
       {row?.link ? <OpenOnHomeDepot href={row.link} /> : null}
     </header>
@@ -341,14 +343,12 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
   const fees = state.settings.fees;
   const answer = (saved?.model === row.model ? saved.value : null) ?? report.packaging[row.model.toUpperCase()] ?? null;
   const loose = answer === 'loose';
-  const asins = row.parts.map((p) => p.asin).filter((a): a is string => a !== null);
   const e = row.estimate;
   // Core counts every uncovered part at $0 (inactive, in review, with no listing), so its price is not in the figure.
   const counted = new Set(row.uncovered);
   const gross = row.parts.reduce((sum, p) => sum + (p.price !== null && !counted.has(p.model) ? p.price * p.qty : 0), 0);
   const waiting = waitingParts(row).length;
   const partModels = new Set([...row.parts, ...row.options.flatMap((o) => o.parts)].map((p) => p.model));
-  const missingAsin = row.parts.filter((p) => p.asin === null).map((p) => p.model);
   const question = report.review.find((r) => r.kind === 'split' && r.subject === row.key) ?? null;
 
   const answerQuestion = async (a: ReviewAnswer): Promise<string | null> => {
@@ -390,23 +390,6 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
   const answerLine = row.answer ? (
     <AnswerLine text={row.answer.kind === 'none' ? noEstimate(row) : ANSWER_LINE[row.answer.kind]} className={row.answer.kind === 'none' ? 'detail-noestimate' : undefined} disabled={reopening} scanRunning={state.scanRunning} error={reopenError} onChange={() => void reopen()} />
   ) : null;
-
-  const copy = () => {
-    if (asins.length === 0) return;
-    setCopyFailed(false);
-    navigator.clipboard
-      .writeText(asins.join(' '))
-      .then(() => {
-        setCopied(
-          missingAsin.length === 0
-            ? 'Copied'
-            : `Copied ${asins.length} ${asins.length === 1 ? 'ASIN' : 'ASINs'}. ${listOf(missingAsin)} ${missingAsin.length === 1 ? 'has' : 'have'} no ASIN.`,
-        );
-        clearTimeout(timer.current);
-        timer.current = setTimeout(() => setCopied(null), 2000);
-      })
-      .catch(() => setCopyFailed(true));
-  };
 
   const now = Date.now();
   return (
@@ -501,7 +484,7 @@ export function Detail({ report, state, bundleKey, onBack, api, onPaidEnd }: Det
             {row.answer && row.answer.kind !== 'none' ? answerLine : null}
             <ul className="detail-parts">
               {row.parts.map((p) => (
-                <Part key={p.model} part={p} row={row} report={report} fees={fees} api={api} scanRunning={state.scanRunning} version={version} busy={busy} run={run} now={now} />
+                <Part key={p.model} part={p} row={row} fees={fees} now={now} verify={{ report, api, scanRunning: state.scanRunning, version, busy, run }} />
               ))}
             </ul>
             <PackagingQuestion key={row.key} row={row} api={api} answer={answer} onAnswered={(value) => setSaved({ model: row.model, value })} />

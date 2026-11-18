@@ -1,0 +1,68 @@
+/* This page. Sizes, spacing and colors come from docs/design/mockups/InPage.dc.html; parts and headline reuse Detail.css. */
+
+.thispage {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.thispage-empty {
+  margin: 0;
+  padding: 16px;
+  color: var(--ink-2);
+}
+
+.thispage-read {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+
+.thispage-estimate-label {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.thispage-cost {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+
+.thispage-actions {
+  display: flex;
+  gap: 8px;
+  padding: 14px 16px 6px;
+}
+.thispage-actions .detail-copy {
+  height: 36px;
+}
+.thispage-copy {
+  height: 36px;
+}
+
+.thispage-note {
+  margin: 0;
+  padding: 0 16px 8px;
+}
+.thispage-note.detail-copied:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.thispage .detail-copy:focus-visible,
+.thispage .detail-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
