@@ -1,0 +1,52 @@
+// @vitest-environment jsdom
+// Screenshots of each chip variant, for the owner and the UI reviewer. Runs only with SPLIT_FINDER_SHOTS=1:
+//   SPLIT_FINDER_SHOTS=1 npx vitest run --config vitest.ext.config.ts extension/entrypoints/homedepot.content/Chip.shots.test.ts
+// The chip is server-rendered from the real component into a shadow root in headless Chromium (as it sits on a
+// Home Depot page), under a price line, at 2x, into qa-shots/. Component level: no extension, no worker.
+import { mkdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { chromium } from '@playwright/test';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it } from 'vitest';
+import { Chip, COULD_NOT_OPEN } from './Chip';
+import { chipModel } from './chipModel';
+import { estimateView, lookupView, noReadingView, oneReadingView } from './realViews';
+
+const OUT = resolve('qa-shots');
+const css = readFileSync(join(__dirname, 'chip.css'), 'utf8').replaceAll(':root', ':host');
+
+describe.skipIf(!process.env.SPLIT_FINDER_SHOTS)('chip screenshots', () => {
+  it('writes one image per variant into qa-shots/', async () => {
+    mkdirSync(OUT, { recursive: true });
+    const estimate = (await estimateView());
+    const loss = { ...estimate, row: { ...estimate.row, estimate: { ...estimate.row.estimate!, profit: -12.4, roi: -0.06 } } };
+    const variants: [string, string][] = [
+      ['estimate', html(chipModel(estimate)!)],
+      ['loss', html(chipModel(loss)!)],
+      ['lookup', html(chipModel(await lookupView())!)],
+      ['needs-answer', html(chipModel(await oneReadingView())!)],
+      ['needs-answer-no-reading', html(chipModel(await noReadingView())!)],
+      ['could-not-open', html(chipModel(estimate)!).replace('<p class="chip-note" role="status"></p>', `<p class="chip-note" role="status">${COULD_NOT_OPEN}</p>`)],
+    ];
+    const browser = await chromium.launch({ channel: 'chromium' });
+    try {
+      const page = await browser.newPage({ viewport: { width: 520, height: 150 }, deviceScaleFactor: 2 });
+      for (const [name, markup] of variants) {
+        await page.setContent(`<body style="margin:0;padding:16px;background:#fff;font-family:system-ui,sans-serif"><div style="font-size:34px;line-height:40px;font-weight:700;color:#1F1F1F" data-component="price:Price:v6.41.0">$189.00</div><div id="h"></div></body>`);
+        await page.evaluate(([c, m]) => {
+          const shadow = document.getElementById('h')!.attachShadow({ mode: 'open' });
+          shadow.innerHTML = `<style>:host{all:initial !important}${c}</style>${m}`;
+        }, [css, markup] as const);
+        await page.screenshot({ path: join(OUT, `chip-${name}.png`), fullPage: true });
+      }
+    } finally {
+      await browser.close();
+    }
+    expect(variants).toHaveLength(6);
+  }, 120_000);
+});
+
+function html(model: NonNullable<ReturnType<typeof chipModel>>): string {
+  return renderToStaticMarkup(createElement(Chip, { model, open: async () => true }));
+}
