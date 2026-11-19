@@ -129,21 +129,35 @@ const isWebLink = (link: string | null): link is string => link !== null && /^ht
  * to three of them to open (new tab, http or https only). There is no eBay line at all for a part with no checked
  * listing that has sold, never $0 (the report gives none). It is in the reference group: it is never counted.
  */
-function EbayLine({ option, label }: { option: PriceOption; label: string }) {
-  const links = (option.ebay?.links ?? []).filter(isWebLink).slice(0, 3);
+function EbayLine({ option }: { option: PriceOption }) {
+  const v = option.ebay;
+  const links = (v?.links ?? []).filter(isWebLink).slice(0, 3);
+  // The words of ebayLabel (core/src/ebay/value.ts), with the range and the counts in the figure face. A figure never breaks
+  // across lines (white-space: nowrap in the CSS), so at 360px the line wraps between its parts.
+  const usd = (n: number) => `$${n.toFixed(2)}`;
   return (
-    <div className="detail-price" data-kind="ebay_sold_new" data-reference="true">
+    <div className="detail-price detail-ebay" data-kind="ebay_sold_new" data-reference="true">
       <dt>
-        <span className="detail-price-label">{label}</span>
+        <span className="detail-price-label">
+          {v ? (
+            <>
+              eBay · New · <span className="figure">{v.low === v.high ? usd(v.low) : `${usd(v.low)}–${usd(v.high)}`}</span> · <span className="figure">{v.listings}</span>{' '}
+              {v.listings === 1 ? 'listing' : 'listings'}, <span className="figure">{v.unitsSold}</span> sold
+            </>
+          ) : (
+            'eBay · New'
+          )}
+        </span>
       </dt>
-      <dd className="detail-ebay-links">
-        {links.length > 0 ? <span className="detail-ebay-links-label">Listings</span> : null}
-        {links.map((href, i) => (
-          <a key={href} className="detail-price-label figure" href={href} target="_blank" rel="noopener noreferrer" aria-label={`eBay listing ${i + 1} of ${links.length}, opens in a new tab`}>
-            {i + 1}
-          </a>
-        ))}
-      </dd>
+      {links.length > 0 ? (
+        <dd className="detail-ebay-links">
+          {links.map((href, i) => (
+            <a key={href} className="detail-ebay-link" href={href} target="_blank" rel="noopener noreferrer" aria-label={`eBay listing ${i + 1}`}>
+              Listing {i + 1}
+            </a>
+          ))}
+        </dd>
+      ) : null}
     </div>
   );
 }
@@ -164,7 +178,7 @@ function Prices({ model, prices, bulk }: { model: string; prices: PriceOption[];
     <dl>
       {list.map((o, i) => {
         const label = priceLabel(o, bulk);
-        if (o.kind === 'ebay_sold_new') return <EbayLine key={`${o.kind}:${i}`} option={o} label={label} />;
+        if (o.kind === 'ebay_sold_new') return <EbayLine key={`${o.kind}:${i}`} option={o} />;
         return (
           <div key={`${o.kind}:${i}`} className="detail-price" data-kind={o.kind} data-featured={o.kind === 'amazon_new' ? 'true' : undefined} data-reference={o.reference ? 'true' : undefined}>
             <dt>

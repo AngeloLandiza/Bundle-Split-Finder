@@ -104,7 +104,7 @@ export function cannedRaw(item: EbayListing): JudgeRaw {
   if (said === 'unsure') {
     return {
       evidence: [identity], contentsMatch: null, quantity: 1, condition: 'new', extras: [], missing: [],
-      reason: 'The title names the model, but the item specifics name a different model too.', verdict: 'unsure',
+      reason: 'The title names the model, but the listing details name a different model too.', verdict: 'unsure',
     };
   }
   return {

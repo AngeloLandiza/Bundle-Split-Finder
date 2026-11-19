@@ -251,7 +251,7 @@ function listingProblems(input: JudgeInput, models: string[]): string[] {
       if (p && ownParts.some((o) => o.letters === p.letters && o.digits !== p.digits)) odd.add(tok);
     }
   }
-  for (const tok of odd) problems.push(`The item specifics name ${tok.toUpperCase()}, a different model.`);
+  for (const tok of odd) problems.push(`The listing details name ${tok.toUpperCase()}, a different model.`);
 
   // v1|<item>|<variation>: a listing of several variations, whose price and sales are for any of them.
   const variation = listing.itemId.split('|')[2];
@@ -326,7 +326,7 @@ function bundleProblems(input: JudgeInput): string[] {
       const says =
         ((key === 'battery included' || key === 'charger included') && /^yes\b/.test(val)) ||
         (/^(set includes|included components|items included|includes)$/.test(key) && /\bchargers?\b/.test(val));
-      if (says) out.push(`The item specifics say "${a.name}: ${a.value}" for a tool-only product.`);
+      if (says) out.push(`The listing details say "${a.name}: ${a.value}" for a tool-only product.`);
     }
   }
   return out;

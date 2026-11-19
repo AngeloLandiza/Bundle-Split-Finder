@@ -102,7 +102,7 @@ describe('the eBay step: DEWALT DCF921B on the real search', () => {
     // The model said "match" on all eight. Three the code rejects: a "branded" brand, and item specifics naming DCF911B twice.
     expect(r.listings.map((l) => l.verdict)).toEqual(['match', 'match', 'match', 'match', 'match', 'unsure', 'unsure', 'unsure']);
     expect(r.listings[5]!.reasons).toContain('The brand is given as "branded", not DEWALT.');
-    expect(r.listings[6]!.reasons).toContain('The item specifics name DCF911B, a different model.');
+    expect(r.listings[6]!.reasons).toContain('The listing details name DCF911B, a different model.');
     expect(r.value).toEqual({
       listings: 5, unitsSold: 345, low: 64.99, high: 137.99, medianPrice: 119.99,
       links: ['https://www.ebay.com/itm/356061995376', 'https://www.ebay.com/itm/306552991202', 'https://www.ebay.com/itm/137923389067'],

@@ -14,9 +14,11 @@ const SHOTS = process.env.SPLIT_FINDER_SHOTS === '1';
 const DIR = 'qa-shots/';
 const WIDTHS = [360, 480];
 
-async function shoot(page: Page, name: string, o: { fullPage?: boolean } = {}): Promise<void> {
+async function shoot(page: Page, name: string, o: { fullPage?: boolean; scrollTo?: string; height?: number } = {}): Promise<void> {
   for (const width of WIDTHS) {
-    await page.setViewportSize({ width, height: 820 });
+    await page.setViewportSize({ width, height: o.height ?? 820 });
+    // The part of the page the picture is of, at the top of the view: a whole question, not its tail.
+    if (o.scrollTo) await page.locator(o.scrollTo).first().evaluate((el) => el.scrollIntoView({ block: 'start' }));
     await page.waitForTimeout(150);
     // Nothing may run past the width, shot or not.
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -61,13 +63,21 @@ test('a scan gives a part an eBay reference line and an eBay question; Yes chang
   const limit = options.getByLabel('eBay listings judged per scan');
   await limit.fill('300');
   await limit.blur();
-  await expect(options.getByTestId('ebay-settings-status')).toHaveText('Saved.');
-  expect((await getState(options)).data).toMatchObject({ ebay: { hasEbayKeys: true, hasAnthropicKey: true, judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 300 } });
+  await expect
+    .poll(async () => (await getState(options)).data, { intervals: [100] })
+    .toMatchObject({ ebay: { hasEbayKeys: true, hasAnthropicKey: true, judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 300 } });
+  // A saved key is shown as dots, and the button now replaces it.
+  await expect(options.getByLabel('Anthropic key')).toHaveAttribute('placeholder', '••••••••••••');
+  await expect(options.getByRole('button', { name: 'Replace key' })).toBeVisible();
   // Neither key is in the page once saved.
   expect(await options.content()).not.toContain(EBAY_CERT_ID);
   expect(await options.content()).not.toContain(ANTHROPIC_KEY);
   await shoot(options, 'settings-ebay', { fullPage: true });
 
+  // Three searches a scan: the listing pages and the catalog page, and no Amazon lookup, which this replay has no recording for
+  // (its 404 would put an unrelated SerpApi error above the questions).
+  const settings = { ...((await getState(options)).data as unknown as { settings: Record<string, unknown> }).settings, searchesPerScan: 3 };
+  expect(await send(options, { type: 'saveSettings', settings })).toMatchObject({ ok: true });
   await scanAndWait(options);
   // The replay has no Amazon search for the parts the scan then looks up, so it ends at that 404: the eBay step ran before it.
   const job = (await getState(options)).data.lastJob as unknown as { ebayNotice?: string | null; counts: Record<string, number> };
@@ -104,7 +114,7 @@ test('a scan gives a part an eBay reference line and an eBay question; Yes chang
   const links = reference.getByRole('link', { name: /^eBay listing / });
   await expect(links).toHaveCount(3);
   for (const href of ebay.ebay!.links) await expect(reference.locator(`a[href="${href}"]`)).toHaveAttribute('target', '_blank');
-  await shoot(panel, 'detail-ebay');
+  await shoot(panel, 'detail-ebay', { scrollTo: '.detail-part:has(.detail-prices-reference)', height: 900 });
   // A part with no eBay value has no eBay line.
   expect(await panel.getByText(/^eBay · New/).count()).toBeGreaterThan(0);
 
@@ -119,7 +129,7 @@ test('a scan gives a part an eBay reference line and an eBay question; Yes chang
   await expect(panel.locator('.review-bundle', { hasText: asked[0]!.title })).toBeVisible();
   await expect(panel.getByRole('link', { name: 'Open this listing on eBay' })).toHaveAttribute('href', 'https://www.ebay.com/itm/920101779170');
   await expect(panel.getByText('Why the check was not certain')).toBeVisible();
-  await shoot(panel, 'review-ebay');
+  await shoot(panel, 'review-ebay', { scrollTo: 'fieldset[data-kind="ebay"]', height: 900 });
 
   // Yes: the listing counts, and the line changes (six listings, four more units, $79 inside the range).
   await panel.getByRole('radio', { name: 'Yes, it is exactly this part' }).check();

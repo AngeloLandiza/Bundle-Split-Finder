@@ -5,6 +5,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SETTINGS } from '@core/settings';
 import type { EbayValue } from '@core/ebay/types';
+import { ebayLabel } from '@core/ebay/value';
 import type { BundleRow, PartRow, PriceOption, ScanJob } from '@core/scan/types';
 import type { AppState, PanelReport } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
@@ -54,6 +55,9 @@ function show(prices: PriceOption[]) {
   render(createElement(Detail, { api, report, state, bundleKey: r.key, onBack: vi.fn() }));
 }
 
+/** The eBay row's words as a person reads them, whatever the markup in between. */
+const ebayText = () => document.querySelector('.detail-ebay dt')?.textContent ?? '';
+
 const reference = () => within(screen.getByRole('group', { name: 'Prices for DCF921B' })).getByRole('group', { name: 'Reference · not counted' });
 
 describe("Detail: a part's eBay reference line", () => {
@@ -63,22 +67,34 @@ describe("Detail: a part's eBay reference line", () => {
     expect(within(group).getByText('Home Depot · sold alone')).toBeInTheDocument();
     const text = group.textContent ?? '';
     expect(text.indexOf('Home Depot · sold alone')).toBeLessThan(text.indexOf('eBay · New'));
-    expect(within(group).getByText('eBay · New · $64.99–$137.99 · 5 listings, 345 sold')).toBeInTheDocument();
+    expect(ebayText()).toBe('eBay · New · $64.99–$137.99 · 5 listings, 345 sold');
+    expect(ebayText()).toBe(ebayLabel(VALUE));
     // Not among the counted prices, and not a link itself.
     const counted = screen.getByRole('group', { name: 'Prices for DCF921B' }).querySelector('.detail-prices-counted')!;
     expect(counted.textContent).not.toContain('eBay');
   });
 
-  it('offers up to three of its listings, in a new tab, safely, by number', () => {
+  it('sets the range and the counts in the figure face, each in one piece so no figure breaks across lines', () => {
+    show([ebayOption()]);
+    const figures = [...document.querySelectorAll('.detail-ebay dt .figure')];
+    expect(figures.map((f) => f.textContent)).toEqual(['$64.99–$137.99', '5', '345']);
+    expect(document.querySelector('.detail-ebay dt')!.textContent).toContain('listings, ');
+  });
+
+  it('offers up to three of its listings, in a new tab, safely, as links on a line of their own', () => {
     show([ebayOption()]);
     const links = within(reference()).getAllByRole('link');
-    expect(links.map((a) => a.textContent)).toEqual(['1', '2', '3']);
+    expect(links.map((a) => a.textContent)).toEqual(['Listing 1', 'Listing 2', 'Listing 3']);
+    // Not inside the line's own label: the links are the next element of the row, so they can sit below it.
+    expect(links[0]!.closest('dd')!.classList.contains('detail-ebay-links')).toBe(true);
+    expect(links[0]!.closest('dt')).toBeNull();
     expect(links.map((a) => a.getAttribute('href'))).toEqual(VALUE.links);
     for (const a of links) {
       expect(a).toHaveAttribute('target', '_blank');
       expect(a).toHaveAttribute('rel', 'noopener noreferrer');
     }
-    expect(links[0]).toHaveAccessibleName('eBay listing 1 of 3, opens in a new tab');
+    expect(links.map((a) => a.getAttribute('aria-label'))).toEqual(['eBay listing 1', 'eBay listing 2', 'eBay listing 3']);
+    expect(links[0]).toHaveAccessibleName('eBay listing 1');
   });
 
   it('shows only http and https links, and no more than three', () => {
@@ -88,7 +104,7 @@ describe("Detail: a part's eBay reference line", () => {
 
   it('a single listing reads "1 listing", with one link', () => {
     show([ebayOption({ listings: 1, unitsSold: 13, low: 38.5, high: 38.5, medianPrice: 38.5, links: ['https://www.ebay.com/itm/237179711800'] })]);
-    expect(within(reference()).getByText('eBay · New · $38.50 · 1 listing, 13 sold')).toBeInTheDocument();
+    expect(ebayText()).toBe('eBay · New · $38.50 · 1 listing, 13 sold');
     expect(within(reference()).getAllByRole('link')).toHaveLength(1);
   });
 
@@ -107,6 +123,6 @@ describe("Detail: a part's eBay reference line", () => {
   it('a link with no address is not drawn', () => {
     show([ebayOption({ ...VALUE, links: [] })]);
     expect(within(reference()).queryByRole('link')).toBeNull();
-    expect(screen.queryByText('Listings')).toBeNull();
+    expect(document.querySelector('.detail-ebay-links')).toBeNull();
   });
 });

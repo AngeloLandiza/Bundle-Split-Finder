@@ -13,6 +13,9 @@ const MODEL_NAMES: Record<string, { name: string; note: string }> = {
   'claude-opus-5-5': { name: 'Claude Opus 5.5', note: 'slower and costs much more per listing' },
 };
 
+/** What a saved key shows in its field: dots, never the key (the page does not hold it). */
+const MASKED = '••••••••••••';
+
 const dollars = (n: number): string => (n < 0.1 ? `$${n.toFixed(3)}` : `$${n.toFixed(2)}`);
 
 function Check() {
@@ -97,7 +100,7 @@ export function EbayKeysSection({ api, state }: { api: WorkerApi; state: AppStat
             autoComplete="off"
             spellCheck={false}
             className="input figure"
-            placeholder={has ? 'Saved' : ''}
+            placeholder={has ? MASKED : ''}
             ref={appRef}
             onChange={(e) => setFilled((f) => ({ ...f, app: e.target.value.trim() !== '' }))}
           />
@@ -110,7 +113,7 @@ export function EbayKeysSection({ api, state }: { api: WorkerApi; state: AppStat
             autoComplete="off"
             spellCheck={false}
             className="input figure"
-            placeholder={has ? 'Saved' : ''}
+            placeholder={has ? MASKED : ''}
             ref={certRef}
             onChange={(e) => setFilled((f) => ({ ...f, cert: e.target.value.trim() !== '' }))}
           />
@@ -118,7 +121,7 @@ export function EbayKeysSection({ api, state }: { api: WorkerApi; state: AppStat
       </div>
       <div className="row">
         <button type="button" className="btn" disabled={checking || !filled.app || !filled.cert} onClick={check}>
-          {checking ? 'Checking' : 'Check eBay keys'}
+          {checking ? 'Checking' : has ? 'Replace eBay keys' : 'Check eBay keys'}
         </button>
         {has ? <Confirm label="Remove eBay keys" question="Remove the saved eBay keys from this browser?" yes="Yes, remove keys" danger onYes={forget} /> : null}
       </div>
@@ -178,7 +181,7 @@ export function ListingCheckSection({ api, state }: { api: WorkerApi; state: App
     setSettingsResult(null);
     try {
       const reply = await api.send<null>({ type: 'saveEbaySettings', ...next });
-      setSettingsResult(reply.ok ? { ok: true, text: 'Saved.' } : { ok: false, message: reply.error });
+      setSettingsResult(reply.ok ? null : { ok: false, message: reply.error });
     } catch {
       setSettingsResult({ ok: false, message: UNREACHABLE });
     }
@@ -200,12 +203,12 @@ export function ListingCheckSection({ api, state }: { api: WorkerApi; state: App
             autoComplete="off"
             spellCheck={false}
             className="input figure key-input"
-            placeholder={saved.hasAnthropicKey ? 'Key saved' : ''}
+            placeholder={saved.hasAnthropicKey ? MASKED : ''}
             ref={keyRef}
             onChange={(e) => setHasText(e.target.value.trim() !== '')}
           />
           <button type="button" className="btn" disabled={saving || !hasText} onClick={saveKey}>
-            {saving ? 'Adding' : 'Add key'}
+            {saving ? 'Saving' : saved.hasAnthropicKey ? 'Replace key' : 'Add key'}
           </button>
           {saved.hasAnthropicKey ? <Confirm label="Remove key" question="Remove the saved Anthropic key from this browser?" yes="Yes, remove key" danger onYes={forgetKey} /> : null}
         </div>
@@ -253,9 +256,11 @@ export function ListingCheckSection({ api, state }: { api: WorkerApi; state: App
           Estimated cost: up to <span className="figure small">{dollars(cost)}</span> a scan. An estimate from the model&apos;s published rates; your Anthropic bill is what counts. A listing is judged once, and kept, so a repeat scan costs less.
         </p>
       ) : null}
-      <p className="note" role="status" data-testid="ebay-settings-status">
-        {settingsResult === null ? '' : settingsResult.ok ? settingsResult.text : settingsResult.message}
-      </p>
+      {settingsResult !== null && !settingsResult.ok ? (
+        <p className="field-error" role="alert" data-testid="ebay-settings-error">
+          {settingsResult.message}
+        </p>
+      ) : null}
     </Section>
   );
 }

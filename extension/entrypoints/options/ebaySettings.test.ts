@@ -80,7 +80,10 @@ describe('Settings: eBay reference values', () => {
 
   it('saved keys are never shown back; Remove asks once', async () => {
     const { user, sent } = await open(stateWith({ hasEbayKeys: true }));
-    expect(app().placeholder).toBe('Saved');
+    expect(app().placeholder).toBe('••••••••••••');
+    expect(cert().placeholder).toBe('••••••••••••');
+    expect(screen.getByRole('button', { name: 'Replace eBay keys' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Check eBay keys' })).toBeNull();
     expect(app().value).toBe('');
     await user.click(screen.getByRole('button', { name: 'Remove eBay keys' }));
     expect(sent('forgetEbayKeys')).toEqual([]);
@@ -109,8 +112,10 @@ describe('Settings: the listing check', () => {
 
   it('a saved key shows only that it is saved; Remove asks once', async () => {
     const { user, sent } = await open(stateWith({ hasAnthropicKey: true }));
-    expect(anthropic().placeholder).toBe('Key saved');
+    expect(anthropic().placeholder).toBe('••••••••••••');
     expect(screen.getByTestId('anthropic-key-result')).toHaveTextContent('Anthropic key saved.');
+    expect(screen.getByRole('button', { name: 'Replace key' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Add key' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Remove key' }));
     await user.click(screen.getByRole('button', { name: 'Yes, remove key' }));
     expect(sent('forgetAnthropicKey')).toHaveLength(1);
@@ -125,6 +130,14 @@ describe('Settings: the listing check', () => {
     await user.click(opus);
     expect(opus).toBeChecked();
     expect(sent('saveEbaySettings')).toEqual([{ type: 'saveEbaySettings', judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 60 }]);
+    // No floating confirmation: the page's own line already says changes save as they are made.
+    expect(screen.queryByText('Saved.')).toBeNull();
+  });
+
+  it('says a refusal of the settings under the control, as an alert', async () => {
+    const { user } = await open(stateWith(), { saveEbaySettings: () => ({ ok: false, error: 'Choose one of the models offered.' }) });
+    await user.click(screen.getByRole('radio', { name: /Claude Opus 5\.5/ }));
+    expect(await screen.findByTestId('ebay-settings-error')).toHaveTextContent('Choose one of the models offered.');
   });
 
   it('starts at 60 listings, saves a new number when the field is left, and refuses a number that is not whole or in range without sending it', async () => {

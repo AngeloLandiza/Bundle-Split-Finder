@@ -394,20 +394,31 @@ a.detail-price-label {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-/* Step 10: eBay's reference line: the label as any price's, and up to three numbered links to its listings at the right. */
+/* Step 10: eBay's reference line. The words wrap between their parts, never inside a figure; the links to its listings are a
+   line of their own below it, real links in the link colour. */
+.detail-ebay {
+  display: block;
+}
+.detail-ebay .figure {
+  white-space: nowrap;
+}
 .detail-ebay-links {
   display: flex;
-  align-items: baseline;
-  justify-content: flex-end;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 18px;
 }
-.detail-ebay-links-label {
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--ink-2);
+.detail-ebay-link {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
 }
-.detail-ebay-links a {
-  padding: 0 2px;
+.detail-ebay-link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 .detail-asin {
   font-size: 12px;

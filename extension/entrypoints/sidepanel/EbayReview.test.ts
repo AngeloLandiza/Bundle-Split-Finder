@@ -18,7 +18,7 @@ afterEach(cleanup);
 const Q: Question = {
   id: 'DEWALT:DCF921B|v1|920101779170|0', key: 'DEWALT:DCF921B', brand: 'DEWALT', model: 'DCF921B', itemId: 'v1|920101779170|0',
   title: 'DEWALT DCF921B 20V MAX Brushless 1/2" Cordless Impact Wrench Tool Only', url: 'https://www.ebay.com/itm/920101779170', price: 79, soldQuantity: 4,
-  reasons: ['The item specifics name DCF911B, a different model.', 'The title names the model but not what is included.'], openedAt: 5,
+  reasons: ['The listing details name DCF911B, a different model.', 'The title names the model but not what is included.'], openedAt: 5,
 };
 const SPLIT: ReviewItem = {
   id: 'split:a', kind: 'split', subject: 'homedepot:1', brand: 'DEWALT', model: 'DCK240C2', title: 'DEWALT 20V MAX Cordless 2 Tool Combo Kit', reason: 'The kit lists two impact wrenches.',
