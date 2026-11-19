@@ -1,6 +1,7 @@
 // The two files the command line writes. Text from retailers is untrusted: a cell that
 // starts like a spreadsheet formula is made inert, and separators are quoted.
 
+import type { EbayValue } from '../ebay/types';
 import type { BundleRow, PartRow, ReviewItem, ScanReport } from './types';
 
 export const RUN_COLUMNS: readonly string[] = [
@@ -9,6 +10,8 @@ export const RUN_COLUMNS: readonly string[] = [
   'uncovered_parts', 'hd_link', 'sold_as', 'other_options',
   // Step 9: the ROI at each end of the part prices, and what Home Depot charges for the parts sold alone.
   'roi_lowest', 'roi_amazon_new', 'roi_highest', 'hd_price_total',
+  // Step 10: what New units of each part sell for on eBay, a reference never counted in an estimate.
+  'ebay_ref_low', 'ebay_ref_high', 'ebay_units_sold',
 ];
 
 export const REVIEW_COLUMNS: readonly string[] = ['kind', 'brand', 'model', 'title', 'reason', 'candidates', 'opened_at'];
@@ -52,11 +55,21 @@ function hdPriceTotal(b: BundleRow): number | null {
   return cents / 100;
 }
 
+/**
+ * Step 10: one figure of each part's eBay value, in part order like `amazon_prices`: the part's own, '?' for a
+ * part with no eBay value, and blank when no part has one. Never summed: a total of some of the parts would
+ * read as the total of them all.
+ */
+function ebayColumn(b: BundleRow, pick: (v: EbayValue) => number): string {
+  const values = b.parts.map((p) => p.prices.find((o) => o.kind === 'ebay_sold_new')?.ebay);
+  return values.every((v) => v === undefined) ? '' : join(values.map((v) => (v === undefined ? '?' : String(pick(v)))));
+}
+
 function runRow(b: BundleRow): (string | number | null)[] {
   const head = [b.section, b.brand, b.model, b.title, b.itemId, b.price, b.regularPrice, b.percentOff];
   // sold_as is the primary's label, which the row's figures are; '' when the bundle has one way to sell.
   const tail = [b.link, b.options[0]?.label ?? '', otherOptions(b)];
-  if (b.section === 'split') return [...head, '', '', '', '', null, null, null, null, '', ...tail, null, null, null, null];
+  if (b.section === 'split') return [...head, '', '', '', '', null, null, null, null, '', ...tail, null, null, null, null, '', '', ''];
   const e = b.estimate;
   // Where the estimate is null, every end of the range is.
   const range = [b.range.lowest?.roi ?? null, b.range.amazonNew?.roi ?? null, b.range.highest?.roi ?? null, hdPriceTotal(b)];
@@ -70,6 +83,7 @@ function runRow(b: BundleRow): (string | number | null)[] {
     join(b.uncovered),
     ...tail,
     ...range,
+    ebayColumn(b, (v) => v.low), ebayColumn(b, (v) => v.high), ebayColumn(b, (v) => v.unitsSold),
   ];
 }
 

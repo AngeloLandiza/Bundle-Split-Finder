@@ -7,11 +7,11 @@ import { answeredKitWorld, KIT_KEY, kitReport, kitRunPaid, P553_KEY } from './ki
 
 // The four columns of step 9 follow other_options; these tests are about the two before them, so the line is cut
 // before them (their cells are numbers or empty, never a comma).
-const lineOf = (csv: string): string[] => csv.trimEnd().split('\n').map((l, i) => (i === 0 ? l : l.split(',').slice(0, -4).join(',')));
+const lineOf = (csv: string): string[] => csv.trimEnd().split('\n').map((l, i) => (i === 0 ? l : l.split(',').slice(0, -7).join(',')));
 
 describe('CSV: sold_as and other_options', () => {
   it('ends the header with the two columns', () => {
-    expect(RUN_COLUMNS.slice(-7, -4)).toEqual(['hd_link', 'sold_as', 'other_options']);
+    expect(RUN_COLUMNS.slice(-10, -7)).toEqual(['hd_link', 'sold_as', 'other_options']);
   });
 
   it('writes the primary label and, while no option has an estimate, an empty other_options', async () => {

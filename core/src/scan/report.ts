@@ -6,12 +6,16 @@ import { isBulkPackaging } from '../match';
 import type { BundleResult } from '../money';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
+import { ebayPriceOption } from '../ebay/value';
 import { componentCounts } from './classify';
 import { twinKeys, twinKeysOf } from './twins';
 import {
   type BundleRecord,
   type BundleRow,
   type BundleStatus,
+  type EbayQuestion,
+  type EbayValueRecord,
+  effectiveVerdict,
   type ListingRecord,
   type PartAvailability,
   type PartPriceRecord,
@@ -32,19 +36,27 @@ import {
 
 const SECTION_RANK: Record<ReportSection, number> = { confirmed: 0, waiting: 1, inactive_listing: 2, missing_listing: 3, split: 4 };
 
-/** A part's stored Home Depot price (step 9): its own part price record with a price, else a twin's (Ruling 70). */
-type HdPriceOf = (brand: string, model: string) => PartPriceRecord | undefined;
+/**
+ * The reference figures kept apart from splitting, read once per report and never from the catalog: a part's
+ * stored Home Depot price (step 9: its own part price record with a price, else a twin's, Ruling 70), and its
+ * eBay value (step 10: its own record with a value, else a twin's).
+ */
+interface RefsOf {
+  hd(brand: string, model: string): PartPriceRecord | undefined;
+  ebay(brand: string, model: string): EbayValueRecord | undefined;
+}
 
-/** The HdPriceOf of the part price store, read once per report. Never the catalog: a price is not a splitting fact. */
-async function hdPrices(store: ScanStore): Promise<HdPriceOf> {
-  const byKey = new Map((await store.listPartPrices()).filter((r) => r.price !== null).map((r) => [r.key, r] as const));
-  return (brand, model) => {
+async function refsOf(store: ScanStore): Promise<RefsOf> {
+  const hdByKey = new Map((await store.listPartPrices()).filter((r) => r.price !== null).map((r) => [r.key, r] as const));
+  const ebayByKey = new Map((await store.listEbayValues()).filter((r) => r.value !== null).map((r) => [r.key, r] as const));
+  const first = <T>(by: Map<string, T>, brand: string, model: string): T | undefined => {
     for (const key of [partKey(brand, model), ...twinKeys(brand, model)]) {
-      const hd = byKey.get(key);
-      if (hd) return hd;
+      const found = by.get(key);
+      if (found) return found;
     }
     return undefined;
   };
+  return { hd: (brand, model) => first(hdByKey, brand, model), ebay: (brand, model) => first(ebayByKey, brand, model) };
 }
 
 /** Ties among equal prices go in this order. */
@@ -60,7 +72,7 @@ const KIND_ORDER: Record<PriceKind, number> = { amazon_new: 0, amazon_buybox: 1,
  */
 function priceOptions(
   settings: ScanSettings, model: string, matched: boolean, asin: string | null, active: boolean, price: PriceRecord | undefined, listing: ListingRecord | undefined,
-  hd: PartPriceRecord | undefined,
+  hd: PartPriceRecord | undefined, ebay: EbayValueRecord | undefined,
 ): PriceOption[] {
   const out: PriceOption[] = [];
   const base = { condition: 'new' as const, seller: null, shipsFrom: null, offers: null };
@@ -89,6 +101,8 @@ function priceOptions(
       ...(soldAs.toUpperCase() !== model.trim().toUpperCase() ? { soldAs } : {}),
     });
   }
+  // Step 10: what New units of the part sell for on eBay: a reference, never counted. Absent, never $0, without a value.
+  if (ebay?.value) out.push({ ...ebayPriceOption(ebay.value, ebay.checkedAt), ebay: ebay.value });
   return out.sort((a, b) => b.price - a.price || KIND_ORDER[a.kind] - KIND_ORDER[b.kind]);
 }
 
@@ -98,7 +112,7 @@ function priceOptions(
  */
 const countedPrices = (p: PartRow): number[] => (p.availability === 'active' ? p.prices.filter((o) => !o.reference).map((o) => o.price) : []);
 
-async function partRows(store: ScanStore, settings: ScanSettings, hdOf: HdPriceOf, brand: string, counts: Record<string, number>): Promise<PartRow[]> {
+async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, brand: string, counts: Record<string, number>): Promise<PartRow[]> {
   const rows: PartRow[] = [];
   for (const model of Object.keys(counts)) {
     const match = await store.getMatch(partKey(brand, model));
@@ -120,7 +134,7 @@ async function partRows(store: ScanStore, settings: ScanSettings, hdOf: HdPriceO
       priceSeenAt: price?.seenAt ?? null,
       image: listing?.image ?? null,
       title: listing?.title ?? null,
-      prices: priceOptions(settings, model, matched, match?.asin ?? null, availability === 'active', price, listing, hdOf(brand, model)),
+      prices: priceOptions(settings, model, matched, match?.asin ?? null, availability === 'active', price, listing, refs.hd(brand, model), refs.ebay(brand, model)),
       // The PO (Nov 18): a New listing in bulk packaging is a place to sell; the panel labels it.
       ...(listing && isBulkPackaging(listing.title) ? { packaging: 'bulk' as const } : {}),
     });
@@ -183,7 +197,7 @@ const shown = (name: string, qty: number): string => (qty > 1 ? `${name} ×${qty
  * of its own, which the estimate values at the liquidation rate, as any part with no listing.
  */
 async function optionOf(
-  store: ScanStore, settings: ScanSettings, hdOf: HdPriceOf, b: BundleRecord, counts: Record<string, number>, kits: Map<string, KitItem[]>, split: string[],
+  store: ScanStore, settings: ScanSettings, refs: RefsOf, b: BundleRecord, counts: Record<string, number>, kits: Map<string, KitItem[]>, split: string[],
 ): Promise<Evaluated> {
   const components: Record<string, number> = {};
   // Component key of each item with no model number -> the page's own text, in page order.
@@ -207,7 +221,7 @@ async function optionOf(
     }
   }
   const models = Object.fromEntries(Object.entries(components).filter(([k]) => !k.startsWith(UNNAMED)));
-  const parts = await partRows(store, settings, hdOf, b.brand, models);
+  const parts = await partRows(store, settings, refs, b.brand, models);
   const priced: PricedListing[] = [];
   for (const p of parts) {
     if (p.availability === 'active' && p.asin !== null && p.price !== null) {
@@ -284,10 +298,10 @@ function primaryOf(options: Evaluated[]): number {
 
 /**
  * `recordsOf`: the stored records of one kit's brand and model (kitIndex over kitRecords: bundle
- * records and catalog entries marked a kit), built once per report; `hdOf` (step 9) too.
+ * records and catalog entries marked a kit), built once per report; `refs` (steps 9 and 10) too.
  */
 async function bundleRow(
-  store: ScanStore, settings: ScanSettings, b: BundleRecord, recordsOf: (brand: string, model: string) => KitRecord[], hdOf: HdPriceOf,
+  store: ScanStore, settings: ScanSettings, b: BundleRecord, recordsOf: (brand: string, model: string) => KitRecord[], refs: RefsOf,
 ): Promise<BundleRow> {
   const base = {
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
@@ -319,7 +333,7 @@ async function bundleRow(
     }
   }
   const evaluated: Evaluated[] = [];
-  for (const choice of splitChoices([...kits.keys()])) evaluated.push(await optionOf(store, settings, hdOf, b, counts, kits, choice));
+  for (const choice of splitChoices([...kits.keys()])) evaluated.push(await optionOf(store, settings, refs, b, counts, kits, choice));
   const p = primaryOf(evaluated);
   const primary = evaluated[p]!;
   return {
@@ -338,7 +352,7 @@ async function bundleRow(
 /** One bundle's row, exactly as buildReport builds it. A product page the owner has open shows it (pageView.ts). Reads only. */
 export async function reportRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
   const catalog = await store.listCatalog();
-  return bundleRow(store, settings, b, kitIndex(kitRecords(await store.listBundles(), catalog)), await hdPrices(store));
+  return bundleRow(store, settings, b, kitIndex(kitRecords(await store.listBundles(), catalog)), await refsOf(store));
 }
 
 export async function buildReport(store: ScanStore, settings: ScanSettings): Promise<ScanReport> {
@@ -350,9 +364,9 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   const stored = await store.listBundles();
   const catalog = await store.listCatalog();
   const recordsOf = kitIndex(kitRecords(stored, catalog));
-  const hdOf = await hdPrices(store);
+  const refs = await refsOf(store);
   for (const b of stored) {
-    bundles.push(await bundleRow(store, settings, b, recordsOf, hdOf));
+    bundles.push(await bundleRow(store, settings, b, recordsOf, refs));
     for (const part of [...resolvedParts(b), ...kitItemParts(b, recordsOf)]) held.add(part.key);
   }
   bundles.sort((a, b) => {
@@ -371,5 +385,26 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
     // An item saved before step 5 has no choices stored.
     .map((r) => ({ ...r, choices: choicesOf(r) }))
     .sort((a, b) => a.openedAt - b.openedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return { bundles, review };
+  return { bundles, review, ebayQuestions: await ebayQuestions(store, held) };
+}
+
+/**
+ * Step 10: the eBay listings the judge left unsure that could count, for the parts some bundle holds now (a
+ * twin held counts), oldest check first. A listing counts only with a USD price and units sold, as ebayValue
+ * counts it: asking about one that could not count would only tire the owner. An answered listing is not asked again.
+ */
+async function ebayQuestions(store: ScanStore, held: Set<string>): Promise<EbayQuestion[]> {
+  const out: EbayQuestion[] = [];
+  for (const r of await store.listEbayValues()) {
+    if (!held.has(r.key) && !twinKeysOf(r.key).some((k) => held.has(k))) continue;
+    for (const l of r.listings) {
+      if (effectiveVerdict(l) !== 'unsure') continue;
+      if (l.currency !== 'USD' || l.price === null || !(l.price > 0) || !((l.soldQuantity ?? 0) > 0)) continue;
+      out.push({
+        id: `${r.key}|${l.itemId}`, key: r.key, brand: r.brand, model: r.model, itemId: l.itemId, title: l.title, url: l.url,
+        price: l.price, soldQuantity: l.soldQuantity, reasons: [...l.reasons], openedAt: r.checkedAt,
+      });
+    }
+  }
+  return out.sort((a, b) => a.openedAt - b.openedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }

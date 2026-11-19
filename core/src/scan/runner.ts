@@ -21,6 +21,7 @@ import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit } from './split';
 import { rejectedOf, twinKeys } from './twins';
+import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
 import { bundleKey, PART_PRICE_READS_MAX, partKey, priceActive, resolvedParts } from './types';
 import type {
   BudgetView, BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PageOutcome, PageReading, PartPriceRecord, PriceRecord, ReadPages, ReadPartPrices,
@@ -50,6 +51,12 @@ export interface ScanDeps {
    * pages (readPartPricesPass). Without it no price is read; prices read before are still shown.
    */
   readPartPrices?: ReadPartPrices;
+  /**
+   * Step 10: the eBay step, after Home Depot's part prices (ebayPass.ts): eBay's search and item reads and a
+   * model's judgement of each listing, as a reference value per part. `skip` says why it does not run (keys
+   * missing). Absent: the step does not exist (the command line). It never stops a scan.
+   */
+  ebay?: EbayStep;
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -83,6 +90,7 @@ interface Run extends PartContext {
   shouldStop: () => boolean;
   readPages: ReadPages | null;
   readPartPrices: ReadPartPrices | null;
+  ebay: EbayStep | null;
   job: ScanJob;
   /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
@@ -124,6 +132,8 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
     const kitPass = bundlePass.goOn ? await readKitPages(run, bundlePass.notRead) : bundlePass;
     // Step 9: then Home Depot's prices for the parts sold alone, free, unless Home Depot refused a page.
     if (kitPass.goOn) await readPartPricesPass(run);
+    // Step 10: then eBay's reference values for the parts, free, whether or not Home Depot refused a page.
+    await ebayPass(run);
     await planParts(run, known.listings);
   } else if (run.job.phase === 'parts') {
     // A continued job: its lookups are judged with the models the split knew.
@@ -147,7 +157,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const failedBefore = failingBefore(scans);
   const run = (job: ScanJob): Run => ({
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
-    readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
+    readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, ebay: deps.ebay ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
   });
 
   // An interrupted job is continued as saved: no new plan, whatever budget this run has. A job
@@ -932,6 +942,51 @@ async function readPartPricesPass(run: Run): Promise<void> {
   }
   job.counts.partPricesRead = (job.counts.partPricesRead ?? 0) + (await savePartPrices(store, asked, readings, run.now()));
   await store.putScan(job);
+}
+
+// ---------------------------------------------------------------- step 10: eBay's reference values for the parts (free)
+
+/**
+ * Step 10: the parts whose eBay value a scan checks now: every part bundleParts plans for (kit items included)
+ * whose eBay value record, or a twin's, is complete and was checked within freshnessMs. A record that left
+ * listings unjudged is asked for again whatever its age. Largest saving first, then key; a RYOBI part written
+ * two ways once.
+ */
+export async function ebayPartsWanted(store: ScanStore, settings: ScanSettings, now: number): Promise<EbayPart[]> {
+  const parts = [...(await bundleParts(store)).values()];
+  const checked = new Map((await store.listEbayValues()).filter((r) => r.complete).map((r) => [r.key, r.checkedAt] as const));
+  const fresh = (p: Part): boolean => [p.key, ...twinKeys(p.brand, p.model)].some((k) => {
+    const at = checked.get(k);
+    return at !== undefined && now - at <= settings.freshnessMs;
+  });
+  const seen = new Set<string>();
+  return parts
+    .filter((p) => !fresh(p))
+    .sort((a, b) => b.saving - a.saving || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+    .filter((p) => once(seen, kitKey(p.brand, p.model)))
+    .map(({ key, brand, model }) => ({ key, brand, model }));
+}
+
+/**
+ * Step 10: the eBay step (runEbayPass), or the plain sentence saying why it did not run. Never a search of
+ * SerpApi's, and never stops the scan: a failure is a sentence in the job's ebayNotice. Not run once a stop was asked for.
+ */
+async function ebayPass(run: Run): Promise<void> {
+  const { store, job, ebay } = run;
+  if (!ebay || run.shouldStop()) return;
+  if (ebay.kind === 'skip') {
+    noteEbay(job, ebay.notice);
+    await store.putScan(job);
+    return;
+  }
+  const parts = await ebayPartsWanted(store, run.settings, run.now());
+  if (parts.length === 0) return;
+  // Only eBay and the model are called inside the pass, and it catches what they throw. An error from the store
+  // is not caught: the job stays "running" and the next run continues it, as for the other free steps.
+  await runEbayPass({
+    store, job, save: () => store.putScan(job), parts, ebay: ebay.ebay, judge: ebay.judge, listingsJudgedPerScan: ebay.listingsJudgedPerScan,
+    now: run.now, shouldStop: run.shouldStop,
+  });
 }
 
 const newestFirst = (a: BundleRecord, b: BundleRecord): number => b.seenAt - a.seenAt || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
