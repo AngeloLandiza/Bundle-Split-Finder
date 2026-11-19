@@ -67,7 +67,7 @@ test('worker facts: key access level, tick alarm, no console errors', async ({ w
 
 test('the built bundle talks only to the local replay server', () => {
   const manifest = JSON.parse(readFileSync(join(EXTENSION_DIR, 'manifest.json'), 'utf8'));
-  expect(manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'http://localhost/*']);
+  expect(manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', 'http://localhost/*']);
   const files = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]));
   const background = readFileSync(join(EXTENSION_DIR, 'background.js'), 'utf8');
