@@ -5,7 +5,7 @@
 
 import { AnswerRefused } from './answers';
 import { valueOf } from './ebayPass';
-import { effectiveVerdict, type EbayValueRecord, type ScanStore } from './types';
+import { ebayAnswerKey, effectiveVerdict, type EbayOwnerAnswer, type ScanStore } from './types';
 
 export type EbayAnswerKind = 'yes' | 'no';
 
@@ -38,22 +38,25 @@ export async function applyEbayAnswer(store: ScanStore, request: unknown, now: n
   const listing = record.listings[at]!;
   if (listing.owner !== undefined) throw new AnswerRefused(ANSWERED);
   if (effectiveVerdict(listing) !== 'unsure') throw new AnswerRefused(CHANGED);
-  const listings = record.listings.map((l, i) => (i === at ? { ...l, owner: a.answer === 'yes' ? ('match' as const) : ('not_match' as const), ownerAt: now } : l));
+  const owner = a.answer === 'yes' ? ('match' as const) : ('not_match' as const);
+  // The answer is its own record first: it is what every later check applies, so a check that stops partway cannot lose it.
+  await store.putEbayAnswer({
+    key: ebayAnswerKey(record.key, listing.itemId, listing.revision), part: record.key, model: record.model, itemId: listing.itemId, revision: listing.revision ?? '',
+    owner, ownerAt: now, judged: listing.verdict, reasons: [...listing.reasons], title: listing.title, url: listing.url,
+  });
+  const listings = record.listings.map((l, i) => (i === at ? { ...l, owner, ownerAt: now } : l));
   await store.putEbayValue({ ...record, listings, value: valueOf(listings) });
 }
 
 /**
- * The owner's answers as labels for the judge, in the shape of fixtures/ebay/labels.json (`labelledBy` is
- * 'owner'), with what the judge said and the listing's title and page so the label can be checked.
+ * The owner's answers as labels for the judge, in the shape of fixtures/ebay/labels.json (`labelledBy` is 'owner'), with what
+ * the judge said and the listing's title and page so the label can be checked. From the answer records, so an answer
+ * survives whatever happened to the part's value since.
  */
-export function ebayLabelsOf(records: EbayValueRecord[]): {
+export function ebayLabelsOf(answers: EbayOwnerAnswer[]): {
   itemId: string; model: string; verdict: 'match' | 'not_match'; labelledBy: 'owner'; judged: string; reasons: string[]; title: string; url: string; answeredAt: number | null;
 }[] {
-  return records.flatMap((r) =>
-    r.listings.flatMap((l) =>
-      l.owner === undefined
-        ? []
-        : [{ itemId: l.itemId, model: r.model, verdict: l.owner, labelledBy: 'owner' as const, judged: l.verdict, reasons: [...l.reasons], title: l.title, url: l.url, answeredAt: l.ownerAt ?? null }],
-    ),
-  );
+  return answers.map((a) => ({
+    itemId: a.itemId, model: a.model, verdict: a.owner, labelledBy: 'owner' as const, judged: a.judged, reasons: [...a.reasons], title: a.title, url: a.url, answeredAt: a.ownerAt,
+  }));
 }

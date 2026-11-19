@@ -129,6 +129,17 @@ describe('EbayClient', () => {
     expect(e.message + JSON.stringify(e)).not.toMatch(/secret|t1/);
   });
 
+  it('a token request answered 429 or 5xx is a limit or a server error, not a refusal of the keys', async () => {
+    const answer = (status: number) => (async () => new Response('{}', { status })) as unknown as typeof fetch;
+    const caught = async (status: number) => (await new EbayClient({ appId: APP, certId: CERT, fetchFn: answer(status) }).search('a', OPTS).catch((x: unknown) => x)) as Error;
+    expect(await caught(429)).toBeInstanceOf(EbayRateLimitedError);
+    const e = await caught(503);
+    expect(e).toBeInstanceOf(EbayServerError);
+    expect((e as EbayServerError).status).toBe(503);
+    expect(await caught(401)).toBeInstanceOf(EbayAuthError);
+    expect(await caught(400)).toBeInstanceOf(EbayAuthError);
+  });
+
   it('a failed token request is an auth error that names no key', async () => {
     const fetchFn = (async () => new Response(JSON.stringify({ error: 'invalid_client', error_description: `bad ${APP}` }), { status: 401 })) as unknown as typeof fetch;
     const e = (await new EbayClient({ appId: APP, certId: CERT, fetchFn }).search('a', OPTS).catch((x: unknown) => x)) as Error;

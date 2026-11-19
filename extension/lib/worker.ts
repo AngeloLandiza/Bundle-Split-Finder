@@ -9,7 +9,7 @@ import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer } from '@core/scan
 import { EbayClient } from '@core/ebay/client';
 import { ClaudeJudge } from '@core/judge/claude';
 import { applyEbayAnswer, ebayLabelsOf } from '@core/scan/ebayAnswers';
-import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep } from '@core/scan/ebayPass';
+import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep, JUDGE_CALL_TIMEOUT_MS } from '@core/scan/ebayPass';
 import type { ProductPage } from '@core/hdPage';
 import { notePage } from '@core/scan/pageView';
 import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
@@ -141,6 +141,8 @@ export interface WorkerEnv {
   readPages?: ReadPages;
   /** Reads Home Depot's own price of parts sold alone in the owner's browser (step 9); without it none is read. */
   readPartPrices?: ReadPartPrices;
+  /** Step 10: longest one eBay or model call may take, in ms; default 30 s. A call that runs out is skipped, never a result. */
+  callTimeoutMs?: number;
   /** Step 10: where eBay's API is, for the end-to-end build (the replay server). Default https://api.ebay.com. */
   ebayBaseUrl?: string;
   /**
@@ -305,7 +307,12 @@ export function withoutKey(text: string, key: string): string {
 }
 
 /** What a continuation compares to tell whether the job moved on since the last start. */
-const progressOf = (job: ScanJob): string => `${job.searchesUsed}:${job.phase}:${job.queue.length}`;
+export const progressOf = (job: ScanJob): string => {
+  const c = job.counts;
+  // The eBay step spends no search and changes neither the phase nor the queue: its calls are progress too, or a worker evicted
+  // during it would look like one that got nowhere, and a scan would give up because of an optional step.
+  return `${job.searchesUsed}:${job.phase}:${job.queue.length}:${c.ebaySearches ?? 0}:${c.ebayItemReads ?? 0}:${c.listingsJudged ?? 0}`;
+};
 
 // ---------------------------------------------------------------- the worker
 
@@ -321,6 +328,16 @@ export function createWorker(env: WorkerEnv): Worker {
   let scan: Promise<void> | null = null;
   /** Set by stopScan (and forgetKey) while a scan runs; cleared when it ends. runScan asks before every paid step. */
   let stopRequested = false;
+  /** Aborted with stopRequested: an eBay or model call in flight ends at once. A new one is made when the stop is spent. */
+  let stopAbort = new AbortController();
+  const askStop = (): void => {
+    stopRequested = true;
+    stopAbort.abort();
+  };
+  const spentStop = (): void => {
+    stopRequested = false;
+    stopAbort = new AbortController();
+  };
   /** The key the running scan holds, so it is kept out of replies even after it was forgotten. */
   let scanKey: string | null = null;
   /** True while a start is between its first read and the scan's claim (or its refusal). */
@@ -342,27 +359,31 @@ export function createWorker(env: WorkerEnv): Worker {
   /** Counts every change of an eBay or Anthropic key. A scan's eBay step holds the keys it started with: it goes no further once this moves. */
   let ebayKeyEpoch = 0;
   /** The secrets a running scan's eBay step holds, so they are kept out of replies even after they were forgotten. */
-  const ebayKeysHeld: { certId: string | null; anthropic: string | null } = { certId: null, anthropic: null };
+  const ebayKeysHeld: { appId: string | null; certId: string | null; anthropic: string | null } = { appId: null, certId: null, anthropic: null };
+  const callTimeoutMs = env.callTimeoutMs ?? JUDGE_CALL_TIMEOUT_MS;
   const tokenStore: TokenStore = { get: () => prefs.getEbayToken(), set: (t) => prefs.setEbayToken(t), clear: () => prefs.clearEbayToken() };
 
   /**
    * The eBay step of a scan: built from the keys saved now, or the sentence saying which is missing (the scan carries on
    * without it). Caps per scan are core's (EBAY_SEARCHES_MAX, EBAY_ITEM_READS_MAX); the client holds them too.
    */
-  async function ebayStepFor(): Promise<EbayStep> {
+  async function ebayStepFor(stop: AbortSignal): Promise<EbayStep> {
     const keys = await prefs.getEbayKeys();
     const anthropic = await prefs.getAnthropicKey();
     if (keys === null || anthropic === null) return { kind: 'skip', notice: skippedFor(keys !== null, anthropic !== null) };
     const es = await ebaySettings();
     const epoch = ebayKeyEpoch;
+    ebayKeysHeld.appId = keys.appId;
     ebayKeysHeld.certId = keys.certId;
     ebayKeysHeld.anthropic = anthropic;
+    // Every eBay call ends when the scan is stopped, and after the call timeout: a call that runs out is a read skipped, never a result.
+    const bounded: typeof fetch = (input, init) => env.fetchFn(input, { ...init, signal: AbortSignal.any([stop, AbortSignal.timeout(callTimeoutMs)]) });
     const ebay = new EbayClient({
-      appId: keys.appId, certId: keys.certId, fetchFn: cachingTokenFetch(env.fetchFn, tokenStore, keys.appId, env.now), now: env.now,
+      appId: keys.appId, certId: keys.certId, fetchFn: cachingTokenFetch(bounded, tokenStore, keys.appId, env.now), now: env.now,
       maxSearches: EBAY_SEARCHES_MAX, maxItemReads: EBAY_ITEM_READS_MAX, ...(env.ebayBaseUrl ? { baseUrl: env.ebayBaseUrl } : {}),
     });
     const judge = new ClaudeJudge({ apiKey: anthropic, model: es.judgeModel, fetchFn: env.judgeFetchFn ?? env.fetchFn });
-    return { kind: 'run', ebay, judge, listingsJudgedPerScan: es.listingsJudgedPerScan, halted: () => ebayKeyEpoch !== epoch };
+    return { kind: 'run', ebay, judge, listingsJudgedPerScan: es.listingsJudgedPerScan, halted: () => ebayKeyEpoch !== epoch, signal: stop, callTimeoutMs };
   }
 
   /**
@@ -371,7 +392,7 @@ export function createWorker(env: WorkerEnv): Worker {
    */
   async function scrubbed<T>(value: T): Promise<T> {
     const ebayKeys = await prefs.getEbayKeys();
-    const keys = [await prefs.getKey(), scanKey, ebayKeys?.certId ?? null, await prefs.getAnthropicKey(), ebayKeysHeld.certId, ebayKeysHeld.anthropic].filter(
+    const keys = [await prefs.getKey(), scanKey, ebayKeys?.certId ?? null, ebayKeys?.appId ?? null, await prefs.getAnthropicKey(), ebayKeysHeld.appId, ebayKeysHeld.certId, ebayKeysHeld.anthropic].filter(
       (k): k is string => k !== null && k !== '',
     );
     let text = JSON.stringify(value);
@@ -452,7 +473,7 @@ export function createWorker(env: WorkerEnv): Worker {
     } finally {
       starting = false;
       // A stop sent during a start that did not run was for that start only.
-      if (scan === null) stopRequested = false;
+      if (scan === null) spentStop();
     }
   }
 
@@ -514,7 +535,7 @@ export function createWorker(env: WorkerEnv): Worker {
     if (keyNow !== key) return fail(keyNow === null ? NO_KEY : KEY_CHANGED);
     if (stopRequested) return refuse(STOPPED);
 
-    const ebay = await ebayStepFor();
+    const ebay = await ebayStepFor(stopAbort.signal);
     scanKey = key;
     scan = (async () => {
       try {
@@ -530,8 +551,9 @@ export function createWorker(env: WorkerEnv): Worker {
       })
       .finally(() => {
         scan = null;
-        stopRequested = false;
+        spentStop();
         scanKey = null;
+        ebayKeysHeld.appId = null;
         ebayKeysHeld.certId = null;
         ebayKeysHeld.anthropic = null;
         endProgress();
@@ -658,7 +680,7 @@ export function createWorker(env: WorkerEnv): Worker {
   async function forgetKey(): Promise<Reply<null>> {
     await prefs.forgetKey();
     // A scan or a paid action holds the key in memory: it stops before its next search.
-    if (scan !== null || starting) stopRequested = true;
+    if (scan !== null || starting) askStop();
     if (paid !== null) paidStop = true;
     // The account shown belonged to that key.
     await prefs.setAccount(null);
@@ -788,7 +810,7 @@ export function createWorker(env: WorkerEnv): Worker {
       bundles, listings: await store.listListings(), matches: await store.listMatches(), answers, questions,
       // Step 10: the owner's answers to eBay listing questions, as labels for the judge (fixtures/ebay/labels.json shape),
       // and the questions still open. Listings' titles and pages only: no seller or buyer data is kept.
-      ebayAnswers: ebayLabelsOf(await store.listEbayValues()), ebayQuestions: report.ebayQuestions ?? [],
+      ebayAnswers: ebayLabelsOf(await store.listEbayAnswers()), ebayQuestions: report.ebayQuestions ?? [],
     };
     return ok(JSON.stringify(audit, null, 2));
   }
@@ -1138,7 +1160,7 @@ export function createWorker(env: WorkerEnv): Worker {
       case 'exportAudit':
         return exportAudit();
       case 'stopScan':
-        if (scan !== null || starting) stopRequested = true;
+        if (scan !== null || starting) askStop();
         return ok(null);
       case 'clearSavedSearches':
         await env.cache.clear();

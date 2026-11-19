@@ -17,7 +17,7 @@ import type { EbayListing } from '@core/ebay/types';
 import { browseItem, browseSearch } from '../../scripts/ebay-replay';
 import { notePage, type PageView } from '@core/scan/pageView';
 import { toScanSettings } from '@core/settings';
-import { createWorker, type DeferredPage, type PageEnv, type Prefs, type Worker } from './worker';
+import { createWorker, type DeferredPage, type PageEnv, type Prefs, progressOf, type Worker } from './worker';
 
 // Every search goes through the real SerpApiClient over replayRecorded(); the Account API
 // is a fake answered from fx.SERPAPI_ACCOUNT_FREE. Nothing reaches the network.
@@ -252,6 +252,7 @@ interface World {
   fetchFn: typeof fetch;
   readPages?: ReadPages;
   readPartPrices?: ReadPartPrices;
+  callTimeoutMs?: number;
   worker: Worker;
 }
 
@@ -313,6 +314,7 @@ function workerOver(w: World, store: ScanStore = w.store): Worker {
     broadcast: (state) => void w.broadcasts.push(state),
     readPages: w.readPages,
     readPartPrices: w.readPartPrices,
+    callTimeoutMs: w.callTimeoutMs,
     pages: w.pages,
   });
 }
@@ -619,7 +621,7 @@ describe('worker: continues after the worker restarts (criterion 8)', () => {
     await first.onTick();
     const [saved] = await w.store.listScans();
     expect(saved).toMatchObject({ status: 'running', phase: 'parts', searchesUsed: 1 });
-    expect(w.prefs.data.activeScan).toEqual({ jobId: saved!.id, trigger: 'scheduled', attempts: 0, progress: '0:listing:1' });
+    expect(w.prefs.data.activeScan).toEqual({ jobId: saved!.id, trigger: 'scheduled', attempts: 0, progress: '0:listing:1:0:0:0' });
     // The scheduled run is not over, so the schedule has not moved on.
     expect(w.prefs.data.lastScheduledRunAt).toBe(T0 - 7 * HOUR);
     expect(w.ledger).toHaveLength(2);
@@ -1060,12 +1062,12 @@ describe('worker: a scan that cannot be saved stops after two tries', () => {
 
     await worker.onTick();
     expect(w.replay.calls).toEqual([RATCHET]);
-    expect(w.prefs.data.activeScan).toMatchObject({ attempts: 0, progress: '0:listing:1' });
+    expect(w.prefs.data.activeScan).toMatchObject({ attempts: 0, progress: '0:listing:1:0:0:0' });
 
     w.clock = T0 + MINUTE;
     await worker.onTick();
     expect(w.replay.calls).toEqual([RATCHET, RATCHET]);
-    expect(w.prefs.data.activeScan).toMatchObject({ attempts: 1, progress: '0:listing:1' });
+    expect(w.prefs.data.activeScan).toMatchObject({ attempts: 1, progress: '0:listing:1:0:0:0' });
 
     w.clock = T0 + 2 * MINUTE;
     const before = w.requests.length;
@@ -2367,10 +2369,10 @@ const ratchetListing = (n: number, price: number, sold: number): EbayListing => 
 });
 const RATCHET_LISTINGS = [ratchetListing(1, 120, 40), ratchetListing(2, 130, 10), ratchetListing(3, 99, 5)];
 
-interface Call { origin: string; path: string; method: string; headers: Record<string, string>; search: string }
+interface Call { origin: string; path: string; method: string; headers: Record<string, string>; search: string; signal?: AbortSignal }
 
 /** eBay and the model, answering over the world's fetch. Records every call that reaches either, with its headers. */
-function withEbay(w: World, o: { claude?: (n: number) => Response | Promise<Response>; onSearch?: () => void | Promise<void>; token?: () => string } = {}): { calls: Call[]; searches: () => number; anthropic: () => number } {
+function withEbay(w: World, o: { claude?: (n: number, init?: RequestInit) => Response | Promise<Response>; onSearch?: () => void | Promise<void>; token?: () => string } = {}): { calls: Call[]; searches: () => number; anthropic: () => number } {
   const inner = w.fetchFn;
   const calls: Call[] = [];
   let anthropic = 0;
@@ -2380,7 +2382,7 @@ function withEbay(w: World, o: { claude?: (n: number) => Response | Promise<Resp
     const headers = Object.fromEntries(Object.entries((init?.headers ?? {}) as Record<string, string>).map(([k, v]) => [k.toLowerCase(), v]));
     const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
     if (url.origin === 'https://api.ebay.com') {
-      calls.push({ origin: url.origin, path: url.pathname, method: init?.method ?? 'GET', headers, search: url.search });
+      calls.push({ origin: url.origin, path: url.pathname, method: init?.method ?? 'GET', headers, search: url.search, ...(init?.signal ? { signal: init.signal } : {}) });
       if (url.pathname === '/identity/v1/oauth2/token') {
         if (headers.authorization !== BASIC) return json({ error: 'invalid_client' }, 401);
         tokenNo += 1;
@@ -2396,9 +2398,9 @@ function withEbay(w: World, o: { claude?: (n: number) => Response | Promise<Resp
       return item ? json(browseItem(item)) : json({ error: 'not found' }, 404);
     }
     if (url.origin === 'https://api.anthropic.com') {
-      calls.push({ origin: url.origin, path: url.pathname, method: init?.method ?? 'GET', headers, search: url.search });
+      calls.push({ origin: url.origin, path: url.pathname, method: init?.method ?? 'GET', headers, search: url.search, ...(init?.signal ? { signal: init.signal } : {}) });
       anthropic += 1;
-      if (o.claude) return o.claude(anthropic);
+      if (o.claude) return o.claude(anthropic, init);
       const body = JSON.parse(String(init?.body)) as { messages: { content: string }[] };
       const title = /<title>\n([\s\S]*?)\n<\/title>/.exec(body.messages[0]!.content)![1]!.trim();
       const answer = {
@@ -2650,4 +2652,69 @@ describe('worker: eBay reference values (step 10)', () => {
     const row = lines.find((l) => l.includes('PBLRC2501SB'))!;
     expect(row.endsWith(',99 | ?,130 | ?,55 | ?')).toBe(true);
   });
+
+  it('a scan\'s progress counts the eBay step: an eviction during it is not "no progress"', () => {
+    const base = { searchesUsed: 3, phase: 'listing', queue: [], counts: {} } as unknown as ScanJob;
+    const at = (counts: Record<string, number>) => progressOf({ ...base, counts: counts as unknown as ScanJob['counts'] });
+    expect(at({})).toBe(at({ ebaySearches: 0, ebayItemReads: 0, listingsJudged: 0 }));
+    const seen = new Set([at({}), at({ ebaySearches: 1 }), at({ ebayItemReads: 1 }), at({ listingsJudged: 1 }), at({ ebaySearches: 1, ebayItemReads: 1, listingsJudged: 1 })]);
+    expect(seen.size).toBe(5);
+  });
+
+  it('a model call that never answers is given up at the timeout: not judged, and the scan goes on', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    w.callTimeoutMs = 40;
+    w.worker = workerOver(w);
+    let signals = 0;
+    withEbay(w, {
+      claude: (_n, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          signals += 1;
+          init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+        }),
+    });
+    const job = await scanThrough(w);
+    expect(signals).toBe(3);
+    expect(await w.store.getEbayValue('RYOBI:PBLRC25B')).toBeUndefined();
+    expect(job.counts).toMatchObject({ listingsJudged: 3 });
+    expect(JSON.stringify(await state(w))).not.toContain(ANTHROPIC);
+  });
+
+  it('Stop ends a model call in flight at once', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    let inFlight: AbortSignal | undefined;
+    withEbay(w, {
+      claude: (_n, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          inFlight = init?.signal ?? undefined;
+          init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+        }),
+    });
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    await vi.waitFor(() => expect(inFlight).toBeDefined());
+    expect(inFlight!.aborted).toBe(false);
+    await send(w, { type: 'stopScan' });
+    await untilIdle(w);
+    expect(inFlight!.aborted).toBe(true);
+    expect((await lastJob(w)).stopReason).toBe('user');
+  });
+
+  it('every eBay call carries an abort signal too', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    const net = withEbay(w);
+    await scanThrough(w);
+    expect(net.calls.filter((c) => c.origin === 'https://api.ebay.com').every((c) => c.signal)).toBe(true);
+  });
+
+  it('the eBay App ID is kept out of what a page is told, as the keys are', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    await scanThrough(w);
+    const [job] = await w.store.listScans();
+    await w.store.putScan({ ...job!, stopMessage: `a failure that echoed ${APP} and ${CERT}` });
+    const text = JSON.stringify(await state(w));
+    expect(text).not.toContain(APP);
+    expect(text).not.toContain(CERT);
+    expect(text).toContain('[key]');
+  });
 });
+

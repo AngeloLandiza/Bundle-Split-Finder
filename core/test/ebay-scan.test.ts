@@ -173,7 +173,7 @@ describe('the owner\'s answer', () => {
     const after = (await store.getEbayValue('RYOBI:PBLRC25B'))!;
     expect(after.value).toMatchObject({ listings: 2, unitsSold: 30, low: 41, high: 42 });
     expect(after.listings[1]).toMatchObject({ verdict: 'unsure', owner: 'match', ownerAt: 77 });
-    expect(ebayLabelsOf([after])).toEqual([
+    expect(ebayLabelsOf(await store.listEbayAnswers())).toEqual([
       { itemId: 'v1|2|0', model: 'PBLRC25B', verdict: 'match', labelledBy: 'owner', judged: 'unsure', reasons: ['The title names the model.'], title: 'RYOBI PBLRC25B 18V ONE+ ratchet (2)', url: 'https://www.ebay.com/itm/2', answeredAt: 77 },
     ]);
 
@@ -181,7 +181,7 @@ describe('the owner\'s answer', () => {
     await no.putEbayValue(record('PBLRC25B', unsure));
     await applyEbayAnswer(no, { key: 'RYOBI:PBLRC25B', itemId: 'v1|2|0', answer: 'no' }, 78);
     expect((await no.getEbayValue('RYOBI:PBLRC25B'))!.value).toMatchObject({ listings: 1, unitsSold: 10 });
-    expect(ebayLabelsOf([(await no.getEbayValue('RYOBI:PBLRC25B'))!])[0]).toMatchObject({ verdict: 'not_match', labelledBy: 'owner' });
+    expect(ebayLabelsOf(await no.listEbayAnswers())[0]).toMatchObject({ verdict: 'not_match', labelledBy: 'owner' });
   });
 
   it('an answer that gives a value to a part that had none shows the eBay line', async () => {

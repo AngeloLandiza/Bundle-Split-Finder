@@ -8,6 +8,7 @@ import { EbayAuthError, EbayForbiddenError, EbayRateLimitedError, EbayServerErro
 import type { EbayListing, EbayListingSummary } from '../src/ebay/types';
 import { PROMPT_VERSION } from '../src/judge/prompt';
 import type { JudgeCall, JudgeInput, JudgeRaw, ListingJudge, NotJudgedReason } from '../src/judge/types';
+import { applyEbayAnswer, ebayLabelsOf } from '../src/scan/ebayAnswers';
 import { type EbayPort, EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, runEbayPass } from '../src/scan/ebayPass';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { judgementKey, type EbayValueRecord, type ScanJob } from '../src/scan/types';
@@ -275,15 +276,103 @@ describe('the eBay step: DEWALT DCF921B on the real search', () => {
     expect(await store.getEbayValue('DEWALT:DCK420D2')).toMatchObject({ value: null, listings: [], notJudged: 0, complete: true });
   });
 
-  it('the owner\'s answer stays on a listing through a new check, while its revision is the same', async () => {
+  it('the owner\'s answer is its own record and stays on a listing through a new check, even one that stops partway', async () => {
     const store = new MemoryScanStore();
     await run({ store });
+    const unsure = (await store.getEbayValue(DCF.key))!.listings.find((l) => l.itemId === 'v1|840092869695|0')!;
+    expect(unsure.verdict).toBe('unsure');
+    const before = (await store.getEbayValue(DCF.key))!.value!;
+    await applyEbayAnswer(store, { key: DCF.key, itemId: unsure.itemId, answer: 'yes' }, 99);
+    const answered = (await store.getEbayValue(DCF.key))!.value!;
+    expect(answered.listings).toBe(before.listings + 1);
+    expect(answered.unitsSold).toBe(before.unitsSold + 4);
+
+    // A check with another model asks everything again; the model is limited at its third call.
+    // The listings it did not reach are carried from the last check, and the answer, the value and the label stand.
+    const opus = judge({ model: 'claude-opus-5-5', fail: (id) => (id === 'v1|306552991202|0' ? 'rate_limited' : null) });
+    const second = await run({ store, judge: opus, job: job() });
+    expect(second.job.ebayNotice).toBe("Claude's rate limit was reached, so the rest of the eBay listings wait for the next scan.");
+    expect(opus.calls).toHaveLength(3);
     const r = (await store.getEbayValue(DCF.key))!;
-    const unsure = r.listings.find((l) => l.verdict === 'unsure')!;
-    await store.putEbayValue({ ...r, listings: r.listings.map((l) => (l === unsure ? { ...l, owner: 'match' as const, ownerAt: 9 } : l)) });
-    await run({ store, job: job() });
-    const after = (await store.getEbayValue(DCF.key))!.listings.find((l) => l.itemId === unsure.itemId)!;
-    expect(after).toMatchObject({ verdict: 'unsure', owner: 'match', ownerAt: 9 });
+    expect(r.complete).toBe(false);
+    expect(r.listings).toHaveLength(8);
+    expect(r.listings.find((l) => l.itemId === unsure.itemId)).toMatchObject({ verdict: 'unsure', owner: 'match', ownerAt: 99 });
+    expect(r.value).toEqual(answered);
+    expect(ebayLabelsOf(await store.listEbayAnswers())).toEqual([
+      expect.objectContaining({ itemId: unsure.itemId, model: 'DCF921B', verdict: 'match', labelledBy: 'owner', judged: 'unsure', answeredAt: 99 }),
+    ]);
+  });
+
+  it('an answer given for a listing\'s revision does not hold for another', async () => {
+    const store = new MemoryScanStore();
+    await run({ store });
+    const item = recording.parts.DCF921B!.items['v1|840092869695|0']!;
+    await applyEbayAnswer(store, { key: DCF.key, itemId: item.itemId, answer: 'yes' }, 1);
+    const base = port();
+    const changed: EbayPort = { search: base.search, getItem: async (id) => (id === item.itemId ? { ...item, revision: 'newer' } : base.getItem(id)) };
+    await run({ store, ebay: changed, job: job() });
+    const l = (await store.getEbayValue(DCF.key))!.listings.find((x) => x.itemId === item.itemId)!;
+    expect(l).toMatchObject({ revision: 'newer', verdict: 'unsure' });
+    expect(l.owner).toBeUndefined();
+  });
+
+  it('a part\'s name is part of the saved answer\'s key: a changed name asks the model again', async () => {
+    const store = new MemoryScanStore();
+    await run({ store });
+    await store.putCatalogEntry({ key: DCF.key, brand: 'DEWALT', model: 'DCF921B', title: 'A new name for the part', kinds: [], isKit: false, upc: null, seenAt: 1 });
+    const j = judge();
+    await run({ store, judge: j, job: job() });
+    expect(j.calls).toHaveLength(8);
+  });
+
+  it('a model call is given an abort signal that ends it at the timeout: not judged, never a verdict', async () => {
+    const hang: ListingJudge = {
+      id: 'claude', model: 'claude-haiku-5-5',
+      judge: (_i, signal) => new Promise<JudgeCall>((resolve) => signal?.addEventListener('abort', () => resolve({ judgeId: 'claude', model: 'claude-haiku-5-5', promptVersion: PROMPT_VERSION, ok: false, notJudged: { reason: 'aborted', message: 'cancelled' } }))),
+    };
+    const store = new MemoryScanStore();
+    const j = job();
+    await runEbayPass({ store, job: j, save: async () => {}, parts: [DCF], ebay: port(), judge: hang, listingsJudgedPerScan: 60, now: () => NOW, shouldStop: () => false, callTimeoutMs: 5 });
+    expect(await store.getEbayValue(DCF.key)).toBeUndefined();
+    expect(j.counts.listingsJudged).toBe(8);
+  });
+
+  it('a stop aborts the model call in flight', async () => {
+    const stop = new AbortController();
+    const seen: AbortSignal[] = [];
+    const hang: ListingJudge = {
+      id: 'claude', model: 'claude-haiku-5-5',
+      judge: (_i, signal) => new Promise<JudgeCall>((resolve) => {
+        seen.push(signal!);
+        signal!.addEventListener('abort', () => resolve({ judgeId: 'claude', model: 'claude-haiku-5-5', promptVersion: PROMPT_VERSION, ok: false, notJudged: { reason: 'aborted', message: 'cancelled' } }));
+        setTimeout(() => stop.abort(), 1);
+      }),
+    };
+    const j = job();
+    await runEbayPass({ store: new MemoryScanStore(), job: j, save: async () => {}, parts: [DCF], ebay: port(), judge: hang, listingsJudgedPerScan: 60, now: () => NOW, shouldStop: () => stop.signal.aborted, signal: stop.signal });
+    expect(seen).toHaveLength(1);
+    expect(seen[0]!.aborted).toBe(true);
+  });
+
+  it('a 400 from the model (unknown model, no credit) stops the step with a plain notice', async () => {
+    const e = port();
+    const { job: after } = await run({ ebay: e, judge: judge({ fail: () => 'bad_request' }), parts: [DCF, { key: 'DEWALT:DCB205', brand: 'DEWALT', model: 'DCB205' }] });
+    expect(after.ebayNotice).toBe('Claude refused the request (an unknown model, no credit or a bad request), so eBay listings were not judged. Check the model and your Anthropic account.');
+    expect(e.searches).toHaveLength(1);
+  });
+
+  it('saves the job after every call, so a count is kept if the worker is evicted in the middle', async () => {
+    const store = new MemoryScanStore();
+    const j = job();
+    const seen: number[] = [];
+    await runEbayPass({
+      store, job: j, save: async () => void seen.push((j.counts.ebaySearches ?? 0) * 1000 + (j.counts.ebayItemReads ?? 0) * 10 + (j.counts.listingsJudged ?? 0)),
+      parts: [DCF], ebay: port(), judge: judge(), listingsJudgedPerScan: 60, now: () => NOW, shouldStop: () => false,
+    });
+    // One save for the search, then for each of the 8 listings one for the read and one for the model call (and its tokens).
+    expect(seen.length).toBeGreaterThanOrEqual(1 + 8 * 2);
+    expect(seen[0]).toBe(1000);
+    expect(seen).toContain(1000 + 8 * 10 + 7);
   });
 
   it('a stop asked for ends the step without a search', async () => {

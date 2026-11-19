@@ -27,7 +27,7 @@ describe('the database upgrade', () => {
     await v1.add('ledger', { at: 'a', engine: 'e', key: 'k', label: 'l' });
     v1.close();
     const db = await openDb(name);
-    expect(db.version).toBe(3);
+    expect(db.version).toBe(4);
     const s = new IdbScanStore(db);
     expect(await s.getCursor('RYOBI')).toEqual({ brand: 'RYOBI', nextPage: 3, passes: 1, updatedAt: 1 });
     expect(await readLedger(db)).toHaveLength(1);
@@ -39,7 +39,7 @@ describe('the database upgrade', () => {
     expect(await s.getJudgement('x')).toBeUndefined();
   });
 
-  it('a version 2 database gains only the eBay stores: what it held, partPrices included, is kept', async () => {
+  it('a version 2 database gains only the eBay stores (values, judgements, owner answers): what it held, partPrices included, is kept', async () => {
     const name = fresh();
     const v2 = await openDB(name, 2, {
       upgrade(d) {
@@ -54,11 +54,11 @@ describe('the database upgrade', () => {
     await v2.put('cache', { key: 'k', at: 1, data: 1 });
     v2.close();
     const db = await openDb(name);
-    expect(db.version).toBe(3);
+    expect(db.version).toBe(4);
     const s = new IdbScanStore(db);
     expect(await s.getPartPrice('RYOBI:PCL500')).toEqual(r);
     expect(await new IdbCache(db).get('k')).toEqual({ at: 1, data: 1 });
-    expect([...db.objectStoreNames].sort()).toEqual(['bundles', 'cache', 'catalog', 'cursors', 'ebayValues', 'judgements', 'ledger', 'listings', 'matches', 'partPrices', 'prices', 'review', 'scans']);
+    expect([...db.objectStoreNames].sort()).toEqual(['bundles', 'cache', 'catalog', 'cursors', 'ebayAnswers', 'ebayValues', 'judgements', 'ledger', 'listings', 'matches', 'partPrices', 'prices', 'review', 'scans']);
   });
 });
 

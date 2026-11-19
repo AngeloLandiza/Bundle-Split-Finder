@@ -271,6 +271,31 @@ export interface EbayValueRecord {
 }
 
 /**
+ * Step 10: the owner's Yes or No to "Is this eBay listing exactly this part?", kept on its own, by part, listing and revision,
+ * so no check of the part, however it ends, can lose it: every value is computed with the answers (ebayPass.ts), and the audit
+ * file exports them as labels. Self-contained: the listing's title and page and what the judge said are kept with it.
+ */
+export interface EbayOwnerAnswer {
+  /** ebayAnswerKey(part, itemId, revision) */
+  key: string;
+  /** partKey of the part. */
+  part: string;
+  model: string;
+  itemId: string;
+  /** The listing's sellerItemRevision, empty when eBay gave none: an answer holds only for the revision it was given for. */
+  revision: string;
+  owner: 'match' | 'not_match';
+  ownerAt: number;
+  /** What the judge's checked verdict was (unsure, for a question asked). */
+  judged: EbayVerdict;
+  reasons: string[];
+  title: string;
+  url: string;
+}
+
+export const ebayAnswerKey = (part: string, itemId: string, revision: string | undefined): string => [part, itemId, revision ?? ''].join('|');
+
+/**
  * Step 10: one model answer, kept so a listing is judged once for a part, item revision, prompt and model.
  * It holds the model's raw answer text, never a verdict: verification rules change without a prompt
  * version change, so every read is verified again (core/src/judge/verify.ts).
@@ -290,9 +315,24 @@ export interface JudgementRecord {
   judgedAt: number;
 }
 
-/** The key of a judgement: item, revision (empty when eBay gives none), prompt version, model and part. */
-export const judgementKey = (itemId: string, revision: string | undefined, promptVersion: string, model: string, part: string): string =>
-  [itemId, revision ?? '', promptVersion, model, part].join('|');
+/** A short fingerprint of a text (FNV-1a, 32 bits, in hex): enough to tell two part names apart in a key, not a security measure. */
+export function textHash(text: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}
+
+/**
+ * The key of a judgement: item, revision (empty when eBay gives none), prompt version, model and part, with everything else the
+ * model is shown about the part: its other written form and its name (Home Depot's title, as a hash). A change of any of them is
+ * a new question for the model, so a saved answer to the old one is not used.
+ */
+export const judgementKey = (
+  itemId: string, revision: string | undefined, promptVersion: string, model: string, part: string, twin?: string, name?: string,
+): string => [itemId, revision ?? '', promptVersion, model, part, twin ?? '', name ? textHash(name) : ''].join('|');
 
 export interface CatalogRecord {
   /** partKey(brand, model) */
@@ -619,6 +659,10 @@ export interface ScanStore {
   getEbayValue(key: string): Promise<EbayValueRecord | undefined>;
   putEbayValue(record: EbayValueRecord): Promise<void>;
   listEbayValues(): Promise<EbayValueRecord[]>;
+
+  /** Step 10: the owner's answers about eBay listings, by ebayAnswerKey. Listed by key. */
+  putEbayAnswer(record: EbayOwnerAnswer): Promise<void>;
+  listEbayAnswers(): Promise<EbayOwnerAnswer[]>;
 
   /** Step 10: saved model answers, by judgementKey. */
   getJudgement(key: string): Promise<JudgementRecord | undefined>;

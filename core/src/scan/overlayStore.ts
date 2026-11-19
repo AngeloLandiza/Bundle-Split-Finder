@@ -3,7 +3,7 @@
 // page's view is computed over one while a scan or a panel action runs (pageView.ts, write: false).
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from './types';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
@@ -50,6 +50,7 @@ export class OverlayStore implements ScanStore {
   private readonly partPrices = new Layer<PartPriceRecord>((r) => r.key, byKey((r) => r.key));
   private readonly ebayValues = new Layer<EbayValueRecord>((r) => r.key, byKey((r) => r.key));
   private readonly judgements = new Layer<JudgementRecord>((r) => r.key, byKey((r) => r.key));
+  private readonly ebayAnswers = new Layer<EbayOwnerAnswer>((r) => r.key, byKey((r) => r.key));
   private readonly scans = new Layer<ScanJob>((r) => r.id, (a, b) => b.startedAt - a.startedAt);
 
   constructor(private readonly base: ScanStore) {}
@@ -136,6 +137,13 @@ export class OverlayStore implements ScanStore {
   }
   listEbayValues() {
     return this.ebayValues.list(() => this.base.listEbayValues());
+  }
+
+  async putEbayAnswer(record: EbayOwnerAnswer) {
+    this.ebayAnswers.put(record);
+  }
+  listEbayAnswers() {
+    return this.ebayAnswers.list(() => this.base.listEbayAnswers());
   }
 
   getJudgement(key: string) {

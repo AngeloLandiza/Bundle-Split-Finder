@@ -2,7 +2,7 @@
 // out, so neither the caller's object nor a returned one aliases what is stored.
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from './types';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
@@ -22,6 +22,7 @@ export class MemoryScanStore implements ScanStore {
   private readonly partPrices = new Map<string, PartPriceRecord>();
   private readonly ebayValues = new Map<string, EbayValueRecord>();
   private readonly judgements = new Map<string, JudgementRecord>();
+  private readonly ebayAnswers = new Map<string, EbayOwnerAnswer>();
   private readonly scans = new Map<string, ScanJob>();
 
   private get<T>(map: Map<string, T>, key: string): T | undefined {
@@ -115,6 +116,13 @@ export class MemoryScanStore implements ScanStore {
   }
   async listEbayValues() {
     return this.list(this.ebayValues, byKey((r) => r.key));
+  }
+
+  async putEbayAnswer(record: EbayOwnerAnswer) {
+    this.ebayAnswers.set(record.key, structuredClone(record));
+  }
+  async listEbayAnswers() {
+    return this.list(this.ebayAnswers, byKey((r) => r.key));
   }
 
   async getJudgement(key: string) {

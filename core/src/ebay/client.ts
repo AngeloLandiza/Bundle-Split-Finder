@@ -111,6 +111,9 @@ export class EbayClient {
       throw new EbayError('Network error reaching eBay for a token.');
     }
     const json = (await res.json().catch(() => ({}))) as { access_token?: unknown; expires_in?: unknown };
+    // The status says what went wrong: a limit or an eBay outage is not the keys' fault, and must not read as if it were.
+    if (res.status === 429) throw new EbayRateLimitedError('eBay is limiting calls (HTTP 429).');
+    if (res.status >= 500) throw new EbayServerError(`eBay had a server problem (HTTP ${res.status}).`, res.status);
     if (!res.ok || typeof json.access_token !== 'string') {
       throw new EbayAuthError(`eBay refused the token request (HTTP ${res.status}). Check the App ID and Cert ID.`, res.status);
     }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from '../src/scan/types';
 
 const bundle = (itemId: string, over: Partial<BundleRecord> = {}): BundleRecord => ({
@@ -137,6 +137,11 @@ const judgement = (itemId: string, over: Partial<JudgementRecord> = {}): Judgeme
   ...over,
 });
 
+const ebayAnswer = (itemId: string, over: Partial<EbayOwnerAnswer> = {}): EbayOwnerAnswer => ({
+  key: `RYOBI:PCL206B|${itemId}|`, part: 'RYOBI:PCL206B', model: 'PCL206B', itemId, revision: '', owner: 'match', ownerAt: 1, judged: 'unsure', reasons: ['r'],
+  title: 'RYOBI PCL206B', url: 'https://www.ebay.com/itm/1', ...over,
+});
+
 export function storeConformance(name: string, make: () => Promise<ScanStore>): void {
 describe(`${name} round trips`, () => {
   it('bundles: put, get, replace, missing', async () => {
@@ -256,6 +261,17 @@ describe(`${name} round trips`, () => {
     const got = (await s.getEbayValue('RYOBI:PCL206B'))!;
     got.listings[0]!.title = 'changed';
     expect((await s.getEbayValue('RYOBI:PCL206B'))!.listings[0]!.title).toBe('RYOBI PCL206B 18V ONE+ Drill/Driver (Tool Only)');
+  });
+
+  it("the owner's eBay answers (step 10): put, replace by key, listed by key, a copy is returned", async () => {
+    const s = await make();
+    await s.putEbayAnswer(ebayAnswer('v1|2|0'));
+    await s.putEbayAnswer(ebayAnswer('v1|1|0'));
+    await s.putEbayAnswer(ebayAnswer('v1|2|0', { owner: 'not_match', ownerAt: 5 }));
+    const all = await s.listEbayAnswers();
+    expect(all.map((r) => [r.itemId, r.owner])).toEqual([['v1|1|0', 'match'], ['v1|2|0', 'not_match']]);
+    all[0]!.reasons.push('x');
+    expect((await s.listEbayAnswers())[0]!.reasons).toEqual(['r']);
   });
 
   it('judgements (step 10): put, get, replace, missing; a copy is returned', async () => {
