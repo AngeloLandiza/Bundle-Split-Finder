@@ -1,0 +1,1741 @@
+{
+ "about": "Ground-truth labels for the eBay validation candidates (fixtures/ebay/validation-2026-11-19.json kept listings). Drafted 2026-11-19 by three independent Opus readings with verbatim quotes, under the PO's packaging ruling (bulk, repackaged, no box and kit-pulled New listings count when the contents are exactly the product). labelledBy 'draft' until the owner checks one.",
+ "labels": [
+  {
+   "itemId": "v1|227605048699|0",
+   "model": "A986501",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Set Includes=Batteries, 65 drill bits",
+   "note": "Title names the 65-piece bit set, but brand is Unbranded and the specifics claim batteries and call it a replacement part."
+  },
+  {
+   "itemId": "v1|127192189387|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Not Brand Dewalt !!!",
+   "note": "Third-party impact driver that takes DCB205 batteries."
+  },
+  {
+   "itemId": "v1|187318038830|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "New For Dewalt DCB205 20 Volt 20V Max 3/8\" 2 Speed Drill Driver",
+   "note": "Third-party drill driver for DEWALT batteries."
+  },
+  {
+   "itemId": "v1|237159233078|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "This is a third\u2011party compatible battery, not original.",
+   "note": "Third-party 2-pack of compatible batteries."
+  },
+  {
+   "itemId": "v1|277722677166|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "For DEWALT DCB205 20V MAX XR Brushless Cordless 1/2\" Hammer Drill Driver",
+   "note": "Third-party hammer drill for DEWALT batteries."
+  },
+  {
+   "itemId": "v1|286694301512|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "For DEWALT DCB205 20V MAX XR Cordless Drill Impact Driver",
+   "note": "Third-party impact driver for DEWALT batteries."
+  },
+  {
+   "itemId": "v1|336563044587|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "4-Pack 20V 8.0Ah Replacement Battery for Dewalt",
+   "note": "Four third-party 8Ah replacement batteries."
+  },
+  {
+   "itemId": "v1|366805273239|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "For DEWALT DCB205 20V MAX Cordless Drill Impact Driver",
+   "note": "Third-party impact driver for DEWALT batteries."
+  },
+  {
+   "itemId": "v1|800928940227|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "3-Pack 20 Volt 5.0Ah Battery for Dewalt",
+   "note": "Three third-party replacement batteries."
+  },
+  {
+   "itemId": "v1|237085136740|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "12.0Ah Battery Compatible with DeWalt 20V/60V MAX DCB609 DCB606",
+   "note": "Third-party 12Ah battery, compatible only."
+  },
+  {
+   "itemId": "v1|237085142273|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "2PACK 12Ah Battery Compatible with DeWalt",
+   "note": "Third-party 12Ah 2-pack, compatible only."
+  },
+  {
+   "itemId": "v1|237085171037|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "9.0Ah Battery Compatible with DeWalt 20V/60V MAX DCB606",
+   "note": "Third-party 9Ah battery, compatible only."
+  },
+  {
+   "itemId": "v1|237085173054|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "2PACK 9.0Ah Battery Compatible with DeWalt 20V/60V MAX DCB606",
+   "note": "Third-party 9Ah 2-pack, compatible only."
+  },
+  {
+   "itemId": "v1|237115540921|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "DCB118 8A Fast Charger Compatible with DeWalt",
+   "note": "A third-party charger, not the battery."
+  },
+  {
+   "itemId": "v1|237115638702|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Dual Charger DCB102 with USB Compatible with Dewalt",
+   "note": "A third-party charger, not the battery."
+  },
+  {
+   "itemId": "v1|407189136497|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "DEWALT DCG409VSN 20V MAX XR 125mm Variable Speed Grinder DCB606 FLEXVOLT Battery",
+   "note": "A grinder sold with a DCB606; the battery is one item in a bundle."
+  },
+  {
+   "itemId": "v1|820076505425|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "12.0Ah Compatible with Dewalt 20V/60V Max Battery",
+   "note": "Third-party 12Ah battery, compatible only."
+  },
+  {
+   "itemId": "v1|137923389067|0",
+   "model": "DCF921B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new sealed in the box",
+   "note": "Sealed DCF921B."
+  },
+  {
+   "itemId": "v1|227617096880|0",
+   "model": "DCF921B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "stated maximum torque of up to 450 N\u00b7m. Please check the product specifications before purchase.",
+   "note": "Description is a generic DCF921 clone text with specs that differ from the genuine tool."
+  },
+  {
+   "itemId": "v1|306552991202|0",
+   "model": "DCF921B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "This is a BARE TOOL ONLY",
+   "note": "DCF921B tool only, New."
+  },
+  {
+   "itemId": "v1|356061995376|0",
+   "model": "DCF921B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new Sealed box",
+   "note": "Sealed DCF921B."
+  },
+  {
+   "itemId": "v1|407209694810|0",
+   "model": "DCF921B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "4 ft",
+   "note": "Title says tool only new, but the aspects list a 4 ft cable and 350 W and match a clone listing template."
+  },
+  {
+   "itemId": "v1|407352842496|0",
+   "model": "DCF921B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Dewalt DCF911B",
+   "note": "Title and text say DCF921B but MPN and model aspects say DCF911B."
+  },
+  {
+   "itemId": "v1|840092869695|0",
+   "model": "DCF921B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Origin Mainland China Brand Name DEWALT",
+   "note": "Brand aspect BRANDED and a customised Mainland China spec sheet describe a different product."
+  },
+  {
+   "itemId": "v1|920101779170|0",
+   "model": "DCF921B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Dewalt DCF911B",
+   "note": "Title says DCF921B but MPN, model and UPC aspects say DCF911B."
+  },
+  {
+   "itemId": "v1|188014102173|0",
+   "model": "DCK200D1P1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Condition: New in factory sealed box. Model # DCK200D1P1",
+   "note": "Factory sealed kit."
+  },
+  {
+   "itemId": "v1|198754433948|0",
+   "model": "DCK200D1P1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "New in factory sealed box",
+   "note": "Factory sealed DCK200D1P1 kit."
+  },
+  {
+   "itemId": "v1|257813691503|0",
+   "model": "DCK200D1P1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand New - Box has some damage",
+   "note": "New kit under the exact model; box damaged."
+  },
+  {
+   "itemId": "v1|327416179319|0",
+   "model": "DCK200D1P1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "# DCK200D1P1",
+   "note": "New kit, exact MPN, two batteries."
+  },
+  {
+   "itemId": "v1|820032917676|0",
+   "model": "DCK200D1P1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "DeWalt DCK200D1P1 Atomic 20V MAX Li-ion 1/2\" Drill & 1/4\" Impact Kit W/Batteries",
+   "note": "New kit under the exact MPN."
+  },
+  {
+   "itemId": "v1|960204899926|0",
+   "model": "DCK200D1P1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Drill, Impact, (2) Batteries, & Bag DCK200D1P1",
+   "note": "New kit, exact MPN, contents match."
+  },
+  {
+   "itemId": "v1|257830643937|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "BRAND NEW SEALED",
+   "note": "Sealed DCK225D2."
+  },
+  {
+   "itemId": "v1|267847487029|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "(NEW/SEALED)",
+   "note": "Sealed DCK225D2."
+  },
+  {
+   "itemId": "v1|287719715826|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "BRAND NEW SEALED",
+   "note": "Sealed DCK225D2."
+  },
+  {
+   "itemId": "v1|366811148561|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Battery Included,Charger,Tool Bag",
+   "note": "DCK225D2, New, full kit contents."
+  },
+  {
+   "itemId": "v1|388042199892|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "DEWALT DCK225D2 ATOMIC 20V MAX",
+   "note": "Model in title, New, two batteries."
+  },
+  {
+   "itemId": "v1|398045310682|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "two 20V MAX* compact 2 Ah batteries",
+   "note": "DCK225D2, New, full kit contents."
+  },
+  {
+   "itemId": "v1|398418302621|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Condition is New.",
+   "note": "DCK225D2 kit with two 2.0Ah batteries, New."
+  },
+  {
+   "itemId": "v1|860158654414|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new unopened inbox",
+   "note": "Unopened DCK225D2."
+  },
+  {
+   "itemId": "v1|147653239103|0",
+   "model": "DCK240C2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Complete manufacturer-packaged combo kit.",
+   "note": "Factory-sealed DCK240C2 kit with its listed contents."
+  },
+  {
+   "itemId": "v1|206700841473|0",
+   "model": "DCK240C2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Includes 2 Batteries, Charger and Bag",
+   "note": "New DCK240C2 kit with batteries, charger and bag."
+  },
+  {
+   "itemId": "v1|307242864662|0",
+   "model": "DCK240C2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Powered by (2) included 20V MAX* batteries and a charger",
+   "note": "New DCK240C2 kit as packaged; same copied text as another listing."
+  },
+  {
+   "itemId": "v1|397847697008|0",
+   "model": "DCK240C2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Includes batteries, charger, and contractor bag",
+   "note": "New DCK240C2 kit with its two batteries, charger and bag."
+  },
+  {
+   "itemId": "v1|800845491870|0",
+   "model": "DCK240C2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "NEW Dewalt 20V Cordless Drill Driver/Impact Driver Combo Kit DCK240C2",
+   "note": "New DCK240C2 combo kit, one unit; sparse text but model and condition are stated."
+  },
+  {
+   "itemId": "v1|820267241417|0",
+   "model": "DCK240C2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Powered by (2) included 20V MAX* batteries and a charger",
+   "note": "New DCK240C2 kit as packaged; copied text names DCF88M2 once, likely a typo for DCF885."
+  },
+  {
+   "itemId": "v1|820276848612|0",
+   "model": "DCK240C2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Combo Kit - DCK240C2 New Sealed",
+   "note": "Sealed new DCK240C2 kit."
+  },
+  {
+   "itemId": "v1|840030997950|0",
+   "model": "DCK240C2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Includes batteries, charger, and contractor bag",
+   "note": "New DCK240C2 kit as packaged."
+  },
+  {
+   "itemId": "v1|327460334492|0",
+   "model": "DCK316ST2M1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "3 Tool Set with 3 Batteries FLEXVOLT 6Ah 20V 6Ah/4Ah DCK316ST2M1 NEW",
+   "note": "New DCK316ST2M1 kit with its three batteries."
+  },
+  {
+   "itemId": "v1|820336375899|0",
+   "model": "DCK316ST2M1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "This combo also includes a charger.",
+   "note": "New DCK316ST2M1 kit with batteries and charger."
+  },
+  {
+   "itemId": "v1|820359190968|0",
+   "model": "DCK316ST2M1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "This combo also includes a charger.",
+   "note": "New DCK316ST2M1 kit with batteries and charger."
+  },
+  {
+   "itemId": "v1|860152981972|0",
+   "model": "DCK316ST2M1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brushless 3-tool Combo Kit DCK316ST2M1",
+   "note": "New DCK316ST2M1 kit; sparse text."
+  },
+  {
+   "itemId": "v1|920123858992|0",
+   "model": "DCK316ST2M1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "3-Tool Combo Kit w/ 3 Li-Ion Batteries DCK316ST2M1",
+   "note": "New DCK316ST2M1 kit."
+  },
+  {
+   "itemId": "v1|920142956609|0",
+   "model": "DCK316ST2M1",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "DEWALT DCK316ST2M1 20V MAX Brushless 3-Tool Kit w/ 3 Li-Ion Batteries",
+   "note": "New DCK316ST2M1 kit; charger not mentioned but the model names the kit."
+  },
+  {
+   "itemId": "v1|146662936520|0",
+   "model": "DCK940D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand New - An unused, unopened, undamaged item in its original packaging",
+   "note": "New unopened 9-tool kit under the exact model."
+  },
+  {
+   "itemId": "v1|165858721119|0",
+   "model": "DCK940D2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "DeWALT DCK940D2 20V Li-Ion Drill Impact Circular Saw Grinder 9 Tools",
+   "note": "New, model in title and aspects, 9 tools and 2 batteries; nothing added or missing is stated."
+  },
+  {
+   "itemId": "v1|113468536542|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Item is new in the box.",
+   "note": "New in box DCS334B with its blade and manual."
+  },
+  {
+   "itemId": "v1|196342362972|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new in retail box. Tool only",
+   "note": "New DCS334B in retail box."
+  },
+  {
+   "itemId": "v1|227606338180|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Battery and charger sold separately per box label Box shows minor corner wear",
+   "note": "New boxed DCS334B, box wear only."
+  },
+  {
+   "itemId": "v1|237179176273|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "New, not in retail package.",
+   "note": "New DCS334B bare tool; the specifics say kit pull while the text mentions distressed packaging, both New."
+  },
+  {
+   "itemId": "v1|307208760778|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "(Bare Tool) NIB",
+   "note": "New in box DCS334B."
+  },
+  {
+   "itemId": "v1|327419658638|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Jig Saw Bare Tool - Brand New",
+   "note": "New DCS334B bare tool."
+  },
+  {
+   "itemId": "v1|377646315433|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "TOOL ONLY, BATTERY NOT INCLUDED",
+   "note": "New DCS334B bare tool."
+  },
+  {
+   "itemId": "v1|402569474133|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Item is new Taken out of a kit.",
+   "note": "New DCS334B kit pull with blade and manual; kit pulls are accepted."
+  },
+  {
+   "itemId": "v1|116958216969|0",
+   "model": "DCS391B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Unbranded",
+   "note": "Title says new DEWALT DCS391B tool only, but the brand aspect says Unbranded and the text is a copied retail page."
+  },
+  {
+   "itemId": "v1|117507173763|0",
+   "model": "DCS391B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "New, taken out of a kit",
+   "note": "New saw pulled from a kit, with its blade; packaging is not identity per the PO ruling."
+  },
+  {
+   "itemId": "v1|117521722953|0",
+   "model": "DCS391B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "NEW Open Box",
+   "note": "Listed as open box."
+  },
+  {
+   "itemId": "v1|128184963218|0",
+   "model": "DCS391B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Storage bag only and does not include power tools",
+   "note": "A bag for the saw, not the saw."
+  },
+  {
+   "itemId": "v1|267578886867|0",
+   "model": "DCS391B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Unbranded",
+   "note": "Same copied listing as another: brand aspect Unbranded against a DEWALT title."
+  },
+  {
+   "itemId": "v1|327302412063|0",
+   "model": "DCS391B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "6 Ah",
+   "note": "Battery Included says No but Battery Capacity says 6 Ah; the text never says tool only."
+  },
+  {
+   "itemId": "v1|366734675217|0",
+   "model": "DCS391B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "The lithium-ion battery technology provides reliable power",
+   "note": "Never says tool only or whether a battery comes with it, and calls the brushed saw brushless."
+  },
+  {
+   "itemId": "v1|880037664195|0",
+   "model": "DCS391B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "NEW SEALED DEWALT DCS391B",
+   "note": "Sealed, tool only, the right model."
+  },
+  {
+   "itemId": "v1|137797445056|0",
+   "model": "DCS565B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "MPN=DCS391BR, DCS391B",
+   "note": "Title says DCS565B but MPN, motor and description are the DCS391; contradicts itself."
+  },
+  {
+   "itemId": "v1|168856181932|0",
+   "model": "DCS565B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "DCS565B Circular Saw BNIB",
+   "note": "Brand new in box."
+  },
+  {
+   "itemId": "v1|198782460909|0",
+   "model": "DCS565B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Dewalt DCS565B 20V MAX Cordless Brushless 6-1/2\" Sidewinder Style Circular Saw",
+   "note": "New, exact model; packaging not stated, nothing added."
+  },
+  {
+   "itemId": "v1|257859062508|0",
+   "model": "DCS565B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Sidewinder Style Circular Saw New no box",
+   "note": "New bare DCS565B without box, which is accepted; no battery."
+  },
+  {
+   "itemId": "v1|365786172642|0",
+   "model": "DCS565B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "This version is sold as a Tool Only (Bare Tool)",
+   "note": "New bare DCS565B in non-retail packaging, which is accepted."
+  },
+  {
+   "itemId": "v1|377632083165|0",
+   "model": "DCS565B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Battery Included=No (Body Only)",
+   "note": "New, exact model, no battery."
+  },
+  {
+   "itemId": "v1|800901115505|0",
+   "model": "DCS565B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "new in box etc etc, no battery",
+   "note": "New in box, tool only."
+  },
+  {
+   "itemId": "v1|920032977253|0",
+   "model": "DCS565B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "DEWALT DCS565B 20V MAX Brushless 6-1/2 in Cordless Circular Saw Tool Only",
+   "note": "New tool-only DCS565B."
+  },
+  {
+   "itemId": "v1|284198216434|585687063824",
+   "model": "P119",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Model=P215 1/2\" Drill Driver with bit",
+   "note": "Multi-variation listing whose variation is the P215 drill; P119 is only one of several options named."
+  },
+  {
+   "itemId": "v1|128035040284|0",
+   "model": "P553",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "with 4Ah Battery&Charge",
+   "note": "Adds a battery and charger to the tool-only saw."
+  },
+  {
+   "itemId": "v1|157386833712|0",
+   "model": "P553",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "OEM Ryobi Dust Bag 089240027702 Fits P553",
+   "note": "A dust bag part."
+  },
+  {
+   "itemId": "v1|157962149487|0",
+   "model": "P553",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Battery and charger sold separately",
+   "note": "P553 tool only with its standard blade, wrench, bag and clamp."
+  },
+  {
+   "itemId": "v1|326483749385|0",
+   "model": "P553",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "This listing is for the blade screw only",
+   "note": "A blade screw part."
+  },
+  {
+   "itemId": "v1|820061828109|0",
+   "model": "P553",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Cordless Miter Saw P553 w/Blade, Bag, Clamp",
+   "note": "P553 with its standard included items, New."
+  },
+  {
+   "itemId": "v1|336583587412|0",
+   "model": "PBP003",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Ryobi PCL201K1 ONE+ 18V 3/8 in. Drill/Driver Kit",
+   "note": "A drill kit that contains the battery, not the battery alone."
+  },
+  {
+   "itemId": "v1|236477677426|0",
+   "model": "PBP004",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "P117 Rapid Charger for Ryobi 18V 4.0Ah PBP005 PBP004",
+   "note": "A third-party charger, not the battery."
+  },
+  {
+   "itemId": "v1|236477677426|0",
+   "model": "PBP005",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "P117 Rapid Charger for Ryobi 18V 4.0Ah PBP005",
+   "note": "A third-party charger, not the battery."
+  },
+  {
+   "itemId": "v1|157947182520|0",
+   "model": "PCG002",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Compact Glue Gun with Battery and PCG002 Charger",
+   "note": "Glue gun kit; the charger is only one item in it."
+  },
+  {
+   "itemId": "v1|275567042201|0",
+   "model": "PCG002",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Hybrid Soldering Station Combo Kit Battery + Charger P190 PCG002",
+   "note": "Soldering station with battery and charger; not the charger alone."
+  },
+  {
+   "itemId": "v1|327229233339|0",
+   "model": "PCG002",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "TTI 18-Volt Ryobi Charger PCG002, (NO Retail Packaging, Bulk Packaged)",
+   "note": "New PCG002 charger alone in bulk packaging, which the PO accepts."
+  },
+  {
+   "itemId": "v1|236818733894|0",
+   "model": "PCL1201K2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "2x 18V 1.5 Ah Batteries, Charger, Tool Bag",
+   "note": "New PCL1201K2 with the full kit contents."
+  },
+  {
+   "itemId": "v1|407365253664|0",
+   "model": "PCL1201K2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "This kit remains factory sealed and has never been opened or used.",
+   "note": "Sealed kit; only the outer box is worn."
+  },
+  {
+   "itemId": "v1|147674091595|0",
+   "model": "PCL1600K2",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "6-Tool Combo Kit w/ 1 Li-Ion Battery",
+   "note": "Title says one battery but the PCL1600K2 kit has two."
+  },
+  {
+   "itemId": "v1|206655912936|0",
+   "model": "PCL1600K2",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "*Only what is pictured is included with auction*",
+   "note": "Contents depend on photos we cannot see; text names only the 6 tools, not batteries or charger."
+  },
+  {
+   "itemId": "v1|227609859768|0",
+   "model": "PCL1600K2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "An unused, unopened, undamaged item in its original packaging",
+   "note": "New unopened PCL1600K2 kit."
+  },
+  {
+   "itemId": "v1|257844510859|0",
+   "model": "PCL1600K2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand New and Sealed",
+   "note": "Sealed PCL1600K2 kit."
+  },
+  {
+   "itemId": "v1|287481896404|0",
+   "model": "PCL1600K2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "two batteries, charger and a tool bag",
+   "note": "New in box with the full kit contents."
+  },
+  {
+   "itemId": "v1|316052694370|0",
+   "model": "PCL1600K2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Ryobi ONE+ 18V Cordless 6-Tool Combo Set (PCL1600K2)",
+   "note": "Model in title, New condition, nothing added or missing stated."
+  },
+  {
+   "itemId": "v1|800870140728|0",
+   "model": "PCL1600K2",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Model: PCL1600K2X",
+   "note": "Contents match the kit but the model is PCL1600K2X with a different UPC; whether that is the same product is not settled."
+  },
+  {
+   "itemId": "v1|860121023300|0",
+   "model": "PCL1600K2",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Ryobi PCL1600K2 ONE+ 18V Cordless 6-Tool Combo Set",
+   "note": "Only a title; its battery count aspect says 1 where the kit has 2, and nothing says sealed or complete."
+  },
+  {
+   "itemId": "v1|168866627985|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Hard Case for RYOBI ONE+ 18V Cordless 1/2 in. Drill PCL206B",
+   "note": "A third-party case only."
+  },
+  {
+   "itemId": "v1|188845704613|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Cordless Drill Motor Assembly",
+   "note": "Replacement motor/gearbox assembly, not the drill."
+  },
+  {
+   "itemId": "v1|227591262313|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Drill Motor full Assembly gearbox gear box chuck",
+   "note": "A part of the drill, taken from a modified unit."
+  },
+  {
+   "itemId": "v1|237179711800|0",
+   "model": "PCL206",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI 18V 1/2 in. Drill/Driver (PCL206B) TOOL ONLY",
+   "note": "Tool-only PCL206B, battery not included; some filler aspects (battery capacity, charging time) are noise."
+  },
+  {
+   "itemId": "v1|257818770834|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Keyless Kit w Battery & Charger",
+   "note": "Drill sold with a battery and charger added."
+  },
+  {
+   "itemId": "v1|307277091818|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "(Tool Only) (Untested)",
+   "note": "Marked untested."
+  },
+  {
+   "itemId": "v1|366607811264|0",
+   "model": "PCL206",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Battery Included=No",
+   "note": "New bare PCL206 drill pulled from a K1 kit; no battery (Number of Batteries=0), contents are the drill."
+  },
+  {
+   "itemId": "v1|377640716347|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "with PBP006 2Ah Battery",
+   "note": "Drill with a battery added."
+  },
+  {
+   "itemId": "v1|137327970219|0",
+   "model": "PCL235",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "no battery, charger, or retail box included",
+   "note": "New bare PCL235 tool without retail box; packaging is not identity per the PO ruling."
+  },
+  {
+   "itemId": "v1|147276605796|0",
+   "model": "PCL235",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "pulled from a sealed multi-tool combo kit",
+   "note": "New PCL235B pulled from a sealed kit; packaging is not identity per the PO ruling."
+  },
+  {
+   "itemId": "v1|147678470822|0",
+   "model": "PCL235",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "New, unused, in original packaging",
+   "note": "PCL235B tool only in original packaging."
+  },
+  {
+   "itemId": "v1|206708671407|0",
+   "model": "PCL235",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Cordless Impact Driver & 1.5 Ah Battery",
+   "note": "Adds a battery to the tool-only product."
+  },
+  {
+   "itemId": "v1|366378094437|0",
+   "model": "PCL235",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Impact Driver (Body Only)",
+   "note": "Tool only PCL235B, New."
+  },
+  {
+   "itemId": "v1|366569621360|0",
+   "model": "PCL235",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "lithium-ion battery technology with a capacity of 1.5 Ah",
+   "note": "Aspects say Battery Included No but also Set Includes Battery and one battery; never says tool only."
+  },
+  {
+   "itemId": "v1|800878614640|0",
+   "model": "PCL235",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "NEW OPEN BOX",
+   "note": "Open box."
+  },
+  {
+   "itemId": "v1|960159882548|0",
+   "model": "PCL235",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "**Battery & Charger NOT included** Condition: New in box",
+   "note": "New in box, tool only."
+  },
+  {
+   "itemId": "v1|168861009512|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "PCL265B Sealed In Box",
+   "note": "Sealed PCL265B tool only."
+  },
+  {
+   "itemId": "v1|198783563452|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "It was part of a bigger set",
+   "note": "New, un-opened PCL265B from a larger set; packaging is not identity per the PO ruling."
+  },
+  {
+   "itemId": "v1|198786245593|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "New and unopened.",
+   "note": "Unopened PCL265B."
+  },
+  {
+   "itemId": "v1|206708277789|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Impact Wrench (Tool Only) PCL265B",
+   "note": "PCL265B tool only, New."
+  },
+  {
+   "itemId": "v1|800886751414|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new unopened, tool only",
+   "note": "Unopened PCL265B."
+  },
+  {
+   "itemId": "v1|820358679165|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "brand new, sealed in box",
+   "note": "Sealed PCL265B."
+  },
+  {
+   "itemId": "v1|820371254281|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "PCL265B Impact Wrench Tool Only",
+   "note": "PCL265B tool only, New."
+  },
+  {
+   "itemId": "v1|960187232535|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new never opened",
+   "note": "Unopened PCL265B tool only."
+  },
+  {
+   "itemId": "v1|168795937649|0",
+   "model": "PCL406",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "(Tool Only)  SEALED",
+   "note": "Sealed tool-only PCL406B."
+  },
+  {
+   "itemId": "v1|178338010910|0",
+   "model": "PCL406",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "NEW RYOBI 18 Volt PCL406 Cordless 5\" Random Orbit Sander (Tool Only)",
+   "note": "New tool-only PCL406 in bulk packaging, which is accepted."
+  },
+  {
+   "itemId": "v1|227570592635|0",
+   "model": "PCL406",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "W/ Carry Bag",
+   "note": "A carry bag is added, which the tool-only PCL406B does not include; no box is not the issue."
+  },
+  {
+   "itemId": "v1|236798097626|0",
+   "model": "PCL406",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Box has never been opened",
+   "note": "New unopened PCL406B; the dust bag is part of the boxed product."
+  },
+  {
+   "itemId": "v1|257581180842|0",
+   "model": "PCL406",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "OEM Ryobi Dust Bag for Sander PCL406",
+   "note": "A replacement dust bag part."
+  },
+  {
+   "itemId": "v1|336903090911|0",
+   "model": "PCL406",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Random Orbital Sander Battery Power Tool Only PCL406B",
+   "note": "New tool-only PCL406B."
+  },
+  {
+   "itemId": "v1|406309779541|0",
+   "model": "PCL406",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "PLEASE NOTE SANDER IS NOT INCLUDED IN THIS PURCHASE!!!",
+   "note": "Dust bag clip accessory."
+  },
+  {
+   "itemId": "v1|860008454584|0",
+   "model": "PCL406",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "tool only (battery and charger not included). Factory sealed.",
+   "note": "Factory sealed tool-only PCL406B."
+  },
+  {
+   "itemId": "v1|168795937649|0",
+   "model": "PCL406B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "(Tool Only)  SEALED",
+   "note": "Sealed PCL406B."
+  },
+  {
+   "itemId": "v1|227570592635|0",
+   "model": "PCL406B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "This sander will not come in the original box!",
+   "note": "A carry bag is added; the missing original box alone would not decide it."
+  },
+  {
+   "itemId": "v1|236798097626|0",
+   "model": "PCL406B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Box has never been opened",
+   "note": "Unopened PCL406B; the dust bag is part of the retail product."
+  },
+  {
+   "itemId": "v1|257581180842|0",
+   "model": "PCL406B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Genuine OEM Ryobi Sander Dust Bag Assembly",
+   "note": "A replacement dust bag."
+  },
+  {
+   "itemId": "v1|306778771703|0",
+   "model": "PCL406B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "is a replacement part that will fix your broken sander",
+   "note": "A drive belt part."
+  },
+  {
+   "itemId": "v1|336894117023|0",
+   "model": "PCL406B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Tool Only \u2013 PCL406B",
+   "note": "PCL406B tool only, New."
+  },
+  {
+   "itemId": "v1|336903090911|0",
+   "model": "PCL406B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Tool Only PCL406B",
+   "note": "PCL406B tool only, New."
+  },
+  {
+   "itemId": "v1|860008454584|0",
+   "model": "PCL406B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Factory sealed.",
+   "note": "Sealed PCL406B tool only."
+  },
+  {
+   "itemId": "v1|158112891501|0",
+   "model": "PCL424B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "NEW Ryobi 18 Volt Cordless Fixed Base Trim Router PCL424B Tool Only",
+   "note": "New tool-only PCL424B in bulk packaging, which is accepted."
+  },
+  {
+   "itemId": "v1|206680600101|0",
+   "model": "PCL424B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Charger Included=Charger Included",
+   "note": "Title says Tool/Charger Only and an aspect says charger included, against Tool Only; contents unclear."
+  },
+  {
+   "itemId": "v1|206709263695|0",
+   "model": "PCL424B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Compact Router PCL424B Tool Only",
+   "note": "New tool-only PCL424B."
+  },
+  {
+   "itemId": "v1|227546438492|0",
+   "model": "PCL424B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "(Tool Only) PCL424B BRAND NEW",
+   "note": "New tool-only PCL424B."
+  },
+  {
+   "itemId": "v1|227606151324|0",
+   "model": "PCL424B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "NEW Ryobi 18V Compact Fixed Base Router PCL424 Tool Only",
+   "note": "New tool only, MPN PCL424B."
+  },
+  {
+   "itemId": "v1|237191477030|0",
+   "model": "PCL424B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "the included charger ensures",
+   "note": "Title says Tool/Charger Only and text mentions an included charger; contents unclear."
+  },
+  {
+   "itemId": "v1|800888206088|0",
+   "model": "PCL424B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Router Wall Mount Compatible with Ryobi PCL424B",
+   "note": "A wall mount accessory."
+  },
+  {
+   "itemId": "v1|900073438377|0",
+   "model": "PCL424B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Ryobi ONE+ PCL424B Router",
+   "note": "New, exact tool-only model; nothing added stated."
+  },
+  {
+   "itemId": "v1|147585605681|0",
+   "model": "PCL430",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "NEW CONDITION with accessories, 2.0 battery and charger",
+   "note": "A battery kit, not the tool-only product."
+  },
+  {
+   "itemId": "v1|157913211812|0",
+   "model": "PCL430",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Ryobi ONE+ 18V PCL430 Oscillating Multi-Tool",
+   "note": "PCL430 tool, New, Battery Included No."
+  },
+  {
+   "itemId": "v1|198655269487|0",
+   "model": "PCL430",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "+ 2 Battery Kit PSK1212SB",
+   "note": "Adds a two-battery kit."
+  },
+  {
+   "itemId": "v1|257844087302|0",
+   "model": "PCL430",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Oscillating Multi-Tool PCL430B (Tool Only)",
+   "note": "PCL430B tool only, New."
+  },
+  {
+   "itemId": "v1|326811950771|0",
+   "model": "PCL430",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Brand New from Open Box, Tested",
+   "note": "Open box, with battery, charger and extra blades added."
+  },
+  {
+   "itemId": "v1|377539280381|0",
+   "model": "PCL430",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "This is for the tool only. No accessories, no batteries.",
+   "note": "Missing the blade, pad and sandpaper the retail product includes."
+  },
+  {
+   "itemId": "v1|860060045734|0",
+   "model": "PCL430",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new, never used",
+   "note": "New PCL430B with its standard accessories in a shelf-worn original box."
+  },
+  {
+   "itemId": "v1|920110015736|0",
+   "model": "PCL430",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ 18V Cordless Oscillating Multi-Tool PCL430B",
+   "note": "PCL430B, New, no battery."
+  },
+  {
+   "itemId": "v1|198655269487|0",
+   "model": "PCL430B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "+ 2 Battery Kit PSK1212SB",
+   "note": "Tool with a battery kit added."
+  },
+  {
+   "itemId": "v1|257725943997|0",
+   "model": "PCL430B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "(Never opened, Never used)",
+   "note": "New unopened tool-only PCL430B."
+  },
+  {
+   "itemId": "v1|257844087302|0",
+   "model": "PCL430B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Multi-Tool PCL430B (Tool Only)",
+   "note": "New tool-only PCL430B."
+  },
+  {
+   "itemId": "v1|297450750992|0",
+   "model": "PCL430B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new never been used, battery, and charger is not included",
+   "note": "New tool-only PCL430B."
+  },
+  {
+   "itemId": "v1|385192707132|0",
+   "model": "PCL430B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand NEW In Original BOX",
+   "note": "New in original box, tool only."
+  },
+  {
+   "itemId": "v1|860060045734|0",
+   "model": "PCL430B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Original box shows wear/damage from storage",
+   "note": "New unused in original box (box worn), tool only."
+  },
+  {
+   "itemId": "v1|920110015736|0",
+   "model": "PCL430B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ 18V Cordless Oscillating Multi-Tool PCL430B",
+   "note": "New PCL430B, Battery Included=No."
+  },
+  {
+   "itemId": "v1|940075915022|0",
+   "model": "PCL430B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new, factory-sealed in original retail packaging.",
+   "note": "Factory sealed tool-only PCL430B."
+  },
+  {
+   "itemId": "v1|137919232134|0",
+   "model": "PCL500",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "TOOL ONLY With Blade",
+   "note": "New PCL500 bare tool with its blade."
+  },
+  {
+   "itemId": "v1|147668297298|0",
+   "model": "PCL500",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "The set includes blades",
+   "note": "New PCL500B tool only with blade."
+  },
+  {
+   "itemId": "v1|156329863486|0",
+   "model": "PCL500",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "TOOL ONLY No Blades",
+   "note": "The saw comes with its 18T blade from RYOBI; this listing leaves the blade out."
+  },
+  {
+   "itemId": "v1|178031120219|0",
+   "model": "PCL500",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Circular Saw PCL500B + Jig Saw PCL525 BARE TOOLS",
+   "note": "Two tools sold together."
+  },
+  {
+   "itemId": "v1|206680626055|0",
+   "model": "PCL500",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Cordless Circular Saw PCL500B (Tool Only) NEW",
+   "note": "New PCL500B tool only; no description, nothing says anything is added or missing."
+  },
+  {
+   "itemId": "v1|287730164423|0",
+   "model": "PCL500",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand NEW in box! Circular Saw and 18-tooth Carbide saw blade.",
+   "note": "New boxed PCL500B with its blade."
+  },
+  {
+   "itemId": "v1|407306761118|0",
+   "model": "PCL500",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "we were shocked to discover how many perfectly functional returns were being wasted",
+   "note": "A resold e-commerce return, and the description names a different saw, the P505."
+  },
+  {
+   "itemId": "v1|860138586833|0",
+   "model": "PCL500",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Cable Length=6 ft",
+   "note": "Title says PCL500 tool only, but the specifics give a 12 in blade and a cable, and nothing says whether the blade comes."
+  },
+  {
+   "itemId": "v1|147668297298|0",
+   "model": "PCL500B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "The set includes blades",
+   "note": "New PCL500B tool only with blade."
+  },
+  {
+   "itemId": "v1|156329863486|0",
+   "model": "PCL500B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "TOOL ONLY No Blades",
+   "note": "The saw comes with its 18T blade from RYOBI; this listing leaves the blade out."
+  },
+  {
+   "itemId": "v1|178031120219|0",
+   "model": "PCL500B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Circular Saw PCL500B + Jig Saw PCL525 BARE TOOLS",
+   "note": "Two tools sold together."
+  },
+  {
+   "itemId": "v1|206680626055|0",
+   "model": "PCL500B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Cordless Circular Saw PCL500B (Tool Only) NEW",
+   "note": "New PCL500B tool only; no description, nothing says anything is added or missing."
+  },
+  {
+   "itemId": "v1|287730164423|0",
+   "model": "PCL500B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand NEW in box! Circular Saw and 18-tooth Carbide saw blade.",
+   "note": "New boxed PCL500B with its blade."
+  },
+  {
+   "itemId": "v1|407306761118|0",
+   "model": "PCL500B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "we were shocked to discover how many perfectly functional returns were being wasted",
+   "note": "A resold e-commerce return, and the description names a different saw, the P505."
+  },
+  {
+   "itemId": "v1|860008454589|0",
+   "model": "PCL500B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Circular Saw PCL500B Tool Only - NEW Sealed",
+   "note": "Factory-sealed PCL500B tool only."
+  },
+  {
+   "itemId": "v1|960148830553|0",
+   "model": "PCL500B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Circular Saw PCL500B + Jig Saw PCL525 BARE TOOLS",
+   "note": "Two tools sold together."
+  },
+  {
+   "itemId": "v1|117516495632|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "NEW RETAIL BOX NEW RYOBI ONE+ 18V RECIPROCATING SAW TOOL ONLY PCL515B",
+   "note": "New in retail box, tool only."
+  },
+  {
+   "itemId": "v1|177339372841|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ 18V Cordless Reciprocating Saw (Tool Only), PCL515B",
+   "note": "New tool-only PCL515B with blade and manual; bulk packaging is accepted."
+  },
+  {
+   "itemId": "v1|206680602591|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Ryobi PCL515B 18V Cordless Reciprocating Saw - Tool Only NEW",
+   "note": "New tool-only PCL515B."
+  },
+  {
+   "itemId": "v1|257857139667|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ 18V Cordless Reciprocating Saw PCL515 (Tool Only)",
+   "note": "New PCL515 tool only, MPN PCL515B."
+  },
+  {
+   "itemId": "v1|366805367554|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Tool Only (No Battery)",
+   "note": "New PCL515 tool only; one aspect says one battery but Battery Included=No."
+  },
+  {
+   "itemId": "v1|407137065221|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "BRAND NEW FACTORY SEALED",
+   "note": "Factory sealed PCL515B tool only."
+  },
+  {
+   "itemId": "v1|800877348287|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "BRAND NEW RYOBI MODEL PCL515B",
+   "note": "New, tool only, battery and charger not included."
+  },
+  {
+   "itemId": "v1|920158666573|0",
+   "model": "PCL515",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ HP 18V Cordless Reciprocating Saw (Tool Only) PCL515B",
+   "note": "Title calls it ONE+ HP (a different line) while MPN is PCL515B and UPC differs from other PCL515B listings."
+  },
+  {
+   "itemId": "v1|117516495632|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "NEW RETAIL BOX NEW RYOBI ONE+ 18V RECIPROCATING SAW TOOL ONLY PCL515B",
+   "note": "New PCL515B in its retail box."
+  },
+  {
+   "itemId": "v1|177339372841|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Includes: PCL515 18V Reciprocating Saw, 6 in. Wood Cutting Blade, and Operator\u2019s Manual.",
+   "note": "New PCL515B in bulk packaging with its blade; bulk is accepted."
+  },
+  {
+   "itemId": "v1|206680602591|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Ryobi PCL515B 18V Cordless Reciprocating Saw - Tool Only NEW",
+   "note": "New PCL515B tool only; no description."
+  },
+  {
+   "itemId": "v1|267754167917|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand New - SEALED! TOOL ONLY! No batteries included.",
+   "note": "Sealed PCL515B tool only."
+  },
+  {
+   "itemId": "v1|318915722907|0",
+   "model": "PCL515B",
+   "verdict": "unsure",
+   "labelledBy": "draft",
+   "quote": "Set Includes=Reciprocating Saw, Blade, Battery, Charger",
+   "note": "Title says tool only but the specifics list a battery and charger in the set."
+  },
+  {
+   "itemId": "v1|407137065221|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "BRAND NEW FACTORY SEALED",
+   "note": "Factory-sealed PCL515B tool only."
+  },
+  {
+   "itemId": "v1|800877348287|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "INCLUDES ONE 6\" WOOD CUTTING BLADE TOOL ONLY DOES NOT INCLUDE A BATTERY OR CHARGER",
+   "note": "New PCL515B tool only as packaged."
+  },
+  {
+   "itemId": "v1|920158666573|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "***these are in the original unopened packaging***",
+   "note": "New PCL515B tool only, unopened, with its wood blade."
+  },
+  {
+   "itemId": "v1|127237075410|0",
+   "model": "PCL525",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Cordless Jig Saw + Free 2.0 Ah Battery",
+   "note": "Jig saw sold with a battery."
+  },
+  {
+   "itemId": "v1|128199455736|0",
+   "model": "PCL525",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Ryobi ONE+ PCL525 Cordless Battery Jigsaw, Tool Only",
+   "note": "New PCL525 tool only; sparse text."
+  },
+  {
+   "itemId": "v1|147684161051|0",
+   "model": "PCL525",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Condition: New, unused, in original packaging.",
+   "note": "New PCL525B in original packaging with its blade, shoe and wrench."
+  },
+  {
+   "itemId": "v1|168558378297|0",
+   "model": "PCL525",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Includes: (1) PCL525 18V Cordless Jig Saw, (1) Non-Marring Shoe, (1) T-Shank Wood Cutting Blade.",
+   "note": "New PCL525 in bulk packaging with its listed pieces."
+  },
+  {
+   "itemId": "v1|168869669557|0",
+   "model": "PCL525",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ 18V Jigsaw PCL525B (Tool-Only)",
+   "note": "New PCL525B tool only; generated specifics (yellow, brushless) are noise."
+  },
+  {
+   "itemId": "v1|178031120219|0",
+   "model": "PCL525",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "Circular Saw PCL500B + Jig Saw PCL525 BARE TOOLS",
+   "note": "Two tools sold together."
+  },
+  {
+   "itemId": "v1|336387346314|0",
+   "model": "PCL525",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ 18V Cordless Jigsaw Saw Tool Only PCL525B Green",
+   "note": "New PCL525B tool only; the UPC is not a RYOBI one, but nothing names an added or missing item."
+  },
+  {
+   "itemId": "v1|880130444955|0",
+   "model": "PCL525",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new never opened. Sealed.",
+   "note": "Sealed PCL525B tool only."
+  },
+  {
+   "itemId": "v1|127237075410|0",
+   "model": "PCL525B",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "+ Free 2.0 Ah Battery",
+   "note": "Jig saw with a battery added (promo bundle)."
+  },
+  {
+   "itemId": "v1|147684161051|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Condition: New, unused, in original packaging.",
+   "note": "New in original packaging, tool only."
+  },
+  {
+   "itemId": "v1|168869669557|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ 18V Jigsaw PCL525B (Tool-Only)",
+   "note": "New tool-only PCL525B."
+  },
+  {
+   "itemId": "v1|287370153094|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ 18V Cordless Jig Saw Tool Only PCL525B New",
+   "note": "New tool only; battery capacity aspect is filler, Number of Batteries=0."
+  },
+  {
+   "itemId": "v1|298690363268|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "New In Factory Sealed Box. TOOL ONLY.",
+   "note": "Factory sealed tool-only jig saw."
+  },
+  {
+   "itemId": "v1|336387346314|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Tool Only PCL525B",
+   "note": "New tool only; UPC is not a RYOBI code and one aspect says one battery, but Battery Included=No."
+  },
+  {
+   "itemId": "v1|880130444955|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "Brand new never opened. Sealed.",
+   "note": "Sealed tool-only PCL525B."
+  },
+  {
+   "itemId": "v1|920082243518|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "RYOBI ONE+ 18V Cordless Jig Saw Tool Only PCL525B",
+   "note": "New tool-only PCL525B."
+  },
+  {
+   "itemId": "v1|407347608384|0",
+   "model": "PCL660",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "It is a \"Bare Tool\" Pulled from a Kit.",
+   "note": "New unused PCL660 light, bare tool from a kit; New kit pulls are accepted."
+  },
+  {
+   "itemId": "v1|800780450566|0",
+   "model": "PCL660",
+   "verdict": "not_match",
+   "labelledBy": "draft",
+   "quote": "PCL660B w/ 18V Power Source P743 Bundle",
+   "note": "Light bundled with a second product, the P743 power source."
+  },
+  {
+   "itemId": "v1|287405974584|0",
+   "model": "PSBCK102K2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "w/2 Batteries PSBCK102K2",
+   "note": "PSBCK102K2 with two batteries, New."
+  },
+  {
+   "itemId": "v1|377513643127|0",
+   "model": "PSBCK102K2",
+   "verdict": "match",
+   "labelledBy": "draft",
+   "quote": "w/2 Batteries PSBCK102K2",
+   "note": "PSBCK102K2 with two batteries, New."
+  }
+ ]
+}
