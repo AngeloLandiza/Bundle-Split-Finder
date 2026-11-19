@@ -1,0 +1,169 @@
+// eBay Browse API client. Runs in the extension service worker and in Node: it needs only a fetch
+// function and a clock. It reads no environment and writes no log.
+//
+// Keys and tokens: the App ID and Cert ID go only into the token request's Authorization header; the
+// token only into a Bearer header. Neither is ever put in a URL, an error message or a log line, and
+// an error carries the HTTP status, never the response body (a body can echo a credential).
+//
+// Responses go through parseSearch / parseItem, so a seller or buyer field is never kept.
+
+import { parseItem, parseSearch } from './parse';
+import type { EbayListing, EbayListingSummary } from './types';
+
+const HOST = 'https://api.ebay.com';
+const SCOPE = 'https://api.ebay.com/oauth/api_scope';
+/** The token is treated as expired this long before eBay says it is. */
+const EXPIRY_MARGIN_MS = 60_000;
+
+export class EbayError extends Error {
+  constructor(message: string, public readonly status?: number) {
+    super(message);
+    this.name = 'EbayError';
+  }
+}
+/** The token request failed, or a call was refused as unauthorised even with a fresh token. */
+export class EbayAuthError extends EbayError {
+  constructor(message: string, status?: number) { super(message, status); this.name = 'EbayAuthError'; }
+}
+/** HTTP 403: the keys lack permission for this call. */
+export class EbayForbiddenError extends EbayError {
+  constructor(message: string) { super(message, 403); this.name = 'EbayForbiddenError'; }
+}
+/** HTTP 429: eBay's call limit. */
+export class EbayRateLimitedError extends EbayError {
+  constructor(message: string) { super(message, 429); this.name = 'EbayRateLimitedError'; }
+}
+export class EbayServerError extends EbayError {
+  constructor(message: string, status: number) { super(message, status); this.name = 'EbayServerError'; }
+}
+/** This client's own cap on searches or item reads was reached; nothing was sent. */
+export class EbayCapError extends EbayError {
+  constructor(public readonly kind: 'searches' | 'item reads', public readonly cap: number) {
+    super(`eBay ${kind} cap of ${cap} reached for this run; no call was made.`);
+    this.name = 'EbayCapError';
+  }
+}
+
+export interface EbayClientOptions {
+  appId: string;
+  certId: string;
+  fetchFn?: typeof fetch;
+  now?: () => number;
+  /** Per-instance caps; default none. */
+  maxSearches?: number;
+  maxItemReads?: number;
+  baseUrl?: string;
+}
+
+export interface EbaySearchOptions {
+  categoryIds?: string[];
+  /** Only New listings (conditionIds 1000). */
+  conditionNew?: boolean;
+  /** Only fixed-price listings. */
+  fixedPrice?: boolean;
+  limit?: number;
+}
+
+export interface EbaySearchResult {
+  /** eBay's count of matching listings (may exceed the summaries returned). */
+  total: number;
+  summaries: EbayListingSummary[];
+}
+
+function base64(s: string): string {
+  if (typeof btoa === 'function') return btoa(s);
+  return Buffer.from(s).toString('base64');
+}
+
+export class EbayClient {
+  private readonly appId: string;
+  private readonly certId: string;
+  private readonly fetchFn: typeof fetch;
+  private readonly now: () => number;
+  private readonly host: string;
+  private readonly maxSearches: number;
+  private readonly maxItemReads: number;
+  private token: { value: string; expiresAt: number } | null = null;
+  readonly counts = { searches: 0, itemReads: 0, tokens: 0 };
+
+  constructor(o: EbayClientOptions) {
+    this.appId = o.appId;
+    this.certId = o.certId;
+    this.fetchFn = o.fetchFn ?? ((...a) => fetch(...a));
+    this.now = o.now ?? Date.now;
+    this.host = o.baseUrl ?? HOST;
+    this.maxSearches = o.maxSearches ?? Infinity;
+    this.maxItemReads = o.maxItemReads ?? Infinity;
+  }
+
+  private async getToken(force: boolean): Promise<string> {
+    if (!force && this.token && this.now() < this.token.expiresAt) return this.token.value;
+    this.token = null;
+    this.counts.tokens += 1;
+    let res: Response;
+    try {
+      res = await this.fetchFn(`${this.host}/identity/v1/oauth2/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: 'Basic ' + base64(`${this.appId}:${this.certId}`) },
+        body: 'grant_type=client_credentials&scope=' + encodeURIComponent(SCOPE),
+      });
+    } catch {
+      throw new EbayError('Network error reaching eBay for a token.');
+    }
+    const json = (await res.json().catch(() => ({}))) as { access_token?: unknown; expires_in?: unknown };
+    if (!res.ok || typeof json.access_token !== 'string') {
+      throw new EbayAuthError(`eBay refused the token request (HTTP ${res.status}). Check the App ID and Cert ID.`, res.status);
+    }
+    const secs = typeof json.expires_in === 'number' && json.expires_in > 0 ? json.expires_in : 7200;
+    this.token = { value: json.access_token, expiresAt: this.now() + secs * 1000 - EXPIRY_MARGIN_MS };
+    return json.access_token;
+  }
+
+  /** One authorised GET. A 401 drops the token, fetches a new one and retries once. */
+  private async get(path: string): Promise<unknown> {
+    const url = `${this.host}${path}`;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const token = await this.getToken(attempt > 0);
+      let res: Response;
+      try {
+        res = await this.fetchFn(url, { headers: { Authorization: `Bearer ${token}`, 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US' } });
+      } catch {
+        throw new EbayError('Network error reaching eBay.');
+      }
+      if (res.status === 401) {
+        this.token = null;
+        if (attempt === 0) continue;
+        throw new EbayAuthError('eBay refused the token again (HTTP 401).', 401);
+      }
+      if (res.status === 403) throw new EbayForbiddenError('eBay says these keys may not make this call (HTTP 403).');
+      if (res.status === 429) throw new EbayRateLimitedError('eBay is limiting calls (HTTP 429).');
+      if (res.status >= 500) throw new EbayServerError(`eBay had a server problem (HTTP ${res.status}).`, res.status);
+      if (!res.ok) throw new EbayError(`eBay answered HTTP ${res.status}.`, res.status);
+      return res.json().catch(() => {
+        throw new EbayError('eBay sent a response that is not JSON.', res.status);
+      });
+    }
+    throw new EbayAuthError('eBay refused the token again (HTTP 401).', 401);
+  }
+
+  async search(query: string, opts: EbaySearchOptions = {}): Promise<EbaySearchResult> {
+    if (this.counts.searches >= this.maxSearches) throw new EbayCapError('searches', this.maxSearches);
+    this.counts.searches += 1;
+    const filters: string[] = [];
+    if (opts.conditionNew) filters.push('conditionIds:{1000}');
+    if (opts.fixedPrice) filters.push('buyingOptions:{FIXED_PRICE}');
+    const q = new URLSearchParams({ q: query });
+    if (filters.length) q.set('filter', filters.join(','));
+    if (opts.categoryIds?.length) q.set('category_ids', opts.categoryIds.join(','));
+    if (opts.limit) q.set('limit', String(opts.limit));
+    const json = await this.get(`/buy/browse/v1/item_summary/search?${q}`);
+    const total = typeof (json as { total?: unknown } | null)?.total === 'number' ? (json as { total: number }).total : 0;
+    return { total, summaries: parseSearch(json) };
+  }
+
+  async getItem(itemId: string): Promise<EbayListing> {
+    if (this.counts.itemReads >= this.maxItemReads) throw new EbayCapError('item reads', this.maxItemReads);
+    this.counts.itemReads += 1;
+    return parseItem(await this.get(`/buy/browse/v1/item/${encodeURIComponent(itemId)}`));
+  }
+}
