@@ -1,0 +1,798 @@
+{
+ "about": "eBay Browse API response recorded 2026-11-19 (production, EBAY_US, New, fixed price). Seller fields removed: Split Finder keeps no eBay user data (exemption from account-deletion notifications).",
+ "response": {
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=RYOBI+PCL206B&limit=10&filter=conditionIds%3A%7B1000%7D%2CbuyingOptions%3A%7BFIXED_PRICE%7D&offset=0",
+  "total": 47,
+  "next": "https://api.ebay.com/buy/browse/v1/item_summary/search?q=RYOBI+PCL206B&limit=10&filter=conditionIds%3A%7B1000%7D%2CbuyingOptions%3A%7BFIXED_PRICE%7D&offset=10",
+  "limit": 10,
+  "offset": 0,
+  "itemSummaries": [
+   {
+    "itemId": "v1|237179711800|0",
+    "title": "RYOBI 18V 1/2 in. Drill/Driver (PCL206B) TOOL ONLY",
+    "leafCategoryIds": [
+     "184655"
+    ],
+    "categories": [
+     {
+      "categoryId": "184655",
+      "categoryName": "Cordless Drills"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "3247",
+      "categoryName": "Power Tools"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/ciMAAeSwOpJq9jUB/s-l225.jpg"
+    },
+    "price": {
+     "value": "38.50",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C237179711800%7C0",
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/ciMAAeSwOpJq9jUB/s-l1600.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "FIXED",
+      "shippingCost": {
+       "value": "0.00",
+       "currency": "USD"
+      },
+      "minEstimatedDeliveryDate": "2026-11-21T08:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-11-24T08:00:00.000Z"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE"
+    ],
+    "epid": "13054315447",
+    "itemWebUrl": "https://www.ebay.com/itm/237179711800?_skw=RYOBI+PCL206B&hash=item3739033138:g:ciMAAeSwOpJq9jUB",
+    "itemLocation": {
+     "postalCode": "481**",
+     "country": "US"
+    },
+    "additionalImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/lAUAAeSwJVlq9jUB/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/lAwAAeSwJVlq9jUC/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/TmMAAeSwBDJq9jUC/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/~McAAeSw6cpq9jUD/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/ZvMAAeSwJEdq9jUa/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/dtQAAeSwAOhq9jUD/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/fXAAAeSwegtq9jUE/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/S-kAAeSweTtq9jUE/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/afYAAeSwIZpq9jUE/s-l225.jpg"
+     }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "237179711800",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-11-12T21:57:19.000Z",
+    "itemCreationDate": "2026-11-12T21:57:19.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+   },
+   {
+    "itemId": "v1|307277091818|0",
+    "title": "Ryobi One+ 18V 3/8\" Cordless Drill Driver PCL206B (Tool Only) (Untested)",
+    "leafCategoryIds": [
+     "184655"
+    ],
+    "categories": [
+     {
+      "categoryId": "184655",
+      "categoryName": "Cordless Drills"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "3247",
+      "categoryName": "Power Tools"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/yvIAAeSwwQxq9CXQ/s-l225.jpg"
+    },
+    "price": {
+     "value": "37.79",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C307277091818%7C0",
+    "marketingPrice": {
+     "originalPrice": {
+      "value": "53.99",
+      "currency": "USD"
+     },
+     "discountPercentage": "30",
+     "discountAmount": {
+      "value": "16.20",
+      "currency": "USD"
+     },
+     "priceTreatment": "MARKDOWN"
+    },
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/yvIAAeSwwQxq9CXQ/s-l1600.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "FIXED",
+      "shippingCost": {
+       "value": "0.00",
+       "currency": "USD"
+      },
+      "minEstimatedDeliveryDate": "2026-11-23T08:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-11-30T08:00:00.000Z"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/307277091818?_skw=RYOBI+PCL206B&hash=item478b2453ea:g:yvIAAeSwwQxq9CXQ",
+    "itemLocation": {
+     "postalCode": "300**",
+     "country": "US"
+    },
+    "additionalImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/1wUAAeSwnq1q9CXQ/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/rjgAAeSwFN9q9CXQ/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/cYsAAeSw7Dhq9CXQ/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/07sAAeSwyEpq9CXQ/s-l225.jpg"
+     }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "307277091818",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-11-11T08:22:54.000Z",
+    "itemCreationDate": "2026-11-11T08:22:54.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+   },
+   {
+    "itemId": "v1|168866627985|0",
+    "title": "Hard Case for RYOBI ONE+ 18V Cordless 1/2 in. Drill PCL206B, S Black & Green",
+    "leafCategoryIds": [
+     "184655"
+    ],
+    "categories": [
+     {
+      "categoryId": "184655",
+      "categoryName": "Cordless Drills"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "3247",
+      "categoryName": "Power Tools"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/-TcAAeSwEQFq-wan/s-l225.jpg"
+    },
+    "price": {
+     "value": "35.05",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C168866627985%7C0",
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/-TcAAeSwEQFq-wan/s-l640.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "FIXED",
+      "shippingCost": {
+       "value": "0.00",
+       "currency": "USD"
+      },
+      "minEstimatedDeliveryDate": "2026-11-24T08:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-12-01T08:00:00.000Z"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/168866627985?_skw=RYOBI+PCL206B&hash=item27513c4191:g:-TcAAeSwEQFq-wan",
+    "itemLocation": {
+     "postalCode": "331**",
+     "country": "US"
+    },
+    "additionalImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/uLgAAeSwSj9q-wan/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/wrYAAeSw50dq-wan/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/9~wAAeSww6dq-wan/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/0IEAAeSwURJq-wan/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/yqEAAeSwhJpq-wan/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/7B4AAeSwuxNq-wan/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/-TMAAeSwEQFq-wan/s-l225.jpg"
+     }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "168866627985",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-11-16T13:35:30.000Z",
+    "itemCreationDate": "2026-11-16T13:35:30.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+   },
+   {
+    "itemId": "v1|236637525086|0",
+    "title": "3dPrinted RYOBI 2 Pk Ryobi BIT HOLDER - MODEL PCL206B AND IMPACT MODEL PCL235B",
+    "leafCategoryIds": [
+     "260199"
+    ],
+    "categories": [
+     {
+      "categoryId": "260199",
+      "categoryName": "Drill Attachments"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     },
+     {
+      "categoryId": "260176",
+      "categoryName": "Power Tool & Air Tool Accessories"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/rhYAAeSwy4Zpkdw0/s-l225.jpg"
+    },
+    "price": {
+     "value": "11.99",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C236637525086%7C0",
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/rhYAAeSwy4Zpkdw0/s-l1600.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "FIXED",
+      "shippingCost": {
+       "value": "0.00",
+       "currency": "USD"
+      },
+      "minEstimatedDeliveryDate": "2026-11-21T08:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-11-25T08:00:00.000Z"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/236637525086?_skw=RYOBI+PCL206B&hash=item3718b2145e:g:rhYAAeSwy4Zpkdw0",
+    "itemLocation": {
+     "postalCode": "604**",
+     "country": "US"
+    },
+    "additionalImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/UvoAAeSwjFppkdw0/s-l225.jpg"
+     }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "236637525086",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-02-15T14:52:36.000Z",
+    "itemCreationDate": "2026-02-15T14:52:36.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+   },
+   {
+    "itemId": "v1|840115329271|0",
+    "title": "Hard Case for RYOBI ONE+ 18V Cordless 1/2 in. Drill S, Black & Green",
+    "leafCategoryIds": [
+     "184655"
+    ],
+    "categories": [
+     {
+      "categoryId": "184655",
+      "categoryName": "Cordless Drills"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "3247",
+      "categoryName": "Power Tools"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/pKsAAeSwEdxq83GQ/s-l225.jpg"
+    },
+    "price": {
+     "value": "36.46",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C840115329271%7C0",
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/pKsAAeSwEdxq83GQ/s-l1600.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "FIXED",
+      "shippingCost": {
+       "value": "0.00",
+       "currency": "USD"
+      },
+      "minEstimatedDeliveryDate": "2026-11-21T08:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-11-25T08:00:00.000Z"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/840115329271?_skw=RYOBI+PCL206B&hash=itemc39ac698f7:g:pKsAAeSwEdxq83GQ",
+    "itemLocation": {
+     "country": "US"
+    },
+    "additionalImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/r9AAAeSwndRq83GQ/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/-UsAAeSwbetq83GR/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/~z4AAeSwTARq83GQ/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/lgsAAeSw935q83GQ/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/fW4AAeSw-~1q83GQ/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/j94AAeSwJG5q83GR/s-l225.jpg"
+     }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "840115329271",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-11-10T19:33:33.000Z",
+    "itemCreationDate": "2026-11-10T19:33:33.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+   },
+   {
+    "itemId": "v1|168746651736|0",
+    "title": "RYOBI ONE+ 18V Cordless 1/2\" Drill/Driver - (Tool Only) - PCL206B",
+    "leafCategoryIds": [
+     "184655"
+    ],
+    "categories": [
+     {
+      "categoryId": "184655",
+      "categoryName": "Cordless Drills"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "3247",
+      "categoryName": "Power Tools"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/X2EAAeSw8uNqvVi2/s-l225.jpg"
+    },
+    "price": {
+     "value": "54.99",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C168746651736%7C0",
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/X2EAAeSw8uNqvVi2/s-l1600.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "CALCULATED"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE"
+    ],
+    "epid": "26059543457",
+    "itemWebUrl": "https://www.ebay.com/itm/168746651736?_skw=RYOBI+PCL206B&hash=item274a159058:g:X2EAAeSw8uNqvVi2",
+    "itemLocation": {
+     "postalCode": "177**",
+     "country": "US"
+    },
+    "additionalImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/SawAAeSwuxRqvVi~/s-l225.jpg"
+     }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "168746651736",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-10-03T08:00:01.000Z",
+    "itemCreationDate": "2026-10-03T08:00:01.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+   },
+   {
+    "itemId": "v1|206403539440|0",
+    "title": "Ryobi LINK STM304 Toolbox Insert for PCL206B Drill Driver",
+    "leafCategoryIds": [
+     "33089"
+    ],
+    "categories": [
+     {
+      "categoryId": "33089",
+      "categoryName": "Tool Boxes"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     },
+     {
+      "categoryId": "130140",
+      "categoryName": "Tool Boxes & Storage"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/yUsAAeSwI2NqTra5/s-l225.jpg"
+    },
+    "price": {
+     "value": "35.00",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C206403539440%7C0",
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/yUsAAeSwI2NqTra5/s-l1200.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "CALCULATED"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/206403539440?_skw=RYOBI+PCL206B&hash=item300e9c11f0:g:yUsAAeSwI2NqTra5",
+    "itemLocation": {
+     "postalCode": "300**",
+     "country": "US"
+    },
+    "additionalImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/E40AAeSwK4BqTra4/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/MiQAAeSwKzVqTra5/s-l225.jpg"
+     }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "206403539440",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-07-08T20:53:04.000Z",
+    "itemCreationDate": "2026-07-08T20:53:04.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+   },
+   {
+    "itemId": "v1|800875926218|0",
+    "title": "Drill Bit Holder Mount for Ryobi PCL206B, PCL235B & Ryobi quarter inch, Black",
+    "leafCategoryIds": [
+     "42633"
+    ],
+    "categories": [
+     {
+      "categoryId": "42633",
+      "categoryName": "Other Tool Storage"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     },
+     {
+      "categoryId": "130140",
+      "categoryName": "Tool Boxes & Storage"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/aP8AAeSw7bNq8MES/s-l225.jpg"
+    },
+    "price": {
+     "value": "20.99",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C800875926218%7C0",
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/aP8AAeSw7bNq8MES/s-l1200.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "FIXED",
+      "shippingCost": {
+       "value": "6.99",
+       "currency": "USD"
+      },
+      "minEstimatedDeliveryDate": "2026-11-23T08:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-11-30T08:00:00.000Z"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/800875926218?_skw=RYOBI+PCL206B&hash=itemba77ecd2ca:g:aP8AAeSw7bNq8MES",
+    "itemLocation": {
+     "postalCode": "941**",
+     "country": "US"
+    },
+    "adultOnly": false,
+    "legacyItemId": "800875926218",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-11-04T12:25:52.000Z",
+    "itemCreationDate": "2026-11-04T12:25:52.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+   },
+   {
+    "itemId": "v1|920080659249|0",
+    "title": "Ryobi PCL206 ONE+ 18V 1/2 in Keyless Drill/Driver 2-Speed LED Tool Only \u20182025 DC",
+    "leafCategoryIds": [
+     "184655"
+    ],
+    "categories": [
+     {
+      "categoryId": "184655",
+      "categoryName": "Cordless Drills"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "3247",
+      "categoryName": "Power Tools"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/ysMAAeSw~K9q4TZy/s-l225.jpg"
+    },
+    "price": {
+     "value": "49.99",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C920080659249%7C0",
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/ysMAAeSw~K9q4TZy/s-l1600.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "FIXED",
+      "shippingCost": {
+       "value": "0.00",
+       "currency": "USD"
+      },
+      "minEstimatedDeliveryDate": "2026-11-23T08:00:00.000Z",
+      "maxEstimatedDeliveryDate": "2026-11-28T08:00:00.000Z"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/920080659249?_skw=RYOBI+PCL206B&hash=itemd63914b331:g:ysMAAeSw~K9q4TZy&amdata=enc%3AAQALAAAA8Of5zIIojhOf%2BkQK%2Bxzjn7nEgozSqcbE%2BIqqzbjaLzxgKNWYrFrsW5wIkT1l2F7CJoWdPJHXI8ie6HqYJBWBeDCuwPRpSw5xWRyC7hmIprWaBggx4u8Yr5jWuW3I7SxomP0ywfJihI197EynHbNiPCyX953xjtwtSNBzygN5xZvntiTCjLQ%2F%2BNjRfB94KPa3mwOZbZi0qQjNIzMNG4tK%2BB7kHjuajN1LTIbmg0F67IQ7VXFvxo7KavFkHsoUS3afAyXvRSYuIxRBeXWjDYOZWUnM2HnmXtnoqI9RdsGb6i%2FYCvNRExNYCH1Ie6rzLVHgMg%3D%3D",
+    "itemLocation": {
+     "postalCode": "170**",
+     "country": "US"
+    },
+    "additionalImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/K7cAAeSw8M1q4TZy/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/unkAAeSwiv1q4TZz/s-l225.jpg"
+     },
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/3oEAAeSwMnRq4TZz/s-l225.jpg"
+     }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "920080659249",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-10-27T23:41:16.000Z",
+    "itemCreationDate": "2026-10-27T23:41:16.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": true,
+    "listingMarketplaceId": "EBAY_US"
+   },
+   {
+    "itemId": "v1|227583400448|0",
+    "title": "Ryobi PCL206 ONE+ 18V 1/2 in Keyless Drill/Driver 2-Speed LED Tool Only \u20182025 DC",
+    "leafCategoryIds": [
+     "184655"
+    ],
+    "categories": [
+     {
+      "categoryId": "184655",
+      "categoryName": "Cordless Drills"
+     },
+     {
+      "categoryId": "631",
+      "categoryName": "Tools & Workshop Equipment"
+     },
+     {
+      "categoryId": "3247",
+      "categoryName": "Power Tools"
+     },
+     {
+      "categoryId": "11700",
+      "categoryName": "Home & Garden"
+     }
+    ],
+    "image": {
+     "imageUrl": "https://i.ebayimg.com/images/g/h4YAAeSw6XBqv9Ps/s-l225.jpg"
+    },
+    "price": {
+     "value": "36.00",
+     "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C227583400448%7C0",
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/h4YAAeSw6XBqv9Ps/s-l1600.jpg"
+     }
+    ],
+    "shippingOptions": [
+     {
+      "shippingCostType": "CALCULATED"
+     }
+    ],
+    "buyingOptions": [
+     "FIXED_PRICE",
+     "BEST_OFFER"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/227583400448?_skw=RYOBI+PCL206B&hash=item34fd071a00:g:h4YAAeSw6XBqv9Ps&amdata=enc%3AAQALAAAA8Of5zIIojhOf%2BkQK%2Bxzjn7mM%2FxVRzM87YXk%2BZJDmO3w7rkXJAQnKEIKPKMhGRFAn%2Bp2Zx5JCclZy%2Ftw6zUAeMvuWJ2EJXbpB4HlOnEFIZ42IOkbAJVW7tyFQJ7roL4E6m6YNSya5p1Tm%2FGoMhCYF9DHTLZJmOgQltpAV9CJreisWKRkF5GBo570CvuGSma%2F7hIK4iOjlIBAFskNdZq4mqqTWOvHgEs1J3Zj0OAZh4BFD%2B7z0sj0HYAWux3fDeSFEUr5kb6ulgeMaTkZv%2BvSco8sPbDTeY7%2Bm7WeJXQ30cZcM6ZFobx1jEfJd86iMvP7hLQ%3D%3D",
+    "itemLocation": {
+     "postalCode": "916**",
+     "country": "US"
+    },
+    "additionalImages": [
+     {
+      "imageUrl": "https://i.ebayimg.com/images/g/GtoAAeSwFBtq3lzw/s-l225.jpg"
+     }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "227583400448",
+    "availableCoupons": false,
+    "itemOriginDate": "2026-10-23T22:14:14.000Z",
+    "itemCreationDate": "2026-10-25T21:48:21.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": true,
+    "listingMarketplaceId": "EBAY_US"
+   }
+  ]
+ }
+}
