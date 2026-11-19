@@ -119,10 +119,10 @@ describe('a combo kit (DCK240C2, "… Combo Kit with (2) 20V 1.3Ah Batteries, Ch
     expect(v.verdict).toBe('match');
   });
 
-  it('a match whose contents quotes leave out the bag is unsure', () => {
+  it('a listing naming the kit model stands for its contents, bag included (fix round 2 ruling)', () => {
     const v = verifyJudgement(answer('match', [identity, ['contents', identity[1]]]), kit);
-    expect(v.verdict).toBe('unsure');
-    expect(v.downgrades.join(' ')).toMatch(/bag/);
+    expect(v.downgrades).toEqual([]);
+    expect(v.verdict).toBe('match');
   });
 
   it('names what the part name includes', () => {
@@ -132,16 +132,17 @@ describe('a combo kit (DCK240C2, "… Combo Kit with (2) 20V 1.3Ah Batteries, Ch
   });
 });
 
-describe('kit listings missing a piece of the kit', () => {
+describe('kit listings and the pieces of the kit', () => {
   // 860158654414: "DEWALT 20V MAX ATOMIC Brushless 2-Tool Combo Kit w/2 Li-Ion Batteries DCK225D2";
-  // the part is "… Combo Kit (2-Tool) with (2) 2.0Ah Batteries, Charger and Bag", and the listing
-  // never mentions a charger or a bag.
+  // the part is "… Combo Kit (2-Tool) with (2) 2.0Ah Batteries, Charger and Bag". The listing never
+  // mentions a charger or a bag, and is labelled a match: it names the exact kit model and denies
+  // nothing, so the model number stands for the kit's contents (fix round 2 ruling).
   const noCharger = input('DCK225D2', '860158654414');
 
-  it('refuses a match on a kit listing with no charger', () => {
+  it('accepts the kit listing that names the kit model and denies nothing', () => {
     const v = verifyJudgement(answer('match', [['identity', noCharger.listing.title], ['contents', noCharger.listing.title]]), noCharger);
-    expect(v.verdict).toBe('unsure');
-    expect(v.downgrades.join(' ')).toMatch(/charger/);
+    expect(v.downgrades).toEqual([]);
+    expect(v.verdict).toBe('match');
   });
 
   it('keeps an honest not_match that names what is missing', () => {
@@ -157,13 +158,13 @@ describe('kit listings missing a piece of the kit', () => {
     expect(v.verdict).toBe('unsure');
   });
 
-  it('PCL1600K2 with one battery of two and no charger', () => {
+  it('PCL1600K2 with one battery of two', () => {
     // 147674091595: "Ryobi ONE+ 18V 6-Tool Combo Kit w/ 1 Li-Ion Battery IRYOBI ONE+ncluded PCL1600K2";
     // the part is "… 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger".
     const one = input('PCL1600K2', '147674091595');
     const v = verifyJudgement(answer('match', [['identity', one.listing.title], ['contents', 'Ryobi ONE+ 18V 6-Tool Combo Kit w/ 1 Li-Ion Battery']]), one);
     expect(v.verdict).toBe('unsure');
-    expect(v.downgrades.join(' ')).toMatch(/charger/);
+    expect(v.downgrades.join(' ')).toMatch(/1 battery; the part's name says 2/);
   });
 
   it('a component named only as absent does not count (constructed quote check on a real kit name)', () => {
@@ -229,13 +230,15 @@ describe('packaging is not identity: New kit pulls and bulk tools with the right
 });
 
 describe('a count that is the product is not several units', () => {
-  it('A986501 "65-Piece": the part name says 65-Piece, so the title count stands', () => {
-    // 227605048699: "Ryobi A986501 65-Piece Drill and Impact Driver Bit Set"
+  it('A986501 "65-Piece": the part name says 65-Piece, so the title count is not a problem', () => {
+    // 227605048699: "Ryobi A986501 65-Piece Drill and Impact Driver Bit Set". Labelled unsure (its
+    // brand is "Unbranded"), so only the count exemption is tested here, not a match.
     const set = input('A986501', '227605048699');
     const raw = answer('match', [['identity', set.listing.title], ['contents', set.listing.title]]);
-    expect(verifyJudgement(raw, set).verdict).toBe('match');
+    expect(verifyJudgement(raw, set).downgrades.join(' ')).not.toMatch(/65-piece/);
     // Without the name nothing says the 65 pieces are the product.
-    expect(verifyJudgement(raw, input('A986501', '227605048699', { withTitle: false })).verdict).toBe('unsure');
+    const nameless = verifyJudgement(raw, input('A986501', '227605048699', { withTitle: false }));
+    expect(nameless.downgrades.join(' ')).toMatch(/"65-piece", which may mean more than one unit/);
   });
 
   // Constructed listings: the recording has no PBP2003 listing (its one search result named another
