@@ -17,7 +17,7 @@ Verdicts:
 
 A model number with extra letters or digits (a kit suffix such as K1 or C2) is a different product, unless it is the other written form given for the part.
 
-Evidence: copy each quote word for word from the listing's title, item specifics or description. Do not paraphrase, correct, shorten inside, or join text from different places. Give each quote one claim:
+Evidence: copy each quote word for word from the listing's title, item specifics or description. Do not paraphrase, fix spelling, leave out words in the middle, or join text from different places. Give each quote one claim:
 - identity: the quote names the tool and contains its model number
 - tool_only: the quote says the tool is sold alone
 - quantity: the quote says how many units are sold
