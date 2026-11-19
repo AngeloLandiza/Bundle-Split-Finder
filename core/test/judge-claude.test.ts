@@ -30,7 +30,8 @@ const INPUT: JudgeInput = {
     mpn: 'PCL206',
     brand: 'Ryobi',
     conditionId: '1000',
-    price: { value: '38.50', currency: 'USD' },
+    price: 38.5,
+    currency: 'USD',
   },
 };
 
@@ -38,11 +39,13 @@ const MATCH: JudgeRaw = {
   evidence: [
     { claim: 'identity', quote: 'RYOBI 18V 1/2 in. Drill/Driver (PCL206B) TOOL ONLY' },
     { claim: 'quantity', quote: 'Number of Items in Set: 1' },
+    { claim: 'contents', quote: 'TOOL ONLY' },
   ],
-  toolOnly: true,
+  contentsMatch: true,
   quantity: 1,
   condition: 'new',
   extras: [],
+  missing: [],
   reason: 'Title names PCL206B, tool only.',
   verdict: 'match',
 };

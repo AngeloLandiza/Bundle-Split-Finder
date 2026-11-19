@@ -1,6 +1,6 @@
 // The code-side check of a judge's answer. The model's word alone never makes a match: every quote
-// must be found in the listing, a match must quote the model number, and every field must say one
-// bare New tool. Anything short of that is unsure (CLAUDE.md rule 4). Checks here only ever lower a
+// must be found in the listing, a match must quote the model number and what the listing includes,
+// and every field must say one New unit of exactly the product, nothing added and nothing missing. Anything short of that is unsure (CLAUDE.md rule 4). Checks here only ever lower a
 // verdict, never raise one.
 
 import { itemSpecifics, PROMPT_VERSION } from './prompt';
@@ -46,11 +46,37 @@ export function findModel(text: string, model: string): number {
 }
 
 const ACCESSORY_WORD = /\b(for|fits|compatible)\b/;
-const PACK = /\b\d+\s*-?\s*(pk|pks|pack|packs|pcs|pc|piece|pieces|count|ct|lot)\b|\b(pack|lot|set) of\b/;
+const PACK_COUNT = /\b(\d+)\s*-?\s*(pk|pks|pack|packs|pcs|pc|piece|pieces|count|ct|lot)\b/g;
+const PACK_OF = /\b(pack|lot|set) of\s*(\d+)?/g;
+
+const UNIT: Record<string, string> = {
+  pk: 'pack',
+  pks: 'pack',
+  pack: 'pack',
+  packs: 'pack',
+  pcs: 'piece',
+  pc: 'piece',
+  piece: 'piece',
+  pieces: 'piece',
+  count: 'count',
+  ct: 'count',
+  lot: 'lot',
+  set: 'set',
+};
+
+/** Counts a text states ("2 Pk", "65-Piece", "pack of 2"), each keyed by number and unit ("2:pack"). */
+function packCounts(text: string): { said: string; key: string }[] {
+  const out: { said: string; key: string }[] = [];
+  for (const m of text.matchAll(PACK_COUNT)) out.push({ said: m[0], key: `${Number(m[1])}:${UNIT[m[2]!]}` });
+  for (const m of text.matchAll(PACK_OF)) out.push({ said: m[0].trim(), key: m[2] ? `${Number(m[2])}:${UNIT[m[1]!]}` : 'unknown' });
+  return out;
+}
 
 /**
- * Title checks for a match, from the hard cases on eBay's PCL206B search: "Hard Case for RYOBI …
- * PCL206B", "Toolbox Insert for PCL206B", "2 Pk … BIT HOLDER - MODEL PCL206B". Each only lowers.
+ * Title checks for a match, from the hard cases on eBay's searches: "Hard Case for RYOBI … PCL206B",
+ * "Toolbox Insert for PCL206B", "2 Pk … BIT HOLDER - MODEL PCL206B", "2Pack … Battery Compatible
+ * with DeWalt … DCB205". A count the part's own name states ("65-Piece" for A986501, "(2-Pack)" for
+ * PBP2003) is the product, not several units. Each check only lowers.
  */
 function titleProblems(input: JudgeInput, models: string[]): string[] {
   const title = normaliseText(input.listing.title);
@@ -59,11 +85,48 @@ function titleProblems(input: JudgeInput, models: string[]): string[] {
   const problems: string[] = [];
   const accessory = before.match(ACCESSORY_WORD);
   if (accessory) {
-    problems.push(`The title says "${accessory[0]}" before the model number, as accessories do (a case or holder for the tool).`);
+    problems.push(`The title says "${accessory[0]}" before the model number, as accessories do (a case or holder for the product).`);
   }
-  const pack = title.match(PACK);
-  if (pack) problems.push(`The title says "${pack[0]}", which may mean more than one unit.`);
+  const own = new Set(packCounts(normaliseText(input.part.title ?? '')).map((c) => c.key));
+  for (const count of packCounts(title)) {
+    if (!own.has(count.key)) problems.push(`The title says "${count.said}", which may mean more than one unit.`);
+  }
+  const included = namedComponents(input.part.title);
+  for (const m of title.matchAll(NO_WORD)) {
+    const word = m[2]!;
+    const isComponent = COMPONENTS.find(([, re]) => re.test(word));
+    if (PACKAGING_OR_POWER.has(word) && !(isComponent && included.includes(isComponent[0]))) continue;
+    problems.push(`The title says "${m[0]}", which may mean a piece the product includes is missing.`);
+  }
   return problems;
+}
+
+// "No Blades" (PCL500B 156329863486, a saw sold with a blade) says a piece is missing. "No Box",
+// "No Battery" or "No Charger" on a tool-only product do not, unless the product includes it.
+const NO_WORD = /\b(no|without|w\/o)\s+([a-z]+)/g;
+const PACKAGING_OR_POWER = new Set(['box', 'retail', 'packaging', 'package', 'tag', 'tags', 'battery', 'batteries', 'charger', 'chargers']);
+
+// A component named only to say it is absent ("no charger", "battery not included") is not named.
+const NEGATED = new RegExp(
+  String.raw`\b(no|without|w/o)\s+(\S+\s+){0,2}?(batter(y|ies)|chargers?|bags?|cases?)\b|(batter(y|ies)|chargers?|bags?|cases?)\s+(\S+\s+){0,2}?(not included|sold separately)`,
+  'g',
+);
+
+// What a part's name can say its product includes besides its main item. A name saying the product
+// comes without them ("Tool Only", "not included", "sold separately") asks for none of them.
+const COMPONENTS: [string, RegExp][] = [
+  ['battery', /\bbatter(y|ies)\b/],
+  ['charger', /\bchargers?\b/],
+  ['bag', /\bbags?\b/],
+  ['case', /\bcases?\b/],
+];
+const WITHOUT = /\btools? only\b|\bnot included\b|\bsold separately\b/;
+
+/** What the part's name says the product includes, each to be named by a contents quote. */
+export function namedComponents(partTitle: string | undefined): string[] {
+  const name = normaliseText(partTitle ?? '');
+  if (name === '' || WITHOUT.test(name)) return [];
+  return COMPONENTS.filter(([, re]) => re.test(name)).map(([word]) => word);
 }
 
 const unsure = (claimed: VerifiedJudgement['claimed'], raw: JudgeRaw | null, downgrades: string[]): VerifiedJudgement => ({
@@ -107,15 +170,30 @@ export function verifyJudgement(answer: unknown, input: JudgeInput): VerifiedJud
       (e) => e.claim === 'identity' && models.some((m) => findModel(normaliseText(e.quote), m) >= 0),
     );
     if (!named) downgrades.push(`No identity quote contains ${models.join(' or ')}.`);
-    if (raw.toolOnly !== true) downgrades.push('The judge does not say the listing is the bare tool alone.');
+    const contents = raw.evidence.filter((e) => e.claim === 'contents').map((e) => normaliseText(e.quote).replace(NEGATED, ' '));
+    if (contents.length === 0) {
+      downgrades.push(
+        part.title
+          ? 'No contents quote shows what the listing includes.'
+          : 'No part name was given, and no contents quote shows what the listing includes.',
+      );
+    } else {
+      for (const [word, re] of COMPONENTS) {
+        if (!namedComponents(part.title).includes(word)) continue;
+        if (!contents.some((q) => re.test(q))) downgrades.push(`The part's name includes a ${word}, and no contents quote names one.`);
+      }
+    }
+    if (raw.contentsMatch !== true) downgrades.push('The judge does not say the listing holds exactly what the product includes.');
     if (raw.quantity !== 1) downgrades.push(`The judge gives the quantity as ${raw.quantity ?? 'unknown'}, not 1.`);
     if (raw.condition !== 'new') downgrades.push(`The judge gives the condition as ${raw.condition ?? 'unknown'}, not new.`);
-    if (raw.extras.length > 0) downgrades.push(`The judge lists something sold with the tool: ${raw.extras.join(', ')}.`);
+    if (raw.extras.length > 0) downgrades.push(`The judge lists something sold beyond the product: ${raw.extras.join(', ')}.`);
+    if (raw.missing.length > 0) downgrades.push(`The judge lists something the product includes that is missing: ${raw.missing.join(', ')}.`);
     for (const e of raw.evidence) {
-      if (e.claim === 'extra') downgrades.push(`The judge quotes something included besides the tool: "${e.quote.trim()}".`);
-      if (e.claim === 'not_the_tool') downgrades.push(`The judge quotes text showing it is not the tool: "${e.quote.trim()}".`);
+      if (e.claim === 'extra') downgrades.push(`The judge quotes something added to the product: "${e.quote.trim()}".`);
+      if (e.claim === 'missing') downgrades.push(`The judge quotes something missing from the product: "${e.quote.trim()}".`);
+      if (e.claim === 'not_the_product') downgrades.push(`The judge quotes text showing it is not the product: "${e.quote.trim()}".`);
     }
-    if (listing.conditionId !== undefined && listing.conditionId !== EBAY_NEW) {
+    if (listing.conditionId != null && listing.conditionId !== EBAY_NEW) {
       downgrades.push(`eBay lists the condition as ${listing.conditionId}, not New (${EBAY_NEW}).`);
     }
     downgrades.push(...titleProblems(input, models));

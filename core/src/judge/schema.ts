@@ -25,14 +25,15 @@ export const JUDGE_SCHEMA = {
         additionalProperties: false,
       },
     },
-    toolOnly: nullable({ type: 'boolean' }),
+    contentsMatch: nullable({ type: 'boolean' }),
     quantity: nullable({ type: 'integer' }),
     condition: nullable({ type: 'string', enum: ['new', 'other'] }),
     extras: { type: 'array', items: { type: 'string' } },
+    missing: { type: 'array', items: { type: 'string' } },
     reason: { type: 'string' },
     verdict: { type: 'string', enum: ['match', 'not_match', 'unsure'] },
   },
-  required: ['evidence', 'toolOnly', 'quantity', 'condition', 'extras', 'reason', 'verdict'],
+  required: ['evidence', 'contentsMatch', 'quantity', 'condition', 'extras', 'missing', 'reason', 'verdict'],
   additionalProperties: false,
 } as const;
 
@@ -47,7 +48,7 @@ const isStringArray = (v: unknown): v is string[] => Array.isArray(v) && v.every
  */
 export function parseJudgeRaw(value: unknown): ParsedJudgeRaw {
   if (!isRecord(value)) return { ok: false, problem: 'The answer is not a JSON object.' };
-  const { evidence, toolOnly, quantity, condition, extras, reason, verdict } = value;
+  const { evidence, contentsMatch, quantity, condition, extras, missing, reason, verdict } = value;
   if (verdict !== 'match' && verdict !== 'not_match' && verdict !== 'unsure') {
     return { ok: false, problem: 'The answer has no known verdict.' };
   }
@@ -59,7 +60,9 @@ export function parseJudgeRaw(value: unknown): ParsedJudgeRaw {
     }
     quotes.push({ claim: e.claim as JudgeRaw['evidence'][number]['claim'], quote: e.quote });
   }
-  if (toolOnly !== null && typeof toolOnly !== 'boolean') return { ok: false, problem: 'toolOnly is not true, false or null.' };
+  if (contentsMatch !== null && typeof contentsMatch !== 'boolean') {
+    return { ok: false, problem: 'contentsMatch is not true, false or null.' };
+  }
   if (quantity !== null && !(typeof quantity === 'number' && Number.isInteger(quantity) && quantity >= 0)) {
     return { ok: false, problem: 'quantity is not a whole number or null.' };
   }
@@ -67,6 +70,10 @@ export function parseJudgeRaw(value: unknown): ParsedJudgeRaw {
     return { ok: false, problem: 'condition is not "new", "other" or null.' };
   }
   if (!isStringArray(extras)) return { ok: false, problem: 'extras is not a list of words.' };
+  if (!isStringArray(missing)) return { ok: false, problem: 'missing is not a list of words.' };
   if (typeof reason !== 'string') return { ok: false, problem: 'The answer has no reason.' };
-  return { ok: true, raw: { evidence: quotes, toolOnly, quantity, condition, extras: [...extras], reason, verdict } };
+  return {
+    ok: true,
+    raw: { evidence: quotes, contentsMatch, quantity, condition, extras: [...extras], missing: [...missing], reason, verdict },
+  };
 }

@@ -33,7 +33,8 @@ const REAL: JudgeInput = {
     mpn: item.mpn,
     brand: item.brand,
     conditionId: item.conditionId,
-    price: item.price,
+    price: Number(item.price.value),
+    currency: item.price.currency,
   },
 };
 
@@ -50,18 +51,20 @@ const fromSearch = (id: string, extra: Partial<JudgeInput['listing']> = {}): Jud
 });
 
 const TITLE = REAL.listing.title; // "RYOBI 18V 1/2 in. Drill/Driver (PCL206B) TOOL ONLY"
+const CONTENTS = { claim: 'contents', quote: 'TOOL ONLY' } as const;
 
 /** A well-formed "match" for the real listing; tests change one thing at a time. */
 const goodMatch = (over: Partial<JudgeRaw> = {}): JudgeRaw => ({
   evidence: [
     { claim: 'identity', quote: TITLE },
-    { claim: 'tool_only', quote: 'TOOL ONLY' },
+    { claim: 'contents', quote: 'TOOL ONLY' },
     { claim: 'quantity', quote: 'Number of Items in Set: 1' },
   ],
-  toolOnly: true,
+  contentsMatch: true,
   quantity: 1,
   condition: 'new',
   extras: [],
+  missing: [],
   reason: 'The title names PCL206B and says tool only.',
   verdict: 'match',
   ...over,
@@ -84,18 +87,19 @@ describe('verifyJudgement: a match that holds', () => {
       evidence: [
         { claim: 'identity', quote: '  ryobi 18v 1/2 in.   drill/driver (pcl206b) tool only ' },
         { claim: 'quantity', quote: 'Item Diameter: 1/2” Chuck Diameter' },
+        { claim: 'contents', quote: 'tool  ONLY' },
       ],
     });
     expect(verifyJudgement(raw, REAL).verdict).toBe('match');
   });
 
   it('accepts an identity quote from the item specifics, matching the model whatever its case', () => {
-    const raw = goodMatch({ evidence: [{ claim: 'identity', quote: 'Model: pcl206b' }] });
+    const raw = goodMatch({ evidence: [{ claim: 'identity', quote: 'Model: pcl206b' }, CONTENTS] });
     expect(verifyJudgement(raw, REAL).verdict).toBe('match');
   });
 
   it('accepts the RYOBI twin form as the identity (PCL206 written PCL206B)', () => {
-    const raw = goodMatch({ evidence: [{ claim: 'identity', quote: 'Drill/Driver (PCL206B)' }] });
+    const raw = goodMatch({ evidence: [{ claim: 'identity', quote: 'Drill/Driver (PCL206B)' }, CONTENTS] });
     expect(verifyJudgement(raw, REAL).verdict).toBe('match');
   });
 });
@@ -103,7 +107,7 @@ describe('verifyJudgement: a match that holds', () => {
 describe('verifyJudgement: quotes must be real', () => {
   it('downgrades a match with a fabricated quote to unsure', () => {
     const raw = goodMatch({
-      evidence: [...goodMatch().evidence, { claim: 'tool_only', quote: 'Bare tool, no battery or charger included' }],
+      evidence: [...goodMatch().evidence, { claim: 'contents', quote: 'Bare tool, no battery or charger included' }],
     });
     const v = verifyJudgement(raw, REAL);
     expect(v.verdict).toBe('unsure');
@@ -126,7 +130,7 @@ describe('verifyJudgement: quotes must be real', () => {
   it('downgrades a not_match with a fabricated quote to unsure', () => {
     const raw = goodMatch({
       verdict: 'not_match',
-      toolOnly: false,
+      contentsMatch: false,
       evidence: [{ claim: 'extra', quote: 'Includes 2.0Ah battery and charger' }],
     });
     expect(verifyJudgement(raw, REAL).verdict).toBe('unsure');
@@ -141,8 +145,8 @@ describe('verifyJudgement: quotes must be real', () => {
     const input = fromSearch('168866627985'); // Hard Case for RYOBI ONE+ 18V Cordless 1/2 in. Drill PCL206B, ...
     const raw = goodMatch({
       verdict: 'not_match',
-      toolOnly: false,
-      evidence: [{ claim: 'not_the_tool', quote: 'Hard Case for RYOBI ONE+ 18V Cordless 1/2 in. Drill PCL206B' }],
+      contentsMatch: false,
+      evidence: [{ claim: 'not_the_product', quote: 'Hard Case for RYOBI ONE+ 18V Cordless 1/2 in. Drill PCL206B' }],
     });
     expect(verifyJudgement(raw, input).verdict).toBe('not_match');
   });
@@ -154,7 +158,7 @@ describe('verifyJudgement: quotes must be real', () => {
 
 describe('verifyJudgement: a match needs the model named', () => {
   it('downgrades a match with no identity quote', () => {
-    const raw = goodMatch({ evidence: [{ claim: 'tool_only', quote: 'TOOL ONLY' }] });
+    const raw = goodMatch({ evidence: [{ claim: 'contents', quote: 'TOOL ONLY' }] });
     const v = verifyJudgement(raw, REAL);
     expect(v.verdict).toBe('unsure');
     expect(v.downgrades.join(' ')).toMatch(/PCL206/);
@@ -174,7 +178,12 @@ describe('verifyJudgement: a match needs the model named', () => {
     // 920080659249: "Ryobi PCL206 ONE+ 18V 1/2 in Keyless Drill/Driver 2-Speed LED Tool Only ‘2025 DC"
     const input = fromSearch('920080659249');
     input.part = { brand: 'RYOBI', model: 'PCL206B' };
-    const raw = goodMatch({ evidence: [{ claim: 'identity', quote: input.listing.title }] });
+    const raw = goodMatch({
+      evidence: [
+        { claim: 'identity', quote: input.listing.title },
+        { claim: 'contents', quote: 'Tool Only' },
+      ],
+    });
     expect(verifyJudgement(raw, input).verdict).toBe('unsure');
     input.part = { brand: 'RYOBI', model: 'PCL206B', twin: 'PCL206' };
     expect(verifyJudgement(raw, input).verdict).toBe('match');
@@ -195,7 +204,7 @@ describe('verifyJudgement: a match must be one bare New tool', () => {
   });
 
   it('downgrades a match that quotes something other than the tool', () => {
-    const raw = goodMatch({ evidence: [...goodMatch().evidence, { claim: 'not_the_tool', quote: 'Battery Capacity: 1.5 Ah' }] });
+    const raw = goodMatch({ evidence: [...goodMatch().evidence, { claim: 'not_the_product', quote: 'Battery Capacity: 1.5 Ah' }] });
     expect(verifyJudgement(raw, REAL).verdict).toBe('unsure');
   });
 
@@ -204,9 +213,9 @@ describe('verifyJudgement: a match must be one bare New tool', () => {
     expect(verifyJudgement(goodMatch({ quantity: null }), REAL).verdict).toBe('unsure');
   });
 
-  it('downgrades toolOnly false or unknown', () => {
-    expect(verifyJudgement(goodMatch({ toolOnly: false }), REAL).verdict).toBe('unsure');
-    expect(verifyJudgement(goodMatch({ toolOnly: null }), REAL).verdict).toBe('unsure');
+  it('downgrades contentsMatch false or unknown', () => {
+    expect(verifyJudgement(goodMatch({ contentsMatch: false }), REAL).verdict).toBe('unsure');
+    expect(verifyJudgement(goodMatch({ contentsMatch: null }), REAL).verdict).toBe('unsure');
   });
 
   it('downgrades a condition that is not new, or unknown', () => {
@@ -222,7 +231,12 @@ describe('verifyJudgement: a match must be one bare New tool', () => {
 
 describe('verifyJudgement: listings sold "for" the tool never become a match', () => {
   const titleMatch = (input: JudgeInput) =>
-    goodMatch({ evidence: [{ claim: 'identity', quote: input.listing.title }] });
+    goodMatch({
+      evidence: [
+        { claim: 'identity', quote: input.listing.title },
+        { claim: 'contents', quote: input.listing.title },
+      ],
+    });
 
   it.each([
     ['168866627985'], // Hard Case for RYOBI ONE+ 18V Cordless 1/2 in. Drill PCL206B, S Black & Green
@@ -324,7 +338,7 @@ describe('the schema', () => {
 
   it('parseJudgeRaw accepts what the schema describes and nothing looser', () => {
     expect(parseJudgeRaw(goodMatch())).toEqual({ ok: true, raw: goodMatch() });
-    expect(parseJudgeRaw({ ...goodMatch(), toolOnly: 'yes' }).ok).toBe(false);
+    expect(parseJudgeRaw({ ...goodMatch(), contentsMatch: 'yes' }).ok).toBe(false);
     expect(parseJudgeRaw({ ...goodMatch(), condition: 'New' }).ok).toBe(false);
     expect(parseJudgeRaw({ ...goodMatch(), extras: [1] }).ok).toBe(false);
   });

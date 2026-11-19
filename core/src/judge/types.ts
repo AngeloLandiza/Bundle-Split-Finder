@@ -1,4 +1,5 @@
-// The listing judge: a language model asked whether one eBay listing is exactly one tool. This file
+// The listing judge: a language model asked whether one eBay listing is exactly one product (the
+// item sold under a part's model number: a bare tool, a battery, a charger, a kit, a bit set). This file
 // is the provider-neutral contract. An adapter (claude.ts first) turns a JudgeInput into one model
 // call and hands back the model's answer text; verify.ts decides what that answer is worth. A second
 // provider is a new adapter file and nothing else.
@@ -8,7 +9,11 @@ export interface JudgePart {
   brand: string;
   model: string;
   twin?: string;
-  /** The part's name as Home Depot gives it, for context only. */
+  /**
+   * The part's name (Home Depot's title): says what the product is and what it includes, e.g.
+   * "20V MAX Cordless Drill/Impact 2 Tool Combo Kit with (2) 20V 1.3Ah Batteries, Charger, and Bag".
+   * Without it the model number alone defines the product.
+   */
   title?: string;
 }
 
@@ -27,9 +32,10 @@ export interface JudgeListing {
   mpn?: string;
   brand?: string;
   /** eBay's condition id; "1000" is New. */
-  conditionId?: string;
-  /** Kept for the caller. Never shown to the model: a price is not evidence of identity. */
-  price?: { value: string; currency: string };
+  conditionId?: string | null;
+  /** Kept for the caller, as EbayListing has it. Never shown to the model: a price is not evidence of identity. */
+  price?: number | null;
+  currency?: string;
 }
 
 export interface JudgeInput {
@@ -40,20 +46,25 @@ export interface JudgeInput {
 export type JudgeVerdict = 'match' | 'not_match' | 'unsure';
 
 /** What a quote is offered as evidence of. */
-export type EvidenceClaim = 'identity' | 'tool_only' | 'quantity' | 'condition' | 'extra' | 'not_the_tool';
+export type EvidenceClaim = 'identity' | 'contents' | 'quantity' | 'condition' | 'extra' | 'missing' | 'not_the_product';
 
-export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = ['identity', 'tool_only', 'quantity', 'condition', 'extra', 'not_the_tool'];
+export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = ['identity', 'contents', 'quantity', 'condition', 'extra', 'missing', 'not_the_product'];
 
 /** The model's answer, as the schema shapes it. Nothing in it is trusted until verify.ts has read it. */
 export interface JudgeRaw {
   evidence: { claim: EvidenceClaim; quote: string }[];
-  /** True: the bare tool and nothing else. False: something else comes with it, or it is not the tool. */
-  toolOnly: boolean | null;
-  /** Units of the tool sold in the listing. */
+  /**
+   * True: the listing holds exactly what the product includes, nothing more, nothing less. False:
+   * something is added or missing, or it is not the product. Null: the text does not say.
+   */
+  contentsMatch: boolean | null;
+  /** Units of the product sold in the listing (one 2-pack battery is 1). */
   quantity: number | null;
   condition: 'new' | 'other' | null;
-  /** Everything sold with the tool, in short words ("battery", "charger", "case"). */
+  /** Everything sold beyond the product, in short words ("battery", "charger", "case"). */
   extras: string[];
+  /** Everything the product includes that the listing lacks, in short words. */
+  missing: string[];
   reason: string;
   verdict: JudgeVerdict;
 }
