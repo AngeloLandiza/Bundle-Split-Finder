@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from '../src/scan/types';
 
 const bundle = (itemId: string, over: Partial<BundleRecord> = {}): BundleRecord => ({
@@ -113,6 +113,30 @@ const partPrice = (model: string, over: Partial<PartPriceRecord> = {}): PartPric
   ...over,
 });
 
+const ebayValue = (model: string, over: Partial<EbayValueRecord> = {}): EbayValueRecord => ({
+  key: `RYOBI:${model}`,
+  brand: 'RYOBI',
+  model,
+  value: { listings: 1, unitsSold: 13, low: 38.5, high: 38.5, medianPrice: 38.5, links: ['https://www.ebay.com/itm/237179711800'] },
+  listings: [
+    {
+      itemId: 'v1|237179711800|0', title: 'RYOBI PCL206B 18V ONE+ Drill/Driver (Tool Only)', price: 38.5, currency: 'USD', soldQuantity: 13,
+      url: 'https://www.ebay.com/itm/237179711800', verdict: 'match', reasons: ['The title names the model.'],
+    },
+  ],
+  notJudged: 0,
+  complete: true,
+  checkedAt: 1,
+  ...over,
+});
+
+const judgement = (itemId: string, over: Partial<JudgementRecord> = {}): JudgementRecord => ({
+  key: `${itemId}||p1|claude-haiku-5-5|RYOBI:PCL206B`,
+  itemId, revision: '', promptVersion: 'p1', model: 'claude-haiku-5-5', part: 'RYOBI:PCL206B',
+  answer: '{"verdict":"unsure"}', usage: { inputTokens: 900, outputTokens: 120 }, judgedAt: 1,
+  ...over,
+});
+
 export function storeConformance(name: string, make: () => Promise<ScanStore>): void {
 describe(`${name} round trips`, () => {
   it('bundles: put, get, replace, missing', async () => {
@@ -214,6 +238,38 @@ describe(`${name} round trips`, () => {
     const got = (await s.getPartPrice(a.key))!;
     got.price = 1;
     expect((await s.getPartPrice(a.key))!.price).toBe(89);
+  });
+
+  it('eBay values (step 10): put, get, replace, missing, listed by key; the catalog and part prices are untouched', async () => {
+    const s = await make();
+    const a = ebayValue('PCL500B');
+    await s.putEbayValue(a);
+    expect(await s.getEbayValue(a.key)).toEqual(a);
+    const b = ebayValue('PCL500B', { checkedAt: 2, value: null, listings: [], complete: false, notJudged: 2 });
+    await s.putEbayValue(b);
+    expect(await s.getEbayValue(a.key)).toEqual(b);
+    await s.putEbayValue(ebayValue('PCL206B'));
+    expect((await s.listEbayValues()).map((r) => r.key)).toEqual(['RYOBI:PCL206B', 'RYOBI:PCL500B']);
+    expect(await s.getEbayValue('RYOBI:NOPE')).toBeUndefined();
+    expect(await s.listCatalog()).toEqual([]);
+    expect(await s.listPartPrices()).toEqual([]);
+    const got = (await s.getEbayValue('RYOBI:PCL206B'))!;
+    got.listings[0]!.title = 'changed';
+    expect((await s.getEbayValue('RYOBI:PCL206B'))!.listings[0]!.title).toBe('RYOBI PCL206B 18V ONE+ Drill/Driver (Tool Only)');
+  });
+
+  it('judgements (step 10): put, get, replace, missing; a copy is returned', async () => {
+    const s = await make();
+    const a = judgement('v1|1|0');
+    await s.putJudgement(a);
+    expect(await s.getJudgement(a.key)).toEqual(a);
+    const b = judgement('v1|1|0', { answer: '{"verdict":"match"}' });
+    await s.putJudgement(b);
+    expect(await s.getJudgement(a.key)).toEqual(b);
+    expect(await s.getJudgement('nope')).toBeUndefined();
+    const got = (await s.getJudgement(a.key))!;
+    got.usage.inputTokens = 1;
+    expect((await s.getJudgement(a.key))!.usage.inputTokens).toBe(900);
   });
 
   it('scans: put, get, replace, missing', async () => {

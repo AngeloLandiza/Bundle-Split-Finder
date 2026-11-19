@@ -2,7 +2,7 @@
 // out, so neither the caller's object nor a returned one aliases what is stored.
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from './types';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
@@ -20,6 +20,8 @@ export class MemoryScanStore implements ScanStore {
   private readonly cursors = new Map<string, CatalogCursor>();
   private readonly reviews = new Map<string, ReviewItem>();
   private readonly partPrices = new Map<string, PartPriceRecord>();
+  private readonly ebayValues = new Map<string, EbayValueRecord>();
+  private readonly judgements = new Map<string, JudgementRecord>();
   private readonly scans = new Map<string, ScanJob>();
 
   private get<T>(map: Map<string, T>, key: string): T | undefined {
@@ -103,6 +105,23 @@ export class MemoryScanStore implements ScanStore {
   }
   async listPartPrices() {
     return this.list(this.partPrices, byKey((r) => r.key));
+  }
+
+  async getEbayValue(key: string) {
+    return this.get(this.ebayValues, key);
+  }
+  async putEbayValue(record: EbayValueRecord) {
+    this.ebayValues.set(record.key, structuredClone(record));
+  }
+  async listEbayValues() {
+    return this.list(this.ebayValues, byKey((r) => r.key));
+  }
+
+  async getJudgement(key: string) {
+    return this.get(this.judgements, key);
+  }
+  async putJudgement(record: JudgementRecord) {
+    this.judgements.set(record.key, structuredClone(record));
   }
 
   async getScan(id: string) {

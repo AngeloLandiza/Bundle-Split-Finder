@@ -352,6 +352,11 @@ export class WatchedStore implements ScanStore {
   getPartPrice: ScanStore['getPartPrice'] = (key) => this.inner.getPartPrice(key);
   putPartPrice: ScanStore['putPartPrice'] = (r) => this.inner.putPartPrice(r);
   listPartPrices: ScanStore['listPartPrices'] = () => this.inner.listPartPrices();
+  getEbayValue: ScanStore['getEbayValue'] = (key) => this.inner.getEbayValue(key);
+  putEbayValue: ScanStore['putEbayValue'] = (r) => this.inner.putEbayValue(r);
+  listEbayValues: ScanStore['listEbayValues'] = () => this.inner.listEbayValues();
+  getJudgement: ScanStore['getJudgement'] = (key) => this.inner.getJudgement(key);
+  putJudgement: ScanStore['putJudgement'] = (r) => this.inner.putJudgement(r);
   getScan: ScanStore['getScan'] = (id) => this.inner.getScan(id);
   putScan: ScanStore['putScan'] = (job) => this.inner.putScan(job);
   listScans: ScanStore['listScans'] = () => this.inner.listScans();

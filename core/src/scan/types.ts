@@ -6,6 +6,7 @@
 // worker with IndexedDB behind the same ScanStore.
 
 import type { Decomposition } from '../decompose';
+import type { EbayValue, EbayVerdict } from '../ebay/types';
 import type { PageContent } from '../hdPage';
 import type { Grade } from '../match';
 import { DEFAULT_FEES, type BundleResult, type FeeSettings } from '../money';
@@ -220,6 +221,79 @@ export interface PartPriceRecord {
   checkedAt: number;
 }
 
+/**
+ * Step 10: one eBay listing a part's eBay value was built from, as the judge and the checks left it. The
+ * listing's text is not kept, only what the panel shows and the value needs. No seller or buyer field exists
+ * here (no eBay user data).
+ */
+export interface EbayJudgedListing {
+  itemId: string;
+  title: string;
+  price: number | null;
+  currency: string;
+  /** Units this listing has sold (eBay's estimatedSoldQuantity); null when eBay does not say. */
+  soldQuantity: number | null;
+  /** The listing's page on eBay. */
+  url: string;
+  /** eBay's sellerItemRevision: an owner's answer holds only while it is the same. */
+  revision?: string;
+  /** What the judge and the code-side checks made of the listing: the only verdict a model can give. */
+  verdict: EbayVerdict;
+  /** The judge's reason and each check that lowered its answer, in plain sentences. */
+  reasons: string[];
+  /** The owner's answer to "Is this eBay listing exactly this part?": it overrides `verdict`. Absent until answered. */
+  owner?: 'match' | 'not_match';
+  ownerAt?: number;
+}
+
+/** A listing's verdict as the value counts it: the owner's answer, else the judge's checked verdict. */
+export const effectiveVerdict = (l: Pick<EbayJudgedListing, 'verdict' | 'owner'>): EbayVerdict => l.owner ?? l.verdict;
+
+/**
+ * Step 10: what New units of a part sell for on eBay, as a reference (never counted in an estimate), in
+ * its own store keyed by the part. `value` is null when no listing is a verified match that has sold:
+ * the part then shows no eBay line, never $0.
+ */
+export interface EbayValueRecord {
+  /** partKey(brand, model) of the part asked for. */
+  key: string;
+  brand: string;
+  model: string;
+  value: EbayValue | null;
+  /** Every listing judged for the part this check, in search order. */
+  listings: EbayJudgedListing[];
+  /** Listings the check left unjudged (a failed or refused call, or a limit reached). Never a verdict. */
+  notJudged: number;
+  /** False when listings were left unjudged: the part is asked for again next scan whatever its age. */
+  complete: boolean;
+  /** When the part was last checked. Freshness is measured from here. */
+  checkedAt: number;
+}
+
+/**
+ * Step 10: one model answer, kept so a listing is judged once for a part, item revision, prompt and model.
+ * It holds the model's raw answer text, never a verdict: verification rules change without a prompt
+ * version change, so every read is verified again (core/src/judge/verify.ts).
+ */
+export interface JudgementRecord {
+  /** judgementKey(...) */
+  key: string;
+  itemId: string;
+  revision: string;
+  promptVersion: string;
+  model: string;
+  /** partKey of the part judged for: the answer is about that part's identity and contents. */
+  part: string;
+  /** The model's answer text, exactly as received. */
+  answer: string;
+  usage: { inputTokens: number; outputTokens: number };
+  judgedAt: number;
+}
+
+/** The key of a judgement: item, revision (empty when eBay gives none), prompt version, model and part. */
+export const judgementKey = (itemId: string, revision: string | undefined, promptVersion: string, model: string, part: string): string =>
+  [itemId, revision ?? '', promptVersion, model, part].join('|');
+
 export interface CatalogRecord {
   /** partKey(brand, model) */
   key: string;
@@ -428,6 +502,16 @@ export interface ScanCounts {
    * Absent on a job saved before step 9; it reads as 0.
    */
   partPricesRead?: number;
+  /**
+   * Step 10: eBay searches and item reads this scan made (free, from the owner's own eBay keys), listings a
+   * model was asked about (not those answered from a saved judgement), and the tokens those calls used.
+   * Absent on a job saved before step 10; they read as 0.
+   */
+  ebaySearches?: number;
+  ebayItemReads?: number;
+  listingsJudged?: number;
+  judgeTokensIn?: number;
+  judgeTokensOut?: number;
 }
 
 /**
@@ -481,6 +565,11 @@ export interface ScanJob {
    * Absent when there are none; a job saved before it existed holds every page behind its earlier one.
    */
   answeredPages?: string[];
+  /**
+   * Step 10: one plain sentence when the eBay step was skipped or stopped early (keys missing, eBay or the
+   * model refused or limited a call). Not a failure of the scan: Home Depot and Amazon results are unaffected.
+   */
+  ebayNotice?: string | null;
   /** Searches that counted against the quota (responses that came from the network). */
   searchesUsed: number;
   counts: ScanCounts;
@@ -525,6 +614,15 @@ export interface ScanStore {
   getPartPrice(key: string): Promise<PartPriceRecord | undefined>;
   putPartPrice(record: PartPriceRecord): Promise<void>;
   listPartPrices(): Promise<PartPriceRecord[]>;
+
+  /** Step 10: eBay reference values, by partKey. Never read by the splitter, and never counted in an estimate. */
+  getEbayValue(key: string): Promise<EbayValueRecord | undefined>;
+  putEbayValue(record: EbayValueRecord): Promise<void>;
+  listEbayValues(): Promise<EbayValueRecord[]>;
+
+  /** Step 10: saved model answers, by judgementKey. */
+  getJudgement(key: string): Promise<JudgementRecord | undefined>;
+  putJudgement(record: JudgementRecord): Promise<void>;
 
   getScan(id: string): Promise<ScanJob | undefined>;
   putScan(job: ScanJob): Promise<void>;
@@ -572,7 +670,7 @@ export interface PartRow {
  *                counted only while no older than the featured price, else shown for reference
  * amazon_list    the matched listing's list price (struck through): reference only
  * homedepot      Home Depot's own price for the part sold alone: reference only
- * ebay_sold_new  reserved for eBay sold New listings; nothing produces it yet
+ * ebay_sold_new  step 10: what New units of the part sell for on eBay (listings a model checked, with units sold): reference only
  */
 export type PriceKind = 'amazon_new' | 'amazon_buybox' | 'amazon_list' | 'homedepot' | 'ebay_sold_new';
 
@@ -607,6 +705,8 @@ export interface PriceOption {
   soldAs?: string;
   /** amazon_buybox only: the page's only offer (single_offer), not a Buy New box. Absent otherwise. */
   singleOffer?: true;
+  /** ebay_sold_new only: the value the figure is the median of (listings, units sold, range, up to 3 links). */
+  ebay?: EbayValue;
 }
 
 /**
@@ -710,11 +810,37 @@ export interface OwnerAnswer {
   kind: 'chosen' | 'entered' | 'none';
 }
 
+/**
+ * Step 10: "Is this eBay listing exactly <MODEL>, New, with the same contents?", asked for a listing the judge
+ * left unsure that could count (a USD price, units sold). Its own list, not a ReviewItem: the answer is a
+ * listing's verdict (answerEbay), not a split or a match.
+ */
+export interface EbayQuestion {
+  /** `${key}|${itemId}`: one open question per part and listing. */
+  id: string;
+  /** partKey of the part. */
+  key: string;
+  brand: string;
+  model: string;
+  itemId: string;
+  title: string;
+  /** The listing's page; may be empty. */
+  url: string;
+  price: number | null;
+  soldQuantity: number | null;
+  /** The judge's reason and every check that lowered its answer. */
+  reasons: string[];
+  /** When the part's eBay value was checked: questions go oldest first. */
+  openedAt: number;
+}
+
 export interface ScanReport {
   /** By section: confirmed, waiting, inactive_listing, missing_listing, split; within each, highest estimated profit first. */
   bundles: BundleRow[];
   /** Open review items, oldest first. */
   review: ReviewItem[];
+  /** Step 10: open eBay listing questions, oldest first. Absent in a report built before step 10 (it reads as none). */
+  ebayQuestions?: EbayQuestion[];
 }
 
 /**

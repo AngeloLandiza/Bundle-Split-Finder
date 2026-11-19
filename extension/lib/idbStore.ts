@@ -5,7 +5,7 @@
 
 import type { IDBPDatabase } from 'idb';
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from '@core/scan/types';
 import { openDb, type KeyedStore } from './db';
 
@@ -58,6 +58,13 @@ export class IdbScanStore implements ScanStore {
   getPartPrice(key: string) { return this.get<PartPriceRecord>('partPrices', key); }
   putPartPrice(record: PartPriceRecord) { return this.put('partPrices', record); }
   listPartPrices() { return this.list<PartPriceRecord>('partPrices'); }
+
+  getEbayValue(key: string) { return this.get<EbayValueRecord>('ebayValues', key); }
+  putEbayValue(record: EbayValueRecord) { return this.put('ebayValues', record); }
+  listEbayValues() { return this.list<EbayValueRecord>('ebayValues'); }
+
+  getJudgement(key: string) { return this.get<JudgementRecord>('judgements', key); }
+  putJudgement(record: JudgementRecord) { return this.put('judgements', record); }
 
   getScan(id: string) { return this.get<ScanJob>('scans', id); }
   putScan(job: ScanJob) { return this.put('scans', job); }
