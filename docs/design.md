@@ -82,10 +82,16 @@ All text pairs meet 4.5:1. Do not introduce new colors; ask first.
   link to fee settings; one block per part with model, short name, price, net, ASIN link,
   grade, and Verify when the grade is "Title match"; under each part its prices, highest first, each
   labelled with where it comes from ("Amazon · New" in weight, the Buy Box with its seller, reference prices
-  such as Amazon's list price and Home Depot's own price marked "not counted"); the packaging question until answered;
+  such as Amazon's list price and Home Depot's own price marked "not counted"); a part's eBay line last in that
+  group ("eBay · New · $38.50–$54.99 · 3 listings, 41 sold", with up to three numbered links to its listings), and
+  no eBay line at all, never $0, when no checked listing has sold; the packaging question until answered;
   **Copy ASINs** as the primary action.
 - **Review**: one question at a time with real choices, for example "Which impact wrench
-  comes with this kit?" with DCF891B and DCF921B as radio options. Answering saves and moves on.
+  comes with this kit?" with DCF891B and DCF921B as radio options. Answering saves and moves on. An eBay listing the
+  check was unsure of is a question in the same list: "Is this eBay listing exactly DCF921B, New, with the same
+  contents?", with the listing's title, price, units sold, why the check was not certain, a link to it, and Yes or No.
+- **eBay notice**: when a scan skipped or cut short its eBay step (a key missing, refused or limited), one plain
+  sentence in the quiet line under the Deals bar. It is not an error: the Amazon and Home Depot figures are unaffected.
 - **Footer status bar**: next scan time on the left; searches left with a small meter on
   the right.
 - **States to build**: no key (FirstRun), scanning, stopped at a limit (Limit, with the
@@ -113,6 +119,11 @@ All text pairs meet 4.5:1. Do not introduce new colors; ask first.
   block. The forecast is live. When the schedule cannot fit the plan the block turns to
   the attention colors and says so with the fix: "This needs 1,200 searches a month and
   your plan has 150 to spend. Use 5 per scan, or scan less often."
+- **eBay reference values** and **Listing check** (step 10, no mockup; same two-part row and fields as the SerpApi
+  key): the eBay App ID and Cert ID (masked, **Check eBay keys**, saved only when eBay gives a token), the Anthropic
+  key (masked, **Add key**, not checked: a check costs money), the model that reads each listing (a radio group), the
+  most listings it may read in a scan, and the estimated cost of that, labelled an estimate. The help says the eBay
+  figure is a reference and is not counted.
 - **What to scan**, **Fees**, **Alerts**, **Your data** as in the mockup.
 - Changes save on change. No Save button. Destructive actions ask once.
 

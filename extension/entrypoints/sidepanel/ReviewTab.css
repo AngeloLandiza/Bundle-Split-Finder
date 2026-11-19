@@ -174,6 +174,32 @@
   color: var(--ink-2);
 }
 
+/* Step 10: an eBay listing question. The listing's price, units sold and link on one line; why the check was unsure as a plain list. */
+.review-cand-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 2px;
+  margin: 0;
+  color: var(--ink-2);
+}
+.review-ebay-link {
+  color: var(--link);
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+.review-reasons ul {
+  margin: 2px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.review-reasons li {
+  overflow-wrap: anywhere;
+}
+
 /* Said to a screen reader, not shown. */
 .review-hidden {
   position: absolute;

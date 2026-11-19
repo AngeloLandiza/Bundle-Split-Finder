@@ -125,6 +125,30 @@ function Check() {
 const isWebLink = (link: string | null): link is string => link !== null && /^https?:\/\//i.test(link);
 
 /**
+ * Step 10: eBay's reference line: what New units of the part sell for there, from the listings a model checked, with up
+ * to three of them to open (new tab, http or https only). There is no eBay line at all for a part with no checked
+ * listing that has sold, never $0 (the report gives none). It is in the reference group: it is never counted.
+ */
+function EbayLine({ option, label }: { option: PriceOption; label: string }) {
+  const links = (option.ebay?.links ?? []).filter(isWebLink).slice(0, 3);
+  return (
+    <div className="detail-price" data-kind="ebay_sold_new" data-reference="true">
+      <dt>
+        <span className="detail-price-label">{label}</span>
+      </dt>
+      <dd className="detail-ebay-links">
+        {links.length > 0 ? <span className="detail-ebay-links-label">Listings</span> : null}
+        {links.map((href, i) => (
+          <a key={href} className="detail-price-label figure" href={href} target="_blank" rel="noopener noreferrer" aria-label={`eBay listing ${i + 1} of ${links.length}, opens in a new tab`}>
+            {i + 1}
+          </a>
+        ))}
+      </dd>
+    </div>
+  );
+}
+
+/**
  * One part's prices in two groups, each highest first: the counted prices (Amazon New and the Buy Box, the figures
  * the estimate uses), then a group headed "Reference · not counted" (Amazon's list price, Home Depot's, an older
  * Buy Box). The Amazon New price is the featured one. A price with a link opens its page in a new tab; a reference
@@ -134,11 +158,13 @@ function Prices({ model, prices, bulk }: { model: string; prices: PriceOption[];
   if (prices.length === 0) return null;
   const high = (a: PriceOption, b: PriceOption) => b.price - a.price;
   const counted = prices.filter((o) => !o.reference).sort(high);
-  const reference = prices.filter((o) => o.reference).sort(high);
+  // eBay's line is a range with its own listings, so it follows the single prices rather than sorting among them.
+  const reference = [...prices.filter((o) => o.reference && o.kind !== 'ebay_sold_new').sort(high), ...prices.filter((o) => o.kind === 'ebay_sold_new' && o.reference)];
   const rows = (list: PriceOption[]) => (
     <dl>
       {list.map((o, i) => {
         const label = priceLabel(o, bulk);
+        if (o.kind === 'ebay_sold_new') return <EbayLine key={`${o.kind}:${i}`} option={o} label={label} />;
         return (
           <div key={`${o.kind}:${i}`} className="detail-price" data-kind={o.kind} data-featured={o.kind === 'amazon_new' ? 'true' : undefined} data-reference={o.reference ? 'true' : undefined}>
             <dt>

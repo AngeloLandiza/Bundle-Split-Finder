@@ -122,6 +122,13 @@ describe('side panel shell', () => {
     expect(tab('This page')).toHaveTextContent(/^This page$/);
   });
 
+  it('counts the eBay listing questions with the review items', async () => {
+    const withEbay = { ...REPORT, ebayQuestions: [{ id: 'k|1', key: 'DEWALT:DCF921B', brand: 'DEWALT', model: 'DCF921B', itemId: '1', title: 't', url: '', price: 79, soldQuantity: 4, reasons: [], openedAt: 2 }] } as unknown as PanelReport;
+    setup(state(), withEbay);
+    await screen.findByText('3 bundles');
+    expect(within(tab('Review')).getByText('2')).toHaveAttribute('data-tag', 'attention');
+  });
+
   it('a Review count of zero is plain text, not a tag', async () => {
     setup(state(), EMPTY);
     await screen.findByText('0 bundles');

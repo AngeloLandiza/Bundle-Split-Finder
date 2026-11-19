@@ -205,6 +205,12 @@ export function DealsTab({ report, state, sort, onSort, onOpen, api, onPaidEnd }
         </span>
       </div>
       {aside && !limitCopy(state, now, report.bundles) ? <p className="deals-stale">{aside}</p> : null}
+      {/* Step 10: the eBay step skipped or stopped early. The scan itself is unaffected; this says why a part has no eBay line. */}
+      {job?.ebayNotice ? (
+        <p className="deals-stale" data-testid="ebay-notice">
+          {job.ebayNotice}
+        </p>
+      ) : null}
       {days !== null ? <p className="deals-stale">Prices seen {days === 1 ? '1 day' : `${days} days`} ago. The next scan refreshes them.</p> : null}
       {groups.map((g) => (
         <section key={g.id} aria-label={g.label}>

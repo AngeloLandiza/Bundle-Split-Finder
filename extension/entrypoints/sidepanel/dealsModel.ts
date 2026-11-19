@@ -2,6 +2,7 @@
 // section, the sections themselves. No React here, so the rules can be tested on their own.
 
 import type { BundleResult } from '@core/money';
+import { ebayLabel } from '@core/ebay/value';
 import { partKey, type BundleRow, type PartRow, type PriceOption, type PriceRange, type ReportSection, type ScanJob } from '@core/scan/types';
 import { roi, roiSigned } from '../../lib/format';
 import type { SortKey } from './sort';
@@ -172,6 +173,7 @@ export function priceLabel(o: PriceOption, bulk = false): string {
     case 'homedepot':
       return `Home Depot · sold alone${o.soldAs ? ` as ${o.soldAs}` : ''}`;
     case 'ebay_sold_new':
-      return 'eBay · sold New';
+      // "eBay · New · $38.50–$54.99 · 3 listings, 41 sold": what units of the part sold for there, over the listings a model checked.
+      return o.ebay ? ebayLabel(o.ebay) : 'eBay · New';
   }
 }

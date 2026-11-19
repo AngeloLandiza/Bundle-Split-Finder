@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { validateSettings, type ExtensionSettings } from '@core/settings';
 import { AlertsSection, DataSection, FeesSection, WhatToScanSection } from './OtherSections';
+import { EbayKeysSection, ListingCheckSection } from './EbaySection';
 import { KeySection } from './KeySection';
 import { ScanningSection } from './ScanningSection';
 import { realWorker, useAppState, type WorkerApi } from '../../lib/pageClient';
@@ -72,6 +73,8 @@ export function SettingsPage({ api = realWorker }: { api?: WorkerApi }) {
         {state && draft ? (
           <>
             <KeySection api={api} state={state} />
+            <EbayKeysSection api={api} state={state} />
+            <ListingCheckSection api={api} state={state} />
             <ScanningSection
               draft={draft}
               problems={problems}

@@ -192,7 +192,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
       <Tabs
         active={tab}
         dealCount={report?.bundles.length ?? 0}
-        reviewCount={report?.review.length ?? 0}
+        reviewCount={(report?.review.length ?? 0) + (report?.ebayQuestions?.length ?? 0)}
         onChange={setTab}
       />
       {state.scanRunning ? <ProgressRow job={state.lastJob} /> : null}

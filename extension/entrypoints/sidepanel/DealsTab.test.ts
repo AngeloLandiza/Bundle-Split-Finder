@@ -964,3 +964,19 @@ describe('stale prices', () => {
     expect(screen.queryByText(/^Prices seen/)).toBeNull();
   });
 });
+
+describe("the eBay step's notice (step 10)", () => {
+  it('says in a plain line why eBay reference values were skipped or stopped, once, under the bar', () => {
+    const sentence = 'eBay reference values were skipped. Add your eBay App ID and Cert ID and your Anthropic key in Settings to see them.';
+    show(report([row('c1')]), state({ lastJob: job({ ebayNotice: sentence }) }));
+    expect(screen.getAllByText(sentence)).toHaveLength(1);
+    expect(screen.getByTestId('ebay-notice')).toHaveTextContent(sentence);
+  });
+  it('is absent when the step ran cleanly, and on a job from before step 10', () => {
+    show(report([row('c1')]), state({ lastJob: job({ ebayNotice: null }) }));
+    expect(screen.queryByTestId('ebay-notice')).toBeNull();
+    cleanup();
+    show(report([row('c1')]), state({ lastJob: job() }));
+    expect(screen.queryByTestId('ebay-notice')).toBeNull();
+  });
+});

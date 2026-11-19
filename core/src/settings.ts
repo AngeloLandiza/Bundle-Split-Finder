@@ -4,6 +4,7 @@
 
 import { DEFAULT_FEES, type FeeSettings } from './money';
 import { CLAUDE_JUDGE_MODELS, DEFAULT_CLAUDE_JUDGE_MODEL } from './judge/claude';
+import { costOf, PRICE_TABLE } from './judge/eval';
 import { type Schedule, validateSchedule } from './schedule';
 import type { BudgetPolicy } from './serpapi/budget';
 import { DEFAULT_LISTINGS_JUDGED_PER_SCAN, MAX_LISTINGS_JUDGED_PER_SCAN } from './scan/ebayPass';
@@ -65,6 +66,20 @@ export function ebaySettingsProblem(s: unknown): string | null {
     return `Use a whole number of listings from 1 to ${MAX_LISTINGS_JUDGED_PER_SCAN}.`;
   }
   return null;
+}
+
+/**
+ * Roughly what one listing costs the model: the judge's instructions (about 1,100 tokens), the listing's text (about 400
+ * on average, over the 217 recorded listings) and the schema on the way in; the answer and its thinking on the way out.
+ * An estimate for Settings to say out loud, not a measurement: `npm run judge:eval` measures the real figure.
+ */
+export const ESTIMATED_TOKENS_PER_LISTING = { input: 1700, output: 500 } as const;
+
+/** Dollars a scan may cost the owner at `listings` listings judged, at the model's published rates; null for a model with no rate. */
+export function estimatedJudgeCost(model: string, listings: number): number | null {
+  const rates = PRICE_TABLE[model];
+  if (!rates || !Number.isFinite(listings) || listings < 0) return null;
+  return costOf({ inputTokens: ESTIMATED_TOKENS_PER_LISTING.input * listings, outputTokens: ESTIMATED_TOKENS_PER_LISTING.output * listings }, rates);
 }
 
 /** Who asked for a scan. A scheduled scan may never touch the reserve; one the user starts may. */
