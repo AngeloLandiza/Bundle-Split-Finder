@@ -21,7 +21,7 @@ export const DEFAULT_CLAUDE_JUDGE_MODEL = 'claude-haiku-5-5';
  * Room for the answer and the model's thinking, which counts against max_tokens and cannot be
  * turned off on these models. Running out is "not judged", never a verdict.
  */
-export const CLAUDE_JUDGE_MAX_TOKENS = 1000;
+export const CLAUDE_JUDGE_MAX_TOKENS = 2000;
 
 /**
  * Thinking depth. Low keeps the thinking inside CLAUDE_JUDGE_MAX_TOKENS; the eval can raise both.

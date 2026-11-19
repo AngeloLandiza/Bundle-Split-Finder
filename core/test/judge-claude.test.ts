@@ -119,7 +119,7 @@ describe('ClaudeJudge: the request', () => {
     expect(Object.keys(body).sort()).toEqual(['max_tokens', 'messages', 'model', 'output_config', 'system']);
     expect(body.model).toBe('claude-opus-5-5');
     expect(body.max_tokens).toBeGreaterThan(0);
-    expect(body.max_tokens).toBeLessThanOrEqual(1000);
+    expect(body.max_tokens).toBe(2000);
     expect(body.system).toBe(JUDGE_PROMPT);
     expect(body.output_config.format).toEqual({ type: 'json_schema', schema: JUDGE_SCHEMA });
     expect(body.messages).toHaveLength(1);
