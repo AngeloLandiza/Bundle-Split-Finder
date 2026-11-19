@@ -7,3 +7,4 @@ export * from './schema';
 export * from './verify';
 export * from './fromEbay';
 export * from './claude';
+export * from './eval';
