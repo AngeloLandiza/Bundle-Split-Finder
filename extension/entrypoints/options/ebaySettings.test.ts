@@ -35,7 +35,7 @@ async function open(state: AppState, handlers: Partial<Record<Request['type'], H
 
 const app = () => screen.getByLabelText('eBay App ID') as HTMLInputElement;
 const cert = () => screen.getByLabelText('eBay Cert ID') as HTMLInputElement;
-const anthropic = () => screen.getByLabelText('Anthropic API key') as HTMLInputElement;
+const anthropic = () => screen.getByLabelText('Anthropic key') as HTMLInputElement;
 const limit = () => screen.getByLabelText('eBay listings judged per scan') as HTMLInputElement;
 
 describe('Settings: eBay reference values', () => {

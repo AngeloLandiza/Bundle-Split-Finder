@@ -4,9 +4,15 @@
 import { readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { SERPAPI_ACCOUNT_FREE } from '../core/test/fixtures';
+import { anthropicAnswer, browseItem, browseSearch, ebayToken, recordedEbay } from '../scripts/ebay-replay';
 import { replayRecorded } from '../scripts/replay';
 
 export const GOOD_KEY = 'TEST';
+/** Step 10: the keys the replay accepts for eBay and the model. Invented: no real key is ever in a spec or a fixture. */
+export const EBAY_APP_ID = 'replay-app';
+export const EBAY_CERT_ID = 'replay-cert';
+export const ANTHROPIC_KEY = 'sk-ant-replay';
+const EBAY_TOKEN = 'v^1.1#replay-token';
 
 const PAGES_DIR = new URL('../fixtures/homedepot-pages/', import.meta.url);
 const recordedPages = new Map(
@@ -66,6 +72,12 @@ export interface ReplayServer {
   pageRequests: string[];
   /** Models of the /s/<model> searches requested so far, in order (as requested, not upper-cased). */
   searchPageRequests: string[];
+  /** Step 10: the `q` of every eBay search received, in order, and the item ids of every eBay item read. */
+  ebaySearches: string[];
+  ebayItems: string[];
+  /** Step 10: calls the fake model answered, and how many came with the wrong key. */
+  modelCalls: number;
+  modelBadKeys: number;
   /** These ids are answered 403 with the recorded refused page, until reset(). '*' refuses every id and every /s/ search. */
   refuse(...itemIds: string[]): void;
   /** Test-only: the recorded page of `recordedId` is served for item `itemId`, until reset(). */
@@ -84,6 +96,10 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   let misses: string[] = [];
   let pageRequests: string[] = [];
   let searchPageRequests: string[] = [];
+  let ebaySearches: string[] = [];
+  let ebayItems: string[] = [];
+  let modelCalls = 0;
+  let modelBadKeys = 0;
   const refused = new Set<string>();
   const servedAs = new Map<string, string>();
   let searchDelay = 0;
@@ -98,7 +114,40 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       const url = new URL(req.url ?? '/', 'http://localhost');
       counts[url.pathname] = (counts[url.pathname] ?? 0) + 1;
       const headers = { 'content-type': 'application/json', 'access-control-allow-origin': '*' };
-      if (req.method !== 'GET') {
+      if (url.pathname === '/identity/v1/oauth2/token' && req.method === 'POST') {
+        // eBay's application token: the App ID and Cert ID in a Basic header, never in the address.
+        const ok = req.headers.authorization === `Basic ${Buffer.from(`${EBAY_APP_ID}:${EBAY_CERT_ID}`).toString('base64')}`;
+        if (ok) res.writeHead(200, headers).end(JSON.stringify(ebayToken(EBAY_TOKEN)));
+        else res.writeHead(401, headers).end(JSON.stringify({ error: 'invalid_client' }));
+      } else if (url.pathname.startsWith('/buy/browse/v1/') && req.method === 'GET') {
+        // eBay's Browse API, from the recorded searches and item reads (fixtures/ebay/validation-2026-11-19.json).
+        if (req.headers.authorization !== `Bearer ${EBAY_TOKEN}`) {
+          res.writeHead(401, headers).end(JSON.stringify({ error: 'invalid_token' }));
+        } else if (url.pathname === '/buy/browse/v1/item_summary/search') {
+          const q = url.searchParams.get('q') ?? '';
+          ebaySearches.push(q);
+          const part = recordedEbay()[q.split(' ').slice(1).join(' ').toUpperCase()];
+          res.writeHead(200, headers).end(JSON.stringify(browseSearch(part?.total ?? 0, part?.summaries ?? [])));
+        } else {
+          const id = decodeURIComponent(url.pathname.slice('/buy/browse/v1/item/'.length));
+          ebayItems.push(id);
+          const item = Object.values(recordedEbay()).flatMap((p) => Object.values(p.items)).find((i) => i.itemId === id);
+          if (item) res.writeHead(200, headers).end(JSON.stringify(browseItem(item)));
+          else res.writeHead(404, headers).end(JSON.stringify({ error: 'not found' }));
+        }
+      } else if (url.pathname === '/v1/messages' && req.method === 'POST') {
+        // The listing judge's model: a canned answer per recorded listing (scripts/ebay-replay.ts), never computed.
+        const chunks: Buffer[] = [];
+        for await (const chunk of req) chunks.push(chunk as Buffer);
+        modelCalls += 1;
+        if (req.headers['x-api-key'] !== ANTHROPIC_KEY) {
+          modelBadKeys += 1;
+          res.writeHead(401, headers).end(JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } }));
+          return;
+        }
+        const answered = anthropicAnswer(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+        res.writeHead(answered.status, headers).end(JSON.stringify(answered.body));
+      } else if (req.method !== 'GET') {
         res.writeHead(405, headers).end('{}');
       } else if (url.pathname === '/search.json') {
         if (searchDelay > 0) await new Promise((ok) => setTimeout(ok, searchDelay));
@@ -157,6 +206,18 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     get searchPageRequests() {
       return searchPageRequests;
     },
+    get ebaySearches() {
+      return ebaySearches;
+    },
+    get ebayItems() {
+      return ebayItems;
+    },
+    get modelCalls() {
+      return modelCalls;
+    },
+    get modelBadKeys() {
+      return modelBadKeys;
+    },
     refuse(...ids) {
       for (const id of ids) refused.add(id);
     },
@@ -174,6 +235,10 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       searchesFail = false;
       pageRequests = [];
       searchPageRequests = [];
+      ebaySearches = [];
+      ebayItems = [];
+      modelCalls = 0;
+      modelBadKeys = 0;
       refused.clear();
       servedAs.clear();
       for (const k of Object.keys(counts)) delete counts[k];

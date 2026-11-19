@@ -11,6 +11,8 @@
 
 import { readFileSync } from 'node:fs';
 import type { EbayListing, EbayListingSummary } from '../core/src/ebay/types';
+import { judgeListingFromEbay } from '../core/src/judge/fromEbay';
+import { renderJudgeInput } from '../core/src/judge/prompt';
 import type { JudgeRaw } from '../core/src/judge/types';
 
 export interface RecordedPart { total: number; summaries: EbayListingSummary[]; items: Record<string, EbayListing> }
@@ -51,15 +53,30 @@ export function browseItem(l: EbayListing): unknown {
 /** eBay's application token answer. */
 export const ebayToken = (token = 'v^1.1#i^1#test-token', expiresIn = 7200): unknown => ({ access_token: token, expires_in: expiresIn, token_type: 'Application Access Token' });
 
+/** The `<listing>` block of a model's user message: the title, item specifics and description the model reads. */
+const listingBlock = (userMessage: string): string | undefined => {
+  const at = userMessage.indexOf('<listing>');
+  return at < 0 ? undefined : userMessage.slice(at).trim();
+};
+
+let blocks: Map<string, EbayListing> | undefined;
+
 /**
- * The listing a model's request is about, found by the title in its user message, among the recorded items.
- * The request carries no item id (and no price): the title is what the model reads.
+ * The listing a model's request is about, found among the recorded items by the text the model reads (title, item specifics
+ * and description together: two listings may share a title). The request carries no item id and no price.
  */
 export function listingOfRequest(userMessage: string): EbayListing | undefined {
-  const title = /<title>\n([\s\S]*?)\n<\/title>/.exec(userMessage)?.[1]?.trim();
-  if (!title) return undefined;
-  for (const part of Object.values(recordedEbay())) for (const item of Object.values(part.items)) if (item.title.trim() === title) return item;
-  return undefined;
+  if (blocks === undefined) {
+    blocks = new Map();
+    for (const part of Object.values(recordedEbay())) {
+      for (const item of Object.values(part.items)) {
+        const block = listingBlock(renderJudgeInput({ part: { brand: '', model: '' }, listing: judgeListingFromEbay(item) }));
+        if (block !== undefined && !blocks.has(block)) blocks.set(block, item);
+      }
+    }
+  }
+  const block = listingBlock(userMessage);
+  return block === undefined ? undefined : blocks.get(block);
 }
 
 /**

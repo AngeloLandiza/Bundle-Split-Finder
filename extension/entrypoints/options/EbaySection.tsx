@@ -96,7 +96,7 @@ export function EbayKeysSection({ api, state }: { api: WorkerApi; state: AppStat
             type="password"
             autoComplete="off"
             spellCheck={false}
-            className="input figure key-input"
+            className="input figure"
             placeholder={has ? 'Saved' : ''}
             ref={appRef}
             onChange={(e) => setFilled((f) => ({ ...f, app: e.target.value.trim() !== '' }))}
@@ -109,7 +109,7 @@ export function EbayKeysSection({ api, state }: { api: WorkerApi; state: AppStat
             type="password"
             autoComplete="off"
             spellCheck={false}
-            className="input figure key-input"
+            className="input figure"
             placeholder={has ? 'Saved' : ''}
             ref={certRef}
             onChange={(e) => setFilled((f) => ({ ...f, cert: e.target.value.trim() !== '' }))}
@@ -192,7 +192,7 @@ export function ListingCheckSection({ api, state }: { api: WorkerApi; state: App
       help="A model reads each eBay listing to check it is exactly the part, New, with the same contents. It uses your own Anthropic key, so the calls are billed to your Anthropic account."
     >
       <div className="field">
-        <label htmlFor="anthropic-key">Anthropic API key</label>
+        <label htmlFor="anthropic-key">Anthropic key</label>
         <div className="row">
           <input
             id="anthropic-key"

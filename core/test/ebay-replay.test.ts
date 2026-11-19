@@ -35,6 +35,14 @@ describe('the canned model', () => {
     expect(body).toMatchObject({ stop_reason: 'end_turn', usage: { input_tokens: 900, output_tokens: 150 } });
   });
 
+  it('tells two listings with the same title apart by the rest of what the model reads', () => {
+    const a = 'v1|920101779170|0';
+    const b = 'v1|407352842496|0';
+    expect(dcf[a]!.title).toBe(dcf[b]!.title);
+    expect(listingOfRequest(renderJudgeInput(input(a)))?.itemId).toBe(a);
+    expect(listingOfRequest(renderJudgeInput(input(b)))?.itemId).toBe(b);
+  });
+
   it('its matches verify as matches, its unsure stays unsure, and everything else is not a match', () => {
     for (const id of ['v1|356061995376|0', 'v1|137923389067|0', 'v1|306552991202|0', 'v1|407209694810|0', 'v1|227617096880|0']) {
       expect(verifyJudgement(cannedRaw(dcf[id]!), input(id)), id).toMatchObject({ verdict: 'match', downgrades: [] });
