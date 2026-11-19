@@ -167,6 +167,14 @@ export default defineBackground(() => {
     now: Date.now,
     // Set only in the end-to-end build; undefined means https://serpapi.com.
     baseUrl: __SPLIT_FINDER_BASE_URL__,
+    // Step 10, the same switch: eBay's API and the listing judge's model are the replay server in the end-to-end build. The
+    // judge's address is fixed in core (no setting can send the key elsewhere), so the build moves its host here; the
+    // production build keeps neither, and a test confirms its bundle holds no localhost address.
+    ebayBaseUrl: __SPLIT_FINDER_BASE_URL__,
+    judgeFetchFn:
+      __SPLIT_FINDER_BASE_URL__ === undefined
+        ? undefined
+        : (input, init) => fetch(String(input).replace('https://api.anthropic.com', __SPLIT_FINDER_BASE_URL__), init),
     readPages,
     readPartPrices,
     pages: chromePages(),

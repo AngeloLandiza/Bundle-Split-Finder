@@ -3,8 +3,10 @@
 // which deals to notify after a scan.
 
 import { DEFAULT_FEES, type FeeSettings } from './money';
+import { CLAUDE_JUDGE_MODELS, DEFAULT_CLAUDE_JUDGE_MODEL } from './judge/claude';
 import { type Schedule, validateSchedule } from './schedule';
 import type { BudgetPolicy } from './serpapi/budget';
+import { DEFAULT_LISTINGS_JUDGED_PER_SCAN, MAX_LISTINGS_JUDGED_PER_SCAN } from './scan/ebayPass';
 import { type BundleRow, DEFAULT_SCAN_SETTINGS, type ScanReport, type ScanSettings } from './scan/types';
 
 export interface AlertSettings {
@@ -40,6 +42,30 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   fees: DEFAULT_FEES,
   alerts: { enabled: false, minProfit: 20, minRoiPercent: 20 },
 };
+
+/**
+ * Step 10: the eBay reference values' settings. Kept apart from ExtensionSettings: they are saved by their own
+ * message and never validated with the scan's fields. The eBay and Anthropic keys are not settings: they are keys.
+ */
+export interface EbaySettings {
+  /** One of CLAUDE_JUDGE_MODELS. */
+  judgeModel: string;
+  /** Listings a model is asked about in one scan: the owner's cost cap. 1 to MAX_LISTINGS_JUDGED_PER_SCAN. */
+  listingsJudgedPerScan: number;
+}
+
+export const DEFAULT_EBAY_SETTINGS: EbaySettings = { judgeModel: DEFAULT_CLAUDE_JUDGE_MODEL, listingsJudgedPerScan: DEFAULT_LISTINGS_JUDGED_PER_SCAN };
+
+/** The problem with these eBay settings in one sentence, or null. Anything that is not a known model and a whole number in range is one. */
+export function ebaySettingsProblem(s: unknown): string | null {
+  const v = (typeof s === 'object' && s !== null ? s : {}) as Record<string, unknown>;
+  if (typeof v.judgeModel !== 'string' || !(CLAUDE_JUDGE_MODELS as readonly string[]).includes(v.judgeModel)) return 'Choose one of the models offered.';
+  const n = v.listingsJudgedPerScan;
+  if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > MAX_LISTINGS_JUDGED_PER_SCAN) {
+    return `Use a whole number of listings from 1 to ${MAX_LISTINGS_JUDGED_PER_SCAN}.`;
+  }
+  return null;
+}
 
 /** Who asked for a scan. A scheduled scan may never touch the reserve; one the user starts may. */
 export type ScanTrigger = 'scheduled' | 'manual';

@@ -2,7 +2,9 @@
 // getKey. It is never logged and never written anywhere else.
 
 import { browser } from 'wxt/browser';
-import { DEFAULT_SETTINGS, KNOWN_BRANDS, type ExtensionSettings, type ScanTrigger } from '@core/settings';
+import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS, KNOWN_BRANDS, type EbaySettings, type ExtensionSettings, type ScanTrigger } from '@core/settings';
+import { CLAUDE_JUDGE_MODELS } from '@core/judge/claude';
+import { MAX_LISTINGS_JUDGED_PER_SCAN } from '@core/scan/ebayPass';
 import type { AccountInfo } from '@core/serpapi/budget';
 
 export interface ActiveScan {
@@ -122,3 +124,70 @@ export async function getAccount(): Promise<StoredAccount | null> {
   return typeof v === 'object' && v !== null ? (v as StoredAccount) : null;
 }
 export const setAccount = (v: StoredAccount | null): Promise<void> => write('account', v);
+
+// ---------------------------------------------------------------- eBay and the model (step 10)
+
+// The eBay App ID and Cert ID and the Anthropic key are secrets like the SerpApi key: chrome.storage.local only
+// (restrictKeyAccess keeps content scripts out), returned only by these functions, never logged, sent only to
+// api.ebay.com and api.anthropic.com. The judge model and the listings judged per scan are not secrets.
+
+export interface EbayKeys {
+  appId: string;
+  certId: string;
+}
+
+export async function getEbayKeys(): Promise<EbayKeys | null> {
+  const v = await read('ebayKeys');
+  if (typeof v !== 'object' || v === null) return null;
+  const { appId, certId } = v as Record<string, unknown>;
+  return typeof appId === 'string' && appId !== '' && typeof certId === 'string' && certId !== '' ? { appId, certId } : null;
+}
+export const setEbayKeys = (keys: EbayKeys): Promise<void> => write('ebayKeys', { appId: keys.appId, certId: keys.certId });
+export async function forgetEbayKeys(): Promise<void> {
+  await local().remove('ebayKeys');
+}
+
+export async function getAnthropicKey(): Promise<string | null> {
+  const v = await read('anthropicKey');
+  return typeof v === 'string' && v !== '' ? v : null;
+}
+export const setAnthropicKey = (key: string): Promise<void> => write('anthropicKey', key);
+export async function forgetAnthropicKey(): Promise<void> {
+  await local().remove('anthropicKey');
+}
+
+const knownModel = (v: unknown): v is string => typeof v === 'string' && (CLAUDE_JUDGE_MODELS as readonly string[]).includes(v);
+
+/** Defaults under whatever is stored, field by field. */
+export async function getEbaySettings(): Promise<EbaySettings> {
+  const v = await read('ebaySettings');
+  const s = (typeof v === 'object' && v !== null ? v : {}) as Record<string, unknown>;
+  return {
+    judgeModel: knownModel(s.judgeModel) ? s.judgeModel : DEFAULT_EBAY_SETTINGS.judgeModel,
+    listingsJudgedPerScan: wholeIn(s.listingsJudgedPerScan, 1, MAX_LISTINGS_JUDGED_PER_SCAN) ? s.listingsJudgedPerScan : DEFAULT_EBAY_SETTINGS.listingsJudgedPerScan,
+  };
+}
+export const saveEbaySettings = (s: EbaySettings): Promise<void> => write('ebaySettings', { judgeModel: s.judgeModel, listingsJudgedPerScan: s.listingsJudgedPerScan });
+
+// ---------------------------------------------------------------- eBay's access token (storage.session)
+
+/**
+ * eBay's application token is valid two hours, and the grant is limited to 1,000 a day: it is kept in storage.session,
+ * which outlives the service worker and is gone when the browser closes. Bound to the App ID it was granted for.
+ */
+export interface CachedEbayToken {
+  appId: string;
+  token: string;
+  expiresAt: number;
+}
+
+export async function getEbayToken(): Promise<CachedEbayToken | null> {
+  const v = (await browser.storage.session.get('ebayToken')).ebayToken as unknown;
+  if (typeof v !== 'object' || v === null) return null;
+  const { appId, token, expiresAt } = v as Record<string, unknown>;
+  return typeof appId === 'string' && typeof token === 'string' && token !== '' && typeof expiresAt === 'number' ? { appId, token, expiresAt } : null;
+}
+export const setEbayToken = (t: CachedEbayToken): Promise<void> => browser.storage.session.set({ ebayToken: t });
+export async function clearEbayToken(): Promise<void> {
+  await browser.storage.session.remove('ebayToken');
+}

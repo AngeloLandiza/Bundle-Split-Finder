@@ -6,6 +6,10 @@
 // "Rule n" refers to the step 3 plan, Task 5 ("The service worker").
 
 import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer } from '@core/scan/answers';
+import { EbayClient } from '@core/ebay/client';
+import { ClaudeJudge } from '@core/judge/claude';
+import { applyEbayAnswer, ebayLabelsOf } from '@core/scan/ebayAnswers';
+import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep } from '@core/scan/ebayPass';
 import type { ProductPage } from '@core/hdPage';
 import { notePage } from '@core/scan/pageView';
 import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
@@ -16,13 +20,14 @@ import { partKey, type BudgetView, type BundleRow, type PaidAction, type Quote, 
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
 import {
-  budgetPolicyFor, dealsToNotify, DEFAULT_SETTINGS, type ExtensionSettings, type ScanTrigger, type SettingsField, toScanSettings, validateSettings,
+  budgetPolicyFor, dealsToNotify, DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS, type EbaySettings, ebaySettingsProblem, type ExtensionSettings, type ScanTrigger, type SettingsField, toScanSettings, validateSettings,
 } from '@core/settings';
 import { runCsv } from '@core/scan/csv';
 import { buildReport } from '@core/scan/report';
 import { nextRun, type Schedule } from '@core/schedule';
+import { cachingTokenFetch, checkEbayKeys, type TokenStore } from './ebayEnv';
 import type { AppState, OpenThisPageReply, Packaging, PageSeenReply, PanelReport, Reply, Request, ThisPage } from './messages';
-import type { ActiveScan, StoredAccount } from './prefs';
+import type { ActiveScan, CachedEbayToken, EbayKeys, StoredAccount } from './prefs';
 
 /** The functions of prefs.ts the worker uses, with the same names and signatures. */
 export interface Prefs {
@@ -44,6 +49,18 @@ export interface Prefs {
   setAccount(v: StoredAccount | null): Promise<void>;
   /** Whether the chip shows on Home Depot pages (chrome.storage.local `showChip`); true unless the owner turned it off. */
   getShowChip(): Promise<boolean>;
+  /** Step 10: the eBay App ID and Cert ID, the Anthropic key, the judge's settings, and eBay's token (storage.session). */
+  getEbayKeys(): Promise<EbayKeys | null>;
+  setEbayKeys(keys: EbayKeys): Promise<void>;
+  forgetEbayKeys(): Promise<void>;
+  getAnthropicKey(): Promise<string | null>;
+  setAnthropicKey(key: string): Promise<void>;
+  forgetAnthropicKey(): Promise<void>;
+  getEbaySettings(): Promise<EbaySettings>;
+  saveEbaySettings(s: EbaySettings): Promise<void>;
+  getEbayToken(): Promise<CachedEbayToken | null>;
+  setEbayToken(t: CachedEbayToken): Promise<void>;
+  clearEbayToken(): Promise<void>;
 }
 
 /**
@@ -124,6 +141,13 @@ export interface WorkerEnv {
   readPages?: ReadPages;
   /** Reads Home Depot's own price of parts sold alone in the owner's browser (step 9); without it none is read. */
   readPartPrices?: ReadPartPrices;
+  /** Step 10: where eBay's API is, for the end-to-end build (the replay server). Default https://api.ebay.com. */
+  ebayBaseUrl?: string;
+  /**
+   * Step 10: the fetch the listing judge's calls go through, for the end-to-end build (which sends the Anthropic address
+   * to the replay server). Default `fetchFn`. The judge's address is fixed in core, so no setting can send the key elsewhere.
+   */
+  judgeFetchFn?: typeof fetch;
   /** The chip's page visits (step 7). Without it, pages are kept in memory and the panel cannot be opened from the chip. */
   pages?: PageEnv;
 }
@@ -153,6 +177,13 @@ const RUNNING = 'A scan is already running.';
 const GAVE_UP = 'The scan could not be saved, so it was stopped. Check that Chrome has free storage, then scan again.';
 const STOPPED = 'The scan was stopped before it began.';
 const BAD_PACKAGING = 'Choose retail boxed or loose.';
+const ENTER_EBAY_KEYS = 'Enter the eBay App ID and the Cert ID.';
+const ENTER_ANTHROPIC_KEY = 'Enter your Anthropic API key.';
+/** The sentence a scan leaves in the job when a key the eBay step needs is not saved. */
+function skippedFor(ebay: boolean, anthropic: boolean): string {
+  const need = !ebay && !anthropic ? 'your eBay App ID and Cert ID and your Anthropic key' : !ebay ? 'your eBay App ID and Cert ID' : 'your Anthropic key';
+  return `eBay reference values were skipped. Add ${need} in Settings to see them.`;
+}
 const NO_MODEL = 'Name the bundle model.';
 const ANSWER_LATER = 'A scan is running. Answer again when it has finished.';
 /** An answer or a Change asked for while a Look up or Verify runs, which reads and writes matches and the answer's parts. */
@@ -303,12 +334,46 @@ export function createWorker(env: WorkerEnv): Worker {
 
   const settings = async () => trusted(await prefs.getSettings());
 
+  /** Stored eBay settings are untrusted, like the scan's: one that fails its check is the default. */
+  const ebaySettings = async (): Promise<EbaySettings> => {
+    const stored = await prefs.getEbaySettings();
+    return ebaySettingsProblem(stored) === null ? { judgeModel: stored.judgeModel, listingsJudgedPerScan: stored.listingsJudgedPerScan } : { ...DEFAULT_EBAY_SETTINGS };
+  };
+  /** Counts every change of an eBay or Anthropic key. A scan's eBay step holds the keys it started with: it goes no further once this moves. */
+  let ebayKeyEpoch = 0;
+  /** The secrets a running scan's eBay step holds, so they are kept out of replies even after they were forgotten. */
+  const ebayKeysHeld: { certId: string | null; anthropic: string | null } = { certId: null, anthropic: null };
+  const tokenStore: TokenStore = { get: () => prefs.getEbayToken(), set: (t) => prefs.setEbayToken(t), clear: () => prefs.clearEbayToken() };
+
+  /**
+   * The eBay step of a scan: built from the keys saved now, or the sentence saying which is missing (the scan carries on
+   * without it). Caps per scan are core's (EBAY_SEARCHES_MAX, EBAY_ITEM_READS_MAX); the client holds them too.
+   */
+  async function ebayStepFor(): Promise<EbayStep> {
+    const keys = await prefs.getEbayKeys();
+    const anthropic = await prefs.getAnthropicKey();
+    if (keys === null || anthropic === null) return { kind: 'skip', notice: skippedFor(keys !== null, anthropic !== null) };
+    const es = await ebaySettings();
+    const epoch = ebayKeyEpoch;
+    ebayKeysHeld.certId = keys.certId;
+    ebayKeysHeld.anthropic = anthropic;
+    const ebay = new EbayClient({
+      appId: keys.appId, certId: keys.certId, fetchFn: cachingTokenFetch(env.fetchFn, tokenStore, keys.appId, env.now), now: env.now,
+      maxSearches: EBAY_SEARCHES_MAX, maxItemReads: EBAY_ITEM_READS_MAX, ...(env.ebayBaseUrl ? { baseUrl: env.ebayBaseUrl } : {}),
+    });
+    const judge = new ClaudeJudge({ apiKey: anthropic, model: es.judgeModel, fetchFn: env.judgeFetchFn ?? env.fetchFn });
+    return { kind: 'run', ebay, judge, listingsJudgedPerScan: es.listingsJudgedPerScan, halted: () => ebayKeyEpoch !== epoch };
+  }
+
   /**
    * The value with every copy of the key replaced. Error text from a failed search (a job's
    * stopMessage) is the only way the key could get in; this is the last door before a page.
    */
   async function scrubbed<T>(value: T): Promise<T> {
-    const keys = [await prefs.getKey(), scanKey].filter((k): k is string => k !== null && k !== '');
+    const ebayKeys = await prefs.getEbayKeys();
+    const keys = [await prefs.getKey(), scanKey, ebayKeys?.certId ?? null, await prefs.getAnthropicKey(), ebayKeysHeld.certId, ebayKeysHeld.anthropic].filter(
+      (k): k is string => k !== null && k !== '',
+    );
     let text = JSON.stringify(value);
     if (text === undefined || !keys.some((k) => text.includes(k))) return value;
     for (const k of keys) text = text.split(k).join('[key]');
@@ -324,6 +389,7 @@ export function createWorker(env: WorkerEnv): Worker {
     const next = nextRun(s.schedule, new Date(now), last === null ? null : new Date(last));
     return {
       hasKey: (await prefs.getKey()) !== null,
+      ebay: { hasEbayKeys: (await prefs.getEbayKeys()) !== null, hasAnthropicKey: (await prefs.getAnthropicKey()) !== null, ...(await ebaySettings()) },
       account: account?.info ?? null,
       accountCheckedAt: account?.at ?? null,
       problem,
@@ -448,10 +514,11 @@ export function createWorker(env: WorkerEnv): Worker {
     if (keyNow !== key) return fail(keyNow === null ? NO_KEY : KEY_CHANGED);
     if (stopRequested) return refuse(STOPPED);
 
+    const ebay = await ebayStepFor();
     scanKey = key;
     scan = (async () => {
       try {
-        await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages, readPartPrices: env.readPartPrices });
+        await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages, readPartPrices: env.readPartPrices, ebay });
       } catch {
         // The job stays "running" and activeScan keeps naming it: the next tick continues it.
         return;
@@ -465,6 +532,8 @@ export function createWorker(env: WorkerEnv): Worker {
         scan = null;
         stopRequested = false;
         scanKey = null;
+        ebayKeysHeld.certId = null;
+        ebayKeysHeld.anthropic = null;
         endProgress();
         void broadcast();
         settleDeferred();
@@ -597,6 +666,71 @@ export function createWorker(env: WorkerEnv): Worker {
     return ok(null);
   }
 
+  /** Step 10: eBay's keys are saved only when eBay gives a token for them. A running scan's eBay step stops: it holds the old keys. */
+  async function saveEbayKeys(appId: unknown, certId: unknown): Promise<Reply<null>> {
+    const a = typeof appId === 'string' ? appId.trim() : '';
+    const c = typeof certId === 'string' ? certId.trim() : '';
+    if (a === '' || c === '') return refuse(ENTER_EBAY_KEYS);
+    const problem = await checkEbayKeys({ appId: a, certId: c, fetchFn: env.fetchFn, store: tokenStore, now: env.now, ...(env.ebayBaseUrl ? { baseUrl: env.ebayBaseUrl } : {}) });
+    if (problem !== null) return refuse(problem);
+    ebayKeyEpoch += 1;
+    await prefs.setEbayKeys({ appId: a, certId: c });
+    await broadcast();
+    return ok(null);
+  }
+
+  async function forgetEbayKeys(): Promise<Reply<null>> {
+    ebayKeyEpoch += 1;
+    await prefs.forgetEbayKeys();
+    await prefs.clearEbayToken();
+    await broadcast();
+    return ok(null);
+  }
+
+  /** The Anthropic key is not checked: a check is a call, and a call costs money. A wrong key shows at the first listing, as a notice. */
+  async function saveAnthropicKey(apiKey: unknown): Promise<Reply<null>> {
+    const k = typeof apiKey === 'string' ? apiKey.trim() : '';
+    if (k === '') return refuse(ENTER_ANTHROPIC_KEY);
+    ebayKeyEpoch += 1;
+    await prefs.setAnthropicKey(k);
+    await broadcast();
+    return ok(null);
+  }
+
+  async function forgetAnthropicKey(): Promise<Reply<null>> {
+    ebayKeyEpoch += 1;
+    await prefs.forgetAnthropicKey();
+    await broadcast();
+    return ok(null);
+  }
+
+  async function saveEbaySettings(judgeModel: unknown, listingsJudgedPerScan: unknown): Promise<Reply<null>> {
+    const next = { judgeModel, listingsJudgedPerScan };
+    const problem = ebaySettingsProblem(next);
+    if (problem !== null) return refuse(problem);
+    await prefs.saveEbaySettings({ judgeModel: judgeModel as string, listingsJudgedPerScan: listingsJudgedPerScan as number });
+    await broadcast();
+    return ok(null);
+  }
+
+  /**
+   * The owner's Yes or No to an eBay listing question (core/src/scan/ebayAnswers.ts). Taken through the start gate and
+   * refused while a scan runs, as a review answer is: the scan rewrites the part's eBay value. The request is untrusted.
+   */
+  const answerEbay = (request: unknown): Promise<Reply<null>> =>
+    serial(async () => {
+      if (scan !== null) return refuse(ANSWER_LATER);
+      if (paid !== null) return refuse(ANSWER_AFTER_SEARCH);
+      try {
+        await applyEbayAnswer(store, request, env.now());
+      } catch (err) {
+        if (err instanceof AnswerRefused) return refuse(err.message);
+        throw err;
+      }
+      await broadcast();
+      return ok(null);
+    });
+
   /**
    * Rule 5. A running scan keeps the budget it started with. Saving never starts a scan: a
    * changed schedule counts from now, written before the settings so that no tick in between
@@ -652,6 +786,9 @@ export function createWorker(env: WorkerEnv): Worker {
     const audit = {
       kind: 'split-finder-audit', version: 1, exportedAt: env.now(),
       bundles, listings: await store.listListings(), matches: await store.listMatches(), answers, questions,
+      // Step 10: the owner's answers to eBay listing questions, as labels for the judge (fixtures/ebay/labels.json shape),
+      // and the questions still open. Listings' titles and pages only: no seller or buyer data is kept.
+      ebayAnswers: ebayLabelsOf(await store.listEbayValues()), ebayQuestions: report.ebayQuestions ?? [],
     };
     return ok(JSON.stringify(audit, null, 2));
   }
@@ -978,6 +1115,18 @@ export function createWorker(env: WorkerEnv): Worker {
         return checkKey(request.apiKey);
       case 'forgetKey':
         return forgetKey();
+      case 'saveEbayKeys':
+        return saveEbayKeys(request.appId, request.certId);
+      case 'forgetEbayKeys':
+        return forgetEbayKeys();
+      case 'saveAnthropicKey':
+        return saveAnthropicKey(request.apiKey);
+      case 'forgetAnthropicKey':
+        return forgetAnthropicKey();
+      case 'saveEbaySettings':
+        return saveEbaySettings(request.judgeModel, request.listingsJudgedPerScan);
+      case 'answerEbay':
+        return answerEbay({ key: request.key, itemId: request.itemId, answer: request.answer });
       case 'scanNow':
         return scanNow();
       case 'saveSettings':

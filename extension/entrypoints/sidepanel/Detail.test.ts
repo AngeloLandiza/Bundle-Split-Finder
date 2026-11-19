@@ -799,7 +799,7 @@ describe('footer', () => {
     expect(lines).toHaveLength(2);
     expect(lines[0]).toMatch(/^section,brand,bundle_model,bundle_title,/);
     expect(lines[1]).toBe(
-      'confirmed,RYOBI,PBLRC2501SB,ONE+ HP 18V Extended Reach Ratchets (Tools Only),1,189,338,44,PBLRC25B | PBLRC01B,B0B3JWF5ZV | B0B6Z2ZGVK,exact | exact,169 | 169,287.3,189,98.3,0.52,,https://www.homedepot.com/p/328814689,,,,,,',
+      'confirmed,RYOBI,PBLRC2501SB,ONE+ HP 18V Extended Reach Ratchets (Tools Only),1,189,338,44,PBLRC25B | PBLRC01B,B0B3JWF5ZV | B0B6Z2ZGVK,exact | exact,169 | 169,287.3,189,98.3,0.52,,https://www.homedepot.com/p/328814689,,,,,,,,,',
     );
   });
 });

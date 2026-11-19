@@ -24,7 +24,8 @@ export default defineConfig({
   manifest: {
     name: 'Split Finder',
     permissions: ['storage', 'alarms', 'sidePanel', 'notifications', 'scripting'],
-    host_permissions: ['https://serpapi.com/*', 'https://www.homedepot.com/*', ...(e2e ? ['http://localhost/*'] : [])],
+    // Step 10: eBay's API and the listing judge's model, each with the owner's own key. No other host ever gets either.
+    host_permissions: ['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', ...(e2e ? ['http://localhost/*'] : [])],
     // The chip's fonts are declared in the Home Depot page's own document (a shadow root cannot load @font-face),
     // so only Home Depot pages may fetch them. use_dynamic_url gives the files a per-session address, so a page cannot
     // probe for the extension by a fixed URL. The content script's stylesheet is added by WXT.

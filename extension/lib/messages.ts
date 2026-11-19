@@ -12,6 +12,16 @@ export type Request =
   /** Checks the key with the free Account API. The key is saved only when it works. */
   | { type: 'checkKey'; apiKey: string }
   | { type: 'forgetKey' }
+  /** Step 10: asks eBay for a token with these keys (free); they are saved only when eBay gives one. Reply data: null. */
+  | { type: 'saveEbayKeys'; appId: string; certId: string }
+  | { type: 'forgetEbayKeys' }
+  /** Step 10: saves the Anthropic key. It is not checked: a check is a call that costs money. Reply data: null. */
+  | { type: 'saveAnthropicKey'; apiKey: string }
+  | { type: 'forgetAnthropicKey' }
+  /** Step 10: the judge model and the listings judged per scan. Reply data: null. */
+  | { type: 'saveEbaySettings'; judgeModel: string; listingsJudgedPerScan: number }
+  /** Step 10: the owner's Yes or No to an eBay listing question (core/src/scan/ebayAnswers.ts). Reply data: null. */
+  | { type: 'answerEbay'; key: string; itemId: string; answer: 'yes' | 'no' }
   | { type: 'saveSettings'; settings: ExtensionSettings }
   | { type: 'scanNow' }
   | { type: 'stopScan' }
@@ -92,8 +102,18 @@ export interface PanelReport extends ScanReport {
 
 export type Reply<T = unknown> = { ok: true; data: T } | { ok: false; error: string };
 
+/** Step 10: what Settings shows of the eBay keys, the Anthropic key and the judge's settings. The keys themselves never leave the worker. */
+export interface EbayState {
+  hasEbayKeys: boolean;
+  hasAnthropicKey: boolean;
+  judgeModel: string;
+  listingsJudgedPerScan: number;
+}
+
 export interface AppState {
   hasKey: boolean;
+  /** Step 10. Absent in a state built before it (tests): it reads as no keys and the default settings. */
+  ebay?: EbayState;
   account: AccountInfo | null;
   accountCheckedAt: number | null;
   /** One plain sentence when the last account check or scan start failed; null otherwise. */

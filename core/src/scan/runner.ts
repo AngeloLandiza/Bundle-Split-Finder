@@ -985,7 +985,7 @@ async function ebayPass(run: Run): Promise<void> {
   // is not caught: the job stays "running" and the next run continues it, as for the other free steps.
   await runEbayPass({
     store, job, save: () => store.putScan(job), parts, ebay: ebay.ebay, judge: ebay.judge, listingsJudgedPerScan: ebay.listingsJudgedPerScan,
-    now: run.now, shouldStop: run.shouldStop,
+    now: run.now, shouldStop: () => run.shouldStop() || (ebay.halted?.() ?? false),
   });
 }
 

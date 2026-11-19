@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import {
   forgetKey, getAccount, getActiveScan, getKey, getLastScheduledRunAt, getNotified, getPackaging, getSettings, getShowChip, setShowChip, savePackaging, restrictKeyAccess,
   saveSettings, setAccount, setActiveScan, setKey, setLastScheduledRunAt, setNotified,
+  clearEbayToken, forgetAnthropicKey, forgetEbayKeys, getAnthropicKey, getEbayKeys, getEbaySettings, getEbayToken, saveEbaySettings, setAnthropicKey, setEbayKeys, setEbayToken,
 } from './prefs';
 
 beforeEach(() => fakeBrowser.reset());
@@ -129,5 +130,53 @@ describe('showChip', () => {
     await setShowChip(false);
     expect((await getSettings()).searchesPerScan).toBe(9);
     expect(await getKey()).toBeNull();
+  });
+});
+
+describe('eBay and the model (step 10)', () => {
+  it('the eBay keys and the Anthropic key are in storage.local, apart from the SerpApi key and from each other', async () => {
+    expect(await getEbayKeys()).toBeNull();
+    expect(await getAnthropicKey()).toBeNull();
+    await setKey('serp');
+    await setEbayKeys({ appId: 'app', certId: 'cert' });
+    await setAnthropicKey('sk-ant-x');
+    expect(await getEbayKeys()).toEqual({ appId: 'app', certId: 'cert' });
+    expect(await getAnthropicKey()).toBe('sk-ant-x');
+    const stored = await fakeBrowser.storage.local.get(null);
+    expect(Object.keys(stored).sort()).toEqual(['anthropicKey', 'apiKey', 'ebayKeys']);
+    expect(Object.keys(await fakeBrowser.storage.session.get(null))).toEqual([]);
+    await forgetEbayKeys();
+    expect(await getEbayKeys()).toBeNull();
+    expect(await getAnthropicKey()).toBe('sk-ant-x');
+    expect(await getKey()).toBe('serp');
+    await forgetAnthropicKey();
+    expect(await getAnthropicKey()).toBeNull();
+  });
+
+  it('half a pair of eBay keys, or keys that are not text, read as none', async () => {
+    await fakeBrowser.storage.local.set({ ebayKeys: { appId: 'app' }, anthropicKey: 5 });
+    expect(await getEbayKeys()).toBeNull();
+    expect(await getAnthropicKey()).toBeNull();
+    await fakeBrowser.storage.local.set({ ebayKeys: { appId: 'app', certId: '' } });
+    expect(await getEbayKeys()).toBeNull();
+  });
+
+  it('the judge settings default to Haiku and 60, round-trip, and a wrong field takes its default', async () => {
+    expect(await getEbaySettings()).toEqual({ judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60 });
+    await saveEbaySettings({ judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 12 });
+    expect(await getEbaySettings()).toEqual({ judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 12 });
+    await fakeBrowser.storage.local.set({ ebaySettings: { judgeModel: 'gpt-4', listingsJudgedPerScan: 12.5 } });
+    expect(await getEbaySettings()).toEqual({ judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60 });
+  });
+
+  it('eBay\'s token lives in storage.session only, and is dropped by clearEbayToken', async () => {
+    expect(await getEbayToken()).toBeNull();
+    await setEbayToken({ appId: 'app', token: 't', expiresAt: 5 });
+    expect(await getEbayToken()).toEqual({ appId: 'app', token: 't', expiresAt: 5 });
+    expect(Object.keys(await fakeBrowser.storage.local.get(null))).toEqual([]);
+    await clearEbayToken();
+    expect(await getEbayToken()).toBeNull();
+    await fakeBrowser.storage.session.set({ ebayToken: { appId: 'app', token: '', expiresAt: 5 } });
+    expect(await getEbayToken()).toBeNull();
   });
 });

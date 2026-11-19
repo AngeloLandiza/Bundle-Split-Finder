@@ -9,10 +9,12 @@ import type { BundleRow, PageOutcome, PaidAction, PartPriceReading, Quote, ReadP
 import { parseAccount } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, MemoryCache, NETWORK_ERROR_PREFIX } from '@core/serpapi/client';
 import { noticeSentence } from '../entrypoints/sidepanel/Notice';
-import { DEFAULT_SETTINGS, type ExtensionSettings } from '@core/settings';
+import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS, type EbaySettings, type ExtensionSettings } from '@core/settings';
 import type { AppState, PanelReport, Reply, Request } from './messages';
-import type { ActiveScan, StoredAccount } from './prefs';
+import type { ActiveScan, CachedEbayToken, StoredAccount } from './prefs';
 import { parseProductPage, type ProductPage } from '@core/hdPage';
+import type { EbayListing } from '@core/ebay/types';
+import { browseItem, browseSearch } from '../../scripts/ebay-replay';
 import { notePage, type PageView } from '@core/scan/pageView';
 import { toScanSettings } from '@core/settings';
 import { createWorker, type DeferredPage, type PageEnv, type Prefs, type Worker } from './worker';
@@ -112,6 +114,44 @@ class FakePrefs implements Prefs {
   showChip = true;
   async getShowChip() {
     return this.showChip;
+  }
+  // Step 10: the eBay and Anthropic keys, the judge's settings and eBay's token, unchecked like the rest.
+  ebayKeys: { appId: string; certId: string } | null = null;
+  anthropicKey: string | null = null;
+  ebaySettings: unknown = {};
+  token: CachedEbayToken | null = null;
+  async getEbayKeys() {
+    return structuredClone(this.ebayKeys);
+  }
+  async setEbayKeys(keys: { appId: string; certId: string }) {
+    this.ebayKeys = structuredClone(keys);
+  }
+  async forgetEbayKeys() {
+    this.ebayKeys = null;
+  }
+  async getAnthropicKey() {
+    return this.anthropicKey;
+  }
+  async setAnthropicKey(key: string) {
+    this.anthropicKey = key;
+  }
+  async forgetAnthropicKey() {
+    this.anthropicKey = null;
+  }
+  async getEbaySettings() {
+    return { ...structuredClone(DEFAULT_EBAY_SETTINGS), ...(typeof this.ebaySettings === 'object' && this.ebaySettings !== null ? structuredClone(this.ebaySettings) : {}) } as EbaySettings;
+  }
+  async saveEbaySettings(s: EbaySettings) {
+    this.ebaySettings = structuredClone(s);
+  }
+  async getEbayToken() {
+    return structuredClone(this.token);
+  }
+  async setEbayToken(t: CachedEbayToken) {
+    this.token = structuredClone(t);
+  }
+  async clearEbayToken() {
+    this.token = null;
   }
 }
 
@@ -881,7 +921,9 @@ describe('worker: exports and saved searches (rule 6)', () => {
     expect(reply.ok).toBe(true);
     const text = reply.ok ? reply.data : '{}';
     const data = JSON.parse(text);
-    expect(Object.keys(data)).toEqual(['kind', 'version', 'exportedAt', 'bundles', 'listings', 'matches', 'answers', 'questions']);
+    expect(Object.keys(data)).toEqual(['kind', 'version', 'exportedAt', 'bundles', 'listings', 'matches', 'answers', 'questions', 'ebayAnswers', 'ebayQuestions']);
+    expect(data.ebayAnswers).toEqual([]);
+    expect(data.ebayQuestions).toEqual([]);
     expect(data).toMatchObject({ kind: 'split-finder-audit', version: 1, exportedAt: w.clock });
     expect(data.matches.map((m: { key: string }) => m.key)).toEqual(['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']);
     expect(data.listings).toEqual(await w.store.listListings());
@@ -2305,5 +2347,307 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     gate.release();
     await untilIdle(v);
     await vi.waitFor(async () => expect(bundleOf(await thisPage(v)).questionStored).toBe(true));
+  });
+});
+
+// ---------------------------------------------------------------- step 10: eBay reference values
+
+// eBay and the model are fakes here; the worker's wiring is what is tested (the pass itself is core/test/ebay-pass.test.ts, on
+// the recorded eBay responses). The listings are SYNTHETIC: three New "PBLRC25B" listings, so the ratchet bundle the world's
+// scans read has parts eBay answers for.
+const APP = 'split-finder-app';
+const CERT = 'cert-secret-9f3c';
+const ANTHROPIC = 'sk-ant-secret-71ab';
+const TOKEN = 'v^1.1#token-one';
+const BASIC = `Basic ${btoa(`${APP}:${CERT}`)}`;
+
+const ratchetListing = (n: number, price: number, sold: number): EbayListing => ({
+  itemId: `v1|${900000 + n}|0`, title: `RYOBI PBLRC25B 18V ONE+ Extended Reach Ratchet (Tool Only) ${n}`, price, currency: 'USD', conditionId: '1000', categoryIds: ['3247'],
+  brand: 'RYOBI', mpn: 'PBLRC25B', aspects: [{ name: 'Brand', value: 'RYOBI' }], descriptionText: 'New, tool only.', soldQuantity: sold, url: `https://www.ebay.com/itm/${900000 + n}`,
+});
+const RATCHET_LISTINGS = [ratchetListing(1, 120, 40), ratchetListing(2, 130, 10), ratchetListing(3, 99, 5)];
+
+interface Call { origin: string; path: string; method: string; headers: Record<string, string>; search: string }
+
+/** eBay and the model, answering over the world's fetch. Records every call that reaches either, with its headers. */
+function withEbay(w: World, o: { claude?: (n: number) => Response | Promise<Response>; onSearch?: () => void | Promise<void>; token?: () => string } = {}): { calls: Call[]; searches: () => number; anthropic: () => number } {
+  const inner = w.fetchFn;
+  const calls: Call[] = [];
+  let anthropic = 0;
+  let tokenNo = 0;
+  w.fetchFn = (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = new URL(String(input instanceof Request ? input.url : input));
+    const headers = Object.fromEntries(Object.entries((init?.headers ?? {}) as Record<string, string>).map(([k, v]) => [k.toLowerCase(), v]));
+    const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+    if (url.origin === 'https://api.ebay.com') {
+      calls.push({ origin: url.origin, path: url.pathname, method: init?.method ?? 'GET', headers, search: url.search });
+      if (url.pathname === '/identity/v1/oauth2/token') {
+        if (headers.authorization !== BASIC) return json({ error: 'invalid_client' }, 401);
+        tokenNo += 1;
+        return json({ access_token: o.token ? o.token() : `${TOKEN}-${tokenNo}`, expires_in: 7200, token_type: 'Application Access Token' });
+      }
+      if (headers.authorization === undefined || !headers.authorization.startsWith(`Bearer ${TOKEN}`)) return json({ error: 'no token' }, 401);
+      if (url.pathname === '/buy/browse/v1/item_summary/search') {
+        await o.onSearch?.();
+        const ratchet = url.searchParams.get('q') === 'RYOBI PBLRC25B';
+        return json(browseSearch(ratchet ? RATCHET_LISTINGS.length : 0, ratchet ? RATCHET_LISTINGS : []));
+      }
+      const item = RATCHET_LISTINGS.find((l) => url.pathname === `/buy/browse/v1/item/${encodeURIComponent(l.itemId)}`);
+      return item ? json(browseItem(item)) : json({ error: 'not found' }, 404);
+    }
+    if (url.origin === 'https://api.anthropic.com') {
+      calls.push({ origin: url.origin, path: url.pathname, method: init?.method ?? 'GET', headers, search: url.search });
+      anthropic += 1;
+      if (o.claude) return o.claude(anthropic);
+      const body = JSON.parse(String(init?.body)) as { messages: { content: string }[] };
+      const title = /<title>\n([\s\S]*?)\n<\/title>/.exec(body.messages[0]!.content)![1]!.trim();
+      const answer = {
+        evidence: [{ claim: 'identity', quote: title }, { claim: 'contents', quote: 'tool only' }], contentsMatch: true, quantity: 1, condition: 'new', extras: [], missing: [],
+        reason: 'The title names the model and says tool only.', verdict: 'match',
+      };
+      return json({ id: 'msg', type: 'message', role: 'assistant', stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(answer) }], usage: { input_tokens: 500, output_tokens: 50 } });
+    }
+    return inner(input as string, init);
+  }) as typeof fetch;
+  return { calls, searches: () => calls.filter((c) => c.path === '/buy/browse/v1/item_summary/search').length, anthropic: () => anthropic };
+}
+
+const withKeys = (w: World): World => {
+  w.prefs.ebayKeys = { appId: APP, certId: CERT };
+  w.prefs.anthropicKey = ANTHROPIC;
+  return w;
+};
+
+async function scanThrough(w: World): Promise<ScanJob> {
+  expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+  await untilIdle(w);
+  return lastJob(w);
+}
+
+describe('worker: eBay reference values (step 10)', () => {
+  it('the state says whether the keys are saved and what the settings are, never the keys', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    expect((await state(w)).ebay).toEqual({ hasEbayKeys: false, hasAnthropicKey: false, judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60 });
+    withEbay(w);
+    expect(await send(w, { type: 'saveEbayKeys', appId: APP, certId: CERT })).toEqual({ ok: true, data: null });
+    expect(await send(w, { type: 'saveAnthropicKey', apiKey: ANTHROPIC })).toEqual({ ok: true, data: null });
+    const s = await state(w);
+    expect(s.ebay).toEqual({ hasEbayKeys: true, hasAnthropicKey: true, judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60 });
+    const text = JSON.stringify([s, await send(w, { type: 'getReport' }), w.broadcasts]);
+    for (const secret of [CERT, ANTHROPIC]) expect(text).not.toContain(secret);
+  });
+
+  it('eBay keys are saved only when eBay gives a token for them, and the token is kept for the scans', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const net = withEbay(w);
+    expect(await send(w, { type: 'saveEbayKeys', appId: APP, certId: 'wrong' })).toEqual({ ok: false, error: 'eBay did not accept this App ID and Cert ID.' });
+    expect(w.prefs.ebayKeys).toBeNull();
+    expect(await send(w, { type: 'saveEbayKeys', appId: '  ', certId: CERT })).toEqual({ ok: false, error: 'Enter the eBay App ID and the Cert ID.' });
+    expect(await send(w, { type: 'saveEbayKeys', appId: APP, certId: CERT })).toEqual({ ok: true, data: null });
+    expect(w.prefs.ebayKeys).toEqual({ appId: APP, certId: CERT });
+    expect(w.prefs.token).toMatchObject({ appId: APP, token: `${TOKEN}-1`, expiresAt: T0 + 7200_000 });
+    // The keys went only to eBay's token address, in the Authorization header: never in a URL.
+    expect(net.calls.every((c) => c.origin === 'https://api.ebay.com' && c.path === '/identity/v1/oauth2/token' && c.search === '')).toBe(true);
+  });
+
+  it('a network failure while checking eBay keys is one plain sentence, and nothing is saved', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.fetchFn = (() => Promise.reject(new TypeError(`failed to fetch ${CERT}`))) as typeof fetch;
+    const reply = await send(w, { type: 'saveEbayKeys', appId: APP, certId: CERT });
+    expect(reply).toEqual({ ok: false, error: 'eBay could not be reached. Check the connection, then try again.' });
+    expect(w.prefs.ebayKeys).toBeNull();
+  });
+
+  it('the Anthropic key is saved without a call: a check would cost money', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const net = withEbay(w);
+    expect(await send(w, { type: 'saveAnthropicKey', apiKey: '   ' })).toEqual({ ok: false, error: 'Enter your Anthropic API key.' });
+    expect(await send(w, { type: 'saveAnthropicKey', apiKey: ` ${ANTHROPIC} ` })).toEqual({ ok: true, data: null });
+    expect(w.prefs.anthropicKey).toBe(ANTHROPIC);
+    expect(net.calls).toEqual([]);
+    expect(await send(w, { type: 'forgetAnthropicKey' })).toEqual({ ok: true, data: null });
+    expect(w.prefs.anthropicKey).toBeNull();
+  });
+
+  it('forgetting the eBay keys forgets the token too', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    withEbay(w);
+    await send(w, { type: 'saveEbayKeys', appId: APP, certId: CERT });
+    expect(w.prefs.token).not.toBeNull();
+    expect(await send(w, { type: 'forgetEbayKeys' })).toEqual({ ok: true, data: null });
+    expect(w.prefs.ebayKeys).toBeNull();
+    expect(w.prefs.token).toBeNull();
+  });
+
+  it('settings: a known model and a whole number of listings are saved; anything else is refused and nothing changes', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    expect(await send(w, { type: 'saveEbaySettings', judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 25 })).toEqual({ ok: true, data: null });
+    expect((await state(w)).ebay).toMatchObject({ judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 25 });
+    expect(await send(w, { type: 'saveEbaySettings', judgeModel: 'gpt-4', listingsJudgedPerScan: 25 })).toEqual({ ok: false, error: 'Choose one of the models offered.' });
+    expect(await send(w, { type: 'saveEbaySettings', judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 0 })).toMatchObject({ ok: false });
+    expect(await send(w, { type: 'saveEbaySettings', judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 2.5 })).toMatchObject({ ok: false });
+    expect(await send(w, { type: 'saveEbaySettings', judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 100_000 })).toMatchObject({ ok: false });
+    expect((await state(w)).ebay).toMatchObject({ judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 25 });
+    // Stored settings are untrusted: a bad model reads as the default.
+    w.prefs.ebaySettings = { judgeModel: 'nope', listingsJudgedPerScan: 25 };
+    expect((await state(w)).ebay).toMatchObject({ judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60 });
+  });
+
+  it('a scan with no keys skips the step with a plain notice and calls nobody', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const net = withEbay(w);
+    let job = await scanThrough(w);
+    expect(job.status).toBe('done');
+    expect(job.ebayNotice).toBe('eBay reference values were skipped. Add your eBay App ID and Cert ID and your Anthropic key in Settings to see them.');
+    w.prefs.ebayKeys = { appId: APP, certId: CERT };
+    job = await scanThrough(w);
+    expect(job.ebayNotice).toBe('eBay reference values were skipped. Add your Anthropic key in Settings to see them.');
+    w.prefs.ebayKeys = null;
+    w.prefs.anthropicKey = ANTHROPIC;
+    job = await scanThrough(w);
+    expect(job.ebayNotice).toBe('eBay reference values were skipped. Add your eBay App ID and Cert ID in Settings to see them.');
+    expect(net.calls).toEqual([]);
+  });
+
+  it('a scan with both keys checks each part: eBay values are stored, the report shows the reference line, and the counts say what was done', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    const net = withEbay(w);
+    const job = await scanThrough(w);
+    expect(job.status).toBe('done');
+    expect(job.ebayNotice ?? null).toBeNull();
+    expect(job.counts).toMatchObject({ ebaySearches: 2, ebayItemReads: 3, listingsJudged: 3, judgeTokensIn: 1500, judgeTokensOut: 150 });
+    const value = (await w.store.getEbayValue('RYOBI:PBLRC25B'))!;
+    expect(value.value).toEqual({ listings: 3, unitsSold: 55, low: 99, high: 130, medianPrice: 120, links: expect.any(Array) });
+    expect((await w.store.getEbayValue('RYOBI:PBLRC01B'))!.value).toBeNull();
+    const report = await send<PanelReport>(w, { type: 'getReport' });
+    const part = report.ok ? report.data.bundles.find((b) => b.key === 'homedepot:328814689')!.parts.find((p) => p.model === 'PBLRC25B')! : undefined;
+    expect(part?.prices.find((o) => o.kind === 'ebay_sold_new')).toMatchObject({ reference: true, price: 120, offers: 3 });
+    // One token for the whole scan, and no key in a URL.
+    expect(net.calls.filter((c) => c.path === '/identity/v1/oauth2/token')).toHaveLength(1);
+    expect(net.calls.every((c) => !c.search.includes(CERT) && !c.search.includes(ANTHROPIC) && !c.search.includes(APP))).toBe(true);
+    expect(w.prefs.token).toMatchObject({ appId: APP });
+  });
+
+  it('keys go only to their own host: the Anthropic key to api.anthropic.com alone, the eBay keys to api.ebay.com alone, SerpApi\'s key to neither', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    const net = withEbay(w);
+    await scanThrough(w);
+    for (const c of net.calls) {
+      const sent = JSON.stringify(c.headers);
+      if (c.origin === 'https://api.anthropic.com') {
+        expect(c.headers['x-api-key']).toBe(ANTHROPIC);
+        expect(sent).not.toContain(CERT);
+        expect(c.path).toBe('/v1/messages');
+      } else {
+        expect(sent).not.toContain(ANTHROPIC);
+        expect(sent).not.toContain(KEY);
+        // The Cert ID appears only, encoded, in the token request's Authorization header.
+        if (c.path === '/identity/v1/oauth2/token') expect(c.headers.authorization).toBe(BASIC);
+        else expect(c.headers.authorization).toBe(`Bearer ${TOKEN}-1`);
+      }
+    }
+    // And no SerpApi request carried them.
+    expect(JSON.stringify(w.requests)).not.toMatch(new RegExp(`${CERT}|${ANTHROPIC}`));
+  });
+
+  it('the token is kept between scans: the second scan asks eBay for none, and a token eBay refuses is fetched again', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    const net = withEbay(w);
+    await scanThrough(w);
+    expect(net.calls.filter((c) => c.path === '/identity/v1/oauth2/token')).toHaveLength(1);
+    // A later scan, the values stale: the cached token is used.
+    w.clock += 4 * 24 * HOUR;
+    w.prefs.token = { appId: APP, token: `${TOKEN}-1`, expiresAt: w.clock + HOUR };
+    await scanThrough(w);
+    expect(net.calls.filter((c) => c.path === '/identity/v1/oauth2/token')).toHaveLength(1);
+    // eBay stops accepting it: dropped, one new token, the call goes through.
+    w.clock += 4 * 24 * HOUR;
+    w.prefs.token = { appId: APP, token: 'stale', expiresAt: w.clock + HOUR };
+    const job = await scanThrough(w);
+    expect(net.calls.filter((c) => c.path === '/identity/v1/oauth2/token')).toHaveLength(2);
+    expect(job.ebayNotice ?? null).toBeNull();
+    expect(w.prefs.token).toMatchObject({ token: `${TOKEN}-2` });
+  });
+
+  it('a model that refuses the key stops judging for the scan with a notice; the scan itself is done', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    const net = withEbay(w, { claude: () => new Response(JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: `invalid x-api-key ${ANTHROPIC}` } }), { status: 401 }) });
+    const job = await scanThrough(w);
+    expect(job.status).toBe('done');
+    expect(job.ebayNotice).toBe('Claude did not accept the Anthropic key, so eBay listings were not judged. Check the key in Settings.');
+    expect(net.anthropic()).toBe(1);
+    expect(JSON.stringify(await state(w))).not.toContain(ANTHROPIC);
+    expect(await w.store.getEbayValue('RYOBI:PBLRC25B')).toBeUndefined();
+  });
+
+  it('a rate-limited model stops the step with a notice', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    const net = withEbay(w, { claude: () => new Response('{}', { status: 429 }) });
+    const job = await scanThrough(w);
+    expect(job.ebayNotice).toBe("Claude's rate limit was reached, so the rest of the eBay listings wait for the next scan.");
+    expect(net.anthropic()).toBe(1);
+  });
+
+  it('the owner removing the Anthropic key during the step ends it: no further call to eBay or the model', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    const net = withEbay(w, { onSearch: async () => void (await send(w, { type: 'forgetAnthropicKey' })) });
+    const job = await scanThrough(w);
+    expect(job.status).toBe('done');
+    expect(net.searches()).toBe(1);
+    expect(net.anthropic()).toBe(0);
+  });
+
+  it('the listings judged per scan is the owner\'s cap on model calls', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    await send(w, { type: 'saveEbaySettings', judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 2 });
+    const net = withEbay(w);
+    const job = await scanThrough(w);
+    expect(net.anthropic()).toBe(2);
+    expect(job.ebayNotice).toBe('The limit of 2 listings judged a scan was reached. The rest wait for the next scan.');
+  });
+
+  it('answerEbay: refused while a scan runs; otherwise saved, counted in the value, and exported as an owner label', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    // The model is unsure of the 99 listing.
+    withEbay(w, {
+      claude: (n) =>
+        new Response(JSON.stringify({
+          stop_reason: 'end_turn', usage: { input_tokens: 1, output_tokens: 1 },
+          content: [{ type: 'text', text: JSON.stringify({ evidence: [], contentsMatch: null, quantity: null, condition: null, extras: [], missing: [], reason: `Not sure (${n}).`, verdict: 'unsure' }) }],
+        })),
+    });
+    await scanThrough(w);
+    const before = (await send<PanelReport>(w, { type: 'getReport' }));
+    const questions = before.ok ? before.data.ebayQuestions! : [];
+    expect(questions.map((q) => [q.model, q.itemId])).toEqual(RATCHET_LISTINGS.map((l) => ['PBLRC25B', l.itemId]));
+    expect((await w.store.getEbayValue('RYOBI:PBLRC25B'))!.value).toBeNull();
+
+    const gate = held(w);
+    await send(w, { type: 'scanNow' });
+    expect(await send(w, { type: 'answerEbay', key: 'RYOBI:PBLRC25B', itemId: questions[0]!.itemId, answer: 'yes' })).toEqual({ ok: false, error: 'A scan is running. Answer again when it has finished.' });
+    gate.release();
+    await untilIdle(w);
+
+    expect(await send(w, { type: 'answerEbay', key: 'RYOBI:PBLRC25B', itemId: questions[0]!.itemId, answer: 'yes' })).toEqual({ ok: true, data: null });
+    expect(await send(w, { type: 'answerEbay', key: 'RYOBI:PBLRC25B', itemId: questions[0]!.itemId, answer: 'no' })).toEqual({ ok: false, error: 'That question was already answered.' });
+    expect((await w.store.getEbayValue('RYOBI:PBLRC25B'))!.value).toMatchObject({ listings: 1, unitsSold: 40 });
+    const exported = await send<string>(w, { type: 'exportAudit' });
+    const audit = JSON.parse(exported.ok ? exported.data : '{}');
+    expect(audit.ebayAnswers).toEqual([
+      expect.objectContaining({ itemId: questions[0]!.itemId, model: 'PBLRC25B', verdict: 'match', labelledBy: 'owner', judged: 'unsure' }),
+    ]);
+    expect(audit.ebayQuestions.map((q: { itemId: string }) => q.itemId)).toEqual(questions.slice(1).map((q) => q.itemId));
+    expect(JSON.stringify(audit)).not.toMatch(new RegExp(`${CERT}|${ANTHROPIC}|seller`, 'i'));
+  });
+
+  it('the CSV export carries the eBay columns', async () => {
+    const w = withKeys(world({ key: KEY, settings: RYOBI }));
+    withEbay(w);
+    await scanThrough(w);
+    const csv = await send<string>(w, { type: 'exportDeals' });
+    const lines = csv.ok ? csv.data.trimEnd().split('\n') : [];
+    expect(lines[0]!.endsWith(',ebay_ref_low,ebay_ref_high,ebay_units_sold')).toBe(true);
+    const row = lines.find((l) => l.includes('PBLRC2501SB'))!;
+    expect(row.endsWith(',99 | ?,130 | ?,55 | ?')).toBe(true);
   });
 });

@@ -41,7 +41,14 @@ export interface EbayPort {
 
 /** The step, or why it is skipped. The extension builds `run` only when it holds all three keys. */
 export type EbayStep =
-  | { kind: 'run'; ebay: EbayPort; judge: ListingJudge; listingsJudgedPerScan: number }
+  | {
+      kind: 'run';
+      ebay: EbayPort;
+      judge: ListingJudge;
+      listingsJudgedPerScan: number;
+      /** True once the step must go no further, apart from a stop of the scan: the owner removed or changed a key it holds. */
+      halted?: () => boolean;
+    }
   | { kind: 'skip'; notice: string };
 
 /** A part to check: partKey and its brand and model, upper case. */
