@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { VerifiedRow } from '@core/assist/approve';
-import type { VerifiedQuote } from '@core/assist/types';
+import type { Suggestion, VerifiedQuote } from '@core/assist/types';
 import { reviewSignature } from '@core/scan/answers';
 import type { ReviewItem } from '@core/scan/types';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
@@ -100,8 +100,27 @@ export function useApproveAll(api: WorkerApi, onApproved: (item: ReviewItem, see
 /** The bundle or part a row is about, in one line: the bundle's own name, else its brand and model. */
 export const rowName = (item: ReviewItem): string => (item.kind === 'split' && item.title ? item.title : `${item.brand} ${item.model}`);
 
-/** The quote a row shows: one that names the answer when there is one, else the first. */
-export const keyQuoteOf = (quotes: readonly VerifiedQuote[]): VerifiedQuote | undefined => quotes.find((q) => q.names) ?? quotes[0];
+/**
+ * The quote a row shows: among the quotes that name the answer's models (all, if there are any, else the first), the one that names the most of
+ * them, and of those the shortest, so it fits the row's one line and still says something. With no quote naming the answer, the first.
+ */
+export const keyQuoteOf = (quotes: readonly VerifiedQuote[], models: readonly string[] = []): VerifiedQuote | undefined => {
+  const naming = quotes.filter((q) => q.names);
+  if (naming.length === 0) return quotes[0];
+  const wanted = [...new Set(models.map((m) => m.toUpperCase()))];
+  const score = (q: VerifiedQuote): number => wanted.filter((m) => q.quote.toUpperCase().includes(m)).length;
+  return [...naming].sort((x, y) => score(y) - score(x) || x.quote.length - y.quote.length)[0];
+};
+
+/**
+ * A Home Depot search row is quoted with its own label in front ("RYOBI PCL525B (item 318898528): ONE+ 18V Cordless Jig Saw"). In a
+ * compact row that label would use the line before the quote said anything, so the row shows the title after it. The full quote is the
+ * line's hover text and is shown whole when the row is opened.
+ */
+export const compactQuote = (quote: string): string => /^[^:]{1,60}\(item \d+\):\s+(\S.*)$/.exec(quote)?.[1] ?? quote;
+
+/** The models of a verified answer, for choosing its key quote. */
+const modelsOf = (s: Suggestion): string[] => (s.status === 'verified' && 'parts' in s.answer ? s.answer.parts : []);
 
 function Chevron({ open }: { open: boolean }) {
   return (
@@ -123,10 +142,13 @@ export interface AiSuggestionsSectionProps {
 }
 
 export function AiSuggestionsSection({ rows, approve, scanRunning, expanded, onToggle, renderQuestion }: AiSuggestionsSectionProps) {
-  const [confirming, setConfirming] = useState(false);
+  // The rows the owner was asked about. The question is put about these rows and the press applies exactly these: a row verified
+  // while the question is open is not in it, and waits for the next time (docs/design.md, "Approve all verified").
+  const [asked, setAsked] = useState<readonly VerifiedRow[] | null>(null);
   const titleId = useId();
   const askRef = useRef<HTMLButtonElement>(null);
   const yesRef = useRef<HTMLButtonElement>(null);
+  const confirming = asked !== null;
   // Focus follows the owner's own press: the confirmation's Approve when it opens, the button again when it is cancelled.
   const wasConfirming = useRef(false);
   useEffect(() => {
@@ -136,12 +158,13 @@ export function AiSuggestionsSection({ rows, approve, scanRunning, expanded, onT
   }, [confirming]); // eslint-disable-line react-hooks/exhaustive-deps
   // A scan starting, or the rows going, withdraws a question the owner has not answered.
   useEffect(() => {
-    if (scanRunning || rows.length === 0) setConfirming(false);
+    if (scanRunning || rows.length === 0) setAsked(null);
   }, [scanRunning, rows.length]);
 
   if (rows.length === 0 && approve.run === null) return null;
   const n = rows.length;
   const running = approve.run !== null;
+  const count = asked?.length ?? n;
   return (
     <section className="ai-section" aria-labelledby={titleId}>
       <div className="ai-section-head">
@@ -149,34 +172,37 @@ export function AiSuggestionsSection({ rows, approve, scanRunning, expanded, onT
           AI suggestions · <span className="figure">{running ? approve.run!.total : n}</span>
         </h2>
         {running ? (
-          <button type="button" className="btn btn-secondary" aria-disabled="true">
-            Approving {approve.run!.index} of {approve.run!.total}…
-          </button>
-        ) : confirming ? (
-          <div className="ai-confirm" role="group" aria-label="Approve all verified AI answers">
-            <span className="ai-confirm-q">Approve {n} AI {n === 1 ? 'answer' : 'answers'}?</span>
-            <button
-              type="button"
-              className="btn btn-primary"
-              ref={yesRef}
-              disabled={scanRunning}
-              onClick={() => {
-                setConfirming(false);
-                void approve.approve(rows);
-              }}
-            >
-              Approve
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={() => setConfirming(false)}>
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button type="button" className="btn btn-secondary" ref={askRef} aria-disabled={scanRunning || undefined} onClick={() => (scanRunning ? undefined : setConfirming(true))}>
-            Approve all {n} verified
+          <span className="ai-approve-progress" role="status">
+            Approving <span className="figure">{approve.run!.index}</span> of <span className="figure">{approve.run!.total}</span>…
+          </span>
+        ) : confirming ? null : (
+          <button type="button" className="ai-approve" ref={askRef} aria-disabled={scanRunning || undefined} onClick={() => (scanRunning ? undefined : setAsked(rows))}>
+            Approve all <span className="figure">{n}</span> verified
           </button>
         )}
       </div>
+      {confirming && !running ? (
+        <div className="ai-confirm" role="group" aria-label="Approve all verified AI answers">
+          <span className="ai-confirm-q">
+            Approve <span className="figure">{count}</span> AI {count === 1 ? 'answer' : 'answers'}?
+          </span>
+          <button
+            type="button"
+            className="btn btn-primary"
+            ref={yesRef}
+            disabled={scanRunning}
+            onClick={() => {
+              setAsked(null);
+              void approve.approve(asked);
+            }}
+          >
+            Approve
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={() => setAsked(null)}>
+            Cancel
+          </button>
+        </div>
+      ) : null}
       {scanRunning && !running ? <p className="ai-note">A scan is running. Approve when it has finished.</p> : null}
       <ul className="ai-rows">
         {rows.map((row) => {
@@ -184,7 +210,7 @@ export function AiSuggestionsSection({ rows, approve, scanRunning, expanded, onT
           const bodyId = `${titleId}-${row.item.id}`;
           const suggestion = row.stored.suggestion;
           const proposal = proposalOf(suggestion, row.item);
-          const quote = suggestion.status === 'verified' ? keyQuoteOf(suggestion.quotes) : undefined;
+          const quote = suggestion.status === 'verified' ? keyQuoteOf(suggestion.quotes, modelsOf(suggestion)) : undefined;
           const href = quote ? webUrl(quote.url) : null;
           return (
             <li key={`${row.item.id}|${reviewSignature(row.item)}`} className="ai-row" data-open={open || undefined}>
@@ -195,10 +221,10 @@ export function AiSuggestionsSection({ rows, approve, scanRunning, expanded, onT
                 </span>
                 <Chevron open={open} />
               </button>
-              {quote ? (
+              {quote && !open ? (
                 <p className="ai-row-quote">
                   <q className="ai-row-quote-text" title={quote.quote}>
-                    {quote.quote}
+                    {compactQuote(quote.quote)}
                   </q>
                   {href ? (
                     <a className="ai-source" href={href} target="_blank" rel="noopener noreferrer">

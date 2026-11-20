@@ -28,17 +28,63 @@
 .ai-section-title .figure {
   font-size: 12px;
 }
-/* The inline question that replaces the button: "Approve 18 AI answers? Approve · Cancel". */
+/* Approve all: a text button in ink at the header's right. Quiet, but it reads as a decision: semibold, underlined, the count in figures.
+   Not the primary button (Accept all is the one ink fill) and not the bordered Ask AI about all, which is a different act. */
+.ai-approve {
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ai-approve .figure {
+  font-size: 12px;
+  font-weight: 600;
+}
+.ai-approve:hover {
+  text-decoration-thickness: 2px;
+}
+.ai-approve:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.ai-approve[aria-disabled='true'] {
+  color: var(--ink-3);
+  text-decoration: none;
+  cursor: default;
+}
+.ai-approve-progress {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.ai-approve-progress .figure {
+  font-size: 12px;
+}
+/* The inline question under the header: "Approve 18 AI answers? Approve · Cancel". */
 .ai-confirm {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 8px 12px;
+  margin: 0 16px;
 }
 .ai-confirm-q {
   font-size: 14px;
   line-height: 20px;
   color: var(--ink);
+}
+.ai-confirm-q .figure {
+  font-size: 13px;
 }
 .ai-note {
   margin: 0 16px;
@@ -147,8 +193,12 @@
   border-top: 1px solid var(--line);
 }
 
-/* Ask AI about all, beside Accept all, or alone at the top of Review. */
-.ask-all-bar {
+/* Ask AI about all: its own row at the top of Review, the button and under it one sentence in ink-2 about how the last asking went. */
+.ask-all-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   margin: 0 16px 16px;
 }
 .btn.ask-all {
@@ -162,7 +212,7 @@
   color: var(--ink-3);
 }
 .ask-all-note {
-  margin: 0 16px 16px;
+  margin: 0;
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-2);

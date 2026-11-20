@@ -16,7 +16,7 @@ import type { AppState, AskAllResult, PanelReport, Reply, Request } from '../../
 import type { WorkerApi } from '../../lib/pageClient';
 import { ReviewTab } from './ReviewTab';
 import { askAllSentence } from './AskAll';
-import { keyQuoteOf } from './AiSuggestions';
+import { compactQuote, keyQuoteOf } from './AiSuggestions';
 import { researchCostLabel } from '@core/research/eval';
 
 // Step 12, R3: the Review tab with Ask AI about all, the "AI suggestions" section and Approve all. Real questions of the validation replay.
@@ -160,6 +160,11 @@ describe('the key quote of a row', () => {
     // A quote that names nothing is the key only when no quote names the answer.
     expect(keyQuoteOf([q('first', false), q('second', false)])?.quote).toBe('first');
     expect(keyQuoteOf([])).toBeUndefined();
+  });
+  it('a search row\'s own label is left off the compact line, and nothing else is changed', () => {
+    expect(compactQuote('RYOBI PCL525B (item 318898528): ONE+ 18V Cordless Jig Saw (Tool Only)')).toBe('ONE+ 18V Cordless Jig Saw (Tool Only)');
+    expect(compactQuote('Includes DCK200D1P1 and DCF921B.')).toBe('Includes DCK200D1P1 and DCF921B.');
+    expect(compactQuote('Model (item 12): ')).toBe('Model (item 12): ');
   });
   it('is read case-blind, and a repeated model counts once', () => {
     const quotes = [q('includes dck200d1p1 and dcf921b', true), q('DCK200D1P1', true)];

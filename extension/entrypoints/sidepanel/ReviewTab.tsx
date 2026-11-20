@@ -12,7 +12,7 @@ import { AcceptSuggested, suggestedOf, useAcceptAll } from './AcceptSuggested';
 import { EbayQuestion, type EbayChoice } from './EbayQuestion';
 import { notSuggestedSentence } from './AiSuggestion';
 import { AiSuggestionsSection, ApproveResultLine, useApproveAll } from './AiSuggestions';
-import { AskAllButton, askAllSentence } from './AskAll';
+import { AskAllButton, AskAllRow, askAllSentence } from './AskAll';
 import { ReviewQuestion, type AiControl } from './ReviewQuestion';
 import './ReviewTab.css';
 
@@ -116,26 +116,23 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
     hasAi && (askable.length >= 2 || queueRunning) ? (
       <AskAllButton count={askable.length} cost={askAllCostLabel(askable.map((q) => q.kind), model)} running={queueRunning} scanRunning={state.scanRunning} onAsk={() => void askAll()} />
     ) : null;
-  const askAllNote = askAllError ?? (!queueRunning && !state.scanRunning && state.askAllResult ? askAllSentence(state.askAllResult) : null);
+  // The sentence about how the last asking went belongs to the Ask AI row. It goes once the section shows the results, except when the
+  // queue stopped on its own (a problem, or the spending cap): the section does not say why it holds fewer rows than were asked about.
+  const last = state.askAllResult;
+  const lastShown = last && !queueRunning && !state.scanRunning && (rows.length === 0 || last.problem !== null || last.overspent) ? askAllSentence(last) : null;
+  const askAllNote = askAllError ?? lastShown;
   const accept = (
-    <>
-      <AcceptSuggested
-        items={suggested}
-        run={acceptAll.run}
-        result={acceptAll.result}
-        focusedId={acceptAll.focusedId}
-        scanRunning={state.scanRunning}
-        onAccept={() => void acceptAll.accept(suggested)}
-        linkOf={homeDepotLinkOf}
-        extra={askAllButton}
-      />
-      {askAllNote ? (
-        <p className="ask-all-note" role="status">
-          {askAllNote}
-        </p>
-      ) : null}
-    </>
+    <AcceptSuggested
+      items={suggested}
+      run={acceptAll.run}
+      result={acceptAll.result}
+      focusedId={acceptAll.focusedId}
+      scanRunning={state.scanRunning}
+      onAccept={() => void acceptAll.accept(suggested)}
+      linkOf={homeDepotLinkOf}
+    />
   );
+  const askRow = <AskAllRow button={askAllButton} note={askAllNote} />;
 
   // After an answer the form is gone: focus goes to the next question's heading (ReviewQuestion), or here.
   // Keyed on the number answered, so a report reload never takes focus.
@@ -190,7 +187,8 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   if (!entry && rows.length === 0) {
     return (
       <>
-        {/* Only a result sentence or the Ask AI about all button can be here: the Accept block needs two questions. */}
+        {/* Only the Ask AI row or a result sentence can be here: the Accept block needs two questions. */}
+        {askRow}
         {accept}
         <ApproveResultLine result={approveAll.result} focusedId={approveAll.focusedId} />
         <p className="review-empty" ref={emptyRef} tabIndex={-1}>
@@ -254,7 +252,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
 
   return (
     <section className="review" aria-label="Review" ref={sectionRef} tabIndex={-1}>
-      {accept}
+      {askRow}
       <ApproveResultLine result={approveAll.result} focusedId={approveAll.focusedId} />
       <AiSuggestionsSection
         rows={rows}
@@ -273,6 +271,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
           />
         )}
       />
+      {accept}
       {entry ? (
         <>
           <p className="review-count figure" aria-live="polite">

@@ -53,6 +53,10 @@
   gap: 4px;
 }
 .ai-quotes li {
+  /* The quote and its source on one line: the source sits at the end of the quote's last line, not on a line of its own. */
+  display: flex;
+  align-items: last baseline;
+  gap: 8px;
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-2);
@@ -65,7 +69,14 @@
   -webkit-line-clamp: 4;
   line-clamp: 4;
   overflow: hidden;
+  flex: 0 1 auto;
+  min-width: 0;
   color: var(--ink-2);
+}
+.ai-quotes .ai-source,
+.ai-quotes .ai-source-plain {
+  flex: none;
+  padding: 0;
 }
 .ai-claimed {
   color: var(--ink-2);

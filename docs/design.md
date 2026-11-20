@@ -149,23 +149,41 @@ offered no reading. Every rule of Ask AI holds: the AI drafts, the owner decides
 - **Ask AI only where it can help.** The per-question button reads "Ask AI · about $0.10" for a
   split question (research) and "Ask AI · about $0.02" for a match question. It is never shown where
   no call would be made.
-- **Ask AI about all.** At the top of Review, beside Accept all, a secondary text button
-  "Ask AI about all 26 · about $3" runs the research for every open question in the background. Its
-  progress uses the progress row under the tabs ("Asking AI · 7 of 26", estimate, "$0.41 so far" in
+- **Order of Review.** Suggestions first: the Ask AI row; then "AI suggestions · N" with its rows; then
+  the Accept all block ("N bundles have one suggested answer"); then the remaining questions.
+- **Ask AI about all.** The first row of Review, alone in its row, a bordered secondary button
+  "Ask AI about all 26 · about $3": the words in the word face, a real space either side of the middot,
+  only the price in the figure face. It runs the research for every open question in the background.
+  Its progress uses the progress row under the tabs ("Asking AI · 7 of 26", estimate, "$0.41 so far" in
   Details) with Stop. The panel stays usable; nothing is preselected until a result arrives.
-- **Suggestions first.** Review opens with a section "AI suggestions · 18" above the remaining
-  questions: one compact row per question — the bundle's name (one line, cut with an ellipsis), the
-  proposed parts in the figure face, one key quote in ink-2 with its source link — expanding to the
-  full suggestion and the question's controls. Unverified and "could not tell" rows sit in the
-  ordinary list below with their block, never in this section.
-- **Approve all verified.** The section's header carries one secondary button "Approve all 18
-  verified". It applies only verified suggestions shown in the section, is followed by an inline
-  confirmation line ("Approve 18 AI answers? Approve · Cancel"), and each approval is recorded as
-  an AI approval for the audit. Accept all stays for single-reading questions with no suggestion.
+  The one sentence about how the last asking went ("Asked 26 questions: 18 verified, 8 left for you.
+  Cost $0.52.", "Stopped after 4 of 11: 3 verified.") is the row's own, under the button, in ink-2; it
+  goes away once the section shows the results, and stays only when the queue stopped on its own and
+  the section cannot say why: three researches in a row that ran past their limits or failed, or what
+  it cost passing twice the estimate its button showed ("Stopped: asking cost more than expected
+  ($0.52). Nothing was applied."). What was suggested stays; nothing is ever applied by the queue.
+- **Suggestions first.** The section "AI suggestions · 18" lists one compact row per question: the
+  bundle's name (one line, cut with an ellipsis), the proposed parts in the figure face, and one key
+  quote on its own line (one line, ellipsis) with its source link at the end of that line. The key
+  quote is one that names the answer's models (the one naming the most of them, then the shortest);
+  a Home Depot search row's own label ("RYOBI PCL525B (item 318898528): ") is left off the compact
+  line, which would otherwise be spent before the quote says anything (the full quote is the hover text
+  and shows whole when the row is opened). A row expands to the full suggestion and the question's
+  controls, where each quote's source sits at the end of the quote's own line, not on a line of its own.
+  Unverified and "could not tell" rows sit in the ordinary list below with their block, never in this
+  section.
+- **Approve all verified.** The section header carries it at its right, apart from Ask AI about all:
+  a quiet text button in ink, semibold and underlined, "Approve all 18 verified" with the count in the
+  figure face. Secondary (Accept all is the one ink fill), but it reads as the section's decision.
+  It applies only verified suggestions shown in the section, is followed by an inline confirmation
+  ("Approve 18 AI answers? Approve · Cancel") and each approval is recorded as an AI approval for the
+  audit. The count is the same in the header, the button and the confirmation. The confirmation
+  snapshots the rows when it opens: the press applies exactly those, and a row verified meanwhile is
+  not included. Accept all stays for single-reading questions with no suggestion.
 - **Research sources** are named on each quote ("Home Depot page", "Home Depot search",
   "ryobitools.com"); links are http/https only and open in a new tab.
-- **Settings › Listing check** gains "Ask AI after each scan" (off by default) and shows the
-  research estimate per question.
+- **Settings › Listing check** gains "Ask AI after each scan" (a checkbox, off by default; its label does
+  not say so again) and shows the research estimate per question.
 - No new colours, cards, icons or spinners; the existing AI suggestion block is reused.
 - Refinements from the build: "Ask AI about all" is a bordered secondary button, hidden when fewer than
   2 questions can be asked; a suggestion asked for one question stays with that question until answered
