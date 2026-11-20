@@ -27,7 +27,7 @@ export interface PageSections {
   title: string;
   /** Home Depot's model number for the product ("PCL500B"). */
   model: string;
-  /** The page's highlight bullets, in page order (an "Includes: ..." line among them). */
+  /** The page's highlights (details.highlights), then its descriptive bullets, in page order ("Includes: ..." lines among them). */
   bullets: string[];
   description: string;
   specifications: PageSpecification[];

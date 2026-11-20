@@ -192,7 +192,8 @@ export function parseProductPage(text: string, itemId: string): ProductPage | nu
  * The sections of the product in an Apollo state object (`window.__APOLLO_STATE__`, parsed), as the research contract
  * (research/types.ts) shapes them. Specifications are `specificationGroup[].specifications[].{specName, specValue}`
  * flattened in page order (checked against fixtures/homedepot-pages/research-2026-11-20.json); a page without the group
- * gives none. A page with no description gives ''. `itemId` names the product
+ * gives none. Bullets are `details.highlights` (328690510: "Includes: 18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig
+ * Saw"), then the descriptive bullets parseBundlePage reads. A page with no description gives ''. `itemId` names the product
  * to read; without it, the first `base-catalog-<itemId>` object is read. Null when the state holds no such product.
  */
 export function parsePageState(state: unknown, itemId?: string): PageSections | null {
@@ -212,10 +213,13 @@ export function parsePageState(state: unknown, itemId?: string): PageSections | 
     }
   }
   const content = contentOf(product as Json);
+  // details.highlights first, as the page shows them above the descriptive bullets; a highlight that is also a bullet is read once.
+  const raw = asObj((product as Json).details).highlights;
+  const highlights = (Array.isArray(raw) ? raw : []).filter((h): h is string => typeof h === 'string' && h.trim() !== '' && !content.bullets.includes(h));
   return {
     title: nonEmpty(ids.productLabel) ?? '',
     model: nonEmpty(ids.modelNumber) ?? '',
-    bullets: content.bullets,
+    bullets: [...new Set(highlights), ...content.bullets],
     description: content.description ?? '',
     specifications,
   };

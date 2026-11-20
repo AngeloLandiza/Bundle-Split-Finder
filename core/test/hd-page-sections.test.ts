@@ -15,21 +15,31 @@ const page = (id: string): Rec => {
   return r;
 };
 
+/** details.highlights of a recorded page, as its text holds them (each recording holds one product; no highlight holds a "]"). */
+const highlightsOf = (r: Rec): string[] => {
+  const m = /"highlights":(\[[^\]]*\]|null)/.exec(r.text);
+  const h = m ? (JSON.parse(m[1]!) as unknown) : null;
+  return Array.isArray(h) ? h.filter((x): x is string => typeof x === 'string') : [];
+};
+
 describe('parsePageSections (step 12, R2)', () => {
   it('reads title, model, bullets and description of a recorded 2-tool RYOBI page', () => {
     const got = parsePageSections(page('328814689').text);
     expect(got?.title).toBe('ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only)');
     expect(got?.model).toBe('PBLRC2501SB');
     expect(got?.description).toContain('2-Tool Combo Kit');
-    expect(got?.bullets[0]).toContain('1/4" Ratchet');
+    // The highlights first, then the descriptive bullets.
+    expect(got?.bullets.slice(0, 3)).toEqual(['Slim Head and Extended Reach', 'Includes: 1/4" and 3/8" Extended Reach Ratchets', 'Over 300 ONE+ Products – All Work With Any RYOBI ONE+ 18V Battery']);
+    expect(got?.bullets[3]).toContain('1/4" Ratchet');
   });
 
-  it('gives the same bullets and description as parseBundlePage, for every recorded 200 page, with or without the item id', () => {
+  it('gives the highlights, then the same bullets as parseBundlePage, and its description, for every recorded 200 page, with or without the item id', () => {
     for (const p of pages.filter((r) => r.status === 200)) {
       const sections = parsePageSections(p.text);
       const content = parseBundlePage(p.text, p.itemId);
+      const highlights = highlightsOf(p);
       expect(sections, p.itemId).not.toBeNull();
-      expect(sections?.bullets).toEqual(content?.bullets);
+      expect(sections?.bullets).toEqual([...highlights.filter((h) => !content!.bullets.includes(h)), ...content!.bullets]);
       expect(sections?.description).toBe(content?.description ?? '');
       expect(parsePageSections(p.text, p.itemId)).toEqual(sections);
       expect(sections?.title).not.toBe('');
