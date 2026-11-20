@@ -195,7 +195,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
         reviewCount={(report?.review.length ?? 0) + (report?.ebayQuestions?.length ?? 0)}
         onChange={setTab}
       />
-      {state.scanRunning ? <ProgressRow job={state.lastJob} /> : null}
+      {state.scanRunning ? <ProgressRow job={state.lastJob} rates={state.rates} /> : null}
       <Notice state={state} api={api} error={scanError ?? reportError} />
       <main className="panel-body">
         {tab === 'deals' ? (

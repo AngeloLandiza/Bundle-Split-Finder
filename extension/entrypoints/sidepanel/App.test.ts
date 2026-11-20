@@ -11,6 +11,7 @@ import type { AppState, PanelReport, Reply, Request } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { App } from './App';
 import { Notice } from './Notice';
+import { pipelineView } from '@core/scan/pipeline';
 import { progressText } from './ProgressRow';
 
 vi.mock('./Notice', () => ({ Notice: vi.fn(() => null) }));
@@ -149,20 +150,26 @@ describe('side panel shell', () => {
     const { send, emit } = setup(state());
     await user.click(await screen.findByRole('button', { name: 'Scan now' }));
     expect(send).toHaveBeenCalledWith({ type: 'scanNow' });
-    expect(screen.queryByText(/^Scanning/)).toBeNull();
+    expect(screen.queryByRole('progressbar')).toBeNull();
 
-    await emit(state({ scanRunning: true, lastJob: JOB }));
+    // Measured rates from earlier scans reach the row: 300 Home Depot pages left at 2 s is "about 10 min" here, and
+    // the seeds (3 s) would say 15.
+    const rates = { serpapiSearch: [2, 2, 2] };
+    const big = { ...JOB, queue: Array.from({ length: 300 }, (_, i) => ({ kind: 'listing', q: 'a', page: i + 2, filterTokens: null, bundlesOnly: true })) } as unknown as ScanJob;
+    await emit(state({ scanRunning: true, lastJob: big, rates }));
     const stop = screen.getByRole('button', { name: 'Stop' });
     expect(screen.queryByRole('button', { name: 'Scan now' })).toBeNull();
-    const status = screen.getByRole('status');
-    expect(status.textContent).toBe('Scanning · page 4 of 5 · 12 searches used');
-    expect([...status.querySelectorAll('.figure')].map((e) => e.textContent)).toEqual(['4', '5', '12']);
+    const view = pipelineView(big, rates, 0);
+    expect(view.estimateText).toBe('at least 10 min');
+    const bar = screen.getByRole('progressbar', { name: 'Scan progress' });
+    expect(bar).toHaveAttribute('aria-valuetext', view.ariaValueText);
+    expect(bar.closest('.progress')).toHaveTextContent(`Fetching Home Depot deals pages · 3 of 303${view.estimateText}Details`);
     await user.click(stop);
     expect(send).toHaveBeenCalledWith({ type: 'stopScan' });
 
     await emit(state({ scanRunning: false, lastJob: { ...JOB, status: 'stopped' } }));
     expect(screen.getByRole('button', { name: 'Scan now' })).toBeInTheDocument();
-    expect(screen.queryByText(/^Scanning/)).toBeNull();
+    expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
   it('fetches the report again after a state change and keeps the last one meanwhile', async () => {

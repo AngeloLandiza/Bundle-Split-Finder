@@ -178,7 +178,8 @@ describe('headline', () => {
 
   it('shows the scan progress under the top bar while a scan runs', () => {
     show(row(), { state: state({ scanRunning: true }) });
-    expect(screen.getAllByRole('status')[0]).toHaveTextContent(/^Scanning/);
+    expect(screen.getByRole('progressbar', { name: 'Scan progress' }).closest('.progress')).toHaveTextContent(/^Scanningestimating/);
+    expect(screen.getByRole('button', { name: 'Details' })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('writes a loss with the real minus and the loss colour', () => {

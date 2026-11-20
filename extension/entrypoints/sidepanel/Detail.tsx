@@ -505,7 +505,7 @@ export function Detail({ report, state, bundleKey, onBack, backLabel = 'Deals', 
   return (
     <div className="detail">
       {top}
-      {state.scanRunning ? <ProgressRow job={state.lastJob} /> : null}
+      {state.scanRunning ? <ProgressRow job={state.lastJob} rates={state.rates} /> : null}
       <main className="detail-body">
         <section className="detail-head">
           <div className="detail-brand">{row.brand}</div>
