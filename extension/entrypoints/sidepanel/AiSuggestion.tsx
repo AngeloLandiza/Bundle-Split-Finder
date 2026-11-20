@@ -1,5 +1,6 @@
 import { forwardRef, type ReactNode } from 'react';
 import { choicesOf } from '@core/scan/answers';
+import { expandParts } from '@core/assist/parts';
 import type { Suggestion, VerifiedQuote } from '@core/assist/types';
 import type { ReviewItem } from '@core/scan/types';
 import './AiSuggestion.css';
@@ -14,25 +15,46 @@ export function notSuggestedSentence(s: Extract<Suggestion, { status: 'not_sugge
   return s.reason;
 }
 
+/** The radio's value for "Enter the parts" (ReviewQuestion). */
+export const ENTER_VALUE = 'enter';
+
+const sameParts = (a: readonly string[], b: readonly string[]): boolean => [...a].sort().join(',') === [...b].sort().join(',');
+
 /**
  * The control a suggestion preselects: a split question's reading, or a match question's listing, by the radio's value
  * (ReviewQuestion: the index, as text). Only a verified choice preselects anything; every other state leaves the owner to choose.
+ * Parts the AI found (step 12) preselect the reading that is exactly those parts, or else "Enter the parts", with them typed in.
  */
 export function preselectOf(s: Suggestion, item: ReviewItem): string | null {
   if (s.status !== 'verified' || s.answer.decision !== 'choose') return null;
   if (s.answer.kind === 'split') return choicesOf(item)[s.answer.choiceIndex] ? String(s.answer.choiceIndex) : null;
+  if (s.answer.kind === 'parts') {
+    if (item.kind !== 'split') return null;
+    const parts = expandParts(s.answer.parts);
+    const at = choicesOf(item).findIndex((c) => sameParts(c, parts));
+    return at >= 0 ? String(at) : ENTER_VALUE;
+  }
   const asin = s.answer.asin;
   const at = item.candidates.findIndex((c) => c.asin === asin);
   return at < 0 ? null : String(at);
 }
 
-type Proposal = { kind: 'parts'; parts: string[] } | { kind: 'listing'; title: string; asin: string } | { kind: 'none' };
+/** The text "Enter the parts" starts with when a suggestion's parts are not one of the readings: the models, comma separated. */
+export function typedPartsOf(s: Suggestion): string {
+  return s.status === 'verified' && s.answer.decision === 'choose' && s.answer.kind === 'parts' ? expandParts(s.answer.parts).join(', ') : '';
+}
+
+export type Proposal = { kind: 'parts'; parts: string[] } | { kind: 'listing'; title: string; asin: string } | { kind: 'none' };
 
 /** What the AI proposed, for the line in ink. For an unverified suggestion this is what it claimed. */
-function proposalOf(s: Suggestion, item: ReviewItem): Proposal | null {
+export function proposalOf(s: Suggestion, item: ReviewItem): Proposal | null {
   if (s.status === 'verified') {
     const a = s.answer;
-    return a.decision === 'none' ? { kind: 'none' } : a.kind === 'split' ? { kind: 'parts', parts: a.parts } : { kind: 'listing', title: a.title, asin: a.asin };
+    if (a.decision === 'none') return { kind: 'none' };
+    if (a.kind === 'split') return { kind: 'parts', parts: a.parts };
+    // Counted parts read as the models with their counts: "DCK940D2 + 2 × DCB203".
+    if (a.kind === 'parts') return { kind: 'parts', parts: a.parts.map((p) => (p.qty === 1 ? p.model : `${p.qty} × ${p.model}`)) };
+    return { kind: 'listing', title: a.title, asin: a.asin };
   }
   if (s.status !== 'unverified' || s.claimed === null || s.claimed.decision === 'cannot_tell') return null;
   const raw = s.claimed;
@@ -46,7 +68,7 @@ function proposalOf(s: Suggestion, item: ReviewItem): Proposal | null {
 }
 
 /** A source's link, only when it is a web address: http or https. */
-function webUrl(url: string | null): string | null {
+export function webUrl(url: string | null): string | null {
   if (url === null) return null;
   try {
     const u = new URL(url);
@@ -82,7 +104,7 @@ function Quotes({ quotes }: { quotes: VerifiedQuote[] }) {
 }
 
 /** `claimed`: what the AI said that the code could not confirm. Only a verified answer is in ink; a claim is in ink-2. */
-const Answer = ({ p, claimed = false }: { p: Proposal; claimed?: boolean }): ReactNode => {
+export const Answer = ({ p, claimed = false }: { p: Proposal; claimed?: boolean }): ReactNode => {
   const cls = claimed ? 'ai-answer ai-claimed' : 'ai-answer';
   return p.kind === 'none' ? (
     <p className={cls}>None of these</p>

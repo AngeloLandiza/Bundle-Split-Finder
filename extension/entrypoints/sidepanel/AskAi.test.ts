@@ -59,6 +59,14 @@ function setup(report: PanelReport, over: { state?: AppState; answers?: Record<s
 
 const askButton = () => screen.getByRole('button', { name: /^(Ask AI|Asking)/ });
 
+/**
+ * Step 12: a verified suggestion is a row of "AI suggestions", closed. The owner opens it to read the whole suggestion and use the
+ * question's controls, which are the same as they were in the list.
+ */
+const openRow = async (): Promise<void> => {
+  await userEvent.click(within(screen.getByRole('region', { name: /AI suggestions/ })).getByRole('button', { expanded: false }));
+};
+
 describe('Ask AI: the button', () => {
   it('is absent with no Anthropic key: no disabled teaser', async () => {
     const { q } = await question();
@@ -76,7 +84,8 @@ describe('Ask AI: the button', () => {
     expect(askButton()).toHaveTextContent('Ask AI · about $0.01');
     cleanup();
     setup(reportOf([q]), { state: state({ ebay: { hasEbayKeys: false, hasAnthropicKey: true, judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 60 } }) });
-    expect(askButton()).toHaveTextContent('Ask AI · about $0.02');
+    // Opus, a split question: it is researched, which costs more than reading one listing.
+    expect(askButton()).toHaveTextContent('Ask AI · about $0.10');
     expect(document.body.textContent).not.toContain('$0.00');
   });
 
@@ -158,6 +167,7 @@ describe('Ask AI: a verified suggestion', () => {
   it('shows the label, the proposed answer in ink and its quote with a source link in a new tab; the reading is preselected and the button reads Approve', async () => {
     const { q, check } = await question();
     setup(reportOf([q], [await check(RIGHT)]));
+    await openRow();
     const block = screen.getByRole('group', { name: 'AI suggestion' });
     expect(within(block).getByText('AI suggestion')).toBeVisible();
     expect(within(block).getByText('PBP004 + PBP003 + PCG002')).toBeVisible();
@@ -178,6 +188,7 @@ describe('Ask AI: a verified suggestion', () => {
   it('is the answer only when the owner presses Approve: nothing is sent before', async () => {
     const { q, check } = await question();
     const { calls } = setup(reportOf([q], [await check(RIGHT)]));
+    await openRow();
     expect(calls).toEqual([]);
     await userEvent.click(screen.getByRole('button', { name: 'Approve' }));
     expect(calls).toEqual([{ type: 'answerReview', id: PSK, answer: { choice: 0, seen: reviewSignature(q) }, aiSuggestion: true }]);
@@ -186,6 +197,7 @@ describe('Ask AI: a verified suggestion', () => {
   it('changing the selection before Approve sends the other answer, still marked as made with a suggestion on screen', async () => {
     const { q, check } = await question(PSK, true);
     const { calls } = setup(reportOf([q], [await check(RIGHT)]));
+    await openRow();
     expect(screen.getByRole('radio', { name: 'PBP004 + PBP003 + PCG002' })).toBeChecked();
     await userEvent.click(screen.getByRole('radio', { name: 'PCG002 + PBP004' }));
     await userEvent.click(screen.getByRole('button', { name: 'Save answer' }));
@@ -195,6 +207,7 @@ describe('Ask AI: a verified suggestion', () => {
   it('the button reads Approve only while the selection is the AI\'s answer; any other selection reads Save answer', async () => {
     const { q, check } = await question(PSK, true);
     setup(reportOf([q], [await check(RIGHT)]));
+    await openRow();
     expect(screen.getByRole('button', { name: 'Approve' })).toBeEnabled();
     await userEvent.click(screen.getByRole('radio', { name: 'PCG002 + PBP004' }));
     expect(screen.queryByRole('button', { name: 'Approve' })).toBeNull();
@@ -219,6 +232,7 @@ describe('Ask AI: a verified suggestion', () => {
     const s = await check(RIGHT);
     const many = { ...s, suggestion: { ...s.suggestion, quotes: Array.from({ length: 5 }, (_, i) => ({ quote: `line ${i}`, sourceId: 'bundle', label: 'Home Depot page', url: 'https://www.homedepot.com/p/1', names: false })) } } as StoredSuggestion;
     setup(reportOf([q], [many]));
+    await openRow();
     expect(within(screen.getByRole('group', { name: 'AI suggestion' })).getAllByRole('link')).toHaveLength(3);
   });
 
@@ -227,6 +241,9 @@ describe('Ask AI: a verified suggestion', () => {
     const s = await check(RIGHT);
     const bad = { ...s, suggestion: { ...s.suggestion, quotes: [{ quote: 'a line', sourceId: 'bundle', label: 'Home Depot page', url: 'javascript:alert(1)', names: true }] } } as StoredSuggestion;
     setup(reportOf([q], [bad]));
+    // Not a link in the row either.
+    expect(within(screen.getByRole('region', { name: /AI suggestions/ })).queryByRole('link')).toBeNull();
+    await openRow();
     const block = screen.getByRole('group', { name: 'AI suggestion' });
     expect(within(block).queryByRole('link')).toBeNull();
     expect(within(block).getByText('Home Depot page')).toBeVisible();
@@ -241,6 +258,7 @@ describe('Ask AI: a verified suggestion', () => {
       suggestion: { questionId: q.id, seen: reviewSignature(q), provider: 'claude', model: 'm', promptVersion: 'v', status: 'verified', reason: 'r', quotes: [], answer: { decision: 'choose', kind: 'match', asin: c.asin, title: c.title } },
     };
     setup(reportOf([q], [s]));
+    await openRow();
     const block = screen.getByRole('group', { name: 'AI suggestion' });
     expect(within(block).getByText(c.asin)).toBeVisible();
     expect(screen.getAllByRole('radio')[2]).toBeChecked();

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { pageReadingOf } from '@core/pageSplit';
 import { choicesOf, reviewSignature } from '@core/scan/answers';
 import type { ReviewItem } from '@core/scan/types';
@@ -120,9 +120,11 @@ export interface AcceptSuggestedProps {
   onAccept: () => void;
   /** A bundle's page on Home Depot, the link its question shows; null when the report has none. */
   linkOf: (item: ReviewItem) => string | null;
+  /** Step 12: a secondary button that sits beside Accept all, or alone at the top when there is no block (Ask AI about all). */
+  extra?: ReactNode;
 }
 
-export function AcceptSuggested({ items, run, result, focusedId, scanRunning, onAccept, linkOf }: AcceptSuggestedProps) {
+export function AcceptSuggested({ items, run, result, focusedId, scanRunning, onAccept, linkOf, extra }: AcceptSuggestedProps) {
   const resultRef = useRef<HTMLParagraphElement>(null);
   const [expanded, setExpanded] = useState(false);
   // Focus goes to the sentence once per result, whatever remounts the block: it is what the owner pressed the button for.
@@ -173,10 +175,13 @@ export function AcceptSuggested({ items, run, result, focusedId, scanRunning, on
             <button type="button" className="btn btn-primary" disabled={run !== null || scanRunning} onClick={onAccept}>
               {run ? `Accepting ${run.index} of ${run.items.length}…` : `Accept all ${shown.length}`}
             </button>
+            {extra}
           </div>
           <p className="accept-note">Each bundle gets the parts shown. Questions with more than one answer stay below.</p>
           {scanRunning && !run ? <p className="accept-note">{SCAN_RUNNING}</p> : null}
         </section>
+      ) : extra ? (
+        <div className="ask-all-bar">{extra}</div>
       ) : null}
       {result !== null ? (
         <p className="accept-result" ref={resultRef} tabIndex={-1}>

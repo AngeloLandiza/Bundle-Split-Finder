@@ -47,7 +47,9 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
 
   // A refused Scan now or Stop belongs to the moment it was refused in: it goes when a scan starts or ends, when
   // a Look up or Verify on this panel ends, and on the scan control's next success.
-  const running = state?.scanRunning ?? null;
+  // A scan or, step 12, Ask AI about all: both have a Stop and a progress row, and never run together.
+  const asking = state?.askAll != null;
+  const running = state === null ? null : state.scanRunning || asking;
   const [seenRunning, setSeenRunning] = useState(running);
   if (seenRunning !== running) {
     setSeenRunning(running);
@@ -55,6 +57,8 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     setStopping(false);
   }
   runningNow.current = running === true;
+  const askingNow = useRef(false);
+  askingNow.current = asking;
   const paidEnded = useCallback(() => setScanError(null), []);
 
   // The report is read on mount and after every state change. The last one stays on screen while the next loads.
@@ -146,7 +150,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
     if (stopping) return;
     setStopping(true);
     api
-      .send({ type: 'stopScan' })
+      .send({ type: askingNow.current ? 'stopAskAll' : 'stopScan' })
       .then((reply) => {
         if (!reply.ok) setStopping(false);
         // A failure that comes after the scan ended no longer applies.
@@ -181,8 +185,8 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   return (
     <div className="panel">
       <Header
-        scanRunning={state.scanRunning}
-        stopping={stopping}
+        scanRunning={state.scanRunning || asking}
+        stopping={stopping || state.askAll?.stopping === true}
         noKey={false}
         scanBlockedTitle={hourlyBlockTitle(state, clock)}
         onScan={send('scanNow')}
@@ -195,7 +199,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
         reviewCount={(report?.review.length ?? 0) + (report?.ebayQuestions?.length ?? 0)}
         onChange={setTab}
       />
-      {state.scanRunning ? <ProgressRow job={state.lastJob} rates={state.rates} /> : null}
+      {state.scanRunning ? <ProgressRow job={state.lastJob} rates={state.rates} /> : state.askAll ? <ProgressRow job={null} rates={state.rates} askAll={state.askAll} /> : null}
       <Notice state={state} api={api} error={scanError ?? reportError} />
       <main className="panel-body">
         {tab === 'deals' ? (

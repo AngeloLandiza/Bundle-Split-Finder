@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { type PipelineView, pipelineView, type UnitRates } from '@core/scan/pipeline';
+import { type AskAllProgress, askAllView, type PipelineView, pipelineView, type UnitRates } from '@core/scan/pipeline';
 import type { ScanJob } from '@core/scan/types';
 
 /**
@@ -116,11 +116,15 @@ const STARTING: PipelineView = {
   steps: [],
 };
 
-export function ProgressRow({ job, rates }: { job: ScanJob | null; rates?: UnitRates }) {
+/**
+ * The row under the tabs. A scan's job, or (step 12) the Ask AI about all queue: the same row, the same words, from `askAllView`.
+ * With `askAll` given the row is the queue's; the worker never runs both at once.
+ */
+export function ProgressRow({ job, rates, askAll }: { job: ScanJob | null; rates?: UnitRates; askAll?: AskAllProgress | null }) {
   const r = rates ?? NO_RATES;
-  // The view depends on the job and the rates alone (pipelineView does not read the clock), so it changes when a
+  // The view depends on the job (or the queue's counts) and the rates alone (neither view reads the clock), so it changes when a
   // step's units change and never by the second.
-  const view = useMemo(() => (job ? pipelineView(job, r, Date.now()) : STARTING), [job, r]);
+  const view = useMemo(() => (askAll ? askAllView(askAll, r) : job ? pipelineView(job, r, Date.now()) : STARTING), [job, r, askAll]);
   const [open, toggle] = useDetailsOpen();
   const spoken = useThrottled(view.ariaValueText, LIVE_EVERY_MS);
   const listId = useId();
@@ -148,7 +152,7 @@ export function ProgressRow({ job, rates }: { job: ScanJob | null; rates?: UnitR
       <div
         className="progress-bar"
         role="progressbar"
-        aria-label="Scan progress"
+        aria-label={view.labels?.bar ?? 'Scan progress'}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.floor(percent)}
@@ -156,7 +160,7 @@ export function ProgressRow({ job, rates }: { job: ScanJob | null; rates?: UnitR
       >
         <div className="progress-fill" style={{ width: `${percent.toFixed(1)}%` }} />
       </div>
-      <ol className="progress-steps" id={listId} aria-label="Scan steps" hidden={!open}>
+      <ol className="progress-steps" id={listId} aria-label={view.labels?.steps ?? 'Scan steps'} hidden={!open}>
         {view.steps.map((s) => (
           <li key={s.label} className="progress-step" data-state={s.state}>
             <span className="progress-step-name">{s.label}</span>

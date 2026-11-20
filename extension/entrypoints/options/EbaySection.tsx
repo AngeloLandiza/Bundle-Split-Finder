@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { questionCostLabel } from '@core/assist/cost';
 import { CLAUDE_JUDGE_MODELS } from '@core/judge/claude';
 import { MAX_LISTINGS_JUDGED_PER_SCAN } from '@core/scan/ebayPass';
 import { DEFAULT_EBAY_SETTINGS, ebaySettingsProblem, estimatedJudgeCost } from '@core/settings';
@@ -144,6 +145,10 @@ export function ListingCheckSection({ api, state }: { api: WorkerApi; state: App
   const [model, setModel] = useState(saved.judgeModel);
   const [limit, setLimit] = useState(saved.listingsJudgedPerScan);
   const [settingsResult, setSettingsResult] = useState<Result | null>(null);
+  // Step 12: whether a finished scan is followed by Ask AI about all. Off until the owner turns it on.
+  const [askAfter, setAskAfter] = useState(state.askAfterScan === true);
+  const [askAfterFailed, setAskAfterFailed] = useState(false);
+  useEffect(() => setAskAfter(state.askAfterScan === true), [state.askAfterScan]);
   const problem = ebaySettingsProblem({ judgeModel: model, listingsJudgedPerScan: limit });
   const cost = problem === null ? estimatedJudgeCost(model, limit) : null;
 
@@ -184,6 +189,18 @@ export function ListingCheckSection({ api, state }: { api: WorkerApi; state: App
       setSettingsResult(reply.ok ? null : { ok: false, message: reply.error });
     } catch {
       setSettingsResult({ ok: false, message: UNREACHABLE });
+    }
+  }
+
+  async function saveAskAfter(on: boolean) {
+    setAskAfter(on);
+    setAskAfterFailed(false);
+    try {
+      const reply = await api.send<null>({ type: 'saveAskAfterScan', on });
+      if (!reply.ok) throw new Error(reply.error);
+    } catch {
+      setAskAfter(!on);
+      setAskAfterFailed(true);
     }
   }
 
@@ -259,6 +276,28 @@ export function ListingCheckSection({ api, state }: { api: WorkerApi; state: App
       {settingsResult !== null && !settingsResult.ok ? (
         <p className="field-error" role="alert" data-testid="ebay-settings-error">
           {settingsResult.message}
+        </p>
+      ) : null}
+
+      <div>
+        <label className="choice">
+          <input type="checkbox" checked={askAfter} onChange={(e) => void saveAskAfter(e.target.checked)} />
+          <span>
+            Ask AI after each scan <span className="hint">off until you turn it on</span>
+          </span>
+        </label>
+        <p className="note">
+          When a scan has finished, the AI is asked about the Review questions it opened and any still waiting, in the background. It only drafts: nothing is answered until you approve it in Review.
+        </p>
+        {askAfterFailed ? (
+          <p className="field-error" role="alert" data-testid="ask-after-error">
+            Not saved. Try again.
+          </p>
+        ) : null}
+      </div>
+      {questionCostLabel('match', model) !== null ? (
+        <p className="note" data-testid="ask-cost">
+          Estimated cost of asking, on the model above: <span className="figure small">{questionCostLabel('split', model)}</span> for a bundle&apos;s parts, <span className="figure small">{questionCostLabel('match', model)}</span> for a listing. An estimate from the model&apos;s published rates; your Anthropic bill is what counts.
         </p>
       ) : null}
     </Section>

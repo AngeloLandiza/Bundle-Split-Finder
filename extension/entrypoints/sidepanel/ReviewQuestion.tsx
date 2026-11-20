@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { reviewSignature } from '@core/scan/answers';
 import type { ReviewAnswer, ReviewItem } from '@core/scan/types';
 import { money } from '../../lib/format';
@@ -6,10 +6,11 @@ import { OpenOnHomeDepot } from './OpenOnHomeDepot';
 import { amazonListingUrl, amazonSearchUrl } from '../../lib/links';
 import { reviewReasonParts } from './reviewReason';
 import type { StoredSuggestion } from '@core/assist/stored';
-import { AiSuggestion, preselectOf } from './AiSuggestion';
+import { expandParts } from '@core/assist/parts';
+import { AiSuggestion, ENTER_VALUE, preselectOf, typedPartsOf } from './AiSuggestion';
 
 const NONE = 'none';
-const ENTER = 'enter';
+const ENTER = ENTER_VALUE;
 /** The worker's refusal for a question that changed (core/src/scan/answers.ts). AcceptSuggested's drift test ties it to the worker. */
 export const CHANGED = 'That question changed. Choose again.';
 export const SCAN_RUNNING = 'A scan is running. Answer when it has finished.';
@@ -21,6 +22,8 @@ export interface AiControl {
   /** The suggestion made for this question as it reads now, if any. It is never an answer. */
   suggestion: StoredSuggestion | null;
   asking: boolean;
+  /** Ask AI about all is running: a single ask waits for it, so the button is there and does nothing. */
+  queueRunning?: boolean;
   /** One plain sentence about the last ask that gave nothing. */
   notice: string | null;
   onAsk: () => void;
@@ -45,15 +48,21 @@ export interface ReviewQuestionProps {
 }
 
 export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading = false, onSave, onNotNow, compact = false, homeDepotLink = null, ai }: ReviewQuestionProps) {
+  // Several questions may be on the panel at once (an open row of AI suggestions and the question below it): ids are this one's own.
+  const uid = useId();
   const suggestion = ai?.suggestion?.suggestion;
   // A verified suggestion preselects its choice: the owner still presses Approve. Nothing else preselects.
   const [picked, setPicked] = useState<string | null>(() => (suggestion && suggestion.status !== 'not_suggested' ? preselectOf(suggestion, item) : null));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [typed, setTyped] = useState('');
-  // Approve is pressing the AI's own answer: once the owner selects another, the button is Save answer again.
+  // Parts the AI found that no reading offers start typed in "Enter the parts"; the owner may change them.
+  const [typed, setTyped] = useState(() => (suggestion && suggestion.status !== 'not_suggested' ? typedPartsOf(suggestion) : ''));
+  // Split on commas, trimmed, empty ones dropped. Nothing else: the worker checks the models and refuses with a sentence.
+  const typedParts = typed.split(',').map((x) => x.trim()).filter((x) => x !== '');
+  // Approve is pressing the AI's own answer: once the owner selects another, or edits the parts it typed, the button is Save answer again.
   const preselected = suggestion?.status === 'verified' ? preselectOf(suggestion, item) : null;
-  const approving = preselected !== null && picked === preselected;
+  const proposedParts = suggestion?.status === 'verified' && suggestion.answer.decision === 'choose' && suggestion.answer.kind === 'parts' ? expandParts(suggestion.answer.parts) : null;
+  const approving = preselected !== null && picked === preselected && (picked !== ENTER || (proposedParts !== null && typedParts.map((p) => p.toUpperCase()).join(',') === proposedParts.join(',')));
   const legendRef = useRef<HTMLLegendElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);
   const wasAsking = useRef(false);
@@ -83,9 +92,6 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
   useEffect(() => {
     if (scanRunning) setError(null);
   }, [scanRunning]);
-
-  // Split on commas, trimmed, empty ones dropped. Nothing else: the worker checks the models and refuses with a sentence.
-  const typedParts = typed.split(',').map((x) => x.trim()).filter((x) => x !== '');
 
   const submit = async () => {
     if (picked === null || (picked === ENTER && typedParts.length === 0)) return;
@@ -167,7 +173,7 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
           {split
             ? item.choices.map((parts, i) => row(String(i), <span className="figure">{parts.join(' + ')}</span>))
             : item.candidates.map((c, i) => {
-                const priceId = `review-price-${i}`;
+                const priceId = `${uid}-price-${i}`;
                 return row(
                   String(i),
                   <span className="review-cand-title" title={c.title}>
@@ -190,20 +196,20 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
                 'Enter the parts',
                 picked === ENTER ? (
                   <div className="review-enter">
-                    <label htmlFor="review-parts" className="review-enter-label">
+                    <label htmlFor={`${uid}-parts`} className="review-enter-label">
                       Model numbers, separated by commas
                     </label>
                     <input
-                      id="review-parts"
+                      id={`${uid}-parts`}
                       type="text"
                       className="review-enter-input"
                       autoComplete="off"
                       spellCheck={false}
-                      aria-describedby="review-parts-help"
+                      aria-describedby={`${uid}-parts-help`}
                       value={typed}
                       onChange={(e) => setTyped(e.target.value)}
                     />
-                    <p id="review-parts-help" className="review-enter-help">
+                    <p id={`${uid}-parts-help`} className="review-enter-help">
                       List a part twice if the bundle has two.
                     </p>
                   </div>
@@ -213,10 +219,10 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
           {row(
             NONE,
             'None of these',
-            <p id="review-none-effect" className="review-none-effect">
+            <p id={`${uid}-none-effect`} className="review-none-effect">
               {split ? 'The bundle stays in Contents not known.' : 'The part stays without a listing.'}
             </p>,
-            'review-none-effect',
+            `${uid}-none-effect`,
           )}
           {!split ? (
             <a className="review-search" href={amazonSearchUrl(item.brand, item.model)} target="_blank" rel="noopener noreferrer">
@@ -235,7 +241,7 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
           ) : null}
           {ai && !suggestion ? (
             // aria-disabled, not disabled: the button keeps focus while it reads Asking…
-            <button type="button" className="btn ai-ask" aria-disabled={ai.asking || scanRunning} onClick={() => (ai.asking || scanRunning ? undefined : ai.onAsk())}>
+            <button type="button" className="btn ai-ask" aria-disabled={ai.asking || scanRunning || ai.queueRunning === true} onClick={() => (ai.asking || scanRunning || ai.queueRunning ? undefined : ai.onAsk())}>
               {ai.asking ? (
                 'Asking…'
               ) : (

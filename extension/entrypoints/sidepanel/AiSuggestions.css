@@ -1,0 +1,169 @@
+/* AI suggestions and Ask AI about all (step 12). docs/design.md, "AI research and bulk approval". Rows are the Review tab's: a white band,
+   hairlines edge to edge, ink and ink-2 only. No card, no fill, no new colour. */
+.ai-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.ai-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin: 0 16px;
+  min-height: 32px;
+}
+/* The section label's style, as Accept all's. */
+.ai-section-title {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.ai-section-title .figure {
+  font-size: 12px;
+}
+/* The inline question that replaces the button: "Approve 18 AI answers? Approve · Cancel". */
+.ai-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ai-confirm-q {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink);
+}
+.ai-note {
+  margin: 0 16px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.ai-result {
+  margin: 0 16px 16px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink);
+}
+.ai-result:focus {
+  outline: none;
+}
+.ai-result:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.ai-rows {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.ai-row {
+  border-bottom: 1px solid var(--line);
+}
+/* The name and the proposed answer open the row. A button, so Tab and Enter reach it; the quote's link is outside it. */
+.ai-row-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 16px 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ai-row-head:last-child {
+  padding-bottom: 11px;
+}
+.ai-row-head:hover {
+  background: var(--paper);
+}
+.ai-row-head:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+.ai-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 0;
+}
+/* One line, cut with an ellipsis. */
+.ai-row-name {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ai-row-main .ai-answer {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.ai-row-chevron {
+  flex: none;
+  margin-top: 2px;
+  color: var(--ink-2);
+}
+.ai-row-quote {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 16px 11px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+  min-width: 0;
+}
+.ai-row-quote-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ink-2);
+}
+.ai-row-quote .ai-source,
+.ai-row-quote .ai-source-plain {
+  flex: none;
+  padding: 0;
+}
+/* The open row: the question as it is everywhere else, under a hairline. */
+.ai-row-body {
+  padding: 12px 0 4px;
+  border-top: 1px solid var(--line);
+}
+
+/* Ask AI about all, beside Accept all, or alone at the top of Review. */
+.ask-all-bar {
+  margin: 0 16px 16px;
+}
+.btn.ask-all {
+  white-space: nowrap;
+}
+.btn.ask-all .figure {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.btn.ask-all[aria-disabled='true'] .figure {
+  color: var(--ink-3);
+}
+.ask-all-note {
+  margin: 0 16px 16px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}

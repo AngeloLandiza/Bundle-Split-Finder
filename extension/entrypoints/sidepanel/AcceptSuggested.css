@@ -50,6 +50,11 @@
 .accept-actions {
   margin: 4px 16px 0;
   align-self: flex-start;
+  /* Accept all and, beside it, Ask AI about all: they wrap rather than run past a narrow panel. */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 .accept-toggle {
   padding: 0;
