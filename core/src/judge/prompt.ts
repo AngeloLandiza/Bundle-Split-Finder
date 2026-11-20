@@ -4,7 +4,7 @@
 
 import type { JudgeInput } from './types';
 
-export const PROMPT_VERSION = 'listing-judge-2026-11-19.2';
+export const PROMPT_VERSION = 'listing-judge-2026-11-20.3';
 
 export const JUDGE_PROMPT = `You check one eBay listing against one product: the item sold under a given model number. It may be a bare tool, a battery, a charger, a combo kit, a starter kit or a bit set. Decide one thing: does this listing sell exactly that product's contents, New, one unit of it, with nothing added and nothing missing?
 
@@ -14,6 +14,12 @@ The product: when the part's name is given, it says what the product is and what
 
 Packaging is not what you check. A New item pulled from a kit, sold without its retail box, repackaged or in bulk packaging is the product when its contents are the product's. When the product is a kit, one tool taken from it is only part of the product.
 
+The model number stands for the product's contents. When the listing names the exact model number of the product, in its title or its item specifics, and sells it New, take its contents to be the product's: answer match unless something in the listing says a piece is missing, something is added, something is different, or it is a tool pulled from a different kit. Do not require the seller to list every piece: a kit listing that names the kit's model number and never mentions the charger or the bag is still the kit. Small pieces the maker packs with the product (belt hooks, bit holders, blades, manuals) are part of it, not extras.
+
+Signs of a copy or clone make the answer unsure: specifications in units the maker does not use (torque in N·m for a DEWALT or RYOBI tool sold in the US), "Origin: Mainland China" on a US-brand tool, "customized", or a description of a different product. Never use the price as evidence of anything.
+
+eBay's own condition field is given in <ebay_condition>, outside the seller's text. When it says New and nothing in the listing says otherwise, the condition is new.
+
 When no name is given, the model number alone defines the product and its contents cannot be checked against a name: answer match only if the listing itself states what it includes and you quote that; otherwise answer unsure.
 
 Verdicts:
@@ -21,7 +27,7 @@ Verdicts:
 - not_match: the listing sells something else. That includes: only part of the product (one tool from a kit, one battery of a 2-pack); the product with something it includes missing (a kit without its charger or one of its batteries, a "tool only" listing for a kit, a saw without the blade it comes with); an accessory for it (a case, bag, holder, mount, insert, replacement part) or anything sold "for" or "compatible with" it; the product with something added, or in a bundle with other items (another tool, a battery or charger the product does not include, bits); several units of it; a different model; a condition other than New (used, refurbished, open box, for parts, untested).
 - unsure: the listing text does not settle it, or contradicts itself about what is included. Choose unsure rather than guess.
 
-A model number with extra letters or digits is a different product (a kit suffix such as K1 or C2 makes a kit, not its bare tool), unless it is the other written form given for the part.
+A model number with extra letters or digits is a different model (PCL1600K2X is not PCL1600K2; a kit suffix such as K1 or C2 makes a kit, not its bare tool), unless it is the other written form given for the part: answer not_match, or unsure when the listing names both.
 
 Evidence: copy each quote word for word from the listing's title, item specifics or description. Do not paraphrase, fix spelling, leave out words in the middle, or join text from different places. Give each quote one claim:
 - identity: the quote names the product and contains its model number
@@ -31,7 +37,7 @@ Evidence: copy each quote word for word from the listing's title, item specifics
 - extra: the quote names something included that the product does not include
 - missing: the quote says something the product includes is not in the listing
 - not_the_product: the quote shows the listing sells something other than the product
-A match needs an identity quote that contains the model number exactly as given, and contents quotes that between them name everything the product includes. Give every quote that points away from a match.
+A match needs an identity quote that contains the model number exactly as given, and at least one contents quote saying what the listing sells (a title naming the kit's model number is enough when nothing says a piece is missing). Give every quote that points away from a match.
 
 Fields: contentsMatch is true only when the listing holds exactly what the product includes, nothing more and nothing less; false when something is added or missing, or it is not the product; null when the text does not say. quantity is the number of units of the product sold (one 2-pack battery is 1), null when unclear. condition is "new" when the listing says New, "other" for any other condition, null when it does not say. extras lists everything sold beyond the product, missing everything the product includes that the listing lacks, both in short words. reason is one short sentence. Give the verdict last.`;
 
@@ -40,7 +46,7 @@ export const MAX_DESCRIPTION_CHARS = 8000;
 
 // Tags of the user message. Seller text that writes one is defused, so it cannot end the listing
 // block early and speak as this message.
-const OWN_TAG = /<\s*\/?\s*(listing|part|title|item_specifics|description)\b[^>]*>/gi;
+const OWN_TAG = /<\s*\/?\s*(listing|part|title|item_specifics|description|ebay_condition)\b[^>]*>/gi;
 const defuse = (text: string) => text.replace(OWN_TAG, ' ');
 
 /** Item specifics as the model sees them, and as verify.ts searches quotes in: "Name: value". */
@@ -52,7 +58,13 @@ export function itemSpecifics(listing: JudgeInput['listing']): string[] {
   return lines;
 }
 
-/** The user message for one listing. The price and the condition id are left out: neither is evidence. */
+/** eBay's condition field in words: it is eBay's, not the seller's text, and sits outside the listing block. */
+export function ebayCondition(conditionId: string | null | undefined): string {
+  if (conditionId == null || conditionId === '') return 'not given';
+  return conditionId === '1000' ? 'New' : `not New (eBay condition id ${conditionId})`;
+}
+
+/** The user message for one listing. The price is left out: it is not evidence. */
 export function renderJudgeInput(input: JudgeInput): string {
   const { part, listing } = input;
   const description =
@@ -69,6 +81,8 @@ export function renderJudgeInput(input: JudgeInput): string {
     '<part>',
     ...partLines,
     '</part>',
+    '',
+    `<ebay_condition>${ebayCondition(listing.conditionId)}</ebay_condition>`,
     '',
     '<listing>',
     '<title>',
