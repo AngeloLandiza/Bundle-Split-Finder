@@ -590,13 +590,16 @@ export function createWorker(env: WorkerEnv): Worker {
 
     const ebay = await ebayStepFor(stopAbort.signal);
     scanKey = key;
-    // Step 12: set when the scan ran to its end (not stopped, not out of searches), so "Ask AI after each scan" follows it.
-    let ranToEnd = false;
+    // What the last Ask AI about all said was about the questions as they were: the scan may open, close and change them.
+    askAllResult = null;
+    // Step 12: set when the scan ended any way but the owner's Stop (finished, out of searches, a failed search: its questions are open
+    // all the same), so "Ask AI after each scan" follows it. A scan the owner stopped is a sign they want things quiet.
+    let askAfter = false;
     scan = (async () => {
       try {
         const ended = await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages, readPartPrices: env.readPartPrices, ebay });
         await keepRates(ended);
-        ranToEnd = ended.status === 'done';
+        askAfter = ended.stopReason !== 'user';
       } catch {
         // The job stays "running" and activeScan keeps naming it: the next tick continues it.
         return;
@@ -616,7 +619,7 @@ export function createWorker(env: WorkerEnv): Worker {
         endProgress();
         void broadcast();
         settleDeferred();
-        if (ranToEnd) void askAfterScan();
+        if (askAfter) void askAfterScan();
       });
     await broadcast();
     return ok(null);
@@ -1079,7 +1082,9 @@ export function createWorker(env: WorkerEnv): Worker {
         const current = await keep(record);
         if (suggestion.status === 'not_suggested' && stopped) break;
         run.done += 1;
-        run.asked += 1;
+        // Asked: a call was made and it said something or cost something (keep() kept it). A question with nothing to ask, or a call
+        // that failed, is passed over: done, not asked.
+        if (suggestion.status !== 'not_suggested' || suggestion.usage !== undefined) run.asked += 1;
         run.costUsd += record.costUsd ?? 0;
         if (suggestion.usage !== undefined) {
           timedMs += env.now() - began;
@@ -1154,7 +1159,7 @@ export function createWorker(env: WorkerEnv): Worker {
     return ok(null);
   }
 
-  /** After a scan that ran to its end: when the owner asked for it, the queue starts. A refusal (no key, nothing to ask) is not an error. */
+  /** After a scan that was not stopped by the owner: when the owner asked for it, the queue starts. A refusal (no key, nothing to ask) is not an error. */
   async function askAfterScan(): Promise<void> {
     try {
       if (!prefs.getAskAfterScan || !(await prefs.getAskAfterScan())) return;

@@ -2,6 +2,10 @@
 .review {
   padding: 12px 0 16px;
 }
+/* Takes focus when a row of "AI suggestions" has been answered and is gone; the region itself shows no ring. */
+.review:focus {
+  outline: none;
+}
 .review-count {
   margin: 0 16px 8px;
   font-size: 12px;

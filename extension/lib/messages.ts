@@ -138,7 +138,7 @@ export interface EbayState {
 export interface AskAllResult {
   /** Questions in the queue when it began. */
   total: number;
-  /** Questions it got an answer for (a suggestion, or the AI's "could not tell"), not counting any it skipped. */
+  /** Questions it made a call for that said something or cost something. Not one with nothing to ask, a failed call, or a question it skipped. */
   asked: number;
   /** Of those, how many left something to show (not a failed call). */
   suggested: number;
