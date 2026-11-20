@@ -116,8 +116,8 @@ The scan's progress lives in the one row under the tabs; it never becomes a pane
   while the number of parts is not yet known, "estimating" before any step has a measured
   rate. It never counts down by the second; it updates when a step's units change.
 - **Accessibility:** the bar is role=progressbar with aria-valuetext ("Step 6 of 8, checking
-  eBay listings, about 4 minutes left"); the status line is a polite live region updated at
-  most every 5 seconds.
+  eBay listings, about 4 minutes left"); the visible line updates at once; the bar's aria-valuetext is also
+  spoken through a polite live region, at most every 5 seconds.
 - When the scan ends, the row goes away as today; a stopped or failed scan keeps its existing
   sentences.
 
