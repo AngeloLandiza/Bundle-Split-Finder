@@ -14,12 +14,14 @@ import { type Catalog, catalogEntry, type Decomposition } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
 import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, isReviewCap, maySparePart, pick, type Picked, sameModel } from '../match';
 import { planScan } from '../scanPlan';
+import { estimatedJudgeCost } from '../settings';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit } from './split';
+import { closeRest, endStep, ensurePipeline, finishUnit, measure, moveUnits, newPipeline, type StepId, setJudge, skipStep, startStep } from './pipeline';
 import { rejectedOf, twinKeys } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
 import { bundleKey, PART_PRICE_READS_MAX, partKey, priceActive, resolvedParts } from './types';
@@ -117,6 +119,7 @@ interface Run extends PartContext {
 /** Start a scan, or continue the newest one whose status is "running". Resolves with the finished job. */
 export async function runScan(deps: ScanDeps): Promise<ScanJob> {
   const run = await startJob(deps);
+  beginPipeline(run);
   if (run.job.phase === 'listing') {
     // Amazon brand pages, then Home Depot pages: one queue.
     await runQueue(run);
@@ -132,6 +135,10 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
     const kitPass = bundlePass.goOn ? await readKitPages(run, bundlePass.notRead) : bundlePass;
     // Step 9: then Home Depot's prices for the parts sold alone, free, unless Home Depot refused a page.
     if (kitPass.goOn) await readPartPricesPass(run);
+    else {
+      // Step 11: the row says why these did not run.
+      for (const id of ['kitPages', 'partPrices'] as const) skipStep(run.job, id, kitPass.why ?? 'page read failed');
+    }
     // Step 10: then eBay's reference values for the parts, free, whether or not Home Depot refused a page.
     await ebayPass(run);
     await planParts(run, known.listings);
@@ -199,6 +206,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
       catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0, partPricesRead: 0,
     },
   };
+  job.pipeline = newPipeline(job.queue.length);
   // Ruling 57: carried on, so a part that keeps failing stays behind the others until it is answered.
   if (failedBefore.length > 0) job.failingParts = [...failedBefore];
   if (answered.size > 0) job.answeredPages = [...answered];
@@ -339,6 +347,11 @@ function brandFilter(settings: ScanSettings, brand: string): string | null {
 
 async function runQueue(run: Run): Promise<void> {
   const { job } = run;
+  // Step 11: the listing phase is the Home Depot deals pages (and the brands' Amazon pages), the parts phase the lookups.
+  const stage: StepId = job.phase === 'listing' ? 'hdPages' : 'amazon';
+  const queued = (): number => job.queue.filter((s) => (stage === 'hdPages' ? s.kind === 'listing' || s.kind === 'catalog' : s.kind === 'lookup' || s.kind === 'refresh')).length;
+  if (stage === 'amazon' && job.queue.length === 0 && (job.stopReason !== null || job.deferred.length > 0)) skipStep(job, 'amazon', whyNot(job.stopReason));
+  else startStep(job, stage, { remaining: queued(), now: run.now() });
   while (!run.halted && job.queue.length > 0) {
     const step = job.queue[0]!;
     // 3 rule 1: asked before every paid step, never during one.
@@ -349,6 +362,7 @@ async function runQueue(run: Run): Promise<void> {
     // Only the search is inside the try. An error from the store (below, in setAside or in
     // halt) is not caught: the job stays "running" and the next runScan continues it.
     let result: SearchResult;
+    const sentAt = run.now();
     try {
       result = await send(run, step);
     } catch (err) {
@@ -363,6 +377,7 @@ async function runQueue(run: Run): Promise<void> {
         const sentence = `The ${step.brand} Amazon page ${step.page} was skipped: ${stop.message}`;
         job.stopMessage = job.stopMessage === null ? sentence : `${job.stopMessage} ${sentence}`;
         job.queue.shift();
+        moveUnits(job, stage, { remaining: queued() });
         await run.store.putScan(job);
         continue;
       }
@@ -389,7 +404,22 @@ async function runQueue(run: Run): Promise<void> {
     if (result.source === 'network') job.searchesUsed += 1;
     job.queue.shift();
     if (result.source === 'cache') topUp(run);
+    // Step 11: a cached answer is free and instant, so it counts but is not timed.
+    finishUnit(job, stage, { ms: result.source === 'network' ? run.now() - sentAt : null, remaining: queued() });
     await run.store.putScan(job);
+  }
+  endStep(job, stage, run.now());
+  await run.store.putScan(job);
+}
+
+/** Step 11: why a step that did not run did not, in four words or fewer, from the job's stop reason. */
+function whyNot(reason: StopReason | null): string {
+  switch (reason) {
+    case null: return 'nothing to do';
+    case 'user': return 'stopped';
+    case 'rate_limited': return 'rate limited';
+    case 'error': return 'search failed';
+    default: return 'search limit';
   }
 }
 
@@ -454,6 +484,7 @@ async function setAside(run: Run, step: Lookup | Refresh, message: string): Prom
   const sentence = `${step.kind === 'lookup' ? 'The lookup' : 'The price check'} of ${step.model} failed: ${message}`;
   if (run.setAside === 0) job.stopMessage = job.stopMessage === null ? sentence : `${job.stopMessage} ${sentence}`;
   job.queue.shift();
+  moveUnits(job, 'amazon', { remaining: job.queue.filter((q) => q.kind === 'lookup' || q.kind === 'refresh').length });
   job.deferred.splice(run.setAside, 0, step);
   run.setAside += 1;
   run.lastFailed = true;
@@ -782,6 +813,8 @@ interface PageTarget {
 interface PassResult {
   goOn: boolean;
   notRead: number;
+  /** Step 11: when goOn is false, why the later reads were skipped, in four words or fewer. */
+  why?: string;
 }
 
 /**
@@ -799,8 +832,9 @@ async function readBundlePages(run: Run): Promise<PassResult> {
     .filter((b) => b.page === undefined || b.page === null)
     .sort(newestFirst)
     .slice(0, pagesLeft(run));
-  if (unread.length === 0 || run.shouldStop()) return { goOn: true, notRead: 0 };
-  return readInto(run, unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle({ ...b, page }) })));
+  if (run.shouldStop()) return { goOn: true, notRead: 0 };
+  if (unread.length === 0) return nothingToRead(run, 'bundlePages');
+  return readInto(run, 'bundlePages', unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle({ ...b, page }) })));
 }
 
 /**
@@ -821,7 +855,8 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
   const none = { goOn: true, notRead: 0 };
   if (!run.readPages) return none;
   const room = Math.max(0, pagesLeft(run) - bundleNotRead);
-  if (room === 0 || run.shouldStop()) return none;
+  if (run.shouldStop()) return none;
+  if (room === 0) return nothingToRead(run, 'kitPages');
   const bundles = await store.listBundles();
   const catalog = await store.listCatalog();
   const bundlesOf = kitIndex(bundles);
@@ -843,8 +878,8 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
       wanted.push(kit);
     }
   }
-  if (wanted.length === 0) return none;
-  return readInto(run, wanted.slice(0, room).map((k) => ({ itemId: k.itemId!, save: (page) => store.putCatalogEntry({ ...k, page }) })));
+  if (wanted.length === 0) return nothingToRead(run, 'kitPages');
+  return readInto(run, 'kitPages', wanted.slice(0, room).map((k) => ({ itemId: k.itemId!, save: (page) => store.putCatalogEntry({ ...k, page }) })));
 }
 
 // ---------------------------------------------------------------- step 9: Home Depot's prices for the parts (free)
@@ -931,16 +966,28 @@ async function readPartPricesPass(run: Run): Promise<void> {
   if (!run.readPartPrices || run.shouldStop()) return;
   const cap = Math.min(PART_PRICE_READS_MAX, Math.max(0, Math.floor(run.settings.partPriceReadsPerScan)));
   const asked = (await partPricesWanted(store, run.settings, run.now())).slice(0, cap);
-  if (asked.length === 0) return;
+  if (asked.length === 0) {
+    await nothingToRead(run, 'partPrices');
+    return;
+  }
+  // Step 11: saved before the reader is called, so the row shows "0 of N" while the batch is in flight.
+  startStep(job, 'partPrices', { remaining: asked.length, now: run.now() });
+  await store.putScan(job);
+  const readStart = run.now();
   let readings: unknown;
   try {
     readings = await run.readPartPrices(asked.map(({ brand, model }) => ({ brand, model })));
   } catch (err) {
     noteProblem(job, `Reading Home Depot prices failed: ${(err instanceof Error && err.message) || String(err)}`);
+    endStep(job, 'partPrices', run.now());
     await store.putScan(job);
     return;
   }
-  job.counts.partPricesRead = (job.counts.partPricesRead ?? 0) + (await savePartPrices(store, asked, readings, run.now()));
+  const savedPrices = await savePartPrices(store, asked, readings, run.now());
+  job.counts.partPricesRead = (job.counts.partPricesRead ?? 0) + savedPrices;
+  moveUnits(job, 'partPrices', { done: (job.pipeline?.find((p) => p.id === 'partPrices')?.unitsDone ?? 0) + savedPrices });
+  measure(job, 'partPrices', run.now() - readStart, asked.length);
+  endStep(job, 'partPrices', run.now());
   await store.putScan(job);
 }
 
@@ -980,7 +1027,16 @@ async function ebayPass(run: Run): Promise<void> {
     return;
   }
   const parts = await ebayPartsWanted(store, run.settings, run.now());
-  if (parts.length === 0) return;
+  if (parts.length === 0) {
+    for (const id of ['ebay', 'judge'] as const) skipStep(job, id, 'all up to date');
+    await store.putScan(job);
+    return;
+  }
+  // Step 11: the eBay step and the listing check run together, a listing at a time; the pass keeps their figures.
+  const counts = job.counts;
+  startStep(job, 'ebay', { remaining: null, done: (counts.ebaySearches ?? 0) + (counts.ebayItemReads ?? 0), now: run.now() });
+  startStep(job, 'judge', { remaining: null, done: counts.listingsJudged ?? 0, now: run.now() });
+  await store.putScan(job);
   // Only eBay and the model are called inside the pass, and it catches what they throw. An error from the store
   // is not caught: the job stays "running" and the next run continues it, as for the other free steps.
   await runEbayPass({
@@ -988,13 +1044,19 @@ async function ebayPass(run: Run): Promise<void> {
     now: run.now, shouldStop: () => run.shouldStop() || (ebay.halted?.() ?? false),
     ...(ebay.signal ? { signal: ebay.signal } : {}), ...(ebay.callTimeoutMs ? { callTimeoutMs: ebay.callTimeoutMs } : {}),
   });
+  for (const id of ['ebay', 'judge'] as const) endStep(job, id, run.now());
+  await store.putScan(job);
 }
 
 const newestFirst = (a: BundleRecord, b: BundleRecord): number => b.seenAt - a.seenAt || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
 
 /** P1 to P4 for one list of pages: one call to readPages, each page read saved and counted, problems noted, then the job saved. */
-async function readInto(run: Run, targets: PageTarget[]): Promise<PassResult> {
+async function readInto(run: Run, stage: StepId, targets: PageTarget[]): Promise<PassResult> {
   const { store, job, readPages } = run;
+  // Step 11: saved before the reader is called, so the row shows "0 of N" while the batch is in flight.
+  startStep(job, stage, { remaining: targets.length, now: run.now() });
+  await store.putScan(job);
+  const readStart = run.now();
   // Only the reader is inside the try. An error from the store is not caught: the job stays
   // "running" and the next runScan continues it, reading only the pages still unread.
   let outcomes: PageOutcome[];
@@ -1002,8 +1064,9 @@ async function readInto(run: Run, targets: PageTarget[]): Promise<PassResult> {
     outcomes = await readPages!(targets.map((t) => t.itemId));
   } catch (err) {
     noteProblem(job, `Reading Home Depot pages failed: ${(err instanceof Error && err.message) || String(err)}`);
+    endStep(job, stage, run.now());
     await store.putScan(job);
-    return { goOn: false, notRead: targets.length };
+    return { goOn: false, notRead: targets.length, why: 'page reader failed' };
   }
   const readAt = run.now();
   const asked = new Map(targets.map((t) => [t.itemId, t]));
@@ -1037,8 +1100,38 @@ async function readInto(run: Run, targets: PageTarget[]): Promise<PassResult> {
   else if (unreadable) {
     noteProblem(job, anyRead ? 'A Home Depot page could not be read.' : 'No Home Depot page could be read.');
   }
+  moveUnits(job, stage, { done: (job.pipeline?.find((p) => p.id === stage)?.unitsDone ?? 0) + read });
+  measure(job, stage, run.now() - readStart, targets.length);
+  endStep(job, stage, run.now());
   await store.putScan(job);
-  return { goOn: !refused, notRead: targets.length - read };
+  return { goOn: !refused, notRead: targets.length - read, ...(refused ? { why: 'Home Depot refused' } : {}) };
+}
+
+/** Step 11: a read step with no page to read has run: done, nothing read. */
+async function nothingToRead(run: Run, stage: StepId): Promise<PassResult> {
+  startStep(run.job, stage, { remaining: 0, now: run.now() });
+  endStep(run.job, stage, run.now());
+  await run.store.putScan(run.job);
+  return { goOn: true, notRead: 0 };
+}
+
+/**
+ * Step 11: the record of the scan's stages, ready to be filled. A job without one (saved before step 11, or continued
+ * from one) gets what its phase and counts say. The stages this run cannot run are skipped now, with the reason.
+ */
+function beginPipeline(run: Run): void {
+  const { job, ebay } = run;
+  ensurePipeline(job);
+  if (!run.readPages) for (const id of ['bundlePages', 'kitPages'] as const) skipStep(job, id, 'no page reader');
+  if (!run.readPartPrices) skipStep(job, 'partPrices', 'no price reader');
+  if (!ebay) for (const id of ['ebay', 'judge'] as const) skipStep(job, id, 'not in this run');
+  else if (ebay.kind === 'skip') {
+    const missing = ebay.missing ?? [];
+    const noEbay = 'no eBay keys';
+    const noClaude = 'no Anthropic key';
+    skipStep(job, 'ebay', missing.length === 0 ? 'keys not saved' : missing.includes('ebay') ? noEbay : noClaude);
+    skipStep(job, 'judge', missing.length === 0 ? 'keys not saved' : missing.includes('anthropic') ? noClaude : noEbay);
+  } else setJudge(job, ebay.judge.model, estimatedJudgeCost(ebay.judge.model, ebay.listingsJudgedPerScan));
 }
 
 /**
@@ -1475,6 +1568,11 @@ async function finish(run: Run): Promise<ScanJob> {
   // since moved into the queue (Ruling 48), nothing waits and no limit stopped the job. A
   // budget refusal at a search always defers that step (halt), so it never ends here.
   if (job.deferred.length === 0 && (job.stopReason === 'run_cap' || job.stopReason === 'reserve' || job.stopReason === 'hourly_limit')) job.stopReason = null;
+  // Step 11: whatever did not run says why; the last step is the save itself.
+  closeRest(job, whyNot(job.stopReason), run.now());
+  startStep(job, 'finish', { remaining: 1, now: run.now() });
+  finishUnit(job, 'finish', { ms: null, remaining: 0 });
+  endStep(job, 'finish', run.now());
   job.phase = 'finish';
   job.status = job.stopReason !== null || job.deferred.length > 0 ? 'stopped' : 'done';
   job.finishedAt = run.now();

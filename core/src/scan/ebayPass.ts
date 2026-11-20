@@ -20,6 +20,7 @@ import { PROMPT_VERSION } from '../judge/prompt';
 import type { JudgeCall, JudgeInput, JudgeOutcome, ListingJudge } from '../judge/types';
 import { judgeListing } from '../judge/verify';
 import { modelForms } from '../match';
+import { measure, moveUnits, noteCost } from './pipeline';
 import { twinKeys } from './twins';
 import {
   type EbayJudgedListing, type EbayOwnerAnswer, type EbayValueRecord, ebayAnswerKey, effectiveVerdict, judgementKey, type ScanJob, type ScanStore,
@@ -55,7 +56,12 @@ export type EbayStep =
       /** Longest a model call may take; default JUDGE_CALL_TIMEOUT_MS. A call that runs out is not judged, never a verdict. */
       callTimeoutMs?: number;
     }
-  | { kind: 'skip'; notice: string };
+  | {
+      kind: 'skip';
+      notice: string;
+      /** Step 11: which keys are not saved, so the progress row can say which ("no eBay keys", "no Anthropic key"). */
+      missing?: ('ebay' | 'anthropic')[];
+    };
 
 /** A part to check: partKey and its brand and model, upper case. */
 export interface EbayPart {
@@ -160,16 +166,49 @@ export async function runEbayPass(a: EbayPassArgs): Promise<void> {
     return false;
   };
 
-  for (const part of parts) {
+  // Step 11: the progress row's figures. The units done are the job's own counts, so they are right after an eviction.
+  // What is left is a projection: the searches still to make, the listings of the part in hand still to read, and
+  // for the parts after it the average listings a part has kept so far. Unknown (null) until a part has been searched.
+  let pendingSearches = parts.length;
+  let readsLeft = 0;
+  let partsAfter = 0;
+  let partsSearched = 0;
+  let keptTotal = 0;
+  const timed = job.pipeline !== undefined;
+  const sync = (): void => {
+    if (!timed) return;
+    const judged = num(counts.listingsJudged);
+    moveUnits(job, 'ebay', { done: num(counts.ebaySearches) + num(counts.ebayItemReads) });
+    moveUnits(job, 'judge', { done: judged });
+    if (partsSearched === 0) {
+      moveUnits(job, 'ebay', { remaining: null });
+      moveUnits(job, 'judge', { remaining: null });
+    } else {
+      const later = readsLeft + Math.round(partsAfter * (keptTotal / partsSearched));
+      moveUnits(job, 'ebay', { remaining: pendingSearches + later });
+      moveUnits(job, 'judge', { remaining: Math.max(0, Math.min(judgedCap - judged, later)) });
+    }
+    noteCost(job);
+  };
+
+  for (const [at, part] of parts.entries()) {
     if (stop !== null || judgeCapHit || a.shouldStop()) break;
     if (num(counts.ebaySearches) >= EBAY_SEARCHES_MAX) { noteEbay(job, NOTICE.searches); break; }
 
+    pendingSearches = parts.length - at;
+    partsAfter = parts.length - at - 1;
+    // Before its search answers, this part is expected to keep what the parts before it kept, on average.
+    readsLeft = partsSearched > 0 ? Math.round(keptTotal / partsSearched) : 0;
     counts.ebaySearches = num(counts.ebaySearches) + 1;
+    pendingSearches -= 1;
+    sync();
     // Saved before the call: after an eviction the count already includes it, so a cap cannot be exceeded.
     await a.save();
     let searched: EbaySearchResult;
+    const searchStart = now();
     try {
       searched = await ebay.search(`${part.brand} ${part.model}`, { categoryIds: [POWER_TOOLS_CATEGORY], conditionNew: true, fixedPrice: true, limit: 200 });
+      if (timed) measure(job, 'ebay', now() - searchStart);
     } catch (err) {
       // A search that failed for another reason leaves the part as it was: it is asked for again next scan.
       if (ebayFailed(err)) stop = 'ebay';
@@ -177,6 +216,10 @@ export async function runEbayPass(a: EbayPassArgs): Promise<void> {
       continue;
     }
     const kept = preFilter({ brand: part.brand, model: part.model }, searched.summaries).kept;
+    partsSearched += 1;
+    keptTotal += kept.length;
+    readsLeft = kept.length;
+    sync();
 
     const before = await store.getEbayValue(part.key);
     const name = await nameOf(store, part);
@@ -188,10 +231,14 @@ export async function runEbayPass(a: EbayPassArgs): Promise<void> {
       if (stop !== null || a.shouldStop()) { notJudged += kept.length - i; break; }
       if (num(counts.ebayItemReads) >= EBAY_ITEM_READS_MAX) { noteEbay(job, NOTICE.reads); stop = 'ebay'; notJudged += kept.length - i; break; }
       counts.ebayItemReads = num(counts.ebayItemReads) + 1;
+      readsLeft = kept.length - i - 1;
+      sync();
       await a.save();
       let item: EbayListing;
+      const readStart = now();
       try {
         item = await ebay.getItem(summary.itemId);
+        if (timed) measure(job, 'ebay', now() - readStart);
       } catch (err) {
         notJudged += 1;
         if (ebayFailed(err)) { stop = 'ebay'; notJudged += kept.length - i - 1; break; }
@@ -212,9 +259,12 @@ export async function runEbayPass(a: EbayPassArgs): Promise<void> {
         continue;
       } else {
         counts.listingsJudged = num(counts.listingsJudged) + 1;
+        sync();
         await a.save();
+        const judgeStart = now();
         try {
           call = await judge.judge(input, a.signal ? AbortSignal.any([a.signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs));
+          if (timed && call.ok) measure(job, 'judge', now() - judgeStart);
         } catch {
           // An adapter must not throw (ListingJudge); one that does is a call with no answer, never a verdict.
           call = { judgeId: judge.id, model: judge.model, promptVersion: PROMPT_VERSION, ok: false, notJudged: { reason: 'bad_response', message: 'The judge failed without an answer.' } };
@@ -222,6 +272,7 @@ export async function runEbayPass(a: EbayPassArgs): Promise<void> {
         if (call.usage) {
           counts.judgeTokensIn = num(counts.judgeTokensIn) + call.usage.inputTokens;
           counts.judgeTokensOut = num(counts.judgeTokensOut) + call.usage.outputTokens;
+          noteCost(job);
           await a.save();
         }
         if (call.ok) {
@@ -249,6 +300,8 @@ export async function runEbayPass(a: EbayPassArgs): Promise<void> {
       });
     }
 
+    readsLeft = 0;
+    sync();
     // The part's listings in search order: each judged now, or (a check that stopped before it) as the last check left it.
     const listings: EbayJudgedListing[] = [];
     for (const s of kept) {

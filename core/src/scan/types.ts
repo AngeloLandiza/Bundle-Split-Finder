@@ -12,6 +12,7 @@ import type { Grade } from '../match';
 import { DEFAULT_FEES, type BundleResult, type FeeSettings } from '../money';
 import type { BlockReason } from '../serpapi/budget';
 import type { Params, SearchOptions, SearchResult } from '../serpapi/client';
+import type { PipelineStep } from './pipeline';
 
 // ---------------------------------------------------------------- ports
 
@@ -610,6 +611,12 @@ export interface ScanJob {
    * model refused or limited a call). Not a failure of the scan: Home Depot and Amazon results are unaffected.
    */
   ebayNotice?: string | null;
+  /**
+   * Step 11: what the scan is doing, one entry per stage in run order (pipeline.ts): its state, its units done and
+   * to do, when it started and ended, and why a stage was skipped. Set by the runner and saved with the job, so it
+   * survives a worker eviction. Absent on a job saved before step 11; pipelineOf derives one for the panel.
+   */
+  pipeline?: PipelineStep[];
   /** Searches that counted against the quota (responses that came from the network). */
   searchesUsed: number;
   counts: ScanCounts;
