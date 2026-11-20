@@ -15,6 +15,8 @@ import * as fx from '../../core/test/fixtures';
 import type { AppState, PanelReport, Reply, Request } from './messages';
 import type { ResearchTools } from '@core/research/types';
 import { createWorker, type AskOne, type Prefs } from './worker';
+import { askAllCostLabel } from '@core/assist/cost';
+import { askAllSentence } from '../entrypoints/sidepanel/AskAll';
 
 const KEY = 'TEST';
 const ANTHROPIC = 'sk-ant-test-0000-not-a-real-key';
@@ -365,6 +367,99 @@ describe('askAiAll: questions that change while it runs', () => {
   });
 });
 
+describe('askAiAll: the limits of the queue (step 12, fix round R3b)', () => {
+  const SPLITS = [PSK, OTHERS[0]!, OTHERS[1]!, OTHERS[2]!, 'split:homedepot:314716732'];
+  const fakeTools: { forQuestion(): ResearchTools } = {
+    forQuestion: () => ({
+      readHomeDepotPage: async () => ({ error: 'not recorded' }),
+      searchHomeDepot: async () => ({ error: 'not recorded' }),
+      catalogLookup: async () => ({ sourceId: 'catalog:none', entries: [] }),
+    }),
+  };
+  const usage = { inputTokens: 100, outputTokens: 10 };
+  const stored = (id: string, question: ReviewItem, costUsd: number, suggestion: Record<string, unknown>): StoredSuggestion => ({
+    key: `${id}|${T0}`, questionId: id, seen: reviewSignature(question), askedAt: T0, costUsd,
+    suggestion: { questionId: id, seen: reviewSignature(question), provider: 'test', model: 'research', promptVersion: 'x', usage, ...suggestion } as StoredSuggestion['suggestion'],
+  });
+  const ranOut = (id: string, question: ReviewItem): StoredSuggestion =>
+    stored(id, question, 0.01, { status: 'not_suggested', reason: 'The research reached its limit of 8 tool calls before an answer.', notSuggested: { reason: 'limit', message: 'x' } });
+  const couldNotTell = (id: string, question: ReviewItem, costUsd: number): StoredSuggestion => stored(id, question, costUsd, { status: 'cannot_tell', reason: 'No.', quotes: [] });
+
+  it('three researches in a row that ran past a limit end the queue, with a sentence, instead of asking on at the same cost', async () => {
+    // A model that only ever pauses: each question hits the 12-request limit, which comes back as not_suggested with no provider error.
+    const pause = () => json(200, { id: 'msg', type: 'message', role: 'assistant', model: 'm', stop_reason: 'pause_turn', stop_details: null, content: [], usage: { input_tokens: 1000, output_tokens: 10 } });
+    const t = await setup({ researchTools: fakeTools, ids: SPLITS, respond: pause });
+    await t.send({ type: 'askAiAll' });
+    await t.idle();
+    // Three questions of twelve requests each, and no fourth.
+    expect(t.calls).toHaveLength(36);
+    const result = (await t.state()).data.askAllResult!;
+    expect(result.problem).toMatch(/limit/);
+    expect(result.stopped).toBe(false);
+    expect(askAllSentence(result)).toMatch(/^Asking stopped after \d of 5: .*limit/);
+  });
+
+  it('a result that says something in between resets the count: two limits, an answer, two limits is not three in a row', async () => {
+    let n = 0;
+    let t!: Awaited<ReturnType<typeof setup>>;
+    const askOne: AskOne = async (id) => {
+      const question = (await t.store.getReview(id))!;
+      n += 1;
+      return n === 3 ? couldNotTell(id, question, 0.01) : ranOut(id, question);
+    };
+    t = await setup({ askOne, ids: SPLITS });
+    await t.send({ type: 'askAiAll' });
+    await t.idle();
+    expect(n).toBe(5);
+    expect((await t.state()).data.askAllResult!.problem).toBeNull();
+  });
+
+  it('a question the model declined is not a limit, and does not end the queue', async () => {
+    let t!: Awaited<ReturnType<typeof setup>>;
+    const askOne: AskOne = async (id) =>
+      stored(id, (await t.store.getReview(id))!, 0.01, { status: 'not_suggested', reason: 'The model declined.', notSuggested: { reason: 'refusal', message: 'x' } });
+    t = await setup({ askOne, ids: SPLITS });
+    await t.send({ type: 'askAiAll' });
+    await t.idle();
+    expect((await t.state()).data.askAllResult!.problem).toBeNull();
+  });
+
+  it('stops when what it has cost passes twice the estimate its button showed, says so, and keeps what was suggested', async () => {
+    let t!: Awaited<ReturnType<typeof setup>>;
+    const ids: string[] = [];
+    let each = 0;
+    const askOne: AskOne = async (id) => {
+      ids.push(id);
+      return couldNotTell(id, (await t.store.getReview(id))!, each);
+    };
+    t = await setup({ askOne, ids: SPLITS });
+    const shown = Number(askAllCostLabel(SPLITS.map(() => 'split' as const), 'claude-haiku-5-5')!.replace('about $', ''));
+    // Each question costs 0.9 of the whole estimate: the third pushes the total past twice what the button said.
+    each = shown * 0.9;
+    await t.send({ type: 'askAiAll' });
+    await t.idle();
+    expect(ids).toHaveLength(3);
+    const result = (await t.state()).data.askAllResult!;
+    expect(result).toMatchObject({ overspent: true, problem: null, stopped: false });
+    expect(askAllSentence(result)).toBe(`Stopped: asking cost more than expected ($${result.costUsd.toFixed(2)}). Nothing was applied.`);
+    expect(await t.suggestions.list()).toHaveLength(3);
+    for (const id of ids) expect((await t.store.getReview(id))!.answer).toBeNull();
+  });
+
+  it('does not stop at exactly twice the estimate: only passing it does', async () => {
+    let t!: Awaited<ReturnType<typeof setup>>;
+    const four = SPLITS.slice(0, 4);
+    const shown = Number(askAllCostLabel(four.map(() => 'split' as const), 'claude-haiku-5-5')!.replace('about $', ''));
+    // Four questions at half the estimate each: exactly twice in all, after the last.
+    const askOne: AskOne = async (id) => couldNotTell(id, (await t.store.getReview(id))!, shown / 2);
+    t = await setup({ askOne, ids: four });
+    await t.send({ type: 'askAiAll' });
+    await t.idle();
+    expect(await t.suggestions.list()).toHaveLength(4);
+    expect((await t.state()).data.askAllResult).toMatchObject({ asked: 4, overspent: false });
+  });
+});
+
 describe('askAiAll: the question is asked through the function it is given', () => {
   it('calls AskOne for each question with a signal, and saves what it returns as a suggestion, never an answer', async () => {
     const seen: { id: string; signal: AbortSignal }[] = [];
@@ -521,5 +616,31 @@ describe('research: a split question is researched, any other is asked as before
     expect(t.calls).toHaveLength(1);
     expect(await t.suggestions.list()).toEqual([]);
     expect((await t.state()).data.askAllResult).toMatchObject({ stopped: true, asked: 0 });
+  });
+
+  it('Stop reaches a page read in flight: the tool is handed the research signal, and it is aborted', async () => {
+    let seen: AbortSignal | undefined;
+    const reading: { forQuestion(): ResearchTools } = {
+      forQuestion: () => ({
+        ...fakeTools.forQuestion(),
+        readHomeDepotPage: (_input, signal) => new Promise((resolve) => {
+          seen = signal;
+          signal?.addEventListener('abort', () => resolve({ error: 'stopped' }));
+        }),
+      }),
+    };
+    const readPage = () => json(200, { id: 'msg', type: 'message', role: 'assistant', model: 'm', stop_reason: 'tool_use', stop_details: null, content: [{ type: 'tool_use', id: 'toolu_1', name: 'read_homedepot_page', input: { itemId: '339206615' } }], usage: { input_tokens: 1000, output_tokens: 50 } });
+    const t = await setup({ researchTools: reading, ids: [PSK, OTHERS[0]!], respond: readPage });
+    await t.send({ type: 'askAiAll' });
+    for (let i = 0; i < 200 && seen === undefined; i++) await new Promise((r) => setTimeout(r, 5));
+    expect(seen).toBeDefined();
+    expect(seen!.aborted).toBe(false);
+    await t.send({ type: 'stopAskAll' });
+    await t.idle();
+    expect(seen!.aborted).toBe(true);
+    expect(t.calls).toHaveLength(1);
+    // What the call cost is kept for the count; no suggestion comes of it, and the next question is not asked.
+    for (const r of await t.suggestions.list()) expect(r.suggestion.status).toBe('not_suggested');
+    expect((await t.state()).data.askAllResult).toMatchObject({ stopped: true, suggested: 0 });
   });
 });

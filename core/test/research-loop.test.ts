@@ -277,6 +277,36 @@ describe('researchQuestion', () => {
     expect(await researchQuestion(q, evidence, tools, late.model, { catalog, now: clock })).toMatchObject({ reason: expect.stringMatching(/time limit of 60 seconds/) });
   });
 
+  it("a time, tool-call, web-search or request limit says so: notSuggested.reason is 'limit', which is not the owner's Stop and not a refusal", async () => {
+    const { q, evidence, tools, catalog } = await setup();
+    const many = Array.from({ length: 9 }, (_, i) => use(`toolu_${i}`, 'catalog_lookup', { model: `PCL50${i}`, query: null }));
+    const calls = await researchQuestion(q, evidence, tools, scripted([turn('tool_use', many.slice(0, 5)), turn('tool_use', many.slice(5))]).model, { catalog });
+    const search = (i: number) => ({ type: 'server_tool_use', id: `srvtoolu_${i}`, name: 'web_search', input: { query: `q${i}` } });
+    const searches = await researchQuestion(q, evidence, tools, scripted([turn('pause_turn', [search(1), search(2), search(3)])]).model, { catalog });
+    const requests = await researchQuestion(q, evidence, tools, scripted(Array.from({ length: 3 }, () => turn('pause_turn', []))).model, { catalog, limits: { maxRequests: 3 } });
+    const hang = (_req: ResearchRequest, signal?: AbortSignal) => new Promise<ResearchTurn>((resolve) => {
+      signal?.addEventListener('abort', () => resolve({ ok: false, notJudged: { reason: 'aborted', message: 'The call to Claude was cancelled.' } }));
+    });
+    const time = await researchQuestion(q, evidence, tools, scripted([hang]).model, { catalog, limits: { timeLimitMs: 20 } });
+    for (const s of [calls, searches, requests, time]) expect(s).toMatchObject({ status: 'not_suggested', notSuggested: { reason: 'limit', message: expect.stringMatching(/limit/) } });
+  });
+
+  it('the time limit aborts a client tool in flight: the tool is handed a signal that the limit fires', async () => {
+    const { q, evidence, tools, catalog } = await setup();
+    let seen: AbortSignal | undefined;
+    const hanging: typeof tools = {
+      ...tools,
+      catalogLookup: (_input, signal) => new Promise((_, reject) => {
+        seen = signal;
+        signal?.addEventListener('abort', () => reject(new Error('stopped')));
+      }),
+    };
+    const { model } = scripted([turn('tool_use', [use('toolu_1', 'catalog_lookup', { model: 'PCL500', query: null })])]);
+    const s = await researchQuestion(q, evidence, hanging, model, { catalog, limits: { timeLimitMs: 20 } });
+    expect(seen?.aborted).toBe(true);
+    expect(s).toMatchObject({ status: 'not_suggested', notSuggested: { reason: 'limit' } });
+  });
+
   it("the owner's Stop aborts: not_suggested, aborted", async () => {
     const { q, evidence, tools, catalog } = await setup();
     const stop = new AbortController();

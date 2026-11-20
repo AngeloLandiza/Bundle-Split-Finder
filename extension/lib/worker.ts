@@ -8,7 +8,7 @@
 import { ClaudeAssist } from '@core/assist/claude';
 import { gatherEvidence } from '@core/assist/evidence';
 import { askQueueOf } from '@core/assist/askAll';
-import { estimatedQuestionCost } from '@core/assist/cost';
+import { askAllShownCost, estimatedQuestionCost } from '@core/assist/cost';
 import { PRICE_TABLE } from '@core/judge/eval';
 import { ClaudeResearch } from '@core/research/claude';
 import { researchCost } from '@core/research/eval';
@@ -1085,6 +1085,8 @@ export function createWorker(env: WorkerEnv): Worker {
     verified: number;
     costUsd: number;
     estimateUsd: number | null;
+    /** What the button said it would cost, rounded up as it says it; twice this is the most the queue spends. Null: no known rate, no cap. */
+    shownUsd: number | null;
     /** Aborted by Stop, or by the Anthropic key being forgotten. */
     abort: AbortController;
     promise: Promise<void>;
@@ -1098,12 +1100,24 @@ export function createWorker(env: WorkerEnv): Worker {
     !['refusal', 'max_tokens', 'bad_response', 'no_answer', 'unexpected_stop', 'bad_request'].includes(s.notSuggested.reason);
 
   /**
+   * The sentence for three failures in a row. A research that ran past its time, tool-call or request limit is not an API failure,
+   * but it costs what a call costs and gives nothing, and asking on would do it again: it counts ('limit', core/src/research/loop.ts).
+   */
+  const troubleSentence = (s: StoredSuggestion['suggestion']): string | null => {
+    if (s.status !== 'not_suggested') return null;
+    if (s.notSuggested?.reason === 'limit') return 'The research ran past its limits on three questions in a row.';
+    if (s.notSuggested?.reason === 'aborted') return 'The AI took too long. Try again later.';
+    return s.reason;
+  };
+
+  /**
    * Asks about each question in turn, over askOne, and keeps what comes back. Never throws. A question is read again before its
    * turn: one the owner answered meanwhile is skipped. Stop (abort) ends the call in flight, which keeps nothing, and the rest are not
    * asked. Three failed calls in a row end it, with the sentence of the last.
    */
   async function runAskAll(run: AskAllRun, ids: string[]): Promise<void> {
     let problem: string | null = null;
+    let overspent = false;
     let failures = 0;
     let timedMs = 0;
     let timed = 0;
@@ -1146,11 +1160,16 @@ export function createWorker(env: WorkerEnv): Worker {
         if (providerTrouble(suggestion, stopped)) {
           failures += 1;
           if (failures >= ASK_ALL_MAX_FAILURES) {
-            problem = suggestion.status === 'not_suggested' ? (suggestion.notSuggested?.reason === 'aborted' ? 'The AI took too long. Try again later.' : suggestion.reason) : null;
+            problem = troubleSentence(suggestion);
             break;
           }
         } else {
           failures = 0;
+        }
+        // The spending cap: what the queue has cost passes twice what its button said. What was suggested stays; nothing is applied.
+        if (run.shownUsd !== null && run.costUsd > 2 * run.shownUsd) {
+          overspent = true;
+          break;
         }
         await broadcast();
       }
@@ -1159,7 +1178,7 @@ export function createWorker(env: WorkerEnv): Worker {
     }
     askAllResult = {
       total: run.total, asked: run.asked, suggested: run.suggested, verified: run.verified, costUsd: run.costUsd,
-      stopped: run.abort.signal.aborted, problem,
+      stopped: run.abort.signal.aborted, problem, overspent,
     };
     // The seconds a call took become the next estimate's rate. Never fails the queue.
     try {
@@ -1190,6 +1209,7 @@ export function createWorker(env: WorkerEnv): Worker {
       const run: AskAllRun = {
         total: queue.length, done: 0, asked: 0, suggested: 0, verified: 0, costUsd: 0,
         estimateUsd: costs.every((c) => c !== null) ? costs.reduce<number>((sum, c) => sum + c!, 0) : null,
+        shownUsd: askAllShownCost(queue.map((q) => q.kind), model),
         abort: new AbortController(), promise: Promise.resolve(),
       };
       askAll = run;

@@ -150,6 +150,8 @@ export interface AskAllResult {
   stopped: boolean;
   /** One plain sentence when the queue gave up on repeated failures of the call; null otherwise. */
   problem: string | null;
+  /** The queue stopped because what it had cost passed twice the estimate its button showed. */
+  overspent: boolean;
 }
 
 export interface AppState {

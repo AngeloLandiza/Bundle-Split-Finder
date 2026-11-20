@@ -109,18 +109,20 @@ export async function researchQuestion(
     controller.abort();
   }, limits.timeLimitMs);
   const deadline = now() + limits.timeLimitMs;
+  // A limit is the research's own end, not a provider's failure and not the owner's Stop: it says so (reason 'limit'), so a queue can count it.
+  const limit = (message: string): ResearchSuggestion => notSuggested(message, { reason: 'limit', message });
   const stopped = (): ResearchSuggestion | null => {
-    if (timedOut || now() >= deadline) return notSuggested(`The research ran past its time limit of ${Math.round(limits.timeLimitMs / 1000)} seconds before an answer.`);
+    if (timedOut || now() >= deadline) return limit(`The research ran past its time limit of ${Math.round(limits.timeLimitMs / 1000)} seconds before an answer.`);
     if (opts.signal?.aborted) return notSuggested('Stopped before an answer.', { reason: 'aborted', message: 'The call to Claude was cancelled.' });
     return null;
   };
   const overLimit = (): ResearchSuggestion | null =>
     trace.toolCalls + trace.webSearches + trace.webFetches > limits.maxToolCalls
-      ? notSuggested(`The research reached its limit of ${limits.maxToolCalls} tool calls before an answer.`)
+      ? limit(`The research reached its limit of ${limits.maxToolCalls} tool calls before an answer.`)
       : trace.webSearches > limits.maxWebSearches
-        ? notSuggested(`The research reached its limit of ${limits.maxWebSearches} web searches before an answer.`)
+        ? limit(`The research reached its limit of ${limits.maxWebSearches} web searches before an answer.`)
         : trace.webFetches > limits.maxWebFetches
-          ? notSuggested(`The research reached its limit of ${limits.maxWebFetches} web fetches before an answer.`)
+          ? limit(`The research reached its limit of ${limits.maxWebFetches} web fetches before an answer.`)
           : null;
 
   try {
@@ -128,7 +130,7 @@ export async function researchQuestion(
     for (;;) {
       const halt = stopped();
       if (halt) return halt;
-      if (trace.requests >= limits.maxRequests) return notSuggested(`The research reached its limit of ${limits.maxRequests} requests before an answer.`);
+      if (trace.requests >= limits.maxRequests) return limit(`The research reached its limit of ${limits.maxRequests} requests before an answer.`);
 
       let turn;
       try {

@@ -43,10 +43,11 @@ export function questionCostLabel(kind: 'split' | 'match', model: string): strin
 }
 
 /**
- * What asking about all of these questions may cost: the sum of each one's estimate, rounded up, in cents under a dollar and in
- * whole dollars from a dollar ("about $3"). Null when there is nothing to ask or the model has no rate.
+ * What asking about all of these questions may cost, as the button says it: the sum of each one's estimate, rounded up to the
+ * cent under a dollar and to the whole dollar from a dollar. Null when there is nothing to ask or the model has no rate.
+ * The queue's spending cap is twice this number, so the cap is never below what the owner was told.
  */
-export function askAllCostLabel(kinds: readonly ('split' | 'match')[], model: string): string | null {
+export function askAllShownCost(kinds: readonly ('split' | 'match')[], model: string): number | null {
   if (kinds.length === 0) return null;
   let total = 0;
   for (const k of kinds) {
@@ -54,5 +55,12 @@ export function askAllCostLabel(kinds: readonly ('split' | 'match')[], model: st
     if (c === null) return null;
     total += c;
   }
-  return total >= 1 ? `about $${Math.ceil(Math.round(total * 1e6) / 1e6)}` : `about $${(centsOf(total) / 100).toFixed(2)}`;
+  return total >= 1 ? Math.ceil(Math.round(total * 1e6) / 1e6) : centsOf(total) / 100;
+}
+
+/** "about $3" or "about $0.09": the button's estimate in words. Null when there is nothing to ask or the model has no rate. */
+export function askAllCostLabel(kinds: readonly ('split' | 'match')[], model: string): string | null {
+  const shown = askAllShownCost(kinds, model);
+  if (shown === null) return null;
+  return shown >= 1 ? `about $${shown}` : `about $${shown.toFixed(2)}`;
 }

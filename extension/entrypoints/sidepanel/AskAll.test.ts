@@ -16,6 +16,7 @@ import type { AppState, AskAllResult, PanelReport, Reply, Request } from '../../
 import type { WorkerApi } from '../../lib/pageClient';
 import { ReviewTab } from './ReviewTab';
 import { askAllSentence } from './AskAll';
+import { keyQuoteOf } from './AiSuggestions';
 import { researchCostLabel } from '@core/research/eval';
 
 // Step 12, R3: the Review tab with Ask AI about all, the "AI suggestions" section and Approve all. Real questions of the validation replay.
@@ -66,6 +67,8 @@ const world = async () => {
   return { a: q(A, 1), b: q(B, 2), c: q(C, 3), d: q(D, 4), none: q(NO_READING, 5), match: q(MATCH, 6) };
 };
 const section = () => screen.getByRole('region', { name: /AI suggestions/ });
+/** The inline question of Approve all: its count is a figure in a span of its own, so it is read by its text, not by getByText. */
+const confirmQ = (): string | null => section().querySelector('.ai-confirm-q')?.textContent ?? null;
 const askAllButton = () => screen.getByRole('button', { name: /^(Ask AI about all|Asking…)/ });
 
 describe('the "AI suggestions" section', () => {
@@ -141,18 +144,78 @@ describe('the "AI suggestions" section', () => {
   });
 });
 
+describe('the key quote of a row', () => {
+  const q = (quote: string, names: boolean, label = 'Home Depot page') => ({ quote, sourceId: 's', label, url: 'https://www.homedepot.com/p/1', names });
+  it('is one that names the answer\'s models, the one naming the most of them, and of those the shortest', () => {
+    const quotes = [
+      q('18V 5-1/2" Circular Saw', false),
+      q('RYOBI PCL500B (item 317987588): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)', true, 'Home Depot search'),
+      q('Includes PCL500B and PCL525B.', true),
+      q('PCL525B', true),
+    ];
+    // Two models named by one quote beat one model named by a shorter quote.
+    expect(keyQuoteOf(quotes, ['PCL500B', 'PCL525B'])?.quote).toBe('Includes PCL500B and PCL525B.');
+    // With no models to count, a quote that names is still preferred, the shortest.
+    expect(keyQuoteOf(quotes)?.quote).toBe('PCL525B');
+    // A quote that names nothing is the key only when no quote names the answer.
+    expect(keyQuoteOf([q('first', false), q('second', false)])?.quote).toBe('first');
+    expect(keyQuoteOf([])).toBeUndefined();
+  });
+  it('is read case-blind, and a repeated model counts once', () => {
+    const quotes = [q('includes dck200d1p1 and dcf921b', true), q('DCK200D1P1', true)];
+    expect(keyQuoteOf(quotes, ['DCK200D1P1', 'DCF921B', 'DCF921B'])?.quote).toBe('includes dck200d1p1 and dcf921b');
+  });
+});
+
 describe('Approve all verified', () => {
-  it('is a secondary button in the section header that says how many; nothing is sent by it', async () => {
+  it('is a quiet text button at the section header\'s right that says how many, the count in the figure face; nothing is sent by it', async () => {
     const { a, b, c } = await world();
     const { calls } = setup(reportOf([a, b, c], [verifiedReading(a), verifiedReading(b), cannotTell(c)]));
     const button = within(section()).getByRole('button', { name: 'Approve all 2 verified' });
-    expect(button).toHaveClass('btn-secondary');
+    // Secondary: not the ink fill Accept all has, and not the bordered Ask AI about all.
+    expect(button).not.toHaveClass('btn-primary');
+    expect(button).not.toHaveClass('btn-secondary');
+    expect(button.querySelector('.figure')).toHaveTextContent('2');
+    expect(within(section()).getByRole('heading')).toHaveTextContent('AI suggestions · 2');
+    // In the header, after the title.
+    expect(button.parentElement).toBe(within(section()).getByRole('heading').parentElement);
     await userEvent.click(button);
     // A question first, inline: "Approve 2 AI answers?" with Approve and Cancel. Still nothing sent.
-    expect(within(section()).getByText('Approve 2 AI answers?')).toBeVisible();
+    expect(confirmQ()).toBe('Approve 2 AI answers?');
+    expect(section().querySelector('.ai-confirm-q .figure')).toHaveTextContent('2');
     expect(within(section()).getByRole('button', { name: 'Approve' })).toHaveFocus();
     expect(within(section()).getByRole('button', { name: 'Cancel' })).toBeVisible();
     expect(calls).toEqual([]);
+  });
+
+  it('Approve applies exactly the rows the question was asked about: a row verified meanwhile is not in it, and is still a row', async () => {
+    const { a, b, c } = await world();
+    const ui = setup(reportOf([a, b, c], [verifiedReading(a), verifiedReading(b)]));
+    await userEvent.click(within(section()).getByRole('button', { name: 'Approve all 2 verified' }));
+    expect(confirmQ()).toBe('Approve 2 AI answers?');
+    // While the question is open, a third suggestion comes back verified.
+    ui.rerender({ report: reportOf([a, b, c], [verifiedReading(a), verifiedReading(b), verifiedReading(c)]) });
+    expect(within(section()).getByRole('heading')).toHaveTextContent('AI suggestions · 3');
+    expect(confirmQ()).toBe('Approve 2 AI answers?');
+    await userEvent.click(within(section()).getByRole('button', { name: 'Approve' }));
+    await screen.findByText('Approved 2 of 2.');
+    expect(ui.calls).toEqual([
+      { type: 'answerReview', id: a.id, answer: { choice: 0, seen: reviewSignature(a) }, aiSuggestion: true },
+      { type: 'answerReview', id: b.id, answer: { choice: 0, seen: reviewSignature(b) }, aiSuggestion: true },
+    ]);
+    // The one that came meanwhile was not approved: it is still there to be.
+    expect(within(section()).getByRole('button', { name: 'Approve all 1 verified' })).toBeVisible();
+  });
+
+  it('a row answered by the owner while the question is open is not approved by the press as if it were open: the worker refuses it and it is counted', async () => {
+    const { a, b } = await world();
+    const ui = setup(reportOf([a, b], [verifiedReading(a), verifiedReading(b)]), {
+      send: async (r) => (r.type === 'answerReview' && r.id === a.id ? { ok: false, error: 'That question was already answered.' } : { ok: true, data: null }),
+    });
+    await userEvent.click(within(section()).getByRole('button', { name: 'Approve all 2 verified' }));
+    await userEvent.click(within(section()).getByRole('button', { name: 'Approve' }));
+    await screen.findByText('Approved 1 of 2. 1 was no longer open.');
+    expect(ui.calls).toHaveLength(2);
   });
 
   it('Cancel sends nothing and puts the button back, with focus', async () => {
@@ -161,7 +224,7 @@ describe('Approve all verified', () => {
     await userEvent.click(within(section()).getByRole('button', { name: 'Approve all 2 verified' }));
     await userEvent.click(within(section()).getByRole('button', { name: 'Cancel' }));
     expect(calls).toEqual([]);
-    expect(within(section()).queryByText('Approve 2 AI answers?')).toBeNull();
+    expect(confirmQ()).toBeNull();
     expect(within(section()).getByRole('button', { name: 'Approve all 2 verified' })).toHaveFocus();
   });
 
@@ -229,13 +292,13 @@ describe('Approve all verified', () => {
     const { a, b } = await world();
     const ui = setup(reportOf([a, b], [verifiedReading(a), verifiedReading(b)]));
     await userEvent.click(within(section()).getByRole('button', { name: 'Approve all 2 verified' }));
-    expect(within(section()).getByText('Approve 2 AI answers?')).toBeVisible();
+    expect(confirmQ()).toBe('Approve 2 AI answers?');
     ui.rerender({ state: state({ scanRunning: true }) });
-    expect(within(section()).queryByText('Approve 2 AI answers?')).toBeNull();
+    expect(confirmQ()).toBeNull();
     const button = within(section()).getByRole('button', { name: 'Approve all 2 verified' });
     expect(button).toHaveAttribute('aria-disabled', 'true');
     await userEvent.click(button);
-    expect(within(section()).queryByText('Approve 2 AI answers?')).toBeNull();
+    expect(confirmQ()).toBeNull();
     expect(ui.calls).toEqual([]);
   });
 
@@ -266,15 +329,31 @@ describe('Accept all stays for questions with no suggestion', () => {
 });
 
 describe('Ask AI about all', () => {
-  it('sits beside Accept all, as a secondary button that says how many and about what it costs', async () => {
+  it('is a secondary button that says how many and about what it costs: the words in the word face, only the price a figure', async () => {
     const { a, b, c, d } = await world();
     const ONE = 'The model number reads as one reading.';
     setup(reportOf([a, b, c, d].map((q) => ({ ...q, reason: ONE }))));
     const button = askAllButton();
     expect(button).toHaveClass('btn-secondary');
     expect(button).toHaveAccessibleName(/^Ask AI about all 4 · about \$0\.\d\d$/);
-    expect(button.parentElement).toBe(screen.getByRole('button', { name: 'Accept all 4' }).parentElement);
-    expect(button.querySelectorAll('.figure')).toHaveLength(2);
+    // A real space on each side of the middot, and the price alone in the figure face.
+    expect(button.textContent).toMatch(/^Ask AI about all 4 · about \$0\.\d\d$/);
+    const figures = button.querySelectorAll('.figure');
+    expect(figures).toHaveLength(1);
+    expect(figures[0]!.textContent).toMatch(/^\$0\.\d\d$/);
+  });
+
+  it('Review reads in this order at one reading: the Ask AI row, the AI suggestions with their rows, the Accept all block, then the questions', async () => {
+    const { a, b, c, d, none } = await world();
+    const ONE = 'The model number reads as one reading.';
+    // Two questions for Accept all, two verified suggestions, and one question with no suggestion (so Ask AI about all has three to ask).
+    const [x, y] = [c, d].map((q) => ({ ...q, reason: ONE }));
+    setup(reportOf([a, b, x!, y!, none], [verifiedReading(a), verifiedReading(b)]));
+    const order = [askAllButton(), screen.getByRole('heading', { name: /^AI suggestions/ }), screen.getByRole('heading', { name: /bundles have one suggested answer/ }), screen.getByText(/^1 of 3$/)];
+    for (let i = 0; i + 1 < order.length; i++) expect(order[i]!.compareDocumentPosition(order[i + 1]!) & Node.DOCUMENT_POSITION_FOLLOWING, `${i}`).toBeTruthy();
+    // The Approve all button is in the section's own header, apart from the Ask AI button.
+    expect(within(section()).getByRole('button', { name: 'Approve all 2 verified' })).toBeVisible();
+    expect(askAllButton().parentElement).not.toBe(section());
   });
 
   it('is alone at the top when there is no Accept all, and counts only what can be asked: a match question with no listing is not', async () => {
@@ -339,19 +418,47 @@ describe('Ask AI about all', () => {
     expect(calls).toEqual([]);
   });
 
-  it('says how it ended, in one sentence', async () => {
+  it('says how it ended, in one sentence under its button, in the Ask AI row', async () => {
     const { a, b } = await world();
-    const result: AskAllResult = { total: 26, asked: 26, suggested: 24, verified: 18, costUsd: 0.52, stopped: false, problem: null };
+    const result: AskAllResult = { total: 26, asked: 26, suggested: 24, verified: 18, costUsd: 0.52, stopped: false, problem: null, overspent: false };
     setup(reportOf([a, b]), { state: state({ askAllResult: result }) });
-    expect(screen.getByRole('status', { name: '' })).toHaveTextContent('Asked 26 questions: 18 verified, 8 left for you. Cost $0.52.');
+    const line = screen.getByRole('status', { name: '' });
+    expect(line).toHaveTextContent('Asked 26 questions: 18 verified, 8 left for you. Cost $0.52.');
+    expect(line.parentElement).toBe(askAllButton().parentElement);
+    expect(line.nextElementSibling).toBeNull();
+  });
+
+  it('the sentence goes away once the section shows the results; a stop the section cannot explain stays', async () => {
+    const { a, b, c } = await world();
+    const done: AskAllResult = { total: 3, asked: 3, suggested: 2, verified: 2, costUsd: 0.05, stopped: false, problem: null, overspent: false };
+    const suggestions = [verifiedReading(a), verifiedReading(b)];
+    setup(reportOf([a, b, c], suggestions), { state: state({ askAllResult: done }) });
+    expect(screen.queryByText(/^Asked 3 questions/)).toBeNull();
+    expect(screen.queryByRole('status', { name: '' })).toBeNull();
+    cleanup();
+    setup(reportOf([a, b, c], suggestions), { state: state({ askAllResult: { ...done, stopped: true } }) });
+    expect(screen.queryByText(/^Stopped after/)).toBeNull();
+    cleanup();
+    setup(reportOf([a, b, c], suggestions), { state: state({ askAllResult: { ...done, overspent: true, costUsd: 0.31 } }) });
+    expect(screen.getByText('Stopped: asking cost more than expected ($0.31). Nothing was applied.')).toBeVisible();
+    cleanup();
+    setup(reportOf([a, b, c], suggestions), { state: state({ askAllResult: { ...done, problem: 'Claude refused the API key (HTTP 401).' } }) });
+    expect(screen.getByText(/^Asking stopped after 3 of 3: Claude refused/)).toBeVisible();
+  });
+
+  it('a result with no section to show it keeps its sentence, even for a queue that stopped on the owner\'s Stop', async () => {
+    const { a, b } = await world();
+    setup(reportOf([a, b], [cannotTell(a)]), { state: state({ askAllResult: { total: 4, asked: 2, suggested: 1, verified: 0, costUsd: 0.1, stopped: true, problem: null, overspent: false } }) });
+    expect(screen.getByRole('status', { name: '' })).toHaveTextContent('Stopped after 2 of 4: 0 verified. Cost $0.10.');
   });
 
   it('the sentence says stopped, and why a queue gave up', () => {
-    const base: AskAllResult = { total: 26, asked: 7, suggested: 5, verified: 4, costUsd: 0.41, stopped: true, problem: null };
+    const base: AskAllResult = { total: 26, asked: 7, suggested: 5, verified: 4, costUsd: 0.41, stopped: true, problem: null, overspent: false };
     expect(askAllSentence(base)).toBe('Stopped after 7 of 26: 4 verified. Cost $0.41.');
     expect(askAllSentence({ ...base, asked: 3, costUsd: 0, problem: 'Claude refused the API key (HTTP 401).' })).toBe('Asking stopped after 3 of 26: Claude refused the API key (HTTP 401).');
     expect(askAllSentence({ ...base, stopped: false, asked: 1, total: 1, verified: 1, suggested: 1, costUsd: 0.01 })).toBe('Asked 1 question: 1 verified, 0 left for you. Cost $0.01.');
     expect(askAllSentence({ ...base, stopped: false, asked: 0, total: 3, verified: 0, suggested: 0, costUsd: 0 })).toBe('Nothing was asked.');
+    expect(askAllSentence({ ...base, stopped: false, overspent: true, costUsd: 0.527 })).toBe('Stopped: asking cost more than expected ($0.53). Nothing was applied.');
   });
 });
 
@@ -399,8 +506,22 @@ describe('the styles of the section', () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
     expect(css).not.toMatch(/box-shadow|gradient|border-left/);
   });
-  it('lets Accept all and Ask AI about all wrap instead of running past a narrow panel', () => {
-    const accept = readFileSync(join(__dirname, 'AcceptSuggested.css'), 'utf8');
-    expect(accept.slice(accept.indexOf('.accept-actions {'), accept.indexOf('}', accept.indexOf('.accept-actions {')))).toMatch(/flex-wrap: wrap/);
+  it('Approve all is a text button with no border or fill; the confirmation wraps instead of running past a narrow panel', () => {
+    expect(rule('.ai-approve')).toMatch(/border: 0/);
+    expect(rule('.ai-approve')).toMatch(/background: transparent/);
+    expect(rule('.ai-approve')).toMatch(/color: var\(--ink\)/);
+    expect(rule('.ai-confirm')).toMatch(/flex-wrap: wrap/);
+  });
+  it('an opened suggestion puts each quote\'s source on the quote\'s own line, not a line of its own', () => {
+    const block = readFileSync(join(__dirname, 'AiSuggestion.css'), 'utf8');
+    const li = block.slice(block.indexOf('.ai-quotes li {'), block.indexOf('}', block.indexOf('.ai-quotes li {')));
+    expect(li).toMatch(/display: flex/);
+    expect(li).toMatch(/align-items: last baseline/);
+    const source = block.slice(block.indexOf('.ai-quotes .ai-source,'), block.indexOf('}', block.indexOf('.ai-quotes .ai-source,')));
+    expect(source).toMatch(/flex: none/);
+  });
+  it('the Ask AI row sentence is ink-2, 13px', () => {
+    expect(rule('.ask-all-note')).toMatch(/color: var\(--ink-2\)/);
+    expect(rule('.ask-all-note')).toMatch(/font-size: 13px/);
   });
 });

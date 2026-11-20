@@ -97,7 +97,8 @@ export type NotJudgedReason =
   | 'refusal' // the model declined
   | 'max_tokens' // the answer was cut off
   | 'unexpected_stop'
-  | 'no_answer'; // no text in the answer
+  | 'no_answer' // no text in the answer
+  | 'limit'; // research only: it ran past its time, tool-call, web-search or request limit before an answer
 
 export interface NotJudged {
   reason: NotJudgedReason;
