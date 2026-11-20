@@ -78,6 +78,10 @@ export interface ReplayServer {
   /** Step 10: calls the fake model answered, and how many came with the wrong key. */
   modelCalls: number;
   modelBadKeys: number;
+  /** Step 11: the user message of every Ask AI call the fake model received, in order. */
+  assistCalls: string[];
+  /** Step 11: what the fake model answers an Ask AI call (the answer object in the review assistant's schema), from the call's user message. Cleared by reset(). */
+  setAssistReply(reply: ((user: string) => unknown) | null): void;
   /** These ids are answered 403 with the recorded refused page, until reset(). '*' refuses every id and every /s/ search. */
   refuse(...itemIds: string[]): void;
   /** Test-only: the recorded page of `recordedId` is served for item `itemId`, until reset(). */
@@ -103,6 +107,8 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   let ebayItems: string[] = [];
   let modelCalls = 0;
   let modelBadKeys = 0;
+  let assistCalls: string[] = [];
+  let assistReply: ((user: string) => unknown) | null = null;
   const refused = new Set<string>();
   const servedAs = new Map<string, string>();
   let searchDelay = 0;
@@ -148,13 +154,37 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
         // The listing judge's model: a canned answer per recorded listing (scripts/ebay-replay.ts), never computed.
         const chunks: Buffer[] = [];
         for await (const chunk of req) chunks.push(chunk as Buffer);
+        const sent = JSON.parse(Buffer.concat(chunks).toString('utf8')) as { system?: unknown; messages?: { content?: unknown }[] };
+        // Step 11, Ask AI: the review assistant's prompt. The test says what the model answers (setAssistReply); with no script it is refused.
+        if (typeof sent.system === 'string' && sent.system.startsWith('You help the owner of a small reselling business answer one review question')) {
+          const user = String(sent.messages?.[0]?.content ?? '');
+          assistCalls.push(user);
+          if (req.headers['x-api-key'] !== ANTHROPIC_KEY) {
+            modelBadKeys += 1;
+            res.writeHead(401, headers).end(JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } }));
+            return;
+          }
+          const answer = assistReply?.(user);
+          if (answer === undefined) {
+            res.writeHead(400, headers).end(JSON.stringify({ type: 'error', error: { type: 'invalid_request_error', message: 'No scripted answer.' } }));
+            return;
+          }
+          res.writeHead(200, headers).end(
+            JSON.stringify({
+              id: 'msg_replay', type: 'message', role: 'assistant', model: 'replay', stop_reason: 'end_turn', stop_details: null,
+              content: [{ type: 'text', text: JSON.stringify(answer) }],
+              usage: { input_tokens: 1800, output_tokens: 300 },
+            }),
+          );
+          return;
+        }
         modelCalls += 1;
         if (req.headers['x-api-key'] !== ANTHROPIC_KEY) {
           modelBadKeys += 1;
           res.writeHead(401, headers).end(JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } }));
           return;
         }
-        const answered = anthropicAnswer(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+        const answered = anthropicAnswer(sent);
         res.writeHead(answered.status, headers).end(JSON.stringify(answered.body));
       } else if (req.method !== 'GET') {
         res.writeHead(405, headers).end('{}');
@@ -228,6 +258,12 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     get modelBadKeys() {
       return modelBadKeys;
     },
+    get assistCalls() {
+      return assistCalls;
+    },
+    setAssistReply(reply) {
+      assistReply = reply;
+    },
     refuse(...ids) {
       for (const id of ids) refused.add(id);
     },
@@ -254,6 +290,8 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       ebayItems = [];
       modelCalls = 0;
       modelBadKeys = 0;
+      assistCalls = [];
+      assistReply = null;
       refused.clear();
       servedAs.clear();
       for (const k of Object.keys(counts)) delete counts[k];

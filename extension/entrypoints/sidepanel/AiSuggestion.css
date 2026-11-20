@@ -80,7 +80,7 @@
   border: 0;
   background: transparent;
   color: var(--ink);
-  padding: 0 8px;
+  padding: 0 4px 0 0;
 }
 .btn.ai-ask .figure {
   font-weight: 400;
