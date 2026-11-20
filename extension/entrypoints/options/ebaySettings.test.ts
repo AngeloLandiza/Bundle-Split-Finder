@@ -185,6 +185,9 @@ describe('Settings: Ask AI after each scan (step 12)', () => {
     await open(stateWith({ hasAnthropicKey: true }));
     expect(box()).not.toBeChecked();
     expect(screen.getByText(/It only drafts: nothing is answered until you approve it in Review\./)).toBeVisible();
+    // The checkbox says whether it is on; the label does not say it again.
+    expect(screen.queryByText(/off until you turn it on/)).toBeNull();
+    expect(box().closest('label')).toHaveTextContent(/^Ask AI after each scan$/);
   });
 
   it('is on when the worker says so, and a press saves the change at once, in one message', async () => {

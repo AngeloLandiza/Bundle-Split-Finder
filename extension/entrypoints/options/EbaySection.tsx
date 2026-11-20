@@ -282,9 +282,7 @@ export function ListingCheckSection({ api, state }: { api: WorkerApi; state: App
       <div>
         <label className="choice">
           <input type="checkbox" checked={askAfter} onChange={(e) => void saveAskAfter(e.target.checked)} />
-          <span>
-            Ask AI after each scan <span className="hint">off until you turn it on</span>
-          </span>
+          <span>Ask AI after each scan</span>
         </label>
         <p className="note">
           When a scan has finished, the AI is asked about the Review questions it opened and any still waiting, in the background. It only drafts: nothing is answered until you approve it in Review.
