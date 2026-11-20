@@ -41,10 +41,12 @@ const SIBLING_ROW = 'RYOBI PCL500B-PCL525B (item 324616618): ONE+ 18V Cordless 2
 const RIGHT: ResearchPart[] = [
   { model: 'PCL500B', qty: 1, quotes: [
     { quote: PCL500B_ROW, sourceId: 'hd-search:ryobi-pcl500' }, { quote: '18V 5-1/2" Circular Saw', sourceId: 'bundle' },
+    { quote: '18V ONE+ 5-1/2 in. Circular Saw', sourceId: 'hd-page:328690510' },
     { quote: '18T Carbide Tipped Blade', sourceId: 'bundle' }, { quote: '(2) Hex Wrenches', sourceId: 'bundle' }, { quote: SIBLING_ROW, sourceId: 'hd-search:ryobi-pcl500' },
   ] },
   { model: 'PCL525B', qty: 1, quotes: [
     { quote: PCL525B_ROW, sourceId: 'hd-search:ryobi-jig-saw-tool-only' }, { quote: '18V Jig Saw', sourceId: 'bundle' },
+    { quote: '18V ONE+ Jig Saw', sourceId: 'hd-page:328690510' },
     { quote: 'Non-Marring Shoe', sourceId: 'bundle' }, { quote: 'T-Shank Wood Cutting Blade', sourceId: 'bundle' }, { quote: SIBLING_ROW, sourceId: 'hd-search:ryobi-pcl500' },
   ] },
 ];

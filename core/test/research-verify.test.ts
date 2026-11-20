@@ -15,6 +15,9 @@ import { pcl500525sbLedger, researchCase, rowLine } from './research-world';
 
 const CIRC_ITEM = '18V 5-1/2" Circular Saw';
 const JIG_ITEM = '18V Jig Saw';
+// The page's highlight "Includes: 18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw": two items, each to be accounted for.
+const CIRC_HALF = '18V ONE+ 5-1/2 in. Circular Saw';
+const JIG_HALF = '18V ONE+ Jig Saw';
 
 function rightParts(ledger: ResearchLedgerEntry[]): ResearchPart[] {
   return [
@@ -22,6 +25,7 @@ function rightParts(ledger: ResearchLedgerEntry[]): ResearchPart[] {
       model: 'PCL500B', qty: 1, quotes: [
         { quote: rowLine(ledger, 'hd-search:1', 'PCL500B'), sourceId: 'hd-search:1' },
         { quote: CIRC_ITEM, sourceId: 'hd-page:328690510' },
+        { quote: CIRC_HALF, sourceId: 'hd-page:328690510' },
         { quote: '18T Carbide Tipped Blade', sourceId: 'hd-page:328690510' },
         { quote: '(2) Hex Wrenches', sourceId: 'bundle' },
         { quote: rowLine(ledger, 'hd-search:1', 'PCL500B-PCL525B'), sourceId: 'hd-search:1' },
@@ -31,6 +35,7 @@ function rightParts(ledger: ResearchLedgerEntry[]): ResearchPart[] {
       model: 'PCL525B', qty: 1, quotes: [
         { quote: rowLine(ledger, 'hd-search:2', 'PCL525B'), sourceId: 'hd-search:2' },
         { quote: JIG_ITEM, sourceId: 'hd-page:328690510' },
+        { quote: JIG_HALF, sourceId: 'hd-page:328690510' },
         { quote: 'Non-Marring Shoe', sourceId: 'hd-page:328690510' },
         { quote: 'T-Shank Wood Cutting Blade', sourceId: 'hd-page:328690510' },
         { quote: rowLine(ledger, 'hd-search:1', 'PCL500B-PCL525B'), sourceId: 'hd-search:1' },

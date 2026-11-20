@@ -156,9 +156,9 @@ function productOf(titles: string[], kitFlag: boolean): Product {
 
 // --- Includes lists -------------------------------------------------------------------------------
 
-interface Item {
-  /** Which Includes bullet the item is on. */
-  list: number;
+export interface Item {
+  /** The Includes lists the item is on, first where it is first named: a product the page names twice is one item on both. */
+  lists: number[];
   model: string | null;
   name: string;
   qty: number;
@@ -180,11 +180,28 @@ function includesText(l: LedgerLine): string | null {
 // Two lists in one bullet ("... and Accessories : Includes: (29) Impact Driving Bits ..."), as kitContents splits them.
 const NEXT_LIST = /\s:\s*(?=includes\s*:)/i;
 
+const JOIN = /\s+(?:and|&)\s+/i;
+
+/**
+ * The products an Includes item names: two or more when it joins products with "and" or "&" ("18V ONE+ 5-1/2 in.
+ * Circular Saw and 18V ONE+ Jig Saw", a highlight of 328690510), each piece then to be accounted for. Only when every
+ * piece is a product by its own words (a kind word in each); otherwise the item is one ("1/4" and 3/8" Extended Reach
+ * Ratchets": a size before the "and"; "Black Oxide Drill and Drive Bits": no product after it). An item with a model
+ * number, or a count other than 1, is one: which piece the model or the count belongs to would be a guess.
+ */
+function pieces(name: string, model: string | null, qty: number): string[] {
+  if (model !== null || qty !== 1) return [name];
+  const parts = name.split(JOIN).map((p) => p.trim());
+  return parts.length > 1 && parts.every((p) => kindsOf(p).length > 0) ? parts : [name];
+}
+
 /**
  * The items of the Includes lists of some entries, each list read once however many entries hold it. A
  * bullet holding two lists ("... : Includes: ...") is two lists: a quote that spans both claims nothing.
+ * An item named again on another list (a highlight that repeats an Includes bullet: the same model number,
+ * or the same words and count) is the same item, on both lists, and is accounted for once.
  */
-function includesItems(brand: string, entries: ResearchLedgerEntry[]): Item[] {
+export function includesItems(brand: string, entries: ResearchLedgerEntry[]): Item[] {
   const seen = new Set<string>();
   const out: Item[] = [];
   let list = 0;
@@ -200,10 +217,19 @@ function includesItems(brand: string, entries: ResearchLedgerEntry[]): Item[] {
         for (const it of items) {
           // parseIncludes leaves a joining "and" as its own piece before "(n)" ("Charger, and (2) Tool Bags" gives "and";
           // "(29) Impact Driving Bits And (1) ..." gives "Impact Driving Bits And", recorded on 345177929): not an item.
-          const name = it.name.replace(/^(and|&)\s+/i, '').replace(/\s+(and|&)$/i, '').trim();
-          if (name === '' || /^(and|&)$/i.test(name)) continue;
-          const kinds = kindsOf(name);
-          out.push({ list, model: it.model, name, qty: it.qty, kinds, product: it.model !== null || kinds.length > 0 });
+          const whole = it.name.replace(/^(and|&)\s+/i, '').replace(/\s+(and|&)$/i, '').trim();
+          if (whole === '' || /^(and|&)$/i.test(whole)) continue;
+          for (const name of pieces(whole, it.model, it.qty)) {
+            const again = out.find((o) => !o.lists.includes(list) && o.qty === it.qty && (it.model !== null
+              ? o.model !== null && sameModel(brand, o.model, it.model)
+              : o.model === null && normaliseText(o.name) === normaliseText(name)));
+            if (again) {
+              again.lists.push(list);
+              continue;
+            }
+            const kinds = kindsOf(name);
+            out.push({ lists: [list], model: it.model, name, qty: it.qty, kinds, product: it.model !== null || kinds.length > 0 });
+          }
         }
         list++;
       }
@@ -225,9 +251,25 @@ function itemBatteries(it: Item): number {
   return it.qty * (lead ? Number(lead[1]) : 1);
 }
 
+/**
+ * The batteries a kit's own page lists, or null when its lists disagree. Battery items that all carry a model
+ * number, none on two lists, are counted together (two lists may name different batteries). Otherwise each list
+ * that names batteries counts them on its own, and the lists must agree: a highlight's "2 Batteries" and the
+ * Includes bullet's PBP005 and PBP002 are the same two batteries (317987591), not four.
+ */
+function pageBatteries(contents: Item[]): number | null {
+  const batteries = contents.filter((c) => c.kinds.includes('battery'));
+  if (batteries.length === 0) return 0;
+  if (batteries.every((c) => c.model !== null && c.lists.length === 1)) return batteries.reduce((n, c) => n + itemBatteries(c), 0);
+  const perList = [...new Set(batteries.flatMap((c) => c.lists))]
+    .map((l) => batteries.filter((c) => c.lists.includes(l)).reduce((n, c) => n + itemBatteries(c), 0));
+  return perList.every((n) => n === perList[0]) ? perList[0]! : null;
+}
+
 /** A product's battery count: a kit's own page (its battery items) first, else its names (kitBatteryCount); a lone battery is 1 (or its pack). */
 function partBatteries(p: { product: Product; contents: Item[] }): number | null {
-  const fromPage = p.contents.filter((c) => c.kinds.includes('battery')).reduce((n, c) => n + itemBatteries(c), 0);
+  const fromPage = pageBatteries(p.contents);
+  if (fromPage === null) return null;
   if (fromPage > 0) return fromPage;
   if (p.product.battery === false) return 0;
   const named = p.product.titles.map((t) => kitBatteryCount(t));
@@ -451,8 +493,9 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
  */
 function claimedBy(quote: FoundQuote, items: Item[]): { items: number[]; spans: boolean } {
   const inside = items.map((it, i) => ({ i, it, name: normaliseText(it.name) })).filter((x) => x.name !== '' && holds(quote.norm, x.name));
-  const lists = new Set(inside.map((x) => x.it.list));
-  if (lists.size > 1) return { items: [], spans: true };
+  // Within one list: some list holds every item the quote names (an item named on two lists is on both).
+  const lists = [...new Set(inside.flatMap((x) => x.it.lists))];
+  if (inside.length > 0 && !lists.some((l) => inside.every((x) => x.it.lists.includes(l)))) return { items: [], spans: true };
   // An item whose name the quote holds only inside a longer item's name ("2 in. impact drive bits" in "3 1/2 in. impact
   // drive bits") is not pointed at by it: the longer names are taken out of the quote before the shorter is looked for.
   const pointed = inside.filter((x) => {
@@ -562,9 +605,9 @@ function checkIncludes(items: Item[], parts: PartCheck[], brand: string, tie: Ti
     }
     if (p.product.kit) continue;
     // A part that is not a kit is, on each list, as many of the list's products as its quantity says.
-    const lists = new Set(items.map((it) => it.list));
+    const lists = new Set(items.flatMap((it) => it.lists));
     for (const l of lists) {
-      const n = items.filter((it, i) => it.list === l && it.product && owners[i]!.has(p)).reduce((s, it) => s + it.qty, 0);
+      const n = items.filter((it, i) => it.lists.includes(l) && it.product && owners[i]!.has(p)).reduce((s, it) => s + it.qty, 0);
       if (n > 0 && n !== p.qty) problems.push(`${p.model} is given quantity ${p.qty}; the Includes items it accounts for count ${n}.`);
     }
   }

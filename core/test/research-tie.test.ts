@@ -21,10 +21,12 @@ function parts(ledger: ResearchLedgerEntry[], jig = 'PCL525B', tie = true): Rese
   return [
     { model: 'PCL500B', qty: 1, quotes: [
       { quote: rowLine(ledger, 'hd-search:1', 'PCL500B'), sourceId: 'hd-search:1' }, { quote: '18V 5-1/2" Circular Saw', sourceId: 'bundle' },
+      { quote: '18V ONE+ 5-1/2 in. Circular Saw', sourceId: 'hd-page:328690510' },
       { quote: '18T Carbide Tipped Blade', sourceId: 'bundle' }, { quote: '(2) Hex Wrenches', sourceId: 'bundle' }, ...sibling,
     ] },
     { model: jig, qty: 1, quotes: [
       { quote: rowLine(ledger, 'hd-search:2', jig), sourceId: 'hd-search:2' }, { quote: '18V Jig Saw', sourceId: 'bundle' },
+      { quote: '18V ONE+ Jig Saw', sourceId: 'hd-page:328690510' },
       { quote: 'Non-Marring Shoe', sourceId: 'bundle' }, { quote: 'T-Shank Wood Cutting Blade', sourceId: 'bundle' }, ...sibling,
     ] },
   ];
@@ -55,9 +57,14 @@ describe('a word-only Includes item needs its model tied to the bundle', () => {
     expect(tied).toMatchObject({ status: 'verified', answer: { parts: ['PCL500B', 'PCL525B'] } });
     expect(reasonsOf(verifyResearch(answer(parts(ledger, 'PCL525B', false)), q, ledger, catalog))).toEqual([
       'Several RYOBI circular saws fit "18V 5-1/2" Circular Saw"; nothing ties PCL500B to this bundle.',
+      'Several RYOBI circular saws fit "18V ONE+ 5-1/2 in. Circular Saw"; nothing ties PCL500B to this bundle.',
       'Several RYOBI jig saws fit "18V Jig Saw"; nothing ties PCL525B to this bundle.',
+      'Several RYOBI jig saws fit "18V ONE+ Jig Saw"; nothing ties PCL525B to this bundle.',
       '"18V 5-1/2" Circular Saw" on the bundle\'s Includes list is left over: no part accounts for it.',
       '"18V Jig Saw" on the bundle\'s Includes list is left over: no part accounts for it.',
+      // The page's highlight, "Includes: 18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw", is two items too.
+      '"18V ONE+ 5-1/2 in. Circular Saw" on the bundle\'s Includes list is left over: no part accounts for it.',
+      '"18V ONE+ Jig Saw" on the bundle\'s Includes list is left over: no part accounts for it.',
     ]);
   });
 
