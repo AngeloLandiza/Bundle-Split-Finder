@@ -9,3 +9,5 @@ export * from './verify';
 export * from './suggest';
 export * from './claude';
 export * from './eval';
+export * from './cost';
+export * from './stored';
