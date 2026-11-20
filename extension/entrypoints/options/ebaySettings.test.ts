@@ -116,8 +116,8 @@ describe('Settings: the listing check', () => {
     expect(screen.getByTestId('anthropic-key-result')).toHaveTextContent('Anthropic key saved.');
     expect(screen.getByRole('button', { name: 'Replace key' })).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Add key' })).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'Remove key' }));
-    await user.click(screen.getByRole('button', { name: 'Yes, remove key' }));
+    await user.click(screen.getByRole('button', { name: 'Remove Anthropic key' }));
+    await user.click(screen.getByRole('button', { name: 'Yes, remove Anthropic key' }));
     expect(sent('forgetAnthropicKey')).toHaveLength(1);
   });
 

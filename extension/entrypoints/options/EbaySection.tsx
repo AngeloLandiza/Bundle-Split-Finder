@@ -210,7 +210,7 @@ export function ListingCheckSection({ api, state }: { api: WorkerApi; state: App
           <button type="button" className="btn" disabled={saving || !hasText} onClick={saveKey}>
             {saving ? 'Saving' : saved.hasAnthropicKey ? 'Replace key' : 'Add key'}
           </button>
-          {saved.hasAnthropicKey ? <Confirm label="Remove key" question="Remove the saved Anthropic key from this browser?" yes="Yes, remove key" danger onYes={forgetKey} /> : null}
+          {saved.hasAnthropicKey ? <Confirm label="Remove Anthropic key" question="Remove the saved Anthropic key from this browser?" yes="Yes, remove Anthropic key" danger onYes={forgetKey} /> : null}
         </div>
       </div>
       <ResultLine result={shownKey} testId="anthropic-key-result" />

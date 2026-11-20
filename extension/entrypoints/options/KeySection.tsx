@@ -107,9 +107,9 @@ export function KeySection({ api, state }: { api: WorkerApi; state: AppState }) 
         </button>
         {state.hasKey ? (
           <Confirm
-            label="Remove key"
+            label="Remove SerpApi key"
             question="Remove the saved key from this browser?"
-            yes="Yes, remove key"
+            yes="Yes, remove SerpApi key"
             danger
             onYes={forget}
           />

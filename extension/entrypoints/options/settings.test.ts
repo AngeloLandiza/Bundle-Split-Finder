@@ -64,12 +64,12 @@ const keyLine = () => screen.getByTestId('key-result');
 const forecast = () => screen.getByTestId('forecast');
 
 describe('SerpApi key', () => {
-  it('no key: empty field, Check key waits for a key, no Remove key', async () => {
+  it('no key: empty field, Check key waits for a key, no Remove SerpApi key', async () => {
     await open(stateWith());
     expect(keyField().value).toBe('');
     expect(keyField().type).toBe('password');
     expect(screen.getByRole('button', { name: 'Check key' })).toBeDisabled();
-    expect(screen.queryByRole('button', { name: 'Remove key' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Remove SerpApi key' })).toBeNull();
   });
 
   it('while checking: the button is disabled and reads Checking', async () => {
@@ -113,13 +113,13 @@ describe('SerpApi key', () => {
     await waitFor(() => expect(keyLine().textContent).toBe('SerpApi could not be reached. Check the connection, then try again.'));
   });
 
-  it('a saved key is never shown back; Remove key asks once', async () => {
+  it('a saved key is never shown back; Remove SerpApi key asks once', async () => {
     const { user, send } = await open(stateWith({ hasKey: true, account: ACCOUNT }));
     expect(keyField().value).toBe('');
     expect(keyField().placeholder).toBe('Key saved');
-    await user.click(screen.getByRole('button', { name: 'Remove key' }));
+    await user.click(screen.getByRole('button', { name: 'Remove SerpApi key' }));
     expect(send).not.toHaveBeenCalledWith({ type: 'forgetKey' });
-    await user.click(screen.getByRole('button', { name: 'Yes, remove key' }));
+    await user.click(screen.getByRole('button', { name: 'Yes, remove SerpApi key' }));
     expect(send).toHaveBeenCalledWith({ type: 'forgetKey' });
   });
 });
@@ -266,7 +266,7 @@ describe('Saving waits for blur or Enter', () => {
 
 describe('Confirmations', () => {
   it.each([
-    ['Remove key', 'Yes, remove key', { hasKey: true, account: ACCOUNT }],
+    ['Remove SerpApi key', 'Yes, remove SerpApi key', { hasKey: true, account: ACCOUNT }],
     ['Clear saved searches', 'Yes, clear', {}],
   ])('%s: Escape, Cancel and Yes return focus to the opener', async (opener, yes, over) => {
     const { user } = await open(stateWith(over));
