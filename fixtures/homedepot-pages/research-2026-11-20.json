@@ -1,0 +1,1449 @@
+{
+ "about": "Home Depot product pages and searches recorded 2026-11-20 in the owner's Chrome from a homedepot.com tab (fetch('/p/<id>') and fetch('/s/<query>'); the page's window.__APOLLO_STATE__ parsed in the tab). Trimmed to what research reads: for pages, base-catalog-<id> with identifiers (brandName, productLabel, modelNumber, canonicalUrl, itemId), details (description, highlights, descriptiveAttributes name/value; HTML link bullets dropped), specificationGroup (specTitle, specName, specValue), bundleFlag, bundleItems; for searches, the first 12 base-searchNav-<id> entries in page order with identifiers. Query strings removed. No SerpApi. Checksums verified on transfer.",
+ "pages": {
+  "328690510": {
+   "base-catalog-328690510": {
+    "__typename": "BaseProduct",
+    "itemId": "328690510",
+    "identifiers": {
+     "brandName": "RYOBI",
+     "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 5-1/2 in. Circular Saw and Jig Saw (Tools Only)",
+     "modelNumber": "PCL500525SB",
+     "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510",
+     "itemId": "328690510"
+    },
+    "details": {
+     "description": "The 18V ONE+ 2-Tool Combo Kit with the 18V 5-1/2\" Circular Saw and 18V Jig Saw allows you to tackle any cut and every project. The 5-1/2\" Circular Saw has the ability to make fast, clean cuts with a cut speed of 4,700 RPM. Achieve over 215 cuts per charge and get the job done without stopping. The circular saw has the ability to cut through 2-by material with 1-11/16\" depth of cut and 0-50° bevel capacity. It's equipped with a spindle lock and on-board wrench storage for convenient blade changes. The Jig Saw has the ability to make fast, precise cuts and it's equipped with a variable speed dialing reaching 0-3,000 SPM. Match power to application with 4 orbital settings. Experience a 30% reduction in vibration to enhance your cut control. The tool-free blade release provides quick and easy blade changes for all t-shank blades. Best of all, it is part of the RYOBI ONE+ system where any 18V ONE+ battery works with any 18V ONE+ product. This 18V ONE+ 2-Tool Combo Kit is backed by the RYOBI 3-year manufacturer’s warranty and includes an 18V 5-1/2\" Circular Saw, 18V Jig Saw, 18T Carbide Tipped Blade, (2) Hex Wrenches, Non-Marring Shoe, T-Shank Wood Cutting Blade and Operator's Manuals.",
+     "highlights": [
+      "Tackle Any Cut and Every Project with the 2-Tool Combo Kit",
+      "Includes: 18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw",
+      "Over 300 ONE+ Products – All Work With Any RYOBI ONE+ 18V Battery"
+     ],
+     "descriptiveAttributes": [
+      {
+       "name": "Bullet01",
+       "value": "Circular Saw: Fast, clean cuts with cut speed of 4,700 RPM"
+      },
+      {
+       "name": "Bullet02",
+       "value": "Circular Saw: Over 215 cuts per charge"
+      },
+      {
+       "name": "Bullet03",
+       "value": "Circular Saw: 0-50° Bevel capacity for greater cut variety"
+      },
+      {
+       "name": "Bullet04",
+       "value": "Circular Saw: Ability to cut through 2-by material with 1-11/16\" depth of cut"
+      },
+      {
+       "name": "Bullet05",
+       "value": "Circular Saw: Spindle lock and on-board wrench storage for convenient blade changes"
+      },
+      {
+       "name": "Bullet06",
+       "value": "Jig Saw: Fast, precise cuts with cut speed of 0-3,000 SPM"
+      },
+      {
+       "name": "Bullet07",
+       "value": "Jig Saw: 4 Orbital settings to match power to application"
+      },
+      {
+       "name": "Bullet08",
+       "value": "Jig Saw: Variable speed trigger for precise speed control"
+      },
+      {
+       "name": "Bullet09",
+       "value": "Jig Saw: 30% Reduced vibration enhances cut control"
+      },
+      {
+       "name": "Bullet10",
+       "value": "Jig Saw: Tool-free blade release provides quick and easy blade changes for all t-shank blades"
+      },
+      {
+       "name": "Bullet11",
+       "value": "Jig Saw: Non-marring shoe protects work surface"
+      },
+      {
+       "name": "Bullet12",
+       "value": "Jig Saw: LED worklight illuminates the workspace for clear cut line visibility"
+      },
+      {
+       "name": "Bullet13",
+       "value": "Don't forget your RYOBI 5-1/2 in. 18 Carbide Teeth Thin Kerf Circular Saw Blade (A065101) and RYOBI 30 PC. Jig Saw Blade Set (A143001)"
+      },
+      {
+       "name": "Bullet14",
+       "value": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products"
+      },
+      {
+       "name": "Bullet15",
+       "value": "3-year manufacturer's warranty"
+      },
+      {
+       "name": "Bullet16",
+       "value": "Includes: 18V 5-1/2\" Circular Saw, 18V Jig Saw, 18T Carbide Tipped Blade, (2) Hex Wrenches, Non-Marring Shoe, T-Shank Wood Cutting Blade, and Operator's Manuals"
+      },
+      {
+       "name": "Bullet17",
+       "value": "Battery and charger sold separately"
+      }
+     ]
+    },
+    "specificationGroup": [
+     {
+      "specTitle": "Details",
+      "specifications": [
+       {
+        "specName": "Battery Power Type",
+        "specValue": "Lithium Ion"
+       },
+       {
+        "specName": "Battery Voltage (V)",
+        "specValue": "18V"
+       },
+       {
+        "specName": "Charger Included",
+        "specValue": "Charger Not Included"
+       },
+       {
+        "specName": "Color Family",
+        "specValue": "Green"
+       },
+       {
+        "specName": "Cordless Tool Type",
+        "specValue": "Combo Kit"
+       },
+       {
+        "specName": "Cordless/Corded",
+        "specValue": "Cordless"
+       },
+       {
+        "specName": "Included",
+        "specValue": "Blade(s)"
+       },
+       {
+        "specName": "Motor Type",
+        "specValue": "Brushed"
+       },
+       {
+        "specName": "Number of Tools (Bonus Tool Not Included)",
+        "specValue": "2"
+       },
+       {
+        "specName": "Number of Total Batteries Included",
+        "specValue": "0"
+       },
+       {
+        "specName": "Power Tool Features",
+        "specValue": "Built-In Light,Cushioned Grip,Keyless Blade Change,LED Light,Orbital Action,Scrolling Action,Variable Speed,Worklight"
+       },
+       {
+        "specName": "Returnable",
+        "specValue": "90-Day"
+       },
+       {
+        "specName": "Tools Included",
+        "specValue": "Circular Saw,Jig Saw"
+       },
+       {
+        "specName": "Tools Product Type",
+        "specValue": "Power Tool"
+       },
+       {
+        "specName": "Voltage (V)",
+        "specValue": "18 V"
+       }
+      ]
+     },
+     {
+      "specTitle": "Warranty / Certifications",
+      "specifications": [
+       {
+        "specName": "Manufacturer Warranty",
+        "specValue": "3-Year Manufacturer's Warranty"
+       }
+      ]
+     }
+    ],
+    "bundleFlag": null,
+    "bundleItems": null
+   }
+  },
+  "328814689": {
+   "base-catalog-328814689": {
+    "__typename": "BaseProduct",
+    "itemId": "328814689",
+    "identifiers": {
+     "brandName": "RYOBI",
+     "productLabel": "ONE+ HP 18V Brushless Cordless 1/4 in. and 3/8 in. Extended Reach Ratchets (Tools Only)",
+     "modelNumber": "PBLRC2501SB",
+     "canonicalUrl": "/p/RYOBI-ONE-HP-18V-Brushless-Cordless-1-4-in-and-3-8-in-Extended-Reach-Ratchets-Tools-Only-PBLRC2501SB/328814689",
+     "itemId": "328814689"
+    },
+    "details": {
+     "description": "RYOBI introduces the 18V ONE+ HP Brushless 2-Tool Combo Kit. The 18V ONE+ HP Brushless 3/8 in. Extended Reach Ratchet features ONE+ HP Technology that provides up to 55 ft./lbs. of torque, while the 18V ONE+ HP Brushless 1/4 in. Extended Reach Ratchet delivers up to 40 ft-lbs. of torque. Utilize these ratchet's extended reach and slim heads to access hard to reach areas. The 4-position head makes fitting into tight spaces a breeze at any angle. Regardless of the angle you position the ratchet, your workspace will be illuminated by one of the two LED's on the front of the ratchet. The included Brushless Extended Reach Ratchets are compatible with all RYOBI 18V ONE+ Tools. Best of all, it is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. This 18V ONE+ HP 2-Tool Combo Kit is backed by the RYOBI 3-Year Manufacturer's Warranty and includes a Brushless 3/8 in. Extended Reach Ratchet, Brushless 1/4 in. Extended Reach Ratchet, and Operator's Manuals.",
+     "highlights": [
+      "Slim Head and Extended Reach",
+      "Includes: 1/4\" and 3/8\" Extended Reach Ratchets",
+      "Over 300 ONE+ Products – All Work With Any RYOBI ONE+ 18V Battery"
+     ],
+     "descriptiveAttributes": [
+      {
+       "name": "Bullet01",
+       "value": "1/4\" Ratchet - ONE+ HP Technology provides more power with up to 40 ft./lbs. of torque"
+      },
+      {
+       "name": "Bullet02",
+       "value": "1/4\" Ratchet - Slim head and extended reach for access to tight spaces"
+      },
+      {
+       "name": "Bullet03",
+       "value": "1/4\" Ratchet - 4-position rotating head"
+      },
+      {
+       "name": "Bullet04",
+       "value": "1/4\" Ratchet - Dual on-board LED worklights"
+      },
+      {
+       "name": "Bullet05",
+       "value": "1/4\" Ratchet - Variable speed metal paddle trigger"
+      },
+      {
+       "name": "Bullet06",
+       "value": "3/8\" Ratchet - ONE+ HP Technology provides more power with up to 55 ft./lbs. of torque"
+      },
+      {
+       "name": "Bullet07",
+       "value": "3/8\" Ratchet - Slim head and extended reach for access to tight spaces"
+      },
+      {
+       "name": "Bullet08",
+       "value": "3/8\" Ratchet -4-position rotating head"
+      },
+      {
+       "name": "Bullet09",
+       "value": "3/8\" Ratchet -Dual on-board LED worklights"
+      },
+      {
+       "name": "Bullet10",
+       "value": "3/8\" Ratchet -Variable speed metal paddle trigger"
+      },
+      {
+       "name": "Bullet11",
+       "value": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products"
+      },
+      {
+       "name": "Bullet12",
+       "value": "3-year manufacturer's warranty"
+      },
+      {
+       "name": "Bullet13",
+       "value": "Includes: (1) PBLRC01 18V ONE+ HP Brushless 1/4\" Extended Reach Ratchet (1) PBLRC25 18V ONE+ HP Brushless Cordless 3/8 in. Extended Reach Ratchet and Operator's Manual"
+      },
+      {
+       "name": "Bullet14",
+       "value": "Battery and Charger Sold Separately"
+      }
+     ]
+    },
+    "specificationGroup": [
+     {
+      "specTitle": "Details",
+      "specifications": [
+       {
+        "specName": "Batteries Included",
+        "specValue": "No"
+       },
+       {
+        "specName": "Battery Amp Hours",
+        "specValue": "No Battery"
+       },
+       {
+        "specName": "Battery Power Type",
+        "specValue": "Lithium Ion"
+       },
+       {
+        "specName": "Battery Size",
+        "specValue": "18-volt"
+       },
+       {
+        "specName": "Battery Voltage (V)",
+        "specValue": "18V"
+       },
+       {
+        "specName": "Charger Included",
+        "specValue": "Charger Not Included"
+       },
+       {
+        "specName": "Color Family",
+        "specValue": "Green"
+       },
+       {
+        "specName": "Cordless Tool Type",
+        "specValue": "Cordless Ratchet"
+       },
+       {
+        "specName": "Cordless/Corded",
+        "specValue": "Cordless"
+       },
+       {
+        "specName": "Included",
+        "specValue": "Tool Only"
+       },
+       {
+        "specName": "Motor Type",
+        "specValue": "Brushless"
+       },
+       {
+        "specName": "Number of Total Batteries Included",
+        "specValue": "0"
+       },
+       {
+        "specName": "Power Tool Features",
+        "specValue": "LED Light,Variable Speed"
+       },
+       {
+        "specName": "Product Weight (lb.)",
+        "specValue": "2.85 lb"
+       },
+       {
+        "specName": "Ratchet Reach",
+        "specValue": "Extended"
+       },
+       {
+        "specName": "Returnable",
+        "specValue": "90-Day"
+       },
+       {
+        "specName": "Tool Only| Kit",
+        "specValue": "Tool Only"
+       },
+       {
+        "specName": "Tools Product Type",
+        "specValue": "Power Tool"
+       },
+       {
+        "specName": "Variable Speed",
+        "specValue": "Yes"
+       }
+      ]
+     },
+     {
+      "specTitle": "Warranty / Certifications",
+      "specifications": [
+       {
+        "specName": "Manufacturer Warranty",
+        "specValue": "3-Year Manufacturer's Warranty"
+       }
+      ]
+     },
+     {
+      "specTitle": "Dimensions",
+      "specifications": [
+       {
+        "specName": "Drive Size (in.)",
+        "specValue": "3/8 in. & 1/4 in."
+       },
+       {
+        "specName": "Product Depth (in.)",
+        "specValue": "15.37 in"
+       },
+       {
+        "specName": "Product Height (in.)",
+        "specValue": "5.21 in"
+       },
+       {
+        "specName": "Product Width (in.)",
+        "specValue": "2.98 in"
+       }
+      ]
+     }
+    ],
+    "bundleFlag": null,
+    "bundleItems": null
+   }
+  },
+  "339206615": {
+   "base-catalog-339206615": {
+    "__typename": "BaseProduct",
+    "itemId": "339206615",
+    "identifiers": {
+     "brandName": "RYOBI",
+     "productLabel": "ONE+ 18V Lithium Starter Kit with (1) 2.0 Ah Battery, (1) 4.0 Ah Battery, and Charger",
+     "modelNumber": "PSK1212SB",
+     "canonicalUrl": "/p/RYOBI-ONE-18V-Lithium-Starter-Kit-with-1-2-0-Ah-Battery-1-4-0-Ah-Battery-and-Charger-PSK1212SB/339206615",
+     "itemId": "339206615"
+    },
+    "details": {
+     "description": "Get more out of your RYOBI ONE+ tools with extended runtime and greater versatility using the 18V ONE+ 4Ah & 2Ah Lithium Starter Kit. The high-capacity 4Ah battery delivers more runtime between charges, while the compact, lightweight 2Ah battery provides a convenient option when portability and reduced weight matter most. The batteries feature IntelliCell Electronics, a smarter power and runtime management system, that maximizes performance to keep your tools performing at their best, even during demanding use. Advanced lithium-ion cells provide dependable, fade-free power that keeps your tools operating at full power until the job is done. The COOL-CORE heat management system regulates pack temperature to keep it running cooler and maintain consistent output during use. A durable pack design with anti-vibration technology adds protection against impacts and everyday wear, whether you’re on the job or working around the house. A high-visibility LED fuel gauge clearly displays remaining runtime so you can stay productive without interruptions. Quickly charge the 2Ah battery to a ready state in as little as 50 minutes when paired with the included RYOBI ONE+ charger. Part of the RYOBI ONE+ system – any 18V ONE+ battery works with any 18V ONE+ product. This 18V ONE+ 4Ah & 2Ah Lithium Starter Kit is backed by the RYOBI 3-year manufacturer’s warranty and includes the PBP004 18V ONE+ 4Ah Lithium Battery, PBP003 18V ONE+ 2Ah Battery, and PCG002 18V ONE+ Charger.",
+     "highlights": [
+      "Higher Capacity 4Ah Battery Pack Provides Longer Runtime",
+      "Includes: 18V ONE+ 4Ah + 2Ah Lithium Batteries & 18V Charger",
+      "Power All 300 ONE+ Products With Any RYOBI 18V ONE+ Battery"
+     ],
+     "descriptiveAttributes": [
+      {
+       "name": "Bullet01",
+       "value": "Battery: High capacity 4Ah battery delivers longer runtime and more power for use with a variety of ONE+ products"
+      },
+      {
+       "name": "Bullet02",
+       "value": "Battery: 2Ah battery features a compact and lightweight design for use on over 300 ONE+ tools"
+      },
+      {
+       "name": "Bullet03",
+       "value": "Battery: IntelliCell electronics manage power and runtime to maximize performance under demanding use"
+      },
+      {
+       "name": "Bullet04",
+       "value": "Battery: COOL-CORE heat management system maintains cooler temperatures while in use"
+      },
+      {
+       "name": "Bullet05",
+       "value": "Battery: Advanced lithium-ion cells deliver long life and fade-free performance"
+      },
+      {
+       "name": "Bullet06",
+       "value": "Battery: Durable pack design with increased impact durability and anti-vibration technology for added protection"
+      },
+      {
+       "name": "Bullet07",
+       "value": "Battery: High visibility LED fuel gauge clearly indicates remaining runtime"
+      },
+      {
+       "name": "Bullet08",
+       "value": "Charger: Charge any RYOBI 18V ONE+ battery with the included charger"
+      },
+      {
+       "name": "Bullet09",
+       "value": "Charger: Indicator lights show battery status as batteries are charged and maintained"
+      },
+      {
+       "name": "Bullet10",
+       "value": "Charger: Energy save mode conserves energy when not charging or maintaining batteries"
+      },
+      {
+       "name": "Bullet11",
+       "value": "Charger: Mount on the wall or place on a work area to maximize workspace"
+      },
+      {
+       "name": "Bullet12",
+       "value": "Charge the 18V 2Ah battery to ready-state 80% in as little as 50 minutes with the included RYOBI ONE+ charger"
+      },
+      {
+       "name": "Bullet13",
+       "value": "Download the all-inclusive RYOBI app for registration in seconds, a personalized digital tool box, exclusive access, customer service, and more"
+      },
+      {
+       "name": "Bullet14",
+       "value": "Part of the RYOBI 18V ONE+ system of over 300 cordless products"
+      },
+      {
+       "name": "Bullet15",
+       "value": "3-year manufacturer’s warranty"
+      },
+      {
+       "name": "Bullet16",
+       "value": "Includes: (1) PBP004 18V ONE+ 4Ah Lithium Batteries, (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) PCG002 18V ONE+ Charger, and operator’s manuals"
+      }
+     ]
+    },
+    "specificationGroup": [
+     {
+      "specTitle": "Details",
+      "specifications": [
+       {
+        "specName": "AC\\DC",
+        "specValue": "AC"
+       },
+       {
+        "specName": "Battery Amp Hours",
+        "specValue": "4 Ah"
+       },
+       {
+        "specName": "Battery Power Type",
+        "specValue": "Lithium Ion"
+       },
+       {
+        "specName": "Battery Voltage (V)",
+        "specValue": "18V"
+       },
+       {
+        "specName": "Charge time (min.)",
+        "specValue": "80"
+       },
+       {
+        "specName": "Charger Included",
+        "specValue": "Charger Included"
+       },
+       {
+        "specName": "Color Family",
+        "specValue": "Gray"
+       },
+       {
+        "specName": "Cordless Tool Type",
+        "specValue": "Battery/Charger Set"
+       },
+       {
+        "specName": "Individual Battery Weight",
+        "specValue": "1.00 lb,1.63 lb"
+       },
+       {
+        "specName": "Number of Charging Ports",
+        "specValue": "1 Port"
+       },
+       {
+        "specName": "Number of Total Batteries Included",
+        "specValue": "2"
+       },
+       {
+        "specName": "Power Tool Accessory Type",
+        "specValue": "Battery and Charger Set"
+       },
+       {
+        "specName": "Power Tool Features",
+        "specValue": "No Additional Features"
+       },
+       {
+        "specName": "Rechargeable",
+        "specValue": "Yes"
+       },
+       {
+        "specName": "Returnable",
+        "specValue": "90-Day"
+       },
+       {
+        "specName": "Used with Equipment Type",
+        "specValue": "Utility"
+       }
+      ]
+     }
+    ],
+    "bundleFlag": null,
+    "bundleItems": null
+   }
+  },
+  "341645081": {
+   "base-catalog-341645081": {
+    "__typename": "BaseProduct",
+    "itemId": "341645081",
+    "identifiers": {
+     "brandName": "RYOBI",
+     "productLabel": "ONE+18V Cordless 6-Tool Combo Kit with Batteries, and Charger & ONE+18V 4.0 Ah Lithium Battery",
+     "modelNumber": "PCL1600K2-PBP004",
+     "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-and-Charger-ONE-18V-4-0-Ah-Lithium-Battery-PCL1600K2-PBP004/341645081",
+     "itemId": "341645081"
+    },
+    "details": {
+     "description": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a 1.5 Ah Battery, Charger, Bag, and Operator’s Manuals.",
+     "highlights": null,
+     "descriptiveAttributes": [
+      {
+       "name": "Bullet01",
+       "value": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque"
+      },
+      {
+       "name": "Bullet02",
+       "value": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque"
+      },
+      {
+       "name": "Bullet03",
+       "value": "Circular Saw - Over 215 cuts per charge"
+      },
+      {
+       "name": "Bullet04",
+       "value": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes"
+      },
+      {
+       "name": "Bullet05",
+       "value": "Multi-Tool - Fast cutting with 20,000 max OPM"
+      },
+      {
+       "name": "Bullet06",
+       "value": "LED Light - 280 Lumens of light output"
+      },
+      {
+       "name": "Bullet07",
+       "value": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products"
+      },
+      {
+       "name": "Bullet08",
+       "value": "3-year manufacturer's warranty"
+      },
+      {
+       "name": "Bullet09",
+       "value": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light"
+      },
+      {
+       "name": "Bullet10",
+       "value": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals"
+      }
+     ]
+    },
+    "specificationGroup": [
+     {
+      "specTitle": "Details",
+      "specifications": [
+       {
+        "specName": "Battery Power Type",
+        "specValue": "Lithium Ion"
+       },
+       {
+        "specName": "Battery Voltage (V)",
+        "specValue": "18V"
+       },
+       {
+        "specName": "Charger Included",
+        "specValue": "Charger Included"
+       },
+       {
+        "specName": "Color Family",
+        "specValue": "Green"
+       },
+       {
+        "specName": "Cordless Tool Type",
+        "specValue": "Combo Kit"
+       },
+       {
+        "specName": "Cordless/Corded",
+        "specValue": "Cordless"
+       },
+       {
+        "specName": "Included",
+        "specValue": "Battery Included,Blade(s),Charger"
+       },
+       {
+        "specName": "Motor Type",
+        "specValue": "Brushed"
+       },
+       {
+        "specName": "Number of Tools (Bonus Tool Not Included)",
+        "specValue": "6"
+       },
+       {
+        "specName": "Number of Total Batteries Included",
+        "specValue": "3"
+       },
+       {
+        "specName": "Power Tool Features",
+        "specValue": "Keyless Chuck,LED Light,Variable Speed"
+       },
+       {
+        "specName": "Returnable",
+        "specValue": "90-Day"
+       },
+       {
+        "specName": "Tools Included",
+        "specValue": "Circular Saw,Drill Driver,Impact Driver,Multi-Tool,Reciprocating Saw,Worklight"
+       },
+       {
+        "specName": "Tools Product Type",
+        "specValue": "Power Tool"
+       },
+       {
+        "specName": "Voltage (V)",
+        "specValue": "18 V"
+       }
+      ]
+     },
+     {
+      "specTitle": "Warranty / Certifications",
+      "specifications": [
+       {
+        "specName": "Manufacturer Warranty",
+        "specValue": "3-Year Manufacturer's Warranty"
+       }
+      ]
+     }
+    ],
+    "bundleFlag": null,
+    "bundleItems": null
+   }
+  }
+ },
+ "searches": {
+  "PCL500525SB": {
+   "status": 200,
+   "finalPath": "/s/PCL500525SB",
+   "state": {
+    "base-searchNav-328690510": {
+     "__typename": "BaseProduct",
+     "itemId": "328690510",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 5-1/2 in. Circular Saw and Jig Saw (Tools Only)",
+      "modelNumber": "PCL500525SB",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+     }
+    },
+    "base-searchNav-341644987": {
+     "__typename": "BaseProduct",
+     "itemId": "341644987",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+18V Cordless 2-Tool Combo Kit with Circular Saw, Jig Saw & ONE+18V 2.0 Ah Lithium Battery",
+      "modelNumber": "PCL500525SB-PBP003",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Circular-Saw-Jig-Saw-ONE-18V-2-0-Ah-Lithium-Battery-PCL500525SB-PBP003/341644987"
+     }
+    }
+   }
+  },
+  "ryobi pcl500": {
+   "status": 200,
+   "finalPath": "/s/ryobi%20pcl500",
+   "state": {
+    "base-searchNav-317987588": {
+     "__typename": "BaseProduct",
+     "itemId": "317987588",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)",
+      "modelNumber": "PCL500B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-5-1-2-in-Circular-Saw-Tool-Only-PCL500B/317987588"
+     }
+    },
+    "base-searchNav-328690510": {
+     "__typename": "BaseProduct",
+     "itemId": "328690510",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 5-1/2 in. Circular Saw and Jig Saw (Tools Only)",
+      "modelNumber": "PCL500525SB",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+     }
+    },
+    "base-searchNav-316879118": {
+     "__typename": "BaseProduct",
+     "itemId": "316879118",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 5-1/2 in. Circular Saw Kit with 4.0 Ah Battery and Charger",
+      "modelNumber": "PCL500K1",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-5-1-2-in-Circular-Saw-Kit-with-4-0-Ah-Battery-and-Charger-PCL500K1/316879118"
+     }
+    },
+    "base-searchNav-324616618": {
+     "__typename": "BaseProduct",
+     "itemId": "324616618",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)",
+      "modelNumber": "PCL500B-PCL525B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500B-PCL525B/324616618"
+     }
+    },
+    "base-searchNav-327783647": {
+     "__typename": "BaseProduct",
+     "itemId": "327783647",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 5 1/2 in. Circular Saw with ONE+ 18V 2.0 Ah Lithium-Ion Battery",
+      "modelNumber": "PCL500B-PBP006",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-5-1-2-in-Circular-Saw-with-ONE-18V-2-0-Ah-Lithium-Ion-Battery-PCL500B-PBP006/327783647"
+     }
+    },
+    "base-searchNav-327055801": {
+     "__typename": "BaseProduct",
+     "itemId": "327055801",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless LED Workbench Light (Tool Only)",
+      "modelNumber": "PCL667B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-LED-Workbench-Light-Tool-Only-PCL667B/327055801"
+     }
+    },
+    "base-searchNav-321347481": {
+     "__typename": "BaseProduct",
+     "itemId": "321347481",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 5-1/2 in. Circular Saw (Tool Only) with 5-1/2 in. Carbide Circular Saw Blade",
+      "modelNumber": "PCL500B-A065101",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-5-1-2-in-Circular-Saw-Tool-Only-with-5-1-2-in-Carbide-Circular-Saw-Blade-PCL500B-A065101/321347481"
+     }
+    },
+    "base-searchNav-320033040": {
+     "__typename": "BaseProduct",
+     "itemId": "320033040",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ HP 18V Brushless Cordless Compact 6-1/2 in. Circular Saw (Tool Only)",
+      "modelNumber": "PSBCS01B",
+      "canonicalUrl": "/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-6-1-2-in-Circular-Saw-Tool-Only-PSBCS01B/320033040"
+     }
+    },
+    "base-searchNav-339206765": {
+     "__typename": "BaseProduct",
+     "itemId": "339206765",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless Lighting Combo Kit w/ LED Magnetic Task Light, LED Spotlight, & Flexible LED Clamp Light (Tools Only)",
+      "modelNumber": "PCL1309B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-Lighting-Combo-Kit-w-LED-Magnetic-Task-Light-LED-Spotlight-Flexible-LED-Clamp-Light-Tools-Only-PCL1309B/339206765"
+     }
+    },
+    "base-searchNav-324696120": {
+     "__typename": "BaseProduct",
+     "itemId": "324696120",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ HP 18V Brushless Cordless 10 in. Sliding Compound Miter Saw Kit with 4.0 Ah Battery, Charger, and Miter Saw Stand",
+      "modelNumber": "PBLMS01K-A18MS01G",
+      "canonicalUrl": "/p/RYOBI-ONE-HP-18V-Brushless-Cordless-10-in-Sliding-Compound-Miter-Saw-Kit-with-4-0-Ah-Battery-Charger-and-Miter-Saw-Stand-PBLMS01K-A18MS01G/324696120"
+     }
+    },
+    "base-searchNav-318956619": {
+     "__typename": "BaseProduct",
+     "itemId": "318956619",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 3-3/8 in. Multi Material Plunge Saw Kit with 2.0 Ah Battery and Charger",
+      "modelNumber": "P555K1N",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-3-3-8-in-Multi-Material-Plunge-Saw-Kit-with-2-0-Ah-Battery-and-Charger-P555K1N/318956619"
+     }
+    },
+    "base-searchNav-314109552": {
+     "__typename": "BaseProduct",
+     "itemId": "314109552",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ HP 18V Brushless Cordless Jig Saw (Tool Only)",
+      "modelNumber": "PBLJS01B",
+      "canonicalUrl": "/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Jig-Saw-Tool-Only-PBLJS01B/314109552"
+     }
+    }
+   }
+  },
+  "PCL1600K2": {
+   "status": 200,
+   "finalPath": "/s/PCL1600K2",
+   "state": {
+    "base-searchNav-317987591": {
+     "__typename": "BaseProduct",
+     "itemId": "317987591",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+      "modelNumber": "PCL1600K2",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Compact-Battery-4-0-Ah-Battery-and-Charger-PCL1600K2/317987591"
+     }
+    },
+    "base-searchNav-334547651": {
+     "__typename": "BaseProduct",
+     "itemId": "334547651",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, Charger, and Drill & Impact Drive Kit (40-Piece)",
+      "modelNumber": "PCL1600K2-A98401",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+     }
+    },
+    "base-searchNav-320243671": {
+     "__typename": "BaseProduct",
+     "itemId": "320243671",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and 65-Piece Drill and Impact Drive Kit",
+      "modelNumber": "PCL1600K2-A986501",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+     }
+    },
+    "base-searchNav-334547339": {
+     "__typename": "BaseProduct",
+     "itemId": "334547339",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, Charger, and Diamond Grit Driving Set (52-Piece)",
+      "modelNumber": "PCL1600K2-A965201",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Diamond-Grit-Driving-Set-52-Piece-PCL1600K2-A965201/334547339"
+     }
+    },
+    "base-searchNav-334547201": {
+     "__typename": "BaseProduct",
+     "itemId": "334547201",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, Charger, and 11 in. Flexible Shaft Bit Holder",
+      "modelNumber": "PCL1600K2-A10FB1G",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+     }
+    },
+    "base-searchNav-321811428": {
+     "__typename": "BaseProduct",
+     "itemId": "321811428",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 6-Tool Combo Kit w/ 1.5 Ah Battery, 4.0 Ah Battery, & Charger w/ 2.0 Ah Battery and Charger",
+      "modelNumber": "PCL1600K2-PSK005",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+     }
+    },
+    "base-searchNav-334547280": {
+     "__typename": "BaseProduct",
+     "itemId": "334547280",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, Charger, and Wire Wheel Assortment Set (6-Piece)",
+      "modelNumber": "PCL1600K2-A72601",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Wire-Wheel-Assortment-Set-6-Piece-PCL1600K2-A72601/334547280"
+     }
+    },
+    "base-searchNav-334547470": {
+     "__typename": "BaseProduct",
+     "itemId": "334547470",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, Charger, and Titanium Drill Bit Set (22-Piece)",
+      "modelNumber": "PCL1600K2-A972202",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Titanium-Drill-Bit-Set-22-Piece-PCL1600K2-A972202/334547470"
+     }
+    },
+    "base-searchNav-320243741": {
+     "__typename": "BaseProduct",
+     "itemId": "320243741",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and Miter Saw",
+      "modelNumber": "PCL1600K2-P553",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+     }
+    },
+    "base-searchNav-343678343": {
+     "__typename": "BaseProduct",
+     "itemId": "343678343",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V 6-Tool Combo Kit w/ 2Ah Battery, 4Ah Battery, & Charger w/ Titanium 4PC Hex Shank Twist Bit Set",
+      "modelNumber": "PCL1600K2-AR1860G",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-6-Tool-Combo-Kit-w-2Ah-Battery-4Ah-Battery-Charger-w-Titanium-4PC-Hex-Shank-Twist-Bit-Set-PCL1600K2-AR1860G/343678343"
+     }
+    },
+    "base-searchNav-343658541": {
+     "__typename": "BaseProduct",
+     "itemId": "343658541",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V 6-Tool Combo Kit w/ 2Ah Battery, 4Ah Battery, Charger & Twisted Wire Wheel Set (3-Pieces)",
+      "modelNumber": "PCL1600K2-A721201",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-6-Tool-Combo-Kit-w-2Ah-Battery-4Ah-Battery-Charger-Twisted-Wire-Wheel-Set-3-Pieces-PCL1600K2-A721201/343658541"
+     }
+    },
+    "base-searchNav-341645081": {
+     "__typename": "BaseProduct",
+     "itemId": "341645081",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+18V Cordless 6-Tool Combo Kit with Batteries, and Charger & ONE+18V 4.0 Ah Lithium Battery",
+      "modelNumber": "PCL1600K2-PBP004",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-and-Charger-ONE-18V-4-0-Ah-Lithium-Battery-PCL1600K2-PBP004/341645081"
+     }
+    }
+   }
+  },
+  "dewalt dck240c2": {
+   "status": 200,
+   "finalPath": "/s/dewalt%20dck240c2",
+   "state": {
+    "base-searchNav-204373168": {
+     "__typename": "BaseProduct",
+     "itemId": "204373168",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "20V MAX Cordless Drill/Impact 2 Tool Combo Kit with (2) 20V 1.3Ah Batteries, Charger, and Bag",
+      "modelNumber": "DCK240C2",
+      "canonicalUrl": "/p/DEWALT-20V-MAX-Cordless-Drill-Impact-2-Tool-Combo-Kit-with-2-20V-1-3Ah-Batteries-Charger-and-Bag-DCK240C2/204373168"
+     }
+    },
+    "base-searchNav-322138483": {
+     "__typename": "BaseProduct",
+     "itemId": "322138483",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) with (2) 2.0Ah Batteries, Charger and Bag",
+      "modelNumber": "DCK225D2",
+      "canonicalUrl": "/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-with-2-2-0Ah-Batteries-Charger-and-Bag-DCK225D2/322138483"
+     }
+    },
+    "base-searchNav-333828126": {
+     "__typename": "BaseProduct",
+     "itemId": "333828126",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "20V MAX Cordless Drill/Impact 2 Tool Combo Kit and Brushless Oscillating Multi Tool with (2) 1.3Ah Batteries and Charger",
+      "modelNumber": "DCK240C2WCS354B",
+      "canonicalUrl": "/p/DEWALT-20V-MAX-Cordless-Drill-Impact-2-Tool-Combo-Kit-and-Brushless-Oscillating-Multi-Tool-with-2-1-3Ah-Batteries-and-Charger-DCK240C2WCS354B/333828126"
+     }
+    },
+    "base-searchNav-206510226": {
+     "__typename": "BaseProduct",
+     "itemId": "206510226",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "20V MAX Lithium-Ion Cordless Combo Kit (2 Piece), Mechanics Tool Set (200 Piece), (2) 20V 1.3Ah Batteries, and Charger",
+      "modelNumber": "DCK240C2DWMT75000",
+      "canonicalUrl": "/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Piece-Mechanics-Tool-Set-200-Piece-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DWMT75000/206510226"
+     }
+    },
+    "base-searchNav-331253356": {
+     "__typename": "BaseProduct",
+     "itemId": "331253356",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "20V MAX Lithium-Ion Cordless 2-Tool Combo Kit with (2) 4.0 Ah Batteries, Charger and Kit Bag",
+      "modelNumber": "DCK2101QQ2",
+      "canonicalUrl": "/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-2-4-0-Ah-Batteries-Charger-and-Kit-Bag-DCK2101QQ2/331253356"
+     }
+    },
+    "base-searchNav-306554157": {
+     "__typename": "BaseProduct",
+     "itemId": "306554157",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "20V MAX Cordless Drill/Impact Combo Kit, 6.5 in. Circular Saw, (2) 20V 1.3Ah Batteries, and Charger",
+      "modelNumber": "DCK240C2DCS391B",
+      "canonicalUrl": "/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-6-5-in-Circular-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS391B/306554157"
+     }
+    },
+    "base-searchNav-301397448": {
+     "__typename": "BaseProduct",
+     "itemId": "301397448",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "20V MAX XR Cordless Impact Driver/Rotary Hammer 2 Tool Combo Kit, (2) 20V 5.0Ah Batteries and Charger",
+      "modelNumber": "DCK233P2",
+      "canonicalUrl": "/p/DEWALT-20V-MAX-XR-Cordless-Impact-Driver-Rotary-Hammer-2-Tool-Combo-Kit-2-20V-5-0Ah-Batteries-and-Charger-DCK233P2/301397448"
+     }
+    },
+    "base-searchNav-323152152": {
+     "__typename": "BaseProduct",
+     "itemId": "323152152",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "ATOMIC 20-Volt MAX Lithium-Ion Cordless 2-Tool Combo Kit with (2) 2.0Ah Batteries, Charger and Bag",
+      "modelNumber": "DCK226D2",
+      "canonicalUrl": "/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-2-2-0Ah-Batteries-Charger-and-Bag-DCK226D2/323152152"
+     }
+    },
+    "base-searchNav-326894170": {
+     "__typename": "BaseProduct",
+     "itemId": "326894170",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "ATOMIC 20V MAX Lithium-Ion Cordless Combo Kit (2-Tool) and 1/4 in. Impact Driver with (2) 2Ah Batteries, Charger and Bag",
+      "modelNumber": "DCK225D2WCF850B",
+      "canonicalUrl": "/p/DEWALT-ATOMIC-20V-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-1-4-in-Impact-Driver-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCF850B/326894170"
+     }
+    },
+    "base-searchNav-336154926": {
+     "__typename": "BaseProduct",
+     "itemId": "336154926",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "20V MAX Lithium-Ion Cordless 2-Tool Combo Kit",
+      "modelNumber": "DCK274E2",
+      "canonicalUrl": "/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-2-Tool-Combo-Kit-DCK274E2/336154926"
+     }
+    },
+    "base-searchNav-331594630": {
+     "__typename": "BaseProduct",
+     "itemId": "331594630",
+     "identifiers": {
+      "brandName": "Milwaukee",
+      "productLabel": "M18 18V Lith-Ion Brushless Cordless Compact Drill/Impact Combo Kit w/(2) 2.0 Ah Batteries, Charger & Bit Set (25-Piece)",
+      "modelNumber": "3692-22CT-48-32-4095",
+      "canonicalUrl": "/p/Milwaukee-M18-18V-Lith-Ion-Brushless-Cordless-Compact-Drill-Impact-Combo-Kit-w-2-2-0-Ah-Batteries-Charger-Bit-Set-25-Piece-3692-22CT-48-32-4095/331594630"
+     }
+    },
+    "base-searchNav-338371894": {
+     "__typename": "BaseProduct",
+     "itemId": "338371894",
+     "identifiers": {
+      "brandName": "DEWALT",
+      "productLabel": "20V MAX Lithium-Ion Cordless Drill/Impact 2 Tool Combo Kit & 1/4 in. Bit Set (30-Piece) w/ (2) 1.3Ah Batteries & Charger",
+      "modelNumber": "DCK240C2W30SET",
+      "canonicalUrl": "/p/DEWALT-20V-MAX-Lithium-Ion-Cordless-Drill-Impact-2-Tool-Combo-Kit-1-4-in-Bit-Set-30-Piece-w-2-1-3Ah-Batteries-Charger-DCK240C2W30SET/338371894"
+     }
+    }
+   }
+  },
+  "ryobi 5-1/2 in. circular saw tool only": {
+   "status": 200,
+   "finalPath": "/s/ryobi%205-1%2F2%20in.%20circular%20saw%20tool%20only",
+   "state": {
+    "base-searchNav-317987588": {
+     "__typename": "BaseProduct",
+     "itemId": "317987588",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)",
+      "modelNumber": "PCL500B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-5-1-2-in-Circular-Saw-Tool-Only-PCL500B/317987588"
+     }
+    },
+    "base-searchNav-328690510": {
+     "__typename": "BaseProduct",
+     "itemId": "328690510",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 5-1/2 in. Circular Saw and Jig Saw (Tools Only)",
+      "modelNumber": "PCL500525SB",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+     }
+    },
+    "base-searchNav-321347481": {
+     "__typename": "BaseProduct",
+     "itemId": "321347481",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 5-1/2 in. Circular Saw (Tool Only) with 5-1/2 in. Carbide Circular Saw Blade",
+      "modelNumber": "PCL500B-A065101",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-5-1-2-in-Circular-Saw-Tool-Only-with-5-1-2-in-Carbide-Circular-Saw-Blade-PCL500B-A065101/321347481"
+     }
+    },
+    "base-searchNav-324616618": {
+     "__typename": "BaseProduct",
+     "itemId": "324616618",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)",
+      "modelNumber": "PCL500B-PCL525B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500B-PCL525B/324616618"
+     }
+    },
+    "base-searchNav-316879118": {
+     "__typename": "BaseProduct",
+     "itemId": "316879118",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 5-1/2 in. Circular Saw Kit with 4.0 Ah Battery and Charger",
+      "modelNumber": "PCL500K1",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-5-1-2-in-Circular-Saw-Kit-with-4-0-Ah-Battery-and-Charger-PCL500K1/316879118"
+     }
+    },
+    "base-searchNav-202021700": {
+     "__typename": "BaseProduct",
+     "itemId": "202021700",
+     "identifiers": {
+      "brandName": "Avanti",
+      "productLabel": "5-1/2 in. x 100-Tooth OSB/Plywood Circular Saw Blade",
+      "modelNumber": "A05100X",
+      "canonicalUrl": "/p/Avanti-5-1-2-in-x-100-Tooth-OSB-Plywood-Circular-Saw-Blade-A05100X/202021700"
+     }
+    },
+    "base-searchNav-321367525": {
+     "__typename": "BaseProduct",
+     "itemId": "321367525",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 3-Tool Combo Kit with 7-1/4 in. Miter Saw, Jig Saw, and 5-1/2 in. Circular Saw (Tools Only)",
+      "modelNumber": "PBT01B-PCL525B-PCL500B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-3-Tool-Combo-Kit-with-7-1-4-in-Miter-Saw-Jig-Saw-and-5-1-2-in-Circular-Saw-Tools-Only-PBT01B-PCL525B-PCL500B/321367525"
+     }
+    },
+    "base-searchNav-319241456": {
+     "__typename": "BaseProduct",
+     "itemId": "319241456",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "5-1/2 in. 18T Thin Kerf Carbide Circular Saw Blade",
+      "modelNumber": "A065101",
+      "canonicalUrl": "/p/RYOBI-5-1-2-in-18T-Thin-Kerf-Carbide-Circular-Saw-Blade-A065101/319241456"
+     }
+    },
+    "base-searchNav-319905470": {
+     "__typename": "BaseProduct",
+     "itemId": "319905470",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "Vacuum Adaptor for ONE+ 5 1/2 in. Circular Saw",
+      "modelNumber": "A065501",
+      "canonicalUrl": "/p/RYOBI-Vacuum-Adaptor-for-ONE-5-1-2-in-Circular-Saw-A065501/319905470"
+     }
+    },
+    "base-searchNav-318070590": {
+     "__typename": "BaseProduct",
+     "itemId": "318070590",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "5-1/2 in. 24-Tooth Carbide Flooring Blade (1-Piece)",
+      "modelNumber": "A06F551",
+      "canonicalUrl": "/p/RYOBI-5-1-2-in-24-Tooth-Carbide-Flooring-Blade-1-Piece-A06F551/318070590"
+     }
+    },
+    "base-searchNav-339307292": {
+     "__typename": "BaseProduct",
+     "itemId": "339307292",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 5-1/2 in. Circular Saw Kit with 2 Ah Battery and Charger",
+      "modelNumber": "PCL500K1SB",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-5-1-2-in-Circular-Saw-Kit-with-2-Ah-Battery-and-Charger-PCL500K1SB/339307292"
+     }
+    },
+    "base-searchNav-308879098": {
+     "__typename": "BaseProduct",
+     "itemId": "308879098",
+     "identifiers": {
+      "brandName": "DIABLO",
+      "productLabel": "5-1/2 in. x 18-Tooth Fast Framing Circular Saw Blade with Bushings",
+      "modelNumber": "D055018WMX",
+      "canonicalUrl": "/p/DIABLO-5-1-2-in-x-18-Tooth-Fast-Framing-Circular-Saw-Blade-with-Bushings-D055018WMX/308879098"
+     }
+    }
+   }
+  },
+  "ryobi jig saw tool only": {
+   "status": 200,
+   "finalPath": "/s/ryobi%20jig%20saw%20tool%20only",
+   "state": {
+    "base-searchNav-318898528": {
+     "__typename": "BaseProduct",
+     "itemId": "318898528",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless Jig Saw (Tool Only)",
+      "modelNumber": "PCL525B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-Jig-Saw-Tool-Only-PCL525B/318898528"
+     }
+    },
+    "base-searchNav-314109552": {
+     "__typename": "BaseProduct",
+     "itemId": "314109552",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ HP 18V Brushless Cordless Jig Saw (Tool Only)",
+      "modelNumber": "PBLJS01B",
+      "canonicalUrl": "/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Jig-Saw-Tool-Only-PBLJS01B/314109552"
+     }
+    },
+    "base-searchNav-341967500": {
+     "__typename": "BaseProduct",
+     "itemId": "341967500",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Kit w/ 4.0 Ah Battery, 2.0 Ah Battery, Charger, & FREE ONE+ Cordless Jig Saw",
+      "modelNumber": "PSK1212SB-PCL525B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Kit-w-4-0-Ah-Battery-2-0-Ah-Battery-Charger-FREE-ONE-Cordless-Jig-Saw-PSK1212SB-PCL525B/341967500"
+     }
+    },
+    "base-searchNav-328690510": {
+     "__typename": "BaseProduct",
+     "itemId": "328690510",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 5-1/2 in. Circular Saw and Jig Saw (Tools Only)",
+      "modelNumber": "PCL500525SB",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+     }
+    },
+    "base-searchNav-329429373": {
+     "__typename": "BaseProduct",
+     "itemId": "329429373",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ HP 18V Brushless Cordless Compact Barrel Grip Jig Saw (Tool Only)",
+      "modelNumber": "PSBJS01B",
+      "canonicalUrl": "/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-Barrel-Grip-Jig-Saw-Tool-Only-PSBJS01B/329429373"
+     }
+    },
+    "base-searchNav-325607047": {
+     "__typename": "BaseProduct",
+     "itemId": "325607047",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless Jig Saw with 2.0 Ah Battery",
+      "modelNumber": "PCL525B-PBP006",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-Jig-Saw-with-2-0-Ah-Battery-PCL525B-PBP006/325607047"
+     }
+    },
+    "base-searchNav-335486525": {
+     "__typename": "BaseProduct",
+     "itemId": "335486525",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ HP 18V Brushless Cordless Multi-Tool and Jig Saw Kit (Tools Only)",
+      "modelNumber": "PBLMT51JS01SB",
+      "canonicalUrl": "/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Multi-Tool-and-Jig-Saw-Kit-Tools-Only-PBLMT51JS01SB/335486525"
+     }
+    },
+    "base-searchNav-324616618": {
+     "__typename": "BaseProduct",
+     "itemId": "324616618",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)",
+      "modelNumber": "PCL500B-PCL525B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500B-PCL525B/324616618"
+     }
+    },
+    "base-searchNav-320653627": {
+     "__typename": "BaseProduct",
+     "itemId": "320653627",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V 18-Gauge Cordless AirStrike Brad Nailer with Cordless Jig Saw",
+      "modelNumber": "P321-PCL525B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-18-Gauge-Cordless-AirStrike-Brad-Nailer-with-Cordless-Jig-Saw-P321-PCL525B/320653627"
+     }
+    },
+    "base-searchNav-323071635": {
+     "__typename": "BaseProduct",
+     "itemId": "323071635",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 7-1/4 in. Compound Miter Saw and Jig Saw (Tools Only)",
+      "modelNumber": "P553-PCL525B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-7-1-4-in-Compound-Miter-Saw-and-Jig-Saw-Tools-Only-P553-PCL525B/323071635"
+     }
+    },
+    "base-searchNav-320511066": {
+     "__typename": "BaseProduct",
+     "itemId": "320511066",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless Jig Saw Kit with Compact Battery and Charger",
+      "modelNumber": "PCL525K1",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-Jig-Saw-Kit-with-Compact-Battery-and-Charger-PCL525K1/320511066"
+     }
+    },
+    "base-searchNav-326258768": {
+     "__typename": "BaseProduct",
+     "itemId": "326258768",
+     "identifiers": {
+      "brandName": "RYOBI",
+      "productLabel": "ONE+ 18V Cordless 2-Tool Combo Kit with 1/4 Sheet Sander and Jig Saw (Tools Only)",
+      "modelNumber": "PCL401B-PCL525B",
+      "canonicalUrl": "/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-1-4-Sheet-Sander-and-Jig-Saw-Tools-Only-PCL401B-PCL525B/326258768"
+     }
+    }
+   }
+  },
+  "zzqx notaproduct 98765": {
+   "status": 200,
+   "finalPath": "/s/zzqx%20notaproduct%2098765",
+   "state": {
+    "base-searchNav-700114357": {
+     "__typename": "BaseProduct",
+     "itemId": "700114357",
+     "identifiers": {
+      "brandName": "Munters",
+      "productLabel": "Plc,Alc/Oem, I/O 8160 Expansion Board 150-038194-007",
+      "modelNumber": "150-038194-007",
+      "canonicalUrl": "/p/Munters-Plc-Alc-Oem-I-O-8160-Expansion-Board-150-038194-007-150-038194-007/700114357"
+     }
+    },
+    "base-searchNav-700098466": {
+     "__typename": "BaseProduct",
+     "itemId": "700098466",
+     "identifiers": {
+      "brandName": "Bell And Gossett",
+      "productLabel": "Psh-4 Primary/Secondary Hdr 112471",
+      "modelNumber": "112471",
+      "canonicalUrl": "/p/Bell-And-Gossett-Psh-4-Primary-Secondary-Hdr-112471-112471/700098466"
+     }
+    },
+    "base-searchNav-327088458": {
+     "__typename": "BaseProduct",
+     "itemId": "327088458",
+     "identifiers": {
+      "brandName": "MIGHTY MAX BATTERY",
+      "productLabel": "7.5V 600mAh Battery for Motorola Series MU21CV, MU22CVS, MU24CV - 4 Pack",
+      "modelNumber": "MAX3495963",
+      "canonicalUrl": "/p/MIGHTY-MAX-BATTERY-7-5V-600mAh-Battery-for-Motorola-Series-MU21CV-MU22CVS-MU24CV-4-Pack-MAX3495963/327088458"
+     }
+    },
+    "base-searchNav-328599480": {
+     "__typename": "BaseProduct",
+     "itemId": "328599480",
+     "identifiers": {
+      "brandName": "MIGHTY MAX BATTERY",
+      "productLabel": "ML-HNN9044 Battery for Motorola Radius SP21 2-Way Radio - 2 Pack",
+      "modelNumber": "MAX3458893",
+      "canonicalUrl": "/p/MIGHTY-MAX-BATTERY-ML-HNN9044-Battery-for-Motorola-Radius-SP21-2-Way-Radio-2-Pack-MAX3458893/328599480"
+     }
+    },
+    "base-searchNav-323920931": {
+     "__typename": "BaseProduct",
+     "itemId": "323920931",
+     "identifiers": {
+      "brandName": "MIGHTY MAX BATTERY",
+      "productLabel": "7.5V 600mAh Battery for Motorola Spirit PRO SU22C, SU220 - 2 Pack",
+      "modelNumber": "MAX3495915",
+      "canonicalUrl": "/p/MIGHTY-MAX-BATTERY-7-5V-600mAh-Battery-for-Motorola-Spirit-PRO-SU22C-SU220-2-Pack-MAX3495915/323920931"
+     }
+    },
+    "base-searchNav-321249911": {
+     "__typename": "BaseProduct",
+     "itemId": "321249911",
+     "identifiers": {
+      "brandName": "MIGHTY MAX BATTERY",
+      "productLabel": "Battery for Motorola PRO1150, SP10, SP21 (4-Pack)",
+      "modelNumber": "ML-HNN9044MP4",
+      "canonicalUrl": "/p/MIGHTY-MAX-BATTERY-Battery-for-Motorola-PRO1150-SP10-SP21-4-Pack-ML-HNN9044MP4/321249911"
+     }
+    },
+    "base-searchNav-328330303": {
+     "__typename": "BaseProduct",
+     "itemId": "328330303",
+     "identifiers": {
+      "brandName": "MIGHTY MAX BATTERY",
+      "productLabel": "7.5V 600mAh Battery for Motorola SP10 Model P24RRC23F2BA - 2 Pack",
+      "modelNumber": "MAX3495921",
+      "canonicalUrl": "/p/MIGHTY-MAX-BATTERY-7-5V-600mAh-Battery-for-Motorola-SP10-Model-P24RRC23F2BA-2-Pack-MAX3495921/328330303"
+     }
+    },
+    "base-searchNav-330758426": {
+     "__typename": "BaseProduct",
+     "itemId": "330758426",
+     "identifiers": {
+      "brandName": "MIGHTY MAX BATTERY",
+      "productLabel": "HNN9044 Battery for Motorola PRO1150 2-Way Radio - 4 Pack",
+      "modelNumber": "MAX3458917",
+      "canonicalUrl": "/p/MIGHTY-MAX-BATTERY-HNN9044-Battery-for-Motorola-PRO1150-2-Way-Radio-4-Pack-MAX3458917/330758426"
+     }
+    },
+    "base-searchNav-700055628": {
+     "__typename": "BaseProduct",
+     "itemId": "700055628",
+     "identifiers": {
+      "brandName": "Nortek",
+      "productLabel": "Nortek Repl Mtr Dm2X Prog 1/2Hp Q7Re 3T M0104402R",
+      "modelNumber": "M0104402R",
+      "canonicalUrl": "/p/Nortek-Nortek-Repl-Mtr-Dm2X-Prog-1-2Hp-Q7Re-3T-M0104402R-M0104402R/700055628"
+     }
+    },
+    "base-searchNav-339770214": {
+     "__typename": "BaseProduct",
+     "itemId": "339770214",
+     "identifiers": {
+      "brandName": "MIGHTY MAX BATTERY",
+      "productLabel": "MLHNN9044 Battery for Motorola PRO1150, SP10, SP21 - 2 Pack",
+      "modelNumber": "MAX3495912",
+      "canonicalUrl": "/p/MIGHTY-MAX-BATTERY-MLHNN9044-Battery-for-Motorola-PRO1150-SP10-SP21-2-Pack-MAX3495912/339770214"
+     }
+    },
+    "base-searchNav-700102815": {
+     "__typename": "BaseProduct",
+     "itemId": "700102815",
+     "identifiers": {
+      "brandName": "Lochinvar",
+      "productLabel": "K Board Computer 110U Ser 200 100270582",
+      "modelNumber": "100270582",
+      "canonicalUrl": "/p/Lochinvar-K-Board-Computer-110U-Ser-200-100270582-100270582/700102815"
+     }
+    },
+    "base-searchNav-700110613": {
+     "__typename": "BaseProduct",
+     "itemId": "700110613",
+     "identifiers": {
+      "brandName": "Modine",
+      "productLabel": "Purge Card 5H0799520000",
+      "modelNumber": "5H0799520000",
+      "canonicalUrl": "/p/Modine-Purge-Card-5H0799520000-5H0799520000/700110613"
+     }
+    }
+   }
+  }
+ }
+}
