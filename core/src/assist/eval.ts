@@ -55,6 +55,8 @@ export function outcomeOf(s: Suggestion, truth: AssistTruth): AssistOutcome {
   const a = s.answer;
   if (a.decision === 'none') return truth.kind === 'none' ? 'verified_correct' : 'verified_wrong';
   if (truth.kind !== 'choose') return 'verified_wrong';
+  // Ask AI never proposes parts (only research does, scored by research/eval.ts); here they match no reading.
+  if (a.decision === 'parts') return 'verified_wrong';
   if (a.kind === 'split') return 'choiceIndex' in truth && truth.choiceIndex === a.choiceIndex ? 'verified_correct' : 'verified_wrong';
   return 'asins' in truth && truth.asins.includes(a.asin) ? 'verified_correct' : 'verified_wrong';
 }
@@ -85,6 +87,7 @@ export interface AssistEvalScore {
 const said = (s: Suggestion): string => {
   if (s.status !== 'verified') return s.status;
   const a = s.answer;
+  if (a.decision === 'parts') return `parts ${a.parts.join(', ')}`;
   return a.decision === 'none' ? 'none' : a.kind === 'split' ? `reading ${a.choiceIndex} (${a.parts.join(', ')})` : `listing ${a.asin}`;
 };
 

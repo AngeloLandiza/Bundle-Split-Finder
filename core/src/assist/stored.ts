@@ -85,6 +85,11 @@ export function proposedAnswer(suggestion: Suggestion, question: ReviewItem): st
     const a = suggestion.answer;
     return a.decision === 'none' ? NONE : a.kind === 'split' ? a.parts.join(',') : a.asin;
   }
+  // Step 12 research: an unverified parts answer proposed those parts, each as many times as its quantity.
+  if (suggestion.status === 'unverified' && suggestion.claimed === null && suggestion.researchClaim?.decision === 'parts') {
+    const parts = suggestion.researchClaim.parts.flatMap((p) => Array<string>(Math.max(0, Math.min(9, p.qty))).fill(p.model.trim().toUpperCase()));
+    return parts.length > 0 ? parts.join(',') : null;
+  }
   if (suggestion.status !== 'unverified' || suggestion.claimed === null) return null;
   const raw = suggestion.claimed;
   if (raw.decision === 'none') return NONE;

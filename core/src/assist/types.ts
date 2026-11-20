@@ -6,6 +6,7 @@
 // fetching, no search); the model's answer is read by verify.ts, which decides what it is worth.
 
 import type { NotJudged, TokenUsage } from '../judge/types';
+import type { ResearchAnswer } from '../research/types';
 
 /** One line of a source, as the model is shown it and as a quote is searched in. */
 export interface EvidenceLine {
@@ -89,14 +90,24 @@ export interface VerifiedQuote {
 export type SuggestedAnswer =
   | { decision: 'choose'; kind: 'split'; choiceIndex: number; parts: string[] }
   | { decision: 'choose'; kind: 'match'; asin: string; title: string }
-  | { decision: 'none' };
+  | { decision: 'none' }
+  /**
+   * Step 12 research: parts the AI found, not one of the question's readings. `parts` lists each model
+   * as many times as its quantity, as a typed parts answer does (ReviewItem.answerParts). Approve saves
+   * it through the typed parts path.
+   */
+  | { decision: 'parts'; kind: 'split'; parts: string[] };
 
 /** The model's answer after the code's check. */
 export type CheckedSuggestion =
   /** Every quote was found in the source it names, the choice is one offered, and the quotes name it. Still only a suggestion. Only a choice is ever verified. */
   | { status: 'verified'; answer: SuggestedAnswer; quotes: VerifiedQuote[]; reason: string }
   /** The model gave an answer the code could not confirm. Shown as unverified; it preselects nothing. */
-  | { status: 'unverified'; reasons: string[]; claimed: AssistRaw | null }
+  | {
+    status: 'unverified'; reasons: string[]; claimed: AssistRaw | null;
+    /** Step 12 research: the research answer as the model gave it (claimed is null for a parts answer). */
+    researchClaim?: ResearchAnswer;
+  }
   /** The model said the evidence does not settle it. Only quotes that were found are kept. */
   | { status: 'cannot_tell'; reason: string; quotes: VerifiedQuote[] }
   /**
