@@ -5,6 +5,7 @@ import { browser } from 'wxt/browser';
 import type { BundleRow } from '@core/scan/types';
 import { IdbCache } from '../lib/idbCache';
 import { IdbScanStore } from '../lib/idbStore';
+import { IdbSuggestionStore } from '../lib/idbSuggestions';
 import { appendLedger } from '../lib/ledger';
 import { CONTENT_REQUESTS, type ChipSetting, type Request, type ShowThisPage, type StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
@@ -160,6 +161,8 @@ export default defineBackground(() => {
   }
   const worker = createWorker({
     store: new IdbScanStore(),
+    // Step 11: Ask AI's suggestions, in a store of their own.
+    suggestions: new IdbSuggestionStore(),
     cache: new IdbCache(),
     prefs,
     ledger: appendLedger,

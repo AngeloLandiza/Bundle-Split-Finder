@@ -1,7 +1,9 @@
 import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
 import { storeConformance } from '../../core/test/storeConformance';
+import type { StoredSuggestion } from '@core/assist/stored';
 import { IdbScanStore } from './idbStore';
+import { IdbSuggestionStore } from './idbSuggestions';
 import { openDB } from 'idb';
 import { openDb } from './db';
 import { appendLedger, readLedger } from './ledger';
@@ -27,7 +29,7 @@ describe('the database upgrade', () => {
     await v1.add('ledger', { at: 'a', engine: 'e', key: 'k', label: 'l' });
     v1.close();
     const db = await openDb(name);
-    expect(db.version).toBe(4);
+    expect(db.version).toBe(5);
     const s = new IdbScanStore(db);
     expect(await s.getCursor('RYOBI')).toEqual({ brand: 'RYOBI', nextPage: 3, passes: 1, updatedAt: 1 });
     expect(await readLedger(db)).toHaveLength(1);
@@ -54,11 +56,45 @@ describe('the database upgrade', () => {
     await v2.put('cache', { key: 'k', at: 1, data: 1 });
     v2.close();
     const db = await openDb(name);
-    expect(db.version).toBe(4);
+    expect(db.version).toBe(5);
     const s = new IdbScanStore(db);
     expect(await s.getPartPrice('RYOBI:PCL500')).toEqual(r);
     expect(await new IdbCache(db).get('k')).toEqual({ at: 1, data: 1 });
-    expect([...db.objectStoreNames].sort()).toEqual(['bundles', 'cache', 'catalog', 'cursors', 'ebayAnswers', 'ebayValues', 'judgements', 'ledger', 'listings', 'matches', 'partPrices', 'prices', 'review', 'scans']);
+    expect([...db.objectStoreNames].sort()).toEqual(['bundles', 'cache', 'catalog', 'cursors', 'ebayAnswers', 'ebayValues', 'judgements', 'ledger', 'listings', 'matches', 'partPrices', 'prices', 'review', 'scans', 'suggestions']);
+  });
+});
+
+describe('IdbSuggestionStore', () => {
+  const record = (askedAt: number, over: Record<string, unknown> = {}) =>
+    ({ key: `split:homedepot:1|${askedAt}`, questionId: 'split:homedepot:1', seen: '[["A"]]', askedAt, costUsd: 0.01, suggestion: { status: 'cannot_tell', reason: 'r', quotes: [] }, ...over }) as unknown as StoredSuggestion;
+
+  it('keeps every ask, oldest first, and replaces a record of the same key (an outcome added)', async () => {
+    const store = new IdbSuggestionStore(await openDb(fresh()));
+    await store.put(record(200));
+    await store.put(record(100));
+    expect((await store.list()).map((r) => r.askedAt)).toEqual([100, 200]);
+    await store.put(record(100, { outcome: { answeredAt: 150, answer: 'none', agreed: null } }));
+    const all = await store.list();
+    expect(all).toHaveLength(2);
+    expect(all[0]!.outcome).toEqual({ answeredAt: 150, answer: 'none', agreed: null });
+  });
+
+  it('a version 4 database gains only the suggestions store and keeps what it held', async () => {
+    const name = fresh();
+    const v4 = await openDB(name, 4, {
+      upgrade(d) {
+        for (const [store, keyPath] of Object.entries({ bundles: 'key', catalog: 'key', matches: 'key', prices: 'asin', listings: 'asin', cursors: 'brand', review: 'id', scans: 'id', cache: 'key', partPrices: 'key', ebayValues: 'key', judgements: 'key', ebayAnswers: 'key' })) {
+          d.createObjectStore(store, { keyPath });
+        }
+        d.createObjectStore('ledger', { autoIncrement: true });
+      },
+    });
+    await v4.put('cursors', { brand: 'RYOBI', nextPage: 3, passes: 1, updatedAt: 1 });
+    v4.close();
+    const db = await openDb(name);
+    expect(db.version).toBe(5);
+    expect(await new IdbScanStore(db).getCursor('RYOBI')).toEqual({ brand: 'RYOBI', nextPage: 3, passes: 1, updatedAt: 1 });
+    expect(await new IdbSuggestionStore(db).list()).toEqual([]);
   });
 });
 

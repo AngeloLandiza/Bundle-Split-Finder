@@ -4,8 +4,8 @@
 import { openDB, type IDBPDatabase } from 'idb';
 
 export const DB_NAME = 'split-finder';
-/** 2 (step 9): adds partPrices. 3 (step 10): adds ebayValues and judgements. 4: adds ebayAnswers. An upgrade creates only the stores a database lacks, so nothing stored is lost. */
-export const DB_VERSION = 4;
+/** 2 (step 9): adds partPrices. 3 (step 10): adds ebayValues and judgements. 4: adds ebayAnswers. 5 (step 11): adds suggestions. An upgrade creates only the stores a database lacks, so nothing stored is lost. */
+export const DB_VERSION = 5;
 
 /** Object stores and their key paths. The ledger uses an auto-increment key. */
 export const KEYED_STORES = {
@@ -22,6 +22,7 @@ export const KEYED_STORES = {
   ebayValues: 'key',
   judgements: 'key',
   ebayAnswers: 'key',
+  suggestions: 'key',
 } as const;
 
 export type KeyedStore = keyof typeof KEYED_STORES;

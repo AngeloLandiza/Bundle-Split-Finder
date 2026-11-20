@@ -5,7 +5,11 @@
 // calls onTick, and every tick either continues an interrupted scan or starts one that is due.
 // "Rule n" refers to the step 3 plan, Task 5 ("The service worker").
 
-import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer } from '@core/scan/answers';
+import { ClaudeAssist } from '@core/assist/claude';
+import { gatherEvidence } from '@core/assist/evidence';
+import { agreedWith, liveSuggestion, MemorySuggestionStore, suggestionCost, suggestionKey, type StoredSuggestion, type SuggestionStore } from '@core/assist/stored';
+import { suggestAnswer } from '@core/assist/suggest';
+import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer, reviewSignature } from '@core/scan/answers';
 import { EbayClient } from '@core/ebay/client';
 import { ClaudeJudge } from '@core/judge/claude';
 import { applyEbayAnswer, ebayLabelsOf } from '@core/scan/ebayAnswers';
@@ -156,6 +160,8 @@ export interface WorkerEnv {
   judgeFetchFn?: typeof fetch;
   /** The chip's page visits (step 7). Without it, pages are kept in memory and the panel cannot be opened from the chip. */
   pages?: PageEnv;
+  /** Step 11: where Ask AI keeps its suggestions, apart from the scan's store. Without it they are kept in memory, lost with the worker. */
+  suggestions?: SuggestionStore;
 }
 
 /** Who sent a request: the tab, when it came from a content script. */
@@ -191,6 +197,13 @@ function skippedFor(ebay: boolean, anthropic: boolean): string {
   return `eBay reference values were skipped. Add ${need} in Settings to see them.`;
 }
 const NO_MODEL = 'Name the bundle model.';
+const NO_ANTHROPIC_KEY = 'Add your Anthropic key in Settings.';
+/** The sentences of askAi. The question ones are answers.ts's own, so a panel that reads either treats them alike. */
+const ASK_SCAN = 'A scan is running. Ask again when it has finished.';
+const ASK_BUSY = 'Already asking about that question.';
+const ASK_CHANGED = 'That question changed while the AI worked. Ask again.';
+const ASK_NOT_FOUND = 'That question was not found.';
+const ASK_ANSWERED = 'That question was already answered.';
 const ANSWER_LATER = 'A scan is running. Answer again when it has finished.';
 /** An answer or a Change asked for while a Look up or Verify runs, which reads and writes matches and the answer's parts. */
 const ANSWER_AFTER_SEARCH = 'A search is running. Answer again when it has finished.';
@@ -323,6 +336,7 @@ export const progressOf = (job: ScanJob): string => {
 export function createWorker(env: WorkerEnv): Worker {
   const { prefs, store } = env;
   const pages = env.pages ?? memoryPages();
+  const suggestions = env.suggestions ?? new MemorySuggestionStore();
   const baseUrl = env.baseUrl ?? 'https://serpapi.com';
   const accountOf = (key: string) => SerpApiClient.account(key, env.fetchFn, baseUrl);
 
@@ -833,6 +847,13 @@ export function createWorker(env: WorkerEnv): Worker {
       // Step 10: the owner's answers to eBay listing questions, as labels for the judge (fixtures/ebay/labels.json shape),
       // and the questions still open. Listings' titles and pages only: no seller or buyer data is kept.
       ebayAnswers: ebayLabelsOf(await store.listEbayAnswers()), ebayQuestions: report.ebayQuestions ?? [],
+      // Step 11: every Ask AI call. `agreed` is true when the owner's answer is the one suggested, false when it is another, and
+      // null while it is not answered or when the AI could not tell. Quotes are the code's, found in the page; no key is kept.
+      aiSuggestions: (await suggestions.list()).map((r) => ({
+        questionId: r.questionId, source: 'ai' as const, suggestion: r.suggestion, agreed: r.outcome?.agreed ?? null,
+        askedAt: r.askedAt, answeredAt: r.outcome?.answeredAt ?? null, answer: r.outcome?.answer ?? null,
+        model: r.suggestion.model, tokens: r.suggestion.usage ?? null, costUsd: r.costUsd,
+      })),
     };
     return ok(JSON.stringify(audit, null, 2));
   }
@@ -842,7 +863,10 @@ export function createWorker(env: WorkerEnv): Worker {
     // Validated on read, like settings: prefs drops entries that are not a known answer.
     const packaging: Record<string, Packaging> = {};
     for (const [m, a] of Object.entries(await prefs.getPackaging())) if (a === 'retail_boxed' || a === 'loose') packaging[m] = a;
-    return ok({ ...report, packaging });
+    // Step 11: the suggestion to show for each open question, the latest made for the question as it reads now.
+    const records = await suggestions.list();
+    const aiSuggestions = report.review.flatMap((q) => liveSuggestion(records, q) ?? []);
+    return ok({ ...report, packaging, aiSuggestions });
   }
 
   /**
@@ -853,7 +877,7 @@ export function createWorker(env: WorkerEnv): Worker {
    * The request is untrusted: applyReviewAnswer checks its shape (an id, a choice, none or typed parts, and the
    * `seen` signature of the question shown) and refuses anything else with a plain sentence.
    */
-  const answerReview = (id: string, answer: ReviewAnswer): Promise<Reply<null>> =>
+  const answerReview = (id: string, answer: ReviewAnswer, aiSuggestion = false): Promise<Reply<null>> =>
     serial(async () => {
       if (scan !== null) return refuse(ANSWER_LATER);
       if (paid !== null) return refuse(ANSWER_AFTER_SEARCH);
@@ -863,9 +887,63 @@ export function createWorker(env: WorkerEnv): Worker {
         if (err instanceof AnswerRefused) return refuse(err.message);
         throw err;
       }
+      // The answer is saved. Whether it is the one a suggestion on screen proposed is kept for the audit, and never decides the save.
+      if (aiSuggestion) await recordOutcome(id, answer.seen);
       await broadcast();
       return ok(null);
     });
+
+  /** Notes, on the suggestion the owner had in front of them, what they answered and whether it was the suggested answer. */
+  async function recordOutcome(id: string, seen: unknown): Promise<void> {
+    try {
+      const item = await store.getReview(id);
+      if (!item || item.answer === null || typeof seen !== 'string') return;
+      const shown = (await suggestions.list())
+        .filter((r) => r.questionId === id && r.seen === seen && r.outcome === undefined && r.suggestion.status !== 'not_suggested')
+        .sort((a, b) => b.askedAt - a.askedAt)[0];
+      if (shown) await suggestions.put({ ...shown, outcome: { answeredAt: env.now(), answer: item.answer, agreed: agreedWith(shown.suggestion, item) } });
+    } catch {
+      // The answer stands; a suggestion's note is only for the audit.
+    }
+  }
+
+  /** The questions being asked about now: a second press for the same one is refused. */
+  const asking = new Set<string>();
+
+  /**
+   * Step 11, Ask AI. The owner's Anthropic model drafts an answer to one Review question from what the scan stored
+   * (core/src/assist/: the evidence, the code's check of every quote). The result is kept as a suggestion, never as the
+   * question's answer (rule 4): only the owner's Approve, which is answerReview, saves one. Spends no search. It is not taken
+   * through the start gate: a call may take 30 seconds and must not hold a scan back; the question is read again when
+   * the model has answered, and a suggestion for a question that changed meanwhile is dropped. Refused while a scan runs.
+   */
+  async function askAi(questionId: unknown): Promise<Reply<StoredSuggestion>> {
+    if (scan !== null) return refuse(ASK_SCAN);
+    const apiKey = await prefs.getAnthropicKey();
+    if (apiKey === null) return refuse(NO_ANTHROPIC_KEY);
+    const id = typeof questionId === 'string' ? questionId : '';
+    const question = id === '' ? undefined : await store.getReview(id);
+    if (!question) return refuse(ASK_NOT_FOUND);
+    if (question.answer !== null) return refuse(ASK_ANSWERED);
+    if (asking.has(id)) return refuse(ASK_BUSY);
+    asking.add(id);
+    try {
+      const model = (await ebaySettings()).judgeModel;
+      const assist = new ClaudeAssist({ apiKey, model, fetchFn: env.judgeFetchFn ?? env.fetchFn });
+      const suggestion = await suggestAnswer(question, await gatherEvidence(store, question), assist, AbortSignal.timeout(callTimeoutMs));
+      const askedAt = env.now();
+      const record: StoredSuggestion = { key: suggestionKey(id, askedAt), questionId: id, seen: suggestion.seen, askedAt, suggestion, costUsd: suggestionCost(model, suggestion.usage) };
+      // A call that gave nothing and cost nothing leaves no record. One that cost something is kept, for the count of what was spent.
+      if (suggestion.status !== 'not_suggested' || suggestion.usage !== undefined) await suggestions.put(record);
+      // The question as it is now: a scan or an answer may have changed it while the model worked.
+      const now = await store.getReview(id);
+      if (!now || now.answer !== null || reviewSignature(now) !== suggestion.seen) return refuse(ASK_CHANGED);
+      await broadcast();
+      return ok(record);
+    } finally {
+      asking.delete(id);
+    }
+  }
 
   /**
    * Opens again a split question the owner answered (answers.ts, reopenReviewAnswer), so it can be
@@ -1192,7 +1270,9 @@ export function createWorker(env: WorkerEnv): Worker {
       case 'setPackaging':
         return setPackaging(request.model, request.packaging);
       case 'answerReview':
-        return answerReview(request.id, request.answer);
+        return answerReview(request.id, request.answer, request.aiSuggestion === true);
+      case 'askAi':
+        return askAi(request.questionId);
       case 'reopenReview':
         return reopenReview(request.id);
       case 'quote':

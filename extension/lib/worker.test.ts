@@ -981,7 +981,7 @@ describe('worker: exports and saved searches (rule 6)', () => {
     expect(reply.ok).toBe(true);
     const text = reply.ok ? reply.data : '{}';
     const data = JSON.parse(text);
-    expect(Object.keys(data)).toEqual(['kind', 'version', 'exportedAt', 'bundles', 'listings', 'matches', 'answers', 'questions', 'ebayAnswers', 'ebayQuestions']);
+    expect(Object.keys(data)).toEqual(['kind', 'version', 'exportedAt', 'bundles', 'listings', 'matches', 'answers', 'questions', 'ebayAnswers', 'ebayQuestions', 'aiSuggestions']);
     expect(data.ebayAnswers).toEqual([]);
     expect(data.ebayQuestions).toEqual([]);
     expect(data).toMatchObject({ kind: 'split-finder-audit', version: 1, exportedAt: w.clock });

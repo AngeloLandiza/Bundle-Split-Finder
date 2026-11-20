@@ -1,6 +1,7 @@
 // Messages between the extension's pages and its service worker.
 // The service worker is the only context that holds the key and talks to SerpApi.
 
+import type { StoredSuggestion } from '../../core/src/assist/stored';
 import type { ProductPage } from '../../core/src/hdPage';
 import type { PageView } from '../../core/src/scan/pageView';
 import type { UnitRates } from '../../core/src/scan/pipeline';
@@ -37,7 +38,17 @@ export type Request =
   /** Reply data: PanelReport. */
   | { type: 'getReport' }
   | { type: 'setPackaging'; model: string; packaging: Packaging }
-  | { type: 'answerReview'; id: string; answer: ReviewAnswer }
+  /**
+   * `aiSuggestion: true` says an Ask AI suggestion for this question was on screen when the owner answered, so the
+   * worker records whether the answer is the one suggested. Accept all never sends it, and no answer ever comes from a suggestion.
+   */
+  | { type: 'answerReview'; id: string; answer: ReviewAnswer; aiSuggestion?: true }
+  /**
+   * Step 11, Ask AI: one question's evidence (stored by the scan, nothing fetched) goes to the owner's Anthropic model, which
+   * drafts an answer the owner may approve. Spends no search; costs a model call. Refused while a scan runs and with no key.
+   * Reply data: StoredSuggestion. It is saved as a suggestion and never as the question's answer.
+   */
+  | { type: 'askAi'; questionId: string }
   /** Opens again a split question the owner answered, so it can be answered again. Reply data: null. */
   | { type: 'reopenReview'; id: string }
   /** Reply data: Quote, what the action would spend now and why it may not run. Spends nothing. */
@@ -99,6 +110,8 @@ export type Packaging = 'retail_boxed' | 'loose';
 export interface PanelReport extends ScanReport {
   /** The owner's packaging answers by bundle model, upper case. A model not here is not answered. */
   packaging: Record<string, Packaging>;
+  /** Step 11: the Ask AI suggestion to show for each open question that has one (made for the question as it is now). Absent in a report built before it. */
+  aiSuggestions?: StoredSuggestion[];
 }
 
 export type Reply<T = unknown> = { ok: true; data: T } | { ok: false; error: string };
