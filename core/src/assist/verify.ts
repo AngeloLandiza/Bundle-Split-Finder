@@ -3,6 +3,8 @@
 // answer must be one the question offers; and a choice must be shown by quotes that name it. Anything
 // short of that is unverified, which the panel shows without preselecting anything (CLAUDE.md rule 4).
 // Verified means only that the suggestion is grounded in the stored pages: the owner still decides.
+// Only a choice is ever verified: a "none" is `none_suggested` and a "cannot tell" `cannot_tell`, both
+// shown as the AI's view with nothing preselected (fix round 2).
 // Quotes are compared as the listing judge compares them (normaliseText, findModel in judge/verify.ts).
 
 import { findModel, normaliseText } from '../judge/verify';
@@ -80,16 +82,15 @@ export function verifySuggestion(answer: unknown, question: ReviewItem, evidence
   const strip = (qs: typeof quotes): VerifiedQuote[] => qs.map(({ norm: _norm, fields: _fields, ...q }) => q);
 
   if (raw.decision === 'cannot_tell') return { status: 'cannot_tell', reason, quotes: strip(quotes) };
+  // A "none" is never verified (fix round 2): a quote can show what a page says, not that nothing fits.
+  if (raw.decision === 'none') return { status: 'none_suggested', reason, quotes: strip(quotes) };
 
   if (evidence.sources.some((s) => s.lines.some((l) => l.suspect))) {
     problems.push('The page holds text written to an AI; read it yourself before answering.');
   }
 
   let suggested: SuggestedAnswer;
-  if (raw.decision === 'none') {
-    if (quotes.length === 0) problems.push('The answer says none fits, and gives no quote that shows it.');
-    suggested = { decision: 'none' };
-  } else if (question.kind === 'split') {
+  if (question.kind === 'split') {
     const choices = choicesOf(question);
     const i = raw.choiceIndex;
     if (choices.length === 0) {

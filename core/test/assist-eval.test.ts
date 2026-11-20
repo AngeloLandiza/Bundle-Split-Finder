@@ -51,6 +51,13 @@ describe('scoring', () => {
     expect(outcomeOf(verifiedNone, { kind: 'choose', asins: ['B0'] })).toBe('verified_wrong');
     expect(outcomeOf(verifiedNone, { kind: 'uncertain' })).toBe('verified_wrong');
     expect(outcomeOf({ ...meta, status: 'cannot_tell', reason: '', quotes: [] }, { kind: 'uncertain' })).toBe('cannot_tell');
+    // Fix round 2: a none is the AI's view, never verified, so neither right nor wrong.
+    expect(outcomeOf({ ...meta, status: 'none_suggested', reason: '', quotes: [] }, { kind: 'choose', choiceIndex: 0 })).toBe('none_suggested');
+    const s = scoreSuggestions([
+      { questionId: 'x', truth: { kind: 'choose', choiceIndex: 0 }, suggestion: { ...meta, status: 'none_suggested', reason: '', quotes: [] }, called: true },
+      { questionId: 'y', truth: { kind: 'none' }, suggestion: { ...meta, status: 'none_suggested', reason: '', quotes: [] }, called: true },
+    ]);
+    expect(s).toMatchObject({ byOutcome: { none_suggested: 2, verified_wrong: 0 }, noneAgainstKey: [{ questionId: 'x' }], trustworthy: true });
   });
 
   it('counts outcomes, calls, tokens and cost; trustworthy only with no verified-but-wrong', () => {
@@ -59,7 +66,8 @@ describe('scoring', () => {
       { questionId: 'b', truth: { kind: 'choose', choiceIndex: 0 }, suggestion: verifiedSplit(1), called: true },
       { questionId: 'c', truth: { kind: 'none' }, suggestion: { ...meta, status: 'not_suggested', reason: 'x' }, called: false },
     ], PRICE_TABLE['claude-opus-5-5']);
-    expect(s.byOutcome).toEqual({ verified_correct: 1, verified_wrong: 1, unverified: 0, cannot_tell: 0, not_suggested: 1 });
+    expect(s.byOutcome).toEqual({ verified_correct: 1, verified_wrong: 1, unverified: 0, cannot_tell: 0, none_suggested: 0, not_suggested: 1 });
+    expect(s.noneAgainstKey).toEqual([]);
     expect(s.wrong).toEqual([{ questionId: 'b', truth: { kind: 'choose', choiceIndex: 0 }, said: 'reading 1 (A)' }]);
     expect(s.calls).toBe(2);
     expect(s.tokens).toEqual({ input: 2000, output: 200 });
@@ -68,8 +76,8 @@ describe('scoring', () => {
   });
 });
 
-// A fake model: right on PSK1212SB (its Includes line names the parts), a verified "none" on PBP004
-// (wrong: the label says B09HDZ5MPV), cannot_tell everywhere else.
+// A fake model: right on PSK1212SB (its Includes line names the parts), a "none" on PBP004 (against the
+// label, B09HDZ5MPV: returned as none_suggested, never verified), cannot_tell everywhere else.
 const PSK1212SB_INCLUDES = 'Includes: (1) PBP004 18V ONE+ 4Ah Lithium Batteries, (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) PCG002 18V ONE+ Charger';
 const PBP004_TITLE = 'TTI Ryobi PBP004 ONE+ High Performance 18 Volts Lithium-Ion 4.0 Ah Battery';
 const reply = (raw: Partial<AssistRaw>): AssistCallResult => ({
@@ -131,12 +139,13 @@ describe('npm run assist:eval', () => {
     expect(doc.results).toHaveLength(26);
     expect(doc.results.filter((r) => !r.called).map((r) => r.questionId)).toEqual(['split:homedepot:314716732', 'split:homedepot:328690510']);
     expect(first.text).toContain('Verified and correct: 1');
-    expect(first.text).toContain('Verified but wrong: 1 (must be 0 to trust)');
-    expect(first.text).toContain('  match:RYOBI:PBP004: key listing B09HDZ5MPV; assistant none');
+    expect(first.text).toContain('Verified but wrong: 0 (must be 0 to trust)');
+    expect(first.text).toContain("None fits, the AI's view (never verified, preselects nothing): 1, 1 where the key is not none");
+    expect(first.text).toContain('  match:RYOBI:PBP004: key listing B09HDZ5MPV');
     expect(first.text).toContain('Cannot tell: 22');
     expect(first.text).toContain('Not suggested: 2');
     expect(first.text).toContain('Tokens: 24000 in, 2400 out.');
-    expect(first.text).toContain('Overall: FAIL, a verified suggestion disagrees with the key.');
+    expect(first.text).toContain('Overall: no verified suggestion disagrees with the key.');
 
     const again = await run(['--model', MODEL, '--replay'], { outDir: first.outDir, env: () => { throw new Error('env read'); } });
     expect(again.code).toBe(0);

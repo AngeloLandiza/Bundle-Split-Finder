@@ -115,15 +115,33 @@ describe('a split suggestion', () => {
     expect(got).toMatchObject({ status: 'unverified', reasons: ["No quote from the bundle page's Includes, specification lines or description names PSK12B.", "No quote from the bundle page's Includes, specification lines or description names PSK00B."] });
   });
 
-  it("verifies 'none' when a quote shows it (PSK1200SB holds PBP003 and P119: the answer key typed those)", async () => {
+  // Fix round 2 (controller ruling): a "none" is never verified. Real runs: Haiku said none for
+  // PCL1600K2 + PBP2003 (321809549) and PCL1600K2 + PBP003 (341644756), not knowing the kit's model
+  // stands for its tools, and for P553 and PCL406B, whose labels could not settle them.
+  it("never verifies 'none', even when a quote shows it (PSK1200SB holds PBP003 and P119: the answer key typed those)", async () => {
     const { w, q, ev } = await split('split:homedepot:342303258');
     expect(keyOf(w, q.id)).toEqual(['PBP003', 'P119']);
     const got = verifySuggestion(answer({
-      decision: 'none', evidence: [{ quote: 'Includes: (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) P119 18V ONE+ Charger', source: 'bundle' }],
+      decision: 'none', reason: 'The page lists PBP003 and P119.',
+      evidence: [
+        { quote: 'Includes: (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) P119 18V ONE+ Charger', source: 'bundle' },
+        { quote: 'Includes: (1) PSK12B and (1) PSK00B', source: 'bundle' },
+      ],
     }), q, ev);
-    expect(got).toMatchObject({ status: 'verified', answer: { decision: 'none' } });
-    const bare = verifySuggestion(answer({ decision: 'none' }), q, ev);
-    expect(bare).toMatchObject({ status: 'unverified', reasons: ['The answer says none fits, and gives no quote that shows it.'] });
+    // The AI's view, with only the quotes that were found: the fabricated one is dropped.
+    expect(got).toEqual({
+      status: 'none_suggested', reason: 'The page lists PBP003 and P119.',
+      quotes: [{ quote: 'Includes: (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) P119 18V ONE+ Charger', sourceId: 'bundle', label: 'Home Depot page', url: expect.any(String), names: false }],
+    });
+    expect(verifySuggestion(answer({ decision: 'none' }), q, ev)).toEqual({ status: 'none_suggested', reason: 'Because.', quotes: [] });
+  });
+
+  it("returns 'none' as none_suggested on a real wrong none: PCL1600K2 + PBP003 (341644756), whose key is that reading", async () => {
+    const { w, q, ev } = await split('split:homedepot:341644756');
+    expect(keyOf(w, q.id)).toEqual(q.choices[0]);
+    const title = ev.sources[0]!.lines[0]!.text;
+    const got = verifySuggestion(answer({ decision: 'none', evidence: [{ quote: title, source: 'bundle' }] }), q, ev);
+    expect(got.status).toBe('none_suggested');
   });
 
   it("does not count a kit page's quote as naming what the bundle holds (PCL1201K2-PCL430B)", async () => {

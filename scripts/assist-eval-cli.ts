@@ -153,6 +153,11 @@ function printScore(log: (l: string) => void, s: AssistEvalScore, rows: (AssistE
   }
   log(`Unverified: ${s.byOutcome.unverified}`);
   log(`Cannot tell: ${s.byOutcome.cannot_tell}`);
+  log(`None fits, the AI's view (never verified, preselects nothing): ${s.byOutcome.none_suggested}, ${s.noneAgainstKey.length} where the key is not none`);
+  for (const n of s.noneAgainstKey) {
+    const item = rows.find((r) => r.questionId === n.questionId)!.item;
+    log(`  ${n.questionId}: key ${truthText(n.truth, item)}`);
+  }
   log(`Not suggested: ${s.byOutcome.not_suggested}`);
   log(`Tokens: ${s.tokens.input} in, ${s.tokens.output} out. Cost: ${usd(s.cost ?? costOf({ inputTokens: s.tokens.input, outputTokens: s.tokens.output }, rates))}.`);
   log('Per question:');

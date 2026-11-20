@@ -46,7 +46,8 @@ export function matchTruth(item: ReviewItem, label: MatchLabel | undefined): Ass
   return offered.length > 0 ? { kind: 'choose', asins: offered } : { kind: 'none' };
 }
 
-export type AssistOutcome = 'verified_correct' | 'verified_wrong' | 'unverified' | 'cannot_tell' | 'not_suggested';
+/** none_suggested (fix round 2): the AI's view that nothing fits, never verified, so never right or wrong here. */
+export type AssistOutcome = 'verified_correct' | 'verified_wrong' | 'unverified' | 'cannot_tell' | 'none_suggested' | 'not_suggested';
 
 /** How a suggestion fares against the truth. Only a verified suggestion can be right or wrong. */
 export function outcomeOf(s: Suggestion, truth: AssistTruth): AssistOutcome {
@@ -71,6 +72,8 @@ export interface AssistEvalScore {
   byOutcome: Record<AssistOutcome, number>;
   /** Questions whose verified suggestion disagrees with the key: must be none to trust the assistant. */
   wrong: { questionId: string; truth: AssistTruth; said: string }[];
+  /** none_suggested where the key is not "none": shown to the owner, preselecting nothing, so not wrong; listed to watch. */
+  noneAgainstKey: { questionId: string; truth: AssistTruth }[];
   /** Model calls made (a question that offers nothing is not called). */
   calls: number;
   tokens: { input: number; output: number };
@@ -86,7 +89,8 @@ const said = (s: Suggestion): string => {
 };
 
 export function scoreSuggestions(rows: AssistEvalRow[], rates?: PriceRates): AssistEvalScore {
-  const byOutcome: Record<AssistOutcome, number> = { verified_correct: 0, verified_wrong: 0, unverified: 0, cannot_tell: 0, not_suggested: 0 };
+  const byOutcome: Record<AssistOutcome, number> = { verified_correct: 0, verified_wrong: 0, unverified: 0, cannot_tell: 0, none_suggested: 0, not_suggested: 0 };
+  const noneAgainstKey: AssistEvalScore['noneAgainstKey'] = [];
   const wrong: AssistEvalScore['wrong'] = [];
   let calls = 0;
   const usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
@@ -94,6 +98,7 @@ export function scoreSuggestions(rows: AssistEvalRow[], rates?: PriceRates): Ass
     const o = outcomeOf(r.suggestion, r.truth);
     byOutcome[o]++;
     if (o === 'verified_wrong') wrong.push({ questionId: r.questionId, truth: r.truth, said: said(r.suggestion) });
+    if (o === 'none_suggested' && r.truth.kind !== 'none') noneAgainstKey.push({ questionId: r.questionId, truth: r.truth });
     if (r.called) calls++;
     if (r.suggestion.usage) {
       usage.inputTokens += r.suggestion.usage.inputTokens;
@@ -101,7 +106,7 @@ export function scoreSuggestions(rows: AssistEvalRow[], rates?: PriceRates): Ass
     }
   }
   return {
-    questions: rows.length, byOutcome, wrong, calls,
+    questions: rows.length, byOutcome, wrong, noneAgainstKey, calls,
     tokens: { input: usage.inputTokens, output: usage.outputTokens },
     cost: rates ? costOf(usage, rates) : null,
     trustworthy: byOutcome.verified_wrong === 0,

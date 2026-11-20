@@ -81,7 +81,11 @@ export interface VerifiedQuote {
   names: boolean;
 }
 
-/** What the owner would be asked to approve. For a split the reading's parts; for a match the listing. */
+/**
+ * What the owner would be asked to approve. For a split the reading's parts; for a match the listing.
+ * `{ decision: 'none' }` is kept for code written against it, but verifySuggestion no longer returns
+ * it (fix round 2): a "none" is `none_suggested`, never verified.
+ */
 export type SuggestedAnswer =
   | { decision: 'choose'; kind: 'split'; choiceIndex: number; parts: string[] }
   | { decision: 'choose'; kind: 'match'; asin: string; title: string }
@@ -89,12 +93,19 @@ export type SuggestedAnswer =
 
 /** The model's answer after the code's check. */
 export type CheckedSuggestion =
-  /** Every quote was found in the source it names, the choice is one offered, and the quotes name it. Still only a suggestion. */
+  /** Every quote was found in the source it names, the choice is one offered, and the quotes name it. Still only a suggestion. Only a choice is ever verified. */
   | { status: 'verified'; answer: SuggestedAnswer; quotes: VerifiedQuote[]; reason: string }
   /** The model gave an answer the code could not confirm. Shown as unverified; it preselects nothing. */
   | { status: 'unverified'; reasons: string[]; claimed: AssistRaw | null }
   /** The model said the evidence does not settle it. Only quotes that were found are kept. */
-  | { status: 'cannot_tell'; reason: string; quotes: VerifiedQuote[] };
+  | { status: 'cannot_tell'; reason: string; quotes: VerifiedQuote[] }
+  /**
+   * The model said none of the readings or listings fits (fix round 2). Never verified: one found quote
+   * cannot show that nothing fits (real runs: Haiku said none for a kit it did not recognise by its
+   * contents, and for listings the key itself could not settle). The panel shows it as the AI's view,
+   * with its reason and the quotes that were found, and preselects nothing. Only found quotes are kept.
+   */
+  | { status: 'none_suggested'; reason: string; quotes: VerifiedQuote[] };
 
 interface SuggestionMeta {
   questionId: string;
