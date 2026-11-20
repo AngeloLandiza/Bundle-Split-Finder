@@ -88,7 +88,7 @@ test('detail, while a scan runs', async ({ context, extensionId, options, server
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   await panel.locator('.deal-row', { has: panel.getByRole('button', { name: /^Look up/ }) }).first().locator('.deal-link').click();
   await expect(panel.getByRole('heading', { level: 2, name: /^PARTS · / })).toBeVisible();
-  await expect(panel.locator('.progress-now')).toHaveText(/^(Scanning$|Fetching Home Depot deals pages|Reading bundle pages|Reading Home Depot part prices|Looking up parts on Amazon)/);
+  await expect(panel.locator('.progress-now')).toHaveText(/^(Scanning$|Fetching deals pages|Reading bundle pages|Reading part prices|Looking up parts)/);
   await shoot(panel, 'scanning');
 
   await options.evaluate(() => chrome.runtime.sendMessage({ type: 'stopScan' }));

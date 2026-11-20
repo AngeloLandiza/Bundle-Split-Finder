@@ -39,7 +39,7 @@ test('side panel shell, scanning', async ({ context, extensionId, options, serve
   const panel = await context.newPage();
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   await expect(panel.getByRole('button', { name: 'Stop' })).toBeVisible();
-  await expect(panel.locator('.progress-now')).toHaveText(/^(Scanning$|Fetching Home Depot deals pages)/);
+  await expect(panel.locator('.progress-now')).toHaveText(/^(Scanning$|Fetching deals pages)/);
   await expect(panel.getByRole('progressbar', { name: 'Scan progress' })).toBeVisible();
   await shoot(panel, 'scanning');
 

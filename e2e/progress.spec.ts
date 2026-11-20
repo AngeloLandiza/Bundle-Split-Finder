@@ -17,10 +17,11 @@ const isLookup = (search: string): boolean => search.includes('engine=amazon') &
 const ESTIMATE = /^(about \d+ min|under a minute|at least \d+ min|estimating)$/;
 
 async function fits(panel: Page): Promise<void> {
-  // Nothing runs past the panel, and no figure or state word in the step list is cut or wrapped.
+  // Nothing runs past the panel; the step's label and count, the estimate, and no figure or state word in the step list
+  // is cut or wrapped.
   expect(await panel.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   const cut = await panel.evaluate(() =>
-    [...document.querySelectorAll<HTMLElement>('.progress-step-state, .progress-step-figure, .progress-count, .progress-estimate, .progress-toggle')]
+    [...document.querySelectorAll<HTMLElement>('.progress-now, .progress-step-state, .progress-step-figure, .progress-estimate, .progress-toggle')]
       .filter((e) => e.offsetParent !== null)
       .filter((e) => e.scrollWidth > e.clientWidth + 1 || e.getClientRects().length > 1 || e.getBoundingClientRect().height > 24)
       .map((e) => e.textContent),
@@ -58,13 +59,13 @@ test('the progress row: a step and an estimate, Details lists the steps and is r
   const row = panel.locator('.progress');
   await expect(bar).toBeVisible();
   // While it runs the row names a step, and the estimate is always one of its labelled forms.
-  await expect(row.locator('.progress-now')).toHaveText(/^(Scanning|Fetching Home Depot deals pages|Reading bundle pages|Reading Home Depot part prices|Looking up parts on Amazon)/);
+  await expect(row.locator('.progress-now')).toHaveText(/^(Scanning|Fetching deals pages|Reading bundle pages|Reading part prices|Looking up parts)/);
   await expect(row.locator('.progress-estimate')).toHaveText(ESTIMATE);
 
   // Held at the lookups: the mid point.
-  await expect(row.locator('.progress-now')).toHaveText(/^Looking up parts on Amazon · \d+ of \d+$/, { timeout: 60_000 });
+  await expect(row.locator('.progress-now')).toHaveText(/^Looking up parts · \d+ of \d+$/, { timeout: 60_000 });
   await expect(row.locator('.progress-estimate')).toHaveText(ESTIMATE);
-  await expect(bar).toHaveAttribute('aria-valuetext', /^Step 7 of 8, looking up parts on Amazon, /);
+  await expect(bar).toHaveAttribute('aria-valuetext', /^Step 7 of 8, looking up parts, /);
   const now = Number(await bar.getAttribute('aria-valuenow'));
   expect(now).toBeGreaterThan(0);
   expect(now).toBeLessThan(100);
@@ -75,6 +76,12 @@ test('the progress row: a step and an estimate, Details lists the steps and is r
   // The collapsed row is no taller than the row it replaced (37px) by more than the bar's extra pixel.
   expect((await row.boundingBox())!.height).toBeLessThanOrEqual(38);
   await shoot(panel, 'progress-collapsed');
+  // At 480px the estimate shares the step's line; below 424px it has a line of its own, so the label is never cut.
+  const top = async (sel: string) => (await row.locator(sel).boundingBox())!.y;
+  expect(Math.abs((await top('.progress-estimate')) - (await top('.progress-now')))).toBeLessThan(2);
+  await panel.setViewportSize({ width: 360, height: 820 });
+  expect((await top('.progress-estimate')) - (await top('.progress-now'))).toBeGreaterThan(10);
+  await panel.setViewportSize({ width: 480, height: 820 });
 
   await details.click();
   await expect(details).toHaveAttribute('aria-expanded', 'true');
@@ -86,6 +93,8 @@ test('the progress row: a step and an estimate, Details lists the steps and is r
   await expect(items.nth(4)).toHaveText('eBay listingsskippedno eBay keys');
   await expect(items.nth(6)).toHaveText(/^Amazon lookupsnow\d+ of \d+$/);
   await expect(items.nth(7)).toHaveText('Finishnext');
+  // A step with nothing to do says so; none ends "done" with nothing read.
+  await expect(list).not.toContainText(/done0 (read|of)/);
   await shoot(panel, 'progress-expanded');
 
   // Remembered: the panel opened again shows the list without a press.
@@ -100,4 +109,29 @@ test('the progress row: a step and an estimate, Details lists the steps and is r
   await expect(panel.getByRole('button', { name: 'Scan now' })).toBeVisible();
   // The lookups name parts the replay has no recording of: it answers them 404, and the scan goes on.
   expect(seen.console.filter((c) => !c.includes('404'))).toEqual([]);
+});
+
+test('the progress row early in a scan: the bar about a quarter along', async ({ context, extensionId, options, server }) => {
+  await saveKey(options, 'TEST');
+  await expect(options.getByTestId('key-result')).toContainText('Key works.');
+  // The first deals page answers; every search after it waits. eBay and the listing check are skipped (no keys), so two
+  // of the eight steps are settled and the bar stands at a quarter while the totals of the later steps are not known.
+  let searches = 0;
+  server.holdSearches(() => ++searches > 1);
+
+  const panel = await context.newPage();
+  await panel.setViewportSize({ width: 480, height: 820 });
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await options.evaluate(() => chrome.runtime.sendMessage({ type: 'scanNow' }));
+  const row = panel.locator('.progress');
+  await expect(row.locator('.progress-now')).toHaveText(/^Fetching deals pages · 1 of \d+$/, { timeout: 30_000 });
+  await expect(row.locator('.progress-estimate')).toHaveText(ESTIMATE);
+  const now = Number(await panel.getByRole('progressbar', { name: 'Scan progress' }).getAttribute('aria-valuenow'));
+  expect(now).toBeGreaterThanOrEqual(15);
+  expect(now).toBeLessThanOrEqual(45);
+  await shoot(panel, 'progress-collapsed-30');
+
+  server.releaseSearches();
+  await expect.poll(async () => (await getState(options)).data.scanRunning, { timeout: 60_000, intervals: [250] }).toBe(false);
+  await expect(row).toHaveCount(0);
 });
