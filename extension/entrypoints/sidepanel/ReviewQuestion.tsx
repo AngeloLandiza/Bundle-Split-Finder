@@ -5,12 +5,26 @@ import { money } from '../../lib/format';
 import { OpenOnHomeDepot } from './OpenOnHomeDepot';
 import { amazonListingUrl, amazonSearchUrl } from '../../lib/links';
 import { reviewReasonParts } from './reviewReason';
+import type { StoredSuggestion } from '@core/assist/stored';
+import { AiSuggestion, preselectOf } from './AiSuggestion';
 
 const NONE = 'none';
 const ENTER = 'enter';
 /** The worker's refusal for a question that changed (core/src/scan/answers.ts). AcceptSuggested's drift test ties it to the worker. */
 export const CHANGED = 'That question changed. Choose again.';
 export const SCAN_RUNNING = 'A scan is running. Answer when it has finished.';
+
+/** Step 11, Ask AI. Absent where the question cannot ask (no Anthropic key, or a screen that does not offer it). */
+export interface AiControl {
+  /** "about $0.02", said on the button; null when the model has no known rate. */
+  cost: string | null;
+  /** The suggestion made for this question as it reads now, if any. It is never an answer. */
+  suggestion: StoredSuggestion | null;
+  asking: boolean;
+  /** One plain sentence about the last ask that gave nothing. */
+  notice: string | null;
+  onAsk: () => void;
+}
 
 export interface ReviewQuestionProps {
   item: ReviewItem;
@@ -19,8 +33,9 @@ export interface ReviewQuestionProps {
   blocked?: string | null;
   /** Move focus to the question when it appears: the one before it was just answered. */
   focusHeading?: boolean;
-  /** Resolves to a sentence when the answer was refused, null when it was saved. */
-  onSave: (answer: ReviewAnswer) => Promise<string | null>;
+  /** Resolves to a sentence when the answer was refused, null when it was saved. `aiShown`: a suggestion was on screen when the owner answered. */
+  onSave: (answer: ReviewAnswer, aiShown?: boolean) => Promise<string | null>;
+  ai?: AiControl;
   /** Put the question off: nothing is sent or stored. */
   onNotNow?: () => void;
   /** Inside Detail: its head already shows the bundle's title, brand and model, so the question does not repeat them. */
@@ -29,12 +44,16 @@ export interface ReviewQuestionProps {
   homeDepotLink?: string | null;
 }
 
-export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading = false, onSave, onNotNow, compact = false, homeDepotLink = null }: ReviewQuestionProps) {
-  const [picked, setPicked] = useState<string | null>(null);
+export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading = false, onSave, onNotNow, compact = false, homeDepotLink = null, ai }: ReviewQuestionProps) {
+  const suggestion = ai?.suggestion?.suggestion;
+  // A verified suggestion preselects its choice: the owner still presses Approve. Nothing else preselects.
+  const [picked, setPicked] = useState<string | null>(() => (suggestion && suggestion.status !== 'not_suggested' ? preselectOf(suggestion, item) : null));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [typed, setTyped] = useState('');
   const legendRef = useRef<HTMLLegendElement>(null);
+  const blockRef = useRef<HTMLDivElement>(null);
+  const wasAsking = useRef(false);
   const split = item.kind === 'split';
   const subject = `${item.brand} ${item.model}`;
 
@@ -42,6 +61,20 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
   useEffect(() => {
     if (focusHeading) legendRef.current?.focus();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A suggestion that arrives after the owner asked preselects only when they have not chosen yet; their own choice is not taken from them.
+  // The block takes focus then: the button that was pressed is gone.
+  const arrived = ai?.suggestion?.key;
+  useEffect(() => {
+    if (!suggestion || suggestion.status === 'not_suggested') return;
+    const pre = preselectOf(suggestion, item);
+    if (pre !== null) setPicked((p) => p ?? pre);
+    if (wasAsking.current) blockRef.current?.focus();
+    wasAsking.current = false;
+  }, [arrived]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (ai?.asking) wasAsking.current = true;
+  }, [ai?.asking]);
 
   // A refusal belongs to the attempt that met it: a scan starting makes it stale.
   useEffect(() => {
@@ -59,7 +92,7 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
       picked === NONE ? { none: true, seen } : picked === ENTER ? { parts: typedParts, seen } : { choice: Number(picked), seen };
     setSaving(true);
     setError(null);
-    const refused = await onSave(answer);
+    const refused = await onSave(answer, suggestion !== undefined && suggestion.status !== 'not_suggested');
     setSaving(false);
     if (refused !== null) {
       setError(refused);
@@ -123,6 +156,7 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
             ),
           )}
         </p>
+        {suggestion && suggestion.status !== 'not_suggested' ? <AiSuggestion ref={blockRef} suggestion={suggestion} item={item} /> : null}
         <div className="review-choices">
           {split && item.choices.length === 0 ? (
             <p className="review-note">No reading could be made from the model number or the page. Enter the parts if you know them.</p>
@@ -189,11 +223,29 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
         </div>
         <div className="review-actions">
           <button type="submit" className="btn btn-primary" disabled={picked === null || (picked === ENTER && typedParts.length === 0) || scanRunning || blocked !== null || saving}>
-            Save answer
+            {suggestion?.status === 'verified' ? 'Approve' : 'Save answer'}
           </button>
           {onNotNow ? (
             <button type="button" className="btn btn-secondary" onClick={onNotNow} disabled={saving}>
               Skip for now
+            </button>
+          ) : null}
+          {ai && !suggestion ? (
+            // aria-disabled, not disabled: the button keeps focus while it reads Asking…
+            <button type="button" className="btn ai-ask" aria-disabled={ai.asking || scanRunning} onClick={() => (ai.asking || scanRunning ? undefined : ai.onAsk())}>
+              {ai.asking ? (
+                'Asking…'
+              ) : (
+                <>
+                  Ask AI
+                  {ai.cost ? (
+                    <>
+                      {' · '}
+                      <span className="figure">{ai.cost}</span>
+                    </>
+                  ) : null}
+                </>
+              )}
             </button>
           ) : null}
         </div>
@@ -204,6 +256,11 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
         ) : error ? (
           <p className="review-sentence" role="alert">
             {error}
+          </p>
+        ) : null}
+        {ai?.notice ? (
+          <p className="review-sentence" role="status">
+            {ai.notice}
           </p>
         ) : null}
       </fieldset>

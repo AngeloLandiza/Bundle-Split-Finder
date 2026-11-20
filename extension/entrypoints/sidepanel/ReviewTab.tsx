@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import { askCostLabel } from '@core/assist/cost';
+import { DEFAULT_CLAUDE_JUDGE_MODEL } from '@core/judge/claude';
+import { liveSuggestion, type StoredSuggestion } from '@core/assist/stored';
 import { reviewSignature } from '@core/scan/answers';
 import type { EbayQuestion as EbayQ, ReviewAnswer, ReviewItem } from '@core/scan/types';
 import type { AppState, PanelReport } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { AcceptSuggested, suggestedOf, useAcceptAll } from './AcceptSuggested';
 import { EbayQuestion, type EbayChoice } from './EbayQuestion';
+import { notSuggestedSentence } from './AiSuggestion';
 import { ReviewQuestion } from './ReviewQuestion';
 import './ReviewTab.css';
 
@@ -29,6 +33,10 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const [pass, setPass] = useState<readonly string[]>([]);
   const [focusNext, setFocusNext] = useState(false);
   const emptyRef = useRef<HTMLParagraphElement>(null);
+  // Step 11, Ask AI: the question being asked about, what the last ask said when it gave nothing, and the suggestions asked for in this panel.
+  const [asking, setAsking] = useState<string | null>(null);
+  const [aiNotice, setAiNotice] = useState<{ id: string; text: string } | null>(null);
+  const [got, setGot] = useState<Readonly<Record<string, StoredSuggestion>>>({});
 
   const keyOf = (r: ReviewItem) => `${r.id}|${reviewSignature(r)}`;
   const ebayKeyOf = (q: EbayQ) => `ebay:${q.id}`;
@@ -83,6 +91,30 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
     if (focusNext) setFocusNext(false);
   }, [focusNext]);
 
+  // The button exists only with an Anthropic key saved; its price is the Settings model's.
+  const hasAi = state.ebay?.hasAnthropicKey === true;
+  const aiCost = askCostLabel(state.ebay?.judgeModel ?? DEFAULT_CLAUDE_JUDGE_MODEL);
+  /** Only a suggestion made for the question as it reads now: one for other choices is not shown, whatever the panel holds. */
+  const suggestionFor = (r: ReviewItem): StoredSuggestion | null => {
+    const mine = got[r.id];
+    return liveSuggestion([...(mine ? [mine] : []), ...(report?.aiSuggestions ?? [])], r) ?? null;
+  };
+  const ask = async (r: ReviewItem): Promise<void> => {
+    if (asking !== null) return;
+    setAsking(r.id);
+    setAiNotice(null);
+    try {
+      const reply = await api.send<StoredSuggestion>({ type: 'askAi', questionId: r.id });
+      if (!reply.ok) setAiNotice({ id: r.id, text: reply.error });
+      else if (reply.data.suggestion.status === 'not_suggested') setAiNotice({ id: r.id, text: notSuggestedSentence(reply.data.suggestion) });
+      else setGot((g) => ({ ...g, [r.id]: reply.data }));
+    } catch {
+      setAiNotice({ id: r.id, text: UNREACHABLE });
+    } finally {
+      setAsking(null);
+    }
+  };
+
   if (!report) return <p className="review-empty">No scan has finished yet.</p>;
   if (!entry) {
     return (
@@ -100,10 +132,11 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   // Questions already passed over in this round come before the one shown; at the start of a new round, none.
   const ahead = pass.includes(entry.key) ? 0 : open.filter((e) => e !== entry && pass.includes(e.key)).length;
 
-  const save = async (answer: ReviewAnswer): Promise<string | null> => {
+  const save = async (answer: ReviewAnswer, aiShown = false): Promise<string | null> => {
     if (!item) return null;
     try {
-      const reply = await api.send({ type: 'answerReview', id: item.id, answer });
+      // `aiSuggestion` only says a suggestion was on screen: the answer is the owner's, and it is saved as any answer is.
+      const reply = await api.send({ type: 'answerReview', id: item.id, answer, ...(aiShown ? { aiSuggestion: true as const } : {}) });
       if (!reply.ok) return reply.error;
     } catch {
       return UNREACHABLE;
@@ -152,6 +185,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
           focusHeading={focusNext}
           onSave={save}
           onNotNow={notNow}
+          ai={hasAi ? { cost: aiCost, suggestion: suggestionFor(item), asking: asking === item.id, notice: aiNotice?.id === item.id ? aiNotice.text : null, onAsk: () => void ask(item) } : undefined}
         />
       ) : 'ebay' in entry ? (
         <EbayQuestion key={entry.key} question={entry.ebay} scanRunning={state.scanRunning} focusHeading={focusNext} onSave={saveEbay} onNotNow={notNow} />

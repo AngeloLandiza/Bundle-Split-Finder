@@ -1,0 +1,97 @@
+/* Ask AI (step 11): plain text in a thin ink-2 rule. No fill, no card, no icon. design.md, "Ask AI on Review questions". */
+.ai-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 12px;
+  border-left: 2px solid var(--ink-2);
+  min-width: 0;
+}
+.ai-block:focus {
+  outline: none;
+}
+.ai-block:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.ai-block > p,
+.ai-block > ul {
+  margin: 0;
+}
+/* The section label's style. */
+.ai-label {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.ai-answer {
+  overflow-wrap: anywhere;
+}
+.ai-answer.figure {
+  font-size: 13px;
+  line-height: 18px;
+}
+.ai-answer .figure {
+  font-size: 12px;
+}
+.ai-reason {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.ai-quotes {
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ai-quotes li {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+/* A quote is a line of the page, word for word. Long ones are held to four lines; the whole text is its title. */
+.ai-quote {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+  color: var(--ink-2);
+}
+.ai-source {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--link);
+}
+.ai-source-plain {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* The Ask AI button: a text button in the action row, after the answer controls. */
+.btn.ai-ask {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0 8px;
+}
+.btn.ai-ask .figure {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.btn.ai-ask[aria-disabled='true'] {
+  background: transparent;
+  border: 0;
+  color: var(--ink-3);
+  cursor: default;
+}
+.btn.ai-ask[aria-disabled='true'] .figure {
+  color: var(--ink-3);
+}
