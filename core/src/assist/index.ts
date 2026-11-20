@@ -8,3 +8,4 @@ export * from './schema';
 export * from './verify';
 export * from './suggest';
 export * from './claude';
+export * from './eval';
