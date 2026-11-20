@@ -24,6 +24,31 @@ const CATALOG_ENTRIES_MAX = 20;
 const QUERY_MAX = 200;
 const HOME_DEPOT = 'https://www.homedepot.com';
 const LOAD_TIMEOUT_MS = 30_000;
+/** What a call ended by the research's signal says; the tools turn it into their `stopped` answer. */
+const STOPPED = 'stopped';
+
+/** `work`'s result, or a rejection the moment `signal` fires. `work` is left to end on its own; its late result or failure is dropped. */
+function untilStopped<T>(work: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (signal === undefined) return work;
+  if (signal.aborted) {
+    work.catch(() => undefined);
+    return Promise.reject(new Error(STOPPED));
+  }
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(new Error(STOPPED));
+    signal.addEventListener('abort', onAbort, { once: true });
+    work.then(
+      (v) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(v);
+      },
+      (e) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(e);
+      },
+    );
+  });
+}
 
 /** Shared by every tool of one question: `take()` is true while page reads and searches are left. */
 export interface QuestionBudget {
@@ -131,28 +156,37 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
   let lastEnded: number | null = null;
   let queue: Promise<unknown> = Promise.resolve();
 
-  /** One doorway at a time; a failure of one call never blocks the next. */
-  const inDoorway = <T>(startUrl: string, run: (tabId: number) => Promise<T>): Promise<T> => {
+  /**
+   * One doorway at a time; a failure of one call never blocks the next. `signal` is the research's: the owner's Stop or the question's
+   * time limit. When it fires, the call in flight ends at once (the pause, the load, the settle or the read), the doorway tab is closed
+   * and no tab is left open, and a call still waiting its turn opens none. The call then throws STOPPED.
+   */
+  const inDoorway = <T>(startUrl: string, run: (tabId: number) => Promise<T>, signal?: AbortSignal): Promise<T> => {
     const job = queue.then(async () => {
+      if (signal?.aborted) throw new Error(STOPPED);
       if (lastEnded !== null) {
         const left = pauseMs - (now() - lastEnded);
-        if (left > 0) await env.sleep(left);
+        if (left > 0) await untilStopped(env.sleep(left), signal);
       }
       const stale = await env.remembered();
       if (stale !== null) {
         await env.closeTab(stale).catch(() => undefined);
         await env.remember(null);
       }
+      if (signal?.aborted) throw new Error(STOPPED);
       const tabId = await env.openTab(startUrl);
       try {
         await env.remember(tabId);
+        // Stopped while the tab was opening: the tab is known now, and closed below.
+        if (signal?.aborted) throw new Error(STOPPED);
         try {
-          await env.waitForLoad(tabId, LOAD_TIMEOUT_MS);
-        } catch {
+          await untilStopped(env.waitForLoad(tabId, LOAD_TIMEOUT_MS), signal);
+        } catch (e) {
+          if (signal?.aborted) throw new Error(STOPPED);
           throw new Error('The Home Depot tab did not load.');
         }
-        if (settleMs > 0) await env.sleep(settleMs);
-        return await run(tabId);
+        if (settleMs > 0) await untilStopped(env.sleep(settleMs), signal);
+        return await untilStopped(run(tabId), signal);
       } finally {
         await env.closeTab(tabId).catch(() => undefined);
         await env.remember(null).catch(() => undefined);
@@ -176,7 +210,7 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
         if (refused) return { error: REFUSED_BEFORE };
         if (!budget.take()) return { error: 'limit' };
         try {
-          const answered = await inDoorway(`${env.origin}/p/${itemId}`, (tabId) => env.runInTab(tabId, fetchPagesInTab, [[itemId], 1]));
+          const answered = await inDoorway(`${env.origin}/p/${itemId}`, (tabId) => env.runInTab(tabId, fetchPagesInTab, [[itemId], 1]), signal);
           const got = Array.isArray(answered) ? answered.find((r) => r.itemId === itemId) : undefined;
           if (got && got.status === 404) return { error: `Home Depot has no page for item ${itemId}.` };
           if (!got || got.status !== 200 || got.text === null) {
@@ -187,6 +221,7 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
           if (sections === null) return { error: `The page for item ${itemId} could not be read.` };
           return { sourceId: `hd-page:${itemId}`, label: 'Home Depot page', url: `${HOME_DEPOT}/p/${itemId}`, sections };
         } catch (e) {
+          if (signal?.aborted) return { error: STOPPED };
           return { error: e instanceof Error ? e.message : 'The Home Depot page could not be read.' };
         }
       };
@@ -201,7 +236,7 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
         // The address a quote's source link shows is Home Depot's own, whatever origin the doorway read it from (the end-to-end build reads a local replay).
         const shownUrl = `${HOME_DEPOT}/s/${encodeURIComponent(query)}`;
         try {
-          const answered = await inDoorway(url, (tabId) => env.runInTab(tabId, fetchSearchPageInTab, [query]));
+          const answered = await inDoorway(url, (tabId) => env.runInTab(tabId, fetchSearchPageInTab, [query]), signal);
           if (!answered || answered.status !== 200 || answered.text === null) {
             refused = true;
             return { error: `Home Depot refused the search (${statusNote(answered ? answered.status : 0)}); no more are made for this question.` };
@@ -215,6 +250,7 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
             results: rows.slice(0, SEARCH_RESULTS_MAX).map((r) => ({ title: r.title, brand: r.brand, model: r.model, itemId: r.itemId, url: `${HOME_DEPOT}/p/${r.itemId}` })),
           };
         } catch (e) {
+          if (signal?.aborted) return { error: STOPPED };
           return { error: e instanceof Error ? e.message : 'The Home Depot search could not be read.' };
         }
       };

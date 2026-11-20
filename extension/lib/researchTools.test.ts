@@ -249,6 +249,101 @@ describe('readHomeDepotPage', () => {
   });
 });
 
+describe('the research signal reaches the doorway: a 60 s limit or Stop ends the read in flight and leaves no tab open', () => {
+  const never = () => new Promise<never>(() => {});
+  const ready = (f: Fake) => new Promise<void>((resolve) => {
+    const poll = () => (f.log.some((l) => l.startsWith('open')) ? resolve() : setTimeout(poll, 1));
+    poll();
+  });
+
+  it('while the page loads: the call answers stopped, the tab is closed and forgotten', async () => {
+    const f = fake();
+    f.env.waitForLoad = never;
+    const stop = new AbortController();
+    const reading = (await tools(f)).forQuestion().readHomeDepotPage({ itemId: PAGE }, stop.signal);
+    await ready(f);
+    stop.abort();
+    expect(await reading).toEqual({ error: 'stopped' });
+    expect(f.log.at(-1)).toBe('close 7');
+    expect(await f.env.remembered()).toBeNull();
+  });
+
+  it('while the tab settles (the pause after the load)', async () => {
+    const f = fake();
+    const sleep = f.env.sleep;
+    f.env.sleep = (ms) => (ms === 2500 ? never() : sleep(ms));
+    const stop = new AbortController();
+    const reading = (await tools(f)).forQuestion().readHomeDepotPage({ itemId: PAGE }, stop.signal);
+    await ready(f);
+    stop.abort();
+    expect(await reading).toEqual({ error: 'stopped' });
+    expect(f.log.at(-1)).toBe('close 7');
+  });
+
+  it('while the page is being read in the tab: a search too', async () => {
+    for (const call of ['page', 'search'] as const) {
+      const f = fake();
+      f.env.runInTab = never;
+      const stop = new AbortController();
+      const q = (await tools(f)).forQuestion();
+      const run = call === 'page' ? q.readHomeDepotPage({ itemId: PAGE }, stop.signal) : q.searchHomeDepot({ query: 'ryobi saw' }, stop.signal);
+      await ready(f);
+      stop.abort();
+      expect(await run, call).toEqual({ error: 'stopped' });
+      expect(f.log.at(-1), call).toBe('close 7');
+      expect(await f.env.remembered(), call).toBeNull();
+    }
+  });
+
+  it('a signal that fires while the tab is still opening: the tab is closed once it exists', async () => {
+    const f = fake();
+    const stop = new AbortController();
+    f.env.openTab = async (url) => {
+      f.log.push(`open ${url}`);
+      stop.abort();
+      return 7;
+    };
+    expect(await (await tools(f)).forQuestion().readHomeDepotPage({ itemId: PAGE }, stop.signal)).toEqual({ error: 'stopped' });
+    expect(f.log).toContain('close 7');
+    expect(f.log.filter((l) => l.startsWith('fetch'))).toEqual([]);
+  });
+
+  it('a call waiting behind another doorway opens no tab once its signal has fired', async () => {
+    const f = fake();
+    let release!: () => void;
+    const held = new Promise<void>((r) => (release = r));
+    const load = f.env.waitForLoad;
+    f.env.waitForLoad = async (id, ms) => {
+      await held;
+      return load(id, ms);
+    };
+    const q = (await tools(f)).forQuestion();
+    const first = q.readHomeDepotPage({ itemId: ids[0] });
+    await ready(f);
+    const stop = new AbortController();
+    const second = q.readHomeDepotPage({ itemId: ids[1] }, stop.signal);
+    stop.abort();
+    release();
+    expect(await second).toEqual({ error: 'stopped' });
+    expect(await first).toMatchObject({ sourceId: expect.any(String) });
+    expect(f.log.filter((l) => l.startsWith('open'))).toHaveLength(1);
+  });
+
+  it('is not a Home Depot refusal: the question\'s later calls are still made', async () => {
+    const f = fake();
+    f.env.runInTab = never;
+    const stop = new AbortController();
+    const q = (await tools(f)).forQuestion();
+    const reading = q.readHomeDepotPage({ itemId: PAGE }, stop.signal);
+    await ready(f);
+    stop.abort();
+    await reading;
+    // The same tool set, a fresh signal: the stop was the owner's or the clock's, so Home Depot is not treated as having refused.
+    f.env.runInTab = fake().env.runInTab;
+    expect(await q.readHomeDepotPage({ itemId: PAGE })).toMatchObject({ sourceId: expect.any(String) });
+  });
+});
+
 describe('searchHomeDepot', () => {
   const rows = (n: number): SearchRow[] =>
     Array.from({ length: n }, (_, i) => ({ title: `Tool ${i}`, brand: 'RYOBI', model: `PCL${i}`, itemId: String(300000000 + i) }));
