@@ -16,7 +16,8 @@ export const PCL500525SB = 'split:homedepot:328690510';
 
 let sources: RecordedSources | null = null;
 export function recorded(): RecordedSources {
-  sources ??= loadRecordedSources('fixtures');
+  // With the validation part price lookups (real Home Depot rows): the tests build ledgers from them; the eval leaves them out.
+  sources ??= loadRecordedSources('fixtures', { partPrices: true });
   return sources;
 }
 

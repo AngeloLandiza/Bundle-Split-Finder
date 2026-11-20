@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { INDEX_LABEL, recordedTools, replayedTools, searchIndex, type ToolCallLog } from '../../scripts/research-tools';
+import { INDEX_LABEL, loadRecordedSources, recordedTools, replayedTools, searchIndex, type ToolCallLog } from '../../scripts/research-tools';
 import { recorded } from './research-world';
 
 const models = (rows: { model: string }[]) => rows.map((r) => r.model);
@@ -18,8 +18,15 @@ describe('the recorded index', () => {
     expect(new Set(ids).size).toBe(ids.length);
     expect(products.find((p) => p.itemId === '318898528')).toMatchObject({ brand: 'RYOBI', model: 'PCL525B', title: 'ONE+ 18V Cordless Jig Saw (Tool Only)' });
     expect(products.find((p) => p.itemId === '328690510')).toMatchObject({ model: 'PCL500525SB' });
-    // From the validation part searches (hd-part-prices-2026-11-18.json) only.
+    // From the validation part searches (hd-part-prices-2026-11-18.json) only: in the tests' sources (research-world asks for them).
     expect(products.some((p) => p.model === 'PCL430B')).toBe(true);
+  });
+
+  it("the eval's index leaves out the validation part price lookups (searched by the true parts' numbers, they would favour them)", () => {
+    const eval_ = loadRecordedSources('fixtures');
+    expect(eval_.products.some((p) => p.model === 'PCL430B')).toBe(false);
+    expect(eval_.products.length).toBeLessThan(recorded().products.length);
+    expect(loadRecordedSources('fixtures', { partPrices: true }).products.some((p) => p.model === 'PCL430B')).toBe(true);
   });
 
   it('a model number in the query comes first, in any written form (PCL525 finds PCL525B)', () => {

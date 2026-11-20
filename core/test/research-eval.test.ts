@@ -122,6 +122,26 @@ describe('npm run research:eval', () => {
   });
 });
 
+describe('npm run research:eval on run 3, both ways (fix round 3)', () => {
+  // Run 3 (Opus 5.5, prompt .3, Nov 20), kept as runs-claude-opus-5-5-prompt3.json. Replayed with the tool results it
+  // kept, then with today's recorded tools: the index without the validation part price lookups no longer holds most of
+  // the parts the model found by their numbers (they were recorded only by those lookups), so the score falls.
+  it('kept results 9 correct; fresh tools without part prices 1; with them 9; never a wrong one', async () => {
+    const outDir = mkdtempSync(join(tmpdir(), 'research-eval-'));
+    const { copyFileSync } = await import('node:fs');
+    copyFileSync('fixtures/research/runs-claude-opus-5-5-prompt3.json', join(outDir, 'runs-claude-opus-5-5.json'));
+    const score = async (...flags: string[]) => {
+      const { log, lines } = quiet();
+      expect(await runResearchEval(['--model', 'claude-opus-5-5', '--replay', ...flags], { log, dir: 'fixtures', outDir, env: () => undefined })).toBe(0);
+      expect(lines).toContain('Verified but wrong: 0 (must be 0 to trust)');
+      return lines.find((l) => l.startsWith('Verified and correct:'));
+    };
+    expect(await score()).toBe('Verified and correct: 9');
+    expect(await score('--fresh-tools')).toBe('Verified and correct: 1');
+    expect(await score('--fresh-tools', '--with-part-prices')).toBe('Verified and correct: 9');
+  });
+});
+
 describe('research scoring and cost', () => {
   it('a question costs its tokens and $0.01 a web search; the button estimate is rounded up to a cent', () => {
     expect(researchCost({ inputTokens: 1_000_000, outputTokens: 0, webSearchRequests: 2 }, PRICE_TABLE['claude-haiku-5-5']!)).toBeCloseTo(0.12);

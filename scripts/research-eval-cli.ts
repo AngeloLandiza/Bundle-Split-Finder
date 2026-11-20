@@ -137,7 +137,7 @@ function takeValue(args: string[], name: string): string | null | undefined {
   return v === undefined || v.startsWith('--') ? null : v;
 }
 
-const USAGE = 'Usage: npm run research:eval -- --model <claude-haiku-5-5|claude-opus-5-5> --dry-run | --run --max-cost <usd> | --replay';
+const USAGE = 'Usage: npm run research:eval -- --model <claude-haiku-5-5|claude-opus-5-5> --dry-run | --run --max-cost <usd> | --replay [--fresh-tools] [--with-part-prices]';
 
 /** A model that answers from a run's stored turns, in order, so a replay goes through the same loop. */
 function replayModel(model: string, turns: ResearchTurn[]): ResearchModel {
@@ -158,6 +158,12 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
   const rest = [...args];
   const model = takeValue(rest, '--model');
   const maxCostArg = takeValue(rest, '--max-cost');
+  // Fix round 3: the validation part price lookups stay out of the search index unless asked for (they favour the true parts).
+  const withPrices = rest.includes('--with-part-prices');
+  if (withPrices) rest.splice(rest.indexOf('--with-part-prices'), 1);
+  // --replay --fresh-tools: the recorded turns, but the tools answer as today's recorded tools do (what the model quoted may be gone).
+  const freshTools = rest.includes('--fresh-tools');
+  if (freshTools) rest.splice(rest.indexOf('--fresh-tools'), 1);
   const known = (CLAUDE_JUDGE_MODELS as readonly string[]).includes(model ?? '');
   const maxCost = maxCostArg == null ? undefined : /^\d+(\.\d+)?$/.test(maxCostArg) && Number(maxCostArg) > 0 ? Number(maxCostArg) : NaN;
   const badValue = maxCostArg === null || Number.isNaN(maxCost);
@@ -178,12 +184,12 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
   let loaded;
   try { loaded = await loadResearchQuestions(deps.dir); } catch (e) { log(e instanceof Error ? e.message : 'Could not read the inputs.'); return 1; }
   const { questions, catalog } = loaded;
-  const sources = loadRecordedSources(deps.dir);
+  const sources = loadRecordedSources(deps.dir, { partPrices: withPrices });
 
   if (mode === '--dry-run') {
     const each = estimatedResearchCost(model) ?? 0;
     log(`Research eval, dry run (no network, no key read). Model ${model}, prompt ${RESEARCH_PROMPT_VERSION}, validation set ${VALIDATION_DATE}.`);
-    log(`Questions: ${questions.length} split questions, reopened from the answer key. Tools: recorded files only (${sources.pages.size} pages, ${sources.searches.size} searches); anything else answers "not recorded".`);
+    log(`Questions: ${questions.length} split questions, reopened from the answer key. Tools: recorded files only (${sources.pages.size} pages, ${sources.searches.size} searches); anything else answers "not recorded". Searches not recorded word for word answer from an index of ${sources.products.length} recorded products${withPrices ? ', the validation part price lookups included' : ' (the validation part price lookups left out; --with-part-prices adds them)'}.`);
     for (const q of questions) {
       const id = /^homedepot:(\d+)$/.exec(q.item.subject)?.[1] ?? '';
       log(`  ${q.item.id}  key ${truthText(q.truth)}${sources.pages.has(id) ? '' : '  (its page is not recorded)'}`);
@@ -211,8 +217,8 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
       const stored = runs.get(q.item.id);
       if (!stored) continue;
       // The tools give back what they gave the model; a run recorded before results were kept asks today's recorded tools.
-      const kept = stored.tools.every((t) => t.result !== undefined);
-      if (!kept) older++;
+      const kept = !freshTools && stored.tools.every((t) => t.result !== undefined);
+      if (!kept && !freshTools) older++;
       const calls: ToolCallLog[] = [];
       const tools = kept ? replayedTools(stored.tools) : recordedTools(sources, catalog, calls);
       const s = await researchQuestion(q.item, q.evidence, tools, replayModel(model, stored.turns), { catalog });
@@ -220,6 +226,7 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
       add(q, s, stored.called);
     }
     if (older > 0) log(`${older} question${older === 1 ? '' : 's'} of this file kept no tool results: their tools answer as today's recorded tools do, which the model may not have seen.`);
+    if (freshTools) log(`--fresh-tools: the tools answer as today's recorded tools do${withPrices ? ', part price lookups included' : ''}, not as they answered the model; what it quoted may be gone.`);
     if (doc.incomplete) cut = { maxCost: doc.maxCost ?? 0, done: doc.results.length, of: questions.length };
   } else {
     const apiKey = deps.env('ANTHROPIC_API_KEY');

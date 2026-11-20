@@ -13,9 +13,10 @@
 //
 // Searches (fix round 1): a query recorded word for word answers as Home Depot did. Any other query
 // answers from the recorded index: every product a recorded search or page shows (the Nov 20 searches
-// and pages, the validation pages and the validation set's part searches), ranked by a model number of
-// the query matching the product's model as a whole token first, then by how many of the query's words
-// its title holds; up to 10. The index is not Home Depot's ranking, and its results are labelled so.
+// and pages, the validation pages; the validation set's part price lookups only when asked for, fix round 3:
+// they were searched by the true parts' numbers and favour them), ranked by a model number of the query
+// matching the product's model as a whole token first, then by how many of the query's words its title
+// holds; up to 10. The index is not Home Depot's ranking, and its results are labelled so.
 // The catalog is the validation replay's catalog (the store the replay builds from recorded files).
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -83,8 +84,12 @@ export interface RecordedSources {
 const jsonFiles = (dir: string, prefix = ''): string[] =>
   existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.json') && f.startsWith(prefix)).sort().map((f) => join(dir, f)) : [];
 
-/** Every recorded page, search and product under `fixtures`, the more specific files first (a page found earlier wins). */
-export function loadRecordedSources(fixtures: string): RecordedSources {
+/**
+ * Every recorded page, search and product under `fixtures`, the more specific files first (a page found earlier wins).
+ * `partPrices` (fix round 3, off by default): also index the validation set's part price lookups. They were searched
+ * by the true parts' model numbers, so they hold the very products the key names and make the eval optimistic.
+ */
+export function loadRecordedSources(fixtures: string, opts: { partPrices?: boolean } = {}): RecordedSources {
   const pages = new Map<string, HomeDepotPage>();
   const searches = new Map<string, HomeDepotSearch>();
   const products = new Map<string, HomeDepotSearchRow>();
@@ -125,7 +130,7 @@ export function loadRecordedSources(fixtures: string): RecordedSources {
     }
   }
   // The validation set's part searches (Nov 18): Home Depot's product for each part model, from its search and page.
-  for (const f of jsonFiles(vdir, 'hd-part-prices-')) {
+  for (const f of opts.partPrices ? jsonFiles(vdir, 'hd-part-prices-') : []) {
     for (const r of Object.values(obj(read(f).prices)).map(obj)) {
       product({ itemId: text(r.itemId), brand: text(r.brand), model: text(r.matchedModel), title: text(r.title) });
     }
