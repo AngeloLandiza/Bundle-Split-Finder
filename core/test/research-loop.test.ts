@@ -194,6 +194,33 @@ describe('researchQuestion', () => {
     expect(r.status === 'unverified' && r.reasons[0]).toMatch(/"18V ONE\+ Jig Saw PCL525B" is not found in the ryobitools.com/);
   });
 
+  it('web searches and fetches are counted across the requests of a question, not per request; the tools sent never change', async () => {
+    // max_uses is per turn, and a request whose last message holds only tool_result blocks (or that resumes a pause_turn)
+    // continues the turn (web search and web fetch tool pages), so the API counts earlier requests' uses too. The loop
+    // counts them itself as well, and sends the same tools on every request: dropping or editing a server tool mid-turn
+    // can be refused (server tools page: keep the same tools) and would rewrite the cached prefix.
+    const { q, evidence, tools, catalog } = await setup();
+    const search = (i: number) => ({ type: 'server_tool_use', id: `srvtoolu_${i}`, name: 'web_search', input: { query: `q${i}` } });
+    const fetch = (i: number) => ({ type: 'server_tool_use', id: `srvtoolu_f${i}`, name: 'web_fetch', input: { url: `https://www.ryobitools.com/p/${i}` } });
+    const runs = [
+      [turn('tool_use', [search(1), use('toolu_1', 'catalog_lookup', { model: 'PCL500', query: null })]), turn('tool_use', [search(2), search(3)])],
+      [turn('pause_turn', [fetch(1)]), turn('tool_use', [fetch(2), use('toolu_2', 'catalog_lookup', { model: 'PCL525', query: null })]), turn('pause_turn', [fetch(3)])],
+    ];
+    const reasons = ['The research reached its limit of 2 web searches before an answer.', 'The research reached its limit of 2 web fetches before an answer.'];
+    for (const [i, script] of runs.entries()) {
+      const { model, requests } = scripted(script);
+      const s = await researchQuestion(q, evidence, tools, model, { catalog });
+      expect(s).toMatchObject({ status: 'not_suggested', reason: reasons[i] });
+      expect(requests.length).toBeGreaterThan(1);
+      for (const r of requests) expect(r.tools).toEqual(requests[0]!.tools);
+      // Every request after the first continues the turn: its last message is the assistant's paused content or only tool_result blocks.
+      for (const r of requests.slice(1)) {
+        const last = r.messages.at(-1)!;
+        expect(last.role === 'assistant' || (last.content as { type: string }[]).every((b) => b.type === 'tool_result')).toBe(true);
+      }
+    }
+  });
+
   it('a third web fetch ends the research', async () => {
     const { q, evidence, tools, catalog } = await setup();
     const fetch = (i: number) => ({ type: 'server_tool_use', id: `srvtoolu_${i}`, name: 'web_fetch', input: { url: `https://www.ryobitools.com/p/${i}` } });
