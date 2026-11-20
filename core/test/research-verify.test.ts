@@ -24,6 +24,7 @@ function rightParts(ledger: ResearchLedgerEntry[]): ResearchPart[] {
         { quote: CIRC_ITEM, sourceId: 'hd-page:328690510' },
         { quote: '18T Carbide Tipped Blade', sourceId: 'hd-page:328690510' },
         { quote: '(2) Hex Wrenches', sourceId: 'bundle' },
+        { quote: rowLine(ledger, 'hd-search:1', 'PCL500B-PCL525B'), sourceId: 'hd-search:1' },
       ],
     },
     {
@@ -32,6 +33,7 @@ function rightParts(ledger: ResearchLedgerEntry[]): ResearchPart[] {
         { quote: JIG_ITEM, sourceId: 'hd-page:328690510' },
         { quote: 'Non-Marring Shoe', sourceId: 'hd-page:328690510' },
         { quote: 'T-Shank Wood Cutting Blade', sourceId: 'hd-page:328690510' },
+        { quote: rowLine(ledger, 'hd-search:1', 'PCL500B-PCL525B'), sourceId: 'hd-search:1' },
       ],
     },
   ];
@@ -61,7 +63,8 @@ describe('verifyResearch: a parts answer on PCL500525SB', () => {
     expect(r.status).toBe('verified');
     if (r.status !== 'verified') return;
     expect(r.answer).toEqual({ decision: 'parts', kind: 'split', parts: ['PCL500B', 'PCL525B'] });
-    expect(r.quotes.slice(0, 2).map((x) => [x.sourceId, x.names, x.label])).toEqual([['hd-search:1', true, 'Home Depot search'], ['hd-search:2', true, 'Home Depot search']]);
+    expect(r.quotes.filter((x) => x.names).map((x) => [x.sourceId, x.label])).toEqual([['hd-search:1', 'Home Depot search'], ['hd-search:1', 'Home Depot search'], ['hd-search:2', 'Home Depot search']]);
+    expect(r.quotes.findIndex((x) => !x.names)).toBe(3);
     expect(r.quotes.every((x) => x.url === null || /^https:\/\/www\.homedepot\.com\//.test(x.url))).toBe(true);
   });
 

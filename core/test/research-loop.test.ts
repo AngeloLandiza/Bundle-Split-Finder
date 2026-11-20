@@ -35,16 +35,17 @@ function scripted(turns: (ResearchTurn | ((req: ResearchRequest, signal?: AbortS
 
 const PCL500B_ROW = 'RYOBI PCL500B (item 317987588): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)';
 const PCL525B_ROW = 'RYOBI PCL525B (item 318898528): ONE+ 18V Cordless Jig Saw (Tool Only)';
+const SIBLING_ROW = 'RYOBI PCL500B-PCL525B (item 324616618): ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)';
 
 /** The ids the loop gives: the page keeps the tool's id; the searches' ids have spaces, so they are numbered. */
 const RIGHT: ResearchPart[] = [
   { model: 'PCL500B', qty: 1, quotes: [
     { quote: PCL500B_ROW, sourceId: 'hd-search:ryobi-pcl500' }, { quote: '18V 5-1/2" Circular Saw', sourceId: 'bundle' },
-    { quote: '18T Carbide Tipped Blade', sourceId: 'bundle' }, { quote: '(2) Hex Wrenches', sourceId: 'bundle' },
+    { quote: '18T Carbide Tipped Blade', sourceId: 'bundle' }, { quote: '(2) Hex Wrenches', sourceId: 'bundle' }, { quote: SIBLING_ROW, sourceId: 'hd-search:ryobi-pcl500' },
   ] },
   { model: 'PCL525B', qty: 1, quotes: [
     { quote: PCL525B_ROW, sourceId: 'hd-search:ryobi-jig-saw-tool-only' }, { quote: '18V Jig Saw', sourceId: 'bundle' },
-    { quote: 'Non-Marring Shoe', sourceId: 'bundle' }, { quote: 'T-Shank Wood Cutting Blade', sourceId: 'bundle' },
+    { quote: 'Non-Marring Shoe', sourceId: 'bundle' }, { quote: 'T-Shank Wood Cutting Blade', sourceId: 'bundle' }, { quote: SIBLING_ROW, sourceId: 'hd-search:ryobi-pcl500' },
   ] },
 ];
 const submit = (parts: ResearchPart[] = RIGHT, decision = 'parts') =>

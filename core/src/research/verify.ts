@@ -50,6 +50,8 @@ const up = (s: string): string => s.trim().toUpperCase();
 interface FoundQuote extends VerifiedQuote {
   norm: string;
   entry: ResearchLedgerEntry;
+  /** The model fields of the lines that hold the quote (a search row, a catalog entry): whose line it is. */
+  lineModels: string[];
 }
 
 type Found = { ok: true; quote: FoundQuote } | { ok: false; problem: string };
@@ -65,10 +67,11 @@ function findQuote(q: ResearchQuote, ledger: ResearchLedgerEntry[]): Found {
   const lines = entry.lines.filter((l) => normaliseText(l.text).includes(norm));
   if (lines.length === 0) return { ok: false, problem: `The quote "${show(q.quote)}" is not found in the ${entry.label} (${entry.id}).` };
   if (lines.every((l) => l.suspect)) return { ok: false, problem: `The quote "${show(q.quote)}" comes from text written to an AI, which is never evidence.` };
-  return { ok: true, quote: { quote: q.quote.trim(), sourceId: entry.id, label: entry.label, url: entry.url, names: false, norm, entry } };
+  const lineModels = lines.filter((l) => !l.suspect && l.model !== undefined).map((l) => l.model!);
+  return { ok: true, quote: { quote: q.quote.trim(), sourceId: entry.id, label: entry.label, url: entry.url, names: false, norm, entry, lineModels } };
 }
 
-const strip = (qs: FoundQuote[]): VerifiedQuote[] => qs.map(({ norm: _n, entry: _e, ...q }) => q);
+const strip = (qs: FoundQuote[]): VerifiedQuote[] => qs.map(({ norm: _n, entry: _e, lineModels: _m, ...q }) => q);
 
 /** Whether normalised text names a model, in any way it may be written (modelForms, whole token). */
 const names = (text: string, brand: string, model: string): boolean => modelForms(brand, model).some((f) => findModel(text, f) >= 0);
@@ -90,6 +93,7 @@ const BATTERY = /\bbatter(y|ies)\b|\b\d+(\.\d+)?\s*ah\b/i;
 const CHARGER = /\bcharger\b/i;
 const NO_BATTERY = /\bbatter(y|ies)\b[^.;]{0,40}\b(not included|sold separately)\b|\bno battery\b|^\s*number of total batteries included\s*:\s*0\s*$|^\s*batteries included\s*:\s*no\s*$/i;
 const NO_CHARGER = /\bcharger\b[^.;]{0,40}\b(not included|sold separately)\b/i;
+const BRUSHED_SPEC = /^\s*motor type\s*:\s*brushed\s*$/i;
 
 /** The tool counts a text states. */
 function toolCounts(text: string): number[] {
@@ -106,6 +110,11 @@ function kindsOf(text: string): string[] {
   if (ACCESSORY.test(text) && toolCounts(text).length === 0 && !TOOLS_ONLY.test(text)) return [];
   return [...new Set(kindsFromTitle(text).map(fold))];
 }
+
+/** The message when a part shown only by its kind is not tied to the bundle, or null when it is (or no other model of the kind is in the ledger). */
+type TieCheck = (p: PartCheck, kind: string, what: string) => string | null;
+
+const plural = (kind: string): string => (kind === 'battery' ? 'batteries' : kind.endsWith('s') ? kind : `${kind}s`);
 
 /** One spelling per kind: "batteries" is "battery", "jigsaw" is "jig saw". */
 function fold(k: string): string {
@@ -320,10 +329,21 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
     if (!catalogKit && inner.length > 0) {
       problems.push(`${model} is itself a bundle of ${inner.join(', ')}: its own Home Depot page lists them, and the catalog does not know it as a kit. Give those as the parts.`);
     }
+    const product = productOf(titles, kitFlag);
+    // Fix round 3 (risk 7): a combo of tools is one part only as a kit the catalog knows; a Home Depot combo SKU
+    // (PCL500B-PCL525B, PCL500525SB) whose page names its tools in words only is not one.
+    if (!catalogKit && (product.tools ?? 0) >= 2) {
+      problems.push(`${model} is a combo of ${product.tools} tools that the catalog does not know as a kit; give its tools as the parts.`);
+    }
+    // Fix round 3: the bundle's page says its motor is brushed; a part whose own name says brushless is another tool.
+    if (bundleEntries.some((e) => e.lines.some((l) => !l.suspect && l.field === 'spec' && BRUSHED_SPEC.test(l.text))) && titles.some((t) => /\bbrushless\b/i.test(t))) {
+      problems.push(`The bundle's page says "Motor Type: Brushed"; ${model} is brushless.`);
+    }
     parts.push({
-      model, qty: p.qty, quotes, product: productOf(titles, kitFlag),
+      model, qty: p.qty, quotes, product,
       // What the quotes naming the model say it is; a quote of a part's own page (its model line) says what its title says.
-      quotedKinds: [...new Set(naming.flatMap((q) => [
+      // A row of another product (a sibling listing naming the part among others) says nothing of what the part is.
+      quotedKinds: [...new Set(naming.filter((q) => q.lineModels.length === 0 || q.lineModels.some((m) => sameModel(brand, m, model))).flatMap((q) => [
         ...kindsOf(q.quote),
         ...(q.entry.pageModel !== undefined && !q.entry.isBundle && sameModel(brand, q.entry.pageModel, model)
           ? q.entry.lines.filter((l) => l.field === 'title' && !l.suspect).flatMap((l) => kindsOf(l.text)) : []),
@@ -380,12 +400,42 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
     }
   }
 
-  if (items.length > 0) checkIncludes(items, parts, brand, problems);
-  else checkWithoutIncludes(parts, brand, count, titleTexts, bundleLines.map((l) => l.text), problems);
+  // Fix round 3: when a word-only item could be filled by more than one model of its kind the ledger shows, the
+  // chosen model must be tied to the bundle (never guess): the bundle's own page names it, or a listing of the same
+  // bundle (same tool count, same named tools, same Tools Only) whose model number lists it is quoted under it.
+  const sig = (t: string) => JSON.stringify([toolCounts(t)[0] ?? null, [...new Set(kindsFromTitle(t).map(fold).filter((k) => !POWER_KINDS.has(k)))].sort(), TOOLS_ONLY.test(t)]);
+  const bundleSig = titleTexts[0] !== undefined && kindsFromTitle(titleTexts[0]).length > 0 ? sig(titleTexts[0]) : null;
+  const products = ledger.flatMap((e) => e.products).filter((x) => x.brand === null || up(x.brand) === brand);
+  const lists = (combo: string, model: string) => combo.includes('-') && combo.split('-').some((piece) => sameModel(brand, piece, model));
+  const siblings = new Set(products.filter((x) => bundleSig !== null && !sameModel(brand, x.model, item.model) && sig(x.title) === bundleSig).map((x) => up(x.model)));
+  const tied = (p: PartCheck): boolean =>
+    bundleLines.some((l) => names(normaliseText(l.text), brand, p.model))
+    || p.quotes.some((q) => q.lineModels.some((m) => siblings.has(up(m)) && lists(up(m), p.model))
+      || (!q.entry.isBundle && q.entry.pageModel !== undefined && siblings.has(up(q.entry.pageModel)) && names(q.norm, brand, p.model)));
+  const fillers = (p: PartCheck, kind: string): string[] => [...new Set(products.filter((x) => {
+    if (sameModel(brand, x.model, p.model) || sameModel(brand, x.model, item.model)) return false;
+    const pr = productOf([x.title], x.kit === true);
+    const single = pr.kinds.includes(kind) && !pr.kit && (pr.tools === 1 || (POWER_KINDS.has(kind) && pr.tools === 0));
+    return single && !(noBattery && pr.battery === true) && !(noCharger && pr.charger === true);
+  }).map((x) => up(x.model)))];
+  // Asked for even when the ledger shows no other model of the kind: run 3 searched each model by its number, so the
+  // ledger held one row each and could not show the others the brand sells (a recorded "ryobi jig saw tool only"
+  // search holds five RYOBI jig saws). A word-only item names no model; only a tie says which one it is.
+  const tie: TieCheck = (p, kind, what) => {
+    if (tied(p)) return null;
+    return fillers(p, kind).length > 0
+      ? `Several ${brand} ${plural(kind)} fit "${show(what)}"; nothing ties ${p.model} to this bundle.`
+      : `"${show(what)}" names no model, and nothing ties ${p.model} to this bundle: neither the bundle's page nor a listing of this same bundle that is quoted names it.`;
+  };
+
+  if (items.length > 0) checkIncludes(items, parts, brand, tie, problems);
+  else checkWithoutIncludes(parts, brand, count, titleTexts, bundleLines.map((l) => l.text), tie, problems);
 
   if (problems.length > 0) return unverified([...new Set(problems)]);
   const quotes = parts.flatMap((p) => p.quotes);
-  const ordered = [...quotes.filter((q) => q.names), ...quotes.filter((q) => !q.names)];
+  // The quotes that name a part first, each once (a sibling listing quoted under two parts is shown once).
+  const ordered = [...quotes.filter((q) => q.names), ...quotes.filter((q) => !q.names)]
+    .filter((q, i, all) => all.findIndex((x) => x.sourceId === q.sourceId && x.norm === q.norm) === i);
   return {
     status: 'verified',
     answer: { decision: 'parts', kind: 'split', parts: parts.flatMap((p) => Array<string>(p.qty).fill(p.model)) },
@@ -424,7 +474,7 @@ const ACCESSORIES = /^\s*(other\s+)?accessor(y|ies)\s*$/i;
  * some, a named tool of a kind its page holds. Any other part accounts for an accessory as quoted, and for a
  * tool, battery or charger item only when its own quoted words and its names are that kind.
  */
-function canAccount(p: PartCheck, it: Item, brand: string): { ok: true } | { ok: false; why: string } {
+function canAccount(p: PartCheck, it: Item, brand: string, tie: TieCheck): { ok: true } | { ok: false; why: string; loud?: true } {
   const no = (why: string) => ({ ok: false as const, why });
   if (it.model !== null) {
     return p.product.kit && p.contents.some((c) => c.model !== null && sameModel(brand, c.model, it.model!)) ? { ok: true } : no(`"${show(it.name)}" is model ${it.model}, not ${p.model}.`);
@@ -453,14 +503,19 @@ function canAccount(p: PartCheck, it: Item, brand: string): { ok: true } | { ok:
   }
   if (!it.product) return { ok: true };
   const fits = it.kinds.some((k) => p.quotedKinds.includes(k)) && (p.product.titles.length === 0 || it.kinds.some((k) => p.product.kinds.includes(k)));
-  if (fits) return { ok: true };
+  if (fits) {
+    // Several models of the kind could be this word-only item: the part must be tied to the bundle (fix round 3).
+    const kind = it.kinds.find((k) => p.quotedKinds.includes(k))!;
+    const untied = tie(p, kind, it.name);
+    return untied === null ? { ok: true } : { ok: false, why: untied, loud: true };
+  }
   return no(p.quotedKinds.length === 0
     ? `"${show(it.name)}" is a ${it.kinds.join(' and ')}, and no quote naming ${p.model} says what it is.`
     : `"${show(it.name)}" is a ${it.kinds.join(' and ')}; ${p.model} is ${p.product.titles[0] ? `"${show(p.product.titles[0])}"` : `a ${p.quotedKinds.join(', ')}`}.`);
 }
 
 /** Every item of the bundle's Includes lists is accounted for by the parts given, and every part accounts for one. */
-function checkIncludes(items: Item[], parts: PartCheck[], brand: string, problems: string[]): void {
+function checkIncludes(items: Item[], parts: PartCheck[], brand: string, tie: TieCheck, problems: string[]): void {
   const owners: Set<PartCheck>[] = items.map(() => new Set());
   const inKit = (p: PartCheck, it: Item): boolean =>
     p.product.kit && p.contents.some((c) => (it.model !== null && c.model !== null && sameModel(brand, c.model, it.model)) || normaliseText(c.name) === normaliseText(it.name));
@@ -479,9 +534,9 @@ function checkIncludes(items: Item[], parts: PartCheck[], brand: string, problem
       if (claim.spans) problems.push(`The quote "${show(q.quote)}" spans two Includes lists; quote each list on its own.`);
       for (const i of claim.items) {
         if (owners[i]!.has(p)) continue;
-        const can = canAccount(p, items[i]!, brand);
+        const can = canAccount(p, items[i]!, brand, tie);
         if (can.ok) owners[i]!.add(p);
-        else if (claim.items.length === 1) problems.push(can.why);
+        else if (claim.items.length === 1 || ('loud' in can && can.loud)) problems.push(can.why);
       }
     }
   }
@@ -520,7 +575,7 @@ function checkIncludes(items: Item[], parts: PartCheck[], brand: string, problem
  * "6-Tool", a set's "65-Piece", or its kind of tool), and a battery count the title states matched by the
  * parts' (fix round 2: read from the bundle's own title and page in the ledger, quoted or not).
  */
-function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number | null, titles: string[], lines: string[], problems: string[]): void {
+function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number | null, titles: string[], lines: string[], tie: TieCheck, problems: string[]): void {
   if (count === null) {
     problems.push("The bundle's page has no Includes list and states no tool count, so nothing shows that no part is left over.");
   }
@@ -529,11 +584,17 @@ function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number |
   const saidPieces = pieceCounts(said);
   for (const p of parts) {
     const kinds = [...new Set([...p.quotedKinds, ...p.product.kinds])];
-    const shown = names(said, brand, p.model)
+    const strong = names(said, brand, p.model)
       || (p.product.kit && (p.product.tools ?? 0) >= 2 && saidCounts.includes(p.product.tools!))
-      || p.product.titles.some((t) => pieceCounts(t).some((n) => saidPieces.includes(n)))
-      || (!p.product.kit && kinds.some((k) => holds(said, k)));
-    if (!shown) problems.push(`Nothing on the bundle's own page shows ${p.model} (its model, its tool or piece count, or its kind of product) is in the bundle.`);
+      || p.product.titles.some((t) => pieceCounts(t).some((n) => saidPieces.includes(n)));
+    const byKind = !p.product.kit ? kinds.find((k) => holds(said, k)) : undefined;
+    if (!strong && byKind === undefined) {
+      problems.push(`Nothing on the bundle's own page shows ${p.model} (its model, its tool or piece count, or its kind of product) is in the bundle.`);
+    } else if (!strong && byKind !== undefined) {
+      // Shown by its kind alone ("Miter Saw"): any model of that kind would be, so it must be tied (fix round 3).
+      const untied = tie(p, byKind, byKind);
+      if (untied !== null) problems.push(untied);
+    }
   }
   const want = titles.length > 0 ? kitBatteryCount(titles[0]) : null;
   if (want !== null) {
