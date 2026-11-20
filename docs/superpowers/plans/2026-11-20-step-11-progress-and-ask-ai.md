@@ -33,3 +33,10 @@
 3. A quote not found in the evidence shown as verified.
 4. The progress estimate shown without its label, or counting down per second.
 5. The expanded view or suggestion block crowding the panel at 360px.
+
+## Where this stands (2026-11-20)
+Built, reviewed (code and UI, with fix rounds) and QA'd, on main:
+- **Scan progress:** the runner keeps a per-step pipeline record on the job (survives worker evictions) and learns seconds-per-unit from real scans (seeded, rolling median of 20). The row under the tabs shows the current step with its count, an always-labelled estimate and a 2px bar; "Details" lists every step with done / now / next / skipped and a reason; the model step shows its cost so far. Short labels so nothing is cut at 360px; the estimate drops to its own line below 424px.
+- **Ask AI:** a Review question's "Ask AI · about $0.0x" asks the Settings model for a suggestion from evidence the scan already stored (no searches). Code verifies quotes and the choice; a split verifies only from Includes, specification or description lines; a "none" is never verified. Verified suggestions preselect and the button reads Approve only while that answer is selected. Nothing is saved without the owner; Accept all leaves out questions with a suggestion; the audit records whether the owner agreed.
+- **Measured** on the 26 validation Review questions (pages trimmed to the lines the splitter reads, so many are "could not tell"): Opus 5.5 4 verified-correct, 0 wrong, $0.34; Haiku 5.5 2 correct, 0 wrong, $0.009 (prompt .3).
+Next: the owner's real Review questions (full pages) will show the true rate; Ask AI on Detail/This page if wanted; a sort or page of eBay results by sales.
