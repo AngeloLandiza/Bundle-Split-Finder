@@ -23,3 +23,38 @@ export function askCostLabel(model: string): string | null {
   const cents = Math.max(1, Math.ceil(Math.round(cost * 1e6) / 1e4));
   return `about $${(cents / 100).toFixed(2)}`;
 }
+
+// Step 12: a split question is researched (it may read the whole Home Depot page and search), which sends and receives more
+// than one call about a listing: about 18,000 tokens in and 1,400 out over its few turns. An estimate, like the one above; the
+// real cost of each question is kept with its suggestion.
+export const ESTIMATED_TOKENS_PER_RESEARCH = { input: 18000, output: 1400 } as const;
+
+/** Dollars one question of this kind may cost on `model`; null for a model with no published rate. */
+export function estimatedQuestionCost(kind: 'split' | 'match', model: string): number | null {
+  if (kind === 'match') return estimatedAskCost(model);
+  const rates = PRICE_TABLE[model];
+  return rates ? costOf({ inputTokens: ESTIMATED_TOKENS_PER_RESEARCH.input, outputTokens: ESTIMATED_TOKENS_PER_RESEARCH.output }, rates) : null;
+}
+
+const centsOf = (dollars: number): number => Math.max(1, Math.ceil(Math.round(dollars * 1e6) / 1e4));
+
+/** "about $0.10" for one question of this kind, rounded up to a whole cent; null when the model has no rate. */
+export function questionCostLabel(kind: 'split' | 'match', model: string): string | null {
+  const cost = estimatedQuestionCost(kind, model);
+  return cost === null ? null : `about $${(centsOf(cost) / 100).toFixed(2)}`;
+}
+
+/**
+ * What asking about all of these questions may cost: the sum of each one's estimate, rounded up, in cents under a dollar and in
+ * whole dollars from a dollar ("about $3"). Null when there is nothing to ask or the model has no rate.
+ */
+export function askAllCostLabel(kinds: readonly ('split' | 'match')[], model: string): string | null {
+  if (kinds.length === 0) return null;
+  let total = 0;
+  for (const k of kinds) {
+    const c = estimatedQuestionCost(k, model);
+    if (c === null) return null;
+    total += c;
+  }
+  return total >= 1 ? `about $${Math.ceil(Math.round(total * 1e6) / 1e6)}` : `about $${(centsOf(total) / 100).toFixed(2)}`;
+}

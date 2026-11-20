@@ -156,6 +156,14 @@ class FakePrefs implements Prefs {
   async getEbayToken() {
     return structuredClone(this.token);
   }
+  // Step 12: whether a finished scan is followed by Ask AI about all.
+  askAfterScan = false;
+  async getAskAfterScan() {
+    return this.askAfterScan;
+  }
+  async setAskAfterScan(v: boolean) {
+    this.askAfterScan = v;
+  }
   async setEbayToken(t: CachedEbayToken) {
     this.token = structuredClone(t);
   }
@@ -2780,3 +2788,80 @@ describe('worker: eBay reference values (step 10)', () => {
   });
 });
 
+
+// ---------------------------------------------------------------- step 12: Ask AI after each scan
+
+describe('worker: Ask AI after each scan (step 12)', () => {
+  /** A match question about a part the scan does not touch: one listing, so there is something to ask. */
+  const question = {
+    id: 'match:RYOBI:ZZ999', kind: 'match' as const, subject: 'RYOBI:ZZ999', brand: 'RYOBI', model: 'ZZ999', title: null, reason: 'Two listings look alike.',
+    candidates: [{ asin: 'B0TEST0001', title: 'RYOBI ZZ999 18V ONE+ Tool Only', price: 40, reviews: 12, reasons: [], seenAt: T0 }],
+    choices: [], openedAt: T0, answer: null, answeredAt: null,
+  };
+  const askedModel = (w: World) => {
+    const net = withEbay(w, {
+      claude: (_n, init) => {
+        const body = JSON.parse(String(init?.body)) as { system?: string };
+        // The review assistant's prompt, not the listing judge's.
+        if (typeof body.system === 'string' && body.system.startsWith('You help the owner of a small reselling business')) {
+          const answer = { evidence: [], reason: 'The title does not say.', decision: 'cannot_tell', choiceIndex: null, asin: null };
+          return new Response(JSON.stringify({ id: 'msg', type: 'message', role: 'assistant', stop_reason: 'end_turn', stop_details: null, content: [{ type: 'text', text: JSON.stringify(answer) }], usage: { input_tokens: 900, output_tokens: 80 } }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ error: 'unexpected' }), { status: 400 });
+      },
+    });
+    return net;
+  };
+  const askCalls = (net: ReturnType<typeof withEbay>) => net.calls.filter((c) => c.origin === 'https://api.anthropic.com');
+
+  it('does not run after a scan unless the owner turned it on', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.prefs.anthropicKey = ANTHROPIC;
+    await w.store.putReview(question);
+    const net = askedModel(w);
+    await scanThrough(w);
+    expect(askCalls(net)).toHaveLength(0);
+    expect((await state(w)).askAfterScan).toBe(false);
+  });
+
+  it('runs the queue once the scan has ended, when it is on, and the suggestion is not an answer', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    w.prefs.anthropicKey = ANTHROPIC;
+    await send(w, { type: 'saveAskAfterScan', on: true });
+    await w.store.putReview(question);
+    const net = askedModel(w);
+    await scanThrough(w);
+    // The scan itself opened questions too: every one of them that can be asked is, once, and ours among them.
+    await vi.waitFor(async () => expect((await state(w)).askAllResult).toMatchObject({ stopped: false, problem: null }));
+    const result = (await state(w)).askAllResult!;
+    expect(result.total).toBeGreaterThanOrEqual(1);
+    expect(result.asked).toBe(result.total);
+    expect(askCalls(net)).toHaveLength(result.total);
+    expect((await w.store.getReview(question.id))!.answer).toBeNull();
+    // It began after the scan ended: no scan was running when the first model call was sent.
+    expect((await state(w)).scanRunning).toBe(false);
+  });
+
+  it('does not run after a scan the owner stopped, or with no Anthropic key', async () => {
+    const stopped = world({ key: KEY, settings: RYOBI });
+    stopped.prefs.anthropicKey = ANTHROPIC;
+    await send(stopped, { type: 'saveAskAfterScan', on: true });
+    await stopped.store.putReview(question);
+    const net = askedModel(stopped);
+    const hold = held(stopped);
+    expect(await send(stopped, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    await send(stopped, { type: 'stopScan' });
+    hold.release();
+    await untilIdle(stopped);
+    expect((await lastJob(stopped)).status).toBe('stopped');
+    expect(askCalls(net)).toHaveLength(0);
+
+    const keyless = world({ key: KEY, settings: RYOBI });
+    await send(keyless, { type: 'saveAskAfterScan', on: true });
+    await keyless.store.putReview(question);
+    const net2 = askedModel(keyless);
+    await scanThrough(keyless);
+    expect(askCalls(net2)).toHaveLength(0);
+    expect((await state(keyless)).askAllResult ?? null).toBeNull();
+  });
+});

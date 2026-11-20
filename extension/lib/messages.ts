@@ -4,7 +4,7 @@
 import type { StoredSuggestion } from '../../core/src/assist/stored';
 import type { ProductPage } from '../../core/src/hdPage';
 import type { PageView } from '../../core/src/scan/pageView';
-import type { UnitRates } from '../../core/src/scan/pipeline';
+import type { AskAllProgress, UnitRates } from '../../core/src/scan/pipeline';
 import type { PaidAction, Quote, ReviewAnswer, ScanJob, ScanReport } from '../../core/src/scan/types';
 import type { AccountInfo } from '../../core/src/serpapi/budget';
 import type { ExtensionSettings } from '../../core/src/settings';
@@ -49,6 +49,16 @@ export type Request =
    * Reply data: StoredSuggestion. It is saved as a suggestion and never as the question's answer.
    */
   | { type: 'askAi'; questionId: string }
+  /**
+   * Step 12: Ask AI about every open question that can be asked and has no suggestion, one at a time, in the background. Replies at
+   * once, `{ queued }`; progress and the end are in AppState (`askAll`, `askAllResult`). Refused while a scan runs, with no key, and
+   * with nothing to ask. A scan is refused while it runs. Spends no search; each call costs the owner's model.
+   */
+  | { type: 'askAiAll' }
+  /** Step 12: cancels the queue: the call in flight ends and writes nothing. Nothing running is no error. Reply data: null. */
+  | { type: 'stopAskAll' }
+  /** Step 12: Settings › Listing check › "Ask AI after each scan". Reply data: null. */
+  | { type: 'saveAskAfterScan'; on: boolean }
   /** Opens again a split question the owner answered, so it can be answered again. Reply data: null. */
   | { type: 'reopenReview'; id: string }
   /** Reply data: Quote, what the action would spend now and why it may not run. Spends nothing. */
@@ -124,6 +134,24 @@ export interface EbayState {
   listingsJudgedPerScan: number;
 }
 
+/** How the last Ask AI about all ended: what it did and what it cost. Kept until the next one starts. */
+export interface AskAllResult {
+  /** Questions in the queue when it began. */
+  total: number;
+  /** Questions it got an answer for (a suggestion, or the AI's "could not tell"), not counting any it skipped. */
+  asked: number;
+  /** Of those, how many left something to show (not a failed call). */
+  suggested: number;
+  /** Of those, how many are verified: the ones Approve all offers. */
+  verified: number;
+  /** Dollars the questions cost, at the model's rates. */
+  costUsd: number;
+  /** Stop was pressed (or the key was removed) before the end. */
+  stopped: boolean;
+  /** One plain sentence when the queue gave up on repeated failures of the call; null otherwise. */
+  problem: string | null;
+}
+
 export interface AppState {
   hasKey: boolean;
   /** Step 10. Absent in a state built before it (tests): it reads as no keys and the default settings. */
@@ -139,6 +167,12 @@ export interface AppState {
   nextRunAt: number | null;
   /** Step 11: how long a unit of each kind took in recent scans (the progress estimate's rates). Absent: seeds only. */
   rates?: UnitRates;
+  /** Step 12: the Ask AI about all queue, while it runs; absent otherwise. */
+  askAll?: AskAllProgress | null;
+  /** Step 12: how the last queue ended; absent before the first. */
+  askAllResult?: AskAllResult | null;
+  /** Step 12: whether a finished scan is followed by Ask AI about all. Absent in a state built before it: off. */
+  askAfterScan?: boolean;
 }
 
 /** Sent to every extension page when the chip opened the side panel on This page. The panel then takes the answer for its tab. */

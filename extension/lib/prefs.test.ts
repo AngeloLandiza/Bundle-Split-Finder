@@ -4,7 +4,7 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import {
   forgetKey, getAccount, getActiveScan, getKey, getLastScheduledRunAt, getNotified, getPackaging, getSettings, getShowChip, setShowChip, savePackaging, restrictKeyAccess,
   saveSettings, setAccount, setActiveScan, setKey, setLastScheduledRunAt, setNotified,
-  getRates, setRates,
+  getRates, setRates, getAskAfterScan, setAskAfterScan,
   clearEbayToken, forgetAnthropicKey, forgetEbayKeys, getAnthropicKey, getEbayKeys, getEbaySettings, getEbayToken, saveEbaySettings, setAnthropicKey, setEbayKeys, setEbayToken,
 } from './prefs';
 
@@ -179,6 +179,20 @@ describe('eBay and the model (step 10)', () => {
     expect(await getEbayToken()).toBeNull();
     await fakeBrowser.storage.session.set({ ebayToken: { appId: 'app', token: '', expiresAt: 5 } });
     expect(await getEbayToken()).toBeNull();
+  });
+});
+
+describe('Ask AI after each scan (step 12)', () => {
+  it('is off until it is turned on, round-trips, and anything stored that is not true reads as off', async () => {
+    expect(await getAskAfterScan()).toBe(false);
+    await setAskAfterScan(true);
+    expect(await getAskAfterScan()).toBe(true);
+    await setAskAfterScan(false);
+    expect(await getAskAfterScan()).toBe(false);
+    for (const v of ['true', 1, 'yes', null, {}]) {
+      await fakeBrowser.storage.local.set({ askAfterScan: v });
+      expect(await getAskAfterScan(), String(v)).toBe(false);
+    }
   });
 });
 

@@ -222,6 +222,8 @@ export const SEED_SECONDS: Readonly<Record<UnitKind, number>> = {
   ebayCall: 0.6,
   'judgeCall:claude-haiku-5-5': 2.5,
   'judgeCall:claude-opus-5-5': 7,
+  // Step 12: one question asked of the owner's model, read from the evidence or researched. A guess until the first run measures it.
+  askAi: 8,
 };
 
 /** What kind of unit a step counts; null for the step that has none. */
@@ -387,6 +389,8 @@ export interface PipelineView {
   /** The bar's aria-valuetext. */
   ariaValueText: string;
   steps: { label: string; state: StepState; figure: string }[];
+  /** The words the row's bar and list are named by, for a screen reader. Absent: the scan's own ("Scan progress", "Scan steps"). */
+  labels?: { bar: string; steps: string };
 }
 
 const dollars = (n: number): string => `$${n.toFixed(2)}`;
@@ -471,5 +475,42 @@ export function pipelineView(job: ScanJob, rates: UnitRates, now: number): Pipel
     fraction: fractionOf(steps, rates),
     ariaValueText: `Step ${index + 1} of ${steps.length}, ${lowerFirst(label)}, ${left}`,
     steps: steps.map((s) => ({ label: STEP_NAMES[s.id], state: s.state, figure: figureOf(s) })),
+  };
+}
+
+// ---------------------------------------------------------------- step 12: Ask AI about all
+
+/**
+ * The queue "Ask AI about all" runs in the background: not a scan and not kept on a job, so the worker holds it and
+ * sends it in AppState. `costUsd` is what the questions asked so far cost at the model's rates; `estimateUsd` what the
+ * whole queue was estimated to cost when it began.
+ */
+export interface AskAllProgress {
+  done: number;
+  total: number;
+  costUsd: number;
+  estimateUsd: number | null;
+  /** Stop was pressed: the question in flight is being cancelled. */
+  stopping?: boolean;
+}
+
+/** What the progress row says while the queue runs: the same shape as a scan's, drawn by the same row. Pure. */
+export function askAllView(p: AskAllProgress, rates: UnitRates): PipelineView {
+  const left = Math.max(0, p.total - p.done);
+  const each = secondsPerUnit(rates, 'askAi')?.seconds ?? SEED_SECONDS.askAi!;
+  const seconds = left * each;
+  const m = minutes(seconds);
+  const estimateText = seconds < 60 ? 'under a minute' : `about ${m} min`;
+  const timeLeft = seconds < 60 ? 'less than a minute left' : `about ${plural(m, 'minute', 'minutes')} left`;
+  const count = `${p.done} of ${p.total}`;
+  return {
+    current: { label: 'Asking AI', count },
+    estimateText,
+    stepsDone: 0,
+    stepsTotal: 1,
+    fraction: p.total > 0 ? Math.max(0, Math.min(1, p.done / p.total)) : 0,
+    ariaValueText: `Asking AI, ${count}, ${timeLeft}`,
+    steps: [{ label: 'Asking AI', state: 'now', figure: `${dollars(p.costUsd)} so far` }],
+    labels: { bar: 'Asking AI progress', steps: 'Asking AI steps' },
   };
 }

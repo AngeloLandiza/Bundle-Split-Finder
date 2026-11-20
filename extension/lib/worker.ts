@@ -7,6 +7,8 @@
 
 import { ClaudeAssist } from '@core/assist/claude';
 import { gatherEvidence } from '@core/assist/evidence';
+import { askQueueOf } from '@core/assist/askAll';
+import { estimatedQuestionCost } from '@core/assist/cost';
 import { agreedWith, liveSuggestion, MemorySuggestionStore, suggestionCost, suggestionKey, type StoredSuggestion, type SuggestionStore } from '@core/assist/stored';
 import { suggestAnswer } from '@core/assist/suggest';
 import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer, reviewSignature } from '@core/scan/answers';
@@ -31,8 +33,16 @@ import { runCsv } from '@core/scan/csv';
 import { buildReport } from '@core/scan/report';
 import { nextRun, type Schedule } from '@core/schedule';
 import { cachingTokenFetch, checkEbayKeys, type TokenStore } from './ebayEnv';
-import type { AppState, OpenThisPageReply, Packaging, PageSeenReply, PanelReport, Reply, Request, ThisPage } from './messages';
+import type { AppState, AskAllResult, OpenThisPageReply, Packaging, PageSeenReply, PanelReport, Reply, Request, ThisPage } from './messages';
 import type { ActiveScan, CachedEbayToken, EbayKeys, StoredAccount } from './prefs';
+
+/**
+ * Step 12: asks the owner's model one Review question and returns what it drafted. It stores nothing and answers nothing: the worker
+ * keeps what comes back as a suggestion (never as the question's answer), unless the call was aborted. `signal` is aborted by Stop.
+ * Throws for a question that is not there or already answered; a failed call is a `not_suggested` suggestion. Today it is the
+ * evidence-only path of step 11; the controller routes split questions to research by passing its own.
+ */
+export type AskOne = (questionId: string, signal: AbortSignal) => Promise<StoredSuggestion>;
 
 /** The functions of prefs.ts the worker uses, with the same names and signatures. */
 export interface Prefs {
@@ -57,6 +67,9 @@ export interface Prefs {
   /** Step 11: how long a unit of each kind took in recent scans, for the progress estimate. Optional: without it no timing is kept. */
   getRates?(): Promise<UnitRates>;
   setRates?(v: UnitRates): Promise<void>;
+  /** Step 12: whether a finished scan is followed by Ask AI about all (off by default). Optional: without it the setting is off. */
+  getAskAfterScan?(): Promise<boolean>;
+  setAskAfterScan?(v: boolean): Promise<void>;
   /** Step 10: the eBay App ID and Cert ID, the Anthropic key, the judge's settings, and eBay's token (storage.session). */
   getEbayKeys(): Promise<EbayKeys | null>;
   setEbayKeys(keys: EbayKeys): Promise<void>;
@@ -162,6 +175,8 @@ export interface WorkerEnv {
   pages?: PageEnv;
   /** Step 11: where Ask AI keeps its suggestions, apart from the scan's store. Without it they are kept in memory, lost with the worker. */
   suggestions?: SuggestionStore;
+  /** Step 12: how one question is asked, for Ask AI and for Ask AI about all. Default: the step 11 evidence-only call. */
+  askOne?: AskOne;
 }
 
 /** Who sent a request: the tab, when it came from a content script. */
@@ -204,6 +219,14 @@ const ASK_BUSY = 'Already asking about that question.';
 const ASK_CHANGED = 'That question changed while the AI worked. Ask again.';
 const ASK_NOT_FOUND = 'That question was not found.';
 const ASK_ANSWERED = 'That question was already answered.';
+/** Step 12, Ask AI about all. A scan and the queue are never at once: each is refused, in one sentence, while the other runs. */
+const ASK_ALL_RUNNING = 'Asking about all questions is running. Ask again when it has finished.';
+const ASK_ALL_AGAIN = 'Already asking about all questions.';
+const ASK_ALL_NOTHING = 'There is nothing to ask about.';
+const SCAN_AFTER_ASK_ALL = 'Asking AI is running. Stop it first, or wait for it to finish.';
+const BAD_SETTING = 'Choose on or off.';
+/** Calls in a row the provider fails (a refused key, a limit, no answer) before the queue stops and says why. */
+const ASK_ALL_MAX_FAILURES = 3;
 const ANSWER_LATER = 'A scan is running. Answer again when it has finished.';
 /** An answer or a Change asked for while a Look up or Verify runs, which reads and writes matches and the answer's parts. */
 const ANSWER_AFTER_SEARCH = 'A search is running. Answer again when it has finished.';
@@ -366,6 +389,10 @@ export function createWorker(env: WorkerEnv): Worker {
   let paidKey: string | null = null;
   /** Set by forgetKey, and by checkKey saving a different key, while a paid action runs. runPaid asks it before every search. */
   let paidStop = false;
+  /** Step 12: the Ask AI about all queue this worker is running, from its claim until it has ended. A scan is not started meanwhile. */
+  let askAll: AskAllRun | null = null;
+  /** How the last queue ended. Lost with the worker. */
+  let askAllResult: AskAllResult | null = null;
 
   const settings = async () => trusted(await prefs.getSettings());
 
@@ -439,6 +466,11 @@ export function createWorker(env: WorkerEnv): Worker {
       lastJob: (await store.listScans())[0] ?? null,
       nextRunAt: next === null ? null : next.getTime(),
       ...(prefs.getRates ? { rates: await prefs.getRates() } : {}),
+      ...(askAll !== null
+        ? { askAll: { done: askAll.done, total: askAll.total, costUsd: askAll.costUsd, estimateUsd: askAll.estimateUsd, ...(askAll.abort.signal.aborted ? { stopping: true } : {}) } }
+        : {}),
+      ...(askAllResult !== null ? { askAllResult } : {}),
+      ...(prefs.getAskAfterScan ? { askAfterScan: await prefs.getAskAfterScan() } : {}),
     };
   }
 
@@ -558,10 +590,13 @@ export function createWorker(env: WorkerEnv): Worker {
 
     const ebay = await ebayStepFor(stopAbort.signal);
     scanKey = key;
+    // Step 12: set when the scan ran to its end (not stopped, not out of searches), so "Ask AI after each scan" follows it.
+    let ranToEnd = false;
     scan = (async () => {
       try {
         const ended = await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages, readPartPrices: env.readPartPrices, ebay });
         await keepRates(ended);
+        ranToEnd = ended.status === 'done';
       } catch {
         // The job stays "running" and activeScan keeps naming it: the next tick continues it.
         return;
@@ -581,6 +616,7 @@ export function createWorker(env: WorkerEnv): Worker {
         endProgress();
         void broadcast();
         settleDeferred();
+        if (ranToEnd) void askAfterScan();
       });
     await broadcast();
     return ok(null);
@@ -665,7 +701,8 @@ export function createWorker(env: WorkerEnv): Worker {
     try {
       started = await serial(async () => {
         // Rule 3: a tick while a scan is active does nothing; nor while a Verify or Look up runs.
-        if (scan !== null || paid !== null) return null;
+        // Step 12: nor while Ask AI about all runs: the scan waits for its turn, and the next tick tries again.
+        if (scan !== null || paid !== null || askAll !== null) return null;
         const resume = await saved();
         if (resume !== null) return (await start(resume.trigger, resume)).ok ? scan : null;
         const s = await settings();
@@ -688,6 +725,7 @@ export function createWorker(env: WorkerEnv): Worker {
     serial(async () => {
       if (scan !== null) return refuse(RUNNING);
       if (paid !== null) return refuse(PAID_RUNNING);
+      if (askAll !== null) return refuse(SCAN_AFTER_ASK_ALL);
       const resume = await saved();
       return start(resume?.trigger ?? 'manual', resume);
     });
@@ -758,6 +796,8 @@ export function createWorker(env: WorkerEnv): Worker {
   async function forgetAnthropicKey(): Promise<Reply<null>> {
     ebayKeyEpoch += 1;
     await prefs.forgetAnthropicKey();
+    // The queue holds nothing of the key, but it was started with it: it stops, as a scan's eBay step does.
+    askAll?.abort.abort();
     await broadcast();
     return ok(null);
   }
@@ -910,15 +950,54 @@ export function createWorker(env: WorkerEnv): Worker {
   /** The questions being asked about now: a second press for the same one is refused. */
   const asking = new Set<string>();
 
+  /** A question that cannot be asked, with the sentence to say. */
+  class AskRefused extends Error {}
+
   /**
-   * Step 11, Ask AI. The owner's Anthropic model drafts an answer to one Review question from what the scan stored
-   * (core/src/assist/: the evidence, the code's check of every quote). The result is kept as a suggestion, never as the
-   * question's answer (rule 4): only the owner's Approve, which is answerReview, saves one. Spends no search. It is not taken
-   * through the start gate: a call may take 30 seconds and must not hold a scan back; the question is read again when
-   * the model has answered, and a suggestion for a question that changed meanwhile is dropped. Refused while a scan runs.
+   * The step 11 call: the question's evidence (what the scan stored, nothing fetched) goes to the owner's Anthropic model, which
+   * drafts an answer. Returns the record to keep; stores nothing. The call ends when `signal` does or after the call timeout.
+   */
+  const askEvidenceOnly: AskOne = async (id, signal) => {
+    const apiKey = await prefs.getAnthropicKey();
+    if (apiKey === null) throw new AskRefused(NO_ANTHROPIC_KEY);
+    const question = await store.getReview(id);
+    if (!question) throw new AskRefused(ASK_NOT_FOUND);
+    if (question.answer !== null) throw new AskRefused(ASK_ANSWERED);
+    const model = (await ebaySettings()).judgeModel;
+    const assist = new ClaudeAssist({ apiKey, model, fetchFn: env.judgeFetchFn ?? env.fetchFn });
+    const suggestion = await suggestAnswer(question, await gatherEvidence(store, question), assist, AbortSignal.any([signal, AbortSignal.timeout(callTimeoutMs)]));
+    const askedAt = env.now();
+    return { key: suggestionKey(id, askedAt), questionId: id, seen: suggestion.seen, askedAt, suggestion, costUsd: suggestionCost(model, suggestion.usage) };
+  };
+  const askOne: AskOne = env.askOne ?? askEvidenceOnly;
+
+  /**
+   * Keeps what a call drafted, as a suggestion and never as the question's answer (rule 4). The question is read again now: a scan
+   * or an answer may have changed it while the model worked. A call that gave nothing and cost nothing leaves no record. One that
+   * cost something is kept, for the count of what was spent; when the question changed meanwhile it is kept closed (an outcome with
+   * nothing agreed), so it can never come back and preselect an answer should the question be reopened with the same readings.
+   * Returns whether the suggestion is for the question as it is now.
+   */
+  async function keep(record: StoredSuggestion): Promise<boolean> {
+    const { suggestion } = record;
+    const now = await store.getReview(record.questionId);
+    const current = now !== undefined && now.answer === null && reviewSignature(now) === record.seen;
+    if (suggestion.status !== 'not_suggested' || suggestion.usage !== undefined) {
+      await suggestions.put(current ? record : { ...record, outcome: { answeredAt: env.now(), answer: now?.answer ?? '', agreed: null } });
+    }
+    return current;
+  }
+
+  /**
+   * Step 11, Ask AI. The owner's Anthropic model drafts an answer to one Review question (AskOne: today the evidence the scan stored,
+   * core/src/assist/, the code's check of every quote). The result is kept as a suggestion, never as the question's answer (rule 4):
+   * only the owner's Approve, which is answerReview, saves one. Spends no search. It is not taken through the start gate: a call may
+   * take 30 seconds and must not hold a scan back; the question is read again when the model has answered, and a suggestion for a
+   * question that changed meanwhile is dropped. Refused while a scan runs, and while Ask AI about all does.
    */
   async function askAi(questionId: unknown): Promise<Reply<StoredSuggestion>> {
     if (scan !== null) return refuse(ASK_SCAN);
+    if (askAll !== null) return refuse(ASK_ALL_RUNNING);
     const apiKey = await prefs.getAnthropicKey();
     if (apiKey === null) return refuse(NO_ANTHROPIC_KEY);
     const id = typeof questionId === 'string' ? questionId : '';
@@ -928,26 +1007,168 @@ export function createWorker(env: WorkerEnv): Worker {
     if (asking.has(id)) return refuse(ASK_BUSY);
     asking.add(id);
     try {
-      const model = (await ebaySettings()).judgeModel;
-      const assist = new ClaudeAssist({ apiKey, model, fetchFn: env.judgeFetchFn ?? env.fetchFn });
-      const suggestion = await suggestAnswer(question, await gatherEvidence(store, question), assist, AbortSignal.timeout(callTimeoutMs));
-      const askedAt = env.now();
-      const record: StoredSuggestion = { key: suggestionKey(id, askedAt), questionId: id, seen: suggestion.seen, askedAt, suggestion, costUsd: suggestionCost(model, suggestion.usage) };
-      // The question as it is now: a scan or an answer may have changed it while the model worked.
-      const now = await store.getReview(id);
-      const current = now !== undefined && now.answer === null && reviewSignature(now) === suggestion.seen;
-      // A call that gave nothing and cost nothing leaves no record. One that cost something is kept, for the count of what was spent;
-      // when the question changed meanwhile it is kept closed (an outcome with nothing agreed), so it can never come back and
-      // preselect an answer should the question be reopened with the same readings.
-      if (suggestion.status !== 'not_suggested' || suggestion.usage !== undefined) {
-        await suggestions.put(current ? record : { ...record, outcome: { answeredAt: env.now(), answer: now?.answer ?? '', agreed: null } });
+      let record: StoredSuggestion;
+      try {
+        record = await askOne(id, new AbortController().signal);
+      } catch (err) {
+        return refuse(err instanceof AskRefused ? err.message : FAILED);
       }
-      if (!current) return refuse(ASK_CHANGED);
+      if (!(await keep(record))) return refuse(ASK_CHANGED);
       await broadcast();
       return ok(record);
     } finally {
       asking.delete(id);
     }
+  }
+
+  // ---------------------------------------------------------------- Ask AI about all (step 12)
+
+  /** What the worker holds of a running queue. */
+  interface AskAllRun {
+    total: number;
+    /** Questions finished: asked, skipped (answered or gone meanwhile) or failed. */
+    done: number;
+    asked: number;
+    suggested: number;
+    verified: number;
+    costUsd: number;
+    estimateUsd: number | null;
+    /** Aborted by Stop, or by the Anthropic key being forgotten. */
+    abort: AbortController;
+    promise: Promise<void>;
+  }
+
+  /** A failed call that says the provider, not this question, is the trouble: asking on would fail the same way. */
+  const providerTrouble = (s: StoredSuggestion['suggestion'], stopped: boolean): boolean =>
+    s.status === 'not_suggested' &&
+    s.notSuggested !== undefined &&
+    !(stopped && s.notSuggested.reason === 'aborted') &&
+    !['refusal', 'max_tokens', 'bad_response', 'no_answer', 'unexpected_stop', 'bad_request'].includes(s.notSuggested.reason);
+
+  /**
+   * Asks about each question in turn, over askOne, and keeps what comes back. Never throws. A question is read again before its
+   * turn: one the owner answered meanwhile is skipped. Stop (abort) ends the call in flight, which keeps nothing, and the rest are not
+   * asked. Three failed calls in a row end it, with the sentence of the last.
+   */
+  async function runAskAll(run: AskAllRun, ids: string[]): Promise<void> {
+    let problem: string | null = null;
+    let failures = 0;
+    let timedMs = 0;
+    let timed = 0;
+    try {
+      for (const id of ids) {
+        if (run.abort.signal.aborted) break;
+        const question = await store.getReview(id);
+        if (!question || question.answer !== null) {
+          run.done += 1;
+          continue;
+        }
+        const began = env.now();
+        let record: StoredSuggestion;
+        try {
+          record = await askOne(id, run.abort.signal);
+        } catch (err) {
+          if (run.abort.signal.aborted) break;
+          // A key forgotten meanwhile ends the queue; any other refusal or failure is this question's alone.
+          if (err instanceof AskRefused && err.message === NO_ANTHROPIC_KEY) break;
+          run.done += 1;
+          continue;
+        }
+        const stopped = run.abort.signal.aborted;
+        const { suggestion } = record;
+        const current = await keep(record);
+        if (suggestion.status === 'not_suggested' && stopped) break;
+        run.done += 1;
+        run.asked += 1;
+        run.costUsd += record.costUsd ?? 0;
+        if (suggestion.usage !== undefined) {
+          timedMs += env.now() - began;
+          timed += 1;
+        }
+        if (suggestion.status !== 'not_suggested' && current) {
+          run.suggested += 1;
+          if (suggestion.status === 'verified') run.verified += 1;
+        }
+        if (providerTrouble(suggestion, stopped)) {
+          failures += 1;
+          if (failures >= ASK_ALL_MAX_FAILURES) {
+            problem = suggestion.status === 'not_suggested' ? (suggestion.notSuggested?.reason === 'aborted' ? 'The AI took too long. Try again later.' : suggestion.reason) : null;
+            break;
+          }
+        } else {
+          failures = 0;
+        }
+        await broadcast();
+      }
+    } catch {
+      // A storage error: what was kept stands, and the queue ends.
+    }
+    askAllResult = {
+      total: run.total, asked: run.asked, suggested: run.suggested, verified: run.verified, costUsd: run.costUsd,
+      stopped: run.abort.signal.aborted, problem,
+    };
+    // The seconds a call took become the next estimate's rate. Never fails the queue.
+    try {
+      const seconds = timed > 0 ? timedMs / 1000 / timed : 0;
+      if (seconds > 0 && prefs.getRates && prefs.setRates) await prefs.setRates(addSamples(await prefs.getRates(), [{ kind: 'askAi', seconds }]));
+    } catch {
+      // The estimate is only less good without it.
+    }
+    askAll = null;
+    await broadcast();
+  }
+
+  /**
+   * Ask AI about all. The questions are the open ones with something to ask and no suggestion (core/src/assist/askAll.ts), oldest
+   * first, taken through the start gate so no scan starts between the check and the claim. Replies once the queue is under way;
+   * it runs in the background, one question at a time, and the panel stays usable. Nothing is applied: every result is a suggestion.
+   */
+  const askAiAll = (): Promise<Reply<{ queued: number }>> =>
+    serial(async () => {
+      if (scan !== null || starting) return refuse(ASK_SCAN);
+      if (askAll !== null) return refuse(ASK_ALL_AGAIN);
+      if ((await prefs.getAnthropicKey()) === null) return refuse(NO_ANTHROPIC_KEY);
+      const open = (await store.listReview()).filter((q) => q.answer === null).sort((a, b) => a.openedAt - b.openedAt);
+      const queue = askQueueOf(open, await suggestions.list()).filter((q) => !asking.has(q.id));
+      if (queue.length === 0) return refuse(ASK_ALL_NOTHING);
+      const model = (await ebaySettings()).judgeModel;
+      const costs = queue.map((q) => estimatedQuestionCost(q.kind, model));
+      const run: AskAllRun = {
+        total: queue.length, done: 0, asked: 0, suggested: 0, verified: 0, costUsd: 0,
+        estimateUsd: costs.every((c) => c !== null) ? costs.reduce<number>((sum, c) => sum + c!, 0) : null,
+        abort: new AbortController(), promise: Promise.resolve(),
+      };
+      askAll = run;
+      askAllResult = null;
+      run.promise = runAskAll(run, queue.map((q) => q.id));
+      await broadcast();
+      return ok({ queued: queue.length });
+    });
+
+  /** Stop: the call in flight ends and keeps nothing; the rest are not asked. Nothing running is no error. */
+  async function stopAskAll(): Promise<Reply<null>> {
+    if (askAll !== null && !askAll.abort.signal.aborted) {
+      askAll.abort.abort();
+      await broadcast();
+    }
+    return ok(null);
+  }
+
+  /** After a scan that ran to its end: when the owner asked for it, the queue starts. A refusal (no key, nothing to ask) is not an error. */
+  async function askAfterScan(): Promise<void> {
+    try {
+      if (!prefs.getAskAfterScan || !(await prefs.getAskAfterScan())) return;
+      await askAiAll();
+    } catch {
+      // The scan is done; the owner can ask by hand.
+    }
+  }
+
+  async function saveAskAfterScan(on: unknown): Promise<Reply<null>> {
+    if (typeof on !== 'boolean') return refuse(BAD_SETTING);
+    await prefs.setAskAfterScan?.(on);
+    await broadcast();
+    return ok(null);
   }
 
   /**
@@ -1278,6 +1499,12 @@ export function createWorker(env: WorkerEnv): Worker {
         return answerReview(request.id, request.answer, request.aiSuggestion === true);
       case 'askAi':
         return askAi(request.questionId);
+      case 'askAiAll':
+        return askAiAll();
+      case 'stopAskAll':
+        return stopAskAll();
+      case 'saveAskAfterScan':
+        return saveAskAfterScan(request.on);
       case 'reopenReview':
         return reopenReview(request.id);
       case 'quote':

@@ -112,6 +112,14 @@ export async function getRates(): Promise<UnitRates> {
 }
 export const setRates = (v: UnitRates): Promise<void> => write('unitRates', trustedRates(v));
 
+// ---------------------------------------------------------------- Ask AI after each scan (step 12)
+
+/** Whether a scan that ran to its end is followed by Ask AI about all. Off until the owner turns it on; anything but `true` reads as off. */
+export async function getAskAfterScan(): Promise<boolean> {
+  return (await read('askAfterScan')) === true;
+}
+export const setAskAfterScan = (on: boolean): Promise<void> => write('askAfterScan', on === true);
+
 // ---------------------------------------------------------------- the rest
 
 export async function getActiveScan(): Promise<ActiveScan | null> {
