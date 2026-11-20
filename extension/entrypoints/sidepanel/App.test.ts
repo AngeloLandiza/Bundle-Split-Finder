@@ -163,7 +163,7 @@ describe('side panel shell', () => {
     expect(view.estimateText).toBe('at least 10 min');
     const bar = screen.getByRole('progressbar', { name: 'Scan progress' });
     expect(bar).toHaveAttribute('aria-valuetext', view.ariaValueText);
-    expect(bar.closest('.progress')).toHaveTextContent(`Fetching Home Depot deals pages · 3 of 303${view.estimateText}Details`);
+    expect(bar.closest('.progress')).toHaveTextContent(`Fetching deals pages · 3 of 303${view.estimateText}Details`);
     await user.click(stop);
     expect(send).toHaveBeenCalledWith({ type: 'stopScan' });
 

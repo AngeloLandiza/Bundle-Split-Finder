@@ -33,10 +33,31 @@ describe('the progress bar', () => {
   });
 });
 
-describe('the collapsed line', () => {
-  it('a long label gives way with an ellipsis; the count never does (QA, 360px)', () => {
-    expect(declarations('.progress-label')).toContain('text-overflow: ellipsis');
-    expect(declarations('.progress-count')).toContain('flex: none');
+describe('the collapsed line (UI review of P2)', () => {
+  it('is one grid line: the step, the estimate, Details', () => {
+    expect(declarations('.progress')).toContain('container-type: inline-size');
+    expect(declarations('.progress-line')).toContain(`grid-template-areas: 'now estimate toggle'`);
+  });
+
+  it('below 424px the estimate takes a line of its own over the bar, so the label is never cut', () => {
+    const narrow = css.indexOf('@container (max-width: 423px)');
+    expect(narrow).toBeGreaterThan(0);
+    const grid = declarations('.progress-line', narrow);
+    expect(grid).toContain(`grid-template-areas:\n      'now toggle'\n      'estimate estimate'`);
+  });
+
+  it('keeps the spaces around its middle dot the way text does: no white-space: pre, no space before an ellipsis', () => {
+    expect(css).not.toMatch(/white-space: pre[;\s]/);
+    expect(declarations('.progress-now')).toContain('white-space: nowrap');
+  });
+
+  it('Details: ink-2, underlined in ink-2 at rest, and a visible focus ring', () => {
+    const rest = declarations('.progress-toggle');
+    expect(rest).toContain('color: var(--ink-2)');
+    expect(rest).toContain('text-decoration-color: var(--ink-2)');
+    const focus = declarations('.progress-toggle:focus-visible');
+    expect(focus).toContain('outline: 2px solid var(--ink)');
+    expect(focus).toContain('outline-offset: 2px');
   });
 });
 
@@ -49,6 +70,12 @@ describe('the step list', () => {
     expect(declarations('.progress')).toContain('color: var(--ink-2)');
     expect(declarations(".progress-step[data-state='now']")).toContain('color: var(--ink)');
     expect(declarations('.progress-step-state,\n.progress-step-figure')).toContain('white-space: nowrap');
+  });
+
+  it("a skipped step's reason is ink-2 in the word face, even on a line in ink", () => {
+    const reason = declarations(".progress-step-figure:not(.figure)");
+    expect(reason).toContain('color: var(--ink-2)');
+    expect(reason).toContain('font-family: var(--font-words)');
   });
 
   it('has no card: no fill of its own, no radius, no shadow', () => {

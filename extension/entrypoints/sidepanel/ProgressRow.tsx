@@ -130,14 +130,14 @@ export function ProgressRow({ job, rates }: { job: ScanJob | null; rates?: UnitR
   return (
     <div className="progress" data-open={open || undefined}>
       <div className="progress-line">
-        {/* At 360px a long label gives way (an ellipsis), never the count. */}
+        {/* The label is never cut: below 424px the estimate takes its own line (sidepanel.css), not the label's room. */}
         <span className="progress-now">
-          <span className="progress-label">{label}</span>
+          {label}
           {count ? (
-            <span className="progress-count">
+            <>
               {' · '}
               <span className="figure">{count}</span>
-            </span>
+            </>
           ) : null}
         </span>
         <span className="progress-estimate figure">{view.estimateText}</span>

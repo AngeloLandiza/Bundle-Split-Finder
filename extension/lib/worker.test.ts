@@ -1096,7 +1096,7 @@ describe('worker: the key never leaves in a reply or a broadcast', () => {
 describe('worker: a scan that cannot be saved stops after two tries', () => {
   const GAVE_UP = 'The scan could not be saved, so it was stopped. Check that Chrome has free storage, then scan again.';
 
-  it('every job save after the first fails and the cache cannot be written: two tries, then nothing is sent', async () => {
+  it('every job save after the first fails and the cache cannot be written: two tries, then nothing is sent, and no search is paid for', async () => {
     const w = world({ key: KEY, settings: { ...RYOBI, searchesPerScan: 3, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
     let saves = 0;
     const broken = new Proxy(w.store, {
@@ -1104,6 +1104,7 @@ describe('worker: a scan that cannot be saved stops after two tries', () => {
         if (prop === 'putScan') {
           return async (job: ScanJob) => {
             saves += 1;
+            // Every save after the first fails: the job is created, and the save as its first step starts (step 11) fails, before any search.
             if (saves > 1) throw new Error('QuotaExceededError');
             return target.putScan(job);
           };
@@ -1119,12 +1120,12 @@ describe('worker: a scan that cannot be saved stops after two tries', () => {
     w.worker = worker;
 
     await worker.onTick();
-    expect(w.replay.calls).toEqual([RATCHET]);
+    expect(w.replay.calls).toEqual([]);
     expect(w.prefs.data.activeScan).toMatchObject({ attempts: 0, progress: '0:listing:1:0:0:0' });
 
     w.clock = T0 + MINUTE;
     await worker.onTick();
-    expect(w.replay.calls).toEqual([RATCHET, RATCHET]);
+    expect(w.replay.calls).toEqual([]);
     expect(w.prefs.data.activeScan).toMatchObject({ attempts: 1, progress: '0:listing:1:0:0:0' });
 
     w.clock = T0 + 2 * MINUTE;
@@ -1141,9 +1142,12 @@ describe('worker: a scan that cannot be saved stops after two tries', () => {
     expect(w.requests).toHaveLength(before);
 
     // A later Scan now may try again.
+    const savesBefore = saves;
     expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
     await untilIdle(w);
-    expect(w.replay.calls).toEqual([RATCHET, RATCHET, RATCHET]);
+    expect(saves).toBeGreaterThan(savesBefore);
+    // The save as the first step starts fails before its search, so a scan that cannot be saved never spends one.
+    expect(w.replay.calls).toEqual([]);
   });
 
   it('a job that makes progress between interruptions is continued as many times as needed', async () => {

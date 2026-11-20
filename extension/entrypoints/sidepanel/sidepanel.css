@@ -152,6 +152,7 @@ select {
 /* progress row (step 11, docs/design.md "Scan progress"): one line and a 2px bar. The bar is the row's lower edge,
    full width, in place of the hairline; Details opens one line a step under it, and the hairline comes back. */
 .progress {
+  container-type: inline-size;
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-2);
@@ -161,36 +162,42 @@ select {
   border-bottom: 1px solid var(--line);
 }
 .progress-line {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: 'now estimate toggle';
   align-items: center;
-  gap: 12px;
+  column-gap: 12px;
   padding: 6px 16px;
 }
-.progress-now {
-  flex: 1 1 auto;
-  display: flex;
-  min-width: 0;
-  white-space: pre;
-  color: var(--ink);
+/* Below 424px the longest step with its count, the longest estimate and Details do not fit on one line. The estimate
+   takes a line of its own over the bar, at every step, so the row keeps one height through the scan and the label is
+   never cut. (UI review of P2.) */
+@container (max-width: 423px) {
+  .progress-line {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'now toggle'
+      'estimate estimate';
+  }
 }
-.progress-label {
+.progress-now {
+  grid-area: now;
   min-width: 0;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
-}
-.progress-count {
-  flex: none;
+  color: var(--ink);
 }
 .progress-now .figure,
 .progress-estimate {
   font-size: 12px;
 }
 .progress-estimate {
-  flex: none;
+  grid-area: estimate;
   white-space: nowrap;
 }
 .progress-toggle {
-  flex: none;
+  grid-area: toggle;
   min-height: 24px;
   padding: 0;
   border: 0;
@@ -199,12 +206,16 @@ select {
   font-size: 13px;
   cursor: pointer;
   text-decoration: underline;
-  text-decoration-color: var(--line-strong);
+  text-decoration-color: var(--ink-2);
   text-underline-offset: 2px;
 }
 .progress-toggle:hover {
   color: var(--ink);
-  text-decoration-color: currentColor;
+  text-decoration-color: var(--ink);
+}
+.progress-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 .progress-bar {
   height: 2px;
@@ -251,6 +262,11 @@ select {
 }
 .progress-step-figure.figure {
   font-size: 12px;
+}
+/* A skipped step's reason: words, in ink-2, in the figure column. */
+.progress-step-figure:not(.figure) {
+  font-family: var(--font-words);
+  color: var(--ink-2);
 }
 @media (prefers-reduced-motion: reduce) {
   .progress-fill {

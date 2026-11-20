@@ -299,7 +299,7 @@ describe('progress row (step 11): the live region and the estimate', () => {
     vi.useFakeTimers();
     const view = render(createElement(ProgressRow, { job: lookingUp(0), rates: RATES }));
     view.rerender(createElement(ProgressRow, { job: lookingUp(40), rates: RATES }));
-    expect(line(view.container)).toBe('Looking up parts on Amazon · 40 of 200');
+    expect(line(view.container)).toBe('Looking up parts · 40 of 200');
     expect(estimateOf(view.container)).toBe(pipelineView(lookingUp(40), RATES, T0).estimateText);
     expect(bar()).toHaveAttribute('aria-valuetext', spoken(40));
     expect(status()).toBe(spoken(0));
