@@ -359,15 +359,18 @@ export const STEP_NAMES: Readonly<Record<StepId, string>> = {
   finish: 'Finish',
 };
 
-/** What the row's first line says while the step is the current one. */
+/**
+ * What the row's first line says while the step is the current one. Short, so that at 360px the label sits whole beside
+ * its count and Details (UI review of P2); the step list names each step in full.
+ */
 export const CURRENT_LABELS: Readonly<Record<StepId, string>> = {
-  hdPages: 'Fetching Home Depot deals pages',
+  hdPages: 'Fetching deals pages',
   bundlePages: 'Reading bundle pages',
   kitPages: 'Reading kit pages',
-  partPrices: 'Reading Home Depot part prices',
+  partPrices: 'Reading part prices',
   ebay: 'Checking eBay listings',
-  judge: 'Checking listings with Claude',
-  amazon: 'Looking up parts on Amazon',
+  judge: 'Checking listings',
+  amazon: 'Looking up parts',
   finish: 'Finishing up',
 };
 

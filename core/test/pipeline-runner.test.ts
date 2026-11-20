@@ -103,7 +103,9 @@ describe('the scan records its stages on the job', () => {
       readPages: unreadable, readPartPrices: async (parts) => notFound(parts),
       ebay: { kind: 'run', ebay: ebayWith(2), judge: judgeOf('claude-haiku-5-5'), listingsJudgedPerScan: 60 },
     });
-    expect(states(job).filter((s) => !s.endsWith(':done'))).toEqual([]);
+    // The ratchet has no kit, so the kit pages had nothing to read: skipped, "none found", not "done, 0 read".
+    expect(states(job).filter((s) => !s.endsWith(':done'))).toEqual(['kitPages:skipped']);
+    expect(byId(job, 'kitPages').skippedReason).toBe('none found');
     expect(byId(job, 'partPrices').unitsDone).toBe(job.counts.partPricesRead);
     expect(byId(job, 'partPrices').unitsDone).toBeGreaterThan(0);
     // Two parts: two searches and two item reads each, every one timed.
@@ -196,14 +198,14 @@ describe('the record mid-scan, as the panel reads it', () => {
     const job = await snapshots(2, 'claude-opus-5-5');
     expect(job.status).toBe('running');
     expect(states(job)).toEqual([
-      'hdPages:done', 'bundlePages:done', 'kitPages:done', 'partPrices:done', 'ebay:now', 'judge:now', 'amazon:next', 'finish:next',
+      'hdPages:done', 'bundlePages:done', 'kitPages:skipped', 'partPrices:done', 'ebay:now', 'judge:now', 'amazon:next', 'finish:next',
     ]);
     // A model call measured at 30 s on an earlier scan: the three listings the second part is expected to keep make 90 s.
     const rates: UnitRates = { 'judgeCall:claude-opus-5-5': [30] };
     const view = pipelineView(job, rates, T0);
     expect(view.current.label).toBe('Checking eBay listings');
     expect(view.steps.map((s) => [s.label, s.state])).toEqual([
-      ['Home Depot deals pages', 'done'], ['Bundle pages', 'done'], ['Kit pages', 'done'], ['Home Depot part prices', 'done'],
+      ['Home Depot deals pages', 'done'], ['Bundle pages', 'done'], ['Kit pages', 'skipped'], ['Home Depot part prices', 'done'],
       ['eBay listings', 'now'], ['Listing check (Claude)', 'now'], ['Amazon lookups', 'next'], ['Finish', 'next'],
     ]);
     // The lookups are not planned until the free steps end, so what is left is a lower bound.
@@ -243,5 +245,75 @@ describe('the record mid-scan, as the panel reads it', () => {
     expect(rates.serpapiSearch).toHaveLength(2);
     expect(rates.ebayCall).toHaveLength(1);
     expect(estimate({ ...job, pipeline: job.pipeline!.map((s) => (s.id === 'finish' ? s : s)) }, rates, T0).kind).toBe('underMinute');
+  });
+});
+
+// ---------------------------------------------------------------- UI review of P2, fixes 2 and 3
+describe('steps with nothing to do, and the job saved as each step starts', () => {
+  /** A store that keeps a copy of every job it is given, as the panel would have seen it. */
+  class RecordingStore extends MemoryScanStore {
+    saved: ScanJob[] = [];
+    override async putScan(job: ScanJob) {
+      this.saved.push(structuredClone(job));
+      return super.putScan(job);
+    }
+  }
+
+  async function recorded(opts: Partial<Deps> = {}, store = new RecordingStore()) {
+    const now = ticking();
+    const budget = new SearchBudget(parseAccount({ ...fx.SERPAPI_ACCOUNT_FREE }), { reserve: 0, maxPerRun: 10 });
+    const client = new SerpApiClient({ apiKey: 'TEST', budget, cache: new MemoryCache(), fetchFn: replayRecorded().fetchFn, now });
+    store.saved = [];
+    const job = await runScan({ client, budget, store, settings: RATCHET, now, ...opts });
+    return { store, job, saved: store.saved.filter((j) => j.status === 'running') };
+  }
+  const readers = (): Partial<Deps> => ({ readPages: unreadable, readPartPrices: async (parts) => notFound(parts) });
+
+  it('a step that had nothing to do says "none found", in the record and in the step list', async () => {
+    const { job } = await recorded(readers());
+    expect(byId(job, 'kitPages')).toMatchObject({ state: 'skipped', skippedReason: 'none found' });
+    const kit = pipelineView(job, {}, T0).steps.find((s) => s.label === 'Kit pages')!;
+    expect(kit).toEqual({ label: 'Kit pages', state: 'skipped', figure: 'none found' });
+  });
+
+  it('no step starts with nothing to do, in a first scan or in a second over the same store', async () => {
+    const first = await recorded(readers());
+    const second = await recorded(readers(), first.store);
+    for (const { saved } of [first, second]) {
+      // "0 of 0" never shows: a step with nothing queued is skipped instead of started.
+      for (const j of saved) for (const s of j.pipeline!) if (s.state === 'now' && s.id !== 'finish') expect(s.unitsTotal, `${s.id} ${states(j)}`).not.toBe(0);
+    }
+    // The second scan has its pages and prices already: what it had nothing to do for says so.
+    const done = states(second.job);
+    for (const s of second.job.pipeline!) if (s.state === 'skipped') expect(s.skippedReason, s.id).not.toBe('');
+    expect(done.at(-1)).toBe('finish:done');
+  });
+
+  it('each paid or read step is saved as it starts, with its count from 0', async () => {
+    const { saved } = await recorded(readers());
+    for (const id of ['hdPages', 'bundlePages', 'partPrices', 'amazon'] as const) {
+      // The first time the panel sees the step going, nothing of it is done yet, and its count shows.
+      const first = saved.find((j) => byId(j, id).state === 'now');
+      expect(first, id).toBeDefined();
+      expect(byId(first!, id).unitsDone, id).toBe(0);
+      expect(byId(first!, id).unitsTotal, id).toBeGreaterThan(0);
+      expect(pipelineView(first!, {}, T0).current.count, id).toBe(`0 of ${byId(first!, id).unitsTotal}`);
+    }
+  });
+
+  it('the Amazon step is saved as started before its first search is sent', async () => {
+    const store = new RecordingStore();
+    let atFirstLookup: ScanJob | undefined;
+    const replay = replayRecorded();
+    const fetchFn: typeof replay.fetchFn = async (url, init) => {
+      if (String(url).includes('engine=amazon') && !atFirstLookup) atFirstLookup = structuredClone((await store.listScans())[0]!);
+      return replay.fetchFn(url, init);
+    };
+    const now = ticking();
+    const budget = new SearchBudget(parseAccount({ ...fx.SERPAPI_ACCOUNT_FREE }), { reserve: 0, maxPerRun: 10 });
+    const client = new SerpApiClient({ apiKey: 'TEST', budget, cache: new MemoryCache(), fetchFn, now });
+    await runScan({ client, budget, store, settings: RATCHET, now, ...readers() });
+    expect(byId(atFirstLookup!, 'amazon')).toMatchObject({ state: 'now', unitsDone: 0 });
+    expect(pipelineView(atFirstLookup!, {}, T0).current).toEqual({ label: 'Looking up parts', count: `0 of ${byId(atFirstLookup!, 'amazon').unitsTotal}` });
   });
 });

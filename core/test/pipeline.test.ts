@@ -4,8 +4,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  addSamples, closeRest, derivePipeline, endStep, estimate, moveUnits, newPipeline, type PipelineStep, pipelineView, RATE_WINDOW, secondsPerUnit, SEED_SECONDS, skipStep,
-  startStep, trustedRates, type UnitRates,
+  addSamples, closeRest, CURRENT_LABELS, derivePipeline, endStep, estimate, moveUnits, newPipeline, type PipelineStep, pipelineView, RATE_WINDOW, secondsPerUnit, SEED_SECONDS, skipStep,
+  startStep, STEP_IDS, trustedRates, type UnitRates,
 } from '../src/scan/pipeline';
 import type { ScanJob } from '../src/scan/types';
 
@@ -238,9 +238,9 @@ describe('pipelineView', () => {
     const one = job([{ state: 'done' }, { state: 'skipped' }, { state: 'skipped' }, { state: 'skipped' }, { state: 'skipped' }, { state: 'skipped' }, { state: 'now', unitsDone: 0, unitsTotal: 20 }, { state: 'next', unitsTotal: 1 }]);
     const v = pipelineView(one, {}, NOW);
     expect(v.estimateText).toBe('about 1 min');
-    expect(v.ariaValueText).toBe('Step 7 of 8, looking up parts on Amazon, about 1 minute left');
+    expect(v.ariaValueText).toBe('Step 7 of 8, looking up parts, about 1 minute left');
     const small = job([{ state: 'done' }, { state: 'skipped' }, { state: 'skipped' }, { state: 'skipped' }, { state: 'skipped' }, { state: 'skipped' }, { state: 'now', unitsDone: 0, unitsTotal: 3 }, { state: 'next', unitsTotal: 1 }]);
-    expect(pipelineView(small, {}, NOW).ariaValueText).toBe('Step 7 of 8, looking up parts on Amazon, less than a minute left');
+    expect(pipelineView(small, {}, NOW).ariaValueText).toBe('Step 7 of 8, looking up parts, less than a minute left');
   });
 
   it('skipped steps give the reason as their figure, and the next model step the estimated cost', () => {
@@ -282,7 +282,7 @@ describe('pipelineView', () => {
     const j = job([], { phase: 'listing', queue: [{ kind: 'listing', q: 'x', page: 2, filterTokens: null, bundlesOnly: false }, { kind: 'listing', q: 'x', page: 3, filterTokens: null, bundlesOnly: false }], counts: { ...job([]).counts, pagesFetched: 1 } });
     delete j.pipeline;
     const v = pipelineView(j, {}, NOW);
-    expect(v.current).toEqual({ label: 'Fetching Home Depot deals pages', count: '1 of 3' });
+    expect(v.current).toEqual({ label: 'Fetching deals pages', count: '1 of 3' });
     expect(v.steps[0]).toEqual({ label: 'Home Depot deals pages', state: 'now', figure: '1 of 3' });
   });
 
@@ -290,5 +290,12 @@ describe('pipelineView', () => {
     expect(pipelineView(job([]), {}, NOW).steps.map((s) => s.label)).toEqual([
       'Home Depot deals pages', 'Bundle pages', 'Kit pages', 'Home Depot part prices', 'eBay listings', 'Listing check (Claude)', 'Amazon lookups', 'Finish',
     ]);
+  });
+
+  it('the current-step labels are short enough to sit whole beside the count and Details at 360px (UI review, fix 1)', () => {
+    expect(STEP_IDS.map((id) => CURRENT_LABELS[id])).toEqual([
+      'Fetching deals pages', 'Reading bundle pages', 'Reading kit pages', 'Reading part prices', 'Checking eBay listings', 'Checking listings', 'Looking up parts', 'Finishing up',
+    ]);
+    for (const id of STEP_IDS) expect(CURRENT_LABELS[id].length).toBeLessThanOrEqual(22);
   });
 });

@@ -350,8 +350,13 @@ async function runQueue(run: Run): Promise<void> {
   // Step 11: the listing phase is the Home Depot deals pages (and the brands' Amazon pages), the parts phase the lookups.
   const stage: StepId = job.phase === 'listing' ? 'hdPages' : 'amazon';
   const queued = (): number => job.queue.filter((s) => (stage === 'hdPages' ? s.kind === 'listing' || s.kind === 'catalog' : s.kind === 'lookup' || s.kind === 'refresh')).length;
+  const unitsBefore = job.pipeline?.find((s) => s.id === stage)?.unitsDone ?? 0;
   if (stage === 'amazon' && job.queue.length === 0 && (job.stopReason !== null || job.deferred.length > 0)) skipStep(job, 'amazon', whyNot(job.stopReason));
+  // Nothing queued and nothing done before (a continued job keeps what it did): the step had nothing to do.
+  else if (job.queue.length === 0 && unitsBefore === 0) skipStep(job, stage, NONE_FOUND);
   else startStep(job, stage, { remaining: queued(), now: run.now() });
+  // Saved as the step starts, so the row shows it with its count from the first moment (UI review of P2).
+  await run.store.putScan(job);
   while (!run.halted && job.queue.length > 0) {
     const step = job.queue[0]!;
     // 3 rule 1: asked before every paid step, never during one.
@@ -411,6 +416,9 @@ async function runQueue(run: Run): Promise<void> {
   endStep(job, stage, run.now());
   await run.store.putScan(job);
 }
+
+/** Step 11: the reason a step with nothing to do gives in the step list. */
+const NONE_FOUND = 'none found';
 
 /** Step 11: why a step that did not run did not, in four words or fewer, from the job's stop reason. */
 function whyNot(reason: StopReason | null): string {
@@ -856,7 +864,7 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
   if (!run.readPages) return none;
   const room = Math.max(0, pagesLeft(run) - bundleNotRead);
   if (run.shouldStop()) return none;
-  if (room === 0) return nothingToRead(run, 'kitPages');
+  if (room === 0) return nothingToRead(run, 'kitPages', 'page limit reached');
   const bundles = await store.listBundles();
   const catalog = await store.listCatalog();
   const bundlesOf = kitIndex(bundles);
@@ -1044,7 +1052,12 @@ async function ebayPass(run: Run): Promise<void> {
     now: run.now, shouldStop: () => run.shouldStop() || (ebay.halted?.() ?? false),
     ...(ebay.signal ? { signal: ebay.signal } : {}), ...(ebay.callTimeoutMs ? { callTimeoutMs: ebay.callTimeoutMs } : {}),
   });
-  for (const id of ['ebay', 'judge'] as const) endStep(job, id, run.now());
+  for (const id of ['ebay', 'judge'] as const) {
+    // A pass that made no call of this kind, and was not stopped, had nothing to do for it.
+    const s = job.pipeline?.find((p) => p.id === id);
+    if (s && s.unitsDone === 0 && s.costSoFar === undefined && !run.shouldStop()) skipStep(job, id, NONE_FOUND);
+    else endStep(job, id, run.now());
+  }
   await store.putScan(job);
 }
 
@@ -1107,10 +1120,12 @@ async function readInto(run: Run, stage: StepId, targets: PageTarget[]): Promise
   return { goOn: !refused, notRead: targets.length - read, ...(refused ? { why: 'Home Depot refused' } : {}) };
 }
 
-/** Step 11: a read step with no page to read has run: done, nothing read. */
-async function nothingToRead(run: Run, stage: StepId): Promise<PassResult> {
-  startStep(run.job, stage, { remaining: 0, now: run.now() });
-  endStep(run.job, stage, run.now());
+/**
+ * Step 11: a read step with no page to read did not run: skipped, "none found" (or why there was no room), never
+ * "done, 0 read" (UI review of P2).
+ */
+async function nothingToRead(run: Run, stage: StepId, why = NONE_FOUND): Promise<PassResult> {
+  skipStep(run.job, stage, why);
   await run.store.putScan(run.job);
   return { goOn: true, notRead: 0 };
 }
