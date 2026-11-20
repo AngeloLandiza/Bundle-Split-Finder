@@ -84,6 +84,9 @@ export interface ReplayServer {
   servePageAs(itemId: string, recordedId: string): void;
   /** Opt-in: every /search.json answer waits this many ms, so a test can hold a scan in the running state. reset() clears it. */
   delaySearches(ms: number): void;
+  /** Opt-in: a /search.json whose query string `match` accepts waits until releaseSearches() or reset(), so a test can hold a scan at one step. */
+  holdSearches(match: (search: string) => boolean): void;
+  releaseSearches(): void;
   /** Test-only: every /search.json is answered 500, as if SerpApi were failing, until reset(). */
   failSearches(): void;
   reset(): void;
@@ -103,6 +106,12 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   const refused = new Set<string>();
   const servedAs = new Map<string, string>();
   let searchDelay = 0;
+  let holdMatch: ((search: string) => boolean) | null = null;
+  const held: (() => void)[] = [];
+  const release = (): void => {
+    holdMatch = null;
+    for (const go of held.splice(0)) go();
+  };
   let searchesFail = false;
   // The reader looks up `base-catalog-<itemId>` in the page's state, so a page served under another id carries that id.
   const pageText = (id: string): string | undefined => {
@@ -151,6 +160,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
         res.writeHead(405, headers).end('{}');
       } else if (url.pathname === '/search.json') {
         if (searchDelay > 0) await new Promise((ok) => setTimeout(ok, searchDelay));
+        if (holdMatch?.(url.search)) await new Promise<void>((go) => held.push(go));
         if (searchesFail) {
           res.writeHead(500, headers).end(JSON.stringify({ error: 'Internal error.' }));
           return;
@@ -227,11 +237,16 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     delaySearches(ms) {
       searchDelay = ms;
     },
+    holdSearches(match) {
+      holdMatch = match;
+    },
+    releaseSearches: release,
     failSearches() {
       searchesFail = true;
     },
     reset() {
       searchDelay = 0;
+      release();
       searchesFail = false;
       pageRequests = [];
       searchPageRequests = [];
