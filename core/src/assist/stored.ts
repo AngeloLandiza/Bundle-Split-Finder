@@ -6,7 +6,6 @@ import { costOf, PRICE_TABLE } from '../judge/eval';
 import type { TokenUsage } from '../judge/types';
 import { choicesOf, NONE, reviewSignature } from '../scan/answers';
 import type { ReviewItem } from '../scan/types';
-import { expandParts } from './parts';
 import type { Suggestion } from './types';
 
 /** What the owner did with a suggestion shown for the question. */
@@ -84,7 +83,7 @@ export function proposedAnswer(suggestion: Suggestion, question: ReviewItem): st
   if (suggestion.status === 'none_suggested') return NONE;
   if (suggestion.status === 'verified') {
     const a = suggestion.answer;
-    return a.decision === 'none' ? NONE : a.kind === 'split' ? a.parts.join(',') : a.kind === 'parts' ? expandParts(a.parts).join(',') : a.asin;
+    return a.decision === 'none' ? NONE : a.decision === 'parts' || a.kind === 'split' ? a.parts.join(',') : a.asin;
   }
   // Step 12 research: an unverified parts answer proposed those parts, each as many times as its quantity.
   if (suggestion.status === 'unverified' && suggestion.claimed === null && suggestion.researchClaim?.decision === 'parts') {

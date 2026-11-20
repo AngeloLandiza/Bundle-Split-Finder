@@ -42,7 +42,7 @@ const record = (q: ReviewItem, suggestion: Suggestion, at = 1): StoredSuggestion
 const verifiedReading = (q: ReviewItem): StoredSuggestion =>
   record(q, { ...base(q), status: 'verified', reason: 'r', quotes: [quoteOf(q)], answer: { decision: 'choose', kind: 'split', choiceIndex: 0, parts: q.choices[0]! } });
 const verifiedParts = (q: ReviewItem, parts: { model: string; qty: number }[]): StoredSuggestion =>
-  record(q, { ...base(q), status: 'verified', reason: 'r', quotes: [quoteOf(q)], answer: { decision: 'choose', kind: 'parts', parts } });
+  record(q, { ...base(q), status: 'verified', reason: 'r', quotes: [quoteOf(q)], answer: { decision: 'parts', kind: 'split', parts: parts.flatMap((p) => Array.from({ length: p.qty }, () => p.model)) } });
 const cannotTell = (q: ReviewItem): StoredSuggestion => record(q, { ...base(q), status: 'cannot_tell', reason: 'The page does not list the parts.', quotes: [] });
 const unverified = (q: ReviewItem): StoredSuggestion =>
   record(q, { ...base(q), status: 'unverified', reasons: ['The quote is not found.'], claimed: { evidence: [], reason: 'x', decision: 'choose', choiceIndex: 0, asin: null } });
@@ -374,7 +374,7 @@ describe('the per-question Ask AI button rule', () => {
     const { none, match } = await world();
     const opus = state({ ebay: { hasEbayKeys: false, hasAnthropicKey: true, judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 60 } });
     setup(reportOf([none]), { state: opus });
-    expect(screen.getByRole('button', { name: /^Ask AI · / })).toHaveTextContent('about $0.10');
+    expect(screen.getByRole('button', { name: /^Ask AI · / })).toHaveTextContent('about $0.11');
     cleanup();
     setup(reportOf([match]), { state: opus });
     expect(screen.getByRole('button', { name: /^Ask AI · / })).toHaveTextContent('about $0.02');

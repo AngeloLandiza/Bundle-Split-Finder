@@ -6,7 +6,6 @@ import { OpenOnHomeDepot } from './OpenOnHomeDepot';
 import { amazonListingUrl, amazonSearchUrl } from '../../lib/links';
 import { reviewReasonParts } from './reviewReason';
 import type { StoredSuggestion } from '@core/assist/stored';
-import { expandParts } from '@core/assist/parts';
 import { AiSuggestion, ENTER_VALUE, preselectOf, typedPartsOf } from './AiSuggestion';
 
 const NONE = 'none';
@@ -61,7 +60,7 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
   const typedParts = typed.split(',').map((x) => x.trim()).filter((x) => x !== '');
   // Approve is pressing the AI's own answer: once the owner selects another, or edits the parts it typed, the button is Save answer again.
   const preselected = suggestion?.status === 'verified' ? preselectOf(suggestion, item) : null;
-  const proposedParts = suggestion?.status === 'verified' && suggestion.answer.decision === 'choose' && suggestion.answer.kind === 'parts' ? expandParts(suggestion.answer.parts) : null;
+  const proposedParts = suggestion?.status === 'verified' && suggestion.answer.decision === 'parts' ? suggestion.answer.parts : null;
   const approving = preselected !== null && picked === preselected && (picked !== ENTER || (proposedParts !== null && typedParts.map((p) => p.toUpperCase()).join(',') === proposedParts.join(',')));
   const legendRef = useRef<HTMLLegendElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);

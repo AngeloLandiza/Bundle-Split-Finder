@@ -80,12 +80,12 @@ describe('Ask AI: the button', () => {
   it('says its price on the button, rounded up, never $0.00', async () => {
     const { q } = await question();
     setup(reportOf([q]));
-    expect(askButton()).toHaveAccessibleName('Ask AI · about $0.01');
-    expect(askButton()).toHaveTextContent('Ask AI · about $0.01');
+    expect(askButton()).toHaveAccessibleName('Ask AI · about $0.02');
+    expect(askButton()).toHaveTextContent('Ask AI · about $0.02');
     cleanup();
     setup(reportOf([q]), { state: state({ ebay: { hasEbayKeys: false, hasAnthropicKey: true, judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 60 } }) });
     // Opus, a split question: it is researched, which costs more than reading one listing.
-    expect(askButton()).toHaveTextContent('Ask AI · about $0.10');
+    expect(askButton()).toHaveTextContent('Ask AI · about $0.11');
     expect(document.body.textContent).not.toContain('$0.00');
   });
 
@@ -94,7 +94,7 @@ describe('Ask AI: the button', () => {
     setup(reportOf([q]));
     const row = askButton().parentElement!;
     expect([...row.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Save answer', 'Skip for now', expect.stringContaining('Ask AI')]);
-    expect(askButton().querySelector('.figure')).toHaveTextContent('about $0.01');
+    expect(askButton().querySelector('.figure')).toHaveTextContent('about $0.02');
   });
 
   it('is not pressable while a scan runs, and says nothing it cannot back', async () => {
@@ -140,7 +140,7 @@ describe('Ask AI: asking', () => {
     setup(reportOf([q]), { answers: { askAi: { ok: true, data: { suggestion: { status: 'not_suggested', reason: 'Claude could not be reached.' } } } } });
     await userEvent.click(askButton());
     expect(await screen.findByText('Claude could not be reached.')).toBeVisible();
-    expect(askButton()).toHaveTextContent('Ask AI · about $0.01');
+    expect(askButton()).toHaveTextContent('Ask AI · about $0.02');
     expect(screen.queryByRole('group', { name: 'AI suggestion' })).toBeNull();
   });
 

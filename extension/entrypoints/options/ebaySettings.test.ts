@@ -203,8 +203,8 @@ describe('Settings: Ask AI after each scan (step 12)', () => {
 
   it('says what asking costs a question, as an estimate, at the model chosen', async () => {
     const { user } = await open(stateWith());
-    expect(screen.getByTestId('ask-cost')).toHaveTextContent('Estimated cost of asking, on the model above: about $0.01 for a bundle\'s parts, about $0.01 for a listing. An estimate');
+    expect(screen.getByTestId('ask-cost')).toHaveTextContent('Estimated cost of asking, on the model above: about $0.02 for a bundle\'s parts, about $0.01 for a listing. An estimate');
     await user.click(screen.getByRole('radio', { name: /Claude Opus 5\.5/ }));
-    expect(screen.getByTestId('ask-cost')).toHaveTextContent('about $0.10 for a bundle\'s parts, about $0.02 for a listing');
+    expect(screen.getByTestId('ask-cost')).toHaveTextContent('about $0.11 for a bundle\'s parts, about $0.02 for a listing');
   });
 });

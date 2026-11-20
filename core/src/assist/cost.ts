@@ -4,6 +4,7 @@
 // a few hundred more (A1 report). The real cost of each call is kept with it (stored.ts, suggestionCost).
 
 import { costOf, PRICE_TABLE } from '../judge/eval';
+import { estimatedResearchCost } from '../research/eval';
 
 export const ESTIMATED_TOKENS_PER_QUESTION = { input: 1800, output: 500 } as const;
 
@@ -25,15 +26,12 @@ export function askCostLabel(model: string): string | null {
 }
 
 // Step 12: a split question is researched (it may read the whole Home Depot page and search), which sends and receives more
-// than one call about a listing: about 18,000 tokens in and 1,400 out over its few turns. An estimate, like the one above; the
-// real cost of each question is kept with its suggestion.
-export const ESTIMATED_TOKENS_PER_RESEARCH = { input: 18000, output: 1400 } as const;
+// than one call about a listing: its estimate is the research agent's (core/src/research/eval.ts). The real cost of each question
+// is kept with its suggestion.
 
 /** Dollars one question of this kind may cost on `model`; null for a model with no published rate. */
 export function estimatedQuestionCost(kind: 'split' | 'match', model: string): number | null {
-  if (kind === 'match') return estimatedAskCost(model);
-  const rates = PRICE_TABLE[model];
-  return rates ? costOf({ inputTokens: ESTIMATED_TOKENS_PER_RESEARCH.input, outputTokens: ESTIMATED_TOKENS_PER_RESEARCH.output }, rates) : null;
+  return kind === 'match' ? estimatedAskCost(model) : estimatedResearchCost(model);
 }
 
 const centsOf = (dollars: number): number => Math.max(1, Math.ceil(Math.round(dollars * 1e6) / 1e4));

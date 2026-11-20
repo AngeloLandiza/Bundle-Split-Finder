@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { agreedWith, proposedAnswer, type StoredSuggestion } from '../src/assist/stored';
 import { approvalOf, verifiedRows } from '../src/assist/approve';
 import { askQueueOf, canAsk } from '../src/assist/askAll';
-import { expandParts } from '../src/assist/parts';
+import { researchCostLabel } from '../src/research/eval';
 import { askAllCostLabel, estimatedAskCost, estimatedQuestionCost, questionCostLabel } from '../src/assist/cost';
 import type { Suggestion } from '../src/assist/types';
 import { reviewSignature } from '../src/scan/answers';
@@ -26,7 +26,8 @@ const verifiedChoice = (q: ReviewItem, choiceIndex = 0): Suggestion => ({
 });
 const verifiedParts = (q: ReviewItem, parts: { model: string; qty: number }[]): Suggestion => ({
   ...meta(q), status: 'verified', reason: 'r', quotes: [{ quote: 'q', sourceId: 'bundle', label: 'Home Depot page', url: 'https://www.homedepot.com/p/1', names: true }],
-  answer: { decision: 'choose', kind: 'parts', parts },
+  // The research's shape: each model repeated by its quantity.
+  answer: { decision: 'parts', kind: 'split', parts: parts.flatMap((p) => Array.from({ length: p.qty }, () => p.model)) },
 });
 const cannotTell = (q: ReviewItem): Suggestion => ({ ...meta(q), status: 'cannot_tell', reason: 'no', quotes: [] });
 
@@ -78,7 +79,6 @@ describe('what Approve all sends', async () => {
     const item = q(NO_READING);
     const s = verifiedParts(item, [{ model: 'dck940d2', qty: 1 }, { model: 'DCB203', qty: 2 }]);
     expect(approvalOf(s, item)).toEqual({ parts: ['DCK940D2', 'DCB203', 'DCB203'], seen: reviewSignature(item) });
-    expect(expandParts([{ model: 'DCB203', qty: 2 }])).toEqual(['DCB203', 'DCB203']);
   });
 
   it('nothing else is ever approved: not an unverified, cannot-tell or none suggestion, not a reading the question no longer has, not parts for a match question', () => {
@@ -90,9 +90,7 @@ describe('what Approve all sends', async () => {
     expect(approvalOf(verifiedChoice(item, 3), item)).toBeNull();
     const match = q(MATCH_ONE);
     expect(approvalOf(verifiedParts(match, [{ model: 'PBP004', qty: 1 }]), match)).toBeNull();
-    // A parts answer with a count that is not a whole number, or nothing in it, is not one.
-    expect(approvalOf(verifiedParts(item, [{ model: 'PBP004', qty: 0 }]), item)).toBeNull();
-    expect(approvalOf(verifiedParts(item, [{ model: 'PBP004', qty: 1.5 }]), item)).toBeNull();
+    // A parts answer with nothing in it, or more models than the typed-parts answer takes, is not one.
     expect(approvalOf(verifiedParts(item, []), item)).toBeNull();
     expect(approvalOf(verifiedParts(item, [{ model: 'PBP004', qty: 5 }, { model: 'PBP003', qty: 4 }]), item)).toBeNull();
   });
@@ -136,12 +134,14 @@ describe('what asking costs, said before the click', () => {
   it('is said rounded up, never "$0.00"', () => {
     expect(questionCostLabel('match', MODEL)).toBe('about $0.01');
     expect(questionCostLabel('match', 'claude-opus-5-5')).toBe('about $0.02');
-    expect(questionCostLabel('split', 'claude-opus-5-5')).toBe('about $0.10');
+    // The research's own label (core/src/research/eval.ts): the same figure, whichever file says it.
+    expect(questionCostLabel('split', 'claude-opus-5-5')).toBe(researchCostLabel('claude-opus-5-5'));
+    expect(questionCostLabel('split', 'claude-opus-5-5')).toBe('about $0.11');
     expect(questionCostLabel('split', 'a-model-with-no-rate')).toBeNull();
   });
 
   it('for all: the sum, in cents under a dollar and in whole dollars from a dollar, rounded up; null when no rate or nothing to ask', () => {
-    expect(askAllCostLabel(['split', 'split', 'match'], 'claude-opus-5-5')).toBe('about $0.22');
+    expect(askAllCostLabel(['split', 'split', 'match'], 'claude-opus-5-5')).toBe('about $0.23');
     expect(askAllCostLabel(Array.from({ length: 26 }, () => 'split' as const), 'claude-opus-5-5')).toBe('about $3');
     expect(askAllCostLabel(['split'], 'a-model-with-no-rate')).toBeNull();
     expect(askAllCostLabel([], MODEL)).toBeNull();

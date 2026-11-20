@@ -4,7 +4,6 @@
 
 import { choicesOf, MAX_ENTERED_PARTS, reviewSignature } from '../scan/answers';
 import type { ReviewAnswer, ReviewItem } from '../scan/types';
-import { expandParts } from './parts';
 import { liveSuggestion, type StoredSuggestion } from './stored';
 import type { Suggestion } from './types';
 
@@ -15,18 +14,20 @@ import type { Suggestion } from './types';
  * keeps a button off a suggestion that would be refused.
  */
 export function approvalOf(suggestion: Suggestion, item: ReviewItem): ReviewAnswer | null {
-  if (suggestion.status !== 'verified' || suggestion.answer.decision !== 'choose') return null;
+  if (suggestion.status !== 'verified' || suggestion.answer.decision === 'none') return null;
   const seen = reviewSignature(item);
   const a = suggestion.answer;
+  // Parts the research found (R1: each model repeated by its quantity), saved through the typed-parts answer.
+  if (a.decision === 'parts') {
+    const parts = a.parts.map((p) => p.trim().toUpperCase());
+    return item.kind === 'split' && parts.length >= 1 && parts.length <= MAX_ENTERED_PARTS && parts.every((p) => p !== '') ? { parts, seen } : null;
+  }
   if (a.kind === 'split') return item.kind === 'split' && choicesOf(item)[a.choiceIndex] ? { choice: a.choiceIndex, seen } : null;
   if (a.kind === 'match') {
     const at = item.kind === 'match' ? item.candidates.findIndex((c) => c.asin === a.asin) : -1;
     return at < 0 ? null : { choice: at, seen };
   }
-  if (item.kind !== 'split' || a.parts.length === 0) return null;
-  if (!a.parts.every((p) => typeof p.model === 'string' && p.model.trim() !== '' && Number.isInteger(p.qty) && p.qty >= 1)) return null;
-  const parts = expandParts(a.parts);
-  return parts.length <= MAX_ENTERED_PARTS ? { parts, seen } : null;
+  return null;
 }
 
 /** A question the section "AI suggestions" lists: open, with a verified suggestion made for it as it reads now, and the answer Approve sends. */

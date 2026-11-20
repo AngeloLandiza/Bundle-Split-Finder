@@ -1,6 +1,5 @@
 import { forwardRef, type ReactNode } from 'react';
 import { choicesOf } from '@core/scan/answers';
-import { expandParts } from '@core/assist/parts';
 import type { Suggestion, VerifiedQuote } from '@core/assist/types';
 import type { ReviewItem } from '@core/scan/types';
 import './AiSuggestion.css';
@@ -26,14 +25,14 @@ const sameParts = (a: readonly string[], b: readonly string[]): boolean => [...a
  * Parts the AI found (step 12) preselect the reading that is exactly those parts, or else "Enter the parts", with them typed in.
  */
 export function preselectOf(s: Suggestion, item: ReviewItem): string | null {
-  if (s.status !== 'verified' || s.answer.decision !== 'choose') return null;
-  if (s.answer.kind === 'split') return choicesOf(item)[s.answer.choiceIndex] ? String(s.answer.choiceIndex) : null;
-  if (s.answer.kind === 'parts') {
+  if (s.status !== 'verified' || s.answer.decision === 'none') return null;
+  if (s.answer.decision === 'parts') {
     if (item.kind !== 'split') return null;
-    const parts = expandParts(s.answer.parts);
+    const parts = s.answer.parts;
     const at = choicesOf(item).findIndex((c) => sameParts(c, parts));
     return at >= 0 ? String(at) : ENTER_VALUE;
   }
+  if (s.answer.kind === 'split') return choicesOf(item)[s.answer.choiceIndex] ? String(s.answer.choiceIndex) : null;
   const asin = s.answer.asin;
   const at = item.candidates.findIndex((c) => c.asin === asin);
   return at < 0 ? null : String(at);
@@ -41,7 +40,14 @@ export function preselectOf(s: Suggestion, item: ReviewItem): string | null {
 
 /** The text "Enter the parts" starts with when a suggestion's parts are not one of the readings: the models, comma separated. */
 export function typedPartsOf(s: Suggestion): string {
-  return s.status === 'verified' && s.answer.decision === 'choose' && s.answer.kind === 'parts' ? expandParts(s.answer.parts).join(', ') : '';
+  return s.status === 'verified' && s.answer.decision === 'parts' ? s.answer.parts.join(', ') : '';
+}
+
+/** Models listed once each with their count: ["DCB203", "DCB203", "DCK940D2"] reads "2 × DCB203", "DCK940D2". */
+export function countedParts(models: readonly string[]): string[] {
+  const counts = new Map<string, number>();
+  for (const m of models) counts.set(m, (counts.get(m) ?? 0) + 1);
+  return [...counts].map(([m, n]) => (n === 1 ? m : `${n} × ${m}`));
 }
 
 export type Proposal = { kind: 'parts'; parts: string[] } | { kind: 'listing'; title: string; asin: string } | { kind: 'none' };
@@ -51,10 +57,14 @@ export function proposalOf(s: Suggestion, item: ReviewItem): Proposal | null {
   if (s.status === 'verified') {
     const a = s.answer;
     if (a.decision === 'none') return { kind: 'none' };
+    // Parts the research found read as the models with their counts: "DCK940D2 + 2 × DCB203".
+    if (a.decision === 'parts') return { kind: 'parts', parts: countedParts(a.parts) };
     if (a.kind === 'split') return { kind: 'parts', parts: a.parts };
-    // Counted parts read as the models with their counts: "DCK940D2 + 2 × DCB203".
-    if (a.kind === 'parts') return { kind: 'parts', parts: a.parts.map((p) => (p.qty === 1 ? p.model : `${p.qty} × ${p.model}`)) };
     return { kind: 'listing', title: a.title, asin: a.asin };
+  }
+  // A research answer that offered parts the code could not confirm: what it claimed, in ink-2 (the claim keeps its counts).
+  if (s.status === 'unverified' && s.claimed === null && s.researchClaim?.decision === 'parts' && s.researchClaim.parts.length > 0) {
+    return { kind: 'parts', parts: s.researchClaim.parts.map((p) => (p.qty === 1 ? p.model : `${p.qty} × ${p.model}`)) };
   }
   if (s.status !== 'unverified' || s.claimed === null || s.claimed.decision === 'cannot_tell') return null;
   const raw = s.claimed;
