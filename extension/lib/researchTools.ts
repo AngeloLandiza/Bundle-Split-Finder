@@ -22,6 +22,7 @@ export const QUESTION_TOOL_LIMIT = 6;
 const SEARCH_RESULTS_MAX = 10;
 const CATALOG_ENTRIES_MAX = 20;
 const QUERY_MAX = 200;
+const HOME_DEPOT = 'https://www.homedepot.com';
 const LOAD_TIMEOUT_MS = 30_000;
 
 /** Shared by every tool of one question: `take()` is true while page reads and searches are left. */
@@ -184,7 +185,7 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
           }
           const sections = parsePageSections(got.text, itemId);
           if (sections === null) return { error: `The page for item ${itemId} could not be read.` };
-          return { sourceId: `hd-page:${itemId}`, label: 'Home Depot page', url: `${env.origin}/p/${itemId}`, sections };
+          return { sourceId: `hd-page:${itemId}`, label: 'Home Depot page', url: `${HOME_DEPOT}/p/${itemId}`, sections };
         } catch (e) {
           return { error: e instanceof Error ? e.message : 'The Home Depot page could not be read.' };
         }
@@ -197,6 +198,8 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
         if (refused) return { error: REFUSED_BEFORE };
         if (!budget.take()) return { error: 'limit' };
         const url = `${env.origin}/s/${encodeURIComponent(query)}`;
+        // The address a quote's source link shows is Home Depot's own, whatever origin the doorway read it from (the end-to-end build reads a local replay).
+        const shownUrl = `${HOME_DEPOT}/s/${encodeURIComponent(query)}`;
         try {
           const answered = await inDoorway(url, (tabId) => env.runInTab(tabId, fetchSearchPageInTab, [query]));
           if (!answered || answered.status !== 200 || answered.text === null) {
@@ -208,8 +211,8 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
           return {
             sourceId: `hd-search:${slug(query)}`,
             label: 'Home Depot search',
-            url,
-            results: rows.slice(0, SEARCH_RESULTS_MAX).map((r) => ({ title: r.title, brand: r.brand, model: r.model, itemId: r.itemId, url: `${env.origin}/p/${r.itemId}` })),
+            url: shownUrl,
+            results: rows.slice(0, SEARCH_RESULTS_MAX).map((r) => ({ title: r.title, brand: r.brand, model: r.model, itemId: r.itemId, url: `${HOME_DEPOT}/p/${r.itemId}` })),
           };
         } catch (e) {
           return { error: e instanceof Error ? e.message : 'The Home Depot search could not be read.' };

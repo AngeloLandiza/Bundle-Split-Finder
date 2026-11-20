@@ -4,13 +4,15 @@ import { ANTHROPIC_KEY, type ReplayServer } from './replay-server';
 import { expect, getState, saveKey, test } from './fixtures';
 
 // Step 12, R3: Ask AI about all, the "AI suggestions" section and Approve all, end to end. The built extension scans against the
-// replay server, whose fake model answers the review assistant as the test says (server.setAssistReply). Nothing leaves the machine
-// and no real model is called.
+// replay server. Its fake model answers the research agent as the test says (server.setResearchReply), and its Home Depot routes answer
+// the research tools' page reads and searches from fixtures/homedepot-pages/research-2026-11-20.json. Nothing leaves the machine and no
+// real model is called.
 //
-// The questions are the recorded scan's: twelve open split questions. Four bundles are served the recorded page that says "Includes
-// DCK200D1P1 and DCF921B." (as in ask-ai.spec), and their questions are given that reading after the scan, so the fake model can quote
-// the page for them. Three it answers verifiably (the first, the second and the sixth question); the third it quotes wrongly, so the
-// code finds the quote missing (unverified). Every other question it cannot tell. The queue asks them in the store's order, so a Stop
+// The questions are the recorded scan's: open split questions, which the worker researches. Four bundles are served the recorded page that
+// says "Includes DCK200D1P1 and DCF921B." (as in ask-ai.spec), and their questions are given that reading after the scan, so the fake model
+// can quote the page for them: three it answers verifiably (the first, the second and the sixth question); the third it quotes wrongly, so
+// the code finds the quote missing (unverified). RYOBI PCL500525SB (offers no reading) it researches: it reads the page and two searches and
+// answers PCL500B + PCL525B, the answer key's. Every other question it cannot tell. The queue asks them in the store's order, so a Stop
 // after the fourth leaves the sixth for a second pass.
 
 const SHOTS = process.env.SPLIT_FINDER_SHOTS === '1';
@@ -21,8 +23,11 @@ const T2 = '324903619';
 const T3 = '324904496';
 /** The sixth question in the order they are asked. */
 const T4 = '341644756';
+/** RYOBI PCL500525SB: no reading to choose from; research finds its parts. */
+const PCL = '328690510';
 const TARGETS = [T1, T2, T3, T4];
 const READING = ['DCK200D1P1', 'DCF921B'];
+const PCL_ANSWER = 'PCL500B,PCL525B';
 
 async function shoot(page: Page, name: string, width: number, target?: () => Promise<void>): Promise<void> {
   await page.setViewportSize({ width, height: 900 });
@@ -54,13 +59,58 @@ async function scanAndWait(page: Page): Promise<void> {
     .toBe(true);
 }
 
-/** Scans until the four bundles' pages have been read, then gives their questions the reading the served page names. */
+const INCLUDES = 'Includes DCK200D1P1 and DCF921B.';
+/** The third question's bundle model, as the prompt gives it (the recorded scan's). */
+const T3_MODEL = 'Bundle model number: PCL1201K2-PCL430B';
+const use = (id: string, name: string, input: unknown) => ({ type: 'tool_use', id, name, input });
+const turn = (...content: unknown[]) => ({ stopReason: 'tool_use' as const, content });
+const submit = (input: unknown) => turn(use('toolu_submit', 'submit_answer', input));
+/** The research answer for PCL500525SB as a model might give it: each part named by a Home Depot search row and by the bundle's own words. */
+const PCL_PARTS = {
+  quotes: [], decision: 'parts', choiceIndex: null, reason: 'The two tools, as Home Depot sells them alone.',
+  parts: [
+    { model: 'PCL500B', qty: 1, quotes: [
+      { quote: 'RYOBI PCL500B (item 317987588): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)', sourceId: 'hd-search:ryobi-pcl500' },
+      { quote: '18V 5-1/2" Circular Saw', sourceId: 'hd-page:328690510' }, { quote: '18T Carbide Tipped Blade', sourceId: 'hd-page:328690510' },
+      { quote: '(2) Hex Wrenches', sourceId: 'bundle' },
+    ] },
+    { model: 'PCL525B', qty: 1, quotes: [
+      { quote: 'RYOBI PCL525B (item 318898528): ONE+ 18V Cordless Jig Saw (Tool Only)', sourceId: 'hd-search:ryobi-jig-saw-tool-only' },
+      { quote: '18V Jig Saw', sourceId: 'hd-page:328690510' }, { quote: 'Non-Marring Shoe', sourceId: 'hd-page:328690510' },
+      { quote: 'T-Shank Wood Cutting Blade', sourceId: 'hd-page:328690510' },
+    ] },
+  ],
+};
+/**
+ * What the fake research model does, a turn at a time (the turn is how many times it has spoken): for PCL500525SB it reads the page and two
+ * Home Depot searches and then submits the parts; for three questions with the served page it quotes the page's own sentence; for the
+ * third it quotes a sentence the page does not have; for the rest it cannot tell.
+ */
+const researchSays = (body: { messages: { role: string; content: unknown }[] }) => {
+  const user = String(body.messages[0]!.content);
+  const spoken = body.messages.filter((m) => m.role === 'assistant').length;
+  if (user.includes(`Bundle Home Depot item id: ${PCL}`)) {
+    return [
+      turn(use('t1', 'read_homedepot_page', { itemId: PCL, url: null })),
+      turn(use('t2', 'search_homedepot', { query: 'ryobi pcl500' }), use('t3', 'search_homedepot', { query: 'ryobi jig saw tool only' })),
+      submit(PCL_PARTS),
+    ][spoken];
+  }
+  const reading = /<reading index="(\d+)">DCK200D1P1, DCF921B<\/reading>/.exec(user);
+  if (reading && user.includes(INCLUDES)) {
+    const quote = user.includes(T3_MODEL) ? 'Includes DCK200D1P1 and a battery the page never mentions.' : INCLUDES;
+    return submit({ quotes: [{ quote, sourceId: 'bundle' }], parts: [], reason: 'The page says it includes both.', decision: 'choose', choiceIndex: Number(reading[1]) });
+  }
+  return submit({ quotes: [], parts: [], reason: 'The page does not say which parts are in the kit.', decision: 'cannot_tell', choiceIndex: null });
+};
+
+/** Scans until the four bundles' pages have been read, gives their questions the reading the served page names, then turns on the research routes and the model. */
 async function seedAndScan(options: Page, worker: Worker, server: ReplayServer): Promise<void> {
   await saveKey(options, 'TEST');
   await expect(options.getByTestId('key-result')).toContainText('Key works.');
   for (const id of TARGETS) server.servePageAs(id, '337440459');
-  for (let i = 0; i < 8 && !TARGETS.every((id) => server.pageRequests.includes(id)); i++) await scanAndWait(options);
-  for (const id of TARGETS) expect(server.pageRequests).toContain(id);
+  for (let i = 0; i < 8 && ![...TARGETS, PCL].every((id) => server.pageRequests.includes(id)); i++) await scanAndWait(options);
+  for (const id of [...TARGETS, PCL]) expect(server.pageRequests).toContain(id);
   // Written after the last scan, which would write the readings back.
   await worker.evaluate(
     (args) =>
@@ -80,20 +130,10 @@ async function seedAndScan(options: Page, worker: Worker, server: ReplayServer):
       }),
     { ids: TARGETS, reading: READING },
   );
+  // From here on Home Depot's pages and searches are the research recordings, and the model is the script above.
+  server.serveResearchPages(true);
+  server.setResearchReply(researchSays);
 }
-
-const INCLUDES = 'Includes DCK200D1P1 and DCF921B.';
-/** The third question's bundle model, as the prompt gives it (the recorded scan's). */
-const T3_MODEL = 'Bundle model number: PCL1201K2-PCL430B';
-/** What the fake model says: the page's own sentence for three questions; a sentence the page does not have for the third; nothing for the rest. */
-const says = (user: string): unknown => {
-  const reading = /<reading index="(\d+)">DCK200D1P1, DCF921B<\/reading>/.exec(user);
-  if (reading && user.includes(INCLUDES)) {
-    const quote = user.includes(T3_MODEL) ? 'Includes DCK200D1P1 and a battery the page never mentions.' : INCLUDES;
-    return { evidence: [{ quote, source: 'bundle' }], reason: 'The page says it includes both.', decision: 'choose', choiceIndex: Number(reading[1]), asin: null };
-  }
-  return { evidence: [], reason: 'The page does not say which parts are in the kit.', decision: 'cannot_tell', choiceIndex: null, asin: null };
-};
 
 const askAllButton = (panel: Page) => panel.getByRole('button', { name: /^Ask AI about all/ });
 const countIn = async (panel: Page, name: RegExp): Promise<number> => Number(/(\d+)/.exec(await panel.getByRole('button', { name }).innerText())![1]);
@@ -111,10 +151,9 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
   const acceptAll = await countIn(panel, /^Accept all/);
   expect(acceptAll).toBeGreaterThanOrEqual(TARGETS.length);
 
-  // With the key, beside Accept all, saying how many and about what it costs. Twelve split questions, Haiku.
+  // With the key, beside Accept all, saying how many and about what it costs. Every open question is a split question that research can answer.
   expect(await send(options, { type: 'saveAnthropicKey', apiKey: ANTHROPIC_KEY })).toMatchObject({ ok: true });
-  await expect(askAllButton(panel)).toHaveAccessibleName(/^Ask AI about all \d+ · about \$0\.\d\d$/);
-  // Every open question of the recorded scan is a split question that can be asked: the number is how many there are.
+  await expect(askAllButton(panel)).toHaveAccessibleName(/^Ask AI about all \d+ · about \$\d+(\.\d\d)?$/);
   const TOTAL = await countIn(panel, /^Ask AI about all/);
   expect(TOTAL).toBeGreaterThanOrEqual(8);
   expect((await send(options, { type: 'getReport' })).data.review).toHaveLength(TOTAL);
@@ -122,7 +161,6 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
   expect(server.assistCalls).toEqual([]);
 
   // Ask about all of them, slowly enough to see the row and to stop it.
-  server.setAssistReply(says);
   server.delayAssist(700);
   await askAllButton(panel).click();
   const row = panel.locator('.progress');
@@ -138,16 +176,16 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
   await expect(panel.getByRole('button', { name: 'Scan now' })).toHaveCount(0);
   expect(await send(options, { type: 'scanNow' })).toMatchObject({ ok: false, error: 'Asking AI is running. Stop it first, or wait for it to finish.' });
 
-  // Stop, once four questions are done: the fifth is out.
+  // Stop, once four questions are done (the fourth is the researched one): the fifth is out.
   await expect.poll(async () => (await getState(options)).data.askAll?.done ?? 0, { timeout: 60_000, intervals: [100] }).toBeGreaterThanOrEqual(4);
   await panel.getByRole('button', { name: 'Stop' }).click();
   await expect.poll(async () => (await getState(options)).data.askAll ?? null, { timeout: 30_000, intervals: [100] }).toBeNull();
   const result = (await getState(options)).data.askAllResult!;
-  // The one with no reading has nothing to ask with the evidence alone, so it is passed over, not asked.
-  expect(result).toMatchObject({ stopped: true, total: TOTAL, verified: 2 });
-  expect(result.asked).toBeGreaterThanOrEqual(3);
+  // Verified so far: the first two and the researched parts.
+  expect(result).toMatchObject({ stopped: true, total: TOTAL, verified: 3 });
+  expect(result.asked).toBeGreaterThanOrEqual(4);
   expect(result.asked).toBeLessThan(TOTAL - 1);
-  await expect(panel.getByRole('status').filter({ hasText: 'Stopped after' })).toContainText(`Stopped after ${result.asked} of ${TOTAL}: 2 verified.`);
+  await expect(panel.getByRole('status').filter({ hasText: 'Stopped after' })).toContainText(`Stopped after ${result.asked} of ${TOTAL}: 3 verified.`);
   await expect(panel.getByRole('button', { name: 'Scan now' })).toBeVisible();
   // No half-written suggestion: one record for each question that was answered, none for the call that was cancelled.
   server.delayAssist(0);
@@ -159,13 +197,15 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
 
   // The section lists the verified ones only; the unverified and the cannot-tell stay in the list below with their block.
   const section = panel.getByRole('region', { name: /AI suggestions/ });
-  await expect(section.getByRole('heading', { name: 'AI suggestions · 2' })).toBeVisible();
-  await expect(section.getByRole('listitem')).toHaveCount(2);
+  await expect(section.getByRole('heading', { name: 'AI suggestions · 3' })).toBeVisible();
+  await expect(section.getByRole('listitem')).toHaveCount(3);
   await expect(section.getByText(INCLUDES)).toHaveCount(2);
+  // The researched one proposes parts no reading offered, with the Home Depot search row that names each as its quote.
+  await expect(section.getByText('PCL500B + PCL525B')).toBeVisible();
   await expect(section.getByRole('link', { name: 'Home Depot page' }).first()).toHaveAttribute('target', '_blank');
   // One line each: a name longer than the panel is cut, not wrapped.
   expect(await section.locator('.ai-row-name').evaluateAll((els) => els.every((el) => el.scrollHeight <= el.clientHeight + 1))).toBe(true);
-  await expect(panel.getByRole('button', { name: 'Approve all 2 verified' })).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Approve all 3 verified' })).toBeVisible();
   for (const width of [360, 480]) await shoot(panel, 'review-ai-section', width, () => panel.evaluate(() => window.scrollTo(0, 0)));
 
   // Ask about the rest: a question with a suggestion is not asked twice.
@@ -174,43 +214,78 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
   expect(left).toBe(TOTAL - result.asked);
   await askAllButton(panel).click();
   await expect.poll(async () => (await getState(options)).data.askAllResult?.stopped, { timeout: 60_000, intervals: [100] }).toBe(false);
-  // Every question but the one with no reading was asked, once.
-  expect(server.assistCalls.length - before).toBe(left - 1);
+  expect(server.assistCalls.length - before).toBe(left);
   a = await audit(options);
-  expect(a.aiSuggestions).toHaveLength(TOTAL - 1);
+  expect(a.aiSuggestions).toHaveLength(TOTAL);
   const verifiedIds = a.aiSuggestions.filter((r: { suggestion: { status: string } }) => r.suggestion.status === 'verified').map((r: { questionId: string }) => idOf(r.questionId));
-  expect(verifiedIds.sort()).toEqual([T1, T2, T4].sort());
-  await expect(section.getByRole('heading', { name: 'AI suggestions · 3' })).toBeVisible();
+  expect(verifiedIds.sort()).toEqual([T1, T2, T4, PCL].sort());
+  await expect(section.getByRole('heading', { name: 'AI suggestions · 4' })).toBeVisible();
   // Accept all has nothing left to answer: every other question the AI has spoken on.
   await expect(panel.getByRole('button', { name: /^Accept all/ })).toHaveCount(0);
+  // Nothing about the key anywhere in what was kept (the trace holds each source's name and link only).
+  expect(JSON.stringify(a)).not.toContain(ANTHROPIC_KEY);
+
+  // The researched suggestion open: its parts, the search rows and the bundle's words as quotes, each with its source.
+  await section.getByRole('button', { name: /PCL500B \+ PCL525B/ }).click();
+  const block = section.getByRole('group', { name: 'AI suggestion' });
+  await expect(block.getByText('PCL500B + PCL525B')).toBeVisible();
+  await expect(section.getByRole('radio', { name: 'Enter the parts' })).toBeChecked();
+  await expect(section.getByRole('textbox')).toHaveValue('PCL500B, PCL525B');
+  await expect(section.getByRole('button', { name: 'Approve', exact: true })).toBeEnabled();
+  await shoot(panel, 'research-parts', 360, () => block.scrollIntoViewIfNeeded());
+  await section.getByRole('button', { name: /PCL500B \+ PCL525B/ }).first().click();
 
   // Approve all asks first. Nothing is saved by the first press.
-  await panel.getByRole('button', { name: 'Approve all 3 verified' }).click();
-  await expect(section.getByText('Approve 3 AI answers?')).toBeVisible();
+  await panel.getByRole('button', { name: 'Approve all 4 verified' }).click();
+  await expect(section.getByText('Approve 4 AI answers?')).toBeVisible();
   await expect(section.getByRole('button', { name: 'Approve', exact: true })).toBeFocused();
   expect(await answered(options)).toEqual({});
   await shoot(panel, 'review-ai-approve-all-confirm', 360, () => panel.evaluate(() => window.scrollTo(0, 0)));
   // Cancel changes nothing.
   await section.getByRole('button', { name: 'Cancel' }).click();
   expect(await answered(options)).toEqual({});
-  await panel.getByRole('button', { name: 'Approve all 3 verified' }).click();
+  await panel.getByRole('button', { name: 'Approve all 4 verified' }).click();
   await section.getByRole('button', { name: 'Approve', exact: true }).click();
-  await expect(panel.getByText('Approved 3 of 3.')).toBeVisible();
+  await expect(panel.getByText('Approved 4 of 4.')).toBeVisible();
 
-  // Exactly the verified ones are answered, with the parts the page named, and each is recorded as an AI approval.
-  expect(await answered(options)).toEqual({ [T1]: READING.join(','), [T2]: READING.join(','), [T4]: READING.join(',') });
+  // Exactly the verified ones are answered, with the parts the page named or the research found, and each is recorded as an AI approval.
+  expect(await answered(options)).toEqual({ [T1]: READING.join(','), [T2]: READING.join(','), [T4]: READING.join(','), [PCL]: PCL_ANSWER });
   a = await audit(options);
   const outcomes = a.aiSuggestions
     .filter((r: { agreed: boolean | null }) => r.agreed !== null)
     .map((r: { questionId: string; agreed: boolean }) => [idOf(r.questionId), r.agreed]);
-  expect(outcomes.sort()).toEqual([[T1, true], [T2, true], [T4, true]].sort());
+  expect(outcomes.sort()).toEqual([[T1, true], [T2, true], [T4, true], [PCL, true]].sort());
   await expect(panel.getByRole('region', { name: /AI suggestions/ })).toHaveCount(0);
   // The third question, whose quote the code could not find, was not approved: it is still open, with its block and nothing preselected.
   const open = (await send(options, { type: 'getReport' })).data.review as Item[];
   expect(open.map((q) => idOf(q.id))).toContain(T3);
-  expect(open).toHaveLength(TOTAL - 3);
+  expect(open).toHaveLength(TOTAL - 4);
   expect(seen.console.filter((c) => !c.includes('status of 403') && !c.includes('status of 404'))).toEqual([]);
   expect(JSON.stringify(a)).not.toContain(ANTHROPIC_KEY);
+});
+
+test('Research reads Home Depot only while no scan runs, and its tools never reach SerpApi or Amazon', async ({ options, server, worker }) => {
+  test.setTimeout(300_000);
+  await seedAndScan(options, worker, server);
+  expect(await send(options, { type: 'saveAnthropicKey', apiKey: ANTHROPIC_KEY })).toMatchObject({ ok: true });
+  const searchesBefore = server.searches.length;
+  const pagesBefore = server.pageRequests.length;
+  server.delayAssist(600);
+  const asking = send(options, { type: 'askAi', questionId: `split:homedepot:${PCL}` });
+  // While the one question is being researched, a scan is refused: the doorway tab is not shared.
+  await expect.poll(() => server.researchRequests.length, { timeout: 30_000, intervals: [50] }).toBeGreaterThan(0);
+  expect(await send(options, { type: 'scanNow' })).toMatchObject({ ok: false, error: 'Asking AI is running. Stop it first, or wait for it to finish.' });
+  expect(await asking).toMatchObject({ ok: true });
+  // It read the bundle's page and two searches in the owner's browser, and nothing went to SerpApi.
+  // (the doorway tab loads the page, then the tool fetches it from inside the tab: two requests for the one read)
+  expect([...new Set(server.pageRequests.slice(pagesBefore))]).toEqual([PCL]);
+  expect(server.searches.length).toBe(searchesBefore);
+  const [record] = (await audit(options)).aiSuggestions.filter((r: { questionId: string }) => idOf(r.questionId) === PCL);
+  expect(record.suggestion.reasons ?? []).toEqual([]);
+  expect(record.suggestion).toMatchObject({ status: 'verified', answer: { decision: 'parts', parts: ['PCL500B', 'PCL525B'] }, research: { toolCalls: 3 } });
+  // What is kept of the trace is each source's name and link, not the pages' text.
+  expect(record.suggestion.research.ledger.every((e: { lines: unknown[] }) => e.lines.length === 0)).toBe(true);
+  expect(await answered(options)).toEqual({});
 });
 
 test('Accept all still answers the questions the AI has not been asked about', async ({ context, extensionId, options, server, worker }) => {
@@ -221,7 +296,6 @@ test('Accept all still answers the questions the AI has not been asked about', a
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   await panel.getByRole('button', { name: /^Review/ }).click();
   const all = await countIn(panel, /^Accept all/);
-  server.setAssistReply(says);
   // Ask about two questions on their own: they have suggestions, so Accept all leaves them be.
   expect(await send(options, { type: 'askAi', questionId: `split:homedepot:${T1}` })).toMatchObject({ ok: true });
   expect(await send(options, { type: 'askAi', questionId: `split:homedepot:${T3}` })).toMatchObject({ ok: true });
@@ -240,7 +314,6 @@ test('Settings: Ask AI after each scan is off until turned on, then the queue fo
   test.setTimeout(300_000);
   await seedAndScan(options, worker, server);
   expect(await send(options, { type: 'saveAnthropicKey', apiKey: ANTHROPIC_KEY })).toMatchObject({ ok: true });
-  server.setAssistReply(says);
   await options.reload();
   const box = options.getByRole('checkbox', { name: /Ask AI after each scan/ });
   await expect(box).not.toBeChecked();
@@ -255,13 +328,13 @@ test('Settings: Ask AI after each scan is off until turned on, then the queue fo
   await expect.poll(async () => (await getState(options)).data.askAfterScan).toBe(true);
   await options.reload();
   await expect(options.getByRole('checkbox', { name: /Ask AI after each scan/ })).toBeChecked();
-  // The scan runs to its end and the queue starts after it; nothing is answered.
+  // The scan runs and the queue starts after it; nothing is answered by the AI.
   await scanAndWait(options);
-  await expect.poll(async () => (await getState(options)).data.askAllResult?.stopped, { timeout: 60_000, intervals: [200] }).toBe(false);
+  await expect.poll(async () => (await getState(options)).data.askAllResult?.stopped, { timeout: 120_000, intervals: [200] }).toBe(false);
   const result = (await getState(options)).data.askAllResult!;
   expect(result.total).toBeGreaterThan(0);
   expect(server.assistCalls.length).toBeGreaterThan(before);
   expect(server.assistCalls.length - before).toBeLessThanOrEqual(result.total);
-  // Nothing was answered by the AI: the only answers are the scan's own closing of a question its page now settles.
+  // The only answers are the scan's own closing of a question its page now settles.
   expect(Object.values(await answered(options)).every((a) => a === 'resolved by a later scan')).toBe(true);
 });

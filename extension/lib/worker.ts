@@ -9,6 +9,11 @@ import { ClaudeAssist } from '@core/assist/claude';
 import { gatherEvidence } from '@core/assist/evidence';
 import { askQueueOf } from '@core/assist/askAll';
 import { estimatedQuestionCost } from '@core/assist/cost';
+import { PRICE_TABLE } from '@core/judge/eval';
+import { ClaudeResearch } from '@core/research/claude';
+import { researchCost } from '@core/research/eval';
+import { researchQuestion } from '@core/research/loop';
+import type { CatalogEntry, ResearchTools } from '@core/research/types';
 import { agreedWith, liveSuggestion, MemorySuggestionStore, suggestionCost, suggestionKey, type StoredSuggestion, type SuggestionStore } from '@core/assist/stored';
 import { suggestAnswer } from '@core/assist/suggest';
 import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer, reviewSignature } from '@core/scan/answers';
@@ -175,8 +180,13 @@ export interface WorkerEnv {
   pages?: PageEnv;
   /** Step 11: where Ask AI keeps its suggestions, apart from the scan's store. Without it they are kept in memory, lost with the worker. */
   suggestions?: SuggestionStore;
-  /** Step 12: how one question is asked, for Ask AI and for Ask AI about all. Default: the step 11 evidence-only call. */
+  /** Step 12: how one question is asked, for Ask AI and for Ask AI about all. Default: a split question is researched, any other is asked as in step 11. */
   askOne?: AskOne;
+  /**
+   * Step 12: the research agent's free tools, run in the owner's browser (extension/lib/researchTools.ts). With them a split question is
+   * researched; without them (a test, a page with no tabs) it is asked as in step 11, from the evidence the scan stored.
+   */
+  researchTools?: { forQuestion(): ResearchTools };
 }
 
 /** Who sent a request: the tab, when it came from a content script. */
@@ -705,7 +715,7 @@ export function createWorker(env: WorkerEnv): Worker {
       started = await serial(async () => {
         // Rule 3: a tick while a scan is active does nothing; nor while a Verify or Look up runs.
         // Step 12: nor while Ask AI about all runs: the scan waits for its turn, and the next tick tries again.
-        if (scan !== null || paid !== null || askAll !== null) return null;
+        if (scan !== null || paid !== null || askAll !== null || singleAsks > 0) return null;
         const resume = await saved();
         if (resume !== null) return (await start(resume.trigger, resume)).ok ? scan : null;
         const s = await settings();
@@ -728,7 +738,7 @@ export function createWorker(env: WorkerEnv): Worker {
     serial(async () => {
       if (scan !== null) return refuse(RUNNING);
       if (paid !== null) return refuse(PAID_RUNNING);
-      if (askAll !== null) return refuse(SCAN_AFTER_ASK_ALL);
+      if (askAll !== null || singleAsks > 0) return refuse(SCAN_AFTER_ASK_ALL);
       const resume = await saved();
       return start(resume?.trigger ?? 'manual', resume);
     });
@@ -956,6 +966,9 @@ export function createWorker(env: WorkerEnv): Worker {
   /** A question that cannot be asked, with the sentence to say. */
   class AskRefused extends Error {}
 
+  /** Asks started and not yet finished, counted at once: a scan is not started while one runs (research reads in the doorway tab). */
+  let singleAsks = 0;
+
   /**
    * The step 11 call: the question's evidence (what the scan stored, nothing fetched) goes to the owner's Anthropic model, which
    * drafts an answer. Returns the record to keep; stores nothing. The call ends when `signal` does or after the call timeout.
@@ -972,7 +985,39 @@ export function createWorker(env: WorkerEnv): Worker {
     const askedAt = env.now();
     return { key: suggestionKey(id, askedAt), questionId: id, seen: suggestion.seen, askedAt, suggestion, costUsd: suggestionCost(model, suggestion.usage) };
   };
-  const askOne: AskOne = env.askOne ?? askEvidenceOnly;
+
+  /**
+   * Step 12: a split question is researched. The model reads the bundle's page and what else it asks for through the free tools (the
+   * owner's browser, never a SerpApi search, never Amazon), the code checks every quote and part against what was read, and the result
+   * is a suggestion like any other. What is kept of the trace is each source's name and link, enough to show a quote and its source:
+   * not the pages' text, never the key.
+   */
+  async function askResearch(id: string, signal: AbortSignal, tools: ResearchTools): Promise<StoredSuggestion> {
+    const apiKey = await prefs.getAnthropicKey();
+    if (apiKey === null) throw new AskRefused(NO_ANTHROPIC_KEY);
+    const question = await store.getReview(id);
+    if (!question) throw new AskRefused(ASK_NOT_FOUND);
+    if (question.answer !== null) throw new AskRefused(ASK_ANSWERED);
+    const model = (await ebaySettings()).judgeModel;
+    const research = new ClaudeResearch({ apiKey, model, fetchFn: env.judgeFetchFn ?? env.fetchFn });
+    const catalog = (await store.listCatalog()).map((c): CatalogEntry => ({ brand: c.brand, model: c.model, title: c.title, kind: c.isKit ? 'kit' : 'part' }));
+    const result = await researchQuestion(question, await gatherEvidence(store, question), tools, research, { signal, catalog });
+    const { research: trace, ...suggestion } = result;
+    const slim = { ...suggestion, research: { ...trace, ledger: trace.ledger.map((e) => ({ id: e.id, kind: e.kind, label: e.label, url: e.url, lines: [], products: [], isBundle: e.isBundle })) } };
+    const rates = PRICE_TABLE[model];
+    const askedAt = env.now();
+    return {
+      key: suggestionKey(id, askedAt), questionId: id, seen: result.seen, askedAt, suggestion: slim as typeof suggestion,
+      costUsd: rates && result.usage ? researchCost({ ...result.usage, webSearchRequests: trace.usage.webSearchRequests }, rates) : null,
+    };
+  }
+
+  /** The default AskOne: research for a split question when the tools are there, the evidence-only call for the rest. */
+  const askRouted: AskOne = async (id, signal) => {
+    const question = typeof id === 'string' ? await store.getReview(id) : undefined;
+    return question?.kind === 'split' && env.researchTools ? askResearch(id, signal, env.researchTools.forQuestion()) : askEvidenceOnly(id, signal);
+  };
+  const askOne: AskOne = env.askOne ?? askRouted;
 
   /**
    * Keeps what a call drafted, as a suggestion and never as the question's answer (rule 4). The question is read again now: a scan
@@ -999,17 +1044,20 @@ export function createWorker(env: WorkerEnv): Worker {
    * question that changed meanwhile is dropped. Refused while a scan runs, and while Ask AI about all does.
    */
   async function askAi(questionId: unknown): Promise<Reply<StoredSuggestion>> {
-    if (scan !== null) return refuse(ASK_SCAN);
+    if (scan !== null || starting) return refuse(ASK_SCAN);
     if (askAll !== null) return refuse(ASK_ALL_RUNNING);
-    const apiKey = await prefs.getAnthropicKey();
-    if (apiKey === null) return refuse(NO_ANTHROPIC_KEY);
-    const id = typeof questionId === 'string' ? questionId : '';
-    const question = id === '' ? undefined : await store.getReview(id);
-    if (!question) return refuse(ASK_NOT_FOUND);
-    if (question.answer !== null) return refuse(ASK_ANSWERED);
-    if (asking.has(id)) return refuse(ASK_BUSY);
-    asking.add(id);
+    // Counted before the first await, so a scan asked for meanwhile is refused: research reads in the doorway tab.
+    singleAsks += 1;
+    let id = '';
     try {
+      const apiKey = await prefs.getAnthropicKey();
+      if (apiKey === null) return refuse(NO_ANTHROPIC_KEY);
+      id = typeof questionId === 'string' ? questionId : '';
+      const question = id === '' ? undefined : await store.getReview(id);
+      if (!question) return refuse(ASK_NOT_FOUND);
+      if (question.answer !== null) return refuse(ASK_ANSWERED);
+      if (asking.has(id)) return refuse(ASK_BUSY);
+      asking.add(id);
       let record: StoredSuggestion;
       try {
         record = await askOne(id, new AbortController().signal);
@@ -1020,7 +1068,8 @@ export function createWorker(env: WorkerEnv): Worker {
       await broadcast();
       return ok(record);
     } finally {
-      asking.delete(id);
+      singleAsks -= 1;
+      if (id !== '') asking.delete(id);
     }
   }
 

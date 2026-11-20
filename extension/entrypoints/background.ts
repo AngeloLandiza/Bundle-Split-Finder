@@ -11,6 +11,7 @@ import { CONTENT_REQUESTS, type ChipSetting, type Request, type ShowThisPage, ty
 import * as prefs from '../lib/prefs';
 import { mayAsk } from '../lib/sender';
 import { createPageReader, createPartPriceReader, openDoorway, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
+import { createResearchTools } from '../lib/researchTools';
 import { createWorker, type DeferredPage, type PageEnv } from '../lib/worker';
 import type { ProductPage } from '../../core/src/hdPage';
 
@@ -159,8 +160,18 @@ export default defineBackground(() => {
   if (__SPLIT_FINDER_DEBUG__ || __SPLIT_FINDER_BASE_URL__ !== undefined) {
     (globalThis as { splitFinderReadPartPrices?: unknown }).splitFinderReadPartPrices = readPartPrices;
   }
+  const store = new IdbScanStore();
+  // Step 12: the research agent's free tools. Home Depot's pages and search are read in the same doorway tab, one at a time; the worker
+  // never researches while a scan runs (its gate), so the two never share the tab.
+  const researchTools = createResearchTools({
+    env: chromeReaderEnv(),
+    store,
+    settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50,
+    pauseMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 0,
+  });
   const worker = createWorker({
-    store: new IdbScanStore(),
+    store,
+    researchTools,
     // Step 11: Ask AI's suggestions, in a store of their own.
     suggestions: new IdbSuggestionStore(),
     cache: new IdbCache(),

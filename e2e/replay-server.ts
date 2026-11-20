@@ -47,6 +47,15 @@ const partProductText = (id: string): string | undefined => {
 // A search for a model with no entry shows unrelated products, as a real search with no exact hit does.
 const OTHER_PRODUCT_LINKS = ['/p/RYOBI-ONE-18V-Cordless-Jig-Saw-Kit-PCL999K1/399000007'];
 
+// Step 12: the pages and searches the research tools read, recorded in the owner's Chrome (fixtures/homedepot-pages/research-2026-11-20.json).
+// Served only after a test asks for them (serveResearchPages), because the same item ids are the scan's own pages.
+const researchFile = JSON.parse(readFileSync(new URL('research-2026-11-20.json', PAGES_DIR), 'utf8')) as {
+  pages: Record<string, unknown>;
+  searches: Record<string, { status: number; state: unknown }>;
+};
+const researchKey = (q: string): string => q.trim().replace(/\s+/g, ' ').toLowerCase();
+const researchSearches = new Map(Object.entries(researchFile.searches).map(([q, s]) => [researchKey(q), s] as const));
+
 // The refused page's own scripts are not part of what the reader sees: one loads from Home Depot's CDN, the other is the blanked bot-script path.
 const refusedPage = readFileSync(new URL('refused-2026-11-10.html', PAGES_DIR), 'utf8').replace(/<script\b[^>]*\bsrc=[^>]*>\s*<\/script>/g, '');
 // type="text/plain" so the tab does not run the recorded text: after the state object the fixtures replace every
@@ -84,6 +93,17 @@ export interface ReplayServer {
   setAssistReply(reply: ((user: string) => unknown) | null): void;
   /** Step 11: every Ask AI answer waits this many ms, so a test can photograph the asking state. reset() clears it. */
   delayAssist(ms: number): void;
+  /** Step 12: the user message (the question and its evidence) of every research request the fake model received, in order. */
+  researchRequests: string[];
+  /**
+   * Step 12: what the fake model answers a research request (the one with the research tools): the content blocks of one turn, from the
+   * request's body (its messages say how far the conversation is) and the 1-based number of this request. With no script, a research
+   * request is answered with the Ask AI answer (setAssistReply) as a submit_answer, so a question asked as before reads as before.
+   * Cleared by reset().
+   */
+  setResearchReply(reply: ((body: { messages: { role: string; content: unknown }[] }, n: number) => { stopReason: 'tool_use' | 'end_turn'; content: unknown[] } | undefined) | null): void;
+  /** Step 12: /p/<id> and /s/<free text> answer with the pages and searches recorded for the research tools, until reset(). */
+  serveResearchPages(on: boolean): void;
   /** These ids are answered 403 with the recorded refused page, until reset(). '*' refuses every id and every /s/ search. */
   refuse(...itemIds: string[]): void;
   /** Test-only: the recorded page of `recordedId` is served for item `itemId`, until reset(). */
@@ -112,6 +132,9 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   let assistCalls: string[] = [];
   let assistReply: ((user: string) => unknown) | null = null;
   let assistDelay = 0;
+  let researchRequests: string[] = [];
+  let researchReply: Parameters<ReplayServer['setResearchReply']>[0] = null;
+  let researchPages = false;
   const refused = new Set<string>();
   const servedAs = new Map<string, string>();
   let searchDelay = 0;
@@ -158,6 +181,42 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
         const chunks: Buffer[] = [];
         for await (const chunk of req) chunks.push(chunk as Buffer);
         const sent = JSON.parse(Buffer.concat(chunks).toString('utf8')) as { system?: unknown; messages?: { content?: unknown }[] };
+        // Step 12, research: the request carries the research tools. The test scripts the turns (setResearchReply); with no script the Ask AI
+        // answer is submitted at once, so a question asked as in step 11 reads as it did.
+        const toolNames = Array.isArray((sent as { tools?: unknown }).tools) ? ((sent as { tools: { name?: string }[] }).tools).map((t) => t.name) : [];
+        if (toolNames.includes('submit_answer')) {
+          const messages = (sent.messages ?? []) as { role: string; content: unknown }[];
+          const user = String(messages[0]?.content ?? '');
+          if (messages.length === 1) {
+            researchRequests.push(user);
+            assistCalls.push(user);
+          }
+          if (req.headers['x-api-key'] !== ANTHROPIC_KEY) {
+            modelBadKeys += 1;
+            res.writeHead(401, headers).end(JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } }));
+            return;
+          }
+          if (assistDelay > 0) await new Promise((ok) => setTimeout(ok, assistDelay));
+          let turn = researchReply?.({ messages }, researchRequests.length);
+          if (turn === undefined && researchReply === null) {
+            const a = assistReply?.(user) as { evidence?: { quote: string; source: string }[]; reason?: string; decision?: string; choiceIndex?: number | null } | undefined;
+            if (a !== undefined) {
+              const input = { quotes: (a.evidence ?? []).map((e) => ({ quote: e.quote, sourceId: e.source })), parts: [], reason: a.reason ?? '', decision: a.decision, choiceIndex: a.choiceIndex ?? null };
+              turn = { stopReason: 'tool_use', content: [{ type: 'tool_use', id: 'toolu_submit', name: 'submit_answer', input }] };
+            }
+          }
+          if (turn === undefined) {
+            res.writeHead(400, headers).end(JSON.stringify({ type: 'error', error: { type: 'invalid_request_error', message: 'No scripted answer.' } }));
+            return;
+          }
+          res.writeHead(200, headers).end(
+            JSON.stringify({
+              id: 'msg_replay', type: 'message', role: 'assistant', model: 'replay', stop_reason: turn.stopReason, stop_details: null,
+              content: turn.content, usage: { input_tokens: 1800, output_tokens: 300 },
+            }),
+          );
+          return;
+        }
         // Step 11, Ask AI: the review assistant's prompt. The test says what the model answers (setAssistReply); with no script it is refused.
         if (typeof sent.system === 'string' && sent.system.startsWith('You help the owner of a small reselling business answer one review question')) {
           const user = String(sent.messages?.[0]?.content ?? '');
@@ -208,6 +267,19 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       } else if (url.pathname === '/favicon.ico') {
         // Chrome asks for it when the reader's tab loads.
         res.writeHead(204).end();
+      } else if (researchPages && url.pathname.startsWith('/s/') && researchSearches.has(researchKey(decodeURIComponent(url.pathname.slice(3))))) {
+        // A search the research tools make: the recorded state, in the shape the page parser reads.
+        const recorded = researchSearches.get(researchKey(decodeURIComponent(url.pathname.slice(3))))!;
+        searchPageRequests.push(decodeURIComponent(url.pathname.slice(3)));
+        res.writeHead(recorded.status, { 'content-type': 'text/html; charset=utf-8' }).end(html(`window.__APOLLO_STATE__=${JSON.stringify(recorded.state)}`));
+      } else if (researchPages && url.pathname.startsWith('/s/') && url.pathname.length > 3) {
+        // Any other search the research tools make: Home Depot's answer to a query it cannot match (no products).
+        searchPageRequests.push(decodeURIComponent(url.pathname.slice(3)));
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(html('window.__APOLLO_STATE__={}'));
+      } else if (researchPages && url.pathname.startsWith('/p/') && Object.hasOwn(researchFile.pages, url.pathname.slice(3))) {
+        const id = url.pathname.slice(3);
+        pageRequests.push(id);
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(html(`window.__APOLLO_STATE__=${JSON.stringify(researchFile.pages[id])}`));
       } else if (url.pathname.startsWith('/s/')) {
         // Home Depot's own search for a model: product links in the page, or the refusal when every id is refused.
         const model = decodeURIComponent(url.pathname.slice(3));
@@ -271,6 +343,15 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     delayAssist(ms) {
       assistDelay = ms;
     },
+    get researchRequests() {
+      return researchRequests;
+    },
+    setResearchReply(reply) {
+      researchReply = reply;
+    },
+    serveResearchPages(on) {
+      researchPages = on;
+    },
     refuse(...ids) {
       for (const id of ids) refused.add(id);
     },
@@ -300,6 +381,9 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       assistCalls = [];
       assistReply = null;
       assistDelay = 0;
+      researchRequests = [];
+      researchReply = null;
+      researchPages = false;
       refused.clear();
       servedAs.clear();
       for (const k of Object.keys(counts)) delete counts[k];

@@ -12,6 +12,7 @@ import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS, type EbaySettings } from '@cor
 import { MemoryCache } from '@core/serpapi/client';
 import * as fx from '../../core/test/fixtures';
 import type { AppState, PanelReport, Reply, Request } from './messages';
+import type { ResearchTools } from '@core/research/types';
 import { createWorker, type AskOne, type Prefs } from './worker';
 
 const KEY = 'TEST';
@@ -65,7 +66,7 @@ class FakePrefs {
   setAskAfterScan = async (v: boolean) => void (this.askAfterScan = v);
 }
 
-interface Call { headers: Record<string, string>; user: string; model: string }
+interface Call { headers: Record<string, string>; user: string; model: string; tools?: { name?: string }[] }
 
 interface Options {
   anthropic?: string | null;
@@ -74,6 +75,8 @@ interface Options {
   respond?: (call: Call, n: number) => Response | Promise<Response>;
   blockSearches?: Promise<void>;
   askOne?: AskOne;
+  /** Step 12: with it a split question is researched. */
+  researchTools?: { forQuestion(): ResearchTools };
   /** Which questions are open. Default: the PSK one and OTHERS. */
   ids?: string[];
 }
@@ -108,8 +111,8 @@ async function setup(opts: Options = {}) {
       const url = String(input instanceof Request ? input.url : input);
       if (url.includes('/account.json')) return json(200, fx.SERPAPI_ACCOUNT_FREE);
       if (url.startsWith('https://api.anthropic.com/')) {
-        const body = JSON.parse(String(init?.body)) as { model: string; messages: { content: string }[] };
-        const call: Call = { headers: init?.headers as Record<string, string>, user: body.messages[0]!.content, model: body.model };
+        const body = JSON.parse(String(init?.body)) as { model: string; messages: { content: string }[]; tools?: { name?: string }[] };
+        const call: Call = { headers: init?.headers as Record<string, string>, user: body.messages[0]!.content, model: body.model, ...(body.tools ? { tools: body.tools } : {}) };
         calls.push(call);
         flight.now += 1;
         flight.max = Math.max(flight.max, flight.now);
@@ -129,6 +132,7 @@ async function setup(opts: Options = {}) {
     broadcast: (s) => void broadcasts.push(s),
     suggestions,
     ...(opts.askOne ? { askOne: opts.askOne } : {}),
+    ...(opts.researchTools ? { researchTools: opts.researchTools } : {}),
   });
   const send = <T = unknown>(request: Request): Promise<Reply<T>> => worker.onMessage(request) as Promise<Reply<T>>;
   const state = async () => (await send<AppState>({ type: 'getState' })) as { ok: true; data: AppState };
@@ -420,5 +424,81 @@ describe('Ask AI after each scan: the setting', () => {
     expect(t.prefs.askAfterScan).toBe(true);
     expect(await t.send({ type: 'saveAskAfterScan', on: 'yes' as unknown as boolean })).toMatchObject({ ok: false });
     expect(t.prefs.askAfterScan).toBe(true);
+  });
+});
+
+describe('research: a split question is researched, any other is asked as before', () => {
+  const fakeTools: { forQuestion(): ResearchTools } = {
+    forQuestion: () => ({
+      readHomeDepotPage: async () => ({ error: 'not recorded' }),
+      searchHomeDepot: async () => ({ error: 'not recorded' }),
+      catalogLookup: async () => ({ sourceId: 'catalog:none', entries: [] }),
+    }),
+  };
+  const submit = (input: Record<string, unknown>) =>
+    json(200, { id: 'msg', type: 'message', role: 'assistant', model: 'm', stop_reason: 'tool_use', stop_details: null, content: [{ type: 'tool_use', id: 'toolu_1', name: 'submit_answer', input }], usage: { input_tokens: 4000, output_tokens: 300 } });
+  const bodyOf = (c: Call) => JSON.parse(JSON.stringify(c)) as Call;
+
+  it('sends the question to the model with the research tools, keeps the result as a suggestion with the trace\'s sources and no page text, and never the key', async () => {
+    const t = await setup({
+      researchTools: fakeTools, ids: [PSK],
+      respond: () => submit({ quotes: [{ quote: PSK_INCLUDES, sourceId: 'bundle' }], parts: [], reason: 'The page lists the parts.', decision: 'choose', choiceIndex: 0 }),
+    });
+    const reply = await t.send<StoredSuggestion>({ type: 'askAi', questionId: PSK });
+    expect(reply.ok && reply.data.suggestion).toMatchObject({ status: 'verified', answer: { decision: 'choose', kind: 'split', choiceIndex: 0 }, research: { requests: 1, toolCalls: 0 } });
+    expect(t.calls).toHaveLength(1);
+    expect(bodyOf(t.calls[0]!).user).toContain(PSK_INCLUDES);
+    expect(t.calls[0]!.tools!.map((x) => x.name)).toEqual(expect.arrayContaining(['read_homedepot_page', 'search_homedepot', 'catalog_lookup', 'submit_answer', 'web_search']));
+    // The brand's own sites only.
+    expect(JSON.stringify(t.calls[0]!.tools)).toContain('ryobitools.com');
+    const [record] = await t.suggestions.list();
+    const ledger = (record!.suggestion as unknown as { research: { ledger: { id: string; url: string | null; lines: unknown[] }[] } }).research.ledger;
+    expect(ledger.map((e) => e.id)).toContain('bundle');
+    expect(ledger.every((e) => e.lines.length === 0)).toBe(true);
+    expect(record!.costUsd).toBeGreaterThan(0);
+    expect(JSON.stringify(record)).not.toContain(ANTHROPIC);
+    expect((await t.store.getReview(PSK))!.answer).toBeNull();
+  });
+
+  it('a split question with no reading is asked, since research can answer it; without the tools it is not (nothing to ask with the evidence alone)', async () => {
+    const asked = await setup({ researchTools: fakeTools, ids: ['split:homedepot:314716732'], respond: () => submit({ quotes: [], parts: [], reason: 'Not settled.', decision: 'cannot_tell', choiceIndex: null }) });
+    expect(await asked.send<{ queued: number }>({ type: 'askAiAll' })).toEqual({ ok: true, data: { queued: 1 } });
+    await asked.idle();
+    expect(asked.calls).toHaveLength(1);
+    expect((await asked.suggestions.list())[0]!.suggestion.status).toBe('cannot_tell');
+  });
+
+  it('a match question is asked as in step 11, with no research tools', async () => {
+    const t = await setup({ researchTools: fakeTools, ids: ['match:RYOBI:P553'] });
+    await t.send({ type: 'askAi', questionId: 'match:RYOBI:P553' });
+    expect(t.calls).toHaveLength(1);
+    expect(t.calls[0]!.model).toBe('claude-haiku-5-5');
+    expect(t.calls[0]!.tools).toBeUndefined();
+  });
+
+  it('a scan is refused while one question is researched: research reads in the doorway tab', async () => {
+    let release!: () => void;
+    const hold = new Promise<void>((r) => (release = r));
+    const t = await setup({ researchTools: fakeTools, ids: [PSK], respond: async () => (await hold, submit({ quotes: [], parts: [], reason: 'x', decision: 'cannot_tell', choiceIndex: null })) });
+    const asking = t.send({ type: 'askAi', questionId: PSK });
+    for (let i = 0; i < 100 && t.calls.length < 1; i++) await new Promise((r) => setTimeout(r, 5));
+    expect(await t.send({ type: 'scanNow' })).toEqual({ ok: false, error: 'Asking AI is running. Stop it first, or wait for it to finish.' });
+    await t.worker.onTick();
+    expect((await t.state()).data.scanRunning).toBe(false);
+    release();
+    expect(await asking).toMatchObject({ ok: true });
+    expect(await t.send({ type: 'scanNow' })).toMatchObject({ ok: true });
+    for (let i = 0; i < 100 && (await t.state()).data.scanRunning; i++) await new Promise((r) => setTimeout(r, 10));
+  });
+
+  it('Stop ends a research in flight and keeps nothing for it', async () => {
+    const t = await setup({ researchTools: fakeTools, ids: [PSK, OTHERS[0]!], respond: () => new Promise<Response>(() => {}) });
+    await t.send({ type: 'askAiAll' });
+    for (let i = 0; i < 200 && t.calls.length < 1; i++) await new Promise((r) => setTimeout(r, 5));
+    await t.send({ type: 'stopAskAll' });
+    await t.idle();
+    expect(t.calls).toHaveLength(1);
+    expect(await t.suggestions.list()).toEqual([]);
+    expect((await t.state()).data.askAllResult).toMatchObject({ stopped: true, asked: 0 });
   });
 });

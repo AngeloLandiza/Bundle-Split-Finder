@@ -53,6 +53,9 @@ async function scanAndWait(page: Page): Promise<void> {
 /** The Review tab with this question in front: the older ones are put off, which sends nothing. */
 async function showQuestion(panel: Page): Promise<void> {
   await panel.getByRole('button', { name: /^Review/ }).click();
+  // Step 12: a verified suggestion is a row of "AI suggestions", closed: opened, it is the question as it was.
+  const rows = panel.getByRole('region', { name: /AI suggestions/ }).getByRole('button', { expanded: false });
+  if ((await rows.count()) > 0) await rows.first().click();
   const mine = panel.getByRole('radio', { name: READING_1, exact: true });
   for (let i = 0; i < 40 && !(await mine.isVisible()); i++) await panel.getByRole('button', { name: 'Skip for now' }).click();
   await expect(mine).toBeVisible();
@@ -108,14 +111,14 @@ test('Ask AI: nothing is saved until Approve; verified, unverified, cannot tell 
 
   // The key is saved, and the button says its price: Settings' model is Haiku.
   expect(await send(options, { type: 'saveAnthropicKey', apiKey: ANTHROPIC_KEY })).toMatchObject({ ok: true });
-  await expect(panel.getByRole('button', { name: 'Ask AI · about $0.01' })).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Ask AI · about $0.02' })).toBeVisible();
   expect(server.assistCalls).toEqual([]);
   await shoot(panel, 'ask-ai-button', [360, 480]);
 
   // (b) Unverified: the model's quote is not on the page. The block says so, nothing is preselected, the owner chooses.
   server.setAssistReply(says.unverified);
   server.delayAssist(2_500);
-  await panel.getByRole('button', { name: /^Ask AI/ }).click();
+  await panel.getByRole('button', { name: /^Ask AI(?! about all)/ }).click();
   // While it works the button reads Asking… and the question stays usable.
   await expect(panel.getByRole('button', { name: 'Asking…' })).toBeVisible();
   await shoot(panel, 'ask-ai-asking', [360]);
@@ -127,7 +130,7 @@ test('Ask AI: nothing is saved until Approve; verified, unverified, cannot tell 
   expect(server.modelBadKeys).toBe(0);
   for (const r of await panel.getByRole('radio').all()) await expect(r).not.toBeChecked();
   await expect(panel.getByRole('button', { name: 'Save answer' })).toBeDisabled();
-  await expect(panel.getByRole('button', { name: 'Approve' })).toHaveCount(0);
+  await expect(panel.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
   await shoot(panel, 'ask-ai-unverified', [360]);
   // Nothing was saved by the suggestion.
   expect(await saved(options)).toBeNull();
@@ -144,7 +147,7 @@ test('Ask AI: nothing is saved until Approve; verified, unverified, cannot tell 
   await panel.reload();
   await showQuestion(panel);
   server.setAssistReply(says.cannotTell);
-  await panel.getByRole('button', { name: /^Ask AI/ }).click();
+  await panel.getByRole('button', { name: /^Ask AI(?! about all)/ }).click();
   await expect(block.getByText('AI could not tell from the page')).toBeVisible();
   await expect(block.getByText('The page does not say which impact wrench is in the kit.')).toBeVisible();
   for (const r of await panel.getByRole('radio').all()) await expect(r).not.toBeChecked();
@@ -162,7 +165,7 @@ test('Ask AI: nothing is saved until Approve; verified, unverified, cannot tell 
   await expect(block.getByRole('link')).toHaveCount(0);
   for (const r of await panel.getByRole('radio').all()) await expect(r).not.toBeChecked();
   await expect(panel.getByRole('button', { name: 'Save answer' })).toBeDisabled();
-  await expect(panel.getByRole('button', { name: 'Approve' })).toHaveCount(0);
+  await expect(panel.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
   await shoot(panel, 'ask-ai-none', [360]);
   expect(await saved(options)).toBeNull();
 
@@ -175,23 +178,25 @@ test('Ask AI: nothing is saved until Approve; verified, unverified, cannot tell 
   await expect(block.getByText(READING_1)).toBeVisible();
   await expect(block.getByText('Includes DCK200D1P1 and DCF921B.')).toBeVisible();
   await expect(block.getByRole('link', { name: 'Home Depot page' })).toHaveAttribute('target', '_blank');
-  await expect(panel.getByRole('radio', { name: READING_1, exact: true })).toBeChecked();
-  await expect(panel.getByRole('button', { name: 'Approve' })).toBeEnabled();
-  await expect(panel.getByRole('button', { name: 'Save answer' })).toHaveCount(0);
+  // The question is in its row of "AI suggestions" (opened by showQuestion), not in the list below it.
+  const verifiedRow = panel.getByRole('region', { name: /AI suggestions/ });
+  await expect(verifiedRow.getByRole('radio', { name: READING_1, exact: true })).toBeChecked();
+  await expect(verifiedRow.getByRole('button', { name: 'Approve', exact: true })).toBeEnabled();
+  await expect(verifiedRow.getByRole('button', { name: 'Save answer' })).toHaveCount(0);
   await shoot(panel, 'ask-ai-verified', [360, 480]);
   // Selecting another answer makes it the owner's own: the button is Save answer again, and back on the AI's it is Approve.
-  await panel.getByRole('radio', { name: READING_0, exact: true }).check();
-  await expect(panel.getByRole('button', { name: 'Save answer' })).toBeVisible();
-  await panel.getByRole('radio', { name: READING_1, exact: true }).check();
-  await expect(panel.getByRole('button', { name: 'Approve' })).toBeVisible();
+  await verifiedRow.getByRole('radio', { name: READING_0, exact: true }).check();
+  await expect(verifiedRow.getByRole('button', { name: 'Save answer' })).toBeVisible();
+  await verifiedRow.getByRole('radio', { name: READING_1, exact: true }).check();
+  await expect(verifiedRow.getByRole('button', { name: 'Approve', exact: true })).toBeVisible();
   expect(await saved(options)).toBeNull();
   expect(server.assistCalls).toHaveLength(4);
 
-  await panel.getByRole('button', { name: 'Approve' }).click();
+  await verifiedRow.getByRole('button', { name: 'Approve', exact: true }).click();
   await expect.poll(() => saved(options)).toBe('DCK200D1P1,DCF921B');
   a = await audit(options);
   expect(a.aiSuggestions).toHaveLength(4);
-  expect(a.aiSuggestions.at(-1)).toMatchObject({ questionId: ID, source: 'ai', agreed: true, answer: 'DCK200D1P1,DCF921B', suggestion: { status: 'verified' }, tokens: { inputTokens: 1800, outputTokens: 300 } });
+  expect(a.aiSuggestions.at(-1)).toMatchObject({ questionId: ID, source: 'ai', agreed: true, answer: 'DCK200D1P1,DCF921B', suggestion: { status: 'verified' }, tokens: expect.objectContaining({ inputTokens: 1800, outputTokens: 300 }) });
   // Neither key nor secrets in the audit.
   expect(JSON.stringify(a)).not.toContain(ANTHROPIC_KEY);
   expect(seen.console.filter((c) => !c.includes('status of 403') && !c.includes('status of 404'))).toEqual([]);
@@ -204,10 +209,10 @@ test('Ask AI: a call the model refuses is said in one line and the button comes 
   const panel = await context.newPage();
   await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
   await showQuestion(panel);
-  await panel.getByRole('button', { name: /^Ask AI/ }).click();
+  await panel.getByRole('button', { name: /^Ask AI(?! about all)/ }).click();
   // The replay refuses the key: the model's refusal is a failed call, not a suggestion.
   await expect(panel.getByText(/Claude refused the API key/)).toBeVisible();
-  await expect(panel.getByRole('button', { name: 'Ask AI · about $0.01' })).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Ask AI · about $0.02' })).toBeVisible();
   await expect(panel.getByRole('group', { name: 'AI suggestion' })).toHaveCount(0);
   expect(server.modelBadKeys).toBe(1);
   expect(await saved(options)).toBeNull();
