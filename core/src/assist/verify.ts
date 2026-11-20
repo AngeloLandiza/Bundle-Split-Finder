@@ -10,7 +10,7 @@ import { modelForms } from '../match';
 import { choicesOf } from '../scan/answers';
 import type { ReviewItem } from '../scan/types';
 import { parseAssistRaw } from './schema';
-import type { AssistEvidence, AssistRaw, CheckedSuggestion, EvidenceSource, SuggestedAnswer, VerifiedQuote } from './types';
+import type { AssistEvidence, AssistRaw, CheckedSuggestion, EvidenceLine, EvidenceSource, SuggestedAnswer, VerifiedQuote } from './types';
 
 /** The model's reason is shown to the owner; longer than this it is cut. */
 export const MAX_REASON_CHARS = 300;
@@ -26,8 +26,15 @@ const show = (q: string): string => {
   return t.length > 80 ? `${t.slice(0, 79)}…` : t;
 };
 
-/** Where a quote was found: its source and line, or why it was not. */
-type Found = { ok: true; source: EvidenceSource; line: string } | { ok: false; problem: string };
+/**
+ * The bundle page's lines that can show what the bundle holds: its Includes and specification lines and
+ * its description. Its title and model number are what the splitter read to ask the question; a reading
+ * shown only by them would be the splitter's own evidence quoted back (controller ruling, A1 fix round 1).
+ */
+const CONTENT_FIELDS: ReadonlySet<EvidenceLine['field']> = new Set(['bullet', 'description']);
+
+/** Where a quote was found: its source and the fields of the lines that hold it, or why it was not. */
+type Found = { ok: true; source: EvidenceSource; fields: Set<EvidenceLine['field']> } | { ok: false; problem: string };
 
 function findQuote(quote: string, sourceId: string, evidence: AssistEvidence): Found {
   const source = evidence.sources.find((s) => s.id === sourceId.trim());
@@ -39,7 +46,7 @@ function findQuote(quote: string, sourceId: string, evidence: AssistEvidence): F
   if (lines.every((l) => l.suspect)) {
     return { ok: false, problem: `The quote "${show(quote)}" comes from text written to an AI, which is never evidence.` };
   }
-  return { ok: true, source, line: normaliseText(lines.find((l) => !l.suspect)!.text) };
+  return { ok: true, source, fields: new Set(lines.filter((l) => !l.suspect).map((l) => l.field)) };
 }
 
 /** Whether normalised text names a model, in any way it may be written. */
@@ -59,7 +66,7 @@ export function verifySuggestion(answer: unknown, question: ReviewItem, evidence
   }
 
   const problems: string[] = [];
-  const quotes: (VerifiedQuote & { norm: string })[] = [];
+  const quotes: (VerifiedQuote & { norm: string; fields: Set<EvidenceLine['field']> })[] = [];
   for (const e of raw.evidence) {
     const found = findQuote(e.quote, e.source, evidence);
     if (!found.ok) {
@@ -68,9 +75,9 @@ export function verifySuggestion(answer: unknown, question: ReviewItem, evidence
     }
     const norm = normaliseText(e.quote);
     if (quotes.some((q) => q.sourceId === found.source.id && q.norm === norm)) continue;
-    quotes.push({ quote: e.quote.trim(), sourceId: found.source.id, label: found.source.label, url: found.source.url, names: false, norm });
+    quotes.push({ quote: e.quote.trim(), sourceId: found.source.id, label: found.source.label, url: found.source.url, names: false, norm, fields: found.fields });
   }
-  const strip = (qs: typeof quotes): VerifiedQuote[] => qs.map(({ norm: _norm, ...q }) => q);
+  const strip = (qs: typeof quotes): VerifiedQuote[] => qs.map(({ norm: _norm, fields: _fields, ...q }) => q);
 
   if (raw.decision === 'cannot_tell') return { status: 'cannot_tell', reason, quotes: strip(quotes) };
 
@@ -91,11 +98,12 @@ export function verifySuggestion(answer: unknown, question: ReviewItem, evidence
       problems.push(`The answer chooses reading ${i ?? 'none'}; the question offers ${choices.length === 1 ? 'only reading 0' : `readings 0 to ${choices.length - 1}`}.`);
     }
     const parts = i !== null && i >= 0 && i < choices.length ? choices[i]! : [];
-    // What the bundle holds is shown by the bundle's own page, not a kit's: only its quotes name a part.
-    const own = quotes.filter((q) => q.sourceId === 'bundle');
+    // What the bundle holds is shown by the bundle's own page, not a kit's, and by its content lines, not
+    // its title or model number (CONTENT_FIELDS): only those quotes name a part.
+    const own = quotes.filter((q) => q.sourceId === 'bundle' && [...q.fields].some((f) => CONTENT_FIELDS.has(f)));
     for (const part of parts) {
       const naming = own.filter((q) => names(q.norm, question.brand, part));
-      if (naming.length === 0) problems.push(`No quote from the bundle's page names ${part}.`);
+      if (naming.length === 0) problems.push(`No quote from the bundle page's Includes, specification lines or description names ${part}.`);
       for (const q of naming) q.names = true;
     }
     suggested = { decision: 'choose', kind: 'split', choiceIndex: i ?? -1, parts: [...parts] };

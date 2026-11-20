@@ -48,11 +48,30 @@ describe('a split suggestion', () => {
     expect(got.status).toBe('verified');
   });
 
-  it('verifies a reading the model number names (PCL1600K2-P553), and the answer key agrees', async () => {
+  // Controller ruling (A1 fix round 1): the title and model number are what the splitter read to ask the
+  // question, so quoting them back is circular. Only Includes or specification lines or the description name a part.
+  it('does not verify a reading only the model number and title name (PCL1600K2-P553: its page has no Includes lines), though the answer key agrees', async () => {
     const { w, q, ev } = await split('split:homedepot:320243741');
+    expect(ev.sources[0]!.lines.map((l) => l.field)).toEqual(['title', 'model']);
+    expect(keyOf(w, q.id)).toEqual(q.choices[0]);
     const got = verifySuggestion(answer({ evidence: [{ quote: 'PCL1600K2-P553', source: 'bundle' }, { quote: 'Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and Miter Saw', source: 'bundle' }], choiceIndex: 0 }), q, ev);
+    expect(got).toMatchObject({ status: 'unverified', reasons: ["No quote from the bundle page's Includes, specification lines or description names PCL1600K2.", "No quote from the bundle page's Includes, specification lines or description names P553."] });
+  });
+
+  it('does not verify a hyphen reading from its model number when the Includes lines name other parts (PSK1212SB-PCL265B: the answer key typed the starter kit\'s parts)', async () => {
+    const { w, q, ev } = await split('split:homedepot:344304336');
+    expect(q.choices).toEqual([['PSK1212SB', 'PCL265B']]);
+    expect(keyOf(w, q.id)).toEqual(['PBP004', 'PBP003', 'PCG002', 'PCL265B']);
+    const includes = ev.sources[0]!.lines.find((l) => l.field === 'bullet')!.text;
+    const got = verifySuggestion(answer({ evidence: [{ quote: 'PSK1212SB-PCL265B', source: 'bundle' }, { quote: includes, source: 'bundle' }], choiceIndex: 0 }), q, ev);
+    // The Includes line names PCL265 (PCL265B's other written form), never PSK1212SB.
+    expect(got).toMatchObject({ status: 'unverified', reasons: ["No quote from the bundle page's Includes, specification lines or description names PSK1212SB."] });
+  });
+
+  it('counts a short quote that an Includes line holds (PSK1212SB)', async () => {
+    const { q, ev } = await split('split:homedepot:339206615');
+    const got = verifySuggestion(answer({ evidence: [{ quote: 'PBP004', source: 'bundle' }, { quote: 'PBP003', source: 'bundle' }, { quote: 'PCG002', source: 'bundle' }], choiceIndex: 0 }), q, ev);
     expect(got.status).toBe('verified');
-    expect(got.status === 'verified' && got.answer.decision === 'choose' && got.answer.kind === 'split' && got.answer.parts).toEqual(keyOf(w, q.id));
   });
 
   it('leaves a fabricated quote unverified', async () => {
@@ -64,9 +83,9 @@ describe('a split suggestion', () => {
       status: 'unverified',
       reasons: [
         'The quote "Includes: (1) PBP004, (1) PBP003 and (1) PCG002" is not found in the Home Depot page.',
-        "No quote from the bundle's page names PBP004.",
-        "No quote from the bundle's page names PBP003.",
-        "No quote from the bundle's page names PCG002.",
+        "No quote from the bundle page's Includes, specification lines or description names PBP004.",
+        "No quote from the bundle page's Includes, specification lines or description names PBP003.",
+        "No quote from the bundle page's Includes, specification lines or description names PCG002.",
       ],
       claimed: expect.objectContaining({ choiceIndex: 0 }),
     });
@@ -93,7 +112,7 @@ describe('a split suggestion', () => {
     const { q, ev } = await split('split:homedepot:342303258');
     expect(q.choices).toEqual([['PSK12B', 'PSK00B']]);
     const got = verifySuggestion(answer({ evidence: [{ quote: 'PSK1200SB', source: 'bundle' }], choiceIndex: 0 }), q, ev);
-    expect(got).toMatchObject({ status: 'unverified', reasons: ["No quote from the bundle's page names PSK12B.", "No quote from the bundle's page names PSK00B."] });
+    expect(got).toMatchObject({ status: 'unverified', reasons: ["No quote from the bundle page's Includes, specification lines or description names PSK12B.", "No quote from the bundle page's Includes, specification lines or description names PSK00B."] });
   });
 
   it("verifies 'none' when a quote shows it (PSK1200SB holds PBP003 and P119: the answer key typed those)", async () => {
@@ -111,9 +130,10 @@ describe('a split suggestion', () => {
     const { q, ev } = await split('split:homedepot:324904496');
     const kitTitle = ev.sources[1]!.lines[0]!.text;
     const got = verifySuggestion(answer({ evidence: [{ quote: kitTitle, source: 'kit:PCL1201K2' }], choiceIndex: 0 }), q, ev);
-    expect(got).toMatchObject({ status: 'unverified', reasons: ["No quote from the bundle's page names PCL1201K2.", "No quote from the bundle's page names PCL430B."] });
-    const ok = verifySuggestion(answer({ evidence: [{ quote: 'PCL1201K2-PCL430B', source: 'bundle' }, { quote: kitTitle, source: 'kit:PCL1201K2' }], choiceIndex: 0 }), q, ev);
-    expect(ok).toMatchObject({ status: 'verified', quotes: [{ sourceId: 'bundle', names: true }, { sourceId: 'kit:PCL1201K2', label: 'Home Depot page for PCL1201K2', url: 'https://www.homedepot.com/p/317987584', names: false }] });
+    expect(got).toMatchObject({ status: 'unverified', reasons: ["No quote from the bundle page's Includes, specification lines or description names PCL1201K2.", "No quote from the bundle page's Includes, specification lines or description names PCL430B."] });
+    // A kit quote that was found is still kept and labelled with its own page, for the owner to read.
+    const kept = verifySuggestion(answer({ decision: 'cannot_tell', evidence: [{ quote: kitTitle, source: 'kit:PCL1201K2' }] }), q, ev);
+    expect(kept).toMatchObject({ status: 'cannot_tell', quotes: [{ sourceId: 'kit:PCL1201K2', label: 'Home Depot page for PCL1201K2', url: 'https://www.homedepot.com/p/317987584' }] });
   });
 
   it('passes cannot_tell through with its reason, keeping only the quotes that were found', async () => {
