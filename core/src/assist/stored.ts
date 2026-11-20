@@ -79,6 +79,8 @@ export function liveSuggestion(records: readonly StoredSuggestion[], question: R
  * owner chose for themselves, and whether it was the claim is still worth knowing.
  */
 export function proposedAnswer(suggestion: Suggestion, question: ReviewItem): string | null {
+  // "None of these" is the AI's view, never verified (none_suggested), and it is still what it proposed.
+  if (suggestion.status === 'none_suggested') return NONE;
   if (suggestion.status === 'verified') {
     const a = suggestion.answer;
     return a.decision === 'none' ? NONE : a.kind === 'split' ? a.parts.join(',') : a.asin;

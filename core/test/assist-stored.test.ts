@@ -90,9 +90,9 @@ describe('whether the owner agreed', () => {
     expect(agreedWith(s, { ...q, answer: 'PBP004,PCG002' })).toBe(false);
   });
 
-  it('a verified "none of these" agrees with the owner saying none', async () => {
+  it('"none of these" is the AI\'s view, never verified, and it agrees with the owner saying none', async () => {
     const { q, s } = await suggestionFor(PSK, { decision: 'none', evidence: [{ quote: PSK1212SB_INCLUDES, source: 'bundle' }] });
-    expect(s.status).toBe('verified');
+    expect(s.status).toBe('none_suggested');
     expect(proposedAnswer(s, q)).toBe('none');
     expect(agreedWith(s, { ...q, answer: 'none' })).toBe(true);
     expect(agreedWith(s, { ...q, answer: 'PBP004,PBP003,PCG002' })).toBe(false);
