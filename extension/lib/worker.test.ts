@@ -2519,7 +2519,7 @@ describe('worker: eBay reference values (step 10)', () => {
     expect(job.ebayNotice ?? null).toBeNull();
     expect(job.counts).toMatchObject({ ebaySearches: 2, ebayItemReads: 3, listingsJudged: 3, judgeTokensIn: 1500, judgeTokensOut: 150 });
     const value = (await w.store.getEbayValue('RYOBI:PBLRC25B'))!;
-    expect(value.value).toEqual({ listings: 3, unitsSold: 55, low: 99, high: 130, medianPrice: 120, links: expect.any(Array) });
+    expect(value.value).toEqual({ listings: 3, unitsSold: 55, low: 99, high: 130, medianPrice: 120, links: expect.any(Array), linkPrices: [120, 130, 99] });
     expect((await w.store.getEbayValue('RYOBI:PBLRC01B'))!.value).toBeNull();
     const report = await send<PanelReport>(w, { type: 'getReport' });
     const part = report.ok ? report.data.bundles.find((b) => b.key === 'homedepot:328814689')!.parts.find((p) => p.model === 'PBLRC25B')! : undefined;

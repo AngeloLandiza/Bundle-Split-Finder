@@ -106,6 +106,7 @@ describe('the eBay step: DEWALT DCF921B on the real search', () => {
     expect(r.value).toEqual({
       listings: 5, unitsSold: 345, low: 64.99, high: 137.99, medianPrice: 119.99,
       links: ['https://www.ebay.com/itm/356061995376', 'https://www.ebay.com/itm/306552991202', 'https://www.ebay.com/itm/137923389067'],
+      linkPrices: [119.99, 137.99, 129.99],
     });
     expect(r.complete).toBe(true);
     expect(r.notJudged).toBe(0);

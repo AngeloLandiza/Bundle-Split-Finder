@@ -131,7 +131,11 @@ const isWebLink = (link: string | null): link is string => link !== null && /^ht
  */
 function EbayLine({ option }: { option: PriceOption }) {
   const v = option.ebay;
-  const links = (v?.links ?? []).filter(isWebLink).slice(0, 3);
+  // Each link keeps its listing's price (linkPrices, in step with links); a value stored before that has none, and its links read "Listing N".
+  const links = (v?.links ?? [])
+    .map((href, i) => ({ href, price: v?.linkPrices?.[i] }))
+    .filter((l) => isWebLink(l.href))
+    .slice(0, 3);
   // The words of ebayLabel (core/src/ebay/value.ts), with the range and the counts in the figure face. A figure never breaks
   // across lines (white-space: nowrap in the CSS), so at 360px the line wraps between its parts.
   const usd = (n: number) => `$${n.toFixed(2)}`;
@@ -151,9 +155,16 @@ function EbayLine({ option }: { option: PriceOption }) {
       </dt>
       {links.length > 0 ? (
         <dd className="detail-ebay-links">
-          {links.map((href, i) => (
-            <a key={href} className="detail-ebay-link" href={href} target="_blank" rel="noopener noreferrer" aria-label={`eBay listing ${i + 1}`}>
-              Listing {i + 1}
+          {links.map(({ href, price }, i) => (
+            <a
+              key={href}
+              className="detail-ebay-link figure"
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={price === undefined ? `eBay listing ${i + 1}` : `eBay listing ${i + 1}, ${usd(price)}`}
+            >
+              {price === undefined ? `Listing ${i + 1}` : usd(price)}
             </a>
           ))}
         </dd>

@@ -121,7 +121,7 @@ describe('ebayValue', () => {
 
   it('one listing: the label reads "$38.50 · 1 listing, 13 sold" (the recorded item)', () => {
     const v = ebayValue([m(item)])!;
-    expect(v).toMatchObject({ listings: 1, unitsSold: 13, low: 38.5, high: 38.5, medianPrice: 38.5, links: ['https://www.ebay.com/itm/237179711800'] });
+    expect(v).toMatchObject({ listings: 1, unitsSold: 13, low: 38.5, high: 38.5, medianPrice: 38.5, links: ['https://www.ebay.com/itm/237179711800'], linkPrices: [38.5] });
     expect(ebayLabel(v)).toBe('eBay · New · $38.50 · 1 listing, 13 sold');
   });
 
@@ -135,6 +135,8 @@ describe('ebayValue', () => {
     expect([v.low, v.high]).toEqual([38.5, 99]);
     expect(v.medianPrice).toBe(45);
     expect(v.links).toEqual(['c', 'a', 'd'].map((x) => `https://www.ebay.com/itm/${x}`));
+    // Each link's own price, in the same order: c 45, a 38.5, d 99.
+    expect(v.linkPrices).toEqual([45, 38.5, 99]);
   });
 
   it('labels a range with the sold-weighted counts', () => {

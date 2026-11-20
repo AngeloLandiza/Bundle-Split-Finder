@@ -22,8 +22,11 @@ export function ebayValue(judged: { listing: EbayListing; verdict: EbayVerdict }
     acc += u.sold;
     if (acc * 2 >= unitsSold) { median = u.price; break; }
   }
-  const links = [...used].sort((a, b) => b.sold - a.sold).map((u) => u.url).filter((u) => u !== '').slice(0, 3);
-  return { listings: used.length, unitsSold, low: round2(byPrice[0]!.price), high: round2(byPrice[byPrice.length - 1]!.price), medianPrice: round2(median), links };
+  const linked = [...used].sort((a, b) => b.sold - a.sold).filter((u) => u.url !== '').slice(0, 3);
+  return {
+    listings: used.length, unitsSold, low: round2(byPrice[0]!.price), high: round2(byPrice[byPrice.length - 1]!.price), medianPrice: round2(median),
+    links: linked.map((u) => u.url), linkPrices: linked.map((u) => round2(u.price)),
+  };
 }
 
 /** "eBay · New · $38.50–$54.99 · 3 listings, 41 sold"; one listing: "eBay · New · $38.50 · 1 listing, 13 sold". */

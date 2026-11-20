@@ -46,4 +46,6 @@ export interface EbayValue {
   medianPrice: number;
   /** Up to 3 listing pages, those with the most units sold first. */
   links: string[];
+  /** The price of each listing in `links`, in the same order. Absent in a value stored before it was added. */
+  linkPrices?: number[];
 }

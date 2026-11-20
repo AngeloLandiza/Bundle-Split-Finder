@@ -25,6 +25,8 @@ afterEach(() => vi.useRealTimers());
 const VALUE: EbayValue = {
   listings: 5, unitsSold: 345, low: 64.99, high: 137.99, medianPrice: 119.99,
   links: ['https://www.ebay.com/itm/356061995376', 'https://www.ebay.com/itm/306552991202', 'https://www.ebay.com/itm/137923389067'],
+  // Each listing's own price, in step with links (validation-2026-11-19.json: 119.99, 137.99, 129.99).
+  linkPrices: [119.99, 137.99, 129.99],
 };
 
 const ebayOption = (v: EbayValue = VALUE): PriceOption => ({
@@ -84,7 +86,9 @@ describe("Detail: a part's eBay reference line", () => {
   it('offers up to three of its listings, in a new tab, safely, as links on a line of their own', () => {
     show([ebayOption()]);
     const links = within(reference()).getAllByRole('link');
-    expect(links.map((a) => a.textContent)).toEqual(['Listing 1', 'Listing 2', 'Listing 3']);
+    // Each link reads its listing's price, in the figure face.
+    expect(links.map((a) => a.textContent)).toEqual(['$119.99', '$137.99', '$129.99']);
+    for (const a of links) expect(a).toHaveClass('figure');
     // Not inside the line's own label: the links are the next element of the row, so they can sit below it.
     expect(links[0]!.closest('dd')!.classList.contains('detail-ebay-links')).toBe(true);
     expect(links[0]!.closest('dt')).toBeNull();
@@ -93,19 +97,36 @@ describe("Detail: a part's eBay reference line", () => {
       expect(a).toHaveAttribute('target', '_blank');
       expect(a).toHaveAttribute('rel', 'noopener noreferrer');
     }
-    expect(links.map((a) => a.getAttribute('aria-label'))).toEqual(['eBay listing 1', 'eBay listing 2', 'eBay listing 3']);
-    expect(links[0]).toHaveAccessibleName('eBay listing 1');
+    expect(links.map((a) => a.getAttribute('aria-label'))).toEqual(['eBay listing 1, $119.99', 'eBay listing 2, $137.99', 'eBay listing 3, $129.99']);
+    expect(links[0]).toHaveAccessibleName('eBay listing 1, $119.99');
+    expect(links[1]).toHaveAccessibleName('eBay listing 2, $137.99');
   });
 
-  it('shows only http and https links, and no more than three', () => {
-    show([ebayOption({ ...VALUE, links: ['javascript:alert(1)', 'https://www.ebay.com/itm/1', 'data:text/html,x', 'http://www.ebay.com/itm/2', 'https://www.ebay.com/itm/3', 'https://www.ebay.com/itm/4'] })]);
-    expect(within(reference()).getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(['https://www.ebay.com/itm/1', 'http://www.ebay.com/itm/2', 'https://www.ebay.com/itm/3']);
+  it('shows only http and https links, and no more than three, each still with its own price', () => {
+    show([ebayOption({
+      ...VALUE,
+      links: ['javascript:alert(1)', 'https://www.ebay.com/itm/1', 'data:text/html,x', 'http://www.ebay.com/itm/2', 'https://www.ebay.com/itm/3', 'https://www.ebay.com/itm/4'],
+      linkPrices: [1, 11, 2, 22, 33, 44],
+    })]);
+    const links = within(reference()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['https://www.ebay.com/itm/1', 'http://www.ebay.com/itm/2', 'https://www.ebay.com/itm/3']);
+    expect(links.map((a) => a.textContent)).toEqual(['$11.00', '$22.00', '$33.00']);
+  });
+
+  it('a value stored before linkPrices existed: its links read "Listing N", with the same addresses', () => {
+    show([ebayOption({ ...VALUE, linkPrices: undefined })]);
+    const links = within(reference()).getAllByRole('link');
+    expect(links.map((a) => a.textContent)).toEqual(['Listing 1', 'Listing 2', 'Listing 3']);
+    expect(links.map((a) => a.getAttribute('aria-label'))).toEqual(['eBay listing 1', 'eBay listing 2', 'eBay listing 3']);
   });
 
   it('a single listing reads "1 listing", with one link', () => {
-    show([ebayOption({ listings: 1, unitsSold: 13, low: 38.5, high: 38.5, medianPrice: 38.5, links: ['https://www.ebay.com/itm/237179711800'] })]);
+    show([ebayOption({ listings: 1, unitsSold: 13, low: 38.5, high: 38.5, medianPrice: 38.5, links: ['https://www.ebay.com/itm/237179711800'], linkPrices: [38.5] })]);
     expect(ebayText()).toBe('eBay · New · $38.50 · 1 listing, 13 sold');
-    expect(within(reference()).getAllByRole('link')).toHaveLength(1);
+    const links = within(reference()).getAllByRole('link');
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveTextContent('$38.50');
+    expect(links[0]).toHaveAccessibleName('eBay listing 1, $38.50');
   });
 
   it('has no eBay line, and no $0, when the part has no eBay value', () => {
