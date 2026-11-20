@@ -17,11 +17,12 @@ export interface EvalResult {
   usage?: TokenUsage;
 }
 
-export interface PriceRates { input: number; output: number }
+/** Dollars per million tokens. `cacheRead`: a prompt-cache read (step 12 research caches its prompt); a cache write is 1.25x input (5-minute entries). */
+export interface PriceRates { input: number; output: number; cacheRead?: number }
 /** Dollars per million tokens. */
 export const PRICE_TABLE: Record<string, PriceRates> = {
-  'claude-haiku-5-5': { input: 0.1, output: 0.5 },
-  'claude-opus-5-5': { input: 4, output: 20 },
+  'claude-haiku-5-5': { input: 0.1, output: 0.5, cacheRead: 0.01 },
+  'claude-opus-5-5': { input: 4, output: 20, cacheRead: 0.2 },
 };
 
 export const costOf = (usage: { inputTokens: number; outputTokens: number }, rates: PriceRates): number =>

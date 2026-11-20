@@ -31,14 +31,21 @@ export class ClaudeResearch implements ResearchModel {
     this.effort = opts.effort ?? CLAUDE_RESEARCH_EFFORT;
   }
 
-  /** The body of one request. No output_config.format: the answer is the submit_answer tool's input (schema.ts). */
+  /**
+   * The body of one request. No output_config.format: the answer is the submit_answer tool's input (schema.ts).
+   * Prompt caching (fix round 2; prompt caching guide: tools render before system, a breakpoint on the last
+   * system block caches both; top-level cache_control places one more on the last block and moves it forward
+   * as the conversation grows): the fixed prompt and tools are read from the cache by every question, and each
+   * request of a question reads the conversation before it. Nothing in the prompt varies by time or request.
+   */
   requestBody(request: ResearchRequest): Record<string, unknown> {
     return {
       model: this.model,
       max_tokens: request.maxTokens,
-      system: request.system,
+      system: [{ type: 'text', text: request.system, cache_control: { type: 'ephemeral' } }],
       tools: request.tools,
       messages: request.messages,
+      cache_control: { type: 'ephemeral' },
       output_config: { effort: this.effort },
     };
   }

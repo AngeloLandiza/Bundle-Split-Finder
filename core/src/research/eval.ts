@@ -15,23 +15,40 @@ import type { ResearchUsage } from './types';
 /** Dollars per web search on the Claude API ($10 per 1,000, web search tool page). */
 export const WEB_SEARCH_USD = 0.01;
 
-/** A research question's cost: its tokens at the model's rates and its web searches. */
-export function researchCost(usage: Pick<ResearchUsage, 'inputTokens' | 'outputTokens'> & { webSearchRequests?: number }, rates: PriceRates): number {
-  return costOf(usage, rates) + (usage.webSearchRequests ?? 0) * WEB_SEARCH_USD;
+/** A prompt-cache write costs 1.25x input (5-minute entries); a read the model's cacheRead rate, else 0.1x input. */
+export const CACHE_WRITE_FACTOR = 1.25;
+export const CACHE_READ_FACTOR = 0.1;
+
+/**
+ * A research question's cost: its uncached input, cache writes and reads, and output at the model's rates,
+ * and its web searches (web fetches cost only their tokens).
+ */
+export function researchCost(
+  usage: Pick<ResearchUsage, 'inputTokens' | 'outputTokens' | 'cacheReadInputTokens' | 'cacheCreationInputTokens'> & { webSearchRequests?: number },
+  rates: PriceRates,
+): number {
+  const written = ((usage.cacheCreationInputTokens ?? 0) * rates.input * CACHE_WRITE_FACTOR) / 1_000_000;
+  const read = ((usage.cacheReadInputTokens ?? 0) * (rates.cacheRead ?? rates.input * CACHE_READ_FACTOR)) / 1_000_000;
+  return costOf(usage, rates) + written + read + (usage.webSearchRequests ?? 0) * WEB_SEARCH_USD;
 }
 
 /**
  * What one research press may cost, said on the button before the click. An estimate, never a bill.
- * Measured on the first real run (Opus 5.5, 19 questions, prompt .1, Nov 20:
- * fixtures/research/runs-claude-opus-5-5.json): 634,962 tokens in, 21,375 out and 12 web searches, so
- * about 33,400 in, 1,100 out and 0.6 searches a question; the conversation is sent again on every
- * request. Rounded up for one fetched brand page (max_content_tokens 6,000): 40,000 in, 1,200 out, 1 search.
+ * From the second real run (Opus 5.5, prompt .2, 19 questions, Nov 20; runs-claude-opus-5-5-prompt2.json):
+ * 374,137 tokens in over 53 requests, 16,544 out, no web search, $1.83 uncached ($0.096 a question). The
+ * prompt is cached since fix round 2 (system prompt and tools, and the growing conversation): each request
+ * then reads the one before it from the cache and writes only what is new, which on that run's requests
+ * is about 7,300 tokens written and 12,400 read a question (simulated, $1.07 for the 19, not yet measured
+ * on a run). Rounded up for a fetched brand page and one web search: 8,000 written, 14,000 read, 1,000 out.
  */
-export const ESTIMATED_RESEARCH = { input: 40_000, output: 1_200, webSearches: 1 } as const;
+export const ESTIMATED_RESEARCH = { input: 0, cacheWrite: 8_000, cacheRead: 14_000, output: 1_000, webSearches: 1 } as const;
 
 export function estimatedResearchCost(model: string): number | null {
   const rates = PRICE_TABLE[model];
-  return rates ? researchCost({ inputTokens: ESTIMATED_RESEARCH.input, outputTokens: ESTIMATED_RESEARCH.output, webSearchRequests: ESTIMATED_RESEARCH.webSearches }, rates) : null;
+  const e = ESTIMATED_RESEARCH;
+  return rates
+    ? researchCost({ inputTokens: e.input, cacheCreationInputTokens: e.cacheWrite, cacheReadInputTokens: e.cacheRead, outputTokens: e.output, webSearchRequests: e.webSearches }, rates)
+    : null;
 }
 
 /** "about $0.10": rounded up to a whole cent, never "$0.00". Null for a model with no rate. */
@@ -71,7 +88,7 @@ export interface ResearchEvalScore {
   byOutcome: Record<ResearchOutcome, number>;
   wrong: { questionId: string; said: string }[];
   calls: number;
-  tokens: { input: number; output: number };
+  tokens: { input: number; output: number; cacheRead: number; cacheWrite: number };
   webSearches: number;
   webFetches: number;
   cost: number | null;
@@ -90,7 +107,7 @@ export function saidOf(s: Suggestion): string {
 export function scoreResearch(rows: ResearchEvalRow[], rates?: PriceRates): ResearchEvalScore {
   const byOutcome: Record<ResearchOutcome, number> = { verified_correct: 0, verified_wrong: 0, unverified: 0, cannot_tell: 0, none_suggested: 0, not_suggested: 0 };
   const wrong: ResearchEvalScore['wrong'] = [];
-  const usage = { inputTokens: 0, outputTokens: 0, webSearchRequests: 0, webFetchRequests: 0 };
+  const usage = { inputTokens: 0, outputTokens: 0, cacheReadInputTokens: 0, cacheCreationInputTokens: 0, webSearchRequests: 0, webFetchRequests: 0 };
   let calls = 0;
   for (const r of rows) {
     const o = researchOutcome(r.suggestion, r.truth, r.item);
@@ -103,11 +120,13 @@ export function scoreResearch(rows: ResearchEvalRow[], rates?: PriceRates): Rese
       usage.outputTokens += u.outputTokens;
       usage.webSearchRequests += u.webSearchRequests ?? 0;
       usage.webFetchRequests += u.webFetchRequests ?? 0;
+      usage.cacheReadInputTokens += u.cacheReadInputTokens ?? 0;
+      usage.cacheCreationInputTokens += u.cacheCreationInputTokens ?? 0;
     }
   }
   return {
     questions: rows.length, byOutcome, wrong, calls,
-    tokens: { input: usage.inputTokens, output: usage.outputTokens }, webSearches: usage.webSearchRequests, webFetches: usage.webFetchRequests,
+    tokens: { input: usage.inputTokens, output: usage.outputTokens, cacheRead: usage.cacheReadInputTokens, cacheWrite: usage.cacheCreationInputTokens }, webSearches: usage.webSearchRequests, webFetches: usage.webFetchRequests,
     cost: rates ? researchCost(usage, rates) : null,
     trustworthy: byOutcome.verified_wrong === 0,
   };

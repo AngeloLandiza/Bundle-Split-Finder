@@ -125,7 +125,9 @@ describe('research scoring and cost', () => {
   it('a question costs its tokens and $0.01 a web search; the button estimate is rounded up to a cent', () => {
     expect(researchCost({ inputTokens: 1_000_000, outputTokens: 0, webSearchRequests: 2 }, PRICE_TABLE['claude-haiku-5-5']!)).toBeCloseTo(0.12);
     expect(researchCostLabel('claude-haiku-5-5')).toBe('about $0.02');
-    expect(researchCostLabel('claude-opus-5-5')).toBe('about $0.20');
+    expect(researchCostLabel('claude-opus-5-5')).toBe('about $0.08');
+    // Cache writes at 1.25x input, reads at the model's cache rate (Opus 5.5: $0.20 a million).
+    expect(researchCost({ inputTokens: 0, outputTokens: 0, cacheCreationInputTokens: 1_000_000, cacheReadInputTokens: 1_000_000 }, PRICE_TABLE['claude-opus-5-5']!)).toBeCloseTo(5.2);
     expect(researchCostLabel('unknown')).toBeNull();
   });
 

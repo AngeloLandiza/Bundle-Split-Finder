@@ -117,7 +117,7 @@ function printScore(log: (l: string) => void, s: ResearchEvalScore, rows: Resear
   log(`Cannot tell: ${s.byOutcome.cannot_tell}`);
   log(`None fits, the AI's view (never verified): ${s.byOutcome.none_suggested}`);
   log(`Not suggested: ${s.byOutcome.not_suggested}`);
-  log(`Tokens: ${s.tokens.input} in, ${s.tokens.output} out. Web searches: ${s.webSearches}. Web fetches: ${s.webFetches}. Cost: ${usd(s.cost ?? 0)}.`);
+  log(`Tokens: ${s.tokens.input} in, ${s.tokens.cacheWrite} written to and ${s.tokens.cacheRead} read from the cache, ${s.tokens.output} out. Web searches: ${s.webSearches}. Web fetches: ${s.webFetches}. Cost: ${usd(s.cost ?? 0)}.`);
   log('Per question:');
   for (const r of rows) {
     const sg = r.suggestion;

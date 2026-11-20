@@ -53,8 +53,12 @@ describe('ClaudeResearch', () => {
     expect(call!.init.headers).toMatchObject({ 'x-api-key': KEY, 'anthropic-version': '2023-06-01' });
     expect(String(call!.init.body)).not.toContain(KEY);
     const body = JSON.parse(String(call!.init.body));
-    expect(Object.keys(body).sort()).toEqual(['max_tokens', 'messages', 'model', 'output_config', 'system', 'tools']);
-    expect(body).toMatchObject({ model: MODEL, max_tokens: 4000, system: RESEARCH_PROMPT, output_config: { effort: 'low' } });
+    expect(Object.keys(body).sort()).toEqual(['cache_control', 'max_tokens', 'messages', 'model', 'output_config', 'system', 'tools']);
+    expect(body).toMatchObject({ model: MODEL, max_tokens: 4000, output_config: { effort: 'low' } });
+    // Prompt caching (fix round 2): a breakpoint on the fixed system prompt (tools render before it, so both are cached), and
+    // automatic caching of the growing conversation.
+    expect(body.system).toEqual([{ type: 'text', text: RESEARCH_PROMPT, cache_control: { type: 'ephemeral' } }]);
+    expect(body.cache_control).toEqual({ type: 'ephemeral' });
     // No output_config.format: citations (always on with web search) and JSON outputs are refused together.
     expect(body.output_config.format).toBeUndefined();
 
