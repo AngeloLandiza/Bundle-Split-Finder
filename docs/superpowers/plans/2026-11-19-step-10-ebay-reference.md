@@ -61,3 +61,8 @@ UI review (Detail line, Review question, Settings), QA walkthrough, decisions.md
 3. Keys or seller names reaching a log, fixture, export or model prompt.
 4. A failed or rate-limited model call shown as a verdict or blocking the scan.
 5. A part with no eBay match showing $0 instead of no eBay line.
+
+## Where this stands (2026-11-20)
+Built, reviewed and on main: eBay search and listing reads (owner's production keys, free), a loss-only pre-filter, a provider-neutral listing judge with code-side verification (Claude adapter first), an answer key of 217 labelled listings, `npm run judge:eval` (dry-run, run, replay, --sample, --max-cost), and the extension: Settings (eBay keys, Anthropic key, model, listings per scan, cost estimate), an optional eBay step in the scan, the eBay line in Detail's "Reference · not counted" group with links priced, eBay questions in Review whose answers persist and export as owner labels, three CSV columns. eBay never enters any ROI.
+Measured: Opus 5.5 90% of labelled matches, 2 false matches, $3.91 a pass; Haiku 5.5 58%, 5 false, $0.12. Reliability bar not met (no owner-checked labels yet).
+Next: the owner checks ~30 labels (incl. the two conflicts) → re-score; decide the Settings default (Opus recommended); then whether eBay may count. Later: sort/page eBay results by sales instead of the first 8; Marketplace Insights application for sold prices; DeepSeek or another adapter is one file.
