@@ -23,3 +23,4 @@ export * from './settings';
 export * from './ebay';
 export * from './judge';
 export * from './assist';
+export * from './research';
