@@ -55,6 +55,8 @@ function readUsage(body: Record<string, unknown>): TokenUsage | undefined {
   // Server tools (step 12, research): the web searches this response ran, billed apart from tokens.
   const searches = isRecord(u.server_tool_use) ? num(u.server_tool_use.web_search_requests) : undefined;
   if (searches !== undefined) usage.webSearchRequests = searches;
+  const fetches = isRecord(u.server_tool_use) ? num(u.server_tool_use.web_fetch_requests) : undefined;
+  if (fetches !== undefined) usage.webFetchRequests = fetches;
   return usage;
 }
 

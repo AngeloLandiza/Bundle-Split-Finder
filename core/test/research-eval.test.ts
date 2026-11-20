@@ -18,19 +18,18 @@ import { PCL500525SB } from './research-world';
 
 const use = (id: string, name: string, input: Record<string, unknown>) => ({ type: 'tool_use', id, name, input });
 const turn = (content: unknown[]): ResearchTurn => ({ ok: true, stopReason: 'tool_use', content, usage: { inputTokens: 3000, outputTokens: 200, webSearchRequests: 0 } });
-const BOTH = '18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw';
 const RIGHT = {
   quotes: [], decision: 'parts', choiceIndex: null, reason: 'The two tools, as Home Depot sells them alone.',
   parts: [
     { model: 'PCL500B', qty: 1, quotes: [
-      { quote: 'RYOBI PCL500B (item 317987588): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)', sourceId: 'hd-search:1' },
+      { quote: 'RYOBI PCL500B (item 317987588): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)', sourceId: 'hd-search:ryobi-pcl500' },
       { quote: '18V 5-1/2" Circular Saw', sourceId: 'bundle' }, { quote: '18T Carbide Tipped Blade', sourceId: 'bundle' },
-      { quote: '(2) Hex Wrenches', sourceId: 'bundle' }, { quote: BOTH, sourceId: 'hd-page:328690510' },
+      { quote: '(2) Hex Wrenches', sourceId: 'bundle' },
     ] },
     { model: 'PCL525B', qty: 1, quotes: [
-      { quote: 'RYOBI PCL525B (item 318898528): ONE+ 18V Cordless Jig Saw (Tool Only)', sourceId: 'hd-search:2' },
+      { quote: 'RYOBI PCL525B (item 318898528): ONE+ 18V Cordless Jig Saw (Tool Only)', sourceId: 'hd-search:index-ryobi-one-18v-jig-saw-tool-only-pcl525b' },
       { quote: '18V Jig Saw', sourceId: 'bundle' }, { quote: 'Non-Marring Shoe', sourceId: 'bundle' },
-      { quote: 'T-Shank Wood Cutting Blade', sourceId: 'bundle' }, { quote: BOTH, sourceId: 'hd-page:328690510' },
+      { quote: 'T-Shank Wood Cutting Blade', sourceId: 'bundle' },
     ] },
   ],
 };
@@ -49,7 +48,7 @@ function fakeModel(): ResearchModel & { sent: number } {
       if (key === '328690510') {
         return [
           turn([use('t1', 'read_homedepot_page', { itemId: '328690510', url: null })]),
-          turn([use('t2', 'search_homedepot', { query: 'ryobi pcl500' }), use('t3', 'search_homedepot', { query: 'RYOBI  Jig Saw Tool Only' })]),
+          turn([use('t2', 'search_homedepot', { query: 'ryobi pcl500' }), use('t3', 'search_homedepot', { query: 'RYOBI ONE+ 18V Jig Saw Tool Only PCL525B' })]),
           turn([use('t4', 'submit_answer', RIGHT)]),
         ][n]!;
       }
@@ -94,6 +93,7 @@ describe('npm run research:eval', () => {
     expect(run.lines).toContain('Verified and correct: 1');
     expect(run.lines).toContain('Verified but wrong: 0 (must be 0 to trust)');
     expect(run.lines).toContain('Cannot tell: 18');
+    expect(run.lines).toContain('    tools: read 328690510 (recorded); search "ryobi pcl500" (recorded, 10 rows); search "RYOBI ONE+ 18V Jig Saw Tool Only PCL525B" (recorded index, 10 rows)');
     expect(run.lines).toContain('Overall: no verified suggestion disagrees with the key.');
     const doc = JSON.parse(readFileSync(join(outDir, 'runs-claude-opus-5-5.json'), 'utf8')) as ResearchRunsFile;
     expect(doc.results).toHaveLength(19);
@@ -125,7 +125,7 @@ describe('research scoring and cost', () => {
   it('a question costs its tokens and $0.01 a web search; the button estimate is rounded up to a cent', () => {
     expect(researchCost({ inputTokens: 1_000_000, outputTokens: 0, webSearchRequests: 2 }, PRICE_TABLE['claude-haiku-5-5']!)).toBeCloseTo(0.12);
     expect(researchCostLabel('claude-haiku-5-5')).toBe('about $0.02');
-    expect(researchCostLabel('claude-opus-5-5')).toBe('about $0.11');
+    expect(researchCostLabel('claude-opus-5-5')).toBe('about $0.20');
     expect(researchCostLabel('unknown')).toBeNull();
   });
 

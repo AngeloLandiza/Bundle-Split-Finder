@@ -15,7 +15,7 @@ import type { AssistEvidence, Suggestion } from '../assist/types';
 import { type ClaudeMessageBody, stopFailure } from '../judge/claude';
 import type { NotJudged, TokenUsage } from '../judge/types';
 import {
-  addCited, bundleIdentity, catalogLedgerEntry, freshId, ledgerFromEvidence, onHomeDepot, pageEntry, renderEntry, safeUrl, searchEntry, webEntry,
+  addCited, addFetched, bundleIdentity, catalogLedgerEntry, freshId, ledgerFromEvidence, onHomeDepot, pageEntry, renderEntry, safeUrl, searchEntry, webEntry,
 } from './ledger';
 import { DEFAULT_RESEARCH_LIMITS, RESEARCH_PROMPT, RESEARCH_PROMPT_VERSION, renderResearchInput, researchTools } from './prompt';
 import type { CatalogEntry, ResearchLedgerEntry, ResearchAnswer, ResearchLimits, ResearchModel, ResearchRequest, ResearchTools, ResearchUsage } from './types';
@@ -39,6 +39,8 @@ export interface ResearchTrace {
   toolCalls: number;
   /** Web searches the model called (server_tool_use blocks). */
   webSearches: number;
+  /** Brand-site pages the model opened with web_fetch (server_tool_use blocks; fix round 1). */
+  webFetches: number;
   requests: number;
   usage: ResearchUsage;
   /** The model's answer as it gave it; null when there was none. */
@@ -60,6 +62,7 @@ function addUsage(total: ResearchUsage, u: TokenUsage | undefined): void {
   if (u.cacheReadInputTokens !== undefined) total.cacheReadInputTokens = (total.cacheReadInputTokens ?? 0) + u.cacheReadInputTokens;
   if (u.cacheCreationInputTokens !== undefined) total.cacheCreationInputTokens = (total.cacheCreationInputTokens ?? 0) + u.cacheCreationInputTokens;
   total.webSearchRequests += u.webSearchRequests ?? 0;
+  total.webFetchRequests += u.webFetchRequests ?? 0;
 }
 
 type ToolOutcome = { content: string; isError: boolean };
@@ -78,8 +81,8 @@ export async function researchQuestion(
   const limits: ResearchLimits = { ...DEFAULT_RESEARCH_LIMITS, ...opts.limits };
   const now = opts.now ?? (() => Date.now());
   const ledger: ResearchLedgerEntry[] = [];
-  const usage: ResearchUsage = { inputTokens: 0, outputTokens: 0, webSearchRequests: 0 };
-  const trace: ResearchTrace = { ledger, toolCalls: 0, webSearches: 0, requests: 0, usage, answer: null, droppedResults: 0 };
+  const usage: ResearchUsage = { inputTokens: 0, outputTokens: 0, webSearchRequests: 0, webFetchRequests: 0 };
+  const trace: ResearchTrace = { ledger, toolCalls: 0, webSearches: 0, webFetches: 0, requests: 0, usage, answer: null, droppedResults: 0 };
   const meta = { questionId: item.id, seen: reviewSignature(item), provider: model.provider, model: model.model, promptVersion: RESEARCH_PROMPT_VERSION };
   const withUsage = () => (usage.inputTokens + usage.outputTokens + usage.webSearchRequests > 0 ? { usage: { ...usage } } : {});
   const notSuggested = (reason: string, notJudged?: NotJudged): ResearchSuggestion => ({
@@ -112,11 +115,13 @@ export async function researchQuestion(
     return null;
   };
   const overLimit = (): ResearchSuggestion | null =>
-    trace.toolCalls + trace.webSearches > limits.maxToolCalls
+    trace.toolCalls + trace.webSearches + trace.webFetches > limits.maxToolCalls
       ? notSuggested(`The research reached its limit of ${limits.maxToolCalls} tool calls before an answer.`)
       : trace.webSearches > limits.maxWebSearches
         ? notSuggested(`The research reached its limit of ${limits.maxWebSearches} web searches before an answer.`)
-        : null;
+        : trace.webFetches > limits.maxWebFetches
+          ? notSuggested(`The research reached its limit of ${limits.maxWebFetches} web fetches before an answer.`)
+          : null;
 
   try {
     let answer: unknown = undefined;
@@ -194,10 +199,20 @@ export async function researchQuestion(
   }
 }
 
-/** Web search calls and results, and the passages the model cited from them, into the ledger. */
+/** Web search and web fetch calls and results, and the passages the model cited, into the ledger. */
 function absorbServerBlocks(content: unknown[], ledger: ResearchLedgerEntry[], trace: ResearchTrace): void {
   for (const b of content.filter(isRecord)) {
     if (b.type === 'server_tool_use' && b.name === 'web_search') trace.webSearches++;
+    if (b.type === 'server_tool_use' && b.name === 'web_fetch') trace.webFetches++;
+    // A fetched brand page (web fetch tool page: content is a web_fetch_result holding a document; an
+    // error is a web_fetch_tool_result_error). Only plain text is read; a PDF's base64 is not.
+    if (b.type === 'web_fetch_tool_result' && isRecord(b.content) && b.content.type === 'web_fetch_result') {
+      const doc = isRecord(b.content.content) ? b.content.content : {};
+      const source = isRecord(doc.source) ? doc.source : {};
+      const text = source.type === 'text' && typeof source.data === 'string' ? source.data : '';
+      const url = typeof b.content.url === 'string' ? b.content.url : '';
+      if (!addFetched(ledger, { url, title: typeof doc.title === 'string' ? doc.title : null, text }) && text !== '') trace.droppedResults++;
+    }
     if (b.type === 'web_search_tool_result' && Array.isArray(b.content)) {
       for (const r of b.content.filter(isRecord)) {
         if (r.type !== 'web_search_result') continue;

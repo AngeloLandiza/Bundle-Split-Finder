@@ -59,13 +59,17 @@ describe('ClaudeResearch', () => {
     expect(body.output_config.format).toBeUndefined();
 
     const tools = body.tools as Record<string, unknown>[];
-    expect(tools.map((t) => t.name)).toEqual(['read_homedepot_page', 'search_homedepot', 'catalog_lookup', 'submit_answer', 'web_search']);
+    expect(tools.map((t) => t.name)).toEqual(['read_homedepot_page', 'search_homedepot', 'catalog_lookup', 'submit_answer', 'web_search', 'web_fetch']);
     expect(tools.find((t) => t.name === 'web_search')).toEqual({
       type: WEB_SEARCH_TOOL_TYPE, name: 'web_search', max_uses: 2, allowed_domains: ['ryobitools.com', 'dewalt.com'], allowed_callers: ['direct'],
     });
     expect(WEB_SEARCH_TOOL_TYPE).toBe('web_search_20260209');
     expect(tools.find((t) => t.name === 'submit_answer')).toMatchObject({ strict: true, input_schema: RESEARCH_ANSWER_SCHEMA });
-    for (const t of tools.filter((x) => x.name !== 'web_search')) expect(t).toMatchObject({ strict: true });
+    // Fix round 1: web fetch on the same two sites, to open a brand page found by search; citations off (the default).
+    expect(tools.find((t) => t.name === 'web_fetch')).toEqual({
+      type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 2, allowed_domains: ['ryobitools.com', 'dewalt.com'], max_content_tokens: 6000, allowed_callers: ['direct'],
+    });
+    for (const t of tools.filter((x) => x.name !== 'web_search' && x.name !== 'web_fetch')) expect(t).toMatchObject({ strict: true });
     // No tool reaches Amazon or SerpApi.
     expect(JSON.stringify(tools)).not.toMatch(/amazon|serpapi/i);
   });

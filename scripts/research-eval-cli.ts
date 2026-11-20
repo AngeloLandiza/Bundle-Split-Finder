@@ -30,7 +30,7 @@ import {
 } from '../core/src/research';
 import { NONE, RESOLVED_BY_SCAN } from '../core/src/scan/answers';
 import type { ReviewItem } from '../core/src/scan/types';
-import { loadRecordedSources, recordedTools, type ToolCallLog } from './research-tools';
+import { loadRecordedSources, recordedTools, replayedTools, type ToolCallLog } from './research-tools';
 import { CacheOnlyClient, loadInputs, ResponsesCache, runValidationPipeline, VALIDATION_DATE, validationFiles } from './validate-cli';
 
 export const DEFAULT_PAUSE_MS = 500;
@@ -98,7 +98,17 @@ export async function loadResearchQuestions(dir: string): Promise<{ questions: R
 
 const truthText = (t: ResearchTruth): string => (t.kind === 'none' ? 'none' : t.parts.join(' + '));
 
-function printScore(log: (l: string) => void, s: ResearchEvalScore, rows: ResearchEvalRow[]): void {
+/** One tool call as the score lists it, with where its answer came from ("recorded index" for a search the index answered). */
+export function toolText(t: ToolCallLog): string {
+  const input = t.input as { itemId?: string; url?: string; query?: string; model?: string };
+  const what = t.tool === 'readHomeDepotPage' ? `read ${input.itemId ?? input.url ?? '?'}`
+    : t.tool === 'searchHomeDepot' ? `search "${input.query ?? ''}"` : `catalog ${input.model ?? `"${input.query ?? ''}"`}`;
+  const result = t.result as { results?: unknown[]; entries?: unknown[] } | undefined;
+  const rows = result?.results ? `, ${result.results.length} rows` : result?.entries ? `, ${result.entries.length} entries` : '';
+  return `${what} (${t.source ?? (t.recorded ? 'recorded' : 'not recorded')}${rows})`;
+}
+
+function printScore(log: (l: string) => void, s: ResearchEvalScore, rows: ResearchEvalRow[], tools: Map<string, ToolCallLog[]> = new Map()): void {
   log(`Questions scored: ${s.questions}. Questions researched: ${s.calls}.`);
   log(`Verified and correct: ${s.byOutcome.verified_correct}`);
   log(`Verified but wrong: ${s.byOutcome.verified_wrong} (must be 0 to trust)`);
@@ -107,12 +117,14 @@ function printScore(log: (l: string) => void, s: ResearchEvalScore, rows: Resear
   log(`Cannot tell: ${s.byOutcome.cannot_tell}`);
   log(`None fits, the AI's view (never verified): ${s.byOutcome.none_suggested}`);
   log(`Not suggested: ${s.byOutcome.not_suggested}`);
-  log(`Tokens: ${s.tokens.input} in, ${s.tokens.output} out. Web searches: ${s.webSearches}. Cost: ${usd(s.cost ?? 0)}.`);
+  log(`Tokens: ${s.tokens.input} in, ${s.tokens.output} out. Web searches: ${s.webSearches}. Web fetches: ${s.webFetches}. Cost: ${usd(s.cost ?? 0)}.`);
   log('Per question:');
   for (const r of rows) {
     const sg = r.suggestion;
     const extra = sg.status === 'unverified' ? `: ${sg.reasons.join(' ')}` : sg.status === 'not_suggested' ? `: ${sg.reason}` : sg.status === 'verified' ? `: ${saidOf(sg)}` : '';
     log(`  ${r.questionId}  key ${truthText(r.truth)}  ${researchOutcome(sg, r.truth, r.item)}${extra}`);
+    const calls = tools.get(r.questionId) ?? [];
+    if (calls.length > 0) log(`    tools: ${calls.map(toolText).join('; ')}`);
   }
   log(s.trustworthy ? 'Overall: no verified suggestion disagrees with the key.' : 'Overall: FAIL, a verified suggestion disagrees with the key.');
 }
@@ -186,6 +198,7 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
   const add = (q: ResearchEvalQuestion, suggestion: ResearchSuggestion, called: boolean) =>
     rows.push({ questionId: q.item.id, item: q.item, truth: q.truth, suggestion, called });
   let cut: { maxCost: number; done: number; of: number } | null = null;
+  const toolLogs = new Map<string, ToolCallLog[]>();
 
   if (mode === '--replay') {
     if (!existsSync(file)) { log(`No runs file for ${model}. Nothing to replay.`); return 1; }
@@ -193,12 +206,20 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
     log(`Research eval, replay of ${shown} (no network).`);
     if (doc.promptVersion !== RESEARCH_PROMPT_VERSION) log(`The runs were made with prompt ${doc.promptVersion}; today's prompt is ${RESEARCH_PROMPT_VERSION}. They are checked with today's code.`);
     const runs = new Map(doc.results.map((r) => [r.questionId, r] as const));
+    let older = 0;
     for (const q of questions) {
       const stored = runs.get(q.item.id);
       if (!stored) continue;
-      const s = await researchQuestion(q.item, q.evidence, recordedTools(sources, catalog), replayModel(model, stored.turns), { catalog });
+      // The tools give back what they gave the model; a run recorded before results were kept asks today's recorded tools.
+      const kept = stored.tools.every((t) => t.result !== undefined);
+      if (!kept) older++;
+      const calls: ToolCallLog[] = [];
+      const tools = kept ? replayedTools(stored.tools) : recordedTools(sources, catalog, calls);
+      const s = await researchQuestion(q.item, q.evidence, tools, replayModel(model, stored.turns), { catalog });
+      toolLogs.set(q.item.id, kept ? stored.tools : calls);
       add(q, s, stored.called);
     }
+    if (older > 0) log(`${older} question${older === 1 ? '' : 's'} of this file kept no tool results: their tools answer as today's recorded tools do, which the model may not have seen.`);
     if (doc.incomplete) cut = { maxCost: doc.maxCost ?? 0, done: doc.results.length, of: questions.length };
   } else {
     const apiKey = deps.env('ANTHROPIC_API_KEY');
@@ -226,6 +247,7 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
       };
       const s = await researchQuestion(q.item, q.evidence, recordedTools(sources, catalog, calls), recording, { catalog });
       results.push({ questionId: q.item.id, called: turns.length > 0, turns, tools: calls, status: s.status });
+      toolLogs.set(q.item.id, calls);
       add(q, s, turns.length > 0);
       if (turns.some((t) => !t.ok && t.notJudged.reason === 'auth')) { log('The key was refused. Stopped; nothing written.'); return 1; }
       if (s.usage) spent += researchCost(s.usage, rates);
@@ -241,6 +263,6 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
   }
 
   if (cut) log(`Run cut by --max-cost ${usd(cut.maxCost)} after ${cut.done} of ${cut.of} questions: the score covers only those ${cut.done}.`);
-  printScore(log, scoreResearch(rows, rates), rows);
+  printScore(log, scoreResearch(rows, rates), rows, toolLogs);
   return 0;
 }

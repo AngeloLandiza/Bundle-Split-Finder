@@ -21,11 +21,13 @@ export function researchCost(usage: Pick<ResearchUsage, 'inputTokens' | 'outputT
 }
 
 /**
- * What one research press may cost, said on the button before the click: an estimate from a typical
- * run (the prompt and evidence about 3,000 tokens, sent again on each of about 4 requests as the tool
- * results grow, so about 16,000 in; 1,500 out with thinking; one web search). An estimate, never a bill.
+ * What one research press may cost, said on the button before the click. An estimate, never a bill.
+ * Measured on the first real run (Opus 5.5, 19 questions, prompt .1, Nov 20:
+ * fixtures/research/runs-claude-opus-5-5.json): 634,962 tokens in, 21,375 out and 12 web searches, so
+ * about 33,400 in, 1,100 out and 0.6 searches a question; the conversation is sent again on every
+ * request. Rounded up for one fetched brand page (max_content_tokens 6,000): 40,000 in, 1,200 out, 1 search.
  */
-export const ESTIMATED_RESEARCH = { input: 16_000, output: 1_500, webSearches: 1 } as const;
+export const ESTIMATED_RESEARCH = { input: 40_000, output: 1_200, webSearches: 1 } as const;
 
 export function estimatedResearchCost(model: string): number | null {
   const rates = PRICE_TABLE[model];
@@ -71,6 +73,7 @@ export interface ResearchEvalScore {
   calls: number;
   tokens: { input: number; output: number };
   webSearches: number;
+  webFetches: number;
   cost: number | null;
   /** Zero verified-but-wrong. Necessary, not sufficient: the owner still approves every answer. */
   trustworthy: boolean;
@@ -87,7 +90,7 @@ export function saidOf(s: Suggestion): string {
 export function scoreResearch(rows: ResearchEvalRow[], rates?: PriceRates): ResearchEvalScore {
   const byOutcome: Record<ResearchOutcome, number> = { verified_correct: 0, verified_wrong: 0, unverified: 0, cannot_tell: 0, none_suggested: 0, not_suggested: 0 };
   const wrong: ResearchEvalScore['wrong'] = [];
-  const usage = { inputTokens: 0, outputTokens: 0, webSearchRequests: 0 };
+  const usage = { inputTokens: 0, outputTokens: 0, webSearchRequests: 0, webFetchRequests: 0 };
   let calls = 0;
   for (const r of rows) {
     const o = researchOutcome(r.suggestion, r.truth, r.item);
@@ -99,11 +102,12 @@ export function scoreResearch(rows: ResearchEvalRow[], rates?: PriceRates): Rese
       usage.inputTokens += u.inputTokens;
       usage.outputTokens += u.outputTokens;
       usage.webSearchRequests += u.webSearchRequests ?? 0;
+      usage.webFetchRequests += u.webFetchRequests ?? 0;
     }
   }
   return {
     questions: rows.length, byOutcome, wrong, calls,
-    tokens: { input: usage.inputTokens, output: usage.outputTokens }, webSearches: usage.webSearchRequests,
+    tokens: { input: usage.inputTokens, output: usage.outputTokens }, webSearches: usage.webSearchRequests, webFetches: usage.webFetchRequests,
     cost: rates ? researchCost(usage, rates) : null,
     trustworthy: byOutcome.verified_wrong === 0,
   };

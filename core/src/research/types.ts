@@ -91,13 +91,15 @@ export interface ResearchTools {
 
 /**
  * Where a ledger entry came from. `stored`: the evidence the scan stored (the bundle's page, a kit's
- * page), given before any tool ran. `brand_site`: a web search result on ryobitools.com or dewalt.com.
+ * page), given before any tool ran. `brand_site`: a web search result or a page web_fetch opened, on
+ * ryobitools.com or dewalt.com (a subdomain included).
  */
 export type LedgerKind = 'stored' | 'homedepot_page' | 'homedepot_search' | 'catalog' | 'brand_site';
 
 /** One line of a source: what the model is shown, and what a quote is searched in (a quote never spans two lines). */
 export interface LedgerLine {
-  field: 'title' | 'model' | 'bullet' | 'spec' | 'description' | 'result' | 'entry' | 'cited';
+  /** `page`: a line of a brand-site page's text, as web_fetch returned it (fix round 1). */
+  field: 'title' | 'model' | 'bullet' | 'spec' | 'description' | 'result' | 'entry' | 'cited' | 'page';
   text: string;
   /** A search result's or catalog entry's model: the product the line is about. */
   model?: string;
@@ -181,18 +183,22 @@ export interface ResearchModel {
   send(request: ResearchRequest, signal?: AbortSignal): Promise<ResearchTurn>;
 }
 
-/** Limits of one question's research (design: ≤ 8 tool calls, ≤ 2 web searches, 60 s, max_tokens 4000). */
+/** Limits of one question's research (design: ≤ 8 tool calls, ≤ 2 web searches, 60 s, max_tokens 4000; fix round 1: ≤ 2 web fetches). */
 export interface ResearchLimits {
-  /** Client tool calls and web searches together. */
+  /** Client tool calls, web searches and web fetches together. */
   maxToolCalls: number;
   maxWebSearches: number;
+  maxWebFetches: number;
+  /** A fetched brand-site page is cut to about this many tokens (web_fetch max_content_tokens). */
+  maxFetchTokens: number;
   timeLimitMs: number;
   maxTokens: number;
   /** Requests in one question, pause_turn continuations included. */
   maxRequests: number;
 }
 
-/** Usage of a whole question: every request's tokens summed, and the web searches run. */
+/** Usage of a whole question: every request's tokens summed, and the web searches and fetches run (fetches cost only their tokens). */
 export interface ResearchUsage extends TokenUsage {
   webSearchRequests: number;
+  webFetchRequests: number;
 }

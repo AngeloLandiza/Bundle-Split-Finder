@@ -76,6 +76,8 @@ export interface TokenUsage {
   cacheCreationInputTokens?: number;
   /** Web searches the response ran (a server tool, step 12 research), billed apart from tokens. Absent when none was offered. */
   webSearchRequests?: number;
+  /** Web fetches the response ran (a server tool, step 12 research fix round 1); no charge beyond tokens. */
+  webFetchRequests?: number;
 }
 
 /**

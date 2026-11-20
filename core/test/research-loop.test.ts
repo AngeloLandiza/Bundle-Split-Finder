@@ -35,17 +35,16 @@ function scripted(turns: (ResearchTurn | ((req: ResearchRequest, signal?: AbortS
 
 const PCL500B_ROW = 'RYOBI PCL500B (item 317987588): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)';
 const PCL525B_ROW = 'RYOBI PCL525B (item 318898528): ONE+ 18V Cordless Jig Saw (Tool Only)';
-const BOTH = '18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw';
 
 /** The ids the loop gives: the page keeps the tool's id; the searches' ids have spaces, so they are numbered. */
 const RIGHT: ResearchPart[] = [
   { model: 'PCL500B', qty: 1, quotes: [
-    { quote: PCL500B_ROW, sourceId: 'hd-search:1' }, { quote: '18V 5-1/2" Circular Saw', sourceId: 'bundle' },
-    { quote: '18T Carbide Tipped Blade', sourceId: 'bundle' }, { quote: '(2) Hex Wrenches', sourceId: 'bundle' }, { quote: BOTH, sourceId: 'hd-page:328690510' },
+    { quote: PCL500B_ROW, sourceId: 'hd-search:ryobi-pcl500' }, { quote: '18V 5-1/2" Circular Saw', sourceId: 'bundle' },
+    { quote: '18T Carbide Tipped Blade', sourceId: 'bundle' }, { quote: '(2) Hex Wrenches', sourceId: 'bundle' },
   ] },
   { model: 'PCL525B', qty: 1, quotes: [
-    { quote: PCL525B_ROW, sourceId: 'hd-search:2' }, { quote: '18V Jig Saw', sourceId: 'bundle' },
-    { quote: 'Non-Marring Shoe', sourceId: 'bundle' }, { quote: 'T-Shank Wood Cutting Blade', sourceId: 'bundle' }, { quote: BOTH, sourceId: 'hd-page:328690510' },
+    { quote: PCL525B_ROW, sourceId: 'hd-search:ryobi-jig-saw-tool-only' }, { quote: '18V Jig Saw', sourceId: 'bundle' },
+    { quote: 'Non-Marring Shoe', sourceId: 'bundle' }, { quote: 'T-Shank Wood Cutting Blade', sourceId: 'bundle' },
   ] },
 ];
 const submit = (parts: ResearchPart[] = RIGHT, decision = 'parts') =>
@@ -79,7 +78,7 @@ describe('researchQuestion', () => {
     });
     expect(log.map((l) => [l.tool, l.recorded])).toEqual([['readHomeDepotPage', true], ['searchHomeDepot', true], ['searchHomeDepot', true]]);
     expect(s.research).toMatchObject({ toolCalls: 3, webSearches: 0, requests: 3 });
-    expect(s.research.ledger.map((e) => e.id)).toEqual(['bundle', 'hd-page:328690510', 'hd-search:1', 'hd-search:2']);
+    expect(s.research.ledger.map((e) => e.id)).toEqual(['bundle', 'hd-page:328690510', 'hd-search:ryobi-pcl500', 'hd-search:ryobi-jig-saw-tool-only']);
 
     // Each request: the fixed prompt, the same tools, the conversation so far, max_tokens 4000.
     expect(requests).toHaveLength(3);
@@ -91,24 +90,46 @@ describe('researchQuestion', () => {
     expect(requests[1]!.messages[1]).toEqual({ role: 'assistant', content: HAPPY[0]!.ok ? HAPPY[0]!.content : [] });
     const results = requests[2]!.messages[4]!.content as { type: string; tool_use_id: string; content: string; is_error?: boolean }[];
     expect(results.map((r) => [r.type, r.tool_use_id, r.is_error])).toEqual([['tool_result', 'toolu_2', undefined], ['tool_result', 'toolu_3', undefined]]);
-    expect(results[0]!.content).toContain(`<source id="hd-search:1" is="Home Depot search results"`);
+    expect(results[0]!.content).toContain(`<source id="hd-search:ryobi-pcl500" is="Home Depot search results"`);
     expect(results[0]!.content).toContain(`<result>${PCL500B_ROW}</result>`);
   });
 
-  it('a tool with no recording answers as an error result, and nothing enters the ledger', async () => {
+  it('a page with no recording, or off Home Depot, answers as an error result, and nothing enters the ledger', async () => {
     const { q, evidence, tools, catalog } = await setup();
     const { model, requests } = scripted([
-      turn('tool_use', [use('toolu_1', 'search_homedepot', { query: 'ryobi circular saw jig saw combo' }), use('toolu_2', 'read_homedepot_page', { itemId: null, url: 'https://www.amazon.com/dp/B0' })]),
+      turn('tool_use', [use('toolu_1', 'read_homedepot_page', { itemId: '999999991', url: null }), use('toolu_2', 'read_homedepot_page', { itemId: null, url: 'https://www.amazon.com/dp/B0' })]),
       turn('tool_use', [use('toolu_s', 'submit_answer', { quotes: [], parts: [], reason: 'Nothing settles it.', decision: 'cannot_tell', choiceIndex: null })]),
     ]);
     const s = await researchQuestion(q, evidence, tools, model, { catalog });
     expect(s.status).toBe('cannot_tell');
     const results = requests[1]!.messages[2]!.content as { content: string; is_error?: boolean }[];
     expect(results).toEqual([
-      expect.objectContaining({ is_error: true, content: 'The search could not be run: not recorded' }),
+      expect.objectContaining({ is_error: true, content: 'The page could not be read: not recorded' }),
       expect.objectContaining({ is_error: true, content: 'Give a Home Depot item id or a homedepot.com address.' }),
     ]);
     expect(s.research.ledger.map((e) => e.id)).toEqual(['bundle']);
+  });
+
+  it('a search not recorded word for word answers from the recorded index, labelled so, and its rows verify as search rows', async () => {
+    const { q, evidence, tools, catalog } = await setup();
+    // The two searches the real run made (runs-claude-opus-5-5.json, Nov 20), which no recording held.
+    const circ = 'RYOBI ONE+ 18V 5-1/2 in. Circular Saw Tool Only PCL500B';
+    const jig = 'RYOBI ONE+ 18V Jig Saw Tool Only PCL525B';
+    const slug = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+    const ids = { circ: `hd-search:index-${slug(circ)}`, jig: `hd-search:index-${slug(jig)}` };
+    const parts = RIGHT.map((p) => ({ ...p, quotes: p.quotes.map((x) => (x.sourceId === 'hd-search:ryobi-pcl500' ? { ...x, sourceId: ids.circ } : x.sourceId === 'hd-search:ryobi-jig-saw-tool-only' ? { ...x, sourceId: ids.jig } : x)) }));
+    const { model, requests } = scripted([
+      HAPPY[0]!,
+      turn('tool_use', [use('toolu_2', 'search_homedepot', { query: circ }), use('toolu_3', 'search_homedepot', { query: jig })]),
+      turn('tool_use', [submit(parts)]),
+    ]);
+    const s = await researchQuestion(q, evidence, tools, model, { catalog });
+    const shown = (requests[2]!.messages[4]!.content as { content: string }[]).map((r) => r.content);
+    expect(shown[0]).toContain(`<source id="${ids.circ}" is="Home Depot search results"`);
+    expect(shown[0]).toContain('<result>RYOBI PCL500B (item 317987588): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)</result>');
+    expect(s.research.ledger.filter((e) => e.kind === 'homedepot_search').map((e) => e.label)).toEqual(['Home Depot search (recorded index)', 'Home Depot search (recorded index)']);
+    expect(s.status === 'unverified' ? s.reasons : []).toEqual([]);
+    expect(s).toMatchObject({ status: 'verified', answer: { parts: ['PCL500B', 'PCL525B'] } });
   });
 
   it('web search: its results on the brand sites enter the ledger by address, with what the model cited; another domain is dropped', async () => {
@@ -132,6 +153,51 @@ describe('researchQuestion', () => {
     expect(site.lines.map((l) => [l.field, l.text])).toEqual([['title', '18V ONE+ Cordless Jig Saw - PCL525B'], ['cited', 'The 18V ONE+ Jig Saw (PCL525B) has a variable speed trigger.']]);
     expect(s.research).toMatchObject({ webSearches: 1, droppedResults: 1, toolCalls: 0 });
     expect(s.usage).toMatchObject({ webSearchRequests: 1 });
+  });
+
+  it('web fetch: a brand page found by search is opened, its text enters the ledger, and a quote from it verifies', async () => {
+    const { q, evidence, tools, catalog } = await setup();
+    // Constructed for this test (no brand-site page is recorded): one ryobitools.com page, in the web fetch tool page's shape.
+    const url = 'https://www.ryobitools.com/products/33287193134';
+    const pageText = 'ONE+ 18V JIG SAW\nTool Only\n18V ONE+ Jig Saw PCL525B\n4 orbital settings and a variable speed trigger.';
+    const fetched = [
+      { type: 'server_tool_use', id: 'srvtoolu_1', name: 'web_search', input: { query: 'ryobi pcl525b' } },
+      { type: 'web_search_tool_result', tool_use_id: 'srvtoolu_1', content: [{ type: 'web_search_result', url, title: '18V ONE+ Jig Saw | RYOBI Tools', encrypted_content: 'Eq…' }] },
+      { type: 'server_tool_use', id: 'srvtoolu_2', name: 'web_fetch', input: { url } },
+      { type: 'web_fetch_tool_result', tool_use_id: 'srvtoolu_2', content: {
+        type: 'web_fetch_result', url, retrieved_at: '2026-11-20T10:00:00Z',
+        content: { type: 'document', source: { type: 'text', media_type: 'text/plain', data: pageText }, title: '18V ONE+ Jig Saw | RYOBI Tools' },
+      } },
+      // Off the two sites, and a PDF: neither enters the ledger.
+      { type: 'web_fetch_tool_result', tool_use_id: 'srvtoolu_3', content: { type: 'web_fetch_result', url: 'https://www.example.com/x', content: { type: 'document', source: { type: 'text', media_type: 'text/plain', data: 'PCL525B' } } } },
+      { type: 'web_fetch_tool_result', tool_use_id: 'srvtoolu_4', content: { type: 'web_fetch_result', url: 'https://www.dewalt.com/manual.pdf', content: { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: 'JVBERi0=' } } } },
+    ];
+    const parts = RIGHT.map((p) => (p.model === 'PCL525B' ? { ...p, quotes: [{ quote: '18V ONE+ Jig Saw PCL525B', sourceId: url }, ...p.quotes.slice(1)] } : p));
+    const { model } = scripted([
+      HAPPY[0]!,
+      turn('tool_use', [use('toolu_2', 'search_homedepot', { query: 'ryobi pcl500' })]),
+      { ok: true, stopReason: 'tool_use', content: [...fetched, submit(parts)], usage: { inputTokens: 6000, outputTokens: 300, webSearchRequests: 1, webFetchRequests: 1 } },
+    ]);
+    const s = await researchQuestion(q, evidence, tools, model, { catalog });
+    const site = s.research.ledger.find((e) => e.id === url)!;
+    expect(site).toMatchObject({ kind: 'brand_site', label: 'ryobitools.com' });
+    expect(site.lines.map((l) => l.field)).toEqual(['title', 'page', 'page', 'page', 'page']);
+    expect(s.research).toMatchObject({ webSearches: 1, webFetches: 1, droppedResults: 1 });
+    expect(s.research.ledger.some((e) => e.url?.includes('example.com') || e.url?.includes('dewalt.com'))).toBe(false);
+    expect(s.status === 'unverified' ? s.reasons : []).toEqual([]);
+    expect(s).toMatchObject({ status: 'verified', usage: { webSearchRequests: 1, webFetchRequests: 1 } });
+    // The same quote from the search result alone (its title only, the page not opened) is not found.
+    const unopened = s.research.ledger.map((e) => (e.id === url ? { ...e, lines: e.lines.filter((l) => l.field === 'title') } : e));
+    const { verifyResearch } = await import('../src/research/verify');
+    const r = verifyResearch({ quotes: [], parts, reason: 'x', decision: 'parts', choiceIndex: null }, q, unopened, catalog);
+    expect(r.status === 'unverified' && r.reasons[0]).toMatch(/"18V ONE\+ Jig Saw PCL525B" is not found in the ryobitools.com/);
+  });
+
+  it('a third web fetch ends the research', async () => {
+    const { q, evidence, tools, catalog } = await setup();
+    const fetch = (i: number) => ({ type: 'server_tool_use', id: `srvtoolu_${i}`, name: 'web_fetch', input: { url: `https://www.ryobitools.com/p/${i}` } });
+    const s = await researchQuestion(q, evidence, tools, scripted([turn('pause_turn', [fetch(1), fetch(2), fetch(3)])]).model, { catalog });
+    expect(s).toMatchObject({ status: 'not_suggested', reason: 'The research reached its limit of 2 web fetches before an answer.' });
   });
 
   it('pause_turn sends the paused content back as it came and goes on', async () => {

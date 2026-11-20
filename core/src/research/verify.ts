@@ -29,7 +29,7 @@ import { findModel, normaliseText } from '../judge/verify';
 import { parseIncludes } from '../kitContents';
 import { modelForms, sameModel } from '../match';
 import type { ReviewItem } from '../scan/types';
-import { INCLUDES_SPEC } from './ledger';
+import { INCLUDES_SPEC, safeUrl } from './ledger';
 import { parseResearchAnswer } from './schema';
 import type { CatalogEntry, ResearchLedgerEntry, LedgerLine, ResearchAnswer, ResearchQuote } from './types';
 
@@ -55,7 +55,10 @@ interface FoundQuote extends VerifiedQuote {
 type Found = { ok: true; quote: FoundQuote } | { ok: false; problem: string };
 
 function findQuote(q: ResearchQuote, ledger: ResearchLedgerEntry[]): Found {
-  const entry = ledger.find((e) => e.id === q.sourceId.trim());
+  // A brand-site source is named by its address, which the model may write as the API showed it or as the ledger keeps it.
+  const id = q.sourceId.trim();
+  const asUrl = /^https?:\/\//i.test(id) ? safeUrl(id) : null;
+  const entry = ledger.find((e) => e.id === id) ?? (asUrl ? ledger.find((e) => e.kind === 'brand_site' && e.id === asUrl) : undefined);
   if (!entry) return { ok: false, problem: `The quote "${show(q.quote)}" names a source that was not read (${show(q.sourceId)}).` };
   const norm = normaliseText(q.quote);
   if (norm === '') return { ok: false, problem: 'The answer gave an empty quote.' };
@@ -173,8 +176,12 @@ function includesItems(brand: string, entries: ResearchLedgerEntry[]): Item[] {
       const items = parseIncludes(brand, [t]);
       if (items.length === 0) continue;
       for (const it of items) {
-        const kinds = kindsOf(it.name);
-        out.push({ list, model: it.model, name: it.name, qty: it.qty, kinds, product: it.model !== null || kinds.length > 0 });
+        // parseIncludes leaves a joining "and" as its own piece before "(n)" ("Charger, and (2) Tool Bags" gives "and";
+        // "(29) Impact Driving Bits And (1) ..." gives "Impact Driving Bits And", recorded on 345177929): not an item.
+        const name = it.name.replace(/^(and|&)\s+/i, '').replace(/\s+(and|&)$/i, '').trim();
+        if (name === '' || /^(and|&)$/i.test(name)) continue;
+        const kinds = kindsOf(name);
+        out.push({ list, model: it.model, name, qty: it.qty, kinds, product: it.model !== null || kinds.length > 0 });
       }
       list++;
     }
@@ -409,7 +416,7 @@ function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number |
 // --- choose: Ask AI's rules ------------------------------------------------------------------------
 
 const FIELD: Record<LedgerLine['field'], EvidenceLine['field']> = {
-  title: 'title', model: 'model', bullet: 'bullet', spec: 'bullet', description: 'description', result: 'bullet', entry: 'bullet', cited: 'bullet',
+  title: 'title', model: 'model', bullet: 'bullet', spec: 'bullet', description: 'description', result: 'bullet', entry: 'bullet', cited: 'bullet', page: 'bullet',
 };
 
 /**

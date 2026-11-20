@@ -133,14 +133,42 @@ export function catalogLedgerEntry(id: string, lookup: CatalogLookup): ResearchL
 
 /**
  * A brand-site search result. Its page text reaches the model encrypted (the API passes it back
- * unread), so only what the code can read is quotable: the title, and the passages the model cited
- * from it (cited_text). Products are never taken from it: a brand-site model counts only when quoted.
+ * unread), so only what the code can read is quotable: the title, the passages the model cited from it
+ * (cited_text), and the page's text once web_fetch opens it (addFetched). Products are never taken
+ * from it: a brand-site model counts only when quoted.
  */
 export function webEntry(id: string, result: { url: string; title: string; pageAge?: string | null }): ResearchLedgerEntry | null {
   const url = safeUrl(result.url);
   if (!onBrandSite(url)) return null;
   const host = new URL(url!).hostname.replace(/^www\./, '');
   return { id, kind: 'brand_site', label: host, url, lines: [line('title', result.title)].filter(present), products: [], isBundle: false };
+}
+
+/** A fetched page's text is kept up to this many characters (web_fetch's max_content_tokens cuts it first). */
+export const MAX_FETCHED_CHARS = 40_000;
+
+/**
+ * A brand-site page web_fetch opened (fix round 1): its text, as the API returned it in plain text,
+ * one ledger line per line of it, so a quote from the page is checked against what it says. The page
+ * joins the search result of the same address when there is one (its id is the address either way).
+ * Null for an address off the brand sites, or a fetch with no text (a PDF comes back as base64: unread).
+ */
+export function addFetched(ledger: ResearchLedgerEntry[], result: { url: string; title: string | null; text: string }): ResearchLedgerEntry | null {
+  const url = safeUrl(result.url);
+  if (!onBrandSite(url)) return null;
+  const text = result.text.slice(0, MAX_FETCHED_CHARS);
+  const lines = text.split(/\r?\n/).map((t) => line('page', t)).filter(present);
+  if (lines.length === 0) return null;
+  let entry = ledger.find((e) => e.kind === 'brand_site' && e.id === url);
+  if (!entry) {
+    entry = webEntry(url!, { url: url!, title: result.title ?? '' })!;
+    ledger.push(entry);
+  } else if (result.title && !entry.lines.some((l) => l.field === 'title')) {
+    const t = line('title', result.title);
+    if (t) entry.lines.unshift(t);
+  }
+  for (const l of lines) if (!entry.lines.some((x) => x.field === 'page' && x.text === l.text)) entry.lines.push(l);
+  return entry;
 }
 
 /** Adds a passage the model cited from a brand-site result to that result's entry (once). */
@@ -164,12 +192,12 @@ export function freshId(ledger: ResearchLedgerEntry[], wanted: string | undefine
 
 // Tags of the rendered sources. Page text that writes one is defused, so it cannot end a source early
 // and speak as the prompt.
-const OWN_TAG = /<\s*\/?\s*(question|readings?|reading|evidence|sources?|title|model_number|line|spec|description|result|entry|cited|notes?|missing|bundle)\b[^>]*>/gi;
+const OWN_TAG = /<\s*\/?\s*(question|readings?|reading|evidence|sources?|title|model_number|line|spec|description|result|entry|cited|page_text|notes?|missing|bundle)\b[^>]*>/gi;
 export const defuse = (text: string): string => text.replace(OWN_TAG, ' ');
 const attr = (text: string): string => defuse(text).replace(/["<>]/g, ' ');
 
 const TAG: Record<LedgerLine['field'], string> = {
-  title: 'title', model: 'model_number', bullet: 'line', spec: 'spec', description: 'description', result: 'result', entry: 'entry', cited: 'cited',
+  title: 'title', model: 'model_number', bullet: 'line', spec: 'spec', description: 'description', result: 'result', entry: 'entry', cited: 'cited', page: 'page_text',
 };
 
 const WHAT: Record<ResearchLedgerEntry['kind'], string> = {

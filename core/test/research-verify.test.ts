@@ -15,7 +15,6 @@ import { pcl500525sbLedger, researchCase, rowLine } from './research-world';
 
 const CIRC_ITEM = '18V 5-1/2" Circular Saw';
 const JIG_ITEM = '18V Jig Saw';
-const BOTH_ITEM = '18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw';
 
 function rightParts(ledger: ResearchLedgerEntry[]): ResearchPart[] {
   return [
@@ -25,7 +24,6 @@ function rightParts(ledger: ResearchLedgerEntry[]): ResearchPart[] {
         { quote: CIRC_ITEM, sourceId: 'hd-page:328690510' },
         { quote: '18T Carbide Tipped Blade', sourceId: 'hd-page:328690510' },
         { quote: '(2) Hex Wrenches', sourceId: 'bundle' },
-        { quote: BOTH_ITEM, sourceId: 'hd-page:328690510' },
       ],
     },
     {
@@ -34,7 +32,6 @@ function rightParts(ledger: ResearchLedgerEntry[]): ResearchPart[] {
         { quote: JIG_ITEM, sourceId: 'hd-page:328690510' },
         { quote: 'Non-Marring Shoe', sourceId: 'hd-page:328690510' },
         { quote: 'T-Shank Wood Cutting Blade', sourceId: 'hd-page:328690510' },
-        { quote: BOTH_ITEM, sourceId: 'hd-page:328690510' },
       ],
     },
   ];
@@ -207,6 +204,42 @@ describe('verifyResearch: a parts answer on PCL500525SB', () => {
     const { ledger, q, catalog } = await pcl500525sbLedger();
     expect(verifyResearch('not json', q, ledger, catalog)).toEqual({ status: 'unverified', reasons: ['The answer is not valid JSON.'], claimed: null });
     expect(verifyResearch({ decision: 'parts', reason: 'x', parts: [{ model: 'PCL500B', qty: 1.5, quotes: [] }] }, q, ledger, catalog).status).toBe('unverified');
+  });
+
+  it('a brand-site source named by its address verifies however the address is written (host case, as the API showed it)', async () => {
+    const { ledger, q, catalog } = await pcl500525sbLedger();
+    // Constructed: a fetched ryobitools.com page line (no brand page is recorded).
+    const site = webEntry('https://www.ryobitools.com/products/33287193134', { url: 'https://www.ryobitools.com/products/33287193134', title: 'x' })!;
+    site.lines.push({ field: 'page', text: '18V ONE+ Jig Saw PCL525B' });
+    const parts = rightParts(ledger);
+    parts[1]!.quotes[0] = { quote: '18V ONE+ Jig Saw PCL525B', sourceId: 'https://WWW.RYOBITOOLS.COM/products/33287193134' };
+    expect(reasonsOf(verifyResearch(answer(parts), q, [...ledger, site], catalog))).toEqual([]);
+  });
+});
+
+describe('verifyResearch: a kit and an accessory set (PCL1800K3N-A967002, validation item 345174826)', () => {
+  it('verifies when every Includes item of both lists is quoted under its part; the list\'s joining "and" is not an item', async () => {
+    const { researchCase: rc } = await import('./research-world');
+    const { q, evidence, catalog } = await rc('split:homedepot:345174826');
+    const { ledgerFromEvidence, searchEntry } = await import('../src/research/ledger');
+    const { recordedTools } = await import('../../scripts/research-tools');
+    const tools = recordedTools((await import('./research-world')).recorded(), catalog);
+    const kit = await tools.searchHomeDepot({ query: 'RYOBI PCL1800K3N' });
+    const set = await tools.searchHomeDepot({ query: 'RYOBI A967002' });
+    if ('error' in kit || 'error' in set) throw new Error('no index answer');
+    const ledger = [...ledgerFromEvidence(evidence), searchEntry('hd-search:1', kit), searchEntry('hd-search:2', set)];
+    const row = (id: string, m: string) => ({ quote: rowLine(ledger, id, m), sourceId: id });
+    const bundle = (quote: string) => ({ quote, sourceId: 'bundle' });
+    const parts: ResearchPart[] = [
+      { model: 'PCL1800K3N', qty: 1, quotes: [row('hd-search:1', 'PCL1800K3N'), bundle('8 Tools'), bundle('3 Batteries'), bundle('Charger'), bundle('(2) Tool Bags')] },
+      { model: 'A967002', qty: 1, quotes: [row('hd-search:2', 'A967002'), bundle('Bits'), bundle('Nut Drivers'), bundle('Socket Adaptors And A Bit Holder')] },
+    ];
+    const r = verifyResearch(answer(parts), q, ledger, catalog);
+    expect(reasonsOf(r)).toEqual([]);
+    expect(r).toMatchObject({ status: 'verified', answer: { parts: ['PCL1800K3N', 'A967002'] } });
+    // Without the set's bits the second list has a leftover (the bags are the kit's own: its page lists them).
+    parts[1]!.quotes = parts[1]!.quotes.filter((x) => x.quote !== 'Bits');
+    expect(reasonsOf(verifyResearch(answer(parts), q, ledger, catalog))).toEqual(['"Bits" on the bundle\'s Includes list is left over: no part accounts for it.']);
   });
 });
 
