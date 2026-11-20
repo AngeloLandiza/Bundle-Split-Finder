@@ -25,7 +25,7 @@
 import { verifySuggestion } from '../assist/verify';
 import type { AssistEvidence, AssistRaw, CheckedSuggestion, EvidenceLine, EvidenceSource, VerifiedQuote } from '../assist/types';
 import { kindsFromTitle } from '../decompose';
-import { findModel, normaliseText } from '../judge/verify';
+import { findModel, kitBatteryCount, normaliseText } from '../judge/verify';
 import { parseIncludes } from '../kitContents';
 import { modelForms, sameModel } from '../match';
 import type { ReviewItem } from '../scan/types';
@@ -104,7 +104,12 @@ function toolCounts(text: string): number[] {
 /** The kinds of product a name says (kindsFromTitle, plural and spelling folded), none for an accessory's name. */
 function kindsOf(text: string): string[] {
   if (ACCESSORY.test(text) && toolCounts(text).length === 0 && !TOOLS_ONLY.test(text)) return [];
-  return [...new Set(kindsFromTitle(text).map((k) => (k === 'batteries' ? 'battery' : k === 'jigsaw' ? 'jig saw' : k)))];
+  return [...new Set(kindsFromTitle(text).map(fold))];
+}
+
+/** One spelling per kind: "batteries" is "battery", "jigsaw" is "jig saw". */
+function fold(k: string): string {
+  return k === 'batteries' ? 'battery' : k === 'jigsaw' ? 'jig saw' : k;
 }
 
 interface Product {
@@ -163,30 +168,66 @@ function includesText(l: LedgerLine): string | null {
   return null;
 }
 
-/** The items of the Includes lists of some entries, each bullet read once however many entries hold it. */
+// Two lists in one bullet ("... and Accessories : Includes: (29) Impact Driving Bits ..."), as kitContents splits them.
+const NEXT_LIST = /\s:\s*(?=includes\s*:)/i;
+
+/**
+ * The items of the Includes lists of some entries, each list read once however many entries hold it. A
+ * bullet holding two lists ("... : Includes: ...") is two lists: a quote that spans both claims nothing.
+ */
 function includesItems(brand: string, entries: ResearchLedgerEntry[]): Item[] {
   const seen = new Set<string>();
   const out: Item[] = [];
   let list = 0;
   for (const e of entries) {
     for (const l of e.lines) {
-      const t = l.suspect ? null : includesText(l);
-      if (t === null || seen.has(normaliseText(t))) continue;
-      seen.add(normaliseText(t));
-      const items = parseIncludes(brand, [t]);
-      if (items.length === 0) continue;
-      for (const it of items) {
-        // parseIncludes leaves a joining "and" as its own piece before "(n)" ("Charger, and (2) Tool Bags" gives "and";
-        // "(29) Impact Driving Bits And (1) ..." gives "Impact Driving Bits And", recorded on 345177929): not an item.
-        const name = it.name.replace(/^(and|&)\s+/i, '').replace(/\s+(and|&)$/i, '').trim();
-        if (name === '' || /^(and|&)$/i.test(name)) continue;
-        const kinds = kindsOf(name);
-        out.push({ list, model: it.model, name, qty: it.qty, kinds, product: it.model !== null || kinds.length > 0 });
+      const bullet = l.suspect ? null : includesText(l);
+      if (bullet === null) continue;
+      for (const t of bullet.split(NEXT_LIST)) {
+        if (seen.has(normaliseText(t))) continue;
+        seen.add(normaliseText(t));
+        const items = parseIncludes(brand, [t]);
+        if (items.length === 0) continue;
+        for (const it of items) {
+          // parseIncludes leaves a joining "and" as its own piece before "(n)" ("Charger, and (2) Tool Bags" gives "and";
+          // "(29) Impact Driving Bits And (1) ..." gives "Impact Driving Bits And", recorded on 345177929): not an item.
+          const name = it.name.replace(/^(and|&)\s+/i, '').replace(/\s+(and|&)$/i, '').trim();
+          if (name === '' || /^(and|&)$/i.test(name)) continue;
+          const kinds = kindsOf(name);
+          out.push({ list, model: it.model, name, qty: it.qty, kinds, product: it.model !== null || kinds.length > 0 });
+        }
+        list++;
       }
-      list++;
     }
   }
   return out;
+}
+
+// --- Counts a name states ----------------------------------------------------------------------------
+
+/** "65-Piece", "(30-Piece)", "70PC": the piece counts a text states. */
+function pieceCounts(text: string): number[] {
+  return [...text.matchAll(/\b(\d+)\s*-?\s*(?:pieces?|pcs?)\b/gi)].map((m) => Number(m[1]));
+}
+
+/** Batteries an Includes item names: its "(n)" times a leading count ("2 Batteries", "(2) Compact Lithium Battery"). */
+function itemBatteries(it: Item): number {
+  const lead = /^(\d)\s+(?:\S+\s+){0,3}?batter(y|ies)\b/i.exec(it.name);
+  return it.qty * (lead ? Number(lead[1]) : 1);
+}
+
+/** A product's battery count: a kit's own page (its battery items) first, else its names (kitBatteryCount); a lone battery is 1 (or its pack). */
+function partBatteries(p: { product: Product; contents: Item[] }): number | null {
+  const fromPage = p.contents.filter((c) => c.kinds.includes('battery')).reduce((n, c) => n + itemBatteries(c), 0);
+  if (fromPage > 0) return fromPage;
+  if (p.product.battery === false) return 0;
+  const named = p.product.titles.map((t) => kitBatteryCount(t));
+  if (named.length > 0 && named.every((n) => n !== null && n === named[0])) return named[0]!;
+  if (p.product.tools === 0 && p.product.kinds.length === 1 && p.product.kinds[0] === 'battery') {
+    const packs = p.product.titles.map((t) => Number(/\b(\d)\s*-?\s*pack\b/i.exec(t)?.[1] ?? 1));
+    return packs.every((n) => n === packs[0]) ? packs[0]! : null;
+  }
+  return null;
 }
 
 // --- The check ------------------------------------------------------------------------------------
@@ -256,7 +297,9 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
     if (fromLedger.length === 0 && fromCatalog.length === 0 && !fromBrandSite) {
       problems.push(`${model} is not a model any source read gives: no catalog entry, Home Depot page or search result of ${brand} has it, and no brand-site passage quoted names it.`);
     }
-    const naming = quotes.filter((q) => names(q.norm, brand, model));
+    // A quote names the part when it holds the model, or comes from the part's own Home Depot page (fix round 2).
+    const ownPage = (q: FoundQuote) => !q.entry.isBundle && q.entry.pageModel !== undefined && sameModel(brand, q.entry.pageModel, model);
+    const naming = quotes.filter((q) => names(q.norm, brand, model) || ownPage(q));
     if (naming.length === 0) problems.push(`No quote given for ${model} names ${model}.`);
     for (const q of naming) q.names = true;
 
@@ -265,6 +308,18 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
     const titles = [...new Set([...fromLedger.map((x) => x.title), ...fromCatalog.map((c) => c.title), ...siteNames].map((t) => t.trim()).filter((t) => t !== ''))];
     const kitFlag = fromLedger.some((x) => x.kit === true) || fromCatalog.some((c) => c.kind === 'kit');
     const ownPages = ledger.filter((e) => !e.isBundle && e.pageModel !== undefined && sameModel(brand, e.pageModel, model));
+    const contents = includesItems(brand, ownPages);
+    // Fix round 2: a product that is itself a bundle of other products is not a part (the splitter's rule, decompose.ts
+    // and kitContents.ts): a manufacturer kit is a part when the catalog marks it a kit (catalog.isKit, what decomposeRyobi
+    // resolves as one part); anything else whose own page's Includes list names other model numbers splits into them,
+    // as the answer key splits PSK1212SB into PBP004 + PBP003 + PCG002. A starter kit whose page names no model (PSK0114)
+    // stays one part.
+    const catalogKit = fromCatalog.some((c) => c.kind === 'kit')
+      || ledger.filter((e) => e.kind === 'catalog').flatMap((e) => e.products).some((x) => x.kit === true && sameModel(brand, x.model, model));
+    const inner = [...new Set(contents.filter((c) => c.model !== null && !sameModel(brand, c.model, model)).map((c) => up(c.model!)))];
+    if (!catalogKit && inner.length > 0) {
+      problems.push(`${model} is itself a bundle of ${inner.join(', ')}: its own Home Depot page lists them, and the catalog does not know it as a kit. Give those as the parts.`);
+    }
     parts.push({
       model, qty: p.qty, quotes, product: productOf(titles, kitFlag),
       // What the quotes naming the model say it is; a quote of a part's own page (its model line) says what its title says.
@@ -273,7 +328,7 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
         ...(q.entry.pageModel !== undefined && !q.entry.isBundle && sameModel(brand, q.entry.pageModel, model)
           ? q.entry.lines.filter((l) => l.field === 'title' && !l.suspect).flatMap((l) => kindsOf(l.text)) : []),
       ]))],
-      contents: includesItems(brand, ownPages),
+      contents,
     });
   }
 
@@ -313,8 +368,20 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
     }
   }
 
+  // What the bundle's title names, every part must be (fix round 2): a piece-counted set ("65-Piece") is a part of that
+  // count, and a kind of tool ("Miter Saw") is a part's, or inside a kit part's own page.
+  const allKinds = (p: PartCheck): Set<string> => new Set([...p.product.kinds, ...p.quotedKinds, ...p.contents.flatMap((c) => c.kinds)]);
+  for (const t of titleTexts.slice(0, 1)) {
+    for (const n of new Set(pieceCounts(t))) {
+      if (!parts.some((p) => p.product.titles.some((x) => pieceCounts(x).includes(n)))) problems.push(`The bundle's title names a ${n}-piece set that no part is.`);
+    }
+    for (const k of new Set(kindsFromTitle(t).map(fold).filter((k) => !POWER_KINDS.has(k)))) {
+      if (!parts.some((p) => allKinds(p).has(k))) problems.push(`The bundle's title names a ${k} that no part is or holds.`);
+    }
+  }
+
   if (items.length > 0) checkIncludes(items, parts, brand, problems);
-  else checkWithoutIncludes(parts, brand, count, problems);
+  else checkWithoutIncludes(parts, brand, count, titleTexts, bundleLines.map((l) => l.text), problems);
 
   if (problems.length > 0) return unverified([...new Set(problems)]);
   const quotes = parts.flatMap((p) => p.quotes);
@@ -327,10 +394,69 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
   };
 }
 
-/** The items a quote points at: those whose whole name it holds, unless it also holds another item's name that is not part of it. */
-function claimedBy(quote: FoundQuote, items: Item[]): number[] {
-  const inside = items.map((it, i) => ({ i, name: normaliseText(it.name) })).filter((x) => x.name !== '' && holds(quote.norm, x.name));
-  return inside.filter((x) => inside.every((y) => y.name === x.name || x.name.includes(y.name))).map((x) => x.i);
+/**
+ * The items a quote points at: those whose whole name it holds, within one Includes list. A quote of a
+ * whole list ("Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories") points at each of its items
+ * (fix round 2: the first real runs quote lists whole); a quote that spans two lists points at none.
+ */
+function claimedBy(quote: FoundQuote, items: Item[]): { items: number[]; spans: boolean } {
+  const inside = items.map((it, i) => ({ i, it, name: normaliseText(it.name) })).filter((x) => x.name !== '' && holds(quote.norm, x.name));
+  const lists = new Set(inside.map((x) => x.it.list));
+  if (lists.size > 1) return { items: [], spans: true };
+  // An item whose name the quote holds only inside a longer item's name ("2 in. impact drive bits" in "3 1/2 in. impact
+  // drive bits") is not pointed at by it: the longer names are taken out of the quote before the shorter is looked for.
+  const pointed = inside.filter((x) => {
+    let rest = quote.norm;
+    for (const y of inside) if (y.name !== x.name && y.name.includes(x.name)) rest = rest.split(y.name).join(' | ');
+    return holds(rest, x.name);
+  });
+  return { items: pointed.map((x) => x.i), spans: false };
+}
+
+const BAG = /\bbags?\b/i;
+const ACCESSORIES = /^\s*(other\s+)?accessor(y|ies)\s*$/i;
+
+/**
+ * Whether a part may account for an Includes item a quote of it points at, or why not. An item with a model
+ * number is that model's (or inside a kit part whose own page lists it). A kit part (fix round 2) accounts
+ * for a generic item only as its own title or page states it, counts agreeing: "6 Tools" for a 6-Tool kit,
+ * "2 Batteries" for a kit of two, "Charger" and "Bag" when it holds one, "Accessories" when its page lists
+ * some, a named tool of a kind its page holds. Any other part accounts for an accessory as quoted, and for a
+ * tool, battery or charger item only when its own quoted words and its names are that kind.
+ */
+function canAccount(p: PartCheck, it: Item, brand: string): { ok: true } | { ok: false; why: string } {
+  const no = (why: string) => ({ ok: false as const, why });
+  if (it.model !== null) {
+    return p.product.kit && p.contents.some((c) => c.model !== null && sameModel(brand, c.model, it.model!)) ? { ok: true } : no(`"${show(it.name)}" is model ${it.model}, not ${p.model}.`);
+  }
+  if (p.product.kit) {
+    const kinds = new Set([...p.product.kinds, ...p.contents.flatMap((c) => c.kinds)]);
+    const counted = toolCounts(it.name);
+    if (counted.length > 0) {
+      return counted.every((n) => n === p.product.tools) ? { ok: true } : no(`"${show(it.name)}" says ${counted[0]} tools; ${p.model} holds ${p.product.tools ?? 'an unknown number of'}.`);
+    }
+    if (it.kinds.includes('battery')) {
+      const has = partBatteries(p);
+      if (has === null || itemBatteries(it) !== has) return no(`"${show(it.name)}" is ${itemBatteries(it)} batter${itemBatteries(it) === 1 ? 'y' : 'ies'}; ${p.model}'s own title and page say ${has ?? 'no count'}.`);
+    }
+    if (it.kinds.includes('charger') && !(p.product.charger === true || kinds.has('charger'))) return no(`"${show(it.name)}" is a charger; ${p.model}'s own title and page name none.`);
+    const tools = it.kinds.filter((k) => !POWER_KINDS.has(k));
+    if (tools.some((k) => !kinds.has(k))) return no(`"${show(it.name)}" is a ${tools.join(' and ')}; ${p.model}'s own title and page do not name one.`);
+    if (it.kinds.length > 0) return { ok: true };
+    if (BAG.test(it.name)) {
+      return [...p.product.titles, ...p.contents.map((c) => c.name)].some((t) => BAG.test(t)) ? { ok: true } : no(`"${show(it.name)}": ${p.model}'s own title and page name no bag.`);
+    }
+    if (ACCESSORIES.test(it.name)) {
+      return p.contents.some((c) => !c.product) ? { ok: true } : no(`"${show(it.name)}": ${p.model}'s own page lists no accessories.`);
+    }
+    return no(`"${show(it.name)}" is not something ${p.model}'s own title or page says it holds.`);
+  }
+  if (!it.product) return { ok: true };
+  const fits = it.kinds.some((k) => p.quotedKinds.includes(k)) && (p.product.titles.length === 0 || it.kinds.some((k) => p.product.kinds.includes(k)));
+  if (fits) return { ok: true };
+  return no(p.quotedKinds.length === 0
+    ? `"${show(it.name)}" is a ${it.kinds.join(' and ')}, and no quote naming ${p.model} says what it is.`
+    : `"${show(it.name)}" is a ${it.kinds.join(' and ')}; ${p.model} is ${p.product.titles[0] ? `"${show(p.product.titles[0])}"` : `a ${p.quotedKinds.join(', ')}`}.`);
 }
 
 /** Every item of the bundle's Includes lists is accounted for by the parts given, and every part accounts for one. */
@@ -345,29 +471,17 @@ function checkIncludes(items: Item[], parts: PartCheck[], brand: string, problem
       if ((it.model !== null && sameModel(brand, it.model, p.model)) || inKit(p, it)) owners[i]!.add(p);
     }
   });
-  // Items the answer quotes under a part, from the bundle's own page.
+  // Items the answer quotes under a part, from the bundle's own page. A quote of one item that the part cannot be is a
+  // problem; a quote of a whole list claims, of its items, those the part can be.
   for (const p of parts) {
     for (const q of p.quotes.filter((x) => x.entry.isBundle)) {
-      for (const i of claimedBy(q, items)) {
-        const it = items[i]!;
+      const claim = claimedBy(q, items);
+      if (claim.spans) problems.push(`The quote "${show(q.quote)}" spans two Includes lists; quote each list on its own.`);
+      for (const i of claim.items) {
         if (owners[i]!.has(p)) continue;
-        if (it.model !== null) {
-          problems.push(`"${show(it.name)}" is model ${it.model}, not ${p.model}.`);
-          continue;
-        }
-        if (it.product) {
-          const own = p.product.kit
-            ? new Set([...p.product.kinds, ...p.quotedKinds, ...p.contents.flatMap((c) => c.kinds)])
-            : new Set(p.quotedKinds);
-          const fits = it.kinds.some((k) => own.has(k)) && (p.product.kit || p.product.titles.length === 0 || it.kinds.some((k) => p.product.kinds.includes(k)));
-          if (!fits) {
-            problems.push(p.quotedKinds.length === 0 && !p.product.kit
-              ? `"${show(it.name)}" is a ${it.kinds.join(' and ')}, and no quote naming ${p.model} says what it is.`
-              : `"${show(it.name)}" is a ${it.kinds.join(' and ')}; ${p.model} is ${p.product.titles[0] ? `"${show(p.product.titles[0])}"` : `a ${[...own].join(', ') || 'product of unknown kind'}`}.`);
-            continue;
-          }
-        }
-        owners[i]!.add(p);
+        const can = canAccount(p, items[i]!, brand);
+        if (can.ok) owners[i]!.add(p);
+        else if (claim.items.length === 1) problems.push(can.why);
       }
     }
   }
@@ -401,15 +515,35 @@ function checkIncludes(items: Item[], parts: PartCheck[], brand: string, problem
   }
 }
 
-/** With no Includes list: a stated tool count, and each part shown by a quote of the bundle's page naming its model or its kind. */
-function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number | null, problems: string[]): void {
+/**
+ * With no Includes list: a stated tool count, each part shown by the bundle's own words (its model, a kit's
+ * "6-Tool", a set's "65-Piece", or its kind of tool), and a battery count the title states matched by the
+ * parts' (fix round 2: read from the bundle's own title and page in the ledger, quoted or not).
+ */
+function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number | null, titles: string[], lines: string[], problems: string[]): void {
   if (count === null) {
     problems.push("The bundle's page has no Includes list and states no tool count, so nothing shows that no part is left over.");
   }
+  const said = [...titles, ...lines].map(normaliseText).join(' \n ');
+  const saidCounts = toolCounts(said);
+  const saidPieces = pieceCounts(said);
   for (const p of parts) {
-    const kinds = new Set([...p.quotedKinds, ...p.product.kinds]);
-    const shown = p.quotes.filter((q) => q.entry.isBundle).some((q) => names(q.norm, brand, p.model) || [...kinds].some((k) => holds(q.norm, k)));
-    if (!shown) problems.push(`No quote from the bundle's own page shows ${p.model} (its model, or its kind of product) is in the bundle.`);
+    const kinds = [...new Set([...p.quotedKinds, ...p.product.kinds])];
+    const shown = names(said, brand, p.model)
+      || (p.product.kit && (p.product.tools ?? 0) >= 2 && saidCounts.includes(p.product.tools!))
+      || p.product.titles.some((t) => pieceCounts(t).some((n) => saidPieces.includes(n)))
+      || (!p.product.kit && kinds.some((k) => holds(said, k)));
+    if (!shown) problems.push(`Nothing on the bundle's own page shows ${p.model} (its model, its tool or piece count, or its kind of product) is in the bundle.`);
+  }
+  const want = titles.length > 0 ? kitBatteryCount(titles[0]) : null;
+  if (want !== null) {
+    const each = parts.map((p) => ({ p, n: partBatteries(p) }));
+    const unknown = each.filter((x) => x.n === null);
+    if (unknown.length > 0) for (const x of unknown) problems.push(`The bundle's title counts ${want} batter${want === 1 ? 'y' : 'ies'}, and how many ${x.p.model} holds cannot be read.`);
+    else {
+      const total = each.reduce((s, x) => s + x.n! * x.p.qty, 0);
+      if (total !== want) problems.push(`The bundle's title counts ${want} batter${want === 1 ? 'y' : 'ies'}; the parts hold ${total}.`);
+    }
   }
 }
 
