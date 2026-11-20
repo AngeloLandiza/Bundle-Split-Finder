@@ -98,21 +98,25 @@ export function parseBundlePage(text: string, itemId: string): PageContent | nul
   return product === null ? null : contentOf(product);
 }
 
-/** The `base-catalog-<itemId>` object of the page's `window.__APOLLO_STATE__=` object; null when there is none or it does not parse. */
-function productState(text: string, itemId: string): Json | null {
+/** The page's parsed `window.__APOLLO_STATE__=` object; null when there is none or it does not parse. */
+function pageState(text: string): Json | null {
   const mark = text.indexOf(STATE_MARK);
   if (mark < 0) return null;
   const start = mark + STATE_MARK.length;
   if (text[start] !== '{') return null;
   const end = objectEnd(text, start);
   if (end < 0) return null;
-  let state: unknown;
   try {
-    state = JSON.parse(text.slice(start, end));
+    return asObj(JSON.parse(text.slice(start, end)));
   } catch {
     return null;
   }
-  const product = asObj(state)[`base-catalog-${itemId}`];
+}
+
+/** The `base-catalog-<itemId>` object of the page's `window.__APOLLO_STATE__=` object; null when there is none or it does not parse. */
+function productState(text: string, itemId: string): Json | null {
+  const state = pageState(text);
+  const product = state === null ? null : state[`base-catalog-${itemId}`];
   return product && typeof product === 'object' ? (product as Json) : null;
 }
 
@@ -181,4 +185,42 @@ export function parseProductPage(text: string, itemId: string): ProductPage | nu
   const model = nonEmpty(ids.modelNumber);
   if (brand === null || model === null) return null;
   return { itemId, brand, model, title: nonEmpty(ids.productLabel) ?? '', ...pricingOf(product), ...contentOf(product) };
+}
+
+/** A named value from a product page's specifications ("Included Items": "Battery, charger"), as the page gives it. */
+export interface PageSpecification { name: string; value: string }
+
+/**
+ * Everything the research agent may read of one Home Depot page (step 12, R2): its title and model, the bullets and
+ * description parseBundlePage gives, and its specification groups.
+ */
+export interface PageSections {
+  title: string;
+  model: string;
+  bullets: string[];
+  description: string | null;
+  /**
+   * Always empty for now. The recorded pages (fixtures/homedepot-pages) are cut down to identifiers and details and hold
+   * no specification group, so its field names are not known; they are added from a recorded page, never from memory.
+   */
+  specifications: PageSpecification[];
+}
+
+/**
+ * The sections of a product page's embedded data. `itemId` names the product to read; without it, the first
+ * `base-catalog-<itemId>` object is read. Null when the data is missing or does not parse, or holds no such product.
+ */
+export function parsePageSections(text: string, itemId?: string): PageSections | null {
+  const state = pageState(text);
+  if (state === null) return null;
+  const key = itemId !== undefined ? `base-catalog-${itemId}` : Object.keys(state).find((k) => /^base-catalog-\d+$/.test(k));
+  const product = key === undefined ? undefined : state[key];
+  if (!product || typeof product !== 'object') return null;
+  const ids = asObj((product as Json).identifiers);
+  return {
+    title: nonEmpty(ids.productLabel) ?? '',
+    model: nonEmpty(ids.modelNumber) ?? '',
+    ...contentOf(product as Json),
+    specifications: [],
+  };
 }
