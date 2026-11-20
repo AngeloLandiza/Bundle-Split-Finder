@@ -98,6 +98,49 @@ All text pairs meet 4.5:1. Do not introduce new colors; ask first.
   reason), nothing found, offline or SerpApi error (plain sentence and a Retry that shows
   its cost), stale data ("Prices seen 4 days ago").
 
+### Scan progress (step 11)
+
+The scan's progress lives in the one row under the tabs; it never becomes a panel of its own.
+- **Collapsed, the default.** Line 1: the current step in plain words and its own count
+  ("Checking eBay listings · 23 of 60"), and on the right the estimate in the figure face
+  ("about 4 min"). Line 2: a 2px determinate bar the full width of the row, ink on line color,
+  no rounded ends, no stripes, no animation beyond the width easing (none under
+  prefers-reduced-motion). Nothing else: searches used and cost move to the expanded view.
+- **Expanded,** by a quiet "Details" text button at the row's right (aria-expanded; the
+  choice is remembered). One line a step, in run order: name on the left, a state word
+  (done, now, next, skipped) in ink-2 except "now" in ink, and the step's own figure on the
+  right ("15 read", "10 searches", "23 of 60", "est. $1.08"; the model step shows "$0.42 so
+  far" while it runs). Skipped steps say why in four words or fewer ("no Anthropic key").
+  No icons, no checkmarks, no colour coding: the words carry the state.
+- **The estimate** is always labelled: "about 4 min", "under a minute", "at least 3 min"
+  while the number of parts is not yet known, "estimating" before any step has a measured
+  rate. It never counts down by the second; it updates when a step's units change.
+- **Accessibility:** the bar is role=progressbar with aria-valuetext ("Step 6 of 8, checking
+  eBay listings, about 4 minutes left"); the status line is a polite live region updated at
+  most every 5 seconds.
+- When the scan ends, the row goes away as today; a stopped or failed scan keeps its existing
+  sentences.
+
+### Ask AI on Review questions (step 11)
+
+The AI drafts; the owner decides. A suggestion is never an answer until the owner presses Approve.
+- **Entry:** a secondary "Ask AI" text button in the question's action row, after the answer
+  controls, with its cost in the figure face ("Ask AI · about $0.02"). Absent when there is no
+  Anthropic key (no disabled teaser). One question at a time; no "ask AI for all".
+- **While it works:** the button reads "Asking…" and the question stays usable; no spinner.
+- **The suggestion** sits inside the question, above the answer controls, as plain text in a
+  thin left rule (ink-2 rule, no fill, no card): a label "AI suggestion" in the small caps
+  style of section labels, the proposed answer in ink (the reading's parts, or the listing's
+  title and ASIN), then at most three quotes, each a short verbatim line in ink-2 with a link
+  to its source ("Home Depot page", "Amazon listing"). The answer controls are preselected to
+  the suggestion; the primary button reads "Approve" instead of "Save answer".
+- **When it cannot tell,** the block says "AI could not tell from the page" with its one-line
+  reason, preselects nothing, and the owner answers as before.
+- **A suggestion whose quotes fail the code's check** is shown as "AI suggestion, unverified"
+  and preselects nothing; the owner must choose.
+- Approving records that the answer came from an approved AI suggestion (for the audit:
+  agreement rate). Changing the selection before saving records a disagreement.
+
 ### Chip on Home Depot product pages
 
 - A single 40px control placed directly under the price: mark, "Splits into 2 parts",
