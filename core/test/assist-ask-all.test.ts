@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { agreedWith, proposedAnswer, type StoredSuggestion } from '../src/assist/stored';
 import { approvalOf, verifiedRows } from '../src/assist/approve';
 import { askQueueOf, canAsk } from '../src/assist/askAll';
-import { researchCostLabel } from '../src/research/eval';
+import { estimatedResearchCost, researchCostLabel } from '../src/research/eval';
 import { askAllCostLabel, estimatedAskCost, estimatedQuestionCost, questionCostLabel } from '../src/assist/cost';
 import type { Suggestion } from '../src/assist/types';
 import { reviewSignature } from '../src/scan/answers';
@@ -13,6 +13,9 @@ import type { ReviewItem } from '../src/scan/types';
 import { asked, assistWorld, type AssistWorld } from './assist-world';
 
 const MODEL = 'claude-haiku-5-5';
+/** A cost as the buttons say it: rounded up to a whole cent, or to a whole dollar from a dollar. */
+const centsLabel = (usd: number): string => 'about $' + (Math.ceil(Math.round(usd * 1e6) / 1e4) / 100).toFixed(2);
+const wholeDollarsLabel = (usd: number): string => 'about $' + String(Math.ceil(Math.round(usd * 1e6) / 1e6));
 const ONE_READING = 'split:homedepot:339206615';
 const NO_READING = 'split:homedepot:314716732';
 const MATCH_ONE = 'match:RYOBI:PBP004';
@@ -136,13 +139,20 @@ describe('what asking costs, said before the click', () => {
     expect(questionCostLabel('match', 'claude-opus-5-5')).toBe('about $0.02');
     // The research's own label (core/src/research/eval.ts): the same figure, whichever file says it.
     expect(questionCostLabel('split', 'claude-opus-5-5')).toBe(researchCostLabel('claude-opus-5-5'));
-    expect(questionCostLabel('split', 'claude-opus-5-5')).toBe('about $0.11');
+    // Rounded up to a whole cent, from the research's own estimate.
+    expect(questionCostLabel('split', 'claude-opus-5-5')).toBe(centsLabel(estimatedResearchCost('claude-opus-5-5')!));
+    expect(questionCostLabel('split', MODEL)).toBe(researchCostLabel(MODEL));
+    expect(questionCostLabel('split', MODEL)).not.toBe('about $0.00');
     expect(questionCostLabel('split', 'a-model-with-no-rate')).toBeNull();
   });
 
   it('for all: the sum, in cents under a dollar and in whole dollars from a dollar, rounded up; null when no rate or nothing to ask', () => {
-    expect(askAllCostLabel(['split', 'split', 'match'], 'claude-opus-5-5')).toBe('about $0.23');
-    expect(askAllCostLabel(Array.from({ length: 26 }, () => 'split' as const), 'claude-opus-5-5')).toBe('about $3');
+    const opus = 'claude-opus-5-5';
+    const split = estimatedResearchCost(opus)!;
+    const match = estimatedAskCost(opus)!;
+    expect(askAllCostLabel(['split', 'split', 'match'], opus)).toBe(centsLabel(2 * split + match));
+    expect(26 * split).toBeGreaterThanOrEqual(1);
+    expect(askAllCostLabel(Array.from({ length: 26 }, () => 'split' as const), opus)).toBe(wholeDollarsLabel(26 * split));
     expect(askAllCostLabel(['split'], 'a-model-with-no-rate')).toBeNull();
     expect(askAllCostLabel([], MODEL)).toBeNull();
   });

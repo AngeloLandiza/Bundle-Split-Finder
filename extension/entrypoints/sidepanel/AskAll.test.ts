@@ -16,6 +16,7 @@ import type { AppState, AskAllResult, PanelReport, Reply, Request } from '../../
 import type { WorkerApi } from '../../lib/pageClient';
 import { ReviewTab } from './ReviewTab';
 import { askAllSentence } from './AskAll';
+import { researchCostLabel } from '@core/research/eval';
 
 // Step 12, R3: the Review tab with Ask AI about all, the "AI suggestions" section and Approve all. Real questions of the validation replay.
 
@@ -374,7 +375,7 @@ describe('the per-question Ask AI button rule', () => {
     const { none, match } = await world();
     const opus = state({ ebay: { hasEbayKeys: false, hasAnthropicKey: true, judgeModel: 'claude-opus-5-5', listingsJudgedPerScan: 60 } });
     setup(reportOf([none]), { state: opus });
-    expect(screen.getByRole('button', { name: /^Ask AI · / })).toHaveTextContent('about $0.11');
+    expect(screen.getByRole('button', { name: /^Ask AI · / })).toHaveTextContent(researchCostLabel('claude-opus-5-5')!);
     cleanup();
     setup(reportOf([match]), { state: opus });
     expect(screen.getByRole('button', { name: /^Ask AI · / })).toHaveTextContent('about $0.02');

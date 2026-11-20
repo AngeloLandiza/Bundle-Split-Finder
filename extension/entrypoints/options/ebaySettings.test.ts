@@ -8,6 +8,7 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import type { AppState, EbayState, Reply, Request } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import { SettingsPage } from './SettingsPage';
+import { researchCostLabel } from '@core/research/eval';
 
 // Step 10: the eBay keys, the Anthropic key, the model and the limit on the settings page.
 
@@ -203,8 +204,8 @@ describe('Settings: Ask AI after each scan (step 12)', () => {
 
   it('says what asking costs a question, as an estimate, at the model chosen', async () => {
     const { user } = await open(stateWith());
-    expect(screen.getByTestId('ask-cost')).toHaveTextContent('Estimated cost of asking, on the model above: about $0.02 for a bundle\'s parts, about $0.01 for a listing. An estimate');
+    expect(screen.getByTestId('ask-cost')).toHaveTextContent('Estimated cost of asking, on the model above: ' + researchCostLabel('claude-haiku-5-5') + ' for a bundle\'s parts, about $0.01 for a listing. An estimate');
     await user.click(screen.getByRole('radio', { name: /Claude Opus 5\.5/ }));
-    expect(screen.getByTestId('ask-cost')).toHaveTextContent('about $0.11 for a bundle\'s parts, about $0.02 for a listing');
+    expect(screen.getByTestId('ask-cost')).toHaveTextContent(researchCostLabel('claude-opus-5-5') + ' for a bundle\'s parts, about $0.02 for a listing');
   });
 });
