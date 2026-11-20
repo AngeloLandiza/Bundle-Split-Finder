@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { asked, assistWorld } from '../../core/test/assist-world';
+import { PRICE_TABLE } from '@core/judge/eval';
 import { reviewSignature } from '@core/scan/answers';
 import { OverlayStore } from '@core/scan/overlayStore';
 import { MemorySuggestionStore, type StoredSuggestion } from '@core/assist/stored';
@@ -458,6 +459,26 @@ describe('research: a split question is researched, any other is asked as before
     expect(record!.costUsd).toBeGreaterThan(0);
     expect(JSON.stringify(record)).not.toContain(ANTHROPIC);
     expect((await t.store.getReview(PSK))!.answer).toBeNull();
+  });
+
+  it('a research suggestion costs its cache writes and reads and its web searches too, at the model\'s rates; a match question costs its tokens', async () => {
+    const usage = { input_tokens: 2000, output_tokens: 300, cache_creation_input_tokens: 5000, cache_read_input_tokens: 9000, server_tool_use: { web_search_requests: 2 } };
+    const answer = { quotes: [], parts: [], reason: 'x', decision: 'cannot_tell', choiceIndex: null };
+    const t = await setup({
+      researchTools: fakeTools, ids: [PSK, 'match:RYOBI:P553'], ebaySettings: { ...DEFAULT_EBAY_SETTINGS, judgeModel: 'claude-opus-5-5' },
+      respond: (c) => (c.tools ? json(200, { ...message(answer), stop_reason: 'tool_use', content: [{ type: 'tool_use', id: 'toolu_1', name: 'submit_answer', input: answer }], usage }) : json(200, message(CANNOT, { input_tokens: 1000, output_tokens: 100 }))),
+    });
+    await t.send({ type: 'askAi', questionId: PSK });
+    await t.send({ type: 'askAi', questionId: 'match:RYOBI:P553' });
+    const records = await t.suggestions.list();
+    const research = records.find((r) => r.questionId === PSK)!;
+    const match = records.find((r) => r.questionId === 'match:RYOBI:P553')!;
+    // Opus: $4 in and $20 out a million; a cache write 1.25x the input rate, a read at the model's cache-read rate (else 0.1x); $0.01 a web search.
+    const rates = PRICE_TABLE['claude-opus-5-5']!;
+    const expected = (2000 * 4 + 300 * 20 + 5000 * 4 * 1.25 + 9000 * (rates.cacheRead ?? 4 * 0.1)) / 1e6 + 2 * 0.01;
+    expect(research.costUsd).toBeCloseTo(expected, 8);
+    expect(research.costUsd!).toBeGreaterThan((2000 * 4 + 300 * 20) / 1e6);
+    expect(match.costUsd).toBeCloseTo((1000 * 4 + 100 * 20) / 1e6, 8);
   });
 
   it('a split question with no reading is asked, since research can answer it; without the tools it is not (nothing to ask with the evidence alone)', async () => {
