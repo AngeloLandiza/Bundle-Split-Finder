@@ -3,35 +3,13 @@
 // (hdReader.ts), with its settle, pause and refusal rule; every Chrome call goes through ReaderEnv, so this file
 // touches no chrome.* and is tested with fakes.
 //
-// Result shapes are the contract the loop in core/src/research is written against. If core/src/research/types.ts
-// ever defines them, import them from there and delete the copies below.
+// Result shapes are the contract in core/src/research/types.ts (ResearchTools); nothing is defined twice.
 
-import { parsePageSections, parseSearchText, type PageSections } from '@core/hdPage';
+import { parsePageSections, parseSearchText } from '@core/hdPage';
 import { sameModel } from '@core/match';
+import type { CatalogEntry, CatalogLookup, ResearchTools } from '@core/research/types';
 import type { ScanStore } from '@core/scan/types';
 import { fetchPagesInTab, type ReaderEnv } from './hdReader';
-
-export type ToolError = { error: string };
-
-export interface HdPageResult {
-  sourceId: string;
-  label: 'Home Depot page';
-  url: string;
-  sections: PageSections;
-}
-
-export interface HdSearchResult {
-  sourceId: string;
-  label: 'Home Depot search';
-  url: string;
-  results: { title: string; brand: string; model: string; itemId: string; url: string }[];
-}
-
-export interface CatalogResult {
-  sourceId: string;
-  label: 'Catalog';
-  entries: { brand: string; model: string; title: string; kind: string }[];
-}
 
 /** One product of a Home Depot search page, as the parser reads it. */
 export interface SearchRow { title: string; brand: string; model: string; itemId: string }
@@ -66,11 +44,11 @@ export function createQuestionBudget(limit: number = QUESTION_TOOL_LIMIT): Quest
   };
 }
 
-export interface QuestionTools {
+/** The research contract's tools, and the budget they share. */
+export interface QuestionTools extends ResearchTools {
   budget: QuestionBudget;
-  readHomeDepotPage(input: { itemId?: string; url?: string }): Promise<HdPageResult | ToolError>;
-  searchHomeDepot(input: { query: string }): Promise<HdSearchResult | ToolError>;
-  catalogLookup(input: { model?: string; query?: string }): Promise<CatalogResult>;
+  /** The local catalog never fails: narrower than the contract's `CatalogLookup | ToolError`. */
+  catalogLookup(input: { model?: string; query?: string }): Promise<CatalogLookup>;
 }
 
 const ITEM_ID = /^\d{9}$/;
@@ -190,9 +168,10 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
       let refused = false;
       const REFUSED_BEFORE = 'Home Depot refused an earlier request; no more are made for this question.';
 
-      const readHomeDepotPage: QuestionTools['readHomeDepotPage'] = async (input) => {
+      const readHomeDepotPage: QuestionTools['readHomeDepotPage'] = async (input, signal) => {
         const itemId = homeDepotItemId(input);
         if (itemId === null) return { error: 'Give a 9-digit Home Depot item id or a https://www.homedepot.com/p/... address. Only homedepot.com pages can be read.' };
+        if (signal?.aborted) return { error: 'stopped' };
         if (refused) return { error: REFUSED_BEFORE };
         if (!budget.take()) return { error: 'limit' };
         try {
@@ -205,15 +184,16 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
           }
           const sections = parsePageSections(got.text, itemId);
           if (sections === null) return { error: `The page for item ${itemId} could not be read.` };
-          return { sourceId: `hd-page-${itemId}`, label: 'Home Depot page', url: `${env.origin}/p/${itemId}`, sections };
+          return { sourceId: `hd-page:${itemId}`, label: 'Home Depot page', url: `${env.origin}/p/${itemId}`, sections };
         } catch (e) {
           return { error: e instanceof Error ? e.message : 'The Home Depot page could not be read.' };
         }
       };
 
-      const searchHomeDepot: QuestionTools['searchHomeDepot'] = async (input) => {
+      const searchHomeDepot: QuestionTools['searchHomeDepot'] = async (input, signal) => {
         const query = typeof input.query === 'string' ? input.query.trim().replace(/\s+/g, ' ') : '';
         if (query === '' || query.length > QUERY_MAX) return { error: `Give a search of 1 to ${QUERY_MAX} characters.` };
+        if (signal?.aborted) return { error: 'stopped' };
         if (refused) return { error: REFUSED_BEFORE };
         if (!budget.take()) return { error: 'limit' };
         const url = `${env.origin}/s/${encodeURIComponent(query)}`;
@@ -226,7 +206,7 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
           const rows = (deps.parseSearch ?? parseSearchText)(answered.text);
           if (rows === null) return { error: 'The search page could not be read.' };
           return {
-            sourceId: `hd-search-${slug(query)}`,
+            sourceId: `hd-search:${slug(query)}`,
             label: 'Home Depot search',
             url,
             results: rows.slice(0, SEARCH_RESULTS_MAX).map((r) => ({ title: r.title, brand: r.brand, model: r.model, itemId: r.itemId, url: `${env.origin}/p/${r.itemId}` })),
@@ -239,18 +219,18 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
       const catalogLookup: QuestionTools['catalogLookup'] = async (input) => {
         const model = typeof input.model === 'string' ? input.model.trim() : '';
         const words = (typeof input.query === 'string' ? input.query : '').toLowerCase().split(/\s+/).filter((w) => w !== '');
-        const sourceId = `catalog-${slug(model || words.join(' ')) || 'none'}`;
-        const entries: CatalogResult['entries'] = [];
+        const sourceId = `catalog:${slug(model || words.join(' ')) || 'none'}`;
+        const entries: CatalogEntry[] = [];
         if (model !== '' || words.length > 0) {
           for (const r of await store.listCatalog()) {
             if (model !== '' && !sameModel(r.brand, r.model, model)) continue;
             const text = `${r.brand} ${r.model} ${r.title}`.toLowerCase();
             if (!words.every((w) => text.includes(w))) continue;
-            entries.push({ brand: r.brand, model: r.model, title: r.title, kind: r.isKit ? 'kit' : r.kinds.join(', ') || 'unknown' });
+            entries.push({ brand: r.brand, model: r.model, title: r.title, kind: r.isKit ? 'kit' : 'part' });
             if (entries.length >= CATALOG_ENTRIES_MAX) break;
           }
         }
-        return { sourceId, label: 'Catalog', entries };
+        return { sourceId, entries };
       };
 
       return { budget, readHomeDepotPage, searchHomeDepot, catalogLookup };

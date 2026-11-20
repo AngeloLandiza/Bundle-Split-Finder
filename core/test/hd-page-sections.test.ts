@@ -30,7 +30,7 @@ describe('parsePageSections (step 12, R2)', () => {
       const content = parseBundlePage(p.text, p.itemId);
       expect(sections, p.itemId).not.toBeNull();
       expect(sections?.bullets).toEqual(content?.bullets);
-      expect(sections?.description).toBe(content?.description);
+      expect(sections?.description).toBe(content?.description ?? '');
       expect(parsePageSections(p.text, p.itemId)).toEqual(sections);
       expect(sections?.title).not.toBe('');
       expect(sections?.model).not.toBe('');

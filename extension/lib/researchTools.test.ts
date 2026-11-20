@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { MemoryScanStore } from '@core/scan/memoryStore';
 import { partKey, type CatalogRecord } from '@core/scan/types';
+import type { ResearchTools } from '@core/research/types';
 import { fetchPagesInTab, type InTabResult, type ReaderEnv } from './hdReader';
 import {
   createQuestionBudget, createResearchTools, fetchSearchPageInTab, homeDepotItemId, QUESTION_TOOL_LIMIT,
@@ -69,6 +70,19 @@ async function tools(f: Fake, over: Partial<Parameters<typeof createResearchTool
   return createResearchTools({ env: f.env, store, settleMs: 2500, pauseMs: 1000, now: f.now, ...over });
 }
 
+describe('the research contract', () => {
+  it("a question's tools are the loop's ResearchTools (compile-time), and a stopped signal makes no request", async () => {
+    const f = fake();
+    const q = (await tools(f, { parseSearch: () => [] })).forQuestion();
+    const asContract: ResearchTools = q;
+    const stopped = AbortSignal.abort();
+    expect(await asContract.readHomeDepotPage({ itemId: PAGE }, stopped)).toEqual({ error: 'stopped' });
+    expect(await asContract.searchHomeDepot({ query: 'drill' }, stopped)).toEqual({ error: 'stopped' });
+    expect(f.log).toEqual([]);
+    expect(q.budget.used()).toBe(0);
+  });
+});
+
 describe('homeDepotItemId', () => {
   it('reads the item id from an item id, a product address or a bare /p/ address, on homedepot.com only', () => {
     expect(homeDepotItemId({ itemId: '328814689' })).toBe('328814689');
@@ -110,7 +124,7 @@ describe('readHomeDepotPage', () => {
     const q = (await tools(f)).forQuestion();
     const out = await q.readHomeDepotPage({ itemId: PAGE });
     expect(out).toEqual({
-      sourceId: `hd-page-${PAGE}`,
+      sourceId: `hd-page:${PAGE}`,
       label: 'Home Depot page',
       url: `https://www.homedepot.com/p/${PAGE}`,
       sections: {
@@ -137,7 +151,7 @@ describe('readHomeDepotPage', () => {
   it('reads a page named by a product address', async () => {
     const f = fake();
     const out = await (await tools(f)).forQuestion().readHomeDepotPage({ url: `https://www.homedepot.com/p/RYOBI-Ratchets/${PAGE}` });
-    expect(out).toMatchObject({ sourceId: `hd-page-${PAGE}`, label: 'Home Depot page' });
+    expect(out).toMatchObject({ sourceId: `hd-page:${PAGE}`, label: 'Home Depot page' });
   });
 
   it('refuses a page that is not on homedepot.com without opening a tab or spending the budget', async () => {
@@ -245,7 +259,7 @@ describe('searchHomeDepot', () => {
     const q = (await tools(f, { parseSearch: (html) => { parsed = html; return rows(14); } })).forQuestion();
     const out = await q.searchHomeDepot({ query: ' ryobi 18V drill ' });
     expect(parsed).toBe('<html>search</html>');
-    expect(out).toMatchObject({ sourceId: 'hd-search-ryobi-18v-drill', label: 'Home Depot search', url: 'https://www.homedepot.com/s/ryobi%2018V%20drill' });
+    expect(out).toMatchObject({ sourceId: 'hd-search:ryobi-18v-drill', label: 'Home Depot search', url: 'https://www.homedepot.com/s/ryobi%2018V%20drill' });
     const results = (out as { results: unknown[] }).results;
     expect(results).toHaveLength(10);
     expect(results[0]).toEqual({ title: 'Tool 0', brand: 'RYOBI', model: 'PCL0', itemId: '300000000', url: 'https://www.homedepot.com/p/300000000' });
@@ -292,8 +306,8 @@ describe('catalogLookup', () => {
   it('finds a model, in either RYOBI form, with its kind', async () => {
     const q = (await tools(fake())).forQuestion();
     expect(await q.catalogLookup({ model: 'pcl206' })).toEqual({
-      sourceId: 'catalog-pcl206', label: 'Catalog',
-      entries: [{ brand: 'RYOBI', model: 'PCL206B', title: 'ONE+ 18V Cordless 1/2 in. Drill/Driver (Tool Only)', kind: 'drill' }],
+      sourceId: 'catalog:pcl206',
+      entries: [{ brand: 'RYOBI', model: 'PCL206B', title: 'ONE+ 18V Cordless 1/2 in. Drill/Driver (Tool Only)', kind: 'part' }],
     });
     expect(((await q.catalogLookup({ model: 'PCL1600K2' })) as { entries: { kind: string }[] }).entries[0]?.kind).toBe('kit');
   });

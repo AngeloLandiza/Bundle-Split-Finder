@@ -7,6 +7,7 @@
 // Reading the page the user is looking at costs no SerpApi searches.
 
 import { toUpc12 } from './identifiers';
+import type { PageSections, PageSpecification } from './research/types';
 
 export interface HdProduct {
   retailer: 'homedepot';
@@ -187,28 +188,11 @@ export function parseProductPage(text: string, itemId: string): ProductPage | nu
   return { itemId, brand, model, title: nonEmpty(ids.productLabel) ?? '', ...pricingOf(product), ...contentOf(product) };
 }
 
-/** A named value from a product page's specifications ("Included Items": "Battery, charger"), as the page gives it. */
-export interface PageSpecification { name: string; value: string }
-
 /**
- * Everything the research agent may read of one Home Depot page (step 12, R2): its title and model, the bullets and
- * description parseBundlePage gives, and its specification groups.
- */
-export interface PageSections {
-  title: string;
-  model: string;
-  bullets: string[];
-  description: string | null;
-  /**
-   * `specificationGroup[].specifications[]` as `{specName, specValue}`, in page order, groups flattened (checked against
-   * fixtures/homedepot-pages/research-2026-11-20.json: "Included": "Tool Only", "Tools Included": "Circular Saw,Jig Saw",
-   * "Number of Total Batteries Included": "0"). A page without the group gives none. The older, cut-down recordings have none.
-   */
-  specifications: PageSpecification[];
-}
-
-/**
- * The sections of the product in an Apollo state object (`window.__APOLLO_STATE__`, parsed). `itemId` names the product
+ * The sections of the product in an Apollo state object (`window.__APOLLO_STATE__`, parsed), as the research contract
+ * (research/types.ts) shapes them. Specifications are `specificationGroup[].specifications[].{specName, specValue}`
+ * flattened in page order (checked against fixtures/homedepot-pages/research-2026-11-20.json); a page without the group
+ * gives none. A page with no description gives ''. `itemId` names the product
  * to read; without it, the first `base-catalog-<itemId>` object is read. Null when the state holds no such product.
  */
 export function parsePageState(state: unknown, itemId?: string): PageSections | null {
@@ -227,10 +211,12 @@ export function parsePageState(state: unknown, itemId?: string): PageSections | 
       if (name !== null && value !== '') specifications.push({ name, value });
     }
   }
+  const content = contentOf(product as Json);
   return {
     title: nonEmpty(ids.productLabel) ?? '',
     model: nonEmpty(ids.modelNumber) ?? '',
-    ...contentOf(product as Json),
+    bullets: content.bullets,
+    description: content.description ?? '',
     specifications,
   };
 }
