@@ -74,6 +74,8 @@ export interface TokenUsage {
   outputTokens: number;
   cacheReadInputTokens?: number;
   cacheCreationInputTokens?: number;
+  /** Web searches the response ran (a server tool, step 12 research), billed apart from tokens. Absent when none was offered. */
+  webSearchRequests?: number;
 }
 
 /**

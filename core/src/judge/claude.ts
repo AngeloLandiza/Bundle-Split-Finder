@@ -52,6 +52,9 @@ function readUsage(body: Record<string, unknown>): TokenUsage | undefined {
   const created = num(u.cache_creation_input_tokens);
   if (read !== undefined) usage.cacheReadInputTokens = read;
   if (created !== undefined) usage.cacheCreationInputTokens = created;
+  // Server tools (step 12, research): the web searches this response ran, billed apart from tokens.
+  const searches = isRecord(u.server_tool_use) ? num(u.server_tool_use.web_search_requests) : undefined;
+  if (searches !== undefined) usage.webSearchRequests = searches;
   return usage;
 }
 
@@ -68,15 +71,29 @@ export interface ClaudeMessagesRequest {
   declined?: string;
 }
 
+/** A Messages API response, read only as far as the transport needs: the rest is the caller's. */
+export interface ClaudeMessageBody {
+  stop_reason: string;
+  content: unknown[];
+  [field: string]: unknown;
+}
+
 /**
- * One call to the Messages API. No retries. Never throws for a provider or network failure: it
- * returns ok: false with a typed reason.
+ * One Messages API call's whole response (step 12: the research loop reads the content blocks
+ * itself), with its usage when the response gave one, or why there is no response.
  */
-export async function callClaudeMessages(req: ClaudeMessagesRequest): Promise<ClaudeMessagesResult> {
+export type ClaudeRawResult = { ok: true; body: ClaudeMessageBody; usage?: TokenUsage } | { ok: false; notJudged: NotJudged };
+
+/**
+ * One call to the Messages API, returning the response as it came: HTTP, network and shape failures
+ * are typed; the stop reason is left to the caller. No retries; never throws for a provider or
+ * network failure. callClaudeMessages is this plus the judge's reading of the stop reason.
+ */
+export async function sendClaudeMessages(req: ClaudeMessagesRequest): Promise<ClaudeRawResult> {
   const { apiKey, signal } = req;
   // Called through a wrapper: a bare `fetch` stored on an object throws "Illegal invocation".
   const fetchFn = req.fetchFn ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
-  const fail = (notJudged: NotJudged, usage?: TokenUsage): ClaudeMessagesResult => ({ ok: false, notJudged, ...(usage ? { usage } : {}) });
+  const fail = (notJudged: NotJudged): ClaudeRawResult => ({ ok: false, notJudged });
 
   let res: Response;
   try {
@@ -112,20 +129,41 @@ export async function callClaudeMessages(req: ClaudeMessagesRequest): Promise<Cl
     return fail({ reason: 'bad_response', message: 'Claude answered with something that is not a message.' });
   }
   const usage = readUsage(body);
+  return { ok: true, body: body as ClaudeMessageBody, ...(usage ? { usage } : {}) };
+}
+
+/**
+ * Why a response's stop reason gives no answer, for the stops every caller reads alike (a refusal, an
+ * answer cut off); null for any other stop, which the caller reads.
+ */
+export function stopFailure(body: ClaudeMessageBody, declined?: string): NotJudged | null {
   const stop = body.stop_reason;
   if (stop === 'refusal') {
     const details = body.stop_details;
     const category = isRecord(details) && typeof details.category === 'string' ? details.category : undefined;
-    return fail({ reason: 'refusal', message: req.declined ?? 'Claude declined to answer.', ...(category ? { refusalCategory: category } : {}) }, usage);
+    return { reason: 'refusal', message: declined ?? 'Claude declined to answer.', ...(category ? { refusalCategory: category } : {}) };
   }
-  if (stop === 'max_tokens') {
-    return fail({ reason: 'max_tokens', message: 'Claude’s answer was cut off before it finished.' }, usage);
-  }
+  if (stop === 'max_tokens') return { reason: 'max_tokens', message: 'Claude’s answer was cut off before it finished.' };
+  return null;
+}
+
+/**
+ * One call to the Messages API. No retries. Never throws for a provider or network failure: it
+ * returns ok: false with a typed reason.
+ */
+export async function callClaudeMessages(req: ClaudeMessagesRequest): Promise<ClaudeMessagesResult> {
+  const sent = await sendClaudeMessages(req);
+  if (!sent.ok) return sent;
+  const { body, usage } = sent;
+  const fail = (notJudged: NotJudged): ClaudeMessagesResult => ({ ok: false, notJudged, ...(usage ? { usage } : {}) });
+  const stopped = stopFailure(body, req.declined);
+  if (stopped) return fail(stopped);
+  const stop = body.stop_reason;
   if (stop !== 'end_turn') {
-    return fail({ reason: 'unexpected_stop', message: `Claude stopped for an unexpected reason (${stop.slice(0, 40)}).` }, usage);
+    return fail({ reason: 'unexpected_stop', message: `Claude stopped for an unexpected reason (${stop.slice(0, 40)}).` });
   }
   const text = body.content.find((b): b is { type: 'text'; text: string } => isRecord(b) && b.type === 'text' && typeof b.text === 'string');
-  if (!text) return fail({ reason: 'no_answer', message: 'Claude’s answer had no text.' }, usage);
+  if (!text) return fail({ reason: 'no_answer', message: 'Claude’s answer had no text.' });
   return { ok: true, answer: text.text, usage: usage ?? { inputTokens: 0, outputTokens: 0 } };
 }
 
