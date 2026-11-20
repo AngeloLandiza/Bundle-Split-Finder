@@ -14,6 +14,7 @@ import type { ProductPage } from '@core/hdPage';
 import { notePage } from '@core/scan/pageView';
 import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
 import { wantedFor } from '@core/scan/classify';
+import { addSamples, samplesOf, type UnitRates } from '@core/scan/pipeline';
 import { runScan } from '@core/scan/runner';
 import { knownModels } from '@core/scan/split';
 import { partKey, type BudgetView, type BundleRow, type PaidAction, type Quote, type ReadPages, type ReadPartPrices, type ReviewAnswer, type ScanJob, type ScanStore } from '@core/scan/types';
@@ -49,6 +50,9 @@ export interface Prefs {
   setAccount(v: StoredAccount | null): Promise<void>;
   /** Whether the chip shows on Home Depot pages (chrome.storage.local `showChip`); true unless the owner turned it off. */
   getShowChip(): Promise<boolean>;
+  /** Step 11: how long a unit of each kind took in recent scans, for the progress estimate. Optional: without it no timing is kept. */
+  getRates?(): Promise<UnitRates>;
+  setRates?(v: UnitRates): Promise<void>;
   /** Step 10: the eBay App ID and Cert ID, the Anthropic key, the judge's settings, and eBay's token (storage.session). */
   getEbayKeys(): Promise<EbayKeys | null>;
   setEbayKeys(keys: EbayKeys): Promise<void>;
@@ -370,7 +374,9 @@ export function createWorker(env: WorkerEnv): Worker {
   async function ebayStepFor(stop: AbortSignal): Promise<EbayStep> {
     const keys = await prefs.getEbayKeys();
     const anthropic = await prefs.getAnthropicKey();
-    if (keys === null || anthropic === null) return { kind: 'skip', notice: skippedFor(keys !== null, anthropic !== null) };
+    if (keys === null || anthropic === null) {
+      return { kind: 'skip', notice: skippedFor(keys !== null, anthropic !== null), missing: [...(keys === null ? ['ebay' as const] : []), ...(anthropic === null ? ['anthropic' as const] : [])] };
+    }
     const es = await ebaySettings();
     const epoch = ebayKeyEpoch;
     ebayKeysHeld.appId = keys.appId;
@@ -418,6 +424,7 @@ export function createWorker(env: WorkerEnv): Worker {
       scanRunning: scan !== null,
       lastJob: (await store.listScans())[0] ?? null,
       nextRunAt: next === null ? null : next.getTime(),
+      ...(prefs.getRates ? { rates: await prefs.getRates() } : {}),
     };
   }
 
@@ -539,7 +546,8 @@ export function createWorker(env: WorkerEnv): Worker {
     scanKey = key;
     scan = (async () => {
       try {
-        await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages, readPartPrices: env.readPartPrices, ebay });
+        const ended = await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages, readPartPrices: env.readPartPrices, ebay });
+        await keepRates(ended);
       } catch {
         // The job stays "running" and activeScan keeps naming it: the next tick continues it.
         return;
@@ -562,6 +570,20 @@ export function createWorker(env: WorkerEnv): Worker {
       });
     await broadcast();
     return ok(null);
+  }
+
+  /**
+   * Step 11: what this scan measured joins the rates the progress estimate uses, once, as the scan ends. Read and written
+   * here, so a scan the worker was evicted in still counts whole: the timings are on the job. Never fails the scan.
+   */
+  async function keepRates(job: ScanJob): Promise<void> {
+    if (!prefs.getRates || !prefs.setRates) return;
+    try {
+      const samples = samplesOf(job);
+      if (samples.length > 0) await prefs.setRates(addSamples(await prefs.getRates(), samples));
+    } catch {
+      // The estimate is only less good without it.
+    }
   }
 
   /** Rule 2, afterwards. */

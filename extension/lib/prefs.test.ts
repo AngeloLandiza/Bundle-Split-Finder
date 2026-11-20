@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS } from '@core/settings';
 import {
   forgetKey, getAccount, getActiveScan, getKey, getLastScheduledRunAt, getNotified, getPackaging, getSettings, getShowChip, setShowChip, savePackaging, restrictKeyAccess,
   saveSettings, setAccount, setActiveScan, setKey, setLastScheduledRunAt, setNotified,
+  getRates, setRates,
   clearEbayToken, forgetAnthropicKey, forgetEbayKeys, getAnthropicKey, getEbayKeys, getEbaySettings, getEbayToken, saveEbaySettings, setAnthropicKey, setEbayKeys, setEbayToken,
 } from './prefs';
 
@@ -178,5 +179,29 @@ describe('eBay and the model (step 10)', () => {
     expect(await getEbayToken()).toBeNull();
     await fakeBrowser.storage.session.set({ ebayToken: { appId: 'app', token: '', expiresAt: 5 } });
     expect(await getEbayToken()).toBeNull();
+  });
+});
+
+describe('scan timing (step 11)', () => {
+  it('is empty until set, and round-trips', async () => {
+    expect(await getRates()).toEqual({});
+    await setRates({ serpapiSearch: [2.5, 3], 'judgeCall:claude-opus-5-5': [7.1] });
+    expect(await getRates()).toEqual({ serpapiSearch: [2.5, 3], 'judgeCall:claude-opus-5-5': [7.1] });
+  });
+
+  it('drops what is not a list of positive numbers, on the way in and on the way out', async () => {
+    await setRates({ serpapiSearch: [1, -3, Number.NaN] as number[], ebayCall: [] });
+    expect(await getRates()).toEqual({ serpapiSearch: [1] });
+    await fakeBrowser.storage.local.set({ unitRates: { hdPageRead: 'slow', ebayCall: [0.5, 'x'] } });
+    expect(await getRates()).toEqual({ ebayCall: [0.5] });
+    await fakeBrowser.storage.local.set({ unitRates: 'garbage' });
+    expect(await getRates()).toEqual({});
+  });
+
+  it('is kept apart from the key and the settings', async () => {
+    await setKey('secret-value');
+    await setRates({ ebayCall: [0.6] });
+    await forgetKey();
+    expect(await getRates()).toEqual({ ebayCall: [0.6] });
   });
 });

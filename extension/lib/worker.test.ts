@@ -17,6 +17,7 @@ import type { EbayListing } from '@core/ebay/types';
 import { browseItem, browseSearch } from '../../scripts/ebay-replay';
 import { notePage, type PageView } from '@core/scan/pageView';
 import { toScanSettings } from '@core/settings';
+import { trustedRates, type UnitRates } from '@core/scan/pipeline';
 import { createWorker, type DeferredPage, type PageEnv, type Prefs, progressOf, type Worker } from './worker';
 
 // Every search goes through the real SerpApiClient over replayRecorded(); the Account API
@@ -114,6 +115,14 @@ class FakePrefs implements Prefs {
   showChip = true;
   async getShowChip() {
     return this.showChip;
+  }
+  // Step 11: how long a unit of each kind took, as prefs.ts keeps it.
+  rates: unknown = {};
+  async getRates() {
+    return trustedRates(structuredClone(this.rates));
+  }
+  async setRates(v: UnitRates) {
+    this.rates = structuredClone(v);
   }
   // Step 10: the eBay and Anthropic keys, the judge's settings and eBay's token, unchecked like the rest.
   ebayKeys: { appId: string; certId: string } | null = null;
@@ -468,6 +477,55 @@ describe('worker: reading Home Depot prices of parts', () => {
 
   it('without a reader, no price is read and the scan runs as before', async () => {
     const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    await w.worker.onTick();
+    expect((await lastJob(w)).status).not.toBe('running');
+  });
+});
+
+describe('worker: how long a unit takes (step 11)', () => {
+  /** Every search takes two seconds on this clock. */
+  const slow = (w: World): void => {
+    w.beforeSearch = () => {
+      w.clock += 2000;
+    };
+  };
+
+  it('a scan that ends adds what it measured to the rates, and the state carries them', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    slow(w);
+    expect((await state(w)).rates).toEqual({});
+    await w.worker.onTick();
+    const job = await lastJob(w);
+    expect(job.pipeline!.map((s) => s.id)).toHaveLength(8);
+    const rates = (await state(w)).rates!;
+    // One sample for the Home Depot page and one for the lookups, two seconds a search.
+    expect(rates.serpapiSearch).toEqual([2, 2]);
+    expect(Object.keys(rates)).toEqual(['serpapiSearch']);
+  });
+
+  it('keeps adding: a second scan makes four samples', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    slow(w);
+    await w.worker.onTick();
+    // The next scan is due again, a day on; its pages come from the replay, the clock still takes two seconds a search.
+    w.clock += 25 * HOUR;
+    await w.worker.onTick();
+    expect((await state(w)).rates!.serpapiSearch!.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('a scan that measured nothing leaves the rates as they were', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    w.prefs.rates = { ebayCall: [0.5] };
+    await w.worker.onTick();
+    expect((await state(w)).rates).toEqual({ ebayCall: [0.5] });
+  });
+
+  it('a store that will not take the rates does not fail the scan', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    slow(w);
+    w.prefs.setRates = async () => {
+      throw new Error('quota');
+    };
     await w.worker.onTick();
     expect((await lastJob(w)).status).not.toBe('running');
   });

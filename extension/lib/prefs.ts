@@ -5,6 +5,7 @@ import { browser } from 'wxt/browser';
 import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS, KNOWN_BRANDS, type EbaySettings, type ExtensionSettings, type ScanTrigger } from '@core/settings';
 import { CLAUDE_JUDGE_MODELS } from '@core/judge/claude';
 import { MAX_LISTINGS_JUDGED_PER_SCAN } from '@core/scan/ebayPass';
+import { trustedRates, type UnitRates } from '@core/scan/pipeline';
 import type { AccountInfo } from '@core/serpapi/budget';
 
 export interface ActiveScan {
@@ -98,6 +99,18 @@ export async function getPackaging(): Promise<Record<string, 'retail_boxed' | 'l
   return out;
 }
 export const savePackaging = (v: Record<string, 'retail_boxed' | 'loose'>): Promise<void> => write('packaging', v);
+
+// ---------------------------------------------------------------- scan timing (step 11)
+
+/**
+ * How long a unit of each kind took in the last scans (searches, Home Depot page reads, eBay calls, model calls by model):
+ * the last 20 measured seconds-per-unit of each, which the progress estimate takes the median of. Not a secret and not a
+ * setting: it only makes the estimate better. Read untrusted: whatever is not a list of positive numbers is dropped.
+ */
+export async function getRates(): Promise<UnitRates> {
+  return trustedRates(await read('unitRates'));
+}
+export const setRates = (v: UnitRates): Promise<void> => write('unitRates', trustedRates(v));
 
 // ---------------------------------------------------------------- the rest
 

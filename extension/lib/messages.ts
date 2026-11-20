@@ -3,6 +3,7 @@
 
 import type { ProductPage } from '../../core/src/hdPage';
 import type { PageView } from '../../core/src/scan/pageView';
+import type { UnitRates } from '../../core/src/scan/pipeline';
 import type { PaidAction, Quote, ReviewAnswer, ScanJob, ScanReport } from '../../core/src/scan/types';
 import type { AccountInfo } from '../../core/src/serpapi/budget';
 import type { ExtensionSettings } from '../../core/src/settings';
@@ -123,6 +124,8 @@ export interface AppState {
   lastJob: ScanJob | null;
   /** When the next scheduled scan is due; null in manual mode. */
   nextRunAt: number | null;
+  /** Step 11: how long a unit of each kind took in recent scans (the progress estimate's rates). Absent: seeds only. */
+  rates?: UnitRates;
 }
 
 /** Sent to every extension page when the chip opened the side panel on This page. The panel then takes the answer for its tab. */
