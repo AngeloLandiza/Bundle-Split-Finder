@@ -167,6 +167,11 @@ offered no reading. Every rule of Ask AI holds: the AI drafts, the owner decides
 - **Settings › Listing check** gains "Ask AI after each scan" (off by default) and shows the
   research estimate per question.
 - No new colours, cards, icons or spinners; the existing AI suggestion block is reused.
+- Refinements from the build: "Ask AI about all" is a bordered secondary button, hidden when fewer than
+  2 questions can be asked; a suggestion asked for one question stays with that question until answered
+  (it joins the section after a reload); during Approve all, a refusal about the moment (a scan or search
+  running) stops the run, a refusal about one question is counted and said, and the run goes on; the
+  progress row's Details for the queue is one line, "Asking AI · now · $0.41 so far".
 
 ### Chip on Home Depot product pages
 
