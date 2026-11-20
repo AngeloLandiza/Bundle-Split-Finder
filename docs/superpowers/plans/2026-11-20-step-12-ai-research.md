@@ -29,3 +29,11 @@
 3. Leftovers: a verified answer that leaves part of the Includes list unaccounted.
 4. Research spending SerpApi or browsing Amazon; web search outside the two brand domains.
 5. A long "ask all" blocking scans, or a scan blocking it; Stop leaving a half-written suggestion.
+
+## Where this stands (2026-11-20)
+Built, reviewed (whole-step code review with a critical finding fixed; UI review with fixes), measured and QA'd:
+- **Research agent** for split questions: Home Depot page (with the specification table) and Home Depot search in the owner's browser, the catalog, and the brand sites (web search + web fetch, ryobitools.com / dewalt.com, 2 each a question). No SerpApi, never Amazon. Prompt caching. Limits a question: 8 tool calls, 60 s.
+- **Verification only lowers:** quotes verbatim in a source read; models real; counts ("2-Tool", batteries, charger) and "(Tools Only)" agree; no leftovers on the Includes list; a bundle the splitter would split (e.g. PSK1212SB) is not a part; a combo the catalog does not know as a kit is not a part; a word-only item ("18V Jig Saw") needs a tie to the bundle (the bundle page names the model, or a listing of the same bundle names it — e.g. Home Depot's sibling PCL500B-PCL525B).
+- **Measured** on the 19 validation split questions, recorded tools (Opus 5.5): run 1 1 right / 0 wrong ($3.09); run 2 4 / 1 wrong (starter kit) ($1.83); run 3 10 / 0 ($0.60, caching); run 4 with the tie rule 6 / 0 ($0.69). About 3–4¢ a question.
+- **Panel:** "Ask AI about all N · about $X" (queue with Stop, 3-failure stop, 2× spending cap, progress row), "AI suggestions · N" (verified only, compact rows) with "Approve all N verified" + inline confirmation over a snapshot, Accept all unchanged, "Ask AI after each scan" (off by default).
+Next: the owner's real Review questions (live Home Depot search) will show the true rate; recording more Home Depot searches would make the eval fair; page highlights need a compound-item rule before they can be read; PSBCK102K2-style kits the catalog does not mark are a splitter-catalog gap.
