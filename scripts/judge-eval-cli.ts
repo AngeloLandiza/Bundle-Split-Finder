@@ -7,6 +7,10 @@
 //                 writes fixtures/ebay/judgements-<model>.json and scores it. Costs money: the main
 //                 session runs it after the owner's yes.
 //   --replay      no network: scores the existing judgements file.
+//   --sample <n>  only n labelled listings: sorted by model then item id, n evenly spaced (the same
+//                 every time). The dry run and the score say it is a sample.
+//   --max-cost <usd>  with --run: stops before the next call once the cost of the calls made reaches
+//                 it, writes what it has marked incomplete, and scores only the listings judged.
 //
 // The judgements file holds verdicts, reasons and token counts. No key, no seller data.
 
@@ -34,6 +38,21 @@ export interface JudgementsFile {
   promptVersion: string;
   ranAt: string;
   results: EvalResult[];
+  /** Set when --sample chose the listings: how many. */
+  sample?: number;
+  /** Set when --max-cost stopped the run before every listing was judged. */
+  incomplete?: boolean;
+  maxCost?: number;
+}
+
+const byModelThenItem = (a: Label, b: Label): number =>
+  a.model === b.model ? (a.itemId < b.itemId ? -1 : a.itemId > b.itemId ? 1 : 0) : a.model < b.model ? -1 : 1;
+
+/** n labels, evenly spaced over the labels sorted by model then item id: the same n every time. */
+export function sampleLabels(labels: Label[], n: number): Label[] {
+  const sorted = [...labels].sort(byModelThenItem);
+  if (n >= sorted.length) return sorted;
+  return Array.from({ length: n }, (_, i) => sorted[Math.floor((i * sorted.length) / n)]!);
 }
 
 export interface JudgeEvalDeps {
@@ -111,16 +130,32 @@ export function printScore(log: (l: string) => void, s: EvalScore, cap: { hidden
   log(s.passes ? 'Overall: PASS' : 'Overall: FAIL');
 }
 
+/** Takes `--name <value>` out of args; undefined when absent, null when present without a value. */
+function takeValue(args: string[], name: string): string | null | undefined {
+  const i = args.indexOf(name);
+  if (i < 0) return undefined;
+  const v = args[i + 1];
+  args.splice(i, v === undefined || v.startsWith('--') ? 1 : 2);
+  return v === undefined || v.startsWith('--') ? null : v;
+}
+
+const USAGE = 'Usage: npm run judge:eval -- --model <claude-haiku-5-5|claude-opus-5-5> --dry-run | --run | --replay [--sample <n>] [--max-cost <usd>]';
+
 export async function runJudgeEval(args: string[], deps: JudgeEvalDeps): Promise<number> {
   const { log } = deps;
   const modes = new Set(['--dry-run', '--run', '--replay']);
-  const mi = args.indexOf('--model');
-  const model = mi >= 0 ? args[mi + 1] : undefined;
-  const rest = args.filter((_, i) => i !== mi && i !== mi + 1);
+  const rest = [...args];
+  const model = takeValue(rest, '--model');
+  const sampleArg = takeValue(rest, '--sample');
+  const maxCostArg = takeValue(rest, '--max-cost');
   const known = (CLAUDE_JUDGE_MODELS as readonly string[]).includes(model ?? '');
-  if (mi < 0 || !model || !known || rest.length !== 1 || !modes.has(rest[0]!)) {
-    log('Usage: npm run judge:eval -- --model <claude-haiku-5-5|claude-opus-5-5> --dry-run | --run | --replay');
+  const sample = sampleArg == null ? undefined : /^[1-9]\d*$/.test(sampleArg) ? Number(sampleArg) : NaN;
+  const maxCost = maxCostArg == null ? undefined : /^\d+(\.\d+)?$/.test(maxCostArg) && Number(maxCostArg) > 0 ? Number(maxCostArg) : NaN;
+  const badValue = sampleArg === null || maxCostArg === null || Number.isNaN(sample) || Number.isNaN(maxCost);
+  if (!model || !known || rest.length !== 1 || !modes.has(rest[0]!) || badValue) {
+    log(USAGE);
     if (model && !known) log(`Unknown model "${model}". Known: ${CLAUDE_JUDGE_MODELS.join(', ')}.`);
+    if (badValue) log('--sample takes a whole number above 0; --max-cost a dollar amount above 0.');
     return 2;
   }
   const mode = rest[0]!;
@@ -128,6 +163,16 @@ export async function runJudgeEval(args: string[], deps: JudgeEvalDeps): Promise
   let inputs;
   try { inputs = loadInputs(deps.dir); } catch (e) { log(e instanceof Error ? e.message : 'Could not read the inputs.'); return 1; }
   const cap = hiddenByCap(inputs.recording, inputs.parts);
+  const allCount = inputs.items.length;
+  const key = (l: Label) => `${l.model}\u0000${l.itemId}`;
+  if (sample !== undefined) {
+    const chosen = new Set(sampleLabels(inputs.labels, sample).map(key));
+    const sorted = [...inputs.items].sort((a, b) => byModelThenItem(a.label, b.label));
+    inputs = { ...inputs, items: sorted.filter((it) => chosen.has(key(it.label))), labels: inputs.labels.filter((l) => chosen.has(key(l))) };
+  }
+  const noteFor = (n: number): string | null =>
+    n < allCount ? `Sample: ${n} of ${allCount} labelled listings (sorted by model then item id, evenly spaced); not the full set.` : null;
+  let sampleNote = sample !== undefined ? noteFor(inputs.items.length) : null;
 
   if (mode === '--dry-run') {
     let chars = 0;
@@ -136,7 +181,10 @@ export async function runJudgeEval(args: string[], deps: JudgeEvalDeps): Promise
     const outTok = inputs.items.length * ASSUMED_OUTPUT_TOKENS;
     const cost = costOf({ inputTokens: inTok, outputTokens: outTok }, rates);
     log(`Judge eval, dry run (no network, no key read). Model ${model}, prompt ${PROMPT_VERSION}.`);
-    log(`Listings to judge: ${inputs.items.length} (every labelled listing), one call each.`);
+    log(sampleNote
+      ? `Listings to judge: ${inputs.items.length} (a sample of ${allCount}, sorted by model then item id, evenly spaced), one call each.`
+      : `Listings to judge: ${inputs.items.length} (every labelled listing), one call each.`);
+    if (maxCost !== undefined) log(`A run would stop before the next call once the cost reached ${usd(maxCost)}.`);
     log(`Estimated input: ${inTok} tokens (rendered prompts, characters / ${CHARS_PER_TOKEN}: a rough count).`);
     log(`Estimated output: ${outTok} tokens (assumed ${ASSUMED_OUTPUT_TOKENS} a listing, thinking included).`);
     log(`Prices used: $${rates.input} in / $${rates.output} out per million tokens.`);
@@ -147,19 +195,33 @@ export async function runJudgeEval(args: string[], deps: JudgeEvalDeps): Promise
 
   const file = judgementsPath(deps.dir, model);
   let results: EvalResult[];
+  let cut: { maxCost: number; done: number; of: number } | null = null;
   if (mode === '--replay') {
     if (!existsSync(file)) { log(`No judgements file for ${model}. Nothing to replay.`); return 1; }
-    results = readJson<JudgementsFile>(file).results;
+    const doc = readJson<JudgementsFile>(file);
+    results = doc.results;
     log(`Judge eval, replay of fixtures/ebay/judgements-${model}.json (no network).`);
+    if (doc.sample !== undefined && sample === undefined) {
+      // A sampled run is replayed as the same sample.
+      const chosen = new Set(sampleLabels(inputs.labels, doc.sample).map(key));
+      inputs = { ...inputs, items: inputs.items.filter((it) => chosen.has(key(it.label))), labels: inputs.labels.filter((l) => chosen.has(key(l))) };
+      sampleNote = noteFor(inputs.labels.length);
+    }
+    if (doc.incomplete) cut = { maxCost: doc.maxCost ?? 0, done: doc.results.length, of: doc.sample ?? allCount };
   } else {
-    const key = deps.env('ANTHROPIC_API_KEY');
-    if (!key) { log('ANTHROPIC_API_KEY must be set (in .env or the environment). Nothing was called.'); return 1; }
-    const judge = deps.makeJudge ? deps.makeJudge(model, key) : new ClaudeJudge({ apiKey: key, model });
+    const apiKey = deps.env('ANTHROPIC_API_KEY');
+    if (!apiKey) { log('ANTHROPIC_API_KEY must be set (in .env or the environment). Nothing was called.'); return 1; }
+    const judge = deps.makeJudge ? deps.makeJudge(model, apiKey) : new ClaudeJudge({ apiKey, model });
     const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
     const pause = deps.pauseMs ?? DEFAULT_PAUSE_MS;
     results = [];
+    let spent = 0;
     log(`Judge eval, run. Model ${model}, ${inputs.items.length} listings, one after another.`);
     for (const it of inputs.items) {
+      if (maxCost !== undefined && spent >= maxCost) {
+        cut = { maxCost, done: results.length, of: inputs.items.length };
+        break;
+      }
       const out = await judgeListing(judge, { part: it.part, listing: judgeListingFromEbay(it.listing) });
       const base = { itemId: it.label.itemId, model: it.label.model };
       if (out.kind === 'judged') {
@@ -168,13 +230,26 @@ export async function runJudgeEval(args: string[], deps: JudgeEvalDeps): Promise
         results.push({ ...base, notJudged: { reason: out.reason, message: out.message }, reasons: [], ...(out.usage ? { usage: out.usage } : {}) });
         if (out.reason === 'auth') { log('The key was refused. Stopped; nothing written.'); return 1; }
       }
+      if (out.usage) spent += costOf(out.usage, rates);
       await sleep(pause);
     }
-    const doc: JudgementsFile = { model, promptVersion: PROMPT_VERSION, ranAt: (deps.now?.() ?? new Date()).toISOString(), results };
+    const doc: JudgementsFile = {
+      model, promptVersion: PROMPT_VERSION, ranAt: (deps.now?.() ?? new Date()).toISOString(), results,
+      ...(sample !== undefined ? { sample: inputs.items.length } : {}),
+      ...(cut ? { incomplete: true, maxCost: cut.maxCost } : {}),
+    };
     writeFileSync(file, JSON.stringify(doc, null, 1) + '\n');
     log(`Wrote fixtures/ebay/judgements-${model}.json.`);
   }
 
-  printScore(log, scoreJudgements({ labels: inputs.labels, results, listings: listingsByPart(inputs.recording), rates }), cap);
+  let labels = inputs.labels;
+  if (sampleNote) log(sampleNote);
+  if (cut) {
+    // Only what was judged is scored: a label never called is not a miss.
+    const called = new Set(results.map((r) => `${r.model}\u0000${r.itemId}`));
+    labels = labels.filter((l) => called.has(key(l)));
+    log(`Run cut by --max-cost ${usd(cut.maxCost)} after ${cut.done} of ${cut.of} listings: the score covers only those ${cut.done}.`);
+  }
+  printScore(log, scoreJudgements({ labels, results, listings: listingsByPart(inputs.recording), rates }), cap);
   return 0;
 }

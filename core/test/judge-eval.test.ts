@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { EbayListing } from '../src/ebay/types';
 import { costOf, type EvalResult, type JudgeCall, type Label, type ListingJudge, PRICE_TABLE, PROMPT_VERSION, scoreJudgements } from '../src/judge';
-import { hiddenByCap, judgementsPath, type JudgementsFile, runJudgeEval } from '../../scripts/judge-eval-cli';
+import { hiddenByCap, judgementsPath, type JudgementsFile, runJudgeEval, sampleLabels } from '../../scripts/judge-eval-cli';
 
 const FIX = new URL('../../fixtures/', import.meta.url).pathname;
 
@@ -165,5 +165,95 @@ describe('judge:eval', () => {
     const c = hiddenByCap(rec.parts, parts);
     expect(c.ofCapped).toBeGreaterThanOrEqual(c.hidden);
     expect(c.ofCapped).toBeGreaterThan(0);
+  });
+});
+
+describe('judge:eval --sample and --max-cost (fix round 3)', () => {
+  const run = async (args: string[], dir: string, extra: Partial<Parameters<typeof runJudgeEval>[1]> = {}) => {
+    const lines: string[] = [];
+    const code = await runJudgeEval(args, { log: (l) => lines.push(l), dir, env: () => 'sk-ant-SECRET', sleep: async () => {}, pauseMs: 0, ...extra });
+    return { code, text: lines.join('\n') };
+  };
+  const usage = { inputTokens: 10_000, outputTokens: 1_000 }; // Haiku: $0.0015 a call
+  const perCall = costOf(usage, PRICE_TABLE['claude-haiku-5-5']!);
+  const fakeJudge = (calls: string[]): ListingJudge => ({
+    id: 'fake',
+    model: 'claude-haiku-5-5',
+    async judge(input): Promise<JudgeCall> {
+      calls.push(input.listing.itemId);
+      return { judgeId: 'fake', model: 'claude-haiku-5-5', promptVersion: PROMPT_VERSION, ok: true, answer: 'not json', usage };
+    },
+  });
+
+  it('sampleLabels: sorted by model then item id, n evenly spaced, the same every time', () => {
+    const s = sampleLabels(allLabels, 10);
+    expect(s).toHaveLength(10);
+    expect(sampleLabels(allLabels, 10)).toEqual(s);
+    const sorted = [...allLabels].sort((a, b) => (a.model === b.model ? (a.itemId < b.itemId ? -1 : 1) : a.model < b.model ? -1 : 1));
+    expect(s).toEqual([0, 21, 43, 65, 86, 108, 130, 151, 173, 195].map((i) => sorted[i]));
+    expect(sampleLabels(allLabels, 500)).toHaveLength(217);
+    expect(sampleLabels([...allLabels].reverse(), 10)).toEqual(s);
+  });
+
+  it('dry run with --sample says it is a sample and counts only the sample', async () => {
+    const { code, text } = await run(['--model', 'claude-haiku-5-5', '--dry-run', '--sample', '20'], tmpFixtures());
+    expect(code).toBe(0);
+    expect(text).toContain('Listings to judge: 20 (a sample of 217');
+  });
+
+  it('a run with --sample judges only the sample, writes it, and the score says it is a sample', async () => {
+    const dir = tmpFixtures();
+    const calls: string[] = [];
+    const { code, text } = await run(['--model', 'claude-haiku-5-5', '--run', '--sample', '12'], dir, { makeJudge: () => fakeJudge(calls) });
+    expect(code).toBe(0);
+    expect(calls).toEqual(sampleLabels(allLabels, 12).map((l) => l.itemId));
+    const file = JSON.parse(readFileSync(judgementsPath(dir, 'claude-haiku-5-5'), 'utf8')) as JudgementsFile;
+    expect(file.results).toHaveLength(12);
+    expect(file.sample).toBe(12);
+    expect(file.incomplete).toBeUndefined();
+    expect(text).toContain('Sample: 12 of 217 labelled listings');
+    expect(text).toContain('Labelled listings: 12');
+    // A replay scores the same sample, not 205 listings as never judged.
+    const replay = await run(['--model', 'claude-haiku-5-5', '--replay'], dir);
+    expect(replay.text).toContain('Sample: 12 of 217 labelled listings');
+    expect(replay.text).toContain('Not judged: 0');
+  });
+
+  it('--max-cost stops before the next call once the cost reaches it, writes the part marked incomplete, scores only what was judged', async () => {
+    const dir = tmpFixtures();
+    const calls: string[] = [];
+    const max = (perCall * 2.5).toFixed(6);
+    const { code, text } = await run(['--model', 'claude-haiku-5-5', '--run', '--max-cost', max], dir, { makeJudge: () => fakeJudge(calls) });
+    expect(code).toBe(0);
+    expect(calls).toHaveLength(3); // $0.0030 < $0.00375 after two calls, $0.0045 after three
+    const file = JSON.parse(readFileSync(judgementsPath(dir, 'claude-haiku-5-5'), 'utf8')) as JudgementsFile;
+    expect(file.incomplete).toBe(true);
+    expect(file.results).toHaveLength(3);
+    expect(text).toMatch(/Run cut by --max-cost \$[\d.]+ after 3 of 217 listings/);
+    expect(text).toContain('Labelled listings: 3');
+    expect(text).toContain('Judged: 3. Not judged: 0');
+    expect(text).not.toContain('SECRET');
+
+    const replay = await run(['--model', 'claude-haiku-5-5', '--replay'], dir);
+    expect(replay.code).toBe(0);
+    expect(replay.text).toMatch(/cut by --max-cost/);
+    expect(replay.text).toContain('Labelled listings: 3');
+  });
+
+  it('a max cost never reached judges everything and is not incomplete', async () => {
+    const dir = tmpFixtures();
+    const calls: string[] = [];
+    const { code } = await run(['--model', 'claude-haiku-5-5', '--run', '--sample', '5', '--max-cost', '10'], dir, { makeJudge: () => fakeJudge(calls) });
+    expect(code).toBe(0);
+    expect(calls).toHaveLength(5);
+    expect((JSON.parse(readFileSync(judgementsPath(dir, 'claude-haiku-5-5'), 'utf8')) as JudgementsFile).incomplete).toBeUndefined();
+  });
+
+  it('rejects a bad --sample or --max-cost before doing anything', async () => {
+    const dir = tmpFixtures();
+    for (const bad of [['--sample', '0'], ['--sample', 'x'], ['--sample'], ['--max-cost', '-1'], ['--max-cost', 'lots'], ['--max-cost']]) {
+      expect((await run(['--model', 'claude-haiku-5-5', '--run', ...bad], dir, { makeJudge: () => fakeJudge([]) })).code).toBe(2);
+    }
+    expect(existsSync(judgementsPath(dir, 'claude-haiku-5-5'))).toBe(false);
   });
 });
