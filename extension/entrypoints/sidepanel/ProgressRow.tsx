@@ -130,13 +130,14 @@ export function ProgressRow({ job, rates }: { job: ScanJob | null; rates?: UnitR
   return (
     <div className="progress" data-open={open || undefined}>
       <div className="progress-line">
+        {/* At 360px a long label gives way (an ellipsis), never the count. */}
         <span className="progress-now">
-          {label}
+          <span className="progress-label">{label}</span>
           {count ? (
-            <>
+            <span className="progress-count">
               {' · '}
               <span className="figure">{count}</span>
-            </>
+            </span>
           ) : null}
         </span>
         <span className="progress-estimate figure">{view.estimateText}</span>
@@ -150,7 +151,7 @@ export function ProgressRow({ job, rates }: { job: ScanJob | null; rates?: UnitR
         aria-label="Scan progress"
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={Math.round(percent)}
+        aria-valuenow={Math.floor(percent)}
         aria-valuetext={view.ariaValueText}
       >
         <div className="progress-fill" style={{ width: `${percent.toFixed(1)}%` }} />

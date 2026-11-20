@@ -168,11 +168,18 @@ select {
 }
 .progress-now {
   flex: 1 1 auto;
+  display: flex;
+  min-width: 0;
+  white-space: pre;
+  color: var(--ink);
+}
+.progress-label {
   min-width: 0;
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
-  color: var(--ink);
+}
+.progress-count {
+  flex: none;
 }
 .progress-now .figure,
 .progress-estimate {

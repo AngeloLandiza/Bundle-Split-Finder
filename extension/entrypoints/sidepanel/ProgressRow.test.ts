@@ -125,7 +125,7 @@ describe('progress row (step 11): on every job a replayed scan saved', () => {
       expect(line(container)).toBe(view.current.count ? `${view.current.label} · ${view.current.count}` : view.current.label);
       expect(estimateOf(container)).toBe(view.estimateText);
       expect(bar()).toHaveAttribute('aria-valuetext', view.ariaValueText);
-      expect(bar()).toHaveAttribute('aria-valuenow', String(Math.round(view.fraction * 100)));
+      expect(bar()).toHaveAttribute('aria-valuenow', String(Math.floor(view.fraction * 100)));
       unmount();
     }
   });
@@ -175,6 +175,13 @@ describe('progress row (step 11): collapsed', () => {
     expect(view.fraction).toBeGreaterThan(0);
     expect(view.fraction).toBeLessThan(1);
     expect(container.querySelector<HTMLElement>('.progress-fill')!.style.width).toBe(`${(view.fraction * 100).toFixed(1)}%`);
+  });
+
+  it('does not say 100 while a unit is left (the replay in e2e reached 99.6%)', () => {
+    const job = lookingUp(996, 1000);
+    expect(pipelineView(job, RATES, T0).fraction).toBeGreaterThan(0.995);
+    render(createElement(ProgressRow, { job, rates: RATES }));
+    expect(bar()).toHaveAttribute('aria-valuenow', '99');
   });
 
   it('with no job yet it says Scanning, and that it is estimating', () => {

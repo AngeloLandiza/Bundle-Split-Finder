@@ -33,6 +33,13 @@ describe('the progress bar', () => {
   });
 });
 
+describe('the collapsed line', () => {
+  it('a long label gives way with an ellipsis; the count never does (QA, 360px)', () => {
+    expect(declarations('.progress-label')).toContain('text-overflow: ellipsis');
+    expect(declarations('.progress-count')).toContain('flex: none');
+  });
+});
+
 describe('the step list', () => {
   it('stays hidden while Details is closed, although it is a grid', () => {
     expect(declarations('.progress-steps[hidden]')).toContain('display: none');
