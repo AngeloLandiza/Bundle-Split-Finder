@@ -16,7 +16,7 @@ import type { AppState, AskAllResult, PanelReport, Reply, Request } from '../../
 import type { WorkerApi } from '../../lib/pageClient';
 import { ReviewTab } from './ReviewTab';
 import { askAllSentence } from './AskAll';
-import { compactQuote, keyQuoteOf } from './AiSuggestions';
+import { compactQuote, keyQuoteOf, quoteLineOf } from './AiSuggestions';
 import { researchCostLabel } from '@core/research/eval';
 
 // Step 12, R3: the Review tab with Ask AI about all, the "AI suggestions" section and Approve all. Real questions of the validation replay.
@@ -146,15 +146,19 @@ describe('the "AI suggestions" section', () => {
 
 describe('the key quote of a row', () => {
   const q = (quote: string, names: boolean, label = 'Home Depot page') => ({ quote, sourceId: 's', label, url: 'https://www.homedepot.com/p/1', names });
-  it('is one that names the answer\'s models, the one naming the most of them, and of those the shortest', () => {
+  it('is the shortest quote that names one of the answer\'s models (of equal length, the one naming more)', () => {
     const quotes = [
       q('18V 5-1/2" Circular Saw', false),
       q('RYOBI PCL500B (item 317987588): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)', true, 'Home Depot search'),
       q('Includes PCL500B and PCL525B.', true),
       q('PCL525B', true),
     ];
-    // Two models named by one quote beat one model named by a shorter quote.
-    expect(keyQuoteOf(quotes, ['PCL500B', 'PCL525B'])?.quote).toBe('Includes PCL500B and PCL525B.');
+    // A shorter quote naming one model beats a longer one naming two: the row has one line.
+    expect(keyQuoteOf(quotes, ['PCL500B', 'PCL525B'])?.quote).toBe('PCL525B');
+    expect(keyQuoteOf(quotes.slice(0, 3), ['PCL500B', 'PCL525B'])?.quote).toBe('Includes PCL500B and PCL525B.');
+    // A sibling listing's title that names none of the models is not preferred over one that does.
+    const sibling = q('ONE+ 18V Cordless 2-Tool Combo Kit with 4.0 Ah Battery', true);
+    expect(keyQuoteOf([sibling, q('PCL500B (item 1): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)', true)], ['PCL500B'])?.quote).toMatch(/^PCL500B/);
     // With no models to count, a quote that names is still preferred, the shortest.
     expect(keyQuoteOf(quotes)?.quote).toBe('PCL525B');
     // A quote that names nothing is the key only when no quote names the answer.
@@ -167,8 +171,19 @@ describe('the key quote of a row', () => {
     expect(compactQuote('Model (item 12): ')).toBe('Model (item 12): ');
   });
   it('is read case-blind, and a repeated model counts once', () => {
-    const quotes = [q('includes dck200d1p1 and dcf921b', true), q('DCK200D1P1', true)];
+    const quotes = [q('includes dck200d1p1 and dcf921b', true), q('includes dck200d1p1 and dcf921b today', true)];
     expect(keyQuoteOf(quotes, ['DCK200D1P1', 'DCF921B', 'DCF921B'])?.quote).toBe('includes dck200d1p1 and dcf921b');
+  });
+  it('the line starts at the model when the quote is long, so the model shows before the cut; short quotes stay whole', () => {
+    const sibling = 'RYOBI PCL500B-PCL525B (item 1): ONE+ 18V Cordless 2-Tool Combo Kit with Circular Saw and Jig Saw';
+    // A model only the label names, near the start: the whole quote, with the model in view.
+    expect(quoteLineOf(sibling, ['PCL525B'])).toBe(sibling);
+    // A model near the start is already in view: nothing is cut off the front.
+    expect(quoteLineOf('Includes PBP004 and PBP003 and PCG002.', ['PBP003'])).toBe('Includes PBP004 and PBP003 and PCG002.');
+    expect(quoteLineOf('ONE+ 18V Cordless 2-Tool Combo Kit includes PCL525B and a battery', ['PCL525B'])).toBe('…PCL525B and a battery');
+    expect(quoteLineOf('Includes PCL525B.', ['PCL525B'])).toBe('Includes PCL525B.');
+    expect(quoteLineOf('PCL525B is part of the long kit title here and goes on', ['PCL525B'])).toBe('PCL525B is part of the long kit title here and goes on');
+    expect(quoteLineOf('ONE+ 18V Cordless 2-Tool Combo Kit with a battery', ['PCL525B'])).toBe('ONE+ 18V Cordless 2-Tool Combo Kit with a battery');
   });
 });
 
@@ -455,6 +470,60 @@ describe('Ask AI about all', () => {
     const { a, b } = await world();
     setup(reportOf([a, b], [cannotTell(a)]), { state: state({ askAllResult: { total: 4, asked: 2, suggested: 1, verified: 0, costUsd: 0.1, stopped: true, problem: null, overspent: false } }) });
     expect(screen.getByRole('status', { name: '' })).toHaveTextContent('Stopped after 2 of 4: 0 verified. Cost $0.10.');
+  });
+
+  it('never says $0.00: a cost under a cent reads "under $0.01"', () => {
+    const r: AskAllResult = { total: 7, asked: 7, suggested: 1, verified: 1, costUsd: 0.004, stopped: false, problem: null, overspent: false };
+    expect(askAllSentence(r)).toBe('Asked 7 questions: 1 verified, 6 left for you. Cost under $0.01.');
+    expect(askAllSentence({ ...r, overspent: true })).toBe('Stopped: asking cost more than expected (under $0.01). Nothing was applied.');
+    expect(askAllSentence({ ...r, costUsd: 0 })).toBe('Asked 7 questions: 1 verified, 6 left for you.');
+  });
+
+  it('the sentence about a finished batch goes once its suggestions are approved', async () => {
+    const { a, b } = await world();
+    const result: AskAllResult = { total: 2, asked: 2, suggested: 2, verified: 2, costUsd: 0.01, stopped: false, problem: null, overspent: false };
+    setup(reportOf([a, b], [verifiedReading(a), verifiedReading(b)]), { state: state({ askAllResult: result }) });
+    expect(screen.queryByText(/^Asked 2 questions/)).toBeNull();
+    await userEvent.click(within(section()).getByRole('button', { name: 'Approve all 2 verified' }));
+    await userEvent.click(within(section()).getByRole('button', { name: 'Approve' }));
+    await screen.findByText('Approved 2 of 2.');
+    expect(screen.queryByText(/^Asked 2 questions/)).toBeNull();
+    expect(screen.queryByRole('status', { name: '' })).toBeNull();
+  });
+
+  it('a question answered by hand also ends the sentence about the batch', async () => {
+    const { a, b } = await world();
+    const result: AskAllResult = { total: 2, asked: 2, suggested: 0, verified: 0, costUsd: 0.01, stopped: false, problem: null, overspent: false };
+    setup(reportOf([a, b], [cannotTell(a)]), { state: state({ askAllResult: result }) });
+    expect(screen.getByText(/^Asked 2 questions/)).toBeVisible();
+    await userEvent.click(screen.getByRole('radio', { name: 'None of these' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save answer' }));
+    await waitFor(() => expect(screen.queryByText(/^Asked 2 questions/)).toBeNull());
+  });
+
+  it('after Ask AI about all is pressed, focus goes to the header\'s Stop, the queue\'s control', async () => {
+    const { a, b } = await world();
+    const stop = document.createElement('button');
+    stop.id = 'scan-control';
+    stop.textContent = 'Stop';
+    document.body.appendChild(stop);
+    const ui = setup(reportOf([a, b]));
+    await userEvent.click(askAllButton());
+    expect(stop).not.toHaveFocus();
+    ui.rerender({ state: state({ askAll: { done: 0, total: 2, costUsd: 0, estimateUsd: 0.2 } }) });
+    expect(stop).toHaveFocus();
+    stop.remove();
+  });
+
+  it('focus is left alone when the queue runs but was not started from this panel\'s button', async () => {
+    const { a, b } = await world();
+    const stop = document.createElement('button');
+    stop.id = 'scan-control';
+    document.body.appendChild(stop);
+    const ui = setup(reportOf([a, b]));
+    ui.rerender({ state: state({ askAll: { done: 0, total: 2, costUsd: 0, estimateUsd: 0.2 } }) });
+    expect(stop).not.toHaveFocus();
+    stop.remove();
   });
 
   it('the sentence says stopped, and why a queue gave up', () => {

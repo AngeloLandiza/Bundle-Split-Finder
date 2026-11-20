@@ -59,7 +59,8 @@ export function AskAllRow({ button, note }: { button: ReactNode; note: string | 
   );
 }
 
-const cost = (usd: number): string => `$${usd.toFixed(2)}`;
+/** A real cost under half a cent reads "under $0.01", never "$0.00". */
+const cost = (usd: number): string => (usd > 0 && usd.toFixed(2) === '0.00' ? 'under $0.01' : `$${usd.toFixed(2)}`);
 const questions = (n: number): string => `${n} ${n === 1 ? 'question' : 'questions'}`;
 
 /** How the last Ask AI about all ended, in one sentence: what was asked, what the code verified, and what it cost. */

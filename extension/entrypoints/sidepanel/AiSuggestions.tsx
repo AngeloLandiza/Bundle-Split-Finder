@@ -101,15 +101,39 @@ export function useApproveAll(api: WorkerApi, onApproved: (item: ReviewItem, see
 export const rowName = (item: ReviewItem): string => (item.kind === 'split' && item.title ? item.title : `${item.brand} ${item.model}`);
 
 /**
- * The quote a row shows: among the quotes that name the answer's models (all, if there are any, else the first), the one that names the most of
- * them, and of those the shortest, so it fits the row's one line and still says something. With no quote naming the answer, the first.
+ * The quote a row shows: the shortest quote that contains at least one of the answer's models (of equal length, the one with more of them),
+ * so it fits the row's one line. With no model in any quote, or none given, the shortest that names the answer; with none naming it, the first.
  */
 export const keyQuoteOf = (quotes: readonly VerifiedQuote[], models: readonly string[] = []): VerifiedQuote | undefined => {
   const naming = quotes.filter((q) => q.names);
   if (naming.length === 0) return quotes[0];
   const wanted = [...new Set(models.map((m) => m.toUpperCase()))];
   const score = (q: VerifiedQuote): number => wanted.filter((m) => q.quote.toUpperCase().includes(m)).length;
-  return [...naming].sort((x, y) => score(y) - score(x) || x.quote.length - y.quote.length)[0];
+  const withModel = naming.filter((q) => score(q) > 0);
+  const pool = withModel.length > 0 ? withModel : naming;
+  return [...pool].sort((x, y) => x.quote.length - y.quote.length || score(y) - score(x))[0];
+};
+
+/** A model this near the start of the line is in view at 360px already: the line is not cut at its front. */
+const MODEL_IN_VIEW = 20;
+
+/**
+ * The text of a row's quote line: the quote without a search row's own label (compactQuote) and, when one of the models is
+ * in it further along than the line shows, starting at the model ("…PCL525B (Tool Only)"), so the model shows before the line is cut at 360px. A model only
+ * the label names makes the line the whole quote. The full quote stays the line's hover text.
+ */
+export const quoteLineOf = (quote: string, models: readonly string[] = []): string => {
+  const find = (t: string): number => {
+    const at = models.map((m) => t.toUpperCase().indexOf(m.toUpperCase())).filter((i) => i >= 0);
+    return at.length > 0 ? Math.min(...at) : -1;
+  };
+  let text = compactQuote(quote);
+  let at = find(text);
+  if (at < 0 && find(quote) >= 0) {
+    text = quote;
+    at = find(quote);
+  }
+  return at > MODEL_IN_VIEW ? `…${text.slice(at)}` : text;
 };
 
 /**
@@ -210,7 +234,8 @@ export function AiSuggestionsSection({ rows, approve, scanRunning, expanded, onT
           const bodyId = `${titleId}-${row.item.id}`;
           const suggestion = row.stored.suggestion;
           const proposal = proposalOf(suggestion, row.item);
-          const quote = suggestion.status === 'verified' ? keyQuoteOf(suggestion.quotes, modelsOf(suggestion)) : undefined;
+          const models = modelsOf(suggestion);
+          const quote = suggestion.status === 'verified' ? keyQuoteOf(suggestion.quotes, models) : undefined;
           const href = quote ? webUrl(quote.url) : null;
           return (
             <li key={`${row.item.id}|${reviewSignature(row.item)}`} className="ai-row" data-open={open || undefined}>
@@ -224,7 +249,7 @@ export function AiSuggestionsSection({ rows, approve, scanRunning, expanded, onT
               {quote && !open ? (
                 <p className="ai-row-quote">
                   <q className="ai-row-quote-text" title={quote.quote}>
-                    {compactQuote(quote.quote)}
+                    {quoteLineOf(quote.quote, models)}
                   </q>
                   {href ? (
                     <a className="ai-source" href={href} target="_blank" rel="noopener noreferrer">

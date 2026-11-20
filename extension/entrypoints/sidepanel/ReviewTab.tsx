@@ -50,6 +50,9 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
   const [askAllError, setAskAllError] = useState<string | null>(null);
   const [rowSaved, setRowSaved] = useState(0);
+  // Ask AI about all was pressed here and its queue has not been seen running yet; and the batch result the owner has acted on since.
+  const pressedAskAll = useRef(false);
+  const [dismissedResult, setDismissedResult] = useState<string | null>(null);
 
   const keyOf = (r: ReviewItem) => `${r.id}|${reviewSignature(r)}`;
   const ebayKeyOf = (q: EbayQ) => `ebay:${q.id}`;
@@ -104,13 +107,26 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const askable = askQueueOf(reviews, records);
   const askAll = async (): Promise<void> => {
     setAskAllError(null);
+    pressedAskAll.current = true;
     try {
       const reply = await api.send<{ queued: number }>({ type: 'askAiAll' });
-      if (!reply.ok) setAskAllError(reply.error);
+      if (!reply.ok) {
+        pressedAskAll.current = false;
+        setAskAllError(reply.error);
+      }
     } catch {
+      pressedAskAll.current = false;
       setAskAllError(UNREACHABLE);
     }
   };
+  // The button reads Asking… once the queue runs and is no longer the control: focus goes to the header's Stop (the queue's control, the
+  // same button a scan has), so the next Tab continues from there. Only after the owner pressed Ask AI about all in this panel.
+  useEffect(() => {
+    if (queueRunning && pressedAskAll.current) {
+      pressedAskAll.current = false;
+      document.getElementById('scan-control')?.focus();
+    }
+  }, [queueRunning]);
   // With one question to ask there is its own button: "about all 1" would be the same button twice, so it takes two. Accept all's rule too.
   const askAllButton =
     hasAi && (askable.length >= 2 || queueRunning) ? (
@@ -119,8 +135,9 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   // The sentence about how the last asking went belongs to the Ask AI row. It goes once the section shows the results, except when the
   // queue stopped on its own (a problem, or the spending cap): the section does not say why it holds fewer rows than were asked about.
   const last = state.askAllResult;
+  const lastKey = last ? JSON.stringify(last) : null;
   const lastShown = last && !queueRunning && !state.scanRunning && (rows.length === 0 || last.problem !== null || last.overspent) ? askAllSentence(last) : null;
-  const askAllNote = askAllError ?? lastShown;
+  const askAllNote = askAllError ?? (lastKey !== null && lastKey === dismissedResult ? null : lastShown);
   const accept = (
     <AcceptSuggested
       items={suggested}
@@ -132,6 +149,10 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
       linkOf={homeDepotLinkOf}
     />
   );
+  // The sentence describes a finished batch: once its suggestions are approved or any question is answered, it is not shown again.
+  useEffect(() => {
+    if ((approveAll.result !== null || done.size > 0) && lastKey !== null) setDismissedResult(lastKey);
+  }, [approveAll.result?.id, done.size]); // eslint-disable-line react-hooks/exhaustive-deps
   const askRow = <AskAllRow button={askAllButton} note={askAllNote} />;
 
   // After an answer the form is gone: focus goes to the next question's heading (ReviewQuestion), or here.
