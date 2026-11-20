@@ -65,7 +65,10 @@ const T3_MODEL = 'Bundle model number: PCL1201K2-PCL430B';
 const use = (id: string, name: string, input: unknown) => ({ type: 'tool_use', id, name, input });
 const turn = (...content: unknown[]) => ({ stopReason: 'tool_use' as const, content });
 const submit = (input: unknown) => turn(use('toolu_submit', 'submit_answer', input));
-/** The research answer for PCL500525SB as a model might give it: each part named by a Home Depot search row and by the bundle's own words. */
+/**
+ * The research answer for PCL500525SB as a model might give it: each part named by a Home Depot search row and by the bundle's own words, and
+ * tied to this bundle by Home Depot's sibling listing "PCL500B-PCL525B" (the same two tools, Tools Only), quoted under both parts.
+ */
 const PCL_PARTS = {
   quotes: [], decision: 'parts', choiceIndex: null, reason: 'The two tools, as Home Depot sells them alone.',
   parts: [
@@ -73,11 +76,13 @@ const PCL_PARTS = {
       { quote: 'RYOBI PCL500B (item 317987588): ONE+ 18V Cordless 5 1/2 in. Circular Saw (Tool Only)', sourceId: 'hd-search:ryobi-pcl500' },
       { quote: '18V 5-1/2" Circular Saw', sourceId: 'hd-page:328690510' }, { quote: '18T Carbide Tipped Blade', sourceId: 'hd-page:328690510' },
       { quote: '(2) Hex Wrenches', sourceId: 'bundle' },
+      { quote: 'RYOBI PCL500B-PCL525B (item 324616618): ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)', sourceId: 'hd-search:ryobi-pcl500' },
     ] },
     { model: 'PCL525B', qty: 1, quotes: [
       { quote: 'RYOBI PCL525B (item 318898528): ONE+ 18V Cordless Jig Saw (Tool Only)', sourceId: 'hd-search:ryobi-jig-saw-tool-only' },
       { quote: '18V Jig Saw', sourceId: 'hd-page:328690510' }, { quote: 'Non-Marring Shoe', sourceId: 'hd-page:328690510' },
       { quote: 'T-Shank Wood Cutting Blade', sourceId: 'hd-page:328690510' },
+      { quote: 'RYOBI PCL500B-PCL525B (item 324616618): ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)', sourceId: 'hd-search:ryobi-pcl500' },
     ] },
   ],
 };
