@@ -200,27 +200,79 @@ export interface PageSections {
   bullets: string[];
   description: string | null;
   /**
-   * Always empty for now. The recorded pages (fixtures/homedepot-pages) are cut down to identifiers and details and hold
-   * no specification group, so its field names are not known; they are added from a recorded page, never from memory.
+   * `specificationGroup[].specifications[]` as `{specName, specValue}`, in page order, groups flattened (checked against
+   * fixtures/homedepot-pages/research-2026-11-20.json: "Included": "Tool Only", "Tools Included": "Circular Saw,Jig Saw",
+   * "Number of Total Batteries Included": "0"). A page without the group gives none. The older, cut-down recordings have none.
    */
   specifications: PageSpecification[];
 }
 
 /**
- * The sections of a product page's embedded data. `itemId` names the product to read; without it, the first
- * `base-catalog-<itemId>` object is read. Null when the data is missing or does not parse, or holds no such product.
+ * The sections of the product in an Apollo state object (`window.__APOLLO_STATE__`, parsed). `itemId` names the product
+ * to read; without it, the first `base-catalog-<itemId>` object is read. Null when the state holds no such product.
  */
-export function parsePageSections(text: string, itemId?: string): PageSections | null {
-  const state = pageState(text);
-  if (state === null) return null;
-  const key = itemId !== undefined ? `base-catalog-${itemId}` : Object.keys(state).find((k) => /^base-catalog-\d+$/.test(k));
-  const product = key === undefined ? undefined : state[key];
+export function parsePageState(state: unknown, itemId?: string): PageSections | null {
+  const s = asObj(state);
+  const key = itemId !== undefined ? `base-catalog-${itemId}` : Object.keys(s).find((k) => /^base-catalog-\d+$/.test(k));
+  const product = key === undefined ? undefined : s[key];
   if (!product || typeof product !== 'object') return null;
   const ids = asObj((product as Json).identifiers);
+  const groups = (product as Json).specificationGroup;
+  const specifications: PageSpecification[] = [];
+  for (const g of Array.isArray(groups) ? groups : []) {
+    const list = asObj(g).specifications;
+    for (const sp of Array.isArray(list) ? list : []) {
+      const name = nonEmpty(asObj(sp).specName);
+      const value = asStr(asObj(sp).specValue)?.trim() ?? '';
+      if (name !== null && value !== '') specifications.push({ name, value });
+    }
+  }
   return {
     title: nonEmpty(ids.productLabel) ?? '',
     model: nonEmpty(ids.modelNumber) ?? '',
     ...contentOf(product as Json),
-    specifications: [],
+    specifications,
   };
+}
+
+/** As parsePageState, on the page text from `window.__APOLLO_STATE__=` on. Null when the data is missing or does not parse. */
+export function parsePageSections(text: string, itemId?: string): PageSections | null {
+  const state = pageState(text);
+  return state === null ? null : parsePageState(state, itemId);
+}
+
+/** One product of a Home Depot search page. */
+export interface SearchProduct { itemId: string; brand: string; model: string; title: string; url: string }
+
+/**
+ * The products of a search page's Apollo state: its `base-searchNav-<itemId>` entries, in page order (checked against
+ * research-2026-11-20.json, where each holds `identifiers` brandName, productLabel, modelNumber and canonicalUrl).
+ * Home Depot also returns unrelated products for a query it cannot answer; they are returned as they come, relevance
+ * is the reader's to judge. An entry with no item id or no model is left out.
+ */
+export function parseSearchState(state: unknown, origin = 'https://www.homedepot.com'): SearchProduct[] {
+  const out: SearchProduct[] = [];
+  for (const [key, value] of Object.entries(asObj(state))) {
+    const m = /^base-searchNav-(\d+)$/.exec(key);
+    if (!m || !value || typeof value !== 'object') continue;
+    const ids = asObj(asObj(value).identifiers);
+    const model = nonEmpty(ids.modelNumber);
+    if (model === null) continue;
+    const itemId = m[1] as string;
+    const path = nonEmpty(ids.canonicalUrl);
+    out.push({
+      itemId,
+      brand: nonEmpty(ids.brandName) ?? '',
+      model,
+      title: nonEmpty(ids.productLabel) ?? '',
+      url: `${origin}${path !== null && path.startsWith('/p/') ? path : `/p/${itemId}`}`,
+    });
+  }
+  return out;
+}
+
+/** parseSearchState on a search page's text from `window.__APOLLO_STATE__=` on; null when the data is missing or does not parse. */
+export function parseSearchText(text: string, origin?: string): SearchProduct[] | null {
+  const state = pageState(text);
+  return state === null ? null : parseSearchState(state, origin);
 }

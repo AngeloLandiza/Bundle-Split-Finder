@@ -6,7 +6,7 @@
 // Result shapes are the contract the loop in core/src/research is written against. If core/src/research/types.ts
 // ever defines them, import them from there and delete the copies below.
 
-import { parsePageSections, type PageSections } from '@core/hdPage';
+import { parsePageSections, parseSearchText, type PageSections } from '@core/hdPage';
 import { sameModel } from '@core/match';
 import type { ScanStore } from '@core/scan/types';
 import { fetchPagesInTab, type ReaderEnv } from './hdReader';
@@ -101,14 +101,20 @@ export function homeDepotItemId(input: { itemId?: string; url?: string }): strin
 
 /**
  * Runs inside the tab. Self-contained, like fetchPagesInTab (serialised by its source: no imports, no outside
- * variables). Fetches Home Depot's own `/s/<query>` same-origin and returns the status and, for a 200, the page text.
- * A fetch that throws gives status 0.
+ * variables). Fetches Home Depot's own `/s/<query>` same-origin and returns the status and, for a 200, the text from
+ * `window.__APOLLO_STATE__=` to the next `</script>` (null when the page has none). A fetch that throws gives status 0.
  */
 export async function fetchSearchPageInTab(query: string): Promise<SearchPageResult> {
   try {
     const res = await fetch(`/s/${encodeURIComponent(query)}`, { credentials: 'include' });
     const body = await res.text();
-    return { status: res.status, text: res.status === 200 ? body : null };
+    let text: string | null = null;
+    const mark = body.indexOf('window.__APOLLO_STATE__=');
+    if (res.status === 200 && mark >= 0) {
+      const end = body.indexOf('</script>', mark);
+      text = end >= 0 ? body.slice(mark, end) : body.slice(mark);
+    }
+    return { status: res.status, text };
   } catch {
     return { status: 0, text: null };
   }
@@ -119,9 +125,8 @@ export interface ResearchToolsDeps {
   /** Only the catalog is read. */
   store: Pick<ScanStore, 'listCatalog'>;
   /**
-   * Reads the products of a Home Depot search page; null when the page is not a search page it understands. Not wired
-   * yet: no search page has been recorded to write it against (see docs/decisions.md), and without it every search
-   * answers that the page could not be read.
+   * Reads the products of the search page text fetchSearchPageInTab returns; null when it does not parse. By default
+   * core's parseSearchText (the `base-searchNav-<id>` entries of the page's state, in page order).
    */
   parseSearch?: (pageText: string) => SearchRow[] | null;
   /** As createPageReader: waited once after the doorway tab loads, and between two doorways. */
@@ -218,7 +223,7 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
             refused = true;
             return { error: `Home Depot refused the search (${statusNote(answered ? answered.status : 0)}); no more are made for this question.` };
           }
-          const rows = deps.parseSearch ? deps.parseSearch(answered.text) : null;
+          const rows = (deps.parseSearch ?? parseSearchText)(answered.text);
           if (rows === null) return { error: 'The search page could not be read.' };
           return {
             sourceId: `hd-search-${slug(query)}`,

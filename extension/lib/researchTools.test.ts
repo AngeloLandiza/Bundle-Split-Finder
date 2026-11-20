@@ -12,6 +12,10 @@ import {
 const pages = (JSON.parse(readFileSync('fixtures/homedepot-pages/pages-2026-11-10.json', 'utf8')) as { pages: InTabResult[] }).pages;
 const byId = new Map(pages.map((p) => [p.itemId, p]));
 const ids = pages.map((p) => p.itemId);
+const research = JSON.parse(readFileSync('fixtures/homedepot-pages/research-2026-11-20.json', 'utf8')) as {
+  pages: Record<string, unknown>;
+  searches: Record<string, { state: unknown }>;
+};
 const PAGE = '328814689'; // RYOBI PBLRC2501SB, a recorded 2-tool page
 
 interface Fake { env: ReaderEnv; log: string[]; setNow(ms: number): void; now: () => number }
@@ -118,6 +122,16 @@ describe('readHomeDepotPage', () => {
       },
     });
     expect(f.log).toEqual([`open https://www.homedepot.com/p/${PAGE}`, 'wait', 'sleep 2500', `fetch page ${PAGE}`, 'close 7']);
+  });
+
+  it('reads the specifications of a recorded page: PCL500525SB is two tools, tools only, no battery or charger', async () => {
+    const f = fake({ page: (id) => ({ itemId: id, status: 200, text: `window.__APOLLO_STATE__=${JSON.stringify(research.pages[id])}` }) });
+    const out = (await (await tools(f)).forQuestion().readHomeDepotPage({ itemId: '328690510' })) as { sections: { model: string; specifications: { name: string; value: string }[] } };
+    expect(out.sections.model).toBe('PCL500525SB');
+    const spec = (name: string) => out.sections.specifications.find((s) => s.name === name)?.value;
+    expect(spec('Tools Included')).toBe('Circular Saw,Jig Saw');
+    expect(spec('Number of Total Batteries Included')).toBe('0');
+    expect(spec('Charger Included')).toBe('Charger Not Included');
   });
 
   it('reads a page named by a product address', async () => {
@@ -244,9 +258,17 @@ describe('searchHomeDepot', () => {
     expect(await q.searchHomeDepot({ query: 'zzz' })).toMatchObject({ results: [] });
   });
 
-  it('says the page could not be read when the parser gives null, and when no parser is wired', async () => {
+  it('says the page could not be read when the parser gives null, and when the default parser finds no page data', async () => {
     expect(await (await tools(fake(), { parseSearch: () => null })).forQuestion().searchHomeDepot({ query: 'drill' })).toEqual({ error: expect.stringContaining('could not be read') });
     expect(await (await tools(fake())).forQuestion().searchHomeDepot({ query: 'drill' })).toEqual({ error: expect.stringContaining('could not be read') });
+  });
+
+  it('reads a recorded search with the default parser: "ryobi pcl500" lists the saw first and the combo kit with its item id', async () => {
+    const f = fake({ search: (q) => ({ status: 200, text: `window.__APOLLO_STATE__=${JSON.stringify(research.searches[q]?.state)}` }) });
+    const out = (await (await tools(f)).forQuestion().searchHomeDepot({ query: 'ryobi pcl500' })) as { results: { model: string; itemId: string; url: string }[] };
+    expect(out.results).toHaveLength(10);
+    expect(out.results[0]).toMatchObject({ model: 'PCL500B', itemId: '317987588', url: 'https://www.homedepot.com/p/317987588' });
+    expect(out.results.find((r) => r.model === 'PCL500B-PCL525B')?.itemId).toBe('324616618');
   });
 
   it('refuses an empty or very long query without a tab', async () => {
