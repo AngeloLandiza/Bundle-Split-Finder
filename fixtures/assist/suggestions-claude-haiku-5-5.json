@@ -1,47 +1,47 @@
 {
  "model": "claude-haiku-5-5",
- "promptVersion": "review-assist-2026-11-20.2",
- "ranAt": "2026-11-20T02:47:36.574Z",
+ "promptVersion": "review-assist-2026-11-20.3",
+ "ranAt": "2026-11-20T02:53:40.658Z",
  "results": [
   {
    "questionId": "match:RYOBI:A986501",
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Drill and Impact Drive KIT 65-Piece A986501\",\"source\":\"listing:B09KHGD84Q\"}],\"reason\":\"The listing title names model A986501, but it is a 65-piece kit, and the question's notes say it is unclear whether the part itself is a kit, so the evidence does not show it sells exactly that part by itself.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Drill and Impact Drive KIT 65-Piece A986501\",\"source\":\"listing:B09KHGD84Q\"}],\"reason\":\"The only listing names model A986501, but its title describes a 65-piece kit, not the part itself sold by itself, so it does not clearly match.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 1727,
-     "outputTokens": 153,
+     "inputTokens": 1885,
+     "outputTokens": 127,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
    },
-   "status": "cannot_tell"
+   "status": "none_suggested"
   },
   {
    "questionId": "match:RYOBI:P553",
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"89240034007 Miter Saw Blade Screw for Ryobi P553, PBT01, TS1144, TSS702\",\"source\":\"listing:B0HL81J9GN\"}],\"reason\":\"All listings name P553 only as a compatible or 'for' reference to a miter saw, and they are replacement screws or parts rather than the RYOBI P553 itself, so none is shown to sell the part.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Replacement 89240027010 Miter Saw Inlet Dust Chute for Ryobi P553 TS1144\",\"source\":\"listing:B0DXK73C59\"},{\"quote\":\"89240034007 Miter Saw Blade Screw for Ryobi P553, PBT01, TS1144, TSS702\",\"source\":\"listing:B0HP6GFW3H\"}],\"reason\":\"Every listing shown is a replacement part or accessory (dust chute, blade screw) for the P553 saw, not the P553 part itself, so none fits.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2186,
-     "outputTokens": 165,
+     "inputTokens": 2344,
+     "outputTokens": 213,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
    },
-   "status": "verified"
+   "status": "none_suggested"
   },
   {
    "questionId": "match:RYOBI:PBP004",
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"TTI Ryobi PBP004 ONE+ High Performance 18 Volts Lithium-Ion 4.0 Ah Battery\",\"source\":\"listing:B09HDZ5MPV\"}],\"reason\":\"The listing title names model PBP004, a 4.0 Ah battery, but it does not show it is new and sold by itself rather than a pack or renewed unit, and the brand field is empty.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"TTI Ryobi PBP004 ONE+ High Performance 18 Volts Lithium-Ion 4.0 Ah Battery\",\"source\":\"listing:B09HDZ5MPV\"}],\"reason\":\"The listing title names model PBP004 as a 4.0 Ah battery, but it is not shown to be new and sold by itself rather than as a pack or used, so the fit cannot be confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 1712,
-     "outputTokens": 173,
+     "inputTokens": 1870,
+     "outputTokens": 176,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -53,10 +53,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"ONEAND 18V HIGH Performance Lithium-ION 2.0 AH Compact Battery 2-Pack PBP2003\",\"source\":\"listing:B0BG5SPWVL\"}],\"reason\":\"The only listing is a 2-pack, and the part's pack size is not known, so it cannot be confirmed as the single part.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"ONEAND 18V HIGH Performance Lithium-ION 2.0 AH Compact Battery 2-Pack PBP2003\",\"source\":\"listing:B0BG5SPWVL\"}],\"reason\":\"The listing is a 2-pack of batteries, and the question's part is a single RYOBI PBP2003 with no stated pack size, so the pack count cannot be confirmed as matching.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 1759,
-     "outputTokens": 151,
+     "inputTokens": 1917,
+     "outputTokens": 172,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -68,25 +68,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Ryobi PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench (Tool ONLY- Battery and Charger NOT Included)\",\"source\":\"listing:B0BL8BC8MF\"}],\"reason\":\"The listing title names the model PCL265, a new Ryobi impact wrench sold tool-only, but the part model PCL265B is a different written form, and the title does not name PCL265B or confirm the listing sells exactly that part.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Ryobi PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench (Tool ONLY- Battery and Charger NOT Included)\",\"source\":\"listing:B0BL8BC8MF\"}],\"reason\":\"The listing title names PCL265, a written form of PCL265B, and sells the impact wrench tool only, without battery or charger, though it does not state new or by itself beyond that.\",\"decision\":\"choose\",\"choiceIndex\":null,\"asin\":\"B0BL8BC8MF\"}",
     "usage": {
-     "inputTokens": 1720,
-     "outputTokens": 196,
-     "cacheReadInputTokens": 0,
-     "cacheCreationInputTokens": 0
-    }
-   },
-   "status": "cannot_tell"
-  },
-  {
-   "questionId": "match:RYOBI:PCL406B",
-   "called": true,
-   "result": {
-    "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"2-Piece 5\\\" 8 Hole Hook & Loop Designed for Sander Pads Suited for Ryobi PCL406B 5\\\" Random Orbit Sander\",\"source\":\"listing:B0HF3W3114\"},{\"quote\":\"2X Sander Pad 5 inch 8 Hole for RYOBI 5\\\" Random Orbit Sander RS290 RS290g RS280 RS280VS RS281 RS281VS PCL406B P410 P411\",\"source\":\"listing:B0H8CJ68FJ\"}],\"reason\":\"Every listing shows only sander pads or accessories for the PCL406B sander, not the sander itself, so none fits.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
-    "usage": {
-     "inputTokens": 2323,
-     "outputTokens": 256,
+     "inputTokens": 1878,
+     "outputTokens": 186,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -94,19 +79,34 @@
    "status": "verified"
   },
   {
-   "questionId": "match:RYOBI:PCL430",
+   "questionId": "match:RYOBI:PCL406B",
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[],\"reason\":\"None of the listings shows the RYOBI PCL430 itself sold new by itself; they are accessories, replacement parts, or 'for' compatible items, and no title names the tool as the product sold.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"2-Piece 5\\\" 8 Hole Hook & Loop Designed for Sander Pads Suited for Ryobi PCL406B 5\\\" Random Orbit Sander\",\"source\":\"listing:B0HF3W3114\"},{\"quote\":\"2X Sander Pad 5 inch 8 Hole for RYOBI 5\\\" Random Orbit Sander RS290 RS290g RS280 RS280VS RS281 RS281VS PCL406B P410 P411\",\"source\":\"listing:B0H8CJ68FJ\"}],\"reason\":\"Every listing shows PCL406B only as a compatibility reference for sander pads, not as the sander itself, so none sells the part by itself.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2258,
-     "outputTokens": 99,
+     "inputTokens": 2481,
+     "outputTokens": 263,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
    },
-   "status": "unverified"
+   "status": "none_suggested"
+  },
+  {
+   "questionId": "match:RYOBI:PCL430",
+   "called": true,
+   "result": {
+    "ok": true,
+    "answer": "{\"evidence\":[{\"quote\":\"4 Pcs 692512002 Sleeve Multi-Tool for Ryobi Rid-gid P343 P570 PCL430 MT100\",\"source\":\"listing:B0GWT6TBJ2\"},{\"quote\":\"10PCS Oscillating Saw Blades for Ryobi PCL430\",\"source\":\"listing:B0HGFPX3MX\"}],\"reason\":\"None of the listings title names PCL430 as the sold product: they are sleeves, sanding sets, saw blades or pads made for or compatible with the tool, so none is the part itself.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
+    "usage": {
+     "inputTokens": 2416,
+     "outputTokens": 219,
+     "cacheReadInputTokens": 0,
+     "cacheCreationInputTokens": 0
+    }
+   },
+   "status": "none_suggested"
   },
   {
    "questionId": "split:homedepot:314716732",
@@ -119,10 +119,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"<model_number>PCL1600K2-A986501</model_number>\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own page names no model numbers in its Includes or description; only its title and model number appear, and the kit page cannot show what the bundle holds.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"<model_number>PCL1600K2-A986501</model_number>\",\"source\":\"bundle\"},{\"quote\":\"<title>ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and 65-Piece Drill and Impact Drive Kit</title>\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own page only gives its title and model number and never names the model numbers of its contents, so it cannot be confirmed to hold exactly PCL1600K2 plus A986501; the kit page cannot establish what the bundle holds.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2171,
-     "outputTokens": 125,
+     "inputTokens": 2329,
+     "outputTokens": 245,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -134,10 +134,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"<model_number>PCL1600K2-P553</model_number>\",\"source\":\"bundle\"},{\"quote\":\"<line>Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light</line>\",\"source\":\"kit:PCL1600K2\"}],\"reason\":\"The bundle's own page names no model numbers; the only support for reading 0 comes from the kit's page, which does not show what the bundle holds, and P553 is never named.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"<title>ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and Miter Saw</title>\",\"source\":\"bundle\"},{\"quote\":\"<model_number>PCL1600K2-P553</model_number>\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own page gives only its title and model number and names no model numbers of its contents, so the reading PCL1600K2, P553 cannot be confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2155,
-     "outputTokens": 320,
+     "inputTokens": 2313,
+     "outputTokens": 207,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -149,25 +149,25 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: (2) PBP003 18V ONE+ Lithium 2.0 Ah Batteries\",\"source\":\"bundle\"},{\"quote\":\"Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light\",\"source\":\"bundle\"}],\"reason\":\"The bundle page lists PBP003 batteries plus the six-tool kit contents, which includes PCL1600K2's contents, so the bundle holds more than the reading PCL1600K2, PBP2003 and does not match it exactly.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: (2) PBP003 18V ONE+ Lithium 2.0 Ah Batteries\",\"source\":\"bundle\"},{\"quote\":\"Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light\",\"source\":\"bundle\"}],\"reason\":\"The bundle page lists the kit's contents and two PBP003 batteries, but never names the model number PBP2003 that the reading uses, so the reading cannot be confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2567,
-     "outputTokens": 341,
+     "inputTokens": 2725,
+     "outputTokens": 1051,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
    },
-   "status": "verified"
+   "status": "cannot_tell"
   },
   {
    "questionId": "split:homedepot:322362966",
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"20V MAX XR Cordless Brushless Jigsaw with 20V MAX XR 6.0Ah Battery, 20V MAX XR 4.0Ah Battery and 20V MAX 2.0Ah Battery\",\"source\":\"bundle\"}],\"reason\":\"The bundle page names a jigsaw and three batteries, but no model numbers for its contents, so reading 0 cannot be confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"20V MAX XR Cordless Brushless Jigsaw with 20V MAX XR 6.0Ah Battery, 20V MAX XR 4.0Ah Battery and 20V MAX 2.0Ah Battery\",\"source\":\"bundle\"}],\"reason\":\"The bundle page names a jigsaw and three batteries, but not the model numbers DCB346-3 or DCS334B, and the reading lists only two products, so it cannot be confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 1728,
-     "outputTokens": 177,
+     "inputTokens": 1886,
+     "outputTokens": 193,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -179,10 +179,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Bundle model number: PCL1201K2-PCL430B\",\"source\":\"bundle\"},{\"quote\":\"ONE  18V Cordless 2 Tool Combo Kit w/ Drill/Driver, Circular Saw,  Multi Tool, 2  1.5 Ah Batteries, & Charger\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own page names no model numbers in its Includes or description, and the kit page cannot show what the bundle holds, so the reading cannot be confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"<model_number>PCL1201K2-PCL430B</model_number>\",\"source\":\"bundle\"},{\"quote\":\"ONE  18V Cordless 2 Tool Combo Kit w/ Drill/Driver, Circular Saw,  Multi Tool, 2  1.5 Ah Batteries, & Charger\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own page names no model numbers in its Includes or description, so it does not show it holds exactly PCL1201K2 and PCL430B; its title lists a multi tool and a different set of tools than the kit page.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 1973,
-     "outputTokens": 210,
+     "inputTokens": 2131,
+     "outputTokens": 231,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -200,10 +200,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: (1) PBP004 18V ONE+ 4Ah Lithium Batteries, (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) PCG002 18V ONE+ Charger, and operator’s manuals\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own Includes line names exactly PBP004, PBP003 and PCG002, matching reading 0.\",\"decision\":\"choose\",\"choiceIndex\":0,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: (1) PBP004 18V ONE+ 4Ah Lithium Batteries, (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) PCG002 18V ONE+ Charger, and operator’s manuals\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own Includes line names exactly PBP004, PBP003 and PCG002, matching reading 0 with nothing extra listed.\",\"decision\":\"choose\",\"choiceIndex\":0,\"asin\":null}",
     "usage": {
-     "inputTokens": 1790,
-     "outputTokens": 178,
+     "inputTokens": 1948,
+     "outputTokens": 187,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -215,25 +215,25 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals\",\"source\":\"bundle\"}],\"reason\":\"The bundle's page lists its contents as PCL206, PCL235, PCL500, PCL515, PCL430, PCL660 and batteries PBP005 and PBP002, which do not match the reading's two model numbers PCL1600K2 and PBP003; the bundle page does not name PCL1600K2 or PBP003 as contents, so no reading fits.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals\",\"source\":\"bundle\"},{\"quote\":\"ONE+18V Cordless 6-Tool Combo Kit with Batteries, Charger & ONE+18V 2.0 Ah Battery\",\"source\":\"bundle\"}],\"reason\":\"The bundle's page lists the kit's tools and a PBP002 battery, but the reading's PBP003 is never named in the bundle's contents, and the bundle's own model number PCL1600K2-PBP003 is not a listed item; the reading does not match the bundle's stated contents.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2499,
-     "outputTokens": 344,
+     "inputTokens": 2657,
+     "outputTokens": 387,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
    },
-   "status": "verified"
+   "status": "cannot_tell"
   },
   {
    "questionId": "split:homedepot:341644987",
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: 18V 5-1/2\\\" Circular Saw, 18V Jig Saw, 18T Carbide Tipped Blade, (2) Hex Wrenches, Non-Marring Shoe, T-Shank Wood Cutting Blade, and Operator's Manuals\",\"source\":\"bundle\"},{\"quote\":\"ONE+18V Cordless 2-Tool Combo Kit with Circular Saw, Jig Saw & ONE+18V 2.0 Ah Lithium Battery\",\"source\":\"bundle\"}],\"reason\":\"The bundle's Includes line lists tools and a blade but never names the model number PBP003 or PCL500525SB; the reading's model numbers are not shown inside the bundle.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: 18V 5-1/2\\\" Circular Saw, 18V Jig Saw, 18T Carbide Tipped Blade, (2) Hex Wrenches, Non-Marring Shoe, T-Shank Wood Cutting Blade, and Operator's Manuals\",\"source\":\"bundle\"},{\"quote\":\"ONE+18V Cordless 2-Tool Combo Kit with Circular Saw, Jig Saw & ONE+18V 2.0 Ah Lithium Battery\",\"source\":\"bundle\"}],\"reason\":\"The bundle's page lists the kit's tools and a battery, but the battery is not named by model number as PBP003, so the reading cannot be confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2013,
-     "outputTokens": 281,
+     "inputTokens": 2171,
+     "outputTokens": 273,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -245,25 +245,25 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) P119 18V ONE+ Charger, and operator’s manual\",\"source\":\"bundle\"}],\"reason\":\"The bundle's Includes line names PBP003 and P119, not the PSK12B and PSK00B model numbers in the only reading, so the reading does not match.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) P119 18V ONE+ Charger, and operator’s manual\",\"source\":\"bundle\"}],\"reason\":\"The bundle holds a PBP003 battery and P119 charger, which match neither PSK12B nor PSK00B in the only reading offered.\",\"decision\":\"none\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 1737,
-     "outputTokens": 158,
+     "inputTokens": 1895,
+     "outputTokens": 153,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
    },
-   "status": "verified"
+   "status": "none_suggested"
   },
   {
    "questionId": "split:homedepot:343952159",
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: (2) Compact Lithium Battery, Charger, Tool Bag, and Operator's manuals : Includes: Bits, Nut Drivers, Socket Adaptors And A Bit Holder\",\"source\":\"bundle\"}],\"reason\":\"The bundle page names no model numbers for its contents, so neither PSBCK102K2 nor A967002 is shown inside it.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: (2) Compact Lithium Battery, Charger, Tool Bag, and Operator's manuals : Includes: Bits, Nut Drivers, Socket Adaptors And A Bit Holder\",\"source\":\"bundle\"}],\"reason\":\"The bundle page lists its contents but never names the model numbers PSBCK102K2 or A967002, so the single reading cannot be confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 1777,
-     "outputTokens": 168,
+     "inputTokens": 1935,
+     "outputTokens": 173,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -275,10 +275,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: 18V ONE+ 4Ah Lithium Battery & Charger : Includes: (1) PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench and operator's manual\",\"source\":\"bundle\"}],\"reason\":\"The bundle page names PCL265 as the impact wrench but never names PSK0114 as a model number, so the reading's full product list is not shown.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: 18V ONE+ 4Ah Lithium Battery & Charger : Includes: (1) PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench and operator's manual\",\"source\":\"bundle\"}],\"reason\":\"The bundle page names the impact wrench PCL265 but the reading's PSK0114 kit is only a model number, and the page lists the kit's battery and charger rather than writing PSK0114; the reading's contents are not fully shown.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 1777,
-     "outputTokens": 174,
+     "inputTokens": 1935,
+     "outputTokens": 203,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -290,10 +290,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: PBP004 18V 4Ah Lithium Battery, PBP003 18V 2Ah Lithium Battery, PCG002 Charger, and Operator's Manuals : Includes: (1) PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench and operator's manual\",\"source\":\"bundle\"}],\"reason\":\"The bundle page names the impact wrench as PCL265 and lists the kit's batteries and charger by their own model numbers, not as PSK1212SB and PCL265B, so the reading is not shown.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: (1) PCL265 18V ONE+ Cordless 1/2 in. Impact Wrench and operator's manual\",\"source\":\"bundle\"},{\"quote\":\"Includes: (1) PBP004 18V ONE+ 4Ah Lithium Batteries, (1) PBP003 18V ONE+ 2Ah Lithium Battery, (1) PCG002 18V ONE+ Charger, and operator’s manuals\",\"source\":\"kit:PSK1212SB\"}],\"reason\":\"The bundle lists the impact wrench as PCL265, not PCL265B, and the evidence does not show whether the suffix makes it a different product.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2037,
-     "outputTokens": 598,
+     "inputTokens": 2195,
+     "outputTokens": 943,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -305,10 +305,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: 8 Tools, 3 Batteries, Charger, and (2) Tool Bags : Includes: Bits, Nut Drivers, Socket Adaptors And A Bit Holder\",\"source\":\"bundle\"},{\"quote\":\"Includes: (2) PBP005 18V ONE+ 4.0 Ah Lithium Batteries, (1) PBP002 18V ONE+ Compact Lithium Battery, (1) PCG002 18V ONE+ Charger\",\"source\":\"kit:PCL1800K3N\"}],\"reason\":\"The bundle's own page names no model numbers, and the reading's model numbers come only from the kit page, so the bundle's contents are not confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: 8 Tools, 3 Batteries, Charger, and (2) Tool Bags : Includes: Bits, Nut Drivers, Socket Adaptors And A Bit Holder\",\"source\":\"bundle\"},{\"quote\":\"Includes: (2) PBP005 18V ONE+ 4.0 Ah Lithium Batteries, (1) PBP002 18V ONE+ Compact Lithium Battery, (1) PCG002 18V ONE+ Charger, Reciprocating Saw Blade, Circular Saw Blade, Multi-Tool Accessories, Jig Saw Blade, Sandpaper Assortment, (2) Tool Bags and Operator's Manuals\",\"source\":\"kit:PCL1800K3N\"}],\"reason\":\"The bundle's page lists its contents by category but never names the model number A967002 or the individual model numbers of the products inside, so the reading cannot be confirmed.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2264,
-     "outputTokens": 272,
+     "inputTokens": 2422,
+     "outputTokens": 351,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -320,10 +320,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"<model_number>PCL1800K3N-A964001</model_number>\",\"source\":\"bundle\"},{\"quote\":\"Includes: 8 Tools, 3 Batteries, Charger, and (2) Tool Bags : Includes: Bits, Nut Drivers, Socket Adaptors And A Bit Holder\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own page does not name the model numbers of its contents; the kit page for PCL1800K3N cannot establish what the bundle holds, and A964001 is never shown to be inside the bundle.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: 8 Tools, 3 Batteries, Charger, and (2) Tool Bags : Includes: Bits, Nut Drivers, Socket Adaptors And A Bit Holder\",\"source\":\"bundle\"},{\"quote\":\"Includes: (2) PBP005 18V ONE+ 4.0 Ah Lithium Batteries, (1) PBP002 18V ONE+ Compact Lithium Battery, (1) PCG002 18V ONE+ Charger, Reciprocating Saw Blade, Circular Saw Blade, Multi-Tool Accessories, Jig Saw Blade, Sandpaper Assortment, (2) Tool Bags and Operator’s Manuals\",\"source\":\"kit:PCL1800K3N\"}],\"reason\":\"The bundle's page lists contents only generically (8 tools, 3 batteries, charger) and never names the model numbers, so it cannot be confirmed that the bundle holds exactly the reading's products.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2264,
-     "outputTokens": 224,
+     "inputTokens": 2422,
+     "outputTokens": 366,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -335,10 +335,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories : Includes: (29) Impact Driving Bits And (1) Magnetic Bit Holder\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own page names no model numbers for its tools or batteries, so it does not show the bundle holds PCL1600K2 and A963001 as the reading states.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories : Includes: (29) Impact Driving Bits And (1) Magnetic Bit Holder\",\"source\":\"bundle\"}],\"reason\":\"The bundle page lists 6 tools, 2 batteries, a charger and accessories but never names the model numbers PCL1600K2 or A963001, so it cannot be confirmed as holding exactly that reading's products.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2228,
-     "outputTokens": 173,
+     "inputTokens": 2386,
+     "outputTokens": 191,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -350,10 +350,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories : Includes: (2) 1/16 in. Black Oxide Drill Bit, (1) 5/64 in. Black Oxide Drill Bit\",\"source\":\"bundle\"}],\"reason\":\"The bundle's page lists drill bit sizes and tool counts but names no model numbers, so it cannot be shown to hold exactly PCL1600K2 and A971502.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories : Includes: (2) 1/16 in. Black Oxide Drill Bit, (1) 5/64 in. Black Oxide Drill Bit\",\"source\":\"bundle\"},{\"quote\":\"Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver\",\"source\":\"kit:PCL1600K2\"}],\"reason\":\"The bundle page lists the kit's tools, batteries and charger and a drill bit set, but never names the A971502 bit set model number, so it cannot confirm reading 0 exactly.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2484,
-     "outputTokens": 194,
+     "inputTokens": 2642,
+     "outputTokens": 257,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
@@ -365,10 +365,10 @@
    "called": true,
    "result": {
     "ok": true,
-    "answer": "{\"evidence\":[{\"quote\":\"Bundle model number: PCL1600K2-A989504\",\"source\":\"bundle\"},{\"quote\":\"Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories\",\"source\":\"bundle\"}],\"reason\":\"The bundle's own page lists 6 tools, batteries and accessories but never names the model numbers PCL206, PCL235, etc. or A989504, so the reading cannot be confirmed from the bundle page.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
+    "answer": "{\"evidence\":[{\"quote\":\"Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories : Includes: (20) Black Oxide Drill and Drive Bits, (5) masonry drill bits, (4) woodboring spade bits, (6) bradpoint drill bits, (41) 1 in. impact drive bits, (9) 2 in. impact drive bits, (3) 3 1/2 in. impact drive bits, (6) impact nut drivers, (1) impact magnetic bit holder, and a clear front carrying case\",\"source\":\"bundle\"}],\"reason\":\"The bundle page lists a 6-tool kit with batteries and charger but never names the model number A989504 or any model number of the contents, so it cannot be confirmed as exactly reading 0.\",\"decision\":\"cannot_tell\",\"choiceIndex\":null,\"asin\":null}",
     "usage": {
-     "inputTokens": 2342,
-     "outputTokens": 189,
+     "inputTokens": 2500,
+     "outputTokens": 293,
      "cacheReadInputTokens": 0,
      "cacheCreationInputTokens": 0
     }
