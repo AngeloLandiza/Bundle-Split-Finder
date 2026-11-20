@@ -141,6 +141,33 @@ The AI drafts; the owner decides. A suggestion is never an answer until the owne
 - Approving records that the answer came from an approved AI suggestion (for the audit:
   agreement rate). Changing the selection before saving records a disagreement.
 
+### AI research and bulk approval (step 12)
+
+Extends "Ask AI". The AI may now research a split question (read the full Home Depot page, search
+Home Depot, check the catalog, search the brand's own site) and propose parts even when the tool
+offered no reading. Every rule of Ask AI holds: the AI drafts, the owner decides.
+- **Ask AI only where it can help.** The per-question button reads "Ask AI · about $0.10" for a
+  split question (research) and "Ask AI · about $0.02" for a match question. It is never shown where
+  no call would be made.
+- **Ask AI about all.** At the top of Review, beside Accept all, a secondary text button
+  "Ask AI about all 26 · about $3" runs the research for every open question in the background. Its
+  progress uses the progress row under the tabs ("Asking AI · 7 of 26", estimate, "$0.41 so far" in
+  Details) with Stop. The panel stays usable; nothing is preselected until a result arrives.
+- **Suggestions first.** Review opens with a section "AI suggestions · 18" above the remaining
+  questions: one compact row per question — the bundle's name (one line, cut with an ellipsis), the
+  proposed parts in the figure face, one key quote in ink-2 with its source link — expanding to the
+  full suggestion and the question's controls. Unverified and "could not tell" rows sit in the
+  ordinary list below with their block, never in this section.
+- **Approve all verified.** The section's header carries one secondary button "Approve all 18
+  verified". It applies only verified suggestions shown in the section, is followed by an inline
+  confirmation line ("Approve 18 AI answers? Approve · Cancel"), and each approval is recorded as
+  an AI approval for the audit. Accept all stays for single-reading questions with no suggestion.
+- **Research sources** are named on each quote ("Home Depot page", "Home Depot search",
+  "ryobitools.com"); links are http/https only and open in a new tab.
+- **Settings › Listing check** gains "Ask AI after each scan" (off by default) and shows the
+  research estimate per question.
+- No new colours, cards, icons or spinners; the existing AI suggestion block is reused.
+
 ### Chip on Home Depot product pages
 
 - A single 40px control placed directly under the price: mark, "Splits into 2 parts",
