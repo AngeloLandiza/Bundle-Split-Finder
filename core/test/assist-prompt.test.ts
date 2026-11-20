@@ -20,6 +20,11 @@ describe('the prompt', () => {
     expect(ASSIST_PROMPT).toContain('Prices are not evidence and are not given.');
   });
 
+  it("says a kit's model stands for its contents, and that not knowing it is cannot_tell, not none (fix round 2)", () => {
+    expect(ASSIST_PROMPT).toContain("A kit's model number in a reading stands for everything the kit holds");
+    expect(ASSIST_PROMPT).toContain('Not knowing what a model number holds is cannot_tell, not none.');
+  });
+
   it('renders a split question: its readings by index, the bundle page and each kit page by source id', async () => {
     const w = await assistWorld();
     const q = asked(w, 'split:homedepot:324904496');
