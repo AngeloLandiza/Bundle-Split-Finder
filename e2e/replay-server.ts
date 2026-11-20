@@ -101,7 +101,9 @@ export interface ReplayServer {
    * request is answered with the Ask AI answer (setAssistReply) as a submit_answer, so a question asked as before reads as before.
    * Cleared by reset().
    */
-  setResearchReply(reply: ((body: { messages: { role: string; content: unknown }[] }, n: number) => { stopReason: 'tool_use' | 'end_turn'; content: unknown[] } | undefined) | null): void;
+  setResearchReply(reply: ((body: { messages: { role: string; content: unknown }[] }, n: number) => { stopReason: 'tool_use' | 'end_turn' | 'pause_turn'; content: unknown[] } | undefined) | null): void;
+  /** Step 12: the token usage every research answer reports (default 1,800 in, 300 out), so a test can make the asking cost more than expected. reset() clears it. */
+  setResearchUsage(usage: { input_tokens: number; output_tokens: number } | null): void;
   /** Step 12: /p/<id> and /s/<free text> answer with the pages and searches recorded for the research tools, until reset(). */
   serveResearchPages(on: boolean): void;
   /** These ids are answered 403 with the recorded refused page, until reset(). '*' refuses every id and every /s/ search. */
@@ -135,6 +137,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   let researchRequests: string[] = [];
   let researchReply: Parameters<ReplayServer['setResearchReply']>[0] = null;
   let researchPages = false;
+  let researchUsage: { input_tokens: number; output_tokens: number } | null = null;
   const refused = new Set<string>();
   const servedAs = new Map<string, string>();
   let searchDelay = 0;
@@ -212,7 +215,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
           res.writeHead(200, headers).end(
             JSON.stringify({
               id: 'msg_replay', type: 'message', role: 'assistant', model: 'replay', stop_reason: turn.stopReason, stop_details: null,
-              content: turn.content, usage: { input_tokens: 1800, output_tokens: 300 },
+              content: turn.content, usage: researchUsage ?? { input_tokens: 1800, output_tokens: 300 },
             }),
           );
           return;
@@ -349,6 +352,9 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     setResearchReply(reply) {
       researchReply = reply;
     },
+    setResearchUsage(usage) {
+      researchUsage = usage;
+    },
     serveResearchPages(on) {
       researchPages = on;
     },
@@ -383,6 +389,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       assistDelay = 0;
       researchRequests = [];
       researchReply = null;
+      researchUsage = null;
       researchPages = false;
       refused.clear();
       servedAs.clear();

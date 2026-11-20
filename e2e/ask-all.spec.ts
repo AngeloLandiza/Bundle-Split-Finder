@@ -151,13 +151,19 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
   const acceptAll = await countIn(panel, /^Accept all/);
   expect(acceptAll).toBeGreaterThanOrEqual(TARGETS.length);
 
-  // With the key, beside Accept all, saying how many and about what it costs. Every open question is a split question that research can answer.
+  // With the key, in its own row above Accept all, saying how many and about what it costs. Every open question is a split question that research can answer.
   expect(await send(options, { type: 'saveAnthropicKey', apiKey: ANTHROPIC_KEY })).toMatchObject({ ok: true });
   await expect(askAllButton(panel)).toHaveAccessibleName(/^Ask AI about all \d+ · about \$\d+(\.\d\d)?$/);
   const TOTAL = await countIn(panel, /^Ask AI about all/);
   expect(TOTAL).toBeGreaterThanOrEqual(8);
   expect((await send(options, { type: 'getReport' })).data.review).toHaveLength(TOTAL);
-  await expect(panel.locator('.accept-actions').filter({ has: panel.getByRole('button', { name: /^Accept all/ }) }).getByRole('button', { name: /^Ask AI about all/ })).toBeVisible();
+  // The words are in the word face and only the price is a figure.
+  await expect(askAllButton(panel).locator('.figure')).toHaveText(/^\$\d+(\.\d\d)?$/);
+  expect(await askAllButton(panel).evaluate((el) => el.textContent)).toMatch(/^Ask AI about all \d+ · about \$/);
+  // The Ask AI row comes first: above Accept all.
+  const askAt = (await askAllButton(panel).boundingBox())!;
+  const acceptAt = (await panel.getByRole('button', { name: /^Accept all/ }).boundingBox())!;
+  expect(askAt.y).toBeLessThan(acceptAt.y);
   expect(server.assistCalls).toEqual([]);
 
   // Ask about all of them, slowly enough to see the row and to stop it.
@@ -185,7 +191,8 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
   expect(result).toMatchObject({ stopped: true, total: TOTAL, verified: 3 });
   expect(result.asked).toBeGreaterThanOrEqual(4);
   expect(result.asked).toBeLessThan(TOTAL - 1);
-  await expect(panel.getByRole('status').filter({ hasText: 'Stopped after' })).toContainText(`Stopped after ${result.asked} of ${TOTAL}: 3 verified.`);
+  // The sentence belongs to the Ask AI row and goes once the section shows the results: it is not left between sections.
+  await expect(panel.getByRole('status').filter({ hasText: 'Stopped after' })).toHaveCount(0);
   await expect(panel.getByRole('button', { name: 'Scan now' })).toBeVisible();
   // No half-written suggestion: one record for each question that was answered, none for the call that was cancelled.
   server.delayAssist(0);
@@ -206,6 +213,17 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
   // One line each: a name longer than the panel is cut, not wrapped.
   expect(await section.locator('.ai-row-name').evaluateAll((els) => els.every((el) => el.scrollHeight <= el.clientHeight + 1))).toBe(true);
   await expect(panel.getByRole('button', { name: 'Approve all 3 verified' })).toBeVisible();
+  // Review reads in order: the Ask AI row, the suggestions, the Accept all block, then the questions.
+  const at = async (l: ReturnType<Page['locator']>) => (await l.boundingBox())!.y;
+  const askY = await at(askAllButton(panel));
+  const sectionY = await at(section.getByRole('heading'));
+  const approveY = await at(panel.getByRole('button', { name: 'Approve all 3 verified' }));
+  // In the section's own header, on the title's line.
+  expect(Math.abs(approveY - sectionY)).toBeLessThan(16);
+  expect(askY).toBeLessThan(sectionY);
+  const acceptBlock = panel.getByRole('heading', { name: /bundles have one suggested answer/ });
+  if (await acceptBlock.count()) expect(await at(acceptBlock)).toBeGreaterThan(sectionY);
+  expect(await at(panel.getByText(/^\d+ of \d+$/))).toBeGreaterThan(sectionY);
   for (const width of [360, 480]) await shoot(panel, 'review-ai-section', width, () => panel.evaluate(() => window.scrollTo(0, 0)));
 
   // Ask about the rest: a question with a suggestion is not asked twice.
@@ -237,7 +255,7 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
 
   // Approve all asks first. Nothing is saved by the first press.
   await panel.getByRole('button', { name: 'Approve all 4 verified' }).click();
-  await expect(section.getByText('Approve 4 AI answers?')).toBeVisible();
+  await expect(section.locator('.ai-confirm-q')).toHaveText('Approve 4 AI answers?');
   await expect(section.getByRole('button', { name: 'Approve', exact: true })).toBeFocused();
   expect(await answered(options)).toEqual({});
   await shoot(panel, 'review-ai-approve-all-confirm', 360, () => panel.evaluate(() => window.scrollTo(0, 0)));
@@ -262,6 +280,75 @@ test('Ask AI about all: the queue, Stop, the section of verified suggestions, Ap
   expect(open).toHaveLength(TOTAL - 4);
   expect(seen.console.filter((c) => !c.includes('status of 403') && !c.includes('status of 404'))).toEqual([]);
   expect(JSON.stringify(a)).not.toContain(ANTHROPIC_KEY);
+});
+
+test('Ask AI about all stops after three researches in a row that ran past their limits, and says so in its row', async ({ context, extensionId, options, server, worker }) => {
+  test.setTimeout(300_000);
+  await seedAndScan(options, worker, server);
+  expect(await send(options, { type: 'saveAnthropicKey', apiKey: ANTHROPIC_KEY })).toMatchObject({ ok: true });
+  // A model that only ever pauses: each question runs to its request limit, which is no provider error.
+  server.setResearchReply(() => ({ stopReason: 'pause_turn', content: [] }));
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await panel.getByRole('button', { name: /^Review/ }).click();
+  const TOTAL = await countIn(panel, /^Ask AI about all/);
+  await askAllButton(panel).click();
+  await expect.poll(async () => (await getState(options)).data.askAllResult?.problem ?? null, { timeout: 120_000, intervals: [200] }).toMatch(/limit/);
+  const result = (await getState(options)).data.askAllResult!;
+  expect(result.stopped).toBe(false);
+  // Three questions of twelve requests each, and no fourth.
+  expect(server.researchRequests).toHaveLength(3);
+  expect(TOTAL).toBeGreaterThan(3);
+  const line = panel.getByRole('status').filter({ hasText: 'Asking stopped' });
+  await expect(line).toContainText(`Asking stopped after ${result.asked} of ${TOTAL}: The research ran past its limits on three questions in a row.`);
+  // The sentence is in the Ask AI row, under its button.
+  expect(await line.evaluate((el, id) => el.previousElementSibling === document.querySelector(id), '.ask-all')).toBe(true);
+  expect(await answered(options)).toEqual({});
+  await shoot(panel, 'review-ask-all-limits', 360, () => panel.evaluate(() => window.scrollTo(0, 0)));
+});
+
+test('Ask AI about all stops when it has cost more than twice its estimate, and nothing is applied', async ({ context, extensionId, options, server, worker }) => {
+  test.setTimeout(300_000);
+  await seedAndScan(options, worker, server);
+  expect(await send(options, { type: 'saveAnthropicKey', apiKey: ANTHROPIC_KEY })).toMatchObject({ ok: true });
+  // Each answer reports three million tokens in: a few dollars, against an estimate of cents.
+  server.setResearchUsage({ input_tokens: 3_000_000, output_tokens: 1000 });
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await panel.getByRole('button', { name: /^Review/ }).click();
+  const TOTAL = await countIn(panel, /^Ask AI about all/);
+  await askAllButton(panel).click();
+  await expect.poll(async () => (await getState(options)).data.askAllResult?.overspent ?? null, { timeout: 60_000, intervals: [200] }).toBe(true);
+  const result = (await getState(options)).data.askAllResult!;
+  expect(result.asked).toBeLessThan(TOTAL);
+  expect(server.researchRequests.length).toBeLessThan(TOTAL);
+  await expect(panel.getByRole('status').filter({ hasText: 'Stopped: asking cost more than expected' })).toHaveText(`Stopped: asking cost more than expected ($${result.costUsd.toFixed(2)}). Nothing was applied.`);
+  expect(await answered(options)).toEqual({});
+  await shoot(panel, 'review-ask-all-over-cost', 360, () => panel.evaluate(() => window.scrollTo(0, 0)));
+});
+
+test('Approve all applies the rows it asked about: one that became verified while the question was open is left', async ({ context, extensionId, options, server, worker }) => {
+  test.setTimeout(300_000);
+  await seedAndScan(options, worker, server);
+  expect(await send(options, { type: 'saveAnthropicKey', apiKey: ANTHROPIC_KEY })).toMatchObject({ ok: true });
+  // Two questions the fake model verifies, asked on their own; the panel lists them as rows.
+  for (const id of [T1, T2]) expect(await send(options, { type: 'askAi', questionId: `split:homedepot:${id}` })).toMatchObject({ ok: true });
+  const panel = await context.newPage();
+  await panel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
+  await panel.getByRole('button', { name: /^Review/ }).click();
+  const section = panel.getByRole('region', { name: /AI suggestions/ });
+  await expect(section.getByRole('heading', { name: 'AI suggestions · 2' })).toBeVisible();
+  await panel.getByRole('button', { name: 'Approve all 2 verified' }).click();
+  await expect(section.locator('.ai-confirm-q')).toHaveText('Approve 2 AI answers?');
+  // While the question is open a third question comes back verified.
+  expect(await send(options, { type: 'askAi', questionId: `split:homedepot:${T4}` })).toMatchObject({ ok: true });
+  await expect(section.getByRole('heading', { name: 'AI suggestions · 3' })).toBeVisible();
+  await expect(section.locator('.ai-confirm-q')).toHaveText('Approve 2 AI answers?');
+  await section.getByRole('button', { name: 'Approve', exact: true }).click();
+  await expect(panel.getByText('Approved 2 of 2.')).toBeVisible();
+  expect(await answered(options)).toEqual({ [T1]: READING.join(','), [T2]: READING.join(',') });
+  // The late one is still a row, waiting for its own press.
+  await expect(section.getByRole('button', { name: 'Approve all 1 verified' })).toBeVisible();
 });
 
 test('Research reads Home Depot only while no scan runs, and its tools never reach SerpApi or Amazon', async ({ options, server, worker }) => {

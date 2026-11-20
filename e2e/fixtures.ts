@@ -69,7 +69,7 @@ type AppState = {
   problem: string | null;
   /** Step 12: Ask AI about all, while it runs; how the last one ended; and whether a scan is followed by it. */
   askAll?: { done: number; total: number; costUsd: number; estimateUsd: number | null; stopping?: boolean } | null;
-  askAllResult?: { total: number; asked: number; suggested: number; verified: number; costUsd: number; stopped: boolean; problem: string | null } | null;
+  askAllResult?: { total: number; asked: number; suggested: number; verified: number; costUsd: number; stopped: boolean; problem: string | null; overspent: boolean } | null;
   askAfterScan?: boolean;
 };
 
