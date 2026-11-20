@@ -4,6 +4,9 @@
 //
 // The key is sent in the x-api-key header to https://api.anthropic.com only. It is never put in a
 // URL, a message or a log; the address is fixed so no option can send it anywhere else.
+//
+// The call itself (callClaudeMessages) is shared with the review assistant (core/src/assist/): one
+// transport, one set of typed failures, whatever the prompt.
 
 import { JUDGE_PROMPT, PROMPT_VERSION, renderJudgeInput } from './prompt';
 import { JUDGE_SCHEMA } from './schema';
@@ -52,11 +55,111 @@ function readUsage(body: Record<string, unknown>): TokenUsage | undefined {
   return usage;
 }
 
+/** One Messages API call's result, before the caller adds who answered: the answer text, or why there is none. */
+export type ClaudeMessagesResult = { ok: true; answer: string; usage: TokenUsage } | { ok: false; notJudged: NotJudged; usage?: TokenUsage };
+
+export interface ClaudeMessagesRequest {
+  apiKey: string;
+  /** The request body, as the Messages API takes it. */
+  body: Record<string, unknown>;
+  fetchFn?: typeof fetch;
+  signal?: AbortSignal;
+  /** The sentence for a refusal, naming what was declined. */
+  declined?: string;
+}
+
+/**
+ * One call to the Messages API. No retries. Never throws for a provider or network failure: it
+ * returns ok: false with a typed reason.
+ */
+export async function callClaudeMessages(req: ClaudeMessagesRequest): Promise<ClaudeMessagesResult> {
+  const { apiKey, signal } = req;
+  // Called through a wrapper: a bare `fetch` stored on an object throws "Illegal invocation".
+  const fetchFn = req.fetchFn ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
+  const fail = (notJudged: NotJudged, usage?: TokenUsage): ClaudeMessagesResult => ({ ok: false, notJudged, ...(usage ? { usage } : {}) });
+
+  let res: Response;
+  try {
+    res = await fetchFn(CLAUDE_MESSAGES_URL, {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': ANTHROPIC_VERSION,
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify(req.body),
+      ...(signal ? { signal } : {}),
+    });
+  } catch (err) {
+    // The fetch error's own text is not passed on: it is not ours to show and could hold anything.
+    if (signal?.aborted || (err instanceof Error && err.name === 'AbortError')) {
+      return fail({ reason: 'aborted', message: 'The call to Claude was cancelled.' });
+    }
+    return fail({ reason: 'network', message: 'Claude could not be reached.' });
+  }
+
+  let body: unknown;
+  try {
+    body = await res.json();
+  } catch {
+    body = undefined;
+  }
+
+  if (!res.ok) return fail(httpFailure(res, body, apiKey));
+
+  if (!isRecord(body) || typeof body.stop_reason !== 'string' || !Array.isArray(body.content)) {
+    return fail({ reason: 'bad_response', message: 'Claude answered with something that is not a message.' });
+  }
+  const usage = readUsage(body);
+  const stop = body.stop_reason;
+  if (stop === 'refusal') {
+    const details = body.stop_details;
+    const category = isRecord(details) && typeof details.category === 'string' ? details.category : undefined;
+    return fail({ reason: 'refusal', message: req.declined ?? 'Claude declined to answer.', ...(category ? { refusalCategory: category } : {}) }, usage);
+  }
+  if (stop === 'max_tokens') {
+    return fail({ reason: 'max_tokens', message: 'Claude’s answer was cut off before it finished.' }, usage);
+  }
+  if (stop !== 'end_turn') {
+    return fail({ reason: 'unexpected_stop', message: `Claude stopped for an unexpected reason (${stop.slice(0, 40)}).` }, usage);
+  }
+  const text = body.content.find((b): b is { type: 'text'; text: string } => isRecord(b) && b.type === 'text' && typeof b.text === 'string');
+  if (!text) return fail({ reason: 'no_answer', message: 'Claude’s answer had no text.' }, usage);
+  return { ok: true, answer: text.text, usage: usage ?? { inputTokens: 0, outputTokens: 0 } };
+}
+
+function httpFailure(res: Response, body: unknown, apiKey: string): NotJudged {
+  const status = res.status;
+  const error = isRecord(body) && isRecord(body.error) ? body.error : undefined;
+  const type = typeof error?.type === 'string' ? error.type : undefined;
+  // The API's own message, cut short and with the key removed should it ever be echoed.
+  const said = typeof error?.message === 'string' ? error.message.split(apiKey).join('[key]').slice(0, 200) : '';
+  const detail = [type, said].filter(Boolean).join(': ');
+  const tail = detail ? ` (${detail})` : '';
+  if (status === 401 || status === 403) {
+    return { reason: 'auth', status, message: `Claude refused the API key (HTTP ${status}).${tail}` };
+  }
+  if (status === 429) {
+    const after = Number(res.headers.get('retry-after'));
+    return {
+      reason: 'rate_limited',
+      status,
+      message: `Claude's rate limit was reached (HTTP 429).${tail}`,
+      ...(Number.isFinite(after) && after > 0 ? { retryAfterSeconds: after } : {}),
+    };
+  }
+  if (status === 529) return { reason: 'overloaded', status, message: `Claude is overloaded (HTTP 529).${tail}` };
+  if (status >= 500) return { reason: 'server', status, message: `Claude answered with a server error (HTTP ${status}).${tail}` };
+  if (status === 400) return { reason: 'bad_request', status, message: `Claude refused the request (HTTP 400).${tail}` };
+  return { reason: 'http', status, message: `Claude answered with HTTP ${status}.${tail}` };
+}
+
 export class ClaudeJudge implements ListingJudge {
   readonly id = 'claude';
   readonly model: string;
   private readonly apiKey: string;
-  private readonly fetchFn: typeof fetch;
+  private readonly fetchFn: typeof fetch | undefined;
   private readonly maxTokens: number;
   private readonly effort: ClaudeEffort;
 
@@ -65,9 +168,7 @@ export class ClaudeJudge implements ListingJudge {
     if (!opts.model) throw new Error('ClaudeJudge needs a model id.');
     this.apiKey = opts.apiKey;
     this.model = opts.model;
-    // Called through a wrapper: a bare `fetch` stored on an object throws "Illegal invocation".
-    const f = opts.fetchFn;
-    this.fetchFn = f ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
+    this.fetchFn = opts.fetchFn;
     this.maxTokens = opts.maxTokens ?? CLAUDE_JUDGE_MAX_TOKENS;
     this.effort = opts.effort ?? CLAUDE_JUDGE_EFFORT;
   }
@@ -84,83 +185,13 @@ export class ClaudeJudge implements ListingJudge {
   }
 
   async judge(input: JudgeInput, signal?: AbortSignal): Promise<JudgeCall> {
-    const base = { judgeId: this.id, model: this.model, promptVersion: PROMPT_VERSION };
-    const fail = (notJudged: NotJudged, usage?: TokenUsage): JudgeCall => ({ ...base, ok: false, notJudged, ...(usage ? { usage } : {}) });
-
-    let res: Response;
-    try {
-      res = await this.fetchFn(CLAUDE_MESSAGES_URL, {
-        method: 'POST',
-        headers: {
-          'x-api-key': this.apiKey,
-          'anthropic-version': ANTHROPIC_VERSION,
-          'content-type': 'application/json',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify(this.requestBody(input)),
-        ...(signal ? { signal } : {}),
-      });
-    } catch (err) {
-      // The fetch error's own text is not passed on: it is not ours to show and could hold anything.
-      if (signal?.aborted || (err instanceof Error && err.name === 'AbortError')) {
-        return fail({ reason: 'aborted', message: 'The call to Claude was cancelled.' });
-      }
-      return fail({ reason: 'network', message: 'Claude could not be reached.' });
-    }
-
-    let body: unknown;
-    try {
-      body = await res.json();
-    } catch {
-      body = undefined;
-    }
-
-    if (!res.ok) return fail(this.httpFailure(res, body));
-
-    if (!isRecord(body) || typeof body.stop_reason !== 'string' || !Array.isArray(body.content)) {
-      return fail({ reason: 'bad_response', message: 'Claude answered with something that is not a message.' });
-    }
-    const usage = readUsage(body);
-    const stop = body.stop_reason;
-    if (stop === 'refusal') {
-      const details = body.stop_details;
-      const category = isRecord(details) && typeof details.category === 'string' ? details.category : undefined;
-      return fail({ reason: 'refusal', message: 'Claude declined to judge this listing.', ...(category ? { refusalCategory: category } : {}) }, usage);
-    }
-    if (stop === 'max_tokens') {
-      return fail({ reason: 'max_tokens', message: 'Claude’s answer was cut off before it finished.' }, usage);
-    }
-    if (stop !== 'end_turn') {
-      return fail({ reason: 'unexpected_stop', message: `Claude stopped for an unexpected reason (${stop.slice(0, 40)}).` }, usage);
-    }
-    const text = body.content.find((b): b is { type: 'text'; text: string } => isRecord(b) && b.type === 'text' && typeof b.text === 'string');
-    if (!text) return fail({ reason: 'no_answer', message: 'Claude’s answer had no text.' }, usage);
-    return { ...base, ok: true, answer: text.text, usage: usage ?? { inputTokens: 0, outputTokens: 0 } };
-  }
-
-  private httpFailure(res: Response, body: unknown): NotJudged {
-    const status = res.status;
-    const error = isRecord(body) && isRecord(body.error) ? body.error : undefined;
-    const type = typeof error?.type === 'string' ? error.type : undefined;
-    // The API's own message, cut short and with the key removed should it ever be echoed.
-    const said = typeof error?.message === 'string' ? error.message.split(this.apiKey).join('[key]').slice(0, 200) : '';
-    const detail = [type, said].filter(Boolean).join(': ');
-    const tail = detail ? ` (${detail})` : '';
-    if (status === 401 || status === 403) {
-      return { reason: 'auth', status, message: `Claude refused the API key (HTTP ${status}).${tail}` };
-    }
-    if (status === 429) {
-      const after = Number(res.headers.get('retry-after'));
-      return {
-        reason: 'rate_limited',
-        status,
-        message: `Claude's rate limit was reached (HTTP 429).${tail}`,
-        ...(Number.isFinite(after) && after > 0 ? { retryAfterSeconds: after } : {}),
-      };
-    }
-    if (status === 529) return { reason: 'overloaded', status, message: `Claude is overloaded (HTTP 529).${tail}` };
-    if (status >= 500) return { reason: 'server', status, message: `Claude answered with a server error (HTTP ${status}).${tail}` };
-    if (status === 400) return { reason: 'bad_request', status, message: `Claude refused the request (HTTP 400).${tail}` };
-    return { reason: 'http', status, message: `Claude answered with HTTP ${status}.${tail}` };
+    const result = await callClaudeMessages({
+      apiKey: this.apiKey,
+      body: this.requestBody(input),
+      ...(this.fetchFn ? { fetchFn: this.fetchFn } : {}),
+      ...(signal ? { signal } : {}),
+      declined: 'Claude declined to judge this listing.',
+    });
+    return { judgeId: this.id, model: this.model, promptVersion: PROMPT_VERSION, ...result };
   }
 }
