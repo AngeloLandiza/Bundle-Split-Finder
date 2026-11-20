@@ -303,3 +303,26 @@ describe('cheap checks the labels asked for', () => {
     expect(downgrades(titleMatch(i), i)).toMatch(/several variations/);
   });
 });
+
+describe('fix round 3: a longer form of the model in the seller’s own words', () => {
+  it('PCL1600K2 800870140728 (labelled unsure; a Haiku false match): the description says "Model: PCL1600K2X"', () => {
+    expect(labelOf('PCL1600K2', '800870140728')).toBe('unsure');
+    const i = input('PCL1600K2', '800870140728');
+    const v = verifyJudgement(titleMatch(i), i);
+    expect(v.verdict).toBe('unsure');
+    expect(v.downgrades.join(' ')).toMatch(/PCL1600K2X, a longer model number/);
+  });
+
+  it('DCS391BR only among the MPNs of a labelled match is not used (DCS391B 880037664195)', () => {
+    expect(labelOf('DCS391B', '880037664195')).toBe('match');
+    const i = input('DCS391B', '880037664195');
+    expect(downgrades(titleMatch(i), i)).not.toMatch(/longer model number/);
+  });
+
+  it('the RYOBI twin and a kit suffix are not a longer model (PCL206 237179711800, 366607811264)', () => {
+    for (const id of ['237179711800', '366607811264']) {
+      const i = input('PCL206', id);
+      expect(downgrades(titleMatch(i), i)).not.toMatch(/longer model number/);
+    }
+  });
+});

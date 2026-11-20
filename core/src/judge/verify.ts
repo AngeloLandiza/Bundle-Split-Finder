@@ -5,6 +5,7 @@
 // raise one. The listing checks below are words, not understanding: each comes from a recorded
 // listing (fixtures/ebay/) and is measured against the labels (fixtures/ebay/labels.json).
 
+import { modelForms } from '../match';
 import { itemSpecifics, PROMPT_VERSION } from './prompt';
 import { parseJudgeRaw } from './schema';
 import type { JudgeInput, JudgeOutcome, JudgeRaw, ListingJudge, VerifiedJudgement } from './types';
@@ -252,6 +253,23 @@ function listingProblems(input: JudgeInput, models: string[]): string[] {
     }
   }
   for (const tok of odd) problems.push(`The listing details name ${tok.toUpperCase()}, a different model.`);
+
+  // The model with letters run on in the seller's own words, title or description: "Model:
+  // PCL1600K2X" (PCL1600K2 800870140728, a Haiku false match). The RYOBI twin (PCL206B on PCL206)
+  // and a kit suffix (PCL206K1) are not this. Item specifics are left out: sellers list several
+  // MPNs there, and DCS391BR sits beside DCS391B on a labelled match (880037664195).
+  const forms = new Set(models.flatMap((m) => modelForms(part.brand, m)).map(normaliseText));
+  const longer = new Set<string>();
+  for (const text of [title, normaliseText(listing.descriptionText)]) {
+    for (const f of forms) {
+      for (const hit of text.matchAll(new RegExp(String.raw`(?<![a-z0-9])${escapeRe(f)}([a-z][a-z0-9]*)`, 'g'))) {
+        const whole = f + hit[1]!;
+        if (forms.has(whole) || /^k\d/.test(hit[1]!)) continue;
+        longer.add(whole);
+      }
+    }
+  }
+  for (const tok of longer) problems.push(`The listing says ${tok.toUpperCase()}, a longer model number than the part's.`);
 
   // v1|<item>|<variation>: a listing of several variations, whose price and sales are for any of them.
   const variation = listing.itemId.split('|')[2];
