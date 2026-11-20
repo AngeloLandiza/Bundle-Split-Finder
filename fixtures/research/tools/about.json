@@ -1,0 +1,5 @@
+{
+ "about": "Recorded tool results for research (step 12): npm run research:eval and the tests answer read_homedepot_page and search_homedepot only from recorded files (scripts/research-tools.ts). A file here holds `pages` (by Home Depot item id, the read_homedepot_page result: {sourceId, label, url, sections: {title, model, bullets, description, specifications: [{name, value}]}}) and `searches` (by query, the search_homedepot result: {sourceId, label, url, results: [{title, brand, model, itemId, url}]}), as the extension's tools return them. Files here are read before fixtures/homedepot-pages/research-*.json and the validation pages. Set `constructed: true` on a file put together by hand from recorded rows. This file holds none: the Nov 20 recordings are in fixtures/homedepot-pages/research-2026-11-20.json.",
+ "pages": {},
+ "searches": {}
+}

@@ -15,6 +15,7 @@
     "ebay:record": "tsx scripts/ebay-record.ts",
     "judge:eval": "tsx scripts/judge-eval.ts",
     "assist:eval": "tsx scripts/assist-eval.ts",
+    "research:eval": "tsx scripts/research-eval.ts",
     "fixtures:record": "tsx scripts/record-fixtures.ts",
     "test:live": "vitest run --config vitest.live.config.ts",
     "package": "tsx scripts/package.ts",
