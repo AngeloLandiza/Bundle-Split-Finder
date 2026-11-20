@@ -53,9 +53,15 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const entry = open[0];
   const item = entry && 'review' in entry ? entry.review : undefined;
 
+  /** Only a suggestion made for the question as it reads now: one for other choices is not shown, whatever the panel holds. */
+  const suggestionFor = (r: ReviewItem): StoredSuggestion | null => {
+    const mine = got[r.id];
+    return liveSuggestion([...(mine ? [mine] : []), ...(report?.aiSuggestions ?? [])], r) ?? null;
+  };
   // Accept all: the questions that offer one reading, answered in one press. Each one answered is hidden like a single answer.
   const acceptAll = useAcceptAll(api, (r, seen) => setDone((d) => new Set(d).add(`${r.id}|${seen}`)));
-  const suggested = suggestedOf(open.flatMap((e) => ('review' in e ? [e.review] : [])));
+  // Not one the AI has made a suggestion for: Accept all never decides over what the AI said, so that one is answered on its own.
+  const suggested = suggestedOf(open.flatMap((e) => ('review' in e ? [e.review] : []))).filter((r) => suggestionFor(r) === null);
   // The same link the question's own "Open on Home Depot" uses: the report row's, never one built from the model.
   const homeDepotLinkOf = (r: ReviewItem): string | null => (r.kind === 'split' ? (report?.bundles.find((b) => b.key === r.subject)?.link ?? null) : null);
   // A result sentence about the questions as they were goes stale when a scan starts.
@@ -94,11 +100,6 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   // The button exists only with an Anthropic key saved; its price is the Settings model's.
   const hasAi = state.ebay?.hasAnthropicKey === true;
   const aiCost = askCostLabel(state.ebay?.judgeModel ?? DEFAULT_CLAUDE_JUDGE_MODEL);
-  /** Only a suggestion made for the question as it reads now: one for other choices is not shown, whatever the panel holds. */
-  const suggestionFor = (r: ReviewItem): StoredSuggestion | null => {
-    const mine = got[r.id];
-    return liveSuggestion([...(mine ? [mine] : []), ...(report?.aiSuggestions ?? [])], r) ?? null;
-  };
   const ask = async (r: ReviewItem): Promise<void> => {
     if (asking !== null) return;
     setAsking(r.id);
@@ -142,6 +143,8 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
       return UNREACHABLE;
     }
     setDone((d) => new Set(d).add(`${item.id}|${answer.seen}`));
+    // The answer is saved: the suggestion shown for it is not kept in the panel.
+    setGot(({ [item.id]: _answered, ...rest }) => rest);
     setFocusNext(true);
     return null;
   };

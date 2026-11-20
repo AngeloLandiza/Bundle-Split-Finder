@@ -223,6 +223,28 @@ describe('askAi', () => {
     expect(reply).toEqual({ ok: false, error: 'That question changed while the AI worked. Ask again.' });
     const report = await t.send<PanelReport>({ type: 'getReport' });
     expect(report.ok && report.data.aiSuggestions).toEqual([]);
+    // The readings come back as they were: the discarded suggestion must not come back with them.
+    await t.store.putReview(t.question);
+    const back = await t.send<PanelReport>({ type: 'getReport' });
+    expect(back.ok && back.data.aiSuggestions).toEqual([]);
+  });
+
+  it('closes a suggestion for a question the owner answered while the AI worked: it cannot come back when the question is reopened, and its cost is kept', async () => {
+    let t!: Awaited<ReturnType<typeof setup>>;
+    t = await setup({
+      respond: async () => {
+        await t.store.putReview({ ...t.question, answer: 'none', answeredAt: T0 });
+        return json(200, message(RIGHT));
+      },
+    });
+    expect(await t.send({ type: 'askAi', questionId: PSK })).toEqual({ ok: false, error: 'That question changed while the AI worked. Ask again.' });
+    // Reopened, with the same readings: nothing is preselected from the closed suggestion.
+    await t.store.putReview(t.question);
+    const report = await t.send<PanelReport>({ type: 'getReport' });
+    expect(report.ok && report.data.aiSuggestions).toEqual([]);
+    const [record] = await t.suggestions.list();
+    expect(record!.outcome).toEqual({ answeredAt: T0, answer: 'none', agreed: null });
+    expect(record!.costUsd).not.toBeNull();
   });
 
   it('stops showing a stored suggestion once a scan changes the question', async () => {

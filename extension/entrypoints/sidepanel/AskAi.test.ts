@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { createElement } from 'react';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -159,6 +161,7 @@ describe('Ask AI: a verified suggestion', () => {
     const block = screen.getByRole('group', { name: 'AI suggestion' });
     expect(within(block).getByText('AI suggestion')).toBeVisible();
     expect(within(block).getByText('PBP004 + PBP003 + PCG002')).toBeVisible();
+    expect(within(block).getByText('PBP004 + PBP003 + PCG002')).not.toHaveClass('ai-claimed');
     expect(within(block).getByText(PSK_INCLUDES)).toBeVisible();
     const link = within(block).getByRole('link', { name: 'Home Depot page' });
     expect(link).toHaveAttribute('href', 'https://www.homedepot.com/p/339206615');
@@ -185,8 +188,21 @@ describe('Ask AI: a verified suggestion', () => {
     const { calls } = setup(reportOf([q], [await check(RIGHT)]));
     expect(screen.getByRole('radio', { name: 'PBP004 + PBP003 + PCG002' })).toBeChecked();
     await userEvent.click(screen.getByRole('radio', { name: 'PCG002 + PBP004' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Approve' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save answer' }));
     expect(calls).toEqual([{ type: 'answerReview', id: PSK, answer: { choice: 1, seen: reviewSignature(q) }, aiSuggestion: true }]);
+  });
+
+  it('the button reads Approve only while the selection is the AI\'s answer; any other selection reads Save answer', async () => {
+    const { q, check } = await question(PSK, true);
+    setup(reportOf([q], [await check(RIGHT)]));
+    expect(screen.getByRole('button', { name: 'Approve' })).toBeEnabled();
+    await userEvent.click(screen.getByRole('radio', { name: 'PCG002 + PBP004' }));
+    expect(screen.queryByRole('button', { name: 'Approve' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Save answer' })).toBeEnabled();
+    await userEvent.click(screen.getByRole('radio', { name: 'None of these' }));
+    expect(screen.getByRole('button', { name: 'Save answer' })).toBeEnabled();
+    await userEvent.click(screen.getByRole('radio', { name: 'PBP004 + PBP003 + PCG002' }));
+    expect(screen.getByRole('button', { name: 'Approve' })).toBeEnabled();
   });
 
   it('a suggestion that arrives from asking takes focus, since the button pressed is gone', async () => {
@@ -239,6 +255,8 @@ describe('Ask AI: the states that preselect nothing', () => {
     const block = screen.getByRole('group', { name: 'AI suggestion' });
     expect(within(block).getByText('AI suggestion, unverified')).toBeVisible();
     expect(within(block).getByText('PBP004 + PBP003 + PCG002')).toBeVisible();
+    // Only a verified answer is in ink: what the code could not confirm is in ink-2.
+    expect(within(block).getByText('PBP004 + PBP003 + PCG002')).toHaveClass('ai-claimed');
     for (const r of screen.getAllByRole('radio')) expect(r).not.toBeChecked();
     expect(screen.getByRole('button', { name: 'Save answer' })).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Approve' })).toBeNull();
@@ -255,13 +273,15 @@ describe('Ask AI: the states that preselect nothing', () => {
     expect(screen.getByRole('button', { name: 'Save answer' })).toBeDisabled();
   });
 
-  it('none of these fits: the AI\'s view with its reason and the quotes found, nothing preselected, Save answer not Approve', async () => {
+  it('none of these fits: the AI\'s view with its reason and no quotes (the code cannot tell which back the reason), nothing preselected, Save answer not Approve', async () => {
     const { q, check } = await question();
     const { calls } = setup(reportOf([q], [await check({ decision: 'none', reason: 'The page lists other parts.', evidence: [{ quote: PSK_INCLUDES, source: 'bundle' }] })]));
     const block = screen.getByRole('group', { name: 'AI suggestion' });
     expect(within(block).getByText('AI suggests none of these fits')).toBeVisible();
     expect(within(block).getByText('The page lists other parts.')).toBeVisible();
-    expect(within(block).getByText(PSK_INCLUDES)).toBeVisible();
+    // A quote that is found does not show that nothing fits: none are shown with it.
+    expect(within(block).queryByText(PSK_INCLUDES)).toBeNull();
+    expect(within(block).queryByRole('link')).toBeNull();
     for (const r of screen.getAllByRole('radio')) expect(r).not.toBeChecked();
     expect(screen.getByRole('button', { name: 'Save answer' })).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Approve' })).toBeNull();
@@ -283,22 +303,59 @@ describe('Ask AI: a suggestion for another question is not shown', () => {
   });
 });
 
-describe('Accept all never applies a suggestion', () => {
-  it('sends the one reading as it always did, with no mark of a suggestion, even for a question the AI has spoken on', async () => {
+describe('Accept all leaves out a question the AI has spoken on', () => {
+  const ONE = 'The model number reads as one reading.';
+  async function threeSingleReadings() {
     const w = await assistWorld();
-    // Two questions that offer one reading each and whose reading did not come from the page: the ones Accept all answers.
-    const a = { ...asked(w, 'split:homedepot:339206615'), reason: 'The model number reads as one reading.' };
-    const b = { ...asked(w, 'split:homedepot:320243741'), reason: 'The model number reads as one reading.', openedAt: 5 };
+    // Questions that offer one reading each and whose reading did not come from the page: the ones Accept all answers.
+    const a = { ...asked(w, 'split:homedepot:339206615'), reason: ONE };
+    const b = { ...asked(w, 'split:homedepot:320243741'), reason: ONE, openedAt: 5 };
+    const c = { ...asked(w, 'split:homedepot:341644756'), reason: ONE, openedAt: 6 };
     const ev = await gatherEvidence(w.store, a);
     const checked = verifySuggestion(JSON.stringify(raw({ decision: 'none', reason: 'None.', evidence: [{ quote: PSK_INCLUDES, source: 'bundle' }] })), a, ev);
+    expect(checked.status).toBe('none_suggested');
     const none: StoredSuggestion = { key: suggestionKey(a.id, 1), questionId: a.id, seen: reviewSignature(a), askedAt: 1, costUsd: null, suggestion: { questionId: a.id, seen: reviewSignature(a), provider: 'claude', model: 'm', promptVersion: 'v', ...checked } as Suggestion };
-    const { calls } = setup(reportOf([a, b], [none]));
-    await userEvent.click(screen.getByRole('button', { name: /^Accept all/ }));
-    await waitFor(() => expect(calls.filter((c) => c.type === 'answerReview')).toHaveLength(2));
-    for (const c of calls) {
-      expect(c.type).toBe('answerReview');
-      expect(c).not.toHaveProperty('aiSuggestion');
-      expect(c).toMatchObject({ answer: { choice: 0 } });
+    return { a, b, c, none };
+  }
+
+  it('answers the others as it always did, with no mark of a suggestion, and never the question with a live suggestion', async () => {
+    const { a, b, c, none } = await threeSingleReadings();
+    const { calls } = setup(reportOf([a, b, c], [none]));
+    await userEvent.click(screen.getByRole('button', { name: 'Accept all 2' }));
+    await waitFor(() => expect(calls.filter((x) => x.type === 'answerReview')).toHaveLength(2));
+    expect(calls.map((x) => (x as { id: string }).id).sort()).toEqual([b.id, c.id].sort());
+    for (const x of calls) {
+      expect(x).not.toHaveProperty('aiSuggestion');
+      expect(x).toMatchObject({ answer: { choice: 0 } });
     }
+  });
+
+  it('offers no Accept all when only one question is left without a suggestion', async () => {
+    const { a, b, none } = await threeSingleReadings();
+    setup(reportOf([a, b], [none]));
+    expect(screen.queryByRole('button', { name: /^Accept all/ })).toBeNull();
+  });
+
+  it('a suggestion for other choices does not keep a question out of Accept all', async () => {
+    const { a, b, c, none } = await threeSingleReadings();
+    setup(reportOf([a, b, c], [{ ...none, seen: JSON.stringify([['OTHER']]) }]));
+    expect(screen.getByRole('button', { name: 'Accept all 3' })).toBeVisible();
+  });
+});
+
+describe('the Ask AI styles', () => {
+  const css = readFileSync(join(__dirname, 'AiSuggestion.css'), 'utf8');
+  const rule = (sel: string): string => {
+    const at = css.indexOf(`${sel} {`);
+    expect(at).toBeGreaterThanOrEqual(0);
+    return css.slice(at, css.indexOf('}', at));
+  };
+  it('keeps the cost on the same line as Ask AI, gives a source link a tap target, and sets a claim in ink-2', () => {
+    expect(rule('.btn.ai-ask')).toContain('white-space: nowrap');
+    expect(rule('.ai-source')).toMatch(/padding: 4px 0/);
+    expect(rule('.ai-claimed')).toContain('color: var(--ink-2)');
+  });
+  it('sets the block 12px under what is above it (8px gap and 4px more)', () => {
+    expect(rule('.review-question > .ai-block')).toContain('margin-top: 4px');
   });
 });

@@ -898,10 +898,10 @@ export function createWorker(env: WorkerEnv): Worker {
     try {
       const item = await store.getReview(id);
       if (!item || item.answer === null || typeof seen !== 'string') return;
-      const shown = (await suggestions.list())
-        .filter((r) => r.questionId === id && r.seen === seen && r.outcome === undefined && r.suggestion.status !== 'not_suggested')
-        .sort((a, b) => b.askedAt - a.askedAt)[0];
-      if (shown) await suggestions.put({ ...shown, outcome: { answeredAt: env.now(), answer: item.answer, agreed: agreedWith(shown.suggestion, item) } });
+      // The question is answered now, which liveSuggestion does not offer a suggestion for: ask it as it was shown.
+      const shown = liveSuggestion(await suggestions.list(), { ...item, answer: null });
+      if (!shown || shown.seen !== seen) return;
+      await suggestions.put({ ...shown, outcome: { answeredAt: env.now(), answer: item.answer, agreed: agreedWith(shown.suggestion, item) } });
     } catch {
       // The answer stands; a suggestion's note is only for the audit.
     }
@@ -933,11 +933,16 @@ export function createWorker(env: WorkerEnv): Worker {
       const suggestion = await suggestAnswer(question, await gatherEvidence(store, question), assist, AbortSignal.timeout(callTimeoutMs));
       const askedAt = env.now();
       const record: StoredSuggestion = { key: suggestionKey(id, askedAt), questionId: id, seen: suggestion.seen, askedAt, suggestion, costUsd: suggestionCost(model, suggestion.usage) };
-      // A call that gave nothing and cost nothing leaves no record. One that cost something is kept, for the count of what was spent.
-      if (suggestion.status !== 'not_suggested' || suggestion.usage !== undefined) await suggestions.put(record);
       // The question as it is now: a scan or an answer may have changed it while the model worked.
       const now = await store.getReview(id);
-      if (!now || now.answer !== null || reviewSignature(now) !== suggestion.seen) return refuse(ASK_CHANGED);
+      const current = now !== undefined && now.answer === null && reviewSignature(now) === suggestion.seen;
+      // A call that gave nothing and cost nothing leaves no record. One that cost something is kept, for the count of what was spent;
+      // when the question changed meanwhile it is kept closed (an outcome with nothing agreed), so it can never come back and
+      // preselect an answer should the question be reopened with the same readings.
+      if (suggestion.status !== 'not_suggested' || suggestion.usage !== undefined) {
+        await suggestions.put(current ? record : { ...record, outcome: { answeredAt: env.now(), answer: now?.answer ?? '', agreed: null } });
+      }
+      if (!current) return refuse(ASK_CHANGED);
       await broadcast();
       return ok(record);
     } finally {

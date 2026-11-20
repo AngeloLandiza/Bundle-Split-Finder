@@ -90,9 +90,13 @@ describe('IdbSuggestionStore', () => {
       },
     });
     await v4.put('cursors', { brand: 'RYOBI', nextPage: 3, passes: 1, updatedAt: 1 });
+    // What step 10 stored, which the upgrade must leave as it is.
+    const answer = { key: 'RYOBI:PCL206|v1|1|0', itemId: 'v1|1|0', model: 'PCL206', verdict: 'match', labelledBy: 'owner' };
+    await v4.put('ebayAnswers', answer);
     v4.close();
     const db = await openDb(name);
     expect(db.version).toBe(5);
+    expect(await new IdbScanStore(db).listEbayAnswers()).toEqual([answer]);
     expect(await new IdbScanStore(db).getCursor('RYOBI')).toEqual({ brand: 'RYOBI', nextPage: 3, passes: 1, updatedAt: 1 });
     expect(await new IdbSuggestionStore(db).list()).toEqual([]);
   });

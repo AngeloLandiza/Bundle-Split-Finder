@@ -81,16 +81,19 @@ function Quotes({ quotes }: { quotes: VerifiedQuote[] }) {
   );
 }
 
-const Answer = ({ p }: { p: Proposal }): ReactNode =>
-  p.kind === 'none' ? (
-    <p className="ai-answer">None of these</p>
+/** `claimed`: what the AI said that the code could not confirm. Only a verified answer is in ink; a claim is in ink-2. */
+const Answer = ({ p, claimed = false }: { p: Proposal; claimed?: boolean }): ReactNode => {
+  const cls = claimed ? 'ai-answer ai-claimed' : 'ai-answer';
+  return p.kind === 'none' ? (
+    <p className={cls}>None of these</p>
   ) : p.kind === 'parts' ? (
-    <p className="ai-answer figure">{p.parts.join(' + ')}</p>
+    <p className={`${cls} figure`}>{p.parts.join(' + ')}</p>
   ) : (
-    <p className="ai-answer">
+    <p className={cls}>
       <span className="ai-listing-title">{p.title}</span> <span className="figure">{p.asin}</span>
     </p>
   );
+};
 
 export interface AiSuggestionProps {
   suggestion: Exclude<Suggestion, { status: 'not_suggested' }>;
@@ -113,14 +116,14 @@ export const AiSuggestion = forwardRef<HTMLDivElement, AiSuggestionProps>(functi
         </>
       ) : suggestion.status === 'unverified' ? (
         <>
-          {proposal ? <Answer p={proposal} /> : null}
+          {proposal ? <Answer p={proposal} claimed /> : null}
           <p className="ai-reason">{suggestion.reasons[0] ?? 'The code could not confirm this from the page.'}</p>
         </>
       ) : suggestion.status === 'none_suggested' ? (
         <>
           <p className="ai-answer">AI suggests none of these fits</p>
+          {/* No quotes: a found quote does not show that nothing fits, and the code cannot tell which line backs the reason (none of its quotes "names" an answer). */}
           <p className="ai-reason">{suggestion.reason}</p>
-          <Quotes quotes={suggestion.quotes} />
         </>
       ) : (
         <>

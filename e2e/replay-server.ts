@@ -82,6 +82,8 @@ export interface ReplayServer {
   assistCalls: string[];
   /** Step 11: what the fake model answers an Ask AI call (the answer object in the review assistant's schema), from the call's user message. Cleared by reset(). */
   setAssistReply(reply: ((user: string) => unknown) | null): void;
+  /** Step 11: every Ask AI answer waits this many ms, so a test can photograph the asking state. reset() clears it. */
+  delayAssist(ms: number): void;
   /** These ids are answered 403 with the recorded refused page, until reset(). '*' refuses every id and every /s/ search. */
   refuse(...itemIds: string[]): void;
   /** Test-only: the recorded page of `recordedId` is served for item `itemId`, until reset(). */
@@ -109,6 +111,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
   let modelBadKeys = 0;
   let assistCalls: string[] = [];
   let assistReply: ((user: string) => unknown) | null = null;
+  let assistDelay = 0;
   const refused = new Set<string>();
   const servedAs = new Map<string, string>();
   let searchDelay = 0;
@@ -164,6 +167,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
             res.writeHead(401, headers).end(JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } }));
             return;
           }
+          if (assistDelay > 0) await new Promise((ok) => setTimeout(ok, assistDelay));
           const answer = assistReply?.(user);
           if (answer === undefined) {
             res.writeHead(400, headers).end(JSON.stringify({ type: 'error', error: { type: 'invalid_request_error', message: 'No scripted answer.' } }));
@@ -264,6 +268,9 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
     setAssistReply(reply) {
       assistReply = reply;
     },
+    delayAssist(ms) {
+      assistDelay = ms;
+    },
     refuse(...ids) {
       for (const id of ids) refused.add(id);
     },
@@ -292,6 +299,7 @@ export async function startReplayServer(port: number): Promise<ReplayServer> {
       modelBadKeys = 0;
       assistCalls = [];
       assistReply = null;
+      assistDelay = 0;
       refused.clear();
       servedAs.clear();
       for (const k of Object.keys(counts)) delete counts[k];

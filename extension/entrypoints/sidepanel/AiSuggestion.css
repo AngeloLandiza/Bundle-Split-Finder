@@ -7,6 +7,9 @@
   border-left: 2px solid var(--ink-2);
   min-width: 0;
 }
+.review-question > .ai-block {
+  margin-top: 4px;
+}
 .ai-block:focus {
   outline: none;
 }
@@ -64,8 +67,12 @@
   overflow: hidden;
   color: var(--ink-2);
 }
+.ai-claimed {
+  color: var(--ink-2);
+}
 .ai-source {
   display: inline-block;
+  padding: 4px 0;
   font-size: 12px;
   line-height: 16px;
   color: var(--link);
@@ -81,6 +88,7 @@
   background: transparent;
   color: var(--ink);
   padding: 0 4px 0 0;
+  white-space: nowrap;
 }
 .btn.ai-ask .figure {
   font-weight: 400;

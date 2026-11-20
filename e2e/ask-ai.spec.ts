@@ -114,7 +114,12 @@ test('Ask AI: nothing is saved until Approve; verified, unverified, cannot tell 
 
   // (b) Unverified: the model's quote is not on the page. The block says so, nothing is preselected, the owner chooses.
   server.setAssistReply(says.unverified);
+  server.delayAssist(2_500);
   await panel.getByRole('button', { name: /^Ask AI/ }).click();
+  // While it works the button reads Asking… and the question stays usable.
+  await expect(panel.getByRole('button', { name: 'Asking…' })).toBeVisible();
+  await shoot(panel, 'ask-ai-asking', [360]);
+  server.delayAssist(0);
   const block = panel.getByRole('group', { name: 'AI suggestion' });
   await expect(block.getByText('AI suggestion, unverified')).toBeVisible();
   await expect(block.getByText(READING_1)).toBeVisible();
@@ -153,7 +158,8 @@ test('Ask AI: nothing is saved until Approve; verified, unverified, cannot tell 
   await showQuestion(panel);
   await expect(block.getByText('AI suggests none of these fits')).toBeVisible();
   await expect(block.getByText('The page names a different set of parts.')).toBeVisible();
-  await expect(block.getByRole('link', { name: 'Home Depot page' })).toHaveAttribute('href', /homedepot\.com/);
+  // No quotes with a none: a found line does not show that nothing fits.
+  await expect(block.getByRole('link')).toHaveCount(0);
   for (const r of await panel.getByRole('radio').all()) await expect(r).not.toBeChecked();
   await expect(panel.getByRole('button', { name: 'Save answer' })).toBeDisabled();
   await expect(panel.getByRole('button', { name: 'Approve' })).toHaveCount(0);
@@ -173,6 +179,11 @@ test('Ask AI: nothing is saved until Approve; verified, unverified, cannot tell 
   await expect(panel.getByRole('button', { name: 'Approve' })).toBeEnabled();
   await expect(panel.getByRole('button', { name: 'Save answer' })).toHaveCount(0);
   await shoot(panel, 'ask-ai-verified', [360, 480]);
+  // Selecting another answer makes it the owner's own: the button is Save answer again, and back on the AI's it is Approve.
+  await panel.getByRole('radio', { name: READING_0, exact: true }).check();
+  await expect(panel.getByRole('button', { name: 'Save answer' })).toBeVisible();
+  await panel.getByRole('radio', { name: READING_1, exact: true }).check();
+  await expect(panel.getByRole('button', { name: 'Approve' })).toBeVisible();
   expect(await saved(options)).toBeNull();
   expect(server.assistCalls).toHaveLength(4);
 

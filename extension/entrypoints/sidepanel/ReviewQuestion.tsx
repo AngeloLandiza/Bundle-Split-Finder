@@ -51,6 +51,9 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [typed, setTyped] = useState('');
+  // Approve is pressing the AI's own answer: once the owner selects another, the button is Save answer again.
+  const preselected = suggestion?.status === 'verified' ? preselectOf(suggestion, item) : null;
+  const approving = preselected !== null && picked === preselected;
   const legendRef = useRef<HTMLLegendElement>(null);
   const blockRef = useRef<HTMLDivElement>(null);
   const wasAsking = useRef(false);
@@ -223,7 +226,7 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
         </div>
         <div className="review-actions">
           <button type="submit" className="btn btn-primary" disabled={picked === null || (picked === ENTER && typedParts.length === 0) || scanRunning || blocked !== null || saving}>
-            {suggestion?.status === 'verified' ? 'Approve' : 'Save answer'}
+            {approving ? 'Approve' : 'Save answer'}
           </button>
           {onNotNow ? (
             <button type="button" className="btn btn-secondary" onClick={onNotNow} disabled={saving}>
