@@ -172,6 +172,33 @@ describe('side panel shell', () => {
     expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
+  it('Ask AI about all (step 12): the same row says "Asking AI · 7 of 26" with its estimate and the cost so far in Details; Stop sends stopAskAll', async () => {
+    const user = userEvent.setup();
+    const { send, emit } = setup(state());
+    await user.click(await screen.findByRole('button', { name: 'Scan now' }));
+    const rates = { askAi: [30, 30, 30] };
+    await emit(state({ askAll: { done: 7, total: 26, costUsd: 0.41, estimateUsd: 2.6 }, rates }));
+    // 19 left at 30 s a question.
+    const bar = screen.getByRole('progressbar', { name: 'Asking AI progress' });
+    expect(bar).toHaveAttribute('aria-valuetext', 'Asking AI, 7 of 26, about 10 minutes left');
+    expect(bar.closest('.progress')).toHaveTextContent('Asking AI · 7 of 26about 10 minDetails');
+    await user.click(screen.getByRole('button', { name: 'Details' }));
+    const steps = screen.getByRole('list', { name: 'Asking AI steps' });
+    expect(steps).toHaveTextContent('Asking AInow$0.41 so far');
+    // Stop is the header's, as for a scan, and it stops the queue, not a scan.
+    expect(screen.queryByRole('button', { name: 'Scan now' })).toBeNull();
+    send.mockClear();
+    await user.click(screen.getByRole('button', { name: 'Stop' }));
+    expect(send).toHaveBeenCalledWith({ type: 'stopAskAll' });
+    expect(send).not.toHaveBeenCalledWith({ type: 'stopScan' });
+    await emit(state({ askAll: { done: 8, total: 26, costUsd: 0.45, estimateUsd: 2.6, stopping: true }, rates }));
+    expect(screen.getByRole('button', { name: 'Stopping…' })).toHaveAttribute('aria-disabled', 'true');
+    // Over: the row goes and Scan now is back.
+    await emit(state());
+    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Scan now' })).toBeInTheDocument();
+  });
+
   it('fetches the report again after a state change and keeps the last one meanwhile', async () => {
     const { send, emit } = setup(state());
     await screen.findByText('3 bundles');

@@ -176,3 +176,35 @@ describe('Settings: the listing check', () => {
     expect(limit()).toHaveValue(60);
   });
 });
+
+describe('Settings: Ask AI after each scan (step 12)', () => {
+  const box = () => screen.getByRole('checkbox', { name: /Ask AI after each scan/ });
+
+  it('is off until the owner turns it on, and says what it does and that nothing is answered for them', async () => {
+    await open(stateWith({ hasAnthropicKey: true }));
+    expect(box()).not.toBeChecked();
+    expect(screen.getByText(/It only drafts: nothing is answered until you approve it in Review\./)).toBeVisible();
+  });
+
+  it('is on when the worker says so, and a press saves the change at once, in one message', async () => {
+    const { user, sent } = await open({ ...stateWith({ hasAnthropicKey: true }), askAfterScan: true });
+    expect(box()).toBeChecked();
+    await user.click(box());
+    expect(box()).not.toBeChecked();
+    expect(sent('saveAskAfterScan')).toEqual([{ type: 'saveAskAfterScan', on: false }]);
+  });
+
+  it('puts it back and says so when the change could not be saved', async () => {
+    const { user } = await open(stateWith({ hasAnthropicKey: true }), { saveAskAfterScan: () => ({ ok: false, error: 'No.' }) });
+    await user.click(box());
+    expect(await screen.findByRole('alert')).toHaveTextContent('Not saved. Try again.');
+    expect(box()).not.toBeChecked();
+  });
+
+  it('says what asking costs a question, as an estimate, at the model chosen', async () => {
+    const { user } = await open(stateWith());
+    expect(screen.getByTestId('ask-cost')).toHaveTextContent('Estimated cost of asking, on the model above: about $0.01 for a bundle\'s parts, about $0.01 for a listing. An estimate');
+    await user.click(screen.getByRole('radio', { name: /Claude Opus 5\.5/ }));
+    expect(screen.getByTestId('ask-cost')).toHaveTextContent('about $0.10 for a bundle\'s parts, about $0.02 for a listing');
+  });
+});
