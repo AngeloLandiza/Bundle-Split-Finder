@@ -1,0 +1,3044 @@
+{
+ "model": "claude-haiku-5-5",
+ "promptVersion": "listing-judge-2026-11-19.2",
+ "ranAt": "2026-11-20T01:30:23.023Z",
+ "results": [
+  {
+   "itemId": "v1|227605048699|0",
+   "model": "A986501",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a 65-piece bit set with one battery, not the drill and impact driver kit, and it does not state New condition."
+   ],
+   "usage": {
+    "inputTokens": 3815,
+    "outputTokens": 550,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|127192189387|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a third-party impact driver without battery, not the DEWALT DCB205 battery pack."
+   ],
+   "usage": {
+    "inputTokens": 3805,
+    "outputTokens": 393,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|187318038830|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a third-party AutoJare drill driver, not the DEWALT DCB205 battery pack; the model number only appears as a compatibility reference."
+   ],
+   "usage": {
+    "inputTokens": 3666,
+    "outputTokens": 363,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|237159233078|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing is a compatible third-party 2-pack, not the genuine DeWalt DCB205 single pack, and it is not stated as New."
+   ],
+   "usage": {
+    "inputTokens": 2823,
+    "outputTokens": 283,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|277722677166|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells an AutoJare drill set without battery, not the DEWALT DCB205 battery pack."
+   ],
+   "usage": {
+    "inputTokens": 3811,
+    "outputTokens": 375,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|286694301512|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells an unbranded AutoJare impact driver, tool only, that merely says it is compatible with DCB205; it is not the DEWALT battery pack."
+   ],
+   "usage": {
+    "inputTokens": 3775,
+    "outputTokens": 380,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|336563044587|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a 4-pack of non-OEM 8.0Ah replacement batteries, not one New DCB205 5.0Ah pack."
+   ],
+   "usage": {
+    "inputTokens": 2700,
+    "outputTokens": 350,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|366805273239|0",
+   "model": "DCB205",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells an unbranded impact driver with no battery, not the DCB205 battery pack; the model number appears only as compatibility."
+   ],
+   "usage": {
+    "inputTokens": 3760,
+    "outputTokens": 333,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800928940227|0",
+   "model": "DCB205",
+   "notJudged": {
+    "reason": "network",
+    "message": "Claude could not be reached."
+   },
+   "reasons": []
+  },
+  {
+   "itemId": "v1|237085136740|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a third-party compatible 12.0Ah battery, not the DeWALT DCB606 6.0Ah pack."
+   ],
+   "usage": {
+    "inputTokens": 3537,
+    "outputTokens": 315,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|237085142273|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a third-party compatible 2-pack of 12Ah batteries, not one DCB606 6.0Ah pack, and does not say New."
+   ],
+   "usage": {
+    "inputTokens": 3540,
+    "outputTokens": 353,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|237085171037|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a third-party 9.0Ah compatible battery under a different model, not the DEWALT DCB606 original."
+   ],
+   "usage": {
+    "inputTokens": 3427,
+    "outputTokens": 307,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|237085173054|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells two third-party compatible 9.0Ah batteries under a different model, not one genuine DCB606 6.0Ah pack."
+   ],
+   "usage": {
+    "inputTokens": 3430,
+    "outputTokens": 358,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|237115540921|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a third-party charger for the batteries, not the DCB606 battery pack."
+   ],
+   "usage": {
+    "inputTokens": 3542,
+    "outputTokens": 303,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|237115638702|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a third-party charger, not the DCB606 battery pack; DCB606 appears only as a compatible battery."
+   ],
+   "usage": {
+    "inputTokens": 2978,
+    "outputTokens": 297,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|407189136497|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells an angle grinder with the DCB606 battery, not the DCB606 battery pack alone."
+   ],
+   "usage": {
+    "inputTokens": 3819,
+    "outputTokens": 317,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|820076505425|0",
+   "model": "DCB606",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a third-party compatible 12.0Ah SKYON battery, not the DEWALT DCB606 6.0Ah pack; the model number appears only as compatibility text."
+   ],
+   "usage": {
+    "inputTokens": 3576,
+    "outputTokens": 384,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|137923389067|0",
+   "model": "DCF921B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the DCF921B bare tool, new, one unit, with no battery or charger included."
+   ],
+   "usage": {
+    "inputTokens": 2460,
+    "outputTokens": 706,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|227617096880|0",
+   "model": "DCF921B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title and item specifics give DCF921B tool only and New, but the description repeatedly states model DCF921, so the listing contradicts itself on the model."
+   ],
+   "usage": {
+    "inputTokens": 3147,
+    "outputTokens": 713,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|306552991202|0",
+   "model": "DCF921B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCF921B impact wrench sold bare tool only, matching the Tool Only product; condition New is not stated."
+   ],
+   "usage": {
+    "inputTokens": 2515,
+    "outputTokens": 284,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|356061995376|0",
+   "model": "DCF921B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is a new DCF921B impact wrench with its included hog ring, one unit, with no battery or charger added."
+   ],
+   "usage": {
+    "inputTokens": 2335,
+    "outputTokens": 1054,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|407209694810|0",
+   "model": "DCF921B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the DCF921B impact wrench tool only, New, one unit, with no battery included, matching the product's bare-tool name."
+   ],
+   "usage": {
+    "inputTokens": 2436,
+    "outputTokens": 217,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|407352842496|0",
+   "model": "DCF921B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title and description say DCF921B tool only, but the MPN and model specifics say DCF911B, so the listing contradicts itself on the model."
+   ],
+   "usage": {
+    "inputTokens": 3409,
+    "outputTokens": 842,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|840092869695|0",
+   "model": "DCF921B",
+   "verdict": "unsure",
+   "reasons": [
+    "The title and MPN match the model, and the listing says no battery is included, but it does not state New, the quantity, or that only the bare tool is sold."
+   ],
+   "usage": {
+    "inputTokens": 2641,
+    "outputTokens": 651,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|920101779170|0",
+   "model": "DCF921B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title says DCF921B tool only, but item specifics give model DCF911B and list one battery, so the listing contradicts itself."
+   ],
+   "usage": {
+    "inputTokens": 2513,
+    "outputTokens": 633,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|188014102173|0",
+   "model": "DCK200D1P1",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCK200D1P1 combo kit (drill, impact driver, two batteries, charger, bag), New, though the title says Drill, Impact and bag, and the description does not clearly list the kit bag or confirm the 5.0 Ah and 2.0 Ah batteries."
+   ],
+   "usage": {
+    "inputTokens": 3880,
+    "outputTokens": 352,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|198754433948|0",
+   "model": "DCK200D1P1",
+   "verdict": "unsure",
+   "reasons": [
+    "Title gives the exact model number and New condition, but the listing does not state the batteries, charger and bag included in the kit."
+   ],
+   "usage": {
+    "inputTokens": 2200,
+    "outputTokens": 172,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257813691503|0",
+   "model": "DCK200D1P1",
+   "verdict": "unsure",
+   "reasons": [
+    "Model number and two tools and two batteries are stated and the item is Brand New, but the listing never says a charger or kit bag is included."
+   ],
+   "usage": {
+    "inputTokens": 2401,
+    "outputTokens": 517,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|327416179319|0",
+   "model": "DCK200D1P1",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing names the two tools and two batteries but never mentions the charger or kit bag the product includes, so it is a kit missing contents."
+   ],
+   "usage": {
+    "inputTokens": 2511,
+    "outputTokens": 857,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|820032917676|0",
+   "model": "DCK200D1P1",
+   "verdict": "unsure",
+   "reasons": [
+    "Model number matches, but the listing mentions only batteries, not the charger or kit bag, and does not state condition."
+   ],
+   "usage": {
+    "inputTokens": 2632,
+    "outputTokens": 596,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|960204899926|0",
+   "model": "DCK200D1P1",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing names a drill, impact driver, two batteries and a bag but no charger, which the product includes."
+   ],
+   "usage": {
+    "inputTokens": 2543,
+    "outputTokens": 718,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257830643937|0",
+   "model": "DCK225D2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCK225D2 combo kit, new, with two batteries and two tools, but does not state that the charger and bag are included."
+   ],
+   "usage": {
+    "inputTokens": 2379,
+    "outputTokens": 677,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|267847487029|0",
+   "model": "DCK225D2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCK225D2 combo kit marked New, but it does not state that the charger and bag are included."
+   ],
+   "usage": {
+    "inputTokens": 2727,
+    "outputTokens": 814,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|287719715826|0",
+   "model": "DCK225D2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is a new DCK225D2 combo kit with the product's tools, batteries, charger and bag, but also lists two belt hooks not in the product name."
+   ],
+   "usage": {
+    "inputTokens": 2560,
+    "outputTokens": 1136,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|366811148561|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the DCK225D2 combo kit with drill, impact driver, two 2.0Ah batteries, charger and bag, New, one unit."
+   ],
+   "usage": {
+    "inputTokens": 2588,
+    "outputTokens": 255,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|388042199892|0",
+   "model": "DCK225D2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing has the model number and a 2-battery, 2-tool combo kit, but does not state the charger or bag or the condition."
+   ],
+   "usage": {
+    "inputTokens": 2338,
+    "outputTokens": 585,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|398045310682|0",
+   "model": "DCK225D2",
+   "verdict": "match",
+   "reasons": [
+    "Listing shows the DCK225D2 kit with two tools, two 2.0Ah batteries, charger and bag, New, one unit."
+   ],
+   "usage": {
+    "inputTokens": 3052,
+    "outputTokens": 298,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|398418302621|0",
+   "model": "DCK225D2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing matches model DCK225D2 as New with 2 batteries and 2 tools, but does not explicitly mention the charger or bag."
+   ],
+   "usage": {
+    "inputTokens": 2356,
+    "outputTokens": 262,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|860158654414|0",
+   "model": "DCK225D2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing names the model and two batteries but never states whether the charger and bag are included."
+   ],
+   "usage": {
+    "inputTokens": 2563,
+    "outputTokens": 745,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|147653239103|0",
+   "model": "DCK240C2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing matches the kit with tools, two batteries, charger and bag and is New, but it adds a belt hook not in the product's contents."
+   ],
+   "usage": {
+    "inputTokens": 3980,
+    "outputTokens": 526,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206700841473|0",
+   "model": "DCK240C2",
+   "verdict": "unsure",
+   "reasons": [
+    "Title and specifics name DCK240C2 as a drill/impact combo kit with batteries, charger and bag, but the listing never states New condition."
+   ],
+   "usage": {
+    "inputTokens": 3358,
+    "outputTokens": 290,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|307242864662|0",
+   "model": "DCK240C2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing shows the DCK240C2 kit with batteries, charger and bag, but the description names an impact driver model (DCF88M2) differing from the included DCF885, and never states New condition."
+   ],
+   "usage": {
+    "inputTokens": 2906,
+    "outputTokens": 355,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|397847697008|0",
+   "model": "DCK240C2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCK240C2 2-tool combo kit with two batteries, charger and bag; condition is not stated."
+   ],
+   "usage": {
+    "inputTokens": 2925,
+    "outputTokens": 334,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800845491870|0",
+   "model": "DCK240C2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCK240C2 combo kit, New, one unit with 2 batteries and 2 tools, but it never states the charger or bag are included."
+   ],
+   "usage": {
+    "inputTokens": 2405,
+    "outputTokens": 764,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|820267241417|0",
+   "model": "DCK240C2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing shows the DCK240C2 kit with 2 batteries, charger and bag, but does not state New and gives conflicting impact driver model numbers (DCF885 vs DCF88M2)."
+   ],
+   "usage": {
+    "inputTokens": 2906,
+    "outputTokens": 950,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|820276848612|0",
+   "model": "DCK240C2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing names the model and New, but does not mention the charger or bag the kit includes, and the description lists only batteries and two tools."
+   ],
+   "usage": {
+    "inputTokens": 2501,
+    "outputTokens": 267,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|840030997950|0",
+   "model": "DCK240C2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCK240C2 2-tool combo kit with two batteries, charger and bag, matching the product, but condition is not stated as New."
+   ],
+   "usage": {
+    "inputTokens": 2800,
+    "outputTokens": 291,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|327460334492|0",
+   "model": "DCK316ST2M1",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing names the model and says it includes three tools and three batteries, but the product also includes a charger, which the listing does not mention."
+   ],
+   "usage": {
+    "inputTokens": 2519,
+    "outputTokens": 583,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|820336375899|0",
+   "model": "DCK316ST2M1",
+   "verdict": "match",
+   "reasons": [
+    "Listing describes the same 3-tool combo kit with its FLEXVOLT and 20V batteries and charger, model DCK316ST2M1, new, one kit."
+   ],
+   "usage": {
+    "inputTokens": 2696,
+    "outputTokens": 358,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|820359190968|0",
+   "model": "DCK316ST2M1",
+   "verdict": "match",
+   "reasons": [
+    "Listing matches the DCK316ST2M1 combo kit with FLEXVOLT, 6Ah and 4Ah batteries and charger, sold new as one kit."
+   ],
+   "usage": {
+    "inputTokens": 2694,
+    "outputTokens": 389,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|860152981972|0",
+   "model": "DCK316ST2M1",
+   "verdict": "unsure",
+   "reasons": [
+    "Model number matches and it is a 3-tool combo kit with three batteries, but the listing never states New condition and does not spell out the charger or battery capacities the product includes."
+   ],
+   "usage": {
+    "inputTokens": 2526,
+    "outputTokens": 221,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|920123858992|0",
+   "model": "DCK316ST2M1",
+   "verdict": "unsure",
+   "reasons": [
+    "Model number and 3-tool kit with 3 batteries match, but the listing never mentions a charger or condition, so the contents cannot be confirmed."
+   ],
+   "usage": {
+    "inputTokens": 2398,
+    "outputTokens": 613,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|920142956609|0",
+   "model": "DCK316ST2M1",
+   "verdict": "unsure",
+   "reasons": [
+    "Model number matches and it is a combo kit with 3 batteries, but the listing never says whether the charger is included, and it does not state the condition or quantity."
+   ],
+   "usage": {
+    "inputTokens": 2392,
+    "outputTokens": 742,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|146662936520|0",
+   "model": "DCK940D2",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the DCK940D2 9-tool combo kit, sold new as one unit, with the seller stating it is complete as included by the factory."
+   ],
+   "usage": {
+    "inputTokens": 2889,
+    "outputTokens": 1142,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|165858721119|0",
+   "model": "DCK940D2",
+   "verdict": "unsure",
+   "reasons": [
+    "Model number matches and specifics show 9 tools with 2 batteries, but the title is truncated and no quote confirms the charger, New condition, or single unit."
+   ],
+   "usage": {
+    "inputTokens": 2329,
+    "outputTokens": 243,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|113468536542|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "reasons": [
+    "Bare DCS334B jigsaw sold New, one unit, with the blade it includes and no battery or charger."
+   ],
+   "usage": {
+    "inputTokens": 2726,
+    "outputTokens": 286,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|196342362972|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the DCS334B bare jigsaw tool only, brand new, one unit, with no battery or charger; the product is the tool only."
+   ],
+   "usage": {
+    "inputTokens": 2263,
+    "outputTokens": 256,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|227606338180|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the DCS334B bare tool, New, with no battery or charger included, matching the tool-only product."
+   ],
+   "usage": {
+    "inputTokens": 3704,
+    "outputTokens": 821,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|237179176273|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the DCS334B bare jigsaw tool, new, one unit, with no battery or charger, matching the tool-only product."
+   ],
+   "usage": {
+    "inputTokens": 2512,
+    "outputTokens": 277,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|307208760778|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the bare DCS334B jigsaw, new, one unit, with no battery or charger, matching the Tool Only product."
+   ],
+   "usage": {
+    "inputTokens": 2512,
+    "outputTokens": 264,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|327419658638|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the DCS334B bare jigsaw, brand new, one unit, with no battery or charger, matching the Tool Only product."
+   ],
+   "usage": {
+    "inputTokens": 2431,
+    "outputTokens": 226,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|377646315433|0",
+   "model": "DCS334B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCS334B bare jigsaw, tool only, with no battery or charger; condition is not stated."
+   ],
+   "usage": {
+    "inputTokens": 2372,
+    "outputTokens": 228,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|402569474133|0",
+   "model": "DCS334B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the new DCS334B bare jigsaw with its blade and manual, no battery or charger, matching the tool-only product."
+   ],
+   "usage": {
+    "inputTokens": 2749,
+    "outputTokens": 278,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|116958216969|0",
+   "model": "DCS391B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing sells the DCS391B bare tool only, New, one unit, with no battery or charger and nothing stated as missing.",
+    "The brand is given as \"unbranded\", not DEWALT."
+   ],
+   "usage": {
+    "inputTokens": 3998,
+    "outputTokens": 928,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|117507173763|0",
+   "model": "DCS391B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells one new DCS391B saw with its included blade and no battery or charger, matching the tool-only product."
+   ],
+   "usage": {
+    "inputTokens": 2752,
+    "outputTokens": 702,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|117521722953|0",
+   "model": "DCS391B",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing is the DCS391B tool only, but it is described as Open Box, which is not New."
+   ],
+   "usage": {
+    "inputTokens": 2339,
+    "outputTokens": 218,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|128184963218|0",
+   "model": "DCS391B",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells only a universal storage bag, an accessory, not the DCS391B saw."
+   ],
+   "usage": {
+    "inputTokens": 4036,
+    "outputTokens": 267,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|267578886867|0",
+   "model": "DCS391B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCS391B 20V MAX circular saw, tool only, one unit, with New in the title; the description's stray store-category text and shipping notes do not change the product.",
+    "The brand is given as \"unbranded\", not DEWALT."
+   ],
+   "usage": {
+    "inputTokens": 3488,
+    "outputTokens": 286,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|327302412063|0",
+   "model": "DCS391B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title and model match the bare tool, with no battery included, but the listing never states it is new."
+   ],
+   "usage": {
+    "inputTokens": 2555,
+    "outputTokens": 216,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|366734675217|0",
+   "model": "DCS391B",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing states one battery is included, but the product is the tool only, with no battery."
+   ],
+   "usage": {
+    "inputTokens": 2621,
+    "outputTokens": 701,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|880037664195|0",
+   "model": "DCS391B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the DCS391B 6-1/2 in. circular saw tool only, new, one unit, with model number stated."
+   ],
+   "usage": {
+    "inputTokens": 2463,
+    "outputTokens": 264,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|137797445056|0",
+   "model": "DCS565B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title matches the model and tool-only contents, but item specifics list a different model number (DCS391B) and a brushed motor, so the listing contradicts itself."
+   ],
+   "usage": {
+    "inputTokens": 2696,
+    "outputTokens": 881,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|168856181932|0",
+   "model": "DCS565B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCS565B saw with no battery, but BNIB (Brand New In Box) is not a clear New statement and the description is empty, so the contents claim is not settled."
+   ],
+   "usage": {
+    "inputTokens": 2365,
+    "outputTokens": 268,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|198782460909|0",
+   "model": "DCS565B",
+   "verdict": "unsure",
+   "reasons": [
+    "The listing names the model DCS565B but does not say whether it is the tool only or New, and nothing in it settles what is included."
+   ],
+   "usage": {
+    "inputTokens": 2350,
+    "outputTokens": 670,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257859062508|0",
+   "model": "DCS565B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the DCS565B saw with no battery included, sold New without box, matching the tool-only product with its blade."
+   ],
+   "usage": {
+    "inputTokens": 2494,
+    "outputTokens": 279,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|365786172642|0",
+   "model": "DCS565B",
+   "verdict": "unsure",
+   "reasons": [
+    "Tool-only listing with the model number, New, one unit, but the listing says it includes a saw blade and a blade change wrench that the product includes, and an optional dust chute is listed as included."
+   ],
+   "usage": {
+    "inputTokens": 3326,
+    "outputTokens": 433,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|377632083165|0",
+   "model": "DCS565B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCS565B body-only saw with model number matching the tool-only product, but it does not state New condition."
+   ],
+   "usage": {
+    "inputTokens": 2382,
+    "outputTokens": 209,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800901115505|0",
+   "model": "DCS565B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the DCS565B tool only, no battery, described as new, one unit, matching the product."
+   ],
+   "usage": {
+    "inputTokens": 2382,
+    "outputTokens": 225,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|920032977253|0",
+   "model": "DCS565B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the DCS565B tool only with no battery, and it names the blade the saw includes; the condition is not stated."
+   ],
+   "usage": {
+    "inputTokens": 2547,
+    "outputTokens": 223,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|284198216434|585687063824",
+   "model": "P119",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is a multi-model list of Ryobi 18V tools and batteries with P119 named only among many models and an item specific pointing to a P215 drill driver; what is sold is unclear."
+   ],
+   "usage": {
+    "inputTokens": 2398,
+    "outputTokens": 287,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|128035040284|0",
+   "model": "P553",
+   "verdict": "not_match",
+   "reasons": [
+    "Product is the tool only, but the listing adds a battery and charger."
+   ],
+   "usage": {
+    "inputTokens": 3871,
+    "outputTokens": 312,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|157386833712|0",
+   "model": "P553",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a replacement dust bag that fits the saw, not the saw itself."
+   ],
+   "usage": {
+    "inputTokens": 3471,
+    "outputTokens": 221,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|157962149487|0",
+   "model": "P553",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the P553 tool only with its blade, blade wrench, dust bag, work clamp and manual, matching the product; condition is not stated.",
+    "The judge gives the condition as unknown, not new."
+   ],
+   "usage": {
+    "inputTokens": 2671,
+    "outputTokens": 305,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|326483749385|0",
+   "model": "P553",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells only a replacement blade screw, a part for the P553 saw, not the saw itself."
+   ],
+   "usage": {
+    "inputTokens": 2672,
+    "outputTokens": 258,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|820061828109|0",
+   "model": "P553",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing adds a dust bag and work clamp, which the tool-only product does not include."
+   ],
+   "usage": {
+    "inputTokens": 2420,
+    "outputTokens": 516,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|336583587412|0",
+   "model": "PBP003",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells the PCL201K1 drill/driver kit, which is a different product from the PBP003 battery, and it includes a drill and charger."
+   ],
+   "usage": {
+    "inputTokens": 2528,
+    "outputTokens": 307,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|236477677426|0",
+   "model": "PBP004",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a charger, which is an accessory compatible with the battery, not the battery PBP004 itself."
+   ],
+   "usage": {
+    "inputTokens": 2616,
+    "outputTokens": 259,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|236477677426|0",
+   "model": "PBP005",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a charger compatible with the battery, not the PBP005 battery itself."
+   ],
+   "usage": {
+    "inputTokens": 2616,
+    "outputTokens": 258,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|157947182520|0",
+   "model": "PCG002",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a P306 glue gun kit with battery and charger, not the PCG002 charger alone."
+   ],
+   "usage": {
+    "inputTokens": 3123,
+    "outputTokens": 389,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|275567042201|0",
+   "model": "PCG002",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a soldering station combo kit with a battery, which is not the bare PCG002 charger."
+   ],
+   "usage": {
+    "inputTokens": 2697,
+    "outputTokens": 337,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|327229233339|0",
+   "model": "PCG002",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCG002 charger alone, one unit, but it never states the condition as New."
+   ],
+   "usage": {
+    "inputTokens": 2590,
+    "outputTokens": 501,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|236818733894|0",
+   "model": "PCL1201K2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL1201K2 2-tool kit with drill/driver, circular saw, two batteries, charger and bag, one unit; condition not stated as New."
+   ],
+   "usage": {
+    "inputTokens": 2900,
+    "outputTokens": 344,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|407365253664|0",
+   "model": "PCL1201K2",
+   "verdict": "match",
+   "reasons": [
+    "One new combo kit with drill/driver, circular saw, two batteries and charger, matching the product; the damaged outer box is packaging only."
+   ],
+   "usage": {
+    "inputTokens": 2823,
+    "outputTokens": 956,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|147674091595|0",
+   "model": "PCL1600K2",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing includes one Li-Ion battery and no charger, while the product includes two batteries and a charger."
+   ],
+   "usage": {
+    "inputTokens": 2356,
+    "outputTokens": 630,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206655912936|0",
+   "model": "PCL1600K2",
+   "verdict": "not_match",
+   "reasons": [
+    "The product includes two batteries and a charger, but the listing states only one battery and never mentions a charger."
+   ],
+   "usage": {
+    "inputTokens": 2469,
+    "outputTokens": 683,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|227609859768|0",
+   "model": "PCL1600K2",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL1600K2 6-tool combo kit with batteries, charger and bag, sold new as one unit with nothing stated as missing."
+   ],
+   "usage": {
+    "inputTokens": 2818,
+    "outputTokens": 992,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257844510859|0",
+   "model": "PCL1600K2",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing states only one battery, but the product includes two batteries and a charger."
+   ],
+   "usage": {
+    "inputTokens": 2558,
+    "outputTokens": 711,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|287481896404|0",
+   "model": "PCL1600K2",
+   "verdict": "match",
+   "reasons": [
+    "Listing names model PCL1600K2 as a 6-tool combo kit with two batteries, charger and bag, new, matching the product."
+   ],
+   "usage": {
+    "inputTokens": 2411,
+    "outputTokens": 314,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|316052694370|0",
+   "model": "PCL1600K2",
+   "verdict": "unsure",
+   "reasons": [
+    "The listing has the model number and says it is a 6-tool combo set, but it does not state the batteries or charger or the condition."
+   ],
+   "usage": {
+    "inputTokens": 2478,
+    "outputTokens": 439,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800870140728|0",
+   "model": "PCL1600K2",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the 6-tool combo kit PCL1600K2, New, one unit, with its batteries, charger and bag; the included blades and accessories are part of the kit."
+   ],
+   "usage": {
+    "inputTokens": 2893,
+    "outputTokens": 369,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|860121023300|0",
+   "model": "PCL1600K2",
+   "verdict": "not_match",
+   "reasons": [
+    "The product includes two batteries and a charger, but the listing states only one battery and does not mention a charger."
+   ],
+   "usage": {
+    "inputTokens": 2358,
+    "outputTokens": 629,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|168866627985|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a carrying case for the drill, not the PCL206 drill itself; the drill is expressly not included."
+   ],
+   "usage": {
+    "inputTokens": 3165,
+    "outputTokens": 272,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|188845704613|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a motor, gearbox and chuck assembly, not the complete PCL206 drill, and it omits the gear selector switch; no product name defines the contents, so this is not a match."
+   ],
+   "usage": {
+    "inputTokens": 2521,
+    "outputTokens": 284,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|227591262313|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a drill motor assembly/parts taken from a drill, not the complete product; the description also says it was modified."
+   ],
+   "usage": {
+    "inputTokens": 2161,
+    "outputTokens": 246,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|237179711800|0",
+   "model": "PCL206",
+   "verdict": "unsure",
+   "reasons": [
+    "The title says tool only, but the item specifics say Set Includes: Battery, tool only, and the listing gives no clear New condition."
+   ],
+   "usage": {
+    "inputTokens": 2651,
+    "outputTokens": 580,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257818770834|0",
+   "model": "PCL206",
+   "verdict": "unsure",
+   "reasons": [
+    "The model number has a kit title and item specifics listing a drill, battery and charger, but the product has no name stating its contents, the condition is not stated, and the listing does not clearly state it is one unit of the product."
+   ],
+   "usage": {
+    "inputTokens": 2401,
+    "outputTokens": 297,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|307277091818|0",
+   "model": "PCL206",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing is for model PCL206B, a different model number from PCL206, and it is marked Untested while the description also says NEW."
+   ],
+   "usage": {
+    "inputTokens": 2218,
+    "outputTokens": 611,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|366607811264|0",
+   "model": "PCL206",
+   "verdict": "unsure",
+   "reasons": [
+    "Title gives PCL206 but the MPN and model field read PCL206K1, a kit suffix, so the listing contradicts itself about the product."
+   ],
+   "usage": {
+    "inputTokens": 2517,
+    "outputTokens": 778,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|377640716347|0",
+   "model": "PCL206",
+   "verdict": "unsure",
+   "reasons": [
+    "No product name is given, and the listing includes a battery without stating whether the product includes one or says it is New."
+   ],
+   "usage": {
+    "inputTokens": 2437,
+    "outputTokens": 772,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|137327970219|0",
+   "model": "PCL235",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells one new Ryobi PCL235 impact driver, tool only, with no battery or charger, matching the bare tool product."
+   ],
+   "usage": {
+    "inputTokens": 2556,
+    "outputTokens": 278,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|147276605796|0",
+   "model": "PCL235",
+   "verdict": "unsure",
+   "reasons": [
+    "Description says tool only and New, but item specifics both say no battery and list one battery included, so contents are contradictory."
+   ],
+   "usage": {
+    "inputTokens": 2602,
+    "outputTokens": 518,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|147678470822|0",
+   "model": "PCL235",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the Tool Only impact driver, model PCL235B (the other written form of PCL235), New, one unit, with no battery or charger included."
+   ],
+   "usage": {
+    "inputTokens": 2533,
+    "outputTokens": 269,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206708671407|0",
+   "model": "PCL235",
+   "verdict": "not_match",
+   "reasons": [
+    "Product is the tool only, but the listing includes a 1.5 Ah battery, which the product does not include."
+   ],
+   "usage": {
+    "inputTokens": 2438,
+    "outputTokens": 272,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|366378094437|0",
+   "model": "PCL235",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the body-only tool with model PCL235B and one item, but it never states the condition as New."
+   ],
+   "usage": {
+    "inputTokens": 2482,
+    "outputTokens": 581,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|366569621360|0",
+   "model": "PCL235",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing says it includes a battery (Set Includes: Battery, Number of Batteries: 1) while the product is the tool only, and the condition is not stated as New."
+   ],
+   "usage": {
+    "inputTokens": 2633,
+    "outputTokens": 266,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800878614640|0",
+   "model": "PCL235",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing is for an open box item, which is not New, so it does not match the New product."
+   ],
+   "usage": {
+    "inputTokens": 2452,
+    "outputTokens": 674,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|960159882548|0",
+   "model": "PCL235",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the PCL235B (the other written form of PCL235) tool only, New, one unit, with battery and charger not included, matching the product's contents."
+   ],
+   "usage": {
+    "inputTokens": 2477,
+    "outputTokens": 676,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|168861009512|0",
+   "model": "PCL265B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL265B tool only, one unit, with no battery or charger; the condition is not stated as New, only Sealed In Box."
+   ],
+   "usage": {
+    "inputTokens": 2745,
+    "outputTokens": 294,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|198783563452|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the PCL265B tool only, New, one unit, with no battery or charger, matching the product."
+   ],
+   "usage": {
+    "inputTokens": 2789,
+    "outputTokens": 791,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|198786245593|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL265B tool only, new and unopened, with battery and charger not included as the product requires."
+   ],
+   "usage": {
+    "inputTokens": 2620,
+    "outputTokens": 302,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206708277789|0",
+   "model": "PCL265B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL265B tool-only impact wrench with no batteries or charger, matching the product; condition New is not stated."
+   ],
+   "usage": {
+    "inputTokens": 2729,
+    "outputTokens": 279,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800886751414|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL265B impact wrench tool only, brand new, one unit, with no battery or charger."
+   ],
+   "usage": {
+    "inputTokens": 2293,
+    "outputTokens": 241,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|820358679165|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL265B tool only, brand new, one unit, with no battery, charger or extras, matching the Tool Only product."
+   ],
+   "usage": {
+    "inputTokens": 2606,
+    "outputTokens": 254,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|820371254281|0",
+   "model": "PCL265B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL265B impact wrench tool only, one unit, with no battery or charger; condition not stated."
+   ],
+   "usage": {
+    "inputTokens": 2328,
+    "outputTokens": 252,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|960187232535|0",
+   "model": "PCL265B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the RYOBI PCL265B impact wrench tool only, brand new, one unit, with no battery or charger included."
+   ],
+   "usage": {
+    "inputTokens": 2580,
+    "outputTokens": 252,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|168795937649|0",
+   "model": "PCL406",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL406B tool only, sealed, with the other written form of the model number; 'SEALED' does not clearly state New condition."
+   ],
+   "usage": {
+    "inputTokens": 2293,
+    "outputTokens": 227,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|178338010910|0",
+   "model": "PCL406",
+   "verdict": "match",
+   "reasons": [
+    "Listing is a new RYOBI PCL406 tool-only sander with battery and charger sold separately, matching the product; bulk packaging is acceptable."
+   ],
+   "usage": {
+    "inputTokens": 3003,
+    "outputTokens": 281,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|227570592635|0",
+   "model": "PCL406",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing includes a carry bag, which the tool-only product does not include."
+   ],
+   "usage": {
+    "inputTokens": 2427,
+    "outputTokens": 318,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|236798097626|0",
+   "model": "PCL406",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing is the PCL406B tool, New, one unit, but it adds a dust bag, which the product name does not include."
+   ],
+   "usage": {
+    "inputTokens": 2747,
+    "outputTokens": 260,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257581180842|0",
+   "model": "PCL406",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a replacement dust bag accessory for the sander, not the sander tool itself."
+   ],
+   "usage": {
+    "inputTokens": 2678,
+    "outputTokens": 249,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|336903090911|0",
+   "model": "PCL406",
+   "verdict": "unsure",
+   "reasons": [
+    "Title says Tool Only with the written form PCL406B, but the listing never states New condition."
+   ],
+   "usage": {
+    "inputTokens": 2446,
+    "outputTokens": 193,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|406309779541|0",
+   "model": "PCL406",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a dust bag retention clip accessory, explicitly not the sander."
+   ],
+   "usage": {
+    "inputTokens": 2584,
+    "outputTokens": 319,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|860008454584|0",
+   "model": "PCL406",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL406B tool-only random orbit sander, marked New and sealed, with no battery or charger included, matching the product's written form."
+   ],
+   "usage": {
+    "inputTokens": 2252,
+    "outputTokens": 298,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|168795937649|0",
+   "model": "PCL406B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL406B tool only, with no battery included, matching the product name; 'SEALED' does not state New condition explicitly."
+   ],
+   "usage": {
+    "inputTokens": 2279,
+    "outputTokens": 226,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|227570592635|0",
+   "model": "PCL406B",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing adds a carry bag, which the tool-only product does not include."
+   ],
+   "usage": {
+    "inputTokens": 2413,
+    "outputTokens": 381,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|236798097626|0",
+   "model": "PCL406B",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing is the PCL406B sander alone and New, but it advertises a dust bag, which is not part of the tool-only product, so it is not an exact match."
+   ],
+   "usage": {
+    "inputTokens": 2733,
+    "outputTokens": 266,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257581180842|0",
+   "model": "PCL406B",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a replacement dust bag, an accessory for the sander, not the bare PCL406B sander."
+   ],
+   "usage": {
+    "inputTokens": 2664,
+    "outputTokens": 308,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|306778771703|0",
+   "model": "PCL406B",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a replacement driver belt for the sander, not the sander itself."
+   ],
+   "usage": {
+    "inputTokens": 2277,
+    "outputTokens": 202,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|336894117023|0",
+   "model": "PCL406B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL406B tool only with included sandpaper, bag and manual, but it does not state New condition."
+   ],
+   "usage": {
+    "inputTokens": 3834,
+    "outputTokens": 253,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|336903090911|0",
+   "model": "PCL406B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title names the model PCL406B as tool only, but the listing never states the condition as New or the quantity sold."
+   ],
+   "usage": {
+    "inputTokens": 2432,
+    "outputTokens": 444,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|860008454584|0",
+   "model": "PCL406B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the PCL406B bare sander tool only, marked New and sealed, one unit, with no battery or charger."
+   ],
+   "usage": {
+    "inputTokens": 2238,
+    "outputTokens": 252,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|158112891501|0",
+   "model": "PCL424B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL424B bare tool, marked NEW, with no battery or charger included, matching the product."
+   ],
+   "usage": {
+    "inputTokens": 2923,
+    "outputTokens": 798,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206680600101|0",
+   "model": "PCL424B",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing says it includes a charger, which the tool-only product does not include."
+   ],
+   "usage": {
+    "inputTokens": 2569,
+    "outputTokens": 403,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206709263695|0",
+   "model": "PCL424B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing names PCL424B as a tool-only compact router, but does not state condition as New."
+   ],
+   "usage": {
+    "inputTokens": 2243,
+    "outputTokens": 185,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|227546438492|0",
+   "model": "PCL424B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL424B tool only, brand new, one unit, with no battery, charger or extras stated."
+   ],
+   "usage": {
+    "inputTokens": 2674,
+    "outputTokens": 234,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|227606151324|0",
+   "model": "PCL424B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the new PCL424B bare tool, stated as tool only with no battery or charger and no additional items."
+   ],
+   "usage": {
+    "inputTokens": 2705,
+    "outputTokens": 915,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|237191477030|0",
+   "model": "PCL424B",
+   "verdict": "not_match",
+   "reasons": [
+    "Product is the tool only, but the listing says it includes a charger."
+   ],
+   "usage": {
+    "inputTokens": 2366,
+    "outputTokens": 223,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800888206088|0",
+   "model": "PCL424B",
+   "verdict": "not_match",
+   "reasons": [
+    "The listing sells a plastic wall mount accessory compatible with the router, not the router itself."
+   ],
+   "usage": {
+    "inputTokens": 3451,
+    "outputTokens": 310,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|900073438377|0",
+   "model": "PCL424B",
+   "verdict": "unsure",
+   "reasons": [
+    "The listing names the PCL424B model but does not say whether it is the bare tool only or what it includes, and does not state the condition."
+   ],
+   "usage": {
+    "inputTokens": 2305,
+    "outputTokens": 410,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|147585605681|0",
+   "model": "PCL430",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing is a kit with a battery and charger added, while the product is the tool only."
+   ],
+   "usage": {
+    "inputTokens": 2450,
+    "outputTokens": 293,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|157913211812|0",
+   "model": "PCL430",
+   "verdict": "unsure",
+   "reasons": [
+    "The title gives the model and the battery is not included, but the listing never states the condition and lists Number of Batteries: 1, which is unclear."
+   ],
+   "usage": {
+    "inputTokens": 2476,
+    "outputTokens": 720,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|198655269487|0",
+   "model": "PCL430",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells the PCL430B tool bundled with a 2-battery kit, but the product is the tool only."
+   ],
+   "usage": {
+    "inputTokens": 2634,
+    "outputTokens": 284,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257844087302|0",
+   "model": "PCL430",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the tool only under the other written model form PCL430B, but the listing never states the condition as New."
+   ],
+   "usage": {
+    "inputTokens": 2435,
+    "outputTokens": 539,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|326811950771|0",
+   "model": "PCL430",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing is a kit with battery, charger and accessories added, and the condition is open box rather than New."
+   ],
+   "usage": {
+    "inputTokens": 2473,
+    "outputTokens": 322,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|377539280381|0",
+   "model": "PCL430",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL430 tool only with model number matching, one unit, but condition is not stated as New."
+   ],
+   "usage": {
+    "inputTokens": 2902,
+    "outputTokens": 233,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|860060045734|0",
+   "model": "PCL430",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL430B bare tool, New, one unit, with only the blade, pad and hex key the tool includes or that are part of its packaged contents; no battery or charger.",
+    "The judge lists something sold beyond the product: plunge cut blade, sanding pad and sandpaper, hex key, original box and manuals."
+   ],
+   "usage": {
+    "inputTokens": 2594,
+    "outputTokens": 353,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|920110015736|0",
+   "model": "PCL430",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the bare PCL430B oscillating tool with no battery or charger, matching the tool-only product, but it does not state New condition."
+   ],
+   "usage": {
+    "inputTokens": 2463,
+    "outputTokens": 257,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|198655269487|0",
+   "model": "PCL430B",
+   "verdict": "not_match",
+   "reasons": [
+    "The product is the bare tool (Tool Only), but the listing sells the tool with a 2-battery kit added."
+   ],
+   "usage": {
+    "inputTokens": 2620,
+    "outputTokens": 250,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257725943997|0",
+   "model": "PCL430B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing sells the PCL430B tool only, with no battery or charger, but the description says never opened and never used rather than stating New."
+   ],
+   "usage": {
+    "inputTokens": 2344,
+    "outputTokens": 276,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257844087302|0",
+   "model": "PCL430B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL430B tool only with no battery, one unit; condition not stated."
+   ],
+   "usage": {
+    "inputTokens": 2421,
+    "outputTokens": 222,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|297450750992|0",
+   "model": "PCL430B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL430B tool only, New, one unit, but 'Number of Pieces: 8' conflicts with a bare tool and the listing does not explain it."
+   ],
+   "usage": {
+    "inputTokens": 2354,
+    "outputTokens": 939,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|385192707132|0",
+   "model": "PCL430B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing says both Tool Only and w/ Accessories without naming the accessories, so contents cannot be confirmed."
+   ],
+   "usage": {
+    "inputTokens": 2255,
+    "outputTokens": 501,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|860060045734|0",
+   "model": "PCL430B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the bare PCL430B tool, new, one unit, with no battery or charger; the included plunge cut blade, sanding pad, and hex key are part of the tool's standard package."
+   ],
+   "usage": {
+    "inputTokens": 2580,
+    "outputTokens": 278,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|920110015736|0",
+   "model": "PCL430B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL430B tool with no battery, matching the tool-only product; condition is not stated."
+   ],
+   "usage": {
+    "inputTokens": 2449,
+    "outputTokens": 246,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|940075915022|0",
+   "model": "PCL430B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL430B tool, New, but lists a sanding pad and sandpaper sheets while item specifics say one piece and tool only, so contents are unclear."
+   ],
+   "usage": {
+    "inputTokens": 2598,
+    "outputTokens": 1371,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|137919232134|0",
+   "model": "PCL500",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL500 tool only with its blade, New, one unit, matching the product's contents."
+   ],
+   "usage": {
+    "inputTokens": 2467,
+    "outputTokens": 284,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|147668297298|0",
+   "model": "PCL500",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL500B tool only, New, one unit, with the blade the saw includes; the other written form PCL500B matches."
+   ],
+   "usage": {
+    "inputTokens": 2594,
+    "outputTokens": 266,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|156329863486|0",
+   "model": "PCL500",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing is the right tool, New, one unit, but states no blades are included, and the saw's maker includes a blade with the bare tool."
+   ],
+   "usage": {
+    "inputTokens": 2429,
+    "outputTokens": 898,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|178031120219|0",
+   "model": "PCL500",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a two-tool kit with a jig saw added, not the circular saw alone."
+   ],
+   "usage": {
+    "inputTokens": 2451,
+    "outputTokens": 256,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206680626055|0",
+   "model": "PCL500",
+   "verdict": "unsure",
+   "reasons": [
+    "Title says tool only, New, and the other model form PCL500B, but the specifics conflict on whether a battery is included."
+   ],
+   "usage": {
+    "inputTokens": 2363,
+    "outputTokens": 706,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|287730164423|0",
+   "model": "PCL500",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the tool only with its included 18T blade and wrench, New, one unit, and the model number PCL500B appears in the title."
+   ],
+   "usage": {
+    "inputTokens": 3069,
+    "outputTokens": 318,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|407306761118|0",
+   "model": "PCL500",
+   "verdict": "unsure",
+   "reasons": [
+    "Title matches the model as a tool-only saw, but the description names a different model P505 and sells e-commerce returns, so the listing contradicts itself."
+   ],
+   "usage": {
+    "inputTokens": 2556,
+    "outputTokens": 928,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|860138586833|0",
+   "model": "PCL500",
+   "verdict": "unsure",
+   "reasons": [
+    "Title says tool only with model PCL500, but the listing never states New, and battery fields conflict with the tool-only claim."
+   ],
+   "usage": {
+    "inputTokens": 2571,
+    "outputTokens": 859,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|147668297298|0",
+   "model": "PCL500B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL500B bare tool, New, one unit, with the included blade and no battery or charger, matching the product."
+   ],
+   "usage": {
+    "inputTokens": 2580,
+    "outputTokens": 258,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|156329863486|0",
+   "model": "PCL500B",
+   "verdict": "not_match",
+   "reasons": [
+    "The product is the bare saw with the blade its maker includes, but the listing says No Blades."
+   ],
+   "usage": {
+    "inputTokens": 2415,
+    "outputTokens": 716,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|178031120219|0",
+   "model": "PCL500B",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells the circular saw bundled with a jig saw, which the product does not include."
+   ],
+   "usage": {
+    "inputTokens": 2437,
+    "outputTokens": 254,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206680626055|0",
+   "model": "PCL500B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title says Tool Only and Battery Included is No, but the Number of Batteries: 1 specific conflicts with that, so the listing's contents are unclear."
+   ],
+   "usage": {
+    "inputTokens": 2349,
+    "outputTokens": 724,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|287730164423|0",
+   "model": "PCL500B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL500B tool only, new, one unit, with its included 18T blade, hex wrench and manual; battery and charger are sold separately."
+   ],
+   "usage": {
+    "inputTokens": 3055,
+    "outputTokens": 304,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|407306761118|0",
+   "model": "PCL500B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title and description say tool only with battery not included, but item specifics list one battery and the description names a different model, P505, so the contents are contradictory."
+   ],
+   "usage": {
+    "inputTokens": 2542,
+    "outputTokens": 773,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|860008454589|0",
+   "model": "PCL500B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the PCL500B tool only, new and sealed, one unit, matching the product's bare-tool name."
+   ],
+   "usage": {
+    "inputTokens": 2230,
+    "outputTokens": 224,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|960148830553|0",
+   "model": "PCL500B",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing sells a 2-tool kit with an added jig saw, not the bare circular saw PCL500B alone."
+   ],
+   "usage": {
+    "inputTokens": 2407,
+    "outputTokens": 271,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|117516495632|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "reasons": [
+    "Listing is a new Ryobi PCL515B tool-only reciprocating saw, one unit, with no battery or charger included."
+   ],
+   "usage": {
+    "inputTokens": 2332,
+    "outputTokens": 231,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|177339372841|0",
+   "model": "PCL515",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the bare PCL515 tool with its included wood cutting blade, one unit, but never states the condition is New."
+   ],
+   "usage": {
+    "inputTokens": 3396,
+    "outputTokens": 713,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206680602591|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL515B (the other written form of PCL515), new, tool only with no battery, one unit."
+   ],
+   "usage": {
+    "inputTokens": 2300,
+    "outputTokens": 623,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|257857139667|0",
+   "model": "PCL515",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL515 bare tool, tool only, with the model number in the title, but it does not state the condition as New."
+   ],
+   "usage": {
+    "inputTokens": 2347,
+    "outputTokens": 220,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|366805367554|0",
+   "model": "PCL515",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing sells the PCL515 tool only with model number matching, one unit, but does not state condition as New."
+   ],
+   "usage": {
+    "inputTokens": 2382,
+    "outputTokens": 234,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|407137065221|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL515B reciprocating saw tool only, new, one unit, with no battery or charger, matching the product's other written form."
+   ],
+   "usage": {
+    "inputTokens": 2315,
+    "outputTokens": 223,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800877348287|0",
+   "model": "PCL515",
+   "verdict": "match",
+   "reasons": [
+    "Listing is a new PCL515B reciprocating saw, tool only, including the one blade the saw comes with."
+   ],
+   "usage": {
+    "inputTokens": 2882,
+    "outputTokens": 386,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|920158666573|0",
+   "model": "PCL515",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the tool only with its included wood blade, model PCL515B, one unit; condition is not stated as New."
+   ],
+   "usage": {
+    "inputTokens": 2727,
+    "outputTokens": 280,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|117516495632|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the Ryobi PCL515B reciprocating saw tool only, new, one unit, with model number matching."
+   ],
+   "usage": {
+    "inputTokens": 2318,
+    "outputTokens": 250,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|177339372841|0",
+   "model": "PCL515B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing says bare tool with a 6 in. wood cutting blade included, which the product's bare tool name does not list as included; condition not stated as New, and bulk packaging is not the check."
+   ],
+   "usage": {
+    "inputTokens": 3382,
+    "outputTokens": 357,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|206680602591|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL515B reciprocating saw sold tool only, new, one unit, with model number matching."
+   ],
+   "usage": {
+    "inputTokens": 2286,
+    "outputTokens": 204,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|267754167917|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the tool only with model PCL515B, brand new, one unit, with the blades the saw includes."
+   ],
+   "usage": {
+    "inputTokens": 3084,
+    "outputTokens": 253,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|318915722907|0",
+   "model": "PCL515B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title says Tool Only and Battery Included is No, but Set Includes lists a Battery and Charger, so the listing contradicts itself."
+   ],
+   "usage": {
+    "inputTokens": 2544,
+    "outputTokens": 625,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|407137065221|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL515B tool only, new, with no battery or charger included and no stated missing parts."
+   ],
+   "usage": {
+    "inputTokens": 2301,
+    "outputTokens": 734,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800877348287|0",
+   "model": "PCL515B",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the PCL515B tool only, new, one unit, including the blade the product comes with, with no battery or charger."
+   ],
+   "usage": {
+    "inputTokens": 2868,
+    "outputTokens": 277,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|920158666573|0",
+   "model": "PCL515B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the Tool Only PCL515B with its included wood blade, one unit; condition not stated as New."
+   ],
+   "usage": {
+    "inputTokens": 2713,
+    "outputTokens": 306,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|127237075410|0",
+   "model": "PCL525",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing adds a free 2.0 Ah battery, a charger and a case to the bare jig saw, which is tool only."
+   ],
+   "usage": {
+    "inputTokens": 3469,
+    "outputTokens": 759,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|128199455736|0",
+   "model": "PCL525",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing is the PCL525 jig saw tool only with model number matching, but it does not state the condition as New."
+   ],
+   "usage": {
+    "inputTokens": 2235,
+    "outputTokens": 214,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|147684161051|0",
+   "model": "PCL525",
+   "verdict": "match",
+   "reasons": [
+    "Tool-only jig saw with its included blade, shoe, wrench and manual, New, one unit, model PCL525B matches the other written form."
+   ],
+   "usage": {
+    "inputTokens": 2427,
+    "outputTokens": 291,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|168558378297|0",
+   "model": "PCL525",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the Tool Only PCL525 jig saw, New, one unit, with its included shoe and blade and no battery or charger."
+   ],
+   "usage": {
+    "inputTokens": 3072,
+    "outputTokens": 326,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|168869669557|0",
+   "model": "PCL525",
+   "verdict": "unsure",
+   "reasons": [
+    "Tool-only jigsaw with model PCL525B named in the title; no added items, but the listing never states New."
+   ],
+   "usage": {
+    "inputTokens": 2426,
+    "outputTokens": 195,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|178031120219|0",
+   "model": "PCL525",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing is a two-tool kit including a circular saw, not the jig saw alone."
+   ],
+   "usage": {
+    "inputTokens": 2442,
+    "outputTokens": 277,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|336387346314|0",
+   "model": "PCL525",
+   "verdict": "unsure",
+   "reasons": [
+    "Title says Tool Only with the matching model PCL525B, but the description ends with an unfinished seller addendum and the condition is not stated."
+   ],
+   "usage": {
+    "inputTokens": 2576,
+    "outputTokens": 251,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|880130444955|0",
+   "model": "PCL525",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the Tool Only jig saw under the other written form PCL525B, New, one unit, with its included wrench and no battery or charger."
+   ],
+   "usage": {
+    "inputTokens": 2460,
+    "outputTokens": 715,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|127237075410|0",
+   "model": "PCL525B",
+   "verdict": "not_match",
+   "reasons": [
+    "Tool-only product, but the listing adds a free 2.0 Ah battery plus a charger and case."
+   ],
+   "usage": {
+    "inputTokens": 3455,
+    "outputTokens": 338,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|147684161051|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL525B tool only, New, with the blade and shoe the tool includes; no battery or charger."
+   ],
+   "usage": {
+    "inputTokens": 2413,
+    "outputTokens": 295,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|168869669557|0",
+   "model": "PCL525B",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing names model PCL525B as tool-only with no battery, matching the bare tool product; condition New is not stated."
+   ],
+   "usage": {
+    "inputTokens": 2412,
+    "outputTokens": 199,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|287370153094|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the bare PCL525B jig saw tool only, New, one unit, with the wrench it includes."
+   ],
+   "usage": {
+    "inputTokens": 2748,
+    "outputTokens": 269,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|298690363268|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "reasons": [
+    "Title gives the exact model PCL525B as tool only, New, with the shoe, blade and wrench the tool ships with."
+   ],
+   "usage": {
+    "inputTokens": 2505,
+    "outputTokens": 958,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|336387346314|0",
+   "model": "PCL525B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title and specifics match the bare tool PCL525B with no battery, but the listing does not state the condition and the description ends with an unfinished seller note."
+   ],
+   "usage": {
+    "inputTokens": 2562,
+    "outputTokens": 227,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|880130444955|0",
+   "model": "PCL525B",
+   "verdict": "match",
+   "reasons": [
+    "Listing is the PCL525B tool only, new, one unit, with the wrench the maker includes and no battery or charger."
+   ],
+   "usage": {
+    "inputTokens": 2446,
+    "outputTokens": 695,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|920082243518|0",
+   "model": "PCL525B",
+   "verdict": "unsure",
+   "reasons": [
+    "Title and specifics show the tool only with its wrench, but the listing never states the condition as New."
+   ],
+   "usage": {
+    "inputTokens": 2470,
+    "outputTokens": 500,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|407347608384|0",
+   "model": "PCL660",
+   "verdict": "match",
+   "reasons": [
+    "Listing sells the new bare PCL660 LED light with no battery or charger, matching the Tool Only product."
+   ],
+   "usage": {
+    "inputTokens": 2348,
+    "outputTokens": 265,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|800780450566|0",
+   "model": "PCL660",
+   "verdict": "not_match",
+   "reasons": [
+    "Listing bundles the PCL660B light with a separate P743 power source, which the product does not include."
+   ],
+   "usage": {
+    "inputTokens": 2359,
+    "outputTokens": 229,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|287405974584|0",
+   "model": "PSBCK102K2",
+   "verdict": "unsure",
+   "reasons": [
+    "Listing names the model and two batteries and charger, but never mentions the bag, and says Set Includes 'Battery' singular, contradicting two batteries; New condition is not stated."
+   ],
+   "usage": {
+    "inputTokens": 2756,
+    "outputTokens": 813,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  },
+  {
+   "itemId": "v1|377513643127|0",
+   "model": "PSBCK102K2",
+   "verdict": "unsure",
+   "reasons": [
+    "Model matches and listing is New, but the product includes a bag that the listing never mentions, and the set-includes line lists only a battery and charger, so contents are not confirmed as complete."
+   ],
+   "usage": {
+    "inputTokens": 2604,
+    "outputTokens": 299,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 0
+   }
+  }
+ ]
+}
