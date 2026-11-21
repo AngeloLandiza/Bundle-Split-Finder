@@ -362,3 +362,25 @@ export function pick(want: Wanted, candidates: Candidate[]): Picked {
     review: graded.filter((g) => g.grade === 'review'),
   };
 }
+
+/** A title names the model because the listing is made for the tool: "for Ryobi", "fits", or an OEM spare part. */
+export function accessoryTitle(title: string): boolean {
+  return AFTERMARKET.test(title) || FOR_BRAND.test(title) || (OEM_PART_NUMBER.test(title) && PART_NAME.test(title));
+}
+
+/**
+ * The product page to read when every search row that names the model is an accessory. It is the first
+ * organic row of the same brand whose title leaves the model out and which was rejected only for that.
+ * Null when a titled row may be the tool, or that first row was rejected for another reason. The page's
+ * part number is what may match; this does not.
+ */
+export function toolPageToRead(want: Wanted, candidates: Candidate[]): string | null {
+  const named = candidates.filter((c) => titleHasModel(want.brand, c.title, want.model));
+  if (named.length === 0 || !named.every((c) => accessoryTitle(c.title))) return null;
+  const brand = want.brand.trim().toUpperCase();
+  const first = candidates.find((c) => c.sponsored !== true && (c.brand ?? '').trim().toUpperCase() === brand);
+  if (!first || titleHasModel(want.brand, first.title, want.model)) return null;
+  const g = grade(want, first);
+  if (g.grade === 'reject' && g.reasons.length === 1 && g.reasons[0] === 'no identifier matches') return first.asin;
+  return null;
+}

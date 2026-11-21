@@ -4,13 +4,15 @@
 
 import { useEffect, useState } from 'react';
 import { reviewSignature } from '@core/scan/answers';
-import type { PartRow, ReviewAnswer } from '@core/scan/types';
+import type { PartRow, ReviewAnswer, ReviewItem } from '@core/scan/types';
 import { money, profit, roi } from '../../lib/format';
 import type { AppState, PageView, PanelReport, ThisPage } from '../../lib/messages';
 import { type ActiveTab, UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { waitingParts } from './dealsModel';
-import { feeText, noEstimate, Part, RangeLine } from './Detail';
+import { feeText, noEstimate, Part, RangeLine, UnnamedParts } from './Detail';
+import { UnreadKit } from './ReadKitPage';
 import { ReviewQuestion } from './ReviewQuestion';
+import { useQuestionAi } from './useQuestionAi';
 import { useCopyAsins } from './useCopyAsins';
 import './Detail.css';
 import './ReviewTab.css';
@@ -76,6 +78,7 @@ const plural = (n: number, one: string, many: string): string => `${n} ${n === 1
 
 function Bundle({ view, report, state, api, onOpenDetail }: { view: Extract<PageView, { kind: 'bundle' }>; report: PanelReport | null; state: AppState; api: WorkerApi; onOpenDetail: (key: string) => void }) {
   const { row, question } = view;
+  const ai = useQuestionAi(api, report, state);
   const e = row.estimate;
   const waiting = waitingParts(row).length;
   const { asins, copy, copied, copyFailed } = useCopyAsins(row);
@@ -83,15 +86,16 @@ function Bundle({ view, report, state, api, onOpenDetail }: { view: Extract<Page
   const inReport = report?.bundles.some((b) => b.key === view.key) ?? false;
   const now = Date.now();
 
-  const answer = async (a: ReviewAnswer): Promise<string | null> => {
-    if (!question) return null;
+  const answerItem = async (item: ReviewItem, a: ReviewAnswer, aiShown = false): Promise<string | null> => {
     try {
-      const reply = await api.send({ type: 'answerReview', id: question.id, answer: a });
+      const reply = await api.send({ type: 'answerReview', id: item.id, answer: a, ...(aiShown ? { aiSuggestion: true as const } : {}) });
+      if (reply.ok) ai.clear(item.id);
       return reply.ok ? null : reply.error;
     } catch {
       return UNREACHABLE;
     }
   };
+  const answer = async (a: ReviewAnswer, aiShown = false): Promise<string | null> => (question ? answerItem(question, a, aiShown) : null);
 
   return (
     <div className="thispage">
@@ -122,22 +126,49 @@ function Bundle({ view, report, state, api, onOpenDetail }: { view: Extract<Page
         ) : (
           <p className="detail-noestimate">{noEstimate(row)}</p>
         )}
+        {row.kitsNotRead.map((m) => (
+          <UnreadKit
+            key={m}
+            brand={row.brand}
+            model={m}
+            itemId={row.kitReads?.find((k) => k.model === m)?.itemId ?? null}
+            known={row.kitReads !== undefined}
+            api={api}
+            scanRunning={state.scanRunning}
+            busy={false}
+            asking={state.askAll != null}
+          />
+        ))}
       </section>
 
       {question ? (
-        <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} blocked={view.questionStored ? null : state.scanRunning ? SAVED_LATER_SCAN : SAVED_LATER_SEARCH} onSave={answer} compact />
+        <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} blocked={view.questionStored ? null : state.scanRunning ? SAVED_LATER_SCAN : SAVED_LATER_SEARCH} onSave={answer} compact ai={view.questionStored ? ai.aiFor(question) : undefined} />
       ) : null}
 
       {row.parts.length > 0 ? (
         <>
           <h2 className="detail-label">PARTS · {row.parts.length}</h2>
           <ul className="detail-parts">
-            {row.parts.map((p: PartRow) => (
-              <Part key={p.model} part={p} row={row} fees={state.settings.fees} now={now} />
-            ))}
+            {row.parts.map((p: PartRow) => {
+              const item = p.status === 'review'
+                ? report?.review.find((r) => r.kind === 'match' && r.answer === null && r.brand.toUpperCase() === row.brand.toUpperCase() && r.model.toUpperCase() === p.model.toUpperCase()) ?? null
+                : null;
+              return (
+                <Part
+                  key={p.model}
+                  part={p}
+                  row={row}
+                  fees={state.settings.fees}
+                  now={now}
+                  confirm={{ api, scanRunning: state.scanRunning }}
+                  match={item ? { item, scanRunning: state.scanRunning, onSave: (a, shown) => answerItem(item, a, shown), ai: ai.aiFor(item) } : undefined}
+                />
+              );
+            })}
           </ul>
         </>
       ) : null}
+      <UnnamedParts row={row} api={api} scanRunning={state.scanRunning} />
 
       <div className="thispage-actions">
         <button type="button" className="detail-copy" data-key={view.key} disabled={!inReport} onClick={() => onOpenDetail(view.key)}>

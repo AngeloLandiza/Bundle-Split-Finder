@@ -3,7 +3,7 @@
 // page's view is computed over one while a scan or a panel action runs (pageView.ts, write: false).
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from './types';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
@@ -15,6 +15,8 @@ const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
 /** One collection: the records written here, by key, over the base's. */
 class Layer<T> {
   private readonly written = new Map<string, T>();
+  /** Keys removed here, so a later read does not fall through to the store underneath. */
+  private readonly removed = new Set<string>();
 
   constructor(
     private readonly keyOf: (r: T) => string,
@@ -24,17 +26,30 @@ class Layer<T> {
   // Every record returned is a copy, the store's too, as MemoryScanStore returns them: a caller that
   // changes one changes nothing stored, whatever the store underneath does.
   async get(key: string, base: (key: string) => Promise<T | undefined>): Promise<T | undefined> {
+    if (this.removed.has(key)) return undefined;
     const found = this.written.get(key) ?? (await base(key));
     return found === undefined ? undefined : structuredClone(found);
   }
 
   put(record: T): void {
-    this.written.set(this.keyOf(record), structuredClone(record));
+    const key = this.keyOf(record);
+    this.removed.delete(key);
+    this.written.set(key, structuredClone(record));
+  }
+
+  remove(key: string): void {
+    this.written.delete(key);
+    this.removed.add(key);
+  }
+
+  clear(): void {
+    this.written.clear();
+    this.removed.clear();
   }
 
   /** The base's list with this layer's records in place of the base's of the same key, in the store's order. */
   async list(base: () => Promise<T[]>): Promise<T[]> {
-    const under = (await base()).filter((r) => !this.written.has(this.keyOf(r)));
+    const under = (await base()).filter((r) => !this.written.has(this.keyOf(r)) && !this.removed.has(this.keyOf(r)));
     return [...under, ...this.written.values()].map((r) => structuredClone(r)).sort(this.order);
   }
 }
@@ -48,6 +63,7 @@ export class OverlayStore implements ScanStore {
   private readonly cursors = new Layer<CatalogCursor>((r) => r.brand, byKey((r) => r.brand));
   private readonly reviews = new Layer<ReviewItem>((r) => r.id, byKey((r) => r.id));
   private readonly partPrices = new Layer<PartPriceRecord>((r) => r.key, byKey((r) => r.key));
+  private readonly confirmedPrices = new Layer<ConfirmedPrice>((r) => r.key, byKey((r) => r.key));
   private readonly ebayValues = new Layer<EbayValueRecord>((r) => r.key, byKey((r) => r.key));
   private readonly judgements = new Layer<JudgementRecord>((r) => r.key, byKey((r) => r.key));
   private readonly ebayAnswers = new Layer<EbayOwnerAnswer>((r) => r.key, byKey((r) => r.key));
@@ -129,6 +145,19 @@ export class OverlayStore implements ScanStore {
     return this.partPrices.list(() => this.base.listPartPrices());
   }
 
+  getConfirmedPrice(key: string) {
+    return this.confirmedPrices.get(key, (k) => this.base.getConfirmedPrice(k));
+  }
+  async putConfirmedPrice(record: ConfirmedPrice) {
+    this.confirmedPrices.put(record);
+  }
+  async deleteConfirmedPrice(key: string) {
+    this.confirmedPrices.remove(key);
+  }
+  listConfirmedPrices() {
+    return this.confirmedPrices.list(() => this.base.listConfirmedPrices());
+  }
+
   getEbayValue(key: string) {
     return this.ebayValues.get(key, (k) => this.base.getEbayValue(k));
   }
@@ -161,5 +190,22 @@ export class OverlayStore implements ScanStore {
   }
   listScans() {
     return this.scans.list(() => this.base.listScans());
+  }
+
+  async clearAll() {
+    await this.base.clearAll();
+    this.bundles.clear();
+    this.catalog.clear();
+    this.matches.clear();
+    this.prices.clear();
+    this.listings.clear();
+    this.cursors.clear();
+    this.reviews.clear();
+    this.partPrices.clear();
+    this.confirmedPrices.clear();
+    this.ebayValues.clear();
+    this.judgements.clear();
+    this.ebayAnswers.clear();
+    this.scans.clear();
   }
 }

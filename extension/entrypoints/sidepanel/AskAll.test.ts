@@ -546,10 +546,12 @@ describe('the per-question Ask AI button rule', () => {
     expect(screen.getByRole('button', { name: /^Ask AI · about \$/ })).toBeVisible();
   });
 
-  it('is not shown where no call would be made: a match question with no listing to choose', async () => {
+  it('is shown with no price for a match question with no listing to choose', async () => {
     const { match } = await world();
     setup(reportOf([{ ...match, candidates: [] }]));
-    expect(screen.queryByRole('button', { name: /Ask AI/ })).toBeNull();
+    const button = screen.getByRole('button', { name: 'Ask AI' });
+    expect(button).toHaveAccessibleName('Ask AI');
+    expect(button.textContent).not.toContain('$');
   });
 
   it('says a bundle costs more to ask about than a listing', async () => {

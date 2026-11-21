@@ -29,7 +29,7 @@ describe('the database upgrade', () => {
     await v1.add('ledger', { at: 'a', engine: 'e', key: 'k', label: 'l' });
     v1.close();
     const db = await openDb(name);
-    expect(db.version).toBe(5);
+    expect(db.version).toBe(6);
     const s = new IdbScanStore(db);
     expect(await s.getCursor('RYOBI')).toEqual({ brand: 'RYOBI', nextPage: 3, passes: 1, updatedAt: 1 });
     expect(await readLedger(db)).toHaveLength(1);
@@ -56,17 +56,27 @@ describe('the database upgrade', () => {
     await v2.put('cache', { key: 'k', at: 1, data: 1 });
     v2.close();
     const db = await openDb(name);
-    expect(db.version).toBe(5);
+    expect(db.version).toBe(6);
     const s = new IdbScanStore(db);
     expect(await s.getPartPrice('RYOBI:PCL500')).toEqual(r);
     expect(await new IdbCache(db).get('k')).toEqual({ at: 1, data: 1 });
-    expect([...db.objectStoreNames].sort()).toEqual(['bundles', 'cache', 'catalog', 'cursors', 'ebayAnswers', 'ebayValues', 'judgements', 'ledger', 'listings', 'matches', 'partPrices', 'prices', 'review', 'scans', 'suggestions']);
+    expect([...db.objectStoreNames].sort()).toEqual(['bundles', 'cache', 'catalog', 'confirmedPrices', 'cursors', 'ebayAnswers', 'ebayValues', 'judgements', 'ledger', 'listings', 'matches', 'partPrices', 'prices', 'review', 'scans', 'suggestions']);
   });
 });
 
 describe('IdbSuggestionStore', () => {
   const record = (askedAt: number, over: Record<string, unknown> = {}) =>
     ({ key: `split:homedepot:1|${askedAt}`, questionId: 'split:homedepot:1', seen: '[["A"]]', askedAt, costUsd: 0.01, suggestion: { status: 'cannot_tell', reason: 'r', quotes: [] }, ...over }) as unknown as StoredSuggestion;
+
+  it('clear drops the suggestions and leaves the search ledger', async () => {
+    const db = await openDb(fresh());
+    const store = new IdbSuggestionStore(db);
+    await store.put(record(1));
+    await appendLedger({ at: 'a', engine: 'e', key: 'k', label: 'l' }, db);
+    await store.clear();
+    expect(await store.list()).toEqual([]);
+    expect(await readLedger(db)).toHaveLength(1);
+  });
 
   it('keeps every ask, oldest first, and replaces a record of the same key (an outcome added)', async () => {
     const store = new IdbSuggestionStore(await openDb(fresh()));
@@ -95,7 +105,7 @@ describe('IdbSuggestionStore', () => {
     await v4.put('ebayAnswers', answer);
     v4.close();
     const db = await openDb(name);
-    expect(db.version).toBe(5);
+    expect(db.version).toBe(6);
     expect(await new IdbScanStore(db).listEbayAnswers()).toEqual([answer]);
     expect(await new IdbScanStore(db).getCursor('RYOBI')).toEqual({ brand: 'RYOBI', nextPage: 3, passes: 1, updatedAt: 1 });
     expect(await new IdbSuggestionStore(db).list()).toEqual([]);
@@ -110,6 +120,21 @@ describe('IdbCache', () => {
     expect(await c.get('k')).toEqual({ at: 5, data: { a: [1] } });
     await c.set('k', { at: 6, data: 'x' });
     expect(await c.get('k')).toEqual({ at: 6, data: 'x' });
+  });
+
+  it('clearAll empties the scan records and the cache, and leaves the search ledger', async () => {
+    const db = await openDb(fresh());
+    const s = new IdbScanStore(db);
+    const c = new IdbCache(db);
+    await s.putCursor({ brand: 'DEWALT', nextPage: 2, passes: 1, updatedAt: 1 });
+    await c.set('k', { at: 1, data: 1 });
+    await appendLedger({ at: 'a', engine: 'e', key: 'k', label: 'l' }, db);
+    await s.clearAll();
+    expect(await s.getCursor('DEWALT')).toBeUndefined();
+    expect(await c.get('k')).toBeUndefined();
+    expect(await readLedger(db)).toHaveLength(1);
+    await s.putCursor({ brand: 'RYOBI', nextPage: 1, passes: 0, updatedAt: 2 });
+    expect(await s.getCursor('RYOBI')).toMatchObject({ nextPage: 1 });
   });
 
   it('clear empties only the cache store', async () => {

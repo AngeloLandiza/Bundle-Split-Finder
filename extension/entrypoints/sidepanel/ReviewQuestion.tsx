@@ -111,7 +111,7 @@ export function ReviewQuestion({ item, scanRunning, blocked = null, focusHeading
   const row = (value: string, label: ReactNode, meta?: ReactNode, describedBy?: string) => (
     <div className="review-row" key={value}>
       <label className="review-choice">
-        <input type="radio" name="review-choice" value={value} checked={picked === value} aria-describedby={describedBy} onChange={() => setPicked(value)} />
+        <input type="radio" name={`${uid}-choice`} value={value} checked={picked === value} aria-describedby={describedBy} onChange={() => setPicked(value)} />
         <span className="review-choice-label">{label}</span>
       </label>
       {meta}

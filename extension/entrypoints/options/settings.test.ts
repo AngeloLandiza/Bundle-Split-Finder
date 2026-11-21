@@ -200,6 +200,29 @@ describe('Your data', () => {
     );
   });
 
+  it('deleting all data asks once, and a refusal is the sentence on the page', async () => {
+    const { user, send } = await open(stateWith(), {
+      deleteAllData: () => ({ ok: false, error: 'A scan is running. Delete the data when it has finished.' }),
+    });
+    await user.click(screen.getByRole('button', { name: 'Delete all data' }));
+    expect(send).not.toHaveBeenCalledWith({ type: 'deleteAllData' });
+    expect(screen.getByText('Delete every deal, match, answer and saved search? Your keys, settings and search count stay.')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Yes, delete all data' }));
+    expect(send).toHaveBeenCalledWith({ type: 'deleteAllData' });
+    await waitFor(() =>
+      expect(screen.getByTestId('data-status').textContent).toBe('A scan is running. Delete the data when it has finished.'),
+    );
+  });
+
+  it('deleting all data says what was kept', async () => {
+    const { user } = await open(stateWith());
+    await user.click(screen.getByRole('button', { name: 'Delete all data' }));
+    await user.click(screen.getByRole('button', { name: 'Yes, delete all data' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('data-status').textContent).toBe('All data deleted. Your keys, settings and search count were kept.'),
+    );
+  });
+
   it('clearing saved searches asks once', async () => {
     const { user, send } = await open(stateWith());
     await user.click(screen.getByRole('button', { name: 'Clear saved searches' }));
@@ -268,6 +291,7 @@ describe('Confirmations', () => {
   it.each([
     ['Remove SerpApi key', 'Yes, remove SerpApi key', { hasKey: true, account: ACCOUNT }],
     ['Clear saved searches', 'Yes, clear', {}],
+    ['Delete all data', 'Yes, delete all data', {}],
   ])('%s: Escape, Cancel and Yes return focus to the opener', async (opener, yes, over) => {
     const { user } = await open(stateWith(over));
     for (const how of ['escape', 'cancel', 'yes']) {

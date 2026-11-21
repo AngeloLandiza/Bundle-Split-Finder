@@ -184,6 +184,8 @@ brand (recorded responses, 2026-11-09). So:
 | review | Model number in the title, brand not confirmed | Review queue |
 | reject | Everything else | Hidden |
 
+When every row that names the model is an accessory, the first same-brand row whose title omits the model is not left hidden. Its product page is read (one search, `engine=amazon_product`). A part number or barcode that is the model is a strong or exact match. A page that names a different model stays hidden, and the accessory question stands. The cap is not exceeded: the read uses a free slot or a lookup not yet started, or it waits for the next scan.
+
 "Verify" loads the listing's detail page (`engine=amazon_product`) and upgrades the grade or
 rejects the listing. If several listings are probable, the one with the most reviews is
 chosen and the others are offered as alternatives.

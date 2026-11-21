@@ -10,7 +10,7 @@ import { reviewSignature } from '@core/scan/answers';
 import type { BundleRow, PartRow, PriceOption, ReviewItem, ScanJob } from '@core/scan/types';
 import type { AppState, PanelReport, Quote, Reply, Request } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
-import { Detail } from './Detail';
+import { Detail, UnnamedParts } from './Detail';
 
 afterEach(cleanup);
 
@@ -247,6 +247,25 @@ describe('the open question', () => {
     expect(screen.getByRole('radio', { name: 'PCL1600K2 + P553' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Enter the parts' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Ask AI/ })).toBeNull();
+  });
+
+  it('asks the AI about the open split question when an Anthropic key is saved', async () => {
+    const user = userEvent.setup();
+    const q = question();
+    const { api, send } = fakeApi((r) => (
+      r.type === 'askAi'
+        ? { ok: true, data: { key: 'k', questionId: q.id, seen: reviewSignature(q), askedAt: 1, costUsd: 0, suggestion: { questionId: q.id, seen: reviewSignature(q), provider: 'claude', model: 'm', promptVersion: 'v', status: 'not_suggested', reason: 'Enter the parts yourself.' } } }
+        : { ok: true, data: null }
+    ));
+    show(noParts(), {
+      review: [q],
+      api,
+      state: state({ ebay: { hasEbayKeys: false, hasAnthropicKey: true, judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60 } }),
+    });
+    await user.click(screen.getByRole('button', { name: /^Ask AI/ }));
+    expect(send).toHaveBeenCalledWith({ type: 'askAi', questionId: q.id });
+    expect(await screen.findByText('Enter the parts yourself.')).toBeInTheDocument();
   });
 
   it('ignores a question about another bundle and a match question', () => {
@@ -321,6 +340,9 @@ describe('a part with no listing', () => {
     expect(screen.getByText('Parts sell for').nextElementSibling).toHaveTextContent('$100.00');
     // The part's own label still says only what is true of it.
     expect(within(screen.getAllByRole('listitem')[0]!).getByText('Listing inactive')).toBeInTheDocument();
+    // The last Amazon price stays visible, and it is not the sell price: no "nets" line.
+    expect(within(screen.getAllByRole('listitem')[0]!).getByText('Last Amazon price')).toBeInTheDocument();
+    expect(within(screen.getAllByRole('listitem')[0]!).queryByText(/^nets /)).toBeNull();
     expect(screen.queryByText('No Amazon listing found')).toBeNull();
   });
 
@@ -328,6 +350,205 @@ describe('a part with no listing', () => {
     show(row({ parts: [part('A1', { asin: null, status: 'matched', availability: 'active', grade: null, price: null })] }));
     expect(screen.queryByText('No Amazon listing found')).toBeNull();
     expect(screen.getByText('No listing')).toBeInTheDocument();
+  });
+
+  it('lets the owner confirm a New price and a listing link, and remove it', async () => {
+    const user = userEvent.setup();
+    const none = { status: 'none' as const, asin: null, grade: null, price: null, availability: 'missing' as const, title: null, priceSeenAt: null };
+    const saved = fakeApi();
+    show(row({ status: 'partial', section: 'missing_listing', parts: [part('PCL206', none)], uncovered: ['PCL206'] }), { api: saved.api });
+    expect(screen.getByText('Confirm sell price')).toBeInTheDocument();
+    expect(screen.getByText(/this part counts at \$0/)).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Price'), '80');
+    await user.type(screen.getByLabelText('Listing link'), 'https://www.ebay.com/itm/1');
+    await user.click(screen.getByRole('button', { name: 'Save price' }));
+    expect(saved.send).toHaveBeenCalledWith({ type: 'setConfirmedPrice', brand: 'RYOBI', model: 'PCL206', price: 80, link: 'https://www.ebay.com/itm/1' });
+    expect(screen.getByRole('link', { name: 'Listing' })).toHaveAttribute('href', 'https://www.ebay.com/itm/1');
+    cleanup();
+    const removed = fakeApi();
+    const confirmed: PriceOption = {
+      kind: 'confirmed', price: 80, condition: 'new', seller: null, shipsFrom: null, offers: null, asin: null,
+      link: 'https://www.ebay.com/itm/1', seenAt: NOW, reference: false,
+    };
+    show(row({ parts: [part('PCL206', { ...none, price: 80, prices: [confirmed] })] }), { api: removed.api });
+    await user.click(screen.getByRole('button', { name: 'Remove price' }));
+    expect(removed.send).toHaveBeenCalledWith({ type: 'clearConfirmedPrice', brand: 'RYOBI', model: 'PCL206' });
+  });
+
+  it('counts an eBay listing only after it is chosen, and says so when the Amazon listing is not for sale', async () => {
+    const user = userEvent.setup();
+    const { api, send } = fakeApi();
+    const missing = { status: 'none' as const, asin: null, grade: null, price: null, availability: 'missing' as const, title: null };
+    const ebay: PriceOption = {
+      kind: 'ebay_sold_new', price: 22, condition: 'new', seller: null, shipsFrom: null, offers: 2, asin: null,
+      link: 'https://www.ebay.com/itm/1', seenAt: NOW, reference: true,
+      ebay: {
+        listings: 2, unitsSold: 4, low: 22, high: 30, medianPrice: 22,
+        links: ['https://www.ebay.com/itm/1', 'notaurl'],
+        linkPrices: [22, 9],
+      },
+    };
+    show(row({ parts: [part('PCL416B', { ...missing, prices: [ebay] })] }), { api });
+    expect(screen.getByText(/Count one of these eBay prices/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Count $22.00' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Count $9.00' })).toBeNull();
+    // The range stays. The $22 link does not: Count is the only control that saves that price.
+    expect(document.querySelector('.detail-ebay dt')?.textContent).toBe('eBay · New · $22.00–$30.00 · 2 listings, 4 sold');
+    expect(screen.queryByRole('link', { name: 'eBay listing 1, $22.00' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Open listing' })).toHaveAttribute('href', 'https://www.ebay.com/itm/1');
+    expect(send).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'setConfirmedPrice' }));
+    await user.click(screen.getByRole('button', { name: 'Count $22.00' }));
+    expect(send).toHaveBeenCalledWith({ type: 'setConfirmedPrice', brand: 'RYOBI', model: 'PCL416B', price: 22, link: 'https://www.ebay.com/itm/1' });
+    cleanup();
+
+    const listed: PriceOption = {
+      kind: 'ebay_sold_new', price: 22, condition: 'new', seller: null, shipsFrom: null, offers: 1, asin: null,
+      link: 'https://www.ebay.com/itm/2', seenAt: NOW, reference: true,
+      ebay: { listings: 1, unitsSold: 1, low: 22, high: 22, medianPrice: 22, links: ['https://www.ebay.com/itm/2'] },
+    };
+    show(row({ parts: [part('PCL416B', { ...missing, prices: [listed] })] }));
+    expect(screen.getByRole('link', { name: 'eBay listing 1' })).toHaveAttribute('href', 'https://www.ebay.com/itm/2');
+    expect(screen.queryByRole('button', { name: /^Count / })).toBeNull();
+    cleanup();
+
+    show(row({ parts: [part('PCL206', { status: 'matched', availability: 'inactive', asin: 'B000000001', price: 50 })] }));
+    expect(screen.getByText('Listing inactive')).toBeInTheDocument();
+    expect(screen.getByText('Last Amazon price')).toBeInTheDocument();
+    expect(screen.getByText('A price you confirm counts until this listing is for sale again.')).toBeInTheDocument();
+    expect(screen.queryByText(/not for sale/)).toBeNull();
+  });
+
+  it('lets a charger with no model number be priced from a pasted link', async () => {
+    const user = userEvent.setup();
+    const { api, send } = fakeApi();
+    const option = {
+      id: 'split:PCLKIT', label: 'PCLKIT split into its parts', splitKits: ['PCLKIT'], parts: [], estimate: null,
+      leftovers: ['18V Charger'], loose: true, range: { lowest: null, amazonNew: null, highest: null },
+      unnamed: [{ model: '~18V Charger', name: '18V Charger', qty: 1, price: null, link: null }],
+    };
+    const other = {
+      ...option,
+      id: 'split:OTHER',
+      label: 'Sell the kit as its parts',
+      leftovers: ['Tool Bag'],
+      estimate: { cost: 189, netRevenue: 80, profit: -109, roi: -0.58 },
+      unnamed: [{ model: '~Tool Bag', name: 'Tool Bag', qty: 1, price: null, link: null }],
+    };
+    show(row({ parts: [part('PCL206')], options: [option, other] }), { api });
+    expect(screen.getByRole('heading', { name: 'NO MODEL NUMBER · 1' })).toBeInTheDocument();
+    expect(screen.queryByText('Counts when the kit is split.')).toBeNull();
+    const bag = screen.getByText('Tool Bag').closest('li')!;
+    expect(within(bag).getByText('Confirm sell price')).toBeInTheDocument();
+    expect(within(bag).getByText('−$109.00')).toBeInTheDocument();
+    const charger = screen.getByText('18V Charger').closest('li')!;
+    expect(within(charger).getByText('Confirm sell price')).toBeInTheDocument();
+    expect(within(charger).getByText(/no model number, so it is not looked up/)).toBeInTheDocument();
+    expect(within(bag).queryByText(/No priced Amazon listing is chosen/)).toBeNull();
+    expect(bag.contains(charger)).toBe(false);
+    await user.type(within(charger).getByLabelText('Price'), '15');
+    await user.type(within(charger).getByLabelText('Listing link'), 'https://www.facebook.com/marketplace/item/1');
+    await user.click(within(charger).getByRole('button', { name: 'Save price' }));
+    expect(send).toHaveBeenCalledWith({
+      type: 'setConfirmedPrice', brand: 'RYOBI', model: '~18V Charger', price: 15, link: 'https://www.facebook.com/marketplace/item/1',
+    });
+  });
+
+  it('prices a leftover on one way, and names that profit once a price is stored', () => {
+    const bag = { model: '~Tool Bag', name: 'Tool Bag', qty: 1, price: null as number | null, link: null as string | null };
+    const way = {
+      id: 'split:A', label: 'Sell the drill', splitKits: [] as string[], parts: [], leftovers: ['Tool Bag'], loose: true,
+      range: { lowest: null, amazonNew: null, highest: null },
+      estimate: { cost: 189, netRevenue: 80, profit: -109, roi: -0.58 },
+      unnamed: [bag],
+    };
+    const second = { ...way, id: 'split:B', label: 'Sell the saw', estimate: { cost: 189, netRevenue: 90, profit: -99, roi: -0.52 } };
+    const primary = { ...way, id: 'split:PRIMARY', label: 'Keep the kit', leftovers: [], unnamed: [], estimate: null };
+    show(row({ parts: [part('PCL206')], options: [primary, way, second] }));
+    expect(screen.getAllByText('Confirm sell price')).toHaveLength(1);
+    const first = screen.getByText('Sell the drill').closest('li')!;
+    expect(within(first).getByText('−$109.00')).toBeInTheDocument();
+    expect(within(first).getByText('Confirm sell price')).toBeInTheDocument();
+    const later = screen.getByText('Sell the saw').closest('li')!;
+    expect(within(later).queryByText('Confirm sell price')).toBeNull();
+    expect(within(later).getByText('Tool Bag is entered on Sell the drill.')).toBeInTheDocument();
+    cleanup();
+
+    const priced = { ...bag, price: 15, link: 'https://www.facebook.com/marketplace/item/1' };
+    const { api } = fakeApi();
+    render(createElement(UnnamedParts, {
+      row: row({ parts: [part('PCL206')], options: [primary, { ...way, unnamed: [priced] }, { ...second, unnamed: [priced] }] }),
+      api,
+      scanRunning: false,
+    }));
+    expect(screen.getByText('Sell the drill: est. profit −$109.00. Sell the saw: est. profit −$99.00.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'NO MODEL NUMBER · 1' })).toBeInTheDocument();
+  });
+
+  it('refuses a link that is not a web page, and does not offer a price for a part Amazon already prices', async () => {
+    const user = userEvent.setup();
+    const { api, send } = fakeApi();
+    const missing = { status: 'none' as const, asin: null, grade: null, price: null, availability: 'missing' as const, title: null };
+    show(row({ parts: [part('PCL206', missing)] }), { api });
+    await user.type(screen.getByLabelText('Listing link'), 'javascript:alert(1)');
+    await user.type(screen.getByLabelText('Price'), '80');
+    await user.click(screen.getByRole('button', { name: 'Save price' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Enter a link that starts with http or https.');
+    expect(send).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'setConfirmedPrice' }));
+    cleanup();
+    show(row());
+    expect(screen.queryByText('Confirm sell price')).toBeNull();
+    cleanup();
+    show(row({ parts: [part('~18V Charger', { status: 'none', asin: null, grade: null, price: null, availability: 'missing', title: null })] }));
+    expect(screen.getByText('Confirm sell price')).toBeInTheDocument();
+  });
+
+  it('reads an unread kit page instead of pricing the whole kit, and says so when there is no item id', async () => {
+    const user = userEvent.setup();
+    const { api, send } = fakeApi();
+    show(row({
+      status: 'partial', section: 'missing_listing', uncovered: ['PCL1201K2'], kitsNotRead: ['PCL1201K2'],
+      kitReads: [{ model: 'PCL1201K2', itemId: '317987584' }],
+      parts: [part('PCL1201K2', none), part('PCL515B')],
+    }), { api });
+    expect(screen.queryByText('Confirm sell price')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Read PCL1201K2 page' }));
+    expect(send).toHaveBeenCalledWith({ type: 'readKitPage', brand: 'RYOBI', model: 'PCL1201K2' });
+    cleanup();
+    show(row({
+      kitsNotRead: ['PCL1201K2'], kitReads: [], parts: [part('PCL1201K2', none)],
+    }));
+    expect(screen.getByText('The next scan has to find this kit on Home Depot before its page can be read.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Read PCL1201K2 page' })).toBeNull();
+    cleanup();
+    show(row({
+      kitsNotRead: ['PCL1201K2'], kitReads: [{ model: 'PCL1201K2', itemId: '317987584' }], parts: [part('PCL1201K2', none)],
+    }), { state: state({ scanRunning: true }) });
+    expect(screen.getByRole('button', { name: 'Read PCL1201K2 page' })).toBeDisabled();
+    expect(screen.getByText('A scan is running. Read the page when it has finished.')).toBeInTheDocument();
+  });
+
+  it('says a running scan once above several leftovers on one way', () => {
+    const item = (name: string) => ({ model: `~${name}`, name, qty: 1, price: null as number | null, link: null as string | null });
+    const way = {
+      id: 'split:A', label: 'Sell the drill', splitKits: [] as string[], parts: [], leftovers: ['Tool Bag', '18V Charger'], loose: true,
+      range: { lowest: null, amazonNew: null, highest: null },
+      estimate: { cost: 189, netRevenue: 80, profit: -109, roi: -0.58 },
+      unnamed: [item('Tool Bag'), item('18V Charger')],
+    };
+    const primary = { ...way, id: 'split:PRIMARY', label: 'Keep the kit', leftovers: [], unnamed: [], estimate: null };
+    show(row({ parts: [part('PCL206')], options: [primary, way] }), { state: state({ scanRunning: true }) });
+    const block = screen.getByText('Sell the drill').closest('li')!;
+    expect(within(block).getAllByText('A scan is running. Save the price when it has finished.')).toHaveLength(1);
+    const saves = within(block).getAllByRole('button', { name: 'Save price' });
+    expect(saves).toHaveLength(2);
+    for (const button of saves) expect(button).toBeDisabled();
+  });
+
+  it('does not save a price while a scan is running', () => {
+    const none = { status: 'none' as const, asin: null, grade: null, price: null, availability: 'missing' as const, title: null };
+    show(row({ parts: [part('PCL206', none)] }), { state: state({ scanRunning: true }) });
+    expect(screen.getByRole('button', { name: 'Save price' })).toBeDisabled();
+    expect(screen.getByText('A scan is running. Save the price when it has finished.')).toBeInTheDocument();
   });
 
   it('adds nothing for a part that was never looked up, or when every part has a listing', () => {
@@ -413,9 +634,36 @@ describe('parts', () => {
     expect(screen.getByRole('button', { name: 'Verify · 1 search' })).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('reads Needs your answer in Review for a part left in review', () => {
+  it('reads Needs your answer in Review for a part left in review, and does not offer a price', () => {
     show(row({ parts: [part('X1', { status: 'review', asin: null, grade: null, price: null, availability: 'missing' })] }));
     expect(screen.getByText('Needs your answer in Review')).toBeInTheDocument();
+    expect(screen.queryByText('Confirm sell price')).toBeNull();
+  });
+
+  it('puts the match question and Ask AI on the part, and leaves the price for the owner to confirm', async () => {
+    const user = userEvent.setup();
+    const { send } = fakeApi();
+    const item = question({
+      id: 'match:RYOBI:X1', kind: 'match', subject: 'RYOBI:X1', model: 'X1', title: null, choices: [],
+      reason: 'Two listings fit, and neither is certain.',
+      candidates: [{ asin: 'B000000009', title: 'The drill he meant', price: 40, reviews: null, reasons: [], seenAt: NOW }],
+    });
+    show(
+      row({ parts: [part('X1', { status: 'review', asin: null, grade: null, price: null, availability: 'missing', title: null })] }),
+      {
+        api: { send: send as unknown as WorkerApi['send'], onStateChanged: () => () => {}, download: vi.fn() },
+        review: [item],
+        state: state({ ebay: { hasEbayKeys: false, hasAnthropicKey: true, judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60 } }),
+      },
+    );
+    expect(screen.getByText('The drill he meant')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /Which Amazon listing is/ })).toBeInTheDocument();
+    // The question is on the part, so the tag does not send him to the Review tab.
+    expect(screen.queryByText('Needs your answer in Review')).toBeNull();
+    expect(screen.queryByText('Confirm sell price')).toBeNull();
+    await user.click(screen.getByRole('button', { name: /^Ask AI/ }));
+    expect(send).toHaveBeenCalledWith(expect.objectContaining({ type: 'askAi', questionId: 'match:RYOBI:X1' }));
+    expect(send).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'setConfirmedPrice' }));
   });
 
   it('shows the sentence of a refused run under Verify', async () => {
@@ -800,7 +1048,7 @@ describe('footer', () => {
     expect(lines).toHaveLength(2);
     expect(lines[0]).toMatch(/^section,brand,bundle_model,bundle_title,/);
     expect(lines[1]).toBe(
-      'confirmed,RYOBI,PBLRC2501SB,ONE+ HP 18V Extended Reach Ratchets (Tools Only),1,189,338,44,PBLRC25B | PBLRC01B,B0B3JWF5ZV | B0B6Z2ZGVK,exact | exact,169 | 169,287.3,189,98.3,0.52,,https://www.homedepot.com/p/328814689,,,,,,,,,',
+      'confirmed,RYOBI,PBLRC2501SB,ONE+ HP 18V Extended Reach Ratchets (Tools Only),1,189,338,44,PBLRC25B | PBLRC01B,B0B3JWF5ZV | B0B6Z2ZGVK,exact | exact,169 | 169,287.3,189,98.3,0.52,,https://www.homedepot.com/p/328814689,,,,,,,,,,,',
     );
   });
 });

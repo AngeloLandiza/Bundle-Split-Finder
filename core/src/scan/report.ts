@@ -6,13 +6,16 @@ import { isBulkPackaging } from '../match';
 import type { BundleResult } from '../money';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
+import { kitPageTarget } from './kitPage';
 import { ebayPriceOption } from '../ebay/value';
 import { componentCounts } from './classify';
 import { twinKeys, twinKeysOf } from './twins';
 import {
   type BundleRecord,
   type BundleRow,
+  type CatalogRecord,
   type BundleStatus,
+  type ConfirmedPrice,
   type EbayQuestion,
   type EbayValueRecord,
   effectiveVerdict,
@@ -29,6 +32,7 @@ import {
   priceActive,
   resolvedParts,
   type SaleOption,
+  type UnnamedItem,
   type ScanReport,
   type ScanSettings,
   type ScanStore,
@@ -44,11 +48,14 @@ const SECTION_RANK: Record<ReportSection, number> = { confirmed: 0, waiting: 1, 
 interface RefsOf {
   hd(brand: string, model: string): PartPriceRecord | undefined;
   ebay(brand: string, model: string): EbayValueRecord | undefined;
+  /** The owner's confirmed price for this part only. A twin's price is a different product. */
+  confirmed(brand: string, model: string): ConfirmedPrice | undefined;
 }
 
 async function refsOf(store: ScanStore): Promise<RefsOf> {
   const hdByKey = new Map((await store.listPartPrices()).filter((r) => r.price !== null).map((r) => [r.key, r] as const));
   const ebayByKey = new Map((await store.listEbayValues()).filter((r) => r.value !== null).map((r) => [r.key, r] as const));
+  const confirmedByKey = new Map((await store.listConfirmedPrices()).map((r) => [r.key, r] as const));
   const first = <T>(by: Map<string, T>, brand: string, model: string): T | undefined => {
     for (const key of [partKey(brand, model), ...twinKeys(brand, model)]) {
       const found = by.get(key);
@@ -56,11 +63,15 @@ async function refsOf(store: ScanStore): Promise<RefsOf> {
     }
     return undefined;
   };
-  return { hd: (brand, model) => first(hdByKey, brand, model), ebay: (brand, model) => first(ebayByKey, brand, model) };
+  return {
+    hd: (brand, model) => first(hdByKey, brand, model),
+    ebay: (brand, model) => first(ebayByKey, brand, model),
+    confirmed: (brand, model) => confirmedByKey.get(partKey(brand, model)),
+  };
 }
 
 /** Ties among equal prices go in this order. */
-const KIND_ORDER: Record<PriceKind, number> = { amazon_new: 0, amazon_buybox: 1, ebay_sold_new: 2, amazon_list: 3, homedepot: 4 };
+const KIND_ORDER: Record<PriceKind, number> = { amazon_new: 0, amazon_buybox: 1, confirmed: 2, ebay_sold_new: 3, amazon_list: 4, homedepot: 5 };
 
 /**
  * Step 9: every price known for a part, each labelled, highest first. Amazon's only for the part's
@@ -72,7 +83,7 @@ const KIND_ORDER: Record<PriceKind, number> = { amazon_new: 0, amazon_buybox: 1,
  */
 function priceOptions(
   settings: ScanSettings, model: string, matched: boolean, asin: string | null, active: boolean, price: PriceRecord | undefined, listing: ListingRecord | undefined,
-  hd: PartPriceRecord | undefined, ebay: EbayValueRecord | undefined,
+  hd: PartPriceRecord | undefined, ebay: EbayValueRecord | undefined, confirmed: ConfirmedPrice | undefined,
 ): PriceOption[] {
   const out: PriceOption[] = [];
   const base = { condition: 'new' as const, seller: null, shipsFrom: null, offers: null };
@@ -94,6 +105,11 @@ function priceOptions(
       out.push({ ...base, kind: 'amazon_list', price: listing.listPrice, asin, link, seenAt: listing.checkedAt, reference: true });
     }
   }
+  // Counted while no Amazon New price is. Once one is, the owner's figure stays, as a reference, with its link.
+  if (confirmed) {
+    const amazonCounts = active && price?.price != null && price.seenAt !== null;
+    out.push({ ...base, kind: 'confirmed', price: confirmed.price, asin: null, link: confirmed.link, seenAt: confirmed.confirmedAt, reference: amazonCounts });
+  }
   if (hd && hd.price !== null && hd.seenAt !== null) {
     const soldAs = hd.matchedModel ?? hd.model;
     out.push({
@@ -107,10 +123,21 @@ function priceOptions(
 }
 
 /**
- * Step 9: the prices a range counts for a part: not a reference, and only while its listing is active,
- * as the estimate counts a price. A Buy Box read before a later check found no price is not counted.
+ * Prices a range counts. An active listing's non-reference prices, and a confirmed price that is still
+ * counting (it is marked reference once an Amazon New price exists). An inactive listing's Buy Box does not count.
  */
-const countedPrices = (p: PartRow): number[] => (p.availability === 'active' ? p.prices.filter((o) => !o.reference).map((o) => o.price) : []);
+const countedPrices = (p: PartRow): number[] =>
+  p.prices.filter((o) => !o.reference && (p.availability === 'active' || o.kind === 'confirmed')).map((o) => o.price);
+
+/** The one price the estimate uses for a part: its Amazon New price, or the confirmed price while it has none. */
+function listingFor(p: PartRow): PricedListing | null {
+  if (p.availability === 'active' && p.asin !== null) {
+    const featured = p.prices.find((o) => o.kind === 'amazon_new' && !o.reference);
+    if (featured) return { asin: p.asin, covers: { [p.model]: 1 }, price: featured.price };
+  }
+  const confirmed = p.prices.find((o) => o.kind === 'confirmed' && !o.reference);
+  return confirmed ? { asin: `confirmed:${p.model}`, covers: { [p.model]: 1 }, price: confirmed.price } : null;
+}
 
 async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, brand: string, counts: Record<string, number>): Promise<PartRow[]> {
   const rows: PartRow[] = [];
@@ -123,6 +150,12 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
     if (matched) {
       availability = priceActive(price) ? 'active' : 'inactive';
     }
+    const prices = priceOptions(
+      settings, model, matched, match?.asin ?? null, availability === 'active', price, listing,
+      refs.hd(brand, model), refs.ebay(brand, model), refs.confirmed(brand, model),
+    );
+    const featured = prices.find((o) => o.kind === 'amazon_new' && !o.reference);
+    const confirmedOpt = prices.find((o) => o.kind === 'confirmed' && !o.reference);
     rows.push({
       model,
       qty: counts[model]!,
@@ -130,11 +163,11 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
       availability,
       asin: match?.asin ?? null,
       grade: match?.grade ?? null,
-      price: price?.price ?? null,
-      priceSeenAt: price?.seenAt ?? null,
+      price: featured?.price ?? confirmedOpt?.price ?? price?.price ?? null,
+      priceSeenAt: featured ? featured.seenAt : confirmedOpt ? confirmedOpt.seenAt : (price?.seenAt ?? null),
       image: listing?.image ?? null,
       title: listing?.title ?? null,
-      prices: priceOptions(settings, model, matched, match?.asin ?? null, availability === 'active', price, listing, refs.hd(brand, model), refs.ebay(brand, model)),
+      prices,
       // The PO (Nov 18): a New listing in bulk packaging is a place to sell; the panel labels it.
       ...(listing && isBulkPackaging(listing.title) ? { packaging: 'bulk' as const } : {}),
     });
@@ -224,10 +257,20 @@ async function optionOf(
   const parts = await partRows(store, settings, refs, b.brand, models);
   const priced: PricedListing[] = [];
   for (const p of parts) {
-    if (p.availability === 'active' && p.asin !== null && p.price !== null) {
-      priced.push({ asin: p.asin, covers: { [p.model]: 1 }, price: p.price });
-    }
+    const listing = listingFor(p);
+    if (listing) priced.push(listing);
   }
+  // A leftover with no model number is never looked up. A price counts only when the owner confirmed
+  // it, one sale per unit, the same way a part's confirmed price does. The median of an eBay range
+  // is not a listing and is not added here.
+  const extras: PricedListing[] = [];
+  const unnamedItems: UnnamedItem[] = [];
+  for (const [key, name] of unnamed) {
+    const confirmed = refs.confirmed(b.brand, key);
+    unnamedItems.push({ model: key, name, qty: components[key] ?? 1, price: confirmed?.price ?? null, link: confirmed?.link ?? null });
+    if (confirmed) extras.push({ asin: `confirmed:${key}`, covers: { [key]: 1 }, price: confirmed.price });
+  }
+  priced.push(...extras);
   // Without a bundle price the plan is still what is left unsold; only the estimate needs the price.
   const evaluation = evaluateBundle(b.price ?? 0, components, priced, settings.fees, settings.liquidationRate);
   const left = new Map<string, number>();
@@ -244,6 +287,8 @@ async function optionOf(
   const uncovered = b.price === null
     ? [...parts.map((p) => p.model), ...unnamed.values()]
     : [...evaluation.uncovered.filter((k) => !k.startsWith(UNNAMED)), ...leftUnnamed.map(([, name]) => name)];
+  // Every leftover with no model number has a price the owner confirmed. That is not an Amazon listing.
+  const ownerFilled = split.length > 0 && unnamed.size > 0 && leftUnnamed.length === 0 && extras.length > 0;
   return {
     option: {
       id: split.length === 0 ? 'whole' : `split:${[...split].sort().join('+')}`,
@@ -253,11 +298,13 @@ async function optionOf(
       estimate,
       leftovers,
       loose: split.length > 0,
-      range: estimate === null ? NO_RANGE : rangeOf(settings, b.price!, components, parts, estimate),
+      unnamed: unnamedItems,
+      range: estimate === null ? NO_RANGE : rangeOf(settings, b.price!, components, parts, estimate, extras),
     },
-    status: b.price !== null && evaluation.uncovered.length === 0 ? 'complete' : 'partial',
+    status: b.price !== null && evaluation.uncovered.length === 0 && !ownerFilled ? 'complete' : 'partial',
     // Items from a split kit that are left unsold are a missing listing, whatever the models' listings say.
-    section: split.length > 0 && leftovers.length > 0 ? 'missing_listing' : sectionOf(parts, b.price),
+    // So is a leftover the owner priced: the bundle stays in Missing listing when every model is active.
+    section: (split.length > 0 && leftovers.length > 0) || ownerFilled ? 'missing_listing' : sectionOf(parts, b.price),
     uncovered,
   };
 }
@@ -269,15 +316,19 @@ const NO_RANGE: PriceRange = { lowest: null, amazonNew: null, highest: null };
  * is (evaluateBundle, the same components and fees), with each part at its lowest or highest counted
  * price (countedPrices). The lowest values a part with none at $0; the highest at the liquidation
  * rate, as the estimate does, so lowest <= amazonNew <= highest. amazonNew is the estimate itself.
+ * `extras` are confirmed prices for items with no model number: one price, so both ends count it.
  */
 function rangeOf(
-  settings: ScanSettings, bundlePrice: number, components: Record<string, number>, parts: PartRow[], estimate: BundleResult,
+  settings: ScanSettings, bundlePrice: number, components: Record<string, number>, parts: PartRow[], estimate: BundleResult, extras: PricedListing[],
 ): PriceRange {
   const at = (end: (prices: number[]) => number, liquidationRate: number): BundleResult => {
-    const priced: PricedListing[] = parts.flatMap((p) => {
-      const prices = countedPrices(p);
-      return prices.length > 0 ? [{ asin: p.model, covers: { [p.model]: 1 }, price: end(prices) }] : [];
-    });
+    const priced: PricedListing[] = [
+      ...parts.flatMap((p) => {
+        const prices = countedPrices(p);
+        return prices.length > 0 ? [{ asin: p.model, covers: { [p.model]: 1 }, price: end(prices) }] : [];
+      }),
+      ...extras,
+    ];
     return evaluateBundle(bundlePrice, components, priced, settings.fees, liquidationRate).result;
   };
   return { lowest: at((xs) => Math.min(...xs), 0), amazonNew: estimate, highest: at((xs) => Math.max(...xs), settings.liquidationRate) };
@@ -302,6 +353,7 @@ function primaryOf(options: Evaluated[]): number {
  */
 async function bundleRow(
   store: ScanStore, settings: ScanSettings, b: BundleRecord, recordsOf: (brand: string, model: string) => KitRecord[], refs: RefsOf,
+  bundles: BundleRecord[], catalog: CatalogRecord[],
 ): Promise<BundleRow> {
   const base = {
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
@@ -311,7 +363,7 @@ async function bundleRow(
   };
   const split = b.split;
   if (!split || split.status !== 'resolved') {
-    return { ...base, status: 'needs_review', section: 'split', parts: [], estimate: null, uncovered: [], options: [], kitsNotRead: [], range: NO_RANGE };
+    return { ...base, status: 'needs_review', section: 'split', parts: [], estimate: null, uncovered: [], options: [], kitsNotRead: [], kitReads: [], range: NO_RANGE };
   }
   const counts = componentCounts(split.components);
   // The kits whose own stored page lists their items, in part order. Contents come only from that page.
@@ -345,14 +397,19 @@ async function bundleRow(
     uncovered: primary.uncovered,
     options: [primary, ...evaluated.filter((_, i) => i !== p)].map((e) => e.option),
     kitsNotRead,
+    kitReads: kitsNotRead.flatMap((model) => {
+      const target = kitPageTarget(bundles, catalog, b.brand, model);
+      return target.kind === 'page' ? [{ model, itemId: target.itemId }] : [];
+    }),
     range: primary.option.range,
   };
 }
 
 /** One bundle's row, exactly as buildReport builds it. A product page the owner has open shows it (pageView.ts). Reads only. */
 export async function reportRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
+  const stored = await store.listBundles();
   const catalog = await store.listCatalog();
-  return bundleRow(store, settings, b, kitIndex(kitRecords(await store.listBundles(), catalog)), await refsOf(store));
+  return bundleRow(store, settings, b, kitIndex(kitRecords(stored, catalog)), await refsOf(store), stored, catalog);
 }
 
 export async function buildReport(store: ScanStore, settings: ScanSettings): Promise<ScanReport> {
@@ -366,7 +423,7 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   const recordsOf = kitIndex(kitRecords(stored, catalog));
   const refs = await refsOf(store);
   for (const b of stored) {
-    bundles.push(await bundleRow(store, settings, b, recordsOf, refs));
+    bundles.push(await bundleRow(store, settings, b, recordsOf, refs, stored, catalog));
     for (const part of [...resolvedParts(b), ...kitItemParts(b, recordsOf)]) held.add(part.key);
   }
   bundles.sort((a, b) => {

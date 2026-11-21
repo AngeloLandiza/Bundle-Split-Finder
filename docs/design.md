@@ -80,7 +80,9 @@ All text pairs meet 4.5:1. Do not introduce new colors; ask first.
   are the ends of the range. A real `<select>` or menu button; remember the choice.
 - **Detail**: headline profit, then cost, sells-for, after-fees; the estimate line with a
   link to fee settings; one block per part with model, short name, price, net, ASIN link,
-  grade, and Verify when the grade is "Title match"; under each part its prices, highest first, each
+  grade, and Verify when the grade is "Title match"; a lookup whose titles only name the model on
+  accessories reads one product page itself, and a page whose part number is the model is an ordinary
+  Verified match, with no extra button; under each part its prices, highest first, each
   labelled with where it comes from ("Amazon · New" in weight, the Buy Box with its seller, reference prices
   such as Amazon's list price and Home Depot's own price marked "not counted"); a part's eBay line last in that
   group ("eBay · New · $38.50–$54.99 · 3 listings, 41 sold", with up to three numbered links to its listings), and
@@ -146,9 +148,13 @@ The AI drafts; the owner decides. A suggestion is never an answer until the owne
 Extends "Ask AI". The AI may now research a split question (read the full Home Depot page, search
 Home Depot, check the catalog, search the brand's own site) and propose parts even when the tool
 offered no reading. Every rule of Ask AI holds: the AI drafts, the owner decides.
-- **Ask AI only where it can help.** The per-question button reads "Ask AI · about $0.10" for a
-  split question (research) and "Ask AI · about $0.02" for a match question. It is never shown where
-  no call would be made.
+- **Ask AI on every Review question.** The per-question button reads "Ask AI · about $0.10" for a
+  split question (research) and "Ask AI · about $0.02" for a match question that has a listing to
+  choose. A match question with no listing still gets the button, reading "Ask AI" with no price:
+  pressing it makes no model call and says so. The button is on Review, on This page (once the
+  question is saved), on Detail's open split question, and on a part in Detail whose match question
+  is still open. It is absent when no Anthropic key is saved. Ask AI about all still asks only where
+  a call would be made, so it does not queue an empty match. eBay yes/no questions have no Ask AI.
 - **Order of Review.** Suggestions first: the Ask AI row; then "AI suggestions · N" with its rows; then
   the Accept all block ("N bundles have one suggested answer"); then the remaining questions.
 - **Ask AI about all.** The first row of Review, alone in its row, a bordered secondary button
@@ -219,6 +225,64 @@ offered no reading. Every rule of Ask AI holds: the AI drafts, the owner decides
   figure is a reference and is not counted.
 - **What to scan**, **Fees**, **Alerts**, **Your data** as in the mockup.
 - Changes save on change. No Save button. Destructive actions ask once.
+- **Your data** also has **Delete all data**. It deletes every deal, match, answer, confirmed price
+  and saved search, and asks once. Keys, settings and the searches already counted stay. It waits
+  while a scan, a Look up, a Verify, Ask AI or a kit-page read is running.
+
+### Read a kit page
+
+A kit whose own Home Depot page is not stored is named in the estimate band: "PCL1600K2's contents
+are not known yet: its Home Depot page has not been read." Under that sentence, Detail and This
+page offer **Read PCL1600K2 page**. It reads that one page in the browser, the same page a scan
+would read, and it spends no search. The button is disabled while a scan, a Look up, a Verify or
+Ask AI is running, and the line says when it can be pressed.
+
+A kit with no Home Depot item id yet has no button. The line says the next scan has to find the
+kit on Home Depot before its page can be read.
+
+The button is not a price. An unread kit does not offer Confirm sell price: the tools inside it
+are not known, and a price on the kit would count the whole box as one part. After the page is
+stored, the kit splits into the parts its Includes list names. A part that was looked up and still
+has no Amazon New price keeps Confirm sell price. Nothing is copied off a pasted link.
+
+### Confirm a sell price
+
+A part with no counted Amazon New price, and that has already been looked up, offers a form inside
+the part: **Price** and **Listing link**, then **Save price** (a bordered secondary button, the same
+control as packaging's Yes / No). The form sits under the part's prices, separated by a hairline.
+The heading is "Confirm sell price". The help says the part counts at $0 until a price is entered,
+that the price is the one he saw, and that an eBay or Facebook link is enough. The link is not read.
+**Change price** and **Remove price** are text buttons once a price is saved. While a scan runs,
+Save price is disabled and the line reads "A scan is running. Save the price when it has finished."
+When several of these forms sit in one list, that line is said once above them.
+
+A part still in Review does not show the form. The match question is on that part, in Detail and
+on This page, with Ask AI. The part does not also say "Needs your answer in Review": the question
+is the instruction. Approving a listing is what sets the Amazon price.
+
+When the part's Amazon listing is not for sale, the tag says "Listing inactive". Its last price is
+under Reference, labelled "Last Amazon price". It is not the big price, and it has no "nets" line.
+The form does not repeat that the listing is not for sale. It says a price he confirms counts until
+the listing is for sale again. It then stays in the list as "Confirmed by you" under Reference.
+
+Stored eBay listings that have their own price are buttons under the heading ("Count $22.00", and
+Open listing). Counting one saves that price. Those prices are not also links in the reference
+line: the line keeps the range ("eBay · New · $22.00–$30.00 · 2 listings, 4 sold"). Under the
+buttons, "Or enter a price and a link" is the other path, with its own Save price. A range with no
+per-listing price offers no button, and its listing links stay in the reference line, reading
+"Listing 1". The same links stay when the form is not shown (an active Amazon price, a part still
+in Review). The median stays under Reference. A Facebook link is enough.
+
+A charger or bag the page names without a model number uses the same form. The help says it has no
+model number, so it is not looked up, and it counts at $0 until he enters the price he saw and a
+link. No model number is invented. On Detail, one that is in the estimate on screen is listed
+under **NO MODEL NUMBER**. One that is only in another way to sell is priced on that way, under its
+profit, and the form is there once even when two ways include it. On This page, which has no ways
+list, every such item is under **NO MODEL NUMBER**. One that is not in the estimate above says which
+way it counts in, and once a price is stored, that way's estimated profit.
+
+The bundle stays in Missing listing or Inactive listing: a confirmed price is not an Amazon listing.
+A part not looked up yet has no form. The AI does not invent a dollar amount.
 
 ## Behaviour
 

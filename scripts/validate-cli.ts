@@ -352,6 +352,10 @@ export class WatchedStore implements ScanStore {
   getPartPrice: ScanStore['getPartPrice'] = (key) => this.inner.getPartPrice(key);
   putPartPrice: ScanStore['putPartPrice'] = (r) => this.inner.putPartPrice(r);
   listPartPrices: ScanStore['listPartPrices'] = () => this.inner.listPartPrices();
+  getConfirmedPrice: ScanStore['getConfirmedPrice'] = (key) => this.inner.getConfirmedPrice(key);
+  putConfirmedPrice: ScanStore['putConfirmedPrice'] = (r) => this.inner.putConfirmedPrice(r);
+  deleteConfirmedPrice: ScanStore['deleteConfirmedPrice'] = (key) => this.inner.deleteConfirmedPrice(key);
+  listConfirmedPrices: ScanStore['listConfirmedPrices'] = () => this.inner.listConfirmedPrices();
   getEbayValue: ScanStore['getEbayValue'] = (key) => this.inner.getEbayValue(key);
   putEbayValue: ScanStore['putEbayValue'] = (r) => this.inner.putEbayValue(r);
   listEbayValues: ScanStore['listEbayValues'] = () => this.inner.listEbayValues();
@@ -362,6 +366,11 @@ export class WatchedStore implements ScanStore {
   getScan: ScanStore['getScan'] = (id) => this.inner.getScan(id);
   putScan: ScanStore['putScan'] = (job) => this.inner.putScan(job);
   listScans: ScanStore['listScans'] = () => this.inner.listScans();
+  clearAll: ScanStore['clearAll'] = async () => {
+    this.decisions.clear();
+    this.pending = null;
+    await this.inner.clearAll();
+  };
 }
 
 /** The part a lookup search is for, from its query (`k` is the brand, a space, the model). */

@@ -229,6 +229,16 @@ export function DataSection({ api }: { api: WorkerApi }) {
     }
   }
 
+  async function deleteAll() {
+    setNote(null);
+    try {
+      const reply = await api.send<unknown>({ type: 'deleteAllData' });
+      setNote(reply.ok ? 'All data deleted. Your keys, settings and search count were kept.' : reply.error);
+    } catch {
+      setNote(UNREACHABLE);
+    }
+  }
+
   return (
     <Section title="Your data" help="Everything stays in this browser. Export it to keep a copy or move to another computer.">
       <div className="row">
@@ -255,6 +265,13 @@ export function DataSection({ api }: { api: WorkerApi }) {
           yes="Yes, clear"
           danger
           onYes={clear}
+        />
+        <Confirm
+          label="Delete all data"
+          question="Delete every deal, match, answer and saved search? Your keys, settings and search count stay."
+          yes="Yes, delete all data"
+          danger
+          onYes={deleteAll}
         />
       </div>
       <p className="note" role="status" data-testid="data-status">

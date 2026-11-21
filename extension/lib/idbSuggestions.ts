@@ -21,4 +21,8 @@ export class IdbSuggestionStore implements SuggestionStore {
     const all = (await (await this.db).getAll('suggestions')) as StoredSuggestion[];
     return all.sort((a, b) => a.askedAt - b.askedAt || (a.key < b.key ? -1 : 1));
   }
+
+  async clear(): Promise<void> {
+    await (await this.db).clear('suggestions');
+  }
 }

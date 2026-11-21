@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { verifiedRows } from '@core/assist/approve';
-import { askQueueOf, canAsk } from '@core/assist/askAll';
-import { askAllCostLabel, questionCostLabel } from '@core/assist/cost';
+import { askQueueOf } from '@core/assist/askAll';
+import { liveSuggestion } from '@core/assist/stored';
+import { askAllCostLabel } from '@core/assist/cost';
 import { DEFAULT_CLAUDE_JUDGE_MODEL } from '@core/judge/claude';
-import { liveSuggestion, type StoredSuggestion } from '@core/assist/stored';
 import { reviewSignature } from '@core/scan/answers';
 import type { EbayQuestion as EbayQ, ReviewAnswer, ReviewItem } from '@core/scan/types';
 import type { AppState, PanelReport } from '../../lib/messages';
 import { UNREACHABLE, type WorkerApi } from '../../lib/pageClient';
 import { AcceptSuggested, suggestedOf, useAcceptAll } from './AcceptSuggested';
 import { EbayQuestion, type EbayChoice } from './EbayQuestion';
-import { notSuggestedSentence } from './AiSuggestion';
 import { AiSuggestionsSection, ApproveResultLine, useApproveAll } from './AiSuggestions';
 import { AskAllButton, AskAllRow, askAllSentence } from './AskAll';
-import { ReviewQuestion, type AiControl } from './ReviewQuestion';
+import { ReviewQuestion } from './ReviewQuestion';
+import { useQuestionAi } from './useQuestionAi';
 import './ReviewTab.css';
 
 /** One open question: a review item, or (step 10) an eBay listing question. They are answered one at a time, oldest first, as one list. */
@@ -41,10 +41,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const [focusNext, setFocusNext] = useState(false);
   const emptyRef = useRef<HTMLParagraphElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
-  // Step 11, Ask AI: the question being asked about, what the last ask said when it gave nothing, and the suggestions asked for in this panel.
-  const [asking, setAsking] = useState<string | null>(null);
-  const [aiNotice, setAiNotice] = useState<{ id: string; text: string } | null>(null);
-  const [got, setGot] = useState<Readonly<Record<string, StoredSuggestion>>>({});
+  const ai = useQuestionAi(api, report, state);
   // Step 12: the rows of "AI suggestions" that are open, what the last Ask AI about all press said when it was refused, and how many
   // row answers were saved (focus goes back to the tab when a row goes).
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
@@ -64,8 +61,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
     : [];
   const byAge = entries.sort((a, b) => a.openedAt - b.openedAt).filter((e) => !done.has(e.key));
   const reviews = byAge.flatMap((e) => ('review' in e ? [e.review] : []));
-  /** What the panel knows of suggestions: the ones asked for in this panel, and the report's. */
-  const records = [...Object.values(got), ...(report?.aiSuggestions ?? [])];
+  const { got, records, suggestionFor, aiFor, clear: clearSuggestion } = ai;
   // A question whose suggestion the code verified, and that Approve could save, is listed in "AI suggestions", not in the list below.
   // Except one the owner asked about on its own in this panel: they are looking at it, so its suggestion stays in the question, as it
   // did in step 11, until it is answered. After a reload it is a row like the rest.
@@ -79,8 +75,6 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
   const entry = open[0];
   const item = entry && 'review' in entry ? entry.review : undefined;
 
-  /** Only a suggestion made for the question as it reads now: one for other choices is not shown, whatever the panel holds. */
-  const suggestionFor = (r: ReviewItem): StoredSuggestion | null => liveSuggestion(records, r) ?? null;
   // Accept all: the questions that offer one reading, answered in one press. Each one answered is hidden like a single answer.
   const acceptAll = useAcceptAll(api, (r, seen) => setDone((d) => new Set(d).add(`${r.id}|${seen}`)));
   // Not one the AI has made a suggestion for: Accept all never decides over what the AI said, so that one is answered on its own.
@@ -179,31 +173,6 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
     if (rowSaved > 0) sectionRef.current?.focus();
   }, [rowSaved]);
 
-  /** The Ask AI controls of a question: its price and suggestion. Absent where no call would be made, and with no suggestion and no key. */
-  const aiFor = (r: ReviewItem): AiControl | undefined => {
-    const suggestion = suggestionFor(r);
-    if (!suggestion && !(hasAi && canAsk(r))) return undefined;
-    return {
-      cost: questionCostLabel(r.kind, model), suggestion, asking: asking === r.id, queueRunning,
-      notice: aiNotice?.id === r.id ? aiNotice.text : null, onAsk: () => void ask(r),
-    };
-  };
-  const ask = async (r: ReviewItem): Promise<void> => {
-    if (asking !== null) return;
-    setAsking(r.id);
-    setAiNotice(null);
-    try {
-      const reply = await api.send<StoredSuggestion>({ type: 'askAi', questionId: r.id });
-      if (!reply.ok) setAiNotice({ id: r.id, text: reply.error });
-      else if (reply.data.suggestion.status === 'not_suggested') setAiNotice({ id: r.id, text: notSuggestedSentence(reply.data.suggestion) });
-      else setGot((g) => ({ ...g, [r.id]: reply.data }));
-    } catch {
-      setAiNotice({ id: r.id, text: UNREACHABLE });
-    } finally {
-      setAsking(null);
-    }
-  };
-
   if (!report) return <p className="review-empty">No scan has finished yet.</p>;
   if (!entry && rows.length === 0) {
     return (
@@ -234,7 +203,7 @@ export function ReviewTab({ report, state, api }: ReviewTabProps) {
     }
     setDone((d) => new Set(d).add(`${q.id}|${answer.seen}`));
     // The answer is saved: the suggestion shown for it is not kept in the panel.
-    setGot(({ [q.id]: _answered, ...rest }) => rest);
+    clearSuggestion(q.id);
     if (fromRow) setRowSaved((n) => n + 1);
     else setFocusNext(true);
     return null;

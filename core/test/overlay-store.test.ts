@@ -34,6 +34,21 @@ describe('OverlayStore over a store with records', () => {
     expect(JSON.stringify([await base.listListings(), await base.listScans()])).toBe(before);
   });
 
+  it('deleting a confirmed price hides the one in the store underneath and does not delete it there', async () => {
+    const base = new MemoryScanStore();
+    const kept = { key: 'RYOBI:PCL206', brand: 'RYOBI', model: 'PCL206', price: 80, link: 'https://www.ebay.com/itm/1', confirmedAt: 1 };
+    await base.putConfirmedPrice(kept);
+    const layer = new OverlayStore(base);
+    expect(await layer.getConfirmedPrice(kept.key)).toEqual(kept);
+    await layer.deleteConfirmedPrice(kept.key);
+    expect(await layer.getConfirmedPrice(kept.key)).toBeUndefined();
+    expect(await layer.listConfirmedPrices()).toEqual([]);
+    expect(await base.getConfirmedPrice(kept.key)).toEqual(kept);
+    await layer.putConfirmedPrice({ ...kept, price: 90 });
+    expect((await layer.getConfirmedPrice(kept.key))!.price).toBe(90);
+    expect((await base.getConfirmedPrice(kept.key))!.price).toBe(80);
+  });
+
   it('a record read through to the store is a copy too, even from a store that hands out its own objects', async () => {
     const held = listing('B1', 10);
     const base = new MemoryScanStore();

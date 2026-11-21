@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from '../src/scan/types';
 
 const bundle = (itemId: string, over: Partial<BundleRecord> = {}): BundleRecord => ({
@@ -286,6 +286,42 @@ describe(`${name} round trips`, () => {
     const got = (await s.getJudgement(a.key))!;
     got.usage.inputTokens = 1;
     expect((await s.getJudgement(a.key))!.usage.inputTokens).toBe(900);
+  });
+
+  it('confirmed prices: put, replace, delete, listed by key; a copy is returned', async () => {
+    const s = await make();
+    const a: ConfirmedPrice = { key: 'RYOBI:PCL206', brand: 'RYOBI', model: 'PCL206', price: 80, link: 'https://www.ebay.com/itm/1', confirmedAt: 1 };
+    await s.putConfirmedPrice(a);
+    expect(await s.getConfirmedPrice(a.key)).toEqual(a);
+    const b: ConfirmedPrice = { ...a, price: 84, confirmedAt: 2 };
+    await s.putConfirmedPrice(b);
+    await s.putConfirmedPrice({ key: 'DEWALT:DCD791', brand: 'DEWALT', model: 'DCD791', price: 90, link: 'https://www.ebay.com/itm/2', confirmedAt: 3 });
+    expect((await s.listConfirmedPrices()).map((r) => r.key)).toEqual(['DEWALT:DCD791', 'RYOBI:PCL206']);
+    const got = (await s.getConfirmedPrice(a.key))!;
+    got.price = 1;
+    expect((await s.getConfirmedPrice(a.key))!.price).toBe(84);
+    await s.deleteConfirmedPrice(a.key);
+    expect(await s.getConfirmedPrice(a.key)).toBeUndefined();
+    expect((await s.listConfirmedPrices()).map((r) => r.model)).toEqual(['DCD791']);
+    expect(await s.listPartPrices()).toEqual([]);
+  });
+
+  it('clearAll drops every record, and the next write is kept', async () => {
+    const s = await make();
+    await s.putBundle(bundle('1'));
+    await s.putMatch(match());
+    await s.putReview(review('split:1'));
+    await s.putConfirmedPrice({ key: 'RYOBI:PCL206', brand: 'RYOBI', model: 'PCL206', price: 80, link: 'https://www.ebay.com/itm/1', confirmedAt: 1 });
+    await s.putScan(scan(1));
+    await s.clearAll();
+    expect(await s.listBundles()).toEqual([]);
+    expect(await s.listMatches()).toEqual([]);
+    expect(await s.listReview()).toEqual([]);
+    expect(await s.listConfirmedPrices()).toEqual([]);
+    expect(await s.listScans()).toEqual([]);
+    expect(await s.getBundle('homedepot:1')).toBeUndefined();
+    await s.putBundle(bundle('2'));
+    expect((await s.listBundles()).map((b) => b.itemId)).toEqual(['2']);
   });
 
   it('scans: put, get, replace, missing', async () => {

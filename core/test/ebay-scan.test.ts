@@ -209,11 +209,12 @@ describe('the owner\'s answer', () => {
 });
 
 describe('CSV: ebay_ref_low, ebay_ref_high, ebay_units_sold', () => {
-  const last3 = (csv: string): string[] => csv.trimEnd().split('\n')[1]!.split(',').slice(-3);
+  const last3 = (csv: string): string[] => csv.trimEnd().split('\n')[1]!.split(',').slice(-5, -2);
 
-  it('are the last three columns, after the ones the file had', () => {
-    expect(RUN_COLUMNS.slice(-3)).toEqual(['ebay_ref_low', 'ebay_ref_high', 'ebay_units_sold']);
-    expect(RUN_COLUMNS.slice(-7, -3)).toEqual(['roi_lowest', 'roi_amazon_new', 'roi_highest', 'hd_price_total']);
+  it('are the three columns before the confirmed price and its link', () => {
+    expect(RUN_COLUMNS.slice(-5, -2)).toEqual(['ebay_ref_low', 'ebay_ref_high', 'ebay_units_sold']);
+    expect(RUN_COLUMNS.slice(-2)).toEqual(['confirmed_price', 'confirmed_link']);
+    expect(RUN_COLUMNS.slice(-9, -5)).toEqual(['roi_lowest', 'roi_amazon_new', 'roi_highest', 'hd_price_total']);
   });
 
   it('are blank when no part has an eBay value, and say each part\'s figure in part order, with ? for a part with none', async () => {

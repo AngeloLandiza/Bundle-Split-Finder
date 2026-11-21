@@ -22,7 +22,9 @@ export async function suggestAnswer(question: ReviewItem, evidence: AssistEviden
   if (question.kind === 'split' && choicesOf(question).length === 0) {
     return notSuggested('This question offers no readings to choose from. Enter the parts yourself.');
   }
-  if (question.kind === 'match' && question.candidates.length === 0) return notSuggested('This question offers no listings to choose from.');
+  if (question.kind === 'match' && question.candidates.length === 0) {
+    return notSuggested('This question offers no listings to choose from. Confirm a sell price on the part if you have seen one.');
+  }
 
   let call;
   try {

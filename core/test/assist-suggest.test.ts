@@ -9,9 +9,9 @@ import { gatherEvidence, splitEvidence } from '../src/assist/evidence';
 import { ASSIST_PROMPT, ASSIST_PROMPT_VERSION } from '../src/assist/prompt';
 import { ASSIST_SCHEMA } from '../src/assist/schema';
 import { suggestAnswer } from '../src/assist/suggest';
-import type { AssistModel, AssistRaw } from '../src/assist/types';
+import type { AssistEvidence, AssistModel, AssistRaw } from '../src/assist/types';
 import { reviewSignature } from '../src/scan/answers';
-import { bundleKey } from '../src/scan/types';
+import { bundleKey, type ReviewItem } from '../src/scan/types';
 import { asked, assistWorld } from './assist-world';
 
 const KEY = 'sk-ant-test-0000-not-a-real-key';
@@ -180,6 +180,17 @@ describe('no call is made', () => {
     expect(q.choices).toEqual([]);
     const m = never();
     expect(await suggestAnswer(q, await gatherEvidence(w.store, q), m)).toMatchObject({ status: 'not_suggested', reason: 'This question offers no readings to choose from. Enter the parts yourself.' });
+    expect(m.asked).toBe(0);
+  });
+
+  it('for a match question with no listing to choose', async () => {
+    const q: ReviewItem = {
+      id: 'match:RYOBI:A', kind: 'match', subject: 'RYOBI:A', brand: 'RYOBI', model: 'A', title: null,
+      reason: 'No listing', candidates: [], choices: [], openedAt: 1, answer: null, answeredAt: null,
+    };
+    const m = never();
+    const ev: AssistEvidence = { questionId: q.id, kind: 'match', brand: 'RYOBI', model: 'A', modelForms: ['A'], sources: [], notes: [], missing: [] };
+    expect(await suggestAnswer(q, ev, m)).toMatchObject({ status: 'not_suggested', reason: 'This question offers no listings to choose from. Confirm a sell price on the part if you have seen one.' });
     expect(m.asked).toBe(0);
   });
 

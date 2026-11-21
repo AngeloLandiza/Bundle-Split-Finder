@@ -5,12 +5,12 @@
 // before the first search, and never repeat a search that failed.
 
 import { type Candidate, grade, kitKey, pick } from '../match';
-import type { SearchResult } from '../serpapi/client';
+import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { parseAmazonProduct, parseBuyBox } from '../serpapi/parsers';
 import { wantedFor } from './classify';
 import { listingFrom } from './listings';
 import {
-  applyLookup, bundleParts, failingBefore, type KnownModels, knownModels, lookupOrder, type LookupStep, lookupWanted, markWaiting, matchFromListings,
+  applyIdentify, applyLookup, bundleParts, failingBefore, type KnownModels, knownModels, lookupOrder, type LookupStep, lookupWanted, markWaiting, matchFromListings, notePageDue,
   NOT_CONFIRMED, openMatchReview, pageEvidence, type Part, type PartContext, pickFromListings, savePrice, sendLookup, sharedMatch,
 } from './runner';
 import { writeTwins } from './twins';
@@ -127,7 +127,10 @@ export async function runPaid(
  * Rule 5 and 2c rule 5 as a scan plans them, once: parts a saved listing answers are matched first,
  * for nothing; then one lookup per remaining part, best first in the scan's own order (Ruling 72),
  * through the scan's own step (rule 6). Only what fits the per-scan limit is searched for; the rest
- * wait, as a scan leaves the lookups it defers. A stop before a search, or a failed search, ends
+ * wait, as a scan leaves the lookups it defers. When that search's titled rows are all accessories,
+ * one product page is read too, only if the limit still allows it beside the lookups left; otherwise
+ * the page is owed to the next scan. The quote stays the lookups it could count before the search
+ * returned. A stop before a search, or a failed search, ends
  * the action: that part and the ones after it wait, as a scan leaves its queue when it halts, and a
  * part whose search failed waits from the failure on (waitsFromNow).
  */
@@ -146,7 +149,8 @@ async function lookUp(
   // Every part to search for waits from the press on, keeping when it began to wait, as a scan marks
   // the lookups it defers: the ones past the limit, and any a stop or a failure leaves.
   for (const p of wanted) await markWaiting(ctx, { kind: 'lookup', brand: p.brand, model: p.model });
-  for (const part of searches) {
+  for (let i = 0; i < searches.length; i++) {
+    const part = searches[i]!;
     const stopped = stop();
     if (stopped !== null) throw new PaidProblem(stopped);
     const step: LookupStep = { kind: 'lookup', brand: part.brand, model: part.model };
@@ -157,7 +161,26 @@ async function lookUp(
       await waitsFromNow(ctx, part);
       throw err;
     }
-    await applyLookup(ctx, step, result.data, result.at);
+    const asin = await applyLookup(ctx, step, result.data, result.at);
+    if (!asin) continue;
+    // One more search, only beside the lookups this press still has to run. Otherwise the page is owed.
+    const rest = searches.length - i - 1;
+    if (stop() === null && budget.blockReason(rest + 1) === null) {
+      try {
+        const page = await ctx.client.search(
+          { engine: 'amazon_product', asin, amazon_domain: ctx.settings.amazonDomain },
+          { label: `${ctx.prefix}:identify:${part.model}` },
+        );
+        await applyIdentify(ctx, { kind: 'identify', brand: part.brand, model: part.model, asin }, page.data, page.at);
+      } catch (err) {
+        if (err instanceof BudgetExceededError || err instanceof RateLimitedError) {
+          await notePageDue(ctx, step, asin);
+          throw err;
+        }
+      }
+    } else {
+      await notePageDue(ctx, step, asin);
+    }
   }
   // Ruling 70: the forms onePerProduct skipped, never those past the limit, take their twin's result.
   for (const part of parts) if (need(part) === 'search' && !wanted.includes(part)) await matchFromListings(ctx, known.listings, part);

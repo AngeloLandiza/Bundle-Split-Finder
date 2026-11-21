@@ -127,9 +127,9 @@ test('Deals shows the ROI range under the Amazon New figures, and Detail lists e
     return { key, text: reply.data };
   }, BUNDLE);
   const [header, ...lines] = csv.text.trim().split('\n');
-  expect(header).toMatch(/,roi_lowest,roi_amazon_new,roi_highest,hd_price_total,ebay_ref_low,ebay_ref_high,ebay_units_sold$/);
+  expect(header).toMatch(/,roi_lowest,roi_amazon_new,roi_highest,hd_price_total,ebay_ref_low,ebay_ref_high,ebay_units_sold,confirmed_price,confirmed_link$/);
   const mine = lines.find((l) => l.includes('343992133'))!;
-  expect(mine).toMatch(/,-?[\d.]+,-?[\d.]+,-?[\d.]+,648,[^,]*,[^,]*,[^,]*$/);
+  expect(mine).toMatch(/,-?[\d.]+,-?[\d.]+,-?[\d.]+,648,[^,]*,[^,]*,[^,]*,,$/);
 });
 
 // RYOBI PCL1201K2-PCL515B (recorded bundle 324903619, split by the owner's answer): its saw PCL515B has a recorded Amazon listing ($57.99, list $65).

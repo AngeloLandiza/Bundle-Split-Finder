@@ -3,6 +3,7 @@ import type { BundleRow, PaidAction, SaleOption } from '@core/scan/types';
 import { profit, roi } from '../../lib/format';
 import type { WorkerApi } from '../../lib/pageClient';
 import { RANGE_MEANING, roiRangeText, waitingOf } from './dealsModel';
+import { ConfirmSellPrice, SCAN_PRICE_LATER, unnamedPart } from './ConfirmPrice';
 import { LookUp } from './DealsLookUp';
 
 const escape = (m: string): string => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -57,11 +58,29 @@ interface Props {
   run: (action: PaidAction, button: HTMLButtonElement | null) => Promise<string | null>;
 }
 
-function Way({ option, primary, kits, row, report, api, scanRunning, version, busy, run }: Props & { option: SaleOption; primary: boolean; kits: string[] }) {
+/** The first way that is not the one on screen, per leftover. The form lives there once, under that way's profit. */
+function pricedOn(options: SaleOption[]): Map<string, string> {
+  const primary = new Set((options[0]?.unnamed ?? []).map((item) => item.model));
+  const owner = new Map<string, string>();
+  for (const option of options) {
+    for (const item of option.unnamed ?? []) {
+      if (primary.has(item.model) || owner.has(item.model)) continue;
+      owner.set(item.model, option.id);
+    }
+  }
+  return owner;
+}
+
+function Way({ option, primary, kits, pricedOn: where, row, report, api, scanRunning, version, busy, run }: Props & { option: SaleOption; primary: boolean; kits: string[]; pricedOn: Map<string, string> }) {
   const e = option.estimate;
   const items = waitingOf(row.brand, option.parts);
   const labelId = useId();
   const range = roiRangeText(e, option.range);
+  const mine = (option.unnamed ?? []).filter((item) => where.get(item.model) === option.id);
+  const elsewhere = (option.unnamed ?? []).filter((item) => {
+    const owner = where.get(item.model);
+    return owner !== undefined && owner !== option.id;
+  });
   return (
     <li className="detail-way">
       <div className="detail-part-top">
@@ -90,6 +109,27 @@ function Way({ option, primary, kits, row, report, api, scanRunning, version, bu
       <p className="detail-way-line">
         <Leaves leftovers={option.leftovers} models={option.parts.map((p) => p.model)} />
       </p>
+      {scanRunning && mine.length > 1 ? <p className="detail-confirm-why">{SCAN_PRICE_LATER}</p> : null}
+      {mine.map((item) => (
+        <div key={item.model} className="detail-way-unnamed">
+          <div className="detail-part-model">
+            {item.name}
+            {item.qty > 1 ? ` ×${item.qty}` : ''}
+          </div>
+          <ConfirmSellPrice brand={row.brand} model={item.model} part={unnamedPart(item)} api={api} scanRunning={scanRunning} showFigure hideScanNote={scanRunning && mine.length > 1} />
+        </div>
+      ))}
+      {elsewhere.map((item) => {
+        const label = row.options.find((o) => o.id === where.get(item.model))?.label ?? '';
+        const line = item.price !== null && e
+          ? `${item.name} counts here: est. profit ${profit(e.profit)}. Entered on ${label}.`
+          : `${item.name} is entered on ${label}.`;
+        return (
+          <p key={item.model} className="detail-confirm-why">
+            {line}
+          </p>
+        );
+      })}
       {items.length > 0 ? (
         <LookUp
           row={row} report={report} api={api} scanRunning={scanRunning} version={version} busy={busy} items={items} describedBy={labelId} stacked
@@ -105,6 +145,7 @@ export function WaysToSell(props: Props) {
   const id = useId();
   // Every kit the options name: the whole option's label names them too, though it splits none.
   const kits = [...new Set(props.row.options.flatMap((o) => o.splitKits))];
+  const where = pricedOn(props.row.options);
   return (
     <section aria-labelledby={id} className="detail-ways">
       <h2 id={id} className="detail-label detail-ways-label">
@@ -112,7 +153,7 @@ export function WaysToSell(props: Props) {
       </h2>
       <ul className="detail-parts">
         {props.row.options.map((o, i) => (
-          <Way key={o.id} option={o} primary={i === 0} kits={kits} {...props} />
+          <Way key={o.id} option={o} primary={i === 0} kits={kits} pricedOn={where} {...props} />
         ))}
       </ul>
       <p className="detail-ways-note">Estimated profit and ROI for each way, from your fee settings.</p>

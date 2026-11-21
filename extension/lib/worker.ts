@@ -28,7 +28,9 @@ import { wantedFor } from '@core/scan/classify';
 import { addSamples, samplesOf, type UnitRates } from '@core/scan/pipeline';
 import { runScan } from '@core/scan/runner';
 import { knownModels } from '@core/scan/split';
-import { partKey, type BudgetView, type BundleRow, type PaidAction, type Quote, type ReadPages, type ReadPartPrices, type ReviewAnswer, type ScanJob, type ScanStore } from '@core/scan/types';
+import { CONFIRMED_BRAND_MAX, CONFIRMED_MODEL_MAX, parseConfirmedPrice } from '@core/scan/confirmed';
+import { kitPageTarget } from '@core/scan/kitPage';
+import { partKey, type BudgetView, type BundleRow, type PageOutcome, type PageReading, type PaidAction, type Quote, type ReadPages, type ReadPartPrices, type ReviewAnswer, type ScanJob, type ScanStore } from '@core/scan/types';
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
 import {
@@ -238,6 +240,32 @@ const BAD_SETTING = 'Choose on or off.';
 /** Calls in a row the provider fails (a refused key, a limit, no answer) before the queue stops and says why. */
 const ASK_ALL_MAX_FAILURES = 3;
 const ANSWER_LATER = 'A scan is running. Answer again when it has finished.';
+const SAVE_PRICE_LATER = 'A scan is running. Save the price when it has finished.';
+/** Read kit page. One Home Depot page, in the browser, never a search. */
+const READ_LATER = 'A scan is running. Read the page when it has finished.';
+const READ_WHILE_PAID = 'A Look up or Verify is running. Read the page when it has finished.';
+const READ_WHILE_ASK = 'Asking AI is running. Read the page when it has finished.';
+const READ_BUSY = 'A kit page is already being read.';
+const READ_NO_BROWSER = 'This browser cannot read a Home Depot page.';
+const READ_NONE = 'That kit has no Home Depot page to read.';
+const READ_STORED = "That kit's page is already stored.";
+const READ_NO_ID = 'The next scan has to find this kit on Home Depot before its page can be read.';
+const READ_FAILED = 'Reading the Home Depot page failed. Try again.';
+const READ_UNREADABLE = "Home Depot's page could not be read. Try again.";
+const DELETE_LATER_SCAN = 'A scan is running. Delete the data when it has finished.';
+const DELETE_LATER_PAID = 'A Look up or Verify is running. Delete the data when it has finished.';
+const DELETE_LATER_ASK = 'Asking AI is running. Delete the data when it has finished.';
+const DELETE_LATER_READ = 'A kit page is being read. Delete the data when it has finished.';
+const SCAN_AFTER_KIT = 'A kit page is being read. Scan when it has finished.';
+const PAID_AFTER_KIT = 'A kit page is being read. Try again when it has finished.';
+const ASK_AFTER_KIT = 'A kit page is being read. Ask again when it has finished.';
+
+/** Home Depot answered with something other than the page. The kit stays unread. */
+function refusedPage(status: number | undefined): string {
+  if (status === 0) return 'Home Depot refused the page (no answer). Try again later.';
+  if (typeof status === 'number' && Number.isInteger(status) && status > 0) return `Home Depot refused the page (HTTP ${status}). Try again later.`;
+  return 'Home Depot refused the page. Try again later.';
+}
 /** An answer or a Change asked for while a Look up or Verify runs, which reads and writes matches and the answer's parts. */
 const ANSWER_AFTER_SEARCH = 'A search is running. Answer again when it has finished.';
 /** A Verify or Look up asked for while a scan runs. */
@@ -395,6 +423,8 @@ export function createWorker(env: WorkerEnv): Worker {
   let starting = false;
   /** The Verify or Look up this worker is running, from its claim until it has ended; cleared before the broadcast that follows. */
   let paid: Promise<Reply<null>> | null = null;
+  /** One kit page being read for the owner. A scan, a Look up and Ask AI wait: they share the Home Depot tab or the store. */
+  let reading: Promise<Reply<null>> | null = null;
   /** The key the running paid action holds. */
   let paidKey: string | null = null;
   /** Set by forgetKey, and by checkKey saving a different key, while a paid action runs. runPaid asks it before every search. */
@@ -713,9 +743,9 @@ export function createWorker(env: WorkerEnv): Worker {
     let started: Promise<void> | null = null;
     try {
       started = await serial(async () => {
-        // Rule 3: a tick while a scan is active does nothing; nor while a Verify or Look up runs.
+        // Rule 3: a tick while a scan is active does nothing; nor while a Verify, a Look up, or a kit page read runs.
         // Step 12: nor while Ask AI about all runs: the scan waits for its turn, and the next tick tries again.
-        if (scan !== null || paid !== null || askAll !== null || singleAsks > 0) return null;
+        if (scan !== null || paid !== null || askAll !== null || singleAsks > 0 || reading !== null) return null;
         const resume = await saved();
         if (resume !== null) return (await start(resume.trigger, resume)).ok ? scan : null;
         const s = await settings();
@@ -738,6 +768,7 @@ export function createWorker(env: WorkerEnv): Worker {
     serial(async () => {
       if (scan !== null) return refuse(RUNNING);
       if (paid !== null) return refuse(PAID_RUNNING);
+      if (reading !== null) return refuse(SCAN_AFTER_KIT);
       if (askAll !== null || singleAsks > 0) return refuse(SCAN_AFTER_ASK_ALL);
       const resume = await saved();
       return start(resume?.trigger ?? 'manual', resume);
@@ -1041,10 +1072,12 @@ export function createWorker(env: WorkerEnv): Worker {
    * core/src/assist/, the code's check of every quote). The result is kept as a suggestion, never as the question's answer (rule 4):
    * only the owner's Approve, which is answerReview, saves one. Spends no search. It is not taken through the start gate: a call may
    * take 30 seconds and must not hold a scan back; the question is read again when the model has answered, and a suggestion for a
-   * question that changed meanwhile is dropped. Refused while a scan runs, and while Ask AI about all does.
+   * question that changed meanwhile is dropped. Refused while a scan runs, while a kit page is being read
+   * (both use the Home Depot tab), and while Ask AI about all does.
    */
   async function askAi(questionId: unknown): Promise<Reply<StoredSuggestion>> {
     if (scan !== null || starting) return refuse(ASK_SCAN);
+    if (reading !== null) return refuse(ASK_AFTER_KIT);
     if (askAll !== null) return refuse(ASK_ALL_RUNNING);
     // Counted before the first await, so a scan asked for meanwhile is refused: research reads in the doorway tab.
     singleAsks += 1;
@@ -1199,6 +1232,7 @@ export function createWorker(env: WorkerEnv): Worker {
   const askAiAll = (): Promise<Reply<{ queued: number }>> =>
     serial(async () => {
       if (scan !== null || starting) return refuse(ASK_SCAN);
+      if (reading !== null) return refuse(ASK_AFTER_KIT);
       if (askAll !== null) return refuse(ASK_ALL_AGAIN);
       if ((await prefs.getAnthropicKey()) === null) return refuse(NO_ANTHROPIC_KEY);
       const open = (await store.listReview()).filter((q) => q.answer === null).sort((a, b) => a.openedAt - b.openedAt);
@@ -1274,6 +1308,98 @@ export function createWorker(env: WorkerEnv): Worker {
       return ok(null);
     });
 
+  const setConfirmedPrice = (brand: unknown, model: unknown, price: unknown, link: unknown): Promise<Reply<null>> =>
+    serial(async () => {
+      if (scan !== null) return refuse(SAVE_PRICE_LATER);
+      const parsed = parseConfirmedPrice({ brand, model, price, link }, env.now());
+      if (typeof parsed === 'string') return refuse(parsed);
+      await store.putConfirmedPrice(parsed);
+      await broadcast();
+      return ok(null);
+    });
+
+  const clearConfirmedPrice = (brand: unknown, model: unknown): Promise<Reply<null>> =>
+    serial(async () => {
+      if (scan !== null) return refuse(SAVE_PRICE_LATER);
+      if (typeof brand !== 'string' || typeof model !== 'string') return refuse('Name the part.');
+      const brandUp = brand.trim().toUpperCase();
+      const modelUp = model.trim().toUpperCase();
+      if (brandUp === '' || brandUp.length > CONFIRMED_BRAND_MAX || modelUp === '' || modelUp.length > CONFIRMED_MODEL_MAX) return refuse('Name the part.');
+      await store.deleteConfirmedPrice(partKey(brandUp, modelUp));
+      await broadcast();
+      return ok(null);
+    });
+
+  /**
+   * Reads one kit's Home Depot page in the browser and saves it where a scan would (kitPageTarget).
+   * Spends no search. Refused while a scan, a Look up, a Verify or Ask AI runs: they share the
+   * Home Depot tab or rewrite the same records. A page that comes back unreadable or refused is
+   * not stored, so the kit stays "not read".
+   */
+  function readKitPage(brand: unknown, model: unknown): Promise<Reply<null>> {
+    const claim = serial(async (): Promise<Reply<null> | { running: Promise<Reply<null>> }> => {
+      if (scan !== null || starting) return refuse(READ_LATER);
+      if (paid !== null) return refuse(READ_WHILE_PAID);
+      if (askAll !== null || singleAsks > 0) return refuse(READ_WHILE_ASK);
+      if (reading !== null) return refuse(READ_BUSY);
+      if (!env.readPages) return refuse(READ_NO_BROWSER);
+      if (typeof brand !== 'string' || typeof model !== 'string') return refuse('Name the part.');
+      const brandUp = brand.trim().toUpperCase();
+      const modelUp = model.trim().toUpperCase();
+      if (brandUp === '' || brandUp.length > 40) return refuse('Name the brand.');
+      if (modelUp === '' || modelUp.length > 40) return refuse('Name the part.');
+      const target = kitPageTarget(await store.listBundles(), await store.listCatalog(), brandUp, modelUp);
+      if (target.kind === 'stored') return refuse(READ_STORED);
+      if (target.kind === 'no-id') return refuse(READ_NO_ID);
+      if (target.kind !== 'page') return refuse(READ_NONE);
+      // Cleared when this read ends, and only if it is still the one in flight.
+      const running = finishKitRead(target).finally(() => {
+        if (reading === running) reading = null;
+      });
+      reading = running;
+      return { running };
+    });
+    return claim.then((result) => ('running' in result ? result.running : result));
+  }
+
+  /** The read claimed above. The caller clears `reading` when this settles. */
+  async function finishKitRead(target: { where: 'bundle' | 'catalog'; key: string; itemId: string }): Promise<Reply<null>> {
+    let outcomes: PageOutcome[];
+    try {
+      outcomes = await env.readPages!([target.itemId]);
+    } catch {
+      return refuse(READ_FAILED);
+    }
+    const outcome = Array.isArray(outcomes) ? outcomes.find((o) => o && o.itemId === target.itemId) : undefined;
+    if (!outcome || outcome.kind !== 'read') {
+      const status = outcome?.kind === 'refused' ? outcome.status : undefined;
+      return refuse(outcome?.kind === 'refused' ? refusedPage(status) : READ_UNREADABLE);
+    }
+    const bullets = outcome.content.bullets;
+    if (!Array.isArray(bullets) || bullets.some((b) => typeof b !== 'string')) return refuse(READ_UNREADABLE);
+    const description = outcome.content.description;
+    const page: PageReading = { bullets: [...bullets], description: typeof description === 'string' ? description : null, readAt: env.now() };
+    if (target.where === 'catalog') {
+      const entry = await store.getCatalogEntry(target.key);
+      if (!entry || entry.itemId !== target.itemId) return refuse(READ_NONE);
+      if (entry.page) {
+        await broadcast();
+        return refuse(READ_STORED);
+      }
+      await store.putCatalogEntry({ ...entry, page });
+    } else {
+      const bundle = await store.getBundle(target.key);
+      if (!bundle || bundle.itemId !== target.itemId) return refuse(READ_NONE);
+      if (bundle.page) {
+        await broadcast();
+        return refuse(READ_STORED);
+      }
+      await store.putBundle({ ...bundle, page });
+    }
+    await broadcast();
+    return ok(null);
+  }
+
   // ---------------------------------------------------------------- Verify and Look up (paid.ts)
 
   /**
@@ -1316,7 +1442,7 @@ export function createWorker(env: WorkerEnv): Worker {
     const unreadable = requestProblem(action);
     if (unreadable !== null) return refuse(unreadable);
     const key = await prefs.getKey();
-    let refusal: string | null = scan !== null || starting ? SCAN_RUNNING : paid !== null ? PAID_RUNNING : null;
+    let refusal: string | null = scan !== null || starting ? SCAN_RUNNING : paid !== null ? PAID_RUNNING : reading !== null ? PAID_AFTER_KIT : null;
     let budget: BudgetView = CLOSED;
     if (refusal === null && key === null) refusal = NO_KEY;
     else if (refusal === null && key !== null) {
@@ -1341,6 +1467,7 @@ export function createWorker(env: WorkerEnv): Worker {
       if (unreadable !== null) return refuse(unreadable);
       if (scan !== null) return refuse(SCAN_RUNNING);
       if (paid !== null) return refuse(PAID_RUNNING);
+      if (reading !== null) return refuse(PAID_AFTER_KIT);
       const key = await prefs.getKey();
       if (key === null) return refuse(NO_KEY);
       // Claimed before the gate opens again. Wrapped, so the gate does not wait for the action.
@@ -1529,6 +1656,24 @@ export function createWorker(env: WorkerEnv): Worker {
     return ok(true);
   }
 
+  /**
+   * Settings › Delete all data. Deals, matches, answers, confirmed prices, suggestions and saved
+   * searches go. The key, the settings and the search ledger stay, so the searches already counted
+   * still count. A visit waiting to be stored is dropped, or the next tick would write it back.
+   */
+  async function deleteAllData(): Promise<Reply<null>> {
+    if (scan !== null || starting) return refuse(DELETE_LATER_SCAN);
+    if (paid !== null) return refuse(DELETE_LATER_PAID);
+    if (reading !== null) return refuse(DELETE_LATER_READ);
+    if (askAll !== null || singleAsks > 0) return refuse(DELETE_LATER_ASK);
+    await store.clearAll();
+    await env.cache.clear();
+    await suggestions.clear();
+    for (const d of await pages.deferredAll()) await pages.setDeferred(d.tabId, d.page.itemId, null);
+    await broadcast();
+    return ok(null);
+  }
+
   async function handle(request: Request, sender: RequestSender): Promise<Reply> {
     switch (request.type) {
       case 'getState':
@@ -1565,10 +1710,18 @@ export function createWorker(env: WorkerEnv): Worker {
       case 'clearSavedSearches':
         await env.cache.clear();
         return ok(null);
+      case 'deleteAllData':
+        return deleteAllData();
       case 'getReport':
         return getReport();
       case 'setPackaging':
         return setPackaging(request.model, request.packaging);
+      case 'setConfirmedPrice':
+        return setConfirmedPrice(request.brand, request.model, request.price, request.link);
+      case 'clearConfirmedPrice':
+        return clearConfirmedPrice(request.brand, request.model);
+      case 'readKitPage':
+        return readKitPage(request.brand, request.model);
       case 'answerReview':
         return answerReview(request.id, request.answer, request.aiSuggestion === true);
       case 'askAi':

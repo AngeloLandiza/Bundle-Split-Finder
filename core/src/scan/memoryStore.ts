@@ -2,7 +2,7 @@
 // out, so neither the caller's object nor a returned one aliases what is stored.
 
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from './types';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
@@ -20,6 +20,7 @@ export class MemoryScanStore implements ScanStore {
   private readonly cursors = new Map<string, CatalogCursor>();
   private readonly reviews = new Map<string, ReviewItem>();
   private readonly partPrices = new Map<string, PartPriceRecord>();
+  private readonly confirmedPrices = new Map<string, ConfirmedPrice>();
   private readonly ebayValues = new Map<string, EbayValueRecord>();
   private readonly judgements = new Map<string, JudgementRecord>();
   private readonly ebayAnswers = new Map<string, EbayOwnerAnswer>();
@@ -108,6 +109,19 @@ export class MemoryScanStore implements ScanStore {
     return this.list(this.partPrices, byKey((r) => r.key));
   }
 
+  async getConfirmedPrice(key: string) {
+    return this.get(this.confirmedPrices, key);
+  }
+  async putConfirmedPrice(record: ConfirmedPrice) {
+    this.confirmedPrices.set(record.key, structuredClone(record));
+  }
+  async deleteConfirmedPrice(key: string) {
+    this.confirmedPrices.delete(key);
+  }
+  async listConfirmedPrices() {
+    return this.list(this.confirmedPrices, byKey((r) => r.key));
+  }
+
   async getEbayValue(key: string) {
     return this.get(this.ebayValues, key);
   }
@@ -140,5 +154,21 @@ export class MemoryScanStore implements ScanStore {
   }
   async listScans() {
     return this.list(this.scans, (a, b) => b.startedAt - a.startedAt);
+  }
+
+  async clearAll() {
+    this.bundles.clear();
+    this.catalog.clear();
+    this.matches.clear();
+    this.prices.clear();
+    this.listings.clear();
+    this.cursors.clear();
+    this.reviews.clear();
+    this.partPrices.clear();
+    this.confirmedPrices.clear();
+    this.ebayValues.clear();
+    this.judgements.clear();
+    this.ebayAnswers.clear();
+    this.scans.clear();
   }
 }

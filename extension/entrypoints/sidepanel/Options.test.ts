@@ -384,6 +384,8 @@ describe('Detail: a kit whose page has not been read', () => {
     const row = first.bundles.find((b) => b.key === P553_KEY)!;
     expect(row.kitsNotRead).toEqual(['PCL1600K2']);
     expect(screen.getByText(/contents are not known yet/)).toHaveTextContent("PCL1600K2's contents are not known yet: its Home Depot page has not been read.");
+    expect(row.kitReads).toEqual([{ model: 'PCL1600K2', itemId: '317987591' }]);
+    expect(screen.getByRole('button', { name: 'Read PCL1600K2 page' })).toBeEnabled();
     expect(screen.queryByRole('heading', { name: 'Ways to sell' })).toBeNull();
     expect(screen.queryByText('Shown above')).toBeNull();
   });

@@ -35,9 +35,23 @@ export type Request =
   | { type: 'exportAudit' }
   /** Empties the saved SerpApi responses. Nothing else is deleted. */
   | { type: 'clearSavedSearches' }
+  /**
+   * Deletes every deal, match, answer, confirmed price and saved search. Keys, settings and the
+   * search ledger stay. Refused while a scan, a Look up, a Verify, Ask AI or a kit-page read runs.
+   */
+  | { type: 'deleteAllData' }
   /** Reply data: PanelReport. */
   | { type: 'getReport' }
   | { type: 'setPackaging'; model: string; packaging: Packaging }
+  /** A New price the owner has seen, with a link to the listing. The worker stamps the time. Reply data: null. */
+  | { type: 'setConfirmedPrice'; brand: string; model: string; price: number; link: string }
+  /** Drops that price. Reply data: null. */
+  | { type: 'clearConfirmedPrice'; brand: string; model: string }
+  /**
+   * Reads one unread kit's Home Depot page in the browser and saves it where a scan would.
+   * Spends no search. Reply data: null. A refusal is one sentence.
+   */
+  | { type: 'readKitPage'; brand: string; model: string }
   /**
    * `aiSuggestion: true` says an Ask AI suggestion for this question was on screen when the owner answered, so the
    * worker records whether the answer is the one suggested. Accept all never sends it, and no answer ever comes from a suggestion.

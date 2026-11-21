@@ -150,7 +150,7 @@ test('a scan gives a part an eBay reference line and an eBay question; Yes chang
     expect.objectContaining({ itemId: 'v1|920101779170|0', model: 'DCF921B', verdict: 'match', labelledBy: 'owner', judged: 'unsure', url: 'https://www.ebay.com/itm/920101779170' }),
   ]);
   const csv = (await send(options, { type: 'exportDeals' })).data as string;
-  expect(csv.split('\n')[0]).toMatch(/,ebay_ref_low,ebay_ref_high,ebay_units_sold$/);
+  expect(csv.split('\n')[0]).toMatch(/,ebay_ref_low,ebay_ref_high,ebay_units_sold,confirmed_price,confirmed_link$/);
   const row = csv.split('\n').find((l) => l.includes('DCF921B'))!;
   expect(row).toContain('349');
   for (const text of [JSON.stringify(audit), csv]) {

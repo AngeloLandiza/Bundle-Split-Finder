@@ -146,7 +146,7 @@ test('ways to sell at the default 5 searches per scan: the split looks up what f
   // every Look up with one.
   server.delaySearches(2_000);
   await options.evaluate(() => chrome.runtime.sendMessage({ type: 'scanNow' }));
-  const refusal = split.getByText('A scan is running.');
+  const refusal = split.getByText('A scan is running.', { exact: true });
   await expect(refusal).toBeVisible();
   const button = split.getByRole('button', { name: /^Look up/ });
   for (const width of WIDTHS) {

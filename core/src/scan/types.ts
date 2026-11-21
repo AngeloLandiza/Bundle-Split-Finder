@@ -388,6 +388,12 @@ export interface MatchRecord {
    */
   source?: 'page';
   /**
+   * The ASIN of a same-brand search row whose title omitted the model, still to be read (one product
+   * page) because every row that named the model was an accessory. Cleared once that page is read.
+   * Absent when none is owed.
+   */
+  pageDue?: string;
+  /**
    * Q1a fix round 2: listings a detail page showed are not this part (Verify sent them to review).
    * Matching from saved listings never chooses one of them for the part or its twin. Absent when none.
    */
@@ -516,7 +522,8 @@ export type ScanStep =
   | { kind: 'catalog'; brand: string; page: number }
   | { kind: 'listing'; q: string; page: number; filterTokens: string | null; bundlesOnly: boolean }
   | { kind: 'lookup'; brand: string; model: string }
-  | { kind: 'refresh'; brand: string; model: string; asin: string };
+  | { kind: 'refresh'; brand: string; model: string; asin: string }
+  | { kind: 'identify'; brand: string; model: string; asin: string };
 
 /** A budget limit, SerpApi's own 429, a failed request, or the user pressing Stop. */
 export type StopReason = BlockReason | 'rate_limited' | 'error' | 'user';
@@ -662,6 +669,12 @@ export interface ScanStore {
   putPartPrice(record: PartPriceRecord): Promise<void>;
   listPartPrices(): Promise<PartPriceRecord[]>;
 
+  /** A New sell price the owner confirmed, with a link to the listing. By partKey. Never read by the splitter. */
+  getConfirmedPrice(key: string): Promise<ConfirmedPrice | undefined>;
+  putConfirmedPrice(record: ConfirmedPrice): Promise<void>;
+  deleteConfirmedPrice(key: string): Promise<void>;
+  listConfirmedPrices(): Promise<ConfirmedPrice[]>;
+
   /** Step 10: eBay reference values, by partKey. Never read by the splitter, and never counted in an estimate. */
   getEbayValue(key: string): Promise<EbayValueRecord | undefined>;
   putEbayValue(record: EbayValueRecord): Promise<void>;
@@ -678,6 +691,9 @@ export interface ScanStore {
   getScan(id: string): Promise<ScanJob | undefined>;
   putScan(job: ScanJob): Promise<void>;
   listScans(): Promise<ScanJob[]>;
+
+  /** Drops every record. The next write starts from empty. */
+  clearAll(): Promise<void>;
 }
 
 // ---------------------------------------------------------------- the report
@@ -715,15 +731,30 @@ export interface PartRow {
 }
 
 /**
- * Step 9: where a part's price comes from. Only amazon_new and amazon_buybox count in an estimate today.
+ * Step 9: where a part's price comes from. amazon_new, a current amazon_buybox, and a confirmed price count.
  * amazon_new     the matched New listing's featured price, while the listing is active (the estimate's price)
  * amazon_buybox  the matched listing's "Buy New" box, or its only offer (singleOffer), from its page (Verify);
  *                counted only while no older than the featured price, else shown for reference
+ * confirmed      a New price the owner entered, with a link to the listing. Counted while no Amazon New price is;
+ *                once one is, shown for reference
  * amazon_list    the matched listing's list price (struck through): reference only
  * homedepot      Home Depot's own price for the part sold alone: reference only
  * ebay_sold_new  step 10: what New units of the part sell for on eBay (listings a model checked, with units sold): reference only
  */
-export type PriceKind = 'amazon_new' | 'amazon_buybox' | 'amazon_list' | 'homedepot' | 'ebay_sold_new';
+export type PriceKind = 'amazon_new' | 'amazon_buybox' | 'confirmed' | 'amazon_list' | 'homedepot' | 'ebay_sold_new';
+
+/** A New sell price the owner confirmed for one part, and the listing that shows it. */
+export interface ConfirmedPrice {
+  /** partKey(brand, model). */
+  key: string;
+  brand: string;
+  model: string;
+  /** Dollars, above zero, to the cent. */
+  price: number;
+  /** http or https link to the listing. The proof. */
+  link: string;
+  confirmedAt: number;
+}
 
 /** Step 9: one labelled price for a part. */
 export interface PriceOption {
@@ -827,8 +858,29 @@ export interface BundleRow {
   options: SaleOption[];
   /** Parts the stored catalog marks as kits whose own Home Depot page is not stored, in part order. */
   kitsNotRead: string[];
+  /**
+   * Unread kits the owner can read now, in the same order: the Home Depot item id a scan would read
+   * for that kit. A kit in `kitsNotRead` with no entry here has no item id yet. Absent on a row
+   * built before this field.
+   */
+  kitReads?: { model: string; itemId: string }[];
   /** Step 9: the primary option's range; all null while the split is not resolved. */
   range: PriceRange;
+}
+
+/**
+ * A kit item the page names without a model number. The owner can confirm a price for it.
+ * Nothing invents a model, and the item is never looked up.
+ */
+export interface UnnamedItem {
+  /** '~' and the page's text. The stored price key is this, in upper case. */
+  model: string;
+  /** The page's text, without the '~'. */
+  name: string;
+  qty: number;
+  /** The owner's confirmed price, when one is stored. */
+  price: number | null;
+  link: string | null;
 }
 
 /** One way to sell a bundle: each kit inside it sold whole, or split into the items its page lists. */
@@ -849,6 +901,11 @@ export interface SaleOption {
    * number, in page order. Empty when it leaves nothing.
    */
   leftovers: string[];
+  /**
+   * Kit items with no model number, in page order, priced or not. A confirmed price counts in
+   * this option's estimate. Absent on an option built before this field.
+   */
+  unnamed?: UnnamedItem[];
   /** True when a kit is split: its items have no retail box of their own. */
   loose: boolean;
   /** Step 9: the estimate at each end of the parts' counting prices; `range.amazonNew` is `estimate`. */

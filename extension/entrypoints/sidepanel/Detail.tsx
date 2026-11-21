@@ -3,7 +3,7 @@ import { browser } from 'wxt/browser';
 import { amazonNet, type FeeSettings } from '@core/money';
 import { bundlesCsv } from '@core/scan/csv';
 import { reviewSignature } from '@core/scan/answers';
-import type { BundleRow, PaidAction, PartRow, PriceOption, ReviewAnswer } from '@core/scan/types';
+import type { BundleRow, PaidAction, PartRow, PriceOption, ReviewAnswer, ReviewItem, UnnamedItem } from '@core/scan/types';
 import { money, profit, roi, roiSigned, when } from '../../lib/format';
 import type { AppState, Packaging, PanelReport } from '../../lib/messages';
 import { amazonListingUrl, amazonSearchUrl } from '../../lib/links';
@@ -12,9 +12,12 @@ import { priceLabel, spread, waitingParts } from './dealsModel';
 import { LookUp } from './DealsLookUp';
 import { OpenOnHomeDepot } from './OpenOnHomeDepot';
 import { ProgressRow } from './ProgressRow';
-import { ReviewQuestion } from './ReviewQuestion';
+import { ConfirmSellPrice, confirmShowsChoices, SCAN_PRICE_LATER, unnamedPart } from './ConfirmPrice';
+import { ReviewQuestion, type AiControl } from './ReviewQuestion';
+import { useQuestionAi } from './useQuestionAi';
 import { Verify } from './DetailVerify';
-import { KitNotRead, WaysToSell } from './WaysToSell';
+import { UnreadKit } from './ReadKitPage';
+import { WaysToSell } from './WaysToSell';
 import { usePaidFocus } from './paidFocus';
 import { useCopyAsins } from './useCopyAsins';
 import './Detail.css';
@@ -128,8 +131,9 @@ const isWebLink = (link: string | null): link is string => link !== null && /^ht
  * Step 10: eBay's reference line: what New units of the part sell for there, from the listings a model checked, with up
  * to three of them to open (new tab, http or https only). There is no eBay line at all for a part with no checked
  * listing that has sold, never $0 (the report gives none). It is in the reference group: it is never counted.
+ * When the confirm form offers Count for those same listings, the links are omitted: the range stays, the price does not appear twice.
  */
-function EbayLine({ option }: { option: PriceOption }) {
+function EbayLine({ option, showLinks = true }: { option: PriceOption; showLinks?: boolean }) {
   const v = option.ebay;
   // Each link keeps its listing's price (linkPrices, in step with links); a value stored before that has none, and its links read "Listing N".
   const links = (v?.links ?? [])
@@ -153,7 +157,7 @@ function EbayLine({ option }: { option: PriceOption }) {
           )}
         </span>
       </dt>
-      {links.length > 0 ? (
+      {showLinks && links.length > 0 ? (
         <dd className="detail-ebay-links">
           {links.map(({ href, price }, i) => (
             <a
@@ -179,7 +183,7 @@ function EbayLine({ option }: { option: PriceOption }) {
  * Buy Box). The Amazon New price is the featured one. A price with a link opens its page in a new tab; a reference
  * label shows it only on hover and focus.
  */
-function Prices({ model, prices, bulk }: { model: string; prices: PriceOption[]; bulk: boolean }) {
+function Prices({ model, prices, bulk, foldEbayLinks = false }: { model: string; prices: PriceOption[]; bulk: boolean; foldEbayLinks?: boolean }) {
   if (prices.length === 0) return null;
   const high = (a: PriceOption, b: PriceOption) => b.price - a.price;
   const counted = prices.filter((o) => !o.reference).sort(high);
@@ -189,7 +193,7 @@ function Prices({ model, prices, bulk }: { model: string; prices: PriceOption[];
     <dl>
       {list.map((o, i) => {
         const label = priceLabel(o, bulk);
-        if (o.kind === 'ebay_sold_new') return <EbayLine key={`${o.kind}:${i}`} option={o} />;
+        if (o.kind === 'ebay_sold_new') return <EbayLine key={`${o.kind}:${i}`} option={o} showLinks={!foldEbayLinks} />;
         return (
           <div key={`${o.kind}:${i}`} className="detail-price" data-kind={o.kind} data-featured={o.kind === 'amazon_new' ? 'true' : undefined} data-reference={o.reference ? 'true' : undefined}>
             <dt>
@@ -238,12 +242,39 @@ export interface PartProps {
   row: BundleRow;
   fees: FeeSettings;
   verify?: VerifyProps;
+  confirm?: { api: WorkerApi; scanRunning: boolean };
+  /** The open match question for this part. Ask AI drafts; approving a listing is the answer. */
+  match?: { item: ReviewItem; scanRunning: boolean; onSave: (answer: ReviewAnswer, aiShown?: boolean) => Promise<string | null>; ai?: AiControl };
+}
+
+/** The big price is a price the estimate counts. An inactive listing's last price is not that. */
+function countsInEstimate(part: PartRow): boolean {
+  return (part.availability === 'active' && part.price !== null) || part.prices.some((o) => o.kind === 'confirmed' && !o.reference);
+}
+
+/**
+ * An inactive listing keeps its last price on the part, and that price is not in the labelled list.
+ * Show it under Reference, labelled Last Amazon price, so the big figure is not read as the sell price.
+ */
+function pricesFor(part: PartRow): PriceOption[] {
+  const confirmed = part.prices.some((o) => o.kind === 'confirmed' && !o.reference);
+  if (part.availability !== 'inactive' || part.price === null || part.asin === null || confirmed || part.prices.some((o) => o.kind === 'amazon_new')) return part.prices;
+  return [
+    ...part.prices,
+    {
+      kind: 'amazon_new', price: part.price, condition: 'new', seller: null, shipsFrom: null, offers: null, asin: part.asin,
+      link: amazonListingUrl(part.asin), seenAt: part.priceSeenAt ?? 0, reference: true,
+    },
+  ];
 }
 
 /** One part's block: model, name, price, net, ASIN link and grade. Detail's and This page's. */
-export function Part({ part, row, fees, verify, now }: PartProps) {
+export function Part({ part, row, fees, verify, now, confirm, match }: PartProps) {
   const label = labelOf(part);
   const asin = part.asin;
+  const counted = countsInEstimate(part);
+  // The question is on this part. "Needs your answer in Review" would send him to another tab.
+  const reviewElsewhere = label.text === 'Needs your answer in Review' && match !== undefined;
   return (
     <li className="detail-part">
       <div className="detail-part-top">
@@ -258,7 +289,7 @@ export function Part({ part, row, fees, verify, now }: PartProps) {
             </div>
           ) : null}
         </div>
-        {part.price !== null ? (
+        {counted && part.price !== null ? (
           <div className="detail-part-money">
             <div className="detail-part-price">{money(part.price)}</div>
             <div className="detail-part-net">nets {money(amazonNet(part.price, fees))}</div>
@@ -281,10 +312,12 @@ export function Part({ part, row, fees, verify, now }: PartProps) {
               Search Amazon for <span className="figure">{part.model}</span>
             </a>
           )}
-          <span className="detail-grade" data-tone={label.tone}>
-            {label.tone === 'verified' ? <Check /> : null}
-            {label.text}
-          </span>
+          {reviewElsewhere ? null : (
+            <span className="detail-grade" data-tone={label.tone}>
+              {label.tone === 'verified' ? <Check /> : null}
+              {label.text}
+            </span>
+          )}
         </div>
         {label.text === 'Title match' && asin && verify ? (
           <Verify
@@ -300,8 +333,80 @@ export function Part({ part, row, fees, verify, now }: PartProps) {
           />
         ) : null}
       </div>
-      <Prices model={part.model} prices={part.prices} bulk={part.packaging === 'bulk'} />
+      <Prices
+        model={part.model}
+        prices={pricesFor(part)}
+        bulk={part.packaging === 'bulk'}
+        foldEbayLinks={Boolean(confirm) && !match && !row.kitsNotRead.includes(part.model) && confirmShowsChoices(part)}
+      />
+      {match ? (
+        <ReviewQuestion key={`${match.item.id}|${reviewSignature(match.item)}`} item={match.item} scanRunning={match.scanRunning} onSave={match.onSave} compact ai={match.ai} />
+      ) : null}
+      {confirm && !match && !row.kitsNotRead.includes(part.model) ? <ConfirmSellPrice brand={row.brand} model={part.model} part={part} api={confirm.api} scanRunning={confirm.scanRunning} /> : null}
     </li>
+  );
+}
+
+/** Every leftover with no model number, primary first. One price is shared, so a name is shown once. */
+export function unnamedItems(row: BundleRow): UnnamedItem[] {
+  const seen = new Set<string>();
+  const out: UnnamedItem[] = [];
+  for (const option of row.options) {
+    for (const item of option.unnamed ?? []) {
+      if (seen.has(item.model)) continue;
+      seen.add(item.model);
+      out.push(item);
+    }
+  }
+  return out;
+}
+
+/**
+ * A leftover that is not in the estimate on screen. Before a price, name the way. Once a price is stored and that
+ * way has an estimate, name the profit, so a save is visible where This page has no ways list.
+ */
+function unnamedCountNote(row: BundleRow, item: UnnamedItem): string | null {
+  if ((row.options[0]?.unnamed ?? []).some((u) => u.model === item.model)) return null;
+  const ways = row.options.filter((o) => (o.unnamed ?? []).some((u) => u.model === item.model));
+  if (ways.length === 0) return null;
+  return ways
+    .map((o) => (item.price !== null && o.estimate ? `${o.label}: est. profit ${profit(o.estimate.profit)}.` : `This price counts in ${o.label}, not in the estimate above.`))
+    .join(' ');
+}
+
+/**
+ * Chargers and bags the page names without a model number.
+ * `primary` is Detail: a leftover that is not in the estimate on screen is priced on that way, beside its profit.
+ * `all` is This page, which has no ways list, so every leftover is here and one that is not in the estimate says which way it changes.
+ */
+export function UnnamedParts({ row, api, scanRunning, scope = 'all' }: { row: BundleRow; api: WorkerApi; scanRunning: boolean; scope?: 'primary' | 'all' }) {
+  const onPrimary = new Set((row.options[0]?.unnamed ?? []).map((item) => item.model));
+  const items = unnamedItems(row).filter((item) => scope === 'all' || onPrimary.has(item.model));
+  if (items.length === 0) return null;
+  return (
+    <>
+      <h2 className="detail-label">NO MODEL NUMBER · {items.length}</h2>
+      {scanRunning && items.length > 1 ? <p className="detail-confirm-why">{SCAN_PRICE_LATER}</p> : null}
+      <ul className="detail-parts">
+        {items.map((item) => {
+          const note = scope === 'all' ? unnamedCountNote(row, item) : null;
+          return (
+            <li key={item.model} className="detail-part">
+              <div className="detail-part-top">
+                <div className="detail-part-name">
+                  <div className="detail-part-model">
+                    {item.name}
+                    {item.qty > 1 ? ` ×${item.qty}` : ''}
+                  </div>
+                </div>
+              </div>
+              {note ? <p className="detail-confirm-why">{note}</p> : null}
+              <ConfirmSellPrice brand={row.brand} model={item.model} part={unnamedPart(item)} api={api} scanRunning={scanRunning} showFigure hideScanNote={scanRunning && items.length > 1} />
+            </li>
+          );
+        })}
+      </ul>
+    </>
   );
 }
 
@@ -373,6 +478,7 @@ export const BUSY = 'Another search is still running.';
 const fileName = (model: string): string => `split-finder-${model.replace(/[^A-Za-z0-9._-]+/g, '-')}.csv`;
 
 export function Detail({ report, state, bundleKey, onBack, backLabel = 'Deals', api, onPaidEnd }: DetailProps) {
+  const ai = useQuestionAi(api, report, state);
   const row = report?.bundles.find((b) => b.key === bundleKey) ?? null;
   // One paid request at a time on this screen; `version` makes every quote ask again afterwards.
   const [busy, setBusy] = useState(false);
@@ -456,23 +562,25 @@ export function Detail({ report, state, bundleKey, onBack, backLabel = 'Deals', 
   const e = row.estimate;
   // Core counts every uncovered part at $0 (inactive, in review, with no listing), so its price is not in the figure.
   const counted = new Set(row.uncovered);
-  const gross = row.parts.reduce((sum, p) => sum + (p.price !== null && !counted.has(p.model) ? p.price * p.qty : 0), 0);
+  const unnamedGross = (row.options[0]?.unnamed ?? []).reduce((sum, item) => sum + (item.price !== null ? item.price * item.qty : 0), 0);
+  const gross = unnamedGross + row.parts.reduce((sum, p) => sum + (p.price !== null && !counted.has(p.model) ? p.price * p.qty : 0), 0);
   const waiting = waitingParts(row).length;
   const partModels = new Set([...row.parts, ...row.options.flatMap((o) => o.parts)].map((p) => p.model));
   const question = report.review.find((r) => r.kind === 'split' && r.subject === row.key) ?? null;
 
-  const answerQuestion = async (a: ReviewAnswer): Promise<string | null> => {
-    if (!question) return null;
+  const answerReview = async (item: ReviewItem, a: ReviewAnswer, aiShown = false): Promise<string | null> => {
     try {
-      const reply = await api.send({ type: 'answerReview', id: question.id, answer: a });
+      const reply = await api.send({ type: 'answerReview', id: item.id, answer: a, ...(aiShown ? { aiSuggestion: true as const } : {}) });
       if (!reply.ok) return reply.error;
     } catch {
       return UNREACHABLE;
     }
-    // The reopened question is answered: nothing is pending any more.
-    setReopened(false);
-    // The Save button is gone now: focus goes to the title.
-    titleRef.current?.focus();
+    ai.clear(item.id);
+    // The reopened split question is answered: nothing is pending any more. A match stays on its part.
+    if (item.kind === 'split') {
+      setReopened(false);
+      titleRef.current?.focus();
+    }
     return null;
   };
 
@@ -577,16 +685,24 @@ export function Detail({ report, state, bundleKey, onBack, backLabel = 'Deals', 
           )}
           {reopened && !row.answer && !question ? <p className="detail-noestimate">{SETTLED}</p> : null}
           {row.kitsNotRead.map((m) => (
-            <p className="detail-estimate" key={m}>
-              <KitNotRead model={m} />
-            </p>
+            <UnreadKit
+              key={m}
+              brand={row.brand}
+              model={m}
+              itemId={row.kitReads?.find((k) => k.model === m)?.itemId ?? null}
+              known={row.kitReads !== undefined}
+              api={api}
+              scanRunning={state.scanRunning}
+              busy={busy}
+              asking={state.askAll != null}
+            />
           ))}
         </section>
 
         {row.options.length > 1 ? <WaysToSell row={row} report={report} api={api} scanRunning={state.scanRunning} version={version} busy={busy} run={run} /> : null}
 
         {!e && waiting === 0 && question ? (
-          <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} focusHeading={reopened} onSave={answerQuestion} compact />
+          <ReviewQuestion key={`${question.id}|${reviewSignature(question)}`} item={question} scanRunning={state.scanRunning} focusHeading={reopened} onSave={(a, shown) => answerReview(question, a, shown)} compact ai={ai.aiFor(question)} />
         ) : null}
 
         {row.parts.length > 0 ? (
@@ -594,13 +710,28 @@ export function Detail({ report, state, bundleKey, onBack, backLabel = 'Deals', 
             <h2 className="detail-label">PARTS · {row.parts.length}</h2>
             {row.answer && row.answer.kind !== 'none' ? answerLine : null}
             <ul className="detail-parts">
-              {row.parts.map((p) => (
-                <Part key={p.model} part={p} row={row} fees={fees} now={now} verify={{ report, api, scanRunning: state.scanRunning, version, busy, run }} />
-              ))}
+              {row.parts.map((p) => {
+                const item = p.status === 'review'
+                  ? report.review.find((r) => r.kind === 'match' && r.answer === null && r.brand.toUpperCase() === row.brand.toUpperCase() && r.model.toUpperCase() === p.model.toUpperCase()) ?? null
+                  : null;
+                return (
+                  <Part
+                    key={p.model}
+                    part={p}
+                    row={row}
+                    fees={fees}
+                    now={now}
+                    verify={{ report, api, scanRunning: state.scanRunning, version, busy, run }}
+                    confirm={{ api, scanRunning: state.scanRunning }}
+                    match={item ? { item, scanRunning: state.scanRunning, onSave: (a, shown) => answerReview(item, a, shown), ai: ai.aiFor(item) } : undefined}
+                  />
+                );
+              })}
             </ul>
             <PackagingQuestion key={row.key} row={row} api={api} answer={answer} onAnswered={(value) => setSaved({ model: row.model, value })} />
           </>
         ) : null}
+        <UnnamedParts row={row} api={api} scanRunning={state.scanRunning} scope="primary" />
       </main>
 
       <footer className="detail-footer">

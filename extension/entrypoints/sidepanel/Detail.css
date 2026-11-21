@@ -166,6 +166,18 @@
   font-variant-numeric: tabular-nums;
   font-size: 13px;
 }
+.detail-kit-unread {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.detail-kit-unread .detail-btn:disabled {
+  border-color: var(--line);
+  background: var(--sunken);
+  color: var(--ink-3);
+  cursor: default;
+}
 .detail-estimate,
 .detail-noestimate {
   margin: 0;
@@ -258,6 +270,24 @@
 }
 .detail-part:last-child {
   border-bottom: 0;
+}
+/* The question is built for the Review tab's edge-to-edge rows. Inside a part, line it up with the part. */
+.detail-part .review-question > :not(.review-choices) {
+  margin-left: 0;
+  margin-right: 0;
+}
+.detail-part .review-compact {
+  padding: 4px 0 0;
+  border-top: 1px solid var(--line);
+}
+.detail-part .review-title {
+  font-size: 15px;
+  line-height: 20px;
+  margin-bottom: 0;
+}
+.detail-part .review-choices {
+  margin-left: -16px;
+  margin-right: -16px;
 }
 .detail-part-top {
   display: grid;
@@ -534,6 +564,87 @@ a.detail-price-label {
   color: var(--ink);
 }
 
+.detail-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.detail-confirm-q {
+  font-weight: 600;
+}
+.detail-confirm-why {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.detail-confirm label {
+  font-size: 13px;
+}
+.detail-confirm input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+}
+.detail-confirm input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.detail-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.detail-confirm-choices {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.detail-confirm-choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.detail-confirm-manual {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.detail-confirm-manual legend {
+  padding: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.detail-confirm .detail-btn:disabled {
+  border-color: var(--line);
+  background: var(--sunken);
+  color: var(--ink-3);
+  cursor: default;
+}
+.detail-confirm a {
+  color: var(--link);
+}
+
 .detail-btn {
   height: 32px;
   padding: 0 12px;
@@ -650,6 +761,15 @@ a.detail-price-label {
   font-size: 13px;
   line-height: 18px;
   color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.detail-way-unnamed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.detail-way .detail-confirm-why {
   overflow-wrap: anywhere;
 }
 .detail-ways-note {

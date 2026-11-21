@@ -221,6 +221,7 @@ describe('ways to sell: edge cases', () => {
     const row = await rowOf(w);
     expect(row.options.map((o) => [o.id, o.label, models(o), o.loose])).toEqual([['whole', '', ['PCL1600K2', 'P553'], false]]);
     expect(row.kitsNotRead).toEqual(['PCL1600K2']);
+    expect(row.kitReads).toEqual([{ model: 'PCL1600K2', itemId: '317987591' }]);
     expect(row.parts).toBe(row.options[0]!.parts);
   });
 
@@ -236,6 +237,7 @@ describe('ways to sell: edge cases', () => {
       const row = await rowOf(w);
       expect(row.options.map((o) => [o.id, models(o)])).toEqual([['whole', ['PCL1600K2', 'P553']]]);
       expect(row.kitsNotRead).toEqual(['PCL1600K2']);
+      expect(row.kitReads).toEqual([{ model: 'PCL1600K2', itemId: '317987591' }]);
     }
   });
 

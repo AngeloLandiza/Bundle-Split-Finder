@@ -153,7 +153,7 @@ export const RANGE_MEANING = 'Estimated ROI from the lowest to the highest count
  * A price's label as the panel writes it. The panel groups the prices (counted, then "Reference · not counted"), so no
  * label says "reference". The Buy Box says no "New": the counted group is New only and the Buy Box is a New price from the
  * listing's page. `bulk`: the part's listing is New in bulk packaging (PartRow.packaging), said on that listing's prices.
- * "Amazon · New", "Amazon · New · bulk packaging", "Amazon · Buy Box · sold by X, ships from Amazon",
+ * "Amazon · New", "Amazon · New · bulk packaging", "Last Amazon price", "Amazon · Buy Box · sold by X, ships from Amazon",
  * "Amazon · only offer · sold by X", "Amazon · Buy Box (older) · sold by X", "Amazon list price",
  * "Home Depot · sold alone", "Home Depot · sold alone as PCL206B".
  */
@@ -161,7 +161,8 @@ export function priceLabel(o: PriceOption, bulk = false): string {
   const packaging = bulk ? ['bulk packaging'] : [];
   switch (o.kind) {
     case 'amazon_new':
-      return ['Amazon · New', ...packaging].join(' · ');
+      // The tag already says Listing inactive. This label is only what the number is.
+      return [...(o.reference ? ['Last Amazon price'] : ['Amazon · New']), ...packaging].join(' · ');
     case 'amazon_buybox': {
       if (o.singleOffer) return ['Amazon', 'only offer', ...packaging, ...(o.seller ? [`sold by ${o.seller}`] : [])].join(' · ');
       const who = [o.seller ? `sold by ${o.seller}` : null, o.shipsFrom ? `ships from ${o.shipsFrom}` : null].filter((x) => x !== null);
@@ -170,6 +171,8 @@ export function priceLabel(o: PriceOption, bulk = false): string {
     }
     case 'amazon_list':
       return 'Amazon list price';
+    case 'confirmed':
+      return 'Confirmed by you';
     case 'homedepot':
       return `Home Depot · sold alone${o.soldAs ? ` as ${o.soldAs}` : ''}`;
     case 'ebay_sold_new':

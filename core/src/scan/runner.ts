@@ -12,18 +12,19 @@
 
 import { type Catalog, catalogEntry, type Decomposition } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
-import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, isReviewCap, maySparePart, pick, type Picked, sameModel } from '../match';
+import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, isReviewCap, maySparePart, pick, type Picked, sameModel, toolPageToRead } from '../match';
 import { planScan } from '../scanPlan';
 import { estimatedJudgeCost } from '../settings';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
-import { amazonHasNextPage, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
+import { amazonHasNextPage, parseAmazonProduct, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit } from './split';
 import { closeRest, endStep, ensurePipeline, finishUnit, measure, moveUnits, newPipeline, type StepId, setJudge, skipStep, startStep } from './pipeline';
-import { rejectedOf, twinKeys } from './twins';
+import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
+import { HOME_DEPOT_ITEM_ID, pickUnread } from './kitPage';
 import { bundleKey, PART_PRICE_READS_MAX, partKey, priceActive, resolvedParts } from './types';
 import type {
   BudgetView, BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PageOutcome, PageReading, PartPriceRecord, PriceRecord, ReadPages, ReadPartPrices,
@@ -64,8 +65,12 @@ export interface ScanDeps {
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
 type Listing = Extract<ScanStep, { kind: 'listing' }>;
 export type LookupStep = Extract<ScanStep, { kind: 'lookup' }>;
+export type IdentifyStep = Extract<ScanStep, { kind: 'identify' }>;
 type Lookup = LookupStep;
 type Refresh = Extract<ScanStep, { kind: 'refresh' }>;
+type AmazonStep = Lookup | Refresh | IdentifyStep;
+
+const isAmazonStep = (s: ScanStep): s is AmazonStep => s.kind === 'lookup' || s.kind === 'refresh' || s.kind === 'identify';
 
 /**
  * What the lookup step, and matching a part from saved listings, need. A scan's run is one. The
@@ -349,7 +354,7 @@ async function runQueue(run: Run): Promise<void> {
   const { job } = run;
   // Step 11: the listing phase is the Home Depot deals pages (and the brands' Amazon pages), the parts phase the lookups.
   const stage: StepId = job.phase === 'listing' ? 'hdPages' : 'amazon';
-  const queued = (): number => job.queue.filter((s) => (stage === 'hdPages' ? s.kind === 'listing' || s.kind === 'catalog' : s.kind === 'lookup' || s.kind === 'refresh')).length;
+  const queued = (): number => job.queue.filter((s) => (stage === 'hdPages' ? s.kind === 'listing' || s.kind === 'catalog' : isAmazonStep(s))).length;
   const unitsBefore = job.pipeline?.find((s) => s.id === stage)?.unitsDone ?? 0;
   if (stage === 'amazon' && job.queue.length === 0 && (job.stopReason !== null || job.deferred.length > 0)) skipStep(job, 'amazon', whyNot(job.stopReason));
   // Nothing queued and nothing done before (a continued job keeps what it did): the step had nothing to do.
@@ -387,6 +392,14 @@ async function runQueue(run: Run): Promise<void> {
         continue;
       }
       // 3 rule 2: a lookup or refresh that failed is set aside, unless the one before it failed too.
+      // A product page that cannot be read leaves the accessory question as the lookup wrote it.
+      if (step.kind === 'identify' && stop.reason === 'error') {
+        await clearPageDue(run, step);
+        job.queue.shift();
+        moveUnits(job, stage, { remaining: queued() });
+        await run.store.putScan(job);
+        continue;
+      }
       if ((step.kind === 'lookup' || step.kind === 'refresh') && stop.reason === 'error' && !run.lastFailed) {
         await setAside(run, step, stop.message);
         continue;
@@ -397,7 +410,8 @@ async function runQueue(run: Run): Promise<void> {
     // 3 rule 2: a step answered, from the network or the cache, resets the count.
     run.lastFailed = false;
     // Rule 3: the store first, then the job.
-    await apply(run, step, result);
+    const follow = await apply(run, step, result);
+    if (step.kind === 'lookup' && follow) await schedulePageRead(run, step, follow);
     // Ruling 57: a part answered is no longer failing.
     if (step.kind === 'lookup' || step.kind === 'refresh') {
       const answered = partKey(step.brand, step.model);
@@ -492,7 +506,7 @@ async function setAside(run: Run, step: Lookup | Refresh, message: string): Prom
   const sentence = `${step.kind === 'lookup' ? 'The lookup' : 'The price check'} of ${step.model} failed: ${message}`;
   if (run.setAside === 0) job.stopMessage = job.stopMessage === null ? sentence : `${job.stopMessage} ${sentence}`;
   job.queue.shift();
-  moveUnits(job, 'amazon', { remaining: job.queue.filter((q) => q.kind === 'lookup' || q.kind === 'refresh').length });
+  moveUnits(job, 'amazon', { remaining: job.queue.filter(isAmazonStep).length });
   job.deferred.splice(run.setAside, 0, step);
   run.setAside += 1;
   run.lastFailed = true;
@@ -544,6 +558,11 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
       );
     case 'lookup':
       return sendLookup(run, step);
+    case 'identify':
+      return run.client.search(
+        { engine: 'amazon_product', asin: step.asin, amazon_domain: settings.amazonDomain },
+        { label: `${prefix}:identify:${step.model}` },
+      );
     case 'refresh':
       return run.client.search(amazonPart(run, step), { label: `${prefix}:refresh:${step.model}`, maxAgeMs: settings.freshnessMs });
     default:
@@ -567,17 +586,23 @@ const amazonPart = (ctx: PartContext, step: Lookup | Refresh) => ({
  * ago; a stored record is never replaced by an older response. Match records, review items,
  * cursors and the job use the clock: they record when the tool decided something.
  */
-async function apply(run: Run, step: ScanStep, result: SearchResult): Promise<void> {
+async function apply(run: Run, step: ScanStep, result: SearchResult): Promise<string | null> {
   const { data, at } = result;
   switch (step.kind) {
     case 'catalog':
-      return applyCatalog(run, step, data, at);
+      await applyCatalog(run, step, data, at);
+      return null;
     case 'listing':
-      return applyListing(run, step, data, at);
+      await applyListing(run, step, data, at);
+      return null;
     case 'lookup':
       return applyLookup(run, step, data, at);
+    case 'identify':
+      await applyIdentify(run, step, data, at);
+      return null;
     case 'refresh':
-      return applyRefresh(run, step, data, at);
+      await applyRefresh(run, step, data, at);
+      return null;
     default:
       return unknownStep(step);
   }
@@ -671,7 +696,7 @@ async function applyListing(run: Run, step: Listing, data: unknown, at: number):
 }
 
 /** Rule 6: what a lookup's response changes in the store. */
-export async function applyLookup(ctx: PartContext, step: LookupStep, data: unknown, at: number): Promise<void> {
+export async function applyLookup(ctx: PartContext, step: LookupStep, data: unknown, at: number): Promise<string | null> {
   const { store, job } = ctx;
   const now = ctx.now();
   const key = partKey(step.brand, step.model);
@@ -681,7 +706,7 @@ export async function applyLookup(ctx: PartContext, step: LookupStep, data: unkn
   // A saved queue can outlive the plan: the user may have decided this part since, or (fix round 3) a
   // Verify sent it to review from the listing's page, which a search pick must not undo.
   const existing = await store.getMatch(key);
-  if (existing?.decidedBy === 'user' || (await pageEvidence(store, existing)).page) return;
+  if (existing?.decidedBy === 'user' || (await pageEvidence(store, existing)).page) return null;
   const picked = pick(wantedFor(step.brand, step.model, ctx.catalog), candidates);
   const base = { key, brand: step.brand, model: step.model, decidedBy: 'auto' as const, updatedAt: now, waitingSince: null };
   let match: MatchRecord;
@@ -699,6 +724,92 @@ export async function applyLookup(ctx: PartContext, step: LookupStep, data: unkn
     match = { ...base, status: 'none', asin: null, grade: null, alternatives: [] };
   }
   await store.putMatch(match);
+  if (picked.chosen) return null;
+  return toolPageToRead(wantedFor(step.brand, step.model, ctx.catalog), candidates);
+}
+
+/**
+ * One product page for a same-brand row the lookup could not name. Exact or strong (the page's part
+ * number or barcode is the model): that listing is the match and the accessory question is closed.
+ * Any other page leaves the lookup's question as it is. Either way a page that could be read is not
+ * owed again.
+ */
+export async function applyIdentify(ctx: PartContext, step: IdentifyStep, data: unknown, at: number): Promise<void> {
+  const page = parseAmazonProduct(data, step.asin);
+  // A page that came back but cannot be read is not owed again: the next scan would pay for the same body.
+  if (page === null || page.asin !== step.asin) {
+    await clearPageDue(ctx, step);
+    return;
+  }
+  await savePrice(ctx, step.asin, page, at);
+  const key = partKey(step.brand, step.model);
+  const existing = await ctx.store.getMatch(key);
+  if (!existing) return;
+  if (existing.pageDue !== undefined) {
+    const { pageDue: _owed, ...rest } = existing;
+    await ctx.store.putMatch(rest);
+  }
+  const current = (await ctx.store.getMatch(key))!;
+  if (current.decidedBy === 'user') return;
+  if ((await pageEvidence(ctx.store, current)).page && current.status !== 'waiting') return;
+  const chosen = pick(wantedFor(step.brand, step.model, ctx.catalog), [page]).chosen;
+  if (!chosen || (chosen.grade !== 'exact' && chosen.grade !== 'strong')) return;
+  const now = ctx.now();
+  const match: MatchRecord = {
+    ...current, status: 'matched', asin: page.asin, grade: chosen.grade, alternatives: [],
+    decidedBy: 'auto', updatedAt: now, waitingSince: null, source: 'page',
+  };
+  await ctx.store.putMatch(match);
+  await writeTwins(ctx.store, match, (twin) => twin.decidedBy === 'auto');
+  await closeQuestion(ctx, key);
+  for (const twin of twinKeys(step.brand, step.model)) await closeQuestion(ctx, twin);
+  ctx.job.counts.partsMatched += 1;
+}
+
+/** The page read is still owed: the next scan plans it, and this one does not repeat the search. */
+export async function notePageDue(ctx: Pick<PartContext, 'store'>, step: LookupStep, asin: string): Promise<void> {
+  const match = await ctx.store.getMatch(partKey(step.brand, step.model));
+  if (!match || match.decidedBy === 'user' || match.status === 'matched') return;
+  await ctx.store.putMatch({ ...match, pageDue: asin });
+}
+
+async function clearPageDue(ctx: Pick<PartContext, 'store'>, step: IdentifyStep): Promise<void> {
+  const match = await ctx.store.getMatch(partKey(step.brand, step.model));
+  if (!match?.pageDue) return;
+  const { pageDue: _owed, ...rest } = match;
+  await ctx.store.putMatch(rest);
+}
+
+/**
+ * Read the page in this run when one more search fits beside the steps still queued, or by giving
+ * it the slot of the last lookup or refresh not yet started. Otherwise it is owed to the next scan.
+ * The page read never spends a search the cap does not allow.
+ */
+async function schedulePageRead(run: Run, step: LookupStep, asin: string): Promise<void> {
+  const { job } = run;
+  const identify: IdentifyStep = { kind: 'identify', brand: step.brand, model: step.model, asin };
+  const rest = job.queue.length - 1;
+  if (run.budget.blockReason(rest + 1) === null) {
+    await notePageDue(run, step, asin);
+    job.queue.splice(1, 0, identify);
+    return;
+  }
+  let stealAt = -1;
+  for (let i = job.queue.length - 1; i > 0; i--) {
+    const kind = job.queue[i]!.kind;
+    if (kind === 'lookup' || kind === 'refresh') { stealAt = i; break; }
+  }
+  if (stealAt > 0) {
+    const [stolen] = job.queue.splice(stealAt, 1);
+    if (stolen) {
+      job.deferred.push(stolen);
+      if (stolen.kind === 'lookup') await markWaiting(run, stolen);
+    }
+    await notePageDue(run, step, asin);
+    job.queue.splice(1, 0, identify);
+    return;
+  }
+  await notePageDue(run, step, asin);
 }
 
 /** Ruling 71: a match question offers at most this many listings. */
@@ -802,9 +913,6 @@ const unique = (xs: string[]): string[] => [...new Set(xs)];
 
 // ---------------------------------------------------------------- P1 to P4: the bundles' own pages, then the kits' (free)
 
-/** Ids the reader is given: a Home Depot item id is digits. Stored data is untrusted, and the id goes into a page address. */
-const ITEM_ID = /^\d+$/;
-
 /** What is left of pageReadsPerScan in this job: bundle pages and kit pages read count alike. */
 const pagesLeft = (run: Run): number => Math.max(0, Math.floor(run.settings.pageReadsPerScan) - run.job.counts.pagesRead);
 
@@ -880,7 +988,8 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
       if (judged.has(kitId)) continue;
       judged.add(kitId);
       if (bundlesOf(part.brand, part.model).length > 0 || kitPageStored(allOf(part.brand, part.model), part.brand, part.model)) continue;
-      const kit = kitsOf(part.brand, part.model).find((k) => !k.page && typeof k.itemId === 'string' && ITEM_ID.test(k.itemId) && !asked.has(k.itemId));
+      // The same pick as the panel's Read kit page (kitPageTarget): first in stored order, digit id, not yet asked.
+      const kit = pickUnread(kitsOf(part.brand, part.model), asked);
       if (!kit) continue;
       asked.add(kit.itemId!);
       wanted.push(kit);
@@ -947,7 +1056,7 @@ export async function savePartPrices(store: ScanStore, asked: Pick<Part, 'brand'
       const price = typeof r.price === 'number' && Number.isFinite(r.price) && r.price > 0 ? r.price : null;
       const matchedModel = textOrNull(r.matchedModel)?.toUpperCase() ?? null;
       if (price === null || matchedModel === null || !sameModel(brand, matchedModel, model)) continue;
-      const itemId = typeof r.itemId === 'string' && ITEM_ID.test(r.itemId) ? r.itemId : null;
+      const itemId = typeof r.itemId === 'string' && HOME_DEPOT_ITEM_ID.test(r.itemId) ? r.itemId : null;
       record = { key, brand, model, itemId, matchedModel, price, title: textOrNull(r.title), link: webLink(r.link), seenAt: readAt, checkedAt: readAt };
     } else {
       const before = await store.getPartPrice(key);
@@ -1230,7 +1339,7 @@ interface Wants {
    * allowance has left (planParts); a job's start never counts them, so they move nothing else.
    */
   items: string[];
-  steps: Map<string, Lookup | Refresh>;
+  steps: Map<string, Lookup | Refresh | IdentifyStep>;
 }
 
 /** A part of a bundle: partKey(brand, model), brand and model upper case. */
@@ -1313,7 +1422,7 @@ async function wantedParts(
   const itemLookups: string[] = [];
   const itemRefreshes: string[] = [];
   const waitingSince = new Map<string, number>();
-  const steps = new Map<string, Lookup | Refresh>();
+  const steps = new Map<string, Lookup | Refresh | IdentifyStep>();
   // 2c rule 5 first, for every part, kit items too whatever their kit's state: a saved listing costs
   // nothing. The kits' own matches are final before any kit's items are judged below.
   const matches = new Map<string, MatchRecord | undefined>();
@@ -1340,6 +1449,9 @@ async function wantedParts(
       if (match) waitingSince.set(key, match.waitingSince ?? 0);
       (item ? itemLookups : lookups).push(key);
       steps.set(key, { kind: 'lookup', brand, model });
+    } else if (match?.pageDue && match.decidedBy !== 'user' && match.status !== 'matched' && match.status !== 'waiting') {
+      (item ? itemLookups : lookups).push(key);
+      steps.set(key, { kind: 'identify', brand, model, asin: match.pageDue });
     } else if (match?.status === 'matched' && match.asin !== null) {
       // Also a part just matched from a saved listing: its price is the listing's, as old as that.
       const price = await store.getPrice(match.asin);

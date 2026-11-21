@@ -5,9 +5,9 @@
 
 import type { IDBPDatabase } from 'idb';
 import type {
-  BundleRecord, CatalogCursor, CatalogRecord, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
+  BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from '@core/scan/types';
-import { openDb, type KeyedStore } from './db';
+import { KEYED_STORES, openDb, type KeyedStore } from './db';
 
 export class IdbScanStore implements ScanStore {
   private readonly db: Promise<IDBPDatabase>;
@@ -59,6 +59,11 @@ export class IdbScanStore implements ScanStore {
   putPartPrice(record: PartPriceRecord) { return this.put('partPrices', record); }
   listPartPrices() { return this.list<PartPriceRecord>('partPrices'); }
 
+  getConfirmedPrice(key: string) { return this.get<ConfirmedPrice>('confirmedPrices', key); }
+  putConfirmedPrice(record: ConfirmedPrice) { return this.put('confirmedPrices', record); }
+  async deleteConfirmedPrice(key: string) { await (await this.db).delete('confirmedPrices', key); }
+  listConfirmedPrices() { return this.list<ConfirmedPrice>('confirmedPrices'); }
+
   getEbayValue(key: string) { return this.get<EbayValueRecord>('ebayValues', key); }
   putEbayValue(record: EbayValueRecord) { return this.put('ebayValues', record); }
   listEbayValues() { return this.list<EbayValueRecord>('ebayValues'); }
@@ -73,5 +78,13 @@ export class IdbScanStore implements ScanStore {
   putScan(job: ScanJob) { return this.put('scans', job); }
   async listScans() {
     return (await this.list<ScanJob>('scans')).sort((a, b) => b.startedAt - a.startedAt);
+  }
+
+  /** Every scan record. The search ledger is a different store and is left as it is. */
+  async clearAll() {
+    const db = await this.db;
+    const names = Object.keys(KEYED_STORES);
+    const tx = db.transaction(names, 'readwrite');
+    await Promise.all([...names.map((name) => tx.objectStore(name).clear()), tx.done]);
   }
 }

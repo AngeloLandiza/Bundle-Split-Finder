@@ -38,6 +38,7 @@ export interface SuggestionStore {
   put(record: StoredSuggestion): Promise<void>;
   /** Oldest first. */
   list(): Promise<StoredSuggestion[]>;
+  clear(): Promise<void>;
 }
 
 export class MemorySuggestionStore implements SuggestionStore {
@@ -49,6 +50,10 @@ export class MemorySuggestionStore implements SuggestionStore {
 
   async list(): Promise<StoredSuggestion[]> {
     return [...this.records.values()].map((r) => structuredClone(r)).sort((a, b) => a.askedAt - b.askedAt || (a.key < b.key ? -1 : 1));
+  }
+
+  async clear(): Promise<void> {
+    this.records.clear();
   }
 }
 

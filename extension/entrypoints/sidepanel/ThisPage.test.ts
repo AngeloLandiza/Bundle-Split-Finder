@@ -211,6 +211,21 @@ describe('This page: a bundle read from the page', () => {
     expect(b.send).toHaveBeenCalledWith({ type: 'answerReview', id: view.question!.id, answer: { none: true, seen: reviewSignature(view.question!) } });
   });
 
+  it('asks the AI about the open question when an Anthropic key is saved', async () => {
+    const user = userEvent.setup();
+    const view = w.asked.view as Extract<ThisPage, { kind: 'bundle' }>;
+    const b = browser({ id: 4, url: ASKED_URL }, { 4: view });
+    const withKey = state({ ebay: { hasEbayKeys: false, hasAnthropicKey: true, judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60 } });
+    renderTab(b, { id: 4, url: ASKED_URL }, { report: w.asked.report, state: withKey });
+    await user.click(await screen.findByRole('button', { name: /^Ask AI/ }));
+    expect(b.send).toHaveBeenCalledWith({ type: 'askAi', questionId: view.question!.id });
+    cleanup();
+    const plain = browser({ id: 4, url: ASKED_URL }, { 4: view });
+    renderTab(plain, { id: 4, url: ASKED_URL }, { report: w.asked.report });
+    expect(await screen.findByRole('group', { name: /Which parts come in this bundle\?/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Ask AI/ })).toBeNull();
+  });
+
   it('a refused answer says why, in the worker\'s sentence', async () => {
     const user = userEvent.setup();
     const view = w.asked.view as Extract<ThisPage, { kind: 'bundle' }>;

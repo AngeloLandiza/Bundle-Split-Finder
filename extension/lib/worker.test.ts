@@ -18,6 +18,7 @@ import { browseItem, browseSearch } from '../../scripts/ebay-replay';
 import { notePage, type PageView } from '@core/scan/pageView';
 import { toScanSettings } from '@core/settings';
 import { trustedRates, type UnitRates } from '@core/scan/pipeline';
+import { MemorySuggestionStore, type StoredSuggestion } from '@core/assist/stored';
 import { createWorker, type DeferredPage, type PageEnv, type Prefs, progressOf, type Worker } from './worker';
 
 // Every search goes through the real SerpApiClient over replayRecorded(); the Account API
@@ -1029,6 +1030,53 @@ describe('worker: exports and saved searches (rule 6)', () => {
     for (const p of exported) expect(p.isKit).toBe(true);
   });
 
+  it('deleteAllData empties the deals, matches, answers, prices and saved searches, and keeps the key and the search count', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    const suggestions = new MemorySuggestionStore();
+    await suggestions.put({ key: 'q|1', questionId: 'q', seen: 's', askedAt: 1, costUsd: null, suggestion: { status: 'not_suggested', reason: 'none' } } as unknown as StoredSuggestion);
+    w.worker = createWorker({
+      store: w.store, cache: w.cache, prefs: w.prefs, ledger: (entry) => void w.ledger.push(entry),
+      fetchFn: (input, init) => w.fetchFn(input, init), now: () => w.clock, notify: (rows) => void w.notified.push(rows),
+      broadcast: (state) => void w.broadcasts.push(state), pages: w.pages, suggestions,
+    });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect((await w.store.listBundles()).length).toBeGreaterThan(0);
+    expect(w.ledger.length).toBeGreaterThan(0);
+    const searches = w.ledger.length;
+    await w.store.putConfirmedPrice({ key: 'RYOBI:PBLRC01B', brand: 'RYOBI', model: 'PBLRC01B', price: 40, link: 'https://www.ebay.com/itm/1', confirmedAt: 1 });
+    await w.cache.set('kept', { at: 1, data: { a: 1 } });
+    await w.pages.setDeferred(7, '317987591', {
+      page: { itemId: '317987591', brand: 'RYOBI', model: 'PCL1201K2', title: 'Kit', price: 199, wasPrice: 249, bullets: [], description: null },
+      seenAt: T0,
+    });
+    expect(await send(w, { type: 'deleteAllData' })).toEqual({ ok: true, data: null });
+    expect(await w.store.listBundles()).toEqual([]);
+    expect(await w.store.listMatches()).toEqual([]);
+    expect(await w.store.listReview()).toEqual([]);
+    expect(await w.store.listScans()).toEqual([]);
+    expect(await w.store.listConfirmedPrices()).toEqual([]);
+    expect(await w.cache.get('kept')).toBeUndefined();
+    expect(await suggestions.list()).toEqual([]);
+    expect(await w.pages.deferredAll()).toEqual([]);
+    expect(w.prefs.data.apiKey).toBe(KEY);
+    expect(w.prefs.data.settings).toMatchObject({ brands: ['RYOBI'] });
+    expect(w.ledger).toHaveLength(searches);
+    expect(w.broadcasts.at(-1)).toMatchObject({ hasKey: true, scanRunning: false, lastJob: null });
+  });
+
+  it('deleteAllData refuses while a scan is running and deletes nothing', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await w.store.putConfirmedPrice({ key: 'RYOBI:PBLRC01B', brand: 'RYOBI', model: 'PBLRC01B', price: 40, link: 'https://www.ebay.com/itm/1', confirmedAt: 1 });
+    const gate = held(w);
+    expect(await send(w, { type: 'scanNow' })).toEqual({ ok: true, data: null });
+    await vi.waitFor(() => expect(w.broadcasts.some((b) => b.scanRunning)).toBe(true));
+    expect(await send(w, { type: 'deleteAllData' })).toEqual({ ok: false, error: 'A scan is running. Delete the data when it has finished.' });
+    expect(await w.store.getConfirmedPrice('RYOBI:PBLRC01B')).toMatchObject({ price: 40 });
+    gate.release();
+    await untilIdle(w);
+  });
+
   it('clearSavedSearches empties the cache only: the next scan pays for its pages again, the store keeps its records', async () => {
     const w = world({ key: KEY, settings: RYOBI });
     await send(w, { type: 'scanNow' });
@@ -1293,6 +1341,42 @@ describe('worker: getReport and setPackaging', () => {
     expect(bad).toEqual({ ok: false, error: 'Choose retail boxed or loose.' });
     expect(await send(w, { type: 'setPackaging', model: '  ', packaging: 'loose' })).toEqual({ ok: false, error: 'Name the bundle model.' });
     expect(w.prefs.data.packaging).toBeUndefined();
+  });
+
+  it('setConfirmedPrice counts the price until an Amazon listing is chosen, and refuses a bad price or link', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    await w.store.putBundle({
+      key: 'homedepot:1', retailer: 'homedepot', itemId: '1', title: 'T', brand: 'RYOBI', model: 'KIT',
+      upc: null, price: 100, regularPrice: null, percentOff: null, link: null, seenAt: T0,
+      split: { components: ['A'], status: 'resolved', notes: [] },
+    });
+    await w.store.putMatch({
+      key: 'RYOBI:A', brand: 'RYOBI', model: 'A', status: 'none', asin: null, grade: null,
+      alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null,
+    });
+    const before = w.broadcasts.length;
+    expect(await send(w, { type: 'setConfirmedPrice', brand: 'ryobi', model: 'a', price: 80, link: 'https://www.ebay.com/itm/1' })).toEqual({ ok: true, data: null });
+    expect(w.broadcasts.length).toBeGreaterThan(before);
+    const saved = await w.store.getConfirmedPrice('RYOBI:A');
+    expect(saved).toMatchObject({ price: 80, link: 'https://www.ebay.com/itm/1', confirmedAt: T0 });
+    const reply = await send<PanelReport>(w, { type: 'getReport' });
+    expect(reply.ok).toBe(true);
+    if (!reply.ok) return;
+    const row = reply.data.bundles.find((b) => b.model === 'KIT')!;
+    expect(row.section).toBe('missing_listing');
+    expect(row.uncovered).toEqual([]);
+    expect(row.parts[0]).toMatchObject({ price: 80 });
+    expect(row.estimate).toMatchObject({ netRevenue: 68, profit: -32 });
+    expect(await send(w, { type: 'setConfirmedPrice', brand: 'RYOBI', model: 'A', price: 0, link: 'https://www.ebay.com/itm/1' })).toEqual({ ok: false, error: 'Enter a price above $0.' });
+    expect(await send(w, { type: 'setConfirmedPrice', brand: 'RYOBI', model: 'A', price: 80, link: 'javascript:alert(1)' })).toEqual({ ok: false, error: 'Enter a link that starts with http or https.' });
+    expect((await w.store.getConfirmedPrice('RYOBI:A'))!.price).toBe(80);
+    expect(await send(w, { type: 'clearConfirmedPrice', brand: 'RYOBI', model: 'A' })).toEqual({ ok: true, data: null });
+    const cleared = await send<PanelReport>(w, { type: 'getReport' });
+    expect(cleared.ok).toBe(true);
+    if (!cleared.ok) return;
+    const again = cleared.data.bundles.find((b) => b.model === 'KIT')!;
+    expect(again.uncovered).toEqual(['A']);
+    expect(again.parts[0]!.price).toBeNull();
   });
 
   it('a stored entry that is not a known answer is dropped on read', async () => {
@@ -2718,9 +2802,9 @@ describe('worker: eBay reference values (step 10)', () => {
     await scanThrough(w);
     const csv = await send<string>(w, { type: 'exportDeals' });
     const lines = csv.ok ? csv.data.trimEnd().split('\n') : [];
-    expect(lines[0]!.endsWith(',ebay_ref_low,ebay_ref_high,ebay_units_sold')).toBe(true);
+    expect(lines[0]!.endsWith(',ebay_ref_low,ebay_ref_high,ebay_units_sold,confirmed_price,confirmed_link')).toBe(true);
     const row = lines.find((l) => l.includes('PBLRC2501SB'))!;
-    expect(row.endsWith(',99 | ?,130 | ?,55 | ?')).toBe(true);
+    expect(row.endsWith(',99 | ?,130 | ?,55 | ?,,')).toBe(true);
   });
 
   it('a scan\'s progress counts the eBay step: an eviction during it is not "no progress"', () => {

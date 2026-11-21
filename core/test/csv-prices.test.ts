@@ -41,14 +41,14 @@ async function world(readPartPrices?: ReadPartPrices) {
   return { ...w, clientFor };
 }
 
-/** The four step 9 cells of the first row (before step 10's three): numbers or empty, so none holds a comma. */
-const newCells = (csv: string): string[] => csv.trimEnd().split('\n')[1]!.split(',').slice(-7, -3);
+/** The four step 9 cells of the first row (before the eBay columns and the confirmed-price columns): numbers or empty, so none holds a comma. */
+const newCells = (csv: string): string[] => csv.trimEnd().split('\n')[1]!.split(',').slice(-9, -5);
 const founderOf = async (store: MemoryScanStore) => (await buildReport(store, RATCHET)).bundles.find((b) => b.key === FOUNDER)!;
 
 describe('CSV: roi_lowest, roi_amazon_new, roi_highest, hd_price_total', () => {
   it('are the four columns before step 10\'s three, and the columns before them are the ones the file always had, in order', () => {
-    expect(RUN_COLUMNS.slice(-7, -3)).toEqual(['roi_lowest', 'roi_amazon_new', 'roi_highest', 'hd_price_total']);
-    expect(RUN_COLUMNS.slice(0, -7)).toEqual([
+    expect(RUN_COLUMNS.slice(-9, -5)).toEqual(['roi_lowest', 'roi_amazon_new', 'roi_highest', 'hd_price_total']);
+    expect(RUN_COLUMNS.slice(0, -9)).toEqual([
       'section', 'brand', 'bundle_model', 'bundle_title', 'hd_item_id', 'hd_price', 'hd_was_price', 'hd_percent_off',
       'parts', 'asins', 'match_grades', 'amazon_prices', 'est_net_revenue', 'est_cost', 'est_profit', 'est_roi',
       'uncovered_parts', 'hd_link', 'sold_as', 'other_options',
