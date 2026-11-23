@@ -120,6 +120,9 @@ export class AgentWork {
   private current: Promise<void> | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private progressAt = 0;
+  /** Owner answers (and Undo) being applied, one at a time through answerChain. */
+  private answering = 0;
+  private answerChain: Promise<void> = Promise.resolve();
 
   constructor(deps: WorkDeps) {
     this.d = deps;
@@ -175,7 +178,7 @@ export class AgentWork {
 
   /** The scheduler: a due scan starts unless the agent is paused or busy. Returns whether one started. */
   tick(): boolean {
-    if (this.live.busy || this.d.store.get('agent').paused) return false;
+    if (this.live.busy || this.answering > 0 || this.d.store.get('agent').paused) return false;
     const next = this.nextScanAt();
     if (next === null || Date.parse(next) > this.d.now()) return false;
     this.begin('scan', () => this.scan('scheduled'));
@@ -204,6 +207,7 @@ export class AgentWork {
    */
   private claim(kind: 'scan' | 'ask' | 'paid'): void {
     if (this.live.busy) throw new WorkRefused(this.busySentence(kind));
+    if (kind !== 'ask' && this.answering > 0) throw new WorkRefused('An answer is being applied. Try again in a moment.');
     this.live.busy = kind;
     this.live.stopping = false;
     this.live.pipeline = null;
@@ -571,8 +575,11 @@ export class AgentWork {
   }
 
   /** Undo: the question opens again, the suggestion shows again for the owner, and Autopilot leaves that question alone. */
-  async undo(entryId: string): Promise<StoredAutopilotEntry> {
-    if (this.live.busy === 'scan') throw new WorkRefused('A scan is running. Undo when it has finished.');
+  undo(entryId: string): Promise<StoredAutopilotEntry> {
+    return this.serialAnswer('A scan or a search is running. Undo when it has finished.', () => this.undoNow(entryId));
+  }
+
+  private async undoNow(entryId: string): Promise<StoredAutopilotEntry> {
     const { store } = this.d;
     const entry = store.get('autopilot').find((e) => e.id === entryId);
     if (!entry) throw new AnswerRefused('No such Autopilot entry.');
@@ -613,8 +620,28 @@ export class AgentWork {
   // ------------------------------------------------------------------ the owner's answers and paid actions
 
   /** The owner's answer from the app, applied by the agent (core/src/scan/answers.ts). */
-  async answer(id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean): Promise<void> {
-    if (this.live.busy === 'scan' || this.live.busy === 'paid') throw new WorkRefused('A scan or a search is running. Answer again when it has finished.');
+  answer(id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean): Promise<void> {
+    return this.serialAnswer('A scan or a search is running. Answer again when it has finished.', () => this.answerNow(id, answer, seen, fromSuggestion));
+  }
+
+  /**
+   * The owner's answers (and Undo) one at a time, and never beside a scan or a Look up: refused while one runs, and
+   * while an answer is being applied a tick, Scan now or Look up waits (claim, tick).
+   */
+  private serialAnswer<T>(busySentence: string, fn: () => Promise<T>): Promise<T> {
+    if (this.live.busy === 'scan' || this.live.busy === 'paid') throw new WorkRefused(busySentence);
+    this.answering += 1;
+    const run = this.answerChain.then(fn);
+    this.answerChain = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run.finally(() => {
+      this.answering -= 1;
+    });
+  }
+
+  private async answerNow(id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean): Promise<void> {
     const now = this.d.now();
     if ('ebay' in answer) {
       const q = this.d.store.get('review').ebayQuestions.find((x) => x.id === id);

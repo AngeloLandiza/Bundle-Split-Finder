@@ -161,6 +161,31 @@ describe('the schedule', () => {
     expect(activity.runs[0]).toMatchObject({ trigger: 'scheduled', status: 'failed', error: 'stop here' });
   });
 
+  it('while an answer is being applied no scan starts, and answers go one at a time', async () => {
+    await start();
+    await put('/api/keys/serpapi', { key: SERP_KEY });
+    await patch({ settings: { schedule: { mode: 'interval', hours: 6 } } });
+    clock += 6 * 3_600_000;
+    let found: (v: undefined) => void = () => {};
+    const order: string[] = [];
+    const real = agent.work.scanStore.getReview.bind(agent.work.scanStore);
+    agent.work.scanStore.getReview = (id: string) => {
+      order.push(id);
+      return id === 'first' ? new Promise((r) => (found = r)) : real(id);
+    };
+    const first = agent.work.answer('first', { none: true }, undefined, false);
+    const second = agent.work.answer('second', { none: true }, undefined, false);
+    expect(agent.work.tick()).toBe(false);
+    expect(() => agent.work.scanNow()).toThrow(/answer is being applied/);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(order).toEqual(['first']);
+    found(undefined);
+    await expect(first).rejects.toThrow('That question was not found.');
+    await expect(second).rejects.toThrow('That question was not found.');
+    expect(order).toEqual(['first', 'second']);
+    expect(agent.work.tick()).toBe(true);
+  });
+
   it('after a failed scan nothing runs (no AI, Autopilot or digest); only a waiting Telegram message is sent again', async () => {
     const fakeScan = (async () => {
       throw new Error('Reading Home Depot pages failed.');
