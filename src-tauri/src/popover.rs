@@ -7,6 +7,9 @@
 //!
 //! The Dock badge is the open-question count, set from the same state events as the tray menu
 //! (events.rs -> shell::set_open_questions). With the Dock icon hidden there is no badge.
+//!
+//! Windows: the same popover from the notification-area icon, above it when the taskbar is at the
+//! bottom (anchor_in). There is no Dock, and no taskbar overlay badge: the count is in the tray tooltip.
 
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Mutex;
@@ -145,14 +148,63 @@ pub fn toggle(app: &AppHandle, tray: &Rect) {
 
 /// Where the popover's top-left goes, in points on the screen: centred under the icon, kept 8pt inside
 /// the screen's edges. `icon` is the icon's rect and `screen` the screen's, both in points.
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 fn anchor(icon: (f64, f64, f64, f64), screen: (f64, f64, f64, f64)) -> (f64, f64) {
-  let (ix, iy, iw, ih) = icon;
-  let (sx, _sy, sw, _sh) = screen;
-  let centred = ix + iw / 2.0 - WIDTH / 2.0;
-  let x = centred.min(sx + sw - WIDTH - EDGE).max(sx + EDGE);
-  (x, iy + ih + GAP)
+  anchor_in(icon, screen, (WIDTH, HEIGHT), GAP, EDGE)
 }
 
+/// The same rule for any taskbar edge: centred on the icon, under it when the icon is in the top half of
+/// `area` (the macOS menu bar, a Windows taskbar at the top) and above it otherwise (the Windows taskbar at
+/// the bottom, the default), then kept `edge` inside `area` on every side. On Windows `area` is the
+/// monitor's work area, so a taskbar on the left or right is never covered. All in one unit.
+fn anchor_in(
+  icon: (f64, f64, f64, f64),
+  area: (f64, f64, f64, f64),
+  size: (f64, f64),
+  gap: f64,
+  edge: f64,
+) -> (f64, f64) {
+  let (ix, iy, iw, ih) = icon;
+  let (ax, ay, aw, ah) = area;
+  let (w, h) = size;
+  let x = (ix + iw / 2.0 - w / 2.0).min(ax + aw - w - edge).max(ax + edge);
+  let below = iy + ih / 2.0 < ay + ah / 2.0;
+  let y = if below { iy + ih + gap } else { iy - h - gap };
+  (x, y.min(ay + ah - h - edge).max(ay + edge))
+}
+
+#[cfg(windows)]
+fn place(window: &WebviewWindow, tray: &Rect) {
+  use tauri::PhysicalPosition;
+  // Windows works in physical pixels throughout: the tray rect, the monitor and its work area.
+  let mut pos = tray.position.to_physical::<f64>(1.0);
+  let mut size = tray.size.to_physical::<f64>(1.0);
+  // An icon in the overflow flyout (Windows 11 puts new icons there) may report no rect: the pointer is on it.
+  if size.width < 1.0 || size.height < 1.0 {
+    if let Ok(c) = window.cursor_position() {
+      pos = PhysicalPosition::new(c.x, c.y);
+      size = tauri::PhysicalSize::new(1.0, 1.0);
+    }
+  }
+  let monitor = window
+    .monitor_from_point(pos.x + size.width / 2.0, pos.y + size.height / 2.0)
+    .ok()
+    .flatten()
+    .or_else(|| window.primary_monitor().ok().flatten());
+  let Some(m) = monitor else { return };
+  let s = m.scale_factor();
+  let wa = m.work_area();
+  let (x, y) = anchor_in(
+    (pos.x, pos.y, size.width, size.height),
+    (wa.position.x as f64, wa.position.y as f64, wa.size.width as f64, wa.size.height as f64),
+    (WIDTH * s, HEIGHT * s),
+    GAP * s,
+    EDGE * s,
+  );
+  let _ = window.set_position(PhysicalPosition::new(x.round() as i32, y.round() as i32));
+}
+
+#[cfg(not(windows))]
 fn place(window: &WebviewWindow, tray: &Rect) {
   // The icon's rect arrives in physical pixels. The screen it is on gives the scale to turn it into points.
   let phys_pos = tray.position.to_physical::<f64>(1.0);
@@ -302,6 +354,37 @@ mod tests {
     assert_eq!(anchor((1420.0, 0.0, 20.0, 24.0), screen).0, 1440.0 - 340.0 - 8.0);
     // A second screen to the left of the first: the clamp follows that screen.
     assert_eq!(anchor((-1900.0, 0.0, 20.0, 24.0), (-1920.0, 0.0, 1920.0, 1080.0)).0, -1920.0 + 8.0);
+  }
+
+  // Windows, in physical pixels at 150%: a 1920x1080 monitor, the popover 510x630, gap 6, edge 12.
+  const WIN: (f64, f64) = (340.0 * 1.5, 420.0 * 1.5);
+
+  #[test]
+  fn windows_taskbar_at_the_bottom_puts_the_popover_above_the_icon() {
+    // Work area 1920x1032 (a 48px taskbar below it); the icon near the clock.
+    let (x, y) = anchor_in((1700.0, 1040.0, 36.0, 36.0), (0.0, 0.0, 1920.0, 1032.0), WIN, 6.0, 12.0);
+    assert_eq!(x, 1920.0 - 510.0 - 12.0);
+    // Above the icon would reach into the taskbar's band: it stops 12px above the work area's bottom.
+    assert_eq!(y, 1032.0 - 630.0 - 12.0);
+  }
+
+  #[test]
+  fn windows_taskbar_at_the_top_puts_it_below() {
+    let (x, y) = anchor_in((1000.0, 8.0, 36.0, 36.0), (0.0, 48.0, 1920.0, 1032.0), WIN, 6.0, 12.0);
+    assert_eq!(x, 1018.0 - 255.0);
+    // Under the icon would be 50, inside the taskbar's band: the work area's top edge keeps it at 60.
+    assert_eq!(y, 60.0);
+  }
+
+  #[test]
+  fn windows_taskbar_on_the_left_or_right_is_not_covered() {
+    // Left: the work area starts at 62; the icon sits low in the taskbar.
+    let (x, y) = anchor_in((12.0, 980.0, 36.0, 36.0), (62.0, 0.0, 1858.0, 1080.0), WIN, 6.0, 12.0);
+    assert_eq!(x, 62.0 + 12.0);
+    assert_eq!(y, 980.0 - 630.0 - 6.0);
+    // Right: the work area ends at 1858.
+    let (x, _) = anchor_in((1870.0, 980.0, 36.0, 36.0), (0.0, 0.0, 1858.0, 1080.0), WIN, 6.0, 12.0);
+    assert_eq!(x, 1858.0 - 510.0 - 12.0);
   }
 
   #[test]

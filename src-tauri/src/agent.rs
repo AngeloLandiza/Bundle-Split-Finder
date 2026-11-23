@@ -187,8 +187,17 @@ pub fn start(app: &AppHandle) -> Result<(), String> {
   let data_dir = data_dir(app)?;
   std::fs::create_dir_all(&data_dir).map_err(|e| e.to_string())?;
 
+  // Where Install helper unpacks the extension for Load unpacked: Documents\split-finder. Windows has no
+  // HOME (Documents may also be redirected to OneDrive), so the known folder is asked for there.
+  #[cfg(not(windows))]
   let extension_dir = std::env::var("HOME")
     .map(|h| PathBuf::from(h).join("Documents").join("split-finder"))
+    .unwrap_or_else(|_| data_dir.join("split-finder-extension"));
+  #[cfg(windows)]
+  let extension_dir = app
+    .path()
+    .document_dir()
+    .map(|d| d.join("split-finder"))
     .unwrap_or_else(|_| data_dir.join("split-finder-extension"));
 
   let mut sidecar = app
@@ -217,10 +226,22 @@ pub fn start(app: &AppHandle) -> Result<(), String> {
 }
 
 /// Stops the sidecar this app started: SIGTERM first so the agent can finish a write, then kill.
+/// Windows has no SIGTERM for a windowless child: the agent is asked over HTTP (POST /api/agent/quit).
 pub fn stop(app: &AppHandle) {
   let state = app.state::<AgentChild>();
   let Ok(mut guard) = state.0.lock() else { return };
   let Some(child) = guard.take() else { return };
+  #[cfg(windows)]
+  {
+    if http_post(app, "/api/agent/quit").is_ok() {
+      for _ in 0..20 {
+        if !port_open() {
+          break;
+        }
+        std::thread::sleep(Duration::from_millis(150));
+      }
+    }
+  }
   #[cfg(unix)]
   {
     let _ = std::process::Command::new("kill")

@@ -110,7 +110,14 @@ fn native_chrome<'a>(
           .build(),
       )
   }
-  #[cfg(not(target_os = "macos"))]
+  // Windows: the standard frame and title bar, with the Mica backdrop on Windows 11 (the title bar takes
+  // it; Windows 10 has no Mica and Tauri leaves the window as it is). The webview stays opaque.
+  #[cfg(windows)]
+  {
+    use tauri::window::{Effect, EffectsBuilder};
+    builder.effects(EffectsBuilder::new().effect(Effect::Mica).build())
+  }
+  #[cfg(not(any(target_os = "macos", windows)))]
   {
     builder
   }
@@ -233,8 +240,9 @@ pub fn notify(app: &AppHandle, title: &str, body: &str, kind: &str) {
   }
   let mut builder = app.notification().builder().title(title).body(body);
   if state.sound.load(Ordering::Relaxed) {
-    // "default" is the system notification sound on macOS.
-    builder = builder.sound("default");
+    // "default" is the system notification sound on macOS; Windows toasts name it "Default". A Windows
+    // toast with no sound named is silent.
+    builder = builder.sound(if cfg!(windows) { "Default" } else { "default" });
   }
   if let Err(e) = builder.show() {
     log::warn!("notification failed: {e}");
@@ -396,17 +404,23 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
     ],
   )?;
 
+  // macOS: a black template image the menu bar tints. Windows: the app's own colour icon, which reads on a
+  // light or a dark taskbar alike.
+  #[cfg(target_os = "macos")]
   let icon = Image::from_bytes(include_bytes!("../icons/tray-template.png"))?;
+  #[cfg(not(target_os = "macos"))]
+  let icon = Image::from_bytes(include_bytes!("../icons/32x32.png"))?;
+  let popover_tray = cfg!(any(target_os = "macos", windows));
   let tray = TrayIconBuilder::with_id("main")
     .icon(icon)
-    .icon_as_template(true)
+    .icon_as_template(cfg!(target_os = "macos"))
     .tooltip("Split Finder")
     .menu(&tray_menu)
-    // macOS: a left click opens the popover and the menu stays on a right click. Elsewhere the menu is the left click's.
-    .show_menu_on_left_click(!cfg!(target_os = "macos"))
+    // macOS and Windows: a left click opens the popover and the menu stays on a right click. Elsewhere the menu is the left click's.
+    .show_menu_on_left_click(!popover_tray)
     .on_menu_event(|app, event| handle_menu(app, event.id().as_ref()))
-    .on_tray_icon_event(|tray, event| {
-      // Windows: a left click opens the window (the menu stays on right click there).
+    .on_tray_icon_event(move |tray, event| {
+      // Windows: a double click opens the window (the popover the first click opened hides as the window takes focus).
       if let TrayIconEvent::DoubleClick { button: MouseButton::Left, .. } = event {
         show_window(tray.app_handle());
       }
@@ -417,7 +431,7 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
         ..
       } = event
       {
-        if cfg!(target_os = "macos") {
+        if popover_tray {
           popover::toggle(tray.app_handle(), &rect);
         } else {
           consume_pending_nav(tray.app_handle());
@@ -514,7 +528,12 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
     app,
     &[&app_sub, &edit_sub, &view_sub, &agent_sub, &helper_sub, &window_sub, &help_sub],
   )?;
+  // Windows: no menu bar under the title bar (a Windows app of this kind has none). Its items stay built for
+  // the tray's state; the page's own key handlers carry the shortcuts there (docs/desktop-app.md, Windows).
+  #[cfg(not(windows))]
   app.set_menu(menu)?;
+  #[cfg(windows)]
+  drop(menu);
 
   let state = app.state::<ShellState>();
   if let Ok(mut items) = state.items.lock() {
@@ -595,8 +614,45 @@ fn open_chrome_extensions(app: &AppHandle) {
       .args(["-a", "Google Chrome", "chrome://extensions/"])
       .spawn();
   }
-  #[cfg(not(target_os = "macos"))]
+  #[cfg(windows)]
+  {
+    let _ = app;
+    open_chrome_extensions_windows();
+  }
+  #[cfg(not(any(target_os = "macos", windows)))]
   let _ = tauri_plugin_opener::OpenerExt::opener(app).open_url("chrome://extensions/", None::<&str>);
+}
+
+/// Where Chrome installs itself on Windows: per machine (64- or 32-bit Program Files) or per user.
+#[cfg(any(windows, test))]
+fn chrome_candidates(env: impl Fn(&str) -> Option<String>) -> Vec<std::path::PathBuf> {
+  let tail = ["Google", "Chrome", "Application", "chrome.exe"];
+  ["ProgramFiles", "ProgramFiles(x86)", "LOCALAPPDATA"]
+    .iter()
+    .filter_map(|v| env(v))
+    .map(|base| tail.iter().fold(std::path::PathBuf::from(base), |p, part| p.join(part)))
+    .collect()
+}
+
+/// Windows has no handler for chrome:// addresses, so Chrome itself is started with the address. When it is
+/// not in a standard place, `start chrome` finds it through its App Paths entry.
+#[cfg(windows)]
+fn open_chrome_extensions_windows() {
+  use std::os::windows::process::CommandExt;
+  const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+  const URL: &str = "chrome://extensions/";
+  if let Some(exe) = chrome_candidates(|v| std::env::var(v).ok()).into_iter().find(|p| p.is_file()) {
+    if std::process::Command::new(exe).arg(URL).spawn().is_ok() {
+      return;
+    }
+  }
+  if let Err(e) = std::process::Command::new("cmd")
+    .args(["/C", "start", "", "chrome", URL])
+    .creation_flags(CREATE_NO_WINDOW)
+    .spawn()
+  {
+    log::warn!("could not start Chrome: {e}");
+  }
 }
 
 fn reveal_zip(app: &AppHandle) {
@@ -608,6 +664,33 @@ fn reveal_zip(app: &AppHandle) {
   {
     let _ = std::process::Command::new("open").arg("-R").arg(&p).spawn();
   }
-  #[cfg(not(target_os = "macos"))]
+  // Windows: Explorer opens on the folder with the zip selected.
+  #[cfg(windows)]
+  {
+    let _ = app;
+    if let Err(e) = tauri_plugin_opener::reveal_item_in_dir(&p) {
+      log::warn!("reveal zip: {e}");
+    }
+  }
+  #[cfg(not(any(target_os = "macos", windows)))]
   let _ = tauri_plugin_opener::OpenerExt::opener(app).open_path(p.to_string_lossy(), None::<&str>);
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn chrome_is_looked_for_where_its_installers_put_it() {
+    let env = |v: &str| match v {
+      "ProgramFiles" => Some("C:\\Program Files".to_string()),
+      "LOCALAPPDATA" => Some("C:\\Users\\alex\\AppData\\Local".to_string()),
+      _ => None,
+    };
+    let found: Vec<String> = chrome_candidates(env).iter().map(|p| p.to_string_lossy().into_owned()).collect();
+    assert_eq!(found.len(), 2);
+    assert!(found[0].starts_with("C:\\Program Files"));
+    assert!(found[0].ends_with("chrome.exe"));
+    assert!(found[1].contains("AppData"));
+  }
 }
