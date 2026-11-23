@@ -21,6 +21,7 @@ import type { StoredSuggestion } from '../core/src/assist/stored';
 import { DEFAULT_CLAUDE_JUDGE_MODEL } from '../core/src/judge/claude';
 import { DEFAULT_FEES } from '../core/src/money';
 import type { UnitRates } from '../core/src/scan/pipeline';
+import { measuredByDefault } from './autopilot';
 import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS } from '../core/src/settings';
 import type { BundleRow, EbayQuestion, PaidAction, ReportSection, ReviewItem, ScanJob } from '../core/src/scan/types';
 
@@ -234,10 +235,15 @@ export function defaultSettings(): StoreData['settings'] {
   };
 }
 
-/** Claude for every pipeline, trusted (measured by the step 10 to 12 evals); $25 a month until the owner says otherwise. */
+/**
+ * Claude (Haiku 5.5, the cheapest) for every pipeline; $25 a month until the owner says otherwise. Trusted only where
+ * the evals measured that exact model for that pipeline (autopilot.ts MEASURED_MODELS), so Autopilot waits for the
+ * owner on assist and research until Opus 5.5 is chosen there or the owner marks Haiku trusted.
+ */
 export function defaultAiSettings(): AppSettings['ai'] {
-  const claude = { provider: 'anthropic' as const, model: DEFAULT_CLAUDE_JUDGE_MODEL, apiKeyRef: 'anthropic', trusted: true };
-  return { judge: { ...claude }, assist: { ...claude }, research: { ...claude }, monthlyCapUsd: 25 };
+  const claude = { provider: 'anthropic' as const, model: DEFAULT_CLAUDE_JUDGE_MODEL, apiKeyRef: 'anthropic' };
+  const of = (p: 'judge' | 'assist' | 'research') => ({ ...claude, trusted: measuredByDefault(p, claude) });
+  return { judge: of('judge'), assist: of('assist'), research: of('research'), monthlyCapUsd: 25 };
 }
 
 function defaults(): StoreData {

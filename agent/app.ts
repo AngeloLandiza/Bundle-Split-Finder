@@ -28,6 +28,7 @@ import { AnswerRefused } from '../core/src/scan/answers';
 import { bundlesCsv } from '../core/src/scan/csv';
 import { ebaySettingsProblem, validateSettings } from '../core/src/settings';
 import { Auth, type PairError } from './auth';
+import { measuredByDefault, modelIdentity } from './autopilot';
 import { checkEbayKeysApp } from './checkEbayKeysApp';
 import { checkSerpApiKey } from './checkSerpKey';
 import { EventHub } from './events';
@@ -123,22 +124,21 @@ function parseJobInput(kind: WorkerJobKind, v: unknown): WorkerJobInputs[WorkerJ
 }
 
 const NUMERIC_SETTINGS = ['searchesPerScan', 'reserve', 'keepaTokensPerScan', 'keepaReserve', 'pagesPerBrand', 'keepaDiscoveryShare'] as const;
-const PIPELINES = ['judge', 'assist', 'research'] as const;
 
 function flag(v: unknown, field: string): boolean {
   if (typeof v !== 'boolean') throw new HttpError('bad_request', `${field} must be true or false.`);
   return v;
 }
 
-function aiPipelinePatch(cur: AiPipelineSetting, v: unknown, name: string): AiPipelineSetting {
+const PIPELINES = ['judge', 'assist', 'research'] as const;
+
+export function aiPipelinePatch(cur: AiPipelineSetting, v: unknown, name: (typeof PIPELINES)[number]): AiPipelineSetting {
   const o = obj(v, `ai.${name}`);
   const next: AiPipelineSetting = { ...cur };
   if ('provider' in o) {
     if (o.provider !== 'anthropic' && o.provider !== 'openai-compatible') throw new HttpError('bad_request', 'provider must be anthropic or openai-compatible.');
     next.provider = o.provider;
     next.apiKeyRef = o.provider === 'anthropic' ? 'anthropic' : 'openai';
-    // A model that has not been measured is not trusted until the owner says it is (Autopilot rule 5).
-    if (!('trusted' in o)) next.trusted = o.provider === 'anthropic';
   }
   if ('model' in o) next.model = text(o.model, `ai.${name}.model`, 100);
   if ('baseUrl' in o) next.baseUrl = o.baseUrl === null || o.baseUrl === '' ? undefined : text(o.baseUrl, `ai.${name}.baseUrl`, 300);
@@ -148,6 +148,9 @@ function aiPipelinePatch(cur: AiPipelineSetting, v: unknown, name: string): AiPi
   }
   if ('id' in o) next.id = text(o.id, `ai.${name}.id`, 40);
   if ('label' in o) next.label = text(o.label, `ai.${name}.label`, 60);
+  // Autopilot rule 5: when anything that identifies the model changes (provider, model, address, preset, id), trust
+  // goes back to the measured list (autopilot.ts) unless the same patch says `trusted` itself.
+  if (modelIdentity(next) !== modelIdentity(cur)) next.trusted = measuredByDefault(name, next);
   if ('trusted' in o) next.trusted = flag(o.trusted, `ai.${name}.trusted`);
   if ('rates' in o) {
     const r = obj(o.rates, 'rates');

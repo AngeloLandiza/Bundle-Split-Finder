@@ -21,6 +21,29 @@ import type { StoredSuggestion } from '../core/src/assist/stored';
 import { AnswerRefused, applyReviewAnswer, reopenReviewAnswer, reviewSignature } from '../core/src/scan/answers';
 import type { ReviewAnswer, ReviewItem, ScanStore } from '../core/src/scan/types';
 
+/**
+ * The one list of models Autopilot trusts without the owner saying so: the exact Anthropic models a real eval run
+ * measured for that pipeline (docs/decisions.md, step 10 to 12). Research and assist: only Opus 5.5 (Haiku 5.5 gave
+ * verified "none" answers the key disagrees with on the assist runs; research was only run on Opus). The judge's flag
+ * is not read by Autopilot; both judge models were measured on the 217 labelled listings. Add a model here only after
+ * `assist:eval` / `research:eval` were run against it.
+ */
+export const MEASURED_MODELS: Readonly<Record<'judge' | 'assist' | 'research', readonly string[]>> = {
+  judge: ['claude-haiku-5-5', 'claude-opus-5-5'],
+  assist: ['claude-opus-5-5'],
+  research: ['claude-opus-5-5'],
+};
+
+/** Whether a pipeline's model is trusted by default: Anthropic's own API and a model on the measured list. */
+export function measuredByDefault(pipeline: 'judge' | 'assist' | 'research', s: Pick<AiPipelineSetting, 'provider' | 'model' | 'baseUrl'>): boolean {
+  return s.provider === 'anthropic' && !s.baseUrl && MEASURED_MODELS[pipeline].includes(s.model);
+}
+
+/** What identifies the model a pipeline runs: when any of it changes, trust goes back to the default. */
+export function modelIdentity(s: AiPipelineSetting): string {
+  return JSON.stringify([s.provider, s.model, s.baseUrl ?? null, s.preset ?? null, s.id ?? null]);
+}
+
 export type AutopilotDecision =
   | { apply: true; answer: ReviewAnswer; applied: string; verifiedBy: string[]; pipeline: 'assist' | 'research' }
   | { apply: false; reason: string };
