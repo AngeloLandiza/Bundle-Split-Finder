@@ -398,7 +398,8 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   list. Today; **Deals** with its saved views, each with its count: **Worth buying now** (first, its count
   in the accent: the last scan's own verdict, `buyNow`), All deals, Confirmed, Needs an answer, Waiting
   for a lookup, Losing money, **Watchlist** (`lib/views.ts`; a view is a question about the row's own
-  fields, and a bundle with no estimate is never "losing"); **Agent**: Review with its badge (the
+  fields, and a bundle with no estimate is never "losing"), then **Bought** (his own records, not a view of the rows: its count is
+  his purchases); **Agent**: Review with its badge (the
   accent when above zero), Activity, Settings. Section heads are 11px semibold tertiary with a
   disclosure on hover; a collapsed section is remembered. Rows are 28px, 6px radius; the selected one
   is a grey rounded rectangle with its glyph in the accent. At the foot: "Finish setup · N of 3" while
@@ -442,7 +443,16 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   (`lib/matchWords.ts`); the estimate note under the box. Then **Needs you** (AI-verified first, then oldest; each row the
   question, brand · kind, and its state at the end: "Suggested: 2 parts", "AI could not tell"; a verified one is a green tag).
   Then the **Agent** card at 320px beside them (state and stages, Pause, last scan, next scan, searches left with its meter,
-  Keepa, AI this month, Keys when one is not accepted, Chrome, what Autopilot applied). One column under 1180px. There are
+  Keepa, AI this month, Keys when one is not accepted, Chrome, what Autopilot applied). One column under 1180px. Under Needs you,
+  the **Scorecard** (`components/Scorecard.tsx`, `lib/scorecard.ts`): one grouped box of three rows (Profit realised in the month,
+  Estimate accuracy on completed deals, Flagged Buy now and bought), each a label at the left and its figure with quieter lines at
+  the right, then one plain disclosure "More detail" (per-deal accuracy, open questions, bundles with a complete estimate, the
+  month's running cost). No tiles, no cards in the box. With no purchase it is one empty state, "No purchases recorded yet",
+  saying to press I bought this: never a $0. Realised figures say "recorded by you"; the estimate beside them says it is an
+  estimate. The **Bought** list (`screens/Bought.tsx`) is one grouped section per purchase: its title, the frozen estimate as a
+  note, and a row per part with what he recorded and three small buttons (Sold for…, Still holding, Returned / not sold…); the
+  newest change that can still be taken back is one sentence with Undo above the list. **I bought this…** is a button in the
+  deal inspector and an item of the row's menu; both open a sheet (date, price paid, bundles bought). There are
   no figure tiles: Open questions, Best profit, Bundles found and Searches left were each said again by the lists, the sidebar
   badge and the Agent card.
 - **Deals**: the table fills the content; the title is the sidebar's view. Columns drop by the table's

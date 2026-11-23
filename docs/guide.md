@@ -72,6 +72,16 @@ There are also All deals, Confirmed, Needs an answer and Waiting for a lookup.
 
 Press a number to choose an answer, then **Enter** to save. A "Saved" line appears with **Undo** for a few seconds. **Ctrl+Z** does the same. You can also undo from Activity later. A part left unanswered is not counted.
 
+### Recording what you bought and what it made
+
+The app can only say what it expects. To find out whether its estimates can be trusted, tell it what you really did.
+
+- **When you buy a deal**, open it in Deals and press **I bought this…** (or right-click the row). The date is today, the price is the deal's Home Depot price and the quantity is 1; change any of them. The app saves the estimate as it stands at that moment, each part with its Amazon listing, estimated price and fees, and never changes it afterwards. The deal shows **Bought** and is listed under **Deals, Bought**.
+- **As each part sells**, open **Deals, Bought** and press **Sold for…** on the part. Enter the date and what one unit sold for. If you know the net payout (what reached you after Amazon's fees), enter it too. If you leave it empty the app takes the sale price less the fees in the estimate saved at purchase and labels it "fees estimated". **Still holding** and **Returned / not sold…** (with any money you got back) are there too. You can change any of them again.
+- **Undo.** Each change is a sentence in **Activity**, and the newest one that can still be taken back is also at the top of Bought. Each has **Undo** while nothing later has changed the same purchase; take back the later change first. **Change…** on a purchase corrects its date, price or quantity, or removes the record; that can be undone too.
+- **The scorecard** on Today shows the profit you realised this month on parts marked sold (with "N of M parts sold" until a deal is finished), how far the estimates were from what you made on finished deals, how many deals were flagged Buy now against how many you bought, and, under **More detail**, the open questions, how many bundles have a complete estimate and this month's searches and AI spend. With nothing recorded it says "No purchases recorded yet" and shows no dollar figure. A part's share of what you paid is worked out by its estimated net; that is an allocation, not a measurement.
+- **Download CSV** on Bought saves one row per part with the saved estimate beside what you recorded. Reset scan data never deletes your purchases; its backup folder includes them, and so does the audit file.
+
 ## 5. Leaving it running
 
 Set the schedule in **Settings, Scanning**: only when you press Scan now, every few hours, or once a day. The app scans on its own only while the PC is awake and Split Finder is running. Chrome must be open for Home Depot reads. With Chrome closed, those reads wait and the app tells you. Everything else keeps going.

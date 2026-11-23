@@ -1095,3 +1095,47 @@ and dropped all 12. The fetch was never the problem.
   every item, including accessories with no model number, which today keep their set waiting); the keyword search's
   answer in the page world and whether its Nao pages; the DEWALT lists; and whether a set and a classic combo can be the
   same product under two item ids.
+
+## Outcomes: what he bought, what became of it, and a scorecard (Nov 23)
+
+The two numbers that decide the two-week trial were not measurable: profit actually realised on deals the app flagged, and how
+far the estimate was from what was really made. This is the smallest honest way to record them. (`core/src/outcomes/outcomes.ts`
+is the pure logic, `agent/outcomes.ts` the store side, `desktop-ui/src/lib/scorecard.ts` the scorecard's words.)
+
+- **A purchase freezes the estimate** (`snapshotOf`). "I bought this" copies, once, the deal's parts (model, quantity, Amazon
+  listing and link, grade), each part's estimated sell price, referral and fulfillment fee and after-fees amount, the bundle's
+  estimated profit, ROI, cost, parts total and net revenue, the fee settings of that moment, the basis sentence and whether the
+  last scan had flagged it Buy now. The purchase holds that copy (`structuredClone`); no later scan, price change or fee setting
+  reaches it, and the only edit route (`patchPurchase`) names date, price paid and quantity and refuses any other key, so the
+  snapshot cannot be rewritten even by a hand-made request. Accuracy compares what he made with this, never with today's estimate.
+  A deal with no complete estimate can be bought (the snapshot's `estimate` is null; it is left out of accuracy); a deal with no
+  split cannot (no parts to follow).
+- **Sale results are worked out from the snapshot, never from the current settings.** A part sold with only a price takes
+  `amazonNet` with the snapshot's own rate and fulfillment fee for that part and is labelled `fees_estimated`; a net payout he
+  gives wins (`payout`) and the label goes. Returned or not sold settles the part with what came back (0 by default). Still
+  holding settles nothing. One status per part per purchase, the sale price is per unit and applies to all the part's units
+  (quantity bought times its quantity in the bundle); selling a part in several lots is not supported in version 1 (enter an
+  average or the payout). Rewrite: split a part into lots.
+- **Cost is shared across parts by their estimated net** (`costShare`), since Home Depot sells the bundle, not the parts. This is
+  an allocation, said so in the guide; it only matters for a partly sold deal's realised figure. A complete deal's actual profit is
+  net received less cost, with no allocation. The cost is his price paid with the snapshot's tax and inbound settings applied the
+  way the estimate counts a bundle's cost, so with nothing changed the cost equals the estimate's and the difference is the sales.
+- **Realised this month counts parts settled in the month** (by their date); "N of M parts" counts every part of the deals that
+  had one. Accuracy is over completed deals only (every part sold or returned) that had an estimate, in dollars and as a percent
+  of the estimate's size (null against an estimate of zero), per deal and summed.
+- **Flagged against bought** is backed by records only: the count flagged now (current rows) and, of the purchases, how many were
+  flagged when bought (kept in the snapshot). There is no history of every deal ever flagged, so no "flagged ever" is shown.
+- **The collection is his records, not scan data.** `outcomes.json` goes through the store (single-writer lock, atomic writes,
+  set aside if unreadable) and is in the audit file and in Reset scan data's backup, but `RESET_COLLECTIONS` does not list it, so
+  Reset never empties it. Each change keeps one entry (`before` and `after` of the purchase) for Undo, the newest 100, shown as
+  sentences in Activity and GET /api/outcomes; Undo works while the purchase is still what that change left it, so changes are
+  taken back newest first (409 with a sentence otherwise). Removing a record is such a change and undoes to the whole snapshot.
+- **Routes** (`/api/outcomes`, all `ui` auth: the extension has no use for them): GET, GET export.csv, POST (record), PATCH and
+  DELETE `/:id`, POST `/:id/parts/:part`, POST `/entries/:id/undo`. Validation lives in core and answers one sentence (400);
+  dates are real calendar days not later than tomorrow (time zones), sale dates not before the purchase.
+- **UI:** Today's Scorecard (three rows, one disclosure, empty state with no $0), **Bought** beside the Deals views (his records:
+  a bought deal may have left the list), I bought this in the inspector and the row menu, a Bought tag on rows, a sentence per
+  change in Activity. Money typed with a comma only reads as thousands ("1,179.50"); "12,5" is refused, never read as 125.
+- *Not done, for the rewrite:* a purchase of a deal whose price was seen long ago has no stale warning; the estimate at purchase
+  is the agent's current one, not one re-checked against Home Depot; there is no multi-lot sale of a part and no per-sale fee
+  detail; accuracy has no breakdown by cause (price, fees, sale price).
