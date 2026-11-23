@@ -1,0 +1,138 @@
+.empty {
+  max-width: 520px;
+  padding: 48px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.empty-title {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.empty-cause {
+  color: var(--ink-2);
+}
+
+.empty-action {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--sunken);
+  border-radius: 6px;
+  max-width: 720px;
+}
+
+.error p {
+  flex: 1;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.notice-quiet {
+  background: var(--sunken);
+  color: var(--ink);
+}
+
+.notice-attention {
+  background: var(--attention-bg);
+  color: var(--attention);
+}
+
+.notice-text {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.notice-action {
+  flex: none;
+  display: flex;
+  gap: 8px;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: var(--row);
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.skeleton-bar {
+  display: block;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--sunken);
+}
+
+.skeleton-main {
+  flex: none;
+  width: 52%;
+}
+
+.skeleton-row:nth-child(3n + 2) .skeleton-main {
+  width: 40%;
+}
+
+.skeleton-row:nth-child(3n) .skeleton-main {
+  width: 60%;
+}
+
+.skeleton-fig {
+  margin-left: auto;
+  width: 56px;
+}
+
+.skeleton-fig + .skeleton-fig {
+  margin-left: 0;
+}
+
+.meter {
+  display: inline-block;
+  width: 56px;
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.meter-fill {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+
+.confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.load-offline {
+  padding: 12px 0;
+  font-size: 13px;
+  color: var(--ink-2);
+}

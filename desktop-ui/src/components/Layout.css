@@ -1,0 +1,128 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: var(--head);
+  padding: 12px var(--gutter);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.page-header-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.page-title {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.page-title:focus {
+  outline: none;
+}
+
+.page-sub {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+
+.page-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+  margin-bottom: 8px;
+}
+
+.section-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-body {
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.section-flush {
+  background: transparent;
+  border: 0;
+}
+
+/* Split pane: list on the left, detail on the right, one hairline between. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+}
+
+.split-open {
+  grid-template-columns: minmax(0, 1fr) var(--pane);
+}
+
+.split-main {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.split-pane {
+  min-height: 0;
+  overflow: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+}
+
+.pane-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.pane-close:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.kbd {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--ink-2);
+}

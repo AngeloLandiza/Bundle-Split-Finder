@@ -1,0 +1,26 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.notices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px var(--gutter) 0;
+}
+
+.page-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px var(--gutter) 40px;
+}
+
+/* A body that hosts a split pane fills the page and scrolls inside its own columns. */
+.page-body-split {
+  padding: 0;
+  overflow: hidden;
+}

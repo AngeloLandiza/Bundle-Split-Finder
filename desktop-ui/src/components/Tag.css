@@ -1,0 +1,47 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tag-attention {
+  background: var(--attention-bg);
+  color: var(--attention);
+}
+
+.tag-neutral {
+  background: var(--sunken);
+  color: var(--ink-2);
+}
+
+.tag-verified {
+  color: var(--ink);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: var(--sunken);
+}
+
+.count-attention {
+  background: var(--attention-bg);
+  color: var(--attention);
+}

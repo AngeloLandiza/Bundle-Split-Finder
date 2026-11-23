@@ -1,0 +1,51 @@
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.status-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.status-text {
+  min-width: 0;
+}
+
+.status-compact .status-text {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.status-state {
+  font-weight: 600;
+}
+
+.status-detail {
+  color: var(--ink-2);
+}
+
+.status-right {
+  flex: none;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* 2px determinate bar: ink on line colour, square ends, no stripes, only the width eases. */
+.status-bar {
+  display: block;
+  height: 2px;
+  background: var(--line);
+}
+
+.status-fill {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transition: inline-size 400ms ease-out;
+}

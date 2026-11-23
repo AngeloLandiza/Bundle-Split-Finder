@@ -1,0 +1,187 @@
+.table-wrap {
+  container-type: inline-size;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.col-title {
+  width: auto;
+}
+
+.col-fig {
+  width: 92px;
+}
+
+.col-fig-wide {
+  width: 108px;
+}
+
+.col-match {
+  width: 156px;
+}
+
+.col-time {
+  width: 128px;
+}
+
+.col-action {
+  width: 168px;
+}
+
+.table th {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 16px;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 16px;
+}
+
+.th-left {
+  text-align: left;
+}
+
+.th-right {
+  text-align: right;
+}
+
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.th-right .th-sort {
+  flex-direction: row-reverse;
+}
+
+.th-sort:hover,
+th[aria-sort='ascending'] .th-sort,
+th[aria-sort='descending'] .th-sort {
+  color: var(--ink);
+}
+
+.th-arrow {
+  display: inline-block;
+  width: 10px;
+  font-size: 12px;
+}
+
+.table td {
+  position: relative;
+  height: var(--row);
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.td-left {
+  text-align: left;
+}
+
+.td-right {
+  text-align: right;
+}
+
+.table tbody tr:hover td {
+  background: var(--paper);
+}
+
+.tr-on td,
+.table tbody tr.tr-on:hover td {
+  background: var(--sunken);
+}
+
+/* The stretched open button: covers the row, sits under the row's own controls. */
+.row-open {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 0;
+}
+
+.table tr:has(.row-open:focus-visible) td {
+  background: var(--paper);
+}
+
+.row-open:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
+/* The stretch covers the whole row: the row, not the cell, is the button's containing block.
+   Cell content sits above it but lets clicks through, except a row's own controls. */
+.table-rows td {
+  position: static;
+}
+
+.table-rows tbody tr {
+  position: relative;
+}
+
+.table-rows td > :not(.row-open) {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.table-rows td > .row-control,
+.table-rows td > .row-control * {
+  pointer-events: auto;
+}
+
+@container (max-width: 900px) {
+  .col-hide-900 {
+    display: none;
+  }
+}
+
+@container (max-width: 720px) {
+  .col-hide-720 {
+    display: none;
+  }
+}
+
+@container (max-width: 560px) {
+  .col-hide-560 {
+    display: none;
+  }
+}

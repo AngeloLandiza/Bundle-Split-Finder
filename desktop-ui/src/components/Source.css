@@ -1,0 +1,32 @@
+.source {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.source-plain {
+  color: var(--ink-2);
+}
+
+.quote {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+
+.quote q {
+  quotes: '\201C' '\201D';
+}
+
+.quote-clamp {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.quote-clamp q {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

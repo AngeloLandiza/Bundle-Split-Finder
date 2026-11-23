@@ -1,0 +1,105 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+.btn-md {
+  height: 36px;
+  padding: 0 14px;
+}
+
+.btn-sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.btn-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #000;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+/* A text button: ink, semibold, underlined on hover. "Approve all 18 verified" is one, underlined always. */
+.btn-quiet {
+  background: transparent;
+  color: var(--ink);
+  padding-left: 0;
+  padding-right: 0;
+  height: auto;
+  min-height: 28px;
+}
+
+.btn-quiet:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.btn-danger {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--loss);
+}
+
+.btn-danger:hover:not(:disabled) {
+  border-color: var(--loss);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  color: var(--ink-3);
+  background: var(--sunken);
+  border-color: var(--line);
+}
+
+.btn-quiet:disabled {
+  background: transparent;
+}
+
+.btn-dot {
+  font-weight: 400;
+}
+
+.btn-cost {
+  font-weight: 500;
+}
+
+.btn-cost .fig {
+  font-size: 13px;
+}
+
+.btn-primary .btn-cost {
+  color: var(--line);
+}
+
+.btn-secondary .btn-cost,
+.btn-quiet .btn-cost {
+  color: var(--ink-2);
+}
