@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { globalKey, listKey, reviewKey, type KeyPress } from './keys';
+import { globalKey, isMenuKey, listKey, reviewKey, type KeyPress } from './keys';
 
 const k = (key: string, extra: Partial<KeyPress> = {}): KeyPress => ({ key, target: 'none', ...extra });
 
@@ -19,6 +19,25 @@ describe('global keys', () => {
     expect(globalKey(k('ˆ', { code: 'KeyI', meta: true, alt: true }))).toEqual({ type: 'inspector' });
     expect(globalKey(k('i', { code: 'KeyI', ctrl: true, alt: true, target: 'text' }))).toEqual({ type: 'inspector' });
     expect(globalKey(k('i', { code: 'KeyI', meta: true }))).toBeNull();
+  });
+});
+
+describe('the palette and shortcut keys', () => {
+  it('opens the palette with Cmd or Ctrl and K, from a field too', () => {
+    expect(globalKey(k('k', { meta: true }))).toEqual({ type: 'palette' });
+    expect(globalKey(k('K', { ctrl: true, target: 'text' }))).toEqual({ type: 'palette' });
+    expect(globalKey(k('k'))).toBeNull();
+    expect(globalKey(k('k', { meta: true, shift: true }))).toBeNull();
+  });
+  it('opens the shortcuts sheet with Cmd or Ctrl and the slash', () => {
+    expect(globalKey(k('/', { meta: true }))).toEqual({ type: 'shortcuts' });
+    expect(globalKey(k('/'))).toBeNull();
+  });
+  it('opens a context menu from the keyboard with the menu key or Shift+F10', () => {
+    expect(isMenuKey(k('ContextMenu'))).toBe(true);
+    expect(isMenuKey(k('F10', { shift: true }))).toBe(true);
+    expect(isMenuKey(k('F10'))).toBe(false);
+    expect(isMenuKey(k('F10', { shift: true, meta: true }))).toBe(false);
   });
 });
 

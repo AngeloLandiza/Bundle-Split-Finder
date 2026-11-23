@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppContext, api, type AppContextValue, type PairingValue } from './api/hooks';
 import { ApiError, type AgentEvent, type AppState, type PendingPairRequest } from './api/types';
+import { CommandPalette } from './components/CommandPalette';
+import { ConfirmPriceSheet, type ConfirmTarget } from './components/ConfirmPriceSheet';
+import { MenuProvider } from './components/ContextMenu';
+import { ShortcutsSheet } from './components/ShortcutsSheet';
 import { Sidebar } from './components/Sidebar';
 import { INSPECTOR_DEFAULT, UiContext, clampInspector, type UiValue } from './components/ui';
 import { applyLook, onLookChange, readLook, saveLook, shellChrome, type Look } from './lib/appearance';
@@ -21,6 +25,8 @@ declare global {
     'split-finder:find': CustomEvent;
     'split-finder:inspector': CustomEvent;
     'split-finder:setup': CustomEvent;
+    'split-finder:palette': CustomEvent;
+    'split-finder:shortcuts': CustomEvent;
   }
 }
 
@@ -57,6 +63,11 @@ export function App() {
   const [online, setOnline] = useState(true);
   const [offlineSentence, setOfflineSentence] = useState<string | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null);
+  // Where focus was when the palette or a sheet opened, so closing it puts him back.
+  const returnTo = useRef<HTMLElement | null>(null);
   const [look, setLookState] = useState<Look>(readLook);
   const [inspector, setInspector] = useState(readInspector);
   const listeners = useRef(new Map<AgentEvent['type'], Set<(e: AgentEvent) => void>>());
@@ -121,17 +132,23 @@ export function App() {
     const onFind = () => focusFind();
     const onInspector = () => setInspector((cur) => ({ ...cur, shown: !cur.shown }));
     const onSetup = () => setSetupOpen(true);
+    const onPalette = () => setPaletteOpen(true);
+    const onShortcuts = () => setShortcutsOpen(true);
     window.addEventListener('hashchange', onHash);
     window.addEventListener('split-finder:navigate', onNav);
     window.addEventListener('split-finder:find', onFind);
     window.addEventListener('split-finder:inspector', onInspector);
     window.addEventListener('split-finder:setup', onSetup);
+    window.addEventListener('split-finder:palette', onPalette);
+    window.addEventListener('split-finder:shortcuts', onShortcuts);
     return () => {
       window.removeEventListener('hashchange', onHash);
       window.removeEventListener('split-finder:navigate', onNav);
       window.removeEventListener('split-finder:find', onFind);
       window.removeEventListener('split-finder:inspector', onInspector);
       window.removeEventListener('split-finder:setup', onSetup);
+      window.removeEventListener('split-finder:palette', onPalette);
+      window.removeEventListener('split-finder:shortcuts', onShortcuts);
     };
   }, []);
 
@@ -242,19 +259,41 @@ export function App() {
     return () => set.delete(fn);
   }, []);
 
+  const openOver = useCallback((open: () => void) => {
+    returnTo.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    open();
+  }, []);
+  const closeOver = useCallback((close: () => void) => {
+    close();
+    // After the layer has gone (the window is no longer inert), back to where he was.
+    requestAnimationFrame(() => returnTo.current?.isConnected && returnTo.current.focus({ preventScroll: true }));
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (setupOpen) return;
       const a = globalKey(pressOf(e));
       if (!a) return;
       e.preventDefault();
+      // The palette and the shortcuts sheet toggle with their own keys; the other layers keep the rest of the keys quiet.
+      if (a.type === 'palette') {
+        if (paletteOpen) closeOver(() => setPaletteOpen(false));
+        else if (!shortcutsOpen && !confirmTarget) openOver(() => setPaletteOpen(true));
+        return;
+      }
+      if (a.type === 'shortcuts') {
+        if (shortcutsOpen) closeOver(() => setShortcutsOpen(false));
+        else if (!paletteOpen && !confirmTarget) openOver(() => setShortcutsOpen(true));
+        return;
+      }
+      if (paletteOpen || shortcutsOpen || confirmTarget) return;
       if (a.type === 'go') navigate({ screen: a.screen, id: null });
       else if (a.type === 'inspector') setInspector((cur) => ({ ...cur, shown: !cur.shown }));
       else focusFind();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [navigate, setupOpen]);
+  }, [navigate, setupOpen, paletteOpen, shortcutsOpen, confirmTarget, openOver, closeOver]);
 
   // Move focus to the screen's title on a screen change, so a screen reader hears where it is.
   useEffect(() => {
@@ -283,8 +322,11 @@ export function App() {
         saveLook(next);
       },
       openSetup: () => setSetupOpen(true),
+      openPalette: () => openOver(() => setPaletteOpen(true)),
+      openShortcuts: () => openOver(() => setShortcutsOpen(true)),
+      openConfirmPrice: (target) => openOver(() => setConfirmTarget(target)),
     }),
-    [inspector, setInspectorShown, look],
+    [inspector, setInspectorShown, look, openOver],
   );
 
   const closeSetup = () => {
@@ -299,16 +341,21 @@ export function App() {
   return (
     <AppContext.Provider value={ctx}>
       <UiContext.Provider value={ui}>
-        <div className="window" inert={setupOpen}>
-          <Sidebar route={route} onGo={navigate} />
-          <main className="window-content">
-            {route.screen === 'today' ? <TodayScreen /> : null}
-            {route.screen === 'deals' ? <DealsScreen openId={route.id} view={route.view ?? 'all'} /> : null}
-            {route.screen === 'review' ? <ReviewScreen openId={route.id} /> : null}
-            {route.screen === 'activity' ? <ActivityScreen /> : null}
-          </main>
-        </div>
-        {setupOpen ? <WelcomeSheet onClose={closeSetup} /> : null}
+        <MenuProvider>
+          <div className="window" inert={setupOpen || paletteOpen || shortcutsOpen || confirmTarget !== null}>
+            <Sidebar route={route} onGo={navigate} />
+            <main className="window-content">
+              {route.screen === 'today' ? <TodayScreen /> : null}
+              {route.screen === 'deals' ? <DealsScreen openId={route.id} view={route.view ?? 'all'} /> : null}
+              {route.screen === 'review' ? <ReviewScreen openId={route.id} /> : null}
+              {route.screen === 'activity' ? <ActivityScreen /> : null}
+            </main>
+          </div>
+          {setupOpen ? <WelcomeSheet onClose={closeSetup} /> : null}
+          {paletteOpen ? <CommandPalette onClose={() => closeOver(() => setPaletteOpen(false))} /> : null}
+          {shortcutsOpen ? <ShortcutsSheet onClose={() => closeOver(() => setShortcutsOpen(false))} /> : null}
+          {confirmTarget ? <ConfirmPriceSheet target={confirmTarget} onClose={() => closeOver(() => setConfirmTarget(null))} /> : null}
+        </MenuProvider>
       </UiContext.Provider>
     </AppContext.Provider>
   );

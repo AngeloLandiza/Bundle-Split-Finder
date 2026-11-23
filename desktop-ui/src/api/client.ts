@@ -10,6 +10,7 @@ import type {
   AgentEvent,
   AppSettings,
   AppState,
+  ConfirmPriceRequest,
   DealDetail,
   DealSort,
   DealsView,
@@ -48,6 +49,10 @@ export interface ApiClient {
   lookupQuote(dealId: string): Promise<number>;
   lookUp(dealId: string): Promise<void>;
   verify(dealId: string, model: string): Promise<void>;
+  /** Confirms a sell price for one part of a deal (POST /api/deals/:id/parts/:part/price). The agent never makes up a figure. */
+  confirmPrice(dealId: string, model: string, body: ConfirmPriceRequest): Promise<void>;
+  /** Removes the confirmed price (DELETE on the same path). */
+  removePrice(dealId: string, model: string): Promise<void>;
 
   settings(): Promise<AppSettings>;
   patchSettings(patch: SettingsPatch): Promise<AppSettings>;

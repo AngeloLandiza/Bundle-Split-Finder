@@ -1,0 +1,211 @@
+// The command palette's contents and ranking (Cmd+K). Pure: the screen builds the lists from what the agent said
+// and this module orders them. Nothing here runs a command; it names it, and the palette runs it.
+
+import type { AppState, DealRow, ReviewQuestion } from '../api/types';
+import { KIND_LABEL } from '../screens/reviewModel';
+import { plural } from './format';
+import { modLabel, SCREENS, type Screen } from './keys';
+import type { Route } from './route';
+import { DEAL_VIEWS, VIEW_LABEL } from './views';
+
+export type PaletteSection = 'Go to' | 'Actions' | 'Deals' | 'Questions';
+export const PALETTE_SECTIONS: readonly PaletteSection[] = ['Go to', 'Actions', 'Deals', 'Questions'];
+
+export type CommandId = 'scan' | 'stop' | 'pause' | 'resume' | 'ask-all' | 'approve-all' | 'csv';
+
+export type PaletteAction =
+  | { type: 'go'; route: Route }
+  | { type: 'command'; command: CommandId }
+  | { type: 'deal'; id: string }
+  | { type: 'question'; id: string };
+
+export interface PaletteItem {
+  id: string;
+  section: PaletteSection;
+  title: string;
+  /** A muted second line or tail: the brand and model of a deal, the kind of a question. */
+  detail?: string;
+  /** Shown at the right: a shortcut, or a cost ("5 searches"). */
+  hint?: string;
+  /** Words the title does not hold but a search may use: a model, an item number. */
+  keywords?: string;
+  action: PaletteAction;
+  /** A command that changes answers asks first: the sentence it asks. */
+  confirm?: string;
+}
+
+/** The Preferences panes the Settings screen holds (its section ids). */
+export const SETTINGS_PANES: readonly { id: string; label: string }[] = [
+  { id: 'scanning', label: 'Scanning' },
+  { id: 'fees', label: 'Fees' },
+  { id: 'brands', label: 'What to scan' },
+  { id: 'keys', label: 'Keys' },
+  { id: 'ai', label: 'AI and Autopilot' },
+  { id: 'alerts', label: 'Alerts' },
+  { id: 'chrome', label: 'Chrome helper' },
+  { id: 'general', label: 'General' },
+];
+
+const SCREEN_LABEL: Record<Screen, string> = { today: 'Today', deals: 'Deals', review: 'Review', activity: 'Activity', settings: 'Settings' };
+
+/** Where the palette goes: the five screens, each Deals view, each Preferences pane. */
+export function goToItems(mac: boolean): PaletteItem[] {
+  const out: PaletteItem[] = [];
+  SCREENS.forEach((screen, i) => {
+    out.push({ id: `go:${screen}`, section: 'Go to', title: SCREEN_LABEL[screen], hint: modLabel(String(i + 1), mac), action: { type: 'go', route: { screen, id: null } } });
+    if (screen === 'deals') {
+      for (const v of DEAL_VIEWS) {
+        if (v === 'all') continue;
+        out.push({ id: `go:deals:${v}`, section: 'Go to', title: `Deals · ${VIEW_LABEL[v]}`, keywords: `${VIEW_LABEL[v]} view`, action: { type: 'go', route: { screen: 'deals', id: null, view: v } } });
+      }
+    }
+  });
+  for (const pane of SETTINGS_PANES) {
+    out.push({ id: `go:settings:${pane.id}`, section: 'Go to', title: `Settings · ${pane.label}`, keywords: `preferences ${pane.label}`, action: { type: 'go', route: { screen: 'settings', id: pane.id } } });
+  }
+  return out;
+}
+
+export interface ActionContext {
+  state: AppState | null;
+  /** Open questions the AI has not been asked about, with a price on the call. */
+  askable: number;
+  /** Open questions whose suggestion the code verified. */
+  verified: number;
+  /** Deals the agent holds (a CSV needs one). */
+  deals: number;
+}
+
+/** The commands he may run now. A command that cannot run is left out, not greyed: the list is short and honest. */
+export function actionItems(c: ActionContext): PaletteItem[] {
+  const s = c.state;
+  if (!s) return [];
+  const status = s.agent.status;
+  const running = status === 'scanning' || status === 'asking';
+  const busy = status !== 'idle' && status !== 'error' && status !== 'paused';
+  const out: PaletteItem[] = [];
+  const act = (id: CommandId, title: string, extra: Partial<PaletteItem> = {}) => out.push({ id: `cmd:${id}`, section: 'Actions', title, action: { type: 'command', command: id }, ...extra });
+  if (running) act('stop', 'Stop', { keywords: 'cancel scan' });
+  if (!busy && s.keys.serpapi) {
+    act('scan', 'Scan now', { hint: s.budget.serpPerScan > 0 ? plural(s.budget.serpPerScan, 'search', 'searches') : undefined, keywords: 'run find deals' });
+  }
+  if (status === 'paused') act('resume', 'Resume agent', { keywords: 'unpause' });
+  else act('pause', 'Pause agent', { keywords: 'hold' });
+  if (c.askable >= 1 && (s.keys.anthropic || s.keys.openai) && !busy) act('ask-all', `Ask AI about all ${c.askable}`, { keywords: 'questions review' });
+  if (c.verified >= 1) {
+    act('approve-all', `Approve all ${c.verified} verified`, {
+      keywords: 'answers ai review',
+      confirm: `Approve ${plural(c.verified, 'verified AI answer', 'verified AI answers')}? Each is applied as your answer.`,
+    });
+  }
+  if (c.deals > 0) act('csv', 'Download CSV', { keywords: 'export deals' });
+  return out;
+}
+
+export function dealItems(rows: readonly DealRow[]): PaletteItem[] {
+  return rows.map((r) => ({
+    id: `deal:${r.id}`,
+    section: 'Deals' as const,
+    title: r.title,
+    detail: `${r.brand} · ${r.model}`,
+    keywords: [r.model, r.brand, r.itemId ?? '', r.id].join(' '),
+    action: { type: 'deal' as const, id: r.id },
+  }));
+}
+
+export function questionItems(questions: readonly ReviewQuestion[]): PaletteItem[] {
+  return questions.map((q) => ({
+    id: `question:${q.id}`,
+    section: 'Questions' as const,
+    title: q.bundle.title,
+    detail: `${KIND_LABEL[q.kind]} · ${q.subject}`,
+    keywords: [q.subject, q.bundle.model, q.prompt].join(' '),
+    action: { type: 'question' as const, id: q.id },
+  }));
+}
+
+// ---------------------------------------------------------------- ranking
+
+const norm = (s: string): string => s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
+
+/**
+ * How well one word of the query fits a text, or null. A whole-word match beats a word's start, which beats the
+ * middle of a word, which beats letters in order (a fuzzy match, "pcl2k" for "PCL2200K3N"); earlier is better.
+ */
+export function wordScore(word: string, text: string): number | null {
+  if (word === '') return 0;
+  const at = text.indexOf(word);
+  if (at >= 0) {
+    const before = at === 0 ? ' ' : text[at - 1]!;
+    const boundary = !/[a-z0-9]/.test(before);
+    const end = at + word.length;
+    const whole = boundary && (end === text.length || !/[a-z0-9]/.test(text[end]!));
+    return (whole ? 100 : boundary ? 80 : 50) - Math.min(at, 30) / 3;
+  }
+  // Letters in order, no gap longer than 6, so a stray letter across a long title is not a match.
+  let from = 0;
+  let last = -1;
+  let gaps = 0;
+  for (const ch of word) {
+    const i = text.indexOf(ch, from);
+    if (i < 0 || (last >= 0 && i - last > 7)) return null;
+    gaps += last >= 0 ? i - last - 1 : 0;
+    last = i;
+    from = i + 1;
+  }
+  return Math.max(5, 30 - gaps);
+}
+
+/** The query's words must each fit the title (weighted) or the other words; null when one does not fit anywhere. */
+export function itemScore(query: string, item: Pick<PaletteItem, 'title' | 'detail' | 'keywords'>): number | null {
+  const words = norm(query).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return 0;
+  const title = norm(item.title);
+  const rest = norm(`${item.detail ?? ''} ${item.keywords ?? ''}`);
+  let total = 0;
+  for (const w of words) {
+    const inTitle = wordScore(w, title);
+    const inRest = wordScore(w, rest);
+    const best = Math.max(inTitle !== null ? inTitle * 1.2 : -1, inRest ?? -1);
+    if (best < 0) return null;
+    total += best;
+  }
+  return total;
+}
+
+const CAPS: Record<PaletteSection, number> = { 'Go to': 8, Actions: 8, Deals: 8, Questions: 5 };
+
+export interface PaletteGroup {
+  section: PaletteSection;
+  items: PaletteItem[];
+}
+
+/**
+ * The palette's list. With nothing typed: Go to and Actions, in their own order. With a query: every section by score
+ * (ties keep the given order), Deals and Questions included, capped so a long list does not bury the rest.
+ */
+export function rank(items: readonly PaletteItem[], query: string): PaletteGroup[] {
+  const q = query.trim();
+  const groups: PaletteGroup[] = [];
+  for (const section of PALETTE_SECTIONS) {
+    const own = items.filter((i) => i.section === section);
+    if (q === '') {
+      if (section === 'Deals' || section === 'Questions') continue;
+      // The Preferences panes wait for a word ("fees", "keys"): the quiet list is the screens and the Deals views.
+      const quiet = own.filter((i) => !i.id.startsWith('go:settings:'));
+      if (quiet.length) groups.push({ section, items: quiet });
+      continue;
+    }
+    const scored: { item: PaletteItem; score: number; at: number }[] = [];
+    own.forEach((item, at) => {
+      const score = itemScore(q, item);
+      if (score !== null) scored.push({ item, score, at });
+    });
+    scored.sort((a, b) => b.score - a.score || a.at - b.at);
+    if (scored.length) groups.push({ section, items: scored.slice(0, CAPS[section]).map((s) => s.item) });
+  }
+  return groups;
+}
+
+/** The groups as one list, in the order the arrow keys walk them. */
+export const flatten = (groups: readonly PaletteGroup[]): PaletteItem[] => groups.flatMap((g) => g.items);

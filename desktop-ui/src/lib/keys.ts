@@ -22,7 +22,7 @@ export interface KeyPress {
   target: Target;
 }
 
-export type GlobalAction = { type: 'go'; screen: Screen } | { type: 'find' } | { type: 'inspector' };
+export type GlobalAction = { type: 'go'; screen: Screen } | { type: 'find' } | { type: 'inspector' } | { type: 'palette' } | { type: 'shortcuts' };
 export type ListAction = { type: 'next' } | { type: 'prev' } | { type: 'open' } | { type: 'close' };
 export type ReviewAction = ListAction | { type: 'choose'; index: number } | { type: 'save' } | { type: 'ask' };
 
@@ -36,7 +36,15 @@ export function globalKey(p: KeyPress): GlobalAction | null {
   if ((p.meta || p.ctrl) && !p.alt && !p.shift && (p.key === 'f' || p.key === 'F')) return { type: 'find' };
   // Cmd/Ctrl+Option+I shows or hides the inspector; the shell's View menu sends split-finder:inspector too.
   if ((p.meta || p.ctrl) && p.alt && !p.shift && (p.code === 'KeyI' || p.key === 'i' || p.key === 'I')) return { type: 'inspector' };
+  // Cmd/Ctrl+K opens the command palette; Cmd/Ctrl+/ lists every shortcut.
+  if ((p.meta || p.ctrl) && !p.alt && !p.shift && (p.key === 'k' || p.key === 'K')) return { type: 'palette' };
+  if ((p.meta || p.ctrl) && !p.alt && !p.shift && p.key === '/') return { type: 'shortcuts' };
   return null;
+}
+
+/** The keys that open a context menu from the keyboard: the menu key, or Shift+F10. */
+export function isMenuKey(p: Pick<KeyPress, 'key' | 'shift' | 'meta' | 'ctrl' | 'alt'>): boolean {
+  return p.key === 'ContextMenu' || (p.key === 'F10' && Boolean(p.shift) && !p.meta && !p.ctrl && !p.alt);
 }
 
 /** A table or list with a detail: J/K or arrows move, Enter opens, Escape closes. */

@@ -5,6 +5,7 @@
 // placeholders: no fixture records them. Part lists and questions are written to match the titles. Estimates are computed here with the
 // same fee rule as core/src/money.ts, so the table, the pane and Today agree to the cent.
 
+import { unnamedPartOf } from './map';
 import type {
   ActivityView,
   AppSettings,
@@ -13,6 +14,7 @@ import type {
   DealPart,
   DealRow,
   DealSection,
+  ConfirmState,
   Grade,
   PriceLine,
   ReviewQuestion,
@@ -61,7 +63,7 @@ export const SETTINGS: AppSettings = {
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 const fees = SETTINGS.settings.fees;
-const net = (p: number) => r2(p - Math.max(p * fees.referralRate, fees.minReferral) - fees.fulfillmentFee);
+export const net = (p: number) => r2(p - Math.max(p * fees.referralRate, fees.minReferral) - fees.fulfillmentFee);
 const basis = '15% referral (at least $0.30), $5.50 fulfillment, 0% tax, $0.00 inbound. An estimate from your fee settings, not your real Amazon fees.';
 
 const hd = (itemId: string, slug: string): string => `https://www.homedepot.com/p/${slug}/${itemId}`;
@@ -77,6 +79,8 @@ interface PartSeed {
   grade: Grade;
   listPrice?: number;
   ebay?: { low: number; high: number; listings: number; sold: number };
+  /** The stored eBay listings, each with its own price: what the owner may choose to confirm. */
+  ebayLinks?: { url: string; price: number }[];
 }
 
 function part(s: PartSeed): DealPart {
@@ -97,9 +101,12 @@ function part(s: PartSeed): DealPart {
       counted: false,
       note: `${s.ebay.listings} listings, ${s.ebay.sold} sold`,
       seenAt: ago(300),
-      sources: Array.from({ length: Math.min(3, s.ebay.listings) }, (_, i) => src(`${i + 1}`, `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(s.model)}`)),
+      sources: s.ebayLinks
+        ? s.ebayLinks.map((l, i) => src(`${i + 1}`, l.url))
+        : Array.from({ length: Math.min(3, s.ebay.listings) }, (_, i) => src(`${i + 1}`, `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(s.model)}`)),
     });
   }
+  const state: ConfirmState = s.grade === 'needs_answer' ? 'answer-first' : s.grade === 'not_looked_up' ? 'look-up-first' : counted ? 'amazon-counts' : 'open';
   return {
     model: s.model,
     qty,
@@ -110,6 +117,8 @@ function part(s: PartSeed): DealPart {
     net: counted && s.price !== null ? net(s.price) : null,
     prices,
     verifySearches: s.grade === 'title_match' ? 1 : null,
+    unnamed: false,
+    confirm: { state, ebay: s.ebayLinks ?? [], confirmed: null, inactive: s.grade === 'inactive' },
   };
 }
 
@@ -143,13 +152,15 @@ interface DealSeed {
   range?: { low: number; high: number };
   leaves?: string[];
   secondWay?: { label: string; leaves: string[]; profitDelta: number };
+  /** Kit items with no model number: never looked up, priced only by a price he confirms. */
+  unnamed?: string[];
 }
 
 function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
-  const parts = seed.parts.map(part);
+  const parts = [...seed.parts.map(part), ...(seed.unnamed ?? []).map((name) => unnamedPartOf({ model: `~${name.toUpperCase()}`, name, qty: 1, price: null, link: null }))];
   const cost = r2(seed.price * (1 + fees.salesTaxRate) + fees.inboundCost);
   const countedParts = parts.filter((p) => p.price !== null);
-  const countedAtZero = parts.filter((p) => p.price === null).map((p) => p.model);
+  const countedAtZero = parts.filter((p) => p.price === null).map((p) => (p.unnamed ? (p.title ?? p.model) : p.model));
   const partsSellFor = r2(countedParts.reduce((s, p) => s + (p.price ?? 0) * p.qty, 0));
   const afterFees = r2(countedParts.reduce((s, p) => s + (p.net ?? 0) * p.qty, 0));
   const hasEstimate = !seed.noEstimate && countedParts.length > 0;
@@ -197,6 +208,8 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     title: seed.title,
     brand: seed.brand,
     model: seed.model,
+    itemId: seed.itemId,
+    link,
     section: seed.section,
     price: seed.price,
     off,
@@ -233,6 +246,7 @@ const SEEDS: DealSeed[] = [
     brand: 'RYOBI', model: 'PCL1200K2', title: 'ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Impact Driver, (2) Compact Batteries, and Charger',
     price: 99, was: 149, section: 'confirmed', matchState: 'verified', updatedMin: 47,
     parts: [RYOBI_DRILL, RYOBI_IMPACT, { ...RYOBI_15, qty: 2 }],
+    unnamed: ['18V Charger'],
     leaves: ['18V Charger'],
   },
   {
@@ -299,7 +313,7 @@ const SEEDS: DealSeed[] = [
     price: 679, was: 829, section: 'inactive_listing', matchState: 'inactive', updatedMin: 1460,
     parts: [RYOBI_DRILL, RYOBI_IMPACT, RYOBI_CIRC, RYOBI_RECIP, RYOBI_MULTI, { ...RYOBI_LIGHT, grade: 'verified' }, { ...RYOBI_15, qty: 3 },
       { model: 'PBLRC25B', title: 'ONE+ HP 18V Brushless 3/8 in. Extended Reach Ratchet', asin: 'B0B3JWF5ZV', price: 169, grade: 'verified' },
-      { model: 'PCL900B', title: 'ONE+ 18V Cordless Hand Vacuum (Tool Only)', asin: null, price: null, grade: 'inactive' }],
+      { model: 'PCL900B', title: 'ONE+ 18V Cordless Hand Vacuum (Tool Only)', asin: null, price: null, grade: 'inactive', ebay: { low: 31, high: 44, listings: 2, sold: 9 }, ebayLinks: [{ url: 'https://www.ebay.com/itm/235482930111', price: 44 }, { url: 'https://www.ebay.com/itm/235482930222', price: 31 }] }],
     range: { low: -0.09, high: 0.08 },
   },
   {

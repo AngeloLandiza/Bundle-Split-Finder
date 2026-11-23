@@ -4,6 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type { ActivityError, KeyName, ReportSection, ReviewKind } from '@core/api/contract';
+import type { ConfirmState } from '@core/scan/confirmed';
 import type { PipelineView } from '@core/scan/pipeline';
 
 export type {
@@ -16,6 +17,7 @@ export type {
   ReviewAnswer,
   SettingsPatch,
 } from '@core/api/contract';
+export type { ConfirmState } from '@core/scan/confirmed';
 export type { Schedule } from '@core/schedule';
 export type { PipelineView } from '@core/scan/pipeline';
 
@@ -89,6 +91,10 @@ export interface DealRow {
   title: string;
   brand: string;
   model: string;
+  /** Home Depot's item number, when the agent has one (a search finds a deal by it). */
+  itemId: string | null;
+  /** The bundle's Home Depot page, or null. */
+  link: string | null;
   section: DealSection;
   price: number | null;
   /** Whole percent off, or null. */
@@ -137,6 +143,8 @@ export interface PriceLine {
   /** When the figure was seen (ISO), or null. */
   seenAt: string | null;
   sources: Source[];
+  /** The owner's own confirmed price: Remove is offered on it. */
+  confirmed?: boolean;
 }
 
 export type Grade = 'verified' | 'title_match' | 'needs_answer' | 'inactive' | 'missing' | 'not_looked_up';
@@ -154,7 +162,24 @@ export interface DealPart {
   prices: PriceLine[];
   /** Searches a Verify costs, when the grade is title_match. */
   verifySearches: number | null;
+  /** A kit's item with no model number (a charger, a bag): never looked up, priced only by a price he confirms. */
+  unnamed: boolean;
+  /** What he may do about this part's sell price (core/src/scan/confirmed.ts rules). */
+  confirm: PartConfirm;
 }
+
+/** A part's price form: whether it is open, the stored eBay listings he may choose, and the price he confirmed. */
+export interface PartConfirm {
+  state: ConfirmState;
+  /** The part's stored eBay listings that carry their own price and a link. */
+  ebay: { url: string; price: number }[];
+  confirmed: { price: number; link: string; note: string | null } | null;
+  /** True when the Amazon listing is not for sale: the form says a confirmed price counts until it is again. */
+  inactive: boolean;
+}
+
+/** The body of the confirm-price call, as the form builds it (`url` is the listing's link). */
+export type ConfirmPriceRequest = { kind: 'ebay-listing'; url: string; note?: string } | { kind: 'typed'; price: number; url: string; note?: string };
 
 export interface WayToSell {
   id: string;

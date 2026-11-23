@@ -3,6 +3,7 @@
 
 import { createContext, useContext } from 'react';
 import type { Look } from '../lib/appearance';
+import type { ConfirmTarget } from './ConfirmPriceSheet';
 
 export interface UiValue {
   inspectorShown: boolean;
@@ -13,6 +14,12 @@ export interface UiValue {
   setLook: (look: Look) => void;
   /** Opens the welcome sheet at the first step still open. */
   openSetup: () => void;
+  /** Cmd+K: the command palette. */
+  openPalette: () => void;
+  /** Cmd+/: the keyboard shortcuts sheet. */
+  openShortcuts: () => void;
+  /** The Confirm a price sheet for one part of a deal; a sheet over the window, so App holds it. */
+  openConfirmPrice: (target: ConfirmTarget) => void;
 }
 
 export const UiContext = createContext<UiValue | null>(null);

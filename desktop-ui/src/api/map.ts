@@ -4,7 +4,8 @@
 // for a question that has changed since is dropped, never shown as verified.
 
 import type * as C from '@core/api/contract';
-import type { BundleRow, PartRow, PriceOption, PriceRange } from '@core/scan/types';
+import { confirmedSourceName, confirmState, ebayListingChoices } from '@core/scan/confirmed';
+import type { BundleRow, PartRow, PriceOption, PriceRange, UnnamedItem } from '@core/scan/types';
 import { money } from '../lib/format';
 import type {
   ActivityView,
@@ -91,6 +92,8 @@ export function mapRow(r: C.DealRow): DealRow {
     title: r.bundle.title,
     brand: r.bundle.brand,
     model: r.bundle.model,
+    itemId: r.bundle.itemId,
+    link: r.bundle.link,
     section: r.section,
     price: r.price,
     off: r.off,
@@ -136,7 +139,15 @@ function lineOf(o: PriceOption, part: PartRow): PriceLine {
     case 'amazon_buybox':
       return { ...base, label: o.seller ? `Buy Box · ${o.seller}` : 'Buy Box', amount: o.price, range: null, note: notes.join(' · ') || null, sources: o.link ? [{ label: 'Amazon listing', url: o.link }] : [] };
     case 'confirmed':
-      return { ...base, label: 'Your confirmed price', amount: o.price, range: null, note: notes.join(' · ') || null, sources: o.link ? [{ label: 'Your link', url: o.link }] : [] };
+      return {
+        ...base,
+        label: `Confirmed by you · ${confirmedSourceName(o.link)}`,
+        amount: o.price,
+        range: null,
+        note: [o.note, ...notes].filter(Boolean).join(' · ') || null,
+        sources: o.link ? [{ label: 'Open the listing', url: o.link }] : [],
+        confirmed: true,
+      };
     case 'amazon_list':
       return { ...base, label: 'List price', amount: o.price, range: null, note: notes.join(' · ') || null, sources: o.link ? [{ label: 'Amazon listing', url: o.link }] : [] };
     case 'homedepot':
@@ -157,6 +168,37 @@ function lineOf(o: PriceOption, part: PartRow): PriceLine {
   }
 }
 
+function confirmOf(p: PartRow): DealPart['confirm'] {
+  const own = p.prices.find((o) => o.kind === 'confirmed');
+  return {
+    state: confirmState(p),
+    ebay: ebayListingChoices(p),
+    confirmed: own && own.link ? { price: own.price, link: own.link, note: own.note ?? null } : null,
+    inactive: p.availability === 'inactive',
+  };
+}
+
+/** A kit's item with no model number: no listing, no lookup, priced only by a price he confirms. */
+export function unnamedPartOf(u: UnnamedItem): DealPart {
+  const line: PriceLine[] =
+    u.price !== null && u.link !== null
+      ? [{ label: `Confirmed by you · ${confirmedSourceName(u.link)}`, amount: u.price, range: null, counted: true, note: null, seenAt: null, sources: [{ label: 'Open the listing', url: u.link }], confirmed: true }]
+      : [];
+  return {
+    model: u.model,
+    qty: u.qty,
+    title: u.name,
+    grade: 'missing',
+    asin: null,
+    price: u.price,
+    net: null,
+    prices: line,
+    verifySearches: null,
+    unnamed: true,
+    confirm: { state: 'open', ebay: [], confirmed: u.price !== null && u.link !== null ? { price: u.price, link: u.link, note: null } : null, inactive: false },
+  };
+}
+
 function partOf(p: PartRow): DealPart {
   const grade = gradeOf(p);
   return {
@@ -171,7 +213,16 @@ function partOf(p: PartRow): DealPart {
     prices: p.prices.map((o) => lineOf(o, p)),
     // Verify reads one listing's page: one search (agent/work.ts paidPlan).
     verifySearches: grade === 'title_match' && p.asin ? 1 : null,
+    unnamed: false,
+    confirm: confirmOf(p),
   };
+}
+
+/** The items the kits list with no model number, once each, across the bundle's ways to sell. */
+function unnamedOf(b: BundleRow): DealPart[] {
+  const seen = new Map<string, UnnamedItem>();
+  for (const o of b.options) for (const u of o.unnamed ?? []) if (!seen.has(u.model.toUpperCase())) seen.set(u.model.toUpperCase(), u);
+  return [...seen.values()].map(unnamedPartOf);
 }
 
 /** Why a bundle has no estimate, from what its own row says. */
@@ -199,7 +250,7 @@ function wayOf(o: BundleRow['options'][number], i: number): WayToSell {
 export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetail {
   const b = d.bundle;
   const e = d.estimate ?? null;
-  const parts = b.parts.map(partOf);
+  const parts = [...b.parts.map(partOf), ...unnamedOf(b)];
   return {
     id: d.row.id,
     title: b.title,

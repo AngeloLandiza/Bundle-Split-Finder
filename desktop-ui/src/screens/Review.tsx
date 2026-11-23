@@ -2,15 +2,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { ReviewAnswer, ReviewQuestion } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
+import { useMenu } from '../components/ContextMenu';
 import { SearchField, TextField } from '../components/Fields';
 import { InspectorSplit, Kbd } from '../components/Layout';
 import { Page } from '../components/Page';
+import type { RowMenu } from '../components/Table';
 import { Quote, SourceLink } from '../components/Source';
 import { ConfirmInline, EmptyState, LoadError, LoadingState, Notice } from '../components/States';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { money, plural } from '../lib/format';
-import { pressOf, reviewKey } from '../lib/keys';
+import { copyText, openPage } from '../lib/actions';
+import { isMenuKey, pressOf, reviewKey } from '../lib/keys';
+import { questionMenu, type QuestionMenuId } from '../lib/menus';
 import { KIND_LABEL, groupQuestions, parseTyped, preselected, typedFromSuggestion } from './reviewModel';
 import './Review.css';
 
@@ -57,6 +61,35 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
     if (next) navigate({ screen: 'review', id: next.id });
   };
 
+  // The right-click menu of a question row (design.md, Context menus).
+  const [menuError, setMenuError] = useState<string | null>(null);
+  const hasAi = Boolean(state?.keys.anthropic || state?.keys.openai);
+  const menuOf = (q: ReviewQuestion): RowMenu => ({
+    label: q.bundle.title,
+    items: questionMenu(q, { hasAi, asking: state?.agent.status === 'asking' }),
+    onPick: (id) => {
+      setMenuError(null);
+      const fail = (e: unknown) => setMenuError(e instanceof Error ? e.message : 'That did not work. Try again.');
+      switch (id as QuestionMenuId) {
+        case 'ask':
+          api.ask(q.id).catch(fail);
+          return;
+        case 'approve':
+          void approveIds([q.id]).catch(fail);
+          return;
+        case 'open-deal':
+          if (q.bundle.id) navigate({ screen: 'deals', id: q.bundle.id });
+          return;
+        case 'open-hd':
+          if (!openPage(q.bundle.link)) setMenuError('Home Depot’s page could not be opened.');
+          return;
+        case 'copy-question':
+          void copyText(q.prompt).then((ok) => (ok ? setNotice('Copied the question.') : setMenuError('Could not copy. Select the question by hand.')));
+          return;
+      }
+    },
+  });
+
   const askable = all.filter((q) => q.askCostUsd !== null && q.suggestion === null);
   const askCost = askable.reduce((s, q) => s + (q.askCostUsd ?? 0), 0);
   const asking = state?.agent.status === 'asking';
@@ -65,8 +98,8 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
 
   const list = (
     <div className="review">
-      {askAll.error || approve.error || notice ? (
-        <Notice tone={askAll.error || approve.error ? 'attention' : 'quiet'}>{askAll.error ?? approve.error ?? notice}</Notice>
+      {askAll.error || approve.error || menuError || notice ? (
+        <Notice tone={askAll.error || approve.error || menuError ? 'attention' : 'quiet'}>{askAll.error ?? approve.error ?? menuError ?? notice}</Notice>
       ) : null}
       <div className="list-scroll">
         {res.status === 'loading' ? <LoadingState label="Loading questions" /> : null}
@@ -103,7 +136,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
                 </LinkButton>
               )}
             </div>
-            <QuestionList questions={groups.verified} current={current} onSelect={select} />
+            <QuestionList questions={groups.verified} current={current} onSelect={select} menuOf={menuOf} />
           </section>
         ) : null}
         {groups.needsYou.length ? (
@@ -113,7 +146,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
                 Needs you <span className="fig muted">{groups.needsYou.length}</span>
               </h2>
             </div>
-            <QuestionList questions={groups.needsYou} current={current} onSelect={select} />
+            <QuestionList questions={groups.needsYou} current={current} onSelect={select} menuOf={menuOf} />
           </section>
         ) : null}
       </div>
@@ -162,12 +195,22 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
   );
 }
 
-function QuestionList({ questions, current, onSelect }: { questions: ReviewQuestion[]; current: ReviewQuestion | null; onSelect: (q: ReviewQuestion) => void }) {
+function QuestionList({ questions, current, onSelect, menuOf }: { questions: ReviewQuestion[]; current: ReviewQuestion | null; onSelect: (q: ReviewQuestion) => void; menuOf: (q: ReviewQuestion) => RowMenu }) {
+  const ctx = useMenu();
   return (
     <ul className="qlist">
       {questions.map((q) => (
         <li key={q.id}>
-          <button type="button" className="qitem" aria-current={q.id === current?.id || undefined} onClick={() => onSelect(q)}>
+          <button
+            type="button"
+            className="qitem"
+            aria-current={q.id === current?.id || undefined}
+            onClick={() => onSelect(q)}
+            onContextMenu={(e) => ctx.openFrom(e, menuOf(q))}
+            onKeyDown={(e) => {
+              if (isMenuKey({ key: e.key, shift: e.shiftKey, meta: e.metaKey, ctrl: e.ctrlKey, alt: e.altKey })) ctx.openFrom(e, menuOf(q));
+            }}
+          >
             <span className="qitem-main">
               <span className="qitem-title" title={q.bundle.title}>
                 {q.bundle.title}

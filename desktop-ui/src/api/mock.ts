@@ -7,8 +7,9 @@
 import type { PipelineView } from '@core/scan/pipeline';
 import type { ApiClient } from './client';
 import { mergePatch } from '../lib/patch';
-import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE } from './mockData';
-import { ApiError, type AgentEvent, type AppSettings, type AppState, type PairedExtension, type PendingPairRequest, type ReviewQuestion } from './types';
+import { confirmedSourceName } from '@core/scan/confirmed';
+import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE, net } from './mockData';
+import { ApiError, type AgentEvent, type AppSettings, type AppState, type DealDetail, type PairedExtension, type PendingPairRequest, type ReviewQuestion } from './types';
 
 type Scenario = 'normal' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing';
 
@@ -48,6 +49,7 @@ export function createMockClient(): ApiClient {
 
   const state: AppState = clone(STATE);
   let deals = clone(DEALS);
+  const details: Record<string, DealDetail> = clone(DETAILS);
   let questions: ReviewQuestion[] = clone(QUESTIONS);
   const activity = clone(ACTIVITY);
   let settings: AppSettings = clone(SETTINGS);
@@ -79,6 +81,19 @@ export function createMockClient(): ApiClient {
   if (mode === 'pairing') {
     pairRequests = [{ requestId: 'pair-1', extensionId: 'ponmlkjihgfedcbaponmlkjihgfedcba', code: '482913', requestedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 5 * 60_000).toISOString() }];
   }
+
+  /** The estimate after a confirmed price changes: the same fee rule as the seed (mockData.ts). */
+  const recount = (d: DealDetail) => {
+    const counted = d.parts.filter((p) => p.price !== null);
+    if (d.estimate) {
+      const partsSellFor = Math.round(counted.reduce((sum, p) => sum + (p.price ?? 0) * p.qty, 0) * 100) / 100;
+      const afterFees = Math.round(counted.reduce((sum, p) => sum + net(p.price ?? 0) * p.qty, 0) * 100) / 100;
+      const profit = Math.round((afterFees - d.estimate.cost) * 100) / 100;
+      const roi = Math.round((profit / d.estimate.cost) * 10000) / 10000;
+      d.estimate = { ...d.estimate, partsSellFor, afterFees, profit, roi, countedAtZero: d.parts.filter((p) => p.price === null).map((p) => (p.unnamed ? (p.title ?? p.model) : p.model)) };
+      deals = deals.map((r) => (r.id === d.id ? { ...r, profit, roi } : r));
+    }
+  };
 
   const sync = () => {
     state.counts.review = questions.length;
@@ -135,7 +150,7 @@ export function createMockClient(): ApiClient {
     },
     async deal(id) {
       await online();
-      const d = DETAILS[id];
+      const d = details[id];
       if (!d) throw new ApiError('server', 'This bundle is no longer in the deals. The last scan dropped it.');
       return clone(d);
     },
@@ -237,6 +252,45 @@ export function createMockClient(): ApiClient {
       await online(900);
       state.budget.serpLeft = (state.budget.serpLeft ?? 0) - 1;
       sync();
+    },
+    async confirmPrice(id, model, body) {
+      await online(300);
+      const d = details[id];
+      const p = d?.parts.find((x) => x.model === model);
+      if (!d || !p) throw new ApiError('server', 'No such part in this deal.');
+      if (p.confirm.state === 'answer-first') throw new ApiError('refused', 'Answer its question first. A price counts only after its Amazon listing is chosen.');
+      if (p.confirm.state === 'look-up-first') throw new ApiError('refused', 'Look this part up on Amazon first.');
+      if (p.confirm.state === 'amazon-counts' && !p.confirm.confirmed) throw new ApiError('refused', 'This part counts at its Amazon price. A price you confirm counts only when the listing is not for sale.');
+      let price: number;
+      let link = body.url.trim();
+      if (body.kind === 'ebay-listing') {
+        const chosen = p.confirm.ebay.find((c) => c.url === link);
+        if (!chosen) throw new ApiError('server', 'That is not one of this part’s stored eBay listings.');
+        price = chosen.price;
+      } else {
+        price = body.price;
+      }
+      link = new URL(link).toString();
+      const note = body.note?.trim() || null;
+      const line = { label: `Confirmed by you · ${confirmedSourceName(link)}`, amount: price, range: null, counted: true, note, seenAt: new Date().toISOString(), sources: [{ label: 'Open the listing', url: link }], confirmed: true };
+      p.prices = [line, ...p.prices.filter((x) => !x.confirmed)];
+      p.price = price;
+      p.net = net(price);
+      p.confirm = { ...p.confirm, confirmed: { price, link, note } };
+      recount(d);
+      emit({ type: 'deals' });
+    },
+    async removePrice(id, model) {
+      await online(300);
+      const d = details[id];
+      const p = d?.parts.find((x) => x.model === model);
+      if (!d || !p || !p.confirm.confirmed) throw new ApiError('server', 'This part has no confirmed price.');
+      p.prices = p.prices.filter((x) => !x.confirmed);
+      p.price = null;
+      p.net = null;
+      p.confirm = { ...p.confirm, confirmed: null };
+      recount(d);
+      emit({ type: 'deals' });
     },
 
     async settings() {

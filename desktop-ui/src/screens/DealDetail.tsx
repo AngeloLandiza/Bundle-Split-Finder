@@ -2,11 +2,16 @@ import { Fragment, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealDetail, DealPart, PriceLine } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
+import { useMenu } from '../components/ContextMenu';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
 import { SourceLink } from '../components/Source';
 import { LoadError, LoadingState, Notice } from '../components/States';
 import { Tag } from '../components/Tag';
+import { useUi } from '../components/ui';
+import { amazonSearchUrl, amazonUrl, copyText, openPage } from '../lib/actions';
 import { money, percentOff, plural, when } from '../lib/format';
+import { isMenuKey } from '../lib/keys';
+import { partMenu, type PartMenuId } from '../lib/menus';
 import { GRADE_LABEL } from './reviewModel';
 import './DealDetail.css';
 
@@ -175,7 +180,7 @@ function Detail({ d }: { d: DealDetail }) {
             </h3>
             <ul className="detail-list">
               {d.parts.map((p) => (
-                <Part key={p.model} part={p} dealId={d.id} brand={d.brand} scanRunning={scanRunning} />
+                <Part key={p.model} part={p} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} />
               ))}
             </ul>
           </section>
@@ -194,19 +199,57 @@ function Detail({ d }: { d: DealDetail }) {
   );
 }
 
-function Part({ part, dealId, brand, scanRunning }: { part: DealPart; dealId: string; brand: string; scanRunning: boolean }) {
+function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean }) {
   const verify = useAction(api.verify);
-  const search = `https://www.amazon.com/s?k=${encodeURIComponent(`${brand} ${part.model}`)}`;
+  const removePrice = useAction(api.removePrice);
+  const ui = useUi();
+  const menu = useMenu();
+  const [said, setSaid] = useState<string | null>(null);
   const tone = part.grade === 'verified' ? 'verified' : part.grade === 'title_match' || part.grade === 'needs_answer' ? 'attention' : 'neutral';
+  const label = part.unnamed ? (part.title ?? part.model) : part.model;
+  const confirm = () => ui.openConfirmPrice({ dealId, part, questionId });
+  // A form for the price opens unless an Amazon price already counts and he has none of his own to change.
+  const canConfirm = part.confirm.state !== 'amazon-counts' || part.confirm.confirmed !== null;
+  const remove = () => void removePrice.run(dealId, part.model);
+
+  const openMenu = (e: React.MouseEvent | React.KeyboardEvent) =>
+    menu.openFrom(e, {
+      label,
+      items: partMenu(part, { scanRunning }),
+      onPick: (id) => {
+        switch (id as PartMenuId) {
+          case 'open-amazon':
+            openPage(part.asin ? amazonUrl(part.asin) : amazonSearchUrl(brand, part.model));
+            return;
+          case 'copy-asin':
+            if (part.asin) void copyText(part.asin).then((ok) => setSaid(ok ? `Copied ${part.asin}.` : 'Could not copy. Select the ASIN by hand.'));
+            return;
+          case 'confirm':
+            confirm();
+            return;
+          case 'remove':
+            remove();
+            return;
+        }
+      },
+    });
+
   return (
-    <li className="part">
+    <li
+      className="part"
+      data-menu-row=""
+      onContextMenu={openMenu}
+      onKeyDown={(e) => {
+        if (isMenuKey({ key: e.key, shift: e.shiftKey, meta: e.metaKey, ctrl: e.ctrlKey, alt: e.altKey })) openMenu(e);
+      }}
+    >
       <div className="part-top">
         <div className="part-name">
-          <span className="part-model code">
-            {part.model}
+          <span className={`part-model${part.unnamed ? '' : ' code'}`}>
+            {part.unnamed ? part.title ?? part.model : part.model}
             {part.qty > 1 ? ` ×${part.qty}` : ''}
           </span>
-          {part.title ? (
+          {!part.unnamed && part.title ? (
             <span className="part-title" title={part.title}>
               {part.title}
             </span>
@@ -220,27 +263,43 @@ function Part({ part, dealId, brand, scanRunning }: { part: DealPart; dealId: st
         ) : null}
       </div>
       <div className="part-tags">
-        <Tag tone={tone}>{GRADE_LABEL[part.grade]}</Tag>
-        {part.asin ? (
-          <a href={`https://www.amazon.com/dp/${part.asin}`} target="_blank" rel="noopener noreferrer">
-            <span className="code">{part.asin}</span> on Amazon
-          </a>
+        {part.unnamed ? (
+          <>
+            <Tag tone="neutral">No model number</Tag>
+            <span className="muted">Not looked up on Amazon</span>
+          </>
         ) : (
-          <a href={search} target="_blank" rel="noopener noreferrer">
-            Search Amazon for <span className="code">{part.model}</span>
-          </a>
+          <>
+            <Tag tone={tone}>{GRADE_LABEL[part.grade]}</Tag>
+            {part.asin ? (
+              <a href={amazonUrl(part.asin)} target="_blank" rel="noopener noreferrer">
+                <span className="code">{part.asin}</span> on Amazon
+              </a>
+            ) : (
+              <a href={amazonSearchUrl(brand, part.model)} target="_blank" rel="noopener noreferrer">
+                Search Amazon for <span className="code">{part.model}</span>
+              </a>
+            )}
+          </>
         )}
         {part.grade === 'title_match' && part.asin ? (
           <Button size="sm" busy={verify.busy} busyLabel="Verifying…" disabled={scanRunning} onClick={() => void verify.run(dealId, part.model)} cost={plural(part.verifySearches ?? 1, 'search', 'searches')}>
             Verify
           </Button>
         ) : null}
+        {canConfirm ? (
+          <Button size="sm" onClick={confirm} title="Count a price you have seen, with its link">
+            {part.confirm.confirmed ? 'Change price…' : 'Confirm a price…'}
+          </Button>
+        ) : null}
       </div>
       {verify.error ? <p role="alert">{verify.error}</p> : null}
+      {removePrice.error ? <p role="alert">{removePrice.error}</p> : null}
+      {said ? <p className="detail-note" role="status">{said}</p> : null}
       {part.prices.length ? (
         <ul className="prices">
           {part.prices.map((line, i) => (
-            <PriceRow key={i} line={line} />
+            <PriceRow key={i} line={line} onRemove={line.confirmed ? remove : undefined} removeBusy={removePrice.busy} removeDisabled={scanRunning} />
           ))}
         </ul>
       ) : null}
@@ -248,7 +307,7 @@ function Part({ part, dealId, brand, scanRunning }: { part: DealPart; dealId: st
   );
 }
 
-function PriceRow({ line }: { line: PriceLine }) {
+function PriceRow({ line, onRemove, removeBusy, removeDisabled }: { line: PriceLine; onRemove?: () => void; removeBusy?: boolean; removeDisabled?: boolean }) {
   return (
     <li className={`price${line.counted ? ' price-counted' : ''}`}>
       <span className="price-label">{line.label}</span>
@@ -265,6 +324,14 @@ function PriceRow({ line }: { line: PriceLine }) {
                 <SourceLink source={s}>{/^\d+$/.test(s.label) ? `Listing ${s.label}` : s.label}</SourceLink>
               </Fragment>
             ))}
+          </>
+        ) : null}
+        {onRemove ? (
+          <>
+            {' · '}
+            <button type="button" className="link-btn" disabled={removeBusy || removeDisabled} title={removeDisabled ? 'A scan is running. Remove the price when it has finished.' : undefined} onClick={onRemove}>
+              Remove
+            </button>
           </>
         ) : null}
       </span>

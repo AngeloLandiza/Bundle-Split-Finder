@@ -1,6 +1,8 @@
 import { useImperativeHandle, useRef, type ReactNode, type Ref } from 'react';
-import { listKey, pressOf } from '../lib/keys';
+import { isMenuKey, listKey, pressOf } from '../lib/keys';
+import type { MenuItem } from '../lib/menus';
 import { ariaSort, nextSort, type SortDirection, type SortState } from '../lib/sort';
+import { useMenu } from './ContextMenu';
 import { Glyph } from './Glyph';
 import './Table.css';
 
@@ -18,6 +20,13 @@ export interface Column<T, K extends string> {
   /** Hidden when the table is narrower than this (a small window, or the detail pane is open). */
   hideBelow?: 900 | 720 | 560;
   render: (row: T) => ReactNode;
+}
+
+/** What a row's right-click offers, and what choosing an item does. */
+export interface RowMenu {
+  label: string;
+  items: MenuItem[];
+  onPick: (id: string) => void;
 }
 
 export interface TableHandle {
@@ -41,6 +50,7 @@ export function Table<T, K extends string>({
   onOpen,
   onClose,
   handle,
+  menu,
 }: {
   caption: string;
   rows: T[];
@@ -54,7 +64,10 @@ export function Table<T, K extends string>({
   onOpen: (row: T) => void;
   onClose?: () => void;
   handle?: Ref<TableHandle>;
+  /** The row's context menu (right-click, the menu key, Shift+F10); none when absent. */
+  menu?: (row: T) => RowMenu | null;
 }) {
+  const ctx = useMenu();
   const body = useRef<HTMLTableSectionElement>(null);
   const focusRow = (i: number) => {
     const buttons = body.current?.querySelectorAll<HTMLButtonElement>('.row-open');
@@ -63,7 +76,18 @@ export function Table<T, K extends string>({
   };
   useImperativeHandle(handle, () => ({ focusRow }));
 
+  const openMenu = (e: React.MouseEvent | React.KeyboardEvent, row: T | undefined) => {
+    const m = row && menu ? menu(row) : null;
+    if (m) ctx.openFrom(e, m);
+  };
+
   const onKeyDown = (e: React.KeyboardEvent) => {
+    if (menu && isMenuKey({ key: e.key, shift: e.shiftKey, meta: e.metaKey, ctrl: e.ctrlKey, alt: e.altKey })) {
+      const tr = (e.target as HTMLElement).closest('tr');
+      const at = tr ? Array.from(body.current?.rows ?? []).indexOf(tr as HTMLTableRowElement) : -1;
+      openMenu(e, rows[at]);
+      return;
+    }
     const a = listKey(pressOf(e.nativeEvent));
     if (!a) return;
     const tr = (e.target as HTMLElement).closest('tr');
@@ -120,7 +144,7 @@ export function Table<T, K extends string>({
             const key = rowKey(row);
             const on = key === selected;
             return (
-              <tr key={key} className={on ? 'tr-on' : undefined}>
+              <tr key={key} className={on ? 'tr-on' : undefined} onContextMenu={menu ? (e) => openMenu(e, row) : undefined}>
                 {columns.map((c, i) => (
                   <td key={c.key} className={`td-${c.align ?? 'left'}${c.hideBelow ? ` col-hide-${c.hideBelow}` : ''}`}>
                     {i === 0 ? (

@@ -148,6 +148,8 @@ export function createHttpClient(): ApiClient {
     lookupQuote: async (dealId) => (await call<C.PaidResponse>('GET', `/api/deals/${id(dealId)}/lookup`)).searches,
     lookUp: async (dealId) => void (await call<C.PaidResponse>('POST', `/api/deals/${id(dealId)}/lookup`, {})),
     verify: async (dealId, model) => void (await call<C.PaidResponse>('POST', `/api/deals/${id(dealId)}/verify`, { model })),
+    confirmPrice: async (dealId, model, body) => void (await call<C.ConfirmPriceResponse>('POST', `/api/deals/${id(dealId)}/parts/${id(model)}/price`, body satisfies C.ConfirmPriceBody)),
+    removePrice: async (dealId, model) => void (await call<C.ConfirmPriceResponse>('DELETE', `/api/deals/${id(dealId)}/parts/${id(model)}/price`)),
 
     settings: async () => (await call<C.SettingsResponse>('GET', '/api/settings')).settings,
     patchSettings: async (patch) => (await call<C.SettingsResponse>('PATCH', '/api/settings', patch)).settings,

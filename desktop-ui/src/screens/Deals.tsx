@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealRow, DealSection, DealSort } from '../api/types';
 import { Button } from '../components/Button';
@@ -8,10 +8,12 @@ import { InspectorSplit } from '../components/Layout';
 import { Page } from '../components/Page';
 import { PopoverSection } from '../components/Popover';
 import { EmptyState, LoadError, LoadingState, Notice } from '../components/States';
-import { Table, type Column, type TableHandle } from '../components/Table';
+import { Table, type Column, type RowMenu, type TableHandle } from '../components/Table';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
+import { copyText, openPage } from '../lib/actions';
 import { count, percentOff, plural, when } from '../lib/format';
+import { dealMenu, type DealMenuId } from '../lib/menus';
 import { sortRows, type SortState } from '../lib/sort';
 import { VIEW_LABEL, inView, type DealView } from '../lib/views';
 import { DealDetailPane } from './DealDetail';
@@ -92,6 +94,54 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
   }, [navigate, openId, rows, view]);
 
   const scanRunning = state?.agent.status === 'scanning';
+
+  // What a row's menu says it did, for a moment: "Copied PCL1600K2." or why it could not.
+  const [said, setSaid] = useState<{ tone: 'quiet' | 'attention'; text: string } | null>(null);
+  useEffect(() => {
+    if (!said || said.tone === 'attention') return;
+    const t = setTimeout(() => setSaid(null), 4000);
+    return () => clearTimeout(t);
+  }, [said]);
+  const failed = (e: unknown) => setSaid({ tone: 'attention', text: e instanceof Error ? e.message : 'That did not work. Try again.' });
+  const openRow = (r: DealRow) => {
+    ui.setInspectorShown(true);
+    navigate({ screen: 'deals', id: r.id, view });
+  };
+  const pick = (id: DealMenuId, r: DealRow) => {
+    switch (id) {
+      case 'open':
+      case 'verify':
+        openRow(r);
+        return;
+      case 'open-hd':
+        if (!openPage(r.link)) setSaid({ tone: 'attention', text: 'Home Depot’s page could not be opened.' });
+        return;
+      case 'copy-model':
+        void copyText(r.model).then((ok) => setSaid(ok ? { tone: 'quiet', text: `Copied ${r.model}.` } : { tone: 'attention', text: 'Could not copy. Select the model by hand.' }));
+        return;
+      case 'copy-asins':
+        api
+          .deal(r.id)
+          .then(async (d) => {
+            if (d.asins.length === 0) return setSaid({ tone: 'quiet', text: 'No ASIN is chosen for this deal yet.' });
+            const ok = await copyText(d.asins.join('\n'));
+            setSaid(ok ? { tone: 'quiet', text: `Copied ${plural(d.asins.length, 'ASIN', 'ASINs')}.` } : { tone: 'attention', text: 'Could not copy. Select the ASINs by hand.' });
+          })
+          .catch(failed);
+        return;
+      case 'lookup':
+        api.lookUp(r.id).then(() => setSaid({ tone: 'quiet', text: `Looked up ${r.model}.` })).catch(failed);
+        return;
+      case 'review':
+        api
+          .review()
+          .then((rev) => navigate({ screen: 'review', id: rev.questions.find((q) => q.bundle.id === r.id)?.id ?? null }))
+          .catch(failed);
+        return;
+    }
+  };
+  const menuOf = (r: DealRow): RowMenu => ({ label: r.title, items: dealMenu(r, { scanRunning }), onPick: (id) => pick(id as DealMenuId, r) });
+
   const columns: Column<DealRow, Col>[] = [
     {
       key: 'title',
@@ -191,6 +241,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
           {csv.error}
         </Notice>
       ) : null}
+      {said ? <Notice tone={said.tone}>{said.text}</Notice> : null}
       <div className="list-scroll">
         {res.status === 'loading' ? <LoadingState label="Loading deals" /> : null}
         {res.status === 'error' ? <LoadError error={res.error} onRetry={reload} /> : null}
@@ -239,6 +290,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
             }}
             onClose={openId ? close : undefined}
             handle={table}
+            menu={menuOf}
           />
         ) : null}
       </div>

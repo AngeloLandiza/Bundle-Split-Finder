@@ -1,0 +1,84 @@
+.shortcuts-title {
+  margin: 0 0 14px;
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 32px;
+  align-items: start;
+}
+
+.shortcuts-area:first-child {
+  grid-row: span 2;
+}
+
+.shortcuts-head {
+  margin: 0 0 6px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  color: var(--label-2);
+}
+
+.shortcuts-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-block-size: 26px;
+  border-block-end: 1px solid var(--separator);
+}
+
+.shortcut:last-child {
+  border-block-end: 0;
+}
+
+.shortcut dt {
+  margin: 0;
+}
+
+.shortcut dd {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.shortcut-keys {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.shortcut-or {
+  font-size: 11px;
+  color: var(--label-3);
+}
+
+.shortcuts-foot {
+  font-size: 11px;
+  color: var(--label-2);
+}
+
+.shortcuts-space {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .shortcuts-grid {
+    grid-template-columns: 1fr;
+  }
+  .shortcuts-area:first-child {
+    grid-row: auto;
+  }
+}
