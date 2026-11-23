@@ -891,3 +891,67 @@ reads "Amazon lists it under TTI, the maker of RYOBI; its title names PBP004" an
 spelling of RYOBI ONE+; its title names PCG002". `LADDER_VERSION` is 2, so a stored unknown is read again once (from the
 cached pull) and the deals are judged again. B096WHWDNB (TTI, part number PCG002, bulk packaged) would now confirm for
 PCG002; the key holds it uncertain, so it counts neither way.
+## Nov 23: suggested prices and "answer once"
+Two places the owner's manual work was cut, inside the PO's rules ("A price counts when he confirms it", Nov 20; rule 4;
+rule 5). Replayed with `npx tsx scripts/replay-suggestions.ts` (free, no network; `core/test/replay-suggestions.test.ts`).
+
+### Suggested prices: prepared by the agent, counted only when he confirms (core/src/scan/suggest.ts)
+- **At most one suggestion per part with no counted price** (`PartRow.priceSuggestion`: price, kind, label, evidence with
+  links, fulfillment), only where the price form is open (looked up, not in Review, no Amazon New or confirmed price counting).
+  (a) *Amazon listing not for sale now:* Keepa's average New price for that ASIN over 90 days, else 30 ("Amazon listing not for
+  sale now; its 90-day average was $146.37 (Keepa)"). The average is Keepa's NEW type (index 1, the lowest New offer), Amazon's
+  own (index 0) only when NEW has none: the owner sells as a third party, and the recording shows the gap (DCF921B, B09M3TL9BB:
+  $235.14 Amazon, $146.37 lowest New over 90 days). Read from the trend a pull stored (`PartTrend.newAvg90/newAvg30`; every pull
+  already asks `stats=180`, which carries avg30/avg90 at no token cost). (b) *No Amazon listing:* the middle of the stored eBay
+  listings (the eBay pass searches New, Buy It Now) the judge or the owner marked the same product, with the count and range
+  ("6 eBay listings, $220–$390.15, middle $274.48"); fewer than 3: none. An inactive listing never takes the eBay figure, and no
+  listing never takes a Keepa one: one source per suggestion. (c) *Home Depot's price for the part sold alone* is his cost side:
+  never a suggestion, at most a "Context:" line under one.
+- **One click confirms it, as any confirmed price.** `POST /api/deals/:id/parts/:part/price {kind: 'suggested', suggestion}`:
+  the agent compares kind and price to the cent with the suggestion the part carries now (409 if a scan changed it), and stores
+  an ordinary `ConfirmedPrice` whose link is the suggestion's (the Amazon listing; the eBay listing nearest the middle) and whose
+  `source` keeps the label and evidence. So the Nov 20 ruling holds: an eBay figure counts only because he chose it; nothing
+  counts by itself. It counts until the Amazon listing is for sale again, as before.
+- **The "if accepted" line** (`IncompleteEstimate.ifAccepted`, `DealIncompleteEstimate.ifAccepted`): what the bundle would make
+  if he accepted every unpriced part's suggestion, evaluated exactly as a confirmed price would count (fee settings, rule 5).
+  Only when every unpriced part has one; a second line in the box, never the headline, never a buy or a signal.
+- **The drip pulls the missing averages** (`agent/suggestPrices.ts`, a hook after the fee and sales pulls): each inactive listing
+  of a bundle missing a price whose trend has no average field, smallest break-even first, 1 token each through the drip's
+  Keepa budget and above the reserve. A trend that says Keepa has none (null) is not asked again.
+- **`prices.autoAcceptSuggestions` exists and is always false.** Not in the UI, not patchable, forced off on load: the PO said
+  his approval is the answer.
+- *Replay (after-scan3):* 39 bundles missing a price; from what is stored, 0 suggestions (the copy holds no Keepa trend and no
+  eBay record). The drip would pull 5 averages (P321, DCK225D2, PCL1600K2, PCL206, A10FB1G: 5 tokens), reaching 7 bundles if
+  Keepa has an average for each. With the eBay listings recorded on Nov 19 standing in for the eBay pass, 13 bundles get an eBay
+  suggestion (DCK200D1P1, 6 of 6 the same, middle $274.48), 9 of them with the "if accepted" line (+$33.72 to +$74.56 est.);
+  P553 (2 of 5 the same) gets none, and PCL416B, PCL1400K2 and A72601 have no recording.
+
+### Answer once, apply everywhere (core/src/facts)
+- **What is stored, per brand and model** (`partFacts`, an optional collection of the scan store; the agent's
+  `scan/partFacts.json`; cleared by Reset scan data with his other answers): `isPart` (a part Home Depot does not sell alone, or
+  sells as another model, that he approved as a part), `sellAs` (a special buy or combo sold whole, or as the tools he typed in
+  its place), `notSoldSeparately` (in the box, not sold separately), each with the date and the question it came from. *Not
+  copied:* a chosen Amazon listing is already the part's user-decided match record and a confirmed price is already keyed by
+  brand and model; both already apply in every bundle, so a second copy could only drift.
+- **Applied through settle rule 2.** A part Home Depot did not confirm that he already settled is settled with an `owner_fact`
+  evidence line ("A986501 is a part of the bundles that name it: your answer on Nov 23 (PCL1600K2-A986501)"), in every current
+  bundle (open questions are read again at once, as `withdrawUnreadSplitQuestions` reads them) and every future one. Only the
+  question Home Depot left is answered: the page's own contradictions and the tool count are still checked. A part only his fact
+  settled has no Home Depot title, so it is not counted as a tool in that check (the count still checks every part Home Depot's
+  pages read); without this the owner's own example (PCL406424SB-A21701-A25RS51, "2-Tool") could never settle.
+- **What an answer remembers** (Review's "…and remember this for A986501", checked by default, `ReviewAnswerBody.remember`):
+  only what it says about a part the question asked about (`unsettledParts`). His parts hold it: `isPart` (or `sellAs` whole for
+  a special buy). His parts replace a special buy with tools, keeping the reading's other parts: `sellAs` those tools. He leaves
+  a part out, or answers None: nothing, since leaving a part out of one bundle says nothing about another (rule 4).
+- **"In the box, not sold separately"** (the inspector's link on a no-listing part, `POST /api/facts`): the part is not counted,
+  as an item with no model number, and is no reason for an incomplete estimate. **Newer evidence wins:** when Home Depot's reading
+  finds it sold alone, or its Amazon listing is seen for sale, after the answer, the fact is not applied and the row says what
+  changed ("Home Depot sells A10FB1G on its own since Nov 25 ($12.97)."), with Keep my answer (a new date) and Change. It asks
+  on the part row, once, not as a Review question.
+- **Change** (`DELETE /api/facts/:key?field=`) forgets the answer and reads again every split it settled, so those bundles are
+  asked about again. Undo of the Review answer undoes that bundle only; the fact stays until Change.
+- *Replay (after-scan3):* 9 open questions (6 split, 3 match). Two split questions ask about a named part (A986501, A10FB1G),
+  one question each: one answer per distinct part settles 0 others in this copy. The other 4 have no single part (no reading,
+  or the page names PBP003/PBP006 that no part explains). Match questions were already per model (DCF860B is held by 2 bundles).
+  The test of "one answer settles the others" (`core/test/part-facts.test.ts`, `agent/test/partFacts.test.ts`) uses the real
+  PCL1600K2-A986501 record under a second item id as the stand-in for the owner's live data, where parts repeat.
