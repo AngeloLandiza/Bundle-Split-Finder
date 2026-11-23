@@ -119,6 +119,14 @@ export function ActivityScreen() {
                           </span>
                           <span className="run-summary">{r.summary}</span>
                           {r.error && r.error !== r.summary ? <span className="run-summary">{r.error}</span> : null}
+                          {r.steps
+                            .filter((st) => st.state === 'failed' || st.state === 'skipped')
+                            .map((st) => (
+                              <span key={st.label} className="run-summary">
+                                {st.state === 'failed' ? 'Failed step' : 'Skipped'}: {st.label}
+                                {st.figure ? ` · ${st.figure}` : ''}
+                              </span>
+                            ))}
                         </td>
                         <td className="td-right fig cell-small">{count(r.searches)}</td>
                         <td className="td-right fig cell-small">{count(r.keepaTokens)}</td>
@@ -185,11 +193,11 @@ function AutopilotRow({ a }: { a: AutopilotEntry }) {
               <span className="code">{a.model}</span>
             </>
           ) : null}
-          {' · applied '}
+          {' · Autopilot applied '}
           <span className="code arow-answer">{a.applied}</span>
           {a.by ? (
             <>
-              {' · by '}
+              {' · suggested by '}
               <span className="code">{a.by}</span>
             </>
           ) : null}

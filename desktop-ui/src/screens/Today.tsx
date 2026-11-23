@@ -148,6 +148,13 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
           compact
           title="No deals with an estimate yet"
           cause={losing > 0 ? 'No bundle’s estimate is above zero yet. Losing money lists the ones that are below.' : res.data.rows.length ? 'Every bundle found so far is waiting for a lookup or an answer.' : 'The agent has not found a discounted bundle yet. The next scan looks again.'}
+          action={
+            losing > 0 ? (
+              <Button onClick={() => navigate({ screen: 'deals', id: null, view: 'losing' })}>Show losing money</Button>
+            ) : res.data.rows.length ? (
+              <Button onClick={() => navigate({ screen: 'deals', id: null, view: 'waiting' })}>See what is waiting</Button>
+            ) : null
+          }
         />
       ) : null}
       {rows.length > 0 ? (

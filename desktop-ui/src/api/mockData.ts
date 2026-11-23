@@ -510,13 +510,13 @@ export const STATE: AppState = {
   firstRun: false,
 };
 
-const run = (r: Omit<Run, 'error' | 'steps'> & { error?: string }): Run => ({ error: null, steps: [], ...r });
+const run = (r: Omit<Run, 'error' | 'steps'> & { error?: string; steps?: Run['steps'] }): Run => ({ error: null, steps: [], ...r });
 
 export const ACTIVITY: ActivityView = {
   runs: [
     run({ id: 'r6', kind: 'scan', byYou: false, startedAt: ago(52), finishedAt: ago(47), searches: 5, keepaTokens: 40, aiUsd: 0.34, result: 'finished', summary: '11 bundles, 3 with an estimate. Autopilot applied 3.' }),
     run({ id: 'r5', kind: 'lookup', byYou: true, startedAt: ago(190), finishedAt: ago(189), searches: 2, keepaTokens: 0, aiUsd: 0, result: 'finished', summary: 'Look up: 2 searches.' }),
-    run({ id: 'r4', kind: 'scan', byYou: false, startedAt: ago(412), finishedAt: ago(406), searches: 5, keepaTokens: 38, aiUsd: 0.21, result: 'failed', summary: 'Scan failed.', error: 'SerpApi did not answer after the second page.' }),
+    run({ id: 'r4', kind: 'scan', byYou: false, startedAt: ago(412), finishedAt: ago(406), searches: 5, keepaTokens: 38, aiUsd: 0.21, result: 'failed', summary: 'Scan failed.', error: 'SerpApi did not answer after the second page.', steps: [{ label: 'Home Depot part prices', state: 'done', figure: '40 read' }, { label: 'Amazon lookups', state: 'failed', figure: 'SerpApi did not answer' }, { label: 'eBay listings', state: 'skipped', figure: 'key not accepted' }] }),
     run({ id: 'r3', kind: 'ask', byYou: true, startedAt: ago(780), finishedAt: ago(771), searches: 0, keepaTokens: 0, aiUsd: 0.52, result: 'finished', summary: 'AI asked about 6, 4 verified.' }),
     run({ id: 'r2', kind: 'scan', byYou: false, startedAt: ago(772), finishedAt: ago(766), searches: 5, keepaTokens: 41, aiUsd: 0.18, result: 'limit', summary: 'Scan stopped at the limit.', error: 'Stopped at the hourly limit of 50 searches.' }),
     run({ id: 'r1', kind: 'scan', byYou: true, startedAt: ago(1500), finishedAt: ago(1493), searches: 5, keepaTokens: 44, aiUsd: 0.4, result: 'finished', summary: '9 bundles, 1 with an estimate.' }),
