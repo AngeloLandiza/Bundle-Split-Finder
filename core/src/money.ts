@@ -70,3 +70,17 @@ export function route(packaging: Packaging): Route {
   }
   return { channel: 'ebay', condition: 'new_other', note: 'packaging not confirmed; treated as loose until checked once' };
 }
+
+/**
+ * Nov 23: the lowest Amazon price, to the cent, at which one unit nets `net` after fees (amazonNet's inverse). Null
+ * when no price does (a referral rate of 100% or more) or `net` is not above 0. An estimate from the fee settings.
+ */
+export function priceForNet(net: number, fees: FeeSettings = DEFAULT_FEES): number | null {
+  if (!(net > 0) || !(fees.referralRate < 1)) return null;
+  const atRate = (net + fees.fulfillmentFee) / (1 - fees.referralRate);
+  const price = atRate * fees.referralRate >= fees.minReferral ? atRate : net + fees.fulfillmentFee + fees.minReferral;
+  // The cent at or above the exact price, then down while amazonNet (which rounds to the cent) still nets `net`.
+  let cents = Math.ceil(Math.round(price * 10_000) / 100);
+  while (cents > 1 && amazonNet((cents - 1) / 100, fees) >= net) cents -= 1;
+  return cents / 100;
+}

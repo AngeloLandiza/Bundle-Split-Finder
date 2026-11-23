@@ -10,7 +10,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PaidAction } from '@core/scan/types';
 import { DEFAULT_SETTINGS } from '@core/settings';
 import { answeredKitWorld, KIT_KEY, kitLookUpItems, kitQuote, kitReport, kitRunPaid, type KitWorld, P553_KEY } from '../../../core/test/kit-world';
-import { profit } from '../../lib/format';
 import type { AppState, PanelReport } from '../../lib/messages';
 import type { WorkerApi } from '../../lib/pageClient';
 import { DealsTab } from './DealsTab';
@@ -113,14 +112,18 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     expect(screen.getAllByRole('button', { name: /^Look up/ })).toHaveLength(2);
   });
 
-  it("pressing the whole way's Look up sends exactly its parts and gives it an estimate, with the estimate label under the list", async () => {
+  it("pressing the whole way's Look up sends exactly its parts; with no listing for either, the way has no figure (Nov 23: never $0)", async () => {
     const user = userEvent.setup();
     const { sent } = await openP553();
     await user.click(await within(blocks()[0]!).findByRole('button', { name: 'Look up 2 parts · 2 searches' }));
     expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PCL1600K2' }, { brand: 'RYOBI', model: 'P553' }] } });
     await waitFor(() => expect(within(region()).queryByRole('button', { name: /Look up 2 parts/ })).toBeNull());
-    expect(within(blocks()[0]!).getByText(/^[+−]\$/)).toBeInTheDocument();
-    expect(within(region()).getByText(/^Estimated profit and ROI/)).toBeInTheDocument();
+    // The kit has no Amazon listing and P553 waits in Review: no price is not $0, so no estimate, and the kit sells as its parts.
+    const whole = blocks().find((b) => b.textContent!.includes('sold whole'))!;
+    expect(within(whole).queryByText(/^[+−]\$/)).toBeNull();
+    expect(within(whole).getByText(/^Leaves 2 parts:/)).toHaveTextContent('Leaves 2 parts: PCL1600K2, P553');
+    expect(within(blocks()[0]!).getByText('Shown above')).toBeInTheDocument();
+    expect(blocks()[0]).toHaveTextContent('PCL1600K2 split into its parts');
   });
 
   it("pressing the split way's Look up sends its waiting items and fills them in, leaving the way an estimate or its remaining leftovers", async () => {
@@ -147,7 +150,7 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     });
   });
 
-  it('with the items looked up, the split has an estimate, is the primary and is the one shown above', async () => {
+  it('with the items looked up, the split is the primary and the one shown above, and has no figure while four parts have no price', async () => {
     const w = await answeredKitWorld();
     await kitRunPaid(w, { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PCL1600K2' }, { brand: 'RYOBI', model: 'P553' }] });
     await kitLookUpItems(w, ['PCL206', 'PCL235', 'PCL500', 'PCL515', 'PCL430', 'PCL660', 'PBP005', 'PBP002']);
@@ -158,12 +161,15 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     const [a, b] = blocks();
     expect(a).toHaveTextContent('PCL1600K2 split into its parts');
     expect(within(a!).getByText('Shown above')).toBeInTheDocument();
-    expect(within(a!).getByText(/^[+−]\$/)).toHaveTextContent(profit(row.options[0]!.estimate!.profit));
+    // Nov 23: PCL206 and PCL500 have no listing, PCL430 and P553 wait in Review: no estimate, never one counting them at $0.
+    expect(row.options[0]!.estimate).toBeNull();
+    expect(row.options[0]!.incomplete).toMatchObject({ priced: 5, total: 9 });
+    expect(within(a!).queryByText(/^[+−]\$/)).toBeNull();
     expect(within(a!).queryByRole('button', { name: /^Look up/ })).toBeNull();
     expect(within(a!).getByText(/^Leaves \d+ parts: /)).toBeInTheDocument();
     expect(within(b!).getByText(/^Leaves 2 parts:/)).toHaveTextContent('Leaves 2 parts: PCL1600K2, P553');
-    // The headline is the primary's: the same figure.
-    expect(screen.getByText(profit(row.estimate!.profit), { selector: '.detail-profit' })).toBeInTheDocument();
+    expect(row.estimate).toBeNull();
+    expect(document.querySelector('.detail-profit')?.textContent ?? '').not.toMatch(/[+−]\$/);
   });
 });
 
@@ -356,7 +362,7 @@ describe('Detail: model numbers and names in Ways to sell', () => {
     await kitRunPaid(w, { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PCL1600K2' }, { brand: 'RYOBI', model: 'P553' }] });
     const first = await kitReport(w);
     render(createElement(Harness, { w, api: workerApi(w), first, bundleKey: P553_KEY }));
-    const line = within(blocks()[0]!).getByText(/^Leaves 2 parts:/);
+    const line = within(blocks().find((b) => b.textContent!.includes('sold whole'))!).getByText(/^Leaves 2 parts:/);
     expect(Array.from(line.querySelectorAll('.figure')).map((m) => m.textContent)).toEqual(['PCL1600K2', 'P553']);
   });
 

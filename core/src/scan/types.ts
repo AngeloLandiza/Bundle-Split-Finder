@@ -852,8 +852,49 @@ export interface PriceRange {
 }
 
 /**
+ * Why a model part has no counted price (Nov 23, the third real scan):
+ * waiting     not looked up on Amazon yet (the next scan or the drip looks it up)
+ * review      its Amazon match waits for the owner's answer in Review
+ * no_listing  looked up, and no Amazon listing was found (the owner can confirm a price)
+ * inactive    its Amazon listing is not for sale now (the owner can confirm a price until it is)
+ */
+export type UnpricedState = 'waiting' | 'review' | 'no_listing' | 'inactive';
+
+/** A model part with no counted price, and why. */
+export interface UnpricedPart {
+  model: string;
+  qty: number;
+  state: UnpricedState;
+}
+
+/**
+ * Nov 23, the third real scan: what an option says when some model part has no counted price, in place of an estimate.
+ * A part with no price is never counted at $0 (that showed a $299 bundle "losing" $299). Figures are estimates from the
+ * fee settings (rule 5), never the seller's real fees.
+ */
+export interface IncompleteEstimate {
+  /** Model parts (one per model) with a counted price. */
+  priced: number;
+  /** Model parts (one per model) the option sells. Items with no model number are not counted here. */
+  total: number;
+  /** What the bundle costs with tax and inbound (bundleProfit's cost). */
+  cost: number;
+  /** What the priced parts bring after fees, with any item with no model number the owner priced. */
+  pricedNet: number;
+  /** What the unpriced parts together must bring after fees for the bundle to pay for itself: cost - pricedNet, at least 0. */
+  breakEvenNet: number;
+  /**
+   * With one unpriced model (any quantity) and breakEvenNet above 0: the Amazon price per unit that nets
+   * breakEvenNet / qty after fees (money.ts priceForNet). Null otherwise.
+   */
+  breakEvenPrice: number | null;
+  /** The model parts with no counted price, in part order. */
+  unpriced: UnpricedPart[];
+}
+
+/**
  * complete      split resolved and every part has a priced listing
- * partial       split resolved, at least one part has no priced listing (it counts as liquidated once it has been looked up; while a part waits, there is no estimate)
+ * partial       split resolved, at least one part has no priced listing (Nov 23: then there is no estimate, only an incomplete one)
  * needs_review  the split is not resolved; no estimate
  */
 export type BundleStatus = 'complete' | 'partial' | 'needs_review';
@@ -884,12 +925,15 @@ export interface BundleRow {
   status: BundleStatus;
   section: ReportSection;
   parts: PartRow[];
-  /** An estimate from fee settings, never the seller's real fees. Null without a resolved split and a price, or while a part is waiting for its lookup. */
+  /**
+   * An estimate from fee settings, never the seller's real fees. Null without a resolved split and a price, or (Nov 23)
+   * while any model part has no counted price: waiting for its lookup, in Review, no listing, or an inactive listing.
+   */
   estimate: BundleResult | null;
   /**
    * Parts no priced listing covers, sorted; for a split primary, then its kits' items with no model
-   * number, by their page text in page order. With an estimate they are valued at the liquidation
-   * rate; waiting parts are listed but not valued.
+   * number, by their page text in page order. With an estimate (Nov 23) only items with no model number can be here:
+   * they are not counted (the liquidation rate, default $0), and the owner can confirm a price for each.
    */
   uncovered: string[];
   /**
@@ -927,6 +971,11 @@ export interface BundleRow {
   splitEvidence?: SplitEvidence[];
   /** Step 9: the primary option's range; all null while the split is not resolved. */
   range: PriceRange;
+  /**
+   * Nov 23: the primary option's incomplete estimate, when the bundle has a price and a resolved split but some model
+   * part has no counted price (`estimate` is then null). Absent otherwise.
+   */
+  incomplete?: IncompleteEstimate;
 }
 
 /**
@@ -954,7 +1003,7 @@ export interface SaleOption {
   splitKits: string[];
   /** The option's model items, one row per model, quantities summed (a kit item that is also another part adds to it). */
   parts: PartRow[];
-  /** An estimate from fee settings, never the seller's real fees. Null without a bundle price, or while any of its parts waits or is unmatched. */
+  /** An estimate from fee settings, never the seller's real fees. Null without a bundle price, or (Nov 23) while any model part has no counted price. */
   estimate: BundleResult | null;
   /**
    * What the option leaves unsold, as display names with ` ×N` after a quantity above 1: first the
@@ -971,6 +1020,10 @@ export interface SaleOption {
   loose: boolean;
   /** Step 9: the estimate at each end of the parts' counting prices; `range.amazonNew` is `estimate`. */
   range: PriceRange;
+  /** Nov 23: with a bundle price, while some model part has no counted price (`estimate` is null). Absent otherwise. */
+  incomplete?: IncompleteEstimate;
+  /** Nov 23: how many parts each split kit's own page lists (models and items with no model number). Absent when none is split. */
+  kitParts?: Record<string, number>;
 }
 
 /** Which of the owner's answers decides a bundle's split, and the question it answered. */

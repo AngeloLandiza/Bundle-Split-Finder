@@ -27,14 +27,15 @@ describe('CSV: sold_as and other_options', () => {
     expect(await kitRunPaid(w, { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PCL1600K2' }, { brand: 'RYOBI', model: 'P553' }] })).toBeNull();
     const row = (await kitReport(w)).bundles.find((b) => b.key === P553_KEY)!;
     const [primary, other] = row.options;
-    expect(primary!.estimate).not.toBeNull();
+    // Nov 23: the kit has no listing and P553 is in Review: no price, so neither option has an estimate, and none is invented.
+    expect(primary!.estimate).toBeNull();
     expect(other!.estimate).toBeNull();
-    // The split still waits for its items: no figure is invented for it.
     expect(lineOf(bundlesCsv([row]))[1]!.endsWith(`,${primary!.label},`)).toBe(true);
-    // Hand the other option an estimate to check the pair format on a real row.
-    const withBoth = { ...row, options: [primary!, { ...other!, estimate: primary!.estimate }] };
+    // Hand both options an estimate to check the pair format on a real row.
+    const est = { cost: 388, netRevenue: 400, profit: 12, roi: 0.0309 };
+    const withBoth = { ...row, options: [{ ...primary!, estimate: est }, { ...other!, estimate: est }] };
     const csv = lineOf(bundlesCsv([withBoth]))[1]!;
-    expect(csv.endsWith(`,${primary!.label},${other!.label}: ${primary!.estimate!.profit}`)).toBe(true);
+    expect(csv.endsWith(`,${primary!.label},${other!.label}: 12`)).toBe(true);
   });
 
   it('leaves both empty for a bundle with one way to sell, and for the one with no options', async () => {

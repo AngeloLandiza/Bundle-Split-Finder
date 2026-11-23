@@ -124,10 +124,13 @@ describe('buildReport', () => {
     const report = await buildReport(store, RATCHET);
     const first = report.bundles.find((b) => b.model === 'PBLRC2501SB')!;
     expect(first).toMatchObject({ section: 'inactive_listing', status: 'partial', uncovered: ['PBLRC25B'] });
-    expect(first.estimate!.netRevenue).toBe(124.9);
+    // Nov 23: an inactive listing is no price: no estimate, and what the priced part brings instead.
+    expect(first.estimate).toBeNull();
+    expect(first.incomplete).toMatchObject({ priced: 1, total: 2, pricedNet: 124.9, unpriced: [{ model: 'PBLRC25B', qty: 1, state: 'inactive' }] });
     expect(first.parts.find((p) => p.model === 'PBLRC25B')).toMatchObject({ availability: 'inactive', price: 169, asin: 'B0B3JWF5ZV' });
     expect(report.bundles.some((b) => b.section === 'confirmed')).toBe(false);
-    expect(report.bundles.slice(0, 2).map((b) => b.model)).toEqual(['PBLRC2501SB', 'PBLRC01B-PBLRC25B']);
+    // Neither has an estimate now (a part's listing is inactive): the report keeps key order within the section.
+    expect(report.bundles.slice(0, 2).map((b) => b.model)).toEqual(['PBLRC01B-PBLRC25B', 'PBLRC2501SB']);
   });
 
   async function oneBundleStore(price: { asin: string; price: number | null; reviews: number | null; seenAt: number | null; checkedAt: number } | null) {

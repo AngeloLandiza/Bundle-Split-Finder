@@ -72,7 +72,8 @@ const message = async (res: Response): Promise<string> => ((await res.json()) as
 
 describe('POST /api/deals/:id/parts/:part/price', () => {
   it('counts a stored eBay listing at its own price, and the deal estimate follows', async () => {
-    const before = (await detail()).row.profit;
+    // Nov 23: C (in Review) and D (inactive) have no price, so the deal has no estimate; what its priced parts bring follows.
+    const before = (await detail()).bundle.incomplete!.pricedNet;
     const res = await post('A', { kind: 'ebay-listing', url: EBAY_2 });
     expect(res.status).toBe(200);
     expect(((await res.json()) as { confirmed: { price: number; link: string } }).confirmed).toMatchObject({ price: 75, link: EBAY_2, note: null });
@@ -80,7 +81,8 @@ describe('POST /api/deals/:id/parts/:part/price', () => {
     const a = d.bundle.parts.find((p) => p.model === 'A')!;
     expect(a.price).toBe(75);
     expect(a.prices.find((o) => o.kind === 'confirmed')).toMatchObject({ price: 75, link: EBAY_2, reference: false });
-    expect(d.row.profit).not.toBe(before);
+    expect(d.row.profit).toBeNull();
+    expect(d.bundle.incomplete!.pricedNet).toBeGreaterThan(before);
     expect((await agent.work.scanStore.listConfirmedPrices()).map((c) => c.key)).toEqual(['RYOBI:A']);
   });
 

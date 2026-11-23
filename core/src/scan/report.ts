@@ -3,7 +3,7 @@
 
 import { type KitItem, kitIndex, kitItemParts, kitPageStored, kitPageUnread, type KitRecord, kitRecords, splitItems } from '../kitContents';
 import { isBulkPackaging } from '../match';
-import type { BundleResult } from '../money';
+import { priceForNet, type BundleResult } from '../money';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
 import { kitPageTarget } from './kitPage';
@@ -16,6 +16,7 @@ import {
   type CatalogRecord,
   type BundleStatus,
   type ConfirmedPrice,
+  type IncompleteEstimate,
   type EbayQuestion,
   type EbayValueRecord,
   effectiveVerdict,
@@ -33,6 +34,7 @@ import {
   resolvedParts,
   type SaleOption,
   type UnnamedItem,
+  type UnpricedState,
   type ScanReport,
   type ScanSettings,
   type ScanStore,
@@ -178,6 +180,39 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
 /** A part not looked up yet: it has no listing because nobody has looked, not because there is none. */
 export const notLookedUp = (p: PartRow): boolean => p.status === 'waiting' || p.status === 'unmatched';
 
+/** Nov 23: why a model part with no counted price has none (UnpricedState). */
+export function unpricedState(p: PartRow): UnpricedState {
+  if (notLookedUp(p)) return 'waiting';
+  if (p.status === 'review') return 'review';
+  if (p.status === 'none' || p.availability === 'missing') return 'no_listing';
+  return 'inactive';
+}
+
+const round2 = (n: number): number => Math.round(n * 100) / 100;
+
+/**
+ * Nov 23, the third real scan: what an option with an unpriced model part says instead of an estimate. The priced
+ * parts are evaluated as the estimate is (evaluateBundle, the same components and fees) with nothing else valued, so
+ * `pricedNet` is what they bring after fees; the gap to the cost is what the unpriced parts must bring together.
+ * Never a price for an unpriced part (rule 4): the break-even is what it would have to sell for, labelled as such.
+ */
+function incompleteOf(
+  settings: ScanSettings, bundlePrice: number, components: Record<string, number>, parts: PartRow[], priced: PricedListing[], unpriced: PartRow[],
+): IncompleteEstimate {
+  const floor = evaluateBundle(bundlePrice, components, priced, settings.fees, 0).result;
+  const breakEvenNet = round2(Math.max(0, floor.cost - floor.netRevenue));
+  const one = unpriced.length === 1 ? unpriced[0]! : null;
+  return {
+    priced: parts.length - unpriced.length,
+    total: parts.length,
+    cost: floor.cost,
+    pricedNet: floor.netRevenue,
+    breakEvenNet,
+    breakEvenPrice: one && breakEvenNet > 0 ? priceForNet(breakEvenNet / one.qty, settings.fees) : null,
+    unpriced: unpriced.map((p) => ({ model: p.model, qty: p.qty, state: unpricedState(p) })),
+  };
+}
+
 // A bundle with no parts is never confirmed, and neither is one without its own price. A priced
 // bundle with a part not looked up yet waits for that lookup, before any listing says inactive or missing.
 function sectionOf(parts: PartRow[], bundlePrice: number | null): ReportSection {
@@ -282,8 +317,12 @@ async function optionOf(
     ...leftUnnamed.map(([k, name]) => shown(name, left.get(k)!)),
   ];
   // A part not looked up yet has no price, which is not the same as a price of zero: no estimate until it is.
-  // A part that was looked up and has no listing ("none") still counts at the liquidation rate, as the owner set.
-  const estimate = b.price === null || parts.some(notLookedUp) ? null : evaluation.result;
+  // Nov 23 (supersedes "counted at zero"): neither is a part in Review, with no listing, or with an inactive listing.
+  // An estimate exists only when every model part has a counted price; otherwise the option is incomplete, with what
+  // the priced parts bring and the break-even. An item with no model number is not a reason (it is not counted).
+  const unpriced = parts.filter((p) => listingFor(p) === null);
+  const estimate = b.price === null || unpriced.length > 0 ? null : evaluation.result;
+  const incomplete = b.price !== null && unpriced.length > 0 ? incompleteOf(settings, b.price, components, parts, priced, unpriced) : undefined;
   const uncovered = b.price === null
     ? [...parts.map((p) => p.model), ...unnamed.values()]
     : [...evaluation.uncovered.filter((k) => !k.startsWith(UNNAMED)), ...leftUnnamed.map(([, name]) => name)];
@@ -300,11 +339,14 @@ async function optionOf(
       loose: split.length > 0,
       unnamed: unnamedItems,
       range: estimate === null ? NO_RANGE : rangeOf(settings, b.price!, components, parts, estimate, extras),
+      ...(incomplete ? { incomplete } : {}),
+      ...(split.length > 0 ? { kitParts: Object.fromEntries(split.map((k) => [k, kits.get(k)!.length])) } : {}),
     },
     status: b.price !== null && evaluation.uncovered.length === 0 && !ownerFilled ? 'complete' : 'partial',
     // Items from a split kit that are left unsold are a missing listing, whatever the models' listings say.
     // So is a leftover the owner priced: the bundle stays in Missing listing when every model is active.
-    section: (split.length > 0 && leftovers.length > 0) || ownerFilled ? 'missing_listing' : sectionOf(parts, b.price),
+    // Nov 23: a part not looked up yet comes first here too (sectionOf): the split option waits for its lookups.
+    section: b.price !== null && parts.some(notLookedUp) ? 'waiting' : (split.length > 0 && leftovers.length > 0) || ownerFilled ? 'missing_listing' : sectionOf(parts, b.price),
     uncovered,
   };
 }
@@ -341,7 +383,18 @@ function rangeOf(
  */
 function primaryOf(options: Evaluated[]): number {
   const priced = options.flatMap((o, i) => (o.option.estimate ? [i] : []));
-  if (priced.length === 0) return 0;
+  if (priced.length === 0) {
+    // Nov 23: no option has an estimate. A kit whose own lookup found no listing for sale (none, or inactive) does not
+    // sell whole, so the option that splits exactly those kits is the way to sell once its parts are looked up (they are
+    // looked up for it by the same rule, runner.ts itemsWanted). A kit not looked up yet, or in Review (Ruling 69), and a
+    // split whose parts still wait, stay whole: the whole option says the kit has no listing for sale.
+    const whole = options.find((o) => o.option.id === 'whole');
+    const dead = (whole?.option.incomplete?.unpriced ?? []).filter((u) => u.state === 'no_listing' || u.state === 'inactive').map((u) => u.model);
+    const kits = options.flatMap((o) => o.option.splitKits).filter((k) => dead.includes(k));
+    const want = [...new Set(kits)].sort().join('+');
+    const i = want ? options.findIndex((o) => [...o.option.splitKits].sort().join('+') === want && !o.option.parts.some(notLookedUp)) : -1;
+    return i >= 0 ? i : 0;
+  }
   const clean = priced.filter((i) => options[i]!.option.leftovers.length === 0);
   const profit = (i: number) => options[i]!.option.estimate!.profit;
   return (clean.length > 0 ? clean : priced).reduce((best, i) => (profit(i) > profit(best) ? i : best));
@@ -412,6 +465,7 @@ async function bundleRow(
       return target.kind === 'page' ? [{ model, itemId: target.itemId }] : [];
     }),
     range: primary.option.range,
+    ...(primary.option.incomplete ? { incomplete: primary.option.incomplete } : {}),
     // Step 15: what settled the split, when a settle rule did (the BOGO pair, Home Depot's page of each part).
     ...(split.evidence && split.evidence.length > 0 ? { splitEvidence: split.evidence } : {}),
   };

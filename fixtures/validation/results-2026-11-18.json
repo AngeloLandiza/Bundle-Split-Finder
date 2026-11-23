@@ -59,8 +59,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -548.35,
-          "roi": -0.8334,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "DCK420D2"
           ],
@@ -451,9 +451,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.8334,
-        "amazonNew": -0.8334,
-        "highest": -0.8334
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -1356,8 +1356,8 @@
         {
           "id": "split:PCL1600K2",
           "label": "PCL1600K2 split into its parts",
-          "profit": -24.8,
-          "roi": -0.1132,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -1390,8 +1390,8 @@
         {
           "id": "whole",
           "label": "PCL1600K2 sold whole",
-          "profit": -219,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1600K2",
             "A986501"
@@ -3514,9 +3514,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.1132,
-        "amazonNew": -0.1132,
-        "highest": -0.1132
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -3551,8 +3551,8 @@
         {
           "id": "split:PCL1600K2",
           "label": "PCL1600K2 split into its parts",
-          "profit": -193.8,
-          "roi": -0.4995,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -3585,8 +3585,8 @@
         {
           "id": "whole",
           "label": "PCL1600K2 sold whole",
-          "profit": -388,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1600K2",
             "P553"
@@ -5805,9 +5805,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.4995,
-        "amazonNew": -0.4995,
-        "highest": -0.4995
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -5842,8 +5842,8 @@
         {
           "id": "split:PCL1600K2",
           "label": "PCL1600K2 split into its parts",
-          "profit": -303.8,
-          "roi": -0.61,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -5876,8 +5876,8 @@
         {
           "id": "whole",
           "label": "PCL1600K2 sold whole",
-          "profit": -498,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1600K2",
             "PBP2003"
@@ -8000,9 +8000,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.61,
-        "amazonNew": -0.61,
-        "highest": -0.61
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -8463,8 +8463,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -104.45,
-          "roi": -0.6611,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL406B"
           ],
@@ -8806,9 +8806,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.6611,
-        "amazonNew": -0.6611,
-        "highest": -0.6611
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -8842,8 +8842,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -168,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL500B",
             "PCL525B"
@@ -9424,9 +9424,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -1,
-        "amazonNew": -1,
-        "highest": -1
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -9461,8 +9461,8 @@
         {
           "id": "split:PCL1201K2",
           "label": "PCL1201K2 split into its parts",
-          "profit": -68.61,
-          "roi": -0.3833,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -9481,8 +9481,8 @@
         {
           "id": "whole",
           "label": "PCL1201K2 sold whole",
-          "profit": -131.41,
-          "roi": -0.7341,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1201K2"
           ],
@@ -11014,9 +11014,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.3833,
-        "amazonNew": -0.3833,
-        "highest": -0.3833
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -11051,8 +11051,8 @@
         {
           "id": "split:PCL1201K2",
           "label": "PCL1201K2 split into its parts",
-          "profit": -116.2,
-          "roi": -0.6492,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -11072,8 +11072,8 @@
         {
           "id": "whole",
           "label": "PCL1201K2 sold whole",
-          "profit": -179,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1201K2",
             "PCL430B"
@@ -12968,9 +12968,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.6492,
-        "amazonNew": -0.6492,
-        "highest": -0.6492
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -13005,8 +13005,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -262.15,
-          "roi": -0.8244,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "DCK225D2"
           ],
@@ -13411,9 +13411,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.8244,
-        "amazonNew": -0.8244,
-        "highest": -0.8244
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -13448,8 +13448,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -79.88,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL500B",
             "PCL525B"
@@ -14030,9 +14030,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -1,
-        "amazonNew": -1,
-        "highest": -1
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -14066,8 +14066,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -158.74,
-          "roi": -0.5309,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "DCK200D1P1"
           ],
@@ -14164,9 +14164,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.5309,
-        "amazonNew": -0.5309,
-        "highest": -0.5309
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -14200,8 +14200,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -192.6,
-          "roi": -0.6441,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "DCK200D1P1"
           ],
@@ -14305,9 +14305,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.6441,
-        "amazonNew": -0.6441,
-        "highest": -0.6441
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -14346,8 +14346,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -52.4,
-          "roi": -0.5293,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PBP004"
           ],
@@ -15188,9 +15188,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.5293,
-        "amazonNew": -0.5293,
-        "highest": -0.5293
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -15225,8 +15225,8 @@
         {
           "id": "split:PCL1600K2",
           "label": "PCL1600K2 split into its parts",
-          "profit": -173.03,
-          "roi": -0.4341,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -15258,8 +15258,8 @@
         {
           "id": "whole",
           "label": "PCL1600K2 sold whole",
-          "profit": -367.23,
-          "roi": -0.9213,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1600K2"
           ],
@@ -17381,9 +17381,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.4341,
-        "amazonNew": -0.4341,
-        "highest": -0.4341
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -17422,8 +17422,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -136.65,
-          "roi": -0.8134,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL500B",
             "PCL525B"
@@ -18358,9 +18358,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.8134,
-        "amazonNew": -0.8134,
-        "highest": -0.8134
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -19151,8 +19151,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -153.97,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PSBCK102K2",
             "A967002"
@@ -19348,9 +19348,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -1,
-        "amazonNew": -1,
-        "highest": -1
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -19385,8 +19385,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -292.6,
-          "roi": -0.7333,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "DCK316ST2M1"
           ],
@@ -19784,9 +19784,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.7333,
-        "amazonNew": -0.7333,
-        "highest": -0.7333
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -21461,8 +21461,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -79,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PSK0114",
             "PCL265B"
@@ -22036,9 +22036,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -1,
-        "amazonNew": -1,
-        "highest": -1
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -22081,8 +22081,8 @@
         {
           "id": "whole",
           "label": "",
-          "profit": -52.4,
-          "roi": -0.5293,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PBP004",
             "PCL265B"
@@ -23131,9 +23131,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.5293,
-        "amazonNew": -0.5293,
-        "highest": -0.5293
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -23168,8 +23168,8 @@
         {
           "id": "split:PCL1800K3N",
           "label": "PCL1800K3N split into its parts",
-          "profit": -145.88,
-          "roi": -0.3524,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -23202,8 +23202,8 @@
         {
           "id": "whole",
           "label": "PCL1800K3N sold whole",
-          "profit": -413.97,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1800K3N",
             "A967002"
@@ -25579,9 +25579,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.3524,
-        "amazonNew": -0.3524,
-        "highest": -0.3524
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -25616,8 +25616,8 @@
         {
           "id": "split:PCL1800K3N",
           "label": "PCL1800K3N split into its parts",
-          "profit": -139.88,
-          "roi": -0.3429,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -25650,8 +25650,8 @@
         {
           "id": "whole",
           "label": "PCL1800K3N sold whole",
-          "profit": -407.97,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1800K3N",
             "A964001"
@@ -28223,9 +28223,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.3429,
-        "amazonNew": -0.3429,
-        "highest": -0.3429
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -28260,8 +28260,8 @@
         {
           "id": "split:PCL1600K2",
           "label": "PCL1600K2 split into its parts",
-          "profit": -14.77,
-          "roi": -0.0707,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -28294,8 +28294,8 @@
         {
           "id": "whole",
           "label": "PCL1600K2 sold whole",
-          "profit": -208.97,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1600K2",
             "A963001"
@@ -30152,9 +30152,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.0707,
-        "amazonNew": -0.0707,
-        "highest": -0.0707
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -30189,8 +30189,8 @@
         {
           "id": "split:PCL1600K2",
           "label": "PCL1600K2 split into its parts",
-          "profit": -14.77,
-          "roi": -0.0707,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -30223,8 +30223,8 @@
         {
           "id": "whole",
           "label": "PCL1600K2 sold whole",
-          "profit": -208.97,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1600K2",
             "A971502"
@@ -32046,9 +32046,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.0707,
-        "amazonNew": -0.0707,
-        "highest": -0.0707
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     },
     {
@@ -32083,8 +32083,8 @@
         {
           "id": "split:PCL1600K2",
           "label": "PCL1600K2 split into its parts",
-          "profit": -34.77,
-          "roi": -0.1519,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL206",
             "PCL500",
@@ -32117,8 +32117,8 @@
         {
           "id": "whole",
           "label": "PCL1600K2 sold whole",
-          "profit": -228.97,
-          "roi": -1,
+          "profit": null,
+          "roi": null,
           "leftovers": [
             "PCL1600K2",
             "A989504"
@@ -34094,9 +34094,9 @@
         }
       ],
       "roiRange": {
-        "lowest": -0.1519,
-        "amazonNew": -0.1519,
-        "highest": -0.1519
+        "lowest": null,
+        "amazonNew": null,
+        "highest": null
       }
     }
   ],

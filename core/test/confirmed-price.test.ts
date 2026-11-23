@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { amazonNet, bundleProfit } from '../src/money';
+import { amazonNet, bundleProfit, priceForNet } from '../src/money';
 import { bundlesCsv, RUN_COLUMNS } from '../src/scan/csv';
 import { confirmedSourceName, confirmState, ebayListingChoices, parseConfirmedPrice } from '../src/scan/confirmed';
 import { MemoryScanStore } from '../src/scan/memoryStore';
@@ -111,7 +111,11 @@ describe('a confirmed price in the report', () => {
     expect(a!.prices.find((o) => o.kind === 'confirmed')).toMatchObject({ price: 80, link: LINK, reference: false });
     expect(b).toMatchObject({ model: 'B', price: null });
     expect(b!.prices.some((o) => o.kind === 'confirmed')).toBe(false);
-    expect(row.estimate).toEqual(bundleProfit(100, amazonNet(80)));
+    // Nov 23: B has no price, so there is no estimate; A's confirmed price is what the priced part brings.
+    expect(row.estimate).toBeNull();
+    expect(row.incomplete).toEqual({
+      priced: 1, total: 2, cost: 100, pricedNet: amazonNet(80), breakEvenNet: 32, breakEvenPrice: priceForNet(32), unpriced: [{ model: 'B', qty: 1, state: 'no_listing' }],
+    });
 
     const cells = bundlesCsv([row]).trimEnd().split('\n')[1]!.split(',');
     expect(cells).toHaveLength(RUN_COLUMNS.length);
@@ -127,7 +131,8 @@ describe('a confirmed price in the report', () => {
     expect(part.price).toBe(50);
     expect(part.prices.find((o) => o.kind === 'confirmed')).toMatchObject({ reference: true });
     expect(priced.uncovered).toEqual(['B']);
-    expect(priced.estimate).toEqual(bundleProfit(100, amazonNet(50)));
+    expect(priced.estimate).toBeNull();
+    expect(priced.incomplete).toMatchObject({ priced: 1, pricedNet: amazonNet(50), breakEvenNet: 100 - amazonNet(50) });
   });
 
   it('counts a confirmed price while the Amazon listing is inactive, and the Amazon price when it is for sale again', async () => {
@@ -160,16 +165,22 @@ describe('a confirmed price in the report', () => {
     await store.putMatch(none('PCL206'));
 
     const open = (await buildReport(store, DEFAULT_SCAN_SETTINGS)).bundles[0]!;
-    expect(open.parts.map((p) => p.model)).toEqual(['PCL206']);
-    expect(open.uncovered).toEqual(['PCL206', '18V Charger']);
-    expect(open.estimate).toEqual(bundleProfit(100, 0));
+    const split = open.options.find((o) => o.id === 'split:PCLKIT')!;
+    expect(split.parts.map((p) => p.model)).toEqual(['PCL206']);
+    expect(split.leftovers).toEqual(['PCL206', '18V Charger']);
+    // Nov 23: PCL206 has no price: no estimate (before, $0 for the bundle). The charger has no model number and is no reason.
+    expect(split.estimate).toBeNull();
+    expect(split.incomplete).toMatchObject({ priced: 0, total: 1, pricedNet: 0, breakEvenNet: 100, unpriced: [{ model: 'PCL206', state: 'no_listing' }] });
 
     await store.putConfirmedPrice({ key: partKey('RYOBI', '~18V Charger'), brand: 'RYOBI', model: '~18V CHARGER', price: 40, link: LINK, confirmedAt: T0 });
     const row = (await buildReport(store, DEFAULT_SCAN_SETTINGS)).bundles[0]!;
-    expect(row.uncovered).toEqual(['PCL206']);
-    expect(row.options[0]!.unnamed).toEqual([{ model: '~18V Charger', name: '18V Charger', qty: 1, price: 40, link: LINK }]);
-    expect(row.estimate).toEqual(bundleProfit(100, amazonNet(40)));
-    expect(row.range.lowest?.netRevenue).toBe(row.estimate?.netRevenue);
+    const way = row.options.find((o) => o.id === 'split:PCLKIT')!;
+    expect(way.leftovers).toEqual(['PCL206']);
+    expect(way.unnamed).toEqual([{ model: '~18V Charger', name: '18V Charger', qty: 1, price: 40, link: LINK }]);
+    // The confirmed charger counts in what the priced parts bring; PCL206 must bring the rest.
+    expect(way.estimate).toBeNull();
+    expect(way.incomplete).toMatchObject({ priced: 0, total: 1, pricedNet: amazonNet(40), breakEvenNet: 100 - amazonNet(40), breakEvenPrice: priceForNet(100 - amazonNet(40)) });
+    expect(way.range.lowest).toBeNull();
 
     await store.putMatch({ ...none('PCL206'), status: 'matched', asin: 'B000000002', grade: 'exact' });
     await store.putPrice({ asin: 'B000000002', price: 50, reviews: null, seenAt: T0, checkedAt: T0 });
@@ -178,5 +189,6 @@ describe('a confirmed price in the report', () => {
     expect(both.status).toBe('partial');
     expect(both.uncovered).toEqual([]);
     expect(both.estimate).toEqual(bundleProfit(100, amazonNet(50) + amazonNet(40)));
+    expect(both.incomplete).toBeUndefined();
   });
 });

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { replayRecorded, type Replay } from '../../scripts/replay';
 import { type PageContent, parseBundlePage } from '../src/hdPage';
+import { amazonNet } from '../src/money';
 import { evaluateBundle } from '../src/scanPlan';
 import { applyReviewAnswer, reviewSignature } from '../src/scan/answers';
 import { MemoryScanStore } from '../src/scan/memoryStore';
@@ -116,7 +117,9 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
       ['whole', 'PCL1600K2 sold whole', [], false],
       ['split:PCL1600K2', 'PCL1600K2 split into its parts', ['PCL1600K2'], true],
     ]);
-    const [whole, split] = row.options;
+    const whole = row.options.find((o) => o.id === 'whole');
+    const split = row.options.find((o) => o.id === 'split:PCL1600K2');
+    expect(split!.kitParts).toEqual({ PCL1600K2: KIT_MODELS.length + UNNAMED.length });
     expect(models(whole!)).toEqual(['PCL1600K2', 'P553']);
     expect(models(split!)).toEqual([...KIT_MODELS, 'P553']);
     expect(split!.parts.map((p) => p.qty)).toEqual(KIT_MODELS.map(() => 1).concat(1));
@@ -126,7 +129,8 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
   it('nothing is looked up yet: no estimate anywhere, the primary is whole, and the row is the primary', async () => {
     const w = await answered();
     const row = await rowOf(w);
-    const [whole, split] = row.options;
+    const whole = row.options.find((o) => o.id === 'whole');
+    const split = row.options.find((o) => o.id === 'split:PCL1600K2');
     // PCL1600K2 waits, since the kit is also a bundle the scan resolved; nothing asked for P553 or the items.
     expect(whole!.parts.map((p) => p.status)).toEqual(['waiting', 'unmatched']);
     // Except the items the saved brand page answers, which the scan matched for nothing (Task 3): PBP005, and
@@ -138,30 +142,44 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     // Leftovers name only what a lookup has shown to have no listing: none of these models yet.
     expect(whole!.leftovers).toEqual([]);
     expect(split!.leftovers).toEqual(UNNAMED);
-    expect(row).toMatchObject({ section: 'waiting', status: 'partial', estimate: null, parts: whole!.parts, uncovered: ['P553', 'PCL1600K2'] });
+    // Nov 23: no estimate, an incomplete one. Whole has nothing priced, the split four parts; the kit is not looked up yet, so it stays whole.
+    expect(whole!.incomplete).toMatchObject({ priced: 0, total: 2, cost: 388, pricedNet: 0, breakEvenNet: 388, breakEvenPrice: null });
+    expect(split!.incomplete!.priced).toBe(4);
+    expect(split!.incomplete!.breakEvenNet).toBeLessThan(388);
+    expect(split!.incomplete!.unpriced.map((u) => [u.model, u.state])).toEqual(
+      ['PCL206', 'PCL500', 'PCL430', 'PBP002', 'P553'].map((m) => [m, 'waiting']),
+    );
+    expect(row.options[0]).toBe(whole);
+    expect(row).toMatchObject({ section: 'waiting', status: 'partial', estimate: null, parts: whole!.parts, incomplete: whole!.incomplete, uncovered: ['P553', 'PCL1600K2'] });
   });
 
-  it('a part has a looked-up match only after the owner\'s Look up; the whole option then has its estimate, the split still waits', async () => {
+  it('a part has a looked-up match only after the owner\'s Look up; neither option has an estimate while a part has no price', async () => {
     const w = await answered();
     expect(await w.store.getMatch(partKey('RYOBI', 'P553'))).toBeUndefined();
     await lookUp(w, ['PCL1600K2', 'P553']);
     expect(w.ledger.slice(3)).toEqual(['panel:lookup:PCL1600K2', 'panel:lookup:P553']);
     const row = await rowOf(w);
-    const [whole, split] = row.options;
-    expect(whole!.id).toBe('whole');
+    const whole = row.options.find((o) => o.id === 'whole');
+    const split = row.options.find((o) => o.id === 'split:PCL1600K2');
     // The PCL1600K2 search has no row with PCL1600K2 in its title: the kit has no listing. The P553 search
     // holds only the miter saw's spare parts (Ruling 65): RYOBI's own are rejected, and the brandless ones are
     // a question for the owner, so P553 is in review with no listing yet.
     expect(whole!.parts.map((p) => [p.model, p.status, p.availability])).toEqual([['PCL1600K2', 'none', 'missing'], ['P553', 'review', 'missing']]);
     expect(whole!.leftovers).toEqual(['PCL1600K2', 'P553']);
-    expect(whole!.estimate).toEqual(evaluateBundle(388, { PCL1600K2: 1, P553: 1 }, []).result);
+    // Nov 23 (supersedes "counted at zero"): no listing and a match in Review are no price, not $0: no estimate.
+    expect(whole!.estimate).toBeNull();
+    expect(whole!.incomplete).toEqual({
+      priced: 0, total: 2, cost: 388, pricedNet: 0, breakEvenNet: 388, breakEvenPrice: null,
+      unpriced: [{ model: 'PCL1600K2', qty: 1, state: 'no_listing' }, { model: 'P553', qty: 1, state: 'review' }],
+    });
     // P553 is in review now in the split option too; the kit's items are not looked up.
     expect(split!.parts.find((p) => p.model === 'P553')!.status).toBe('review');
     expect(split!.estimate).toBeNull();
-    expect(row).toMatchObject({ section: 'missing_listing', estimate: whole!.estimate, parts: whole!.parts, uncovered: ['P553', 'PCL1600K2'] });
+    // The kit has no listing, but its items wait for their lookups: whole stays the primary, and says the kit has no listing.
+    expect(row).toMatchObject({ section: 'missing_listing', estimate: null, parts: whole!.parts, incomplete: whole!.incomplete });
   });
 
-  it('with the items looked up as well, the split option has an estimate, and its leftovers are the models with no listing, then the unnamed items', async () => {
+  it('with the items looked up as well, the split option is incomplete (what its priced parts bring, the break-even), and its leftovers are the models with no listing, then the unnamed items', async () => {
     const w = await answered();
     await lookUp(w, ['PCL1600K2', 'P553']);
     await lookUpItems(w, KIT_MODELS);
@@ -187,12 +205,22 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
     expect(split.leftovers).toEqual(['PCL206', 'PCL500', 'PCL430', 'P553', ...UNNAMED]);
     const active = split.parts.filter((p) => p.availability === 'active');
     const components = { ...Object.fromEntries(split.parts.map((p) => [p.model, 1])), ...Object.fromEntries(UNNAMED.map((n) => [`~${n}`, 1])) };
-    expect(split.estimate).toEqual(evaluateBundle(388, components, active.map((p) => ({ asin: p.asin!, covers: { [p.model]: 1 }, price: p.price! }))).result);
-    // Both leave something; the split makes more, so it is the primary, and a split primary with leftovers is a missing listing.
-    expect(split.estimate!.profit).toBeGreaterThan(whole.estimate!.profit);
+    // Nov 23: four models have no price (no listing, or in Review): no estimate; what the five priced parts bring instead.
+    const floor = evaluateBundle(388, components, active.map((p) => ({ asin: p.asin!, covers: { [p.model]: 1 }, price: p.price! }))).result;
+    expect(split.estimate).toBeNull();
+    expect(split.incomplete).toEqual({
+      priced: 5, total: 9, cost: 388, pricedNet: floor.netRevenue, breakEvenNet: 166.15, breakEvenPrice: null,
+      unpriced: [
+        { model: 'PCL206', qty: 1, state: 'no_listing' }, { model: 'PCL500', qty: 1, state: 'no_listing' },
+        { model: 'PCL430', qty: 1, state: 'review' }, { model: 'P553', qty: 1, state: 'review' },
+      ],
+    });
+    expect(floor.netRevenue).toBe(221.85);
+    // The split is closer to paying for itself, so it is the primary, and a split primary with leftovers is a missing listing.
+    expect(split.incomplete!.breakEvenNet).toBeLessThan(whole.incomplete!.breakEvenNet);
     expect(row.options.map((o) => o.id)).toEqual(['split:PCL1600K2', 'whole']);
     expect(row).toMatchObject({
-      section: 'missing_listing', status: 'partial', estimate: split.estimate, parts: split.parts,
+      section: 'missing_listing', status: 'partial', estimate: null, incomplete: split.incomplete, parts: split.parts,
       uncovered: ['P553', 'PCL206', 'PCL430', 'PCL500', ...UNNAMED],
     });
   });
@@ -200,7 +228,8 @@ describe('ways to sell PCL1600K2-P553, on the replay', () => {
   it('the plain kit PCL1600K2 (317987591) is itself a bundle of one kit: sold whole or split into its parts', async () => {
     const w = await answered();
     const row = await rowOf(w, KIT);
-    expect(row.options.map((o) => [o.label, models(o)])).toEqual([
+    // In label order: which one is the primary is the break-even's business (tested above).
+    expect(row.options.map((o) => [o.label, models(o)]).sort((a, b) => String(a[0]).localeCompare(String(b[0])))).toEqual([
       ['PCL1600K2 sold whole', ['PCL1600K2']],
       ['PCL1600K2 split into its parts', KIT_MODELS],
     ]);
@@ -260,14 +289,18 @@ describe('ways to sell: edge cases', () => {
   it('a kit item with the same model as another part adds to its quantity (the owner typed PCL1600K2 and PBP002)', async () => {
     const w = await answered({ answer: ['PCL1600K2', 'PBP002'] });
     expect((await w.store.getBundle(P553))!.split!.components).toEqual(['PCL1600K2', 'PBP002']);
-    const [whole, split] = (await rowOf(w)).options;
+    const row = await rowOf(w);
+    const whole = row.options.find((o) => o.id === 'whole');
+    const split = row.options.find((o) => o.id === 'split:PCL1600K2');
     expect(whole!.parts.map((p) => [p.model, p.qty])).toEqual([['PCL1600K2', 1], ['PBP002', 1]]);
     expect(split!.parts.map((p) => [p.model, p.qty])).toEqual(KIT_MODELS.map((m) => [m, m === 'PBP002' ? 2 : 1]));
   });
 
   it('a kit counted twice splits into twice its items, and a leftover above 1 reads "×N"', async () => {
     const w = await answered({ answer: ['PCL1600K2', 'PCL1600K2', 'P553'] });
-    const [whole, split] = (await rowOf(w)).options;
+    const row = await rowOf(w);
+    const whole = row.options.find((o) => o.id === 'whole');
+    const split = row.options.find((o) => o.id === 'split:PCL1600K2');
     expect(whole!.parts.map((p) => [p.model, p.qty])).toEqual([['PCL1600K2', 2], ['P553', 1]]);
     expect(split!.parts.map((p) => [p.model, p.qty])).toEqual([...KIT_MODELS.map((m) => [m, 2]), ['P553', 1]]);
     expect(split!.leftovers).toEqual(UNNAMED.map((n) => `${n} ×2`));
@@ -379,21 +412,39 @@ describe('the primary option', () => {
     expect(row).toMatchObject({ section: 'missing_listing', status: 'partial', estimate: row.options[0]!.estimate, uncovered: UNNAMED });
   });
 
-  it('when every option leaves something and whole makes more, whole', async () => {
+  it('Nov 23: a part with no listing has no price, at any liquidation rate: no estimate, and the break-even says what it must bring', async () => {
     const store = await kitWorld();
     await listed(store, 'PCL1600K2', null);
     for (const m of KIT_MODELS) await listed(store, m, null);
-    // At the full liquidation rate whole values the kit at $199; the split values its 19 items at $10.47 each, $198.93.
+    // Before Nov 23 the full liquidation rate valued the kit at $199 ("whole, $0"): a price nobody saw.
     const row = await report(store, { ...KITS, liquidationRate: 1 });
-    expect(row.options.map((o) => [o.id, o.estimate?.profit, o.leftovers.length])).toEqual([['whole', 0, 1], ['split:PCL1600K2', -0.07, 19]]);
+    expect(row.options.map((o) => [o.id, o.estimate, o.incomplete?.breakEvenNet])).toEqual([['split:PCL1600K2', null, 199], ['whole', null, 199]]);
+    // One unpriced model: the Amazon price that nets $199 after the default fees (15% referral, $0 fulfillment).
+    expect(row.options[1]!.incomplete).toMatchObject({ priced: 0, total: 1, breakEvenPrice: 234.12, unpriced: [{ model: 'PCL1600K2', state: 'no_listing' }] });
+    expect(amazonNet(234.12)).toBeGreaterThanOrEqual(199);
+    expect(amazonNet(234.11)).toBeLessThan(199);
   });
 
-  it('a tie goes to whole', async () => {
+  it('with no estimate, a kit with no listing for sale is sold as its parts once they are looked up; one not looked up yet, or in Review, stays whole', async () => {
     const store = await kitWorld();
-    await listed(store, 'PCL1600K2', null);
-    for (const m of KIT_MODELS) await listed(store, m, null);
     const row = await report(store);
-    expect(row.options.map((o) => [o.id, o.estimate?.profit])).toEqual([['whole', -199], ['split:PCL1600K2', -199]]);
+    expect(row.options.map((o) => [o.id, o.incomplete?.unpriced.find((u) => u.model === 'PCL1600K2')?.state ?? null])).toEqual([['whole', 'waiting'], ['split:PCL1600K2', null]]);
+    await listed(store, 'PCL1600K2', null);
+    // The kit has no listing, but its parts are not looked up yet: whole, which says so.
+    expect((await report(store)).options[0]!.id).toBe('whole');
+    for (const m of KIT_MODELS) await listed(store, m, ['PCL206', 'PCL235'].includes(m) ? 100 : null);
+    await store.putMatch({
+      key: partKey('RYOBI', 'PCL1600K2'), brand: 'RYOBI', model: 'PCL1600K2', status: 'review', asin: null, grade: null, alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null,
+    });
+    expect((await report(store)).options[0]!.id).toBe('whole');
+    await listed(store, 'PCL1600K2', null);
+    const after = await report(store);
+    expect(after.options.map((o) => [o.id, o.incomplete?.breakEvenNet, o.incomplete?.priced])).toEqual([['split:PCL1600K2', 29, 2], ['whole', 199, 0]]);
+    expect(after).toMatchObject({ estimate: null, incomplete: after.options[0]!.incomplete, section: 'missing_listing' });
+    // An inactive listing is no listing for sale either.
+    await listed(store, 'PCL1600K2', 250);
+    await store.putPrice({ asin: 'B0TESTPCL1600K2', price: 250, reviews: null, seenAt: T0, checkedAt: T0 + 1 });
+    expect((await report(store)).options[0]!.id).toBe('split:PCL1600K2');
   });
 
   it('an option with an estimate beats one without, and a split that leaves nothing keeps the section its parts give', async () => {
