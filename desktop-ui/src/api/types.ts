@@ -174,6 +174,8 @@ export interface DealRow {
   title: string;
   brand: string;
   model: string;
+  /** A Home Depot set (no model number): how many items Home Depot lists in it; the row says "Set · 5 items". */
+  setItems?: number;
   /** Home Depot's item number, when the agent has one (a search finds a deal by it). */
   itemId: string | null;
   /** The bundle's Home Depot page, or null. */
@@ -252,7 +254,7 @@ export interface PriceLine {
 }
 
 export interface SplitEvidence {
-  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact';
+  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set';
   text: string;
   url?: string;
   /** owner_fact: the model his answer is about ("Change" forgets it). */

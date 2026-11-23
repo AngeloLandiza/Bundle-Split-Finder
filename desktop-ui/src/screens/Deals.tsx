@@ -277,7 +277,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
             ) : null}
           </span>
           <span className="deal-sub">
-            {r.brand} · <span className="code">{r.model}</span>
+            {r.brand} · {r.setItems !== undefined ? <>Set · {r.setItems} items</> : <span className="code">{r.model}</span>}
           </span>
           {/* Only when it adds something the other columns do not say; a row without one is two lines. */}
           {lineOf(r, matchShown) ? (

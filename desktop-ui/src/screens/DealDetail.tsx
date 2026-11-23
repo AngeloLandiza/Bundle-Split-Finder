@@ -380,6 +380,7 @@ const EVIDENCE_LABEL: Record<NonNullable<DealDetail['splitEvidence']>[number]['k
   bogo_pair: 'Home Depot BOGO listing',
   page_quote: 'Home Depot bundle page',
   owner_fact: 'Your answer',
+  hd_set: 'Home Depot set page',
 };
 
 function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean }) {

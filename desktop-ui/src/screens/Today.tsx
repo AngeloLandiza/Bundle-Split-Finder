@@ -170,7 +170,7 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
                       {r.title}
                     </span>
                     <span className="nav-sub">
-                      {r.brand} · <span className="code">{r.model}</span>
+                      {r.brand} · {r.setItems !== undefined ? <>Set · {r.setItems} items</> : <span className="code">{r.model}</span>}
                       {percentOff(r.off) ? ` · ${percentOff(r.off)}` : ''}
                     </span>
                     {dealVerdict(r) ? (

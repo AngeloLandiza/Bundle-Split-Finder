@@ -216,6 +216,7 @@ export function mapRow(r: C.DealRow): DealRow {
     title: r.bundle.title,
     brand: r.bundle.brand,
     model: r.bundle.model,
+    ...(r.bundle.setItems !== undefined ? { setItems: r.bundle.setItems } : {}),
     itemId: r.bundle.itemId,
     link: r.bundle.link,
     watched: r.watched ?? false,
@@ -385,7 +386,7 @@ function wayOf(o: BundleRow['options'][number], i: number): WayToSell {
   };
 }
 
-const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote', 'owner_fact'];
+const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote', 'owner_fact', 'hd_set'];
 
 /** How the split is known, each item only when it has a kind and a text; an address only when it is http(s). */
 export function splitEvidenceOf(v: unknown): SplitEvidence[] | undefined {
