@@ -40,7 +40,7 @@ import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
 import {
-  keepaLookupOne, type LookupStep, pageRead, PART_PRICE_MS, plannedWork, readPartPricesFor, runScan, settleWaitingSplits, withdrawUnreadSplitQuestions,
+  keepaLookupOne, type LookupStep, pageRead, PART_PRICE_MS, plannedWork, readKitPagesFor, readPartPricesFor, runScan, settleWaitingSplits, withdrawUnreadSplitQuestions,
 } from '../core/src/scan/runner';
 import { knownModels } from '../core/src/scan/split';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
@@ -408,6 +408,8 @@ export class AgentWork {
     // Step 15: the free part prices first (the parts a waiting split needs come first); a read that saved anything may
     // settle a waiting split, whose parts then join the lookups below. Review is rebuilt with what it opened (refresh).
     let prices = await this.dripPartPrices(settings);
+    // Nov 23: then the pages of the kits with no Amazon listing for sale, so their items join the lookups below.
+    prices += await this.dripKitPages();
     if (prices > 0) {
       const settled = await settleWaitingSplits(this.scanStore, this.d.now());
       prices += settled.resolved + settled.opened;
@@ -491,6 +493,19 @@ export class AgentWork {
       return out.saved;
     } catch {
       // A read Chrome could not make: the parts are asked for again next time.
+      return 0;
+    }
+  }
+
+  /** Nov 23: the free Home Depot pages of kits that do not sell whole (runner.ts readKitPagesFor). Returns how many were saved. */
+  private async dripKitPages(): Promise<number> {
+    if (!this.d.helperConnected()) return 0;
+    const signal = this.dripCtl.signal;
+    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => signal });
+    try {
+      return await readKitPagesFor({ store: this.scanStore, readPages: readers.readPages, now: this.d.now, shouldStop: () => signal.aborted || !this.dripAllowed() });
+    } catch {
+      // A page Chrome could not read: asked for again next time.
       return 0;
     }
   }

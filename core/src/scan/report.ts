@@ -6,7 +6,7 @@ import { isBulkPackaging } from '../match';
 import { priceForNet, type BundleResult } from '../money';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
-import { kitPageTarget } from './kitPage';
+import { kitCatalog, kitPageTarget } from './kitPage';
 import { ebayPriceOption } from '../ebay/value';
 import { componentCounts } from './classify';
 import { twinKeys, twinKeysOf } from './twins';
@@ -485,7 +485,8 @@ export async function partRowsFor(store: ScanStore, settings: ScanSettings, part
 /** One bundle's row, exactly as buildReport builds it. A product page the owner has open shows it (pageView.ts). Reads only. */
 export async function reportRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
   const stored = await store.listBundles();
-  const catalog = await store.listCatalog();
+  // Nov 23: with the kits Home Depot's part pages name (partPriceKits), so a kit no listing page showed is "not read".
+  const catalog = await kitCatalog(store);
   return bundleRow(store, settings, b, kitIndex(kitRecords(stored, catalog)), await refsOf(store), stored, catalog);
 }
 
@@ -496,7 +497,8 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   // items' parts are shown in that option.
   const held = new Set<string>();
   const stored = await store.listBundles();
-  const catalog = await store.listCatalog();
+  // Nov 23: with the kits Home Depot's part pages name (partPriceKits), so a kit no listing page showed is "not read".
+  const catalog = await kitCatalog(store);
   const recordsOf = kitIndex(kitRecords(stored, catalog));
   const refs = await refsOf(store);
   for (const b of stored) {

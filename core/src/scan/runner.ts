@@ -31,7 +31,7 @@ import { type KnownModels, knownModels, readSplit } from './split';
 import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, moveUnits, newPipeline, reopenStep, type StepId, setJudge, skipStep, startStep } from './pipeline';
 import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
-import { HOME_DEPOT_ITEM_ID, pickUnread } from './kitPage';
+import { HOME_DEPOT_ITEM_ID, kitCatalog, pickUnread } from './kitPage';
 import { bundleKey, PART_PRICE_READS_MAX, partKey, priceActive, resolvedParts } from './types';
 import type {
   BudgetView, BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PageOutcome, PageReading, PartPriceRecord, PriceRecord, ReadPages, ReadPartPrices,
@@ -1171,8 +1171,19 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
   const room = Math.max(0, pagesLeft(run) - bundleNotRead);
   if (run.shouldStop()) return none;
   if (room === 0) return nothingToRead(run, 'kitPages', 'page limit reached');
+  const wanted = await kitPagesWanted(store, run.waitForPages);
+  if (wanted.length === 0) return nothingToRead(run, 'kitPages');
+  return readInto(run, 'kitPages', wanted.slice(0, room).map((k) => ({ itemId: k.itemId!, save: (page) => store.putCatalogEntry({ ...k, page }) })));
+}
+
+/**
+ * The kit pages a scan reads (readKitPages above), in its order. Nov 23: the catalog is kitCatalog's, so a kit only
+ * Home Depot's part page named (partPriceKits) is read too, and its reading saved as a catalog entry. `waitForPages`:
+ * also the kits a split that waits for a kit's own page needs (a run that waits for pages, the agent's).
+ */
+export async function kitPagesWanted(store: ScanStore, waitForPages = false): Promise<CatalogRecord[]> {
   const bundles = await store.listBundles();
-  const catalog = await store.listCatalog();
+  const catalog = await kitCatalog(store);
   const bundlesOf = kitIndex(bundles);
   const kitsOf = kitIndex(catalog.filter((c) => c.isKit === true));
   const allOf = kitIndex(kitRecords(bundles, catalog));
@@ -1183,7 +1194,7 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
   for (const b of [...bundles].sort(newestFirst)) {
     // Step 15: a split that waits for a kit's own page (scan/settle.ts rule 2) asks for it as a resolved split's kit is,
     // in a run that waits for pages (the agent's); elsewhere such a split is a question, as before.
-    for (const part of [...resolvedParts(b), ...(run.waitForPages ? waitingParts(b) : [])]) {
+    for (const part of [...resolvedParts(b), ...(waitForPages ? waitingParts(b) : [])]) {
       const kitId = kitKey(part.brand, part.model);
       if (judged.has(kitId)) continue;
       judged.add(kitId);
@@ -1195,8 +1206,39 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
       wanted.push(kit);
     }
   }
-  if (wanted.length === 0) return nothingToRead(run, 'kitPages');
-  return readInto(run, 'kitPages', wanted.slice(0, room).map((k) => ({ itemId: k.itemId!, save: (page) => store.putCatalogEntry({ ...k, page }) })));
+  return wanted;
+}
+
+/** Nov 23: kit pages the agent reads between scans at most, per round of the drip (each is a free Home Depot page). */
+export const DRIP_KIT_PAGES = 3;
+
+/**
+ * Nov 23: between scans, the pages of the kits that do not sell whole: a kit some resolved split holds, whose own Amazon
+ * lookup found no listing for sale (itemsWanted: none, or an inactive listing; one in Review waits, Ruling 69), and whose
+ * page is not read. Its items are looked up only from that page, so without it the bundle stays without an estimate.
+ * Free (Home Depot pages, read in the paired Chrome); each reading saved as readKitPages saves it. Returns how many.
+ */
+export async function readKitPagesFor(r: {
+  store: ScanStore; readPages: ReadPages; now: () => number; max?: number; shouldStop?: () => boolean;
+}): Promise<number> {
+  const wanted: CatalogRecord[] = [];
+  for (const kit of await kitPagesWanted(r.store, true)) {
+    if (await itemsWanted(r.store, await r.store.getMatch(partKey(kit.brand, kit.model)))) wanted.push(kit);
+  }
+  const ask = wanted.slice(0, r.max ?? DRIP_KIT_PAGES);
+  if (ask.length === 0 || r.shouldStop?.()) return 0;
+  const outcomes = await r.readPages(ask.map((k) => k.itemId!));
+  const byId = new Map(ask.map((k) => [k.itemId!, k] as const));
+  const readAt = r.now();
+  let saved = 0;
+  for (const o of outcomes) {
+    const kit = byId.get(o.itemId);
+    if (!kit || o.kind !== 'read') continue;
+    byId.delete(o.itemId);
+    await r.store.putCatalogEntry({ ...kit, page: { ...o.content, readAt } });
+    saved += 1;
+  }
+  return saved;
 }
 
 // ---------------------------------------------------------------- step 9: Home Depot's prices for the parts (free)

@@ -118,12 +118,13 @@ describe('Detail: Ways to sell, PCL1600K2-P553 after the owner chose PCL1600K2 +
     await user.click(await within(blocks()[0]!).findByRole('button', { name: 'Look up 2 parts · 2 searches' }));
     expect(sent).toContainEqual({ type: 'runPaid', action: { kind: 'lookUp', parts: [{ brand: 'RYOBI', model: 'PCL1600K2' }, { brand: 'RYOBI', model: 'P553' }] } });
     await waitFor(() => expect(within(region()).queryByRole('button', { name: /Look up 2 parts/ })).toBeNull());
-    // The kit has no Amazon listing and P553 waits in Review: no price is not $0, so no estimate, and the kit sells as its parts.
-    const whole = blocks().find((b) => b.textContent!.includes('sold whole'))!;
+    // The kit has no Amazon listing and P553 waits in Review: no price is not $0, so no estimate. The split's parts still
+    // wait for their lookups, so whole stays the way shown above.
+    const whole = blocks()[0]!;
+    expect(whole).toHaveTextContent('PCL1600K2 sold whole');
     expect(within(whole).queryByText(/^[+−]\$/)).toBeNull();
     expect(within(whole).getByText(/^Leaves 2 parts:/)).toHaveTextContent('Leaves 2 parts: PCL1600K2, P553');
-    expect(within(blocks()[0]!).getByText('Shown above')).toBeInTheDocument();
-    expect(blocks()[0]).toHaveTextContent('PCL1600K2 split into its parts');
+    expect(within(whole).getByText('Shown above')).toBeInTheDocument();
   });
 
   it("pressing the split way's Look up sends its waiting items and fills them in, leaving the way an estimate or its remaining leftovers", async () => {

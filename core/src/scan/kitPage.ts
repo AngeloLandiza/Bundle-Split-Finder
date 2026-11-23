@@ -3,8 +3,9 @@
 // the next scan would read. Never a search, and never a page whose item id is not digits:
 // the id is put into a Home Depot address.
 
-import { kitIndex, kitPageStored, kitPageUnread, kitRecords } from '../kitContents';
-import type { BundleRecord, CatalogRecord, PageReading } from './types';
+import { catalogEntry } from '../decompose';
+import { kitIndex, kitKey, kitPageStored, kitPageUnread, kitRecords } from '../kitContents';
+import type { BundleRecord, CatalogRecord, PageReading, PartPriceRecord, ScanStore } from './types';
 
 /** A Home Depot item id is digits. Stored data is untrusted, and the id goes into a page address. */
 export const HOME_DEPOT_ITEM_ID = /^\d+$/;
@@ -54,4 +55,34 @@ export function kitPageTarget(bundles: BundleRecord[], catalog: CatalogRecord[],
   }
   const kit = pickUnread(kits);
   return kit && typeof kit.itemId === 'string' ? { kind: 'page', where: 'catalog', key: kit.key, itemId: kit.itemId } : { kind: 'no-id' };
+}
+
+/**
+ * Nov 23, the third real scan: a kit that no listing page showed has no catalog entry, so nothing knew it is a kit and
+ * its page was never read (DCK200D1P1, in 14 of the owner's bundles: no Amazon listing, no kit page, its items never
+ * looked up). Home Depot's own page for the part, read for its price (step 9), names it and gives its item id: a part
+ * whose page title says a kit (catalogEntry's rule: a "Combo Kit" or "N-Tool" title on a kit-shaped model) is a kit
+ * whose page can be read. One entry per such part price record with a digit item id and no stored catalog entry of the
+ * same kit (kitKey), marked a kit, page not read. Never stored as is and never given to the splitter (a part price is not
+ * a fact the splitter reads): only the kit-page reads and the report's "not read" use it. Reading its page saves a
+ * catalog entry, as for any catalog kit (runner.ts readKitPages).
+ */
+export function partPriceKits(partPrices: readonly PartPriceRecord[], catalog: readonly CatalogRecord[]): CatalogRecord[] {
+  const known = new Set(catalog.map((c) => kitKey(c.brand, c.model)));
+  const out: CatalogRecord[] = [];
+  for (const r of partPrices) {
+    if (r.itemId === null || !HOME_DEPOT_ITEM_ID.test(r.itemId) || !r.title) continue;
+    const entry = catalogEntry(r.brand, r.model, r.title);
+    const key = kitKey(entry.brand, entry.model);
+    if (!entry.isKit || known.has(key)) continue;
+    known.add(key);
+    out.push({ key: r.key, brand: entry.brand, model: entry.model, title: r.title, kinds: entry.kinds, isKit: true, upc: null, seenAt: r.checkedAt, itemId: r.itemId, page: null });
+  }
+  return out;
+}
+
+/** The catalog the kit-page reads see: the stored catalog, then partPriceKits. Reads only. */
+export async function kitCatalog(store: Pick<ScanStore, 'listCatalog' | 'listPartPrices'>): Promise<CatalogRecord[]> {
+  const catalog = await store.listCatalog();
+  return [...catalog, ...partPriceKits(await store.listPartPrices(), catalog)];
 }
