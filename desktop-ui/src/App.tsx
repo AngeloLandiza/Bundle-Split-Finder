@@ -132,8 +132,9 @@ export function App() {
     const onFind = () => focusFind();
     const onInspector = () => setInspector((cur) => ({ ...cur, shown: !cur.shown }));
     const onSetup = () => setSetupOpen(true);
-    const onPalette = () => setPaletteOpen(true);
-    const onShortcuts = () => setShortcutsOpen(true);
+    // The Help menu's items toggle, like the keys they show; the shell's menu takes the key, so one of the two arrives.
+    const onPalette = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }));
+    const onShortcuts = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: '/', metaKey: true, bubbles: true }));
     window.addEventListener('hashchange', onHash);
     window.addEventListener('split-finder:navigate', onNav);
     window.addEventListener('split-finder:find', onFind);

@@ -502,7 +502,11 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
     .build()?;
 
   // Help: the welcome sheet again, for setup skipped earlier (split-finder:setup).
+  // Also the command palette and the shortcuts sheet (split-finder:palette, split-finder:shortcuts).
   let help_sub = SubmenuBuilder::new(app, "Help")
+    .item(&MenuItem::with_id(app, "palette", "Command palette...", true, Some("CmdOrCtrl+K"))?)
+    .item(&MenuItem::with_id(app, "shortcuts", "Keyboard shortcuts", true, Some("CmdOrCtrl+/"))?)
+    .separator()
     .item(&MenuItem::with_id(app, "setup", "Finish setup...", true, None::<&str>)?)
     .build()?;
 
@@ -562,6 +566,8 @@ pub fn handle_menu(app: &AppHandle, id: &str) {
     "find" => page_event(app, "split-finder:find"),
     "inspector" => page_event(app, "split-finder:inspector"),
     "setup" => page_event(app, "split-finder:setup"),
+    "palette" => page_event(app, "split-finder:palette"),
+    "shortcuts" => page_event(app, "split-finder:shortcuts"),
     "launch_login" => {
       let on = !launch_at_login(app);
       if let Err(e) = set_launch_at_login(app, on) {
