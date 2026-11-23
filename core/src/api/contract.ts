@@ -597,6 +597,27 @@ export interface ConfirmPriceResponse {
   confirmed: { price: number; link: string; note: string | null; confirmedAt: string } | null;
 }
 
+/**
+ * POST /api/price-from-link `{ url }` (ui): the price the pasted link shows, read for him to confirm (the sheet still
+ * needs his Confirm; nothing here counts as a price). eBay: the Browse item (free). Amazon: one Keepa product pull
+ * (1 token, through the token budget; Amazon is never browsed). Home Depot: the page read in his Chrome (free). Any
+ * other site: not read. USD only. Never a guess: whatever could not be read is `found: false` with the reason.
+ */
+export interface PriceFromLinkFound {
+  found: true;
+  price: number;
+  currency: 'USD';
+  title: string;
+  condition?: string;
+  /** eBay: the shipping cost the listing states (0 is free); null when it states none. Other sources omit it. */
+  shipping?: number | null;
+  source: 'eBay' | 'Amazon (Keepa)' | 'Home Depot';
+  url: string;
+  readAt: string;
+  note?: string;
+}
+export type PriceFromLinkResponse = PriceFromLinkFound | { found: false; reason: string };
+
 // ---------------------------------------------------------------- review
 
 export type ReviewKind = 'split' | 'match' | 'ebay';

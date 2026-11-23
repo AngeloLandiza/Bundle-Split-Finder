@@ -92,3 +92,51 @@ export function parseItem(json: unknown): EbayListing {
   if (text(o.sellerItemRevision)) item.revision = text(o.sellerItemRevision);
   return item;
 }
+
+/** What the owner's "paste a link" reads from one listing: its price now, what it ships for, and whether it can be bought. */
+export interface EbayOffer {
+  title: string;
+  price: number | null;
+  currency: string;
+  condition: string | null;
+  /** The cheapest shipping cost eBay states for the buyer (0 for free); null when eBay states none. */
+  shipping: number | null;
+  /** An auction with no Buy It Now: its current bid is not a price he can buy at. */
+  auctionOnly: boolean;
+  /** The listing's end date has passed, or eBay says it is out of stock. */
+  ended: boolean;
+  url: string;
+}
+
+/**
+ * A Browse getItem / getItemByLegacyId response to the offer (field names from fixtures/ebay/browse-item-*.json:
+ * `price`, `condition`, `shippingOptions[].shippingCost`, `buyingOptions`, `itemEndDate`, `estimatedAvailabilities[]`).
+ * Throws without an itemId or title. Nothing is guessed: an absent field is null or false.
+ */
+export function parseOffer(json: unknown, nowMs: number): EbayOffer {
+  const o = isObj(json) && isObj(json.response) ? json.response : json;
+  if (!isObj(o)) throw new Error('eBay item response is not an object');
+  const base = summaryOf(o);
+  const costs: number[] = [];
+  if (Array.isArray(o.shippingOptions)) {
+    for (const s of o.shippingOptions) {
+      if (!isObj(s) || !isObj(s.shippingCost)) continue;
+      const n = Number(s.shippingCost.value);
+      if (Number.isFinite(n) && n >= 0 && (text(s.shippingCost.currency) ?? 'USD') === 'USD') costs.push(n);
+    }
+  }
+  const buying = Array.isArray(o.buyingOptions) ? o.buyingOptions.filter((b): b is string => typeof b === 'string') : [];
+  const endsAt = text(o.itemEndDate) ? Date.parse(text(o.itemEndDate)!) : NaN;
+  const statuses = Array.isArray(o.estimatedAvailabilities) ? o.estimatedAvailabilities.filter(isObj).map((a) => text(a.estimatedAvailabilityStatus)) : [];
+  const soldOut = statuses.length > 0 && statuses.every((s) => s === 'OUT_OF_STOCK');
+  return {
+    title: base.title,
+    price: base.price,
+    currency: base.currency,
+    condition: text(o.condition) ?? null,
+    shipping: costs.length ? Math.min(...costs) : null,
+    auctionOnly: buying.includes('AUCTION') && !buying.includes('FIXED_PRICE'),
+    ended: soldOut || (Number.isFinite(endsAt) && endsAt <= nowMs),
+    url: base.url,
+  };
+}

@@ -7,7 +7,7 @@
 //
 // Responses go through parseSearch / parseItem, so a seller or buyer field is never kept.
 
-import { parseItem, parseSearch } from './parse';
+import { parseItem, parseOffer, parseSearch, type EbayOffer } from './parse';
 import type { EbayListing, EbayListingSummary } from './types';
 
 const HOST = 'https://api.ebay.com';
@@ -196,5 +196,16 @@ export class EbayClient {
     if (this.counts.itemReads >= this.maxItemReads) throw new EbayCapError('item reads', this.maxItemReads);
     this.counts.itemReads += 1;
     return parseItem(await this.get(`/buy/browse/v1/item/${encodeURIComponent(itemId)}`));
+  }
+
+  /**
+   * The owner's pasted eBay link: one item read by the number in the link (Browse getItemByLegacyId, free), as the offer
+   * he could buy now. Counts as an item read like getItem. An item eBay no longer has is an EbayError with status 404.
+   */
+  async getOfferByLegacyId(legacyItemId: string): Promise<EbayOffer> {
+    if (this.counts.itemReads >= this.maxItemReads) throw new EbayCapError('item reads', this.maxItemReads);
+    this.counts.itemReads += 1;
+    const q = new URLSearchParams({ legacy_item_id: legacyItemId });
+    return parseOffer(await this.get(`/buy/browse/v1/item/get_item_by_legacy_id?${q}`), this.now());
   }
 }

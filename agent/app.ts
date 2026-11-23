@@ -14,6 +14,7 @@ import {
   type AnswerResponse,
   type BogoResponse,
   type ConfirmPriceResponse,
+  type PriceFromLinkResponse,
   type KeyName,
   type CheckKeyResponse,
   type PutKeyResponse,
@@ -57,6 +58,7 @@ import { isBogoListingPath } from '../core/src/tracking/bogoPairs';
 import { HOME_DEPOT_ITEM_ID } from '../core/src/scan/kitPage';
 import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
+import { priceFromLink } from './priceFromLink';
 
 /** A paired extension counts as connected this long after it was last heard from. */
 export const HELPER_CONNECTED_MS = 90_000;
@@ -700,6 +702,11 @@ export function createAgent(opts: AgentOptions): Agent {
       const rec = await work.confirmPrice(plan.record);
       return { confirmed: { price: rec.price, link: rec.link, note: rec.note ?? null, confirmedAt: new Date(rec.confirmedAt).toISOString() } };
     });
+  });
+  // A pasted link read for its price: eBay (Browse), Amazon (one Keepa token), Home Depot (his Chrome). The answer is shown to him; it counts only when he confirms it.
+  r.post('/api/price-from-link', 'ui', async (ctx): Promise<PriceFromLinkResponse> => {
+    const url = text(obj(await ctx.body()).url, 'url', 2048);
+    return priceFromLink({ store, jobs, dataDir: opts.dataDir, now, fetchFn: opts.fetchFn ?? fetch, helperConnected: () => helperLive().connected, cache: work.cache }, url);
   });
   r.delete('/api/deals/:id/parts/:part/price', 'ui', (ctx) => {
     const plan = planRemoveConfirmedPrice(dealOf(ctx.params.id!), ctx.params.part!);
