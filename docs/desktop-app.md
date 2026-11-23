@@ -1,6 +1,6 @@
 # Desktop app (step 13)
 
-Honest status: working on macOS; the Windows installer builds on a Mac but has not run on Windows yet. Not done: keychain for keys, SQLite.
+Honest status: the Mac `.dmg` and the Windows `.exe` installer are both built and working on the Mac. The Windows build has not been run on a real PC yet. Not done: keychain for keys, SQLite.
 
 ## How it fits together
 
@@ -100,8 +100,21 @@ behind.
 - **Signing.** The app is unsigned, so macOS asks you to approve it. A signed app would also
   allow a real notification-click callback; today the click is inferred from the app being
   activated within two minutes.
-- **Extension install.** The zip ships inside the app, but the app has no button for installing
-  it; load it by hand (see `install.md`).
+- **Extension install.** The zip ships inside the app. The app has an **Install the Chrome helper**
+  button (the welcome sheet and Settings, Chrome) that unpacks it into a folder; Chrome still needs
+  Developer mode and **Load unpacked** once, because the app cannot do that for you (see `install.md`).
+
+## Settings, Data
+
+- **Export audit file** (`GET /api/export/audit`): one JSON file, `split-finder-audit-<date>.json`, with the scan
+  store (bundles with their read pages, matches, part prices, reviews, scans), deals, Review questions and
+  suggestions, Activity (runs, errors, answers, Autopilot), settings without keys, the app and helper versions and
+  the platform. Every string goes through the key scrubber, and a last check refuses the whole file (a plain error,
+  nothing written) if any stored key value is still in it. No key is included.
+- **Reset scan data** (`POST /api/data/reset`, body `{ "confirm": "RESET" }`): copies what it deletes to
+  `<app-data>/backup-before-reset-<time>/` (kept, no keys), then clears the scan store, deals, Review,
+  suggestions, Activity, Autopilot history, saved answers, tracking and queued jobs. Keys, settings, pairing and the
+  saved search responses stay. It refuses (409) while a scan, an ask, an answer or the drip is writing.
 
 Decisions and reasons: `docs/decisions.md` (step 13 entries) and
 `docs/superpowers/plans/2026-11-22-step-13-agent-workplace.md`.

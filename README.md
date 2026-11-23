@@ -15,8 +15,9 @@ estimate from the fee settings, not the seller's real fees.
   When Chrome is closed, Home Depot reads wait.
 - **The extension still works alone.** Unpaired, it keeps its own side panel, keys and scans.
 
-Honest status: macOS only. Windows packaging is not done, keys are in a file (not the
-keychain), and the store is JSON files (not SQLite). Details in `docs/desktop-app.md`.
+Honest status: a Mac `.dmg` and a Windows `.exe` installer are both built. The Windows build has
+not been run on a real PC yet. Keys are in a file only the owner can read (not the keychain), and
+the store is JSON files (not SQLite). Details in `docs/desktop-app.md`.
 
 ## Start here
 
@@ -35,6 +36,7 @@ npm run typecheck
 npm test                  # no network
 npm run desktop:dev       # the app with the agent, live (needs Rust)
 npm run desktop:build     # the macOS app and DMG (needs Rust)
+npm run desktop:build:windows  # the Windows x64 installer (.exe), built on a Mac
 npm run ui:dev            # the app's UI in a browser, against a running agent
 npm run ui:mock           # the app's UI on fixture data, no agent
 npm run ext:dev           # the extension with live reload

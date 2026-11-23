@@ -544,3 +544,15 @@ when it asked him: a three-part hyphen split went straight to a question instead
 - The script checks: silent per-user install (`/S /D=`), start, the agent listening on 127.0.0.1:8790 within 60 s, the `/api/hello` HMAC, the shape of a fresh `/api/state`, 401 with no token, 403 with a foreign Origin (and 200 with the app's own, as the control), owner-only ACLs from parsed `icacls` output, `POST /api/agent/quit` leaving no `agent-dashboard` process within 10 s, and a silent uninstall removing the folder. That covers "install and first launch", "icacls on a real profile" and "quit leaving no agent" from the unverified list in docs/desktop-app.md. Still unverified, because a runner has no one to look: Mica, the flyout's position and hide-on-blur, launch at login, `chrome://extensions` from the Helper menu, real Chrome pairing.
 - Choices: the store folder is checked for "no group-wide entry" rather than owner-only, because only files are narrowed (`agent/winAcl.ts`); the folder keeps %APPDATA%'s per-user ACL. `desktop/windows-smoke.test.ts` runs in `npm test` on the Mac and pins what the script relies on (the HMAC, the fresh-state shape, the status codes, the key names, the Node version), so a change to the agent cannot silently break the script. *For v2:* sign the installer and the sidecar, and run this on a tag before every release.
 
+## Nov 23: the audit file and Reset scan data (Settings, Data)
+
+- The app could not export an audit, so a problem report was a screenshot. `GET /api/export/audit` (ui role) is one JSON file of the
+  scan store, deals, Review, suggestions, Activity and settings (agent/dataPane.ts). Its no-key guarantee is two layers: every string and
+  property name goes through work.ts `scrub`, then the finished text is searched for each stored key value (plain and JSON-escaped);
+  a hit fails the whole export with a plain 503 and nothing is sent. A scrubber alone could miss a key sitting in a number or split by
+  escaping, so the second check is the one that is trusted.
+- `POST /api/data/reset` (body `{ confirm: 'RESET' }`) clears scan data and nothing else. Autopilot history and saved answers go with it
+  because their Undo points at bundles that no longer exist; the saved search responses (`cache/`) stay so the next scan does not pay
+  again; the helper's last snapshot in Activity stays because it is the connection, not a scan. A backup folder
+  (`backup-before-reset-<time>`, never the keys) is written first and kept. It refuses while `AgentWork.writing()` (a scan, ask, owner answer or drip round).
+- The app version in the audit file comes from `SPLIT_FINDER_APP_VERSION`, which the shell sets from the Cargo version.

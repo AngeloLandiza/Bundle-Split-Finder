@@ -90,7 +90,7 @@ What costs money:
 - **Keepa.** A subscription with Keepa.
 - **AI.** You pay the AI service for each question. The app keeps a monthly cap (default $25; 0 turns AI off). Activity and Today show what you have spent.
 
-Your keys are saved only on your computer, in the app's own folder. Each key goes only to its own service. The app never shows a key again after you save it. To remove one, open **Settings, Keys** and press **Remove**. To remove everything, uninstall the app and delete the folder `%APPDATA%\com.bundlesplitfinder.desktop`.
+Your keys are saved only on your computer, in the app's own folder. Each key goes only to its own service. The app never shows a key again after you save it. To remove one, open **Settings, Keys** and press **Remove**. To clear the deals, Review and scan history but keep your keys and settings, open **Settings, Data** and press **Reset scan data…**. The app copies what it deletes into a backup folder first and tells you where. To remove everything, including keys, uninstall the app and delete its data folder (**Settings, Data** shows it; on Windows it is `%APPDATA%\com.bundlesplitfinder.desktop`).
 
 ## 7. When something looks wrong
 
@@ -106,7 +106,7 @@ Banners appear near the top. One shows at a time, with "N more" if there are oth
 
 **Activity** shows what happened: errors that need you (some have a retry button), your saved answers, what Autopilot did, and every scan with its searches, Keepa tokens and AI cost. If something is wrong, look there first.
 
-To report a problem, send the developer a screenshot of the banner and of the matching Activity entry. You can also send the CSV from **Settings, Data, Export deals as CSV**.
+To report a problem, open **Settings, Data** and press **Export audit file**, then send the developer that file. It holds what was scanned, matched and asked and what went wrong, and no keys. A screenshot of the banner and of the matching Activity entry helps too.
 
 ## 8. Keyboard shortcuts
 
