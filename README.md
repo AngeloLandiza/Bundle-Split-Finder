@@ -22,6 +22,7 @@ keychain), and the store is JSON files (not SQLite). Details in `docs/desktop-ap
 
 | To | Read |
 | --- | --- |
+| Daily use, in plain words (Alex) | `docs/guide.md` |
 | Install and set up (owner, PO) | `docs/install.md` |
 | How the app is built, what is not done | `docs/desktop-app.md` |
 | What was decided in step 13 | `docs/superpowers/plans/2026-11-22-step-13-agent-workplace.md` and `docs/decisions.md` |

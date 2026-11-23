@@ -1,5 +1,7 @@
 # Install Split Finder
 
+For the daily user, a plain-words guide is in `docs/guide.md`.
+
 Split Finder finds discounted DEWALT and RYOBI bundles on Home Depot, splits each into its
 parts, matches the parts to Amazon listings and ranks bundles by estimated profit. The desktop
 app does the work. The Chrome extension reads Home Depot pages for it. It runs on macOS and
