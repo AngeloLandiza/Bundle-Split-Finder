@@ -54,6 +54,13 @@ const RECORDS = [
       client.getProducts(['B0BGYFTPGK', 'B01H9BL8EO', 'B09M3TL9BB'], 1, { label: 'fixtures:validation-sample', estimate: 3 }),
   },
   {
+    // Since Nov 23 every product pull sends stats=180 (no extra tokens), so this one carries stats.current.
+    name: 'product-B0BGYFTPGK-B01H9BL8EO-B09M3TL9BB-stats',
+    estimate: 3,
+    run: async (client: Awaited<ReturnType<typeof openKeepaDev>>['client']) =>
+      client.getProducts(['B0BGYFTPGK', 'B01H9BL8EO', 'B09M3TL9BB'], 1, { label: 'fixtures:validation-sample-stats', estimate: 3 }),
+  },
+  {
     name: 'search-RYOBI-PCL235B',
     estimate: 10,
     run: async (client: Awaited<ReturnType<typeof openKeepaDev>>['client']) =>
