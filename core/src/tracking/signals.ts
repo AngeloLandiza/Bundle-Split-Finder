@@ -64,7 +64,9 @@ const names = (models: string[]): string => (models.length <= 2 ? models.join(' 
 const sellingParts = (parts: PartRow[]): PartRow[] => parts.filter((p) => p.qty > 0);
 
 /** What confirms a listing beside its grade: Amazon's catalog (Keepa), a SerpApi product page, or the owner's choice. */
-export const CONFIRMING_SOURCES: readonly VerifiedBy[] = ['keepa_catalog', 'serpapi_product', 'owner'];
+// The listing ladder (Nov 23): rung 1's 'listing_fields' confirms (measured 0 wrong); rung 3's 'ai_checked' does not
+// until its own measurement says so (docs/decisions.md): it shows as "confirmed by AI check" and a buy still waits.
+export const CONFIRMING_SOURCES: readonly VerifiedBy[] = ['keepa_catalog', 'serpapi_product', 'listing_fields', 'owner'];
 
 /**
  * Buy safety (Nov 23): a part's Amazon listing is confirmed when its grade is exact (barcode) or strong (manufacturer part

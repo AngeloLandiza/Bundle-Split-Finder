@@ -30,6 +30,10 @@ export interface KeepaProduct {
   /** Keepa's `type` (DRILL, BATTERY, POWER_TOOL_SET …). Not read by any rule: recorded values are unreliable (a brad nailer, Tool Only, is POWER_TOOL_SET). */
   type?: string;
   productType?: number;
+  /** Keepa's `features`: the listing's feature bullets. Absent when Keepa gives none. Read by keepa/listingFields.ts only. */
+  features?: string[];
+  /** Keepa's `gtinList`: the listing's barcodes (recorded: "00033287199938"). Absent when none. Read by keepa/listingFields.ts only. */
+  gtinList?: string[];
   /** Amazon price in the marketplace's smallest currency unit (cents). */
   amazonPrice?: number | null;
   /** Where amazonPrice came from: stats.current[0] (Amazon selling) or stats.current[1] (the lowest New offer). */

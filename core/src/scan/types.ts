@@ -438,7 +438,11 @@ export interface MatchRecord {
 }
 
 /** How a match's listing was verified: Amazon's catalog by Keepa, a SerpApi product page, the owner, or only its title. */
-export type VerifiedBy = 'keepa_catalog' | 'serpapi_product' | 'owner' | 'title';
+/**
+ * The listing ladder (Nov 23) adds 'listing_fields' (rung 1: the pulled fields' own evidence, keepa/listingFields.ts) and
+ * 'ai_checked' (rung 3: the AI listing judge, every quote checked; shown, never a buy's confirmation by itself).
+ */
+export type VerifiedBy = 'keepa_catalog' | 'serpapi_product' | 'listing_fields' | 'ai_checked' | 'owner' | 'title';
 
 /** One catalog check of one listing for one part (keepa/verify.ts checkIdentity), when it was read. */
 export interface CatalogCheckRecord {

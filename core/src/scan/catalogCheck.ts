@@ -9,12 +9,16 @@
 //                 it is withdrawn the same way
 //   unknown       nothing changes; the check is remembered so the listing is not pulled again
 //
+// Rung 1 of the listing ladder (keepa/listingFields.ts) reads the same pulled fields for an unknown: its adopted rules
+// confirm as the catalog does, with verifiedBy 'listing_fields'. No new call.
+//
 // Each listing is checked once per part (catalogChecks): a brand or part number does not go stale. The owner's own
 // decisions are never touched. Pure TypeScript over the ScanStore; the pull itself is the caller's (the scan's queue, the
 // agent's drip), always on Keepa at 1 token.
 
 import type { Catalog } from '../decompose';
-import { checkIdentity, type IdentityStatus, type ListingIdentity } from '../keepa/verify';
+import { checkListingFields } from '../keepa/listingFields';
+import type { IdentityStatus, ListingIdentity } from '../keepa/verify';
 import { BRAND_IN_TITLE_ONLY, BRAND_NOT_CONFIRMED, KIT_NOT_KNOWN } from '../match';
 import { RESOLVED_BY_SCAN } from './answers';
 import { wantedFor } from './classify';
@@ -41,6 +45,8 @@ export interface CatalogOutcome {
   reason: string;
   /** verified: the part is matched to the listing, verified; removed: the listing is no longer the part's; kept: nothing changed. */
   change: 'verified' | 'removed' | 'kept';
+  /** Rung 1's sub-rule when it, not the catalog check, confirmed. */
+  rule?: string;
 }
 
 export const amazonListingLink = (asin: string): string => `https://www.amazon.com/dp/${encodeURIComponent(asin)}`;
@@ -98,13 +104,13 @@ export async function applyCatalogCheck(
     const offered = q?.candidates.some((c) => c.asin === asin) ?? false;
     if (!onMatch && !offered) continue;
     const now = ctx.now();
-    const res = checkIdentity(wantedFor(m.brand, m.model, ctx.catalog), identity);
+    const res = checkListingFields(wantedFor(m.brand, m.model, ctx.catalog), identity);
     const checks: CatalogCheckRecord[] = [...(m.catalogChecks ?? []), { asin, status: res.status, reason: res.reason, at: now }];
     const evidence = `${res.reason}: ${amazonListingLink(asin)}`;
     const rejected = [...new Set([...(m.rejectedAsins ?? []), asin])];
     let change: CatalogOutcome['change'] = 'kept';
     if (res.status === 'confirmed') {
-      const source = identity.source === 'keepa_catalog' ? 'keepa_catalog' : 'serpapi_product';
+      const source = res.rule !== null ? 'listing_fields' : identity.source === 'keepa_catalog' ? 'keepa_catalog' : 'serpapi_product';
       // As a Verify from a page: the listings kept beside it were of its old grade, and no scan judges it again from search rows.
       await store.putMatch({
         ...m, status: 'matched', asin, grade: 'strong', alternatives: [], updatedAt: now, waitingSince: null, source: 'page',
@@ -135,7 +141,7 @@ export async function applyCatalogCheck(
     } else {
       await store.putMatch({ ...m, catalogChecks: checks });
     }
-    out.push({ key: m.key, asin, status: res.status, reason: res.reason, change });
+    out.push({ key: m.key, asin, status: res.status, reason: res.reason, change, ...(res.rule ? { rule: res.rule } : {}) });
   }
   return out;
 }

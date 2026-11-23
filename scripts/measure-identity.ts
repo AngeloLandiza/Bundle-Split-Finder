@@ -37,6 +37,9 @@ export interface MeasuredRow {
   key: Key;
   check: IdentityCheck;
   verdict: Verdict;
+  /** The part and the listing as checked: the listing ladder's measurement (measure-autoconfirm.ts) reads them again. */
+  want: Wanted;
+  listing: ListingIdentity;
 }
 
 export interface SetScore {
@@ -64,7 +67,7 @@ const want = (brand: string, model: string): Wanted => wantedFor(brand, model, n
 
 function row(set: string, w: Wanted, l: ListingIdentity, key: Key): MeasuredRow {
   const check = checkIdentity(w, l);
-  return { set, asin: l.asin, model: w.model, key, check, verdict: verdictOf(key, check) };
+  return { set, asin: l.asin, model: w.model, key, check, verdict: verdictOf(key, check), want: w, listing: l };
 }
 
 function keepaSearchProducts(root: string): KeepaProduct[] {

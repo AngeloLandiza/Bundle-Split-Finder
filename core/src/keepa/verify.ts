@@ -37,6 +37,10 @@ export interface ListingIdentity {
   numberOfItems: number | null;
   packageQuantity: number | null;
   source: IdentitySource;
+  /** The listing's feature bullets (Keepa `features`, SerpApi `about_item`); absent when not read. Rung 1 only (listingFields.ts). */
+  features?: string[];
+  /** The listing's barcodes (Keepa `gtinList`, SerpApi `upc`); absent when not read. Rung 1 only (listingFields.ts). */
+  gtins?: string[];
 }
 
 export type IdentityStatus = 'confirmed' | 'contradicted' | 'unknown';
@@ -108,7 +112,7 @@ export function dewaltAmpHourConflict(model: string, title: string): string | nu
 }
 
 /** Why the title or the counts stop a confirmation, or null. Never a reason to contradict: a title is not the catalog. */
-function titleOrCountProblem(want: PartIdentity, l: ListingIdentity): string | null {
+export function titleOrCountProblem(want: PartIdentity, l: ListingIdentity): string | null {
   const brand = want.brand.trim().toUpperCase();
   const model = want.model.trim().toUpperCase();
   const title = l.title ?? '';
@@ -189,6 +193,8 @@ export function identityFromKeepa(p: KeepaProduct): ListingIdentity {
     numberOfItems: p.numberOfItems ?? null,
     packageQuantity: p.packageQuantity ?? null,
     source: 'keepa_catalog',
+    ...(p.features && p.features.length > 0 ? { features: p.features } : {}),
+    ...(p.gtinList && p.gtinList.length > 0 ? { gtins: p.gtinList } : {}),
   };
 }
 
@@ -210,7 +216,11 @@ export function identityFromSerpProduct(json: unknown, asin: string): ListingIde
   const details = { ...rec(j.item_specifications), ...rec(j.product_details) };
   const title = text(product.title);
   if (!title) return null;
+  const features = Array.isArray(j.about_item) ? j.about_item.map(text).filter((f): f is string => f !== null) : [];
+  const upc = text(details.upc);
   return {
+    ...(features.length > 0 ? { features } : {}),
+    ...(upc ? { gtins: [upc] } : {}),
     asin: text(product.asin) ?? asin,
     title,
     brand: text(product.brand) ?? text(details.brand_name) ?? text(details.brand),

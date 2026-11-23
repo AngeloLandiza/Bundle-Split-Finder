@@ -64,6 +64,9 @@ function tracking(raw: Record<string, unknown>): Pick<KeepaProduct, 'monthlySold
   };
 }
 
+/** The non-empty strings of an array, or none. */
+const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x.trim() !== '') : []);
+
 function parseOneProduct(raw: Record<string, unknown>): KeepaProduct {
   const asin = typeof raw.asin === 'string' ? raw.asin : '';
   const price = amazonCentsFromStats(raw.stats);
@@ -82,6 +85,9 @@ function parseOneProduct(raw: Record<string, unknown>): KeepaProduct {
     numberOfItems: typeof raw.numberOfItems === 'number' && raw.numberOfItems > 0 ? raw.numberOfItems : null,
     packageQuantity: typeof raw.packageQuantity === 'number' && raw.packageQuantity > 0 ? raw.packageQuantity : null,
     ...(typeof raw.type === 'string' ? { type: raw.type } : {}),
+    // Rung 1 of the listing ladder (keepa/listingFields.ts): the feature bullets and barcodes, when Keepa gives them.
+    ...(strings(raw.features).length > 0 ? { features: strings(raw.features) } : {}),
+    ...(strings(raw.gtinList).length > 0 ? { gtinList: strings(raw.gtinList) } : {}),
     productType: typeof raw.productType === 'number' ? raw.productType : undefined,
     amazonPrice: price?.cents ?? null,
   };
