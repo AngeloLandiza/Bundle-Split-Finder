@@ -23,6 +23,15 @@ export const MAX_FAILURES_IN_A_ROW = 3;
 /** Longest one evidence-only call may take. Research has its own limits (core/src/research/prompt.ts). */
 export const ASK_TIMEOUT_MS = 60_000;
 
+/**
+ * Nov 23: how far a pass of items is, for the scan's step line ("Review cards 3 of 9"). `add`: n more items are in this
+ * step; `item`: one is finished, and how long it took when a model call was made for it (null: none was, so no timing).
+ */
+export interface StepProgress {
+  add(n: number): void;
+  item(ms: number | null): void;
+}
+
 export type AskRoute = 'assist' | 'research';
 export type AskOne = (item: ReviewItem, route: AskRoute, signal: AbortSignal) => Promise<StoredSuggestion>;
 
@@ -49,6 +58,8 @@ export interface AiPassDeps {
   now: () => number;
   /** Only these questions (Ask AI on one); default every open one. */
   only?: string[];
+  /** Nov 23: counted for the scan's "Review cards" step; each question, asked or passed over, is one item. */
+  progress?: StepProgress;
   /**
    * Step 16, lever 2 (off unless the owner's setting turns it on): open split questions to ask again although a
    * suggestion is on screen, because what that ask lacked exists now (agent/reverify.ts reaskDue). Each is asked once
@@ -88,7 +99,11 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
   let spent = deps.spentUsd;
   let failures = 0;
   let briefProblem: string | null = null;
+  deps.progress?.add(queue.length);
   for (const item of queue) {
+    const startedAt = deps.now();
+    let asked = false;
+    try {
     if (deps.signal.aborted) break;
     const route: AskRoute = item.kind === 'split' ? 'research' : 'assist';
     const model = deps.models[route];
@@ -116,6 +131,7 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
     let record: StoredSuggestion;
     try {
       record = await deps.askOne(now, route, deps.signal);
+      asked = true;
     } catch {
       continue;
     }
@@ -154,6 +170,9 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
         break;
       }
     } else failures = 0;
+    } finally {
+      deps.progress?.item(asked ? deps.now() - startedAt : null);
+    }
   }
   out.problem ??= briefProblem;
   return out;

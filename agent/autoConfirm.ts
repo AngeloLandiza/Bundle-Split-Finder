@@ -52,6 +52,8 @@ export interface AutoConfirmDeps {
   usedThisScan?: number;
   now: () => number;
   shouldStop: () => boolean;
+  /** Nov 23: counted for the scan's "Listing confirmation" step; each listing read is one item. */
+  progress?: { add(n: number): void; item(ms: number | null): void };
 }
 
 export interface AutoConfirmDone {
@@ -106,9 +108,12 @@ export async function runAutoConfirm(d: AutoConfirmDeps): Promise<AutoConfirmDon
   }
   const policy = budgetPolicyFor(d.ext, 'scheduled', d.mode === 'scan' ? d.usedThisScan ?? 0 : 0);
   const budget = new SearchBudget(account, { reserve: policy.reserve, maxPerRun: Math.min(policy.maxPerRun, allowance) });
+  // What the allowance can read, not every listing that waits: the step's total is what will be read.
+  d.progress?.add(Math.min(targets.length, Math.max(0, allowance)));
   for (const t of targets) {
     if (d.shouldStop() || !budget.canSpend(1)) break;
     const before = budget.spentThisRun;
+    const startedAt = d.now();
     try {
       await d.verify(t, budget);
     } catch {
@@ -121,6 +126,7 @@ export async function runAutoConfirm(d: AutoConfirmDeps): Promise<AutoConfirmDon
     d.saveState(state);
     done.tried.push(t);
     done.searches += spent;
+    d.progress?.item(spent > 0 ? d.now() - startedAt : null);
     const after = (await d.store.listMatches()).filter((m) => m.asin === t.asin);
     if (after.some(isConfirmed)) done.confirmed += 1;
   }

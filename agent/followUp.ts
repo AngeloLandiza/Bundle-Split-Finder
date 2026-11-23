@@ -74,6 +74,8 @@ export interface FollowUpPassDeps {
   now: () => number;
   /** Only these questions (the owner's press); default every open one the loop has not run for. */
   only?: readonly string[];
+  /** Nov 23: counted for the scan's "Review cards" step (each question the loop runs for is one more item). */
+  progress?: { add(n: number): void; item(ms: number | null): void };
   /** The brief of a follow-up answer, as the AI pass writes one (agent/brief.ts). */
   afterKeep?: (record: StoredSuggestion) => Promise<{ costUsd: number; problem: string | null }>;
 }
@@ -156,10 +158,12 @@ export async function followUpPass(d: FollowUpPassDeps): Promise<FollowUpPassRes
   if (!chrome) return { ...out, problem: 'Chrome is closed, so the app could not read the pages these questions need.' };
   const { catalog, kitItemIds } = await catalogOf(d.store);
   let spent = d.spentUsd;
+  d.progress?.add(todo.length);
   for (const x of todo) {
     if (d.signal.aborted) {
       const f = stateOf(x);
       if (f && working(f)) setState(x, { ...f, state: 'gave_up', reason: 'Stopped before the follow-up began.', updatedAt: d.now() });
+      d.progress?.item(null);
       continue;
     }
     // Read again before its turn: the owner may have answered it meanwhile.
@@ -168,6 +172,7 @@ export async function followUpPass(d: FollowUpPassDeps): Promise<FollowUpPassRes
     if (!item || item.answer !== null || reviewSignature(item) !== reviewSignature(x.item) || (x.live && (!rec || rec.seen !== reviewSignature(item)))) {
       const f = stateOf(x);
       if (f && working(f)) setState(x, { ...f, state: 'gave_up', reason: 'The question changed meanwhile.', updatedAt: d.now() });
+      d.progress?.item(null);
       continue;
     }
     const model = d.research;
@@ -181,6 +186,7 @@ export async function followUpPass(d: FollowUpPassDeps): Promise<FollowUpPassRes
     const s = rec?.suggestion;
     const prior = stateOf(x);
     out.ran += 1;
+    const startedAt = d.now();
     const r = await runFollowUp({
       item, catalog, kitItemIds,
       start: rec && s
@@ -193,6 +199,7 @@ export async function followUpPass(d: FollowUpPassDeps): Promise<FollowUpPassRes
     spent += r.costUsd;
     out.costUsd += r.costUsd;
     out.asked += r.asks.length;
+    d.progress?.item(r.asks.length > 0 ? d.now() - startedAt : null);
     if (!rec || !s) {
       setState(x, r.state);
       continue;

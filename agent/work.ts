@@ -29,7 +29,9 @@ import { AnswerRefused, applyReviewAnswer, reviewSignature } from '../core/src/s
 import { applyEbayAnswer } from '../core/src/scan/ebayAnswers';
 import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep, NOTICE as EBAY_NOTICE } from '../core/src/scan/ebayPass';
 import { PaidProblem, lookupsNeeded, quotePaid, runPaid, savedAnswers } from '../core/src/scan/paid';
-import { addSamples, pipelineOf, pipelineView, samplesOf, type PipelineView } from '../core/src/scan/pipeline';
+import {
+  addSamples, DESKTOP_STEP_WORDS, endStep, finishUnit, moveUnits, newTailSteps, type PipelineStep, pipelineOf, pipelineViewOf, samplesOf, skipStep, startStep, type PipelineView, type StepState,
+} from '../core/src/scan/pipeline';
 import { postScanWork } from '../core/src/scan/postScan';
 import { partRowsFor } from '../core/src/scan/report';
 import { bogoFromBody, bogoView, freeParts, type BogoView } from '../core/src/tracking/bogo';
@@ -51,7 +53,7 @@ import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpa
 import {
   BRAND_QUERIES, budgetPolicyFor, estimatedJudgeCost, type ExtensionSettings, type ScanTrigger, toScanSettings, validateSettings,
 } from '../core/src/settings';
-import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
+import { runAiPass, askOneWith, type AiPassResult, type StepProgress } from './aiPass';
 import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatchesWithKeepa } from './verifyMatches';
@@ -390,6 +392,9 @@ export class AgentWork {
     this.live.busy = kind;
     this.live.stopping = false;
     this.live.pipeline = null;
+    this.tail = null;
+    this.liveJob = null;
+    this.finishState = 'next';
     this.live.searchesUsed = 0;
     this.stopCtl = new AbortController();
     // A scan (Look up all is one) keeps the computer awake while it runs, when the owner has not turned that off.
@@ -425,6 +430,8 @@ export class AgentWork {
         this.live.busy = null;
         this.live.stopping = false;
         this.live.pipeline = null;
+        this.tail = null;
+        this.liveJob = null;
         if (this.current === done) this.current = null;
         this.d.changed();
       });
@@ -803,6 +810,73 @@ export class AgentWork {
     }
   }
 
+  // ---- Nov 23, honest progress: the long work after the runner has steps of its own
+
+  /** The steps after the runner (Review cards, Listing confirmation), kept as a job's record so the runner's helpers time them. */
+  private tail: ScanJob | null = null;
+  /** The last job the runner saved. */
+  private liveJob: ScanJob | null = null;
+  /** "Finishing up": the short tail only (the digest, the notifications). */
+  private finishState: StepState = 'next';
+
+  /** The scan's steps as the owner reads them: the runner's, then the tail's, then "Finishing up". Never a time from a guess. */
+  private viewOf(job: ScanJob): PipelineView {
+    const core = pipelineOf(job).filter((s) => s.id !== 'finish');
+    const tail = this.tail?.pipeline ?? newTailSteps();
+    const finish: PipelineStep = { id: 'finish', state: this.finishState, unitsDone: this.finishState === 'done' ? 1 : 0, unitsTotal: 1 };
+    return pipelineViewOf([...core, ...tail, finish], this.d.store.get('runtime').rates, this.d.now(), { unknown: '', measuredOnly: true, words: DESKTOP_STEP_WORDS });
+  }
+
+  /** The line is redrawn now: the runner has ended, so no save of its job says what the tail is doing. */
+  private pushView(): void {
+    if (!this.liveJob || this.live.busy === null) return;
+    this.live.pipeline = this.viewOf(this.liveJob);
+    const now = this.d.now();
+    if (now - this.progressAt >= PROGRESS_MS) this.tellProgress(now);
+    else this.progressSoon();
+  }
+
+  /** Only the short tail is left: the digest and the messages. */
+  private finishNow(): void {
+    this.finishState = 'now';
+    this.pushView();
+  }
+
+  private tailStep(id: 'review' | 'confirm'): PipelineStep | undefined {
+    return this.tail?.pipeline?.find((s) => s.id === id);
+  }
+
+  /** Counts a tail step's items: `add` makes the total larger by n, `item` finishes one (timed when a call was made for it). */
+  private tailProgress(id: 'review' | 'confirm'): StepProgress | undefined {
+    const tail = this.tail;
+    if (!tail) return undefined;
+    return {
+      add: (n) => {
+        const s = this.tailStep(id);
+        if (!s || s.state === 'skipped') return;
+        if (s.state === 'next') startStep(tail, id, { remaining: n, now: this.d.now() });
+        else moveUnits(tail, id, { total: (s.unitsTotal ?? s.unitsDone) + n });
+        this.pushView();
+      },
+      item: (ms) => {
+        const s = this.tailStep(id);
+        if (!s || s.state === 'skipped') return;
+        finishUnit(tail, id, { ms, remaining: Math.max(0, (s.unitsTotal ?? s.unitsDone + 1) - (s.unitsDone + 1)) });
+        this.pushView();
+      },
+    };
+  }
+
+  /** A tail step is over: one that ran ends, one that never began did not run, for `why` (four words or fewer). */
+  private tailSettle(id: 'review' | 'confirm', why: string): void {
+    const tail = this.tail;
+    const s = this.tailStep(id);
+    if (!tail || !s) return;
+    if (s.state === 'now') endStep(tail, id, this.d.now());
+    else if (s.state === 'next') skipStep(tail, id, why);
+    this.pushView();
+  }
+
   /**
    * A store that tells the app how the scan is going, at most once a second. Step 15: the live view is kept on every
    * save, and a save inside the second is told when the second is up (a trailing call): the real Nov 23 scan saved the
@@ -818,7 +892,8 @@ export class AgentWork {
           await target.putScan(job);
           self.live.searchesUsed = job.searchesUsed;
           const now = self.d.now();
-          self.live.pipeline = pipelineView(job, self.d.store.get('runtime').rates, now, { unknown: '' });
+          self.liveJob = job;
+          self.live.pipeline = self.viewOf(job);
           if (now - self.progressAt >= PROGRESS_MS || job.status !== 'running') self.tellProgress(now);
           else self.progressSoon();
         };
@@ -917,6 +992,10 @@ export class AgentWork {
       searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: 'Scanning.', trigger, stopReason: null, error: null,
     };
     this.record(run);
+    // Nov 23: the steps after the runner; Look up all runs none of them.
+    this.tail = { pipeline: newTailSteps() } as unknown as ScanJob;
+    this.finishState = 'next';
+    if (lookups) for (const id of ['review', 'confirm'] as const) skipStep(this.tail, id, 'not in this run');
     // The schedule counts from the start, whatever happens, so a failing scheduled scan does not start again each tick.
     if (trigger === 'scheduled') store.update('runtime', (r) => ({ ...r, lastScheduledRunAt: startedAt }));
     const keys = store.get('keys');
@@ -935,7 +1014,8 @@ export class AgentWork {
       run.stopReason = job.stopReason;
       run.status = job.stopReason === 'user' ? 'stopped' : job.stopReason === null ? 'finished' : job.stopReason === 'error' ? 'failed' : 'limit';
       if (job.stopMessage) run.error = scrub(job.stopMessage, keys);
-      run.steps = pipelineView(job, store.get('runtime').rates, this.d.now(), { unknown: '' }).steps;
+      this.liveJob = job;
+      run.steps = this.viewOf(job).steps;
       // Free scan: each bundle list read in Chrome, with an empty one's sample of its state, in the run's details.
       const lists = bundleListsOf(job);
       if (lists.length > 0) run.bundleLists = lists;
@@ -970,16 +1050,20 @@ export class AgentWork {
     // waiting for Telegram is tried again.
     const scanOk = run.status === 'finished' || run.status === 'limit';
     if (!scanOk) {
+      for (const id of ['review', 'confirm'] as const) this.tailSettle(id, 'scan did not finish');
+      this.finishNow();
       const tg = await this.resendPending();
       if (tg) notes.push(tg);
     } else if (report && lookups) {
       // Look up all spends no AI: the new matches are published and the digest says what is new.
+      this.finishNow();
       await this.publish(report);
       await this.trackScan(report);
       const tg = await this.message(report, job, 0);
       if (tg) notes.push(tg);
     } else if (report && !this.stopCtl.signal.aborted) {
-      ai = await this.aiPass();
+      ai = await this.aiPass(undefined, undefined, this.tailProgress('review'));
+      this.tailSettle('review', 'no questions open');
       if (ai.problem) notes.push(ai.problem);
       if (ai.waitingForChrome > 0) notes.push(`${ai.waitingForChrome} split ${ai.waitingForChrome === 1 ? 'question waits' : 'questions wait'} for Chrome.`);
       applied = await this.autopilot();
@@ -987,7 +1071,9 @@ export class AgentWork {
       await this.publish(report);
       await this.trackScan(report);
       // The listing ladder, rung 2: within what the scan's cap leaves, the listings its catalog check left unconfirmed.
-      const auto = await this.autoConfirmPass('scan', (again?.usedBefore ?? 0) + run.searchesUsed);
+      const auto = await this.autoConfirmPass('scan', (again?.usedBefore ?? 0) + run.searchesUsed, this.tailProgress('confirm'));
+      this.tailSettle('confirm', 'none to read');
+      this.finishNow();
       await this.noteConfirmQueue();
       if (auto && auto.tried.length > 0) {
         run.searchesUsed += auto.searches;
@@ -999,6 +1085,17 @@ export class AgentWork {
       }
       const tg = await this.message(report, job, applied);
       if (tg) notes.push(tg);
+    } else {
+      // No report, or the owner stopped the scan: nothing more is asked or read.
+      for (const id of ['review', 'confirm'] as const) this.tailSettle(id, 'scan stopped');
+      this.finishNow();
+    }
+    this.finishState = 'done';
+    if (job && this.tail) {
+      // What each Review card cost in time stays for the next scan's estimate.
+      const t = this.tail;
+      store.update('runtime', (r) => ({ ...r, rates: addSamples(r.rates, samplesOf(t)) }));
+      run.steps = this.viewOf(job).steps;
     }
 
     // The scan's searches are in the ledger already; the free account check puts the account's own figure back.
@@ -1369,7 +1466,7 @@ export class AgentWork {
 
   // ------------------------------------------------------------------ the AI and Autopilot
 
-  private async aiPass(only?: string[], force?: string[]): Promise<AiPassResult> {
+  private async aiPass(only?: string[], force?: string[], progress?: StepProgress): Promise<AiPassResult> {
     const { store } = this.d;
     const app = store.get('settings');
     const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
@@ -1399,16 +1496,17 @@ export class AgentWork {
       now: this.d.now,
       ...(only ? { only } : {}),
       ...(force && force.length > 0 ? { force } : {}),
+      ...(progress ? { progress } : {}),
     });
     // Step 16: the follow-up loop (agent/followUp.ts; it took over lever 2's re-ask) for the answers still not settled: the free
     // reads and the code's check always, follow-up asks only when the owner's setting allows them. Not after the owner's own ask.
     if (only || this.stopCtl.signal.aborted) return pass;
-    const f = await this.followUps(app.ai.reaskOnNewEvidence === true);
+    const f = await this.followUps(app.ai.reaskOnNewEvidence === true, undefined, progress);
     return { ...pass, asked: pass.asked + f.asked, verified: pass.verified + f.verified, costUsd: pass.costUsd + f.costUsd, problem: pass.problem ?? (f.ran > 0 ? f.problem : null) };
   }
 
   /** Step 16: the follow-up loop over the open questions (or `only`), with the Chrome tools and the research model. */
-  private async followUps(allowAsk: boolean, only?: string[]) {
+  private async followUps(allowAsk: boolean, only?: string[], progress?: StepProgress) {
     const { store } = this.d;
     const app = store.get('settings');
     const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
@@ -1433,6 +1531,7 @@ export class AgentWork {
           put: (id, seen, state) => store.update('review', (r) => ({ ...r, followUps: { ...(r.followUps ?? {}), [id]: { seen, state } } })),
         },
         ...(only ? { only } : {}),
+        ...(progress ? { progress } : {}),
       });
     } catch {
       // A loop that could not run changes nothing it has not kept; the next pass tries again.
@@ -1798,7 +1897,7 @@ export class AgentWork {
    * listings a buy waits on or a deal within reach rests on, within today's allowance, never the reserve. Records an
    * Activity run when it read anything. Null when off, with no SerpApi key, or (in the drip) before its next look.
    */
-  private async autoConfirmPass(mode: 'scan' | 'drip', usedThisScan = 0): Promise<AutoConfirmDone | null> {
+  private async autoConfirmPass(mode: 'scan' | 'drip', usedThisScan = 0, progress?: StepProgress): Promise<AutoConfirmDone | null> {
     const { store } = this.d;
     const app = store.get('settings');
     const keys = store.get('keys');
@@ -1825,7 +1924,7 @@ export class AgentWork {
     let done: AutoConfirmDone;
     try {
       done = await runAutoConfirm({
-        ...base, ext, perDay: app.lookups?.verifySearchesPerDay ?? null, mode, usedThisScan, now: this.d.now,
+        ...base, ext, perDay: app.lookups?.verifySearchesPerDay ?? null, mode, usedThisScan, now: this.d.now, ...(progress ? { progress } : {}),
         saveState: (st) => store.update('runtime', (r) => ({ ...r, autoConfirm: { ...st, queue: r.autoConfirm?.queue ?? [], nextAt: r.autoConfirm?.nextAt ?? null } })),
         account: async () => {
           const a = await SerpApiClient.account(keys.serpapi!, this.d.fetchFn, this.d.serpBaseUrl);
