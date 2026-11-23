@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, mkdtempSync, statSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ActivityResponse, AgentState, ReviewResponse } from '../../core/src/api/contract';
 import { AnswerRefused } from '../../core/src/scan/answers';
@@ -159,6 +159,24 @@ describe('the schedule', () => {
     expect(agent.work.tick()).toBe(false);
     const activity = await json<ActivityResponse>('/api/activity');
     expect(activity.runs[0]).toMatchObject({ trigger: 'scheduled', status: 'failed', error: 'stop here' });
+  });
+
+  it('after a failed scan nothing runs (no AI, Autopilot or digest); only a waiting Telegram message is sent again', async () => {
+    const fakeScan = (async () => {
+      throw new Error('Reading Home Depot pages failed.');
+    }) as unknown as typeof runScan;
+    await start({ work: { runScan: fakeScan } });
+    await put('/api/keys/serpapi', { key: SERP_KEY });
+    await put('/api/keys/telegram', { botToken: BOT, chatId: '42' });
+    agent.store.update('runtime', (r) => ({ ...r, telegram: { ...r.telegram, pending: [{ text: 'Waiting digest', at: new Date(T0).toISOString(), tries: 1 }] } }));
+    const w = agent.work as unknown as Record<'aiPass' | 'autopilot' | 'message', () => Promise<unknown>>;
+    const after = [vi.spyOn(w, 'aiPass'), vi.spyOn(w, 'autopilot'), vi.spyOn(w, 'message')];
+    agent.work.scanNow();
+    await agent.work.idle();
+    for (const spy of after) expect(spy).not.toHaveBeenCalled();
+    expect(telegram.map((t) => t.text)).toEqual(['Waiting digest']);
+    expect(agent.store.get('runtime').telegram.pending).toEqual([]);
+    expect((await json<ActivityResponse>('/api/activity')).runs[0]).toMatchObject({ status: 'failed', error: 'Reading Home Depot pages failed.' });
   });
 
   it('Stop ends the running scan before its next paid step', async () => {

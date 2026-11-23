@@ -335,9 +335,18 @@ export class AgentWork {
     } catch (err) {
       notes.push(`The deals could not be built: ${scrub(sentenceOf(err), keys)}`);
     }
+    // The run as it stands is saved before anything after the scan, so a crash from here keeps the eBay step's AI spend
+    // (the month's cap counts it from the run).
+    this.record({ ...run, status: 'running', aiCostUsd: Math.round((run.judgeCostUsd ?? 0) * 10_000) / 10_000 });
     let ai: AiPassResult | null = null;
     let applied = 0;
-    if (report && !this.stopCtl.signal.aborted) {
+    // A failed or stopped scan is followed by nothing: no AI, no Autopilot, no digest. Only a message that is already
+    // waiting for Telegram is tried again.
+    const scanOk = run.status === 'finished' || run.status === 'limit';
+    if (!scanOk) {
+      const tg = await this.resendPending();
+      if (tg) notes.push(tg);
+    } else if (report && !this.stopCtl.signal.aborted) {
       ai = await this.aiPass();
       if (ai.problem) notes.push(ai.problem);
       if (ai.waitingForChrome > 0) notes.push(`${ai.waitingForChrome} split ${ai.waitingForChrome === 1 ? 'question waits' : 'questions wait'} for Chrome.`);
@@ -741,6 +750,17 @@ export class AgentWork {
     const sentence = `Telegram: ${sent.error} The message is sent again after the next run.`;
     this.addError(sentence, { kind: 'telegram', label: 'Send again', searches: 0, usd: 0 });
     return sentence;
+  }
+
+  /** Sends the digests still waiting for Telegram, if any, and nothing new. Returns a sentence when Telegram failed. */
+  private async resendPending(): Promise<string | null> {
+    const tg = this.d.store.get('keys').telegram;
+    const pending = this.d.store.get('runtime').telegram.pending;
+    if (!tg || pending.length === 0) return null;
+    const sent = await sendPending(this.d.fetchFn, tg, pending, null);
+    const at = new Date(this.d.now()).toISOString();
+    this.d.store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? at : r.telegram.lastSentAt, lastError: sent.error } }));
+    return sent.error ? `Telegram: ${sent.error} The message is sent again after the next run.` : null;
   }
 
   /** Retry from Activity: scan again, ask again, or send the waiting Telegram messages now. */
