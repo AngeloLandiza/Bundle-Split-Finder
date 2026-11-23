@@ -332,6 +332,22 @@ export function createAgent(opts: AgentOptions): Agent {
     work.start();
   }
 
+  // Open requests of each paired extension (its event stream, its long poll), so revoking its token ends them at once.
+  const openByExtension = new Map<string, Set<{ res: ServerResponse; ctl: AbortController }>>();
+  const endConnections = (extensionId: string, except?: ServerResponse) => {
+    for (const c of openByExtension.get(extensionId) ?? []) {
+      if (c.res === except) continue;
+      c.ctl.abort();
+      c.res.destroy();
+    }
+  };
+  /** Revokes an extension's token and ends whatever it has open. */
+  const revoke = (extensionId: string, except?: ServerResponse): boolean => {
+    const ok = auth.revoke(extensionId);
+    if (ok) endConnections(extensionId, except);
+    return ok;
+  };
+
   const r = new Router();
 
   // ------------------------------------------------------------ state and control
@@ -478,6 +494,8 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/pair/claim', 'none', async (ctx) => {
     const b = obj(await ctx.body());
     const res = pairResult<PairClaimResponse>(auth.claim(b.requestId, b.claimSecret, ctx.origin));
+    // Pairing again replaced the old token: what the old one had open ends.
+    if (res.status === 'approved') endConnections(res.extensionId);
     if (res.status === 'approved') mark('state');
     return res;
   });
@@ -490,7 +508,7 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/pair/deny', 'ui', decide(false));
   r.get('/api/pair/extensions', 'ui', () => auth.pairedExtensions());
   r.delete('/api/pair/extensions/:id', 'ui', (ctx) => {
-    if (!auth.revoke(ctx.params.id!)) throw new HttpError('not_found', 'This extension is not paired.');
+    if (!revoke(ctx.params.id!)) throw new HttpError('not_found', 'This extension is not paired.');
     return { ok: true };
   });
   // The app's Disconnect: one extension by id, or every paired one when none is named (the app pairs one helper).
@@ -498,7 +516,7 @@ export function createAgent(opts: AgentOptions): Agent {
     const raw = await ctx.body().catch(() => ({}));
     const id = typeof (raw as { extensionId?: unknown })?.extensionId === 'string' ? (raw as { extensionId: string }).extensionId : null;
     const ids = id ? [id] : auth.pairedExtensions().map((e) => e.extensionId);
-    const revoked = ids.filter((x) => auth.revoke(x));
+    const revoked = ids.filter((x) => revoke(x));
     if (id && !revoked.length) throw new HttpError('not_found', 'This extension is not paired.');
     mark('state');
     return { ok: true, revoked: revoked.length };
@@ -507,7 +525,7 @@ export function createAgent(opts: AgentOptions): Agent {
   r.delete('/api/pair/self', 'extension', (ctx) => {
     const p = ctx.principal;
     if (p?.kind !== 'extension') throw new HttpError('forbidden', 'Only the paired extension can do this.');
-    auth.revoke(p.extensionId);
+    revoke(p.extensionId, ctx.res);
     mark('state');
     return { ok: true };
   });
@@ -651,6 +669,17 @@ export function createAgent(opts: AgentOptions): Agent {
     }
     const ctl = new AbortController();
     res.on('close', () => ctl.abort());
+    if (principal?.kind === 'extension') {
+      const id = principal.extensionId;
+      const set = openByExtension.get(id) ?? new Set();
+      const entry = { res, ctl };
+      set.add(entry);
+      openByExtension.set(id, set);
+      res.on('close', () => {
+        set.delete(entry);
+        if (set.size === 0 && openByExtension.get(id) === set) openByExtension.delete(id);
+      });
+    }
     let bodyRead: Promise<unknown> | null = null;
     const ctx: Ctx = {
       req,

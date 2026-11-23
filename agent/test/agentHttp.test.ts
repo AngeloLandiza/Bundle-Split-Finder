@@ -145,6 +145,31 @@ describe('agent HTTP', () => {
     expect((await ext(token, '/api/state')).status).toBe(401);
   });
 
+  it("revoking an extension ends its open event stream and long poll at once", async () => {
+    const token = await pairExtension();
+    const headers = { Authorization: `Bearer ${token}`, Origin: EXT_ORIGIN };
+    const stream = new Promise<string>((resolve) => {
+      const req = request({ host: '127.0.0.1', port, path: '/api/events', headers }, (res) => {
+        res.on('data', () => {});
+        res.on('close', () => resolve('stream closed'));
+      });
+      req.on('error', () => resolve('stream closed'));
+      req.end();
+    });
+    const poll = fetch(`${base}/api/worker/next?wait=25`, { headers }).then(
+      (r) => `poll answered ${r.status}`,
+      () => 'poll closed',
+    );
+    await new Promise((r) => setTimeout(r, 50));
+    expect(agent.jobs.pollers()).toBe(1);
+    const started = Date.now();
+    expect((await ui(`/api/pair/extensions/${EXT}`, { method: 'DELETE' })).status).toBe(200);
+    expect(await stream).toBe('stream closed');
+    expect(await poll).toBe('poll closed');
+    expect(Date.now() - started).toBeLessThan(2000);
+    expect(agent.jobs.pollers()).toBe(0);
+  });
+
   it('answers a CORS preflight only for pairing extensions, paired ones and the app', async () => {
     const pre = await fetch(`${base}/api/pair/request`, { method: 'OPTIONS', headers: { Origin: EXT_ORIGIN } });
     expect(pre.status).toBe(204);
