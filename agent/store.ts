@@ -28,6 +28,7 @@ import { DEFAULT_BRIEF_MODEL } from '../core/src/brief/pipeline';
 import { DEFAULT_CLAUDE_JUDGE_MODEL } from '../core/src/judge/claude';
 import { DEFAULT_FEES } from '../core/src/money';
 import type { UnitRates } from '../core/src/scan/pipeline';
+import type { HdPaceState } from '../core/src/scan/hdPace';
 import { measuredByDefault } from './autopilot';
 import type { Footprint } from './ownerAnswers';
 import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS } from '../core/src/settings';
@@ -219,6 +220,10 @@ export interface AgentRuntime {
   migrationLog?: { name: string; at: string; sentence: string }[];
   /** Step 15: the drip's last look at Keepa and its last lookup (epoch ms). */
   drip?: { checkedAt: number | null; lastLookupAt: number | null };
+  /** Home Depot's pace (core/src/scan/hdPace.ts): the last read's end, the cool-down, today's drip pages. */
+  hdPace?: HdPaceState;
+  /** When the BOGO pass last read every brand's listing through (epoch ms): it is read again a day later (HD_LIST_REREAD_MS). */
+  bogoReadAt?: number;
   /** The listing ladder, rung 2 (agent/autoConfirm.ts): today's searches and every listing it read. */
   autoConfirm?: { day: string; spent: number; tried: string[]; exhaustedDay?: string; queue?: string[]; nextAt?: number | null; unconfirmable?: Record<string, { key: string; model: string; reason: string }>; searchedAt?: Record<string, number> };
   /** Deal keys already named in a message: a deal alerts once. */

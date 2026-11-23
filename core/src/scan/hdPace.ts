@@ -83,8 +83,12 @@ export function paceStateOf(v: unknown): HdPaceState {
   };
 }
 
-/** A scan (or an owner's run: Read again, an AI question's research) reads at the scan gap within the scan cap; the drip at its own. */
-export type HdMode = 'scan' | 'drip';
+/**
+ * A scan (or an owner's run: Read again, an AI question's research) reads at the scan gap within the scan cap; the drip at
+ * its own gap within its daily cap; one page the owner asked for himself (a pasted link) at the scan gap, outside both caps.
+ * Every mode keeps the cool-down.
+ */
+export type HdMode = 'scan' | 'drip' | 'owner';
 
 export type HdBlock =
   /** A refusal started a cool-down: nothing is read before `until`. */
@@ -182,6 +186,7 @@ export class HdPace {
   /** Pages `mode` may still read: this run's (scan) or today's (drip); 0 while paused. */
   left(mode: HdMode): number {
     if (this.pausedUntil() !== null) return 0;
+    if (mode === 'owner') return Number.POSITIVE_INFINITY;
     return mode === 'scan' ? Math.max(0, this.limits.pagesPerScan - this.runPages) : Math.max(0, this.limits.dripPagesPerDay - this.state().dripPages);
   }
 
@@ -207,7 +212,7 @@ export class HdPace {
       block = this.blocked(mode);
       if (block) throw new HdReadBlocked(block);
       if (mode === 'scan') this.runPages += 1;
-      else {
+      else if (mode === 'drip') {
         const s = this.state();
         this.d.save({ ...s, dripPages: s.dripPages + 1 });
       }

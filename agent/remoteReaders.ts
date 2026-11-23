@@ -14,6 +14,44 @@ import { isBundleListingPath } from '../core/src/scan/listingSource';
 import type { ListedItem, PromoPageOutcome } from '../core/src/tracking/bogoPairs';
 import type { ListingPage } from '../core/src/scan/listingSource';
 import type { WorkerJobs } from './workerJobs';
+import { HdReadBlocked, type HdOutcome, type HdTicket } from '../core/src/scan/hdPace';
+
+/**
+ * Home Depot's pace (core/src/scan/hdPace.ts), bound to a scan or to the drip: every Home Depot job waits for its ticket
+ * (the gap, one read at a time, the caps, the cool-down) before it is queued, and reports how it ended. Throws HdReadBlocked.
+ */
+export interface ReadGate {
+  take(signal?: AbortSignal): Promise<HdTicket>;
+}
+
+/** What each kind of job reads, for the refusal's record ("Home Depot refused a bundle page"). */
+const WHAT: Partial<Record<WorkerJobKind, string>> = {
+  page: 'a bundle page', kitPage: 'a kit page', promoPage: 'an item page', partPrice: "a part's page", search: 'a search page',
+  researchPage: 'a page for a question', bogoListing: 'a BOGO list page', bundleListing: 'a bundle list page',
+};
+
+const REFUSED = /refused/i;
+
+/**
+ * How a Home Depot job ended, from its answer: 'refused' when Home Depot refused (a page outcome `refused`, a part price
+ * `not_read`, a list or research answer that says it refused), 'read' when a page came back, else 'failed' (Chrome, not
+ * Home Depot). A part price is `not_read` for a refusal and for a page it could not parse alike, so it counts as a refusal:
+ * the careful side.
+ */
+export function jobOutcome(kind: WorkerJobKind, result: unknown): HdOutcome {
+  if (kind === 'page' || kind === 'promoPage' || kind === 'kitPage') {
+    const kinds = (Array.isArray(result) ? result : [result]).map((o) => (isRecord(o) ? o.kind : undefined));
+    if (kinds.includes('refused')) return 'refused';
+    return kinds.includes('read') ? 'read' : 'failed';
+  }
+  if (kind === 'partPrice') {
+    const status = isRecord(result) ? result.status : undefined;
+    return status === 'not_read' ? 'refused' : status === 'found' || status === 'not_found' ? 'read' : 'failed';
+  }
+  const err = toolError(result);
+  if (err) return REFUSED.test(err.error) ? 'refused' : 'failed';
+  return 'read';
+}
 
 export interface ReaderTimeouts {
   /** A page or part-price job: this long, plus perItemMs for each page or part asked. */
@@ -170,11 +208,32 @@ export interface RemoteReaders {
   researchTools(store: ScanStore): ResearchTools;
 }
 
-export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<ReaderTimeouts>; signal?: () => AbortSignal | undefined }): RemoteReaders {
+export function remoteReaders(deps: {
+  jobs: WorkerJobs; timeouts?: Partial<ReaderTimeouts>; signal?: () => AbortSignal | undefined;
+  /** Home Depot's pace: with it, every job waits for its ticket and a page job asks for one page. Absent: no pace (the readers' own tests). */
+  gate?: ReadGate;
+}): RemoteReaders {
   const t = { ...DEFAULT_TIMEOUTS, ...deps.timeouts };
+  const gate = deps.gate;
 
-  /** Queues a job and resolves with its result; rejects on a timeout, a Stop, or a job the worker failed. */
-  function run<K extends WorkerJobKind>(kind: K, input: WorkerJobInputs[K], waitMs: number, signal?: AbortSignal): Promise<unknown> {
+  /**
+   * Queues a job and resolves with its result; rejects on a timeout, a Stop, or a job the worker failed. With the pace, the
+   * job is queued only once its ticket is given (HdReadBlocked when the pace allows no read), and how it ended is reported.
+   */
+  async function run<K extends WorkerJobKind>(kind: K, input: WorkerJobInputs[K], waitMs: number, signal?: AbortSignal): Promise<unknown> {
+    if (!gate) return runJob(kind, input, waitMs, signal);
+    const ticket = await gate.take(signal ?? deps.signal?.());
+    try {
+      const result = await runJob(kind, input, waitMs, signal);
+      ticket.done(jobOutcome(kind, result), WHAT[kind]);
+      return result;
+    } catch (e) {
+      ticket.done(e instanceof Error && REFUSED.test(e.message) ? 'refused' : 'failed', WHAT[kind]);
+      throw e;
+    }
+  }
+
+  function runJob<K extends WorkerJobKind>(kind: K, input: WorkerJobInputs[K], waitMs: number, signal?: AbortSignal): Promise<unknown> {
     const job: WorkerJob = deps.jobs.enqueue(kind, input);
     const stop = signal ?? deps.signal?.();
     return new Promise((resolve, reject) => {
@@ -203,11 +262,39 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
     });
   }
 
-  const readPages: ReadPages = async (itemIds) => {
+  /**
+   * With the pace, one page a job, each after its own gap: the first refusal ends the batch (the rest `skipped`), and so
+   * does the pace allowing no more (cap, cool-down). A job that fails after some pages were read keeps them (the rest
+   * `skipped`); one that fails first throws, as an unpaced batch does.
+   */
+  async function onePageAtATime<O extends { itemId: string; kind: string }>(itemIds: readonly string[], one: (id: string) => Promise<O[]>): Promise<O[]> {
+    const out: O[] = [];
+    let ended = false;
+    for (const id of itemIds) {
+      if (ended) {
+        out.push({ itemId: id, kind: 'skipped' } as O);
+        continue;
+      }
+      try {
+        const got = await one(id);
+        out.push(...got);
+        if (got.some((o) => o.kind === 'refused')) ended = true;
+      } catch (e) {
+        if (!(e instanceof HdReadBlocked) && out.length === 0) throw e;
+        ended = true;
+        out.push({ itemId: id, kind: 'skipped' } as O);
+      }
+    }
+    return out;
+  }
+
+  const readPageBatch = async (itemIds: readonly string[]): Promise<PageOutcome[]> => {
     const result = await run('page', { itemIds: [...itemIds] }, t.pageMs + t.perItemMs * itemIds.length);
     if (!Array.isArray(result)) throw new Error('The pages Chrome read could not be read.');
     return result.flatMap((r) => pageOutcome(r) ?? []);
   };
+
+  const readPages: ReadPages = async (itemIds) => (gate ? onePageAtATime(itemIds, (id) => readPageBatch([id])) : readPageBatch(itemIds));
 
   /**
    * Step 9's reading of a part sold alone, with the jobs the extension runs (W5): Home Depot's search for the part, the
@@ -290,11 +377,14 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
     return { products: items, ...(note ? { note } : {}), ...(finalPath ? { finalPath } : {}), ...(total !== undefined ? { total } : {}), ...(sample ? { sample } : {}) };
   };
 
-  const readPromoPages = async (itemIds: string[]): Promise<PromoPageOutcome[]> => {
+  const readPromoBatch = async (itemIds: readonly string[]): Promise<PromoPageOutcome[]> => {
     const result = await run('promoPage', { itemIds: [...itemIds] }, t.pageMs + t.perItemMs * itemIds.length);
     if (!Array.isArray(result)) throw new Error('The BOGO pages Chrome read could not be read.');
     return result.flatMap((r) => promoOutcome(r) ?? []);
   };
+
+  const readPromoPages = async (itemIds: string[]): Promise<PromoPageOutcome[]> =>
+    gate ? onePageAtATime(itemIds, (id) => readPromoBatch([id])) : readPromoBatch(itemIds);
 
   function researchTools(store: ScanStore): ResearchTools {
     let used = 0;

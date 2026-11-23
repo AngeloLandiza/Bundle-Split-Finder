@@ -70,7 +70,8 @@ import { scrubKeyText } from './keyChecks';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
 import { answerText, footprintOf, type Footprint, KEEP_OWNER_ANSWERS, restorable, undoOwnerAnswer } from './ownerAnswers';
-import { remoteReaders, type ReaderTimeouts, type RemoteReaders } from './remoteReaders';
+import { remoteReaders, type ReadGate, type ReaderTimeouts, type RemoteReaders } from './remoteReaders';
+import { HdPace, type HdMode, paceStateOf } from '../core/src/scan/hdPace';
 import { bundleListsOf, discoveryFor, discoveryNote, scheduledScanWaits } from './scanSource';
 import { DirCache, FileScanStore } from './scanStore';
 import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer } from './store';
@@ -122,6 +123,28 @@ export interface WorkDeps {
   runScan?: typeof runScan;
   /** Holds the computer awake while a scan or Look up all runs (agent/keepAwake.ts). Absent: nothing is held (tests). */
   keepAwake?: { hold(): () => void };
+  /**
+   * Home Depot's pace (core/src/scan/hdPace.ts): how it waits for the gap (default a real timer that a Stop ends) and its
+   * jitter draw (default Math.random). Tests pass a sleep that moves their clock.
+   */
+  hdSleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
+  hdRandom?: () => number;
+}
+
+/** A real wait of `ms` that `signal` ends early (rejecting). */
+export function sleepFor(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(new Error('stopped'));
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new Error('stopped'));
+    };
+    signal?.addEventListener('abort', onAbort, { once: true });
+  });
 }
 
 export interface LiveState {
@@ -183,6 +206,8 @@ const reserveTrigger = (explicit: boolean): ScanTrigger => (explicit ? 'manual' 
 export class AgentWork {
   readonly scanStore: ScanStore;
   readonly cache: DirCache;
+  /** Home Depot's pace: every Home Depot read, in a scan and between scans, goes through it (gate). */
+  readonly pace: HdPace;
   private readonly d: WorkDeps;
   /** D2: the kinds, quiet hours and digest timing the owner set. */
   readonly policy: NotifyPolicy;
@@ -204,6 +229,16 @@ export class AgentWork {
     this.scanStore = new FileScanStore(join(deps.dataDir, 'scan'));
     this.cache = new DirCache(join(deps.dataDir, 'cache'));
     this.dealsAtStart = deps.store.get('deals').bundles.length > 0;
+    this.pace = new HdPace({
+      now: deps.now, sleep: deps.hdSleep ?? sleepFor, ...(deps.hdRandom ? { random: deps.hdRandom } : {}),
+      load: () => paceStateOf(deps.store.get('runtime').hdPace),
+      save: (s) => deps.store.update('runtime', (r) => ({ ...r, hdPace: s })),
+    });
+  }
+
+  /** Home Depot's pace bound to a kind of run, for the readers (remoteReaders' gate). */
+  gate(mode: HdMode): ReadGate {
+    return { take: (signal) => this.pace.take(mode, signal) };
   }
 
   // ------------------------------------------------------------------ signals round 2: buy signals between scans
@@ -397,6 +432,8 @@ export class AgentWork {
     this.finishState = 'next';
     this.live.searchesUsed = 0;
     this.stopCtl = new AbortController();
+    // Home Depot's pace: this run's pages count from 0 (HD_PAGES_PER_SCAN, every kind together).
+    this.pace.beginRun();
     // A scan (Look up all is one) keeps the computer awake while it runs, when the owner has not turned that off.
     if (kind === 'scan' && this.d.keepAwake && this.d.store.get('settings').shell.keepAwakeDuringScan !== false) this.releaseAwake = this.d.keepAwake.hold();
     // Step 15: the drip ends before its next part; the claimed work starts once it has (begin, paid).
@@ -675,7 +712,7 @@ export class AgentWork {
   private async dripPartPrices(settings: ReturnType<typeof toScanSettings>): Promise<number> {
     if (!this.d.helperConnected()) return 0;
     const signal = this.dripCtl.signal;
-    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => signal });
+    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => signal, gate: this.gate('drip') });
     try {
       const out = await readPartPricesFor({
         store: this.scanStore, settings, readPartPrices: readers.readPartPrices, now: this.d.now, maxMs: PART_PRICE_MS, waiting: true,
@@ -693,7 +730,7 @@ export class AgentWork {
   private async dripKitPages(): Promise<number> {
     if (!this.d.helperConnected()) return 0;
     const signal = this.dripCtl.signal;
-    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => signal });
+    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => signal, gate: this.gate('drip') });
     try {
       return await readKitPagesFor({ store: this.scanStore, readPages: readers.readPages, now: this.d.now, shouldStop: () => signal.aborted || !this.dripAllowed() });
     } catch {
@@ -1191,7 +1228,7 @@ export class AgentWork {
     });
     const keepa = await this.keepaDeps(ext, keys, notes);
     const connected = !lookups && this.d.helperConnected();
-    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal });
+    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal, gate: this.gate('scan') });
     if (lookups) {
       // Look up all reads nothing in Chrome.
     } else if (!connected) notes.push('Chrome is closed, so Home Depot pages wait for the next scan.');
@@ -1470,7 +1507,7 @@ export class AgentWork {
     const { store } = this.d;
     const app = store.get('settings');
     const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
-    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal });
+    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal, gate: this.gate('scan') });
     // Step 16: what the scan stored since is checked against the unverified answers first (no AI call), and each
     // research ask is stamped with the evidence it rests on, so lever 2 asks again only on new evidence.
     await this.recheck();
@@ -1510,7 +1547,7 @@ export class AgentWork {
     const { store } = this.d;
     const app = store.get('settings');
     const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
-    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal });
+    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal, gate: this.gate('scan') });
     try {
       return await followUpPass({
         store: this.scanStore,

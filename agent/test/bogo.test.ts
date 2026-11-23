@@ -110,8 +110,11 @@ describe('BOGO found by the agent', () => {
     await new Promise((r) => setTimeout(r, 20));
     await scan();
 
-    // Per brand: the first listing page, the next (no new item: the end), then the twelve item pages in one job.
-    expect(worked.map((j) => j.kind)).toEqual(['bogoListing', 'bogoListing', 'promoPage', 'bogoListing', 'bogoListing', 'promoPage']);
+    // Per brand: the first listing page, the next (no new item: the end), then the twelve item pages, one job each (Home
+    // Depot's pace: one page a job, each after its gap).
+    const twelve = Array.from({ length: 12 }, () => 'promoPage');
+    expect(worked.map((j) => j.kind)).toEqual(['bogoListing', 'bogoListing', ...twelve, 'bogoListing', 'bogoListing', ...twelve]);
+    expect(worked.filter((j) => j.kind === 'promoPage').every((j) => (j.input as { itemIds: string[] }).itemIds.length === 1)).toBe(true);
     const pairs = agent.store.get('tracking').bogoPairs;
     expect(Object.keys(pairs)).toHaveLength(13);
     expect(pairs['homedepot:337440459']).toMatchObject({ model: 'DCK200D1P1W921B', starterModel: 'DCK200D1P1', freeModel: '921B', price: 299, endsAt: '2027-01-31' });

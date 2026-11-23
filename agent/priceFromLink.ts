@@ -17,6 +17,7 @@ import { TokenBudget } from '../core/src/keepa/budget';
 import { KeepaBudgetExceededError, KeepaClient, KeepaError } from '../core/src/keepa/client';
 import { parseListingLink } from '../core/src/scan/listingLink';
 import type { Cache } from '../core/src/serpapi/client';
+import { type HdPace, pausedSentence } from '../core/src/scan/hdPace';
 import { remoteReaders, NO_ANSWER } from './remoteReaders';
 import type { Store, StoredKeys } from './store';
 import type { WorkerJobs } from './workerJobs';
@@ -39,6 +40,8 @@ export interface PriceFromLinkDeps {
   /** The agent's Keepa cache: a pull made in the last hour is reused (and said to be from when it was read). */
   cache: Cache;
   timeoutMs?: number;
+  /** Home Depot's pace for one page the owner asked for (mode 'owner': the gap and the cool-down, no cap). Absent: none. */
+  pace?: Pick<HdPace, 'take' | 'pausedUntil'>;
 }
 
 const no = (reason: string): PriceFromLinkResponse => ({ found: false, reason });
@@ -145,7 +148,11 @@ async function fromAmazon(deps: PriceFromLinkDeps, keys: Keys, asin: string | un
 async function fromHomeDepot(deps: PriceFromLinkDeps, id: string | undefined, url: string, ms: number): Promise<PriceFromLinkResponse> {
   if (!id) return no(`That Home Depot link does not name one product. ${TYPE_IT}`);
   if (!deps.helperConnected()) return no(CHROME_CLOSED);
-  const readers = remoteReaders({ jobs: deps.jobs, timeouts: { pageMs: ms, perItemMs: 0 } });
+  // Home Depot's pace: after a refusal nothing is read until the cool-down ends, his own link included.
+  const until = deps.pace?.pausedUntil() ?? null;
+  if (until !== null) return no(`${pausedSentence(until)} ${TYPE_IT}`);
+  const pace = deps.pace;
+  const readers = remoteReaders({ jobs: deps.jobs, timeouts: { pageMs: ms, perItemMs: 0 }, ...(pace ? { gate: { take: (signal?: AbortSignal) => pace.take('owner', signal) } } : {}) });
   let outcomes;
   try {
     outcomes = await readers.readPromoPages([id]);
@@ -155,7 +162,10 @@ async function fromHomeDepot(deps: PriceFromLinkDeps, id: string | undefined, ur
   }
   const outcome = outcomes.find((o) => o.itemId === id);
   if (!outcome) return no(`Chrome did not read that page. ${TYPE_IT}`);
-  if (outcome.kind === 'refused') return no(`Home Depot did not let the page open. Try again in a minute, or ${TYPE_IT.charAt(0).toLowerCase()}${TYPE_IT.slice(1)}`);
+  if (outcome.kind === 'refused') {
+    const paused = deps.pace?.pausedUntil() ?? null;
+    return no(paused !== null ? `Home Depot did not let the page open. ${pausedSentence(paused)} ${TYPE_IT}` : `Home Depot did not let the page open. Try again in a minute, or ${TYPE_IT.charAt(0).toLowerCase()}${TYPE_IT.slice(1)}`);
+  }
   if (outcome.kind !== 'read') return no(`Chrome could not read that Home Depot page. ${TYPE_IT}`);
   const { price, title } = outcome.page;
   if (price === null || !(price > 0)) return no(`Home Depot shows no price on that page. ${TYPE_IT}`);

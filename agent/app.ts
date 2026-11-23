@@ -77,7 +77,7 @@ export interface AgentOptions {
   /** Every paid call's fetch (SerpApi, Keepa, eBay, models, Telegram). Tests pass a fake; default the global fetch. */
   fetchFn?: typeof fetch;
   /** Tests: the scan itself, reader timeouts, SerpApi's address. */
-  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl' | 'keepAwake'>;
+  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl' | 'keepAwake' | 'hdSleep' | 'hdRandom'>;
   /**
    * POST /api/agent/quit: the desktop shell asks the agent to stop as SIGTERM does. Windows has no SIGTERM for a
    * windowless child, so the shell asks over HTTP there before it kills. Absent, the route answers unavailable.
@@ -464,6 +464,8 @@ export function createAgent(opts: AgentOptions): Agent {
 
   const work = new AgentWork({
     store, jobs, dataDir: opts.dataDir, now, fetchFn: opts.fetchFn ?? fetch, helperConnected: () => helperLive().connected, notify,
+    // Home Depot's pace waits on real timers; with the timers off (tests) its gaps are counted on the injected clock and not waited.
+    ...(timers ? {} : { hdSleep: async () => {} }),
     changed: () => mark('state'), ...(opts.work ?? {}),
   });
 
@@ -732,7 +734,7 @@ export function createAgent(opts: AgentOptions): Agent {
   // A pasted link read for its price: eBay (Browse), Amazon (one Keepa token), Home Depot (his Chrome). The answer is shown to him; it counts only when he confirms it.
   r.post('/api/price-from-link', 'ui', async (ctx): Promise<PriceFromLinkResponse> => {
     const url = text(obj(await ctx.body()).url, 'url', 2048);
-    return priceFromLink({ store, jobs, dataDir: opts.dataDir, now, fetchFn: opts.fetchFn ?? fetch, helperConnected: () => helperLive().connected, cache: work.cache }, url);
+    return priceFromLink({ store, jobs, dataDir: opts.dataDir, now, fetchFn: opts.fetchFn ?? fetch, helperConnected: () => helperLive().connected, cache: work.cache, pace: work.pace }, url);
   });
   r.delete('/api/deals/:id/parts/:part/price', 'ui', (ctx) => {
     const plan = planRemoveConfirmedPrice(dealOf(ctx.params.id!), ctx.params.part!);
