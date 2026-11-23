@@ -579,3 +579,62 @@ when it asked him: a three-part hyphen split went straight to a question instead
   shell spawn, kill or execute. The CSP loads images only from the app. *Left for v2:* pairing still trusts an Origin that
   a local program can forge (the code shown in both places is the check), worker results are kept whole, and Install
   helper replaces Documents/split-finder whatever it holds.
+### Signals round 2: the agent says when a bundle is worth buying, between scans too (Nov 23 2026)
+The owner's app on Nov 23: the best deal, DCK225D2WCS369B at $269, est. +$69.15 (26% ROI, both parts on catalog-verified
+listings), had `signals: null` and `fbaEstimate: null`: its estimate came from the drip after the last scan, and signals were
+judged only at a scan's end. Another deal's verdict was "Keepa has no monthly-sold figure stored for DCK540D1 and DCS382B",
+because the drip's price pulls and the catalog check's pulls kept no Keepa figures. And every estimate left out Amazon's
+fulfillment fee (flat fee $0, the default).
+- **Signals are judged whenever an estimate or completeness changes** (`agent/signalsPass.ts`, hooked into `work.ts`'s
+  `refresh`): after the drip's lookups, price pulls, catalog check and sales pulls, after an owner's Review answer, Undo,
+  confirmed price or Look up, and at start (the deals rebuilt from the store when it held deals; nothing fetched). A scan
+  still judges its own at its end (`trackReport`, unchanged); `POST /api/lookups/run` runs as a scan and goes that way. Same
+  rules (`bundleSignals`), same once-per-bundle+signal+day bookkeeping (`freshSignals`, now limited to the bundles judged),
+  same `NotifyPolicy` (kinds, quiet hours, morning digest). The drip's "N new estimates" line and the buy line go in one
+  message. Confirmed and discounted bundles become watched between scans too.
+- **What "judged again" means between scans** (`core/src/tracking/state.ts retrackReport`): a bundle whose figures (section,
+  price, each way's estimate, open Review) moved since its last stored point is judged against its history and gets a point,
+  as at a scan. One whose figures did not move is judged against the history its last point was judged by, with the Keepa
+  figures stored now, so a sales figure that arrived can turn the verdict and nothing else does; a verdict that comes out the
+  same keeps its stored signals and is not sent again. A buy signal still needs a change, so a deal that stays good is not
+  re-announced every day; the scan after a between-scan point sees no change (the owner was told when it happened).
+- **A change is judged once sales data exists** (`judgedBy`): when the point has every part's monthlySold and the points
+  before it did not, those points are left out of the baseline. Measured on the test case: PCL235B first seen at +$29.16
+  (no sales figure: not a buy), the sales pull brought monthlySold 500 and Keepa's $8.02 FBA fee (+$21.14); without this
+  rule the fee's drop made it "no better than the last check" and the deal the owner should buy was never named.
+- **The verdict always names the failing condition** (`BundleSignals.verdict`, `OptionSignals.notBuyNow`, `DealRow.signalNote`):
+  one sentence, money first, then leftovers, then sales: "Not worth buying now: est. profit $6.63 is below your $20 and 4% ROI
+  below your 20%", "…: DCS382B sells about 12 a month, below your 50", "…: no sales data for DCS369B yet — Keepa is asked on
+  the next lookup", "…: no sales data for X — Keepa leaves it out for slow sellers" (pulled, no monthlySold), "…: no sales data
+  for X — no Amazon listing of its own to read" (a confirmed price). A buy: "Worth buying now: est. profit $21.14 (235% ROI),
+  sells about 500 a month, first seen with an estimate". The owner's own numbers print without cents ("$20").
+- **Every Keepa product pull keeps its trend** (`core/src/keepa/trends.ts keepingTrends`): the lookup's price pull, the catalog
+  check's pull and the sales pull write the same `keepa:trend:<asin>` a scan's refresh writes: monthlySold and when it was read
+  (`pulledAt`), `fbaFees.pickAndPackFee`, `referralFeePercentage` (new: `referralPercent`), the sales rank (`stats.current[3]`)
+  and the summed `buyBoxEligibleOfferCounts`. Checked on the recordings: the product pull with and without stats
+  (`product-…-stats.json`, `product-….json`) and the search rows all carry monthlySold, fbaFees, referralFeePercentage and the
+  offer counts; only the stats pull carries a price and a rank. **The price pull's request needed no change**: it already
+  sends `history=0&stats=180`, monthlySold is a product field, and stats cost nothing extra (keepa.com/api-docs/product.html,
+  read Nov 23). Token arithmetic: a drip lookup stays 10 (search) + 1 (price pull) = 11; the catalog check stays 1 a listing;
+  keeping the trend costs 0 tokens (one more local file).
+- **The sales pull** (`salesPullsWanted`, `pullSales`): a watched deal's part whose listing Keepa was never asked about (no
+  trend) is pulled once by the drip, 1 token above the reserve, after the lookups and after the catalog check (whose pulls keep
+  trends too, so a listing it pulled is skipped). A listing pulled with no monthlySold is not pulled again: Keepa leaves it out
+  for slow sellers and a second pull would say the same. The pull saves the price as a refresh does.
+- **Realistic fees** (`fees.fulfillmentSource`, `fees.referralSource`, `core/src/scan/report.ts feesOf`): with 'keepa' (default
+  for new installs), a part's fulfillment fee in the main estimate is Keepa's pick-and-pack fee for its own listing when
+  stored, else the flat fee; a part priced by a confirmed price takes the flat settings. The referral rate stays the owner's
+  unless he picks `referralSource: 'keepa'` (default 'flat': his rate is never changed silently). Migration
+  (`agent/store.ts FULFILLMENT_KEEPA_MIGRATION`, once, logged in `runtime.migrationLog`): a stored fees object with no source
+  takes 'keepa' when its flat fee is $0 and 'flat' when the owner set one. The estimate's basis says exactly what was used:
+  "15% referral (at least $0.30); Amazon's FBA fee from Keepa for 1 of 2 parts ($15.01), your flat $0.00 for PCL424B; 0% tax;
+  $0.00 inbound. An estimate, not your real Amazon fees." With 'flat' it is the settings in words, as before. The separate
+  "FBA estimate (Keepa)" line now replaces each part's fee in the estimate (not the flat setting) and shows only when it
+  differs. Preferences › Scanning: "Fulfillment fee: Amazon's FBA fee from Keepa (recommended) / A flat amount per unit"; the
+  $0 warning stays on the flat choice; with Keepa the flat amount is labelled as the fallback.
+- **Measured on after-scan3** (`core/test/report-keepa-fees.test.ts`), with the three FBA fees the owner's app had stored from
+  Keepa (PCL1201K2 $15.01, PCL406B $7.60, PBT01B $41.53; every other part has none yet): 13 complete estimates either way;
+  above zero 3 before, 0 after. Top 5 before: PCL1201K2-PCL424B +$6.63, PCL1201K2-P755 +$3.26, PCL1201K2-PCL445B +$1.32,
+  PCL1201K2-PCL515B -$0.14, DCK540D1WCS382B -$0.94. After: DCK540D1WCS382B -$0.94, DCK540D1WCS565B -$7.11, DCK540D1WCB1404
+  -$7.70, PCL1201K2-PCL424B -$8.38, PCL1201K2-P755 -$11.75. The five PCL1201K2 BOGO pairs fall by $15.01 each, PCL424B-PCL406B
+  by $7.60. Every part with no stored fee still counts $0, so the rest still overstate; the sales pulls fill those in.
