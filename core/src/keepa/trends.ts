@@ -12,10 +12,16 @@ export interface PartTrend {
   salesRank: number | null;
   offerCount: number | null;
   pulledAt: number;
+  /** Keepa's monthlySold for the listing (units bought in the past month); null or absent when Keepa gave none. */
+  monthlySold?: number | null;
+  /** Keepa's FBA pick-and-pack fee estimate, in dollars; null or absent when Keepa gave none. */
+  fbaFee?: number | null;
+  /** The sum of Keepa's buyBoxEligibleOfferCounts (every condition together); null or absent when Keepa gave none. */
+  buyBoxEligibleOffers?: number | null;
 }
 
 export function partTrendFromProduct(p: KeepaProduct, pulledAt: number): PartTrend {
-  const raw = p as KeepaProduct & { salesRanks?: Record<string, number[]>; offerCount?: number };
+  const raw = p as KeepaProduct & { offerCount?: number };
   let salesRank: number | null = null;
   const ranks = raw.salesRanks;
   if (ranks && typeof ranks === 'object') {
@@ -28,6 +34,9 @@ export function partTrendFromProduct(p: KeepaProduct, pulledAt: number): PartTre
     salesRank,
     offerCount: typeof raw.offerCount === 'number' ? raw.offerCount : null,
     pulledAt,
+    monthlySold: p.monthlySold ?? null,
+    fbaFee: p.fbaPickAndPackFee == null ? null : Math.round(p.fbaPickAndPackFee) / 100,
+    buyBoxEligibleOffers: p.buyBoxEligibleOfferCounts ? p.buyBoxEligibleOfferCounts.reduce((a, b) => a + b, 0) : null,
   };
 }
 

@@ -21,6 +21,22 @@ export interface KeepaProduct {
   productType?: number;
   /** Amazon price in the marketplace's smallest currency unit (cents). */
   amazonPrice?: number | null;
+  /**
+   * Keepa's `monthlySold`: units bought in the past month (recorded: 500, 1000, 600 in
+   * fixtures/keepa/product-*.json). Null when the product has none or a negative "no data" value.
+   */
+  monthlySold?: number | null;
+  /** Keepa's `fbaFees.pickAndPackFee`, in cents (recorded: 802, 710, 760). Null when absent. */
+  fbaPickAndPackFee?: number | null;
+  /** Keepa's `referralFeePercentage` (recorded: 12, 13.83). Null when absent. */
+  referralFeePercentage?: number | null;
+  /** Keepa's `buyBoxEligibleOfferCounts`, an array of 8 counts as recorded; its index meanings are not interpreted here. */
+  buyBoxEligibleOfferCounts?: number[] | null;
+  /**
+   * Keepa's `salesRanks` (category id -> history). Not in any recording yet (history=0 drops it);
+   * kept only when a response carries it, and read by trends.ts as before.
+   */
+  salesRanks?: Record<string, number[]>;
 }
 
 export interface KeepaProductResponse {

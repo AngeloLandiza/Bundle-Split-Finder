@@ -30,9 +30,28 @@ function amazonCentsFromStats(stats: unknown): number | null {
   return typeof v === 'number' && v > 0 ? v : null;
 }
 
+/** A Keepa count or fee: a finite number of 0 or more; Keepa's -1 ("no data") and anything else is null. */
+const count = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null);
+
+function tracking(raw: Record<string, unknown>): Pick<KeepaProduct, 'monthlySold' | 'fbaPickAndPackFee' | 'referralFeePercentage' | 'buyBoxEligibleOfferCounts' | 'salesRanks'> {
+  const fba = raw.fbaFees && typeof raw.fbaFees === 'object' ? (raw.fbaFees as Record<string, unknown>) : null;
+  const offers = Array.isArray(raw.buyBoxEligibleOfferCounts) && raw.buyBoxEligibleOfferCounts.every((n) => typeof n === 'number')
+    ? (raw.buyBoxEligibleOfferCounts as number[])
+    : null;
+  const ranks = raw.salesRanks && typeof raw.salesRanks === 'object' && !Array.isArray(raw.salesRanks) ? (raw.salesRanks as Record<string, number[]>) : undefined;
+  return {
+    monthlySold: count(raw.monthlySold),
+    fbaPickAndPackFee: fba ? count(fba.pickAndPackFee) : null,
+    referralFeePercentage: count(raw.referralFeePercentage),
+    buyBoxEligibleOfferCounts: offers,
+    ...(ranks ? { salesRanks: ranks } : {}),
+  };
+}
+
 function parseOneProduct(raw: Record<string, unknown>): KeepaProduct {
   const asin = typeof raw.asin === 'string' ? raw.asin : '';
   return {
+    ...tracking(raw),
     asin,
     title: typeof raw.title === 'string' ? raw.title : null,
     brand: typeof raw.brand === 'string' ? raw.brand : null,

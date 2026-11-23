@@ -462,12 +462,13 @@ async function runQueue(run: Run): Promise<void> {
     run.lastFailed = false;
     // Rule 3: the store first, then the job.
     const follow = await apply(run, step, result);
-    if (step.kind === 'refresh' && result.keepaProduct) {
+    // An identify pull carries the same Keepa product (sales, FBA fee), so it starts the part's trend too.
+    if ((step.kind === 'refresh' || step.kind === 'identify') && result.keepaProduct) {
       try {
         const next = partTrendFromProduct(result.keepaProduct, result.at);
         const prev = run.cache ? await readPartTrend(run.cache, step.asin) : undefined;
         if (run.trendWriter) await run.trendWriter(next);
-        const delta = amazonPriceDelta(prev, next);
+        const delta = step.kind === 'refresh' ? amazonPriceDelta(prev, next) : null;
         if (delta !== null && delta >= 2) {
           (job.partPriceDrops ??= []).push({ partModel: step.model, delta });
         }
