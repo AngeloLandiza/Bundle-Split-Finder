@@ -10,6 +10,9 @@ import { createAgent, type Agent } from '../app';
 const EXT = 'abcdefghijklmnopabcdefghijklmnop';
 const EXT_ORIGIN = `chrome-extension://${EXT}`;
 
+// A key saved is checked with its own service (agent/keyChecks.ts); no test reaches one.
+const offline = (async () => { throw new Error('offline'); }) as unknown as typeof fetch;
+
 let server: Server;
 let agent: Agent;
 let base: string;
@@ -21,7 +24,7 @@ beforeEach(async () => {
   port = (server.address() as { port: number }).port;
   base = `http://127.0.0.1:${port}`;
   // No shipped helper build here: these polls name none, and a checkout that holds a built zip would call them outdated.
-  agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-http-')), port, timers: false, shippedHelperVersion: null });
+  agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-http-')), port, timers: false, fetchFn: offline, shippedHelperVersion: null });
   server.on('request', agent.handle);
 });
 
@@ -120,7 +123,10 @@ describe('agent HTTP', () => {
 
   it('takes keys in and never gives one back', async () => {
     const put = await ui('/api/keys/serpapi', { method: 'PUT', body: JSON.stringify({ key: 'secret-serp-123' }) });
-    expect(await put.json()).toMatchObject({ serpapi: true, keepa: false });
+    // Saved, and checked with its own service: this agent is offline, so the answer is "could not reach", never a rejection.
+    const saved = (await put.json()) as { saved: boolean; check: { ok: boolean; kind?: string; problem?: string } };
+    expect(saved).toMatchObject({ saved: true, check: { ok: false, kind: 'network' } });
+    expect(JSON.stringify(saved)).not.toContain('secret-');
     await ui('/api/keys/ebay', { method: 'PUT', body: JSON.stringify({ appId: 'secret-app', certId: 'secret-cert' }) });
     for (const path of ['/api/settings', '/api/state', '/api/helper/settings', '/api/activity', '/api/deals', '/api/review']) {
       const text = await (await ui(path)).text();

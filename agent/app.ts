@@ -15,6 +15,8 @@ import {
   type BogoResponse,
   type ConfirmPriceResponse,
   type KeyName,
+  type CheckKeyResponse,
+  type PutKeyResponse,
   type NotifyEvent,
   type PaidResponse,
   type WatchResponse,
@@ -43,6 +45,7 @@ import { AUDIT_REFUSAL, backUpScanData, buildAuditText, clearScanData } from './
 import { measuredByDefault, modelIdentity } from './autopilot';
 import { checkEbayKeysApp } from './checkEbayKeysApp';
 import { checkSerpApiKey } from './checkSerpKey';
+import { checkForOwner, checkStoredKey, forgetKeyCheck, recheckStaleKeys, type KeyCheckHost } from './keyChecks';
 import { EventHub } from './events';
 import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError, type Ctx } from './http';
 import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus, shippedHelperVersion } from './setup';
@@ -74,6 +77,8 @@ export interface AgentOptions {
    * windowless child, so the shell asks over HTTP there before it kills. Absent, the route answers unavailable.
    */
   onQuit?: () => void;
+  /** Nov 23: how long a key check may take before it says "could not reach" (default 10 s); tests shorten it. */
+  keyCheckTimeoutMs?: number;
   /** Nov 23: the helper build this app ships; default the bundled zip's manifest (setup.ts shippedHelperVersion). Tests set it. */
   shippedHelperVersion?: string | null;
 }
@@ -484,6 +489,13 @@ export function createAgent(opts: AgentOptions): Agent {
       }, 15_000)
     : null;
   connectionTimer?.unref?.();
+  const keyHost: KeyCheckHost = { store, fetchFn: opts.fetchFn ?? fetch, now, ...(opts.work?.serpBaseUrl ? { serpBaseUrl: opts.work.serpBaseUrl } : {}), ...(opts.keyCheckTimeoutMs ? { timeoutMs: opts.keyCheckTimeoutMs } : {}) };
+  // Nov 23: stored keys with no verdict in the last 24 hours are checked quietly (free requests only), at start and every hour after.
+  const quietKeyChecks = () => void recheckStaleKeys(keyHost).catch(() => []);
+  const quietStart = timers ? setTimeout(quietKeyChecks, 4_000) : null;
+  const quietTimer = timers ? setInterval(quietKeyChecks, 3_600_000) : null;
+  quietStart?.unref?.();
+  quietTimer?.unref?.();
   if (timers) {
     jobs.start();
     work.start();
@@ -561,13 +573,24 @@ export function createAgent(opts: AgentOptions): Agent {
       return { ...rt, keyProblems: rest };
     });
   };
-  // Keys go in and never come out: both answer with which keys are set.
-  r.put('/api/keys/:name', 'ui', async (ctx) => {
+  // Nov 23: a key is checked with its own service as it is saved (free requests only: agent/keyChecks.ts), and again on demand
+  // from the stored value. What the service said is recorded for the UI (keyProblems, keyChecks).
+  // Keys go in and never come out: a save answers whether it was kept and what the service said; a delete answers which keys are set.
+  r.put('/api/keys/:name', 'ui', async (ctx): Promise<PutKeyResponse> => {
     const name = keyName(ctx);
     const value = parseKey(name, obj(await ctx.body()));
-    const keys = store.update('keys', (k) => ({ ...k, ...value }));
+    store.update('keys', (k) => ({ ...k, ...value }));
+    // The old value's problem and verdict were about another key.
     clearKeyProblem(name);
-    return settingsResponse({ settings: store.get('settings'), keys }).keys;
+    forgetKeyCheck(store, name);
+    const check = (await checkStoredKey(keyHost, name))!;
+    return { saved: true, check: checkForOwner(check, 'save') };
+  });
+  r.post('/api/keys/:name/check', 'ui', async (ctx): Promise<CheckKeyResponse> => {
+    const name = keyName(ctx);
+    const check = await checkStoredKey(keyHost, name);
+    if (!check) throw new HttpError('not_found', 'No such key is saved.');
+    return { check: checkForOwner(check, 'recheck') };
   });
   r.delete('/api/keys/:name', 'ui', (ctx) => {
     const name = keyName(ctx);
@@ -577,6 +600,7 @@ export function createAgent(opts: AgentOptions): Agent {
       return next;
     });
     clearKeyProblem(name);
+    forgetKeyCheck(store, name);
     return settingsResponse({ settings: store.get('settings'), keys }).keys;
   });
   // Free account checks for a key typed in the app (the key is sent only to its own service).
@@ -972,6 +996,8 @@ export function createAgent(opts: AgentOptions): Agent {
     close() {
       if (flushTimer) clearTimeout(flushTimer);
       if (connectionTimer) clearInterval(connectionTimer);
+      if (quietStart) clearTimeout(quietStart);
+      if (quietTimer) clearInterval(quietTimer);
       work.close();
       jobs.stop();
       events.close();

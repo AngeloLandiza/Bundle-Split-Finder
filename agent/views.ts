@@ -17,6 +17,8 @@ import type {
   EvidenceQuote,
   QuestionChoice,
   DealsResponse,
+  KeyCheckRecord,
+  KeyName,
   KeysPresence,
   ReviewAnswer,
   ReviewQuestion,
@@ -556,9 +558,19 @@ function lastScanOf(data: StoreData, live: LiveView): AgentState['agent']['lastS
   return { ...last, canReadPagesAgain: unread > 0 && live.connected && live.busy === null && !live.stopping };
 }
 
+/** Nov 23: when each saved key last got a verdict from its own service. A check of a key that is gone is stale and left out. */
+function keyChecksOf(data: StoreData): Partial<Record<KeyName, KeyCheckRecord>> | null {
+  const out: Partial<Record<KeyName, KeyCheckRecord>> = {};
+  for (const [name, rec] of Object.entries(data.runtime.keyChecks ?? {}) as [KeyName, KeyCheckRecord][]) {
+    if (data.keys[name] !== undefined && rec) out[name] = { ...rec };
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
+
 export function agentState(data: StoreData, live: LiveView): AgentState {
   const status = live.stopping ? 'stopping' : live.busy ? 'scanning' : data.agent.paused ? 'paused' : 'idle';
   const view = live.pipeline;
+  const keyChecks = keyChecksOf(data) ?? undefined;
   return {
     agent: {
       status,
@@ -593,6 +605,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
     },
     keys: keysPresence(data.keys),
     ...(data.runtime.keyProblems && Object.keys(data.runtime.keyProblems).length > 0 ? { keyProblems: { ...data.runtime.keyProblems } } : {}),
+    ...(keyChecks ? { keyChecks } : {}),
     firstRun: data.activity.lastScan === null && data.deals.bundles.length === 0,
     settingsAt: data.settings.updatedAt,
   };

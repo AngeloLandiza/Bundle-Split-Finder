@@ -59,6 +59,7 @@ import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
 import { reverifyPass, wantedReads, withEvidenceKey } from './reverify';
 import { buildDigest, sendPending } from './alerts';
+import { scrubKeyText } from './keyChecks';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
 import { answerText, footprintOf, type Footprint, KEEP_OWNER_ANSWERS, restorable, undoOwnerAnswer } from './ownerAnswers';
@@ -724,7 +725,9 @@ export class AgentWork {
   }
 
   /** Step 15: the last rejection of a key by its service, in plain words, or null when it was accepted. */
-  private keyProblem(name: KeyName, sentence: string | null): void {
+  private keyProblem(name: KeyName, said: string | null): void {
+    // Security review M10: whatever sentence arrives, no stored key (nor the eBay Basic credential) stays in it.
+    const sentence = said === null ? null : scrubKeyText(said, this.d.store.get('keys'));
     const cur = this.d.store.get('runtime').keyProblems ?? {};
     if ((cur[name] ?? null) === sentence) return;
     this.d.store.update('runtime', (r) => {

@@ -73,7 +73,7 @@ export function isApiError(body: unknown): body is ApiErrorBody {
 export type KeyName = 'serpapi' | 'keepa' | 'anthropic' | 'openai' | 'ebay' | 'telegram';
 export const KEY_NAMES: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram'];
 
-/** Body of PUT /api/keys/:name, per key. Answered by KeysPresence; DELETE /api/keys/:name removes it. */
+/** Body of PUT /api/keys/:name, per key. Answered by PutKeyResponse; DELETE /api/keys/:name removes it and answers KeysPresence. */
 export interface KeyValues {
   serpapi: { key: string };
   keepa: { key: string };
@@ -84,6 +84,35 @@ export interface KeyValues {
 }
 
 export type KeysPresence = Record<KeyName, boolean>;
+
+/**
+ * Nov 23: what a key's own service said when the key was checked (agent/keyChecks.ts). `rejected`: the service answered and
+ * did not accept it. `network` and `service`: the service could not be reached or had an outage, so nothing is known about the
+ * key; `limit`: the service asked to slow down (the key is probably fine). `unchecked`: nothing to check it against (an
+ * OpenAI-compatible key before any pipeline names a service address, or a service with no model list). `problem` is one plain
+ * sentence in the service's own words with what to do; never a key. `detail` says what the check found ("118 of 250 searches left").
+ */
+export type KeyCheck =
+  | { ok: true; detail?: string }
+  | { ok: false; problem: string; kind: 'rejected' | 'network' | 'service' | 'limit' | 'unchecked' };
+
+/** PUT /api/keys/:name: the key is saved either way; `check` is its service's answer within ten seconds. */
+export interface PutKeyResponse {
+  saved: true;
+  check: KeyCheck;
+}
+
+/** POST /api/keys/:name/check: the stored key checked again with its own service. */
+export interface CheckKeyResponse {
+  check: KeyCheck;
+}
+
+/** AgentState.keyChecks: the last time a key got a verdict (works or rejected); `at` is an ISO time. Absent while none is known. */
+export interface KeyCheckRecord {
+  ok: boolean;
+  at: string;
+  detail?: string;
+}
 
 // ---------------------------------------------------------------- state
 
@@ -223,6 +252,8 @@ export interface AgentState {
    * cleared when the key is replaced or next accepted. Never the key itself.
    */
   keyProblems?: Partial<Record<KeyName, string>>;
+  /** Nov 23: when each saved key last got a verdict from its own service ("Checked 2 min ago · works"). Never a key. */
+  keyChecks?: Partial<Record<KeyName, KeyCheckRecord>>;
   /** W4: true until the first scan has finished (the one-time first-run flow). */
   firstRun?: boolean;
   /** D2: when the settings last changed; the shell re-reads GET /api/settings when this moves. */

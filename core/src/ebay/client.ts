@@ -125,6 +125,15 @@ export class EbayClient {
     return json.access_token;
   }
 
+  /**
+   * Nov 23: asks eBay for a fresh token and keeps nothing else: the free check of the App ID and Cert ID (Settings, Keys).
+   * Throws what a token request throws: EbayAuthError (its `detail` is eBay's own words), EbayRateLimitedError,
+   * EbayServerError, or EbayError for no answer.
+   */
+  async verifyKeys(): Promise<void> {
+    await this.getToken(true);
+  }
+
   /** What eBay answered, in one sentence: its `error` code and `error_description` (short, plain characters only), the HTTP status, and neither key. */
   private answered(status: number, json: { error?: unknown; error_description?: unknown }): string {
     const clean = (v: unknown): string => {

@@ -15,6 +15,9 @@ const EXT = 'abcdefghijklmnopabcdefghijklmnop';
 const EXT_ORIGIN = `chrome-extension://${EXT}`;
 const SECRET = 'the owner keys file';
 
+// A key saved is checked with its own service (agent/keyChecks.ts); no test reaches one.
+const offline = (async () => { throw new Error('offline'); }) as unknown as typeof fetch;
+
 let server: Server;
 let agent: Agent;
 let port: number;
@@ -38,7 +41,7 @@ beforeEach(async () => {
   port = (server.address() as { port: number }).port;
   base = `http://127.0.0.1:${port}`;
   clock = Date.UTC(2026, 10, 23, 12);
-  agent = createAgent({ dataDir: join(root, 'data'), port, timers: false, shippedHelperVersion: null, now: () => clock });
+  agent = createAgent({ dataDir: join(root, 'data'), port, timers: false, fetchFn: offline, shippedHelperVersion: null, now: () => clock });
   server.on('request', agent.handle);
 });
 

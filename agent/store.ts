@@ -11,6 +11,7 @@ import { dirname, join } from 'node:path';
 import type {
   AppSettings,
   KeyName,
+  KeyCheckRecord,
   AutopilotEntry,
   EvidenceQuote,
   LastScanSummary,
@@ -208,6 +209,8 @@ export interface AgentRuntime {
   keepa: { tokensLeft: number; refillIn: number; refillRate?: number; at: string } | null;
   /** Step 15: the last rejection of each key by its service, in plain words; cleared when replaced or next accepted. */
   keyProblems?: Partial<Record<KeyName, string>>;
+  /** Nov 23: the last verdict of each saved key's own service (agent/keyChecks.ts); dropped when the key is replaced or removed. */
+  keyChecks?: Partial<Record<KeyName, KeyCheckRecord>>;
   /** Step 15: one-time changes to stored data already made (applyMigrations), by name. */
   migrations?: string[];
   /** Signals round 2: what a one-time change did to the owner's settings, in plain words, with when (ISO). */
