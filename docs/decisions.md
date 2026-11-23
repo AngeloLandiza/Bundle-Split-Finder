@@ -771,3 +771,11 @@ is measured on the recorded rows with the answer key and adopted only at zero wr
   DCF921B, DCB606, from the recorded pulls); 27 need a live read. Of those, rung 1 on the stored search row (title and
   brand only, the most a Keepa pull could settle) passes 23 and stops 4 (A967001 and A10FB1G: no RYOBI P-pattern model to read;
   DCK540D1: title says 5Ah where D is 2.0Ah; DCK225D2: the title also names its kit tools DCD794 and DCF809, which the title rule does not read as this model): those go to rung 2 or the owner.
+
+### The AI listing judge measured: it adds nothing, so it stays off (Nov 23 2026)
+`npm run listing-judge:eval -- --model claude-haiku-5-5 --run --max-cost 0.25` on the 215 recorded rows the code rungs
+leave unknown (11 of them are the part, per the answer key): after the code's check of its quotes, 0 right, 0 wrong,
+215 unknown; it answered "different" on 198 rows, 2 of them wrongly. Cost $0.0446
+(fixtures/listing-judge/judgements-claude-haiku-5-5.json). No confirmation was gained, so `ai.listingJudge` stays off and
+is not wired into the agent. Listings are confirmed by Amazon's catalog record, by the title-plus-brand rule (22 right,
+0 wrong), by the automatic product-page read within its allowance, or by the owner.
