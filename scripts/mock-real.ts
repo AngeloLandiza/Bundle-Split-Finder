@@ -1,10 +1,17 @@
-// Builds desktop-ui/src/api/mockReal.json from the owner's real data after two scans (fixtures/e2e-2026-11-23): the
-// open Review questions with their AI suggestions, and the 53 bundles as Deals rows. The desktop UI shows it with
-// `?mock=real` so a screen is judged on real titles, real quotes and real reasons, not on made-up ones.
+// Builds desktop-ui/src/api/mockReal.json from the owner's real data (fixtures/e2e-2026-11-23): after two scans, the
+// open Review questions with their AI suggestions and the 53 bundles as Deals rows (`review`, `rows`); and (Nov 23)
+// after the third scan (after-scan3), every deal and its detail as the agent's own views give them from the report
+// today's code builds (`scan3`), with that scan's open questions. The desktop UI shows `scan3` with `?mock=real`, so a
+// screen is judged on real titles, real figures and real reasons, not on made-up ones.
 // Free, offline: it reads files only. Run: npx tsx scripts/mock-real.ts
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { reviewResponse } from '../agent/views';
+import { dealDetail, dealsResponse, reviewResponse } from '../agent/views';
+import { DEFAULT_FEES } from '../core/src/money';
+import { buildReport } from '../core/src/scan/report';
+import { bogoGroups } from '../core/src/tracking/bogoPairs';
+import { DEFAULT_SCAN_SETTINGS } from '../core/src/scan/types';
+import { loadScanFolder, readStoreFile } from './data-folder';
 
 const dir = 'fixtures/e2e-2026-11-23';
 const read = (p: string): any => JSON.parse(readFileSync(`${dir}/${p}`, 'utf8'));
@@ -73,5 +80,49 @@ const rows = bundles.map(([key, b]) => {
   };
 });
 
-writeFileSync('desktop-ui/src/api/mockReal.json', `${JSON.stringify({ review: out, rows }, null, 1)}\n`);
-console.log(`${out.questions.length} questions, ${rows.length} rows`);
+// ---------------------------------------------------------------- after the third scan (Nov 23)
+
+const DIR3 = `${dir}/after-scan3`;
+const report = await buildReport(await loadScanFolder(DIR3), DEFAULT_SCAN_SETTINGS);
+const stored3 = readStoreFile<any>(DIR3, 'deals.json', { at: null, lookups: {} });
+const review3 = readStoreFile<any>(DIR3, 'review.json', { at: null, questions: [], ebayQuestions: [], evidence: {} });
+// The stored tracking was worked out from the old report (a part with no price at $0): what follows from the report is
+// worked out again as the agent does after every report (work.ts), and what cannot be (FBA fees, signals) is kept only
+// for a bundle that still has an estimate.
+const tracking3 = readStoreFile<any>(DIR3, 'tracking.json', undefined);
+if (tracking3) {
+  const estimated = new Set(report.bundles.filter((b) => b.estimate !== null).map((b) => b.key));
+  const keep = (rec: Record<string, unknown>) => Object.fromEntries(Object.entries(rec ?? {}).filter(([k]) => estimated.has(k)));
+  const groups = Object.fromEntries(bogoGroups(Object.values(tracking3.bogoPairs ?? {}) as any, report.bundles).map((g) => [g.id, g]));
+  tracking3.derived = { ...tracking3.derived, fba: keep(tracking3.derived?.fba), groups };
+  tracking3.signals = keep(tracking3.signals);
+}
+const data3: any = {
+  deals: { at: stored3.at, bundles: report.bundles, auditAt: null, auditBundles: [], lookups: stored3.lookups ?? {} },
+  review: { ...review3, ebayQuestions: [] },
+  suggestions,
+  runtime: { lastJob: null },
+  settings: { settings: { fees: DEFAULT_FEES, searchesPerScan: 18 }, alerts: {}, ai: data.settings.ai },
+  tracking: tracking3,
+};
+const deals3 = dealsResponse(data3, { sort: 'profit' }, Date.parse('2026-11-23T14:00:00Z'));
+const details3: Record<string, any> = {};
+for (const r of deals3.rows) {
+  const d: any = dealDetail(data3, r.id);
+  if (!d) continue;
+  // What the inspector reads of the other ways is their figures and labels, not their parts again; the history is not drawn here.
+  d.bundle = { ...d.bundle, options: d.bundle.options.map((o: any, i: number) => (i === 0 ? o : { ...o, parts: [] })) };
+  d.history = [];
+  // A BOGO group lists every free-tool choice on every one of its pairs: its first five are enough to draw it.
+  if (d.bogoGroup) d.bogoGroup = { ...d.bogoGroup, choices: d.bogoGroup.choices.slice(0, 5) };
+  details3[r.id] = d;
+}
+const review3Out = reviewResponse({ ...data3, settings: data.settings });
+for (const q of review3Out.questions as any[]) {
+  q.item = { kind: q.item.kind, question: { openedAt: q.item.question.openedAt } };
+  q.evidence = q.evidence.slice(0, 4);
+  q.suggestion = null;
+}
+
+writeFileSync('desktop-ui/src/api/mockReal.json', `${JSON.stringify({ review: out, rows, scan3: { deals: deals3, details: details3, review: review3Out } })}\n`);
+console.log(`${out.questions.length} questions, ${rows.length} rows; after the third scan: ${deals3.rows.length} deals, ${review3Out.questions.length} questions`);

@@ -1,8 +1,9 @@
 // The mock agent for `VITE_MOCK=1`: the fixture-backed data in mockData.ts, kept in memory, with
 // a short delay on every call and events pushed the way the real SSE stream pushes them. It answers
 // in the same shapes as the real client (types.ts), so a screen cannot tell them apart.
-// `?mock=real` is the owner's real data after two scans (mockReal.json, from fixtures/e2e-2026-11-23): 53 bundles waiting for
-// lookups, 15 open questions with the AI's real suggestions, Keepa tokens, a rejected eBay key. `?mock=real-scanning` is the
+// `?mock=real` is the owner's real data (mockReal.json, from fixtures/e2e-2026-11-23): since Nov 23, after his third scan
+// (after-scan3: 59 deals through the agent's own views, 13 estimates and 39 missing a price, 10 open questions), with Keepa
+// tokens and a rejected eBay key; the second scan's 53 bundles and 15 questions with real AI suggestions stay in the file. `?mock=real-scanning` is the
 // same app mid-scan, with a step in every state; `real-problems` the same app with an outdated helper and unread pages besides the waiting lookups.
 // `?mock=<scenario>` on the URL shows one state: nobuynow (no bundle is worth buying now), firstrun, empty, offline, chrome-closed, limit,
 // scanning, paused, error, slow, pairing, unread (a scan stopped on unread Home Depot pages), helper-old. Nothing here touches the network.
@@ -12,7 +13,8 @@ import { words } from '../lib/platform';
 import { mergePatch } from '../lib/patch';
 import { confirmedSourceName } from '@core/scan/confirmed';
 import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE, net } from './mockData';
-import { mapReview, mapRow } from './map';
+import type * as C from '@core/api/contract';
+import { mapDetail, mapReview, mapRow } from './map';
 import real from './mockReal.json';
 import { mockBogoView } from './mockTracking';
 import { ApiError, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type DealRow, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
@@ -99,10 +101,18 @@ export function createMockClient(): ApiClient {
   let ebayNotice: string | null = null;
   if (mode === 'real' || mode === 'real-scanning' || mode === 'real-problems') {
     type RealRow = Parameters<typeof mapRow>[0] & { _parts: string[]; _evidence: NonNullable<DealDetail['splitEvidence']> };
-    const rows = real.rows as unknown as RealRow[];
-    deals = rows.map(mapRow);
-    questions = mapReview(real.review as unknown as Parameters<typeof mapReview>[0]).questions;
-    for (const r of rows) details[r.id] = realDetail(mapRow(r), r._parts, r._evidence);
+    const scan3 = (real as unknown as { scan3?: { deals: C.DealsResponse; details: Record<string, C.DealDetail>; review: C.ReviewResponse } }).scan3;
+    if (scan3) {
+      // Nov 23: the owner's data after his third scan, every deal and detail as the agent's own views give them.
+      deals = scan3.deals.rows.map(mapRow);
+      questions = mapReview(scan3.review).questions;
+      for (const [id, d] of Object.entries(scan3.details)) details[id] = mapDetail(d, questions.find((q) => q.bundle.id === id)?.id ?? null);
+    } else {
+      const rows = real.rows as unknown as RealRow[];
+      deals = rows.map(mapRow);
+      questions = mapReview(real.review as unknown as Parameters<typeof mapReview>[0]).questions;
+      for (const r of rows) details[r.id] = realDetail(mapRow(r), r._parts, r._evidence);
+    }
     for (const q of questions) {
       const d = q.bundle.id ? details[q.bundle.id] : undefined;
       if (d) d.questionId = q.id;

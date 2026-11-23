@@ -268,7 +268,11 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
             {r.brand} · <span className="code">{r.model}</span>
           </span>
           {/* Only when it adds something the other columns do not say; a row without one is two lines. */}
-          {dealReason(r, { matchShown }) ? <span className="deal-reason">{dealReason(r, { matchShown })}</span> : null}
+          {dealReason(r, { matchShown }) ? (
+            <span className="deal-reason" title={dealReason(r, { matchShown }) ?? undefined}>
+              {dealReason(r, { matchShown })}
+            </span>
+          ) : null}
         </div>
       ),
     },
