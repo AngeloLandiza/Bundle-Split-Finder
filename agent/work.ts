@@ -17,11 +17,11 @@ import { pipelinesFrom } from '../core/src/ai/factory';
 import { liveSuggestion, agreedWith, type StoredSuggestion } from '../core/src/assist/stored';
 import { approvalOf } from '../core/src/assist/approve';
 import { EbayClient } from '../core/src/ebay/client';
-import { partPriceDropMessage, trendCrosses } from '../core/src/keepa/alerts';
+import { partPriceDropMessage } from '../core/src/keepa/alerts';
 import { TokenBudget } from '../core/src/keepa/budget';
 import { KeepaClient } from '../core/src/keepa/client';
 import { keepaLookupSearchResult, keepaProductSearchResult } from '../core/src/keepa/fetchStep';
-import { readAlertBaseline, writeAlertBaseline, writePartTrend } from '../core/src/keepa/trends';
+import { readPartTrend, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
 import { nextRun } from '../core/src/schedule';
 import { AnswerRefused, applyReviewAnswer, reviewSignature } from '../core/src/scan/answers';
 import { applyEbayAnswer } from '../core/src/scan/ebayAnswers';
@@ -29,13 +29,17 @@ import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep } from '../core/s
 import { PaidProblem, lookupsNeeded, quotePaid, runPaid, savedAnswers } from '../core/src/scan/paid';
 import { addSamples, pipelineOf, pipelineView, samplesOf, type PipelineView } from '../core/src/scan/pipeline';
 import { postScanWork } from '../core/src/scan/postScan';
-import { buildReport } from '../core/src/scan/report';
+import { buildReport, partRowsFor } from '../core/src/scan/report';
+import { bogoFromBody, bogoView, freeParts, type BogoView } from '../core/src/tracking/bogo';
+import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
+import type { TrendLookup } from '../core/src/tracking/signals';
+import { freshSignals, trackReport } from '../core/src/tracking/state';
 import { runScan } from '../core/src/scan/runner';
 import type { PaidAction, ReviewAnswer, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
 import {
-  budgetPolicyFor, estimatedJudgeCost, estimateRoiPercent, type ExtensionSettings, type ScanTrigger, toScanSettings, validateSettings,
+  budgetPolicyFor, estimatedJudgeCost, type ExtensionSettings, type ScanTrigger, toScanSettings, validateSettings,
 } from '../core/src/settings';
 import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { buildDigest, sendPending } from './alerts';
@@ -364,6 +368,7 @@ export class AgentWork {
       applied = await this.autopilot();
       if (applied > 0 || ai.asked > 0) report = await buildReport(this.scanStore, toScanSettings(extensionSettingsOf(store.get('settings'))));
       await this.publish(report);
+      await this.trackScan(report);
       const tg = await this.message(report, job, applied);
       if (tg) notes.push(tg);
     }
@@ -514,6 +519,69 @@ export class AgentWork {
     const at = new Date(this.d.now()).toISOString();
     this.d.store.update('deals', (d) => ({ ...d, at, bundles: report.bundles, lookups }));
     this.d.store.update('review', () => ({ at, questions: report.review, ebayQuestions: report.ebayQuestions ?? [], evidence }));
+    await this.derive(report);
+  }
+
+  // ------------------------------------------------------------------ tracking: watchlist, signals, BOGO
+
+  /** The stored Keepa trend of every part a way to sell holds (keepa:trend:<asin>, written by the scan). Reads only. */
+  private async trendsFor(report: ScanReport): Promise<TrendLookup> {
+    const asins = new Set(report.bundles.flatMap((b) => b.options.flatMap((o) => o.parts.flatMap((p) => (p.asin ? [p.asin] : [])))));
+    const found = new Map<string, PartTrend>();
+    for (const asin of asins) {
+      const t = await readPartTrend(this.cache, asin);
+      if (t) found.set(asin, t);
+    }
+    return (asin) => found.get(asin);
+  }
+
+  /** After a finished scan: the watchlist, each bundle's point and the watched bundles' signals (core/src/tracking). */
+  private async trackScan(report: ScanReport): Promise<void> {
+    const trend = await this.trendsFor(report);
+    const alerts = this.d.store.get('settings').alerts;
+    const now = this.d.now();
+    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now) }));
+  }
+
+  /** What the views show beside each deal: its BOGO promotion's estimate and the FBA-fee estimate, from stored data. */
+  private async derive(report: ScanReport): Promise<void> {
+    const trend = await this.trendsFor(report);
+    const settings = toScanSettings(extensionSettingsOf(this.d.store.get('settings')));
+    const promos = this.d.store.get('tracking').bogo;
+    const bogo: Record<string, BogoView> = {};
+    for (const [key, promo] of Object.entries(promos)) {
+      const row = report.bundles.find((b) => b.key === key);
+      const parts = promo.chosen.length > 0 ? await partRowsFor(this.scanStore, settings, freeParts(promo)) : [];
+      bogo[key] = bogoView(promo, row?.options[0], parts, settings.fees);
+    }
+    const fba: Record<string, FbaEstimate> = {};
+    for (const b of report.bundles) {
+      const f = fbaEstimateOf(b.options[0], trend, settings.fees);
+      if (f) fba[b.key] = f;
+    }
+    this.d.store.update('tracking', (t) => ({ ...t, derived: { bogo, fba } }));
+  }
+
+  /** The owner's BOGO entry for a deal (POST /api/deals/:id/bogo), or null to remove it. Answers with its view. */
+  async saveBogo(bundleKey: string, body: Record<string, unknown> | null): Promise<BogoView | null> {
+    const bundle = this.d.store.get('deals').bundles.find((b) => b.key === bundleKey);
+    if (!bundle) throw new AnswerRefused('No such deal.');
+    const prior = this.d.store.get('tracking').bogo[bundleKey];
+    if (body === null) {
+      this.d.store.update('tracking', (t) => {
+        const { [bundleKey]: _gone, ...bogo } = t.bogo;
+        const { [bundleKey]: _view, ...views } = t.derived.bogo;
+        return { ...t, bogo, derived: { ...t.derived, bogo: views } };
+      });
+      return null;
+    }
+    const promo = bogoFromBody(body, bundleKey, bundle.brand, prior, this.d.now());
+    if (typeof promo === 'string') throw new WorkRefused(promo);
+    const settings = toScanSettings(extensionSettingsOf(this.d.store.get('settings')));
+    const parts = promo.chosen.length > 0 ? await partRowsFor(this.scanStore, settings, freeParts(promo)) : [];
+    const view = bogoView(promo, bundle.options[0], parts, settings.fees);
+    this.d.store.update('tracking', (t) => ({ ...t, bogo: { ...t.bogo, [bundleKey]: promo }, derived: { ...t.derived, bogo: { ...t.derived.bogo, [bundleKey]: view } } }));
+    return view;
   }
 
   // ------------------------------------------------------------------ the AI and Autopilot
@@ -771,20 +839,19 @@ export class AgentWork {
     const app = store.get('settings');
     const runtime = store.get('runtime');
     const trendLines: string[] = (job?.partPriceDrops ?? []).map((d) => partPriceDropMessage(d.partModel, d.delta));
-    if (app.alerts.enabled) {
-      // A deal named before whose estimate fell below the numbers and has now crossed back up: a trend, not a new deal.
-      const known = new Set(runtime.notifiedDeals);
-      for (const row of report.bundles) {
-        if (!row.estimate) continue;
-        const roi = estimateRoiPercent(row.estimate.roi);
-        const baseline = await readAlertBaseline(this.cache, row.key);
-        const cross = known.has(row.key) ? trendCrosses(`${row.brand} ${row.model}`, row.estimate.profit, roi, baseline, app.alerts) : null;
-        if (cross) trendLines.push(cross);
-        await writeAlertBaseline(this.cache, { bundleKey: row.key, profit: row.estimate.profit, roiPercent: roi, notifiedAt: this.d.now() });
-      }
-    }
-    const digest = buildDigest({ report, alerts: app.alerts, notifiedDeals: runtime.notifiedDeals, notifiedQuestions: runtime.notifiedQuestions, autopilotApplied: applied, verifiedWaiting: await this.verifiedWaiting(), trendLines });
+    // The watched deals worth buying now (and, when the owner asked, those that fell through the floor), each once a day.
+    const tracking = store.get('tracking');
+    const now = this.d.now();
+    const kinds = app.alerts.marginDownDigest ? (['buyNow', 'marginDown'] as const) : (['buyNow'] as const);
+    const fresh = app.alerts.enabled ? freshSignals(tracking, kinds, now) : { lines: [], notified: tracking.notified };
+    const digest = buildDigest({
+      report, alerts: app.alerts, notifiedDeals: runtime.notifiedDeals, notifiedQuestions: runtime.notifiedQuestions, autopilotApplied: applied,
+      verifiedWaiting: await this.verifiedWaiting(), trendLines,
+      buyNow: fresh.lines.filter((l) => l.signal.kind === 'buyNow'), marginDown: fresh.lines.filter((l) => l.signal.kind === 'marginDown'),
+    });
     store.update('runtime', (r) => ({ ...r, notifiedDeals: digest.notifiedDeals, notifiedQuestions: digest.notifiedQuestions }));
+    store.update('tracking', (t) => ({ ...t, notified: fresh.notified }));
+    // Through the notification policy (its kinds, quiet hours and the morning digest): a deal line goes as kind 'deal'.
     const text = digest.event && digest.text ? this.policy.digest(digest.event, digest.text) : null;
     return this.sendTelegram(text);
   }

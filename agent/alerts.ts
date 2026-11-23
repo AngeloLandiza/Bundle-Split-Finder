@@ -1,11 +1,14 @@
 // The alert engine (step 13, Decision 6): after a run, at most one message saying what is new, the same text in the
 // app's notification (a `notify` event the shell shows) and on Telegram when the owner set a bot up. A deal is named
-// once (by its bundle key); open questions alert only when one is new since the last message. Profit and ROI are
+// when a watched way to sell is worth buying now (core/src/tracking/signals.ts buyNow: above both numbers, selling, and
+// better than its baseline or newly confirmed), once per bundle, signal and day (the caller's freshSignals); open
+// questions alert only when one is new since the last message. Profit and ROI are
 // estimates from the fee settings and the message says so (rule 5). No key is ever in a message.
 
 import type { NotifyEvent } from '../core/src/api/contract';
 import type { BundleRow, ReviewItem, ScanReport } from '../core/src/scan/types';
 import { estimateRoiPercent, type AlertSettings } from '../core/src/settings';
+import type { SignalLine } from '../core/src/tracking/state';
 import type { PendingMessage } from './store';
 
 /** Deal keys remembered as notified; the oldest are forgotten past this. */
@@ -24,6 +27,10 @@ export interface DigestInput {
   verifiedWaiting: number;
   /** Trend lines already worded (core/src/keepa/alerts.ts). */
   trendLines: string[];
+  /** Watched deals worth buying now and not yet sent today, best estimated profit first (core/src/tracking/state.ts). */
+  buyNow?: SignalLine[];
+  /** Watched deals whose estimate fell through the floor, not yet sent today; used when the owner turned it on. */
+  marginDown?: SignalLine[];
 }
 
 export interface Digest {
@@ -49,17 +56,26 @@ export function buildDigest(input: DigestInput): Digest {
   let count = 0;
   let route = '/';
 
-  const already = new Set(input.notifiedDeals);
-  const fresh = alerts.enabled ? dealsAbove(report.bundles, alerts).filter((b) => !already.has(b.key)) : [];
+  const fresh = alerts.enabled ? (input.buyNow ?? []) : [];
   if (fresh.length > 0) {
     const top = fresh[0]!;
-    const roi = Math.round(estimateRoiPercent(top.estimate!.roi));
+    const n = top.signal.numbers;
     lines.push(
-      `${plural(fresh.length, 'new deal', 'new deals')} above ${alerts.minRoiPercent}% ROI. Top: ${top.brand} ${top.model}, est. profit $${top.estimate!.profit.toFixed(2)} (${roi}% ROI). Estimates from your fee settings.`,
+      `${plural(fresh.length, 'deal', 'deals')} worth buying now. Top: ${top.brand} ${top.model}, est. profit $${(n.profit ?? 0).toFixed(2)} (${Math.round(n.roiPercent ?? 0)}% ROI). ${top.signal.reason} Estimates from your fee settings.`,
     );
     kind = 'deal';
     count = fresh.length;
     route = '/deals';
+  }
+  const down = alerts.enabled && alerts.marginDownDigest ? (input.marginDown ?? []) : [];
+  if (down.length > 0) {
+    lines.push(...down.slice(0, 3).map((d) => `Stop buying? ${d.brand} ${d.model}: ${d.signal.reason}`));
+    if (down.length > 3) lines.push(`${down.length - 3} more below your floor in Deals.`);
+    if (!kind) {
+      kind = 'deal';
+      count = down.length;
+      route = '/deals';
+    }
   }
 
   const open = [...report.review.filter((q: ReviewItem) => q.answer === null).map((q) => q.id), ...(report.ebayQuestions ?? []).map((q) => q.id)];
@@ -102,7 +118,7 @@ export function buildDigest(input: DigestInput): Digest {
     }
   }
 
-  const notifiedDeals = [...input.notifiedDeals, ...fresh.map((b) => b.key)].slice(-KEEP_NOTIFIED);
+  const notifiedDeals = [...input.notifiedDeals, ...fresh.map((l) => l.bundleKey)].slice(-KEEP_NOTIFIED);
   if (!kind) return { text: null, event: null, notifiedDeals, notifiedQuestions: open };
   const text = lines.join('\n');
   return { text, event: { kind, title: 'Split Finder', body: text, count, route }, notifiedDeals, notifiedQuestions: open };

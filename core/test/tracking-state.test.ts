@@ -74,7 +74,7 @@ describe('BOGO: the bundle plus the free tool the owner chooses', () => {
     expect(freeParts(chosen)).toEqual([{ brand: 'DEWALT', model: 'DCF921B', qty: 1 }]);
     const v = bogoView(chosen, good().options[0], [part('DCF921B', ASIN.DCF921B, 249)], DEFAULT_FEES);
     expect(v.label).toBe('BOGO: DCF921B free');
-    expect(v.counted).toEqual([{ model: 'DCF921B', qty: 1, price: 249, net: 211.65 }]);
+    expect(v.counted).toEqual([{ model: 'DCF921B', asin: ASIN.DCF921B, qty: 1, price: 249, net: 211.65 }]);
     expect(v.estimate).toEqual({ cost: 299, netRevenue: 592.45, profit: 293.45, roi: 0.9814 });
     expect(v.note).toBeNull();
   });

@@ -16,6 +16,9 @@ import type { Schedule } from '../schedule';
 import type { PipelineView } from '../scan/pipeline';
 import type { AlertSettings, DiscoveryMode, EbaySettings, TrackingDepth } from '../settings';
 import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartPriceReading, ReportSection, ReviewItem } from '../scan/types';
+import type { BogoView, FreeItem } from '../tracking/bogo';
+import type { FbaEstimate } from '../tracking/fba';
+import type { OptionSignals, Signal, SignalKind, SignalNumbers, Velocity } from '../tracking/signals';
 
 export const AGENT_PORT = 8790;
 /** The app's bearer token, in the agent's data dir; read by the desktop shell (src-tauri agent.rs TOKEN_FILE). */
@@ -158,6 +161,12 @@ export interface DealRow {
   updatedAt: string;
   /** W4: searches a Look up of the bundle's unmatched parts would spend now; null when every part is looked up. */
   lookup?: { searches: number } | null;
+  /** Tracking: on the watchlist (by itself when confirmed and discounted, or by the owner). */
+  watched?: boolean;
+  /** Tracking: the last scan said a way to sell is worth buying now (DealSignals.buyNow). */
+  buyNow?: boolean;
+  /** Tracking: on a BOGO promotion the owner entered; 'choose' until he chooses the free tool. */
+  bogo?: 'choose' | 'chosen' | null;
 }
 
 export interface DealsQuery {
@@ -200,7 +209,114 @@ export interface DealDetail {
   estimateBasis: string;
   /** W4: the figures behind the row's profit; null when there is no estimate. */
   estimate?: DealEstimate | null;
+  /** Tracking: whether the bundle is watched, by whom, since when; null when it never was. */
+  watch?: WatchState | null;
+  /** Tracking: the last scan's signals; null when the bundle is not watched or no scan has run since. */
+  signals?: DealSignals | null;
+  /** Tracking: the stored scan points, oldest first, for a small chart (stored data only; nothing is fetched). */
+  history?: DealHistoryPoint[];
+  /** Tracking: the BOGO promotion the owner entered, with its estimate; null when none. */
+  bogo?: BogoView | null;
+  /**
+   * Tracking: the primary way to sell's estimate with Amazon's FBA fee estimate (Keepa) per part in place of the flat
+   * fulfillment setting, beside the estimate (never instead). Null when no part has a Keepa fee stored.
+   */
+  fbaEstimate?: FbaEstimate | null;
 }
+
+// ---------------------------------------------------------------- tracking: watchlist, signals, BOGO
+
+export interface WatchState {
+  watched: boolean;
+  /** auto: confirmed and discounted at a scan; owner: the owner's Watch or Unwatch, which scans never change. */
+  by: 'auto' | 'owner';
+  since: string;
+}
+
+/** POST /api/deals/:id/watch. Answered by WatchResponse. */
+export interface WatchBody {
+  watch: boolean;
+}
+
+export interface WatchResponse {
+  id: string;
+  watch: WatchState;
+}
+
+/**
+ * A watched bundle's signals at the last scan (core/src/tracking/signals.ts). Each Signal has a plain sentence
+ * (`reason`) and the numbers behind it; every dollar is an estimate from the fee settings. `options[].baseline` times
+ * are epoch milliseconds. `buyNow` is the best way to sell worth buying now, or null; `options[].notBuyNow` says why not.
+ */
+export interface DealSignals {
+  at: string;
+  buyNow: Signal | null;
+  signals: Signal[];
+  options: OptionSignals[];
+}
+
+/** One stored scan of a bundle, for a small chart. Null where the scan had no figure; nothing is filled in. */
+export interface DealHistoryPoint {
+  at: string;
+  section: ReportSection;
+  /** Home Depot's bundle price. */
+  price: number | null;
+  /** The primary way to sell's counted Amazon New prices times their quantities. */
+  amazonNew: number | null;
+  /** The primary way to sell's estimate at that scan. */
+  profit: number | null;
+  roiPercent: number | null;
+  /** The slowest part's Keepa monthlySold. */
+  monthlySold: number | null;
+  /** The slowest part's Keepa sales rank (not in any recording yet: usually null). */
+  salesRank: number | null;
+  /** The most buy-box-eligible offers on any part (Keepa, every condition). */
+  offers: number | null;
+}
+
+/** One row of GET /api/watchlist. */
+export interface WatchRow {
+  row: DealRow;
+  watch: WatchState;
+  signals: DealSignals | null;
+}
+
+/** GET /api/watchlist: watched bundles, the ones worth buying now first, then by estimated profit. */
+export interface WatchlistResponse {
+  /** When the signals were computed (the last scan); null before one. */
+  at: string | null;
+  rows: WatchRow[];
+  /** The numbers the signals were judged by (Settings, alerts). */
+  thresholds: { minProfit: number; minRoiPercent: number; minMonthlySold: number; floorProfit: number };
+}
+
+/** A free item as the owner enters it; the model is upper-cased, the brand defaults to the bundle's. */
+export interface FreeItemBody {
+  brand?: string;
+  model: string;
+  title?: string;
+  itemId?: string;
+  link?: string;
+  /** What the free item holds when it is a kit; omitted or null: sold whole, as its own model. */
+  parts?: { model: string; qty: number }[] | null;
+}
+
+/**
+ * POST /api/deals/:id/bogo: mark the deal as a BOGO promotion, give the eligible free items when known, and choose. Each
+ * field omitted keeps what was saved. A chosen item must be on the eligible list when there is one. DELETE removes it.
+ */
+export interface BogoBody {
+  freeCount?: number;
+  eligible?: FreeItemBody[] | null;
+  chosen?: FreeItemBody[] | null;
+  link?: string | null;
+}
+
+export interface BogoResponse {
+  bogo: BogoView | null;
+}
+
+export type { BogoView, FbaEstimate, FreeItem, OptionSignals, Signal, SignalKind, SignalNumbers, Velocity };
 
 /** W4: GET /api/deals/:id/lookup (the quote shown before the click) and the answer to POST /api/deals/:id/lookup and /verify. */
 export interface PaidResponse {

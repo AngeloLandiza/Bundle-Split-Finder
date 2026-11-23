@@ -12,9 +12,11 @@ import {
   type AgentEventName,
   type AiPipelineSetting,
   type AnswerResponse,
+  type BogoResponse,
   type KeyName,
   type NotifyEvent,
   type PaidResponse,
+  type WatchResponse,
   type PairClaimResponse,
   type PauseResponse,
   type QueuedResponse,
@@ -37,7 +39,8 @@ import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError,
 import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus } from './setup';
 import { COLLECTIONS, Store, type StoreData, type StoredKeys } from './store';
 import { tryServeUi, uiIndexExists } from './uiStatic';
-import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse } from './views';
+import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf } from './views';
+import { setWatch } from '../core/src/tracking/state';
 import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
 
@@ -201,6 +204,17 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
       if (typeof a[f] !== 'number' || !Number.isFinite(a[f]) || (a[f] as number) < 0) throw new HttpError('bad_request', `alerts.${f} must be a number of 0 or more.`);
       next.alerts[f] = a[f] as number;
     }
+    if ('minMonthlySold' in a) {
+      const n = a.minMonthlySold;
+      if (typeof n !== 'number' || !Number.isInteger(n) || n < 0) throw new HttpError('bad_request', 'alerts.minMonthlySold must be a whole number of 0 or more.');
+      next.alerts.minMonthlySold = n;
+    }
+    if ('floorProfit' in a) {
+      if (a.floorProfit === null) delete next.alerts.floorProfit;
+      else if (typeof a.floorProfit !== 'number' || !Number.isFinite(a.floorProfit)) throw new HttpError('bad_request', 'alerts.floorProfit must be a number of dollars, or null for your profit threshold.');
+      else next.alerts.floorProfit = a.floorProfit;
+    }
+    if ('marginDownDigest' in a) next.alerts.marginDownDigest = flag(a.marginDownDigest, 'alerts.marginDownDigest');
   }
   if ('ai' in patch) {
     const a = obj(patch.ai, 'ai');
@@ -348,7 +362,7 @@ export function createAgent(opts: AgentOptions): Agent {
     if (names.length) events.publish('state', state());
   }
   store.onChange((name) => {
-    if (name === 'deals') mark('deals', 'state');
+    if (name === 'deals' || name === 'tracking') mark('deals', 'state');
     else if (name === 'review' || name === 'suggestions') mark('review', 'state');
     else if (name === 'activity' || name === 'autopilot') mark('activity', 'state');
     else if (name !== 'outbox') mark('state');
@@ -458,7 +472,7 @@ export function createAgent(opts: AgentOptions): Agent {
   // ------------------------------------------------------------ deals
   r.get('/api/deals', 'any', (ctx) =>
     dealsResponse(
-      { deals: store.get('deals'), review: store.get('review'), runtime: store.get('runtime'), settings: store.get('settings') },
+      { deals: store.get('deals'), review: store.get('review'), runtime: store.get('runtime'), settings: store.get('settings'), tracking: store.get('tracking') },
       { sort: parseSort(ctx.url.searchParams.get('sort')), section: parseSection(ctx.url.searchParams.get('section')) },
       now(),
     ),
@@ -470,10 +484,26 @@ export function createAgent(opts: AgentOptions): Agent {
     return sendCsv(ctx.res, `split-finder-deals-${csvFileDate(now())}.csv`, bundlesCsv(groups.flatMap((g) => g.rows)));
   });
   r.get('/api/deals/:id', 'any', (ctx) => {
-    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings') }, ctx.params.id!);
+    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings'), tracking: store.get('tracking') }, ctx.params.id!);
     if (!detail) throw new HttpError('not_found', 'No such deal.');
     return detail;
   });
+  // Tracking: the watchlist with each bundle's signals, Watch / Unwatch, and the owner's BOGO entry.
+  r.get('/api/watchlist', 'any', () =>
+    watchlistResponse({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings'), tracking: store.get('tracking') }),
+  );
+  r.post('/api/deals/:id/watch', 'ui', async (ctx): Promise<WatchResponse> => {
+    const id = ctx.params.id!;
+    const watched = flag(obj(await ctx.body()).watch, 'watch');
+    if (!store.get('deals').bundles.some((b) => b.key === id)) throw new HttpError('not_found', 'No such deal.');
+    const t = store.update('tracking', (cur) => ({ ...cur, ...setWatch(cur, id, watched, now()) }));
+    return { id, watch: watchStateOf(t, id)! };
+  });
+  r.post('/api/deals/:id/bogo', 'ui', async (ctx) => {
+    const body = obj(await ctx.body());
+    return refusals(async (): Promise<BogoResponse> => ({ bogo: await work.saveBogo(ctx.params.id!, body) }));
+  });
+  r.delete('/api/deals/:id/bogo', 'ui', (ctx) => refusals(async (): Promise<BogoResponse> => ({ bogo: await work.saveBogo(ctx.params.id!, null) })));
   r.get('/api/deals/:id/export.csv', 'any', (ctx) => {
     const bundle = store.get('deals').bundles.find((b) => b.key === ctx.params.id);
     if (!bundle) throw new HttpError('not_found', 'No such deal.');

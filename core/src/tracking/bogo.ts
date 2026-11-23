@@ -38,6 +38,8 @@ export interface BogoPromotion {
 
 export interface BogoCounted {
   model: string;
+  /** The Amazon listing the price is from; null for a price the owner confirmed with no listing chosen. */
+  asin: string | null;
   qty: number;
   price: number;
   /** After the referral fee and the flat fulfillment fee, times qty. */
@@ -109,7 +111,7 @@ export function bogoView(promo: BogoPromotion, option: SaleOption | undefined, p
     for (const p of parts) {
       const price = countingPrice(p);
       if (price === null) notCounted.push({ model: p.model, why: whyNot(p) });
-      else counted.push({ model: p.model, qty: p.qty, price, net: round2(amazonNet(price, fees) * p.qty) });
+      else counted.push({ model: p.model, asin: p.asin, qty: p.qty, price, net: round2(amazonNet(price, fees) * p.qty) });
     }
   }
   let estimate: BundleResult | null = base;

@@ -25,6 +25,9 @@ import type { UnitRates } from '../core/src/scan/pipeline';
 import { measuredByDefault } from './autopilot';
 import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS } from '../core/src/settings';
 import type { BundleRow, EbayQuestion, PaidAction, ReportSection, ReviewItem, ScanJob } from '../core/src/scan/types';
+import type { BogoView } from '../core/src/tracking/bogo';
+import type { FbaEstimate } from '../core/src/tracking/fba';
+import { emptyTracking, type TrackingState } from '../core/src/tracking/state';
 
 // ---------------------------------------------------------------- collection types
 
@@ -179,6 +182,15 @@ export interface AgentRuntime {
   lastJob: HelperLastJob | null;
 }
 
+/**
+ * The watchlist, each bundle's stored scan points, the last scan's signals, what was sent today, and the owner's BOGO
+ * promotions (core/src/tracking/state.ts). `derived` is worked out from the scan store and the Keepa trend cache when the
+ * deals are published, so the views stay synchronous: each BOGO promotion's view and each bundle's FBA-fee estimate.
+ */
+export interface TrackingCollection extends TrackingState {
+  derived: { bogo: Record<string, BogoView>; fba: Record<string, FbaEstimate> };
+}
+
 export interface StoreData {
   agent: AgentControl;
   settings: AppSettings & { updatedAt: string };
@@ -192,6 +204,7 @@ export interface StoreData {
   pairing: PairingCollection;
   outbox: HelperOutbox;
   runtime: AgentRuntime;
+  tracking: TrackingCollection;
 }
 
 export type CollectionName = keyof StoreData;
@@ -209,6 +222,7 @@ export const COLLECTIONS: readonly CollectionName[] = [
   'pairing',
   'outbox',
   'runtime',
+  'tracking',
 ];
 
 const OWNER_ONLY: ReadonlySet<CollectionName> = new Set(['keys', 'pairing']);
@@ -287,6 +301,7 @@ function defaults(): StoreData {
       lastScheduledRunAt: null, serp: null, keepa: null, notifiedDeals: [], notifiedQuestions: [],
       telegram: { pending: [], lastSentAt: null, lastError: null }, rates: {}, lastJob: null,
     },
+    tracking: { ...emptyTracking(), derived: { bogo: {}, fba: {} } },
   };
 }
 

@@ -92,6 +92,11 @@ describe('a scan from the app', () => {
     expect(q).toMatchObject({ prompt: 'What is inside the RYOBI PCL1600K2-P553?', choices: [{ id: 'choice:0', models: ['PCL1600K2', 'P553'] }] });
     expect(q.seen).toEqual(expect.any(String));
 
+    // The scan's point is in each bundle's history; a bundle still in Review is not watched by itself.
+    const tracking = agent.store.get('tracking');
+    expect(tracking.history['homedepot:320243741']?.map((p) => [p.section, p.reviewOpen])).toEqual([['split', true]]);
+    expect(tracking.watch['homedepot:320243741']).toBeUndefined();
+
     // One digest after the run, on Telegram too, with no key in it.
     expect(telegram).toHaveLength(1);
     expect(telegram[0]!.url).toBe(`https://api.telegram.org/bot${BOT}/sendMessage`);

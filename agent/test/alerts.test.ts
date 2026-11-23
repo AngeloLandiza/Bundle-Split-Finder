@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { BundleRow, ReviewItem } from '../../core/src/scan/types';
 import { DEFAULT_SETTINGS } from '../../core/src/settings';
+import { emptyTracking, freshSignals, trackReport } from '../../core/src/tracking/state';
+import { ASIN, bundle, option, part, recordedTrend } from '../../core/test/tracking-world';
 import { buildDigest, sendPending, sendTelegram } from '../alerts';
 
 const alerts = { ...DEFAULT_SETTINGS.alerts, enabled: true, minProfit: 20, minRoiPercent: 20 };
@@ -11,21 +13,39 @@ const deal = (key: string, model: string, profit: number, roi: number, section: 
 const question = (id: string): ReviewItem => ({ id, kind: 'split', answer: null }) as unknown as ReviewItem;
 
 describe('the digest: at most one message after a run', () => {
-  it('names the new deals above the ROI threshold, the best first, labelled as estimates, and each deal once', () => {
-    const report = {
-      bundles: [deal('a', 'DCK240C2', 30, 0.25), deal('b', 'DCK283D2', 45.1, 0.34), deal('c', 'DCK2100D1T1', 5, 0.5), deal('d', 'DCK300', 60, 0.6, 'waiting')],
-      review: [],
-    };
-    const first = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [] });
-    expect(first.event).toMatchObject({ kind: 'deal', count: 2, route: '/deals' });
-    expect(first.text).toContain('2 new deals above 20% ROI');
-    expect(first.text).toContain('Top: DEWALT DCK283D2, est. profit $45.10 (34% ROI)');
-    expect(first.text).toMatch(/estimate/i);
-    expect(first.notifiedDeals).toEqual(['b', 'a']);
+  it('names the deals worth buying now (not bare ROI), the top one with its reason, labelled as estimates, once a day', () => {
+    const NOW = new Date(2026, 10, 23, 10).getTime();
+    const good = bundle([option('whole', 299, [part('DCF921B', ASIN.DCF921B, 249), part('DCB606', ASIN.DCB606, 199)])]);
+    // Above both numbers but no Keepa sales figure for a part: not worth buying now, so not in the message.
+    const unsold = { ...bundle([option('whole', 299, [part('DCF921B', ASIN.DCF921B, 249), part('DCB205', 'B0NOTPULLED', 199)])]), key: 'DEWALT:OTHER', model: 'OTHER' };
+    const notDiscounted = { ...good, key: 'DEWALT:PLAIN', model: 'PLAIN', percentOff: null };
+    const report = { bundles: [good, unsold, notDiscounted], review: [] };
+    const tracking = trackReport(emptyTracking(), report, recordedTrend, alerts, NOW);
+    const fresh = freshSignals(tracking, ['buyNow'], NOW);
+    const first = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [], buyNow: fresh.lines });
+    expect(first.event).toMatchObject({ kind: 'deal', count: 1, route: '/deals' });
+    expect(first.text).toBe(
+      '1 deal worth buying now. Top: DEWALT DCK200D1P1W921B, est. profit $81.80 (27% ROI). First seen with an estimate: est. profit $81.80 (27% ROI). ' +
+        'The slowest part, DCF921B, sold 600 last month on Amazon (Keepa); your minimum is 50. Estimates from your fee settings.',
+    );
+    expect(first.notifiedDeals).toEqual(['DEWALT:DCK200D1P1W921B']);
 
-    const again = buildDigest({ report, alerts, notifiedDeals: first.notifiedDeals, notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [] });
-    expect(again.event).toBeNull();
-    expect(again.text).toBeNull();
+    const again = freshSignals({ ...tracking, notified: fresh.notified }, ['buyNow'], NOW + 3_600_000);
+    const quiet = buildDigest({ report, alerts, notifiedDeals: first.notifiedDeals, notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [], buyNow: again.lines });
+    expect(quiet.event).toBeNull();
+    expect(quiet.text).toBeNull();
+  });
+
+  it('a deal that fell through the floor is in the message only when the owner turned it on', () => {
+    const line = {
+      bundleKey: 'K', brand: 'DEWALT', model: 'DCK240C2',
+      signal: { kind: 'marginDown' as const, optionId: 'whole', reason: 'Estimated profit fell from $81.80 to $10.00, below your $20.00 floor.', numbers: {} as never },
+    };
+    const report = { bundles: [], review: [] };
+    const off = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [], marginDown: [line] });
+    expect(off.text).toBeNull();
+    const on = buildDigest({ report, alerts: { ...alerts, marginDownDigest: true }, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [], marginDown: [line] });
+    expect(on.text).toBe('Stop buying? DEWALT DCK240C2: Estimated profit fell from $81.80 to $10.00, below your $20.00 floor.');
   });
 
   it('says how many questions need the owner when one is new, and what Autopilot applied, in the same message', () => {

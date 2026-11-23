@@ -6,7 +6,9 @@ import type {
   AutopilotEntry,
   DealDetail,
   DealEstimate,
+  DealHistoryPoint,
   DealRow,
+  DealSignals,
   EvidenceQuote,
   QuestionChoice,
   DealsResponse,
@@ -17,7 +19,12 @@ import type {
   RunRecord,
   SettingsResponse,
   SourceLink,
+  WatchlistResponse,
+  WatchRow,
+  WatchState,
 } from '../core/src/api/contract';
+import type { BundleSignals, HistoryPoint } from '../core/src/tracking/signals';
+import { DEFAULT_MIN_MONTHLY_SOLD } from '../core/src/settings';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { liveSuggestion, type StoredSuggestion } from '../core/src/assist/stored';
 import type { PipelineView } from '../core/src/scan/pipeline';
@@ -77,9 +84,20 @@ function bundlesNeedingAnswer(bundles: readonly BundleRow[], questions: readonly
   return out;
 }
 
-function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, number>): DealRow {
+type Tracking = StoreData['tracking'];
+type WithTracking<K extends keyof StoreData> = Pick<StoreData, K> & Partial<Pick<StoreData, 'tracking'>>;
+
+function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, number>, tracking?: Tracking): DealRow {
   const searches = lookups?.[b.key];
+  const track = tracking
+    ? {
+        watched: tracking.watch[b.key]?.watched === true,
+        buyNow: tracking.watch[b.key]?.watched === true && (tracking.signals[b.key]?.buyNow ?? null) !== null,
+        bogo: tracking.bogo[b.key] ? (tracking.bogo[b.key]!.chosen.length > 0 ? ('chosen' as const) : ('choose' as const)) : null,
+      }
+    : {};
   return {
+    ...track,
     id: b.key,
     bundle: { brand: b.brand, model: b.model, title: b.title, itemId: b.itemId || null, link: b.link },
     section: b.section,
@@ -124,9 +142,9 @@ export function parseSection(v: string | null): ReportSection | undefined {
 }
 
 /** Every bundle as a row: the panel's rows, then audit-only bundles the panel does not have. */
-function allRows(data: Pick<StoreData, 'deals' | 'review'>): DealRow[] {
+function allRows(data: WithTracking<'deals' | 'review'>): DealRow[] {
   const need = bundlesNeedingAnswer(data.deals.bundles, data.review.questions);
-  const rows = data.deals.bundles.map((b) => rowOf(b, need.has(b.key), data.deals.lookups));
+  const rows = data.deals.bundles.map((b) => rowOf(b, need.has(b.key), data.deals.lookups, data.tracking));
   const have = new Set(rows.map((r) => r.id));
   for (const a of data.deals.auditBundles) {
     if (!have.has(a.key)) rows.push(rowOfAudit(a, need.has(a.key), data.deals.auditAt));
@@ -135,7 +153,7 @@ function allRows(data: Pick<StoreData, 'deals' | 'review'>): DealRow[] {
 }
 
 export function dealsResponse(
-  data: Pick<StoreData, 'deals' | 'review' | 'runtime' | 'settings'>,
+  data: WithTracking<'deals' | 'review' | 'runtime' | 'settings'>,
   query: { sort: DealSortKey; section?: ReportSection },
   now: number,
 ): DealsResponse {
@@ -188,21 +206,69 @@ function estimateOf(b: BundleRow, fees: StoreData['settings']['settings']['fees'
   };
 }
 
-export function dealDetail(data: Pick<StoreData, 'deals' | 'review' | 'settings'>, id: string): DealDetail | null {
+const iso = (ms: number): string => new Date(ms).toISOString();
+
+export function watchStateOf(tracking: Tracking | undefined, key: string): WatchState | null {
+  const w = tracking?.watch[key];
+  return w ? { watched: w.watched, by: w.by, since: iso(w.since) } : null;
+}
+
+export function signalsView(s: BundleSignals | undefined): DealSignals | null {
+  return s ? { at: iso(s.at), buyNow: s.buyNow, signals: s.signals, options: s.options } : null;
+}
+
+export function historyView(points: readonly HistoryPoint[] | undefined): DealHistoryPoint[] {
+  return (points ?? []).map((p) => ({
+    at: iso(p.at), section: p.section, price: p.price, amazonNew: p.amazonNew,
+    profit: p.options[0]?.profit ?? null, roiPercent: p.options[0]?.roiPercent ?? null,
+    monthlySold: p.monthlySold, salesRank: p.salesRank, offers: p.offers,
+  }));
+}
+
+/** GET /api/watchlist: the watched bundles, those worth buying now first, then by estimated profit. */
+export function watchlistResponse(data: WithTracking<'deals' | 'review' | 'settings'>): WatchlistResponse {
+  const t = data.tracking;
+  const a = data.settings.alerts;
+  const thresholds = { minProfit: a.minProfit, minRoiPercent: a.minRoiPercent, minMonthlySold: a.minMonthlySold ?? DEFAULT_MIN_MONTHLY_SOLD, floorProfit: a.floorProfit ?? a.minProfit };
+  if (!t) return { at: null, rows: [], thresholds };
+  const need = bundlesNeedingAnswer(data.deals.bundles, data.review.questions);
+  const rows: WatchRow[] = data.deals.bundles
+    .filter((b) => t.watch[b.key]?.watched)
+    .map((b) => ({ row: rowOf(b, need.has(b.key), data.deals.lookups, t), watch: watchStateOf(t, b.key)!, signals: signalsView(t.signals[b.key]) }));
+  rows.sort((x, y) => Number(y.row.buyNow) - Number(x.row.buyNow) || (y.row.profit ?? -Infinity) - (x.row.profit ?? -Infinity));
+  const ats = Object.values(t.signals).map((s) => s.at);
+  return { at: ats.length ? iso(Math.max(...ats)) : null, rows, thresholds };
+}
+
+export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'>, id: string): DealDetail | null {
   const bundle = data.deals.bundles.find((b) => b.key === id);
   if (!bundle) return null;
+  const t = data.tracking;
   const need = bundlesNeedingAnswer([bundle], data.review.questions);
   const sources: SourceLink[] = [];
   if (bundle.link) sources.push({ label: `Home Depot: ${bundle.brand} ${bundle.model}`, url: bundle.link, source: 'homedepot' });
   for (const p of bundle.parts) {
     if (p.asin) sources.push({ label: `Amazon: ${p.model}`, url: amazonLink(p.asin), source: 'amazon' });
   }
+  const bogo = t?.bogo[id] ? t.derived.bogo[id] : undefined;
+  if (bogo?.link) sources.push({ label: 'Home Depot: the BOGO promotion', url: bogo.link, source: 'homedepot' });
+  for (const c of bogo?.chosen ?? []) if (c.link) sources.push({ label: `Home Depot: free ${c.model}`, url: c.link, source: 'homedepot' });
+  for (const c of bogo?.counted ?? []) if (c.asin) sources.push({ label: `Amazon: free ${c.model}`, url: amazonLink(c.asin), source: 'amazon' });
   return {
-    row: rowOf(bundle, need.has(bundle.key), data.deals.lookups),
+    row: rowOf(bundle, need.has(bundle.key), data.deals.lookups, t),
     bundle,
     sources,
     estimateBasis: ESTIMATE_BASIS,
     estimate: estimateOf(bundle, data.settings.settings.fees),
+    ...(t
+      ? {
+          watch: watchStateOf(t, id),
+          signals: t.watch[id]?.watched ? signalsView(t.signals[id]) : null,
+          history: historyView(t.history[id]),
+          bogo: bogo ?? null,
+          fbaEstimate: t.derived.fba[id] ?? null,
+        }
+      : {}),
   };
 }
 
