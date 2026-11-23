@@ -146,13 +146,13 @@ describe('"in the box, not sold separately"', () => {
     expect(after.incomplete!.unpriced.map((u) => u.model)).toEqual(['PCL206']);
     expect(after.incomplete!.total).toBe(before.incomplete!.total - 1);
     const part = after.parts.find((p) => p.model === 'A10FB1G')!;
-    expect(part.fact).toEqual({ text: 'In the box, not sold separately', at: NOW, notCounted: true });
+    expect(part.fact).toEqual({ text: 'In the box, not sold separately', field: 'notSoldSeparately', at: NOW, notCounted: true });
     expect(part.priceSuggestion).toBeUndefined();
     // Home Depot later sells it alone: the fact is not applied, and the row says what changed.
     await store.putPartPrice({ key: partKey('RYOBI', 'A10FB1G'), brand: 'RYOBI', model: 'A10FB1G', itemId: '1', matchedModel: 'A10FB1G', price: 12.97, title: 'bit holder', link: 'https://www.homedepot.com/p/1', seenAt: NOW + 86_400_000 * 2, checkedAt: NOW + 86_400_000 * 2 });
     const later = (await buildReport(store, DEFAULT_SCAN_SETTINGS)).bundles.find((b) => b.model === 'PCL1200K2-A10FB1G')!;
     expect(later.incomplete!.unpriced.map((u) => u.model)).toEqual(['PCL206', 'A10FB1G']);
-    expect(later.parts.find((p) => p.model === 'A10FB1G')!.fact).toEqual({ text: 'In the box, not sold separately', at: NOW, stale: 'Home Depot sells A10FB1G on its own since Nov 25 ($12.97).' });
+    expect(later.parts.find((p) => p.model === 'A10FB1G')!.fact).toEqual({ text: 'In the box, not sold separately', field: 'notSoldSeparately', at: NOW, stale: 'Home Depot sells A10FB1G on its own since Nov 25 ($12.97).' });
     // He keeps his answer: a new date, newer than the evidence, and it applies again.
     await markNotSold(store, 'RYOBI', 'A10FB1G', NOW + 86_400_000 * 3);
     const kept = (await buildReport(store, DEFAULT_SCAN_SETTINGS)).bundles.find((b) => b.model === 'PCL1200K2-A10FB1G')!;

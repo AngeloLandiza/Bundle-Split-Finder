@@ -151,13 +151,14 @@ function factText(f: PartFact): string {
   return 'A part of the bundles that name it';
 }
 
-/** The newest mark of the fact: the one a part row dates. */
-const newest = (f: PartFact): FactMark => [f.notSoldSeparately, f.sellAs, f.isPart].filter((m): m is FactMark => !!m).sort((a, b) => b.at - a.at)[0]!;
+/** The answer a part row shows: "not sold separately" first (it changes the count), then a sale as, then a part. */
+const shown = (f: PartFact): FactField => (f.notSoldSeparately ? 'notSoldSeparately' : f.sellAs ? 'sellAs' : 'isPart');
 
-/** What a part row shows of a fact: its words, when he said it and where, and what changed when it no longer holds. */
+/** What a part row shows of a fact: its words, which answer, when he said it and where, and what changed when it no longer holds. */
 export function factView(f: PartFact, stale: string | null): PartFactView {
-  const mark = f.notSoldSeparately ?? newest(f);
-  return { text: factText(f), at: mark.at, ...(mark.questionId ? { questionId: mark.questionId } : {}), ...(stale ? { stale } : {}) };
+  const field = shown(f);
+  const mark = f[field]!;
+  return { text: factText(f), field, at: mark.at, ...(mark.questionId ? { questionId: mark.questionId } : {}), ...(stale ? { stale } : {}) };
 }
 
 /** "from your answer on Nov 23": the line a bundle shows beside a part a fact settled. */

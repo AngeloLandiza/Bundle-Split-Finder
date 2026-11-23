@@ -933,6 +933,8 @@ export interface ConfirmedSource {
 export interface PartFactView {
   /** In the owner's words: "In the box, not sold separately", "Sold whole", "Sold as PCL406B and PCL424B", "A part of these bundles". */
   text: string;
+  /** Which of the fact's answers the row shows (facts/fact.ts FactField): "Change" forgets that one. */
+  field: 'isPart' | 'sellAs' | 'notSoldSeparately';
   at: number;
   questionId?: string;
   stale?: string;
