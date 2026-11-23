@@ -3,10 +3,9 @@
 // free items' parts, at the same cost (the free item costs nothing). Until the owner chooses, the deal says
 // "BOGO: choose your free tool" and the free tool is not counted. Nothing picks a free tool for him (rule 4).
 //
-// What the recordings show (fixtures/, Nov 23): no listing row or product page marks a product as BOGO. A Home Depot
-// search response carries a "Featured BOGO" value under the "The Home Depot Events" filter (count, hd_filter_tokens
-// value, link), and the product page's pricing object has a `conditionalPromotions` field, null on both pages recorded.
-// So a promotion is the owner's entry for now; bogoFacetOf reads the one recorded shape. See docs/decisions.md.
+// Since the Nov 23 BOGO recording the agent finds promotions by itself from Home Depot's pair listings (bogoPairs.ts);
+// this owner's entry is the fallback for a promotion Home Depot lists no pairs for. SerpApi ignored the BOGO filter
+// token, so bogoFacetOf is only a count of a search's BOGO items. See docs/decisions.md.
 
 import { amazonNet, type BundleResult, type FeeSettings } from '../money';
 import type { PartRow, SaleOption } from '../scan/types';
