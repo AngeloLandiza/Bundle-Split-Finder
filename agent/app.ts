@@ -334,6 +334,12 @@ export function createAgent(opts: AgentOptions): Agent {
   const r = new Router();
 
   // ------------------------------------------------------------ state and control
+  // The shell's challenge (src-tauri/src/agent.rs): no token asked, and only the proof comes back.
+  r.get('/api/hello', 'none', (ctx) => {
+    const proof = auth.helloProof(ctx.url.searchParams.get('nonce'));
+    if (!proof) throw new HttpError('bad_request', 'nonce must be 32 to 128 letters, digits, - or _.');
+    return { proof };
+  });
   r.get('/api/state', 'any', () => state());
   r.post('/api/agent/pause', 'ui', (): PauseResponse => {
     store.update('agent', () => ({ paused: true, pausedAt: iso() }));

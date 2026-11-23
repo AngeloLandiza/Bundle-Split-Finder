@@ -9,7 +9,8 @@ use tauri::menu::{
   CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu, SubmenuBuilder,
 };
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Manager, WebviewWindow, WebviewWindowBuilder};
+use tauri::webview::PageLoadEvent;
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 use tauri_plugin_autostart::ManagerExt as _;
 use tauri_plugin_notification::NotificationExt;
 
@@ -23,6 +24,9 @@ pub const MAIN: &str = "main";
 pub struct ShellState {
   pub open_questions: AtomicU32,
   pub paused: AtomicBool,
+  /// The window shows the "not our agent" message instead of the dashboard; showing it again
+  /// rebuilds it once the agent proves itself.
+  error_page: AtomicBool,
   /// The screen the last notification was about. Desktop notification plugins have no click
   /// callback, so the next activation of the app within the window above navigates there.
   pending_nav: Mutex<Option<(Instant, String)>>,
@@ -34,6 +38,7 @@ impl ShellState {
     Self {
       open_questions: AtomicU32::new(0),
       paused: AtomicBool::new(false),
+      error_page: AtomicBool::new(false),
       pending_nav: Mutex::new(None),
       items: Mutex::new(None),
     }
@@ -76,17 +81,45 @@ pub fn create_window(app: &AppHandle) -> Result<WebviewWindow, String> {
     .first()
     .ok_or("no window in tauri.conf.json")?
     .clone();
-  let token = agent::read_token(app);
-  let window = WebviewWindowBuilder::from_config(app, &cfg)
-    .map_err(|e| e.to_string())?
-    .initialization_script(init_script(token.as_deref()))
-    .build()
-    .map_err(|e| e.to_string())?;
-  if !agent::port_open() {
-    // The agent did not start; the page would be a browser error. Show it anyway so the owner
-    // sees something and can use the tray menu; Open Split Finder retries.
-    log::warn!("agent is not answering on {}", agent::AGENT_ORIGIN);
-  }
+  // The dashboard loads, and the token goes into the page, only after the listener on the port
+  // proved it holds the token (agent::proven_token). Otherwise the window says why and loads nothing
+  // from the port; Open Split Finder tries again.
+  let window = match agent::proven_token(app) {
+    Some(token) => {
+      app.state::<ShellState>().error_page.store(false, Ordering::Relaxed);
+      WebviewWindowBuilder::from_config(app, &cfg)
+        .map_err(|e| e.to_string())?
+        .initialization_script(init_script(Some(&token)))
+        .build()
+        .map_err(|e| e.to_string())?
+    }
+    None => {
+      let message = if agent::port_open() {
+        format!("{}. Quit it, then open Split Finder again.", agent::PORT_TAKEN)
+      } else {
+        "The Split Finder agent is not running. Choose Open Split Finder in the menu bar to try again.".to_string()
+      };
+      log::warn!("not loading the dashboard: {message}");
+      app.state::<ShellState>().error_page.store(true, Ordering::Relaxed);
+      let text = serde_json::to_string(&message).unwrap_or_else(|_| "\"\"".into());
+      let mut blank_cfg = cfg.clone();
+      let blank = tauri::Url::parse("about:blank").map_err(|e| e.to_string())?;
+      blank_cfg.url = WebviewUrl::External(blank);
+      WebviewWindowBuilder::from_config(app, &blank_cfg)
+        .map_err(|e| e.to_string())?
+        .title(format!("Split Finder: {message}"))
+        .on_page_load(move |w, payload| {
+          if payload.event() == PageLoadEvent::Finished {
+            let _ = w.eval(&format!(
+              "document.body.style.font = '15px -apple-system, system-ui, sans-serif'; \
+               document.body.style.margin = '48px'; document.body.textContent = {text};"
+            ));
+          }
+        })
+        .build()
+        .map_err(|e| e.to_string())?
+    }
+  };
   let _ = window.show();
   let _ = window.set_focus();
   Ok(window)
@@ -94,6 +127,11 @@ pub fn create_window(app: &AppHandle) -> Result<WebviewWindow, String> {
 
 /// Brings the window back (recreating it if needed) and focuses it.
 pub fn show_window(app: &AppHandle) -> Option<WebviewWindow> {
+  if app.state::<ShellState>().error_page.load(Ordering::Relaxed) && agent::proven_token(app).is_some() {
+    if let Some(old) = app.get_webview_window(MAIN) {
+      let _ = old.destroy();
+    }
+  }
   let window = app
     .get_webview_window(MAIN)
     .or_else(|| create_window(app).ok())?;

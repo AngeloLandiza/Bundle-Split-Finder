@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { mkdtempSync } from 'node:fs';
 import { createServer, request, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
@@ -185,5 +186,16 @@ describe('agent HTTP', () => {
     expect(all).toMatch(/event: state\ndata: \{"agent":\{"status":"idle"/);
     expect(all).toContain('"counts":{"review":0');
     expect(all).toMatch(/event: notify\ndata: .*"kind":"review".*"count":2/);
+  });
+
+  it("answers the shell's hello with HMAC-SHA256(token, nonce) and nothing else, with no token asked", async () => {
+    const nonce = 'a'.repeat(64);
+    const res = await fetch(`${base}/api/hello?nonce=${nonce}`);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body).toEqual({ proof: createHmac('sha256', agent.auth.uiToken).update(`split-finder-hello:${nonce}`).digest('hex') });
+    expect(JSON.stringify(body)).not.toContain(agent.auth.uiToken);
+    expect((await fetch(`${base}/api/hello?nonce=short`)).status).toBe(400);
+    expect((await fetch(`${base}/api/hello`)).status).toBe(400);
   });
 });

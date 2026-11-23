@@ -4,7 +4,7 @@
 // Host must be the agent's own loopback address (no DNS rebinding); a browser Origin must be the
 // app's own or the paired extension's.
 
-import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -86,6 +86,16 @@ export class Auth {
       `http://localhost:${opts.port}`,
       ...(opts.extraUiOrigins ?? []),
     ]);
+  }
+
+  /**
+   * The shell's challenge before it trusts whatever listens on the port (GET /api/hello): proof that this process holds
+   * the token file's secret, without giving the secret or anything that stands in for it. Domain-separated, so the
+   * answer is no use anywhere else. Null for a nonce that is not 32 to 128 url-safe characters.
+   */
+  helloProof(nonce: unknown): string | null {
+    if (typeof nonce !== 'string' || !/^[A-Za-z0-9_-]{32,128}$/.test(nonce)) return null;
+    return createHmac('sha256', this.uiToken).update(`split-finder-hello:${nonce}`).digest('hex');
   }
 
   // ------------------------------------------------------------ request checks
