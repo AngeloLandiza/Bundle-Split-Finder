@@ -2,17 +2,67 @@
 // call, the event stream read with fetch, the agent's own answers through map.ts. Nothing leaves the machine and no
 // search is spent (the agent runs without its timers).
 
-import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { deflateRawSync } from 'node:zlib';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAgent, type Agent } from '../../../agent/app';
 import type { ReviewItem } from '@core/scan/types';
 import type { ApiClient } from './client';
 import { createHttpClient } from './http';
 import { ApiError, type AgentEvent } from './types';
+
+/** A zip written in Node (no zip CLI on a Windows runner): deflated entries with real CRCs, so tar and unzip both read it. */
+function crc32(buf: Buffer): number {
+  let c = ~0;
+  for (const byte of buf) {
+    c ^= byte;
+    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
+  }
+  return ~c >>> 0;
+}
+function zipOf(files: Record<string, string>): Buffer {
+  const locals: Buffer[] = [];
+  const central: Buffer[] = [];
+  let offset = 0;
+  for (const [name, text] of Object.entries(files)) {
+    const raw = Buffer.from(text, 'utf8');
+    const data = deflateRawSync(raw);
+    const nameBuf = Buffer.from(name, 'utf8');
+    const crc = crc32(raw);
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(8, 8);
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(data.length, 18);
+    local.writeUInt32LE(raw.length, 22);
+    local.writeUInt16LE(nameBuf.length, 26);
+    const dir = Buffer.alloc(46);
+    dir.writeUInt32LE(0x02014b50, 0);
+    dir.writeUInt16LE(20, 4);
+    dir.writeUInt16LE(20, 6);
+    dir.writeUInt16LE(8, 10);
+    dir.writeUInt32LE(crc, 16);
+    dir.writeUInt32LE(data.length, 20);
+    dir.writeUInt32LE(raw.length, 24);
+    dir.writeUInt16LE(nameBuf.length, 28);
+    dir.writeUInt32LE(offset, 42);
+    locals.push(local, nameBuf, data);
+    central.push(dir, nameBuf);
+    offset += 30 + nameBuf.length + data.length;
+  }
+  const dirBuf = Buffer.concat(central);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(Object.keys(files).length, 8);
+  end.writeUInt16LE(Object.keys(files).length, 10);
+  end.writeUInt32LE(dirBuf.length, 12);
+  end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...locals, dirBuf, end]);
+}
 
 // A key saved is checked with its own service (agent/keyChecks.ts); no test reaches one.
 const offline = (async () => { throw new Error('offline'); }) as unknown as typeof fetch;
@@ -114,11 +164,11 @@ describe('the real client on the real agent', () => {
   });
 
   it('installs the Chrome helper: the agent unpacks its zip into the folder and the client says where', async () => {
-    const src = mkdtempSync(join(tmpdir(), 'sf-helper-src-'));
-    writeFileSync(join(src, 'manifest.json'), JSON.stringify({ manifest_version: 3, name: 'Helper', version: '0.1.0', permissions: ['storage'] }));
-    writeFileSync(join(src, 'background.js'), '//');
     const zip = join(mkdtempSync(join(tmpdir(), 'sf-helper-zip-')), 'bundle-split-finder-0.1.0-chrome.zip');
-    execFileSync('zip', ['-q', '-r', zip, '.'], { cwd: src });
+    writeFileSync(zip, zipOf({
+      'manifest.json': JSON.stringify({ manifest_version: 3, name: 'Helper', version: '0.1.0', permissions: ['storage'] }),
+      'background.js': '//',
+    }));
     const dir = join(mkdtempSync(join(tmpdir(), 'sf-helper-dir-')), 'split-finder');
     vi.stubEnv('SPLIT_FINDER_EXTENSION_ZIP', zip);
     vi.stubEnv('SPLIT_FINDER_EXTENSION_DIR', dir);
