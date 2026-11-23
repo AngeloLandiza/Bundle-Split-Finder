@@ -3,6 +3,8 @@
 
 import type { AppState, DealRow, ReviewQuestion } from '../api/types';
 import { plural } from './format';
+import { bestDeals } from './today';
+import { words } from './platform';
 
 export const POPOVER_QUESTIONS = 3;
 
@@ -61,24 +63,19 @@ export function needsYou(questions: readonly ReviewQuestion[], total: number): {
 }
 
 /**
- * The best deal: the highest estimated profit among bundles with an estimate and no open question (the same
- * rule as Today's Best estimated profit). The rows carry no "first seen" date, so this is the best of what the
- * last scan holds, not only of what it found new.
+ * The best deal: the highest estimated profit among bundles with an estimate that is not a loss and no open question
+ * (Today's rule, so the two never disagree; an estimate below zero is never a "best"). The rows carry no "first seen"
+ * date, so this is the best of what the last scan holds, not only of what it found new.
  */
 export function bestDeal(rows: readonly DealRow[]): DealRow | null {
-  let best: DealRow | null = null;
-  for (const r of rows) {
-    if (r.profit === null || r.needsAnswer) continue;
-    if (!best || (r.profit ?? 0) > (best.profit ?? 0)) best = r;
-  }
-  return best;
+  return bestDeals(rows)[0] ?? null;
 }
 
 /** Why Scan now cannot be pressed, or null when it can. */
 export function scanBlocked(state: AppState | null, online: boolean): string | null {
   if (!online || !state) return 'The agent is not running.';
   if (state.agent.status === 'paused') return 'Resume the agent first.';
-  if (!state.keys.serpapi) return 'Add your SerpApi key in Preferences first.';
+  if (!state.keys.serpapi) return `Add your SerpApi key in ${words.preferences} first.`;
   const { serpLeft, serpReserve } = state.budget;
   if (serpLeft !== null && serpLeft <= serpReserve) return 'Searches are at your reserve.';
   return null;

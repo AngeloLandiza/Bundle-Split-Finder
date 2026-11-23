@@ -82,6 +82,12 @@ describe('best deal', () => {
     expect(best?.profit).toBe(Math.max(...eligible.map((r) => r.profit ?? -Infinity)));
     expect(best?.needsAnswer).toBe(false);
   });
+  it('never picks a loss: when every estimate is below zero there is no best deal', () => {
+    const loss = DEALS.find((r) => r.profit !== null && r.profit < 0)!;
+    expect(loss).toBeDefined();
+    expect(bestDeal(DEALS.map((r) => ({ ...r, profit: r.profit === null ? null : -Math.abs(r.profit) - 1 })))).toBeNull();
+    expect(bestDeal([loss])).toBeNull();
+  });
   it('is nothing when no bundle has an estimate', () => {
     expect(bestDeal(DEALS.map((r) => ({ ...r, profit: null })))).toBeNull();
     expect(bestDeal([])).toBeNull();
