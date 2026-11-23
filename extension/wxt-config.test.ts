@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { runTool } from '../scripts/spawn-tool';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -69,7 +69,7 @@ describe('the production build', () => {
     // .output/chrome-mv3, which the owner loads in Chrome, as it was.
     const loaded = join('.output', 'chrome-mv3', 'manifest.json');
     const before = existsSync(loaded) ? statSync(loaded).mtimeMs : null;
-    execFileSync('npx', ['wxt', 'build'], {
+    runTool('npx', ['wxt', 'build'], {
       env: { ...process.env, SPLIT_FINDER_E2E: '', SPLIT_FINDER_DEBUG: '', SPLIT_FINDER_PROD_CHECK: '1' },
       stdio: 'ignore',
     });

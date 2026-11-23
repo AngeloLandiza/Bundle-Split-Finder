@@ -16,6 +16,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as esbuild from 'esbuild';
 
+import { runTool } from '../scripts/spawn-tool';
 import { stripAuthenticode } from './pe';
 
 const root = join(import.meta.dirname, '..');
@@ -100,11 +101,7 @@ async function main(): Promise<void> {
   rmSync(outJs, { force: true });
   mkdirSync(binDir, { recursive: true });
 
-  execFileSync('npx', ['vite', 'build', '--config', 'desktop-ui/vite.config.ts'], {
-    cwd: root,
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-  });
+  runTool('npx', ['vite', 'build', '--config', 'desktop-ui/vite.config.ts'], { cwd: root, stdio: 'inherit' });
 
   esbuild.buildSync({
     entryPoints: [join(root, 'desktop', 'agent-entry.ts')],
@@ -132,11 +129,7 @@ async function main(): Promise<void> {
   execFileSync(process.execPath, ['--experimental-sea-config', seaConfig], { cwd: root, stdio: 'inherit' });
 
   const postject = (extra: string[]) =>
-    execFileSync('npx', ['--yes', 'postject', outBin, 'NODE_SEA_BLOB', blob, '--sentinel-fuse', SENTINEL, ...extra], {
-      cwd: root,
-      stdio: 'inherit',
-      shell: process.platform === 'win32',
-    });
+    runTool('npx', ['--yes', 'postject', outBin, 'NODE_SEA_BLOB', blob, '--sentinel-fuse', SENTINEL, ...extra], { cwd: root, stdio: 'inherit' });
 
   if (windows) {
     // Unsigned: the injected file would not match node.exe's signature anyway (docs/decisions.md, Windows).

@@ -1,11 +1,12 @@
 // Builds the production extension and writes one zip under output/. Spends no searches and reads no .env.
-import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { runTool } from './spawn-tool';
+
 const outDir = '.output-package';
 // Its own folder, with the end-to-end and debug switches off, so .output/chrome-mv3 (loaded in Chrome) is untouched.
-execFileSync('npx', ['wxt', 'zip'], {
+runTool('npx', ['wxt', 'zip'], {
   // NODE_ENV is forced: a parent run under vitest sets it to "test", and React then builds its development JSX (absolute paths).
   env: {
     ...process.env,

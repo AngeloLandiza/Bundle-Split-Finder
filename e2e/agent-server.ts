@@ -1,7 +1,9 @@
-import { spawn, type ChildProcess } from 'node:child_process';
+import type { ChildProcess } from 'node:child_process';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+
+import { spawnTool } from '../scripts/spawn-tool';
 
 const AGENT_PORT = 8790;
 
@@ -25,7 +27,7 @@ export type AgentHarness = { stop: () => void; dataDir: string; port: number };
 export async function startAgentHarness(): Promise<AgentHarness> {
   const dataDir = await mkdtemp(join(tmpdir(), 'sf-agent-e2e-'));
   const root = resolveRepoRoot();
-  const child: ChildProcess = spawn('npx', ['tsx', join(root, 'agent/server.ts')], {
+  const child: ChildProcess = spawnTool('npx', ['tsx', join(root, 'agent/server.ts')], {
     env: { ...process.env, AGENT_PORT: String(AGENT_PORT), SPLIT_FINDER_DATA_DIR: dataDir },
     stdio: 'pipe',
   });
