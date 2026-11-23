@@ -72,10 +72,18 @@ export function followUpVariants(q: ReviewQuestion): ReviewQuestion[] {
     roundsLeft: 0,
   };
 
+  // The agent's round-2 fields: Home Depot's own page confirmed A21701 (its name and link are the real ones); PCL406424SB is a
+  // special buy and A25RS51 is not sold on Home Depot on its own, so the question is still about those two.
+  const settledParts = [{ model: 'A21701', what: '7-Piece 5 in. Random Orbit Sand Paper Assortment Set', url: hd('A21701') }];
+  const unsettledParts = ['PCL406424SB', 'A25RS51'];
+  const waiting: FollowUp = { state: 'running', doing: 'Waiting for Chrome to read the Home Depot pages this needs', tried: [], roundsLeft: 2 };
+
   return [
     copyOf(q, 'queued', { followUp: queued }),
     copyOf(q, 'running', { followUp: running }),
     copyOf(q, 'done', { followUp: done, suggestion: doneSuggestion, brief: doneBrief }),
     copyOf(q, 'gave up', { followUp: gaveUp, suggestion: gaveUpSuggestion }),
+    copyOf(q, 'settled', { settledParts, unsettledParts }),
+    copyOf(q, 'settled, waiting', { settledParts, unsettledParts, followUp: waiting }),
   ];
 }

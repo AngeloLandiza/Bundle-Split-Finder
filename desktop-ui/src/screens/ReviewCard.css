@@ -273,3 +273,31 @@
     transition: none;
   }
 }
+
+.card-unsettled {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--label-2);
+}
+
+.card-unsettled .tag .code {
+  font-size: 11px;
+}
+
+.card-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+.settled-mark {
+  margin-left: 3px;
+  vertical-align: -1px;
+  color: var(--label-2);
+}

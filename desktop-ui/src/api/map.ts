@@ -22,6 +22,7 @@ import type {
   DealSort,
   Drip,
   FollowUp,
+  SettledPart,
   Grade,
   KeyName,
   KeyProblems,
@@ -606,6 +607,21 @@ export function readFollowUp(raw: unknown): FollowUp | undefined {
   return { state: f.state, ...(doing ? { doing } : {}), tried, roundsLeft: f.roundsLeft };
 }
 
+/** The settled/unsettled parts of a question as the agent sends them; each is dropped unless it is well formed. */
+export function readSettled(q: { settledParts?: unknown; unsettledParts?: unknown }): { settledParts?: SettledPart[]; unsettledParts?: string[] } {
+  const settledParts: SettledPart[] = [];
+  if (Array.isArray(q.settledParts)) {
+    for (const p of q.settledParts) {
+      const x = p as Record<string, unknown> | null;
+      if (!x || typeof x.model !== 'string' || !x.model.trim() || typeof x.what !== 'string') continue;
+      const url = typeof x.url === 'string' && x.url.trim() ? x.url.trim() : undefined;
+      settledParts.push({ model: x.model.trim(), what: x.what.trim(), ...(url ? { url } : {}) });
+    }
+  }
+  const unsettledParts = Array.isArray(q.unsettledParts) ? q.unsettledParts.filter((m): m is string => typeof m === 'string' && m.trim() !== '').map((m) => m.trim()) : [];
+  return { ...(settledParts.length ? { settledParts } : {}), ...(unsettledParts.length ? { unsettledParts } : {}) };
+}
+
 export function mapQuestion(q: C.ReviewQuestion): ReviewQuestion {
   const brief = readBrief((q as C.ReviewQuestion & { brief?: unknown }).brief);
   const followUp = readFollowUp((q as C.ReviewQuestion & { followUp?: unknown }).followUp);
@@ -633,6 +649,7 @@ export function mapQuestion(q: C.ReviewQuestion): ReviewQuestion {
     seen: q.seen ?? null,
     ...(brief ? { brief } : {}),
     ...(followUp ? { followUp } : {}),
+    ...readSettled(q),
   };
 }
 

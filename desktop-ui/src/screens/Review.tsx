@@ -22,8 +22,8 @@ import { questionMenu, type QuestionMenuId } from '../lib/menus';
 import { SCREEN_KEYS } from '../lib/notices';
 import { briefFor, rowState } from '../lib/reviewBrief';
 import { DecisionCard, Details, WorkingCard } from './ReviewCard';
-import { AskNoteLine, Own } from './ReviewParts';
-import { KIND_LABEL, SAVED_ROW_MS, groupQuestions, parseTyped, preselected, rowChip, saveHint, typedFromSuggestion, workingNote, workingTitle } from './reviewModel';
+import { AskNoteLine, MarkedModels, Own } from './ReviewParts';
+import { modelMarks, KIND_LABEL, SAVED_ROW_MS, groupQuestions, parseTyped, preselected, rowChip, saveHint, typedFromSuggestion, workingNote, workingTitle } from './reviewModel';
 import './Review.css';
 
 const NONE = '__none';
@@ -290,6 +290,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
               askNote={asks[current.id] ?? null}
               onAsk={(force) => void askQuestion(current, force)}
               focusChoice={focusChoice}
+              chromeClosed={state?.helper.connected === false}
               onMove={move}
               onSaved={afterSave}
               onEscape={() => setConfirming(null)}
@@ -395,6 +396,12 @@ function RowState({ q }: { q: ReviewQuestion }) {
   return <span className="qitem-ai">{text}</span>;
 }
 
+/** A choice's label; its models carry the check when Home Depot's page confirmed them (only a label made of models). */
+function markedLabel(q: ReviewQuestion, c: ReviewQuestion['choices'][number]) {
+  const marks = c.asin ? null : modelMarks(q, c.models);
+  return marks ? <MarkedModels marks={marks} /> : c.label;
+}
+
 function Question({
   q,
   hasAi,
@@ -402,6 +409,7 @@ function Question({
   askNote,
   onAsk,
   focusChoice,
+  chromeClosed,
   onMove,
   onSaved,
   onEscape,
@@ -417,6 +425,8 @@ function Question({
   onAsk: (force: boolean) => void;
   /** Focus goes to the selected choice: he just saved the one before and the keyboard follows. */
   focusChoice: boolean;
+  /** Chrome is closed: the app cannot read pages until it is open. */
+  chromeClosed: boolean;
   onMove: (step: number) => void;
   onSaved: (said: string, answerId: string | null) => void;
   onEscape: () => void;
@@ -547,9 +557,9 @@ function Question({
 
         <div className="card-wrap">
           {working && q.followUp ? (
-            <WorkingCard followUp={q.followUp} id={cardId} />
+            <WorkingCard followUp={q.followUp} id={cardId} chromeClosed={chromeClosed} />
           ) : (
-            <DecisionCard brief={brief} id={cardId} fromAi={s !== null} {...(q.followUp ? { followUp: q.followUp } : {})} note={askNote ? <AskNoteLine note={askNote} q={q} onForce={() => onAsk(true)} /> : undefined} />
+            <DecisionCard brief={brief} id={cardId} settled={q.settledParts ?? []} unsettled={q.unsettledParts ?? []} fromAi={s !== null} {...(q.followUp ? { followUp: q.followUp } : {})} note={askNote ? <AskNoteLine note={askNote} q={q} onForce={() => onAsk(true)} /> : undefined} />
           )}
           {s && intro && !working ? (
             <p className="ai-footnote" role="note">
@@ -587,7 +597,7 @@ function Question({
                     <input type="radio" name={`a-${q.id}`} value={c.id} checked={choice === c.id} onChange={() => setChoice(c.id)} aria-describedby={pre === c.id ? cardId : undefined} />
                     <span className="choice-text">
                       <span className={c.models.length && !c.asin ? 'code choice-label' : 'choice-label'} title={c.label}>
-                        {c.label}
+                        {markedLabel(q, c)}
                       </span>
                       {c.asin ? (
                         <span className="choice-sub">

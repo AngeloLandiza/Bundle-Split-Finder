@@ -9,7 +9,8 @@ import type { ReviewBrief, ReviewQuestion } from '../api/types';
 import { noteOf } from '../lib/askAi';
 import { briefFor } from '../lib/reviewBrief';
 import { DecisionCard, WorkingCard } from './ReviewCard';
-import { AskNoteLine } from './ReviewParts';
+import { AskNoteLine, MarkedModels } from './ReviewParts';
+import { modelMarks } from './reviewModel';
 
 // The owner's real question (his screenshot): PCL406424SB-A21701-A25RS51, which the AI could not tell.
 const third = mapReview((real as unknown as { scan3: { review: C.ReviewResponse } }).scan3.review).questions;
@@ -18,10 +19,10 @@ const cannotTell: ReviewQuestion = {
   ...real406,
   suggestion: { status: 'cannot_tell', choiceId: null, answer: '', reason: 'The Includes list names no model, but whether the two accessory numbers are in this box is not settled.', quotes: [], costUsd: 0.06 },
 };
-const [queued, running, done, gaveUp] = followUpVariants(cannotTell) as [ReviewQuestion, ReviewQuestion, ReviewQuestion, ReviewQuestion];
+const [queued, running, done, gaveUp, settledQ] = followUpVariants(cannotTell) as [ReviewQuestion, ReviewQuestion, ReviewQuestion, ReviewQuestion, ReviewQuestion];
 
 const card = (q: ReviewQuestion, brief: ReviewBrief = briefFor(q)) =>
-  renderToStaticMarkup(createElement(DecisionCard, { brief, id: 'c', fromAi: q.suggestion !== null, ...(q.followUp ? { followUp: q.followUp } : {}) }));
+  renderToStaticMarkup(createElement(DecisionCard, { brief, id: 'c', fromAi: q.suggestion !== null, settled: q.settledParts ?? [], unsettled: q.unsettledParts ?? [], ...(q.followUp ? { followUp: q.followUp } : {}) }));
 const READ_THE_PAGE = 'On the Home Depot page, see whether the Includes list names the accessories sold as A21701 and A25RS51';
 const brief = (check: ReviewBrief['check']): ReviewBrief => ({ ask: 'What is inside this bundle?', suggestion: null, state: 'none', reasons: [{ text: 'Home Depot does not list the parts.' }], check, writtenBy: 'ai' });
 
@@ -95,5 +96,41 @@ describe('Ask AI is answered at once', () => {
   });
   it('any other reason: said, with no action', () => {
     expect(line({ queued: false, reason: 'The app is already working on this one.' })).not.toContain('<button');
+  });
+});
+
+describe('what Home Depot already confirmed', () => {
+  it('lists the confirmed part with its link, and names the unsettled models as tags', () => {
+    const html = card(settledQ);
+    expect(html).toContain('Confirmed by Home Depot');
+    expect(html).toMatch(/<span class="code">A21701<\/span> 7-Piece 5 in\. Random Orbit Sand Paper Assortment Set <a [^>]*>Home Depot/);
+    expect(html).toMatch(/Still to settle:<\/span>[^]*tag-neutral[^]*PCL406424SB[^]*tag-neutral[^]*A25RS51/);
+  });
+  it('shows at most three confirmed lines and says where the rest are', () => {
+    const many = ['A1', 'B2', 'C3', 'D4', 'E5'].map((model) => ({ model, what: `Part ${model}` }));
+    const html = renderToStaticMarkup(createElement(DecisionCard, { brief: briefFor(cannotTell), id: 'c', fromAi: true, settled: many }));
+    expect(html.match(/Part [A-E]\d/g)).toHaveLength(3);
+    expect(html).toContain('2 more in Details');
+  });
+  it('is the card as before when neither field is sent', () => {
+    const html = card(cannotTell);
+    expect(html).not.toContain('Confirmed by Home Depot');
+    expect(html).not.toContain('Still to settle');
+  });
+  it('marks only the settled models of a reading, with a name for a screen reader', () => {
+    const marks = modelMarks(settledQ, ['PCL406424SB', 'a21701', 'A25RS51'])!;
+    expect(marks.map((m) => m.settled)).toEqual([false, true, false]);
+    const html = renderToStaticMarkup(createElement(MarkedModels, { marks }));
+    expect(html.match(/aria-label="Confirmed by Home Depot&#x27;s page"/g)).toHaveLength(1);
+    expect(modelMarks(cannotTell, ['A21701'])).toBeNull();
+  });
+  it('shows the working row as sent, and hints at Chrome only while it is closed', () => {
+    const f = { state: 'running' as const, doing: 'Waiting for Chrome to read the Home Depot pages this needs', tried: [], roundsLeft: 2 };
+    const open = renderToStaticMarkup(createElement(WorkingCard, { followUp: f, id: 'c' }));
+    const closed = renderToStaticMarkup(createElement(WorkingCard, { followUp: f, id: 'c', chromeClosed: true }));
+    expect(open).toContain('Waiting for Chrome to read the Home Depot pages this needs');
+    expect(open).not.toContain('Open Chrome');
+    expect(closed).toContain('Open Chrome so the app can read these pages.');
+    expect(closed).not.toContain('<button');
   });
 });

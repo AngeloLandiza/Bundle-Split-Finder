@@ -8,6 +8,30 @@ export function checkedLines(tried: FollowUpStep[]): { shown: FollowUpStep[]; re
   return { shown: tried.slice(0, CHECKED_VISIBLE), rest: tried.slice(CHECKED_VISIBLE) };
 }
 
+/** How many confirmed parts show on the card; the rest are in Details. */
+export const SETTLED_VISIBLE = 3;
+
+export function settledLines<T>(parts: T[]): { shown: T[]; rest: T[] } {
+  return { shown: parts.slice(0, SETTLED_VISIBLE), rest: parts.slice(SETTLED_VISIBLE) };
+}
+
+const modelKey = (m: string) => m.trim().toUpperCase();
+
+/** The question's models Home Depot's pages confirmed, as a set to ask of a reading's models. Empty when the agent sent none. */
+export function settledModelSet(q: Pick<ReviewQuestion, 'settledParts'>): Set<string> {
+  return new Set((q.settledParts ?? []).map((p) => modelKey(p.model)));
+}
+
+/**
+ * Whether a choice's models are marked: only when the agent said some parts are settled, and then each model on its own
+ * (settled: confirmed by Home Depot's page; not settled: no mark).
+ */
+export function modelMarks(q: Pick<ReviewQuestion, 'settledParts'>, models: string[]): { model: string; settled: boolean }[] | null {
+  const set = settledModelSet(q);
+  if (set.size === 0 || models.length === 0) return null;
+  return models.map((model) => ({ model, settled: set.has(modelKey(model)) }));
+}
+
 /** A source link's label from its address when the step names none: "Home Depot", "Amazon", else the host. */
 export function stepSource(url: string): string {
   try {

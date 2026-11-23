@@ -453,6 +453,17 @@ export interface ReviewQuestion {
   brief?: ReviewBrief;
   /** What the app did on its own about this question; absent when it did nothing (or from an older agent). */
   followUp?: FollowUp;
+  /** Parts of the one reading Home Depot's own pages confirmed, with what each is. Absent unless some were. */
+  settledParts?: SettledPart[];
+  /** The models the question is still about when some parts were confirmed. Absent unless some were. */
+  unsettledParts?: string[];
+}
+
+/** A part Home Depot's page confirmed: its model, what the page says it is, and the page's link when there is one. */
+export interface SettledPart {
+  model: string;
+  what: string;
+  url?: string;
 }
 
 /** The agent's answer to Ask AI (POST /api/review/:id/ask): queued, or why nothing was started. */

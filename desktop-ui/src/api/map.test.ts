@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type * as C from '@core/api/contract';
 import type { PartRow } from '@core/scan/types';
 import { mergePatch } from '../lib/patch';
-import { csvSort, gradeOf, mapEvent, mapRow, mapState, mapSuggestion, readBrief, readFollowUp, scanResult, splitEvidenceOf } from './map';
+import { csvSort, gradeOf, mapEvent, mapRow, mapState, mapSuggestion, readBrief, readFollowUp, readSettled, scanResult, splitEvidenceOf } from './map';
 import { backoffMs, createSseParser } from './sse';
 
 const part = (p: Partial<PartRow>): PartRow =>
@@ -234,5 +234,20 @@ describe('what the app did about a question', () => {
     const counts = (c: object) => mapState({ ...state, counts: { review: 3, autopilotApplied: 0, newDeals: 0, jobsWaiting: 0, ...c } } as unknown as C.AgentState).counts;
     expect(counts({ reviewWorking: 2 })).toEqual({ review: 3, autopilotApplied: 0, newDeals: 0, reviewWorking: 2 });
     expect(counts({})).not.toHaveProperty('reviewWorking');
+  });
+});
+
+describe('settled and unsettled parts', () => {
+  it('maps the two optional fields and drops what is malformed', () => {
+    const got = readSettled({
+      settledParts: [{ model: ' A21701 ', what: '7-Piece 5 in. Random Orbit Sand Paper Assortment Set', url: 'https://www.homedepot.com/p/1' }, { model: 'X' }, { model: '', what: 'y' }, { model: 'B1', what: 'no link' }],
+      unsettledParts: ['PCL406424SB', 3, ' A25RS51 ', ''],
+    });
+    expect(got.settledParts).toEqual([{ model: 'A21701', what: '7-Piece 5 in. Random Orbit Sand Paper Assortment Set', url: 'https://www.homedepot.com/p/1' }, { model: 'B1', what: 'no link' }]);
+    expect(got.unsettledParts).toEqual(['PCL406424SB', 'A25RS51']);
+  });
+  it('maps nothing when both are absent', () => {
+    expect(readSettled({})).toEqual({});
+    expect(readSettled({ settledParts: [], unsettledParts: [] })).toEqual({});
   });
 });

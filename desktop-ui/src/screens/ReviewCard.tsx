@@ -1,12 +1,12 @@
 import { useState, type ReactNode } from 'react';
-import type { AiSuggestion, FollowUp, FollowUpStep, Quote as Quote_, ReviewBrief, ReviewQuestion } from '../api/types';
+import type { AiSuggestion, FollowUp, FollowUpStep, Quote as Quote_, ReviewBrief, ReviewQuestion, SettledPart } from '../api/types';
 import { SourceLink } from '../components/Source';
 import { Spinner } from '../components/States';
 import { Tag } from '../components/Tag';
 import { money } from '../lib/format';
 import { plainReason } from '../lib/questionWords';
 import { ownerCheck } from '../lib/reviewBrief';
-import { checkedLines, groupBySource, stepSource, suggestionChip } from './reviewModel';
+import { checkedLines, settledLines, groupBySource, stepSource, suggestionChip } from './reviewModel';
 import './ReviewCard.css';
 
 /** What the chip on the card says, by the brief's state; no chip when there is nothing to label. */
@@ -31,7 +31,7 @@ function Where({ label, url }: { label: string; url?: string | null }) {
  * the one thing to Check. Everything else the question holds is in Details. A suggestion is the AI's, never the owner's
  * answer, and the chip says whether the code could confirm it (HAX G10, G11; PAIR explainability).
  */
-export function DecisionCard({ brief, id, fromAi, followUp, note }: { brief: ReviewBrief; id: string; fromAi: boolean; followUp?: FollowUp; note?: ReactNode }) {
+export function DecisionCard({ brief, id, fromAi, followUp, note, settled = [], unsettled = [] }: { brief: ReviewBrief; id: string; fromAi: boolean; followUp?: FollowUp; note?: ReactNode; settled?: SettledPart[]; unsettled?: string[] }) {
   const chip = CHIP[brief.state];
   const first = brief.reasons[0];
   // The app has been through this and could not settle it: the sentence says what is still missing, in the words the
@@ -58,6 +58,19 @@ export function DecisionCard({ brief, id, fromAi, followUp, note }: { brief: Rev
       ) : (
         <p className="card-main card-sentence card-quiet">No suggestion yet.</p>
       )}
+
+      {unsettled.length > 0 ? (
+        <p className="card-unsettled">
+          <span>Still to settle:</span>
+          {unsettled.map((m) => (
+            <Tag key={m} tone="neutral">
+              <span className="code">{m}</span>
+            </Tag>
+          ))}
+        </p>
+      ) : null}
+
+      <Settled parts={settled} />
 
       {checked.length > 0 ? (
         <div className="card-part">
@@ -104,6 +117,31 @@ export function DecisionCard({ brief, id, fromAi, followUp, note }: { brief: Rev
   );
 }
 
+/** What Home Depot's own pages confirmed, one line each: the model, what it is, and the page. The rest are in Details. */
+function Settled({ parts }: { parts: SettledPart[] }) {
+  if (parts.length === 0) return null;
+  const { shown, rest } = settledLines(parts);
+  return (
+    <div className="card-part">
+      <p className="card-label">Confirmed by Home Depot</p>
+      <ul className="card-why card-settled">
+        {shown.map((p) => (
+          <li key={p.model}>
+            <span className="code">{p.model}</span> {p.what}
+            {p.url ? (
+              <>
+                {' '}
+                <Where label="Home Depot" url={p.url} />
+              </>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {rest.length ? <p className="card-more">{rest.length} more in Details</p> : null}
+    </div>
+  );
+}
+
 /**
  * What the app did on its own, one line each: what it did, what came of it, and where, when it has an address. At most
  * CHECKED_VISIBLE lines; the rest are in Details.
@@ -134,7 +172,7 @@ function Checked({ tried }: { tried: FollowUpStep[] }) {
  * The card while the app is still working on the question: neutral, never a suggestion. What it is doing now with the
  * spinner, and what it has tried so far. He can answer early; the choices below say so.
  */
-export function WorkingCard({ followUp, id }: { followUp: FollowUp; id: string }) {
+export function WorkingCard({ followUp, id, chromeClosed = false }: { followUp: FollowUp; id: string; chromeClosed?: boolean }) {
   const doing = followUp.doing ?? (followUp.state === 'queued' ? 'Waiting to start' : 'Checking');
   return (
     <section className="card card-working" id={id} aria-label="The app is working on this" aria-busy="true">
@@ -146,6 +184,7 @@ export function WorkingCard({ followUp, id }: { followUp: FollowUp; id: string }
         <Spinner size={14} />
         <span>{doing}</span>
       </p>
+      {chromeClosed ? <p className="card-hint">Open Chrome so the app can read these pages.</p> : null}
       {followUp.tried.length > 0 ? (
         <div className="card-part">
           <p className="card-label">What the app has checked so far</p>
@@ -226,6 +265,24 @@ export function Details({ q, s }: { q: ReviewQuestion; s: AiSuggestion | null })
     >
       <summary>Details</summary>
       <div className="detail-body">
+        {settledLines(q.settledParts ?? []).rest.length > 0 ? (
+          <section className="detail-sec">
+            <h3>Also confirmed by Home Depot</h3>
+            <ul className="detail-quotes">
+              {settledLines(q.settledParts ?? []).rest.map((p) => (
+                <li key={p.model}>
+                  <span className="code">{p.model}</span> {p.what}
+                  {p.url ? (
+                    <>
+                      {' '}
+                      <Where label="Home Depot" url={p.url} />
+                    </>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         {q.followUp && q.followUp.tried.length > 0 ? (
           <section className="detail-sec">
             <h3>What the app checked</h3>
