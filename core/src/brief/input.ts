@@ -89,6 +89,11 @@ export function foundQuotes(s: Suggestion, pool: readonly PoolLine[], models: re
   return [...found.filter((q) => names(q.text, models)), ...found.filter((q) => !names(q.text, models))].slice(0, MAX_BRIEF_QUOTES);
 }
 
+/** The links a question's brief may send the owner to, from the sources its evidence holds. */
+export function linksOfEvidence(evidence: AssistEvidence): BriefSourceLink[] {
+  return evidence.sources.filter((s) => s.url !== null).map((s) => ({ label: s.label, url: s.url!, source: s.kind === 'listing' ? 'amazon' : 'homedepot' }));
+}
+
 const ASKS = { split: 'What is inside this bundle?', match: 'Which Amazon listing is this part?' } as const;
 
 /** "PBP003" twice reads "2 × PBP003". */

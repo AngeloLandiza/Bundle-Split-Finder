@@ -8,10 +8,9 @@
 import { pipelinesFrom } from '../core/src/ai/factory';
 import { gatherEvidence } from '../core/src/assist/evidence';
 import { liveSuggestion, type StoredBriefMeta, type StoredSuggestion } from '../core/src/assist/stored';
-import { briefInputOf, type BriefSourceLink, poolOfEvidence } from '../core/src/brief/input';
+import { briefInputOf, linksOfEvidence, poolOfEvidence } from '../core/src/brief/input';
 import { BRIEF_PROMPT_VERSION } from '../core/src/brief/prompt';
 import { type BriefModel, estimatedBriefCost, worthABrief, writeBrief } from '../core/src/brief/pipeline';
-import type { AssistEvidence } from '../core/src/assist/types';
 import type { ReviewItem, ScanStore } from '../core/src/scan/types';
 import type { AiPassResult } from './aiPass';
 import type { Store } from './store';
@@ -46,11 +45,6 @@ export interface BriefPassResult {
 }
 
 const inFlight = new WeakMap<object, Set<string>>();
-
-/** The links a question's brief may send the owner to, from the sources its evidence holds. */
-export function linksOf(evidence: AssistEvidence): BriefSourceLink[] {
-  return evidence.sources.filter((s) => s.url !== null).map((s) => ({ label: s.label, url: s.url!, source: s.kind === 'listing' ? 'amazon' : 'homedepot' }));
-}
 
 /** A suggestion that has a brief, or was tried lately, is left alone. */
 const needsBrief = (s: StoredSuggestion, now: number): boolean => s.brief === undefined && (s.briefMeta === undefined || now - s.briefMeta.at >= RETRY_AFTER_MS);
@@ -102,7 +96,7 @@ export async function briefPass(ctx: BriefCtx, opts: { only?: string[]; limit?: 
     busy.add(key);
     try {
       const evidence = await gatherEvidence(ctx.scanStore, now);
-      const input = briefInputOf(now, live.suggestion, poolOfEvidence(evidence), linksOf(evidence));
+      const input = briefInputOf(now, live.suggestion, poolOfEvidence(evidence), linksOfEvidence(evidence));
       if (!worthABrief(input)) {
         keep(ctx, key, undefined, { at: ctx.now(), provider: model.provider, model: model.model, promptVersion: BRIEF_PROMPT_VERSION, called: false, costUsd: null, fellBack: 'No quote of the suggestion was found on its page.' });
         continue;

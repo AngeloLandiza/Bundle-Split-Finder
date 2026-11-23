@@ -20,6 +20,7 @@
     "relay:dev": "tsx scripts/relay-dev.ts",
     "agent:dashboard": "tsx agent/server.ts",
     "judge:eval": "tsx scripts/judge-eval.ts",
+    "brief:eval": "tsx scripts/brief-eval.ts",
     "assist:eval": "tsx scripts/assist-eval.ts",
     "research:eval": "tsx scripts/research-eval.ts",
     "fixtures:record": "tsx scripts/record-fixtures.ts",
