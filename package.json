@@ -32,7 +32,7 @@
     "desktop:bundle-agent": "tsx desktop/bundle-agent.ts",
     "desktop:dev": "npm run desktop:build-ui && node desktop/dev-agent.mjs && tauri dev",
     "desktop:build": "tauri build",
-    "desktop:build:windows": "tauri build",
+    "desktop:build:windows": "node desktop/build-windows.mjs",
     "test:e2e": "SPLIT_FINDER_E2E=1 wxt build && SPLIT_FINDER_E2E=1 playwright test",
     "audit": "tsx scripts/audit.ts"
   },
