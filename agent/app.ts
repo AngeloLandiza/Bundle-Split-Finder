@@ -437,7 +437,8 @@ export function createAgent(opts: AgentOptions): Agent {
   });
 
   // Nov 23: questions opened for bundles whose page was never read are withdrawn once at start (the next scan would too).
-  void work.withdrawWaitingQuestions().catch(() => 0);
+  // Signals round 2: then the deals rebuilt and their buy signals judged, with what is stored now (no network).
+  void work.withdrawWaitingQuestions().then(() => work.signalsAtStart()).catch(() => 0);
 
   const state = () => {
     const data = Object.fromEntries(COLLECTIONS.map((n) => [n, store.get(n)])) as unknown as StoreData;

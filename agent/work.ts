@@ -31,7 +31,7 @@ import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep, NOTICE as EBAY_N
 import { PaidProblem, lookupsNeeded, quotePaid, runPaid, savedAnswers } from '../core/src/scan/paid';
 import { addSamples, pipelineOf, pipelineView, samplesOf, type PipelineView } from '../core/src/scan/pipeline';
 import { postScanWork } from '../core/src/scan/postScan';
-import { buildReport, partRowsFor } from '../core/src/scan/report';
+import { partRowsFor } from '../core/src/scan/report';
 import { bogoFromBody, bogoView, freeParts, type BogoView } from '../core/src/tracking/bogo';
 import {
   bogoDigestLines, bogoGroups, mergeBogoPairs, pairBundleRecord, pairFacts, pairsBehindBest, readBogoPass, todayOf, type BogoBrandResult, type BogoGroup,
@@ -54,6 +54,7 @@ import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { checksWaiting, verifyMatchesWithKeepa } from './verifyMatches';
+import { evaluateSignals, pullKeepingTrends, pullSales, reportWithTrends, salesPullsWanted, type SignalsDeps } from './signalsPass';
 import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
 import { reverifyPass, wantedReads, withEvidenceKey } from './reverify';
@@ -186,6 +187,49 @@ export class AgentWork {
     mkdirSync(deps.dataDir, { recursive: true });
     this.scanStore = new FileScanStore(join(deps.dataDir, 'scan'));
     this.cache = new DirCache(join(deps.dataDir, 'cache'));
+    this.dealsAtStart = deps.store.get('deals').bundles.length > 0;
+  }
+
+  // ------------------------------------------------------------------ signals round 2: buy signals between scans
+
+  /** Whether the store held deals when the agent started: only then does the start rebuild them and judge their signals. */
+  private readonly dealsAtStart: boolean;
+
+  private signalsDeps(): SignalsDeps {
+    return {
+      store: this.d.store, cache: this.cache, now: this.d.now, policy: this.policy,
+      telegram: async (text) => {
+        await this.sendTelegram(text);
+      },
+      keepa: () => {
+        const app = this.d.store.get('settings');
+        return Boolean(this.d.store.get('keys').keepa) && app.settings.amazonRefreshViaKeepa && app.lookups?.drip !== false;
+      },
+    };
+  }
+
+  /**
+   * Signals round 2: a bundle's estimate or completeness may have changed (the report was just rebuilt between scans), so
+   * its signals are judged again (agent/signalsPass.ts). A scan judges its own at its end (trackScan).
+   */
+  private async afterChange(report: ScanReport, extra?: { text: string; count: number }): Promise<void> {
+    if (this.live.busy === 'scan') return;
+    try {
+      await evaluateSignals(this.signalsDeps(), report, extra);
+    } catch (err) {
+      this.addError(`Buy signals could not be judged: ${scrub(sentenceOf(err), this.d.store.get('keys'))}`, null);
+    }
+  }
+
+  /**
+   * Signals round 2, at start: the deals rebuilt with what is stored now (the fee settings, Keepa's FBA fees) and their
+   * signals judged, so an estimate made after the last scan (by the drip, before a restart) is judged too. Nothing is
+   * fetched. Only when the store held deals at start.
+   */
+  async signalsAtStart(): Promise<void> {
+    if (!this.dealsAtStart || this.live.busy !== null) return;
+    if ((await this.scanStore.listBundles()).length === 0) return;
+    await this.refresh();
   }
 
   // ------------------------------------------------------------------ state and the schedule
@@ -379,7 +423,7 @@ export class AgentWork {
   private dripActive = false;
   private dripWaiting = 0;
   private dripNextAt: number | null = null;
-  private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number; verified: number; removed: number } | null = null;
+  private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number; verified: number; removed: number; sales: number } | null = null;
 
   /** Whether the drip may run now: its setting on, a Keepa key, Keepa on, not paused, and nothing else running. */
   private dripAllowed(): boolean {
@@ -441,7 +485,9 @@ export class AgentWork {
     this.dripWaiting = work.lookups.length;
     // Catalog check: with no lookup waiting, the drip still runs for title matches and questions Amazon's catalog may settle.
     const checks = keys.keepa && work.lookups.length === 0 ? await checksWaiting(this.scanStore) : 0;
-    if ((work.lookups.length === 0 && checks === 0) || !keys.keepa) {
+    // Signals round 2: and for the sales figures watched deals miss only for want of a pull.
+    const sales = keys.keepa ? salesPullsWanted(store.get('tracking')).length : 0;
+    if ((work.lookups.length === 0 && checks === 0 && sales === 0) || !keys.keepa) {
       if (prices > 0) await this.refresh();
       return;
     }
@@ -455,7 +501,9 @@ export class AgentWork {
     }
     const before = this.estimatedKeys();
     const catalog = (await knownModels(this.scanStore)).catalog;
-    const done = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0, verified: 0, removed: 0 };
+    const done = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0, verified: 0, removed: 0, sales: 0 };
+    // Signals round 2: every product pull keeps its Keepa trend (sales, FBA fee), as a scan's refresh does.
+    const product = pullKeepingTrends(this.cache, (asin, label, maxAgeMs) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: ext.trackingDepth }));
     for (const key of work.lookups) {
       if (!this.dripAllowed() || this.dripCtl.signal.aborted) break;
       if (budget.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE) !== null) break;
@@ -467,7 +515,7 @@ export class AgentWork {
         out = await keepaLookupOne({
           store: this.scanStore, settings, now: this.d.now, keepaBudget: budget, catalog, prefix: 'agent:drip',
           keepaLookup: (brand, model, label) => keepaLookupSearchResult(keepa, `${brand} ${model}`, { label }),
-          keepaProduct: (asin, label, maxAgeMs) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: ext.trackingDepth }),
+          keepaProduct: product,
         }, step);
       } catch (err) {
         // A refusal or a network error: the part keeps waiting; the next look is after DRIP_POLL_MS.
@@ -493,7 +541,7 @@ export class AgentWork {
       try {
         const v = await verifyMatchesWithKeepa({
           store: this.scanStore, catalog, now: this.d.now, keepaBudget: budget, trackingDepth: ext.trackingDepth,
-          keepaProduct: (asin, label) => keepaProductSearchResult(keepa, asin, { label, trackingDepth: ext.trackingDepth }),
+          keepaProduct: (asin, label) => product(asin, label),
           shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
         });
         done.verified += v.verified;
@@ -504,25 +552,35 @@ export class AgentWork {
         if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
       }
     }
+    // Signals round 2: then the sales pulls (1 token each), for watched deals' parts Keepa was never asked about.
+    if (this.dripWaiting === 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
+      try {
+        const s = await pullSales({
+          store: this.scanStore, cache: this.cache, keepaBudget: budget, pull: product, trackingDepth: ext.trackingDepth,
+          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
+        }, salesPullsWanted(store.get('tracking')));
+        done.sales += s.pulled;
+        done.tokens += s.tokens;
+      } catch (err) {
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      }
+    }
     this.dripActive = false;
     // The next look: when a lookup's tokens will have refilled above the reserve, and never sooner than DRIP_POLL_MS.
     const left = (budget.knownBalance ?? status.tokensLeft) - ext.keepaReserve;
     const short = KEEPA_LOOKUP_TOKEN_ESTIMATE - left;
     const perMin = status.refillRate > 0 ? status.refillRate : 1;
     this.dripNextAt = this.d.now() + Math.max(DRIP_POLL_MS, short > 0 ? Math.ceil(short / perMin) * 60_000 : 0);
-    if (done.looked === 0 && done.verified === 0 && done.removed === 0) {
+    if (done.looked === 0 && done.verified === 0 && done.removed === 0 && done.sales === 0) {
       if (prices > 0 || done.tokens > 0) await this.refresh();
       return;
     }
-    await this.refresh();
+    const report = await this.rebuild();
     this.dripRecord(done);
     const fresh = [...this.estimatedKeys()].filter((k) => !before.has(k)).length;
-    if (fresh > 0) {
-      const text = `Keepa lookups between scans gave ${fresh} new ${fresh === 1 ? 'estimate' : 'estimates'} (from your fee settings, not your real fees).`;
-      const tg = this.policy.digest({ kind: 'deal', title: 'Split Finder', body: text, count: fresh, route: '/' }, text);
-      const problem = await this.sendTelegram(tg);
-      if (problem) this.addError(problem, { kind: 'telegram', label: 'Send again', searches: 0, usd: 0 });
-    }
+    const text = `Keepa lookups between scans gave ${fresh} new ${fresh === 1 ? 'estimate' : 'estimates'} (from your fee settings, not your real fees).`;
+    // Signals round 2: the new estimates' buy signals go in the same message.
+    await this.afterChange(report, fresh > 0 ? { text, count: fresh } : undefined);
   }
 
   /** Step 15: the free Home Depot part prices a scan left, read in the paired Chrome while nothing else runs. Returns how many were saved. */
@@ -565,14 +623,14 @@ export class AgentWork {
    * One Activity run an hour of drip: "Looked up 6 parts with Keepa: 4 matched, 2 no Amazon listing." and, from the catalog
    * check, "Verified 6 listings from Amazon's catalog; 1 did not match and was removed."
    */
-  private dripRecord(done: { looked: number; matched: number; none: number; review: number; tokens: number; verified: number; removed: number }): void {
+  private dripRecord(done: { looked: number; matched: number; none: number; review: number; tokens: number; verified: number; removed: number; sales: number }): void {
     const now = this.d.now();
     if (!this.dripRun || now - this.dripRun.startedAt >= DRIP_RUN_MS) {
       const record: RunRecord = {
         id: `run-${now}-drip`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: null, status: 'finished', searchesUsed: 0, keepaTokensUsed: 0,
         aiCostUsd: 0, summary: '', trigger: 'scheduled',
       };
-      this.dripRun = { record, startedAt: now, looked: 0, matched: 0, none: 0, review: 0, verified: 0, removed: 0 };
+      this.dripRun = { record, startedAt: now, looked: 0, matched: 0, none: 0, review: 0, verified: 0, removed: 0, sales: 0 };
     }
     const r = this.dripRun;
     r.looked += done.looked;
@@ -581,11 +639,13 @@ export class AgentWork {
     r.review += done.review;
     r.verified += done.verified;
     r.removed += done.removed;
+    r.sales += done.sales;
     r.record.keepaTokensUsed += done.tokens;
     r.record.finishedAt = new Date(now).toISOString();
     const parts = [`${r.matched} matched`, ...(r.none > 0 ? [`${r.none} no Amazon listing`] : []), ...(r.review > 0 ? [`${r.review} to review`] : [])];
     const looked = r.looked > 0 ? `Looked up ${r.looked} ${r.looked === 1 ? 'part' : 'parts'} with Keepa: ${parts.join(', ')}.` : null;
-    r.record.summary = [looked, catalogSentence(r.verified, r.removed)].filter(Boolean).join(' ');
+    const sales = r.sales > 0 ? `Read sales figures for ${r.sales} ${r.sales === 1 ? 'listing' : 'listings'} from Keepa.` : null;
+    r.record.summary = [looked, catalogSentence(r.verified, r.removed), sales].filter(Boolean).join(' ');
     this.record({ ...r.record });
   }
 
@@ -784,7 +844,7 @@ export class AgentWork {
       if (ai.problem) notes.push(ai.problem);
       if (ai.waitingForChrome > 0) notes.push(`${ai.waitingForChrome} split ${ai.waitingForChrome === 1 ? 'question waits' : 'questions wait'} for Chrome.`);
       applied = await this.autopilot();
-      if (applied > 0 || ai.asked > 0) report = await buildReport(this.scanStore, toScanSettings(extensionSettingsOf(store.get('settings'))));
+      if (applied > 0 || ai.asked > 0) report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(store.get('settings'))), this.cache);
       await this.publish(report);
       await this.trackScan(report);
       const tg = await this.message(report, job, applied);
@@ -1078,7 +1138,7 @@ export class AgentWork {
     const trend = await this.trendsFor(report);
     const alerts = this.d.store.get('settings').alerts;
     const now = this.d.now();
-    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now) }));
+    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: this.signalsDeps().keepa() }) }));
   }
 
   /** What the views show beside each deal: its BOGO promotion's estimate and the FBA-fee estimate, from stored data. */
@@ -1360,9 +1420,19 @@ export class AgentWork {
     return ids.length;
   }
 
-  /** The report rebuilt from the scan's store, for the app (after an answer, an undo, a Look up). */
-  async refresh(): Promise<void> {
-    await this.publish(await buildReport(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings')))));
+  /**
+   * The report rebuilt from the scan's store, for the app (after an answer, an undo, a Look up), with the stored Keepa
+   * trends (each part's FBA fee). Signals round 2: then the signals judged again, with `extra` in the same message.
+   */
+  async refresh(extra?: { text: string; count: number }): Promise<void> {
+    await this.afterChange(await this.rebuild(), extra);
+  }
+
+  /** The report rebuilt and published, without judging signals. */
+  private async rebuild(): Promise<ScanReport> {
+    const report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(this.d.store.get('settings'))), this.cache);
+    await this.publish(report);
+    return report;
   }
 
   /** Ask AI now, about one question or every open one (the app's buttons). Runs in the background. */

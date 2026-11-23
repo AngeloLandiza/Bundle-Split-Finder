@@ -44,7 +44,8 @@ import { plainVerification } from '../core/src/assist/plain';
 import { briefForQuestion, ebayBrief } from '../core/src/brief/view';
 import { choicesOf, reviewSignature } from '../core/src/scan/answers';
 import { matchState, WAITING_PAGE, WAITING_PARTS } from '../core/src/scan/matchState';
-import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
+import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type PartRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
+import { estimateBasis } from '../core/src/scan/report';
 import type { AuditBundle, StoreData, StoredKeys } from './store';
 
 const monthStartMs = (now: number): number => {
@@ -113,6 +114,7 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
     ? {
         watched: tracking.watch[b.key]?.watched === true,
         buyNow: tracking.watch[b.key]?.watched === true && (tracking.signals[b.key]?.buyNow ?? null) !== null,
+        ...(tracking.watch[b.key]?.watched === true && tracking.signals[b.key]?.verdict ? { signalNote: tracking.signals[b.key]!.verdict! } : {}),
         bogo: tracking.bogo[b.key] ? (tracking.bogo[b.key]!.chosen.length > 0 ? ('chosen' as const) : ('choose' as const)) : null,
         bogoPair: pair ? bogoTagOf(pair) : null,
         bogoChoices: group ? { label: group.label, count: group.choices.length, bestId: group.best?.key ?? null, best: group.best?.key === b.key } : null,
@@ -217,12 +219,12 @@ export function dealsResponse(
   };
 }
 
-const pct = (rate: number): string => `${Math.round(rate * 10_000) / 100}%`;
-const usd = (n: number): string => `$${n.toFixed(2)}`;
-
-/** The fee settings in one sentence (rule 5: the estimate says what it rests on). */
-export function feeBasis(fees: StoreData['settings']['settings']['fees']): string {
-  return `${pct(fees.referralRate)} referral (at least ${usd(fees.minReferral)}), ${usd(fees.fulfillmentFee)} fulfillment, ${pct(fees.salesTaxRate)} tax, ${usd(fees.inboundCost)} inbound. An estimate from your fee settings, not your real Amazon fees.`;
+/**
+ * The fees an estimate rests on in one sentence (rule 5). Signals round 2: with Keepa's FBA fee on, which parts took it and
+ * which took the flat fee (core's estimateBasis); `parts` are the counted parts, each with the fees the estimate used.
+ */
+export function feeBasis(fees: StoreData['settings']['settings']['fees'], parts: Pick<PartRow, 'model' | 'qty' | 'fees'>[] = []): string {
+  return estimateBasis(fees, parts);
 }
 
 function estimateOf(b: BundleRow, fees: StoreData['settings']['settings']['fees']): DealEstimate | null {
@@ -235,7 +237,7 @@ function estimateOf(b: BundleRow, fees: StoreData['settings']['settings']['fees'
     cost: b.estimate.cost,
     partsSellFor: Math.round(partsSellFor * 100) / 100,
     afterFees: b.estimate.netRevenue,
-    basis: feeBasis(fees),
+    basis: feeBasis(fees, b.parts.filter((p) => !uncovered.has(p.model))),
     // Nov 23: an estimate exists only when every model part is priced, so only items with no model number are left
     // here; DEFAULT_SCAN_SETTINGS.liquidationRate is 0, so they are not counted until the owner confirms a price.
     countedAtZero: DEFAULT_SCAN_SETTINGS.liquidationRate === 0 ? [...b.uncovered] : [],
@@ -288,7 +290,7 @@ function incompleteEstimateOf(
   return {
     ...incompleteOf(b)!,
     cost: i.cost,
-    basis: feeBasis(fees),
+    basis: feeBasis(fees, (primary?.parts ?? []).filter((p) => p.fees !== undefined)),
     parts,
     notCounted: (primary?.unnamed ?? []).filter((x) => x.price === null).map((x) => x.name),
     soldAs: sold.length ? sold.join('; ') : null,
@@ -303,7 +305,7 @@ export function watchStateOf(tracking: Tracking | undefined, key: string): Watch
 }
 
 export function signalsView(s: BundleSignals | undefined): DealSignals | null {
-  return s ? { at: iso(s.at), buyNow: s.buyNow, signals: s.signals, options: s.options } : null;
+  return s ? { at: iso(s.at), ...(s.verdict ? { verdict: s.verdict } : {}), buyNow: s.buyNow, signals: s.signals, options: s.options } : null;
 }
 
 export function historyView(points: readonly HistoryPoint[] | undefined): DealHistoryPoint[] {

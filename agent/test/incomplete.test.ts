@@ -48,7 +48,10 @@ describe('a deal missing a price, in the agent\'s views', () => {
       // The kit's page is not read yet (only Home Depot's part page named it): the next scan, or the drip, reads it.
       parts: [{ model: 'DCK200D1P1', qty: 1, state: 'no_listing', action: 'confirm_price', questionId: null, kit: { pageRead: false, parts: null, waiting: 0 } }],
     });
-    expect(kit.incompleteEstimate!.basis).toMatch(/An estimate from your fee settings, not your real Amazon fees\.$/);
+    // Signals round 2: Keepa's FBA fee is the default; the priced part has none stored here, so the flat $0 is said to stand in.
+    expect(kit.incompleteEstimate!.basis).toBe(
+      '15% referral (at least $0.30); no FBA fee from Keepa stored for the 1 part yet, so your flat $0.00 fulfillment; 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.',
+    );
     const review = dealDetail(d, key('DCK540D1WCF860B'))!;
     expect(review.incompleteEstimate!.parts).toEqual([{ model: 'DCF860B', qty: 1, state: 'review', action: 'answer', questionId: 'match:DEWALT:DCF860B' }]);
     const waiting = dealDetail(d, key('PCL1201K2-PCL430B'))!;

@@ -210,6 +210,8 @@ export interface AgentRuntime {
   keyProblems?: Partial<Record<KeyName, string>>;
   /** Step 15: one-time changes to stored data already made (applyMigrations), by name. */
   migrations?: string[];
+  /** Signals round 2: what a one-time change did to the owner's settings, in plain words, with when (ISO). */
+  migrationLog?: { name: string; at: string; sentence: string }[];
   /** Step 15: the drip's last look at Keepa and its last lookup (epoch ms). */
   drip?: { checkedAt: number | null; lastLookupAt: number | null };
   /** Deal keys already named in a message: a deal alerts once. */
@@ -422,6 +424,14 @@ const OLD_KEEPA_TOKENS_PER_SCAN = 5;
  */
 export const BRIEF_OPUS_MIGRATION = 'brief-model-opus';
 
+/**
+ * Signals round 2 (Nov 23): every estimate left out Amazon's fulfillment fee, because the flat fee was still the $0
+ * default. A store whose fees name no fulfillment source takes Keepa's FBA fee ('keepa') when its flat fee is 0, and keeps
+ * the flat fee ('flat') when the owner set one; once. One who chooses a flat $0 afterwards keeps it. The referral rate is
+ * never changed here (referralSource stays 'flat': his own rate). Logged in runtime.migrations and in `migrationLog`.
+ */
+export const FULFILLMENT_KEEPA_MIGRATION = 'fulfillment-fee-from-keepa';
+
 /** Applies each one-time change not made yet; returns the collections it changed. */
 export function applyMigrations(data: StoreData): CollectionName[] {
   const before = data.runtime.migrations ?? [];
@@ -442,8 +452,21 @@ export function applyMigrations(data: StoreData): CollectionName[] {
     }
     done.add(BRIEF_OPUS_MIGRATION);
   }
+  const log: { name: string; at: string; sentence: string }[] = [];
+  if (!done.has(FULFILLMENT_KEEPA_MIGRATION)) {
+    const fees = data.settings.settings.fees;
+    if (fees.fulfillmentSource === undefined) {
+      const source = fees.fulfillmentFee === 0 ? 'keepa' : 'flat';
+      data.settings = { ...data.settings, settings: { ...data.settings.settings, fees: { ...fees, fulfillmentSource: source, referralSource: fees.referralSource ?? 'flat' } } };
+      changed.add('settings');
+      if (source === 'keepa') {
+        log.push({ name: FULFILLMENT_KEEPA_MIGRATION, at: new Date().toISOString(), sentence: "Fulfillment fee: Amazon's FBA fee from Keepa now, where Keepa has one for a part's listing; the flat fee was $0.00, which left the fee out. Your referral rate is unchanged." });
+      }
+    }
+    done.add(FULFILLMENT_KEEPA_MIGRATION);
+  }
   if (done.size === before.length) return [];
-  data.runtime = { ...data.runtime, migrations: [...done] };
+  data.runtime = { ...data.runtime, migrations: [...done], ...(log.length > 0 ? { migrationLog: [...(data.runtime.migrationLog ?? []), ...log] } : {}) };
   changed.add('runtime');
   return [...changed];
 }
