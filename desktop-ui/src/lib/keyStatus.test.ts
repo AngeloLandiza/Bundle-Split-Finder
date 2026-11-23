@@ -74,6 +74,8 @@ describe('a deal row’s reason line', () => {
   it('adds the BOGO group sentence, which no column shows', () => {
     const bogoChoices = { label: 'BOGO: 11 free-tool choices — best: PCL265B +$61.50 est.', count: 11, bestId: 'x', best: true };
     expect(dealReason(row({ bogoChoices }), wide)).toBe(bogoChoices.label);
+    // Only the group's best pair carries the sentence; the other pairs keep two lines.
+    expect(dealReason(row({ bogoChoices: { ...bogoChoices, best: false } }), wide)).toBeNull();
     expect(dealReason(row({ bogoChoices, matchState: '3 parts matched' }), narrow)).toBe(`3 parts matched · ${bogoChoices.label}`);
   });
   it('Nov 23: says how many parts are priced and the break-even for a bundle missing a price, wide or narrow', () => {

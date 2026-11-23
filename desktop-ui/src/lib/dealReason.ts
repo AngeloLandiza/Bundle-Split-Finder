@@ -42,6 +42,8 @@ export function dealReason(r: DealRow, o: { matchShown: boolean }): string | nul
     else if (!r.needsAnswer && r.matchState) parts.push(r.matchState);
   }
   if (r.incomplete && r.profit === null) parts.push(incompleteLine(r.incomplete));
-  if (r.bogoChoices?.label) parts.push(r.bogoChoices.label);
+  // The group's sentence once, on its best choice: the first real scan showed the same line under all eleven pairs of a
+  // promotion. The other pairs carry the BOGO tag, and the inspector lists every choice.
+  if (r.bogoChoices?.label && r.bogoChoices.best) parts.push(r.bogoChoices.label);
   return parts.length ? parts.join(' · ') : null;
 }
