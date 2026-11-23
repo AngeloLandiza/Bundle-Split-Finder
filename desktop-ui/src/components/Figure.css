@@ -8,6 +8,20 @@
   color: var(--loss);
 }
 
+/* An estimate before fulfillment: secondary colour, with its tag beside it (text says it, not colour alone). */
+.figure-profit.figure-quiet,
+.figure-profit.figure-quiet.loss {
+  color: var(--label-2);
+}
+
+.figure-before {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 100%;
+}
+
 .figure-md {
   font-size: 13px;
   line-height: 16px;

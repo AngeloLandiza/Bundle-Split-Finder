@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEALS } from '../api/mockData';
-import { bestDeals, buyNowDeals, dealVerdict } from './today';
+import { bestDeals, buyNowDeals, dealVerdict, oneLine } from './today';
 
 describe('a deal\'s one-line verdict on Today', () => {
   const row = (patch: Record<string, unknown>) => ({ ...DEALS[0]!, matchKind: null, lookup: null, ...patch }) as (typeof DEALS)[number];
@@ -15,6 +15,21 @@ describe('a deal\'s one-line verdict on Today', () => {
   it('says what a waiting row waits for, and nothing for a row with no state', () => {
     expect(dealVerdict(row({ matchKind: 'waiting_page', matchState: null }))?.text).toBe('Waiting for its Home Depot page');
     expect(dealVerdict(row({ matchState: null }))).toBeNull();
+  });
+});
+
+describe('the verdict as one short line', () => {
+  const long = 'Not worth buying now: est. profit $6.63 is below your $20, 4% ROI below your 20%, and DCS382B sells about 12 a month, below your 50';
+  it('leaves a short note whole and cuts a long one at its first clause break, keeping the whole for the tooltip', () => {
+    expect(oneLine('Worth buying now: +$21.14 (235% ROI)')).toBe('Worth buying now: +$21.14 (235% ROI)');
+    expect(oneLine(long)).toBe('Not worth buying now: est. profit $6.63 is below your $20');
+    const row = { ...DEALS[0]!, signalNote: long, matchKind: null, lookup: null };
+    expect(dealVerdict(row)).toEqual({ text: 'Not worth buying now: est. profit $6.63 is below your $20', fromAgent: true, full: long });
+  });
+  it('cuts at a word, with an ellipsis, when there is no clause break to use', () => {
+    const t = oneLine('x'.repeat(40) + ' ' + 'y'.repeat(70));
+    expect(t.endsWith('…')).toBe(true);
+    expect(t.length).toBeLessThanOrEqual(91);
   });
 });
 

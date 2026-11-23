@@ -82,7 +82,19 @@ function Detail({ d }: { d: DealDetail }) {
           <WatchBar d={d} />
         </header>
 
-        {d.signals ? <SignalsSection signals={d.signals} /> : null}
+        {d.signals ? (
+          <SignalsSection signals={d.signals} />
+        ) : d.signalNote ? (
+          // An unwatched bundle with an estimate: the same one sentence the row shortens, first in the inspector.
+          <section className="detail-section" aria-labelledby="verdict-title">
+            <h3 className="detail-section-title" id="verdict-title">
+              Verdict
+            </h3>
+            <div className="detail-box signals">
+              <p className="signals-sentence">{d.signalNote}</p>
+            </div>
+          </section>
+        ) : null}
 
         <section className="detail-box" aria-label={!e && d.incomplete ? 'Incomplete estimate' : 'Estimate'}>
           {!e && d.incomplete ? (
@@ -95,7 +107,7 @@ function Detail({ d }: { d: DealDetail }) {
                   <Roi value={e.roi} label />
                 </span>
               </div>
-              <p className="detail-estimate">Estimated profit</p>
+              <p className="detail-estimate">{d.beforeFulfillment && d.beforeFulfillment.parts > 0 ? `Estimated profit, before fulfillment for ${d.beforeFulfillment.parts} of ${d.beforeFulfillment.of} parts` : 'Estimated profit'}</p>
               <dl className="detail-figures">
                 <div>
                   <dt>Bundle costs</dt>

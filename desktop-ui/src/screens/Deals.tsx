@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import { ApiError, type DealRow, type DealSection, type DealSort } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
-import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
+import { Money, Roi, RoiRangeLine, RowProfit } from '../components/Figure';
 import { SearchField, Select } from '../components/Fields';
 import { InspectorSplit } from '../components/Layout';
 import { Page } from '../components/Page';
@@ -22,7 +22,9 @@ import { count, percentOff, plural, upToSearches, when } from '../lib/format';
 import { dealMenu, type DealMenuId } from '../lib/menus';
 import { SCREEN_KEYS } from '../lib/notices';
 import { breakEvenOrder, incompleteLine } from '../lib/incomplete';
+import { estimateRank } from '../lib/order';
 import { sortRows, type SortState } from '../lib/sort';
+import { oneLine } from '../lib/today';
 import { VIEW_LABEL, inView, type DealView } from '../lib/views';
 import { DealDetailPane } from './DealDetail';
 import { SECTION_LABEL, SECTION_ORDER } from './reviewModel';
@@ -45,10 +47,11 @@ function readSort(): SortState<Col> {
 /** A bundle that needs an answer has no figure to compare, so it sorts last (design.md, Deals row). */
 function sortValue(r: DealRow, key: Col): number | string | null {
   switch (key) {
+    // One rule with Today and the popover: an estimate before fulfillment never outranks a full one of the same sign.
     case 'profit':
-      return r.needsAnswer ? null : r.profit;
+      return estimateRank(r, 'profit');
     case 'roi':
-      return r.needsAnswer ? null : r.roi;
+      return estimateRank(r, 'roi');
     case 'off':
       return r.off;
     case 'price':
@@ -62,6 +65,14 @@ function sortValue(r: DealRow, key: Col): number | string | null {
     case 'watch':
       return r.watched ? 1 : 0;
   }
+}
+
+/** The line under a title: the agent's verdict as one short line (the whole sentence on hover), else the reason the columns do not say. */
+function lineOf(r: DealRow, matchShown: boolean): { text: string; full: string } | null {
+  const note = r.signalNote?.trim();
+  if (note) return { text: oneLine(note), full: note };
+  const reason = dealReason(r, { matchShown });
+  return reason ? { text: reason, full: reason } : null;
 }
 
 /** The Deals table in the content and the open bundle in the inspector; the sidebar picks the view. */
@@ -269,9 +280,9 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
             {r.brand} · <span className="code">{r.model}</span>
           </span>
           {/* Only when it adds something the other columns do not say; a row without one is two lines. */}
-          {dealReason(r, { matchShown }) ? (
-            <span className="deal-reason" title={dealReason(r, { matchShown }) ?? undefined}>
-              {dealReason(r, { matchShown })}
+          {lineOf(r, matchShown) ? (
+            <span className="deal-reason" title={lineOf(r, matchShown)?.full}>
+              {lineOf(r, matchShown)?.text}
             </span>
           ) : null}
         </div>
@@ -306,7 +317,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       width: 'col-fig-wide',
       render: (r) =>
         r.profit !== null && !r.needsAnswer ? (
-          <Profit value={r.profit} />
+          <RowProfit value={r.profit} before={r.beforeFulfillment} />
         ) : r.needsAnswer ? (
           // With the Match column hidden (a narrow list), the tag moves here so the row still says it.
           <span className="cell-flag">

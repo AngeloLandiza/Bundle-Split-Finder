@@ -1,5 +1,7 @@
 import type { RoiRange } from '../api/types';
 import { money, profit, roi, roiRange } from '../lib/format';
+import { beforeFulfillmentTip } from '../lib/order';
+import { Tag } from './Tag';
 import './Figure.css';
 
 /** A dollar amount in the figure face. */
@@ -11,6 +13,21 @@ export function Money({ value, className }: { value: number | null | undefined; 
 /** Estimated profit: +$118.40, or −$12.50 in the loss colour. */
 export function Profit({ value, size = 'md' }: { value: number; size?: 'md' | 'lg' | 'xl' }) {
   return <span className={`fig figure-profit figure-${size}${value < 0 ? ' loss' : ''}`}>{profit(value)}</span>;
+}
+
+/**
+ * A row's estimated profit. When the estimate leaves out Amazon's fulfillment fee for some parts it is shown in the secondary
+ * colour (never green, never the loss red) with a neutral "before fulfillment" tag beside it: said in words, not by colour.
+ */
+export function RowProfit({ value, before }: { value: number; before?: { parts: number; of: number } | null }) {
+  if (!before || before.parts <= 0) return <Profit value={value} />;
+  const tip = beforeFulfillmentTip(before);
+  return (
+    <span className="figure-before" title={tip}>
+      <Tag title={tip}>before fulfillment</Tag>
+      <span className="fig figure-profit figure-md figure-quiet">{profit(value)}</span>
+    </span>
+  );
 }
 
 /** ROI as a whole percent. */

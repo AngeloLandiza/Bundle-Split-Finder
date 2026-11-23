@@ -2,18 +2,19 @@ import type { ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import { isWorking, type AppState, type DealRow, type ReviewQuestion } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
-import { Profit, Roi, RoiRangeLine } from '../components/Figure';
+import { Roi, RoiRangeLine, RowProfit } from '../components/Figure';
 import { Glyph } from '../components/Glyph';
 import { Section } from '../components/Layout';
 import { Page } from '../components/Page';
 import { EmptyState, LoadError, LoadingState, Meter } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
 import { Tag } from '../components/Tag';
-import { keepaWords, rejectedKeys, rejectedKeysWords } from '../lib/keyStatus';
+import { feeLookupWords, keepaWords, rejectedKeys, rejectedKeysWords } from '../lib/keyStatus';
 import { count, money, percentOff, plural, usdSpend, when } from '../lib/format';
+import { isBeforeFulfillment } from '../lib/order';
 import { rowState } from '../lib/reviewBrief';
 import { SCREEN_KEYS } from '../lib/notices';
-import { bestDeals, buyNowDeals, dealVerdict } from '../lib/today';
+import { bestDeals, buyNowDeals, dealVerdict, estimatesBeforeFulfillment } from '../lib/today';
 import type { DealView } from '../lib/views';
 import { KIND_LABEL, workingNote } from './reviewModel';
 import './Today.css';
@@ -28,6 +29,7 @@ export function TodayScreen() {
 
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const best = bestDeals(deals.data?.rows ?? []);
+  const early = estimatesBeforeFulfillment(deals.data?.rows ?? []);
   // The last scan's verdicts lead when there are any; otherwise the best estimates (a loss is never a best deal).
   const buy = buyNowDeals(deals.data?.rows ?? []);
   return (
@@ -43,6 +45,16 @@ export function TodayScreen() {
                 res={deals}
                 rows={buy}
                 note="Profit and ROI are estimates from your fee settings, not your real Amazon fees. A scan judged each bundle against your numbers and Keepa’s monthly sales."
+                onRetry={reloadDeals}
+              />
+            ) : best.length === 0 && early.length > 0 ? (
+              <DealsBlock
+                label="Estimates before fulfillment"
+                view="all"
+                actionLabel={deals.data ? `All ${count(deals.data.rows.length)} deals` : 'All deals'}
+                res={deals}
+                rows={early}
+                note="No estimate counts every fee yet, so none is called best. These leave out Amazon’s fulfillment fee for some parts, which can only lower them; Keepa is asked next. Profit and ROI are estimates from your fee settings, not your real Amazon fees."
                 onRetry={reloadDeals}
               />
             ) : (
@@ -106,6 +118,7 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
   const losing = res.data?.rows.filter((r) => !r.needsAnswer && r.profit !== null && r.profit < 0).length ?? 0;
   // Nov 23: a bundle missing a price has no estimate (never a part at $0): its own view says what each part needs.
   const missing = res.data?.rows.filter((r) => r.profit === null && r.incomplete).length ?? 0;
+  const early = res.data?.rows.filter((r) => !r.needsAnswer && r.profit !== null && isBeforeFulfillment(r)).length ?? 0;
   return (
     <Section
       label={label}
@@ -121,7 +134,7 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
           title="No deals with an estimate yet"
           cause={
             losing > 0
-              ? 'No bundle’s estimate is above zero yet. Losing money lists the ones that are below.'
+              ? `No bundle’s estimate is above zero yet. Losing money lists the ones that are below${early > 0 ? `; ${early === 1 ? 'one is' : `${early} are`} still before fulfillment, so a fee can only lower ${early === 1 ? 'it' : 'them'}` : ''}.`
               : missing > 0
                 ? `${missing === 1 ? 'One bundle is' : `${missing} bundles are`} missing a price: an estimate needs every part priced.`
                 : res.data.rows.length
@@ -160,11 +173,15 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
                       {r.brand} · <span className="code">{r.model}</span>
                       {percentOff(r.off) ? ` · ${percentOff(r.off)}` : ''}
                     </span>
-                    {verdictOf(r) ? <span className="nav-verdict">{verdictOf(r)}</span> : null}
+                    {dealVerdict(r) ? (
+                      <span className="nav-verdict" title={dealVerdict(r)?.full}>
+                        {dealVerdict(r)?.text}
+                      </span>
+                    ) : null}
                   </span>
                   <span className="fig deal-grid-fig muted">{r.price !== null ? money(r.price) : '—'}</span>
                   <span className="deal-grid-fig">
-                    <Profit value={r.profit ?? 0} />
+                    <RowProfit value={r.profit ?? 0} before={r.beforeFulfillment} />
                   </span>
                   <span className="deal-grid-fig deal-grid-roi">
                     <Roi value={r.roi ?? 0} />
@@ -179,9 +196,6 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
     </Section>
   );
 }
-
-/** The line under a deal: the agent's note, else how far its parts are confirmed. */
-const verdictOf = (r: DealRow): string | null => dealVerdict(r)?.text ?? null;
 
 const RESULT: Record<string, string> = { finished: 'finished', stopped: 'stopped', limit: 'stopped at the limit', failed: 'failed' };
 
@@ -273,6 +287,7 @@ function AgentBlock({ state }: { state: AppState }) {
                 ) : (
                   'No parts wait for a lookup'
                 )}
+                {feeLookupWords(agent.drip) ? ` · ${feeLookupWords(agent.drip)}` : ''}
               </span>
             ) : null}
           </Fact>
