@@ -1,7 +1,10 @@
+/* Text fields, the search field, pop-up buttons, switches, segmented controls, checkboxes and radios,
+   drawn as AppKit draws them (design.md, Desktop app > Controls). */
+
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -13,35 +16,61 @@
 
 .field-label {
   font-size: 13px;
-  line-height: 18px;
-  font-weight: 600;
-  color: var(--ink);
-  padding: 0;
+  line-height: 16px;
+  color: var(--label);
 }
 
-.field-box,
-.select-box {
-  position: relative;
-  display: flex;
+.field-help {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+.field-status {
+  display: inline-flex;
   align-items: center;
-  height: 36px;
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
+  gap: 4px;
+  font-size: 11px;
+  line-height: 14px;
 }
 
-.field-box:focus-within,
-.select-box:focus-within {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
+.field-status-ok {
+  color: var(--label-2);
+}
+
+.field-status-ok .glyph {
+  color: var(--profit);
+}
+
+.field-status-error {
+  color: var(--loss);
+}
+
+/* NSTextField, bezeled: a 1px inset line, square-ish corners, the focus ring in the accent. */
+.field-box {
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-h);
+  border-radius: 5px;
+  background: var(--text-bg);
+  box-shadow:
+    inset 0 0 0 0.5px light-dark(rgb(0 0 0 / 0.25), rgb(255 255 255 / 0.18)),
+    inset 0 0.5px 0 light-dark(rgb(0 0 0 / 0.08), transparent);
+  min-width: 0;
+}
+
+.field-box:focus-within {
+  box-shadow:
+    inset 0 0 0 0.5px var(--accent),
+    0 0 0 3px var(--focus-ring);
 }
 
 .field-xs {
-  width: 88px;
+  width: 72px;
 }
 
 .field-sm {
-  width: 128px;
+  width: 120px;
 }
 
 .field-md {
@@ -52,227 +81,312 @@
   width: 100%;
 }
 
+.field-auto {
+  width: auto;
+}
+
 .field-input {
   flex: 1;
   min-width: 0;
   height: 100%;
-  padding: 0 10px;
   border: 0;
+  padding: 0 6px;
   background: transparent;
-  font-size: 14px;
-}
-
-.field-input:focus {
+  font-size: 13px;
   outline: none;
 }
 
-.field-input.fig {
-  font-size: 13px;
+.field-input::placeholder {
+  color: var(--placeholder);
 }
 
-.field-input::placeholder {
-  color: var(--ink-3);
+.field-input:focus-visible {
+  outline: none;
 }
 
 .field-affix {
-  padding: 0 10px;
-  color: var(--ink-2);
-  font-size: 13px;
-  white-space: nowrap;
+  padding: 0 6px;
+  color: var(--label-2);
+  font-size: 12px;
 }
 
 .field-affix:first-child {
   padding-right: 0;
 }
 
-.field-help {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+.field-input[aria-invalid='true'] {
+  color: var(--loss);
 }
 
-.field-status {
-  font-size: 13px;
-  line-height: 18px;
+/* The search field: a rounded well, the magnifier at its start, a clear button at its end. */
+.search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--fill);
+  box-shadow: inset 0 0 0 0.5px var(--separator);
+  color: var(--label-2);
+  flex: none;
 }
 
-.field-status-ok {
-  color: var(--ink);
-  font-weight: 600;
+.search:focus-within {
+  background: var(--text-bg);
+  box-shadow:
+    inset 0 0 0 0.5px var(--accent),
+    0 0 0 3px var(--focus-ring);
 }
 
-.field-status-error {
-  color: var(--ink);
+.search-glass {
+  position: absolute;
+  left: 7px;
+  pointer-events: none;
 }
 
-/* Select: the native element, styled, with a 1.5px chevron. */
-.select {
-  appearance: none;
-  -webkit-appearance: none;
+.search-input {
   width: 100%;
   height: 100%;
-  padding: 0 32px 0 10px;
   border: 0;
+  padding: 0 24px 0 26px;
   background: transparent;
-  font-size: 14px;
-  cursor: pointer;
+  color: var(--label);
+  font-size: 13px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.select:focus {
+.search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search-input::placeholder {
+  color: var(--label-2);
+}
+
+.search-input:focus-visible {
   outline: none;
 }
 
-.select-chevron {
+.search-clear {
   position: absolute;
-  right: 10px;
-  pointer-events: none;
-  color: var(--ink-2);
+  right: 5px;
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--label-3);
 }
 
-/* Switch */
+.search-clear:hover {
+  color: var(--label-2);
+}
+
+/* Pop-up button: a push button with the double chevron in an accent well at its end. */
+.popup {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-h);
+  border-radius: 5px;
+  background: var(--button-bg);
+  box-shadow:
+    0 0 0 0.5px var(--button-edge),
+    0 0.5px 1px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.3));
+  min-width: 0;
+}
+
+.popup:focus-within {
+  box-shadow:
+    0 0 0 0.5px var(--button-edge),
+    0 0 0 3px var(--focus-ring);
+}
+
+.popup.field-auto {
+  width: auto;
+}
+
+.popup-select {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0 28px 0 9px;
+  background: transparent;
+  font-size: 13px;
+  color: var(--label);
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  cursor: default;
+}
+
+.popup-select:focus-visible {
+  outline: none;
+}
+
+.popup-arrows {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  bottom: 3px;
+  width: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--on-accent);
+  pointer-events: none;
+}
+
+.popup:has(.popup-select:disabled) {
+  opacity: 0.5;
+}
+
+/* NSSwitch: 26 x 15, the accent when on. The words sit at the start, the switch at the end. */
 .switch-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-}
-
-.switch {
-  position: relative;
-  flex: none;
-  width: 36px;
-  height: 20px;
-  margin-top: 1px;
-  padding: 0;
-  border-radius: 10px;
-  border: 1px solid var(--line-strong);
-  background: var(--sunken);
-  cursor: pointer;
-}
-
-.switch[aria-checked='true'] {
-  background: var(--ink);
-  border-color: var(--ink);
-}
-
-.switch-knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
-  transition: transform 120ms ease-out;
-}
-
-.switch[aria-checked='true'] .switch-knob {
-  transform: translateX(16px);
-  border-color: var(--surface);
-}
-
-.switch:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .switch-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .switch-label {
-  font-weight: 600;
-  cursor: pointer;
+  font-size: 13px;
+  line-height: 16px;
 }
 
-/* Segmented control */
-.seg {
-  margin: 0;
+.switch {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 18px;
+  margin-top: -1px;
   padding: 0;
   border: 0;
+  border-radius: 9px;
+  background: var(--fill-2);
+  box-shadow: inset 0 0 0 0.5px var(--separator);
+  transition: background 120ms ease-out;
+}
+
+.switch[aria-checked='true'] {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+.switch-knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 0.5px rgb(0 0 0 / 0.08),
+    0 1px 2px rgb(0 0 0 / 0.25);
+  transition: transform 120ms ease-out;
+}
+
+.switch[aria-checked='true'] .switch-knob {
+  transform: translateX(14px);
+}
+
+.switch:disabled {
+  opacity: 0.45;
+}
+
+/* NSSegmentedControl: a sunken track, the chosen segment raised. */
+.seg {
+  border: 0;
+  margin: 0;
+  padding: 0;
   min-width: 0;
 }
 
 .seg-track {
   display: inline-flex;
-  flex-wrap: wrap;
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
-  background: var(--surface);
-  overflow: hidden;
+  padding: 1px;
+  gap: 1px;
+  border-radius: 6px;
+  background: var(--fill-2);
 }
 
 .seg-option {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0 12px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-2);
-  cursor: pointer;
-  border-left: 1px solid var(--line);
+  gap: 5px;
+  height: 20px;
+  padding: 0 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: var(--label);
   white-space: nowrap;
 }
 
-.seg-option:first-child {
-  border-left: 0;
+.seg-sm .seg-option {
+  height: 18px;
+  padding: 0 8px;
+  font-size: 11px;
 }
 
 .seg-option input {
   position: absolute;
   opacity: 0;
-  inset: 0;
-  margin: 0;
-  cursor: pointer;
-}
-
-.seg-option:has(input:focus-visible) {
-  outline: 2px solid var(--ink);
-  outline-offset: -2px;
+  pointer-events: none;
 }
 
 .seg-on {
-  background: var(--ink);
-  color: var(--surface);
-  border-left-color: var(--ink);
+  background: light-dark(#ffffff, rgb(255 255 255 / 0.22));
+  box-shadow:
+    0 0 0 0.5px light-dark(rgb(0 0 0 / 0.08), transparent),
+    0 1px 1.5px light-dark(rgb(0 0 0 / 0.15), rgb(0 0 0 / 0.3));
+}
+
+.seg-option:has(input:focus-visible) {
+  outline: 3px solid var(--focus-ring);
 }
 
 .seg-count {
-  font-size: 12px;
-  color: inherit;
-  opacity: 0.8;
+  color: var(--label-2);
 }
 
-/* Radios and checkboxes, as in Settings.dc.html */
+/* Radios and checkboxes: the system's own controls, in the accent. */
 .radios {
-  margin: 0;
-  padding: 0;
-  border: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
+  border: 0;
+  margin: 0;
+  padding: 0;
 }
 
-.radios > .field-label {
+.radios > legend {
   margin-bottom: 6px;
 }
 
 .radio {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 32px;
-  cursor: pointer;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 16px;
 }
 
 .radio input {
-  width: 16px;
-  height: 16px;
   margin: 0;
-  accent-color: var(--ink);
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  flex: none;
 }

@@ -1,27 +1,137 @@
-/* Tokens and base rules for the desktop app (docs/design.md, Tokens and Desktop app).
-   Components keep their own stylesheet next to them; nothing here is component-specific. */
+/* The desktop app's foundation (docs/design.md, Desktop app): macOS semantic colours, the system font,
+   light / dark / system, the accent, and regular / compact density. Components keep their own stylesheet
+   next to them and read only these tokens.
+
+   Every colour is a literal fallback first, written with light-dark() so it follows color-scheme, then
+   WebKit's own system colour where WebKit has one (@supports below): inside the app the window reads the
+   real system label, separator, selection and accent, including Increase Contrast; in another browser it
+   reads close copies. */
+
 :root {
-  --paper: #fafaf7;
-  --surface: #ffffff;
-  --sunken: #f1f0ea;
-  --ink: #1a1c1e;
-  --ink-2: #54585d;
-  --ink-3: #676b70;
-  --line: #e2e0d8;
-  --line-strong: #8b887f;
-  --link: #1d4ed8;
-  --attention: #744600;
-  --attention-bg: #fff3d1;
-  --loss: #a33a12;
+  color-scheme: light dark;
 
-  --font: 'Barlow', 'Segoe UI', system-ui, sans-serif;
-  --mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+  /* Text */
+  --label: light-dark(rgb(0 0 0 / 0.85), rgb(255 255 255 / 0.85));
+  --label-2: light-dark(rgb(0 0 0 / 0.5), rgb(255 255 255 / 0.55));
+  --label-3: light-dark(rgb(0 0 0 / 0.26), rgb(255 255 255 / 0.25));
+  --label-4: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1));
+  --placeholder: light-dark(rgb(0 0 0 / 0.25), rgb(255 255 255 / 0.25));
 
-  --rail: 208px;
-  --gutter: 24px;
-  --pane: clamp(380px, 36vw, 520px);
-  --row: 44px;
-  --head: 64px;
+  /* Lines and fills */
+  --separator: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1));
+  --grid: light-dark(#e6e6e6, #1a1a1a);
+  --fill: light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
+  --fill-2: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.12));
+  --hover: light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.05));
+
+  /* Grounds */
+  --window-bg: light-dark(#ececec, #323232);
+  --content-bg: light-dark(#ffffff, #1e1e1e);
+  --grouped-bg: light-dark(#f5f5f7, #1e1e1e);
+  --group-bg: light-dark(#ffffff, #282828);
+  --text-bg: light-dark(#ffffff, #1e1e1e);
+  --control-bg: light-dark(#ffffff, #1e1e1e);
+  --sidebar-bg: light-dark(#e8e6ea, #2a2a2c);
+  --button-bg: light-dark(#ffffff, rgb(255 255 255 / 0.16));
+  --button-edge: light-dark(rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.04));
+  --toolbar-bg: var(--content-bg);
+  --popover-bg: light-dark(rgb(246 246 246 / 0.98), rgb(40 40 40 / 0.98));
+  --sheet-bg: light-dark(#f4f4f4, #2c2c2e);
+  --dim: light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.38));
+
+  /* Accent and selection */
+  --system-accent: light-dark(#007aff, #0a84ff);
+  --accent: var(--system-accent);
+  --on-accent: #ffffff;
+  --selection: light-dark(#0064e1, #0059d1);
+  --selection-quiet: light-dark(#dcdcdc, #464646);
+  --on-selection-quiet: var(--label);
+  --focus-ring: color-mix(in srgb, var(--accent) 50%, transparent);
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+
+  /* The system palette for meaning: profit green and loss red, "needs you" orange. In light mode the
+     text forms are darkened toward the label so a 13px figure stays readable on white. */
+  --system-green: light-dark(#28cd41, #32d74b);
+  --system-red: light-dark(#ff3b30, #ff453a);
+  --system-orange: light-dark(#ff9500, #ff9f0a);
+  --profit: light-dark(color-mix(in srgb, var(--system-green) 62%, black), var(--system-green));
+  --loss: light-dark(color-mix(in srgb, var(--system-red) 82%, black), var(--system-red));
+  --attention: light-dark(color-mix(in srgb, var(--system-orange) 60%, black), var(--system-orange));
+  --attention-bg: color-mix(in srgb, var(--system-orange) 16%, transparent);
+  --verified-bg: color-mix(in srgb, var(--system-green) 16%, transparent);
+  --notice-bg: light-dark(#fff6e0, #3a3020);
+
+  /* Type: the system font. 13/16 body as in AppKit; SF Mono only for model numbers and ASINs. */
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+
+  /* Layout */
+  --toolbar-h: 52px;
+  --sidebar-w: 220px;
+  --inspector-w: 380px;
+  --gutter: 20px;
+  --radius: 6px;
+  --radius-lg: 10px;
+
+  /* Density: rows and controls */
+  --row: 28px;
+  --row-2: 44px;
+  --control-h: 22px;
+  --control-h-lg: 28px;
+  --section-gap: 24px;
+}
+
+:root[data-density='compact'] {
+  --row: 24px;
+  --row-2: 36px;
+  --gutter: 14px;
+  --section-gap: 18px;
+}
+
+:root[data-appearance='light'] {
+  color-scheme: light;
+}
+
+:root[data-appearance='dark'] {
+  color-scheme: dark;
+}
+
+/* WebKit's semantic system colours: the real ones inside the app window. */
+@supports (color: -apple-system-label) {
+  :root {
+    --label: -apple-system-label;
+    --label-2: -apple-system-secondary-label;
+    --label-3: -apple-system-tertiary-label;
+    --label-4: -apple-system-quaternary-label;
+    --placeholder: -apple-system-placeholder-text;
+    --separator: -apple-system-separator;
+    --grid: -apple-system-grid;
+    --text-bg: -apple-system-text-background;
+    --control-bg: -apple-system-control-background;
+    --content-bg: -apple-system-control-background;
+    --system-accent: -apple-system-control-accent;
+    --selection: -apple-system-selected-content-background;
+    --selection-quiet: -apple-system-unemphasized-selected-content-background;
+    --system-green: -apple-system-green;
+    --system-red: -apple-system-red;
+    --system-orange: -apple-system-orange;
+  }
+}
+
+/* A chosen accent replaces the system's for controls and selection alike (macOS accent colours). */
+:root[data-accent='blue'] { --accent: light-dark(#007aff, #0a84ff); }
+:root[data-accent='purple'] { --accent: light-dark(#953d96, #a550a7); }
+:root[data-accent='pink'] { --accent: light-dark(#f74f9e, #f74f9e); }
+:root[data-accent='red'] { --accent: light-dark(#e0383e, #ff453a); }
+:root[data-accent='orange'] { --accent: light-dark(#f7821b, #ff9f0a); }
+:root[data-accent='yellow'] { --accent: light-dark(#e6b000, #ffd60a); --on-accent: #1d1d1f; }
+:root[data-accent='green'] { --accent: light-dark(#62ba46, #32d74b); }
+:root[data-accent='graphite'] { --accent: light-dark(#8c8c8c, #8c8c8c); }
+:root[data-accent]:not([data-accent='system']) {
+  --selection: color-mix(in srgb, var(--accent) 88%, black);
+}
+:root[data-accent='yellow'] {
+  --selection: light-dark(#e6b000, #b89700);
 }
 
 * {
@@ -38,12 +148,33 @@ body {
   margin: 0;
   min-width: 1000px;
   min-height: 680px;
-  background: var(--paper);
-  color: var(--ink);
+  overflow: hidden;
+  background: var(--content-bg);
+  color: var(--label);
   font-family: var(--font);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 13px;
+  line-height: 16px;
   -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+/* Inside the macOS shell the window's sidebar material shows through: only the content column paints. */
+:root[data-chrome='unified'] body {
+  background: transparent;
+}
+
+/* Text a person reads or copies can be selected; the chrome cannot, as in AppKit. */
+input,
+textarea,
+.selectable,
+.inspector,
+.question,
+.quote,
+.code {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 button,
@@ -59,11 +190,14 @@ h2,
 h3,
 p {
   margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 a {
-  color: var(--link);
+  color: var(--accent);
   text-decoration: none;
+  cursor: pointer;
 }
 
 a:hover {
@@ -71,51 +205,62 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 0;
+  border-radius: 4px;
 }
 
-/* Every figure, model number and ASIN. */
+/* Type scale (design.md, Desktop app > Type) */
+.t-small {
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.t-headline {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.t-title {
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.t-figure {
+  font-size: 26px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Every money, ROI and count figure: the system face with tabular numerals. */
 .fig {
-  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
 }
 
-.fig-sm {
-  font-size: 12px;
-}
-
-/* Mono runs large beside Barlow: a figure inside a 13px line is set at 12px (the 12/16 figure size). */
-.page-sub .fig,
-.list-sub .fig,
-.deal-sub .fig,
-.qitem-sub .fig,
-.arow-sub .fig,
-.detail-meta .fig,
-.question-bundle .fig,
-.facts .fig,
-.rail-meta .fig,
-.detail-note .fig {
-  font-size: 12px;
-}
-
-/* Section labels: "PARTS · 2". */
-.caps {
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-2);
+/* Model numbers and ASINs only: SF Mono, a touch smaller so it sits on the line. */
+.code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 .muted {
-  color: var(--ink-2);
+  color: var(--label-2);
 }
 
 .loss {
   color: var(--loss);
+}
+
+.profit {
+  color: var(--profit);
 }
 
 .sr-only {
@@ -147,7 +292,7 @@ a:hover {
   *,
   *::before,
   *::after {
-    animation: none !important;
+    animation-duration: 1ms !important;
     transition: none !important;
   }
 }

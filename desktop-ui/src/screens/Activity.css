@@ -1,26 +1,18 @@
 .activity {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--section-gap);
   max-width: 1200px;
-}
-
-.alist {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.alist li + li {
-  border-top: 1px solid var(--line);
+  margin: 0 auto;
+  padding: var(--gutter) var(--gutter) 32px;
 }
 
 .arow {
   display: grid;
-  grid-template-columns: 104px minmax(0, 1fr) auto;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
   align-items: start;
-  gap: 16px;
-  padding: 12px 16px;
+  gap: 14px;
+  padding: 10px 12px;
 }
 
 .arow > .btn,
@@ -29,9 +21,9 @@
 }
 
 .arow-time {
-  font-size: 13px;
-  line-height: 20px;
-  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
   white-space: nowrap;
 }
 
@@ -43,51 +35,57 @@
 }
 
 .arow-title {
-  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .arow-title a {
-  color: var(--ink);
+  color: var(--label);
 }
 
 .arow-sub {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--label-2);
 }
 
 .arow-answer {
-  color: var(--ink);
+  color: var(--label);
   font-weight: 600;
-  font-size: 12px;
 }
 
-.col-what {
-  width: auto;
-}
-
-.col-result {
-  width: 168px;
+.arow-error {
+  color: var(--loss);
 }
 
 .cell-small {
-  font-size: 13px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.activity .col-time {
+  width: 156px;
+}
+
+.activity .col-fig {
+  width: 84px;
 }
 
 .run-what {
   display: block;
-  font-weight: 500;
 }
 
 .run-summary {
   display: block;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.run-failed {
+  font-weight: 600;
 }

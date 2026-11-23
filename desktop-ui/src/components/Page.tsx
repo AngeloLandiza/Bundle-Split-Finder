@@ -2,23 +2,24 @@ import type { ReactNode } from 'react';
 import { useApp } from '../api/hooks';
 import { plural } from '../lib/format';
 import { Button } from './Button';
-import { PageHeader } from './Layout';
 import { PairingNotices } from './PairingNotice';
 import { Notice } from './States';
+import { Toolbar } from './Toolbar';
+import { useUi } from './ui';
 import './Page.css';
 
 /**
- * The bands that describe the whole app, under every page header: the agent offline, Chrome
- * closed or not connected, a missing SerpApi key, the searches at their reserve. One sentence
- * each, with the one action that fixes it.
+ * The banners under the toolbar for the whole app: the agent offline, Chrome closed or not connected, a
+ * missing SerpApi key, the searches at their reserve. One sentence each, with the one action that fixes it.
  */
-export function AppNotices() {
-  const { state, online, offlineSentence, refreshState, navigate, pairing } = useApp();
+export function AppNotices({ inset = false }: { inset?: boolean }) {
+  const { state, online, offlineSentence, refreshState, pairing } = useApp();
+  const ui = useUi();
   const out: ReactNode[] = [];
   if (online && pairing.requests.length > 0) out.push(<PairingNotices key="pairing" />);
   if (!online) {
     out.push(
-      <Notice key="offline" title="The agent is not running." action={<Button size="sm" onClick={refreshState}>Retry</Button>}>
+      <Notice key="offline" tone="attention" title="The agent is not running." action={<Button size="sm" onClick={refreshState}>Try again</Button>}>
         {offlineSentence ?? 'Open Split Finder from the menu bar to start it.'} What is on screen is from before it stopped.
       </Notice>,
     );
@@ -32,14 +33,14 @@ export function AppNotices() {
       );
     } else if (!h.paired && pairing.requests.length === 0) {
       out.push(
-        <Notice key="pair" tone="attention" title="Chrome is not connected." action={<Button size="sm" onClick={() => navigate({ screen: 'settings', id: 'chrome' })}>Connect Chrome</Button>}>
+        <Notice key="pair" tone="attention" title="Chrome is not connected." action={<Button size="sm" onClick={ui.openSetup}>Connect Chrome</Button>}>
           Scans need it to read Home Depot pages.
         </Notice>,
       );
     }
     if (!state.keys.serpapi) {
       out.push(
-        <Notice key="key" tone="attention" title="No SerpApi key." action={<Button size="sm" onClick={() => navigate({ screen: 'settings', id: 'keys' })}>Add key</Button>}>
+        <Notice key="key" tone="attention" title="No SerpApi key." action={<Button size="sm" onClick={ui.openSetup}>Add key</Button>}>
           Scans and lookups need it.
         </Notice>,
       );
@@ -54,16 +55,40 @@ export function AppNotices() {
     }
   }
   if (out.length === 0) return null;
-  return <div className="notices">{out}</div>;
+  return <div className={`notices${inset ? ' inset-notices' : ''}`}>{out}</div>;
 }
 
-/** A screen: its header, the app notices, then the body. */
-export function Page({ title, sub, actions, children, bodyClass }: { title: ReactNode; sub?: ReactNode; actions?: ReactNode; children: ReactNode; bodyClass?: string }) {
+/**
+ * A screen: its toolbar in the title bar, the app's banners, then the body. `grouped` sets the body on
+ * the grouped ground with group boxes (Today, Activity, Settings); otherwise the body is the content
+ * ground and fills the window (Deals, Review).
+ */
+export function Page({
+  title,
+  sub,
+  actions,
+  search,
+  viewOptions,
+  inspector = false,
+  grouped = false,
+  children,
+  bodyClass,
+}: {
+  title: ReactNode;
+  sub?: ReactNode;
+  actions?: ReactNode;
+  search?: ReactNode;
+  viewOptions?: ReactNode;
+  inspector?: boolean;
+  grouped?: boolean;
+  children: ReactNode;
+  bodyClass?: string;
+}) {
   return (
-    <div className="page view-enter">
-      <PageHeader title={title} sub={sub} actions={actions} />
+    <div className="page">
+      <Toolbar title={title} sub={sub} actions={actions} search={search} viewOptions={viewOptions} inspector={inspector} />
       <AppNotices />
-      <div className={`page-body${bodyClass ? ` ${bodyClass}` : ''}`}>{children}</div>
+      <div className={`page-body${grouped ? ' page-body-grouped' : ' page-body-fill'}${bodyClass ? ` ${bodyClass}` : ''}`}>{children}</div>
     </div>
   );
 }

@@ -1,0 +1,164 @@
+/* The unified toolbar: 52px, the content's own ground, a hairline under it. */
+.toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--toolbar-h);
+  padding: 0 12px 0 var(--gutter);
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--separator);
+  position: relative;
+  z-index: 10;
+}
+
+.toolbar-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.toolbar-title .page-title {
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolbar-title .page-title:focus {
+  outline: none;
+}
+
+.toolbar-sub {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolbar-items {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-items > .search {
+  margin: 0 4px;
+}
+
+/* A running scan in place of Scan now: the ring, the state and share, and Stop. */
+.scan-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.scan-progress-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-size: 13px;
+  color: var(--label);
+  cursor: default;
+}
+
+.scan-progress-text:hover {
+  background: var(--fill);
+}
+
+.scan-progress-state {
+  font-weight: 500;
+}
+
+.ring {
+  flex: none;
+}
+
+/* Accent swatches in View options, as in System Settings > Appearance. */
+.swatches {
+  display: flex;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.swatch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.5px rgb(0 0 0 / 0.2);
+}
+
+.swatch input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+}
+
+.swatch:has(input:focus-visible) {
+  outline: 3px solid var(--focus-ring);
+}
+
+.swatch-check {
+  color: #ffffff;
+}
+
+/* System: the Mac's own accent, drawn as a ring so it reads as "whatever the Mac uses". */
+.swatch-system {
+  background: var(--content-bg);
+  box-shadow: inset 0 0 0 4px var(--system-accent);
+}
+
+.swatch-system .swatch-check {
+  color: var(--system-accent);
+}
+
+.swatch-blue {
+  background: #007aff;
+}
+
+.swatch-purple {
+  background: #953d96;
+}
+
+.swatch-pink {
+  background: #f74f9e;
+}
+
+.swatch-red {
+  background: #e0383e;
+}
+
+.swatch-orange {
+  background: #f7821b;
+}
+
+.swatch-yellow {
+  background: #ffc600;
+}
+
+.swatch-green {
+  background: #62ba46;
+}
+
+.swatch-graphite {
+  background: #8c8c8c;
+}

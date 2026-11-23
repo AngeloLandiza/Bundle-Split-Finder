@@ -1,26 +1,32 @@
 .page {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100vh;
   min-height: 0;
+  background: var(--content-bg);
 }
 
 .notices {
+  flex: none;
   display: flex;
   flex-direction: column;
+}
+
+.inset-notices {
   gap: 8px;
-  padding: 12px var(--gutter) 0;
 }
 
 .page-body {
   flex: 1;
   min-height: 0;
-  overflow: auto;
-  padding: 20px var(--gutter) 40px;
 }
 
-/* A body that hosts a split pane fills the page and scrolls inside its own columns. */
-.page-body-split {
-  padding: 0;
+.page-body-fill {
   overflow: hidden;
+}
+
+/* The grouped ground: group boxes on a quiet grey, as in System Settings. */
+.page-body-grouped {
+  overflow-y: auto;
+  background: var(--grouped-bg);
 }

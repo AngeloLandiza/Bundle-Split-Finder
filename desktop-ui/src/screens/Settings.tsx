@@ -5,7 +5,7 @@ import { ApiError, type AppSettings, type KeyName, type Schedule, type SettingsP
 import { Button } from '../components/Button';
 import { Checkbox, RadioGroup, Select, Switch, TextField } from '../components/Fields';
 import { Page } from '../components/Page';
-import { ConfirmInline, LoadError, Notice, SkeletonRows } from '../components/States';
+import { ConfirmInline, LoadError, LoadingState, Notice } from '../components/States';
 import { count, money, when } from '../lib/format';
 import { forecast } from '../lib/forecast';
 import { mergePatch } from '../lib/patch';
@@ -48,9 +48,9 @@ export function SettingsScreen({ focus }: { focus: string | null }) {
   }, [focus, res.data]);
 
   return (
-    <Page title="Settings" sub={saved}>
+    <Page title="Settings" sub={saved} grouped>
       <div className="settings">
-        {res.status === 'loading' ? <SkeletonRows rows={8} label="Loading settings" /> : null}
+        {res.status === 'loading' ? <LoadingState label="Loading settings" /> : null}
         {res.status === 'error' && !res.data ? <LoadError error={res.error} onRetry={reload} /> : null}
         {res.data ? <SettingsForm initial={res.data} onSaved={(text) => setSaved(text)} /> : null}
       </div>
@@ -426,7 +426,7 @@ function ChromeRow() {
               {paired.map((x) => (
                 <li key={x.extensionId} className="paired-row">
                   <span className="paired-what">
-                    <span className="fig paired-id" title={x.extensionId}>
+                    <span className="code paired-id" title={x.extensionId}>
                       {x.extensionId}
                     </span>
                     <span className="muted">
@@ -457,7 +457,7 @@ function ChromeRow() {
               ))}
             </ul>
           ) : null}
-          {revoke.error ? <p role="alert">{revoke.error}</p> : null}
+          {revoke.error ? <p className="field-status field-status-error" role="alert">{revoke.error}</p> : null}
         </>
       ) : (
         <p className="muted">The agent is not running.</p>
@@ -493,7 +493,7 @@ function GeneralRow() {
           });
         }}
       />
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? <p className="field-status field-status-error" role="alert">{error}</p> : null}
     </Row>
   );
 }

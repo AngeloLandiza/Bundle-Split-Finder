@@ -3,7 +3,7 @@ import type { ActivityError, AutopilotEntry, Run } from '../api/types';
 import { Button } from '../components/Button';
 import { Section } from '../components/Layout';
 import { Page } from '../components/Page';
-import { EmptyState, LoadError, SkeletonRows } from '../components/States';
+import { EmptyState, LoadError, LoadingState } from '../components/States';
 import { Tag } from '../components/Tag';
 import { count, money, plural, usdSpend, when } from '../lib/format';
 import { KIND_LABEL } from './reviewModel';
@@ -23,13 +23,13 @@ export function ActivityScreen() {
     </>
   ) : undefined;
   return (
-    <Page title="Activity" sub={sub}>
+    <Page title="Activity" sub={sub} grouped>
       <div className="activity">
-        {res.status === 'loading' ? <SkeletonRows rows={8} columns={4} label="Loading activity" /> : null}
+        {res.status === 'loading' ? <LoadingState label="Loading activity" /> : null}
         {res.status === 'error' && !d ? <LoadError error={res.error} onRetry={reload} /> : null}
         {d && d.errors.length ? (
           <Section label="Needs attention" count={d.errors.length}>
-            <ul className="alist">
+            <ul className="rows">
               {d.errors.map((e) => (
                 <ErrorRow key={e.id} e={e} />
               ))}
@@ -39,9 +39,9 @@ export function ActivityScreen() {
         {d ? (
           <Section label="Autopilot" count={d.autopilot.length} flush={d.autopilot.length === 0}>
             {d.autopilot.length === 0 ? (
-              <EmptyState title="Autopilot has not applied anything yet." cause="After each scan it applies AI answers that the code verified against the page. Everything else waits in Review." />
+              <EmptyState compact title="Autopilot has not applied anything yet" cause="After each scan it applies AI answers that the code verified against the page. Everything else waits in Review." />
             ) : (
-              <ul className="alist">
+              <ul className="rows">
                 {d.autopilot.map((a) => (
                   <AutopilotRow key={a.id} a={a} />
                 ))}
@@ -52,10 +52,10 @@ export function ActivityScreen() {
         {d ? (
           <Section label="Runs" count={d.runs.length} flush>
             {d.runs.length === 0 ? (
-              <EmptyState title="No runs yet." cause="Scans, lookups and AI runs are listed here with what each one spent." />
+              <EmptyState compact title="No runs yet" cause="Scans, lookups and AI runs are listed here with what each one spent." />
             ) : (
               <div className="table-wrap">
-                <table className="table">
+                <table className="table table-plain">
                   <caption className="sr-only">Runs, newest first</caption>
                   <colgroup>
                     <col className="col-time" />
@@ -102,7 +102,7 @@ export function ActivityScreen() {
                         <td className="td-right fig cell-small">{count(r.searches)}</td>
                         <td className="td-right fig cell-small">{count(r.keepaTokens)}</td>
                         <td className="td-right fig cell-small">{r.aiUsd ? money(r.aiUsd) : '—'}</td>
-                        <td className="cell-small">{r.result === 'finished' ? RESULT[r.result] : <strong>{RESULT[r.result]}</strong>}</td>
+                        <td className="cell-small">{r.result === 'finished' ? RESULT[r.result] : <span className="run-failed">{RESULT[r.result]}</span>}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -123,7 +123,7 @@ function ErrorRow({ e }: { e: ActivityError }) {
       <span className="arow-time">{when(e.at)}</span>
       <div className="arow-main">
         <p>{e.sentence}</p>
-        {retry.error ? <p role="alert">{retry.error}</p> : null}
+        {retry.error ? <p className="arow-sub arow-error" role="alert">{retry.error}</p> : null}
       </div>
       {e.retry ? (
         <Button size="sm" busy={retry.busy} busyLabel="Starting…" onClick={() => void retry.run(e.id)} cost={e.retry.searches ? plural(e.retry.searches, 'search', 'searches') : e.retry.usd ? `about ${money(e.retry.usd)}` : undefined}>
@@ -161,22 +161,22 @@ function AutopilotRow({ a }: { a: AutopilotEntry }) {
           {a.model ? (
             <>
               {' · '}
-              <span className="fig">{a.model}</span>
+              <span className="code">{a.model}</span>
             </>
           ) : null}
           {' · applied '}
-          <span className="fig arow-answer">{a.applied}</span>
+          <span className="code arow-answer">{a.applied}</span>
           {a.by ? (
             <>
               {' · by '}
-              <span className="fig">{a.by}</span>
+              <span className="code">{a.by}</span>
             </>
           ) : null}
         </p>
         {a.verifiedBy.length ? <p className="arow-sub">Checked by the code: {a.verifiedBy.join('; ')}.</p> : null}
         {a.undone ? <p className="arow-sub">Undone. The question is back in Review.</p> : null}
         {!a.undone && !a.undoable ? <p className="arow-sub">You changed this answer since, so it cannot be undone from here.</p> : null}
-        {undo.error ? <p role="alert">{undo.error}</p> : null}
+        {undo.error ? <p className="arow-sub arow-error" role="alert">{undo.error}</p> : null}
       </div>
       {a.undone ? (
         <Tag>Undone</Tag>

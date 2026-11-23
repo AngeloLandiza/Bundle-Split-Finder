@@ -1,13 +1,14 @@
+/* NSTableView, plain style: a header with column lines, no zebra, a hover tint, the selection in the
+   accent with white text while the window is active (grey when it is not), the focus ring in the accent. */
 .table-wrap {
   container-type: inline-size;
-  background: var(--surface);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  background: var(--content-bg);
 }
 
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: fixed;
 }
 
@@ -19,8 +20,16 @@
   width: 92px;
 }
 
+.col-off {
+  width: 64px;
+}
+
 .col-fig-wide {
-  width: 108px;
+  width: 104px;
+}
+
+.col-roi {
+  width: 96px;
 }
 
 .col-match {
@@ -28,7 +37,15 @@
 }
 
 .col-time {
-  width: 128px;
+  width: 120px;
+}
+
+.col-what {
+  width: auto;
+}
+
+.col-result {
+  width: 150px;
 }
 
 .col-action {
@@ -36,28 +53,39 @@
 }
 
 .table th {
-  height: 32px;
-  padding: 0 12px;
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 600;
-  color: var(--ink-2);
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
+  height: 28px;
+  padding: 0 8px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  color: var(--label-2);
+  background: var(--content-bg);
+  border-bottom: 1px solid var(--separator);
   position: sticky;
   top: 0;
   z-index: 2;
   white-space: nowrap;
 }
 
+/* The column lines in the header, as in Finder's list view. */
+.table th + th::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 1px;
+  background: var(--separator);
+}
+
 .table th:first-child,
 .table td:first-child {
-  padding-left: 16px;
+  padding-left: var(--gutter);
 }
 
 .table th:last-child,
 .table td:last-child {
-  padding-right: 16px;
+  padding-right: var(--gutter);
 }
 
 .th-left {
@@ -71,38 +99,49 @@
 .th-sort {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 28px;
+  gap: 3px;
+  height: 26px;
   padding: 0;
   border: 0;
   background: transparent;
   font: inherit;
   color: inherit;
-  cursor: pointer;
+  cursor: default;
 }
 
 .th-right .th-sort {
   flex-direction: row-reverse;
 }
 
-.th-sort:hover,
 th[aria-sort='ascending'] .th-sort,
 th[aria-sort='descending'] .th-sort {
-  color: var(--ink);
+  color: var(--label);
+  font-weight: 600;
 }
 
 .th-arrow {
-  display: inline-block;
+  display: inline-flex;
   width: 10px;
-  font-size: 12px;
+  color: var(--label-2);
+}
+
+.th-arrow-up .glyph {
+  transform: rotate(180deg);
 }
 
 .table td {
   position: relative;
-  height: var(--row);
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--line);
+  height: var(--row-2);
+  padding: 4px 8px;
   vertical-align: middle;
+  color: var(--label);
+  border-bottom: 1px solid light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.05));
+}
+
+.table-plain td {
+  height: var(--row);
+  padding-top: 3px;
+  padding-bottom: 3px;
 }
 
 .table tbody tr:last-child td {
@@ -118,12 +157,29 @@ th[aria-sort='descending'] .th-sort {
 }
 
 .table tbody tr:hover td {
-  background: var(--paper);
+  background: var(--hover);
 }
 
+/* Selection: the accent while the window is key, grey when it is not (AppKit's emphasized / unemphasized). */
 .tr-on td,
 .table tbody tr.tr-on:hover td {
-  background: var(--sunken);
+  background: var(--selection-quiet);
+  border-bottom-color: transparent;
+}
+
+:root[data-window-active] .tr-on td,
+:root[data-window-active] .table tbody tr.tr-on:hover td {
+  background: var(--selection);
+  color: #ffffff;
+}
+
+:root[data-window-active] .tr-on :is(.muted, .deal-sub, .cell-time, .cell-words, .cell-none, .figure-range, .figure-profit, .loss, .code, .fig) {
+  color: rgb(255 255 255 / 0.92);
+}
+
+:root[data-window-active] .tr-on .tag {
+  background: rgb(255 255 255 / 0.22);
+  color: #ffffff;
 }
 
 /* The stretched open button: covers the row, sits under the row's own controls. */
@@ -134,17 +190,14 @@ th[aria-sort='descending'] .th-sort {
   padding: 0;
   border: 0;
   background: transparent;
-  cursor: pointer;
+  cursor: default;
   z-index: 0;
 }
 
-.table tr:has(.row-open:focus-visible) td {
-  background: var(--paper);
-}
-
 .row-open:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: -2px;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
+  border-radius: 4px;
 }
 
 /* The stretch covers the whole row: the row, not the cell, is the button's containing block.

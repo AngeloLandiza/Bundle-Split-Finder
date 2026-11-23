@@ -1,101 +1,100 @@
+/* A bundle in the inspector: the head, the estimate box, then Ways to sell and Parts as grouped lists,
+   Copy ASINs at the foot. */
 .detail {
   display: flex;
   flex-direction: column;
   min-height: 100%;
 }
 
-.detail-top {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  height: 48px;
-  padding: 0 16px 0 12px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-}
-
-.detail-hd {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.detail-pad {
-  padding: 16px;
-}
-
 .detail-body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 16px 20px 24px;
+  gap: 16px;
+  padding: 16px 16px 20px;
 }
 
 .detail-head {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+}
+
+.detail-brand {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  color: var(--label-2);
 }
 
 .detail-title {
-  font-size: 17px;
-  line-height: 23px;
+  font-size: 15px;
+  line-height: 20px;
   font-weight: 600;
 }
 
 .detail-meta {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
 }
 
-.detail-band {
+/* The estimate: one group box with the large figure. */
+.detail-box {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--line);
+  gap: 8px;
+  padding: 12px 14px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--group-bg);
+  box-shadow: 0 0 0 0.5px var(--separator);
 }
 
 .detail-headline {
   display: flex;
   align-items: baseline;
-  gap: 14px;
+  gap: 12px;
 }
 
 .detail-roi {
   font-size: 15px;
-  color: var(--ink-2);
+  line-height: 20px;
+  color: var(--label-2);
+}
+
+.detail-estimate {
+  margin-top: -6px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
 }
 
 .detail-figures {
-  margin: 0;
+  margin: 4px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--separator);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .detail-figures dt {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
 }
 
 .detail-figures dd {
-  margin: 0;
-  font-size: 15px;
-  line-height: 22px;
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 16px;
   font-weight: 500;
 }
 
 .detail-note {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--label-2);
 }
 
 .detail-none {
@@ -105,32 +104,54 @@
 .detail-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
+}
+
+.detail .notice {
+  border: 0;
+  border-radius: var(--radius);
+  padding: 8px 10px;
 }
 
 .detail-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+}
+
+.detail-section-title {
+  display: flex;
+  gap: 6px;
+  padding: 0 4px;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.detail-section-title .muted {
+  font-weight: 400;
 }
 
 .detail-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--group-bg);
+  box-shadow: 0 0 0 0.5px var(--separator);
+  overflow: hidden;
 }
 
-.detail-list > li {
-  border-bottom: 1px solid var(--line);
+.detail-list > li + li {
+  border-top: 1px solid var(--separator);
 }
 
 .way {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 10px 0;
+  padding: 9px 12px;
 }
 
 .way-top {
@@ -146,7 +167,6 @@
 .way-money {
   display: flex;
   gap: 10px;
-  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -154,7 +174,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 12px 0;
+  padding: 10px 12px;
 }
 
 .part-top {
@@ -166,18 +186,18 @@
 .part-name {
   display: flex;
   flex-direction: column;
+  gap: 1px;
   min-width: 0;
 }
 
 .part-model {
   font-weight: 600;
-  font-size: 13px;
 }
 
 .part-title {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -191,48 +211,48 @@
 }
 
 .part-price {
-  font-size: 14px;
   font-weight: 600;
 }
 
 .part-net {
-  font-size: 12px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
 }
 
 .part-tags {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .prices {
   list-style: none;
   margin: 2px 0 0;
-  padding: 0;
+  padding: 6px 0 0;
+  border-top: 1px solid var(--separator);
   display: flex;
   flex-direction: column;
 }
 
 .price {
   display: grid;
-  grid-template-columns: 112px 128px minmax(0, 1fr);
+  grid-template-columns: 96px 104px minmax(0, 1fr);
   gap: 8px;
-  font-size: 13px;
-  line-height: 20px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--label-2);
 }
 
 .price-counted .price-label,
 .price-counted .price-amount {
-  color: var(--ink);
+  color: var(--label);
   font-weight: 600;
 }
 
 .price-amount {
-  font-size: 12px;
   text-align: right;
 }
 
@@ -245,8 +265,9 @@
   bottom: 0;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  padding: 12px 20px;
-  background: var(--surface);
-  border-top: 1px solid var(--line);
+  padding: 10px 16px;
+  background: var(--grouped-bg);
+  border-top: 1px solid var(--separator);
 }

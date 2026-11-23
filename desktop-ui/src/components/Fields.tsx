@@ -1,4 +1,5 @@
-import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react';
+import { forwardRef, useId, useRef, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react';
+import { Glyph } from './Glyph';
 import './Fields.css';
 
 interface FieldProps {
@@ -10,7 +11,7 @@ interface FieldProps {
   inline?: boolean;
 }
 
-/** A text, number or password field with a real <label>. Figures and keys are set in the figure face. */
+/** A text, number or password field with a real <label>. `mono` sets keys and model numbers in SF Mono. */
 export const TextField = forwardRef<HTMLInputElement, FieldProps & InputHTMLAttributes<HTMLInputElement> & { mono?: boolean; width?: 'xs' | 'sm' | 'md' | 'fill'; suffix?: ReactNode; prefix?: ReactNode }>(
   function TextField({ label, help, status, inline, mono, width = 'fill', suffix, prefix, className, ...rest }, ref) {
     const id = useId();
@@ -26,7 +27,8 @@ export const TextField = forwardRef<HTMLInputElement, FieldProps & InputHTMLAttr
           <input
             ref={ref}
             id={id}
-            className={`field-input${mono ? ' fig' : ''}`}
+            // Numbers and times take tabular figures; SF Mono is only for keys and model numbers.
+            className={`field-input${mono ? (rest.type === 'number' || rest.type === 'time' ? ' fig' : ' code') : ''}`}
             aria-describedby={[helpId, statusId].filter(Boolean).join(' ') || undefined}
             aria-invalid={status?.tone === 'error' || undefined}
             {...rest}
@@ -40,6 +42,7 @@ export const TextField = forwardRef<HTMLInputElement, FieldProps & InputHTMLAttr
         ) : null}
         {status ? (
           <span className={`field-status field-status-${status.tone}`} id={statusId} role={status.tone === 'error' ? 'alert' : 'status'}>
+            {status.tone === 'ok' ? <Glyph name="check" size={12} /> : null}
             {status.text}
           </span>
         ) : null}
@@ -48,31 +51,83 @@ export const TextField = forwardRef<HTMLInputElement, FieldProps & InputHTMLAttr
   },
 );
 
-export function Select({ label, help, inline, children, width = 'md', ...rest }: FieldProps & SelectHTMLAttributes<HTMLSelectElement> & { width?: 'sm' | 'md' | 'fill' }) {
+/** The search field: a rounded well with the magnifier, and a clear button once something is typed. Esc clears it. */
+export function SearchField({ value, onChange, placeholder = 'Search', label, width = 200 }: { value: string; onChange: (v: string) => void; placeholder?: string; label: string; width?: number }) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <span className="search" style={{ inlineSize: width }}>
+      <Glyph name="search" size={14} className="search-glass" />
+      <input
+        ref={ref}
+        type="search"
+        className="search-input"
+        aria-label={label}
+        placeholder={placeholder}
+        value={value}
+        data-find=""
+        spellCheck={false}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && value) {
+            e.preventDefault();
+            e.stopPropagation();
+            onChange('');
+          }
+        }}
+      />
+      {value ? (
+        <button
+          type="button"
+          className="search-clear"
+          aria-label="Clear search"
+          onClick={() => {
+            onChange('');
+            ref.current?.focus();
+          }}
+        >
+          <Glyph name="clear" size={14} />
+        </button>
+      ) : null}
+    </span>
+  );
+}
+
+/** A pop-up button: a real <select> drawn as the AppKit pop-up, with the double chevron at its end. */
+export function Select({ label, help, inline, children, width = 'md', ...rest }: FieldProps & SelectHTMLAttributes<HTMLSelectElement> & { width?: 'sm' | 'md' | 'fill' | 'auto' }) {
   const id = useId();
   return (
     <div className={`field${inline ? ' field-inline' : ''}`}>
       <label className="field-label" htmlFor={id}>
         {label}
       </label>
-      <span className={`select-box field-${width}`}>
-        <select id={id} className="select" {...rest}>
+      <span className={`popup field-${width}`}>
+        <select id={id} className="popup-select" {...rest}>
           {children}
         </select>
-        <svg className="select-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M3 4.5l3 3 3-3" />
-        </svg>
+        <span className="popup-arrows" aria-hidden="true">
+          <Glyph name="chevrons" size={12} />
+        </span>
       </span>
       {help ? <span className="field-help">{help}</span> : null}
     </div>
   );
 }
 
-/** An on/off setting that applies at once: role=switch on a real button. */
+/** An on/off setting that applies at once: role=switch on a real button, drawn as NSSwitch. */
 export function Switch({ label, help, checked, onChange, disabled }: { label: ReactNode; help?: ReactNode; checked: boolean; onChange: (next: boolean) => void; disabled?: boolean }) {
   const id = useId();
   return (
     <div className="switch-row">
+      <span className="switch-text">
+        <label htmlFor={id} className="switch-label">
+          {label}
+        </label>
+        {help ? (
+          <span className="field-help" id={`${id}-help`}>
+            {help}
+          </span>
+        ) : null}
+      </span>
       <button
         type="button"
         role="switch"
@@ -85,16 +140,6 @@ export function Switch({ label, help, checked, onChange, disabled }: { label: Re
       >
         <span className="switch-knob" />
       </button>
-      <span className="switch-text">
-        <label htmlFor={id} className="switch-label">
-          {label}
-        </label>
-        {help ? (
-          <span className="field-help" id={`${id}-help`}>
-            {help}
-          </span>
-        ) : null}
-      </span>
     </div>
   );
 }
@@ -106,20 +151,22 @@ export function Segmented<V extends string>({
   options,
   onChange,
   hideLegend = true,
+  size = 'md',
 }: {
   legend: string;
   value: V;
-  options: { value: V; label: ReactNode; count?: number }[];
+  options: { value: V; label: ReactNode; count?: number; title?: string }[];
   onChange: (v: V) => void;
   hideLegend?: boolean;
+  size?: 'sm' | 'md';
 }) {
   const name = useId();
   return (
-    <fieldset className="seg">
+    <fieldset className={`seg seg-${size}`}>
       <legend className={hideLegend ? 'sr-only' : 'field-label'}>{legend}</legend>
       <div className="seg-track">
         {options.map((o) => (
-          <label key={o.value} className={`seg-option${o.value === value ? ' seg-on' : ''}`}>
+          <label key={o.value} className={`seg-option${o.value === value ? ' seg-on' : ''}`} title={o.title}>
             <input type="radio" name={name} value={o.value} checked={o.value === value} onChange={() => onChange(o.value)} />
             <span>{o.label}</span>
             {o.count !== undefined ? <span className="seg-count fig">{o.count}</span> : null}
@@ -130,7 +177,7 @@ export function Segmented<V extends string>({
   );
 }
 
-/** A radio group in the spec's Settings style: 16px ink radios, 36px rows. */
+/** A radio group: accent radios, one per line. */
 export function RadioGroup<V extends string>({ legend, value, options, onChange }: { legend: string; value: V; options: { value: V; label: ReactNode }[]; onChange: (v: V) => void }) {
   const name = useId();
   return (

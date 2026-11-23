@@ -3,14 +3,17 @@ import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealRow, DealSection, DealSort } from '../api/types';
 import { Button } from '../components/Button';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
-import { Segmented, Select, TextField } from '../components/Fields';
-import { SplitPane } from '../components/Layout';
+import { SearchField, Select } from '../components/Fields';
+import { InspectorSplit } from '../components/Layout';
 import { Page } from '../components/Page';
-import { EmptyState, LoadError, Notice, SkeletonRows } from '../components/States';
+import { PopoverSection } from '../components/Popover';
+import { EmptyState, LoadError, LoadingState, Notice } from '../components/States';
 import { Table, type Column, type TableHandle } from '../components/Table';
 import { Tag } from '../components/Tag';
+import { useUi } from '../components/ui';
 import { count, percentOff, plural, when } from '../lib/format';
 import { sortRows, type SortState } from '../lib/sort';
+import { VIEW_LABEL, inView, type DealView } from '../lib/views';
 import { DealDetailPane } from './DealDetail';
 import { SECTION_LABEL, SECTION_ORDER } from './reviewModel';
 import './Deals.css';
@@ -49,11 +52,13 @@ function sortValue(r: DealRow, key: Col): number | string | null {
   }
 }
 
-export function DealsScreen({ openId }: { openId: string | null }) {
+/** The Deals table in the content and the open bundle in the inspector; the sidebar picks the view. */
+export function DealsScreen({ openId, view }: { openId: string | null; view: DealView }) {
   const { navigate, state } = useApp();
+  const ui = useUi();
   const [res, reload] = useResource(() => api.deals(), [], ['deals']);
   const [sort, setSortState] = useState(readSort);
-  const [filter, setFilter] = useState<Filter>('all');
+  const [section, setSection] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const table = useRef<TableHandle>(null);
 
@@ -67,23 +72,24 @@ export function DealsScreen({ openId }: { openId: string | null }) {
   };
 
   const all = res.data?.rows ?? [];
+  const inThisView = useMemo(() => all.filter((r) => inView(r, view)), [all, view]);
   const counts = useMemo(() => {
     const c = new Map<DealSection, number>();
-    for (const r of all) c.set(r.section, (c.get(r.section) ?? 0) + 1);
+    for (const r of inThisView) c.set(r.section, (c.get(r.section) ?? 0) + 1);
     return c;
-  }, [all]);
+  }, [inThisView]);
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const shown = all.filter((r) => (filter === 'all' || r.section === filter) && (!q || `${r.title} ${r.model} ${r.brand}`.toLowerCase().includes(q)));
+    const shown = inThisView.filter((r) => (section === 'all' || r.section === section) && (!q || `${r.title} ${r.model} ${r.brand}`.toLowerCase().includes(q)));
     return sortRows(shown, sort, sortValue);
-  }, [all, filter, query, sort]);
+  }, [inThisView, section, query, sort]);
 
   const close = useCallback(() => {
     const index = rows.findIndex((r) => r.id === openId);
-    navigate({ screen: 'deals', id: null });
+    navigate({ screen: 'deals', id: null, view });
     // Focus goes back to the row that was open.
     requestAnimationFrame(() => table.current?.focusRow(Math.max(0, index)));
-  }, [navigate, openId, rows]);
+  }, [navigate, openId, rows, view]);
 
   const scanRunning = state?.agent.status === 'scanning';
   const columns: Column<DealRow, Col>[] = [
@@ -99,14 +105,14 @@ export function DealsScreen({ openId }: { openId: string | null }) {
             {r.title}
           </span>
           <span className="deal-sub">
-            {r.brand} · <span className="fig">{r.model}</span>
+            {r.brand} · <span className="code">{r.model}</span>
             {r.lookup ? <span className="deal-flag-quiet"> · Waiting for lookup</span> : null}
           </span>
         </div>
       ),
     },
-    { key: 'price', label: 'Price', sortable: true, align: 'right', width: 'col-fig', hideBelow: 560, render: (r) => <Money value={r.price} className="cell-fig" /> },
-    { key: 'off', label: 'Off', sortable: true, align: 'right', width: 'col-off', hideBelow: 900, render: (r) => <span className="fig cell-fig">{percentOff(r.off)?.replace(' off', '') ?? '—'}</span> },
+    { key: 'price', label: 'Price', sortable: true, align: 'right', width: 'col-fig', hideBelow: 560, render: (r) => <Money value={r.price} /> },
+    { key: 'off', label: 'Off', sortable: true, align: 'right', width: 'col-off', hideBelow: 900, render: (r) => <span className="fig">{percentOff(r.off)?.replace(' off', '') ?? '—'}</span> },
     {
       key: 'match',
       label: 'Match',
@@ -166,64 +172,31 @@ export function DealsScreen({ openId }: { openId: string | null }) {
     { key: 'updated', label: 'Updated', sortable: true, align: 'right', width: 'col-time', hideBelow: 900, render: (r) => <span className="cell-time">{when(r.updatedAt)}</span> },
   ];
 
-  const sectionOptions = [
-    { value: 'all' as Filter, label: 'All', count: all.length },
-    ...SECTION_ORDER.filter((s) => counts.get(s)).map((s) => ({ value: s as Filter, label: SECTION_LABEL[s], count: counts.get(s) })),
-  ];
-
   const csv = useAction(api.downloadDealsCsv);
-  const sub = res.data ? `${plural(all.length, 'bundle', 'bundles')}${res.data.at ? ` · updated ${when(res.data.at)}` : ''}` : undefined;
+  const title = view === 'all' ? 'Deals' : VIEW_LABEL[view];
+  const sub = res.data ? `${plural(inThisView.length, 'bundle', 'bundles')}${res.data.at ? ` · updated ${when(res.data.at)}` : ''}` : undefined;
+  const filtered = query.trim() !== '' || section !== 'all';
 
   const list = (
     <div className="deals">
-      {res.data && all.length > 0 ? (
-        <div className="deals-bar">
-          <span className="deals-seg">
-            <Segmented legend="Show" value={filter} options={sectionOptions} onChange={setFilter} />
-          </span>
-          <span className="deals-select">
-            <Select label={<span className="sr-only">Show</span>} value={filter} onChange={(e) => setFilter(e.target.value as Filter)} width="md">
-              {sectionOptions.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label} ({o.count})
-                </option>
-              ))}
-            </Select>
-          </span>
-          <TextField
-            label={<span className="sr-only">Filter bundles</span>}
-            placeholder="Filter by title or model"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            width="md"
-            data-find=""
-            type="search"
-            className="deals-filter"
-          />
-        </div>
-      ) : null}
       {res.data?.limitNotice ? (
-        <div className="deals-pad deals-notices">
-          <Notice tone="attention" title={res.data.limitNotice.title}>
-            {res.data.limitNotice.text}
-          </Notice>
-        </div>
+        <Notice tone="attention" title={res.data.limitNotice.title}>
+          {res.data.limitNotice.text}
+        </Notice>
       ) : null}
-      {res.data?.staleDays ? (
-        <p className="deals-quiet">The oldest price here was seen {plural(res.data.staleDays, 'day', 'days')} ago. A scan refreshes them.</p>
-      ) : null}
-      {res.data?.ebayNotice ? <p className="deals-quiet">{res.data.ebayNotice}</p> : null}
+      {res.data?.staleDays ? <Notice>The oldest price here was seen {plural(res.data.staleDays, 'day', 'days')} ago. A scan refreshes them.</Notice> : null}
+      {res.data?.ebayNotice ? <Notice>{res.data.ebayNotice}</Notice> : null}
       {csv.error ? (
-        <p className="deals-quiet" role="alert">
+        <Notice tone="attention" title="The CSV was not saved.">
           {csv.error}
-        </p>
+        </Notice>
       ) : null}
-      {res.status === 'loading' ? <SkeletonRows rows={8} columns={4} label="Loading deals" /> : null}
-      {res.status === 'error' ? <div className="deals-pad"><LoadError error={res.error} onRetry={reload} /></div> : null}
-      {res.data && all.length === 0 ? (
-        <div className="deals-pad">
+      <div className="list-scroll">
+        {res.status === 'loading' ? <LoadingState label="Loading deals" /> : null}
+        {res.status === 'error' ? <LoadError error={res.error} onRetry={reload} /> : null}
+        {res.data && all.length === 0 ? (
           <EmptyState
-            title="No deals yet."
+            title="No deals yet"
             cause={state?.agent.lastScan ? 'The last scan found no discounted DEWALT or RYOBI bundles. The next scan looks again.' : 'The agent has not run a scan yet.'}
             action={
               <Button variant="primary" onClick={() => void api.scan()} disabled={!state?.keys.serpapi || scanRunning} cost={state && state.budget.serpPerScan > 0 ? plural(state.budget.serpPerScan, 'search', 'searches') : undefined}>
@@ -231,28 +204,25 @@ export function DealsScreen({ openId }: { openId: string | null }) {
               </Button>
             }
           />
-        </div>
-      ) : null}
-      {res.data && all.length > 0 && rows.length === 0 ? (
-        <div className="deals-pad">
+        ) : null}
+        {res.data && all.length > 0 && inThisView.length === 0 ? <EmptyState title={`Nothing in ${VIEW_LABEL[view]}`} cause={EMPTY_VIEW[view]} action={<Button onClick={() => navigate({ screen: 'deals', id: null })}>Show all deals</Button>} /> : null}
+        {inThisView.length > 0 && rows.length === 0 ? (
           <EmptyState
-            title="No bundle matches."
-            cause={query ? `Nothing in ${filter === 'all' ? 'the deals' : SECTION_LABEL[filter]} has “${query}” in its title or model.` : 'This section is empty.'}
+            title="No bundle matches"
+            cause={query ? `Nothing here has “${query}” in its title or model.` : 'This section is empty.'}
             action={
               <Button
                 onClick={() => {
                   setQuery('');
-                  setFilter('all');
+                  setSection('all');
                 }}
               >
-                Show all
+                Clear the filter
               </Button>
             }
           />
-        </div>
-      ) : null}
-      {rows.length > 0 ? (
-        <>
+        ) : null}
+        {rows.length > 0 ? (
           <Table
             caption="Deals. Profit and ROI are estimates."
             rows={rows}
@@ -262,35 +232,75 @@ export function DealsScreen({ openId }: { openId: string | null }) {
             sort={sort}
             onSort={setSort}
             selected={openId}
-            onOpen={(r) => navigate({ screen: 'deals', id: r.id })}
+            onOpen={(r) => {
+              // Opening a bundle brings the inspector back if it was hidden.
+              ui.setInspectorShown(true);
+              navigate({ screen: 'deals', id: r.id, view });
+            }}
             onClose={openId ? close : undefined}
             handle={table}
           />
-          <p className="deals-foot">
-            Profit and ROI are estimates from your fee settings, not your real Amazon fees. Showing <span className="fig">{count(rows.length)}</span> of <span className="fig">{count(all.length)}</span>.
-          </p>
-        </>
+        ) : null}
+      </div>
+      {rows.length > 0 ? (
+        <p className="status-bar">
+          <span>
+            {filtered ? (
+              <>
+                <span className="fig">{count(rows.length)}</span> of <span className="fig">{count(inThisView.length)}</span>
+              </>
+            ) : (
+              plural(rows.length, 'bundle', 'bundles')
+            )}
+          </span>
+          <span aria-hidden="true">·</span>
+          <span>Profit and ROI are estimates from your fee settings, not your real Amazon fees.</span>
+        </p>
       ) : null}
     </div>
   );
 
+  const sectionOptions = [{ value: 'all' as Filter, label: 'All sections', count: inThisView.length }, ...SECTION_ORDER.filter((s) => counts.get(s)).map((s) => ({ value: s as Filter, label: SECTION_LABEL[s], count: counts.get(s) ?? 0 }))];
+
   return (
     <Page
-      title="Deals"
+      title={title}
       sub={sub}
-      bodyClass="page-body-split"
+      inspector
+      search={all.length ? <SearchField label="Search deals" placeholder="Title or model" value={query} onChange={setQuery} /> : null}
+      viewOptions={
+        all.length ? (
+          <PopoverSection title="Section">
+            <Select label={<span className="sr-only">Section</span>} value={section} onChange={(e) => setSection(e.target.value as Filter)} width="fill">
+              {sectionOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label} ({o.count})
+                </option>
+              ))}
+            </Select>
+          </PopoverSection>
+        ) : null
+      }
       actions={
         all.length ? (
-          <Button busy={csv.busy} busyLabel="Preparing…" onClick={() => void csv.run({ sort: sort.key === 'roi' || sort.key === 'off' ? sort.key : 'profit' })} title={csv.error ?? undefined}>
+          <Button variant="toolbar" glyph="download" busy={csv.busy} busyLabel="Preparing…" onClick={() => void csv.run({ sort: sort.key === 'roi' || sort.key === 'off' ? sort.key : 'profit' })} title="Save the deals as a CSV file, in the order shown">
             Download CSV
           </Button>
         ) : null
       }
     >
-      <SplitPane main={list} pane={openId ? <DealDetailPane id={openId} onClose={close} /> : null} paneLabel="Bundle detail" onClose={close} />
+      <InspectorSplit main={list} inspector={openId ? <DealDetailPane id={openId} /> : null} label="Bundle" onClose={openId ? close : undefined} empty="No bundle selected" />
     </Page>
   );
 }
+
+const EMPTY_VIEW: Record<DealView, string> = {
+  all: '',
+  confirmed: 'No bundle has every part matched and priced yet.',
+  'needs-answer': 'No bundle waits for one of your answers.',
+  waiting: 'Every bundle’s parts have been looked up.',
+  losing: 'No bundle’s estimate is below zero.',
+};
 
 function LookUp({ row, disabled }: { row: DealRow; disabled: boolean }) {
   const look = useAction(api.lookUp);

@@ -1,36 +1,23 @@
 import { Fragment, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealDetail, DealPart, PriceLine } from '../api/types';
-import { Button } from '../components/Button';
+import { Button, LinkButton } from '../components/Button';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
-import { PaneClose } from '../components/Layout';
-import { SourceLink, webUrl } from '../components/Source';
-import { LoadError, Notice, SkeletonRows } from '../components/States';
+import { SourceLink } from '../components/Source';
+import { LoadError, LoadingState, Notice } from '../components/States';
 import { Tag } from '../components/Tag';
 import { money, percentOff, plural, when } from '../lib/format';
 import { GRADE_LABEL } from './reviewModel';
 import './DealDetail.css';
 
-/** One bundle, in the pane beside the Deals table. */
-export function DealDetailPane({ id, onClose }: { id: string; onClose: () => void }) {
+/** One bundle, in the inspector beside the Deals table. */
+export function DealDetailPane({ id }: { id: string }) {
   const [res, reload] = useResource(() => api.deal(id), [id], ['deals']);
   const d = res.data;
   return (
     <div className="detail">
-      <div className="detail-top">
-        <PaneClose onClose={onClose} />
-        {d?.link ? (
-          <a className="detail-hd" href={webUrl(d.link) ?? undefined} target="_blank" rel="noopener noreferrer">
-            Open on Home Depot
-          </a>
-        ) : null}
-      </div>
-      {res.status === 'loading' ? <SkeletonRows rows={6} columns={2} label="Loading the bundle" /> : null}
-      {res.status === 'error' && !d ? (
-        <div className="detail-pad">
-          <LoadError error={res.error} onRetry={reload} />
-        </div>
-      ) : null}
+      {res.status === 'loading' ? <LoadingState label="Loading the bundle" /> : null}
+      {res.status === 'error' && !d ? <LoadError error={res.error} onRetry={reload} /> : null}
       {d ? <Detail d={d} /> : null}
     </div>
   );
@@ -57,10 +44,10 @@ function Detail({ d }: { d: DealDetail }) {
     <>
       <div className="detail-body">
         <header className="detail-head">
-          <p className="caps">{d.brand}</p>
+          <p className="detail-brand">{d.brand}</p>
           <h2 className="detail-title">{d.title}</h2>
           <p className="detail-meta">
-            <span className="fig">{d.model}</span>
+            <span className="code">{d.model}</span>
             {d.price !== null ? (
               <>
                 {' · '}
@@ -68,13 +55,14 @@ function Detail({ d }: { d: DealDetail }) {
               </>
             ) : null}
             {percentOff(d.off) ? ` · ${percentOff(d.off)}` : ''}
-            {' · '}
-            <SourceLink source={{ label: 'Home Depot', url: d.link }} />
-            {d.seenAt ? `, price seen ${when(d.seenAt)}` : ''}
+          </p>
+          <p className="detail-meta">
+            <SourceLink source={{ label: 'Open on Home Depot', url: d.link }} />
+            {d.seenAt ? <span className="muted"> · price seen {when(d.seenAt)}</span> : null}
           </p>
         </header>
 
-        <section className="detail-band" aria-label="Estimate">
+        <section className="detail-box" aria-label="Estimate">
           {e ? (
             <>
               <div className="detail-headline">
@@ -83,6 +71,7 @@ function Detail({ d }: { d: DealDetail }) {
                   <Roi value={e.roi} label />
                 </span>
               </div>
+              <p className="detail-estimate">Estimated profit</p>
               <dl className="detail-figures">
                 <div>
                   <dt>Bundle costs</dt>
@@ -104,16 +93,7 @@ function Detail({ d }: { d: DealDetail }) {
                 </div>
               </dl>
               <p className="detail-note">
-                {e.basis}{' '}
-                <a
-                  href="#/settings/fees"
-                  onClick={(ev) => {
-                    ev.preventDefault();
-                    navigate({ screen: 'settings', id: 'fees' });
-                  }}
-                >
-                  Change
-                </a>
+                {e.basis} <LinkButton onClick={() => navigate({ screen: 'settings', id: 'fees' })}>Change</LinkButton>
               </p>
               <RoiRangeLine range={e.roiRange} />
               {e.countedAtZero.length ? (
@@ -122,7 +102,7 @@ function Detail({ d }: { d: DealDetail }) {
                   {e.countedAtZero.map((m, i) => (
                     <Fragment key={m}>
                       {i === 0 ? '' : i === e.countedAtZero.length - 1 ? ' and ' : ', '}
-                      <span className="fig">{m}</span>
+                      <span className="code">{m}</span>
                     </Fragment>
                   ))}{' '}
                   at $0: no priced Amazon listing is chosen.
@@ -134,14 +114,7 @@ function Detail({ d }: { d: DealDetail }) {
               <p className="detail-none">{d.noEstimate}</p>
               {d.lookup && searches !== null ? (
                 <div className="detail-row">
-                  <Button
-                    variant="primary"
-                    busy={look.busy}
-                    busyLabel="Looking up…"
-                    disabled={scanRunning}
-                    onClick={() => void look.run(d.id)}
-                    cost={plural(searches, 'search', 'searches')}
-                  >
+                  <Button variant="primary" busy={look.busy} busyLabel="Looking up…" disabled={scanRunning} onClick={() => void look.run(d.id)} cost={plural(searches, 'search', 'searches')}>
                     Look up
                   </Button>
                   {scanRunning ? <span className="detail-note">A scan is running. Look up when it has finished.</span> : null}
@@ -168,8 +141,8 @@ function Detail({ d }: { d: DealDetail }) {
 
         {d.ways.length > 1 ? (
           <section className="detail-section">
-            <h3 className="caps">
-              Ways to sell · <span className="fig">{d.ways.length}</span>
+            <h3 className="detail-section-title">
+              Ways to sell <span className="fig muted">{d.ways.length}</span>
             </h3>
             <ul className="detail-list">
               {d.ways.map((w) => (
@@ -197,8 +170,8 @@ function Detail({ d }: { d: DealDetail }) {
 
         {d.parts.length ? (
           <section className="detail-section">
-            <h3 className="caps">
-              Parts · <span className="fig">{d.parts.length}</span>
+            <h3 className="detail-section-title">
+              Parts <span className="fig muted">{d.parts.length}</span>
             </h3>
             <ul className="detail-list">
               {d.parts.map((p) => (
@@ -210,12 +183,12 @@ function Detail({ d }: { d: DealDetail }) {
       </div>
 
       <footer className="detail-foot">
+        <span role="status" className="detail-note">
+          {copied ?? (d.asins.length ? plural(d.asins.length, 'ASIN', 'ASINs') : 'No ASIN chosen yet')}
+        </span>
         <Button variant="primary" disabled={d.asins.length === 0} onClick={() => void copy()}>
           {d.asins.length === 2 ? 'Copy both ASINs' : 'Copy ASINs'}
         </Button>
-        <span role="status" className="detail-note">
-          {copied ?? ''}
-        </span>
       </footer>
     </>
   );
@@ -229,7 +202,7 @@ function Part({ part, dealId, brand, scanRunning }: { part: DealPart; dealId: st
     <li className="part">
       <div className="part-top">
         <div className="part-name">
-          <span className="part-model fig">
+          <span className="part-model code">
             {part.model}
             {part.qty > 1 ? ` ×${part.qty}` : ''}
           </span>
@@ -247,25 +220,18 @@ function Part({ part, dealId, brand, scanRunning }: { part: DealPart; dealId: st
         ) : null}
       </div>
       <div className="part-tags">
+        <Tag tone={tone}>{GRADE_LABEL[part.grade]}</Tag>
         {part.asin ? (
           <a href={`https://www.amazon.com/dp/${part.asin}`} target="_blank" rel="noopener noreferrer">
-            <span className="fig">{part.asin}</span> on Amazon
+            <span className="code">{part.asin}</span> on Amazon
           </a>
         ) : (
           <a href={search} target="_blank" rel="noopener noreferrer">
-            Search Amazon for <span className="fig">{part.model}</span>
+            Search Amazon for <span className="code">{part.model}</span>
           </a>
         )}
-        <Tag tone={tone}>{GRADE_LABEL[part.grade]}</Tag>
         {part.grade === 'title_match' && part.asin ? (
-          <Button
-            size="sm"
-            busy={verify.busy}
-            busyLabel="Verifying…"
-            disabled={scanRunning}
-            onClick={() => void verify.run(dealId, part.model)}
-            cost={plural(part.verifySearches ?? 1, 'search', 'searches')}
-          >
+          <Button size="sm" busy={verify.busy} busyLabel="Verifying…" disabled={scanRunning} onClick={() => void verify.run(dealId, part.model)} cost={plural(part.verifySearches ?? 1, 'search', 'searches')}>
             Verify
           </Button>
         ) : null}
@@ -286,9 +252,7 @@ function PriceRow({ line }: { line: PriceLine }) {
   return (
     <li className={`price${line.counted ? ' price-counted' : ''}`}>
       <span className="price-label">{line.label}</span>
-      <span className="price-amount fig">
-        {line.amount !== null ? money(line.amount) : line.range ? `${money(line.range.low)}–${money(line.range.high)}` : '—'}
-      </span>
+      <span className="price-amount fig">{line.amount !== null ? money(line.amount) : line.range ? `${money(line.range.low)}–${money(line.range.high)}` : '—'}</span>
       <span className="price-note">
         {line.note ? line.note : null}
         {line.seenAt ? `${line.note ? ' · ' : ''}seen ${when(line.seenAt)}` : null}

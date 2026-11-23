@@ -1,6 +1,7 @@
 import { useImperativeHandle, useRef, type ReactNode, type Ref } from 'react';
 import { listKey, pressOf } from '../lib/keys';
 import { ariaSort, nextSort, type SortDirection, type SortState } from '../lib/sort';
+import { Glyph } from './Glyph';
 import './Table.css';
 
 export interface Column<T, K extends string> {
@@ -103,8 +104,8 @@ export function Table<T, K extends string>({
                   <button type="button" className="th-sort" onClick={() => onSort(nextSort(sort, c.key, c.natural ?? 'desc'))}>
                     <span aria-hidden={c.short ? true : undefined}>{c.short ?? c.label}</span>
                     {c.short ? <span className="sr-only">{c.label}</span> : null}
-                    <span className="th-arrow fig" aria-hidden="true">
-                      {sort.key === c.key ? (sort.dir === 'asc' ? '↑' : '↓') : ''}
+                    <span className={`th-arrow${sort.key === c.key && sort.dir === 'asc' ? ' th-arrow-up' : ''}`} aria-hidden="true">
+                      {sort.key === c.key ? <Glyph name="chevron-down" size={10} /> : null}
                     </span>
                   </button>
                 ) : (

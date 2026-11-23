@@ -1,124 +1,134 @@
-.review-pad {
-  padding: 20px var(--gutter);
-}
-
+/* Review: the question list in the content (grouped like a source list's sections), the question in the inspector. */
 .review {
-  display: grid;
-  grid-template-columns: clamp(280px, 30%, 360px) minmax(0, 1fr);
-  height: 100%;
-  min-height: 0;
-}
-
-.review-list {
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-height: 0;
-  overflow: auto;
-  background: var(--surface);
-  border-right: 1px solid var(--line);
 }
 
-.review-filter {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--line);
+.qgroup + .qgroup {
+  margin-top: 8px;
 }
 
-.review-quiet {
-  padding: 10px 16px;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
-  border-bottom: 1px solid var(--line);
-}
-
-.review-group-head {
+.qgroup-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 14px 16px 6px;
+  gap: 12px;
+  min-height: 28px;
+  padding: 4px var(--gutter);
+  background: var(--content-bg);
+  border-bottom: 1px solid var(--separator);
+  font-size: 12px;
 }
 
-/* "Approve all 3 verified": the section's decision, a quiet ink button, underlined. */
-.approve-all {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.review-confirm {
-  padding: 4px 16px 10px;
-  font-size: 13px;
+.qgroup-head h2 {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  color: var(--label-2);
 }
 
 .qlist {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--line);
 }
 
-.qlist li + li {
-  border-top: 1px solid var(--line);
+.qlist li + li .qitem {
+  border-top: 1px solid light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.05));
 }
 
 .qitem {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   width: 100%;
-  min-height: 56px;
-  padding: 9px 16px;
+  min-height: var(--row-2);
+  padding: 4px var(--gutter);
   border: 0;
   background: transparent;
   text-align: left;
-  cursor: pointer;
+  color: var(--label);
+  cursor: default;
 }
 
 .qitem:hover {
-  background: var(--paper);
+  background: var(--hover);
 }
 
 .qitem[aria-current='true'] {
-  background: var(--sunken);
+  background: var(--selection-quiet);
+  border-top-color: transparent;
+}
+
+:root[data-window-active] .qitem[aria-current='true'] {
+  background: var(--selection);
+  color: #ffffff;
+}
+
+:root[data-window-active] .qitem[aria-current='true'] :is(.qitem-sub, .code) {
+  color: rgb(255 255 255 / 0.9);
+}
+
+:root[data-window-active] .qitem[aria-current='true'] .tag {
+  background: rgb(255 255 255 / 0.22);
+  color: #ffffff;
+}
+
+.qlist li + li .qitem[aria-current='true'],
+.qlist li:has(+ li .qitem[aria-current='true']) .qitem {
+  border-color: transparent;
 }
 
 .qitem:focus-visible {
-  outline-offset: -2px;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
+}
+
+.qitem-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .qitem-title {
-  width: 100%;
-  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .qitem-sub {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .review-keys {
-  margin-top: auto;
-  padding: 12px 16px;
-  font-size: 12px;
-  color: var(--ink-2);
-  border-top: 1px solid var(--line);
+  gap: 4px;
 }
 
-.review-detail {
-  min-width: 0;
-  min-height: 0;
-  overflow: auto;
-}
-
+/* The question in the inspector */
 .question {
-  max-width: 760px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 20px var(--gutter) 40px;
+  min-height: 100%;
+}
+
+.question-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 16px 20px;
 }
 
 .question-head {
@@ -127,151 +137,186 @@
   gap: 4px;
 }
 
+.question-kind {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  color: var(--label-2);
+}
+
 .question-prompt {
-  font-size: 20px;
-  line-height: 28px;
+  font-size: 15px;
+  line-height: 20px;
   font-weight: 600;
 }
 
 .question-bundle {
-  color: var(--ink-2);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
 }
 
 .question-links {
   display: flex;
-  gap: 16px;
-  align-items: center;
+  gap: 12px;
+  font-size: 12px;
 }
 
-.question-link-btn {
-  padding: 0;
+.question .notice {
   border: 0;
-  background: transparent;
-  color: var(--link);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.question-link-btn:hover {
-  text-decoration: underline;
+  border-radius: var(--radius);
+  padding: 8px 10px;
 }
 
 .question-section {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  font-size: 13px;
+  line-height: 18px;
 }
 
-/* The AI suggestion: plain text in a thin ink-2 rule, no fill, no card (design.md, Ask AI). */
+.question-section-title {
+  padding: 0;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+/* The AI block: one group box, the answer in the label colour, the quotes and their sources under it. */
 .ai {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 2px 0 2px 14px;
-  border-left: 2px solid var(--ink-2);
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--group-bg);
+  box-shadow: 0 0 0 0.5px var(--separator);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.ai-verified {
+  box-shadow:
+    0 0 0 0.5px var(--separator),
+    inset 0 0 0 1px color-mix(in srgb, var(--system-green) 35%, transparent);
+}
+
+.ai-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .ai-answer {
+  font-size: 15px;
+  line-height: 20px;
   font-weight: 600;
-  color: var(--ink);
-}
-
-.ai-answer.fig {
-  font-size: 13px;
 }
 
 .ai-claimed {
-  color: var(--ink-2);
-  font-weight: 500;
+  font-weight: 400;
+  color: var(--label-2);
 }
 
 .ai-cost {
-  font-size: 12px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
 }
 
 .question-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
 .choices {
-  margin: 0;
-  padding: 0;
-  border: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
 }
 
 .choices > legend {
-  margin-bottom: 8px;
-  padding: 0;
+  margin-bottom: 6px;
+}
+
+.choice-box {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: var(--group-bg);
+  box-shadow: 0 0 0 0.5px var(--separator);
+  overflow: hidden;
 }
 
 .choice {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 8px 12px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  cursor: pointer;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.choice + .choice {
+  border-top: 1px solid var(--separator);
 }
 
 .choice:hover {
-  border-color: var(--line-strong);
+  background: var(--hover);
 }
 
 .choice-on {
-  border-color: var(--ink);
+  background: var(--accent-soft);
 }
 
 .choice input {
-  width: 16px;
-  height: 16px;
   margin: 0;
-  accent-color: var(--ink);
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
   flex: none;
 }
 
 .choice-text {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  flex: 1;
-}
-
-.choice-label.fig {
-  font-size: 13px;
+  gap: 1px;
 }
 
 .choice-sub {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
-}
-
-.choice-ai {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink-2);
-  letter-spacing: 0.06em;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
 }
 
 .question-actions {
+  position: sticky;
+  bottom: 0;
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--grouped-bg);
+  border-top: 1px solid var(--separator);
+}
+
+.question-spacer {
+  flex: 1;
 }
 
 .question-error {
-  font-size: 13px;
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--loss);
 }

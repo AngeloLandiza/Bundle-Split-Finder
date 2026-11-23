@@ -1,76 +1,94 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { EmptyState } from './States';
+import { clampInspector, useUi } from './ui';
 import './Layout.css';
 
-/** The page's title (20/28 semibold), an optional quiet line under it, and the page's actions at the right. */
-export function PageHeader({ title, sub, actions }: { title: ReactNode; sub?: ReactNode; actions?: ReactNode }) {
-  return (
-    <header className="page-header">
-      <div className="page-header-text">
-        <h1 className="page-title" tabIndex={-1}>
-          {title}
-        </h1>
-        {sub ? <p className="page-sub">{sub}</p> : null}
-      </div>
-      {actions ? <div className="page-actions">{actions}</div> : null}
-    </header>
-  );
-}
-
-/** A band with a section label ("BEST DEALS · 5") and its action at the right. One level of surface: no nesting. */
-export function Section({ label, count, action, children, flush = false, id }: { label: string; count?: number; action?: ReactNode; children: ReactNode; flush?: boolean; id?: string }) {
+/**
+ * A grouped section, as in System Settings: its title and count above one rounded box, its action at the
+ * right of the title. Rows inside the box are separated by inset hairlines. One level: no box in a box.
+ */
+export function Section({ label, count, action, children, flush = false, id, note }: { label: string; count?: number; action?: ReactNode; children: ReactNode; flush?: boolean; id?: string; note?: ReactNode }) {
   const auto = useId();
   const labelId = id ?? auto;
   return (
     <section className="section" aria-labelledby={labelId}>
       <div className="section-head">
-        <h2 className="caps" id={labelId}>
+        <h2 className="section-title" id={labelId}>
           {label}
-          {count !== undefined ? <span className="fig"> · {count}</span> : null}
+          {count !== undefined ? <span className="section-count fig">{count}</span> : null}
         </h2>
         {action ? <div className="section-action">{action}</div> : null}
       </div>
-      <div className={flush ? 'section-body section-flush' : 'section-body'}>{children}</div>
+      <div className={flush ? 'section-box section-flush' : 'section-box'}>{children}</div>
+      {note ? <p className="section-note">{note}</p> : null}
     </section>
   );
 }
 
 /**
- * The main list and, when something is open, a detail pane on the right. Escape closes the pane
- * and focus returns to the row that opened it (the screen passes `onClose` and restores focus).
+ * The content on the left and the inspector on the right (Cmd+Option+I shows or hides it), split by a
+ * divider that drags to resize. With nothing selected the inspector says so, as in Finder. Escape
+ * deselects (the screen passes `onClose` and restores focus).
  */
-export function SplitPane({ main, pane, paneLabel, onClose }: { main: ReactNode; pane: ReactNode | null; paneLabel: string; onClose: () => void }) {
-  const ref = useRef<HTMLElement>(null);
+export function InspectorSplit({ main, inspector, label, onClose, empty = 'No selection', min = 0 }: { main: ReactNode; inspector: ReactNode | null; label: string; onClose?: () => void; empty?: string; min?: number }) {
+  const ui = useUi();
+  const width = Math.max(ui.inspectorWidth, min);
+  const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!pane) return;
+    if (!inspector || !onClose) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !e.defaultPrevented) {
+      if (e.key === 'Escape' && !e.defaultPrevented && !document.querySelector('[aria-modal="true"]')) {
         e.preventDefault();
         onClose();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [pane, onClose]);
+  }, [inspector, onClose]);
+
+  const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const right = box.current?.getBoundingClientRect().right ?? window.innerWidth;
+    const target = e.currentTarget;
+    target.setPointerCapture(e.pointerId);
+    const move = (ev: PointerEvent) => ui.setInspectorWidth(clampInspector(right - ev.clientX));
+    const up = () => {
+      target.removeEventListener('pointermove', move);
+      target.removeEventListener('pointerup', up);
+      document.documentElement.classList.remove('resizing');
+    };
+    document.documentElement.classList.add('resizing');
+    target.addEventListener('pointermove', move);
+    target.addEventListener('pointerup', up);
+  };
+  const onKeyResize = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      ui.setInspectorWidth(clampInspector(width + (e.key === 'ArrowLeft' ? 20 : -20)));
+    }
+  };
+
   return (
-    <div className={`split${pane ? ' split-open' : ''}`}>
+    <div className={`split${ui.inspectorShown ? ' split-open' : ''}`} ref={box} style={{ ['--inspector-w' as string]: `${width}px` }}>
       <div className="split-main">{main}</div>
-      {pane ? (
-        <aside className="split-pane view-enter" aria-label={paneLabel} ref={ref}>
-          {pane}
-        </aside>
+      {ui.inspectorShown ? (
+        <>
+          <div
+            className="split-divider"
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize the inspector"
+            aria-valuenow={width}
+            tabIndex={0}
+            onPointerDown={startResize}
+            onKeyDown={onKeyResize}
+          />
+          <aside className="inspector" aria-label={label}>
+            {inspector ?? <EmptyState title={empty} />}
+          </aside>
+        </>
       ) : null}
     </div>
-  );
-}
-
-/** The pane's close control: a real button, Esc does the same. */
-export function PaneClose({ onClose }: { onClose: () => void }) {
-  return (
-    <button type="button" className="pane-close" onClick={onClose} aria-label="Close (Esc)" title="Close (Esc)">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-        <path d="M3 3l8 8M11 3l-8 8" />
-      </svg>
-    </button>
   );
 }
 

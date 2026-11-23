@@ -1,21 +1,21 @@
+/* A source link ("Home Depot page", "Amazon listing") in the accent. */
 .source {
-  font-size: 13px;
-  font-weight: 500;
   white-space: nowrap;
 }
 
 .source-plain {
-  color: var(--ink-2);
+  color: var(--label-2);
 }
 
 .quote {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
 }
 
 .quote q {
   quotes: '\201C' '\201D';
+  color: var(--label);
 }
 
 .quote-clamp {

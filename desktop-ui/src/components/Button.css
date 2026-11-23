@@ -1,105 +1,164 @@
+/* Push buttons, toolbar items and text buttons in the AppKit manner (design.md, Desktop app > Controls). */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 20px;
+  gap: 5px;
+  height: var(--control-h);
+  padding: 0 10px;
+  border: 0;
+  border-radius: 5px;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 400;
   white-space: nowrap;
-  cursor: pointer;
+  cursor: default;
   text-decoration: none;
+  flex: none;
 }
 
 .btn:hover {
   text-decoration: none;
 }
 
-.btn-md {
-  height: 36px;
-  padding: 0 14px;
+.btn .glyph {
+  flex: none;
 }
 
 .btn-sm {
-  height: 28px;
-  padding: 0 10px;
-  font-size: 13px;
+  height: 20px;
+  padding: 0 8px;
+  font-size: 12px;
+  border-radius: 4px;
 }
 
-.btn-primary {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--surface);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #000;
-}
-
-.btn-secondary {
-  background: var(--surface);
-  border-color: var(--line-strong);
-  color: var(--ink);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  border-color: var(--ink);
-}
-
-/* A text button: ink, semibold, underlined on hover. "Approve all 18 verified" is one, underlined always. */
-.btn-quiet {
-  background: transparent;
-  color: var(--ink);
-  padding-left: 0;
-  padding-right: 0;
-  height: auto;
-  min-height: 28px;
-}
-
-.btn-quiet:hover:not(:disabled) {
-  text-decoration: underline;
-}
-
-.btn-danger {
-  background: var(--surface);
-  border-color: var(--line-strong);
-  color: var(--loss);
-}
-
-.btn-danger:hover:not(:disabled) {
-  border-color: var(--loss);
-}
-
-.btn:disabled {
-  cursor: not-allowed;
-  color: var(--ink-3);
-  background: var(--sunken);
-  border-color: var(--line);
-}
-
-.btn-quiet:disabled {
-  background: transparent;
-}
-
-.btn-dot {
-  font-weight: 400;
+.btn-lg {
+  height: var(--control-h-lg);
+  padding: 0 14px;
+  border-radius: 6px;
 }
 
 .btn-cost {
-  font-weight: 500;
+  color: inherit;
+  opacity: 0.72;
 }
 
-.btn-cost .fig {
-  font-size: 13px;
+/* Push button: a raised white key in light mode, a lifted grey one in dark. */
+.btn-secondary,
+.btn-danger {
+  background: var(--button-bg);
+  color: var(--label);
+  box-shadow:
+    0 0 0 0.5px var(--button-edge),
+    0 0.5px 1px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.3));
+}
+
+.btn-secondary:active:not(:disabled),
+.btn-danger:active:not(:disabled) {
+  background: light-dark(#f0f0f0, rgb(255 255 255 / 0.24));
+}
+
+.btn-danger {
+  color: var(--loss);
+}
+
+/* Default button: the accent, white words. */
+.btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow:
+    0 0 0 0.5px color-mix(in srgb, var(--accent) 70%, black),
+    0 0.5px 1px rgb(0 0 0 / 0.2);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 82%, black);
 }
 
 .btn-primary .btn-cost {
-  color: var(--line);
+  opacity: 0.85;
 }
 
-.btn-secondary .btn-cost,
-.btn-quiet .btn-cost {
-  color: var(--ink-2);
+/* Borderless: words only until hovered. */
+.btn-quiet {
+  background: transparent;
+  color: var(--label);
+}
+
+.btn-quiet:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.btn-quiet:active:not(:disabled) {
+  background: var(--fill-2);
+}
+
+/* Toolbar item: borderless, a soft fill on hover, 28px tall, glyph and optional words. */
+.btn-toolbar {
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--label-2);
+}
+
+.btn-toolbar .btn-label {
+  color: var(--label);
+}
+
+.btn-toolbar:hover:not(:disabled) {
+  background: var(--fill);
+}
+
+.btn-toolbar:active:not(:disabled),
+.btn-toolbar[aria-pressed='true'],
+.btn-toolbar[aria-expanded='true'] {
+  background: var(--fill-2);
+  color: var(--label);
+}
+
+.btn-toolbar[aria-pressed='true'] .glyph {
+  color: var(--accent);
+}
+
+.btn-icon {
+  padding: 0;
+  width: 28px;
+}
+
+.btn-sm.btn-icon {
+  width: 20px;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+}
+
+.btn[aria-busy='true'] {
+  opacity: 0.85;
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 0;
+}
+
+/* A text button in the accent: "Open Review", "Show all", "Approve all 4". */
+.link-btn {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--accent);
+  font-size: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.link-btn:disabled {
+  color: var(--label-3);
+  text-decoration: none;
 }

@@ -1,5 +1,6 @@
 import type { AgentView } from '../api/types';
 import { when } from '../lib/format';
+import { ProgressBar, Spinner } from './States';
 import './StatusLine.css';
 
 /** What the agent is doing, in words: the state, then the step the agent reports with its own count. */
@@ -29,21 +30,19 @@ export function StatusLine({ agent, compact = false }: { agent: AgentView; compa
   const words = agentWords(agent);
   const running = agent.status === 'scanning' || agent.status === 'asking';
   const p = agent.pipeline;
-  const pct = p ? Math.round(p.fraction * 100) : 0;
   return (
     <div className={`status${compact ? ' status-compact' : ''}`}>
       <div className="status-line" aria-live="polite">
         <span className="status-text">
-          <span className={`status-state${agent.status === 'paused' ? ' status-paused' : ''}`}>{words.state}</span>
-          {words.detail ? <span className="status-detail"> · {words.detail}</span> : null}
+          {running || agent.status === 'stopping' ? <Spinner size={14} /> : null}
+          <span>
+            <span className={`status-state${agent.status === 'paused' ? ' status-paused' : ''}`}>{words.state}</span>
+            {words.detail ? <span className="status-detail"> · {words.detail}</span> : null}
+          </span>
         </span>
         {running && p && !compact ? <span className="status-right fig">{p.estimateText}</span> : null}
       </div>
-      {running && p ? (
-        <span className="status-bar" role="progressbar" aria-label={p.labels?.bar ?? 'Scan progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-valuetext={p.ariaValueText}>
-          <span className="status-fill" style={{ inlineSize: `${pct}%` }} />
-        </span>
-      ) : null}
+      {running && p ? <ProgressBar value={p.fraction} label={p.labels?.bar ?? 'Scan progress'} valueText={p.ariaValueText} /> : null}
       {running && p && !compact ? (
         <ol className="status-steps" aria-label={p.labels?.steps ?? 'Scan steps'}>
           {p.steps.map((s) => (

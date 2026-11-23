@@ -1,198 +1,220 @@
+/* Today: a dashboard on the grouped ground. Four figures across, then the lists and the agent. */
 .today {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  grid-template-areas: 'main agent';
-  gap: 32px;
-  align-items: start;
   max-width: 1200px;
-}
-
-.today-main {
-  grid-area: main;
+  margin: 0 auto;
+  padding: var(--gutter) var(--gutter) 32px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  min-width: 0;
+  gap: var(--section-gap);
 }
 
-.today-agent {
-  grid-area: agent;
-  min-width: 0;
+.figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
 }
 
-/* Under 1180px one column: what needs him first, the agent under the lists. */
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--group-bg);
+  box-shadow: 0 0 0 0.5px var(--separator);
+  text-align: left;
+  color: var(--label);
+  cursor: default;
+}
+
+.figure-link:hover {
+  background: light-dark(#fafafa, #2e2e2e);
+}
+
+.figure dd {
+  margin: 0;
+}
+
+.figure-label {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  color: var(--label-2);
+}
+
+.figure-note {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--section-gap) 20px;
+  align-items: start;
+}
+
 @media (max-width: 1180px) {
-  .today {
+  .today-grid {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'main' 'agent';
-    gap: 24px;
   }
 }
 
-/* A compact list of links: one hairline between rows, no cards. */
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  background: var(--surface);
-}
-
-.list li + li {
-  border-top: 1px solid var(--line);
-}
-
-.list-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 16px;
-  min-height: 56px;
-  padding: 8px 16px;
-  color: var(--ink);
-}
-
-.list-row:hover {
-  background: var(--paper);
-  text-decoration: none;
-}
-
-.list-row:focus-visible {
-  outline-offset: -2px;
-}
-
-.list-row-deal,
-.list-head {
-  grid-template-columns: minmax(0, 1fr) 104px 112px;
-}
-
-.list-head {
-  display: grid;
-  gap: 16px;
-  padding: 8px 16px 6px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink-2);
-}
-
-.list-head span:not(:first-child) {
-  text-align: right;
-}
-
-.list-main {
+.today-main,
+.today-side {
   display: flex;
   flex-direction: column;
+  gap: var(--section-gap);
   min-width: 0;
 }
 
-.list-title {
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.list-sub {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.list-fig {
-  text-align: right;
-  font-size: 13px;
-}
-
-.list-roi {
+/* A row that opens something: the words, a badge, a chevron at the end, as in System Settings. */
+.nav-row {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--row-2);
+  padding: 6px 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--label);
+  cursor: default;
+}
+
+.nav-row:hover {
+  background: var(--hover);
+}
+
+.nav-row:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
+}
+
+.nav-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nav-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-sub {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-chevron {
+  flex: none;
+  color: var(--label-3);
+}
+
+/* Best deals: bundle, price, profit, ROI in aligned columns. */
+.deal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px 96px 88px;
+  align-items: center;
+  gap: 10px;
+}
+
+.deal-grid-head {
+  min-height: 26px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--separator);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  color: var(--label-2);
+}
+
+.deal-grid-head span:not(:first-child),
+.deal-grid-fig {
+  text-align: right;
+}
+
+.deal-grid-roi {
+  display: inline-flex;
   flex-direction: column;
   align-items: flex-end;
 }
 
-.list-end {
-  display: flex;
-  gap: 8px;
-}
-
-.list-more {
-  padding: 10px 16px;
-  font-size: 13px;
-  color: var(--ink-2);
-  border-top: 1px solid var(--line);
-  background: var(--surface);
-}
-
-.section .figure-estimate {
-  padding: 10px 16px;
-  border-top: 1px solid var(--line);
-  background: var(--surface);
-}
-
-/* The agent block */
-.agent {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-  background: var(--surface);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.agent-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+/* The agent card */
+.agent-status {
+  padding: 12px;
+  border-bottom: 1px solid var(--separator);
 }
 
 .agent-error {
-  font-size: 13px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--loss);
 }
 
 .facts {
   margin: 0;
+}
+
+.fact {
   display: flex;
-  flex-direction: column;
-  border-top: 1px solid var(--line);
-}
-
-.facts > div {
-  display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
+  justify-content: space-between;
   gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-  font-size: 13px;
-  line-height: 18px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 16px;
 }
 
-.facts dt {
-  color: var(--ink-2);
+.fact + .fact {
+  border-top: 1px solid var(--separator);
 }
 
-.facts dd {
+.fact dt {
+  flex: none;
+  color: var(--label);
+}
+
+.fact dd {
   margin: 0;
   min-width: 0;
-}
-
-.facts-meter {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  text-align: right;
+  color: var(--label-2);
 }
 
-.facts-note {
-  grid-column: 1 / -1;
-  color: var(--ink-2);
+.fact dd .meter {
+  width: 120px;
+}
+
+.fact-sub {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
 }
 
 .agent-autopilot {
-  font-size: 13px;
-  line-height: 18px;
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--separator);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
 }

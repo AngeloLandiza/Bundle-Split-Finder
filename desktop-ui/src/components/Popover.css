@@ -1,0 +1,55 @@
+.popover-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+/* The popover's material: a light panel with the system's soft shadow and hairline edge. */
+.popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--popover-bg);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow:
+    0 0 0 0.5px light-dark(rgb(0 0 0 / 0.15), rgb(255 255 255 / 0.12)),
+    0 10px 30px rgb(0 0 0 / 0.2);
+  color: var(--label);
+  cursor: default;
+  animation: popover-in 120ms ease-out;
+}
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.popover-section {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.popover-title {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  color: var(--label-2);
+}
+
+.popover .seg-track {
+  display: flex;
+}
+
+.popover .seg-option {
+  flex: 1;
+  justify-content: center;
+}

@@ -1,49 +1,8 @@
 .deals {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
-}
-
-.deals-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px 16px;
-  flex-wrap: wrap;
-  padding: 16px var(--gutter) 12px;
-}
-
-.deals-filter {
-  flex: none;
-}
-
-.deals-quiet {
-  padding: 0 var(--gutter) 12px;
-  font-size: 13px;
-  color: var(--ink-2);
-}
-
-.deals-pad {
-  padding: 16px var(--gutter);
-}
-
-.deals .table-wrap {
-  margin: 0;
-}
-
-.deals-foot {
-  padding: 10px var(--gutter) 24px;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
-}
-
-.col-off {
-  width: 64px;
-}
-
-.col-roi {
-  width: 124px;
+  flex: 1;
+  min-height: 0;
 }
 
 .deal-flag-quiet,
@@ -65,76 +24,46 @@
   }
 }
 
-/* The section filter: a segmented control, or a select when the list is narrow. */
-.split-main {
-  container-type: inline-size;
-}
-
-.deals-select {
-  display: none;
-}
-
-@container (max-width: 860px) {
-  .deals-seg {
-    display: none;
-  }
-
-  .deals-select {
-    display: block;
-  }
-}
-
 .deal-cell {
   display: flex;
   flex-direction: column;
+  gap: 1px;
   min-width: 0;
 }
 
 .deal-title {
-  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .deal-sub {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.cell-fig {
-  font-size: 13px;
 }
 
 .cell-roi {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-end;
-  font-size: 13px;
 }
 
 .cell-none {
-  color: var(--ink-3);
+  color: var(--label-3);
 }
 
 .cell-words {
-  font-size: 13px;
-  color: var(--ink-2);
+  color: var(--label-2);
 }
 
 .cell-time {
   display: block;
-  font-size: 13px;
-  color: var(--ink-2);
+  color: var(--label-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.table td .figure-profit {
-  font-size: 13px;
 }
