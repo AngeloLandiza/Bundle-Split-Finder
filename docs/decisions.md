@@ -848,3 +848,32 @@ although the paired helper already read Home Depot's pages free (the BOGO pass, 
   Depot lists the same products.
 - *For v2:* if Home Depot's listing state carries prices (unrecorded), the item page reads for price could go; record a
   full listing state once to find out.
+## The listing ladder, round 2: no endless "being confirmed" (Nov 23)
+
+Live, the two pending deals (PSK1212SB-PCL515B and -PCL633B) said their listings were being confirmed for 25 minutes and
+nothing happened: with 102 searches left and a reserve of 100, rung 2's allowance was 0, and the queue still counted its
+listings for "the next day", every day. PBP004 is on B09HDZ5MPV ("TTI Ryobi PBP004 …", brand TTI) and PCG002 on
+B0B1QRQYK2 ("ONEAND 18V Lithium-ION Charger PCG002", brand ONEAND). The validation answer key labels **both as the right
+listing** (TTI makes RYOBI; "ONEAND" is RYOBI's "ONE+" as Amazon prints it), so the hold was right to wait for a
+confirmation, but they are not another brand's parts.
+
+- **Queued only when a rung can run** (`agent/autoConfirm.ts`): rung 2 only when it is on, has a key, today's allowance is
+  not spent and the last known account (`AgentRuntime.serp`, kept fresh by rung 2's own free check) leaves searches above
+  the reserve (`rung2CanRun`); the catalog check only when Keepa can pull (`keepaCanPull`). Otherwise the listing is
+  `unconfirmable` with its reason from what was read (`verify.ts unconfirmedReason`: "listed under the brand TTI", "no part
+  number in Amazon's record", "title only"), no free account check is made, and the drip does not count it. When the
+  allowance is positive again, the listing is queued again once (it was never read, so it is not in `tried`).
+- **The words**: "Looks worth buying: … — 2 listings could not be confirmed: PBP004 is listed under the brand TTI; PCG002
+  under the brand ONEAND. Confirm or replace them." `DealRow.buyPending.blocked` is true, and each part's
+  `PartRow.confirmNote` says its reason on the deal's page. A stored verdict from before ("being confirmed first") is
+  replaced the same way.
+- **Re-pick before giving up** (`agent/verifyMatches.ts repickUnconfirmed`): the part's other stored search rows (free),
+  then one Keepa search for the part (`RYOBI PCG002`, 11 tokens, only above the Keepa reserve, at most once a week a part).
+  When exactly one other candidate passes rung 0 or rung 1, the part moves to it, grade strong, with the record "switched
+  from B0B1QRQYK2 (…) to …: Amazon's catalog lists brand RYOBI, part number PCG002", its price pulled (1 token) and the
+  estimate and signals rebuilt; the old listing stays an alternative. None, or more than one: nothing changes.
+- **The narrow brand contradiction is not adopted** (`verify.ts narrowBrandContradiction`, `npm run measure:autoconfirm`):
+  "brand field another brand, manufacturer (when given) not the brand either, title's first word that brand" fires on no
+  recorded row (0 right, 0 wrong, 302 unknown) and on both live listings, which the answer key says are right (2 wrong).
+  So no listing is downgraded to "needs a listing" on its brand field: it stays counted and `unconfirmable`, and the owner
+  confirms or replaces it.

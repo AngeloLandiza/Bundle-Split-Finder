@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { ADOPTED_RULES, checkListingFields, type FieldRule } from '../core/src/keepa/listingFields';
-import { identityFromKeepa, identityFromSerpProduct } from '../core/src/keepa/verify';
+import { identityFromKeepa, identityFromSerpProduct, narrowBrandContradiction, type ListingIdentity } from '../core/src/keepa/verify';
 import { parseProductResponse, parseSearchResponse } from '../core/src/keepa/parse';
 import { wantedFor } from '../core/src/scan/classify';
 import { measureIdentity, verdictOf, type MeasuredRow, type Verdict } from './measure-identity';
@@ -106,7 +106,47 @@ export function replayScan3(root = ROOT): ReplayRow[] {
   return out;
 }
 
+/**
+ * The two listings the owner's live deals hold (Nov 23, the installed app): each with the brand word the live record shows,
+ * no manufacturer, and the answer key's verdict (fixtures/validation/labels-2026-11-18.json: both are the part's).
+ */
+export const LIVE_HELD: { model: string; listing: ListingIdentity; key: 'is' }[] = [
+  {
+    model: 'PBP004', key: 'is',
+    listing: { asin: 'B09HDZ5MPV', title: 'TTI Ryobi PBP004 ONE+ High Performance 18 Volts Lithium-Ion 4.0 Ah Battery', brand: 'TTI', manufacturer: null, partNumber: null, model: null, numberOfItems: null, packageQuantity: null, source: 'keepa_catalog' },
+  },
+  {
+    model: 'PCG002', key: 'is',
+    listing: { asin: 'B0B1QRQYK2', title: 'ONEAND 18V Lithium-ION Charger PCG002', brand: 'ONEAND', manufacturer: null, partNumber: null, model: null, numberOfItems: null, packageQuantity: null, source: 'keepa_catalog' },
+  },
+];
+
+/**
+ * The narrow brand contradiction (verify.ts narrowBrandContradiction) on every row with a known answer, and on the two live
+ * listings: right when it removes a listing the key says is not the part, wrong when it removes one the key says is.
+ */
+export function measureNarrowBrandRule(root = ROOT): { recorded: { right: number; wrong: number; unknown: number; newRight: number }; live: { right: number; wrong: number; unknown: number }; wrongRows: string[] } {
+  const known = measureIdentity(root).rows.filter((r) => r.key !== 'uncertain');
+  const recorded = { right: 0, wrong: 0, unknown: 0, newRight: 0 };
+  const wrongRows: string[] = [];
+  for (const r of known) {
+    const fired = narrowBrandContradiction(r.want, r.listing) !== null;
+    if (!fired) recorded.unknown += 1;
+    else if (r.key === 'not') { recorded.right += 1; if (r.check.status !== 'contradicted') recorded.newRight += 1; }
+    else { recorded.wrong += 1; wrongRows.push(`${r.asin} for ${r.model}: ${r.listing.title}`); }
+  }
+  const live = { right: 0, wrong: 0, unknown: 0 };
+  for (const h of LIVE_HELD) {
+    if (narrowBrandContradiction(wantedFor('RYOBI', h.model, new Map()), h.listing) === null) live.unknown += 1;
+    else { live.wrong += 1; wrongRows.push(`${h.listing.asin} for ${h.model} (live): ${h.listing.title}`); }
+  }
+  return { recorded, live, wrongRows };
+}
+
 if (process.argv[1] && /measure-autoconfirm\.ts$/.test(process.argv[1])) {
+  const n = measureNarrowBrandRule();
+  console.log(`Narrow brand contradiction, recorded rows: ${n.recorded.right} right (${n.recorded.newRight} not already contradicted), ${n.recorded.wrong} wrong, ${n.recorded.unknown} unknown; the two live listings: ${n.live.wrong} wrong, ${n.live.unknown} unknown`);
+  for (const w of n.wrongRows) console.log(`  wrong: ${w}`);
   const { scores, rung0 } = measureRung1();
   console.log(`Rung 0, the catalog check, on rows with a known answer: ${rung0.right} right, ${rung0.wrong} wrong, ${rung0.unknown} unknown`);
   console.log('Rung 1 on the rows rung 0 left unknown, one sub-rule at a time:');
