@@ -35,6 +35,8 @@ import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, move
 import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
 import { HOME_DEPOT_ITEM_ID, kitCatalog, pickUnread } from './kitPage';
+import { type ListingRow, type ListingSourceDeps, readBundleListings } from './listingSource';
+import type { HdListing } from '../serpapi/parsers';
 import { bundleKey, PART_PRICE_READS_MAX, partKey, priceActive, resolvedParts } from './types';
 import type {
   BudgetView, BundleRecord, CatalogCursor, CatalogRecord, ListingRecord, MatchRecord, PageOutcome, PageReading, PartPriceRecord, PriceRecord, ReadPages, ReadPartPrices,
@@ -106,6 +108,12 @@ export interface ScanDeps {
    * answer names that no source confirms yet; the agent's agent/reverify.ts). Free; the reader's cap and time hold.
    */
   partPricesExtra?: readonly { brand: string; model: string }[];
+  /**
+   * Free scan (Nov 23): the brands' Bundle lists read in the owner's Chrome (listingSource.ts readBundleListings) in place
+   * of SerpApi's listing pages, which the job then does not plan. Their rows feed the same store as a listing page's
+   * (saveListingRow). Absent: SerpApi's listing pages, as before.
+   */
+  chromeListing?: Pick<ListingSourceDeps, 'queries' | 'readListing' | 'readPages'>;
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -155,6 +163,9 @@ interface Run extends PartContext {
   catalogFirst: ReadonlySet<string>;
   waitForPages: boolean;
   partPricesExtra: readonly { brand: string; model: string }[];
+  chromeListing: ScanDeps['chromeListing'];
+  /** Free scan: Home Depot refused a list or page in this run: no other Home Depot page is read in it (the doorway rule). */
+  hdRefused: boolean;
   job: ScanJob;
   /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
@@ -187,10 +198,12 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
   const run = await startJob(deps);
   beginPipeline(run);
   if (run.job.phase === 'listing') {
-    // Amazon brand pages, then Home Depot pages: one queue.
+    // Free scan: the bundle lists in Chrome first (once a job), then the Amazon brand pages (and SerpApi's listing pages
+    // when there is no Chrome list): one queue.
+    if (run.chromeListing && run.job.chromeListing?.done !== true) await readChromeListings(run);
     await runQueue(run);
-    // P1: the bundles' own pages, free, once the queue is empty and before the split.
-    const bundlePass = await readBundlePages(run);
+    // P1: the bundles' own pages, free, once the queue is empty and before the split. Not after Home Depot refused a list.
+    const bundlePass = run.hdRefused ? await refusedEarlier(run) : await readBundlePages(run);
     // Read once for the split and the planning pass that follows it.
     const known = await knownModels(run.store);
     run.catalog = known.catalog;
@@ -259,6 +272,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, noReaderReason: deps.noReaderReason, ebay: deps.ebay ?? null,
     keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
     bogoPairs: deps.bogoPairs ?? {}, catalogFirst: new Set(deps.catalogFirst ?? []), waitForPages: deps.waitForPages ?? false, partPricesExtra: deps.partPricesExtra ?? [],
+    chromeListing: deps.chromeListing, hdRefused: false,
     job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore, plannedKeys: new Set(), settledParts: new Set(),
   });
 
@@ -273,7 +287,8 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const catalogPages = Math.min(catalog.length, Math.floor(budget.spendable * 0.2));
   // Page 1 of every query in settings order, then page 2 of every query, and so on.
   const inOrder: Listing[] = [];
-  for (let page = 1; page <= settings.pagesPerQuery; page++) {
+  // Free scan: with the lists read in Chrome, no SerpApi listing page is planned (nor a deferred one put first).
+  for (let page = 1; page <= (deps.chromeListing ? 0 : settings.pagesPerQuery); page++) {
     for (const q of settings.queries) {
       inOrder.push({ kind: 'listing', q: q.q, page, filterTokens: q.filterTokens ?? null, bundlesOnly: q.bundlesOnly ?? false });
     }
@@ -446,7 +461,10 @@ async function runQueue(run: Run): Promise<void> {
   const stage: StepId = job.phase === 'listing' ? 'hdPages' : 'amazon';
   const queued = (): number => job.queue.filter((s) => (stage === 'hdPages' ? s.kind === 'listing' || s.kind === 'catalog' : isAmazonStep(s))).length;
   const unitsBefore = job.pipeline?.find((s) => s.id === stage)?.unitsDone ?? 0;
-  if (stage === 'amazon' && job.queue.length === 0 && (job.stopReason !== null || job.deferred.length > 0)) skipStep(job, 'amazon', whyNot(job.stopReason));
+  // Free scan: the Chrome lists failed; the brand pages still run and the row keeps its reason.
+  if (job.pipeline?.find((s) => s.id === stage)?.state === 'failed') {
+    // nothing to start
+  } else if (stage === 'amazon' && job.queue.length === 0 && (job.stopReason !== null || job.deferred.length > 0)) skipStep(job, 'amazon', whyNot(job.stopReason));
   // Nothing queued and nothing done before (a continued job keeps what it did): the step had nothing to do.
   else if (job.queue.length === 0 && unitsBefore === 0) skipStep(job, stage, NONE_FOUND);
   else startStep(job, stage, { remaining: queued(), now: run.now() });
@@ -896,44 +914,9 @@ function setAnswered(job: ScanJob, page: Listing, hasNext: boolean): void {
 }
 
 async function applyListing(run: Run, step: Listing, data: unknown, at: number): Promise<void> {
-  const { store, job } = run;
-  const brands = new Set(run.settings.brands.map((b) => b.trim().toUpperCase()));
+  const { job } = run;
   const { listings, hasNextPage } = parseHomeDepotSearch(data);
-  for (const row of listings) {
-    const brand = row.brand?.trim().toUpperCase();
-    if (!brand || !brands.has(brand) || row.model === null) continue;
-    job.counts.productsSeen += 1;
-    // A search row carries no barcode: one already stored is kept, never replaced by null.
-    if (step.bundlesOnly || looksLikeBundle(brand, row.model)) {
-      const key = bundleKey(row.itemId);
-      const known = await store.getBundle(key);
-      // A record seen later than this response is kept as it is.
-      if (!known || known.seenAt <= at) {
-        await store.putBundle({
-          key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: known?.upc ?? null,
-          price: row.price, regularPrice: row.regularPrice, percentOff: row.percentOff, link: row.link, seenAt: at,
-          split: known?.split ?? null,
-          // A page is read once (P1): a row seen again keeps it.
-          ...(known && known.page !== undefined ? { page: known.page } : {}),
-        });
-      }
-      job.counts.bundlesSeen += 1;
-    } else {
-      const entry = catalogEntry(brand, row.model, row.title);
-      const key = partKey(entry.brand, entry.model);
-      const known = await store.getCatalogEntry(key);
-      if (!known || known.seenAt <= at) {
-        await store.putCatalogEntry({
-          key, brand: entry.brand, model: entry.model, title: row.title,
-          kinds: entry.kinds, isKit: entry.isKit ?? false, upc: known?.upc ?? null, seenAt: at,
-          // Step 6: the row's own item id, by which a kit's page is read (readKitPages).
-          itemId: row.itemId,
-          // A kit's page is read once, as a bundle's (P1): a row seen again keeps it.
-          ...(known && known.page !== undefined ? { page: known.page } : {}),
-        });
-      }
-    }
-  }
+  for (const row of listings) await saveListingRow(run, row, at, step.bundlesOnly);
   // F9 review: remembered, so the next page may be planned before this one on a later scan.
   setAnswered(job, step, hasNextPage);
   if (!hasNextPage) {
@@ -947,6 +930,100 @@ async function applyListing(run: Run, step: Listing, data: unknown, at: number):
     job.deferred = job.deferred.filter((s) => !later(s));
   }
   job.counts.pagesFetched += 1;
+}
+
+/**
+ * One listing row into the store: a bundle (by its model's shape, or every row of a bundles-only query), else a catalog
+ * entry. A SerpApi row and a Chrome list row (free scan) go through here alike. A Chrome row with no price (its page was
+ * not read this time) keeps the stored price, never writes null over it; its page reading, when it has one, is the
+ * bundle's page when none is stored (P1: a page is read once), so the bundle pass does not read it again.
+ */
+async function saveListingRow(run: Run, row: HdListing & { page?: ListingRow['page'] }, at: number, bundlesOnly: boolean): Promise<'bundle' | 'catalog' | null> {
+  const { store, job } = run;
+  const brands = new Set(run.settings.brands.map((b) => b.trim().toUpperCase()));
+  const brand = row.brand?.trim().toUpperCase();
+  if (!brand || !brands.has(brand) || row.model === null) return null;
+  job.counts.productsSeen += 1;
+  const fromChrome = row.page !== undefined;
+  // A search row carries no barcode: one already stored is kept, never replaced by null.
+  if (bundlesOnly || looksLikeBundle(brand, row.model)) {
+    const key = bundleKey(row.itemId);
+    const known = await store.getBundle(key);
+    // A record seen later than this response is kept as it is.
+    if (!known || known.seenAt <= at) {
+      const keepPrice = fromChrome && row.price === null && known !== undefined;
+      const page = known && known.page !== undefined && known.page !== null ? known.page : row.page ?? known?.page;
+      await store.putBundle({
+        key, retailer: 'homedepot', itemId: row.itemId, title: row.title, brand, model: row.model, upc: known?.upc ?? null,
+        price: keepPrice ? known.price : row.price, regularPrice: keepPrice ? known.regularPrice : row.regularPrice,
+        percentOff: keepPrice ? known.percentOff : row.percentOff, link: row.link, seenAt: at,
+        split: known?.split ?? null,
+        // A page is read once (P1): a row seen again keeps it.
+        ...(page !== undefined ? { page } : {}),
+        // A pair's BOGO facts (the BOGO pass's) stay.
+        ...(known?.bogo ? { bogo: known.bogo } : {}),
+      });
+    }
+    job.counts.bundlesSeen += 1;
+    return 'bundle';
+  }
+  const entry = catalogEntry(brand, row.model, row.title);
+  const key = partKey(entry.brand, entry.model);
+  const known = await store.getCatalogEntry(key);
+  if (!known || known.seenAt <= at) {
+    const page = known && known.page !== undefined && known.page !== null ? known.page : row.page ?? known?.page;
+    await store.putCatalogEntry({
+      key, brand: entry.brand, model: entry.model, title: row.title,
+      kinds: entry.kinds, isKit: entry.isKit ?? false, upc: known?.upc ?? null, seenAt: at,
+      // Step 6: the row's own item id, by which a kit's page is read (readKitPages).
+      itemId: row.itemId,
+      // A kit's page is read once, as a bundle's (P1): a row seen again keeps it.
+      ...(page !== undefined ? { page } : {}),
+    });
+  }
+  return 'catalog';
+}
+
+/**
+ * Free scan (Nov 23): the brands' Bundle lists and their items' pages read in Chrome (listingSource.ts), each row saved as
+ * a listing page's row is. The step list says where the lists came from and how many bundles they held. A refusal keeps
+ * what was read, says so, and ends this run's Home Depot reading (the bundle, kit and part-price passes skip). The item
+ * pages read count toward pageReadsPerScan, as every Home Depot page read does.
+ */
+async function readChromeListings(run: Run): Promise<void> {
+  const { job, store } = run;
+  const step = job.pipeline?.find((s) => s.id === 'hdPages');
+  if (step) step.source = 'chrome';
+  startStep(job, 'hdPages', { remaining: null, now: run.now() });
+  await store.putScan(job);
+  const cl = run.chromeListing!;
+  const result = await readBundleListings({
+    brands: run.settings.brands, queries: cl.queries, readListing: cl.readListing, readPages: cl.readPages, cache: run.cache, now: run.now,
+    shouldStop: run.shouldStop, itemPagesMax: pagesLeft(run),
+  });
+  const at = run.now();
+  let bundles = 0;
+  for (const row of result.rows) if ((await saveListingRow(run, row, at, false)) === 'bundle') bundles += 1;
+  job.counts.pagesRead += result.itemPagesRead;
+  job.chromeListing = {
+    done: true, pages: result.listingPages, bundles, itemPagesRead: result.itemPagesRead,
+    complete: !result.refused && result.brands.every((b) => b.complete),
+  };
+  if (step) step.found = bundles;
+  moveUnits(job, 'hdPages', { done: result.listingPages, remaining: null });
+  if (result.refused) {
+    run.hdRefused = true;
+    noteProblem(job, `${result.problem ?? 'Home Depot refused a page.'} What was read is kept; the rest is read next scan.`);
+    if (result.listingPages === 0) failStep(job, 'hdPages', 'Home Depot refused', run.now());
+  } else if (result.problem !== null && result.problem !== 'stopped') noteProblem(job, result.problem);
+  await store.putScan(job);
+}
+
+/** Free scan: Home Depot refused a list earlier in this run, so no bundle, kit or part-price page is read in it. */
+async function refusedEarlier(run: Run): Promise<PassResult> {
+  skipStep(run.job, 'bundlePages', 'Home Depot refused');
+  await run.store.putScan(run.job);
+  return { goOn: false, notRead: 0, why: 'Home Depot refused' };
 }
 
 /** Rule 6: what a lookup's response changes in the store. */

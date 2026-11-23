@@ -688,6 +688,12 @@ export interface ScanJob {
    */
   answeredPages?: string[];
   /**
+   * Free scan (Nov 23): the bundle lists were read in the owner's Chrome (scan/listingSource.ts), not searched on SerpApi:
+   * the list pages read, the bundles they listed, the item pages read for prices, and whether every list was read to its
+   * end. `done` once the pass has run, so a continued job does not read the lists again. Absent: SerpApi's listing pages.
+   */
+  chromeListing?: { done: boolean; pages: number; bundles: number; itemPagesRead: number; complete: boolean };
+  /**
    * Step 10: one plain sentence when the eBay step was skipped or stopped early (keys missing, eBay or the
    * model refused or limited a call). Not a failure of the scan: Home Depot and Amazon results are unaffected.
    */

@@ -43,6 +43,12 @@ export interface PipelineStep {
   costEstimate?: number;
   /** The listing check: the model, which is the unit kind's name and the price's key. */
   model?: string;
+  /**
+   * Free scan (Nov 23), the hdPages step only: 'chrome' when the bundle lists were read in the owner's Chrome
+   * (scan/listingSource.ts); its units are then the list pages read, and `found` the bundles they listed. Absent: SerpApi.
+   */
+  source?: 'chrome';
+  found?: number;
   /** Time spent in the units that were measured, in ms; and how many units that covers. A cached answer is not measured. */
   activeMs?: number;
   unitsMeasured?: number;
@@ -411,6 +417,11 @@ export const CURRENT_LABELS: Readonly<Record<StepId, string>> = {
   finish: 'Finishing up',
 };
 
+/** Free scan: the hdPages step's name and current label when the bundle lists were read in Chrome. */
+export const CHROME_LIST_NAME = 'Home Depot bundle lists';
+export const CHROME_LIST_LABEL = 'Reading bundle lists';
+const nameOf = (s: PipelineStep): string => (s.id === 'hdPages' && s.source === 'chrome' ? CHROME_LIST_NAME : STEP_NAMES[s.id]);
+
 export interface PipelineView {
   /** The row's first line: `${label} · ${count}`; count is empty when the step has nothing to count yet. */
   current: { label: string; count: string };
@@ -448,6 +459,12 @@ function figureOf(s: PipelineStep): string {
       if (s.state === 'done' && s.note) return s.note;
       return s.state === 'now' ? countOf(s) : s.state === 'done' ? plural(s.unitsDone, 'lookup', 'lookups') : '';
     case 'hdPages':
+      // Free scan: the lists came from Chrome; any search is an Amazon brand page.
+      if (s.source === 'chrome') {
+        if (s.state === 'now') return s.unitsDone > 0 ? `${plural(s.unitsDone, 'page', 'pages')} read` : 'reading in Chrome';
+        if (s.state === 'done') return `read in Chrome · ${plural(s.found ?? 0, 'bundle', 'bundles')} · ${plural(s.unitsMeasured ?? 0, 'search', 'searches')}`;
+        return '';
+      }
       return s.state === 'now' ? countOf(s) : s.state === 'done' ? plural(s.unitsMeasured ?? 0, 'search', 'searches') : '';
     case 'bundlePages':
     case 'kitPages':
@@ -508,7 +525,7 @@ export function pipelineView(job: ScanJob, rates: UnitRates, now: number, opts: 
   const left = est.kind === 'estimating' ? (unknown === '' ? 'time left not known yet' : 'estimating time left')
     : est.kind === 'underMinute' ? 'less than a minute left'
     : `${est.kind === 'about' ? 'about' : 'at least'} ${plural(m, 'minute', 'minutes')} left`;
-  const label = CURRENT_LABELS[cur.id];
+  const label = cur.id === 'hdPages' && cur.source === 'chrome' ? CHROME_LIST_LABEL : CURRENT_LABELS[cur.id];
   return {
     current: { label, count: cur.state === 'now' ? countOf(cur) : '' },
     estimateText,
@@ -517,7 +534,7 @@ export function pipelineView(job: ScanJob, rates: UnitRates, now: number, opts: 
     fraction: fractionOf(steps, rates),
     ariaValueText: `Step ${index + 1} of ${steps.length}, ${lowerFirst(label)}, ${left}`,
     steps: steps.map((s) => ({
-      label: STEP_NAMES[s.id], state: s.state, figure: figureOf(s),
+      label: nameOf(s), state: s.state, figure: figureOf(s),
       ...(s.state === 'now' || s.state === 'done' || s.state === 'failed' ? { done: s.unitsDone } : {}),
       ...((s.state === 'now' || s.state === 'done' || s.state === 'failed') && s.unitsTotal !== null ? { total: s.unitsTotal } : {}),
     })),
