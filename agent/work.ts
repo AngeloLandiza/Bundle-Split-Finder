@@ -37,7 +37,7 @@ import {
 import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
-import { runScan, withdrawUnreadSplitQuestions } from '../core/src/scan/runner';
+import { pageRead, runScan, withdrawUnreadSplitQuestions } from '../core/src/scan/runner';
 import type { ConfirmedPrice, PaidAction, ReviewAnswer, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
@@ -67,6 +67,20 @@ const CALL_TIMEOUT_MS = 30_000;
 const EVIDENCE_LINES = 40;
 
 export class WorkRefused extends Error {}
+
+/**
+ * Nov 23: what the run found, leading the summary. "Found 16 bundles; 0 estimated because their Home Depot pages were not
+ * read — Read again (free)." when every bundle without an estimate waits for its page; else how many wait.
+ */
+export function outcomeSentence(report: ScanReport): string {
+  const n = report.bundles.length;
+  const estimated = report.bundles.filter((b) => b.estimate !== null).length;
+  const waiting = report.bundles.filter((b) => b.waitingPage === true).length;
+  const found = `Found ${n} ${n === 1 ? 'bundle' : 'bundles'}; ${estimated} estimated`;
+  if (waiting === 0) return `${found}.`;
+  if (waiting === n - estimated) return `${found} because ${waiting === 1 ? 'its Home Depot page was' : 'their Home Depot pages were'} not read — Read again (free).`;
+  return `${found}; ${waiting} ${waiting === 1 ? 'waits for its' : 'wait for their'} Home Depot ${waiting === 1 ? 'page' : 'pages'} — Read again (free).`;
+}
 
 export interface WorkDeps {
   store: Store;
@@ -206,6 +220,39 @@ export class AgentWork {
     return { id: `scan-${at}`, requestedAt: new Date(at).toISOString() };
   }
 
+  /**
+   * Nov 23, Read again (POST /api/scan/read-pages): the free Chrome steps once more (the BOGO listings, the bundle pages,
+   * the kit pages and the part prices) for the bundles the last scan stored, with no listing page and no Amazon brand
+   * page searched; then the Amazon lookups only for what is now settled, within what the last scan left of the per-scan
+   * cap (none when it used it all). Refused, with the reason, while something runs, with Chrome closed, or when every
+   * page is read. `reason` also says, when it starts, how many searches it may spend.
+   */
+  readPagesAgain(): { started: boolean; reason?: string } {
+    const why = this.readAgainRefusal();
+    if (why) return { started: false, reason: why };
+    const last = this.d.store.get('activity').lastScan!;
+    const usedBefore = Math.max(0, last.searchesUsed);
+    const left = Math.max(0, Math.floor(this.d.store.get('settings').settings.searchesPerScan) - usedBefore);
+    this.begin('scan', () => this.scan('manual', { usedBefore }));
+    return {
+      started: true,
+      reason: left > 0
+        ? `Reading the Home Depot pages again (free); then at most ${left} Amazon ${left === 1 ? 'search' : 'searches'}, what the last scan left of its limit, for the parts now known.`
+        : 'Reading the Home Depot pages again (free); no Amazon search, because the last scan used its whole limit.',
+    };
+  }
+
+  /** Why Read again cannot start now, in one sentence; null when it can. */
+  readAgainRefusal(): string | null {
+    if (this.live.busy) return this.busySentence('scan');
+    if (this.answering > 0) return 'An answer is being applied. Try again in a moment.';
+    const last = this.d.store.get('activity').lastScan;
+    if (!last) return 'No scan has run yet: Scan now first.';
+    if (!last.pagesUnread) return 'Every Home Depot page of the last scan is read.';
+    if (!this.d.helperConnected()) return 'Chrome is closed: open Chrome with the Split Finder helper, then read again.';
+    return null;
+  }
+
   /** Stop: the scan ends before its next paid step, the call in flight is aborted, and nothing after the scan runs. */
   stop(): boolean {
     if (!this.live.busy) return false;
@@ -308,7 +355,8 @@ export class AgentWork {
     });
   }
 
-  private async scan(trigger: ScanTrigger): Promise<void> {
+  /** `again`: Read again (readPagesAgain), with the searches the last scan used. */
+  private async scan(trigger: ScanTrigger, again?: { usedBefore: number }): Promise<void> {
     const { store } = this.d;
     const startedAt = this.d.now();
     const run: RunRecord = {
@@ -322,7 +370,7 @@ export class AgentWork {
     const notes: string[] = [];
     let job: ScanJob | null = null;
     try {
-      job = await this.runTheScan(trigger, keys, notes);
+      job = await this.runTheScan(trigger, keys, notes, again);
     } catch (err) {
       run.error = scrub(sentenceOf(err), keys);
       run.status = 'failed';
@@ -380,24 +428,27 @@ export class AgentWork {
     run.questionsAsked = ai?.asked ?? 0;
     run.autopilotApplied = applied;
     run.finishedAt = new Date(this.d.now()).toISOString();
-    run.summary = this.summaryOf(report, run, notes);
+    // Nov 23: the bundles whose own Home Depot page is still not read, for Read again.
+    const pagesUnread = (await this.scanStore.listBundles().catch(() => [])).filter((b) => !pageRead(b)).length;
+    run.summary = this.summaryOf(report, run, notes, again !== undefined);
     this.record(run);
     const open = report ? report.review.length + (report.ebayQuestions?.length ?? 0) : 0;
     store.update('activity', (a) => ({
       ...a,
       lastScan: {
-        at: run.finishedAt!, status: run.status, stopMessage: run.error ?? null, searchesUsed: run.searchesUsed, keepaTokensUsed: run.keepaTokensUsed,
-        newDeals: report ? report.bundles.filter((b) => b.section === 'confirmed').length : 0, reviewOpen: open,
+        at: run.finishedAt!, status: run.status, stopMessage: run.error ?? null,
+        // Read again spends from what the scan before it left, so the two count as one scan against the limit.
+        searchesUsed: (again?.usedBefore ?? 0) + run.searchesUsed, keepaTokensUsed: run.keepaTokensUsed,
+        newDeals: report ? report.bundles.filter((b) => b.section === 'confirmed').length : 0, reviewOpen: open, pagesUnread,
       },
     }));
   }
 
-  private summaryOf(report: ScanReport | null, run: RunRecord, notes: string[]): string {
+  /** Nov 23: the run's outcome first ("Found 16 bundles; 0 estimated because ..."), then what it spent, then the problems. */
+  private summaryOf(report: ScanReport | null, run: RunRecord, notes: string[], again = false): string {
     const parts: string[] = [];
-    if (report) {
-      const confirmed = report.bundles.filter((b) => b.section === 'confirmed').length;
-      parts.push(`${report.bundles.length} ${report.bundles.length === 1 ? 'bundle' : 'bundles'}, ${confirmed} with an estimate.`);
-    }
+    if (again) parts.push('Read again.');
+    if (report) parts.push(outcomeSentence(report));
     if (run.searchesUsed > 0 || run.status !== 'failed') parts.push(`${run.searchesUsed} ${run.searchesUsed === 1 ? 'search' : 'searches'}.`);
     if (run.questionsAsked) parts.push(`AI asked about ${run.questionsAsked}.`);
     if (run.autopilotApplied) parts.push(`Autopilot applied ${run.autopilotApplied}.`);
@@ -405,10 +456,12 @@ export class AgentWork {
     return [...parts, ...notes].join(' ');
   }
 
-  private async runTheScan(trigger: ScanTrigger, keys: StoredKeys, notes: string[]): Promise<ScanJob> {
+  private async runTheScan(trigger: ScanTrigger, keys: StoredKeys, notes: string[], again?: { usedBefore: number }): Promise<ScanJob> {
     const { store } = this.d;
     const app = store.get('settings');
     const ext = extensionSettingsOf(app);
+    // Read again: no listing page and no Amazon brand page; the lookups get what the last scan left of the limit.
+    const scanSettings = again ? { ...toScanSettings(ext), queries: [], catalogPagesPerScan: 0 } : toScanSettings(ext);
     const problems = Object.values(validateSettings(ext));
     if (problems.length > 0) throw new WorkRefused(`A setting needs fixing before a scan: ${problems[0]}`);
     if (!keys.serpapi) throw new WorkRefused('Add your SerpApi key in Settings.');
@@ -423,7 +476,7 @@ export class AgentWork {
 
     const newest = (await this.scanStore.listScans())[0];
     const continued = newest?.status === 'running' ? newest : undefined;
-    const budget = new SearchBudget(account, budgetPolicyFor(ext, trigger, continued?.searchesUsed ?? 0));
+    const budget = new SearchBudget(account, budgetPolicyFor(ext, trigger, again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
     const serpLedger = this.ledger('serpapi-ledger.jsonl');
     const client = new SerpApiClient({
       apiKey: keys.serpapi, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl,
@@ -443,7 +496,7 @@ export class AgentWork {
       bogoPairs,
       // Nov 23: a bundle whose own page is not read waits for it (waiting_page); it is never a question before then.
       waitForPages: true,
-      client, budget, store: this.watched(this.scanStore), settings: toScanSettings(ext), now: this.d.now, labelPrefix: 'agent',
+      client, budget, store: this.watched(this.scanStore), settings: scanSettings, now: this.d.now, labelPrefix: 'agent',
       shouldStop: () => this.stopCtl.signal.aborted,
       ...(connected ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices } : { noReaderReason: 'Chrome closed' }),
       ...(ebay ? { ebay } : {}),

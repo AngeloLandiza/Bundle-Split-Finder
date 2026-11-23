@@ -408,6 +408,17 @@ export interface LiveView {
   stopping: boolean;
   pipeline: PipelineView | null;
   nextScanAt: string | null;
+  /** Nov 23: the helper's build, from its heartbeat, and whether it is not the one this app ships. */
+  helperVersion?: string | null;
+  helperOutdated?: boolean;
+}
+
+/** Nov 23: the last scan, with whether Read again can start now (some page unread, Chrome connected, nothing running). */
+function lastScanOf(data: StoreData, live: LiveView): AgentState['agent']['lastScan'] {
+  const last = data.activity.lastScan;
+  if (!last) return null;
+  const unread = last.pagesUnread ?? 0;
+  return { ...last, canReadPagesAgain: unread > 0 && live.connected && live.busy === null && !live.stopping };
 }
 
 export function agentState(data: StoreData, live: LiveView): AgentState {
@@ -419,10 +430,14 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       ...(view ? { step: view.current.count ? `${view.current.label} · ${view.current.count}` : view.current.label, progress: { done: view.stepsDone, total: view.stepsTotal }, pipeline: view } : {}),
       busy: live.busy === 'paid' ? 'scan' : live.busy,
       nextScanAt: live.nextScanAt,
-      lastScan: data.activity.lastScan,
+      lastScan: lastScanOf(data, live),
       ...(data.agent.problem ? { problem: data.agent.problem } : {}),
     },
-    helper: { paired: data.pairing.extensions.length > 0, connected: live.connected, lastSeenAt: live.lastSeenAt, jobsWaiting: live.jobsWaiting },
+    helper: {
+      paired: data.pairing.extensions.length > 0, connected: live.connected, lastSeenAt: live.lastSeenAt, jobsWaiting: live.jobsWaiting,
+      ...(live.helperOutdated ? { outdated: true } : {}),
+      ...(live.helperVersion ? { version: live.helperVersion } : {}),
+    },
     budget: {
       serpLeft: data.runtime.serp?.left ?? null,
       serpMonthly: data.runtime.serp?.perMonth ?? null,

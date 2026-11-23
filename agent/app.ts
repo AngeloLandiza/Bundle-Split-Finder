@@ -23,6 +23,7 @@ import {
   type QueuedResponse,
   type ReviewAnswer,
   type WorkerJobInputs,
+  type ReadPagesResponse,
   type WorkerJobKind,
   type WorkerNextResponse,
   type WorkerResultBody,
@@ -605,6 +606,8 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/autopilot/:id/undo', 'ui', (ctx) => refusals(() => work.undo(ctx.params.id!)));
   r.post('/api/scan', 'ui', () => refusals(() => work.scanNow()));
   r.post('/api/scan/stop', 'ui', () => ({ stopping: work.stop() }));
+  // Nov 23: Read again, free (ReadPagesResponse): a refusal is an answer with its reason, not an error.
+  r.post('/api/scan/read-pages', 'ui', (): ReadPagesResponse => work.readPagesAgain());
 
   // ------------------------------------------------------------ pairing
   r.post('/api/pair/request', 'none', async (ctx) => pairResult(auth.requestPairing(obj(await ctx.body()).extensionId, ctx.origin)));

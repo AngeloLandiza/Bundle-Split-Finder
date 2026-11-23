@@ -95,6 +95,24 @@ export interface LastScanSummary {
   keepaTokensUsed: number;
   newDeals: number;
   reviewOpen: number;
+  /** Nov 23: bundles whose own Home Depot page is not read (they wait for it, match state `waiting_page`). */
+  pagesUnread?: number;
+  /**
+   * Nov 23, in GET /api/state only: Read again (POST /api/scan/read-pages) can start now: some page is unread, Chrome is
+   * connected and nothing else runs.
+   */
+  canReadPagesAgain?: boolean;
+}
+
+/**
+ * Nov 23, POST /api/scan/read-pages (UI, no body): the free Chrome steps again (bundle pages, kit pages, part prices,
+ * the BOGO listings) for the last scan's bundles, with no SerpApi search for them; then the Amazon lookups only for
+ * what is now settled, within what the last scan left of the per-scan limit. `reason`: why it did not start, or, when it
+ * started, how many searches it may spend ("... then at most 3 Amazon searches ...").
+ */
+export interface ReadPagesResponse {
+  started: boolean;
+  reason?: string;
 }
 
 /** GET /api/state, and the payload of the `state` event. */
@@ -113,7 +131,19 @@ export interface AgentState {
     problem?: string;
   };
   /** The paired Chrome extension, the worker that reads Home Depot pages. `jobsWaiting`: reads waiting for it (W4). */
-  helper: { paired: boolean; connected: boolean; lastSeenAt: string | null; jobsWaiting?: number };
+  helper: {
+    paired: boolean;
+    connected: boolean;
+    lastSeenAt: string | null;
+    jobsWaiting?: number;
+    /**
+     * Nov 23: the helper is not the build this app ships (its heartbeat named another version), or it answered a job with
+     * "does not know that kind of job". The agent then queues one `reload` job; POST /api/helper/reload queues another.
+     */
+    outdated?: boolean;
+    /** Nov 23: the helper's build as its heartbeat says it ("0.1.0+3c92cc7"); absent before one said it. */
+    version?: string;
+  };
   budget: {
     serpLeft: number | null;
     /** W4: the plan's searches a month, from the last account check; null before one. */
