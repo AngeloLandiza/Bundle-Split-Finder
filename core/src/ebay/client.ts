@@ -129,9 +129,11 @@ export class EbayClient {
   private answered(status: number, json: { error?: unknown; error_description?: unknown }): string {
     const clean = (v: unknown): string => {
       if (typeof v !== 'string') return '';
-      let t = v.replace(/[^\x20-\x7e]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
-      for (const k of [this.appId, this.certId]) if (k.trim()) t = t.split(k.trim()).join('[key]');
-      return t;
+      // The keys (and the Basic credential they make) come out before the text is cut: a key cut in half by the limit
+      // would no longer match, and its first half would stay (security review, Nov 23).
+      let t = v.replace(/[^\x20-\x7e]/g, ' ').replace(/\s+/g, ' ').trim();
+      for (const k of [base64(`${this.appId}:${this.certId}`), this.appId, this.certId]) if (k.trim()) t = t.split(k.trim()).join('[key]');
+      return t.slice(0, 200);
     };
     const code = clean(json.error);
     const why = clean(json.error_description);

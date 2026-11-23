@@ -74,4 +74,15 @@ describe('eBay refusing the keys', () => {
     const err = (await new EbayClient({ appId: APP, certId: CERT, fetchFn: grab([], reply) }).search('x').catch((x: unknown) => x)) as { detail: string };
     expect(err.detail).toBe('eBay answered invalid_client: client authentication failed for [key] (HTTP 401).');
   });
+
+  it('keeps no part of a key that falls across the length limit, nor the Basic credential (security review, Nov 23)', async () => {
+    const basic = Buffer.from(`${APP}:${CERT}`).toString('base64');
+    const pad = 'x'.repeat(190);
+    for (const description of [`${pad} ${CERT}`, `${pad} ${APP}`, `bad header Basic ${basic}`]) {
+      const reply = () => new Response(JSON.stringify({ error: 'invalid_client', error_description: description }), { status: 401 });
+      const err = (await new EbayClient({ appId: APP, certId: CERT, fetchFn: grab([], reply) }).search('x').catch((x: unknown) => x)) as { detail: string };
+      for (const secret of [APP, CERT, basic]) expect(err.detail).not.toContain(secret.slice(0, 8));
+      expect(err.detail).toMatch(/^eBay answered invalid_client: .*\(HTTP 401\)\.$/);
+    }
+  });
 });
