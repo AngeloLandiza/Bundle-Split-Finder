@@ -3,7 +3,6 @@ import type { ActivityError, AutopilotEntry, Run } from '../api/types';
 import { Button } from '../components/Button';
 import { Section } from '../components/Layout';
 import { Page } from '../components/Page';
-import { Quote } from '../components/Source';
 import { EmptyState, LoadError, SkeletonRows } from '../components/States';
 import { Tag } from '../components/Tag';
 import { count, money, plural, usdSpend, when } from '../lib/format';
@@ -11,7 +10,7 @@ import { KIND_LABEL } from './reviewModel';
 import '../components/Table.css';
 import './Activity.css';
 
-const KIND: Record<Run['kind'], string> = { scan: 'Scan', ask_all: 'Ask AI about all', lookup: 'Look up', verify: 'Verify' };
+const KIND: Record<Run['kind'], string> = { scan: 'Scan', ask: 'Ask AI', lookup: 'Look up', verify: 'Verify' };
 const RESULT: Record<Run['result'], string> = { finished: 'Finished', stopped: 'Stopped', limit: 'Stopped at the limit', failed: 'Failed', running: 'Running' };
 
 /** What the agent did: errors to act on, Autopilot's answers with Undo, and every run with its spend. */
@@ -95,9 +94,10 @@ export function ActivityScreen() {
                         <td>
                           <span className="run-what">
                             {KIND[r.kind]}
-                            <span className="muted"> · {r.trigger === 'schedule' ? 'scheduled' : 'by you'}</span>
+                            <span className="muted"> · {r.byYou ? 'by you' : 'scheduled'}</span>
                           </span>
                           <span className="run-summary">{r.summary}</span>
+                          {r.error && r.error !== r.summary ? <span className="run-summary">{r.error}</span> : null}
                         </td>
                         <td className="td-right fig cell-small">{count(r.searches)}</td>
                         <td className="td-right fig cell-small">{count(r.keepaTokens)}</td>
@@ -142,30 +142,49 @@ function AutopilotRow({ a }: { a: AutopilotEntry }) {
       <span className="arow-time">{when(a.at)}</span>
       <div className="arow-main">
         <p className="arow-title">
-          <a
-            href={`#/deals/${encodeURIComponent(a.bundle.id)}`}
-            onClick={(ev) => {
-              ev.preventDefault();
-              navigate({ screen: 'deals', id: a.bundle.id });
-            }}
-          >
-            {a.bundle.title}
-          </a>
+          {a.bundleId ? (
+            <a
+              href={`#/deals/${encodeURIComponent(a.bundleId)}`}
+              onClick={(ev) => {
+                ev.preventDefault();
+                navigate({ screen: 'deals', id: a.bundleId });
+              }}
+            >
+              {a.title}
+            </a>
+          ) : (
+            a.title
+          )}
         </p>
         <p className="arow-sub">
-          {KIND_LABEL[a.kind]} · <span className="fig">{a.bundle.model}</span> · applied <span className="fig arow-answer">{a.answer}</span>
+          {KIND_LABEL[a.kind]}
+          {a.model ? (
+            <>
+              {' · '}
+              <span className="fig">{a.model}</span>
+            </>
+          ) : null}
+          {' · applied '}
+          <span className="fig arow-answer">{a.applied}</span>
+          {a.by ? (
+            <>
+              {' · by '}
+              <span className="fig">{a.by}</span>
+            </>
+          ) : null}
         </p>
-        {a.quote ? <Quote quote={a.quote} clamp /> : null}
+        {a.verifiedBy.length ? <p className="arow-sub">Checked by the code: {a.verifiedBy.join('; ')}.</p> : null}
         {a.undone ? <p className="arow-sub">Undone. The question is back in Review.</p> : null}
+        {!a.undone && !a.undoable ? <p className="arow-sub">You changed this answer since, so it cannot be undone from here.</p> : null}
         {undo.error ? <p role="alert">{undo.error}</p> : null}
       </div>
       {a.undone ? (
         <Tag>Undone</Tag>
-      ) : (
+      ) : a.undoable ? (
         <Button size="sm" busy={undo.busy} busyLabel="Undoing…" onClick={() => void undo.run(a.id)}>
           Undo
         </Button>
-      )}
+      ) : null}
     </li>
   );
 }

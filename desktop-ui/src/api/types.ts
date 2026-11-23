@@ -1,33 +1,30 @@
-// The desktop UI's view of the agent's API, mirrored from the step 13 contract outline
-// (docs/superpowers/plans/2026-11-22-step-13-agent-workplace.md). W1 owns the real types in
-// core/src/api/; at merge this file re-exports them and the screens keep compiling.
-// Where the outline is silent, the shape here is the UI's request to W1, marked "UI asks".
+// What the screens read. The agent's contract (core/src/api/contract.ts) is the source of truth: every
+// type that is the same on the wire is re-exported from it here, and the few shapes a screen wants in
+// another form (a flatter row, a labelled price line, the pipeline in words) are defined below and
+// built from the contract in one place, map.ts. Nothing here is mirrored by hand.
+
+import type { ActivityError, KeyName, ReportSection, ReviewKind } from '@core/api/contract';
+import type { PipelineView } from '@core/scan/pipeline';
+
+export type {
+  ActivityError,
+  AppSettings,
+  KeyName,
+  KeysPresence,
+  PairedExtension,
+  PendingPairRequest,
+  ReviewAnswer,
+  SettingsPatch,
+} from '@core/api/contract';
+export type { Schedule } from '@core/schedule';
+export type { PipelineView } from '@core/scan/pipeline';
+
+export type DealSection = ReportSection;
+export type QuestionKind = ReviewKind;
 
 // ------------------------------------------------------------------ GET /api/state
 
-export type KeyName = 'serpapi' | 'keepa' | 'anthropic' | 'openai' | 'ebay' | 'telegram';
-
 export type ScanResult = 'finished' | 'stopped' | 'limit' | 'failed';
-
-export interface ScanStep {
-  /** Plain words: "Checking eBay listings". */
-  name: string;
-  /** 1-based position of this step in the run, and how many steps the run has. */
-  index: number;
-  of: number;
-  /** The step's own count, "23 of 60". */
-  done: number | null;
-  total: number | null;
-}
-
-export interface AgentProgress {
-  /** 0..1, for the 2px bar. */
-  fraction: number;
-  /** Seconds left, or null while estimating. */
-  etaSeconds: number | null;
-  searchesUsed: number;
-  aiSpentUsd: number;
-}
 
 export interface LastScan {
   at: string;
@@ -38,11 +35,13 @@ export interface LastScan {
   message: string | null;
 }
 
-export interface AgentState {
-  /** paused: the owner paused the agent (POST /api/agent/pause); no scheduled scan runs until Resume. */
-  status: 'idle' | 'scanning' | 'asking' | 'stopping' | 'paused';
-  step: ScanStep | null;
-  progress: AgentProgress | null;
+export interface AgentView {
+  /** 'asking': the agent is busy with the AI pass on Review questions. */
+  status: 'idle' | 'scanning' | 'asking' | 'stopping' | 'paused' | 'error';
+  /** The scan's stages as core says them ("Checking eBay listings · 23 of 60", "about 4 min"); null when nothing runs. */
+  pipeline: PipelineView | null;
+  /** The agent's own one-line step, when it reports one without the stages. */
+  step: string | null;
   nextScanAt: string | null;
   lastScan: LastScan | null;
 }
@@ -51,16 +50,15 @@ export interface HelperState {
   paired: boolean;
   connected: boolean;
   lastSeenAt: string | null;
-  /** UI asks: Home Depot read jobs waiting for Chrome. */
+  /** Home Depot read jobs waiting for Chrome. */
   jobsWaiting: number;
 }
 
 export interface BudgetState {
-  serpLeft: number;
-  /** UI asks: the plan's monthly searches, for the meter and the forecast. */
-  serpMonthly: number;
+  /** Null until the agent has checked the SerpApi account once. */
+  serpLeft: number | null;
+  serpMonthly: number | null;
   serpReserve: number;
-  /** UI asks: searches one scan may use, for "Scan now · 5 searches". */
   serpPerScan: number;
   keepaTokens: number | null;
   aiSpentUsd: number;
@@ -68,20 +66,16 @@ export interface BudgetState {
 }
 
 export interface AppState {
-  agent: AgentState;
+  agent: AgentView;
   helper: HelperState;
   budget: BudgetState;
   counts: { review: number; autopilotApplied: number; newDeals: number };
   keys: Record<KeyName, boolean>;
-  /** UI asks: true until the first scan has finished; drives the one-time first-run flow. */
+  /** True until the first scan has finished; drives the one-time first-run flow. */
   firstRun: boolean;
 }
 
 // ------------------------------------------------------------------ GET /api/deals
-
-export type DealSection = 'confirmed' | 'waiting' | 'inactive_listing' | 'missing_listing' | 'split';
-
-export type MatchState = 'verified' | 'title_match' | 'needs_answer' | 'waiting' | 'missing' | 'inactive' | 'contents_unknown';
 
 export type DealSort = 'profit' | 'roi' | 'off' | 'price' | 'updated' | 'title';
 
@@ -99,28 +93,33 @@ export interface DealRow {
   price: number | null;
   /** Whole percent off, or null. */
   off: number | null;
-  matchState: MatchState;
+  /** The agent's own sentence on how far the parts are matched ("2 parts to verify"), or null. */
+  matchState: string | null;
   profit: number | null;
   roi: number | null;
+  /** Only when both ends are known. */
   roiRange: RoiRange | null;
   needsAnswer: boolean;
   updatedAt: string;
-  /** UI asks: parts still to look up and what that costs, for "Look up · 2 searches". */
+  /** Parts still to look up and what that costs, for "Look up · 2 searches". */
   lookup: { searches: number } | null;
 }
 
-export interface DealsResponse {
+export interface DealsView {
   rows: DealRow[];
-  /** When the deals were last refreshed. */
+  /** When the deals were last stored. */
   at: string | null;
   /** One sentence when a scan skipped its eBay step; not an error. */
   ebayNotice: string | null;
+  /** The limit notice when the last scan stopped at one: a title and a sentence. */
+  limitNotice: { title: string; text: string } | null;
+  /** Days since the oldest price was seen, when the list is stale. */
+  staleDays: number | null;
 }
 
 // ------------------------------------------------------------------ GET /api/deals/:id
 
 export interface Source {
-  /** "Home Depot page", "Amazon listing", "Keepa", "eBay listing 2", "ryobitools.com". */
   label: string;
   /** http(s) only; null when there is nothing to open. */
   url: string | null;
@@ -134,8 +133,9 @@ export interface PriceLine {
   range: { low: number; high: number } | null;
   /** Counted in the estimate; reference prices say "not counted". */
   counted: boolean;
-  /** "3 listings, 41 sold", "seen 2 days ago". */
   note: string | null;
+  /** When the figure was seen (ISO), or null. */
+  seenAt: string | null;
   sources: Source[];
 }
 
@@ -163,7 +163,7 @@ export interface WayToSell {
   profit: number | null;
   roi: number | null;
   roiRange: RoiRange | null;
-  /** What this way leaves unsold: "18V Charger", "Tool bag". Empty when nothing. */
+  /** What this way leaves unsold. Empty when nothing. */
   leaves: string[];
 }
 
@@ -173,11 +173,11 @@ export interface Estimate {
   roiRange: RoiRange | null;
   /** Bundle price with tax and inbound cost. */
   cost: number;
-  /** Sum of counted part prices (Amazon New), before fees. */
+  /** The counted part prices before fees. */
   partsSellFor: number;
   /** What those parts net after referral and fulfillment. */
   afterFees: number;
-  /** The fee settings the estimate used, in words: "15% referral, $5.50 fulfillment, 8% tax". */
+  /** The fee settings in words; the agent's sentence, which also says it is an estimate. */
   basis: string;
   /** Parts counted at $0: no priced listing chosen. */
   countedAtZero: string[];
@@ -192,7 +192,6 @@ export interface DealDetail {
   price: number | null;
   off: number | null;
   seenAt: string | null;
-  /** The Home Depot product page. */
   link: string | null;
   estimate: Estimate | null;
   /** Why there is no estimate, in one sentence, when estimate is null. */
@@ -207,8 +206,6 @@ export interface DealDetail {
 
 // ------------------------------------------------------------------ GET /api/review
 
-export type QuestionKind = 'split' | 'match' | 'ebay';
-
 export interface Quote {
   text: string;
   source: Source;
@@ -216,9 +213,7 @@ export interface Quote {
 
 export interface Choice {
   id: string;
-  /** "DCF891B, DCD805B", or a listing title. */
   label: string;
-  /** Set in the figure face. */
   models: string[];
   asin: string | null;
   source: Source | null;
@@ -230,7 +225,7 @@ export interface AiSuggestion {
   status: SuggestionStatus;
   /** The choice it proposes, when that is one of the choices. */
   choiceId: string | null;
-  /** Parts it proposes in words ("PCL206 + PCL235"), or the listing. */
+  /** What it proposes in words ("PCL206 + PCL235"), or the listing. */
   answer: string;
   /** Why it could not tell, or why the code could not confirm it. */
   reason: string | null;
@@ -241,12 +236,11 @@ export interface AiSuggestion {
 export interface ReviewQuestion {
   id: string;
   kind: QuestionKind;
-  bundle: { id: string; title: string; brand: string; model: string; link: string | null };
+  /** `id` is null when the question is not tied to a bundle the deals hold. */
+  bundle: { id: string | null; title: string; brand: string; model: string; link: string | null };
   /** The model the question is about (a part, for match and eBay). */
   subject: string;
-  /** "Which impact wrench comes with this kit?" */
   prompt: string;
-  /** Why the tool could not decide, one sentence. */
   reason: string;
   evidence: Quote[];
   choices: Choice[];
@@ -256,90 +250,59 @@ export interface ReviewQuestion {
   /** What Ask AI costs here; null when no model call would be made. */
   askCostUsd: number | null;
   openedAt: string;
+  /** The agent's signature of the question as shown; sent back with the answer so a changed question is refused. */
+  seen: string | null;
 }
 
-export interface ReviewResponse {
+export interface ReviewView {
   questions: ReviewQuestion[];
-  /** The last Ask AI about all, one sentence, or null. */
-  lastAsk: string | null;
 }
-
-export type ReviewAnswer = { choiceId: string } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' };
 
 // ------------------------------------------------------------------ GET /api/activity
 
 export interface Run {
   id: string;
-  kind: 'scan' | 'ask_all' | 'lookup' | 'verify';
-  trigger: 'schedule' | 'you';
+  kind: 'scan' | 'ask' | 'lookup' | 'verify';
+  byYou: boolean;
   startedAt: string;
   finishedAt: string | null;
   searches: number;
   keepaTokens: number;
   aiUsd: number;
   result: ScanResult | 'running';
-  /** "12 bundles, 3 new above 20% ROI." */
   summary: string;
+  /** What went wrong, in one sentence, or null. */
+  error: string | null;
+  /** The scan's stages at its end. */
+  steps: { label: string; state: string; figure: string }[];
 }
 
 export interface AutopilotEntry {
   id: string;
   at: string;
-  bundle: { id: string; title: string; model: string };
+  bundleId: string | null;
+  /** The bundle's title when the deals still hold it; else the model, else the question. */
+  title: string;
+  model: string | null;
   kind: QuestionKind;
-  /** What it applied: "PCL206 + PCL235 + PCL500". */
-  answer: string;
-  quote: Quote | null;
+  /** What it applied, in plain words. */
+  applied: string;
+  /** The checks the code ran on the suggestion before applying it. */
+  verifiedBy: string[];
+  /** The model that suggested it, "claude-haiku-4-5". */
+  by: string | null;
   undone: boolean;
+  /** False once the owner changed the answer since: Undo would undo the owner's answer. */
+  undoable: boolean;
 }
 
-export interface ActivityError {
-  id: string;
-  at: string;
-  /** What happened and what to do, one sentence. */
-  sentence: string;
-  retry: { label: string; searches: number; usd: number } | null;
-}
-
-export interface ActivityResponse {
+export interface ActivityView {
   runs: Run[];
   autopilot: AutopilotEntry[];
   errors: ActivityError[];
+  /** This month's spend, from the agent's own count. */
   month: { searches: number; keepaTokens: number; aiUsd: number };
 }
-
-// ------------------------------------------------------------------ GET/PATCH /api/settings
-
-export type Schedule = { mode: 'manual' } | { mode: 'interval'; hours: number } | { mode: 'daily'; at: string };
-
-export type Pipeline = 'judge' | 'assist' | 'research';
-export type Provider = 'anthropic' | 'openai_compatible';
-
-export interface Settings {
-  schedule: Schedule;
-  searchesPerScan: number;
-  reserve: number;
-  brands: string[];
-  fees: { referralRate: number; fulfillmentFee: number; minReferral: number; salesTaxRate: number; inboundCost: number };
-  ai: {
-    pipelines: Record<Pipeline, { provider: Provider; model: string }>;
-    autopilot: boolean;
-    monthlyCapUsd: number;
-    /** OpenAI-compatible base URL (DeepSeek and others). */
-    openaiBaseUrl: string;
-  };
-  alerts: {
-    roiThreshold: number;
-    profitThreshold: number;
-    digest: 'each_scan' | 'daily' | 'off';
-    telegramChatId: string;
-  };
-}
-// Launch at login is the shell's, not the agent's: Settings reads and sets it through Tauri's invoke.
-
-export type SettingsPatch = {
-  [K in keyof Settings]?: Settings[K] extends object ? Partial<Settings[K]> : Settings[K];
-};
 
 // ------------------------------------------------------------------ GET /api/events
 
@@ -349,6 +312,9 @@ export type AgentEvent =
   | { type: 'review' }
   | { type: 'activity' }
   | { type: 'notify'; title: string; body: string };
+
+/** The connection to the event stream: 'live' while it delivers, 'down' while it retries. */
+export type StreamStatus = 'live' | 'down';
 
 // ------------------------------------------------------------------ errors
 

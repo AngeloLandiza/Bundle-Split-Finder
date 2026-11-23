@@ -6,17 +6,17 @@
 // same fee rule as core/src/money.ts, so the table, the pane and Today agree to the cent.
 
 import type {
-  ActivityResponse,
+  ActivityView,
+  AppSettings,
   AppState,
   DealDetail,
   DealPart,
   DealRow,
   DealSection,
   Grade,
-  MatchState,
   PriceLine,
   ReviewQuestion,
-  Settings,
+  Run,
   Source,
 } from './types';
 
@@ -24,29 +24,36 @@ export const NOW = Date.now();
 const ago = (min: number) => new Date(NOW - min * 60_000).toISOString();
 const ahead = (min: number) => new Date(NOW + min * 60_000).toISOString();
 
-export const SETTINGS: Settings = {
-  schedule: { mode: 'daily', at: '06:00' },
-  searchesPerScan: 5,
-  reserve: 20,
-  brands: ['DEWALT', 'RYOBI'],
-  fees: { referralRate: 0.15, fulfillmentFee: 5.5, minReferral: 0.3, salesTaxRate: 0, inboundCost: 0 },
-  ai: {
-    pipelines: {
-      judge: { provider: 'anthropic', model: 'claude-haiku-4-5' },
-      assist: { provider: 'anthropic', model: 'claude-sonnet-4-5' },
-      research: { provider: 'anthropic', model: 'claude-sonnet-4-5' },
-    },
-    autopilot: true,
-    monthlyCapUsd: 20,
-    openaiBaseUrl: 'https://api.deepseek.com/v1',
+export const SETTINGS: AppSettings = {
+  autopilot: true,
+  ebaySettings: { judgeModel: 'claude-haiku-4-5', listingsJudgedPerScan: 20 },
+  settings: {
+    schedule: { mode: 'daily', at: '06:00' },
+    searchesPerScan: 5,
+    reserve: 20,
+    keepaTokensPerScan: 60,
+    keepaReserve: 100,
+    fees: { referralRate: 0.15, fulfillmentFee: 5.5, minReferral: 0.3, salesTaxRate: 0, inboundCost: 0 },
+    brands: ['DEWALT', 'RYOBI'],
+    pagesPerBrand: 2,
+    discoveryMode: 'auto',
+    keepaDiscoveryShare: 0.5,
+    trackingDepth: 'price_only',
+    amazonRefreshViaKeepa: true,
   },
-  alerts: { roiThreshold: 0.25, profitThreshold: 40, digest: 'each_scan', telegramChatId: '' },
+  alerts: { enabled: true, minProfit: 40, minRoiPercent: 25, reviewDigest: true },
+  ai: {
+    judge: { provider: 'anthropic', model: 'claude-haiku-4-5', apiKeyRef: 'anthropic', trusted: true },
+    assist: { provider: 'anthropic', model: 'claude-sonnet-4-5', apiKeyRef: 'anthropic', trusted: true },
+    research: { provider: 'openai-compatible', model: 'deepseek-chat', apiKeyRef: 'openai', baseUrl: 'https://api.deepseek.com', trusted: false },
+    monthlyCapUsd: 20,
+  },
 };
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
-const fees = SETTINGS.fees;
+const fees = SETTINGS.settings.fees;
 const net = (p: number) => r2(p - Math.max(p * fees.referralRate, fees.minReferral) - fees.fulfillmentFee);
-const basis = '15% referral, $5.50 fulfillment a part, no sales tax';
+const basis = '15% referral (at least $0.30), $5.50 fulfillment, 0% tax, $0.00 inbound. An estimate from your fee settings, not your real Amazon fees.';
 
 const hd = (itemId: string, slug: string): string => `https://www.homedepot.com/p/${slug}/${itemId}`;
 const amazon = (asin: string): string => `https://www.amazon.com/dp/${asin}`;
@@ -68,10 +75,10 @@ function part(s: PartSeed): DealPart {
   const counted = s.price !== null && (s.grade === 'verified' || s.grade === 'title_match');
   const prices: PriceLine[] = [];
   if (s.price !== null && s.asin) {
-    prices.push({ label: 'Amazon · New', amount: s.price, range: null, counted, note: 'seen today', sources: [src('Amazon listing', amazon(s.asin))] });
+    prices.push({ label: 'Amazon · New', amount: s.price, range: null, counted, note: null, seenAt: ago(47), sources: [src('Amazon listing', amazon(s.asin))] });
   }
   if (s.listPrice) {
-    prices.push({ label: 'List price', amount: s.listPrice, range: null, counted: false, note: 'not counted', sources: s.asin ? [src('Amazon listing', amazon(s.asin))] : [] });
+    prices.push({ label: 'List price', amount: s.listPrice, range: null, counted: false, note: 'not counted', seenAt: ago(47), sources: s.asin ? [src('Amazon listing', amazon(s.asin))] : [] });
   }
   if (s.ebay) {
     prices.push({
@@ -80,6 +87,7 @@ function part(s: PartSeed): DealPart {
       range: { low: s.ebay.low, high: s.ebay.high },
       counted: false,
       note: `${s.ebay.listings} listings, ${s.ebay.sold} sold`,
+      seenAt: ago(300),
       sources: Array.from({ length: Math.min(3, s.ebay.listings) }, (_, i) => src(`${i + 1}`, `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(s.model)}`)),
     });
   }
@@ -96,6 +104,18 @@ function part(s: PartSeed): DealPart {
   };
 }
 
+type SeedMatch = 'verified' | 'title_match' | 'needs_answer' | 'waiting' | 'missing' | 'inactive' | 'contents_unknown';
+/** The agent's own sentence for each, as core's matchState words it. */
+const MATCH_WORDS: Record<SeedMatch, string | null> = {
+  verified: 'All parts matched',
+  title_match: '2 title matches',
+  needs_answer: null,
+  waiting: '2 parts to look up',
+  missing: '1 part with no listing',
+  inactive: '1 listing inactive',
+  contents_unknown: null,
+};
+
 interface DealSeed {
   itemId: string;
   slug: string;
@@ -105,7 +125,7 @@ interface DealSeed {
   price: number;
   was: number | null;
   section: DealSection;
-  matchState: MatchState;
+  matchState: SeedMatch;
   parts: PartSeed[];
   updatedMin: number;
   questionId?: string;
@@ -171,7 +191,7 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     section: seed.section,
     price: seed.price,
     off,
-    matchState: seed.matchState,
+    matchState: MATCH_WORDS[seed.matchState],
     profit: hasEstimate ? profit : null,
     roi: hasEstimate ? roi : null,
     roiRange: hasEstimate ? (seed.range ?? null) : null,
@@ -290,7 +310,7 @@ const bundleRef = (id: string) => {
   return { id: d.id, title: d.title, brand: d.brand, model: d.model, link: d.link };
 };
 
-export const QUESTIONS: ReviewQuestion[] = [
+const RAW_QUESTIONS: Omit<ReviewQuestion, 'seen'>[] = [
   {
     id: 'q-dck200', kind: 'split', bundle: bundleRef('hd-337440459'), subject: 'DCK200D1P1W921B',
     prompt: 'Which impact wrench comes with this kit?',
@@ -384,9 +404,12 @@ export const QUESTIONS: ReviewQuestion[] = [
   },
 ];
 
+/** Each question's signature, as the agent would send it. */
+export const QUESTIONS: ReviewQuestion[] = RAW_QUESTIONS.map((q) => ({ ...q, seen: `sig:${q.id}` }));
+
 export const STATE: AppState = {
   agent: {
-    status: 'idle', step: null, progress: null, nextScanAt: ahead(133),
+    status: 'idle', pipeline: null, step: null, nextScanAt: ahead(133),
     lastScan: { at: ago(47), result: 'finished', newDeals: 3, searches: 5, message: null },
   },
   helper: { paired: true, connected: true, lastSeenAt: ago(1), jobsWaiting: 0 },
@@ -396,19 +419,21 @@ export const STATE: AppState = {
   firstRun: false,
 };
 
-export const ACTIVITY: ActivityResponse = {
+const run = (r: Omit<Run, 'error' | 'steps'> & { error?: string }): Run => ({ error: null, steps: [], ...r });
+
+export const ACTIVITY: ActivityView = {
   runs: [
-    { id: 'r6', kind: 'scan', trigger: 'schedule', startedAt: ago(52), finishedAt: ago(47), searches: 5, keepaTokens: 40, aiUsd: 0.34, result: 'finished', summary: '11 bundles, 3 new above 25% ROI. Autopilot applied 3 answers.' },
-    { id: 'r5', kind: 'lookup', trigger: 'you', startedAt: ago(190), finishedAt: ago(189), searches: 2, keepaTokens: 0, aiUsd: 0, result: 'finished', summary: 'Looked up PCL525B and PCL500B.' },
-    { id: 'r4', kind: 'scan', trigger: 'schedule', startedAt: ago(412), finishedAt: ago(406), searches: 5, keepaTokens: 38, aiUsd: 0.21, result: 'failed', summary: 'SerpApi did not answer after the second page.' },
-    { id: 'r3', kind: 'ask_all', trigger: 'you', startedAt: ago(780), finishedAt: ago(771), searches: 0, keepaTokens: 0, aiUsd: 0.52, result: 'finished', summary: 'Asked 6 questions: 4 verified, 2 left for you.' },
-    { id: 'r2', kind: 'scan', trigger: 'schedule', startedAt: ago(772), finishedAt: ago(766), searches: 5, keepaTokens: 41, aiUsd: 0.18, result: 'limit', summary: 'Stopped at the hourly limit of 50 searches.' },
-    { id: 'r1', kind: 'scan', trigger: 'you', startedAt: ago(1500), finishedAt: ago(1493), searches: 5, keepaTokens: 44, aiUsd: 0.4, result: 'finished', summary: '9 bundles, 1 new above 25% ROI.' },
+    run({ id: 'r6', kind: 'scan', byYou: false, startedAt: ago(52), finishedAt: ago(47), searches: 5, keepaTokens: 40, aiUsd: 0.34, result: 'finished', summary: '11 bundles, 3 with an estimate. Autopilot applied 3.' }),
+    run({ id: 'r5', kind: 'lookup', byYou: true, startedAt: ago(190), finishedAt: ago(189), searches: 2, keepaTokens: 0, aiUsd: 0, result: 'finished', summary: 'Look up: 2 searches.' }),
+    run({ id: 'r4', kind: 'scan', byYou: false, startedAt: ago(412), finishedAt: ago(406), searches: 5, keepaTokens: 38, aiUsd: 0.21, result: 'failed', summary: 'Scan failed.', error: 'SerpApi did not answer after the second page.' }),
+    run({ id: 'r3', kind: 'ask', byYou: true, startedAt: ago(780), finishedAt: ago(771), searches: 0, keepaTokens: 0, aiUsd: 0.52, result: 'finished', summary: 'AI asked about 6, 4 verified.' }),
+    run({ id: 'r2', kind: 'scan', byYou: false, startedAt: ago(772), finishedAt: ago(766), searches: 5, keepaTokens: 41, aiUsd: 0.18, result: 'limit', summary: 'Scan stopped at the limit.', error: 'Stopped at the hourly limit of 50 searches.' }),
+    run({ id: 'r1', kind: 'scan', byYou: true, startedAt: ago(1500), finishedAt: ago(1493), searches: 5, keepaTokens: 44, aiUsd: 0.4, result: 'finished', summary: '9 bundles, 1 with an estimate.' }),
   ],
   autopilot: [
-    { id: 'a3', at: ago(48), bundle: { id: 'hd-317987595', title: DETAILS['hd-317987595']!.title, model: 'PCL1200K2' }, kind: 'match', answer: 'PCL235B · B0BGYFTPGK', quote: { text: 'ONE+ 18V Cordless 1/4 in. Impact Driver - 1,800 in-lbs Torque, 0-3,400 IPM, Tool Only', source: src('Amazon listing', amazon('B0BGYFTPGK')) }, undone: false },
-    { id: 'a2', at: ago(48), bundle: { id: 'hd-345178210', title: DETAILS['hd-345178210']!.title, model: 'PCL1600K2-A983002' }, kind: 'split', answer: 'PCL1600K2 + A983002', quote: { text: 'Includes: (1) PCL1600K2 6-Tool Combo Kit, (1) A983002 300-Piece Drill and Drive Kit', source: src('Home Depot page', DETAILS['hd-345178210']!.link) }, undone: false },
-    { id: 'a1', at: ago(49), bundle: { id: 'hd-204373168', title: DETAILS['hd-204373168']!.title, model: 'DCK240C2' }, kind: 'match', answer: 'DCF885B · B00DL7QDBW', quote: { text: 'DEWALT 20V MAX 1/4" Cordless Impact Driver, Tool Only (DCF885B)', source: src('Amazon listing', amazon('B00DL7QDBW')) }, undone: false },
+    { id: 'a3', at: ago(48), bundleId: 'hd-317987595', title: DETAILS['hd-317987595']!.title, model: 'PCL1200K2', kind: 'match', applied: 'PCL235B · B0BGYFTPGK', verifiedBy: ['the quote was found word for word on the Amazon listing', 'the quote names PCL235B'], by: 'claude-sonnet-4-5', undone: false, undoable: true },
+    { id: 'a2', at: ago(48), bundleId: 'hd-345178210', title: DETAILS['hd-345178210']!.title, model: 'PCL1600K2-A983002', kind: 'split', applied: 'PCL1600K2 + A983002', verifiedBy: ['the quote was found word for word on the Home Depot page', 'the answer is one of the question’s readings'], by: 'claude-sonnet-4-5', undone: false, undoable: true },
+    { id: 'a1', at: ago(49), bundleId: 'hd-204373168', title: DETAILS['hd-204373168']!.title, model: 'DCK240C2', kind: 'match', applied: 'DCF885B · B00DL7QDBW', verifiedBy: ['the quote was found word for word on the Amazon listing'], by: 'claude-sonnet-4-5', undone: false, undoable: false },
   ],
   errors: [
     { id: 'e1', at: ago(406), sentence: 'SerpApi did not answer during the scan at 4:00 PM, so 3 bundles kept their older prices. Retry the scan.', retry: { label: 'Retry scan', searches: 5, usd: 0 } },

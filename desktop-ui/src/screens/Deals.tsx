@@ -1,18 +1,18 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { DealRow, DealSection, DealSort } from '../api/types';
-import { Button, ButtonLink } from '../components/Button';
+import { Button } from '../components/Button';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
 import { Segmented, Select, TextField } from '../components/Fields';
 import { SplitPane } from '../components/Layout';
 import { Page } from '../components/Page';
-import { EmptyState, LoadError, SkeletonRows } from '../components/States';
+import { EmptyState, LoadError, Notice, SkeletonRows } from '../components/States';
 import { Table, type Column, type TableHandle } from '../components/Table';
 import { Tag } from '../components/Tag';
 import { count, percentOff, plural, when } from '../lib/format';
 import { sortRows, type SortState } from '../lib/sort';
 import { DealDetailPane } from './DealDetail';
-import { MATCH_LABEL, SECTION_LABEL, SECTION_ORDER } from './reviewModel';
+import { SECTION_LABEL, SECTION_ORDER } from './reviewModel';
 import './Deals.css';
 
 const SORT_KEY = 'splitFinder.desktopDealsSort';
@@ -45,7 +45,7 @@ function sortValue(r: DealRow, key: Col): number | string | null {
     case 'title':
       return r.title;
     case 'match':
-      return MATCH_LABEL[r.matchState];
+      return r.matchState;
   }
 }
 
@@ -117,14 +117,12 @@ export function DealsScreen({ openId }: { openId: string | null }) {
       render: (r) =>
         r.lookup ? (
           <LookUp row={r} disabled={scanRunning} />
-        ) : r.matchState === 'needs_answer' || r.needsAnswer ? (
+        ) : r.needsAnswer ? (
           <Tag tone="attention">Needs your answer</Tag>
-        ) : r.matchState === 'title_match' ? (
-          <Tag tone="attention">Title match</Tag>
-        ) : r.matchState === 'verified' ? (
-          <Tag tone="verified">Verified</Tag>
         ) : (
-          <span className="cell-words">{MATCH_LABEL[r.matchState]}</span>
+          <span className="cell-words" title={r.matchState ?? undefined}>
+            {r.matchState ?? '—'}
+          </span>
         ),
     },
     {
@@ -173,7 +171,7 @@ export function DealsScreen({ openId }: { openId: string | null }) {
     ...SECTION_ORDER.filter((s) => counts.get(s)).map((s) => ({ value: s as Filter, label: SECTION_LABEL[s], count: counts.get(s) })),
   ];
 
-  const csv = api.dealsCsvUrl({ section: filter === 'all' ? null : filter, sort: sort.key });
+  const csv = useAction(api.downloadDealsCsv);
   const sub = res.data ? `${plural(all.length, 'bundle', 'bundles')}${res.data.at ? ` · updated ${when(res.data.at)}` : ''}` : undefined;
 
   const list = (
@@ -204,7 +202,22 @@ export function DealsScreen({ openId }: { openId: string | null }) {
           />
         </div>
       ) : null}
+      {res.data?.limitNotice ? (
+        <div className="deals-pad deals-notices">
+          <Notice tone="attention" title={res.data.limitNotice.title}>
+            {res.data.limitNotice.text}
+          </Notice>
+        </div>
+      ) : null}
+      {res.data?.staleDays ? (
+        <p className="deals-quiet">The oldest price here was seen {plural(res.data.staleDays, 'day', 'days')} ago. A scan refreshes them.</p>
+      ) : null}
       {res.data?.ebayNotice ? <p className="deals-quiet">{res.data.ebayNotice}</p> : null}
+      {csv.error ? (
+        <p className="deals-quiet" role="alert">
+          {csv.error}
+        </p>
+      ) : null}
       {res.status === 'loading' ? <SkeletonRows rows={8} columns={4} label="Loading deals" /> : null}
       {res.status === 'error' ? <div className="deals-pad"><LoadError error={res.error} onRetry={reload} /></div> : null}
       {res.data && all.length === 0 ? (
@@ -213,7 +226,7 @@ export function DealsScreen({ openId }: { openId: string | null }) {
             title="No deals yet."
             cause={state?.agent.lastScan ? 'The last scan found no discounted DEWALT or RYOBI bundles. The next scan looks again.' : 'The agent has not run a scan yet.'}
             action={
-              <Button variant="primary" onClick={() => void api.scan()} disabled={!state?.keys.serpapi || scanRunning} cost={state ? plural(state.budget.serpPerScan, 'search', 'searches') : undefined}>
+              <Button variant="primary" onClick={() => void api.scan()} disabled={!state?.keys.serpapi || scanRunning} cost={state && state.budget.serpPerScan > 0 ? plural(state.budget.serpPerScan, 'search', 'searches') : undefined}>
                 Scan now
               </Button>
             }
@@ -266,7 +279,13 @@ export function DealsScreen({ openId }: { openId: string | null }) {
       title="Deals"
       sub={sub}
       bodyClass="page-body-split"
-      actions={all.length ? <ButtonLink href={csv} download="split-finder-deals.csv">Download CSV</ButtonLink> : null}
+      actions={
+        all.length ? (
+          <Button busy={csv.busy} busyLabel="Preparing…" onClick={() => void csv.run({ sort: sort.key === 'roi' || sort.key === 'off' ? sort.key : 'profit' })} title={csv.error ?? undefined}>
+            Download CSV
+          </Button>
+        ) : null
+      }
     >
       <SplitPane main={list} pane={openId ? <DealDetailPane id={openId} onClose={close} /> : null} paneLabel="Bundle detail" onClose={close} />
     </Page>

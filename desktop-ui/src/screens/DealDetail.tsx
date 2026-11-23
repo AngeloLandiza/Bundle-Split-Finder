@@ -41,6 +41,9 @@ function Detail({ d }: { d: DealDetail }) {
   const e = d.estimate;
   const [copied, setCopied] = useState<string | null>(null);
   const look = useAction(api.lookUp);
+  // The free quote, asked again when the agent's state changes: what a Look up would spend now (the row's figure may be older).
+  const [quote] = useResource(() => (d.lookup ? api.lookupQuote(d.id) : Promise.resolve(null)), [d.id, d.lookup !== null], ['deals']);
+  const searches = quote.data ?? d.lookup?.searches ?? null;
   const scanRunning = state?.agent.status === 'scanning';
   const copy = async () => {
     try {
@@ -101,7 +104,7 @@ function Detail({ d }: { d: DealDetail }) {
                 </div>
               </dl>
               <p className="detail-note">
-                Estimate from your fee settings ({e.basis}), not your real Amazon fees.{' '}
+                {e.basis}{' '}
                 <a
                   href="#/settings/fees"
                   onClick={(ev) => {
@@ -129,7 +132,7 @@ function Detail({ d }: { d: DealDetail }) {
           ) : (
             <>
               <p className="detail-none">{d.noEstimate}</p>
-              {d.lookup ? (
+              {d.lookup && searches !== null ? (
                 <div className="detail-row">
                   <Button
                     variant="primary"
@@ -137,7 +140,7 @@ function Detail({ d }: { d: DealDetail }) {
                     busyLabel="Looking up…"
                     disabled={scanRunning}
                     onClick={() => void look.run(d.id)}
-                    cost={plural(d.lookup.searches, 'search', 'searches')}
+                    cost={plural(searches, 'search', 'searches')}
                   >
                     Look up
                   </Button>
@@ -288,9 +291,10 @@ function PriceRow({ line }: { line: PriceLine }) {
       </span>
       <span className="price-note">
         {line.note ? line.note : null}
+        {line.seenAt ? `${line.note ? ' · ' : ''}seen ${when(line.seenAt)}` : null}
         {line.sources.length ? (
           <>
-            {line.note ? ' · ' : ''}
+            {line.note || line.seenAt ? ' · ' : ''}
             {line.sources.map((s, i) => (
               <Fragment key={i}>
                 {i > 0 ? ' ' : ''}

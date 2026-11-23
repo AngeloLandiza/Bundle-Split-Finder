@@ -49,3 +49,29 @@
   background: var(--ink);
   transition: inline-size 400ms ease-out;
 }
+
+/* The scan's stages, one line each, the figure at the right. The current stage is ink and semibold, the others ink-2. */
+.status-steps {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.status-step {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 0;
+  color: var(--ink-2);
+}
+
+.status-step-now {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.status-step .fig {
+  font-size: 12px;
+}

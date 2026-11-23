@@ -225,12 +225,23 @@ function AgentBlock({ state }: { state: AppState }) {
           </div>
           <div>
             <dt>Searches left</dt>
-            <dd className="facts-meter">
-              <span>
-                <span className="fig">{count(budget.serpLeft)}</span> of <span className="fig">{count(budget.serpMonthly)}</span>, <span className="fig">{count(budget.serpReserve)}</span> in reserve
-              </span>
-              <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" />
-            </dd>
+            {budget.serpLeft === null ? (
+              <dd>Not checked yet. The agent checks your SerpApi account when it scans.</dd>
+            ) : (
+              <dd className="facts-meter">
+                <span>
+                  <span className="fig">{count(budget.serpLeft)}</span>
+                  {budget.serpMonthly ? (
+                    <>
+                      {' '}
+                      of <span className="fig">{count(budget.serpMonthly)}</span>
+                    </>
+                  ) : null}
+                  , <span className="fig">{count(budget.serpReserve)}</span> in reserve
+                </span>
+                {budget.serpMonthly ? <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" /> : null}
+              </dd>
+            )}
           </div>
           {budget.keepaTokens !== null ? (
             <div>

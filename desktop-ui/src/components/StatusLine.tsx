@@ -1,16 +1,16 @@
-import type { AgentState } from '../api/types';
-import { count, eta, usdSpend, when } from '../lib/format';
+import type { AgentView } from '../api/types';
+import { when } from '../lib/format';
 import './StatusLine.css';
 
-/** What the agent is doing, in words: the state, then the step and its own count. */
-export function agentWords(agent: AgentState, now = Date.now()): { state: string; detail: string | null } {
-  const step = agent.step;
-  const stepCount = step && step.done !== null && step.total !== null ? ` · ${count(step.done)} of ${count(step.total)}` : '';
+/** What the agent is doing, in words: the state, then the step the agent reports with its own count. */
+export function agentWords(agent: AgentView, now = Date.now()): { state: string; detail: string | null } {
+  const p = agent.pipeline;
+  const stage = p ? (p.current.count ? `${p.current.label} · ${p.current.count}` : p.current.label) : agent.step;
   switch (agent.status) {
     case 'scanning':
-      return { state: 'Scanning', detail: step ? `${step.name}${stepCount}` : 'Starting' };
+      return { state: 'Scanning', detail: stage ?? 'Starting' };
     case 'asking':
-      return { state: 'Asking AI', detail: step && step.done !== null && step.total !== null ? `${count(step.done)} of ${count(step.total)} questions` : null };
+      return { state: 'Asking AI', detail: stage };
     case 'stopping':
       return { state: 'Stopping', detail: 'Finishing the current step' };
     case 'paused':
@@ -21,13 +21,14 @@ export function agentWords(agent: AgentState, now = Date.now()): { state: string
 }
 
 /**
- * The one status row (design.md, Scan progress): state and step on the left, the labelled
- * estimate on the right, a 2px determinate bar under it while something runs.
+ * The one status row (design.md, Scan progress): state and stage on the left, the labelled estimate on the right, a
+ * 2px determinate bar under it while the scan runs. The words and figures are core's pipeline view as the agent sends
+ * it; nothing is counted here. A run with no stages (the AI pass) shows no bar rather than a made-up one.
  */
-export function StatusLine({ agent, compact = false }: { agent: AgentState; compact?: boolean }) {
+export function StatusLine({ agent, compact = false }: { agent: AgentView; compact?: boolean }) {
   const words = agentWords(agent);
   const running = agent.status === 'scanning' || agent.status === 'asking';
-  const p = agent.progress;
+  const p = agent.pipeline;
   const pct = p ? Math.round(p.fraction * 100) : 0;
   return (
     <div className={`status${compact ? ' status-compact' : ''}`}>
@@ -36,24 +37,22 @@ export function StatusLine({ agent, compact = false }: { agent: AgentState; comp
           <span className={`status-state${agent.status === 'paused' ? ' status-paused' : ''}`}>{words.state}</span>
           {words.detail ? <span className="status-detail"> · {words.detail}</span> : null}
         </span>
-        {running && p && !compact ? (
-          <span className="status-right fig">
-            {eta(p.etaSeconds)}
-            {p.aiSpentUsd > 0 ? ` · ${usdSpend(p.aiSpentUsd)} so far` : ''}
-          </span>
-        ) : null}
+        {running && p && !compact ? <span className="status-right fig">{p.estimateText}</span> : null}
       </div>
-      {running ? (
-        <span
-          className="status-bar"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={pct}
-          aria-valuetext={`${agent.step ? `Step ${agent.step.index} of ${agent.step.of}, ${agent.step.name.toLowerCase()}` : words.state}, ${eta(p?.etaSeconds)} left`}
-        >
+      {running && p ? (
+        <span className="status-bar" role="progressbar" aria-label={p.labels?.bar ?? 'Scan progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-valuetext={p.ariaValueText}>
           <span className="status-fill" style={{ inlineSize: `${pct}%` }} />
         </span>
+      ) : null}
+      {running && p && !compact ? (
+        <ol className="status-steps" aria-label={p.labels?.steps ?? 'Scan steps'}>
+          {p.steps.map((s) => (
+            <li key={s.label} className={`status-step status-step-${s.state}`} aria-current={s.state === 'now' ? 'step' : undefined}>
+              <span>{s.label}</span>
+              <span className="fig">{s.figure}</span>
+            </li>
+          ))}
+        </ol>
       ) : null}
     </div>
   );

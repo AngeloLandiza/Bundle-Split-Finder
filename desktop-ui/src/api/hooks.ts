@@ -4,7 +4,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { Route } from '../lib/route';
 import { api } from './client';
-import { ApiError, type AgentEvent, type AppState } from './types';
+import { ApiError, type AgentEvent, type AppState, type PendingPairRequest } from './types';
 
 export interface AppContextValue {
   state: AppState | null;
@@ -16,6 +16,17 @@ export interface AppContextValue {
   navigate: (route: Route) => void;
   /** Subscribe to one kind of agent event. */
   on: (type: AgentEvent['type'], fn: (e: AgentEvent) => void) => () => void;
+  /** Chrome's pairing requests waiting for the owner (design.md: a calm notice on every screen). */
+  pairing: PairingValue;
+}
+
+export interface PairingValue {
+  requests: PendingPairRequest[];
+  /** The request being answered, or null. */
+  busyId: string | null;
+  /** One sentence when answering failed, or null. */
+  error: string | null;
+  decide: (requestId: string, allow: boolean) => Promise<void>;
 }
 
 export const AppContext = createContext<AppContextValue | null>(null);

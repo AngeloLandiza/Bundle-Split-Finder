@@ -30,3 +30,71 @@ export function createSseParser(emit: (m: SseMessage) => void): (chunk: string) 
     }
   };
 }
+
+/** How long to wait before reconnect number `attempt` (0 is the first): 1 s, 2 s, 4 s ... never more than 30 s. */
+export function backoffMs(attempt: number): number {
+  return Math.min(30_000, 1000 * 2 ** Math.max(0, attempt));
+}
+
+/** The agent pings every 20 s; a stream silent for this long is dead and is reopened. */
+export const STREAM_SILENCE_MS = 60_000;
+
+export interface StreamOptions {
+  url: string;
+  /** Called on every (re)connect, so a token that arrives late is picked up. */
+  headers: () => HeadersInit;
+  onMessage: (m: SseMessage) => void;
+  /** 'live' once a connection is accepted; 'down' each time it ends or fails. */
+  onStatus: (s: 'live' | 'down') => void;
+  fetchFn?: typeof fetch;
+  /** For tests. */
+  sleep?: (ms: number) => Promise<void>;
+}
+
+/**
+ * One server-sent-events subscription that stays up: it reads `url` with fetch (EventSource cannot send the bearer
+ * token, and the agent accepts it only in the Authorization header), reconnects with a growing wait, and reopens a
+ * stream that has gone silent. Returns the unsubscribe.
+ */
+export function openEventStream(o: StreamOptions): () => void {
+  const abort = new AbortController();
+  const doFetch = o.fetchFn ?? fetch;
+  const sleep = o.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  void (async () => {
+    let attempt = 0;
+    while (!abort.signal.aborted) {
+      const conn = new AbortController();
+      const stop = () => conn.abort();
+      abort.signal.addEventListener('abort', stop, { once: true });
+      let watchdog: ReturnType<typeof setTimeout> | null = null;
+      const arm = () => {
+        if (watchdog) clearTimeout(watchdog);
+        watchdog = setTimeout(stop, STREAM_SILENCE_MS);
+      };
+      try {
+        const res = await doFetch(o.url, { headers: o.headers(), signal: conn.signal });
+        if (!res.ok || !res.body) throw new Error('no stream');
+        o.onStatus('live');
+        arm();
+        const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+        const feed = createSseParser(o.onMessage);
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          attempt = 0;
+          arm();
+          feed(value);
+        }
+      } catch {
+        // The wait below is the whole handling: a dropped or refused stream is retried.
+      } finally {
+        if (watchdog) clearTimeout(watchdog);
+        abort.signal.removeEventListener('abort', stop);
+      }
+      if (abort.signal.aborted) return;
+      o.onStatus('down');
+      await sleep(backoffMs(attempt++));
+    }
+  })();
+  return () => abort.abort();
+}

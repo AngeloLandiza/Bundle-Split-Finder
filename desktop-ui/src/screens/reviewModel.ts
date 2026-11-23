@@ -1,4 +1,4 @@
-import type { DealSection, Grade, MatchState, QuestionKind, ReviewQuestion } from '../api/types';
+import type { DealSection, Grade, QuestionKind, ReviewQuestion } from '../api/types';
 
 export const KIND_LABEL: Record<QuestionKind, string> = {
   split: 'Which parts',
@@ -15,16 +15,6 @@ export const SECTION_LABEL: Record<DealSection, string> = {
 };
 
 export const SECTION_ORDER: readonly DealSection[] = ['confirmed', 'waiting', 'inactive_listing', 'missing_listing', 'split'];
-
-export const MATCH_LABEL: Record<MatchState, string> = {
-  verified: 'Verified',
-  title_match: 'Title match',
-  needs_answer: 'Needs your answer',
-  waiting: 'Waiting for lookup',
-  missing: 'Missing listing',
-  inactive: 'Listing inactive',
-  contents_unknown: 'Contents not known',
-};
 
 export const GRADE_LABEL: Record<Grade, string> = {
   verified: 'Verified',

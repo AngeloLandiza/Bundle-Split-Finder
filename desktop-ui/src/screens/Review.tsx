@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { ReviewAnswer, ReviewQuestion } from '../api/types';
 import { Button } from '../components/Button';
@@ -6,7 +6,7 @@ import { TextField } from '../components/Fields';
 import { Kbd } from '../components/Layout';
 import { Page } from '../components/Page';
 import { Quote, SourceLink } from '../components/Source';
-import { ConfirmInline, EmptyState, LoadError, SkeletonRows } from '../components/States';
+import { ConfirmInline, EmptyState, LoadError, Notice, SkeletonRows } from '../components/States';
 import { money, plural } from '../lib/format';
 import { pressOf, reviewKey } from '../lib/keys';
 import { KIND_LABEL, groupQuestions, parseTyped, preselected, typedFromSuggestion } from './reviewModel';
@@ -21,7 +21,12 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
   const [query, setQuery] = useState('');
   const [confirming, setConfirming] = useState<string[] | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const approve = useAction(api.approve);
+  // Only applied answers are counted as approved; the ones the agent would not apply say why.
+  const approveIds = useCallback(async (ids: string[]) => {
+    const r = await api.approve(ids);
+    setNotice(r.skipped.length ? `Approved ${r.approved}. Not applied: ${r.skipped.map((x) => x.reason).join(' ')}` : `Approved ${plural(r.approved, 'answer', 'answers')}.`);
+  }, []);
+  const approve = useAction(approveIds);
   const askAll = useAction(api.askAll);
 
   const all = res.data?.questions ?? [];
@@ -94,7 +99,6 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
             <div className="review-filter">
               <TextField label={<span className="sr-only">Filter questions</span>} placeholder="Filter by bundle or model" value={query} onChange={(e) => setQuery(e.target.value)} type="search" data-find="" />
             </div>
-            {res.data?.lastAsk ? <p className="review-quiet">{res.data.lastAsk}</p> : null}
             {askAll.error ? (
               <p className="review-quiet" role="alert">
                 {askAll.error}
@@ -124,10 +128,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
                       busy={approve.busy}
                       onCancel={() => setConfirming(null)}
                       onConfirm={() =>
-                        void approve.run(confirming).then((ok) => {
-                          setConfirming(null);
-                          if (ok) setNotice(`Approved ${plural(confirming.length, 'answer', 'answers')}.`);
-                        })
+                        void approve.run(confirming).then(() => setConfirming(null))
                       }
                     />
                   </div>
@@ -150,7 +151,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
               <Kbd>J</Kbd> <Kbd>K</Kbd> move · <Kbd>1</Kbd>–<Kbd>9</Kbd> choose · <Kbd>Enter</Kbd> save · <Kbd>A</Kbd> ask AI
             </p>
             {notice || approve.error ? (
-              <p className="sr-only" role="status">
+              <p className="review-quiet" role="status">
                 {approve.error ?? notice}
               </p>
             ) : null}
@@ -164,7 +165,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
                 onMove={move}
                 onDone={afterAnswer}
                 onEscape={() => setConfirming(null)}
-                onOpenDeal={() => navigate({ screen: 'deals', id: current.bundle.id })}
+                onOpenDeal={current.bundle.id ? () => navigate({ screen: 'deals', id: current.bundle.id }) : null}
               />
             ) : null}
           </div>
@@ -193,7 +194,7 @@ function QuestionList({ questions, current, onSelect }: { questions: ReviewQuest
   );
 }
 
-function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: ReviewQuestion; hasAi: boolean; onMove: (step: number) => void; onDone: () => void; onEscape: () => void; onOpenDeal: () => void }) {
+function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: ReviewQuestion; hasAi: boolean; onMove: (step: number) => void; onDone: () => void; onEscape: () => void; onOpenDeal: (() => void) | null }) {
   const pre = preselected(q);
   const typedStart = typedFromSuggestion(q);
   const [choice, setChoice] = useState<string | null>(pre ?? (typedStart ? TYPED : null));
@@ -201,6 +202,11 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
   const save = useAction(api.answer);
   const ask = useAction(api.ask);
   const form = useRef<HTMLFormElement>(null);
+  // The question as the owner first saw it. An event may bring a changed question (a scan moved the choices) while he
+  // reads; his half-typed answer stays, but it is not sent against choices he has not seen: the agent would refuse it
+  // too. He is told, and can look at the question as it is now.
+  const [seen, setSeen] = useState(q.seen);
+  const changed = q.seen !== seen;
   const s = q.suggestion;
   const aiAnswer = s?.status === 'verified' && ((pre !== null && choice === pre) || (typedStart !== '' && choice === TYPED && typed === typedStart));
 
@@ -216,8 +222,8 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
   };
   const submit = () => {
     const a = answerOf();
-    if (!a || save.busy) return;
-    void save.run(q.id, a, aiAnswer).then((ok) => ok && onDone());
+    if (!a || save.busy || changed) return;
+    void save.run(q.id, a, { fromSuggestion: aiAnswer, seen }).then((ok) => ok && onDone());
   };
 
   const optionIds = [...q.choices.map((c) => c.id), ...(q.allowNone ? [NONE] : []), ...(q.allowTyped ? [TYPED] : [])];
@@ -265,11 +271,33 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
         </p>
         <p className="question-links">
           <SourceLink source={{ label: 'Home Depot page', url: q.bundle.link }} />
-          <button type="button" className="question-link-btn" onClick={onOpenDeal}>
-            Open the deal
-          </button>
+          {onOpenDeal ? (
+            <button type="button" className="question-link-btn" onClick={onOpenDeal}>
+              Open the deal
+            </button>
+          ) : null}
         </p>
       </header>
+
+      {changed ? (
+        <Notice
+          tone="attention"
+          title="This question changed while you were reading."
+          action={
+            <Button
+              size="sm"
+              onClick={() => {
+                setSeen(q.seen);
+                setChoice(preselected(q));
+              }}
+            >
+              Show it as it is now
+            </Button>
+          }
+        >
+          A scan moved its choices, so your pick may mean something else.
+        </Notice>
+      ) : null}
 
       <section className="question-section">
         <h3 className="caps">Why it is asked</h3>
@@ -351,7 +379,7 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
         </fieldset>
 
         <div className="question-actions">
-          <Button type="submit" variant="primary" busy={save.busy} busyLabel="Saving…" disabled={!answerOf()}>
+          <Button type="submit" variant="primary" busy={save.busy} busyLabel="Saving…" disabled={!answerOf() || changed}>
             {aiAnswer ? 'Approve' : 'Save answer'}
           </Button>
           {hasAi && q.kind !== 'ebay' && !s ? (

@@ -1,62 +1,68 @@
 // The one client every screen talks to. `VITE_MOCK=1` selects the fixture-backed mock; otherwise
-// the real HTTP client against the agent (same origin, bearer token from the shell).
+// the real HTTP client against the agent (same origin, bearer token from the shell). Both answer
+// in the shapes of types.ts, which map.ts builds from the agent's contract.
 
-import type {
-  ActivityResponse,
-  AgentEvent,
-  AppState,
-  DealDetail,
-  DealsResponse,
-  KeyName,
-  ReviewAnswer,
-  ReviewResponse,
-  Settings,
-  SettingsPatch,
-} from './types';
+import type { KeyValues } from '@core/api/contract';
 import { createHttpClient } from './http';
 import { createMockClient } from './mock';
+import type {
+  ActivityView,
+  AgentEvent,
+  AppSettings,
+  AppState,
+  DealDetail,
+  DealSort,
+  DealsView,
+  KeyName,
+  PairedExtension,
+  PendingPairRequest,
+  ReviewAnswer,
+  ReviewView,
+  SettingsPatch,
+  StreamStatus,
+} from './types';
 
 export interface ApiClient {
   state(): Promise<AppState>;
-  deals(): Promise<DealsResponse>;
+  deals(): Promise<DealsView>;
   deal(id: string): Promise<DealDetail>;
-  /** The CSV of the deals as shown (UI asks: GET /api/deals/export.csv?section&sort). */
-  dealsCsvUrl(query: { section: string | null; sort: string }): string;
+  /** Saves the deals as CSV (GET /api/deals/export.csv): the token goes in a header, so a plain link cannot fetch it. */
+  downloadDealsCsv(query: { sort: DealSort }): Promise<void>;
 
-  review(): Promise<ReviewResponse>;
-  answer(id: string, answer: ReviewAnswer, fromAi: boolean): Promise<void>;
-  /** UI asks: POST /api/review/:id/ask. */
+  review(): Promise<ReviewView>;
+  /** `seen` is the question's signature as it was shown; the agent refuses the answer when the question has changed. */
+  answer(id: string, answer: ReviewAnswer, o: { fromSuggestion: boolean; seen: string | null }): Promise<void>;
   ask(id: string): Promise<void>;
   askAll(): Promise<void>;
-  approve(ids: string[]): Promise<{ approved: number; refused: number }>;
+  approve(ids: string[]): Promise<{ approved: number; skipped: { id: string; reason: string }[] }>;
 
-  activity(): Promise<ActivityResponse>;
+  activity(): Promise<ActivityView>;
   undo(autopilotId: string): Promise<void>;
-  /** UI asks: POST /api/activity/errors/:id/retry. */
   retry(errorId: string): Promise<void>;
 
   scan(): Promise<void>;
   stop(): Promise<void>;
   pause(): Promise<void>;
   resume(): Promise<void>;
-  /** UI asks: POST /api/deals/:id/lookup and /verify {model}. */
+  /** What a Look up of this bundle's unmatched parts would spend now, in searches. Free. */
+  lookupQuote(dealId: string): Promise<number>;
   lookUp(dealId: string): Promise<void>;
   verify(dealId: string, model: string): Promise<void>;
 
-  settings(): Promise<Settings>;
-  patchSettings(patch: SettingsPatch): Promise<Settings>;
-  /** Write-only: the agent never sends a key back. */
-  putKey(name: KeyName, value: string): Promise<void>;
-  /** UI asks: DELETE /api/keys/:name. */
+  settings(): Promise<AppSettings>;
+  patchSettings(patch: SettingsPatch): Promise<AppSettings>;
+  /** Write-only: the agent never sends a key back. eBay takes {appId, certId}, Telegram {botToken, chatId}. */
+  putKey<N extends KeyName>(name: N, value: KeyValues[N]): Promise<void>;
   deleteKey(name: KeyName): Promise<void>;
 
-  /** Approve a waiting pairing request from Chrome; revoke the paired helper (UI asks: POST /api/pair/revoke). */
-  approvePairing(): Promise<void>;
-  revokePairing(): Promise<void>;
+  /** Chrome's pairing requests waiting for the owner, newest last. */
+  pairRequests(): Promise<PendingPairRequest[]>;
+  decidePairing(requestId: string, allow: boolean): Promise<void>;
+  pairedExtensions(): Promise<PairedExtension[]>;
+  revokeExtension(extensionId: string): Promise<void>;
 
-  /** Server-sent events. Returns the unsubscribe. `onDown` fires when the stream drops. */
-  subscribe(onEvent: (e: AgentEvent) => void, onDown: () => void): () => void;
+  /** Server-sent events; reconnects with a growing wait by itself. Returns the unsubscribe. */
+  subscribe(onEvent: (e: AgentEvent) => void, onStatus: (s: StreamStatus) => void): () => void;
 }
-
 
 export const api: ApiClient = import.meta.env.VITE_MOCK === '1' ? createMockClient() : createHttpClient();

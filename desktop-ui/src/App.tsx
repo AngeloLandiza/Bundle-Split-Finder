@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AppContext, api, useApp, type AppContextValue } from './api/hooks';
-import { ApiError, type AgentEvent, type AppState } from './api/types';
+import { AppContext, api, useApp, type AppContextValue, type PairingValue } from './api/hooks';
+import { ApiError, type AgentEvent, type AppState, type PendingPairRequest } from './api/types';
 import { Button } from './components/Button';
 import { Rail, type RailItem } from './components/Rail';
 import { Meter } from './components/States';
@@ -87,34 +87,83 @@ export function App() {
       });
   }, []);
 
-  // State on load, then from the event stream; a slow poll covers a dropped stream.
+  // Chrome's pairing requests: asked for on load, whenever the agent's state changes (a request is stored, answered or
+  // expires into one), and on a slow poll for the expiry that raises no event. Kept as is when nothing changed.
+  const [requests, setRequests] = useState<PendingPairRequest[]>([]);
+  const [pairBusy, setPairBusy] = useState<string | null>(null);
+  const [pairError, setPairError] = useState<string | null>(null);
+  const refreshPairing = useCallback(() => {
+    api
+      .pairRequests()
+      .then((next) => setRequests((cur) => (JSON.stringify(cur) === JSON.stringify(next) ? cur : next)))
+      .catch(() => {
+        // Offline or not allowed: the offline band already says so, and there is nothing to allow.
+      });
+  }, []);
+
+  // State on load, then from the event stream (which reconnects with a growing wait by itself); a slow poll covers
+  // a stream that is down. After a gap, every screen reloads, since events were missed.
   useEffect(() => {
     refreshState();
-    let retry: ReturnType<typeof setTimeout> | null = null;
-    let off: () => void = () => {};
-    const connect = () => {
-      off = api.subscribe(
-        (e) => {
-          if (e.type === 'state') {
-            setState(e.state);
-            setOnline(true);
+    refreshPairing();
+    let wasDown = false;
+    const off = api.subscribe(
+      (e) => {
+        if (e.type === 'state') {
+          setState(e.state);
+          setOnline(true);
+          refreshPairing();
+        }
+        listeners.current.get(e.type)?.forEach((fn) => fn(e));
+      },
+      (status) => {
+        if (status === 'live') {
+          setOnline(true);
+          if (wasDown) {
+            refreshState();
+            refreshPairing();
+            for (const type of ['deals', 'review', 'activity'] as const) listeners.current.get(type)?.forEach((fn) => fn({ type }));
           }
-          listeners.current.get(e.type)?.forEach((fn) => fn(e));
-        },
-        () => {
+          wasDown = false;
+        } else {
+          wasDown = true;
           refreshState();
-          retry = setTimeout(connect, 5000);
-        },
-      );
-    };
-    connect();
-    const poll = setInterval(refreshState, 30_000);
+        }
+      },
+    );
+    const poll = setInterval(() => {
+      if (document.visibilityState === 'hidden') return;
+      refreshState();
+      refreshPairing();
+    }, 15_000);
     return () => {
       off();
       clearInterval(poll);
-      if (retry) clearTimeout(retry);
     };
-  }, [refreshState]);
+  }, [refreshState, refreshPairing]);
+
+  const pairing = useMemo<PairingValue>(
+    () => ({
+      requests,
+      busyId: pairBusy,
+      error: pairError,
+      decide: async (requestId, allow) => {
+        setPairBusy(requestId);
+        setPairError(null);
+        try {
+          await api.decidePairing(requestId, allow);
+          setRequests((cur) => cur.filter((r) => r.requestId !== requestId));
+          refreshState();
+        } catch (e) {
+          setPairError(e instanceof ApiError ? e.message : 'That did not work. Try again.');
+          refreshPairing();
+        } finally {
+          setPairBusy(null);
+        }
+      },
+    }),
+    [requests, pairBusy, pairError, refreshState, refreshPairing],
+  );
 
   const on = useCallback<AppContextValue['on']>((type, fn) => {
     const set = listeners.current.get(type) ?? new Set();
@@ -140,7 +189,7 @@ export function App() {
     document.querySelector<HTMLElement>('.page-title')?.focus({ preventScroll: true });
   }, [route.screen]);
 
-  const ctx = useMemo<AppContextValue>(() => ({ state, online, offlineSentence, refreshState, navigate, on }), [state, online, offlineSentence, refreshState, navigate, on]);
+  const ctx = useMemo<AppContextValue>(() => ({ state, online, offlineSentence, refreshState, navigate, on, pairing }), [state, online, offlineSentence, refreshState, navigate, on, pairing]);
 
   if (state?.firstRun && !skipped) {
     return (
@@ -209,7 +258,7 @@ function RailFoot() {
         refreshState();
       });
   };
-  const blocked = !online ? 'The agent is not running.' : !keys.serpapi ? 'Add your SerpApi key in Settings first.' : budget.serpLeft <= budget.serpReserve ? 'Searches are at your reserve.' : null;
+  const blocked = !online ? 'The agent is not running.' : !keys.serpapi ? 'Add your SerpApi key in Settings first.' : budget.serpLeft !== null && budget.serpLeft <= budget.serpReserve ? 'Searches are at your reserve.' : null;
   return (
     <>
       <StatusLine agent={agent} compact />
@@ -222,7 +271,7 @@ function RailFoot() {
           Resume
         </Button>
       ) : (
-        <Button variant="primary" onClick={() => act(api.scan)} busy={busy} busyLabel="Starting…" disabled={Boolean(blocked)} title={blocked ?? undefined} cost={plural(budget.serpPerScan, 'search', 'searches')}>
+        <Button variant="primary" onClick={() => act(api.scan)} busy={busy} busyLabel="Starting…" disabled={Boolean(blocked)} title={blocked ?? undefined} cost={budget.serpPerScan > 0 ? plural(budget.serpPerScan, 'search', 'searches') : undefined}>
           Scan now
         </Button>
       )}
@@ -232,10 +281,16 @@ function RailFoot() {
         </p>
       ) : null}
       <div className="rail-meta">
-        <span>
-          <span className="fig">{count(budget.serpLeft)}</span> searches left
-        </span>
-        <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" />
+        {budget.serpLeft === null ? (
+          <span>Searches not checked yet</span>
+        ) : (
+          <>
+            <span>
+              <span className="fig">{count(budget.serpLeft)}</span> searches left
+            </span>
+            {budget.serpMonthly ? <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" /> : null}
+          </>
+        )}
       </div>
       <div className="rail-meta">
         <span>{helper.connected ? 'Chrome connected' : helper.paired ? 'Chrome closed' : 'Chrome not connected'}</span>

@@ -1,24 +1,44 @@
 // The mock agent for `VITE_MOCK=1`: the fixture-backed data in mockData.ts, kept in memory, with
-// a short delay on every call and events pushed the way the real SSE stream will push them.
+// a short delay on every call and events pushed the way the real SSE stream pushes them. It answers
+// in the same shapes as the real client (types.ts), so a screen cannot tell them apart.
 // `?mock=<scenario>` on the URL shows one state: firstrun, empty, offline, chrome-closed, limit,
-// scanning, paused, error, slow. Nothing here touches the network.
+// scanning, paused, error, slow, pairing. Nothing here touches the network.
 
+import type { PipelineView } from '@core/scan/pipeline';
 import type { ApiClient } from './client';
+import { mergePatch } from '../lib/patch';
 import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE } from './mockData';
-import { ApiError, type AgentEvent, type AppState, type ReviewQuestion, type Settings } from './types';
+import { ApiError, type AgentEvent, type AppSettings, type AppState, type PairedExtension, type PendingPairRequest, type ReviewQuestion } from './types';
 
-type Scenario = 'normal' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow';
+type Scenario = 'normal' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing';
 
 const clone = <T>(x: T): T => structuredClone(x);
 
 function scenario(): Scenario {
   if (typeof window === 'undefined') return 'normal';
   const s = new URLSearchParams(window.location.search).get('mock');
-  const all: Scenario[] = ['firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow'];
+  const all: Scenario[] = ['firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing'];
   return all.find((x) => x === s) ?? 'normal';
 }
 
-const STEPS = ['Reading Home Depot bundle pages', 'Searching Amazon for parts', 'Checking Keepa prices', 'Checking eBay listings', 'Asking AI about open questions'];
+const STEPS = ['Home Depot deals pages', 'Bundle pages', 'Home Depot part prices', 'eBay listings', 'Amazon lookups', 'Finish'];
+
+/** The scan's stages as core's pipelineView words them, for a scan `tick` of `total` ticks in. */
+function pipelineAt(tick: number, total: number): PipelineView {
+  const per = total / STEPS.length;
+  const now = Math.min(STEPS.length - 1, Math.floor(tick / per));
+  const done = (tick % per) * 6 + 3;
+  const eta = (total - tick) * 14;
+  return {
+    current: { label: ['Fetching deals pages', 'Reading bundle pages', 'Reading part prices', 'Checking eBay listings', 'Looking up parts', 'Finishing up'][now]!, count: `${done} of 24` },
+    estimateText: tick < 2 ? 'estimating' : eta < 60 ? 'under a minute' : `about ${Math.round(eta / 60)} min`,
+    stepsDone: now,
+    stepsTotal: STEPS.length,
+    fraction: tick / total,
+    ariaValueText: `Step ${now + 1} of ${STEPS.length}, ${STEPS[now]!.toLowerCase()}`,
+    steps: STEPS.map((label, i) => ({ label, state: i < now ? 'done' : i === now ? 'now' : 'next', figure: i < now ? '24 read' : i === now ? `${done} of 24` : '' })),
+  };
+}
 
 export function createMockClient(): ApiClient {
   const mode = scenario();
@@ -30,8 +50,9 @@ export function createMockClient(): ApiClient {
   let deals = clone(DEALS);
   let questions: ReviewQuestion[] = clone(QUESTIONS);
   const activity = clone(ACTIVITY);
-  let settings: Settings = clone(SETTINGS);
-  let lastAsk: string | null = null;
+  let settings: AppSettings = clone(SETTINGS);
+  let pairRequests: PendingPairRequest[] = [];
+  let paired: PairedExtension[] = [{ extensionId: 'abcdefghijklmnopabcdefghijklmnop', pairedAt: new Date(Date.now() - 3 * 86_400_000).toISOString(), lastSeenAt: new Date(Date.now() - 60_000).toISOString() }];
 
   if (mode === 'firstrun') {
     state.firstRun = true;
@@ -39,6 +60,7 @@ export function createMockClient(): ApiClient {
     state.helper = { paired: false, connected: false, lastSeenAt: null, jobsWaiting: 0 };
     state.agent.lastScan = null;
     state.budget.aiSpentUsd = 0;
+    paired = [];
   }
   if (mode === 'firstrun' || mode === 'empty') {
     deals = [];
@@ -54,6 +76,9 @@ export function createMockClient(): ApiClient {
     state.agent.lastScan = { at: new Date(Date.now() - 20 * 60_000).toISOString(), result: 'limit', newDeals: 1, searches: 3, message: 'The scan stopped at your reserve of 20 searches. Scans start again when the plan renews on Dec 1.' };
   }
   if (mode === 'paused') state.agent.status = 'paused';
+  if (mode === 'pairing') {
+    pairRequests = [{ requestId: 'pair-1', extensionId: 'ponmlkjihgfedcbaponmlkjihgfedcba', code: '482913', requestedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 5 * 60_000).toISOString() }];
+  }
 
   const sync = () => {
     state.counts.review = questions.length;
@@ -66,9 +91,7 @@ export function createMockClient(): ApiClient {
     let tick = 0;
     const total = STEPS.length * 4;
     const set = () => {
-      const i = Math.min(STEPS.length - 1, Math.floor(tick / 4));
-      state.agent.step = { name: STEPS[i]!, index: i + 1, of: STEPS.length, done: (tick % 4) * 6 + 3, total: 24 };
-      state.agent.progress = { fraction: tick / total, etaSeconds: tick < 2 ? null : (total - tick) * 14, searchesUsed: Math.min(5, Math.ceil(tick / 3)), aiSpentUsd: Math.max(0, (tick - 14) * 0.06) };
+      state.agent.pipeline = pipelineAt(tick, total);
     };
     set();
     sync();
@@ -76,8 +99,8 @@ export function createMockClient(): ApiClient {
       tick += 1;
       if (tick >= total) {
         stopTimer();
-        state.agent = { ...state.agent, status: 'idle', step: null, progress: null, lastScan: { at: new Date().toISOString(), result: 'finished', newDeals: 1, searches: 5, message: null } };
-        state.budget.serpLeft -= 5;
+        state.agent = { ...state.agent, status: 'idle', pipeline: null, step: null, lastScan: { at: new Date().toISOString(), result: 'finished', newDeals: 1, searches: 5, message: null } };
+        state.budget.serpLeft = (state.budget.serpLeft ?? 0) - 5;
         state.firstRun = false;
         if (deals.length === 0) deals = clone(DEALS);
         sync();
@@ -108,7 +131,7 @@ export function createMockClient(): ApiClient {
     async deals() {
       await online();
       if (mode === 'error') throw new ApiError('server', 'The agent could not read the deals. Try again.');
-      return { rows: clone(deals), at: deals.length ? new Date(Date.now() - 47 * 60_000).toISOString() : null, ebayNotice: null };
+      return { rows: clone(deals), at: deals.length ? new Date(Date.now() - 47 * 60_000).toISOString() : null, ebayNotice: null, limitNotice: null, staleDays: null };
     },
     async deal(id) {
       await online();
@@ -116,12 +139,14 @@ export function createMockClient(): ApiClient {
       if (!d) throw new ApiError('server', 'This bundle is no longer in the deals. The last scan dropped it.');
       return clone(d);
     },
-    dealsCsvUrl: () => 'data:text/csv;charset=utf-8,mock',
+    async downloadDealsCsv() {
+      await online();
+    },
 
     async review() {
       await online();
       if (mode === 'error') throw new ApiError('server', 'The agent could not read the questions. Try again.');
-      return { questions: clone(questions), lastAsk };
+      return { questions: clone(questions) };
     },
     async answer(id) {
       await online();
@@ -142,12 +167,10 @@ export function createMockClient(): ApiClient {
     async askAll() {
       await online();
       state.agent.status = 'asking';
-      state.agent.step = { name: 'Asking AI', index: 1, of: 1, done: 0, total: 2 };
-      state.agent.progress = { fraction: 0, etaSeconds: 40, searchesUsed: 0, aiSpentUsd: 0 };
+      state.agent.step = 'Asking the AI';
       sync();
       setTimeout(() => {
-        state.agent = { ...state.agent, status: 'idle', step: null, progress: null };
-        lastAsk = 'Asked 2 questions: none verified, 2 left for you. Cost $0.20.';
+        state.agent = { ...state.agent, status: 'idle', pipeline: null, step: null };
         sync();
         emit({ type: 'review' });
       }, 3000);
@@ -158,7 +181,7 @@ export function createMockClient(): ApiClient {
       questions = questions.filter((q) => !ok.includes(q));
       sync();
       emit({ type: 'review' });
-      return { approved: ok.length, refused: ids.length - ok.length };
+      return { approved: ok.length, skipped: ids.filter((i) => !ok.some((q) => q.id === i)).map((id) => ({ id, reason: 'Only a verified suggestion can be approved.' })) };
     },
 
     async activity() {
@@ -185,13 +208,13 @@ export function createMockClient(): ApiClient {
     async stop() {
       await online();
       stopTimer();
-      state.agent = { ...state.agent, status: 'idle', step: null, progress: null, lastScan: { at: new Date().toISOString(), result: 'stopped', newDeals: 0, searches: 2, message: 'You stopped the scan. Prices found so far are kept.' } };
+      state.agent = { ...state.agent, status: 'idle', pipeline: null, step: null, lastScan: { at: new Date().toISOString(), result: 'stopped', newDeals: 0, searches: 2, message: 'You stopped the scan. Prices found so far are kept.' } };
       sync();
     },
     async pause() {
       await online();
       stopTimer();
-      state.agent = { ...state.agent, status: 'paused', step: null, progress: null };
+      state.agent = { ...state.agent, status: 'paused', pipeline: null, step: null };
       sync();
     },
     async resume() {
@@ -199,16 +222,20 @@ export function createMockClient(): ApiClient {
       state.agent.status = 'idle';
       sync();
     },
+    async lookupQuote(id) {
+      await online(80);
+      return deals.find((d) => d.id === id)?.lookup?.searches ?? 0;
+    },
     async lookUp(id) {
       await online(900);
       deals = deals.map((d) => (d.id === id ? { ...d, lookup: null } : d));
-      state.budget.serpLeft -= 2;
+      state.budget.serpLeft = (state.budget.serpLeft ?? 0) - 2;
       sync();
       emit({ type: 'deals' });
     },
     async verify() {
       await online(900);
-      state.budget.serpLeft -= 1;
+      state.budget.serpLeft = (state.budget.serpLeft ?? 0) - 1;
       sync();
     },
 
@@ -218,22 +245,16 @@ export function createMockClient(): ApiClient {
     },
     async patchSettings(patch) {
       await online(150);
-      settings = {
-        ...settings,
-        ...patch,
-        fees: { ...settings.fees, ...patch.fees },
-        ai: { ...settings.ai, ...patch.ai, pipelines: { ...settings.ai.pipelines, ...patch.ai?.pipelines } },
-        alerts: { ...settings.alerts, ...patch.alerts },
-      } as Settings;
-      if (patch.searchesPerScan) state.budget.serpPerScan = patch.searchesPerScan;
-      if (patch.reserve !== undefined) state.budget.serpReserve = patch.reserve;
-      if (patch.ai?.monthlyCapUsd !== undefined) state.budget.aiCapUsd = patch.ai.monthlyCapUsd;
+      settings = mergePatch(settings, patch as AppSettings);
+      state.budget.serpPerScan = settings.settings.searchesPerScan;
+      state.budget.serpReserve = settings.settings.reserve;
+      state.budget.aiCapUsd = settings.ai.monthlyCapUsd;
       sync();
       return clone(settings);
     },
     async putKey(name, value) {
       await online(400);
-      if (name === 'serpapi' && value.trim().length < 20) throw new ApiError('refused', 'SerpApi did not accept this key.');
+      if (name === 'serpapi' && (value as { key: string }).key.trim().length < 20) throw new ApiError('refused', 'SerpApi did not accept this key.');
       state.keys[name] = true;
       sync();
     },
@@ -242,23 +263,39 @@ export function createMockClient(): ApiClient {
       state.keys[name] = false;
       sync();
     },
-    async approvePairing() {
-      await online(600);
-      state.helper = { paired: true, connected: true, lastSeenAt: new Date().toISOString(), jobsWaiting: 0 };
+
+    async pairRequests() {
+      await online(80);
+      return clone(pairRequests);
+    },
+    async decidePairing(requestId, allow) {
+      await online(400);
+      const req = pairRequests.find((r) => r.requestId === requestId);
+      pairRequests = pairRequests.filter((r) => r.requestId !== requestId);
+      if (allow && req) {
+        paired = [{ extensionId: req.extensionId, pairedAt: new Date().toISOString(), lastSeenAt: null }];
+        state.helper = { paired: true, connected: true, lastSeenAt: new Date().toISOString(), jobsWaiting: 0 };
+      }
       sync();
     },
-    async revokePairing() {
+    async pairedExtensions() {
+      await online(80);
+      return clone(paired);
+    },
+    async revokeExtension(extensionId) {
       await online();
-      state.helper = { paired: false, connected: false, lastSeenAt: null, jobsWaiting: 0 };
+      paired = paired.filter((p) => p.extensionId !== extensionId);
+      if (paired.length === 0) state.helper = { paired: false, connected: false, lastSeenAt: null, jobsWaiting: 0 };
       sync();
     },
 
-    subscribe(onEvent, onDown) {
+    subscribe(onEvent, onStatus) {
       if (mode === 'offline') {
-        const t = setTimeout(onDown, 50);
+        const t = setTimeout(() => onStatus('down'), 50);
         return () => clearTimeout(t);
       }
       listeners.add(onEvent);
+      onStatus('live');
       return () => listeners.delete(onEvent);
     },
   };
