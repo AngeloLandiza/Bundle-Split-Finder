@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -141,6 +141,31 @@ describe('agent store', () => {
     writeFileSync(join(dir, 'scan-pending.json'), JSON.stringify({ id: 'scan-2', requestedAt: 'r' }));
     const again = openStore(dir);
     expect(again.get('outbox').scan?.id).toBe('scan-1');
-    expect(existsSync(join(dir, 'app-secrets.json'))).toBe(true);
+  });
+
+  it('after the migration the old copies of the keys are gone: secrets deleted, settings without key fields', () => {
+    const dir = tempDir();
+    writeFileSync(join(dir, 'app-settings.json'), JSON.stringify({ version: 1, serpApiKey: 'legacy-serp', anthropicKey: 'legacy-claude', settings: { searchesPerScan: 7 } }));
+    writeFileSync(join(dir, 'app-secrets.json'), JSON.stringify({ keepaApiKey: 'legacy-keepa' }));
+    const s = openStore(dir);
+    expect(s.get('keys')).toEqual({ serpapi: 'legacy-serp', anthropic: 'legacy-claude', keepa: 'legacy-keepa' });
+    expect(existsSync(join(dir, 'app-secrets.json'))).toBe(false);
+    const left = readFileSync(join(dir, 'app-settings.json'), 'utf8');
+    expect(left).not.toContain('legacy');
+    expect(JSON.parse(left)).toEqual({ version: 1, settings: { searchesPerScan: 7 } });
+  });
+
+  it('never imports the old files again when meta.json is missing but the store has keys', () => {
+    const dir = tempDir();
+    const first = Store.open(dir);
+    first.update('keys', () => ({ serpapi: 'kept' }));
+    first.close();
+    unlinkSync(join(dir, 'store', 'meta.json'));
+    // An old file with a key the owner has since deleted, as a restore from backup might leave it.
+    writeFileSync(join(dir, 'app-secrets.json'), JSON.stringify({ keepaApiKey: 'deleted-long-ago' }));
+    const s = openStore(dir);
+    expect(s.get('keys')).toEqual({ serpapi: 'kept' });
+    expect(existsSync(join(dir, 'store', 'meta.json'))).toBe(true);
+    expect(existsSync(join(dir, 'app-secrets.json'))).toBe(false);
   });
 });

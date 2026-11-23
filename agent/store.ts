@@ -518,6 +518,33 @@ export function migrateLegacyFiles(dataDir: string, into: StoreData): string[] {
   return read;
 }
 
+const LEGACY_KEY_FIELDS = ['serpApiKey', 'keepaApiKey', 'anthropicKey', 'ebayAppId', 'ebayCertId'] as const;
+
+/**
+ * After the keys are in the store (keys.json, 0600), the old copies go: app-secrets.json is deleted and the key fields
+ * are taken out of app-settings.json (its other fields stay, unread). Best effort: a file that cannot be changed is
+ * left, and the next start tries again.
+ */
+export function scrubLegacyKeys(dataDir: string): void {
+  try {
+    const secrets = join(dataDir, 'app-secrets.json');
+    if (existsSync(secrets)) unlinkSync(secrets);
+  } catch {
+    // tried again next start
+  }
+  try {
+    const path = join(dataDir, 'app-settings.json');
+    const raw = readJson(path);
+    if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return;
+    const rec = raw as LegacyRecord;
+    if (!LEGACY_KEY_FIELDS.some((f) => f in rec)) return;
+    const kept = Object.fromEntries(Object.entries(rec).filter(([k]) => !(LEGACY_KEY_FIELDS as readonly string[]).includes(k)));
+    writeFileAtomic(path, JSON.stringify(kept, null, 2), 0o600);
+  } catch {
+    // tried again next start
+  }
+}
+
 // ---------------------------------------------------------------- the store
 
 export type ChangeListener = (name: CollectionName) => void;
@@ -544,17 +571,23 @@ export class Store {
 
     const data = defaults();
     const metaPath = join(dir, 'meta.json');
-    const fresh = !existsSync(metaPath);
-    if (fresh) {
-      const migratedFrom = migrateLegacyFiles(dataDir, data);
-      const store = new Store(dir, data, lockPath);
-      for (const name of COLLECTIONS) store.write(name);
-      writeFileAtomic(
-        metaPath,
-        JSON.stringify({ version: STORE_VERSION, createdAt: new Date().toISOString(), migratedFrom }, null, 2),
-      );
-      return store;
+    const writeMeta = (migratedFrom: string[]) =>
+      writeFileAtomic(metaPath, JSON.stringify({ version: STORE_VERSION, createdAt: new Date().toISOString(), migratedFrom }, null, 2));
+    if (!existsSync(metaPath)) {
+      // A store with keys but no meta.json (a crash before meta was written, or meta deleted) is not new: importing the
+      // old files again would bring back keys the owner deleted since.
+      if (!existsSync(join(dir, 'keys.json'))) {
+        const migratedFrom = migrateLegacyFiles(dataDir, data);
+        const store = new Store(dir, data, lockPath);
+        for (const name of COLLECTIONS) store.write(name);
+        writeMeta(migratedFrom);
+        if (lockPath) scrubLegacyKeys(dataDir);
+        return store;
+      }
+      writeMeta([]);
     }
+    // Every start of the writer, so a scrub that failed once is tried again.
+    if (lockPath) scrubLegacyKeys(dataDir);
     const unreadable: CollectionName[] = [];
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     for (const name of COLLECTIONS) {
