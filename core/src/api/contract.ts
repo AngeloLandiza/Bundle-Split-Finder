@@ -204,6 +204,17 @@ export interface ApproveBody {
   ids: string[];
 }
 
+/** Only verified suggestions for the question as it is now are applied; the rest say why not. */
+export interface ApproveResponse {
+  approved: string[];
+  skipped: { id: string; reason: string }[];
+}
+
+/** POST /api/review/:id/answer and POST /api/scan: queued for the worker that applies it. */
+export interface QueuedResponse {
+  queued: true;
+}
+
 // ---------------------------------------------------------------- activity
 
 export interface RunRecord {

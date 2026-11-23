@@ -154,8 +154,13 @@ export class WorkerJobs {
     for (const w of this.waiters.splice(0)) w.resolve(null);
   }
 
-  private lease(): WorkerJob | null {
-    const job = this.store.get('jobs').find((j) => j.status === 'queued');
+  /** Leases the oldest queued job of these kinds now, without waiting (the pre-step-13 extension reads pages only). */
+  take(kinds: readonly WorkerJobKind[]): WorkerJob | null {
+    return this.lease(kinds);
+  }
+
+  private lease(kinds?: readonly WorkerJobKind[]): WorkerJob | null {
+    const job = this.store.get('jobs').find((j) => j.status === 'queued' && (!kinds || kinds.includes(j.kind)));
     if (!job) return null;
     const now = this.now();
     const leased: WorkerJob = {

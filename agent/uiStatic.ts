@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { join, sep } from 'node:path';
 
 import type { ServerResponse } from 'node:http';
 
@@ -15,13 +15,27 @@ const MIME: Record<string, string> = {
   '.png': 'image/png',
 };
 
+/**
+ * The app's Content-Security-Policy, the same as src-tauri/tauri.conf.json's app.security.csp: change
+ * both together.
+ */
+export const UI_CSP =
+  "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://127.0.0.1:8790 ipc: http://ipc.localhost; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'";
+
+function uiHeaders(res: ServerResponse, type: string): void {
+  res.setHeader('Content-Type', type);
+  res.setHeader('Content-Security-Policy', UI_CSP);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+}
+
 function safePath(urlPath: string): string | null {
   const clean = urlPath.replace(/\0/g, '');
   if (clean.includes('..')) return null;
   const rel = clean.replace(/^\/ui\/?/, '') || 'index.html';
   const file = join(agentUiDir(), rel);
   const root = agentUiDir();
-  if (!file.startsWith(root)) return null;
+  if (file !== root && !file.startsWith(root + sep)) return null;
   return file;
 }
 
@@ -39,10 +53,10 @@ export function tryServeUi(url: string | undefined, res: ServerResponse): boolea
     return true;
   }
   const file = safePath(url);
-  if (!file || !existsSync(file)) {
+  if (!file || !existsSync(file) || !statSync(file).isFile()) {
     const fallback = join(agentUiDir(), 'index.html');
     if (existsSync(fallback)) {
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      uiHeaders(res, 'text/html; charset=utf-8');
       res.end(readFileSync(fallback));
       return true;
     }
@@ -51,7 +65,7 @@ export function tryServeUi(url: string | undefined, res: ServerResponse): boolea
     return true;
   }
   const ext = file.slice(file.lastIndexOf('.'));
-  res.setHeader('Content-Type', MIME[ext] ?? 'application/octet-stream');
+  uiHeaders(res, MIME[ext] ?? 'application/octet-stream');
   res.end(readFileSync(file));
   return true;
 }
