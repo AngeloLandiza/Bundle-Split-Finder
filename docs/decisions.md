@@ -489,3 +489,51 @@ The owner's own example, PCL406424SB-A21701-A25RS51 (fixtures/homedepot-pages/fo
 free through the app the same day): Home Depot sells PCL406424SB as its own product (item 328690521, the 2-tool kit) and
 A21701 (item 316546864, a 7-piece sandpaper set); it has no product for A25RS51. The app held none of these readings
 when it asked him: a three-part hyphen split went straight to a question instead of waiting for Home Depot's part pages.
+
+### Step 16, round 2: every part is read before a question, and a question names only what Home Depot did not confirm (Nov 23 2026)
+- *Why PCL406424SB-A21701-A25RS51 went straight to a question:* not its three parts (rule 2 already took any number of hyphen
+  pieces) but its special buy: `spelledOut` returned no reading when a piece ended in SB, so rule 2 did not apply, nothing
+  was waited for, and the question opened with no reading. Now a special buy is read like any part, and a split with a
+  part still to read waits (`waitingFor`) even when another part was already refused: no question opens while a free read
+  could change it (`homeDepotSplit`). *Measured* (`npx tsx scripts/measure-splits.ts`): validation 24 right / 0 wrong / 7
+  open before and after; of the 7, 2 now wait for a reading instead of asking with nothing read (PCL500525SB-PBP003,
+  PSK1212SB-PCL265B). The real scan-3 store: the owner's example waits for all three parts.
+- *Rejected, measured: Home Depot's own page for exactly a special buy or combo as proof it is one kit.* Asked for on the
+  owner's example (PCL406424SB's own page, item 328690521, lists "18V Compact Router, 18V 5" Random Orbit Sander, …" and no
+  other model). The same rule takes PCL500525SB's own page (328690510: "Includes: 18V ONE+ 5-1/2 in. Circular Saw and 18V
+  ONE+ Jig Saw", no other model) as one kit, and the answer key splits it into PCL500B + PCL525B. In the settle rule that is
+  a wrong split of the validation's PCL500525SB-PBP003 once its parts are read ([PCL500525SB, PBP003] for the key's
+  PCL500B + PCL525B + PBP003). In the verifier, replayed on the four recorded runs: 0 newly right, 0 wrong, and the three
+  runs that answered 341644987 with [PCL500525SB, PBP003] are then refused only for "PBP003 accounts for nothing", one
+  technicality from a verified wrong answer. Not adopted: a special buy is never confirmed as one part (the step 12 rule
+  stands), and HD's search shows the same set as `PCL424B-PCL406B` with the same title, which is what the key's convention
+  would split it into. Keeping PCL406424SB whole is a preference call for the owner, so it is asked, not decided.
+- *A narrower question* (`Decomposition`/`ReviewItem.settledParts` and `unsettledParts`; `ReviewQuestion.settledParts`
+  `{model, what, url}` and `unsettledParts: string[]`). From the scan's own part readings (rule 2, once every part is read
+  and some are refused), else from the follow-up loop's reads (`narrowOf`: a Home Depot page or search row of exactly that
+  brand and model settles a part; a search with no such row makes it `not_sold`; a special buy or a combo the catalog does
+  not know as a kit stays unsettled with its page). The brief then asks "What are PCL406424SB and A25RS51 in this bundle?",
+  gives the settled parts as a reason with their page, and its check is the owner's (`who: 'owner'`), written by code
+  (`narrowCheck`): one part not sold on its own: "Home Depot does not sell A25RS51 on its own. If it is in this box, approve
+  the 3 parts; you can mark A25RS51 not sold separately after."; a special buy: "… Keep it as one part, or enter the tools
+  inside it?"; several: "Home Depot: PCL406424SB is a special buy; A25RS51 is not sold on its own. Approve the parts as
+  listed, or enter them?". *No "A25RS51 not sold separately" split choice:* the PO's rule is that everything with a model
+  number counts (everything is a leftover except manuals), and "not sold separately" is already a part's state, set on the
+  part after the split (step 15 rule 4, `NO_AMAZON_LISTING_TEXT`); a split without A25RS51 would hide a part the page names.
+- *The owner's example now, step by step* (real recordings; `core/test/settle-special-buy.test.ts`,
+  `core/test/research-followup.test.ts`, `agent/test/followUp.test.ts`): (1) the scan finds no reading for the three parts and
+  waits (`waiting_parts`), no question; (2) the part-price read finds PCL406424SB (item 328690521) and A21701 (item 316546864)
+  sold under exactly those models and no A25RS51; (3) the split stays a question: A21701 settled by its page, PCL406424SB a
+  special buy, A25RS51 not sold on Home Depot. On the path the app took on Nov 23 (a question already open), the follow-up
+  loop's free reads give the same three `tried` lines with their links and the same narrowing, with or without an AI answer.
+- *No question reaches "Needs you" with an app check and nothing queued:* the loop now also makes the free reads of split
+  questions the AI has not answered (`not_asked`; state in the agent's `review.followUps`, kept across reports), after the AI
+  pass. With Chrome closed every such question is queued ("Waiting for Chrome to read the Home Depot pages this needs") and
+  counted in `reviewWorking`, not `review`; the next pass with Chrome open runs it, and an owner's press then runs it at once.
+  A loop that found nothing to read hands the question to the owner with an owner check ("The app has nothing more it can
+  read for this; the answer is your call."). Tested on all of the owner's scan-3 split questions.
+- *Fixed on the way:* the follow-up eval's Chrome recordings (`fixtures/research/tools/followup-*.json`) were read by every
+  research eval and broke its index (the base eval must not see reads made by the true parts' numbers); they now answer only
+  `--follow-up`. `--fresh-tools` finds the token of the agent that is running: SPLIT_FINDER_DATA_DIR, else ./output when it has
+  one, else the installed app's data folder (`~/Library/Application Support/com.bundlesplitfinder.desktop`, `%APPDATA%\…`).
+  The follow-up eval's replay of the main session's paid run still scores 8 right, 0 wrong ($0.1388 recorded).
