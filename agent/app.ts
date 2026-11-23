@@ -38,6 +38,7 @@ import { planConfirmedPrice, planRemoveConfirmedPrice } from '../core/src/scan/c
 import { bundlesCsv } from '../core/src/scan/csv';
 import { ebaySettingsProblem, validateSettings } from '../core/src/settings';
 import { Auth, type PairError } from './auth';
+import { AUDIT_REFUSAL, backUpScanData, buildAuditText, clearScanData } from './dataPane';
 import { measuredByDefault, modelIdentity } from './autopilot';
 import { checkEbayKeysApp } from './checkEbayKeysApp';
 import { checkSerpApiKey } from './checkSerpKey';
@@ -320,6 +321,14 @@ function sendCsv(res: ServerResponse, file: string, csv: string): typeof HANDLED
   return HANDLED;
 }
 
+function sendJsonFile(res: ServerResponse, file: string, text: string): typeof HANDLED {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${file.replace(/[^A-Za-z0-9._-]/g, '_')}"`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(text);
+  return HANDLED;
+}
+
 /** The work's refusals as HTTP: a busy agent or a refused answer is 409, an unknown thing 404. */
 async function refusals<T>(fn: () => T | Promise<T>): Promise<T> {
   try {
@@ -577,6 +586,27 @@ export function createAgent(opts: AgentOptions): Agent {
     if (!bundles.length) throw new HttpError('not_found', 'No deals to export yet.');
     const groups = dealListSections(bundles, parseSort(ctx.url.searchParams.get('sort')));
     return sendCsv(ctx.res, `split-finder-deals-${csvFileDate(now())}.csv`, bundlesCsv(groups.flatMap((g) => g.rows)));
+  });
+  // Settings, Data: what a developer needs to see what happened (never a key), and a reset of the scan data alone.
+  r.get('/api/export/audit', 'ui', async (ctx) => {
+    let text: string;
+    try {
+      text = await buildAuditText({
+        store, scan: work.scanStore, now: now(), appVersion: process.env.SPLIT_FINDER_APP_VERSION ?? null, helperVersion: helper.version,
+        platform: `${process.platform} ${process.arch}`,
+      });
+    } catch {
+      throw new HttpError('unavailable', AUDIT_REFUSAL);
+    }
+    return sendJsonFile(ctx.res, `split-finder-audit-${csvFileDate(now())}.json`, text);
+  });
+  r.post('/api/data/reset', 'ui', async (ctx) => {
+    if (obj(await ctx.body()).confirm !== 'RESET') throw new HttpError('bad_request', 'confirm must be "RESET".');
+    if (work.writing()) throw new HttpError('conflict', 'A scan or a lookup is running. Stop it or wait for it to finish, then reset.');
+    const backup = backUpScanData(opts.dataDir, store, now());
+    await work.scanStore.clearAll();
+    clearScanData(store);
+    return { reset: true, backup };
   });
   r.get('/api/deals/:id', 'any', (ctx) => {
     const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings'), tracking: store.get('tracking') }, ctx.params.id!);

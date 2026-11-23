@@ -206,6 +206,7 @@ pub fn start(app: &AppHandle) -> Result<(), String> {
     .map_err(|e| format!("Agent binary missing (reinstall Split Finder): {e}"))?
     .env("SPLIT_FINDER_DATA_DIR", data_dir)
     .env("SPLIT_FINDER_EXTENSION_DIR", &extension_dir)
+    .env("SPLIT_FINDER_APP_VERSION", env!("CARGO_PKG_VERSION"))
     .env("AGENT_PORT", AGENT_PORT.to_string());
 
   if let Some(zip) = extension_zip_in_resources(app) {

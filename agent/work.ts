@@ -142,7 +142,7 @@ export function extensionSettingsOf(a: AppSettings): ExtensionSettings {
 }
 
 /** Every key the store holds, as text, so no sentence can carry one out. */
-function secretsOf(keys: StoredKeys): string[] {
+export function secretsOf(keys: StoredKeys): string[] {
   return [keys.serpapi, keys.keepa, keys.anthropic, keys.openai, keys.ebay?.appId, keys.ebay?.certId, keys.telegram?.botToken].filter(
     (k): k is string => typeof k === 'string' && k.length >= 4,
   );
@@ -185,6 +185,11 @@ export class AgentWork {
   }
 
   // ------------------------------------------------------------------ state and the schedule
+
+  /** Whether a scan, an ask, an owner answer or a drip round is writing now (Reset scan data refuses while it is). */
+  writing(): boolean {
+    return this.live.busy !== null || this.dripping !== null || this.answering > 0;
+  }
 
   state(): LiveState {
     const drip = this.dripState();

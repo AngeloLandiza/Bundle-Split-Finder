@@ -355,6 +355,11 @@ function defaults(): StoreData {
   };
 }
 
+/** A new, empty collection (what Reset scan data leaves behind). */
+export function emptyCollection<K extends CollectionName>(name: K): StoreData[K] {
+  return defaults()[name];
+}
+
 /** Fills fields a newer agent added to a collection stored by an older one. */
 function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K] {
   const base = defaults()[name];
