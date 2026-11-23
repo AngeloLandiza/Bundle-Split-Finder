@@ -126,7 +126,7 @@ describe('KeepaClient', () => {
   it('marks fetchStep results as Keepa spend, not SerpApi', async () => {
     const cache = new MemoryCache();
     const body = FIXTURE();
-    await cache.set('keepa:product?asin=B0BGYFTPGK&domain=1&history=0', { at: 1, data: body });
+    await cache.set('keepa:product?asin=B0BGYFTPGK&domain=1&history=0&stats=180', { at: 1, data: body });
     const client = new KeepaClient({ apiKey: 'fixture', budget: new TokenBudget({ reserve: 0, maxPerRun: 5 }), cache });
     const result = await keepaProductSearchResult(client, 'B0BGYFTPGK', { label: 'test' });
     expect(result.billAs).toBe('keepa');

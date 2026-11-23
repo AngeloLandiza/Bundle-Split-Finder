@@ -100,11 +100,11 @@ export class KeepaClient {
   ): Promise<KeepaResult<KeepaProductResponse>> {
     if (asins.length === 0) throw new KeepaError('No ASINs to request.');
     const estimate = options.estimate ?? asins.length;
-    // history=0 drops price-history arrays; enough for match fields and smaller fixtures.
-    const query: Record<string, string> = { domain: String(domain), asin: asins.join(','), history: '0' };
-    if (options.trackingDepth === 'price_and_rank' || options.trackingDepth === 'full') {
-      query.stats = '180';
-    }
+    // history=0 drops price-history arrays; enough for match fields and smaller fixtures. `stats` is sent at every
+    // depth: the current Amazon / New price and sales rank are only in stats.current (no csv with history=0), and
+    // keepa.com/api-docs/product.html (read Nov 23, 2026) says stats has "no extra token cost". Token cost per depth
+    // is in estimates.ts.
+    const query: Record<string, string> = { domain: String(domain), asin: asins.join(','), history: '0', stats: '180' };
     if (options.trackingDepth === 'full') {
       query.offers = '20';
     }

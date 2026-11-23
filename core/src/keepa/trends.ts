@@ -22,8 +22,9 @@ export interface PartTrend {
 
 export function partTrendFromProduct(p: KeepaProduct, pulledAt: number): PartTrend {
   const raw = p as KeepaProduct & { offerCount?: number };
-  let salesRank: number | null = null;
-  const ranks = raw.salesRanks;
+  // The current rank from stats (sent at every depth); else the last point of a salesRanks history when one came.
+  let salesRank: number | null = p.statsSalesRank ?? null;
+  const ranks = salesRank === null ? raw.salesRanks : undefined;
   if (ranks && typeof ranks === 'object') {
     const first = Object.values(ranks).find((arr) => Array.isArray(arr) && arr.length > 0);
     if (first && typeof first[first.length - 1] === 'number') salesRank = first[first.length - 1] as number;

@@ -21,6 +21,10 @@ export interface KeepaProduct {
   productType?: number;
   /** Amazon price in the marketplace's smallest currency unit (cents). */
   amazonPrice?: number | null;
+  /** Where amazonPrice came from: stats.current[0] (Amazon selling) or stats.current[1] (the lowest New offer). */
+  amazonPriceSource?: 'amazon' | 'new_lowest';
+  /** stats.current[3]: the current sales rank (Keepa's SALES index), when stats has one. */
+  statsSalesRank?: number;
   /**
    * Keepa's `monthlySold`: units bought in the past month (recorded: 500, 1000, 600 in
    * fixtures/keepa/product-*.json). Null when the product has none or a negative "no data" value.

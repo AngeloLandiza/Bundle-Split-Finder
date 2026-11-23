@@ -21,13 +21,29 @@ export function parseMeta(body: Record<string, unknown>): KeepaMeta {
   };
 }
 
-/** `stats.current[0]` is the current Amazon price in cents when stats is present. */
-function amazonCentsFromStats(stats: unknown): number | null {
+/**
+ * `stats.current` uses Keepa's price-type indexes (keepa.com/api-docs/statistics-object.html, read Nov 23, 2026):
+ * 0 AMAZON (Amazon itself selling), 1 NEW (the lowest marketplace New offer), 3 SALES (the sales rank, not a price);
+ * -1 means no offer in the interval. Prices are cents.
+ */
+const statsCurrent = (stats: unknown, index: number): number | null => {
   if (!stats || typeof stats !== 'object') return null;
   const cur = (stats as Record<string, unknown>).current;
-  if (!Array.isArray(cur) || cur.length === 0) return null;
-  const v = cur[0];
+  if (!Array.isArray(cur)) return null;
+  const v = cur[index];
   return typeof v === 'number' && v > 0 ? v : null;
+};
+
+/**
+ * The current New price in cents: Amazon's own offer when Amazon sells it, else the lowest marketplace New offer, so a
+ * tool only third parties sell still has a price. The lowest New offer is at or below what the Buy Box usually shows:
+ * the estimate can only come out lower, never higher. Null without stats or without a New offer.
+ */
+function amazonCentsFromStats(stats: unknown): { cents: number; source: 'amazon' | 'new_lowest' } | null {
+  const amazon = statsCurrent(stats, 0);
+  if (amazon !== null) return { cents: amazon, source: 'amazon' };
+  const lowest = statsCurrent(stats, 1);
+  return lowest !== null ? { cents: lowest, source: 'new_lowest' } : null;
 }
 
 /** A Keepa count or fee: a finite number of 0 or more; Keepa's -1 ("no data") and anything else is null. */
@@ -50,15 +66,19 @@ function tracking(raw: Record<string, unknown>): Pick<KeepaProduct, 'monthlySold
 
 function parseOneProduct(raw: Record<string, unknown>): KeepaProduct {
   const asin = typeof raw.asin === 'string' ? raw.asin : '';
+  const price = amazonCentsFromStats(raw.stats);
+  const rank = statsCurrent(raw.stats, 3);
   return {
     ...tracking(raw),
+    ...(price ? { amazonPriceSource: price.source } : {}),
+    ...(rank !== null ? { statsSalesRank: rank } : {}),
     asin,
     title: typeof raw.title === 'string' ? raw.title : null,
     brand: typeof raw.brand === 'string' ? raw.brand : null,
     manufacturer: typeof raw.manufacturer === 'string' ? raw.manufacturer : null,
     partNumber: typeof raw.partNumber === 'string' ? raw.partNumber : null,
     productType: typeof raw.productType === 'number' ? raw.productType : undefined,
-    amazonPrice: amazonCentsFromStats(raw.stats),
+    amazonPrice: price?.cents ?? null,
   };
 }
 

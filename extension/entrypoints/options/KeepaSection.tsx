@@ -14,9 +14,9 @@ const DISCOVERY_LABELS: Record<ExtensionSettings['discoveryMode'], string> = {
 };
 
 const DEPTH_LABELS: Record<ExtensionSettings['trackingDepth'], string> = {
-  price_only: 'Amazon price only',
-  price_and_rank: 'Price and sales rank',
-  full: 'Price, rank, and offers',
+  price_only: 'Amazon price only (1 token a part)',
+  price_and_rank: 'Price and sales rank (1 token a part)',
+  full: 'Price, rank, and offers (up to 13 tokens a part)',
 };
 
 export function KeepaSection({

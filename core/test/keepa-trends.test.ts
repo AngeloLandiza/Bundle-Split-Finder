@@ -2,6 +2,10 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
+import { TokenBudget } from '../src/keepa/budget';
+import { KeepaClient } from '../src/keepa/client';
+import { productTokenEstimate } from '../src/keepa/estimates';
+import { keepaProductSearchResult } from '../src/keepa/fetchStep';
 import { parseProductResponse } from '../src/keepa/parse';
 import { amazonPriceDelta, partTrendFromProduct, readPartTrend, writePartTrend, type PartTrend } from '../src/keepa/trends';
 import { MemoryCache } from '../src/serpapi/client';
@@ -47,6 +51,34 @@ describe('the Keepa fields tracking reads, from the recorded product response', 
     });
     const bare = partTrendFromProduct({ asin: 'B0NONE' }, 1);
     expect([bare.monthlySold, bare.fbaFee, bare.buyBoxEligibleOffers]).toEqual([null, null, null]);
+  });
+
+  it('a price_only refresh asks for stats (free), so a recorded product with stats.current yields its New price and rank', async () => {
+    const urls: string[] = [];
+    // The recorded DCF921B product as Keepa answers once stats is asked for: Keepa's documented stats.current
+    // (statistics-object.html: 0 AMAZON, 1 NEW, 3 SALES; -1 no offer). Amazon does not sell it; the lowest New offer is $199.00.
+    const recorded = (body.products as Record<string, unknown>[]).find((p) => p.asin === 'B09M3TL9BB')!;
+    const withStats = { ...body, products: [{ ...recorded, stats: { current: [-1, 19900, -1, 2345] } }] };
+    const fetchFn = (async (url: string) => {
+      urls.push(url);
+      return new Response(JSON.stringify(urls.length === 1 ? withStats : body), { status: 200 });
+    }) as typeof fetch;
+    const client = new KeepaClient({ apiKey: 'fixture-key', budget: new TokenBudget({ reserve: 0, maxPerRun: 50 }), fetchFn });
+    const r = await keepaProductSearchResult(client, 'B09M3TL9BB', { label: 'refresh', trackingDepth: 'price_only' });
+    expect(new URL(urls[0]!).searchParams.get('stats')).toBe('180');
+    expect(new URL(urls[0]!).searchParams.get('offers')).toBeNull();
+    expect((r.data as { product_results: { extracted_price: number } }).product_results.extracted_price).toBe(199);
+    expect(r.keepaProduct).toMatchObject({ amazonPrice: 19900, amazonPriceSource: 'new_lowest', statsSalesRank: 2345 });
+    expect(partTrendFromProduct(r.keepaProduct!, 1)).toMatchObject({ amazonPrice: 199, salesRank: 2345, monthlySold: 600 });
+
+    // The response recorded on Nov 22 was pulled without stats: it has no price at all, which is why refreshes were blind.
+    await client.getProducts(['B09M3TL9BB', 'X'], 1, { trackingDepth: 'full', estimate: 26 });
+    expect(new URL(urls[1]!).searchParams.get('offers')).toBe('20');
+    expect(parseProductResponse(body).products.every((p) => p.amazonPrice === null)).toBe(true);
+  });
+
+  it('tokens per depth: price_only and price_and_rank 1 per ASIN (stats is free), full adds up to two offer pages at 6', () => {
+    expect([productTokenEstimate('price_only', 3), productTokenEstimate('price_and_rank', 3), productTokenEstimate('full', 3)]).toEqual([3, 3, 39]);
   });
 
   it('a negative monthlySold is Keepa saying it has no data, not a figure', () => {
