@@ -204,26 +204,46 @@ function allRows(data: WithTracking<'deals' | 'review'>): DealRow[] {
 /** A queue whose next look is this far past is stale (the agent stopped): it no longer says "being confirmed". */
 const QUEUE_STALE_MS = 15 * 60_000;
 
+/** "PBP004 is listed under the brand TTI; PCG002 under the brand ONEAND", or "PBP004: no part number in Amazon's record". */
+export function unconfirmableWords(items: { model: string; reason: string }[]): string {
+  let listedSaid = false;
+  return items.map(({ model, reason }) => {
+    if (!reason.startsWith('listed under')) return `${model}: ${reason}`;
+    const words = listedSaid ? `${model} ${reason.replace(/^listed /, '')}` : `${model} is ${reason}`;
+    listedSaid = true;
+    return words;
+  }).join('; ');
+}
+
 /**
  * The listing ladder: a deal's counted listings that nobody confirmed, in words that say what is really happening, from
  * the agent's queue (AgentRuntime.autoConfirm): "2 listings are being confirmed — next check in about 4 min" only for
- * listings an automatic rung will read at a known time; otherwise "2 listings could not be confirmed from Amazon's data
- * — Confirm them (1 search each)", the owner's one action. Never a claim with nothing behind it.
+ * listings a rung that can run will read at a known time. Otherwise each listing's reason, from what was read: "2 listings
+ * could not be confirmed: PBP004 is listed under the brand TTI; PCG002 under the brand ONEAND. Confirm or replace them."
+ * and the row's buyPending says `blocked`. Never a claim with nothing behind it.
  */
 export function confirmingNote(r: DealRow, data: WithTracking<'runtime'>, now: number): DealRow {
   const s = data.tracking?.signals[r.id];
-  if (!s || r.signalNote === undefined) return r;
-  const unconfirmed = new Set(s.options.flatMap((o) => o.unconfirmed ?? []));
-  if (unconfirmed.size === 0) return r;
+  if (!s) return r;
+  const unconfirmed = [...new Set(s.options.flatMap((o) => o.unconfirmed ?? []))];
+  if (unconfirmed.length === 0) return r;
   const q = data.runtime.autoConfirm;
   const live = q?.nextAt !== undefined && q.nextAt !== null && q.nextAt >= now - QUEUE_STALE_MS;
-  const queued = live ? [...unconfirmed].filter((a) => (q!.queue ?? []).includes(a)).length : 0;
-  const n = unconfirmed.size;
+  const queued = live ? unconfirmed.filter((a) => (q!.queue ?? []).includes(a)).length : 0;
+  const n = unconfirmed.length;
+  const reasons = unconfirmed.flatMap((a) => (q?.unconfirmable?.[a] ? [q.unconfirmable[a]!] : []));
   const words = queued > 0
     ? beingConfirmedWords(queued, q!.nextAt!, now)
-    : `${n} ${n === 1 ? 'listing' : 'listings'} could not be confirmed from Amazon's data — Confirm ${n === 1 ? 'it' : 'them'} (1 search each)`;
-  const said = r.signalNote.replace(/\d+ listings? not confirmed yet/, words);
-  return said === r.signalNote ? r : { ...r, signalNote: said };
+    : reasons.length === n
+      ? `${n} ${n === 1 ? 'listing' : 'listings'} could not be confirmed: ${unconfirmableWords(reasons)}. Confirm or replace ${n === 1 ? 'it' : 'them'}`
+      : `${n} ${n === 1 ? 'listing' : 'listings'} could not be confirmed from Amazon's data — Confirm ${n === 1 ? 'it' : 'them'} (1 search each)`;
+  const said = r.signalNote?.replace(/\d+ listings? (?:not confirmed yet|(?:is|are) being confirmed first)/, words);
+  const blocked = queued === 0 && r.buyPending !== undefined;
+  return {
+    ...r,
+    ...(said !== undefined ? { signalNote: said } : {}),
+    ...(blocked ? { buyPending: { ...r.buyPending!, blocked: true } } : {}),
+  };
 }
 
 export function dealsResponse(
@@ -371,9 +391,12 @@ export function watchlistResponse(data: WithTracking<'deals' | 'review' | 'setti
   return { at: ats.length ? iso(Math.max(...ats)) : null, rows, thresholds };
 }
 
-export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'>, id: string): DealDetail | null {
-  const bundle = data.deals.bundles.find((b) => b.key === id);
-  if (!bundle) return null;
+export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'> & Partial<Pick<StoreData, 'runtime'>>, id: string, now?: number): DealDetail | null {
+  const found = data.deals.bundles.find((b) => b.key === id);
+  if (!found) return null;
+  // The listing ladder, round 2: each counted listing no automatic rung will read says why (PartRow.confirmNote).
+  const notes = data.runtime?.autoConfirm?.unconfirmable ?? {};
+  const bundle = { ...found, parts: found.parts.map((p) => (p.asin && notes[p.asin] ? { ...p, confirmNote: notes[p.asin]!.reason } : p)) };
   const t = data.tracking;
   const need = bundlesNeedingAnswer([bundle], data.review.questions);
   const sources: SourceLink[] = [];
@@ -388,7 +411,7 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'>, 
   const group = t ? bogoGroupOf(t, id) : null;
   if (group) sources.push({ label: `Home Depot: the BOGO starter ${group.starterModel}`, url: group.starterLink, source: 'homedepot' });
   return {
-    row: rowOf(bundle, need.has(bundle.key), data.deals.lookups, t),
+    row: data.runtime ? confirmingNote(rowOf(bundle, need.has(bundle.key), data.deals.lookups, t), { runtime: data.runtime, tracking: t }, now ?? Date.now()) : rowOf(bundle, need.has(bundle.key), data.deals.lookups, t),
     bundle,
     sources,
     estimateBasis: ESTIMATE_BASIS,

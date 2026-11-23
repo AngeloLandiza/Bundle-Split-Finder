@@ -232,3 +232,35 @@ export function identityFromSerpProduct(json: unknown, asin: string): ListingIde
     source: 'serpapi_product',
   };
 }
+
+/**
+ * A narrower brand contradiction, measured and NOT adopted (scripts/measure-autoconfirm.ts, docs/decisions.md): the brand
+ * field is another brand, the manufacturer (when given) is not the part's brand either, and the title's first word is that
+ * other brand. Kept for the measurement only: it would remove the listings the answer key says are right for PBP004
+ * (B09HDZ5MPV, "TTI Ryobi PBP004 …": TTI makes RYOBI) and PCG002 (B0B1QRQYK2, "ONEAND 18V … Charger PCG002": ONEAND is
+ * RYOBI's "ONE+" as Amazon prints it) when Amazon's record lists them under those words.
+ */
+export function narrowBrandContradiction(want: PartIdentity, l: Pick<ListingIdentity, 'brand' | 'manufacturer' | 'title'>): string | null {
+  const brand = want.brand.trim().toUpperCase();
+  const listed = brandKey(l.brand);
+  if (listed === null || listed === brand) return null;
+  const maker = brandKey(l.manufacturer);
+  if (maker !== null && maker === brand) return null;
+  const first = brandKey((l.title ?? '').trim().split(/\s+/)[0] ?? '');
+  return first === listed ? `listed under the brand ${cleanBrand(l.brand)}, and its title begins with it` : null;
+}
+
+/**
+ * Why a listing the ladder could not confirm stays unconfirmed, in a few words for the owner, from what was read: its brand
+ * field ("listed under the brand TTI"), the catalog check's reason ("no part number in Amazon's record"), or nothing read
+ * beyond the search row ("title only").
+ */
+export function unconfirmedReason(want: PartIdentity, listingBrand: string | null, checkReason: string | null): string {
+  const brand = want.brand.trim().toUpperCase();
+  const fromCheck = checkReason ? /lists brand ([^,]+?)(?:,| but| made|$)/.exec(checkReason)?.[1]?.trim() ?? null : null;
+  const other = [fromCheck, cleanBrand(listingBrand)].find((b) => b && brandKey(b) !== brand) ?? null;
+  if (other) return `listed under the brand ${other}`;
+  if (checkReason && /no part number/.test(checkReason)) return "no part number in Amazon's record";
+  if (checkReason) return checkReason.replace(/^Amazon's (catalog|product page) /, '').replace(/^title /, 'its title ');
+  return 'title only';
+}

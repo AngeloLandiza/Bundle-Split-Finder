@@ -43,7 +43,7 @@ import {
   keepaLookupOne, type LookupStep, pageRead, PART_PRICE_MS, plannedWork, readKitPagesFor, readPartPricesFor, runScan, settleWaitingSplits, withdrawUnreadSplitQuestions,
 } from '../core/src/scan/runner';
 import { knownModels } from '../core/src/scan/split';
-import { KEEPA_LOOKUP_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
+import { KEEPA_LOOKUP_TOKEN_ESTIMATE, KEEPA_SEARCH_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
 import type { ConfirmedPrice, PaidAction, ReviewAnswer, ReviewItem, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
@@ -53,8 +53,8 @@ import {
 import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
-import { buyWaitsOn, checksWaiting, checksWanted, verifyMatchesWithKeepa } from './verifyMatches';
-import { autoConfirmWanted, confirmationQueue, runAutoConfirm, type AutoConfirmDone } from './autoConfirm';
+import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatchesWithKeepa } from './verifyMatches';
+import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
 import { evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, type SignalsDeps } from './signalsPass';
 import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
@@ -513,7 +513,9 @@ export class AgentWork {
     // Signals rounds 2 and 3: and for the Keepa fees and sales of parts whose bundle has an estimate.
     const sales = keys.keepa ? (await this.feesWanted(settings.freshnessMs)).length : 0;
     this.dripFeesWaiting = sales;
-    if ((work.lookups.length === 0 && checks === 0 && sales === 0) || !keys.keepa) {
+    // The listing ladder, round 2: counted listings no rung could confirm, whose part may still be re-picked (agent/verifyMatches.ts).
+    const repicks = repickTargets(store.get('runtime').autoConfirm, this.d.now());
+    if ((work.lookups.length === 0 && checks === 0 && sales === 0 && repicks.length === 0) || !keys.keepa) {
       if (prices > 0) await this.refresh();
       return;
     }
@@ -589,6 +591,23 @@ export class AgentWork {
         done.removed += v.removed;
         done.tokens += v.tokens;
         if (v.pulled > 0) store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: this.d.now() } }));
+      } catch (err) {
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      }
+    }
+    // The listing ladder, round 2: before giving up on a listing, the part's other candidates (free), then one Keepa search.
+    if (repicks.length > 0 && this.dripWaiting === 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
+      try {
+        const r = await repickUnconfirmed({
+          store: this.scanStore, now: this.d.now, keepaBudget: budget,
+          keepaSearch: async (term, label) => (await keepa.searchProducts(term, 1, { label, estimate: KEEPA_SEARCH_TOKEN_ESTIMATE })).data.products ?? [],
+          keepaProduct: (asin, label) => product(asin, label),
+          searchedAt: store.get('runtime').autoConfirm?.searchedAt ?? {},
+          saveSearched: (key, at) => store.update('runtime', (rt) => ({ ...rt, autoConfirm: { ...(rt.autoConfirm ?? { day: '', spent: 0, tried: [] }), searchedAt: { ...(rt.autoConfirm?.searchedAt ?? {}), [key]: at } } })),
+          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
+        }, repicks);
+        done.tokens += r.tokens;
+        done.verified += r.switched.length;
       } catch (err) {
         if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
       }
@@ -1663,9 +1682,13 @@ export class AgentWork {
     const app = store.get('settings');
     const keys = store.get('keys');
     const now = this.d.now();
-    if (app.lookups?.autoVerify === false || !keys.serpapi || store.get('agent').paused) return null;
-    if (mode === 'drip' && this.autoConfirmNextAt !== null && now < this.autoConfirmNextAt) return null;
     const ext = extensionSettingsOf(app);
+    // Round 2: no free account check, and no wake, while rung 2 cannot read today.
+    if (!rung2CanRun({
+      enabled: app.lookups?.autoVerify !== false, hasKey: Boolean(keys.serpapi), paused: store.get('agent').paused, serp: store.get('runtime').serp,
+      reserve: ext.reserve, perDay: app.lookups?.verifySearchesPerDay, state: store.get('runtime').autoConfirm, now,
+    })) return null;
+    if (mode === 'drip' && this.autoConfirmNextAt !== null && now < this.autoConfirmNextAt) return null;
     const tracking = store.get('tracking');
     const runtime = store.get('runtime');
     const base = {
@@ -1683,7 +1706,12 @@ export class AgentWork {
       done = await runAutoConfirm({
         ...base, ext, perDay: app.lookups?.verifySearchesPerDay ?? null, mode, usedThisScan, now: this.d.now,
         saveState: (st) => store.update('runtime', (r) => ({ ...r, autoConfirm: { ...st, queue: r.autoConfirm?.queue ?? [], nextAt: r.autoConfirm?.nextAt ?? null } })),
-        account: () => SerpApiClient.account(keys.serpapi!, this.d.fetchFn, this.d.serpBaseUrl),
+        account: async () => {
+          const a = await SerpApiClient.account(keys.serpapi!, this.d.fetchFn, this.d.serpBaseUrl);
+          // Round 2: the last known account decides, without a call, whether rung 2 can read (rung2CanRun).
+          store.update('runtime', (r) => ({ ...r, serp: { left: a.totalSearchesLeft, perMonth: a.searchesPerMonth, rateLimitPerHour: a.rateLimitPerHour, at: new Date(this.d.now()).toISOString() } }));
+          return a;
+        },
         verify: (t, budget) => runPaid({
           client: new SerpApiClient({ apiKey: keys.serpapi!, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl, onSpend: (e) => ledger(e) }),
           budget, store: this.scanStore, now: this.d.now, settings: toScanSettings(ext), shouldStop: () => (stop() ? 'Stopped.' : null),
@@ -1718,11 +1746,18 @@ export class AgentWork {
     const keys = store.get('keys');
     const now = this.d.now();
     const runtime = store.get('runtime');
-    const dripOn = app.lookups?.drip !== false && Boolean(keys.keepa) && app.settings.amazonRefreshViaKeepa && !store.get('agent').paused;
-    const verifyOn = app.lookups?.autoVerify !== false && Boolean(keys.serpapi) && !store.get('agent').paused;
+    const ext = extensionSettingsOf(app);
+    const dripOn = app.lookups?.drip !== false && Boolean(keys.keepa) && app.settings.amazonRefreshViaKeepa && !store.get('agent').paused
+      && keepaCanPull(runtime.keepa, ext.keepaReserve);
+    // Round 2: rung 2 is queued only when it can read today (an allowance of 0, off, or no key: not queued).
+    const verifyOn = rung2CanRun({
+      enabled: app.lookups?.autoVerify !== false, hasKey: Boolean(keys.serpapi), paused: store.get('agent').paused, serp: runtime.serp,
+      reserve: ext.reserve, perDay: app.lookups?.verifySearchesPerDay, state: runtime.autoConfirm, now,
+    });
+    const signals = store.get('tracking').signals;
     const verify = verifyOn
       ? (await autoConfirmWanted({
-          store: this.scanStore, signals: store.get('tracking').signals, alerts: app.alerts, bundles: store.get('deals').bundles, state: runtime.autoConfirm,
+          store: this.scanStore, signals, alerts: app.alerts, bundles: store.get('deals').bundles, state: runtime.autoConfirm,
           keepaReads: Boolean(keys.keepa) && app.settings.amazonRefreshViaKeepa,
         })).map((t) => t.asin)
       : [];
@@ -1730,8 +1765,9 @@ export class AgentWork {
       catalog: dripOn ? await checksWanted(this.scanStore) : [], dripNextAt: dripOn ? Math.max(now, this.dripNextAt ?? now) : null,
       verify, verifyNextAt: Math.max(now, this.autoConfirmNextAt ?? now), state: runtime.autoConfirm, now,
     });
+    const unconfirmable = await unconfirmableOf(this.scanStore, signals, q.queue);
     this.confirmWaiting = q.queue.length;
-    store.update('runtime', (r) => ({ ...r, autoConfirm: { ...(r.autoConfirm ?? { day: '', spent: 0, tried: [] }), queue: q.queue, nextAt: q.nextAt } }));
+    store.update('runtime', (r) => ({ ...r, autoConfirm: { ...(r.autoConfirm ?? { day: '', spent: 0, tried: [] }), queue: q.queue, nextAt: q.nextAt, unconfirmable } }));
   }
 
   /** What a Look up of a deal's unmatched parts, or a Verify of one part, would spend now: the quote the UI shows first. */

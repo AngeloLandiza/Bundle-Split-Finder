@@ -8,7 +8,7 @@ import { DEFAULT_SETTINGS } from '../../core/src/settings';
 import type { AccountInfo } from '../../core/src/serpapi/budget';
 import type { BundleSignals } from '../../core/src/tracking/signals';
 import type { DealRow } from '../../core/src/api/contract';
-import { autoConfirmWanted, confirmationQueue, runAutoConfirm, type AutoConfirmState } from '../autoConfirm';
+import { autoConfirmWanted, confirmationQueue, rung2CanRun, runAutoConfirm, type AutoConfirmState } from '../autoConfirm';
 import { confirmingNote } from '../views';
 
 // The listing ladder, rung 2: the owner's Confirm listing click done by the agent. No network: the account check and the
@@ -107,7 +107,8 @@ describe('rung 2 in the agent', () => {
     });
     expect(done).toMatchObject({ searches: 0, waiting: 1 });
     expect(state?.exhaustedDay).toBe('2026-11-23');
-    expect(confirmationQueue({ catalog: [], dripNextAt: null, verify: ['B0B88R7HWB'], verifyNextAt: T + 60_000, state, now: T }).nextAt).toBe(Date.UTC(2026, 10, 24));
+    // Round 2: a spent allowance is not queued for the next day: rung 2 cannot run, so the listing is not "being confirmed".
+    expect(rung2CanRun({ enabled: true, hasKey: true, paused: false, serp: { left: 100 }, reserve: 50, perDay: 0, state, now: T })).toBe(false);
   });
 });
 

@@ -833,6 +833,8 @@ export interface PartRow {
    */
   verifiedBy?: VerifiedBy;
   /** The evidence of verifiedBy, or why Amazon's catalog removed a listing, with the listing's link (MatchRecord.verifyEvidence). */
+  /** The listing ladder, round 2: why no automatic rung could confirm this part's counted listing (agent/autoConfirm.ts). */
+  confirmNote?: string;
   verifyEvidence?: string;
   /**
    * Signals round 2: the fees the estimate used for one unit of this part, each with where it came from: Keepa's figure for

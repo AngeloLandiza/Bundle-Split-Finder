@@ -310,7 +310,8 @@ export interface DealRow {
    * Buy safety (Nov 23): it would be worth buying now but for `listings` counted Amazon listings nobody confirmed yet
    * (title matches the catalog check has not read). Never announced, never in "Worth buying now". Absent otherwise.
    */
-  buyPending?: { listings: number };
+  /** Round 2 of the listing ladder: `blocked` when no automatic rung can confirm them; the owner confirms or replaces them. */
+  buyPending?: { listings: number; blocked?: boolean };
   /**
    * Signals round 2: the watched bundle's one-line verdict (DealSignals.verdict), always saying which condition fails
    * ("Not worth buying now: est. profit $6.63 is below your $20.") or why it is worth buying. Absent when not watched or not

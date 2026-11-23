@@ -675,7 +675,7 @@ export function createAgent(opts: AgentOptions): Agent {
     return { reset: true, backup };
   });
   r.get('/api/deals/:id', 'any', (ctx) => {
-    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings'), tracking: store.get('tracking') }, ctx.params.id!);
+    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings'), tracking: store.get('tracking'), runtime: store.get('runtime') }, ctx.params.id!, Date.now());
     if (!detail) throw new HttpError('not_found', 'No such deal.');
     return detail;
   });

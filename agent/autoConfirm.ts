@@ -10,6 +10,8 @@ import { autoConfirmSentence, autoConfirmTargets, dayOf, verifyAllowanceToday, t
 import type { MatchRecord, ScanStore } from '../core/src/scan/types';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import type { BundleSignals } from '../core/src/tracking/signals';
+import { unconfirmedReason } from '../core/src/keepa/verify';
+import { REPICK_SEARCH_EVERY_MS } from './verifyMatches';
 
 /** What rung 2 keeps between runs (AgentRuntime.autoConfirm): today's spend and every listing it read. */
 export interface AutoConfirmState {
@@ -22,6 +24,10 @@ export interface AutoConfirmState {
   /** Listings some automatic rung will read, and when the next look is (epoch ms); what a deal's words rest on. */
   queue?: string[];
   nextAt?: number | null;
+  /** Counted listings no automatic rung will read, with why (unconfirmableOf); what the deal's words and notes say. */
+  unconfirmable?: Unconfirmable;
+  /** Round 2: when each part was last searched on Keepa for a better listing (verifyMatches.ts repickUnconfirmed). */
+  searchedAt?: Record<string, number>;
 }
 
 export interface AutoConfirmDeps {
@@ -123,18 +129,12 @@ export async function runAutoConfirm(d: AutoConfirmDeps): Promise<AutoConfirmDon
   return done;
 }
 
-/** Start of the next UTC day after `at` (epoch ms). */
-const nextDay = (at: number): number => {
-  const d = new Date(at);
-  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1);
-};
-
 export interface QueueInput {
-  /** Listings the catalog check (rungs 0 and 1) will read in the drip, when the drip runs. */
+  /** Listings the catalog check (rungs 0 and 1) will read in the drip, when the drip runs and Keepa can pull. */
   catalog: string[];
-  /** The drip's next round (epoch ms), or null when it is off. */
+  /** The drip's next round (epoch ms), or null when it is off or Keepa cannot pull. */
   dripNextAt: number | null;
-  /** Listings rung 2 would read, when it is on and has a SerpApi key; [] otherwise. */
+  /** Listings rung 2 will read: [] unless rung2CanRun. */
   verify: string[];
   /** Rung 2's next look (epoch ms). */
   verifyNextAt: number | null;
@@ -143,8 +143,9 @@ export interface QueueInput {
 }
 
 /**
- * What a deal's words rest on: the listings some automatic rung will really read, and the earliest next look. Rung 2's
- * listings wait for the next UTC day when today's allowance is spent. Nothing is queued without a time.
+ * What a deal's words rest on: the listings some automatic rung will really read, and the earliest next look. Only a rung
+ * that can run is queued (round 2, Nov 23: an allowance of 0 queued rung 2 for the next day, every day, and the deal said
+ * "being confirmed" with nothing behind it). Nothing is queued without a time.
  */
 export function confirmationQueue(q: QueueInput): { queue: string[]; nextAt: number | null } {
   const at: number[] = [];
@@ -153,13 +154,62 @@ export function confirmationQueue(q: QueueInput): { queue: string[]; nextAt: num
     q.catalog.forEach((a) => queue.add(a));
     at.push(q.dripNextAt);
   }
-  if (q.verify.length > 0) {
-    const exhausted = q.state?.exhaustedDay === dayOf(q.now);
-    const when = exhausted ? nextDay(q.now) : q.verifyNextAt;
-    if (when !== null) {
-      q.verify.forEach((a) => queue.add(a));
-      at.push(when);
-    }
+  if (q.verify.length > 0 && q.verifyNextAt !== null) {
+    q.verify.forEach((a) => queue.add(a));
+    at.push(q.verifyNextAt);
   }
   return { queue: [...queue], nextAt: at.length > 0 ? Math.min(...at) : null };
+}
+
+/**
+ * Whether rung 2 can read anything today, without a call: on, a SerpApi key, not paused, today's allowance not spent, and
+ * the last known account (AgentRuntime.serp) above the reserve. With no account known yet, one free check will say.
+ */
+export function rung2CanRun(i: {
+  enabled: boolean; hasKey: boolean; paused: boolean; serp: { left: number } | null; reserve: number; perDay: number | null | undefined;
+  state: AutoConfirmState | undefined; now: number;
+}): boolean {
+  if (!i.enabled || !i.hasKey || i.paused) return false;
+  const today = dayOf(i.now);
+  if (i.state?.exhaustedDay === today) return false;
+  if (i.serp === null) return true;
+  const spent = i.state?.day === today ? i.state.spent : 0;
+  return verifyAllowanceToday({ totalSearchesLeft: i.serp.left, renewalDate: null }, i.reserve, i.perDay, spent, i.now) > 0;
+}
+
+/** Whether the drip's Keepa pulls can run: tokens above the reserve now, or a refill that will bring them. */
+export function keepaCanPull(keepa: { tokensLeft: number; refillRate?: number } | null, reserve: number): boolean {
+  return keepa === null || keepa.tokensLeft - reserve >= 1 || (keepa.refillRate ?? 0) > 0;
+}
+
+/** A counted listing no automatic rung will read: its part and why it stays unconfirmed (verify.ts unconfirmedReason). */
+export type Unconfirmable = Record<string, { key: string; model: string; reason: string }>;
+
+/**
+ * The counted listings nobody confirmed (the signals' `unconfirmed`) that are not in `queue`, each with its reason from
+ * what was read: the catalog check's last answer and the listing's stored brand field.
+ */
+export async function unconfirmableOf(store: ScanStore, signals: Record<string, Pick<BundleSignals, 'options'>>, queue: readonly string[]): Promise<Unconfirmable> {
+  const waiting = new Set(queue);
+  const asins = new Set(Object.values(signals).flatMap((s) => s.options.flatMap((o) => o.unconfirmed ?? [])).filter((a) => !waiting.has(a)));
+  const out: Unconfirmable = {};
+  if (asins.size === 0) return out;
+  for (const m of await store.listMatches()) {
+    if (!m.asin || !asins.has(m.asin) || out[m.asin]) continue;
+    const check = [...(m.catalogChecks ?? [])].reverse().find((c) => c.asin === m.asin) ?? null;
+    const listing = await store.getListing(m.asin);
+    out[m.asin] = { key: m.key, model: m.model, reason: unconfirmedReason({ brand: m.brand, model: m.model }, listing?.brand ?? null, check?.reason ?? null) };
+  }
+  return out;
+}
+
+/**
+ * The parts whose counted listing no rung could confirm and that may still be re-picked: each listing in `unconfirmable`
+ * whose part was not searched on Keepa within REPICK_SEARCH_EVERY_MS. Its free re-pick from stored rows runs with it.
+ */
+export function repickTargets(state: AutoConfirmState | undefined, now: number): { key: string; model: string; asin: string; reason: string }[] {
+  const searched = state?.searchedAt ?? {};
+  return Object.entries(state?.unconfirmable ?? {})
+    .filter(([, u]) => searched[u.key] === undefined || now - searched[u.key]! >= REPICK_SEARCH_EVERY_MS)
+    .map(([asin, u]) => ({ key: u.key, model: u.model, asin, reason: u.reason }));
 }
