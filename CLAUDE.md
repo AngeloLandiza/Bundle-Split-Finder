@@ -39,7 +39,12 @@ reads `docs/orchestration.md`: which model does which task, and what may run in 
 
 1. **Search budget.** The development key is SerpApi's free plan: 250 searches a month,
    50 an hour. Nothing may call serpapi.com except through `SerpApiClient` in
-   `core/src/serpapi/client.ts`; in Node, only via `openDevClient()` in `scripts/dev-client.ts`.
+   `core/src/serpapi/client.ts`; in Node, only via `openDevClient()` in `scripts/dev-client.ts`,
+   except the desktop agent (`agent/work.ts`), which spends the owner's own key from its store
+   through `SerpApiClient` under the same `SearchBudget`: a fresh free account check, the
+   owner's reserve (a scheduled scan never touches it), the per-scan cap from Settings, and a
+   ledger in its data folder (`serpapi-ledger.jsonl`). Development never points the agent at
+   the development key, and tests give it a fake fetch.
    Before any command that can spend searches, run `npm run budget`, tell the user how many
    it will spend, and wait for a yes if it is more than 10. Never raise `DEV_ALLOCATION`,
    lower the reserve, add retries around paid calls, or loop over live requests to "see what
@@ -51,8 +56,11 @@ reads `docs/orchestration.md`: which model does which task, and what may run in 
 2. **No network in default tests.** If a test needs the network it belongs in `core/test-live/`
    and must skip, not fail, when the budget is closed.
 3. **The key is a secret.** Never print it, log it, commit it, put it in a URL you display, or
-   write it to a fixture. In the extension it lives in `chrome.storage.local` only and is sent
-   only to `https://serpapi.com`.
+   write it to a fixture. Every key (SerpApi, Keepa, Anthropic, OpenAI-compatible, eBay,
+   Telegram) lives in the desktop agent's store (`<app-data>/store/keys.json`, owner-only); no
+   endpoint returns one, and each is sent only to its own service. Errors and messages the
+   agent writes are scrubbed of every key. An unpaired extension keeps its own key in
+   `chrome.storage.local`, sent only to `https://serpapi.com`.
 4. **Never guess.** A split or match that is not certain returns `needs_review` or a lower
    grade. Do not add heuristics that turn an ambiguous case into a confident answer; add a
    test with the real example instead.

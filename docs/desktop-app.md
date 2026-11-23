@@ -30,7 +30,7 @@ npm run desktop:dev
 - **Split Finder** Tauri app (menubar/window) pointing at the local dashboard (`http://127.0.0.1:8790`).
 - **Extension zip** in app resources (`bundle-split-finder-*-chrome.zip`); menu **Install extension** opens the folder / copy instructions.
 - The **dashboard** ships **inside** the app (embedded sidecar). Opening Split Finder starts it on port **8790** — no Terminal and no npm for end users.
-- **Scans** still run in **Chrome** (Home Depot page reads). `npm run agent:scan` in the repo stays a developer-only tool.
+- **Scans** run in the **agent** (step 13, W4) on its schedule or Scan now; Home Depot pages are read by the paired Chrome extension as worker jobs, and wait while Chrome is closed. `npm run agent:scan` in the repo stays a developer-only tool.
 
 ## Install path for Mac users
 
