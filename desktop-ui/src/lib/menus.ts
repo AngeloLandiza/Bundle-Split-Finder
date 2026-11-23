@@ -2,7 +2,7 @@
 // which items exist, which are greyed (with the sentence why), and where the separators fall. The screen runs them.
 // An item that cannot apply is left out, not greyed, unless he could make it apply by waiting (a scan running).
 
-import type { DealPart, DealRow, ReviewQuestion } from '../api/types';
+import type { DealDetail, DealPart, DealRow, ReviewQuestion } from '../api/types';
 import { bogoMenuLabel } from './bogo';
 import { money, plural } from './format';
 
@@ -19,6 +19,7 @@ export interface MenuItem {
 }
 
 export type DealMenuId = 'open' | 'open-hd' | 'copy-model' | 'copy-asins' | 'watch' | 'unwatch' | 'bogo' | 'lookup' | 'verify' | 'review';
+export type DetailMenuId = 'bogo' | 'open-hd' | 'copy-model';
 export type QuestionMenuId = 'ask' | 'approve' | 'open-deal' | 'open-hd' | 'copy-question';
 export type PartMenuId = 'open-amazon' | 'copy-asin' | 'confirm' | 'remove';
 
@@ -40,6 +41,18 @@ export function dealMenu(row: DealRow, o: { scanRunning: boolean }): MenuItem[] 
   if (hasTitleMatches(row)) more.push({ id: 'verify', label: 'Verify title matches…' });
   if (row.needsAnswer) more.push({ id: 'review', label: 'Show in Review' });
   more.forEach((m, i) => items.push(i === 0 ? { ...m, separatorBefore: true } : m));
+  return items;
+}
+
+/**
+ * The inspector's "…" menu: what is secondary to Watch. The promotion entry stays out of the way on a deal the agent
+ * grouped (its own pairs are shown), and once he entered one the BOGO section carries its own Change and Remove.
+ */
+export function detailMenu(d: Pick<DealDetail, 'bogo' | 'bogoGroup' | 'link'>): MenuItem[] {
+  const items: MenuItem[] = [];
+  if (d.bogo === null && d.bogoGroup === null) items.push({ id: 'bogo', label: bogoMenuLabel(null) });
+  if (d.link) items.push({ id: 'open-hd', label: 'Open on Home Depot' });
+  items.push({ id: 'copy-model', label: 'Copy model', ...(items.length ? { separatorBefore: true } : {}) });
   return items;
 }
 

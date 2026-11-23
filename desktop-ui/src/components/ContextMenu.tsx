@@ -19,11 +19,15 @@ interface OpenMenu {
   /** The row the menu is about, marked while it is open. */
   anchor: HTMLElement | null;
   opener: HTMLElement | null;
+  /** Opened from a button: the first item is highlighted, as a pop-up button's menu is. */
+  first?: boolean;
 }
 
 export interface MenuApi {
   /** Opens a menu for the row a mouse or keyboard event came from. Returns true when the event asked for one (so it can be stopped). */
   openFrom: (e: ReactMouseEvent | ReactKeyboardEvent, o: { label: string; items: MenuItem[]; onPick: (id: string) => void }) => boolean;
+  /** Opens a menu below a button (a "…" overflow button): the same menu, keyboard and focus rules as a right-click. */
+  openAt: (button: HTMLElement, o: { label: string; items: MenuItem[]; onPick: (id: string) => void }) => void;
   close: () => void;
 }
 
@@ -76,7 +80,13 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     return true;
   }, []);
 
-  const api = useMemo<MenuApi>(() => ({ openFrom, close }), [openFrom, close]);
+  const openAt = useCallback<MenuApi['openAt']>((button, o) => {
+    if (o.items.length === 0) return;
+    const r = button.getBoundingClientRect();
+    setMenu({ x: r.left, y: r.bottom + 2, label: o.label, items: o.items, onPick: o.onPick, anchor: null, opener: button, first: true });
+  }, []);
+
+  const api = useMemo<MenuApi>(() => ({ openFrom, openAt, close }), [openFrom, openAt, close]);
   return (
     <Ctx.Provider value={api}>
       {children}
@@ -87,7 +97,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
 
 function MenuPanel({ menu, onClose }: { menu: OpenMenu; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(-1);
+  const [active, setActive] = useState(() => (menu.first ? stepMenu(menu.items, -1, 1) : -1));
   const [pos, setPos] = useState({ x: menu.x, y: menu.y });
   const items = menu.items;
 

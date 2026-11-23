@@ -33,7 +33,8 @@ export type GlyphName =
   | 'sparkle'
   | 'bell'
   | 'globe'
-  | 'drive';
+  | 'drive'
+  | 'more';
 
 const S = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 
@@ -137,6 +138,13 @@ const PATHS: Record<GlyphName, React.ReactNode> = {
     <>
       <path d="M8 2v8M5 7l3 3 3-3" {...S} />
       <path d="M3 10.5V12a1.5 1.5 0 0 0 1.5 1.5h7A1.5 1.5 0 0 0 13 12v-1.5" {...S} />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="3.5" cy="8" r="1.1" fill="currentColor" />
+      <circle cx="8" cy="8" r="1.1" fill="currentColor" />
+      <circle cx="12.5" cy="8" r="1.1" fill="currentColor" />
     </>
   ),
   'chevron-down': <path d="M4.5 6.2L8 9.7l3.5-3.5" {...S} />,

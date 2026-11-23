@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AiSuggestion, DealPart, DealRow, ReviewQuestion } from '../api/types';
-import { dealMenu, hasTitleMatches, partMenu, questionMenu, stepMenu } from './menus';
+import { dealMenu, detailMenu, hasTitleMatches, partMenu, questionMenu, stepMenu } from './menus';
 
 const row = (over: Partial<DealRow> = {}): DealRow =>
   ({ id: 'hd-1', title: 'Kit', brand: 'RYOBI', model: 'PCL1600K2', itemId: '1', link: 'https://www.homedepot.com/p/1', section: 'confirmed', price: 100, off: 10, matchState: '4 parts matched', profit: 10, roi: 0.1, roiRange: null, needsAnswer: false, updatedAt: '2026-11-22T00:00:00Z', lookup: null, watched: false, ...over }) as DealRow;
@@ -103,5 +103,17 @@ describe('moving through a menu', () => {
   });
   it('finds nothing when every item is greyed', () => {
     expect(stepMenu([{ id: 'a', label: 'A', disabled: 'x' }], 0, 1)).toBe(-1);
+  });
+});
+
+describe('the inspector\'s overflow menu', () => {
+  const d = (over: Partial<Parameters<typeof detailMenu>[0]> = {}) => ({ bogo: null, bogoGroup: null, link: 'https://www.homedepot.com/p/1', ...over });
+  it('holds Mark as BOGO and the other secondary actions, so Watch stands alone beside it', () => {
+    expect(ids(detailMenu(d()))).toEqual(['bogo', 'open-hd', 'copy-model']);
+    expect(detailMenu(d())[0]!.label).toBe('Mark as BOGO…');
+  });
+  it('leaves out the promotion entry on a grouped deal or one he already marked, and Home Depot when there is no page', () => {
+    expect(ids(detailMenu(d({ bogoGroup: {} as never, link: null })))).toEqual(['copy-model']);
+    expect(ids(detailMenu(d({ bogo: {} as never })))).toEqual(['open-hd', 'copy-model']);
   });
 });

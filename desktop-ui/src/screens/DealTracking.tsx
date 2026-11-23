@@ -3,36 +3,62 @@
 // where its figures came from; every profit and ROI here is an estimate, and says so.
 
 import { Fragment } from 'react';
+import { useState } from 'react';
 import { api, useAction, useApp } from '../api/hooks';
 import type { BogoGroup, BogoView, DealDetail, DealSignals, FbaEstimate } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
+import { useMenu } from '../components/ContextMenu';
 import { Profit, Roi } from '../components/Figure';
 import { HistoryChart } from '../components/HistoryChart';
 import { SourceLink } from '../components/Source';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
-import { amazonUrl } from '../lib/actions';
+import { amazonUrl, copyText, openPage } from '../lib/actions';
 import { money, plural, when } from '../lib/format';
+import { detailMenu, type DetailMenuId } from '../lib/menus';
 import { verdictOf } from '../lib/signals';
 import './DealTracking.css';
 
-/** Watch or Unwatch, and Mark as BOGO while the deal is not one; under the title, where he reads what the bundle is. */
+/** Watch or Unwatch beside a "…" menu for the rest (Mark as BOGO…, Open on Home Depot, Copy model); under the title, where he reads what the bundle is. */
 export function WatchBar({ d }: { d: DealDetail }) {
   const ui = useUi();
+  const menu = useMenu();
   const watched = d.watch?.watched === true;
   const toggle = useAction(api.watch);
+  const [said, setSaid] = useState<string | null>(null);
+  const pick = (id: string) => {
+    switch (id as DetailMenuId) {
+      case 'bogo':
+        ui.openBogo({ dealId: d.id, model: d.model, bogo: null });
+        return;
+      case 'open-hd':
+        if (!openPage(d.link)) setSaid('Home Depot’s page could not be opened.');
+        return;
+      case 'copy-model':
+        void copyText(d.model).then((ok) => setSaid(ok ? `Copied ${d.model}.` : 'Could not copy. Select the model by hand.'));
+        return;
+    }
+  };
   return (
     <div className="track-bar">
       <div className="track-buttons">
         <Button size="sm" glyph={watched ? 'star-fill' : 'star'} aria-pressed={watched} busy={toggle.busy} busyLabel={watched ? 'Stopping…' : 'Watching…'} onClick={() => void toggle.run(d.id, !watched)} title={watched ? 'Stop watching: scans stop judging this bundle' : 'Watch this bundle: every scan judges whether it is worth buying'}>
           {watched ? 'Unwatch' : 'Watch'}
         </Button>
-        {d.bogo === null && d.bogoGroup === null ? (
-          <Button size="sm" variant="quiet" onClick={() => ui.openBogo({ dealId: d.id, model: d.model, bogo: null })} title="Only for a promotion Home Depot lists no starter + free tool pairs for: you enter the free tool">
-            Mark as BOGO…
-          </Button>
-        ) : null}
+        <Button
+          size="sm"
+          glyph="more"
+          aria-label="More actions"
+          aria-haspopup="menu"
+          title="More actions"
+          onClick={(e) => menu.openAt(e.currentTarget, { label: 'More actions', items: detailMenu(d), onPick: pick })}
+        />
       </div>
+      {said ? (
+        <p className="detail-note" role="status">
+          {said}
+        </p>
+      ) : null}
       {watched ? (
         <p className="detail-note">
           {d.watch!.by === 'auto' ? 'Watched by itself: confirmed and discounted' : 'Watched by you'} since {when(d.watch!.since)}.
