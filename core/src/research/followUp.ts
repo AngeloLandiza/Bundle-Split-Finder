@@ -352,9 +352,12 @@ export async function runFollowUpTasks(
 
 // ---------------------------------------------------------------- the evidence key, the code's check, the question
 
-/** What the loop has read, as one string: a follow-up ask is made only on a key no ask saw. Empty sources do not count. */
+/**
+ * What the loop has read, as one string: a follow-up ask is made only on a key no ask saw. A search that found nothing counts
+ * (that Home Depot shows no such model is news to the model); a read that failed left no entry and does not.
+ */
 export function followUpKey(entries: readonly ResearchLedgerEntry[]): string {
-  return JSON.stringify(entries.filter((e) => e.lines.length > 0 || e.products.length > 0)
+  return JSON.stringify(entries
     .map((e) => `${e.kind}:${e.url ?? e.id}:${e.lines.length}:${e.products.map((p) => up(p.model)).sort().join('|')}`).sort());
 }
 

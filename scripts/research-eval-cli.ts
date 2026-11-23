@@ -30,6 +30,9 @@ import {
 } from '../core/src/research';
 import { NONE, RESOLVED_BY_SCAN } from '../core/src/scan/answers';
 import type { ReviewItem } from '../core/src/scan/types';
+import { agentDataDir } from '../agent/paths';
+import type { ChromeReader } from './research-chrome';
+import { chromeFor, runFollowUpEval } from './research-followup-eval';
 import { loadRecordedSources, recordedTools, replayedTools, type ToolCallLog } from './research-tools';
 import { CacheOnlyClient, loadInputs, ResponsesCache, runValidationPipeline, VALIDATION_DATE, validationFiles } from './validate-cli';
 
@@ -70,6 +73,8 @@ export interface ResearchEvalDeps {
   sleep?: (ms: number) => Promise<void>;
   pauseMs?: number;
   now?: () => Date;
+  /** --follow-up --fresh-tools --run: the owner's Chrome (default: through the running app, scripts/research-chrome.ts). */
+  chrome?: ChromeReader;
 }
 
 export const runsPath = (outDir: string, model: string): string => join(outDir, `runs-${model}.json`);
@@ -137,7 +142,7 @@ function takeValue(args: string[], name: string): string | null | undefined {
   return v === undefined || v.startsWith('--') ? null : v;
 }
 
-const USAGE = 'Usage: npm run research:eval -- --model <claude-haiku-5-5|claude-opus-5-5> --dry-run | --run --max-cost <usd> | --replay [--fresh-tools] [--with-part-prices]';
+const USAGE = 'Usage: npm run research:eval -- --model <claude-haiku-5-5|claude-opus-5-5> [--follow-up] --dry-run | --run --max-cost <usd> | --replay [--fresh-tools] [--with-part-prices]';
 
 /** A model that answers from a run's stored turns, in order, so a replay goes through the same loop. */
 function replayModel(model: string, turns: ResearchTurn[]): ResearchModel {
@@ -164,6 +169,9 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
   // --replay --fresh-tools: the recorded turns, but the tools answer as today's recorded tools do (what the model quoted may be gone).
   const freshTools = rest.includes('--fresh-tools');
   if (freshTools) rest.splice(rest.indexOf('--fresh-tools'), 1);
+  // Step 16: --follow-up measures the follow-up loop on the recorded first asks (scripts/research-followup-eval.ts).
+  const followUp = rest.includes('--follow-up');
+  if (followUp) rest.splice(rest.indexOf('--follow-up'), 1);
   const known = (CLAUDE_JUDGE_MODELS as readonly string[]).includes(model ?? '');
   const maxCost = maxCostArg == null ? undefined : /^\d+(\.\d+)?$/.test(maxCostArg) && Number(maxCostArg) > 0 ? Number(maxCostArg) : NaN;
   const badValue = maxCostArg === null || Number.isNaN(maxCost);
@@ -185,6 +193,12 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
   try { loaded = await loadResearchQuestions(deps.dir); } catch (e) { log(e instanceof Error ? e.message : 'Could not read the inputs.'); return 1; }
   const { questions, catalog } = loaded;
   const sources = loadRecordedSources(deps.dir, { partPrices: withPrices });
+  if (followUp) {
+    return runFollowUpEval({
+      mode: mode as '--dry-run' | '--run' | '--replay', model, rates, maxCost, fresh: freshTools, questions, catalog, deps, outDir,
+      ...(freshTools && mode === '--run' ? { chrome: deps.chrome ?? chromeFor(agentDataDir()) } : {}),
+    });
+  }
 
   if (mode === '--dry-run') {
     const each = estimatedResearchCost(model) ?? 0;
