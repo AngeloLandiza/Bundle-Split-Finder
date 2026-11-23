@@ -52,20 +52,46 @@ describe('remote Home Depot readers (worker jobs)', () => {
     expect(await q.next(0)).toBeNull();
   });
 
-  it('a result that is not a list of readings is a failed read, never data', async () => {
-    const { readers, worker } = setup();
-    const reading = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }]);
-    await worker(() => ({ price: 19 }));
-    await expect(reading).rejects.toThrow('could not be read');
+  const search = (rows: { model: string; itemId: string; brand?: string }[]) => ({
+    sourceId: 'hd-search:x', label: 'Home Depot search', url: 'https://www.homedepot.com/s/x',
+    results: rows.map((r) => ({ title: `RYOBI ${r.model}`, brand: r.brand ?? 'RYOBI', model: r.model, itemId: r.itemId, url: `https://www.homedepot.com/p/${r.itemId}` })),
+  });
+  const reading = (over: Record<string, unknown> = {}) => ({
+    brand: 'RYOBI', model: 'PCL206B', status: 'found', itemId: '315155390', matchedModel: 'PCL206B', price: 59, title: 'Saw', link: 'https://www.homedepot.com/p/315155390', ...over,
   });
 
-  it('reads part prices in the order asked', async () => {
+  it('reads a part price with the jobs the extension runs: its search, then the product page by item id', async () => {
     const { readers, worker } = setup();
-    const reading = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }]);
-    const row = { brand: 'RYOBI', model: 'PCL206B', status: 'found', itemId: '315155390', matchedModel: 'PCL206B', price: 59, title: 'Saw', link: 'https://www.homedepot.com/p/315155390' };
-    const job = await worker(() => [row]);
-    expect(job).toMatchObject({ kind: 'partPrices', input: { parts: [{ brand: 'RYOBI', model: 'PCL206B' }] } });
-    expect(await reading).toEqual([row]);
+    const prices = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }, { brand: 'RYOBI', model: 'PCL235B' }]);
+    // The search shows a kit first (another model) and the part sold alone: the part's own model is picked.
+    expect(await worker(() => search([{ model: 'PCL206K1', itemId: '111111111' }, { model: 'PCL206B', itemId: '315155390' }]))).toMatchObject({ kind: 'search', input: { query: 'RYOBI PCL206B', page: 1 } });
+    expect(await worker(() => reading())).toMatchObject({ kind: 'partPrice', input: { itemId: '315155390', model: 'PCL206B', brand: 'RYOBI' } });
+    // No product for the second part: not found, and no page is read for it.
+    await worker(() => search([{ model: 'PCL206B', itemId: '315155390' }]));
+    expect(await prices).toEqual([reading(), { brand: 'RYOBI', model: 'PCL235B', status: 'not_found', itemId: null, matchedModel: null, price: null, title: null, link: null }]);
+  });
+
+  it('a page that names another brand is not the part; a refused search leaves the rest not read', async () => {
+    const { readers, worker, q } = setup();
+    const prices = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }, { brand: 'RYOBI', model: 'PCL235B' }]);
+    await worker(() => search([{ model: 'PCL206B', itemId: '315155390' }]));
+    await worker(() => reading({ brand: 'DEWALT' }));
+    // The extension answers a refused search as a failed job; the agent hands it out once more, then it fails.
+    for (let i = 0; i < 2; i++) {
+      const job = await q.next(1_000);
+      q.complete({ id: job!.id, ok: false, error: 'Home Depot refused the search (HTTP 403); no more are made for this question.' });
+    }
+    const out = await prices;
+    expect(out[0]).toMatchObject({ status: 'not_found', price: null });
+    expect(out[1]).toMatchObject({ status: 'not_read' });
+  });
+
+  it('a reading that is not a part price is a failed read, never data', async () => {
+    const { readers, worker } = setup();
+    const prices = readers.readPartPrices([{ brand: 'RYOBI', model: 'PCL206B' }]);
+    await worker(() => search([{ model: 'PCL206B', itemId: '315155390' }]));
+    await worker(() => ({ price: 19 }));
+    await expect(prices).rejects.toThrow('could not be read');
   });
 
   it('research tools: a page off homedepot.com is refused, a refusal ends the reads for that question, the catalog is local', async () => {

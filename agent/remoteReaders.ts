@@ -124,11 +124,60 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
     return result.flatMap((r) => pageOutcome(r) ?? []);
   };
 
+  /**
+   * Step 9's reading of a part sold alone, with the jobs the extension runs (W5): Home Depot's search for the part, the
+   * one result whose own model field is the part's (sameModel, RYOBI's B twin included), then that product's page by
+   * item id (`partPrice`), whose reading must name the part's brand. No such result: not_found. A search or page Chrome
+   * could not make (Home Depot refused, Chrome went away): this part and every one after it is not_read, and nothing more
+   * is asked this run, as the extension's own reader stops at a refusal. Never an id guessed.
+   */
   const readPartPrices: ReadPartPrices = async (parts) => {
-    const result = await run('partPrices', { parts: parts.map(({ brand, model }) => ({ brand, model })) }, t.pageMs + t.perItemMs * parts.length);
-    const rows = Array.isArray(result) ? result.map(partPriceReading) : null;
-    if (!rows || rows.some((r) => r === null)) throw new Error('The part prices Chrome read could not be read.');
-    return rows as PartPriceReading[];
+    const out: PartPriceReading[] = [];
+    const empty = (p: { brand: string; model: string }, status: 'not_found' | 'not_read'): PartPriceReading => ({
+      brand: p.brand, model: p.model, status, itemId: null, matchedModel: null, price: null, title: null, link: null,
+    });
+    let stopped = false;
+    for (const part of parts) {
+      if (stopped) {
+        out.push(empty(part, 'not_read'));
+        continue;
+      }
+      let found: HomeDepotSearch | ToolError;
+      try {
+        found = researchSearch(await run('search', { query: `${part.brand} ${part.model}`, page: 1 }, t.toolMs));
+      } catch {
+        stopped = true;
+        out.push(empty(part, 'not_read'));
+        continue;
+      }
+      if ('error' in found) {
+        stopped = true;
+        out.push(empty(part, 'not_read'));
+        continue;
+      }
+      const brand = part.brand.trim().toUpperCase();
+      const exact = found.results.find((r) => r.brand.trim().toUpperCase() === brand && r.model.trim().toUpperCase() === part.model.trim().toUpperCase());
+      const pick = exact ?? found.results.find((r) => r.brand.trim().toUpperCase() === brand && sameModel(part.brand, r.model, part.model));
+      if (!pick || !ITEM_ID.test(pick.itemId)) {
+        out.push(empty(part, 'not_found'));
+        continue;
+      }
+      let raw: unknown;
+      try {
+        raw = await run('partPrice', { itemId: pick.itemId, model: part.model, brand: part.brand }, t.pageMs);
+      } catch {
+        stopped = true;
+        out.push(empty(part, 'not_read'));
+        continue;
+      }
+      const reading = partPriceReading(raw);
+      if (!reading) throw new Error('The part price Chrome read could not be read.');
+      if (reading.status === 'not_read') stopped = true;
+      // The page is not this part's (another brand, another model): Home Depot showed no product for it.
+      const samePart = reading.brand.trim().toUpperCase() === brand && (reading.matchedModel === null || sameModel(part.brand, reading.matchedModel, part.model));
+      out.push(reading.status === 'found' && !samePart ? empty(part, 'not_found') : { ...reading, brand: part.brand, model: part.model });
+    }
+    return out;
   };
 
   function researchTools(store: ScanStore): ResearchTools {

@@ -495,9 +495,10 @@ export interface WorkerJobInputs {
   partPrice: { itemId: string; model: string; brand?: string };
   /** A Home Depot search results page (the research agent's searchHomeDepot; `page` is 1). */
   search: { query: string; page: number };
-  /** W4: Home Depot's own price for each part sold alone, as the extension's ReadPartPrices reads them (step 9). */
-  partPrices: { parts: { brand: string; model: string }[] };
-  /** W4: one product page as text sections, for the research agent's readHomeDepotPage. */
+  /**
+   * W4: one product page as text sections, for the research agent's readHomeDepotPage (not run by the W5 extension yet:
+   * its runJob needs a case calling researchTools.forQuestion().readHomeDepotPage({ itemId })).
+   */
   researchPage: { itemId: string };
 }
 
@@ -513,14 +514,12 @@ export interface WorkerJobResults {
   partPrice: PartPriceReading;
   /** As extension/lib/researchTools.ts searchHomeDepot returns it; a refusal is a ToolError, never an empty list. */
   search: HomeDepotSearch | ToolError;
-  /** One reading per part asked, in order (core/src/scan/types.ts PartPriceReading). */
-  partPrices: PartPriceReading[];
   /** As extension/lib/researchTools.ts readHomeDepotPage returns it. */
   researchPage: HomeDepotPage | ToolError;
 }
 
 export type WorkerJobKind = keyof WorkerJobInputs;
-export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search', 'partPrices', 'researchPage'];
+export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search', 'researchPage'];
 
 export type WorkerJobStatus = 'queued' | 'leased' | 'done' | 'failed';
 

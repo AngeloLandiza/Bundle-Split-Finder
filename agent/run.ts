@@ -1,8 +1,7 @@
-// Local agent prototype (plan Phase 3): core scan + optional Keepa from recorded responses.
-// npm run agent:scan -- --fixtures [--keepa]
+// Developer tool (plan Phase 3): core scan + optional Keepa from recorded responses, printed to the terminal.
+// npm run agent:scan -- --fixtures [--keepa]. The agent itself scans in agent/work.ts; nothing reads this tool's output.
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { TokenBudget } from '../core/src/keepa/budget';
@@ -71,33 +70,9 @@ async function runOnce(): Promise<void> {
     trendWriter: withKeepa ? (t) => writePartTrend(agentCache, t) : undefined,
   });
   const { report, snapshotCount } = await postScanWork({ store, settings, cache: agentCache, now: () => Date.now() });
-  const outPath = fileURLToPath(new URL('../output/agent-last-scan.json', import.meta.url));
-  mkdirSync(dirname(outPath), { recursive: true });
-  writeFileSync(
-    outPath,
-    JSON.stringify(
-      {
-        ok: true,
-        at: new Date().toISOString(),
-        ended,
-        summary: {
-          bundles: report.bundles.length,
-          confirmed: report.bundles.filter((b) => b.section === 'confirmed').length,
-          reviewOpen: report.review.filter((q) => q.answer === null).length,
-          deferredLookups: ended.deferred.filter((s) => s.kind === 'lookup').length,
-          deferredRefreshes: ended.deferred.filter((s) => s.kind === 'refresh').length,
-          snapshots: snapshotCount,
-          serpSearches: ended.searchesUsed,
-          keepaTokens: ended.keepaTokensUsed ?? 0,
-          keepaPlan: ended.keepaPlan ?? null,
-        },
-      },
-      null,
-      2,
-    ),
-  );
+  const confirmed = report.bundles.filter((b) => b.section === 'confirmed').length;
+  console.log(`${report.bundles.length} bundles, ${confirmed} confirmed, ${snapshotCount} option snapshots.`);
   console.log(`Agent scan ended: ${ended.status}, SerpApi searches ${ended.searchesUsed}, Keepa tokens ${ended.keepaTokensUsed ?? 0}`);
-  console.log(`Wrote ${outPath}`);
   const review = report.review.filter((q) => q.answer === null);
   const digest = reviewDigestMessage({
     match: review.filter((q) => q.kind === 'match').length,
