@@ -21,6 +21,8 @@ import {
   type EbayValueRecord,
   effectiveVerdict,
   type ListingRecord,
+  type MatchRecord,
+  type VerifiedBy,
   type PartAvailability,
   type PartPriceRecord,
   type PartRow,
@@ -172,9 +174,18 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
       prices,
       // The PO (Nov 18): a New listing in bulk packaging is a place to sell; the panel labels it.
       ...(listing && isBulkPackaging(listing.title) ? { packaging: 'bulk' as const } : {}),
+      ...verification(match),
     });
   }
   return rows;
+}
+
+/** Catalog check: how the part's listing was verified, and the evidence, as the part row carries them. */
+function verification(match: MatchRecord | undefined): Pick<PartRow, 'verifiedBy' | 'verifyEvidence'> {
+  if (!match) return {};
+  const matched = match.status === 'matched' && match.asin !== null;
+  const by: VerifiedBy | undefined = matched && match.decidedBy === 'user' ? 'owner' : matched && match.verifiedBy ? match.verifiedBy : matched && match.grade === 'probable' ? 'title' : undefined;
+  return { ...(by ? { verifiedBy: by } : {}), ...(match.verifyEvidence ? { verifyEvidence: match.verifyEvidence } : {}) };
 }
 
 /** A part not looked up yet: it has no listing because nobody has looked, not because there is none. */

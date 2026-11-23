@@ -365,6 +365,19 @@ export interface DealEstimate {
    * no model part is ever here (before, a part with no listing was, and showed a $299 bundle "losing" $299).
    */
   countedAtZero: string[];
+  /**
+   * Catalog check: what the counted parts' listings rest on, beside the estimate (the ROI range is unchanged). `verified`:
+   * parts on a listing Amazon's catalog, a product page or the owner verified; `titleMatches`: parts matched only by their
+   * title. `label`: "2 parts on verified listings, 1 on a title match." Absent when no counted part has a listing.
+   */
+  listings?: EstimateListings;
+}
+
+/** Catalog check: how many of an estimate's parts rest on verified listings and how many on title matches. */
+export interface EstimateListings {
+  verified: number;
+  titleMatches: number;
+  label: string;
 }
 
 /** GET /api/deals/:id. `bundle` holds the parts with every labelled price and the ways to sell. */

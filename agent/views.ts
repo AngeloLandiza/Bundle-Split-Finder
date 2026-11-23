@@ -7,6 +7,7 @@ import type {
   DripState,
   DealDetail,
   DealEstimate,
+  EstimateListings,
   DealHistoryPoint,
   DealIncomplete,
   DealIncompleteEstimate,
@@ -236,7 +237,26 @@ function estimateOf(b: BundleRow, fees: StoreData['settings']['settings']['fees'
     // Nov 23: an estimate exists only when every model part is priced, so only items with no model number are left
     // here; DEFAULT_SCAN_SETTINGS.liquidationRate is 0, so they are not counted until the owner confirms a price.
     countedAtZero: DEFAULT_SCAN_SETTINGS.liquidationRate === 0 ? [...b.uncovered] : [],
+    ...listingsOf(b.parts.filter((p) => !uncovered.has(p.model))),
   };
+}
+
+/**
+ * Catalog check: the estimate's parts by what their listing rests on. Verified: a listing graded exact or strong (Amazon's
+ * catalog, a product page's part number or barcode) or the owner's choice; a title match: graded probable. A part priced
+ * only by a confirmed price, with no listing, is neither.
+ */
+export function listingsOf(parts: Pick<BundleRow['parts'][number], 'grade' | 'verifiedBy' | 'asin'>[]): { listings?: EstimateListings } {
+  const listed = parts.filter((p) => p.asin !== null);
+  const verified = listed.filter((p) => p.grade === 'exact' || p.grade === 'strong' || p.verifiedBy === 'owner').length;
+  const titleMatches = listed.filter((p) => p.grade === 'probable' && p.verifiedBy !== 'owner').length;
+  if (verified + titleMatches === 0) return {};
+  const noun = (n: number) => (n === 1 ? 'part' : 'parts');
+  const said = [
+    ...(verified > 0 ? [`${verified} ${noun(verified)} on ${verified === 1 ? 'a verified listing' : 'verified listings'}`] : []),
+    ...(titleMatches > 0 ? [`${titleMatches}${verified > 0 ? '' : ` ${noun(titleMatches)}`} on ${titleMatches === 1 ? 'a title match' : 'title matches'}`] : []),
+  ];
+  return { listings: { verified, titleMatches, label: `${said.join(', ')}.` } };
 }
 
 const ACTION_OF: Record<DealUnpricedPart['state'], DealUnpricedPart['action']> = {

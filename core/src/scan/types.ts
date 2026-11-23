@@ -806,6 +806,13 @@ export interface PartRow {
    * Absent for a retail-boxed listing, and when the listing is not saved (no title to read).
    */
   packaging?: 'bulk';
+  /**
+   * Catalog check: what verified the chosen listing. 'keepa_catalog' or 'serpapi_product' from Amazon's structured fields
+   * (MatchRecord.verifiedBy), 'owner' when the owner chose it, 'title' for a title match. Absent otherwise.
+   */
+  verifiedBy?: VerifiedBy;
+  /** The evidence of verifiedBy, or why Amazon's catalog removed a listing, with the listing's link (MatchRecord.verifyEvidence). */
+  verifyEvidence?: string;
 }
 
 /**
