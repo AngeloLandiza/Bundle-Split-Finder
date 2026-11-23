@@ -342,11 +342,12 @@ export function createAgent(opts: AgentOptions): Agent {
   });
   r.get('/api/state', 'any', () => state());
   r.post('/api/agent/pause', 'ui', (): PauseResponse => {
-    store.update('agent', () => ({ paused: true, pausedAt: iso() }));
+    store.update('agent', (a) => ({ ...a, paused: true, pausedAt: iso() }));
     return { paused: true };
   });
   r.post('/api/agent/resume', 'ui', (): PauseResponse => {
-    store.update('agent', () => ({ paused: false, pausedAt: null }));
+    // Resuming is the owner's acknowledgement of a problem the agent paused itself for.
+    store.update('agent', () => ({ paused: false, pausedAt: null, problem: null }));
     return { paused: false };
   });
   r.get('/api/events', 'any', (ctx) => {

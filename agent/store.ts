@@ -4,8 +4,8 @@
 // one. Keys and pairing are written owner-only (0600). On the first start the JSON files the agent
 // kept before step 13 are read once into the store; after that they are never read again.
 
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync, writeSync } from 'node:fs';
-import { join } from 'node:path';
+import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 import type {
   AppSettings,
@@ -137,6 +137,8 @@ export interface HelperOutbox {
 export interface AgentControl {
   paused: boolean;
   pausedAt: string | null;
+  /** Why the agent paused itself (saved data it could not read at start); Resume clears it. */
+  problem?: string | null;
 }
 
 /** W4: an Autopilot application as the agent keeps it: the contract's entry and what Undo needs. */
@@ -303,11 +305,36 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
 
 // ---------------------------------------------------------------- files
 
-/** Writes the whole file to a temp name beside it, then renames it over the old one. */
+/** Makes a rename in `dir` survive a power cut. A directory cannot be opened on Windows; there rename is the best there is. */
+function fsyncDir(dir: string): void {
+  let fd: number | null = null;
+  try {
+    fd = openSync(dir, 'r');
+    fsyncSync(fd);
+  } catch {
+    // not supported here
+  } finally {
+    if (fd !== null) closeSync(fd);
+  }
+}
+
+/**
+ * Writes the whole file to a temp name beside it, flushes it to disk, renames it over the old one and flushes the
+ * directory, so after a crash or a power cut the file is the old one or the new one, never empty or half written.
+ */
 export function writeFileAtomic(path: string, text: string, mode = 0o644): void {
   const tmp = `${path}.${process.pid}.tmp`;
-  writeFileSync(tmp, text, { mode });
+  const fd = openSync(tmp, 'w', mode);
+  try {
+    const buf = Buffer.from(text, 'utf8');
+    let off = 0;
+    while (off < buf.length) off += writeSync(fd, buf, off, buf.length - off);
+    fsyncSync(fd);
+  } finally {
+    closeSync(fd);
+  }
   renameSync(tmp, path);
+  fsyncDir(dirname(path));
 }
 
 function readJson(path: string): unknown {
@@ -317,6 +344,30 @@ function readJson(path: string): unknown {
   } catch {
     return undefined;
   }
+}
+
+/** A collection's file as it reads: missing, its value, or unreadable (not JSON, or not the collection's shape). */
+function readCollection(name: CollectionName, path: string): { kind: 'missing' } | { kind: 'ok'; value: unknown } | { kind: 'corrupt' } {
+  if (!existsSync(path)) return { kind: 'missing' };
+  let raw: unknown;
+  try {
+    raw = JSON.parse(readFileSync(path, 'utf8')) as unknown;
+  } catch {
+    return { kind: 'corrupt' };
+  }
+  const wantArray = Array.isArray(defaults()[name]);
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw) !== wantArray) return { kind: 'corrupt' };
+  return { kind: 'ok', value: raw };
+}
+
+/** The sentence the app shows when saved data could not be read at start. Never a key. */
+export function unreadableSentence(names: CollectionName[]): string {
+  const parts: string[] = [];
+  if (names.includes('settings')) parts.push('Settings could not be read; the agent is paused.');
+  if (names.includes('keys')) parts.push('Your saved keys could not be read; the agent is paused. The file is kept beside the store as keys.json.corrupt-…; add the keys again in Settings or restore it.');
+  const rest = names.filter((n) => n !== 'settings' && n !== 'keys');
+  if (rest.length) parts.push(`Saved ${rest.join(', ')} could not be read and ${rest.length === 1 ? 'was' : 'were'} kept aside; the agent is paused.`);
+  return `${parts.join(' ')} Autopilot and alerts are off until you turn them on again.`;
 }
 
 function pidAlive(pid: number): boolean {
@@ -504,11 +555,36 @@ export class Store {
       );
       return store;
     }
+    const unreadable: CollectionName[] = [];
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     for (const name of COLLECTIONS) {
-      const raw = readJson(join(dir, `${name}.json`));
-      if (raw !== undefined) (data as Record<CollectionName, unknown>)[name] = normalize(name, raw);
+      const path = join(dir, `${name}.json`);
+      const read = readCollection(name, path);
+      if (read.kind === 'ok') (data as Record<CollectionName, unknown>)[name] = normalize(name, read.value);
+      else if (read.kind === 'corrupt') {
+        // Kept, never overwritten with defaults: the owner (or support) can restore it.
+        renameSync(path, `${path}.corrupt-${stamp}`);
+        unreadable.push(name);
+      }
     }
-    return new Store(dir, data, lockPath);
+    const store = new Store(dir, data, lockPath);
+    if (unreadable.length) store.startSafe(unreadable);
+    return store;
+  }
+
+  /** Collections that could not be read at open (kept as `<name>.json.corrupt-<time>`). */
+  readonly unreadable: CollectionName[] = [];
+
+  /** Something saved could not be read: paused, Autopilot off, alerts off, and the sentence in state and Activity. */
+  private startSafe(names: CollectionName[]): void {
+    this.unreadable.push(...names);
+    const at = new Date().toISOString();
+    const sentence = unreadableSentence(names);
+    this.data.agent = { ...this.data.agent, paused: true, pausedAt: at, problem: sentence };
+    this.data.settings = { ...this.data.settings, autopilot: false, alerts: { ...this.data.settings.alerts, enabled: false } };
+    const error: ActivityErrorRecord = { id: `err-store-${Date.now()}`, at, sentence, retry: null, resolvedAt: null };
+    this.data.activity = { ...this.data.activity, errors: [...(this.data.activity.errors ?? []), error] };
+    for (const name of new Set<CollectionName>([...names, 'agent', 'settings', 'activity'])) this.write(name);
   }
 
   /** A copy of the collection; changing it changes nothing stored. */

@@ -338,6 +338,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       busy: live.busy === 'paid' ? 'scan' : live.busy,
       nextScanAt: live.nextScanAt,
       lastScan: data.activity.lastScan,
+      ...(data.agent.problem ? { problem: data.agent.problem } : {}),
     },
     helper: { paired: data.pairing.extensions.length > 0, connected: live.connected, lastSeenAt: live.lastSeenAt, jobsWaiting: live.jobsWaiting },
     budget: {

@@ -105,6 +105,8 @@ export interface AgentState {
     pipeline?: PipelineView;
     /** W4: what the agent is busy with: a scan, or the AI pass on Review questions. */
     busy?: 'scan' | 'ask' | null;
+    /** Why the agent paused itself at start (saved settings or keys it could not read); gone after Resume. */
+    problem?: string;
   };
   /** The paired Chrome extension, the worker that reads Home Depot pages. `jobsWaiting`: reads waiting for it (W4). */
   helper: { paired: boolean; connected: boolean; lastSeenAt: string | null; jobsWaiting?: number };

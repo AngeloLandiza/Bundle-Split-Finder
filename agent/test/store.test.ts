@@ -49,6 +49,31 @@ describe('agent store', () => {
     }
   });
 
+  it('keeps a file it cannot read, never defaults over it, and starts paused with Autopilot and alerts off', () => {
+    const dir = tempDir();
+    const first = Store.open(dir);
+    first.update('keys', () => ({ serpapi: 'k-test' }));
+    first.close();
+    writeFileSync(join(dir, 'store', 'settings.json'), '{"autopilot": tru');
+    writeFileSync(join(dir, 'store', 'keys.json'), '');
+    const s = openStore(dir);
+    expect(s.unreadable.sort()).toEqual(['keys', 'settings']);
+    const kept = readdirSync(join(dir, 'store')).filter((f) => f.includes('.corrupt-'));
+    expect(kept.sort()).toEqual([expect.stringMatching(/^keys\.json\.corrupt-/), expect.stringMatching(/^settings\.json\.corrupt-/)]);
+    expect(readFileSync(join(dir, 'store', kept.find((f) => f.startsWith('settings'))!), 'utf8')).toBe('{"autopilot": tru');
+    expect(s.get('agent')).toMatchObject({ paused: true, problem: expect.stringMatching(/^Settings could not be read; the agent is paused\. Your saved keys could not be read/) });
+    expect(s.get('settings').autopilot).toBe(false);
+    expect(s.get('settings').alerts.enabled).toBe(false);
+    expect(s.get('activity').errors?.[0]?.sentence).toBe(s.get('agent').problem);
+    // The state survives a restart (the defaults it wrote are readable), and the kept files stay.
+    s.close();
+    open.pop();
+    const again = openStore(dir);
+    expect(again.unreadable).toEqual([]);
+    expect(again.get('agent').paused).toBe(true);
+    expect(readdirSync(join(dir, 'store')).filter((f) => f.includes('.corrupt-'))).toHaveLength(2);
+  });
+
   it('tells listeners which collection changed', () => {
     const s = openStore(tempDir());
     const seen: string[] = [];
