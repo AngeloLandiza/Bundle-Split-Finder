@@ -4,6 +4,7 @@
 // one. Keys and pairing are written owner-only (0600). On the first start the JSON files the agent
 // kept before step 13 are read once into the store; after that they are never read again.
 
+import { DEFAULT_LISTING_SOURCE } from '../core/src/scan/listingSource';
 import { randomBytes } from 'node:crypto';
 import { closeSync, existsSync, fsyncSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, utimesSync, writeSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -305,6 +306,8 @@ export function defaultSettings(): StoreData['settings'] {
     ai: defaultAiSettings(),
     // Step 15: waiting parts are looked up with Keepa between scans as its tokens refill.
     lookups: { drip: true },
+    // Free scan: the bundle lists are read in Chrome when it is connected; a scheduled scan with Chrome closed waits for it.
+    scan: { listingSource: DEFAULT_LISTING_SOURCE, serpWhenChromeClosed: false },
     appearance: { theme: 'system', accent: 'system', density: 'regular' },
     // Today's behaviour: every kind on, no quiet hours, a message after each run.
     notifications: {
@@ -394,6 +397,7 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
       },
       shell: { ...d.shell, ...(s.shell ?? {}) },
       lookups: { drip: true, ...(s.lookups ?? {}) },
+      scan: { listingSource: DEFAULT_LISTING_SOURCE, serpWhenChromeClosed: false, ...(s.scan ?? {}) },
       ai: {
         ...d.ai,
         ...ai,

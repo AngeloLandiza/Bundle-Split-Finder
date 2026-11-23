@@ -173,7 +173,11 @@ describe('agent HTTP', () => {
         shell: { dockIcon: false, menuBarIcon: true },
       },
     });
-    for (const bad of [{ appearance: { theme: 'neon' } }, { notifications: { morningAt: '25:00' } }, { notifications: { kinds: { deal: 'no' } } }, { shell: { dockIcon: 1 } }]) {
+    // Free scan: where the bundle lists come from (default auto) and whether a scheduled scan may search with Chrome closed.
+    expect(got.settings.scan).toEqual({ listingSource: 'auto', serpWhenChromeClosed: false });
+    const src = await ui('/api/settings', { method: 'PATCH', body: JSON.stringify({ scan: { listingSource: 'chrome' } }) });
+    expect(((await src.json()) as { settings: Record<string, unknown> }).settings.scan).toEqual({ listingSource: 'chrome', serpWhenChromeClosed: false });
+    for (const bad of [{ appearance: { theme: 'neon' } }, { notifications: { morningAt: '25:00' } }, { notifications: { kinds: { deal: 'no' } } }, { shell: { dockIcon: 1 } }, { scan: { listingSource: 'bing' } }, { scan: { serpWhenChromeClosed: 'yes' } }]) {
       expect((await ui('/api/settings', { method: 'PATCH', body: JSON.stringify(bad) })).status).toBe(400);
     }
   });

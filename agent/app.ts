@@ -55,7 +55,7 @@ import { tryServeUi, uiIndexExists } from './uiStatic';
 import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf, workingReviewCount } from './views';
 import { setWatch } from '../core/src/tracking/state';
 import { isBogoListingPath } from '../core/src/tracking/bogoPairs';
-import { isBundleListingPath } from '../core/src/scan/listingSource';
+import { DEFAULT_LISTING_SOURCE, isBundleListingPath, LISTING_SOURCES } from '../core/src/scan/listingSource';
 import { HOME_DEPOT_ITEM_ID } from '../core/src/scan/kitPage';
 import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
@@ -234,6 +234,15 @@ function clock(v: unknown, name: string): string {
 function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, unknown>, at: string): StoreData['settings'] {
   const next = structuredClone(cur);
   if ('autopilot' in patch) next.autopilot = flag(patch.autopilot, 'autopilot');
+  if ('scan' in patch) {
+    // Free scan: where the bundle lists come from, and whether a scheduled scan may search for them with Chrome closed.
+    const sc = obj(patch.scan, 'scan');
+    const cur = next.scan ?? { listingSource: DEFAULT_LISTING_SOURCE, serpWhenChromeClosed: false };
+    next.scan = {
+      listingSource: 'listingSource' in sc ? oneOf(sc.listingSource, LISTING_SOURCES, 'scan.listingSource') : cur.listingSource,
+      serpWhenChromeClosed: 'serpWhenChromeClosed' in sc ? flag(sc.serpWhenChromeClosed, 'scan.serpWhenChromeClosed') : cur.serpWhenChromeClosed,
+    };
+  }
   if ('lookups' in patch) {
     const l = obj(patch.lookups, 'lookups');
     if ('drip' in l) next.lookups = { ...(next.lookups ?? { drip: true }), drip: flag(l.drip, 'lookups.drip') };

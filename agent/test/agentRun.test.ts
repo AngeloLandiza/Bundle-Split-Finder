@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ActivityResponse, AgentState, DealsResponse, ReviewResponse } from '../../core/src/api/contract';
+import type { ActivityResponse, AgentState, DealsResponse, ReviewResponse, SettingsResponse } from '../../core/src/api/contract';
 import { parseBundlePage } from '../../core/src/hdPage';
 import { AnswerRefused } from '../../core/src/scan/answers';
 import type { runScan } from '../../core/src/scan/runner';
@@ -203,6 +203,14 @@ describe('the schedule', () => {
     expect(agent.work.nextScanAt()).toBeNull();
     await ui('/api/agent/resume', { method: 'POST' });
 
+    // Free scan: no helper is connected, so the due scheduled scan waits for Chrome; it is still due.
+    expect(agent.work.tick()).toBe(false);
+    expect(calls).toBe(0);
+    expect(agent.work.nextScanAt()).toBe(new Date(firstAt).toISOString());
+    // The owner lets SerpApi find the bundles while Chrome is closed: the scan starts.
+    await patch({ scan: { serpWhenChromeClosed: true } });
+    expect((await json<SettingsResponse>('/api/settings')).settings.scan).toEqual({ listingSource: 'auto', serpWhenChromeClosed: true });
+
     expect(agent.work.tick()).toBe(true);
     await new Promise((r) => setTimeout(r, 20));
     expect(agent.work.tick()).toBe(false);
@@ -224,7 +232,7 @@ describe('the schedule', () => {
     }) as unknown as typeof runScan;
     await start({ work: { runScan: quick } });
     await put('/api/keys/serpapi', { key: SERP_KEY });
-    await patch({ settings: { schedule: { mode: 'interval', hours: 6 } } });
+    await patch({ settings: { schedule: { mode: 'interval', hours: 6 } }, scan: { serpWhenChromeClosed: true } });
     clock += 6 * 3_600_000;
     let found: (v: undefined) => void = () => {};
     const order: string[] = [];

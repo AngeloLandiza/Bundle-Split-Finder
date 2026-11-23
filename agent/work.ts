@@ -65,6 +65,7 @@ import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
 import { answerText, footprintOf, type Footprint, KEEP_OWNER_ANSWERS, restorable, undoOwnerAnswer } from './ownerAnswers';
 import { remoteReaders, type ReaderTimeouts, type RemoteReaders } from './remoteReaders';
+import { discoveryFor, discoveryNote, scheduledScanWaits } from './scanSource';
 import { DirCache, FileScanStore } from './scanStore';
 import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer } from './store';
 import { aiSpentThisMonth, asksAboutEbay } from './views';
@@ -309,6 +310,11 @@ export class AgentWork {
     const next = this.nextScanAt();
     if (next === null || Date.parse(next) > this.d.now()) {
       // Step 15: nothing else runs, so the drip may look up a waiting part with Keepa.
+      void this.drip().catch(() => {});
+      return false;
+    }
+    // Free scan: with Chrome closed a scheduled scan waits for it (unless the owner let SerpApi find the bundles then).
+    if (scheduledScanWaits(this.d.store.get('settings'), this.d.helperConnected())) {
       void this.drip().catch(() => {});
       return false;
     }
@@ -993,11 +999,18 @@ export class AgentWork {
     const bogoPairs = Object.fromEntries(Object.values(store.get('tracking').bogoPairs ?? {}).map((p) => [p.key, `${p.promotionId}:${p.starterItemId}`]));
     // Step 16: the models unverified AI answers wait for are read with the part prices (free).
     const partPricesExtra = connected ? await wantedReads(this.scanStore, store.get('suggestions')) : [];
-    return scan({
+    // Free scan: the bundle lists from Chrome when it can, else SerpApi within the budget; no brand page when Keepa looks up.
+    const discovery = again || lookups ? null : discoveryFor({
+      app, trigger, chromeConnected: connected, serpCanPay: budget.blockReason(1) === null,
+      keepaCanLookUp: Boolean(keepa.keepaLookup) && keepa.keepaScale?.tokensLeft != null, settings: scanSettings, readers,
+    });
+    if (discovery?.note) notes.push(discovery.note);
+    const job = await scan({
       bogoPairs, partPricesExtra, catalogFirst: [...buyWaitsOn(store.get('tracking'))],
       // Nov 23: a bundle whose own page is not read waits for it (waiting_page); it is never a question before then.
       waitForPages: true,
-      client, budget, store: this.watched(this.scanStore), settings: scanSettings, now: this.d.now, labelPrefix: 'agent',
+      client, budget, store: this.watched(this.scanStore), settings: discovery?.settings ?? scanSettings, now: this.d.now, labelPrefix: 'agent',
+      ...(discovery?.chromeListing ? { chromeListing: discovery.chromeListing } : {}),
       shouldStop: () => this.stopCtl.signal.aborted,
       ...(connected ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices } : { noReaderReason: lookups ? 'not in this run' : 'Chrome closed' }),
       ...(ebay ? { ebay } : {}),
@@ -1005,6 +1018,9 @@ export class AgentWork {
       cache: this.cache,
       ...(keepa.keepaProduct ? { trendWriter: (t) => writePartTrend(this.cache, t) } : {}),
     });
+    const listed = discoveryNote(job);
+    if (listed) notes.push(listed);
+    return job;
   }
 
   /**

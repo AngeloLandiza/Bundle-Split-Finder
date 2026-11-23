@@ -7,6 +7,7 @@
 // as window.__SPLIT_FINDER_TOKEN__. A paired extension gets its own token from POST /api/pair/claim.
 // A failed request answers with an HTTP status and an ApiErrorBody. No response ever holds a key.
 
+import type { ListingSourceSetting } from '../scan/listingSource';
 import type { PipelineAiSettings } from '../ai/factory';
 import type { StoredSuggestion } from '../assist/stored';
 import type { ReviewBrief } from '../brief/types';
@@ -955,6 +956,13 @@ export interface AppSettings {
    * for automatic: what the month above the reserve leaves per remaining day, at most 5.
    */
   lookups?: { drip: boolean; autoVerify?: boolean; verifySearchesPerDay?: number | null };
+  /**
+   * Free scan (Nov 23): where a scan finds Home Depot's bundles (core/src/scan/listingSource.ts). `listingSource` 'auto'
+   * (default): Home Depot's Bundle lists read in Chrome when the helper is connected, SerpApi only when it is not and the
+   * budget allows; 'chrome': never a search for them; 'serpapi': SerpApi's listing pages as before. `serpWhenChromeClosed`
+   * (default off): a scheduled scan with Chrome closed searches SerpApi instead of waiting for Chrome. Absent: the defaults.
+   */
+  scan?: { listingSource: ListingSourceSetting; serpWhenChromeClosed: boolean };
   appearance: AppearanceSettings;
   notifications: NotificationSettings;
   shell: ShellSettings;
@@ -967,8 +975,9 @@ export interface SettingsResponse {
   keys: KeysPresence;
 }
 
-export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings' | 'alerts' | 'ai' | 'appearance' | 'notifications' | 'shell'>> & {
+export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings' | 'alerts' | 'ai' | 'appearance' | 'notifications' | 'shell' | 'scan'>> & {
   settings?: Partial<AppSettings['settings']>;
+  scan?: Partial<NonNullable<AppSettings['scan']>>;
   ebaySettings?: Partial<EbaySettings>;
   alerts?: Partial<AlertSettings>;
   appearance?: Partial<AppearanceSettings>;
