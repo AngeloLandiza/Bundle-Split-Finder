@@ -20,3 +20,7 @@ The third real scan: 4 minutes, 16 searches, 59 bundles, 32 with an estimate (34
 went on), 10 open questions, AI $0.13. What it shows next: the best estimate is +$6.63 on a $179 BOGO pair at $0
 fulfillment; 26 bundles sit in "Losing money", many at -100% because a part with no price yet is counted at zero
 (`estimate.countedAtZero`: DCK200D1P1 in 10 bundles, PCL1600K2 in 4, …), which is not an estimate of anything.
+
+Read again with the rule that followed ("An estimate exists only when every part the owner must sell has a counted price",
+docs/decisions.md): 13 complete estimates (3 above zero) and 39 bundles missing a price, each with its break-even.
+`npx tsx scripts/audit-estimates.ts` prints them; `?mock=real` in the desktop UI shows them.
