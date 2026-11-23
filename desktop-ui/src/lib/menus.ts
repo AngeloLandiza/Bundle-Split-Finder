@@ -19,7 +19,7 @@ export interface MenuItem {
 }
 
 export type DealMenuId = 'open' | 'open-hd' | 'copy-model' | 'copy-asins' | 'watch' | 'unwatch' | 'bogo' | 'lookup' | 'verify' | 'review';
-export type DetailMenuId = 'bogo' | 'open-hd' | 'copy-model';
+export type DetailMenuId = 'bogo' | 'lookup' | 'open-hd' | 'copy-model';
 export type QuestionMenuId = 'ask' | 'approve' | 'open-deal' | 'open-hd' | 'copy-question';
 export type PartMenuId = 'open-amazon' | 'copy-asin' | 'confirm' | 'remove';
 
@@ -48,8 +48,10 @@ export function dealMenu(row: DealRow, o: { scanRunning: boolean }): MenuItem[] 
  * The inspector's "…" menu: what is secondary to Watch. The promotion entry stays out of the way on a deal the agent
  * grouped (its own pairs are shown), and once he entered one the BOGO section carries its own Change and Remove.
  */
-export function detailMenu(d: Pick<DealDetail, 'bogo' | 'bogoGroup' | 'link'>): MenuItem[] {
+export function detailMenu(d: Pick<DealDetail, 'bogo' | 'bogoGroup' | 'link'> & { lookup?: DealDetail['lookup'] }, o: { scanRunning: boolean } = { scanRunning: false }): MenuItem[] {
   const items: MenuItem[] = [];
+  // The one place a single bundle is looked up on its own (the table has no button per row): its parts, at what that costs now.
+  if (d.lookup) items.push({ id: 'lookup', label: `Look up this bundle · ${plural(d.lookup.searches, 'search', 'searches')}`, ...(o.scanRunning ? { disabled: SCAN_LATER } : {}) });
   if (d.bogo === null && d.bogoGroup === null) items.push({ id: 'bogo', label: bogoMenuLabel(null) });
   if (d.link) items.push({ id: 'open-hd', label: 'Open on Home Depot' });
   items.push({ id: 'copy-model', label: 'Copy model', ...(items.length ? { separatorBefore: true } : {}) });

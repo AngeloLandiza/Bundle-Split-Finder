@@ -112,6 +112,11 @@ describe('the inspector\'s overflow menu', () => {
     expect(ids(detailMenu(d()))).toEqual(['bogo', 'open-hd', 'copy-model']);
     expect(detailMenu(d())[0]!.label).toBe('Mark as BOGO…');
   });
+  it('holds the single-bundle lookup, with its cost, and greys it while a scan runs', () => {
+    expect(ids(detailMenu(d({ lookup: { searches: 2 } })))).toEqual(['lookup', 'bogo', 'open-hd', 'copy-model']);
+    expect(detailMenu(d({ lookup: { searches: 2 } }))[0]!.label).toBe('Look up this bundle · 2 searches');
+    expect(detailMenu(d({ lookup: { searches: 1 } }), { scanRunning: true })[0]).toMatchObject({ label: 'Look up this bundle · 1 search', disabled: expect.any(String) });
+  });
   it('leaves out the promotion entry on a grouped deal or one he already marked, and Home Depot when there is no page', () => {
     expect(ids(detailMenu(d({ bogoGroup: {} as never, link: null })))).toEqual(['copy-model']);
     expect(ids(detailMenu(d({ bogo: {} as never })))).toEqual(['open-hd', 'copy-model']);

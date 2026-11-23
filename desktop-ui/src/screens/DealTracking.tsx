@@ -25,9 +25,15 @@ export function WatchBar({ d }: { d: DealDetail }) {
   const menu = useMenu();
   const watched = d.watch?.watched === true;
   const toggle = useAction(api.watch);
+  const look = useAction(api.lookUp);
+  const { state } = useApp();
+  const scanRunning = state?.agent.status === 'scanning';
   const [said, setSaid] = useState<string | null>(null);
   const pick = (id: string) => {
     switch (id as DetailMenuId) {
+      case 'lookup':
+        void look.run(d.id).then((ok) => ok && setSaid(`Looked up ${d.model}.`));
+        return;
       case 'bogo':
         ui.openBogo({ dealId: d.id, model: d.model, bogo: null });
         return;
@@ -51,7 +57,7 @@ export function WatchBar({ d }: { d: DealDetail }) {
           aria-label="More actions"
           aria-haspopup="menu"
           title="More actions"
-          onClick={(e) => menu.openAt(e.currentTarget, { label: 'More actions', items: detailMenu(d), onPick: pick })}
+          onClick={(e) => menu.openAt(e.currentTarget, { label: 'More actions', items: detailMenu(d, { scanRunning }), onPick: pick })}
         />
       </div>
       {said ? (
@@ -68,6 +74,7 @@ export function WatchBar({ d }: { d: DealDetail }) {
         <p className="detail-note">Not watched. You stopped watching it {when(d.watch.since)}; scans leave it alone.</p>
       ) : null}
       {toggle.error ? <p role="alert">{toggle.error}</p> : null}
+      {look.error ? <p role="alert">{look.error}</p> : null}
     </div>
   );
 }

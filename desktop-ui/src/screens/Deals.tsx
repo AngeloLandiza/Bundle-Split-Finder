@@ -1,20 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { DealRow, DealSection, DealSort } from '../api/types';
+import { ApiError, type DealRow, type DealSection, type DealSort } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
 import { SearchField, Select } from '../components/Fields';
 import { InspectorSplit } from '../components/Layout';
 import { Page } from '../components/Page';
 import { PopoverSection } from '../components/Popover';
-import { EmptyState, LoadError, LoadingState, Notice } from '../components/States';
+import { EmptyState, LoadError, LoadingState, Notice, ScanStrip } from '../components/States';
 import { Table, type Column, type RowMenu, type TableHandle } from '../components/Table';
 import { WatchToggle } from '../components/WatchToggle';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { copyText, openPage } from '../lib/actions';
-import { isWaitingPage, WAITING_PAGE_LABEL } from '../lib/scanProblem';
+import { dealReason, waitingState } from '../lib/dealReason';
+import { lookupNotice, lookupsStartedWords } from '../lib/lookups';
+import { scanStrip } from '../lib/scanSteps';
 import { count, percentOff, plural, upToSearches, when } from '../lib/format';
+import { keyState } from '../lib/keyStatus';
 import { dealMenu, type DealMenuId } from '../lib/menus';
 import { sortRows, type SortState } from '../lib/sort';
 import { VIEW_LABEL, inView, type DealView } from '../lib/views';
@@ -98,6 +101,16 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
   }, [navigate, openId, rows, view]);
 
   const scanRunning = state?.agent.status === 'scanning';
+  const scanLine = state ? scanStrip(state.agent) : null;
+  const lookups = useMemo(() => lookupNotice(state, all), [state, all]);
+  const [lookupSaid, setLookupSaid] = useState<string | null>(null);
+  const runLook = useAction(async (maxSearches: number) => {
+    const r = await api.runLookups({ maxSearches });
+    if (!r.started) throw new ApiError('refused', lookupsStartedWords(r));
+    setLookupSaid(lookupsStartedWords(r));
+  });
+  const ebay = keyState(state, 'ebay');
+  const reasonOf = (r: DealRow) => dealReason(r);
 
   // What a row's menu says it did, for a moment: "Copied PCL1600K2." or why it could not.
   const [said, setSaid] = useState<{ tone: 'quiet' | 'attention'; text: string } | null>(null);
@@ -211,8 +224,9 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
           </span>
           <span className="deal-sub">
             {r.brand} · <span className="code">{r.model}</span>
-            {r.lookup ? <span className="deal-flag-quiet"> · Waiting for lookup</span> : null}
           </span>
+          {/* A state the Match column already says is hidden here while that column shows (it stays in the row's height). */}
+          <span className={`deal-reason${waitingState(r) || r.needsAnswer ? ' deal-reason-dup' : ''}`}>{reasonOf(r) ?? ' '}</span>
         </div>
       ),
     },
@@ -226,10 +240,8 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       width: 'col-match',
       hideBelow: 720,
       render: (r) =>
-        r.lookup ? (
-          <LookUp row={r} disabled={scanRunning} />
-        ) : isWaitingPage(r) ? (
-          <Tag title="Home Depot’s page for this bundle was not read. The next scan, or Read pages again, reads it; there is nothing to answer yet.">{WAITING_PAGE_LABEL}</Tag>
+        waitingState(r) ? (
+          <Tag title={WAITING_WHY[r.matchKind ?? 'lookup']}>{waitingState(r)}</Tag>
         ) : r.needsAnswer ? (
           <Tag tone="attention">Needs your answer</Tag>
         ) : (
@@ -256,11 +268,11 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
               <Tag tone="attention">Needs answer</Tag>
             </span>
           </span>
-        ) : isWaitingPage(r) ? (
+        ) : waitingState(r) ? (
           <span className="cell-flag">
             <span className="cell-none narrow-hide">—</span>
             <span className="narrow-show">
-              <Tag>Waiting for page</Tag>
+              <Tag>Waiting</Tag>
             </span>
           </span>
         ) : (
@@ -293,13 +305,45 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
 
   const list = (
     <div className="deals">
-      {res.data?.limitNotice ? (
-        <Notice tone="attention" title={res.data.limitNotice.title}>
-          {res.data.limitNotice.text}
+      {scanLine ? <ScanStrip text={scanLine} /> : null}
+      {lookups ? (
+        <Notice
+          title={lookups.title}
+          action={
+            <Button size="sm" busy={runLook.busy} busyLabel="Starting…" disabled={!lookups.action.enabled} cost={lookups.action.cost ?? undefined} title={lookups.action.reason ?? undefined} aria-describedby={lookups.action.reason ? 'lookups-reason' : undefined} onClick={() => void runLook.run(lookups.action.maxSearches)}>
+              {lookups.action.label}
+            </Button>
+          }
+        >
+          {lookups.text}
+          {lookups.action.reason ? (
+            <span className="notice-more" id="lookups-reason">
+              {lookups.action.reason}
+            </span>
+          ) : null}
+          {runLook.error ? (
+            <span className="notice-more" role="alert">
+              {runLook.error}
+            </span>
+          ) : null}
         </Notice>
       ) : null}
+      {lookupSaid ? <Notice>{lookupSaid}</Notice> : null}
       {res.data?.staleDays ? <Notice>The oldest price here was seen {plural(res.data.staleDays, 'day', 'days')} ago. A scan refreshes them.</Notice> : null}
-      {res.data?.ebayNotice ? <Notice>{res.data.ebayNotice}</Notice> : null}
+      {res.data?.ebayNotice ? (
+        <Notice
+          tone={ebay.state === 'rejected' ? 'attention' : 'quiet'}
+          action={
+            ebay.state === 'rejected' ? (
+              <Button size="sm" onClick={() => navigate({ screen: 'settings', id: 'keys' })}>
+                Fix in Settings › Keys
+              </Button>
+            ) : undefined
+          }
+        >
+          {ebay.problem ?? res.data.ebayNotice}
+        </Notice>
+      ) : null}
       {csv.error ? (
         <Notice tone="attention" title="The CSV was not saved.">
           {csv.error}
@@ -419,6 +463,13 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
   );
 }
 
+/** What a waiting tag says on hover: why it waits and what moves it. */
+const WAITING_WHY: Record<'lookup' | 'waiting_page' | 'waiting_parts', string> = {
+  lookup: 'Its parts wait for an Amazon lookup. Keepa looks them up as its tokens refill; Look up now (above the table) spends searches.',
+  waiting_page: 'Home Depot’s page for this bundle was not read. The next scan, or Read pages again, reads it; there is nothing to answer yet.',
+  waiting_parts: 'Home Depot’s own pages for its parts are not read yet. A free read in the next scan settles what is inside; there is nothing to answer yet.',
+};
+
 const EMPTY_VIEW: Record<DealView, string> = {
   'buy-now': 'No watched bundle is worth buying now. A scan checks each one against your profit, ROI and monthly-sales numbers.',
   all: '',
@@ -428,16 +479,3 @@ const EMPTY_VIEW: Record<DealView, string> = {
   losing: 'No bundle’s estimate is below zero.',
   watchlist: 'No bundle is watched yet. A bundle that is confirmed and discounted is watched by itself; star one to watch it yourself.',
 };
-
-function LookUp({ row, disabled }: { row: DealRow; disabled: boolean }) {
-  const look = useAction(api.lookUp);
-  if (!row.lookup) return null;
-  return (
-    <span className="row-control">
-      <Button size="sm" busy={look.busy} busyLabel="Looking up…" disabled={disabled} title={disabled ? 'A scan is running. Look up when it has finished.' : undefined} onClick={() => void look.run(row.id)} cost={plural(row.lookup.searches, 'search', 'searches')}>
-        Look up
-      </Button>
-      {look.error ? <span className="sr-only" role="alert">{look.error}</span> : null}
-    </span>
-  );
-}
