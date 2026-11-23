@@ -176,6 +176,8 @@ export interface DealRow {
   buyNow: boolean;
   /** The agent's one-line verdict on a watched bundle ("Not worth buying now: est. profit $6.63 is below your $20."); null when not judged. */
   signalNote?: string | null;
+  /** The estimate counts no fulfillment fee for `parts` of its `of` parts (never a buy; the agent sorts it after full estimates). */
+  beforeFulfillment?: { parts: number; of: number } | null;
   /** A BOGO promotion he entered: 'choose' until he picks the free tool. */
   bogo: 'choose' | 'chosen' | null;
   /** BOGO found by the agent: this bundle is a starter + free tool pair Home Depot lists at the starter's price. */

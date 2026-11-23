@@ -205,6 +205,7 @@ export function mapRow(r: C.DealRow): DealRow {
     watched: r.watched ?? false,
     buyNow: r.buyNow ?? false,
     signalNote: r.signalNote ?? null,
+    beforeFulfillment: r.beforeFulfillment ?? null,
     bogo: r.bogo ?? null,
     bogoPair: r.bogoPair ?? null,
     bogoChoices: r.bogoChoices ?? null,
