@@ -24,6 +24,7 @@ import { DEFAULT_CLAUDE_JUDGE_MODEL } from '../core/src/judge/claude';
 import { DEFAULT_FEES } from '../core/src/money';
 import type { UnitRates } from '../core/src/scan/pipeline';
 import { measuredByDefault } from './autopilot';
+import type { Footprint } from './ownerAnswers';
 import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS } from '../core/src/settings';
 import type { BundleRow, EbayQuestion, PaidAction, ReportSection, ReviewItem, ScanJob } from '../core/src/scan/types';
 import type { BogoView } from '../core/src/tracking/bogo';
@@ -158,6 +159,28 @@ export interface StoredAutopilotEntry extends AutopilotEntry {
   suggestionKey: string;
 }
 
+/**
+ * An answer the owner saved himself, kept so Undo can reopen the question (ownerAnswers.ts). `before` is what the answer
+ * replaced and `after` what it wrote; Undo works only while the records are still `after`. The newest 50 are kept.
+ */
+export interface StoredOwnerAnswer {
+  id: string;
+  by: 'owner';
+  at: string;
+  questionId: string;
+  title: string;
+  /** What he answered, in plain words. */
+  answer: string;
+  /** The question's `answeredAt` the answer wrote. */
+  answeredAt: number;
+  /** The AI suggestion he used (StoredSuggestion.key), or null. */
+  suggestionKey: string | null;
+  undoneAt: string | null;
+  undoable: boolean;
+  before: Footprint;
+  after: Footprint;
+}
+
 /** A digest Telegram has not taken yet; tried again after the next run. */
 export interface PendingMessage {
   text: string;
@@ -211,6 +234,8 @@ export interface StoreData {
   suggestions: StoredSuggestion[];
   activity: ActivityCollection;
   autopilot: StoredAutopilotEntry[];
+  /** The owner's own answers with what Undo needs, oldest first, at most KEEP_OWNER_ANSWERS. */
+  answers: StoredOwnerAnswer[];
   jobs: WorkerJob[];
   pairing: PairingCollection;
   outbox: HelperOutbox;
@@ -229,6 +254,7 @@ export const COLLECTIONS: readonly CollectionName[] = [
   'suggestions',
   'activity',
   'autopilot',
+  'answers',
   'jobs',
   'pairing',
   'outbox',
@@ -307,6 +333,7 @@ function defaults(): StoreData {
     suggestions: [],
     activity: { runs: [], helper: null, lastScan: null, bridge: null },
     autopilot: [],
+    answers: [],
     jobs: [],
     pairing: { extensions: [], requests: [] },
     outbox: { scan: null, reviewAnswers: [], paid: [], ask: [] },

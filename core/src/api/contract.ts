@@ -610,6 +610,32 @@ export interface QueuedResponse {
 /** W4: POST /api/review/:id/answer. The agent applies the answer itself (core/src/scan/answers.ts). */
 export interface AnswerResponse {
   applied: true;
+  /**
+   * Additive: the id of the entry the agent kept so the owner can take this answer back (POST /api/review/:id/undo,
+   * with this id). Absent for an answer that cannot be taken back (an eBay yes or no).
+   */
+  answerId?: string;
+}
+
+/** POST /api/review/:id/undo (`:id` is an `OwnerAnswerEntry.id`): the question is open again in Review. */
+export interface UndoAnswerResponse {
+  reopened: true;
+  questionId: string;
+}
+
+/** An answer the owner saved himself, as Activity lists it (the newest 50), with whether Undo still works. */
+export interface OwnerAnswerEntry {
+  id: string;
+  questionId: string;
+  /** The bundle's title, or its model when it has none. */
+  title: string;
+  /** What he answered, in plain words ("PCL1600K2, P553", "None of these", an ASIN). */
+  answer: string;
+  at: string;
+  /** False once a later scan or answer changed what this one wrote, or after it was undone. */
+  undoable: boolean;
+  /** When it was undone, else null or absent. */
+  undoneAt?: string | null;
 }
 
 // ---------------------------------------------------------------- activity
@@ -673,6 +699,8 @@ export interface ActivityResponse {
   autopilot: AutopilotEntry[];
   /** W4: open errors, newest first. */
   errors?: ActivityError[];
+  /** Additive: the answers the owner saved himself, newest first, at most 50. */
+  answers?: OwnerAnswerEntry[];
 }
 
 // ---------------------------------------------------------------- settings

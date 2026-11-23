@@ -436,7 +436,7 @@ export function openReviewCount(review: StoreData['review']): number {
   return review.questions.filter((q) => q.answer === null).length + review.ebayQuestions.length;
 }
 
-export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' | 'suggestions'>, sinceIso: string, now: number): ActivityResponse {
+export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' | 'suggestions'> & Partial<Pick<StoreData, 'answers'>>, sinceIso: string, now: number): ActivityResponse {
   const since = Date.parse(sinceIso);
   const runs = data.activity.runs.filter((r) => Date.parse(r.startedAt) >= since);
   const autopilot: AutopilotEntry[] = data.autopilot.map((e) => ({
@@ -453,6 +453,10 @@ export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' 
       since: sinceIso,
     },
     autopilot: autopilot.reverse(),
+    // The owner's own answers (ownerAnswers.ts), newest first; what Undo needs stays in the agent.
+    answers: (data.answers ?? [])
+      .map((a) => ({ id: a.id, questionId: a.questionId, title: a.title, answer: a.answer, at: a.at, undoable: a.undoneAt === null && a.undoable, undoneAt: a.undoneAt }))
+      .reverse(),
     errors: (data.activity.errors ?? [])
       .filter((e) => e.resolvedAt === null)
       .map((e) => ({ id: e.id, at: e.at, sentence: e.sentence, retry: e.retry ? { label: e.retry.label, searches: e.retry.searches, usd: e.retry.usd } : null }))

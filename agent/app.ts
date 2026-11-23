@@ -22,6 +22,7 @@ import {
   type PauseResponse,
   type QueuedResponse,
   type ReviewAnswer,
+  type UndoAnswerResponse,
   type WorkerJobInputs,
   type LookupsRunResponse,
   type ReadPagesResponse,
@@ -422,7 +423,7 @@ export function createAgent(opts: AgentOptions): Agent {
   store.onChange((name) => {
     if (name === 'deals' || name === 'tracking') mark('deals', 'state');
     else if (name === 'review' || name === 'suggestions') mark('review', 'state');
-    else if (name === 'activity' || name === 'autopilot') mark('activity', 'state');
+    else if (name === 'activity' || name === 'autopilot' || name === 'answers') mark('activity', 'state');
     else if (name !== 'outbox') mark('state');
   });
 
@@ -635,10 +636,12 @@ export function createAgent(opts: AgentOptions): Agent {
     const answer = parseAnswer(b.answer);
     const seen = typeof b.seen === 'string' ? b.seen : undefined;
     return refusals(async (): Promise<AnswerResponse> => {
-      await work.answer(ctx.params.id!, answer, seen, b.fromSuggestion === true);
-      return { applied: true };
+      const answerId = await work.answer(ctx.params.id!, answer, seen, b.fromSuggestion === true);
+      return answerId ? { applied: true, answerId } : { applied: true };
     });
   });
+  // The owner takes back an answer he saved (`:id` is the answer entry's id, as in AnswerResponse.answerId).
+  r.post('/api/review/:id/undo', 'ui', (ctx) => refusals(async (): Promise<UndoAnswerResponse> => ({ reopened: true, questionId: (await work.undoAnswer(ctx.params.id!)).questionId })));
   r.post('/api/review/:id/ask', 'ui', (ctx) => refusals(async (): Promise<QueuedResponse> => {
     if (!store.get('review').questions.some((q) => q.id === ctx.params.id && q.answer === null)) throw new HttpError('not_found', 'No open question with this id.');
     work.askNow([ctx.params.id!]);
@@ -647,7 +650,7 @@ export function createAgent(opts: AgentOptions): Agent {
 
   // ------------------------------------------------------------ activity, autopilot, scan
   r.get('/api/activity', 'any', () =>
-    activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), suggestions: store.get('suggestions') }, monthStart(now()), now()),
+    activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), answers: store.get('answers'), suggestions: store.get('suggestions') }, monthStart(now()), now()),
   );
   r.post('/api/activity/errors/:id/retry', 'ui', (ctx) => refusals(async () => {
     await work.retry(ctx.params.id!);

@@ -44,7 +44,7 @@ import {
 } from '../core/src/scan/runner';
 import { knownModels } from '../core/src/scan/split';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
-import type { ConfirmedPrice, PaidAction, ReviewAnswer, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
+import type { ConfirmedPrice, PaidAction, ReviewAnswer, ReviewItem, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
 import {
@@ -54,9 +54,10 @@ import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { buildDigest, sendPending } from './alerts';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
+import { answerText, footprintOf, type Footprint, KEEP_OWNER_ANSWERS, restorable, undoOwnerAnswer } from './ownerAnswers';
 import { remoteReaders, type ReaderTimeouts, type RemoteReaders } from './remoteReaders';
 import { DirCache, FileScanStore } from './scanStore';
-import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys } from './store';
+import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer } from './store';
 import { aiSpentThisMonth } from './views';
 import type { WorkerJobs } from './workerJobs';
 
@@ -1109,7 +1110,8 @@ export class AgentWork {
       if (item.answer !== null || item.kind !== 'split') continue;
       const suggestions = store.get('suggestions');
       const stored = liveSuggestion(suggestions, item);
-      const undone = store.get('autopilot').some((e) => e.questionId === item.id && e.undoneAt !== null);
+      // A question Autopilot answered and the owner undid, or one he answered and took back, stays with him.
+      const undone = store.get('autopilot').some((e) => e.questionId === item.id && e.undoneAt !== null) || store.get('answers').some((e) => e.questionId === item.id && e.undoneAt !== null);
       const d = autopilotDecision(item, stored, app.ai, undone);
       if (!d.apply || !stored) continue;
       let done: { answer: string; answeredAt: number };
@@ -1209,7 +1211,7 @@ export class AgentWork {
   // ------------------------------------------------------------------ the owner's answers and paid actions
 
   /** The owner's answer from the app, applied by the agent (core/src/scan/answers.ts). */
-  answer(id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean): Promise<void> {
+  answer(id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean): Promise<string | null> {
     return this.serialAnswer('A scan or a search is running. Answer again when it has finished.', () => this.answerNow(id, answer, seen, fromSuggestion));
   }
 
@@ -1230,27 +1232,65 @@ export class AgentWork {
     });
   }
 
-  private async answerNow(id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean): Promise<void> {
+  /** The id of the entry Undo takes (undoAnswer) when the answer can be taken back; null for an eBay answer. */
+  private async answerNow(id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean): Promise<string | null> {
     const now = this.d.now();
     if ('ebay' in answer) {
       const q = this.d.store.get('review').ebayQuestions.find((x) => x.id === id);
       if (!q) throw new AnswerRefused('That question was not found.');
       await applyEbayAnswer(this.scanStore, { key: q.key, itemId: q.itemId, answer: answer.ebay }, now);
       await this.refresh();
-      return;
+      return null;
     }
     const item = await this.scanStore.getReview(id);
     if (!item) throw new AnswerRefused('That question was not found.');
     const signed: ReviewAnswer = { ...answer, seen: seen ?? reviewSignature(item) } as ReviewAnswer;
+    const before = await footprintOf(this.scanStore, item);
     await applyReviewAnswer(this.scanStore, id, signed, now);
-    if (fromSuggestion) {
-      const shown = liveSuggestion(this.d.store.get('suggestions'), item);
-      const after = await this.scanStore.getReview(id);
-      if (shown && after) {
-        this.d.store.update('suggestions', (all) => all.map((s) => (s.key === shown.key ? { ...s, outcome: { answeredAt: now, answer: after.answer ?? '', agreed: agreedWith(s.suggestion, after) } } : s)));
-      }
+    const answered = await this.scanStore.getReview(id);
+    const shown = fromSuggestion ? liveSuggestion(this.d.store.get('suggestions'), item) : undefined;
+    if (shown && answered) {
+      this.d.store.update('suggestions', (all) => all.map((s) => (s.key === shown.key ? { ...s, outcome: { answeredAt: now, answer: answered.answer ?? '', agreed: agreedWith(s.suggestion, answered) } } : s)));
     }
+    const entryId = answered ? await this.keepOwnerAnswer(item, answered, before, shown?.key ?? null, now) : null;
     await this.refresh();
+    return entryId;
+  }
+
+  private ownerAnswerSeq = 0;
+
+  /** Keeps what Undo needs for the answer just applied (ownerAnswers.ts); the newest KEEP_OWNER_ANSWERS stay. */
+  private async keepOwnerAnswer(item: ReviewItem, answered: ReviewItem, before: Footprint, suggestionKey: string | null, now: number): Promise<string> {
+    const after = await footprintOf(this.scanStore, answered);
+    const entry: StoredOwnerAnswer = {
+      id: `oa-${now}-${this.ownerAnswerSeq++}`, by: 'owner', at: new Date(now).toISOString(), questionId: item.id,
+      title: item.title ?? `${item.brand} ${item.model}`, answer: answerText(answered), answeredAt: answered.answeredAt ?? now,
+      suggestionKey, undoneAt: null, undoable: restorable(before, after), before, after,
+    };
+    // An older entry for the same question describes records this answer replaced: it can no longer be undone.
+    this.d.store.update('answers', (all) => [...all.map((e) => (e.questionId === item.id && e.undoneAt === null ? { ...e, undoable: false } : e)), entry].slice(-KEEP_OWNER_ANSWERS));
+    return entry.id;
+  }
+
+  /** Undo: the question opens again as it was (with its AI suggestion), the split or match it set goes back, estimates follow. */
+  undoAnswer(entryId: string): Promise<StoredOwnerAnswer> {
+    return this.serialAnswer('A scan or a search is running. Undo when it has finished.', async () => {
+      const { store } = this.d;
+      const entry = store.get('answers').find((e) => e.id === entryId);
+      if (!entry) throw new AnswerRefused('That answer is not kept any more, so it cannot be undone.');
+      try {
+        await undoOwnerAnswer(this.scanStore, entry);
+      } catch (err) {
+        // Refused because the records changed: the entry says so, so Activity stops offering Undo.
+        if (err instanceof AnswerRefused && entry.undoneAt === null && entry.undoable) store.update('answers', (all) => all.map((e) => (e.id === entryId ? { ...e, undoable: false } : e)));
+        throw err;
+      }
+      const undone = { ...entry, undoneAt: new Date(this.d.now()).toISOString(), undoable: false };
+      store.update('answers', (all) => all.map((e) => (e.id === entryId ? undone : e)));
+      if (entry.suggestionKey) store.update('suggestions', (all) => all.map((s) => (s.key === entry.suggestionKey ? (({ outcome: _o, ...rest }) => rest)(s) : s)));
+      await this.refresh();
+      return undone;
+    });
   }
 
   /**
