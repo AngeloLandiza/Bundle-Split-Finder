@@ -94,4 +94,34 @@ describe('paid actions with Keepa product pages', () => {
     // Step 15: a lookup is the search (10) and one price pull (1), as recorded.
     expect(q).toMatchObject({ searches: 0, keepaTokens: 11, refusal: null });
   });
+
+  it('Look up on Keepa: the search rows carry no price, so the listing it matched is pulled once for it (1 token)', async () => {
+    const store = new MemoryScanStore();
+    await store.putBundle({
+      key: 'homedepot:1', retailer: 'homedepot', itemId: '1', title: 'RYOBI ratchet kit', brand: 'RYOBI', model: 'PBLRC25B', upc: null, price: 49, regularPrice: 99,
+      percentOff: 50, link: null, seenAt: T0, split: { components: ['PBLRC25B'], status: 'resolved', notes: [] },
+    });
+    const product = parseProductResponse(FIXTURE).products[0]!;
+    const calls: string[] = [];
+    const keepaLookup = async (): Promise<SearchResult> => {
+      calls.push('search');
+      return {
+        data: { organic_results: [{ asin: 'B0B3JWF5ZV', title: 'RYOBI ONE+ HP 18V Brushless Extended Reach 3/8 in. Ratchet (Tool Only) PBLRC25B', brand: 'RYOBI', price: null, extracted_price: null }] },
+        source: 'network', at: T0, billAs: 'keepa', keepaTokens: 10,
+      };
+    };
+    const productPage: ProductPage = async (asin, label) => {
+      calls.push(`product ${asin} ${label}`);
+      return { data: serpApiProductBodyFromKeepa(product), source: 'network', at: T0, billAs: 'keepa', keepaTokens: 1 };
+    };
+    const budget = new SearchBudget(parseAccount(fx.SERPAPI_ACCOUNT_FREE), { reserve: 0, maxPerRun: 5 });
+    const client = { search: async () => { calls.push('serpapi'); return { data: {}, source: 'network' as const, at: T0 }; } };
+    await runPaid({
+      client, budget, store, now: () => T0, settings: { ...DEFAULT_SCAN_SETTINGS, amazonRefreshViaKeepa: true }, productPage,
+      keepaBudget: new TokenBudget({ reserve: 0, maxPerRun: 50 }), keepaLookup,
+    }, LOOKUP);
+    expect(await store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'matched', asin: 'B0B3JWF5ZV' });
+    expect(calls).toEqual(['search', 'product B0B3JWF5ZV panel:refresh:PBLRC25B']);
+    expect((await store.getPrice('B0B3JWF5ZV'))!.price).toBe(49.99);
+  });
 });

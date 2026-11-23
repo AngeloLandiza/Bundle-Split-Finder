@@ -16,7 +16,7 @@ import { wantedFor } from './classify';
 import { listingFrom } from './listings';
 import {
   applyIdentify, applyLookup, bundleParts, failingBefore, type KnownModels, knownModels, lookupOrder, type LookupStep, lookupWanted, markWaiting, matchFromListings, notePageDue,
-  NOT_CONFIRMED, openMatchReview, pageEvidence, type Part, type PartContext, pickFromListings, savePrice, sendLookup, sharedMatch,
+  NOT_CONFIRMED, openMatchReview, pageEvidence, type Part, type PartContext, pickFromListings, pullMatchedPrice, savePrice, sendLookup, sharedMatch,
 } from './runner';
 import { writeTwins } from './twins';
 import { DEFAULT_SCAN_SETTINGS, partKey } from './types';
@@ -226,6 +226,15 @@ async function lookUp(
       throw err;
     }
     const asin = await applyLookup(ctx, step, result.data, result.at);
+    // Step 15: a Keepa match has no price yet (its search rows carry none): its listing is pulled once, 1 token.
+    if (!asin && useKeepaLookup && productPage && keepaBudget) {
+      try {
+        await pullMatchedPrice(ctx, part, productPage, keepaBudget);
+      } catch (err) {
+        // The match stands; its price is checked by the next scan's refresh.
+        if (err instanceof KeepaBudgetExceededError) throw new PaidProblem(err.message);
+      }
+    }
     if (!asin) continue;
     // One more search, only beside the lookups this press still has to run. Otherwise the page is owed.
     const rest = searches.length - i - 1;
