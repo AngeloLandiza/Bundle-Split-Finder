@@ -23,6 +23,7 @@ import {
   type PaidResponse,
   type WatchResponse,
   type PairClaimResponse,
+  type PartOutcomeBody,
   type PauseResponse,
   type AskResponse,
   type QueuedResponse,
@@ -61,6 +62,7 @@ import { HOME_DEPOT_ITEM_ID } from '../core/src/scan/kitPage';
 import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
 import { priceFromLink } from './priceFromLink';
+import { OutcomeBook, outcomesCsvOf, outcomesResponse } from './outcomes';
 
 /** A paired extension counts as connected this long after it was last heard from. */
 export const HELPER_CONNECTED_MS = 90_000;
@@ -499,6 +501,8 @@ export function createAgent(opts: AgentOptions): Agent {
     if (name === 'deals' || name === 'tracking') mark('deals', 'state');
     else if (name === 'review' || name === 'suggestions') mark('review', 'state');
     else if (name === 'activity' || name === 'autopilot' || name === 'answers') mark('activity', 'state');
+    // Outcomes: a purchase marks its deal Bought, and each change is a sentence in Activity.
+    else if (name === 'outcomes') mark('deals', 'activity', 'state');
     else if (name !== 'outbox') mark('state');
   });
 
@@ -794,9 +798,31 @@ export function createAgent(opts: AgentOptions): Agent {
     return refusals((): Promise<AskResponse> => work.askQuestion(ctx.params.id!, b.force === true));
   });
 
+  // ------------------------------------------------------------ outcomes: what he bought and what became of it
+  // His records, kept in the store's outcomes collection (agent/outcomes.ts). Every route is the app's own ('ui'): the
+  // extension has no use for them. Writes are checked in core/src/outcomes; a refusal is a 400 with one sentence.
+  const outcomes = new OutcomeBook(store, now);
+  r.get('/api/outcomes', 'ui', () => outcomesResponse(store, now()));
+  r.get('/api/outcomes/export.csv', 'ui', (ctx) => {
+    if (!store.get('outcomes').purchases.length) throw new HttpError('not_found', 'No purchases recorded yet.');
+    return sendCsv(ctx.res, `split-finder-outcomes-${csvFileDate(now())}.csv`, outcomesCsvOf(store));
+  });
+  r.post('/api/outcomes', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    return outcomes.record({ dealId: text(b.dealId, 'dealId'), boughtAt: b.boughtAt, pricePaid: b.pricePaid, quantity: b.quantity });
+  });
+  r.patch('/api/outcomes/:id', 'ui', async (ctx) => outcomes.patch(ctx.params.id!, obj(await ctx.body())));
+  r.delete('/api/outcomes/:id', 'ui', (ctx) => outcomes.remove(ctx.params.id!));
+  r.post('/api/outcomes/:id/parts/:part', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    if (b.status !== 'sold' && b.status !== 'holding' && b.status !== 'returned') throw new HttpError('bad_request', 'status must be sold, holding or returned.');
+    return outcomes.setPart(ctx.params.id!, ctx.params.part!, b as unknown as PartOutcomeBody);
+  });
+  r.post('/api/outcomes/entries/:id/undo', 'ui', (ctx) => outcomes.undo(ctx.params.id!));
+
   // ------------------------------------------------------------ activity, autopilot, scan
   r.get('/api/activity', 'any', () =>
-    activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), answers: store.get('answers'), suggestions: store.get('suggestions') }, monthStart(now()), now()),
+    activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), answers: store.get('answers'), suggestions: store.get('suggestions'), outcomes: store.get('outcomes') }, monthStart(now()), now()),
   );
   r.post('/api/activity/errors/:id/retry', 'ui', (ctx) => refusals(async () => {
     await work.retry(ctx.params.id!);

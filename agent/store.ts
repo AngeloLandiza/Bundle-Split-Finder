@@ -17,6 +17,7 @@ import type {
   EvidenceQuote,
   LastScanSummary,
   PairedExtension,
+  Purchase,
   ReviewAnswer,
   RunRecord,
   WorkerJob,
@@ -241,6 +242,26 @@ export interface TrackingCollection extends TrackingState {
   derived: { bogo: Record<string, BogoView>; fba: Record<string, FbaEstimate>; groups?: Record<string, BogoGroup> };
 }
 
+/**
+ * Outcomes: what the owner bought and what became of each part (core/src/outcomes). His records, not scan data: Reset scan data
+ * never empties this collection. `before` and `after` are the purchase as the change found it and left it (null: it did not
+ * exist, or it was removed); Undo works only while the purchase is still `after`. The newest KEEP_OUTCOME_ENTRIES are kept.
+ */
+export interface StoredOutcomeEntry {
+  id: string;
+  at: string;
+  purchaseId: string;
+  sentence: string;
+  undoneAt: string | null;
+  before: Purchase | null;
+  after: Purchase | null;
+}
+
+export interface OutcomesCollection {
+  purchases: Purchase[];
+  entries: StoredOutcomeEntry[];
+}
+
 export interface StoreData {
   agent: AgentControl;
   settings: AppSettings & { updatedAt: string };
@@ -257,6 +278,8 @@ export interface StoreData {
   outbox: HelperOutbox;
   runtime: AgentRuntime;
   tracking: TrackingCollection;
+  /** Outcomes: his purchases and what became of them. Never emptied by Reset scan data. */
+  outcomes: OutcomesCollection;
 }
 
 export type CollectionName = keyof StoreData;
@@ -276,6 +299,7 @@ export const COLLECTIONS: readonly CollectionName[] = [
   'outbox',
   'runtime',
   'tracking',
+  'outcomes',
 ];
 
 const OWNER_ONLY: ReadonlySet<CollectionName> = new Set(['keys', 'pairing']);
@@ -364,6 +388,7 @@ function defaults(): StoreData {
       telegram: { pending: [], lastSentAt: null, lastError: null }, rates: {}, lastJob: null,
     },
     tracking: { ...emptyTracking(), derived: { bogo: {}, fba: {}, groups: {} } },
+    outcomes: { purchases: [], entries: [] },
   };
 }
 

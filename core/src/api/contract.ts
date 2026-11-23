@@ -836,6 +836,197 @@ export interface OwnerAnswerEntry {
   undoneAt?: string | null;
 }
 
+// ---------------------------------------------------------------- outcomes: what the owner bought and what became of it
+
+/**
+ * One part of a bought deal as the estimate had it at the moment he bought (core/src/outcomes). Every dollar is an estimate
+ * from the fee settings of that moment, never the seller's real fees. Frozen: nothing rewrites it afterwards.
+ */
+export interface OutcomeSnapshotPart {
+  /** Stable inside the purchase ("p0", "p1"): the part's outcome is addressed by it. */
+  id: string;
+  model: string;
+  /** Units of this part in one bundle. */
+  qty: number;
+  /** The estimate counted a price for it. */
+  counted: boolean;
+  asin: string | null;
+  listingTitle: string | null;
+  /** The Amazon listing's link, or null with no listing. */
+  listingLink: string | null;
+  grade: string | null;
+  /** Estimated sale price of one unit (Amazon New, or a price the owner confirmed); null when not counted. */
+  sellPrice: number | null;
+  /** The fees the estimate used for one unit, with the rate they came from; null when not counted. */
+  referralRate: number | null;
+  referralFee: number | null;
+  fulfillmentFee: number | null;
+  /** Estimated after-fees amount for one unit; null when not counted. */
+  netEach: number | null;
+}
+
+export interface OutcomeSnapshot {
+  takenAt: string;
+  /** The last scan had judged the bundle worth buying now when he bought it. */
+  buyNow: boolean;
+  bundle: { id: string; itemId: string; brand: string; model: string; title: string; link: string | null; price: number | null; regularPrice: number | null };
+  parts: OutcomeSnapshotPart[];
+  /** Items with no model number the estimate did not count. */
+  uncounted: string[];
+  /** The estimate for one bundle; null when the deal had none (a part missing a price). */
+  estimate: { profit: number; roi: number; cost: number; partsSellFor: number; afterFees: number } | null;
+  /** The fee settings of that moment (a flat fulfillment fee and referral rate are the fallback of a part with none of its own). */
+  fees: { referralRate: number; fulfillmentFee: number; minReferral: number; salesTaxRate: number; inboundCost: number };
+  /** The basis sentence the estimate showed ("15% referral ..."); always says it is an estimate. */
+  basis: string;
+}
+
+export type PartOutcomeStatus = 'open' | 'sold' | 'holding' | 'returned';
+
+/** What the owner recorded about one part. Recorded by him, never worked out by the app. */
+export interface PartOutcome {
+  partId: string;
+  status: PartOutcomeStatus;
+  /** YYYY-MM-DD the part sold or came back; null for open and holding. */
+  date: string | null;
+  /** Sold: the price of one unit. */
+  salePrice: number | null;
+  /** Sold: the net payout he knows for the whole part (all its units); null when he gave only the price. */
+  netPayout: number | null;
+  /** Returned or not sold: money he got back for the whole part (a refund), or null for none. */
+  recovered: number | null;
+  updatedAt: string | null;
+}
+
+/** POST /api/outcomes: the deal he bought. Every field but `dealId` has a default. */
+export interface RecordPurchaseBody {
+  dealId: string;
+  /** YYYY-MM-DD; default today. */
+  boughtAt?: string;
+  /** Price paid for one bundle; default the deal's Home Depot price. */
+  pricePaid?: number;
+  /** Bundles bought; default 1. */
+  quantity?: number;
+}
+
+/** PATCH /api/outcomes/:id: what he can correct. The snapshot cannot be changed. */
+export interface PurchasePatch {
+  boughtAt?: string;
+  pricePaid?: number;
+  quantity?: number;
+}
+
+/** POST /api/outcomes/:id/parts/:part. `sold` needs `salePrice` and `date` (default today). */
+export interface PartOutcomeBody {
+  status: 'sold' | 'holding' | 'returned';
+  date?: string;
+  salePrice?: number;
+  netPayout?: number | null;
+  recovered?: number | null;
+}
+
+/** A part's result, worked out from what he recorded and the frozen snapshot. */
+export interface PartResult {
+  partId: string;
+  model: string;
+  /** Units of the part in the whole purchase (qty times bundles). */
+  units: number;
+  status: PartOutcomeStatus;
+  date: string | null;
+  salePrice: number | null;
+  /** What came in for the part: the payout he gave, the sale price after the snapshot's fees, or the refund; null while not settled. */
+  netReceived: number | null;
+  /** payout: he gave the net; fees_estimated: the sale price less the snapshot's fees; refund: money back; none: returned for nothing. */
+  netFrom: 'payout' | 'fees_estimated' | 'refund' | 'none' | null;
+  /** What the estimate expected for the part, all its units; null when it was not counted. */
+  estimatedNet: number | null;
+  /** The part's share of what he paid, in proportion to its estimated net; null while not settled. */
+  costShare: number | null;
+  /** netReceived less costShare; null while not settled. */
+  profit: number | null;
+}
+
+export interface PurchaseResult {
+  /** What the purchase cost: price paid and the snapshot's tax and inbound settings, times the bundles. */
+  cost: number;
+  /** The snapshot's estimated profit times the bundles; null when the deal had no estimate. */
+  estimatedProfit: number | null;
+  partsTotal: number;
+  /** Parts sold or returned. */
+  partsSettled: number;
+  partsSold: number;
+  partsHolding: number;
+  parts: PartResult[];
+  /** Every part is sold or returned: the deal is complete. */
+  complete: boolean;
+  /** Net received for settled parts less their cost shares; null with nothing settled. */
+  realisedProfit: number | null;
+  /** Only when complete. */
+  actualProfit: number | null;
+  /** Only when complete and the deal had an estimate: diff is actual less estimated. */
+  accuracy: { estimated: number; actual: number; diff: number; diffPercent: number | null } | null;
+  /** Some net came from the sale price and the snapshot's fees, not from a payout he gave. */
+  feesEstimated: boolean;
+}
+
+export interface Purchase {
+  id: string;
+  dealId: string;
+  boughtAt: string;
+  pricePaid: number;
+  quantity: number;
+  createdAt: string;
+  updatedAt: string;
+  snapshot: OutcomeSnapshot;
+  parts: PartOutcome[];
+}
+
+export interface PurchaseView extends Purchase {
+  result: PurchaseResult;
+}
+
+/** One sentence per change, with Undo while it still applies (as Activity lists it). */
+export interface OutcomeEntry {
+  id: string;
+  at: string;
+  purchaseId: string;
+  sentence: string;
+  undoable: boolean;
+  undoneAt: string | null;
+}
+
+/** What the owner's records say (never what the app expects): this month and overall. All of it is recorded by him. */
+export interface OutcomeScorecard {
+  /** YYYY-MM of the month the realised figures are for. */
+  month: string;
+  purchases: number;
+  boughtThisMonth: number;
+  /** Bought deals the last scan had flagged Buy now when he bought them. */
+  flaggedWhenBought: number;
+  /** Null when no part was sold or returned this month. */
+  realised: { profit: number; partsSettled: number; partsSold: number; partsOfThoseDeals: number; deals: number; feesEstimated: boolean } | null;
+  /** Null when no deal is complete with an estimate. */
+  accuracy: { deals: number; estimated: number; actual: number; diff: number; diffPercent: number | null; perDeal: { purchaseId: string; title: string; estimated: number; actual: number; diff: number; diffPercent: number | null }[] } | null;
+}
+
+export interface OutcomesResponse {
+  purchases: PurchaseView[];
+  scorecard: OutcomeScorecard;
+  /** The newest changes first, at most 50. */
+  entries: OutcomeEntry[];
+}
+
+export interface PurchaseResponse {
+  purchase: PurchaseView;
+  /** The entry Undo takes. */
+  entryId: string;
+}
+
+export interface OutcomeUndoResponse {
+  undone: true;
+  purchaseId: string;
+}
+
 // ---------------------------------------------------------------- activity
 
 export interface RunRecord {
@@ -908,6 +1099,8 @@ export interface ActivityResponse {
   errors?: ActivityError[];
   /** Additive: the answers the owner saved himself, newest first, at most 50. */
   answers?: OwnerAnswerEntry[];
+  /** Outcomes: what he recorded about purchases and sales, one sentence each, newest first, at most 50 (POST /api/outcomes/entries/:id/undo). */
+  outcomes?: OutcomeEntry[];
 }
 
 // ---------------------------------------------------------------- settings

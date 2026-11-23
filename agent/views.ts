@@ -21,6 +21,7 @@ import type {
   KeyCheckRecord,
   KeyName,
   KeysPresence,
+  OutcomeEntry,
   ReviewAnswer,
   ReviewQuestion,
   ReviewResponse,
@@ -574,7 +575,24 @@ export function followUpStateOf(review: StoreData['review'], suggestions: StoreD
   return kept && kept.seen === reviewSignature(q) ? kept.state : undefined;
 }
 
-export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' | 'suggestions'> & Partial<Pick<StoreData, 'answers'>>, sinceIso: string, now: number): ActivityResponse {
+/** Outcomes: two stored records are the same when they serialize alike (what Undo compares). */
+export const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+
+/** Activity and GET /api/outcomes list this many of the owner's recorded changes. */
+export const LISTED_OUTCOME_ENTRIES = 50;
+
+/** The outcome entries as the contract lists them, newest first, with whether Undo still works. */
+export function entriesView(data: StoreData['outcomes']): OutcomeEntry[] {
+  return [...data.entries]
+    .reverse()
+    .slice(0, LISTED_OUTCOME_ENTRIES)
+    .map((e) => {
+      const current = data.purchases.find((p) => p.id === e.purchaseId) ?? null;
+      return { id: e.id, at: e.at, purchaseId: e.purchaseId, sentence: e.sentence, undoneAt: e.undoneAt, undoable: e.undoneAt === null && same(current, e.after) };
+    });
+}
+
+export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' | 'suggestions'> & Partial<Pick<StoreData, 'answers' | 'outcomes'>>, sinceIso: string, now: number): ActivityResponse {
   const since = Date.parse(sinceIso);
   const runs = data.activity.runs.filter((r) => Date.parse(r.startedAt) >= since);
   const autopilot: AutopilotEntry[] = data.autopilot.map((e) => ({
@@ -595,6 +613,7 @@ export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' 
     answers: (data.answers ?? [])
       .map((a) => ({ id: a.id, questionId: a.questionId, title: a.title, answer: a.answer, at: a.at, undoable: a.undoneAt === null && a.undoable, undoneAt: a.undoneAt }))
       .reverse(),
+    ...(data.outcomes ? { outcomes: entriesView(data.outcomes) } : {}),
     errors: (data.activity.errors ?? [])
       .filter((e) => e.resolvedAt === null)
       .map((e) => ({ id: e.id, at: e.at, sentence: e.sentence, retry: e.retry ? { label: e.retry.label, searches: e.retry.searches, usd: e.retry.usd } : null }))

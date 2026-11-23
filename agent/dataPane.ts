@@ -62,6 +62,8 @@ export async function buildAuditText(i: AuditInputs): Promise<string> {
     autopilot: i.store.get('autopilot'),
     answers: i.store.get('answers'),
     tracking: i.store.get('tracking'),
+    // Outcomes (his purchases, each with the estimate frozen at purchase, and what he recorded since): the audit checks them against the scans.
+    outcomes: i.store.get('outcomes'),
     jobs: i.store.get('jobs'),
     runtime: i.store.get('runtime'),
   };
@@ -75,11 +77,14 @@ export async function buildAuditText(i: AuditInputs): Promise<string> {
 
 const stamp = (now: number): string => new Date(now).toISOString().replace(/[:.]/g, '-');
 
-/** Copies what Reset deletes to `<dataDir>/backup-before-reset-<time>/` (never the keys) and returns that folder. */
+/**
+ * Copies what Reset deletes to `<dataDir>/backup-before-reset-<time>/` (never the keys) and returns that folder. The owner's
+ * outcomes are copied too although Reset keeps them: the backup is then the whole record of what he had.
+ */
 export function backUpScanData(dataDir: string, store: Store, now: number): string {
   const dir = join(dataDir, `backup-before-reset-${stamp(now)}`);
   mkdirSync(join(dir, 'store'), { recursive: true, mode: 0o700 });
-  for (const name of RESET_COLLECTIONS) writeFileSync(join(dir, 'store', `${name}.json`), JSON.stringify(store.get(name), null, 2));
+  for (const name of [...RESET_COLLECTIONS, 'outcomes'] as const) writeFileSync(join(dir, 'store', `${name}.json`), JSON.stringify(store.get(name), null, 2));
   const scanDir = join(dataDir, 'scan');
   if (existsSync(scanDir)) cpSync(scanDir, join(dir, 'scan'), { recursive: true });
   return dir;
