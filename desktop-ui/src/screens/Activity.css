@@ -70,8 +70,13 @@
 }
 
 .arow-outcome-bad {
-  color: var(--loss);
+  color: var(--label);
   font-weight: 600;
+}
+
+/* On the amber row the warning mark and the words say it is a problem; the words stay in the text colour so they read in both themes. */
+.arow-attention .arow-error {
+  color: var(--label);
 }
 
 /* A day heading is a row in the same box, quiet, so the list is not a box in a box. */

@@ -45,6 +45,10 @@
   --system-accent: light-dark(#007aff, #0a84ff);
   --accent: var(--system-accent);
   --on-accent: #ffffff;
+  /* The accent as text (links) and as a fill under white words (default button, badge): the system blue measured 4.0:1 and
+     3.65:1 in dark, so text takes a deeper shade in light and a lighter one in dark, and the fill a deeper one. */
+  --accent-text: light-dark(color-mix(in srgb, var(--accent) 78%, black), color-mix(in srgb, var(--accent) 72%, white));
+  --accent-fill: light-dark(color-mix(in srgb, var(--accent) 86%, black), color-mix(in srgb, var(--accent) 76%, black));
   --selection: light-dark(#0064e1, #0059d1);
   --selection-quiet: light-dark(#dcdcdc, #464646);
   --on-selection-quiet: var(--label);
@@ -56,9 +60,9 @@
   --system-green: light-dark(#28cd41, #32d74b);
   --system-red: light-dark(#ff3b30, #ff453a);
   --system-orange: light-dark(#ff9500, #ff9f0a);
-  --profit: light-dark(color-mix(in srgb, var(--system-green) 62%, black), var(--system-green));
-  --loss: light-dark(color-mix(in srgb, var(--system-red) 82%, black), var(--system-red));
-  --attention: light-dark(color-mix(in srgb, var(--system-orange) 60%, black), var(--system-orange));
+  --profit: light-dark(color-mix(in srgb, var(--system-green) 56%, black), var(--system-green));
+  --loss: light-dark(color-mix(in srgb, var(--system-red) 74%, black), color-mix(in srgb, var(--system-red) 62%, white));
+  --attention: light-dark(color-mix(in srgb, var(--system-orange) 54%, black), var(--system-orange));
   --attention-bg: color-mix(in srgb, var(--system-orange) 16%, transparent);
   --verified-bg: color-mix(in srgb, var(--system-green) 16%, transparent);
   --notice-bg: light-dark(#fff6e0, #3a3020);
@@ -196,7 +200,7 @@ p {
 }
 
 a {
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: none;
   cursor: pointer;
 }

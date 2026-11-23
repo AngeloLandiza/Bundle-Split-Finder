@@ -47,6 +47,8 @@
   /* Accent: the user's Windows accent where the webview reads it (CSS AccentColor), else the default blue. */
   --system-accent: light-dark(#005fb8, #60cdff);
   --on-accent: #ffffff;
+  /* A user's Windows accent can be any blue; white words on it need 4.5:1 in light, so the fill is deepened there. */
+  --accent-fill: light-dark(color-mix(in srgb, var(--accent) 86%, black), var(--accent));
   --win-selection: color-mix(in srgb, var(--accent) 16%, transparent);
   --focus-stroke: light-dark(#000000, #ffffff);
   --focus-ring: var(--focus-stroke);
@@ -62,12 +64,12 @@
   --toolbar-h: 52px;
 
   /* Meaning colours: Fluent's system fills. */
-  --system-green: light-dark(#0f7b0f, #6ccb5f);
+  --system-green: light-dark(#0b6a0b, #6ccb5f);
   --system-red: light-dark(#c42b1c, #ff99a4);
-  --system-orange: light-dark(#9d5d00, #fce100);
+  --system-orange: light-dark(#8a5100, #fce100);
   --profit: var(--system-green);
   --loss: var(--system-red);
-  --attention: light-dark(#9d5d00, #fce100);
+  --attention: light-dark(#8a5100, #fce100);
 }
 
 @supports (color: AccentColor) {
@@ -238,7 +240,7 @@
 
 :root[data-platform='windows'] .btn-primary {
   border-color: color-mix(in srgb, var(--accent) 88%, black);
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--on-accent);
   box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.25);
 }
