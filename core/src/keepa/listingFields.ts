@@ -62,8 +62,8 @@ function namesOnly(brand: string, model: string, text: string): 'only' | 'other'
 /** The tokens of an identifier field ("Ryobi+P1895" -> RYOBI, P1895). */
 const tokens = (raw: string | null): string[] => (raw ?? '').toUpperCase().split(/[^A-Z0-9-]+/).filter((t) => t !== '');
 
-/** Why the gate refuses, or null. */
-function gateProblem(want: Wanted, l: ListingIdentity): string | null {
+/** Why the gate refuses, or null. Also rung 3's contradiction check (listingJudge). */
+export function listingProblem(want: Wanted, l: ListingIdentity): string | null {
   const brand = want.brand.trim().toUpperCase();
   const model = want.model.trim().toUpperCase();
   const listed = brandKey(l.brand);
@@ -118,7 +118,7 @@ export function checkListingFields(
   const rules = opts.rules ?? ADOPTED_RULES;
   const found = evidence(want, l, rules, opts.hdUpc ?? want.upc ?? null);
   if (!found) return { ...first, rule: null };
-  const problem = gateProblem(want, l);
+  const problem = listingProblem(want, l);
   if (problem) return { status: 'unknown', reason: `${first.reason}; ${found.said}, but ${problem}`, rule: null };
   const shown = cleanBrand(l.brand) ?? want.brand;
   const where = l.source === 'keepa_catalog' ? "Amazon's catalog" : "Amazon's product page";

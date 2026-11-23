@@ -881,6 +881,12 @@ export interface AiAgentSettings {
    * whatever this says. Absent or false: off (the default until `research:eval --follow-up` measures it at zero wrong).
    */
   reaskOnNewEvidence?: boolean;
+  /**
+   * The listing ladder, rung 3 (core/src/listingJudge): an AI judge for a listing rungs 0 to 2 left unconfirmed, every quote
+   * checked by code. Absent or `enabled: false`: off (the default until `listing-judge:eval` measures it at zero wrong).
+   * Even on, its 'ai_checked' never confirms a listing for a buy by itself (docs/decisions.md).
+   */
+  listingJudge?: { enabled: boolean; model: string };
 }
 
 /** D2: how the app looks. Stored by the agent; the UI applies it. */

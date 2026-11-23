@@ -23,6 +23,8 @@ export interface PriceRates { input: number; output: number; cacheRead?: number 
 export const PRICE_TABLE: Record<string, PriceRates> = {
   'claude-haiku-5-5': { input: 0.1, output: 0.5, cacheRead: 0.01 },
   'claude-opus-5-5': { input: 4, output: 20, cacheRead: 0.2 },
+  // Read Nov 23, 2026 from Anthropic's model table (first-party API rates).
+  'claude-sonnet-5-5': { input: 2, output: 10, cacheRead: 0.1 },
   // DeepSeek, read Nov 22, 2026 at https://api-docs.deepseek.com/quick_start/pricing: input = the cache-miss rate, cacheRead = the
   // cache-hit rate, at the PEAK price (01:00-04:00 and 06:00-10:00 UTC on weekdays; off-peak is half), so an estimate never undershoots.
   // The page states no effective date for these prices. A model id is its own key: the same model through another host has another id.
