@@ -15,6 +15,11 @@ describe('global keys', () => {
     expect(globalKey(k('f', { meta: true, target: 'text' }))).toEqual({ type: 'find' });
     expect(globalKey(k('f'))).toBeNull();
   });
+  it('toggles the inspector with Cmd+Option+I, read by the physical key since Option types a dead key', () => {
+    expect(globalKey(k('ˆ', { code: 'KeyI', meta: true, alt: true }))).toEqual({ type: 'inspector' });
+    expect(globalKey(k('i', { code: 'KeyI', ctrl: true, alt: true, target: 'text' }))).toEqual({ type: 'inspector' });
+    expect(globalKey(k('i', { code: 'KeyI', meta: true }))).toBeNull();
+  });
 });
 
 describe('list keys', () => {

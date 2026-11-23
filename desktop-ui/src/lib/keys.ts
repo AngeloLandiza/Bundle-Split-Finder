@@ -13,6 +13,8 @@ export type Target = 'text' | 'control' | 'choice' | 'none';
 
 export interface KeyPress {
   key: string;
+  /** The physical key ("KeyI"): on macOS Option changes `key` (Option+I types a dead key). */
+  code?: string;
   meta?: boolean;
   ctrl?: boolean;
   alt?: boolean;
@@ -20,7 +22,7 @@ export interface KeyPress {
   target: Target;
 }
 
-export type GlobalAction = { type: 'go'; screen: Screen } | { type: 'find' };
+export type GlobalAction = { type: 'go'; screen: Screen } | { type: 'find' } | { type: 'inspector' };
 export type ListAction = { type: 'next' } | { type: 'prev' } | { type: 'open' } | { type: 'close' };
 export type ReviewAction = ListAction | { type: 'choose'; index: number } | { type: 'save' } | { type: 'ask' };
 
@@ -32,6 +34,8 @@ export function globalKey(p: KeyPress): GlobalAction | null {
   }
   // The shell's menu also sends Cmd/Ctrl+F as the split-finder:find event; focusing twice is harmless.
   if ((p.meta || p.ctrl) && !p.alt && !p.shift && (p.key === 'f' || p.key === 'F')) return { type: 'find' };
+  // Cmd/Ctrl+Option+I shows or hides the inspector; the shell's View menu sends split-finder:inspector too.
+  if ((p.meta || p.ctrl) && p.alt && !p.shift && (p.code === 'KeyI' || p.key === 'i' || p.key === 'I')) return { type: 'inspector' };
   return null;
 }
 
