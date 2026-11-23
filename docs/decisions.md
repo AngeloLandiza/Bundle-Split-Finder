@@ -1012,3 +1012,40 @@ world (`ReaderEnv.runInTab`, as every reader does), `credentials: 'include'`, no
   9 pages)".
 
 - **Windows secret files: the OpenSSH ACL, not a user-only ACL** (Nov 23, after run 4 on windows-latest; supersedes the user-only target in the entry above). Run 4 showed the narrowing did run: the three secret files carried explicit, non-inherited `SYSTEM:(F)`, `Administrators:(F)`, `<user>:(F)`. The verifier then wrongly recorded 4 errors, because it demanded one entry. The target is the state Microsoft's OpenSSH for Windows uses for key files: `icacls /inheritance:r /grant` for administrators and SYSTEM only, with `*S-1-5-32-544` by SID for other languages (learn.microsoft.com, OpenSSH key management, "Host key generation" and "Administrative user"); ours adds the owner. SYSTEM and administrators can take any file anyway, and removing them breaks backup and repair tools. `restrictToOwner` runs `/inheritance:r /grant:r *<user SID>:F *S-1-5-18:F *S-1-5-32-544:F`; the verifier accepts exactly that set (the user present, SYSTEM and Administrators optional, no inherited entry, no other account, no deny) and records an error only when the final state differs. Names are matched as icacls prints them (English); a localized Windows reports and is never accepted by guess. Only `agent-token`, `keys.json` and `pairing.json` take this path: `store.lock.<pid>.<hex>.tmp` went through it because `takeLock` writes 0600, and a lock holds no secret. The smoke script checks the same set by SID and fails on any recorded agent error; the store test no longer reads the first Activity error by position. Guide and security review say: your keys are readable by your Windows account and by this PC's administrators, the same as SSH keys.
+### Free scan, fix round 3: Home Depot's Bundle filter lists "sets", and the keyword search is read too (Nov 23)
+The reader's sample on the first live run of fix round 2 showed the cause (recorded:
+`fixtures/homedepot-pages/bundle-list-ryobi-2026-11-23.json`, `bundle-listing-sample-2026-11-23.json`): the Bundle filter
+(`bwo64`) lists products of type `CONFIGURABLE_BUNDLE` with `modelNumber` null (brandName null on 4 of the 12), canonical
+address `/p/sets/<slug>/<itemId>`, `bundleFlag` true and `bundleItems` referring to `BundleItems:<id>` entries
+`{id, quantity}`: Home Depot's own list of the set's items (2 to 5 in the recording). The parser required a model number
+and dropped all 12. The fetch was never the problem.
+- **The listing parser keeps every entry** (`hdPage.ts parseListingState`), keyed by item id, with its model or null, its
+  productType, bundleFlag, its items resolved (a reference that does not resolve to `{id, quantity}` gives no item list),
+  its pricing `value`/`original` and `promotion.dollarOff`/`percentageOff`. `listingSource.ts listedOf` hands a set on with
+  model '' and `set`. An entry of a Bundle list with no brand name is that list's brand (the list is filtered by it).
+- **A set is a bundle kind** (`BundleRecord.set`, model ''): key its item id as every bundle's, price its `value`, was-price
+  its `original` (the saving is original − value), and the step after the lists reads each set item's own page free in
+  Chrome (`runner.ts readSetItems`, the item page reader the lists' prices use; one read per distinct item, within
+  `pageReadsPerScan`) for its brand, model, title and price sold alone. The reading is kept on the set and saved as the
+  item's Home Depot part price, so the normal part pipeline takes it from there. The split (`split.ts setSplit`) is the
+  items' models, each as many times as its quantity, `resolved`, with the evidence "Home Depot lists this set's N items"
+  and the set's link (`hd_set`): settled by Home Depot's own data, so no Review question and no AI. Until every item's page
+  is read the set waits (no question; the row says it waits for its pages); an item whose page names another brand leaves
+  it unsettled (rule 4). A set's own page is not read (it says nothing the split needs).
+- **No model number, everywhere a model was assumed:** deals and the alerts name a set "Set <item id>" (`views.ts setModel`,
+  signals, Keepa snapshots), the CSV's model cell and file name say the same, and the rows show "Set · N items" in place
+  of the mono model line (`DealRow.setItems`).
+- **Three lists per brand, unioned by item id:** the Bundle list with the query, the Bundle list without it (paged on the
+  redirected address to its `totalProducts`), and the plain keyword search page `/s/<query>?NCNI-5` (the recording's
+  `searchReport.searchUrl`), which lists the classic model-numbered combos SerpApi's rows were (SerpApi ignored the filter
+  tokens and returned this search). The search is read to `SEARCH_PAGES_MAX` (2 pages, about SerpApi's 24 rows); every
+  list at most 10 pages, all together at most `LISTING_PAGES_PER_SCAN` (30). The run line names each list with what it
+  says it has, what was read, in how many pages, "page limit" when a limit cut it ("read 120 of 400"), and how many it
+  added to the union.
+- *Replay on the fixtures* (`core/test/scan-sets.test.ts`): the RYOBI list for "ryobi 18v combo kit" gives 12 sets
+  (12 of its 24 on the recorded page), 35 item places, 22 distinct items to read; with readings every set settles with
+  no question. The item pages are not recorded, so the test's readings are made up.
+- *Live checks:* the set items' own pages (does `/p/<item id>` answer with the product state parsePromoPage reads, for
+  every item, including accessories with no model number, which today keep their set waiting); the keyword search's
+  answer in the page world and whether its Nao pages; the DEWALT lists; and whether a set and a classic combo can be the
+  same product under two item ids.
