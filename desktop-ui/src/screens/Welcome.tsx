@@ -7,16 +7,21 @@ import { PairingNotices } from '../components/PairingNotice';
 import { Sheet, SheetActions } from '../components/Sheet';
 import { Notice } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
+import { CONNECT_BUTTON_LABEL } from '@core/api/labels';
 import { plural, upToSearches } from '../lib/format';
 import { words } from '../lib/platform';
 import { setupProgress, type SetupStepId } from '../lib/setup';
 import { InstallHelper, KeyField } from '../components/SetupParts';
+import { NO_CHOICE, RunStep, takeWantedStep, turnedOnSentence, useRunPlan, type RunChoice } from './WelcomeRun';
 import './Welcome.css';
 
-const STEPS: { id: SetupStepId; title: string; short: string }[] = [
+type StepId = SetupStepId | 'run';
+
+const STEPS: { id: StepId; title: string; short: string }[] = [
   { id: 'chrome', title: 'Connect Chrome', short: 'Chrome' },
   { id: 'key', title: 'Add your SerpApi key', short: 'SerpApi key' },
   { id: 'scan', title: 'Run the first scan', short: 'First scan' },
+  { id: 'run', title: 'Let it run by itself', short: 'Run by itself' },
 ];
 
 /** The app's own icon (desktop/icon/app-icon.svg, the one the Dock and the installer use), for the sheet's header. */
@@ -25,26 +30,42 @@ export function AppMark({ size = 64 }: { size?: number }) {
 }
 
 /**
- * The welcome sheet (design.md, Desktop app > Sheet): three short steps over the live app, which stays
- * usable behind it. Skip for now closes it; "Finish setup" in the sidebar or Help > Finish setup opens it
+ * The welcome sheet (design.md, Desktop app > Sheet): four short steps over the live app, which stays
+ * usable behind it. The fourth, "Let it run by itself", turns on a schedule the account can pay for. Skip for now closes it; "Finish setup" in the sidebar or Help > Finish setup opens it
  * again at the first step still open. Nothing here blocks the app.
  */
 export function WelcomeSheet({ onClose }: { onClose: () => void }) {
   const { state, online, pairing, refreshState } = useApp();
   const progress = state ? setupProgress(state) : null;
-  const [index, setIndex] = useState(() => Math.max(0, STEPS.findIndex((s) => s.id === (progress?.current ?? 'chrome'))));
+  // Opens at the first step still open; when the three are done, or Settings asked for it, at the schedule.
+  const [index, setIndex] = useState(() => {
+    const at = takeWantedStep() ?? (progress?.complete ? 'run' : (progress?.current ?? 'chrome'));
+    return Math.max(0, STEPS.findIndex((s) => s.id === at));
+  });
   const scan = useAction(api.scan);
+  const [choice, setChoice] = useState<RunChoice>(NO_CHOICE);
+  const { plan, failed } = useRunPlan(choice);
+  const [turnedOn, setTurnedOn] = useState<string | null>(null);
+  const turnOn = useAction(async () => {
+    if (!plan) return;
+    const schedule = plan.rec.options.find((o) => o.id === plan.schedule)!.schedule;
+    await api.patchSettings({ settings: { schedule }, shell: { launchAtLogin: plan.login, keepAwakeDuringScan: plan.awake } });
+    setTurnedOn(turnedOnSentence(plan));
+    refreshState();
+  });
   const step = STEPS[index]!;
-  const done = (id: SetupStepId) => progress?.steps.find((s) => s.id === id)?.done ?? false;
+  const done = (id: StepId) => (id === 'run' ? turnedOn !== null || (plan !== null && plan.settings.settings.schedule.mode !== 'manual') : (progress?.steps.find((s) => s.id === id)?.done ?? false));
   const last = index === STEPS.length - 1;
   const running = state?.agent.status === 'scanning';
 
   const footer = (
     <SheetActions
       lead={
-        <Button variant="quiet" size="lg" onClick={onClose}>
-          Skip for now
-        </Button>
+        turnedOn !== null ? null : (
+          <Button variant="quiet" size="lg" onClick={onClose}>
+            Skip for now
+          </Button>
+        )
       }
       secondary={
         index > 0 ? (
@@ -55,9 +76,15 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
       }
       primary={
         last ? (
-          <Button variant="primary" size="lg" onClick={onClose} data-autofocus="">
-            {done('scan') || running ? 'Done' : 'Close'}
-          </Button>
+          turnedOn !== null ? (
+            <Button variant="primary" size="lg" onClick={onClose} data-autofocus="">
+              Done
+            </Button>
+          ) : (
+            <Button variant="primary" size="lg" disabled={!plan || !online} busy={turnOn.busy} busyLabel="Turning on…" onClick={() => void turnOn.run()} data-autofocus="">
+              Turn on
+            </Button>
+          )
         ) : (
           <Button variant="primary" size="lg" onClick={() => setIndex(index + 1)} data-autofocus="">
             Continue
@@ -74,7 +101,7 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
         <div>
           <h1 className="t-title">Welcome to Split Finder</h1>
           <p className="welcome-lead">
-            The agent finds discounted DEWALT and RYOBI bundles on Home Depot, matches each part to its Amazon listing, and tells you which are worth a look. Three steps, once. You can use the app while you set it up.
+            The agent finds discounted DEWALT and RYOBI bundles on Home Depot, matches each part to its Amazon listing, and tells you which are worth a look. Four steps, once. You can use the app while you set it up.
           </p>
         </div>
       </header>
@@ -109,7 +136,7 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
             <Done text="Chrome is connected. It reads Home Depot pages for the agent while it is open." />
           ) : (
             <>
-              <p>Install the helper, then in Chrome open the Split Finder side panel and press Connect to the app. Chrome then asks here: check that the code matches and allow it.</p>
+              <p>Install the helper, then in Chrome open the Split Finder side panel and press {CONNECT_BUTTON_LABEL}. Chrome then asks here: check that the code matches and allow it.</p>
               {pairing.requests.length ? (
                 <div className="inset-notices">
                   <PairingNotices />
@@ -161,6 +188,22 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
             {scan.error ? (
               <p className="welcome-error" role="alert">
                 {scan.error}
+              </p>
+            ) : null}
+          </>
+        ) : null}
+
+        {step.id === 'run' ? (
+          <>
+            {!state?.keys.serpapi && turnedOn === null ? (
+              <Notice tone="attention" title="No SerpApi key yet.">
+                Scheduled scans need it. Turn the schedule on now and add the key in the second step, or choose Skip for now.
+              </Notice>
+            ) : null}
+            <RunStep plan={plan} failed={failed} choice={choice} onChoose={setChoice} saved={turnedOn} />
+            {turnOn.error ? (
+              <p className="welcome-error" role="alert">
+                {turnOn.error}
               </p>
             ) : null}
           </>

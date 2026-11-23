@@ -137,3 +137,58 @@
 .welcome-foot-space {
   flex: 1;
 }
+
+/* Step 4, "Let it run by itself": the choices as a radio list with the monthly figure at the end of each row. */
+.welcome-schedule {
+  gap: 8px;
+}
+
+.welcome-option {
+  gap: 8px;
+}
+
+.welcome-option-label {
+  min-width: 0;
+}
+
+.welcome-option-note {
+  margin-inline-start: auto;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+  text-align: end;
+}
+
+/* "Recommended" sits next to the label, the figure stays at the end. */
+.welcome-option-rec {
+  margin-inline-start: 0;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.welcome-option-rec + .welcome-option-note {
+  margin-inline-start: auto;
+}
+
+.welcome-option-off {
+  color: var(--label-3);
+}
+
+.welcome-sum {
+  padding-top: 10px;
+  border-top: 0.5px solid var(--separator);
+  color: var(--label-2);
+}
+
+.welcome-sum strong {
+  color: var(--label);
+  font-weight: 500;
+}
+
+.welcome-switches {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 0.5px solid var(--separator);
+}
