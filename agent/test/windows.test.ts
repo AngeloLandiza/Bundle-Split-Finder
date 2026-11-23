@@ -12,6 +12,8 @@ import {
   parseUserName,
   parseUserSid,
   reportAclProblem,
+  sddlCommandArgs,
+  sddlProblem,
   setAclReporter,
 } from '../winAcl';
 
@@ -78,31 +80,60 @@ describe('owner-only files on Windows (winAcl)', () => {
     expect(ownerOnlyProblem([], SID, null)).toBe('icacls listed no entries');
   });
 
-  it('asks whoami once; per file: icacls to narrow, icacls to read back, all from System32', () => {
+  it('judges SDDL by SIDs only, in any Windows language', () => {
+    const U = 'S-1-5-21-3623811015-3361044348-30300820-1001';
+    const head = 'O:BAG:S-1-5-21-3623811015-3361044348-30300820-513';
+    // accepted: protected, three explicit allow entries (SY and BA are aliases of S-1-5-18 and S-1-5-32-544)
+    expect(sddlProblem(`${head}D:PAI(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;${U})`, U)).toBeNull();
+    expect(sddlProblem(`D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;${U})`, U)).toBeNull();
+    expect(sddlProblem(`D:P(A;;FA;;;S-1-5-18)(A;;FA;;;S-1-5-32-544)(A;;FA;;;${U})`, U)).toBeNull();
+    // inheriting: not protected, inherited ACEs
+    expect(sddlProblem(`${head}D:AI(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;FA;;;${U})`, U)).toBe(
+      'it still inherits permissions from its folder; it carries 3 inherited entries',
+    );
+    // protected but one entry still flagged inherited
+    expect(sddlProblem(`D:PAI(A;ID;FA;;;SY)(A;;FA;;;${U})`, U)).toBe('it carries 1 inherited entries');
+    // Users (BU) and another SID
+    expect(sddlProblem(`D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;${U})(A;;FRFX;;;BU)`, U)).toBe('it also grants BU');
+    // a deny entry
+    expect(sddlProblem(`D:P(D;;FA;;;BG)(A;;FA;;;SY)(A;;FA;;;${U})`, U)).toContain('deny');
+    // the user missing
+    expect(sddlProblem('D:P(A;;FA;;;SY)(A;;FA;;;BA)', U)).toBe('it does not list your account');
+    expect(sddlProblem('', U)).toBe('it has no access list');
+  });
+
+  it('quotes the path for PowerShell', () => {
+    expect(sddlCommandArgs("C:\\Users\\o'brien\\keys.json")).toEqual([
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      "(Get-Acl -LiteralPath 'C:\\Users\\o''brien\\keys.json').Sddl",
+    ]);
+  });
+
+  const SDDL_OK = `O:BAG:S-1-5-21-1-2-3-513D:PAI(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;${SID})`;
+  const SDDL_INHERITED = `O:BAG:S-1-5-21-1-2-3-513D:AI(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;FA;;;${SID})`;
+  const PS = `${SYS32}\\WindowsPowerShell\\v1.0\\powershell.exe`;
+
+  it('asks whoami once; per file: icacls to narrow, PowerShell to read the SDDL back, all from System32', () => {
     const calls: string[][] = [];
     const run = (file: string, args: string[]) => {
       calls.push([file, ...args]);
       if (file.endsWith('whoami.exe')) return WHOAMI;
-      return args.length === 1 ? NARROWED : 'Successfully processed 1 files';
+      return file === PS ? SDDL_OK : 'Successfully processed 1 files';
     };
     const acl = makeOwnerOnly(run, SYS32);
     expect(acl.ensure(FILE)).toBeNull();
     expect(acl.ensure(FILE)).toBeNull();
-    expect(calls.map((c) => c[0])).toEqual([
-      `${SYS32}\\whoami.exe`,
-      `${SYS32}\\icacls.exe`,
-      `${SYS32}\\icacls.exe`,
-      `${SYS32}\\icacls.exe`,
-      `${SYS32}\\icacls.exe`,
-    ]);
+    expect(calls.map((c) => c[0])).toEqual([`${SYS32}\\whoami.exe`, `${SYS32}\\icacls.exe`, PS, `${SYS32}\\icacls.exe`, PS]);
     expect(calls[1]!.slice(1)).toEqual(icaclsOwnerOnlyArgs(FILE, SID));
-    expect(calls[2]!.slice(1)).toEqual([FILE]);
+    expect(calls[2]!.slice(1)).toEqual(sddlCommandArgs(FILE));
   });
 
   it('verify-then-report: a file that stays inherited is reported with the reason', () => {
-    const run = (file: string, args: string[]) => (file.endsWith('whoami.exe') ? WHOAMI : args.length === 1 ? INHERITED : '');
+    const run = (file: string) => (file.endsWith('whoami.exe') ? WHOAMI : file === PS ? SDDL_INHERITED : '');
     const why = makeOwnerOnly(run, SYS32).ensure(FILE);
-    expect(why).toContain('it still inherits NT AUTHORITY\\SYSTEM');
+    expect(why).toContain('it still inherits permissions from its folder');
     const sentences: string[] = [];
     setAclReporter((s) => sentences.push(s));
     reportAclProblem('keys.json', why!);
@@ -111,10 +142,10 @@ describe('owner-only files on Windows (winAcl)', () => {
     expect(sentences[0]).toMatch(/^Windows did not let Split Finder restrict keys\.json to your account: it still inherits .*\. It is readable by this PC's administrators\.$/);
   });
 
-  it('an icacls that throws is the reason, and ensure still reads back', () => {
-    const run = (file: string, args: string[]) => {
+  it('an icacls that throws is the reason when the read back fails too', () => {
+    const run = (file: string) => {
       if (file.endsWith('whoami.exe')) return WHOAMI;
-      if (args.length === 1) throw new Error('icacls.exe exited 5');
+      if (file === PS) throw new Error('powershell.exe exited 1');
       throw new Error('Access is denied.\nmore');
     };
     expect(makeOwnerOnly(run, SYS32).ensure(FILE)).toBe('Access is denied.');

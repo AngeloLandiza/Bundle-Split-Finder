@@ -4,7 +4,7 @@
 // user, SYSTEM and the Administrators group, as explicit entries (no inheritance), as Microsoft's OpenSSH does for keys.
 //
 // The narrowing is applied to the empty temp file before the content is written, and again to the FINAL path after
-// the rename (idempotent), and the result is read back with `icacls <file>`. The first real Windows run (Nov 23, GitHub
+// the rename (idempotent), and the result is read back as SDDL (no account names, so any Windows language). The first real Windows run (Nov 23, GitHub
 // windows-latest) showed all three secret files with the folder's three inherited entries; the agent's only failure
 // signal was a console.warn in a windowless sidecar, which nobody sees. Microsoft documents that a same-volume
 // MoveFileEx keeps the moved file's security descriptor
@@ -99,6 +99,37 @@ export function ownerOnlyProblem(entries: AclEntry[], sid: string, name: string 
   return parts.join('; ');
 }
 
+/** PowerShell args that print the file's SDDL; the path is single-quoted (a quote doubled), so nothing in it is run. */
+export function sddlCommandArgs(path: string): string[] {
+  return ['-NoProfile', '-NonInteractive', '-Command', `(Get-Acl -LiteralPath '${path.replace(/'/g, "''")}').Sddl`];
+}
+
+const SDDL_ALIASES: Record<string, string> = { SY: 'S-1-5-18', BA: 'S-1-5-32-544' };
+
+/**
+ * Judges an SDDL string (`O:..G:..D:PAI(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;S-1-5-21-..)`) by SIDs only: the DACL is
+ * protected (flag P), no ACE is inherited (ACE flag ID), every ACE allows, each for the user, SYSTEM or Administrators,
+ * and the user is present. Null when so, else what is wrong.
+ */
+export function sddlProblem(sddl: string, sid: string): string | null {
+  const d = /D:([A-Z]*)((?:\([^)]*\))*)/.exec(sddl.trim());
+  if (!d) return 'it has no access list';
+  const aces = [...d[2]!.matchAll(/\(([^)]*)\)/g)].map((m) => m[1]!.split(';'));
+  if (aces.length === 0) return 'its access list is empty';
+  const parts: string[] = [];
+  if (!d[1]!.includes('P')) parts.push('it still inherits permissions from its folder');
+  const name = (f: string[]) => SDDL_ALIASES[f[5]!] ?? f[5]!;
+  const inherited = aces.filter((f) => (f[1] ?? '').includes('ID'));
+  if (inherited.length) parts.push(`it carries ${inherited.length} inherited entries`);
+  const denies = aces.filter((f) => f[0] !== 'A');
+  if (denies.length) parts.push('it has a deny or non-allow entry');
+  const allowed = new Set([sid.toUpperCase(), 'S-1-5-18', 'S-1-5-32-544']);
+  const strangers = aces.filter((f) => f[0] === 'A' && !allowed.has(name(f).toUpperCase())).map(name);
+  if (strangers.length) parts.push(`it also grants ${strangers.join(', ')}`);
+  if (!aces.some((f) => name(f).toUpperCase() === sid.toUpperCase())) parts.push('it does not list your account');
+  return parts.length ? parts.join('; ') : null;
+}
+
 export interface OwnerOnly {
   /** Narrows `path` to the current user. Null when done, else why not. Does not read it back. */
   narrow(path: string): string | null;
@@ -136,7 +167,7 @@ export function makeOwnerOnly(run: Run, system32: string): OwnerOnly {
       try {
         const me = user();
         if (!me) return why ?? 'whoami did not name a SID';
-        const problem = ownerOnlyProblem(parseIcaclsEntries(run(icacls, [path]), path), me.sid, me.name);
+        const problem = sddlProblem(run(win32.join(system32, 'WindowsPowerShell', 'v1.0', 'powershell.exe'), sddlCommandArgs(path)), me.sid);
         if (problem === null) return null;
         return why ? `${why}; ${problem}` : problem;
       } catch (err) {
