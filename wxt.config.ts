@@ -1,21 +1,37 @@
-import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 import { defineConfig } from 'wxt';
 
 /**
  * Nov 23: the helper's build, baked in at build time as the manifest's version_name ("0.1.0+3c92cc7"): the package
- * version and the commit it was built from (SPLIT_FINDER_BUILD_ID overrides; "dev" outside a git checkout). The helper
- * sends it in its heartbeats and the app reads the same field from the zip it ships, so an older helper is told apart.
+ * version and a fingerprint of the sources the helper is built from (extension/ and core/src/, file names and contents;
+ * SPLIT_FINDER_BUILD_ID overrides). The helper sends it in its heartbeats and the app reads the same field from the zip
+ * it ships, so an older helper is told apart. A fingerprint, not the git commit: the first end-to-end run showed a commit
+ * that touched only the agent marking an identical helper as outdated.
  */
 function buildId(): string {
   const set = process.env.SPLIT_FINDER_BUILD_ID?.trim();
   if (set && /^[0-9A-Za-z._-]{1,40}$/.test(set)) return set;
-  try {
-    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() || 'dev';
-  } catch {
-    return 'dev';
+  const files: string[] = [];
+  const walk = (dir: string): void => {
+    for (const name of readdirSync(dir).sort()) {
+      const full = join(dir, name);
+      if (statSync(full).isDirectory()) {
+        if (name !== 'node_modules' && !name.startsWith('.')) walk(full);
+      } else if (!/\.test\.tsx?$/.test(name)) files.push(full);
+    }
+  };
+  walk(resolve('extension'));
+  walk(resolve('core/src'));
+  const hash = createHash('sha256');
+  for (const f of files) {
+    hash.update(relative(resolve('.'), f));
+    hash.update('\0');
+    hash.update(readFileSync(f));
+    hash.update('\0');
   }
+  return hash.digest('hex').slice(0, 7);
 }
 const PACKAGE_VERSION = (JSON.parse(readFileSync(resolve('package.json'), 'utf8')) as { version: string }).version;
 export const HELPER_VERSION = `${PACKAGE_VERSION}+${buildId()}`;
