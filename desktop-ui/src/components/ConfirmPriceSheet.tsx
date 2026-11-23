@@ -7,7 +7,7 @@ import { money } from '../lib/format';
 import { Button, LinkButton } from './Button';
 import { TextField } from './Fields';
 import { Money } from './Figure';
-import { Sheet } from './Sheet';
+import { Sheet, SheetActions } from './Sheet';
 import { SourceLink } from './Source';
 import './ConfirmPriceSheet.css';
 
@@ -73,12 +73,13 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
         width={480}
         onCancel={onClose}
         footer={
-          <>
-            <span className="cp-space" />
-            <Button variant="primary" onClick={onClose} data-autofocus="">
-              Close
-            </Button>
-          </>
+          <SheetActions
+            primary={
+              <Button variant="primary" onClick={onClose} data-autofocus="">
+                Close
+              </Button>
+            }
+          />
         }
       >
         {head}
@@ -106,18 +107,21 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
       width={520}
       onCancel={onClose}
       footer={
-        <>
-          {own ? (
-            <Button variant="danger" busy={remove.busy} busyLabel="Removing…" disabled={scanRunning || save.busy} onClick={() => void clear()}>
-              Remove price
+        <SheetActions
+          lead={
+            own ? (
+              <Button variant="danger" busy={remove.busy} busyLabel="Removing…" disabled={scanRunning || save.busy} onClick={() => void clear()}>
+                Remove price
+              </Button>
+            ) : null
+          }
+          secondary={<Button onClick={onClose}>Cancel</Button>}
+          primary={
+            <Button variant="primary" busy={save.busy} busyLabel="Saving…" disabled={scanRunning || busy || form.choice === null} onClick={() => void submit()}>
+              Save price
             </Button>
-          ) : null}
-          <span className="cp-space" />
-          <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" busy={save.busy} busyLabel="Saving…" disabled={scanRunning || busy || form.choice === null} onClick={() => void submit()}>
-            Save price
-          </Button>
-        </>
+          }
+        />
       }
     >
       {head}

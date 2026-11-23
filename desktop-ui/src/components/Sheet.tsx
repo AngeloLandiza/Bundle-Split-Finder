@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { isWindows } from '../lib/platform';
 import './Sheet.css';
 
 /**
@@ -48,5 +49,29 @@ export function Sheet({ label, onCancel, children, footer, width = 560 }: { labe
         <div className="sheet-foot">{footer}</div>
       </div>
     </div>
+  );
+}
+
+/**
+ * The buttons of a sheet's foot, in the order the system keeps (docs/ux-checklist.md, Platform): on a Mac the leading
+ * action, then Cancel, then the primary button last; on Windows the primary button first, then the secondary one
+ * (Microsoft's content dialog and command bar), and the leading action at the far end. The DOM follows what is drawn, so
+ * Tab goes the way the eye does.
+ */
+export function SheetActions({ lead, secondary, primary }: { lead?: ReactNode; secondary?: ReactNode; primary: ReactNode }) {
+  return isWindows ? (
+    <>
+      {primary}
+      {secondary}
+      <span className="sheet-space" />
+      {lead}
+    </>
+  ) : (
+    <>
+      {lead}
+      <span className="sheet-space" />
+      {secondary}
+      {primary}
+    </>
   );
 }

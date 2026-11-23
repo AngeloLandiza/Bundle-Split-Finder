@@ -59,3 +59,7 @@
   gap: 8px;
   padding: 16px 20px 20px;
 }
+
+.sheet-space {
+  flex: 1;
+}

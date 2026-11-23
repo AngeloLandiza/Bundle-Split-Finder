@@ -4,7 +4,7 @@ import type { BogoView } from '../api/types';
 import { pickedTools, typedTool, type FreeToolForm } from '../lib/bogo';
 import { Button } from './Button';
 import { TextField } from './Fields';
-import { Sheet } from './Sheet';
+import { Sheet, SheetActions } from './Sheet';
 import './BogoSheet.css';
 
 export interface BogoTarget {
@@ -56,18 +56,21 @@ export function BogoSheet({ target, onClose }: { target: BogoTarget; onClose: ()
       width={520}
       onCancel={onClose}
       footer={
-        <>
-          {bogo === null ? (
-            <Button disabled={save.busy} onClick={() => void run({})} title="Mark the deal as a BOGO promotion now and choose the free tool later">
-              Mark without a tool
+        <SheetActions
+          lead={
+            bogo === null ? (
+              <Button disabled={save.busy} onClick={() => void run({})} title="Mark the deal as a BOGO promotion now and choose the free tool later">
+                Mark without a tool
+              </Button>
+            ) : null
+          }
+          secondary={<Button onClick={onClose}>Cancel</Button>}
+          primary={
+            <Button variant="primary" busy={save.busy} busyLabel="Saving…" onClick={() => void submit()}>
+              Save {free}
             </Button>
-          ) : null}
-          <span className="bg-space" />
-          <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" busy={save.busy} busyLabel="Saving…" onClick={() => void submit()}>
-            Save {free}
-          </Button>
-        </>
+          }
+        />
       }
     >
       <h2 className="bg-title">{bogo ? `BOGO: choose your ${free}` : 'Mark as BOGO'}</h2>

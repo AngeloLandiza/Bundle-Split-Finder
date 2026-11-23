@@ -2,7 +2,7 @@ import { formatShortcut, isMac as mac, isWindows } from '../lib/platform';
 import { shortcutAreas } from '../lib/shortcuts';
 import { Button } from './Button';
 import { Kbd } from './Layout';
-import { Sheet } from './Sheet';
+import { Sheet, SheetActions } from './Sheet';
 import './ShortcutsSheet.css';
 
 
@@ -15,13 +15,14 @@ export function ShortcutsSheet({ onClose }: { onClose: () => void }) {
       width={620}
       onCancel={onClose}
       footer={
-        <>
-          <span className="shortcuts-foot">Press {formatShortcut(['mod', '/'], mac)} again to close.</span>
-          <span className="shortcuts-space" />
-          <Button variant="primary" onClick={onClose} data-autofocus="">
-            Done
-          </Button>
-        </>
+        <SheetActions
+          lead={<span className="shortcuts-foot">Press {formatShortcut(['mod', '/'], mac)} again to close.</span>}
+          primary={
+            <Button variant="primary" onClick={onClose} data-autofocus="">
+              Done
+            </Button>
+          }
+        />
       }
     >
       <h2 className="shortcuts-title">Keyboard shortcuts</h2>

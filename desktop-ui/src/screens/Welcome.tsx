@@ -4,7 +4,7 @@ import appIcon from '../../../desktop/icon/app-icon.svg';
 import { Button } from '../components/Button';
 import { Glyph } from '../components/Glyph';
 import { PairingNotices } from '../components/PairingNotice';
-import { Sheet } from '../components/Sheet';
+import { Sheet, SheetActions } from '../components/Sheet';
 import { Notice } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
 import { plural, upToSearches } from '../lib/format';
@@ -40,26 +40,31 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
   const running = state?.agent.status === 'scanning';
 
   const footer = (
-    <>
-      <Button variant="quiet" size="lg" onClick={onClose}>
-        Skip for now
-      </Button>
-      <span className="welcome-foot-space" />
-      {index > 0 ? (
-        <Button size="lg" onClick={() => setIndex(index - 1)}>
-          Back
+    <SheetActions
+      lead={
+        <Button variant="quiet" size="lg" onClick={onClose}>
+          Skip for now
         </Button>
-      ) : null}
-      {last ? (
-        <Button variant="primary" size="lg" onClick={onClose} data-autofocus="">
-          {done('scan') || running ? 'Done' : 'Close'}
-        </Button>
-      ) : (
-        <Button variant="primary" size="lg" onClick={() => setIndex(index + 1)} data-autofocus="">
-          Continue
-        </Button>
-      )}
-    </>
+      }
+      secondary={
+        index > 0 ? (
+          <Button size="lg" onClick={() => setIndex(index - 1)}>
+            Back
+          </Button>
+        ) : null
+      }
+      primary={
+        last ? (
+          <Button variant="primary" size="lg" onClick={onClose} data-autofocus="">
+            {done('scan') || running ? 'Done' : 'Close'}
+          </Button>
+        ) : (
+          <Button variant="primary" size="lg" onClick={() => setIndex(index + 1)} data-autofocus="">
+            Continue
+          </Button>
+        )
+      }
+    />
   );
 
   return (
