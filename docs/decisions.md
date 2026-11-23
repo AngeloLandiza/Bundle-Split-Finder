@@ -710,3 +710,64 @@ listings that count in no estimate.
   that file), so with the setting on its pushed count leaves eBay questions out until the next state poll.
 
 - **A pasted link is read for its price; he still confirms it** (owner, Nov 23: "when I paste a link of where I find the item being sold it auto gets the price"). Confirm a price now takes the link first. `POST /api/price-from-link` reads eBay by the Browse item call (free; price, stated shipping, condition; an ended listing, an auction with no Buy It Now and a non-USD price are `found: false`), Amazon by one Keepa product pull through the token budget and reserve (stats.current[0], else [1], said in the note; Amazon is never browsed; a pull under an hour old is reused and its age is shown), and Home Depot by the existing free page job in his Chrome (`promoPage`, which carries the page price). Any other site is not read and the typed-price path is unchanged; no host permission and no scraping was added. The answer only fills the price field. It is saved as a `typed` price with the pasted link when he presses Save price, so the PO's Nov 20 rule (it counts when he confirms) is unchanged, and a price is never copied without being shown. The eBay shipping shown is informational: the price counted is the item price. 15 s timeouts. Not done: Facebook Marketplace and shops other than these three, and an eBay sold price for an ended listing (Browse does not return one).
+
+## Confirming listings by themselves: the listing ladder (Nov 23)
+
+Owner, Nov 23, looking at deals that said "1 listing not confirmed yet": "if I can do this manually with just clicking then
+it should be fully automated". Before this, the catalog check (step 16) answered "unknown" whenever Amazon's record had no
+exact part-number field, remembered that answer, and nothing else ran: the owner's "Confirm listing" was a paid SerpApi
+`amazon_product` read whose page was graded by `pick()` (strong only on a part-number or barcode match, else no change). The
+verdict "N listings are being confirmed first" had nothing behind it. Now a ladder runs by itself, cheapest first; each rung
+is measured on the recorded rows with the answer key and adopted only at zero wrong (`npm run measure:autoconfirm`,
+`npm run listing-judge:eval`).
+
+- **Rung 0, the catalog check** (unchanged): 65 right, 0 wrong, 237 unknown of 302 rows with a known answer.
+- **Rung 1, the listing's own fields** (`core/src/keepa/listingFields.ts`, no new call), on the 237 rows rung 0 left unknown,
+  one sub-rule at a time: model as a whole token in the **title** with the brand field the part's brand: 22 right, 0 wrong
+  (41 rows the key says are another product reached the gate; every one was stopped: 33 with no brand field, the rest by a
+  kit-with-extras, battery, OEM/replacement, pack or other-part-number contradiction). **Adopted.** In the part number or
+  model field as a token (`id_field`), in a **feature bullet**, or a **barcode** equal to Home Depot's UPC: 0 right, 0 wrong
+  each: no recorded row exercises them (no scan stores a Home Depot UPC: after-scan3's catalog has none). **Not adopted**: an
+  unmeasured rule does not confirm. The gate for every sub-rule: brand field = brand, manufacturer = brand when given, no
+  part number that is another identifier, verify.ts's contradictions, and no feature bullet selling a bare tool with a
+  battery ("Comes with a 4Ah battery", B0FD1B8BG5). A rung-1 confirmation is grade strong, `verifiedBy: 'listing_fields'`, and
+  counts as confirmed for a buy (`CONFIRMING_SOURCES`).
+- **Old unknowns are read again once.** A stored catalog check carries the ladder's version (`CatalogCheckRecord.ladder`);
+  an unknown from before rung 1 is queued once more, the pull read from the cache when it is there (`RECHECK_MAX_AGE_MS`, 90
+  days), so the drip has work for the deals that sat waiting.
+- **The owner's click reads more.** The paid Verify of a page that grades only probable now runs rungs 0 and 1 on the page
+  (brand, part number, model, the title rule): a page with RYOBI's brand field and a title naming PBLRC25B confirms with no
+  part-number field.
+- **Rung 2, the owner's click done by the agent** (`core/src/scan/autoConfirm.ts`, `agent/autoConfirm.ts`): after a scan and
+  after each drip round, for a listing still a title match once the catalog check has read it (or Keepa is off), the paid
+  Verify runs through `SerpApiClient` under a `SearchBudget` from a fresh free account check, scheduled policy (never the
+  reserve), the per-scan cap less what the scan spent, and today's allowance. Only where it can change a decision: a buy
+  waiting on its listings (`buyPending`) first, then ways to sell within 75% of both of the owner's numbers (`REACH`), the
+  largest estimated profit first; each listing once (`AgentRuntime.autoConfirm.tried`). Allowance:
+  `lookups.verifySearchesPerDay` when set, else what the account above the reserve leaves per day until renewal, at most 5.
+  `lookups.autoVerify: false` turns it off. In the drip it looks at most every 10 minutes and records its own Activity run
+  ("Confirmed 1 of 2 Amazon listings automatically (2 searches: 1 for a buy waiting on it, 1 within reach of your
+  numbers)."); in a scan the scan's run counts the searches and says the sentence. Offline it settles nothing on the
+  recordings (it is a live read).
+- **Rung 3, the AI listing judge** (`core/src/listingJudge`), provider-neutral, Haiku 5.5 first: same / different / cannot
+  tell, quoting the listing. Code finds each quote word for word in the field it names, needs a model-number quote naming the
+  part, the brand field (or a title that begins with the brand: "… Screw for New Ryobi P553" is not), no other model of the
+  brand in the title, and rung 1's contradictions; then `verifiedBy: 'ai_checked'`. Offline evidence: against a judge that
+  answers "same" on every row, the code's check lets **0 wrong** through (1 right of the 215 rows rungs 0 and 1 left unknown;
+  33 right of all 302). That bounds a careless model, but it does not prove a real one helps: of the 215 open rows only 11
+  are the part. **Shipped off** (`ai.listingJudge` absent); the paid measurement is the main session's:
+  `npm run listing-judge:eval -- --model claude-haiku-5-5 --run --max-cost 0.25` (dry run: 215 rows, about $0.05; Sonnet 5.5
+  about $0.93, Opus 5.5 about $1.85). **Rule:** `ai_checked` shows as "confirmed by AI check" and never confirms a listing for
+  a buy by itself (`CONFIRMING_SOURCES` leaves it out); a buy still needs rung 0, 1 or 2 or the owner. Changing that needs a
+  run at zero wrong on the full set and the owner's yes. Rung 3 is not wired into the agent yet.
+- **The words say what is really happening.** The stored verdict says only "N listings not confirmed yet". The deal row
+  (`agent/views.ts confirmingNote`) replaces it from the agent's queue (`AgentRuntime.autoConfirm.queue` and `nextAt`, written
+  by `noteConfirmQueue` at start, after each drip round and after a scan): "N listings are being confirmed — next check in
+  about 4 min" only for listings the catalog check or rung 2 will really read at a known time (rung 2's wait for the next day
+  when today's allowance is spent); otherwise "N listings could not be confirmed from Amazon's data — Confirm them (1 search
+  each)". A queue more than 15 minutes past its time is stale and says nothing. `AgentState.agent.drip.confirmWaiting` counts
+  them, and `nextAt` is set whenever any drip work waits.
+- **Replay on the owner's third scan** (after-scan3, 30 title matches): 3 settled offline by the catalog check (PCL235,
+  DCF921B, DCB606, from the recorded pulls); 27 need a live read. Of those, rung 1 on the stored search row (title and
+  brand only, the most a Keepa pull could settle) passes 23 and stops 4 (A967001 and A10FB1G: no RYOBI P-pattern model to read;
+  DCK540D1: title says 5Ah where D is 2.0Ah; DCK225D2: the title also names its kit tools DCD794 and DCF809, which the title rule does not read as this model): those go to rung 2 or the owner.
