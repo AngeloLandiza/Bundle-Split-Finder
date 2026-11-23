@@ -60,9 +60,9 @@ describe('planKeepaRun', () => {
     expect(deferred).toEqual(['k3']);
   });
 
-  it('plans lookups by lookup token cost (search plus detail batch), not one per token', () => {
+  it('plans lookups by lookup token cost (search plus one price pull, 11), not one per token', () => {
     const plan = planKeepaRun(
-      { tokensPerRun: 60, discoveryShare: 50, reserve: 0, mode: 'auto' },
+      { tokensPerRun: 20, discoveryShare: 50, reserve: 0, mode: 'auto' },
       { pendingLookups: ['a', 'b', 'c'], staleRefreshes: [], openDiscoveryWork: 3, totalWork: 3 },
     );
     expect(plan.lookups).toEqual(['a']);

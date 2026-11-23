@@ -2,10 +2,16 @@
 
 import type { KeepaTrackingDepth } from './types';
 
-/** Keepa product search. */
+/** Keepa product search: fixtures/keepa/search-RYOBI-PCL235B.json consumed 10 tokens for 20 products. */
 export const KEEPA_SEARCH_TOKEN_ESTIMATE = 10;
-/** Search plus up to a 20-ASIN detail batch when search returns `asinList` only. */
-export const KEEPA_LOOKUP_TOKEN_ESTIMATE = KEEPA_SEARCH_TOKEN_ESTIMATE + 20;
+/**
+ * One Amazon lookup on Keepa, as recorded (Nov 23): the search (10 tokens) returns its products with title, brand,
+ * partNumber, monthlySold and fees, but no `stats` and no `csv`, so no price; the listing the matcher chooses is then
+ * pulled once with stats (1 token: product-…-stats.json consumed 3 for 3 ASINs) for its current price. 10 + 1.
+ * The old figure, 30, counted a 20-ASIN detail batch the recorded search never needs.
+ */
+export const KEEPA_PRICE_PULL_TOKENS = 1;
+export const KEEPA_LOOKUP_TOKEN_ESTIMATE = KEEPA_SEARCH_TOKEN_ESTIMATE + KEEPA_PRICE_PULL_TOKENS;
 
 /**
  * Offer pages `offers=20` can return per product: Keepa bills "6 for every found offer page (contains up to 10 offers)

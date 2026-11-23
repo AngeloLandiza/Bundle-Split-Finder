@@ -91,6 +91,7 @@ describe('paid actions with Keepa product pages', () => {
       budget,
       { lookupUsesKeepa: true, keepaBudget },
     );
-    expect(q).toMatchObject({ searches: 0, keepaTokens: 30, refusal: null });
+    // Step 15: a lookup is the search (10) and one price pull (1), as recorded.
+    expect(q).toMatchObject({ searches: 0, keepaTokens: 11, refusal: null });
   });
 });

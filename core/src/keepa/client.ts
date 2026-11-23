@@ -3,7 +3,7 @@
 
 import { type Cache, type CacheEntry, MemoryCache } from '../serpapi/client';
 import { type TokenBlockReason, TokenBudget, TOKEN_BLOCK_MESSAGE } from './budget';
-import { parseProductResponse, parseSearchResponse } from './parse';
+import { parseMeta, parseProductResponse, parseSearchResponse } from './parse';
 import type { KeepaMeta, KeepaProductResponse, KeepaSearchResponse, KeepaTrackingDepth } from './types';
 import { KEEPA_DOMAIN_US } from './types';
 
@@ -43,6 +43,8 @@ export interface KeepaLedgerEntry {
   tokens: number;
   tokensLeft: number;
   refillIn: number;
+  /** Tokens the account refills a minute, as this answer said (recorded: 1). */
+  refillRate?: number;
 }
 
 export interface KeepaClientOptions {
@@ -120,6 +122,28 @@ export class KeepaClient {
     return this.call('search', query, (body) => parseSearchResponse(body), 'search', options.estimate ?? 10, options);
   }
 
+  /**
+   * Step 15: the account's token status, free (Keepa's `token` request consumes no tokens), never cached and never
+   * refused by the budget. Its body carries the same meta fields as every other Keepa answer (parseMeta); the balance it
+   * reports is noted on the budget like any other answer's, with nothing spent.
+   */
+  async tokenStatus(): Promise<{ tokensLeft: number; refillRate: number; refillIn: number }> {
+    const url = new URL(`${this.baseUrl}/token`);
+    url.searchParams.set('key', this.opts.apiKey);
+    let res: Response;
+    try {
+      res = await this.fetchFn(url.toString());
+    } catch (err) {
+      throw new KeepaError(`${KEEPA_NETWORK}: ${(err as Error).message}`);
+    }
+    if (res.status === 401) throw new KeepaError('Keepa did not accept this key.', 401);
+    if (!res.ok) throw new KeepaError(`Keepa returned HTTP ${res.status}.`, res.status);
+    const meta = parseMeta((await res.json()) as Record<string, unknown>);
+    if (meta.error) throw new KeepaError(meta.error.message);
+    this.opts.budget.noteMeta(meta.tokensLeft, 0, meta.refillRate);
+    return { tokensLeft: meta.tokensLeft, refillRate: meta.refillRate, refillIn: meta.refillIn };
+  }
+
   private async call<T extends KeepaParsed>(
     path: string,
     query: Record<string, string>,
@@ -172,6 +196,7 @@ export class KeepaClient {
       tokens: parsed.meta.tokensConsumed,
       tokensLeft: parsed.meta.tokensLeft,
       refillIn: parsed.meta.refillIn,
+      refillRate: parsed.meta.refillRate,
     });
     const at = this.now();
     const entry: CacheEntry = { at, data: body };
