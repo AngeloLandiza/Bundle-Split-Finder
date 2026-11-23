@@ -10,6 +10,7 @@ import { choicesOf, ownerAnswer } from './answers';
 import { kitCatalog, kitPageTarget } from './kitPage';
 import { ebayPriceOption } from '../ebay/value';
 import { componentCounts } from './classify';
+import { suggestPrice } from './suggest';
 import { twinKeys, twinKeysOf } from './twins';
 import {
   type BundleRecord,
@@ -54,14 +55,16 @@ const SECTION_RANK: Record<ReportSection, number> = { confirmed: 0, waiting: 1, 
 interface RefsOf {
   hd(brand: string, model: string): PartPriceRecord | undefined;
   ebay(brand: string, model: string): EbayValueRecord | undefined;
+  /** Suggested prices: the part's stored eBay record with its judged listings, with or without a value (its own, else a twin's). */
+  ebayListings(brand: string, model: string): EbayValueRecord | undefined;
   /** The owner's confirmed price for this part only. A twin's price is a different product. */
   confirmed(brand: string, model: string): ConfirmedPrice | undefined;
   /** Signals round 2: Keepa's stored figures for a listing (keepa:trend:<asin>), when the caller read them. */
   trend(asin: string): KeepaFees | undefined;
 }
 
-/** What the estimate may take from a listing's stored Keepa trend. */
-export type KeepaFees = Pick<PartTrend, 'fbaFee' | 'referralPercent'>;
+/** What the estimate may take from a listing's stored Keepa trend; suggested prices (Nov 23) read its averages too. */
+export type KeepaFees = Pick<PartTrend, 'fbaFee' | 'referralPercent'> & Partial<Pick<PartTrend, 'newAvg90' | 'newAvg30' | 'pulledAt'>>;
 
 /** Signals round 2: what buildReport may read beside the store. Without `trend`, every part takes the flat settings. */
 export interface ReportOptions {
@@ -71,7 +74,9 @@ export interface ReportOptions {
 
 async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsOf> {
   const hdByKey = new Map((await store.listPartPrices()).filter((r) => r.price !== null).map((r) => [r.key, r] as const));
-  const ebayByKey = new Map((await store.listEbayValues()).filter((r) => r.value !== null).map((r) => [r.key, r] as const));
+  const ebayAll = await store.listEbayValues();
+  const ebayByKey = new Map(ebayAll.filter((r) => r.value !== null).map((r) => [r.key, r] as const));
+  const ebayListed = new Map(ebayAll.filter((r) => r.listings.length > 0).map((r) => [r.key, r] as const));
   const confirmedByKey = new Map((await store.listConfirmedPrices()).map((r) => [r.key, r] as const));
   const first = <T>(by: Map<string, T>, brand: string, model: string): T | undefined => {
     for (const key of [partKey(brand, model), ...twinKeys(brand, model)]) {
@@ -83,6 +88,7 @@ async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsO
   return {
     hd: (brand, model) => first(hdByKey, brand, model),
     ebay: (brand, model) => first(ebayByKey, brand, model),
+    ebayListings: (brand, model) => first(ebayListed, brand, model),
     confirmed: (brand, model) => confirmedByKey.get(partKey(brand, model)),
     trend: (asin) => opts.trend?.(asin),
   };
@@ -164,7 +170,10 @@ function priceOptions(
   // Counted while no Amazon New price is. Once one is, the owner's figure stays, as a reference, with its link.
   if (confirmed) {
     const amazonCounts = active && price?.price != null && price.seenAt !== null;
-    out.push({ ...base, kind: 'confirmed', price: confirmed.price, asin: null, link: confirmed.link, seenAt: confirmed.confirmedAt, reference: amazonCounts, ...(confirmed.note ? { note: confirmed.note } : {}) });
+    out.push({
+      ...base, kind: 'confirmed', price: confirmed.price, asin: null, link: confirmed.link, seenAt: confirmed.confirmedAt, reference: amazonCounts,
+      ...(confirmed.note ? { note: confirmed.note } : {}), ...(confirmed.source ? { source: confirmed.source } : {}),
+    });
   }
   if (hd && hd.price !== null && hd.seenAt !== null) {
     const soldAs = hd.matchedModel ?? hd.model;
@@ -215,6 +224,18 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
     const confirmedOpt = prices.find((o) => o.kind === 'confirmed' && !o.reference);
     // The fees of a counted price: Keepa's for the listing whose Amazon New price counts, the flat settings for a confirmed one.
     const fees = featured && match?.asin ? feesOf(settings.fees, refs.trend(match.asin)) : confirmedOpt ? feesOf(settings.fees, 'confirmed') : undefined;
+    // Suggested prices (Nov 23): at most one, never counted until the owner confirms it (scan/suggest.ts).
+    const suggestion = featured || confirmedOpt
+      ? null
+      : suggestPrice(
+        { status: match?.status ?? 'unmatched', availability, asin: match?.asin ?? null, prices },
+        {
+          amazonDomain: settings.amazonDomain,
+          ...(match?.asin ? { trend: refs.trend(match.asin) } : {}),
+          ...(refs.ebayListings(brand, model) ? { ebay: refs.ebayListings(brand, model)! } : {}),
+          ...(refs.hd(brand, model) ? { hd: refs.hd(brand, model)! } : {}),
+        },
+      );
     rows.push({
       model,
       qty: counts[model]!,
@@ -231,6 +252,7 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
       ...(listing && isBulkPackaging(listing.title) ? { packaging: 'bulk' as const } : {}),
       ...verification(match),
       ...(fees ? { fees } : {}),
+      ...(suggestion ? { priceSuggestion: suggestion } : {}),
     });
   }
   return rows;
@@ -278,6 +300,20 @@ function incompleteOf(
     breakEvenPrice: one && breakEvenNet > 0 ? priceForNet(breakEvenNet / one.qty, settings.fees) : null,
     unpriced: unpriced.map((p) => ({ model: p.model, qty: p.qty, state: unpricedState(p) })),
   };
+}
+
+/**
+ * Suggested prices (Nov 23): what the option would make if the owner confirmed every unpriced part's suggestion, evaluated
+ * as the estimate is, each suggestion as a confirmed price would count (the fee settings' rule for a confirmed price). Only
+ * when every unpriced part has one: otherwise there is still no estimate to show. An estimate from the fee settings (rule 5).
+ */
+function ifAcceptedOf(
+  settings: ScanSettings, bundlePrice: number, components: Record<string, number>, priced: PricedListing[], unpriced: PartRow[],
+): Pick<IncompleteEstimate, 'ifAccepted'> {
+  if (unpriced.length === 0 || !unpriced.every((p) => p.priceSuggestion)) return {};
+  const suggested = unpriced.map((p): PricedListing => ({ asin: `suggested:${p.model}`, covers: { [p.model]: 1 }, price: p.priceSuggestion!.price }));
+  const r = evaluateBundle(bundlePrice, components, [...priced, ...suggested], settings.fees, settings.liquidationRate).result;
+  return { ifAccepted: { profit: r.profit, roi: r.roi, suggested: unpriced.length } };
 }
 
 // A bundle with no parts is never confirmed, and neither is one without its own price. A priced
@@ -389,7 +425,9 @@ async function optionOf(
   // the priced parts bring and the break-even. An item with no model number is not a reason (it is not counted).
   const unpriced = parts.filter((p) => listingFor(p) === null);
   const estimate = b.price === null || unpriced.length > 0 ? null : evaluation.result;
-  const incomplete = b.price !== null && unpriced.length > 0 ? incompleteOf(settings, b.price, components, parts, priced, unpriced) : undefined;
+  const incomplete = b.price !== null && unpriced.length > 0
+    ? { ...incompleteOf(settings, b.price, components, parts, priced, unpriced), ...ifAcceptedOf(settings, b.price, components, priced, unpriced) }
+    : undefined;
   const uncovered = b.price === null
     ? [...parts.map((p) => p.model), ...unnamed.values()]
     : [...evaluation.uncovered.filter((k) => !k.startsWith(UNNAMED)), ...leftUnnamed.map(([, name]) => name)];

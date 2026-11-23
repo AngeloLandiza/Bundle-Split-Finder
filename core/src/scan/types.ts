@@ -837,6 +837,17 @@ export interface PartRow {
   confirmNote?: string;
   verifyEvidence?: string;
   /**
+   * Suggested prices (Nov 23): at most one price the agent prepares for a part with no counted price, with its evidence,
+   * for the owner to confirm in one click (scan/suggest.ts). Never counted until he confirms it (the PO, Nov 20: his
+   * approval is the answer). Absent when the part has a counted price, is in Review or not looked up, or no rule gives one.
+   */
+  priceSuggestion?: PriceSuggestion;
+  /**
+   * Answer once (Nov 23): what the owner settled about this model, applied in every bundle that holds it (core/src/facts).
+   * Absent when he settled nothing about it.
+   */
+  fact?: PartFactView;
+  /**
    * Signals round 2: the fees the estimate used for one unit of this part, each with where it came from: Keepa's figure for
    * the part's listing (fees.fulfillmentSource / referralSource 'keepa' and a stored figure) or the flat setting. Absent
    * while the part has no counted price.
@@ -876,6 +887,47 @@ export interface PartFees {
  */
 export type PriceKind = 'amazon_new' | 'amazon_buybox' | 'confirmed' | 'amazon_list' | 'homedepot' | 'ebay_sold_new';
 
+/**
+ * Suggested prices (Nov 23): a price the agent prepares for a part with no counted price, never counted until the owner
+ * confirms it. amazon_average: its Amazon listing is not for sale now, and Keepa's recent average New price (90 days, else
+ * 30) is the figure. ebay_median: it has no Amazon listing, and the middle of at least 3 stored eBay listings (New, Buy It
+ * Now) the judge or the owner marked the same product is the figure. Home Depot's own price for the part sold alone is his
+ * cost side, never a suggestion: it may be a context line in `evidence`.
+ */
+export interface PriceSuggestion {
+  price: number;
+  kind: 'amazon_average' | 'ebay_median';
+  /** "Amazon listing not for sale now; its 90-day average was $X (Keepa)", "6 eBay listings, $58–$74, middle $66". */
+  label: string;
+  /** What the figure rests on, each with its link when it has one. */
+  evidence: { text: string; url?: string }[];
+  /**
+   * fba: the part has an Amazon listing to sell on (its FBA fee can be read); none: no listing, so a confirmed price takes
+   * the fee settings' rule for a price with no listing (report.ts feesOf 'confirmed').
+   */
+  fulfillment?: 'fba' | 'none';
+}
+
+/** A suggested price the owner confirmed: what it was and what it rested on, kept with the price. */
+export interface ConfirmedSource {
+  kind: PriceSuggestion['kind'];
+  label: string;
+  evidence: { text: string; url?: string }[];
+}
+
+/**
+ * Answer once (Nov 23): what the owner settled about one model, as a part row shows it. `from`: when he said it, and the
+ * question he said it in when there was one. `stale`: newer evidence contradicts it (Home Depot or Amazon now sells it on its
+ * own), in one sentence: the fact is then not applied until he keeps or changes it.
+ */
+export interface PartFactView {
+  /** In the owner's words: "In the box, not sold separately", "Sold whole", "Sold as PCL406B and PCL424B", "A part of these bundles". */
+  text: string;
+  at: number;
+  questionId?: string;
+  stale?: string;
+}
+
 /** A New sell price the owner confirmed for one part, and the listing that shows it. */
 export interface ConfirmedPrice {
   /** partKey(brand, model). */
@@ -889,6 +941,8 @@ export interface ConfirmedPrice {
   confirmedAt: number;
   /** A line the owner added ("seen at the Milwaukee store"). Never read as data; shown with the price. */
   note?: string;
+  /** Present when he confirmed one of the agent's suggested prices (scan/suggest.ts): what it was and what it rested on. */
+  source?: ConfirmedSource;
 }
 
 /** Step 9: one labelled price for a part. */
@@ -926,6 +980,8 @@ export interface PriceOption {
   ebay?: EbayValue;
   /** confirmed only: the owner's note on the price, when he wrote one. */
   note?: string;
+  /** confirmed only: the suggestion he confirmed, when the price was one (ConfirmedPrice.source). */
+  source?: ConfirmedSource;
 }
 
 /**
@@ -979,6 +1035,11 @@ export interface IncompleteEstimate {
   breakEvenPrice: number | null;
   /** The model parts with no counted price, in part order. */
   unpriced: UnpricedPart[];
+  /**
+   * Suggested prices (Nov 23): what the option would make if the owner accepted every unpriced part's suggestion, from the
+   * fee settings (rule 5). A second line, never the headline and never a buy. Present only when every unpriced part has one.
+   */
+  ifAccepted?: { profit: number; roi: number; suggested: number };
 }
 
 /**

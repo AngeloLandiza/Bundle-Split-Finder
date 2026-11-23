@@ -1,7 +1,7 @@
 // A sell price the owner confirms by hand, with a link to the listing that shows it.
 // The worker stores only what this accepts. Nothing here searches or guesses a price.
 
-import { partKey, type BundleRow, type ConfirmedPrice, type PartRow, type UnnamedItem } from './types';
+import { partKey, type BundleRow, type ConfirmedPrice, type PartRow, type PriceSuggestion, type UnnamedItem } from './types';
 
 const PRICE_MAX = 100_000;
 /** A model number. A leftover's page text is longer, so the model field has its own cap. */
@@ -139,6 +139,8 @@ export interface ConfirmPriceInput {
   price?: unknown;
   url?: unknown;
   note?: unknown;
+  /** kind 'suggested': the suggestion as the owner was shown it (PartRow.priceSuggestion). */
+  suggestion?: unknown;
 }
 
 export type ConfirmPlan =
@@ -163,7 +165,8 @@ export function planConfirmedPrice(bundle: BundleRow, model: string, input: Conf
     if (state === 'amazon-counts' && !holds) return refuse('conflict', AMAZON_COUNTS);
   }
   const partModel = target.kind === 'part' ? target.part.model : target.item.model;
-  if (input.kind !== 'ebay-listing' && input.kind !== 'typed') return refuse('bad_request', 'kind must be ebay-listing or typed.');
+  if (input.kind === 'suggested') return planSuggested(bundle, target, input, now);
+  if (input.kind !== 'ebay-listing' && input.kind !== 'typed') return refuse('bad_request', 'kind must be ebay-listing, typed or suggested.');
   let price = input.price;
   let link = input.url;
   if (input.kind === 'ebay-listing') {
@@ -180,6 +183,30 @@ export function planConfirmedPrice(bundle: BundleRow, model: string, input: Conf
   const parsed = parseConfirmedPrice({ brand: bundle.brand, model: partModel, price, link, note: input.note }, now);
   if (typeof parsed === 'string') return refuse('bad_request', parsed);
   return { ok: true, record: parsed };
+}
+
+export const SUGGESTION_GONE = 'That suggestion is not the one the agent has for this part now. Look at the part again.';
+
+/**
+ * Suggested prices (Nov 23): the owner confirms the agent's one suggestion for a part. The suggestion is the one the part
+ * carries now (PartRow.priceSuggestion, built from stored data), never the figure the client sends: the kind and the price
+ * he was shown must equal it to the cent, or it is refused (a scan may have changed it). The record is an ordinary confirmed
+ * price whose link is the suggestion's first linked evidence (the Amazon listing, or the eBay listing nearest the middle) and
+ * whose `source` keeps what it rested on. It counts because he chose it, as any confirmed price (the PO, Nov 20).
+ */
+function planSuggested(bundle: BundleRow, target: ConfirmTarget, input: ConfirmPriceInput, now: number): ConfirmPlan {
+  const live: PriceSuggestion | undefined = target.kind === 'part' ? target.part.priceSuggestion : undefined;
+  if (!live) return refuse('conflict', 'This part has no suggested price now.');
+  const sent = input.suggestion && typeof input.suggestion === 'object' ? (input.suggestion as Record<string, unknown>) : null;
+  const sentPrice = typeof sent?.price === 'number' ? sent.price : Number.NaN;
+  if (!sent || sent.kind !== live.kind || !Number.isFinite(sentPrice) || Math.round(sentPrice * 100) !== Math.round(live.price * 100)) {
+    return refuse('conflict', SUGGESTION_GONE);
+  }
+  const link = live.evidence.find((e) => typeof e.url === 'string' && e.url !== '' && !/^Context:/.test(e.text))?.url;
+  if (!link) return refuse('conflict', 'This suggestion has no listing to link the price to.');
+  const parsed = parseConfirmedPrice({ brand: bundle.brand, model: (target as { part: PartRow }).part.model, price: live.price, link, note: input.note }, now);
+  if (typeof parsed === 'string') return refuse('bad_request', parsed);
+  return { ok: true, record: { ...parsed, source: { kind: live.kind, label: live.label, evidence: live.evidence.map((e) => ({ ...e })) } } };
 }
 
 /** The key to delete when the owner removes a part's confirmed price, or why not. */
