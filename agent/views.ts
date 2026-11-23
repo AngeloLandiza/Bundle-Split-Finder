@@ -33,6 +33,7 @@ import { staleBundleDays } from '../core/src/deals/freshness';
 import { limitCopy } from '../core/src/deals/limitCopy';
 import { DEAL_SECTION_ORDER } from '../core/src/deals/sections';
 import { DEAL_SORTS, sortDealRows, type DealSortKey } from '../core/src/deals/sort';
+import { plainVerification } from '../core/src/assist/plain';
 import { choicesOf, reviewSignature } from '../core/src/scan/answers';
 import { matchState, WAITING_PAGE, WAITING_PARTS } from '../core/src/scan/matchState';
 import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
@@ -331,6 +332,9 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
     if (bundle?.link) sources.push({ label: `Home Depot: ${bundle.brand} ${bundle.model}`, url: bundle.link, source: 'homedepot' });
     for (const c of q.candidates) if (c.asin) sources.push({ label: `Amazon: ${c.title || c.asin}`, url: amazonLink(c.asin), source: 'amazon' });
     const live = liveSuggestion(data.suggestions, q) ?? null;
+    const shown = live ?? latestSuggestion(data.suggestions, q.id);
+    // Step 15, rule 5: a suggestion the code did not verify says why in one plain sentence; the reasons stay for Activity.
+    const plain = shown && shown.suggestion.status === 'unverified' ? plainVerification(shown.suggestion.reasons, q.kind) : null;
     questions.push({
       id: q.id,
       kind: q.kind,
@@ -340,7 +344,7 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
       title: q.title,
       reason: q.reason,
       sources,
-      suggestion: live ?? latestSuggestion(data.suggestions, q.id),
+      suggestion: shown,
       item: { kind: q.kind, question: q },
       seen: reviewSignature(q),
       prompt: promptOf(q),
@@ -348,6 +352,7 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
       choices: choicesFor(q),
       askCostUsd: q.kind === 'match' && q.candidates.length === 0 ? null : estimatedQuestionCost(q.kind, (q.kind === 'split' ? ai.research : ai.assist).model),
       suggestionQuotes: quotesOf(live),
+      ...(plain !== null ? { suggestionPlain: plain } : {}),
     });
   }
   for (const e of data.review.ebayQuestions) {
