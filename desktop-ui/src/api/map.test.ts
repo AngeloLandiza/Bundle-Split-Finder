@@ -45,6 +45,23 @@ describe('the agent state', () => {
     expect(s.helper.jobsWaiting).toBe(4);
     expect(s.firstRun).toBe(false);
   });
+  it('carries the unread-page and outdated-helper fields when the agent sends them, and nothing when it does not', () => {
+    expect(mapState(base).agent.lastScan).not.toHaveProperty('pagesUnread');
+    expect(mapState(base).helper).not.toHaveProperty('outdated');
+    const next = structuredClone(base) as C.AgentState & { agent: { lastScan: Record<string, unknown> }; helper: Record<string, unknown> };
+    next.agent.lastScan.pagesUnread = 16;
+    next.agent.lastScan.canReadPagesAgain = true;
+    next.helper.outdated = true;
+    next.helper.version = '0.4.1';
+    const s = mapState(next);
+    expect(s.agent.lastScan).toMatchObject({ pagesUnread: 16, canReadPagesAgain: true });
+    expect(s.helper).toMatchObject({ outdated: true, version: '0.4.1' });
+  });
+  it('tells a stop the owner asked for from one the agent made', () => {
+    const stop = (stopMessage: string | null) => mapState({ ...base, agent: { ...base.agent, lastScan: { ...base.agent.lastScan!, status: 'stopped', stopMessage } } }).agent.lastScan;
+    expect(stop(null)?.userStopped).toBe(true);
+    expect(stop('Home Depot refused a page (HTTP 200).')?.userStopped).toBeUndefined();
+  });
   it('words a status the agent never sends as failed, not as a success', () => {
     expect(scanResult('unknown')).toBe('failed');
     expect(scanResult('running')).toBe('running');
@@ -122,6 +139,12 @@ describe('a deal row\'s tracking flags', () => {
   });
   it('reads an older agent that sends none of them as not watched, not worth buying now and no promotion', () => {
     expect(mapRow(wire({}))).toMatchObject({ watched: false, buyNow: false, bogo: null, bogoPair: null, bogoChoices: null });
+  });
+  it('reads waiting_page, from its own field or as the match state, as waiting: never as a question', () => {
+    expect(mapRow({ ...wire({ needsAnswer: true }), matchKind: 'waiting_page' } as C.DealRow)).toMatchObject({ matchKind: 'waiting_page', needsAnswer: false });
+    expect(mapRow(wire({ needsAnswer: true, matchState: 'waiting_page' }))).toMatchObject({ matchKind: 'waiting_page', needsAnswer: false });
+    expect(mapRow(wire({ needsAnswer: true }))).toMatchObject({ needsAnswer: true });
+    expect(mapRow(wire({}))).not.toHaveProperty('matchKind');
   });
   it('reads the BOGO pair and its group as sent (the recorded DEWALT pair)', () => {
     const bogoPair = { promotionId: '945972', starterItemId: '334337675', starterModel: 'DCK200D1P1', freeModel: '921B', endsAt: '2027-01-31', description: 'BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL' };

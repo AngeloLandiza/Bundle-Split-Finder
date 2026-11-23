@@ -20,6 +20,12 @@ describe('deal views', () => {
     expect(inView(row('PCL1600K2-P553'), 'waiting')).toBe(true);
     expect(inView(row('PCL1200K2'), 'waiting')).toBe(false);
   });
+  it('puts a bundle waiting for its Home Depot page under Waiting for a lookup, never under Needs an answer', () => {
+    const r: DealRow = { ...row('PCL1600K2'), needsAnswer: false, matchKind: 'waiting_page', profit: null };
+    expect(inView(r, 'waiting')).toBe(true);
+    expect(inView(r, 'needs-answer')).toBe(false);
+    expect(inView(r, 'confirmed')).toBe(false);
+  });
   it('counts Losing money only from an estimate below zero', () => {
     const loss = { ...row('PCL1200K2'), profit: -12.5 };
     expect(inView(loss, 'losing')).toBe(true);

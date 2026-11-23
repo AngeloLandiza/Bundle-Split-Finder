@@ -27,11 +27,12 @@ export function inView(r: DealRow, view: DealView): boolean {
     case 'all':
       return true;
     case 'confirmed':
-      return r.section === 'confirmed' && !r.needsAnswer;
+      return r.section === 'confirmed' && !r.needsAnswer && r.matchKind !== 'waiting_page';
     case 'needs-answer':
       return r.needsAnswer;
     case 'waiting':
-      return r.lookup !== null || r.section === 'waiting';
+      // A bundle whose Home Depot page was not read waits too: for the page, not for an answer.
+      return r.lookup !== null || r.section === 'waiting' || r.matchKind === 'waiting_page';
     case 'losing':
       // Only an estimate below zero; a row that waits for an answer has no estimate to read.
       return !r.needsAnswer && r.profit !== null && r.profit < 0;

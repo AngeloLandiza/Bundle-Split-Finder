@@ -13,6 +13,7 @@ import { WatchToggle } from '../components/WatchToggle';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { copyText, openPage } from '../lib/actions';
+import { isWaitingPage, WAITING_PAGE_LABEL } from '../lib/scanProblem';
 import { count, percentOff, plural, upToSearches, when } from '../lib/format';
 import { dealMenu, type DealMenuId } from '../lib/menus';
 import { sortRows, type SortState } from '../lib/sort';
@@ -227,6 +228,8 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       render: (r) =>
         r.lookup ? (
           <LookUp row={r} disabled={scanRunning} />
+        ) : isWaitingPage(r) ? (
+          <Tag title="Home Depot’s page for this bundle was not read. The next scan, or Read pages again, reads it; there is nothing to answer yet.">{WAITING_PAGE_LABEL}</Tag>
         ) : r.needsAnswer ? (
           <Tag tone="attention">Needs your answer</Tag>
         ) : (
@@ -251,6 +254,13 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
             <span className="cell-none narrow-hide">—</span>
             <span className="narrow-show">
               <Tag tone="attention">Needs answer</Tag>
+            </span>
+          </span>
+        ) : isWaitingPage(r) ? (
+          <span className="cell-flag">
+            <span className="cell-none narrow-hide">—</span>
+            <span className="narrow-show">
+              <Tag>Waiting for page</Tag>
             </span>
           </span>
         ) : (
