@@ -44,6 +44,10 @@ export interface ApiClient {
   retry(errorId: string): Promise<void>;
 
   scan(): Promise<void>;
+  /** Reads again the Home Depot pages the last scan could not read (POST /api/scan/read-pages). Free: no search is spent. */
+  readPagesAgain(): Promise<{ started: boolean; reason?: string }>;
+  /** Asks Chrome to reload the helper extension when it is older than the app (POST /api/helper/reload). */
+  reloadHelper(): Promise<void>;
   stop(): Promise<void>;
   pause(): Promise<void>;
   resume(): Promise<void>;

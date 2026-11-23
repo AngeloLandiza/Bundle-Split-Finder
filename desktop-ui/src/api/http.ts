@@ -143,6 +143,8 @@ export function createHttpClient(): ApiClient {
     retry: async (eid) => void (await call('POST', `/api/activity/errors/${id(eid)}/retry`, {})),
 
     scan: async () => void (await call<C.ScanStartResponse>('POST', '/api/scan', {})),
+    readPagesAgain: () => call<{ started: boolean; reason?: string }>('POST', '/api/scan/read-pages', {}),
+    reloadHelper: async () => void (await call('POST', '/api/helper/reload', {})),
     stop: async () => void (await call('POST', '/api/scan/stop', {})),
     pause: async () => void (await call<C.PauseResponse>('POST', '/api/agent/pause', {})),
     resume: async () => void (await call<C.PauseResponse>('POST', '/api/agent/resume', {})),

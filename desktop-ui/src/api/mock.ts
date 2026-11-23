@@ -2,7 +2,7 @@
 // a short delay on every call and events pushed the way the real SSE stream pushes them. It answers
 // in the same shapes as the real client (types.ts), so a screen cannot tell them apart.
 // `?mock=<scenario>` on the URL shows one state: nobuynow (no bundle is worth buying now), firstrun, empty, offline, chrome-closed, limit,
-// scanning, paused, error, slow, pairing. Nothing here touches the network.
+// scanning, paused, error, slow, pairing, unread (a scan stopped on unread Home Depot pages), helper-old. Nothing here touches the network.
 
 import type { PipelineView } from '@core/scan/pipeline';
 import type { ApiClient } from './client';
@@ -13,14 +13,14 @@ import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE, net } from './moc
 import { mockBogoView } from './mockTracking';
 import { ApiError, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type ReviewQuestion } from './types';
 
-type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing';
+type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old';
 
 const clone = <T>(x: T): T => structuredClone(x);
 
 function scenario(): Scenario {
   if (typeof window === 'undefined') return 'normal';
   const s = new URLSearchParams(window.location.search).get('mock');
-  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing'];
+  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old'];
   return all.find((x) => x === s) ?? 'normal';
 }
 
@@ -84,6 +84,15 @@ export function createMockClient(): ApiClient {
     state.agent.lastScan = { at: new Date(Date.now() - 20 * 60_000).toISOString(), result: 'limit', newDeals: 1, searches: 3, message: 'The scan stopped at your reserve of 20 searches. Scans start again when the plan renews on Dec 1.' };
   }
   if (mode === 'paused') state.agent.status = 'paused';
+  if (mode === 'unread') {
+    // The first scan stopped on a Home Depot page read: the bundles whose page was not read wait, they are not questions.
+    const unread = deals.filter((d) => d.needsAnswer).slice(0, 4);
+    const ids = new Set(unread.map((d) => d.id));
+    deals = deals.map((d) => (ids.has(d.id) ? { ...d, needsAnswer: false, matchKind: 'waiting_page' as const, matchState: null, profit: null, roi: null, roiRange: null } : d));
+    questions = questions.filter((q) => !q.bundle.id || !ids.has(q.bundle.id));
+    state.agent.lastScan = { at: new Date(Date.now() - 5 * 60_000).toISOString(), result: 'stopped', newDeals: 0, searches: 3, message: 'Home Depot refused a page (HTTP 200); the rest are read next scan.', pagesUnread: 16, canReadPagesAgain: true };
+  }
+  if (mode === 'helper-old') state.helper = { ...state.helper, outdated: true, version: '0.4.1' };
   if (mode === 'pairing') {
     pairRequests = [{ requestId: 'pair-1', extensionId: 'ponmlkjihgfedcbaponmlkjihgfedcba', code: '482913', requestedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 5 * 60_000).toISOString() }];
   }
@@ -225,6 +234,21 @@ export function createMockClient(): ApiClient {
       await online();
       if (state.agent.status === 'scanning') throw new ApiError('refused', 'A scan is already running.');
       runScan();
+    },
+    async readPagesAgain() {
+      await online(400);
+      const last = state.agent.lastScan;
+      if (!last?.pagesUnread) return { started: false, reason: 'No pages are waiting to be read.' };
+      state.agent.lastScan = { ...last, pagesUnread: 0, canReadPagesAgain: false, message: null, result: 'finished' };
+      deals = deals.map((d) => (d.matchKind === 'waiting_page' ? { ...d, matchKind: null } : d));
+      sync();
+      emit({ type: 'deals' });
+      return { started: true };
+    },
+    async reloadHelper() {
+      await online(400);
+      state.helper = { ...state.helper, outdated: false };
+      sync();
     },
     async stop() {
       await online();

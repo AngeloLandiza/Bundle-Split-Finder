@@ -44,14 +44,48 @@ export function scanResult(status: string): ScanResult | 'running' {
   return RESULTS.includes(status) ? (status as ScanResult) : 'failed';
 }
 
+/**
+ * The fields the agent adds to its state for unread pages and an outdated helper. The contract may not name them
+ * yet, so they are read as optional and only when they have the right type; an older agent simply lacks them.
+ */
+interface StateExtras {
+  pagesUnread?: unknown;
+  canReadPagesAgain?: unknown;
+  outdated?: unknown;
+  version?: unknown;
+  matchKind?: unknown;
+}
+const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+const bool = (v: unknown): boolean | undefined => (typeof v === 'boolean' ? v : undefined);
+
 function lastScanOf(s: C.LastScanSummary): LastScan {
   const result = scanResult(s.status);
+  const x = s as C.LastScanSummary & StateExtras;
+  const pagesUnread = num(x.pagesUnread);
+  const canReadPagesAgain = bool(x.canReadPagesAgain);
   return {
     at: s.at,
     result: result === 'running' ? 'finished' : result,
     newDeals: s.newDeals,
     searches: s.searchesUsed,
     message: s.stopMessage ?? (s.status === 'stopped' ? 'You stopped the scan. Prices found so far are kept.' : null),
+    ...(pagesUnread !== undefined ? { pagesUnread } : {}),
+    ...(canReadPagesAgain !== undefined ? { canReadPagesAgain } : {}),
+    ...(s.status === 'stopped' && !s.stopMessage ? { userStopped: true } : {}),
+  };
+}
+
+function helperOf(s: C.AgentState): AppState['helper'] {
+  const h = s.helper as C.AgentState['helper'] & StateExtras;
+  const outdated = bool(h.outdated);
+  const version = typeof h.version === 'string' ? h.version : undefined;
+  return {
+    paired: h.paired,
+    connected: h.connected,
+    lastSeenAt: h.lastSeenAt,
+    jobsWaiting: h.jobsWaiting ?? s.counts.jobsWaiting,
+    ...(outdated !== undefined ? { outdated } : {}),
+    ...(version !== undefined ? { version } : {}),
   };
 }
 
@@ -65,7 +99,7 @@ export function mapState(s: C.AgentState): AppState {
       nextScanAt: a.nextScanAt,
       lastScan: a.lastScan ? lastScanOf(a.lastScan) : null,
     },
-    helper: { paired: s.helper.paired, connected: s.helper.connected, lastSeenAt: s.helper.lastSeenAt, jobsWaiting: s.helper.jobsWaiting ?? s.counts.jobsWaiting },
+    helper: helperOf(s),
     budget: {
       serpLeft: s.budget.serpLeft,
       serpMonthly: s.budget.serpMonthly ?? null,
@@ -86,7 +120,14 @@ export function mapState(s: C.AgentState): AppState {
 const rangeOf = (low: number | null, high: number | null): RoiRange | null => (low !== null && high !== null ? { low, high } : null);
 const priceRangeOf = (r: PriceRange): RoiRange | null => rangeOf(r.lowest?.roi ?? null, r.highest?.roi ?? null);
 
+/** A bundle whose Home Depot page could not be read: the agent says so as the row's `matchKind`, or as its match state. */
+function matchKindOf(r: C.DealRow): DealRow['matchKind'] {
+  const x = r as C.DealRow & StateExtras;
+  return x.matchKind === 'waiting_page' || r.matchState === 'waiting_page' ? 'waiting_page' : null;
+}
+
 export function mapRow(r: C.DealRow): DealRow {
+  const matchKind = matchKindOf(r);
   return {
     id: r.id,
     title: r.bundle.title,
@@ -106,7 +147,9 @@ export function mapRow(r: C.DealRow): DealRow {
     profit: r.profit,
     roi: r.roi,
     roiRange: rangeOf(r.roiRange.low, r.roiRange.high),
-    needsAnswer: r.needsAnswer,
+    // Without its page the parts are not known, so there is no question to answer yet.
+    needsAnswer: r.needsAnswer && matchKind === null,
+    ...(matchKind ? { matchKind } : {}),
     updatedAt: r.updatedAt,
     lookup: r.lookup ?? null,
   };

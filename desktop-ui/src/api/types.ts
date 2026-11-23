@@ -49,6 +49,12 @@ export interface LastScan {
   searches: number;
   /** One sentence for stopped, limit and failed. */
   message: string | null;
+  /** Home Depot pages the scan could not read; their parts are not known yet. Absent from an older agent. */
+  pagesUnread?: number;
+  /** Whether "Read pages again" can start now (a free retry of just those pages). Absent from an older agent. */
+  canReadPagesAgain?: boolean;
+  /** True when the owner pressed Stop: a stop he asked for is not a problem to show. Set by map.ts. */
+  userStopped?: boolean;
 }
 
 export interface AgentView {
@@ -68,6 +74,10 @@ export interface HelperState {
   lastSeenAt: string | null;
   /** Home Depot read jobs waiting for Chrome. */
   jobsWaiting: number;
+  /** The Chrome helper is older than the app, so it may not read pages the way this version expects. Absent from an older agent. */
+  outdated?: boolean;
+  /** The helper's own version, when it said one. */
+  version?: string;
 }
 
 export interface BudgetState {
@@ -130,6 +140,8 @@ export interface DealRow {
   /** Only when both ends are known. */
   roiRange: RoiRange | null;
   needsAnswer: boolean;
+  /** 'waiting_page': the bundle's own Home Depot page could not be read, so its parts are not known yet (not a question for him). */
+  matchKind?: 'waiting_page' | null;
   updatedAt: string;
   /** Parts still to look up and what that costs, for "Look up · 2 searches". */
   lookup: { searches: number } | null;
