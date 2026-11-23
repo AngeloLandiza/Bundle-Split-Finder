@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { globalKey, isMenuKey, listKey, reviewKey, type KeyPress } from './keys';
+import { globalKey, isMenuKey, listKey, reviewKey, type KeyPress, windowsKey } from './keys';
 
 const k = (key: string, extra: Partial<KeyPress> = {}): KeyPress => ({ key, target: 'none', ...extra });
 
@@ -99,5 +99,20 @@ describe('Ctrl on Windows answers wherever Cmd does on a Mac', () => {
     expect(isMenuKey({ key: 'F10', shift: true })).toBe(true);
     expect(isMenuKey({ key: 'ContextMenu' })).toBe(true);
     expect(isMenuKey({ key: 'F10', shift: true, ctrl: true })).toBe(false);
+  });
+});
+
+describe('windowsKey', () => {
+  it('Ctrl+R scans, Ctrl+, opens Settings, F5 refreshes', () => {
+    expect(windowsKey({ key: 'r', ctrl: true })).toEqual({ type: 'scan' });
+    expect(windowsKey({ key: 'R', ctrl: true })).toEqual({ type: 'scan' });
+    expect(windowsKey({ key: ',', ctrl: true })).toEqual({ type: 'settings' });
+    expect(windowsKey({ key: 'F5' })).toEqual({ type: 'refresh' });
+  });
+  it('leaves Cmd keys to the Mac menu and other chords alone', () => {
+    expect(windowsKey({ key: 'r', meta: true })).toBeNull();
+    expect(windowsKey({ key: 'r', ctrl: true, shift: true })).toBeNull();
+    expect(windowsKey({ key: 'r' })).toBeNull();
+    expect(windowsKey({ key: 'k', ctrl: true })).toBeNull();
   });
 });

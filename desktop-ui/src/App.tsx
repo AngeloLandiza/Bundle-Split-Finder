@@ -9,10 +9,10 @@ import { ShortcutsSheet } from './components/ShortcutsSheet';
 import { Sidebar } from './components/Sidebar';
 import { INSPECTOR_DEFAULT, UiContext, clampInspector, type UiValue } from './components/ui';
 import { applyLook, onLookChange, readLook, saveLook, shellChrome, type Look } from './lib/appearance';
-import { globalKey, pressOf } from './lib/keys';
+import { globalKey, pressOf, windowsKey } from './lib/keys';
 import { tabForSettingsId } from './lib/prefs';
 import { DEFAULT_ROUTE, hashOf, parseRoute, type Route } from './lib/route';
-import { isMac } from './lib/platform';
+import { isMac, isWindows } from './lib/platform';
 import { openPreferences } from './lib/shell';
 import { ActivityScreen } from './screens/Activity';
 import { DealsScreen } from './screens/Deals';
@@ -276,6 +276,17 @@ export function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (isWindows) {
+        const w = windowsKey(pressOf(e));
+        if (w) {
+          e.preventDefault();
+          if (setupOpen || paletteOpen || shortcutsOpen || sheetOpen) return;
+          if (w.type === 'settings') openPreferences();
+          else if (w.type === 'refresh') refreshState();
+          else if (state?.keys.serpapi && state.agent.status !== 'scanning') void api.scan();
+          return;
+        }
+      }
       if (setupOpen) return;
       const a = globalKey(pressOf(e));
       if (!a) return;
@@ -298,7 +309,7 @@ export function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [navigate, setupOpen, paletteOpen, shortcutsOpen, sheetOpen, openOver, closeOver]);
+  }, [navigate, setupOpen, paletteOpen, shortcutsOpen, sheetOpen, openOver, closeOver, state, refreshState]);
 
   // Move focus to the screen's title on a screen change, so a screen reader hears where it is.
   useEffect(() => {

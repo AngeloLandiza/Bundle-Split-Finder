@@ -25,6 +25,8 @@ export interface KeyPress {
 }
 
 export type GlobalAction = { type: 'go'; screen: Screen } | { type: 'find' } | { type: 'inspector' } | { type: 'palette' } | { type: 'shortcuts' };
+/** Keys a Mac gets from the app menu, which Windows does not attach: the page has to take them itself. */
+export type WindowsAction = { type: 'scan' } | { type: 'settings' } | { type: 'refresh' };
 export type ListAction = { type: 'next' } | { type: 'prev' } | { type: 'open' } | { type: 'close' };
 export type ReviewAction = ListAction | { type: 'choose'; index: number } | { type: 'save' } | { type: 'ask' };
 
@@ -41,6 +43,17 @@ export function globalKey(p: KeyPress): GlobalAction | null {
   // Cmd/Ctrl+K opens the command palette; Cmd/Ctrl+/ lists every shortcut.
   if ((p.meta || p.ctrl) && !p.alt && !p.shift && (p.key === 'k' || p.key === 'K')) return { type: 'palette' };
   if ((p.meta || p.ctrl) && !p.alt && !p.shift && p.key === '/') return { type: 'shortcuts' };
+  return null;
+}
+
+/**
+ * Windows only (the Mac's menu takes Cmd+R and Cmd+, before the page sees them): Ctrl+R scans, Ctrl+, opens Settings,
+ * F5 and Ctrl+R never reload the page (WebView2 would, and Tauri has no switch for it); F5 refreshes the data instead.
+ */
+export function windowsKey(p: Pick<KeyPress, 'key' | 'meta' | 'ctrl' | 'alt' | 'shift'>): WindowsAction | null {
+  if (p.ctrl && !p.meta && !p.alt && !p.shift && (p.key === 'r' || p.key === 'R')) return { type: 'scan' };
+  if (p.ctrl && !p.meta && !p.alt && !p.shift && p.key === ',') return { type: 'settings' };
+  if (p.key === 'F5' && !p.meta && !p.alt) return { type: 'refresh' };
   return null;
 }
 
