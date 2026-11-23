@@ -1,3 +1,13 @@
 fn main() {
-  tauri_build::build()
+  // The commands the dashboard page (a remote origin, see capabilities/agent-ui.json) may call.
+  tauri_build::try_build(
+    tauri_build::Attributes::new().app_manifest(
+      tauri_build::AppManifest::new().commands(&[
+        "agent_status",
+        "get_launch_at_login",
+        "set_launch_at_login",
+      ]),
+    ),
+  )
+  .expect("failed to run tauri-build");
 }

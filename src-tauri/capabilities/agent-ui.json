@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "agent-ui",
+  "description": "The dashboard served by the local agent may read agent status and toggle launch at login. Nothing else.",
+  "windows": ["main"],
+  "remote": {
+    "urls": ["http://127.0.0.1:8790/*"]
+  },
+  "permissions": [
+    "allow-agent-status",
+    "allow-get-launch-at-login",
+    "allow-set-launch-at-login"
+  ]
+}

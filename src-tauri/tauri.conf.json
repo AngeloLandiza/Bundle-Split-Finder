@@ -13,16 +13,20 @@
     "windows": [
       {
         "label": "main",
-        "title": "Split Finder Agent",
-        "width": 800,
-        "height": 600,
+        "title": "Split Finder",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1000,
+        "minHeight": 680,
         "resizable": true,
         "fullscreen": false,
-        "url": "http://127.0.0.1:8790"
+        "visible": false,
+        "create": false,
+        "url": "http://127.0.0.1:8790/ui/"
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://127.0.0.1:8790 ipc: http://ipc.localhost; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
     },
     "withGlobalTauri": false
   },
