@@ -175,6 +175,7 @@ export function createHttpClient(): ApiClient {
     watch: async (dealId, watch) => void (await call<C.WatchResponse>('POST', `/api/deals/${id(dealId)}/watch`, { watch } satisfies C.WatchBody)),
     setBogo: async (dealId, body) => (await call<C.BogoResponse>('POST', `/api/deals/${id(dealId)}/bogo`, body satisfies C.BogoBody)).bogo,
     removeBogo: async (dealId) => void (await call<C.BogoResponse>('DELETE', `/api/deals/${id(dealId)}/bogo`)),
+    priceFromLink: (url) => call<C.PriceFromLinkResponse>('POST', '/api/price-from-link', { url }),
     removePrice: async (dealId, model) => void (await call<C.ConfirmPriceResponse>('DELETE', `/api/deals/${id(dealId)}/parts/${id(model)}/price`)),
 
     settings: async () => (await call<C.SettingsResponse>('GET', '/api/settings')).settings,

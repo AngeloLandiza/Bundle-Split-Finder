@@ -3,7 +3,9 @@
 // sentence that says what is missing. It never makes up a figure (CLAUDE.md rule 4).
 
 import { AMAZON_COUNTS, ANSWER_FIRST, LOOK_UP_FIRST, parseConfirmedPrice } from '@core/scan/confirmed';
+import type { PriceFromLinkFound } from '@core/api/contract';
 import type { ConfirmPriceRequest, DealPart } from '../api/types';
+import { money } from './format';
 
 /** The choice that means "a price I have seen": the other choices are the part's stored eBay listings, by link. */
 export const TYPED = '__typed';
@@ -59,4 +61,61 @@ export function sheetLine(part: Pick<DealPart, 'confirm'>): { kind: 'blocked'; t
   const enter = 'Enter the price you saw and a link to the listing. An eBay or Facebook link is enough.';
   const body = c.ebay.length ? choose : enter;
   return { kind: 'form', text: c.inactive ? `${until} ${body}` : body };
+}
+
+// ---------------------------------------------------------------- a pasted link, read for its price
+
+/**
+ * What the sheet knows about the link he pasted. A found price only fills the price field; it counts when he presses
+ * Save price (docs/decisions.md, "A price counts when he confirms it"). `url` is the link the read was made for, so an
+ * answer for a link he has since changed is dropped.
+ */
+export type LinkRead =
+  | { state: 'idle' }
+  | { state: 'reading'; url: string }
+  | { state: 'found'; url: string; found: PriceFromLinkFound }
+  | { state: 'missed'; url: string; reason: string };
+
+export const IDLE: LinkRead = { state: 'idle' };
+
+/** The pasted text as a link worth reading (http or https, no spaces), or null. */
+export function readableLink(text: string): string | null {
+  const t = text.trim();
+  if (t === '' || /\s/.test(t)) return null;
+  try {
+    const u = new URL(t);
+    return u.protocol === 'http:' || u.protocol === 'https:' ? t : null;
+  } catch {
+    return null;
+  }
+}
+
+const TITLE_MAX = 40;
+
+/** "Found on eBay: $74.99 + $8.50 shipping · New · 'DEWALT DCF887B…'". Shipping is said only when the source gave it; null is "shipping not stated". */
+export function foundLine(f: PriceFromLinkFound): string {
+  const ship = f.shipping === undefined ? '' : f.shipping === null ? ' · shipping not stated' : f.shipping > 0 ? ` + ${money(f.shipping)} shipping` : ' + free shipping';
+  const title = f.title.length > TITLE_MAX ? `${f.title.slice(0, TITLE_MAX).trimEnd()}…` : f.title;
+  return `Found on ${f.source}: ${money(f.price)}${ship}${f.condition ? ` · ${f.condition}` : ''} · '${title}'`;
+}
+
+/** "read just now from eBay", "read 3 min ago from Amazon (Keepa)". */
+export function readSourceLine(f: PriceFromLinkFound, nowMs: number): string {
+  const mins = Math.floor((nowMs - Date.parse(f.readAt)) / 60_000);
+  const when = !(mins >= 1) ? 'just now' : mins < 60 ? `${mins} min ago` : `${Math.floor(mins / 60)} h ago`;
+  return `read ${when} from ${f.source}`;
+}
+
+/** The price field's text for a found price: "74.99". */
+export const foundPriceText = (f: PriceFromLinkFound): string => f.price.toFixed(2);
+
+/**
+ * What Enter does in the form. While a read is under way: nothing. With a link he has not had read and no price yet: read
+ * it (that is what pasting then pressing Enter means). Otherwise: save, and the form's own checks say what is missing.
+ */
+export function enterAction(form: Pick<ConfirmForm, 'choice' | 'price' | 'link'>, read: LinkRead): 'wait' | 'read' | 'save' {
+  if (read.state === 'reading') return 'wait';
+  const link = readableLink(form.link);
+  if (form.choice === TYPED && link !== null && form.price.trim() === '' && !(read.state !== 'idle' && read.url === link)) return 'read';
+  return 'save';
 }

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { confirmedSourceName } from '@core/scan/confirmed';
 import { api, useAction, useApp } from '../api/hooks';
 import type { DealPart } from '../api/types';
-import { confirmRequest, initialForm, sheetLine, TYPED, type ConfirmForm } from '../lib/confirmPrice';
+import { confirmRequest, enterAction, foundLine, foundPriceText, IDLE, initialForm, readableLink, readSourceLine, sheetLine, TYPED, type ConfirmForm, type LinkRead } from '../lib/confirmPrice';
+import { Spinner } from './States';
 import { money } from '../lib/format';
 import { Button, LinkButton } from './Button';
 import { TextField } from './Fields';
@@ -21,9 +22,41 @@ export interface ConfirmTarget {
 
 /**
  * Confirm a price for one part (docs/decisions.md, "A price counts when he confirms it"). He chooses one of the part's
- * stored eBay listings, or types a price and a link (a Facebook link is enough; it is not read). The price counts in
+ * stored eBay listings, or pastes a link (eBay, Amazon and Home Depot links are read for the price, which he still confirms; any other link is not read and he types the price). The price counts in
  * the estimate until an Amazon New price does. A part still in Review has no form: its question comes first.
  */
+/** What reading the pasted link said, within the sheet: a spinner while it reads, then the price found with its source, or why not. */
+function ReadResult({ read }: { read: LinkRead }) {
+  if (read.state === 'reading') {
+    return (
+      <p className="cp-read" role="status">
+        <Spinner size={12} /> Reading the price…
+      </p>
+    );
+  }
+  if (read.state === 'found') {
+    const f = read.found;
+    return (
+      <div className="cp-read" role="status">
+        <p className="cp-found">{foundLine(f)}</p>
+        <p className="cp-source">
+          {readSourceLine(f, Date.now())} · <SourceLink source={{ label: 'Open the listing', url: f.url }} />
+          {f.note ? ` · ${f.note}` : ''}
+        </p>
+        <p className="cp-source">Check it, change it if it is not right, then save.</p>
+      </div>
+    );
+  }
+  if (read.state === 'missed') {
+    return (
+      <p className="cp-read cp-missed" role="status">
+        {read.reason}
+      </p>
+    );
+  }
+  return null;
+}
+
 export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; onClose: () => void }) {
   const { part, dealId } = target;
   const { state, navigate } = useApp();
@@ -41,6 +74,33 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
   const set = (patch: Partial<ConfirmForm>) => {
     setProblem(null);
     setForm((f) => ({ ...f, ...patch }));
+  };
+
+  // The pasted link, read for its price (POST /api/price-from-link). `readFor` is the link the latest read was made for: an
+  // answer that arrives after he changed the link is dropped, and blur after a paste does not read the same link twice.
+  const [read, setRead] = useState<LinkRead>(IDLE);
+  const readFor = useRef<string | null>(null);
+  const readLink = async (raw: string) => {
+    const url = readableLink(raw);
+    if (url === null || readFor.current === url) return;
+    readFor.current = url;
+    setProblem(null);
+    setRead({ state: 'reading', url });
+    let answer: LinkRead;
+    try {
+      const r = await api.priceFromLink(url);
+      answer = r.found ? { state: 'found', url, found: r } : { state: 'missed', url, reason: r.reason };
+    } catch (e) {
+      answer = { state: 'missed', url, reason: e instanceof Error && e.message ? e.message : 'The price could not be read. Type the price you see.' };
+    }
+    if (readFor.current !== url) return;
+    setRead(answer);
+    if (answer.state === 'found') setForm((f) => ({ ...f, choice: TYPED, price: foundPriceText(answer.found) }));
+  };
+  const enter = () => {
+    const what = enterAction(form, read);
+    if (what === 'read') void readLink(form.link);
+    else if (what === 'save') void submit();
   };
 
   const submit = async () => {
@@ -118,7 +178,7 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
           }
           secondary={<Button onClick={onClose}>Cancel</Button>}
           primary={
-            <Button variant="primary" busy={save.busy} busyLabel="Saving…" disabled={scanRunning || busy || form.choice === null} onClick={() => void submit()}>
+            <Button variant="primary" busy={save.busy} busyLabel="Saving…" disabled={scanRunning || busy || form.choice === null || read.state === 'reading'} onClick={() => void submit()}>
               Save price
             </Button>
           }
@@ -139,7 +199,7 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
         className="cp-form"
         onSubmit={(e) => {
           e.preventDefault();
-          void submit();
+          enter();
         }}
       >
         {choices.length > 0 ? (
@@ -173,16 +233,27 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
 
         {typed ? (
           <div className="cp-fields">
-            <TextField label="Price" prefix="$" inputMode="decimal" autoComplete="off" mono type="text" width="sm" value={form.price} onChange={(e) => set({ price: e.target.value })} autoFocus={choices.length === 0} />
             <TextField
               label="Link to the listing"
               type="url"
               autoComplete="off"
-              placeholder="eBay, Facebook or another page"
-              help="A Facebook link is enough. The link is not read; the price is the one you type."
+              placeholder="Paste a link from eBay, Amazon or Home Depot"
+              help="The price is read from an eBay, Amazon or Home Depot link. For any other site, such as Facebook, type the price you see."
               value={form.link}
-              onChange={(e) => set({ link: e.target.value })}
+              autoFocus={choices.length === 0}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (readableLink(value) !== readFor.current) {
+                  readFor.current = null;
+                  setRead(IDLE);
+                }
+                set({ link: value });
+              }}
+              onPaste={(e) => void readLink(e.clipboardData.getData('text'))}
+              onBlur={(e) => void readLink(e.currentTarget.value)}
             />
+            <ReadResult read={read} />
+            <TextField label="Price" prefix="$" inputMode="decimal" autoComplete="off" mono type="text" width="sm" value={form.price} onChange={(e) => set({ price: e.target.value })} />
           </div>
         ) : null}
 

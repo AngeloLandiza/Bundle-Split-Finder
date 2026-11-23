@@ -19,6 +19,7 @@ import { followUpVariants } from './mockFollowUp';
 import real from './mockReal.json';
 import { applyFees } from './mockFees';
 import { mockBogoView } from './mockTracking';
+import { parseListingLink } from '@core/scan/listingLink';
 import { ApiError, isWorking, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type KeyCheck, type KeyName, type DealDetail, type DealRow, type FollowUp, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
 type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems' | 'real-early';
@@ -576,6 +577,14 @@ export function createMockClient(): ApiClient {
       if (d) d.bogo = null;
       deals = deals.map((r) => (r.id === id ? { ...r, bogo: null } : r));
       emit({ type: 'deals' });
+    },
+    async priceFromLink(url) {
+      await online(700);
+      const link = parseListingLink(url);
+      if (link.site === 'ebay' && link.id) {
+        return { found: true, price: 74.99, currency: 'USD', title: 'DEWALT DCF887B 20V MAX XR Brushless Impact Driver Tool Only', condition: 'New', shipping: 8.5, source: 'eBay', url, readAt: new Date().toISOString() };
+      }
+      return { found: false, reason: link.site === 'other' ? 'Split Finder cannot read this site. Type the price you see.' : 'That link does not name one listing. Type the price you see.' };
     },
     async removePrice(id, model) {
       await online(300);

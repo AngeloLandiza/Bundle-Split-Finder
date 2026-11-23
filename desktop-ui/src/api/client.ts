@@ -2,7 +2,7 @@
 // the real HTTP client against the agent (same origin, bearer token from the shell). Both answer
 // in the shapes of types.ts, which map.ts builds from the agent's contract.
 
-import type { InstallExtensionResponse, KeyCheck, KeyValues } from '@core/api/contract';
+import type { InstallExtensionResponse, KeyCheck, KeyValues, PriceFromLinkResponse } from '@core/api/contract';
 import { createHttpClient } from './http';
 import { createMockClient } from './mock';
 import type {
@@ -80,6 +80,8 @@ export interface ApiClient {
   setBogo(dealId: string, body: BogoRequest): Promise<BogoView | null>;
   /** Removes the promotion (DELETE /api/deals/:id/bogo): the deal is no longer a BOGO. */
   removeBogo(dealId: string): Promise<void>;
+  /** Reads a pasted link for its price (POST /api/price-from-link): eBay, Amazon through Keepa, Home Depot through Chrome. It only shows a price; it counts when he confirms it. */
+  priceFromLink(url: string): Promise<PriceFromLinkResponse>;
   /** Removes the confirmed price (DELETE on the same path). */
   removePrice(dealId: string, model: string): Promise<void>;
 

@@ -105,6 +105,35 @@
   gap: 10px;
 }
 
+.cp-read {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+p.cp-read {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.cp-found {
+  margin: 0;
+  color: var(--label);
+}
+
+.cp-source {
+  margin: 0;
+}
+
+.cp-missed {
+  color: var(--label);
+}
+
 .cp-fine {
   margin: 12px 0 0;
   font-size: 11px;
