@@ -39,7 +39,9 @@ import {
 import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
-import { keepaLookupOne, type LookupStep, pageRead, PART_PRICE_MS, plannedWork, readPartPricesFor, runScan, withdrawUnreadSplitQuestions } from '../core/src/scan/runner';
+import {
+  keepaLookupOne, type LookupStep, pageRead, PART_PRICE_MS, plannedWork, readPartPricesFor, runScan, settleWaitingSplits, withdrawUnreadSplitQuestions,
+} from '../core/src/scan/runner';
 import { knownModels } from '../core/src/scan/split';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
 import type { ConfirmedPrice, PaidAction, ReviewAnswer, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
@@ -402,10 +404,16 @@ export class AgentWork {
     const settings = toScanSettings(ext);
     const keys = store.get('keys');
     const pairs = Object.fromEntries(Object.values(store.get('tracking').bogoPairs ?? {}).map((p) => [p.key, `${p.promotionId}:${p.starterItemId}`]));
-    const { work, steps } = await plannedWork(this.scanStore, settings, now, pairs);
-    this.dripWaiting = work.lookups.length;
     this.dripNextAt = now + DRIP_POLL_MS;
-    const prices = await this.dripPartPrices(settings);
+    // Step 15: the free part prices first (the parts a waiting split needs come first); a read that saved anything may
+    // settle a waiting split, whose parts then join the lookups below. Review is rebuilt with what it opened (refresh).
+    let prices = await this.dripPartPrices(settings);
+    if (prices > 0) {
+      const settled = await settleWaitingSplits(this.scanStore, this.d.now());
+      prices += settled.resolved + settled.opened;
+    }
+    const { work, steps } = await plannedWork(this.scanStore, settings, this.d.now(), pairs);
+    this.dripWaiting = work.lookups.length;
     if (work.lookups.length === 0 || !keys.keepa) {
       if (prices > 0) await this.refresh();
       return;
@@ -477,7 +485,7 @@ export class AgentWork {
     const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => signal });
     try {
       const out = await readPartPricesFor({
-        store: this.scanStore, settings, readPartPrices: readers.readPartPrices, now: this.d.now, maxMs: PART_PRICE_MS,
+        store: this.scanStore, settings, readPartPrices: readers.readPartPrices, now: this.d.now, maxMs: PART_PRICE_MS, waiting: true,
         shouldStop: () => signal.aborted || !this.dripAllowed(),
       });
       return out.saved;
