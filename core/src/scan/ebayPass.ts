@@ -159,7 +159,7 @@ export async function runEbayPass(a: EbayPassArgs): Promise<void> {
 
   /** An error from eBay: does it end the step? */
   const ebayFailed = (err: unknown): boolean => {
-    if (err instanceof EbayAuthError) { noteEbay(job, NOTICE.ebayKeys); return true; }
+    if (err instanceof EbayAuthError) { noteEbay(job, `${NOTICE.ebayKeys} ${err.detail}`); return true; }
     if (err instanceof EbayForbiddenError) { noteEbay(job, NOTICE.ebayForbidden); return true; }
     if (err instanceof EbayRateLimitedError) { noteEbay(job, NOTICE.ebayLimited); return true; }
     if (err instanceof EbayCapError) { noteEbay(job, err.kind === 'searches' ? NOTICE.searches : NOTICE.reads); return true; }

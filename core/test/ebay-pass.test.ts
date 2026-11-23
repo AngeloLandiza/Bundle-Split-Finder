@@ -210,8 +210,8 @@ describe('the eBay step: DEWALT DCF921B on the real search', () => {
   });
 
   it('eBay refusing the keys, or limiting calls, stops the step with a plain notice', async () => {
-    const auth = await run({ ebay: port({ failSearch: new EbayAuthError('refused', 401) }) });
-    expect(auth.job.ebayNotice).toBe('eBay did not accept the App ID and Cert ID, so eBay reference values were not checked. Check them in Settings.');
+    const auth = await run({ ebay: port({ failSearch: new EbayAuthError('refused', 401, 'eBay answered invalid_client: client authentication failed (HTTP 401).') }) });
+    expect(auth.job.ebayNotice).toBe('eBay did not accept the App ID and Cert ID, so eBay reference values were not checked. Check them in Settings. eBay answered invalid_client: client authentication failed (HTTP 401).');
     const forbidden = await run({ ebay: port({ failSearch: new EbayForbiddenError('no') }) });
     expect(forbidden.job.ebayNotice).toBe('eBay says these keys may not make this call, so eBay reference values were not checked.');
     const limited = await run({ ebay: port({ failItem: () => new EbayRateLimitedError('slow') }) });

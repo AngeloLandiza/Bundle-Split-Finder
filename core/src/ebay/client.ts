@@ -23,7 +23,9 @@ export class EbayError extends Error {
 }
 /** The token request failed, or a call was refused as unauthorised even with a fresh token. */
 export class EbayAuthError extends EbayError {
-  constructor(message: string, status?: number) { super(message, status); this.name = 'EbayAuthError'; }
+  /** One plain sentence saying what eBay answered (its own error and description, scrubbed of the keys); no key in it. */
+  readonly detail: string;
+  constructor(message: string, status?: number, detail?: string) { super(message, status); this.name = 'EbayAuthError'; this.detail = detail ?? message; }
 }
 /** HTTP 403: the keys lack permission for this call. */
 export class EbayForbiddenError extends EbayError {
@@ -110,16 +112,31 @@ export class EbayClient {
     } catch {
       throw new EbayError('Network error reaching eBay for a token.');
     }
-    const json = (await res.json().catch(() => ({}))) as { access_token?: unknown; expires_in?: unknown };
+    const json = (await res.json().catch(() => ({}))) as { access_token?: unknown; expires_in?: unknown; error?: unknown; error_description?: unknown };
     // The status says what went wrong: a limit or an eBay outage is not the keys' fault, and must not read as if it were.
     if (res.status === 429) throw new EbayRateLimitedError('eBay is limiting calls (HTTP 429).');
     if (res.status >= 500) throw new EbayServerError(`eBay had a server problem (HTTP ${res.status}).`, res.status);
     if (!res.ok || typeof json.access_token !== 'string') {
-      throw new EbayAuthError(`eBay refused the token request (HTTP ${res.status}). Check the App ID and Cert ID.`, res.status);
+      const detail = this.answered(res.status, json);
+      throw new EbayAuthError(`eBay refused the token request (HTTP ${res.status}). Check the App ID and Cert ID.`, res.status, detail);
     }
     const secs = typeof json.expires_in === 'number' && json.expires_in > 0 ? json.expires_in : 7200;
     this.token = { value: json.access_token, expiresAt: this.now() + secs * 1000 - EXPIRY_MARGIN_MS };
     return json.access_token;
+  }
+
+  /** What eBay answered, in one sentence: its `error` code and `error_description` (short, plain characters only), the HTTP status, and neither key. */
+  private answered(status: number, json: { error?: unknown; error_description?: unknown }): string {
+    const clean = (v: unknown): string => {
+      if (typeof v !== 'string') return '';
+      let t = v.replace(/[^\x20-\x7e]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+      for (const k of [this.appId, this.certId]) if (k.trim()) t = t.split(k.trim()).join('[key]');
+      return t;
+    };
+    const code = clean(json.error);
+    const why = clean(json.error_description);
+    const said = code && why ? `${code}: ${why}` : code || why;
+    return said ? `eBay answered ${said} (HTTP ${status}).` : `eBay answered HTTP ${status} with no reason given.`;
   }
 
   /** One authorised GET. A 401 drops the token, fetches a new one and retries once. */
@@ -136,7 +153,7 @@ export class EbayClient {
       if (res.status === 401) {
         this.token = null;
         if (attempt === 0) continue;
-        throw new EbayAuthError('eBay refused the token again (HTTP 401).', 401);
+        throw new EbayAuthError('eBay refused the token again (HTTP 401).', 401, 'eBay gave a token but then refused it on the search itself (HTTP 401).');
       }
       if (res.status === 403) throw new EbayForbiddenError('eBay says these keys may not make this call (HTTP 403).');
       if (res.status === 429) throw new EbayRateLimitedError('eBay is limiting calls (HTTP 429).');
@@ -146,7 +163,7 @@ export class EbayClient {
         throw new EbayError('eBay sent a response that is not JSON.', res.status);
       });
     }
-    throw new EbayAuthError('eBay refused the token again (HTTP 401).', 401);
+    throw new EbayAuthError('eBay refused the token again (HTTP 401).', 401, 'eBay gave a token but then refused it on the search itself (HTTP 401).');
   }
 
   async search(query: string, opts: EbaySearchOptions = {}): Promise<EbaySearchResult> {

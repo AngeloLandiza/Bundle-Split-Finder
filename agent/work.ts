@@ -916,7 +916,12 @@ export class AgentWork {
   private notedEbayKeys(job: ScanJob): void {
     const notice = job.ebayNotice ?? '';
     const ran = pipelineOf(job).find((p) => p.id === 'ebay')?.state === 'done';
-    if (notice.includes(EBAY_NOTICE.ebayKeys)) this.keyProblem('ebay', 'eBay did not accept the App ID and Cert ID.');
+    const at = notice.indexOf(EBAY_NOTICE.ebayKeys);
+    if (at >= 0) {
+      // eBay's own answer follows the notice's fixed sentence, up to the next notice (each ends in a full stop and a space).
+      const said = /^ (eBay (?:answered|gave a token)[^]*?\(HTTP \d+\)\.)/.exec(notice.slice(at + EBAY_NOTICE.ebayKeys.length))?.[1];
+      this.keyProblem('ebay', said ? `eBay did not accept the App ID and Cert ID. ${said}` : 'eBay did not accept the App ID and Cert ID.');
+    }
     else if (ran) this.keyProblem('ebay', null);
     if (notice.includes(EBAY_NOTICE.claudeKey)) this.keyProblem('anthropic', 'Claude did not accept the Anthropic key.');
     else if (pipelineOf(job).find((p) => p.id === 'judge')?.state === 'done' && (job.counts.listingsJudged ?? 0) > 0) this.keyProblem('anthropic', null);

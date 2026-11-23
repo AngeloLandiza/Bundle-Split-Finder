@@ -73,9 +73,13 @@ export async function checkEbayKeys(
   } catch {
     return 'eBay could not be reached. Check the connection, then try again.';
   }
-  const body = (await res.json().catch(() => ({}))) as { access_token?: unknown; expires_in?: unknown };
+  const body = (await res.json().catch(() => ({}))) as { access_token?: unknown; expires_in?: unknown; error?: unknown; error_description?: unknown };
   if (!res.ok || typeof body.access_token !== 'string' || body.access_token === '') {
-    return res.status >= 500 ? `eBay had a server problem (HTTP ${res.status}). Try again later.` : 'eBay did not accept this App ID and Cert ID.';
+    if (res.status >= 500) return `eBay had a server problem (HTTP ${res.status}). Try again later.`;
+    // eBay's own reason, short and plain, with neither key in it.
+    let said = [body.error, body.error_description].filter((v): v is string => typeof v === 'string' && v !== '').join(': ').replace(/[^\x20-\x7e]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+    for (const k of [o.appId, o.certId]) if (k.trim()) said = said.split(k.trim()).join('[key]');
+    return `eBay did not accept this App ID and Cert ID. eBay answered ${said ? `${said} ` : ''}(HTTP ${res.status}).`;
   }
   const secs = typeof body.expires_in === 'number' && body.expires_in > 0 ? body.expires_in : 7200;
   await o.store.set({ appId: o.appId, token: body.access_token, expiresAt: o.now() + secs * 1000 }).catch(() => {});
