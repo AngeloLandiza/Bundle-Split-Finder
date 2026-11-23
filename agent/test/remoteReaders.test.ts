@@ -158,7 +158,18 @@ describe('the BOGO readers (worker jobs)', () => {
     const product = { itemId: '324903619', brand: 'RYOBI', model: 'PCL1201K2-PCL515B', title: 'kit', url: 'https://www.homedepot.com/p/x/324903619' };
     const listing = readers.readBundleListing(path);
     expect(await worker(() => ({ products: [product] }))).toMatchObject({ kind: 'bundleListing', input: { path } });
-    expect(await listing).toEqual([product]);
+    expect(await listing).toEqual({ products: [product] });
+    // Fix round: a list entry's own pricing is kept; an empty list keeps what its state held.
+    const priced = { ...product, price: 179, wasPrice: 268, promotions: [{ promotionId: '945815', startsAt: '2026-10-26', endsAt: '2027-01-31', description: 'Free tool' }] };
+    const withPrice = readers.readBundleListing(path);
+    await worker(() => ({ products: [priced] }));
+    expect(await withPrice).toEqual({ products: [priced] });
+    const empty = readers.readBundleListing(path);
+    await worker(() => ({ products: [], note: 'its state had 2 entries, none a product' }));
+    expect(await empty).toEqual({ products: [], note: 'its state had 2 entries, none a product' });
+    const bad = readers.readBundleListing(path);
+    await worker(() => ({ products: [{ ...product, price: 'free' }] }));
+    await expect(bad).rejects.toThrow('could not be read');
     const refused = readers.readBundleListing(path);
     await worker(() => ({ error: 'Home Depot refused the bundle list (HTTP 403).' }));
     await expect(refused).rejects.toThrow('Home Depot refused the bundle list (HTTP 403).');

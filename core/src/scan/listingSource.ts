@@ -42,32 +42,53 @@ export const LISTING_ITEM_BATCH = 25;
  */
 export const LISTING_ITEM_MAX_AGE_MS = 6 * 60 * 60_000;
 
-/** The only addresses the Bundle listing reader may read: the filter tokens above, a query, and an offset. */
-const LISTING_PATH = new RegExp(
-  `^/b/N-${N_BASE}Z${BUNDLE_FILTER_TOKEN}Z(?:${Object.values(BRAND_FILTER_TOKENS).join('|')})/Ntk-elasticplus/Ntt-[A-Za-z0-9%._~-]{1,120}\\?NCNI-5(&Nao=\\d{1,4})?$`,
-);
+/**
+ * The only addresses the Bundle listing reader may read: the filter tokens above, then either a query and an offset
+ * (`/Ntk-elasticplus/Ntt-<query>?NCNI-5&Nao=<n>`) or no query at all (`?Nao=<n>`: the brand's whole Bundle list).
+ */
+const TOKENS = `N-${N_BASE}Z${BUNDLE_FILTER_TOKEN}Z(?:${Object.values(BRAND_FILTER_TOKENS).join('|')})`;
+const LISTING_PATH = new RegExp(`^/b/${TOKENS}(?:/Ntk-elasticplus/Ntt-[A-Za-z0-9%._~-]{1,120}\\?NCNI-5(&Nao=\\d{1,4})?|(\\?Nao=\\d{1,4})?)$`);
 
 export const isBundleListingPath = (path: unknown): path is string => typeof path === 'string' && LISTING_PATH.test(path);
 
 /**
  * A brand's Bundle listing address for a search query (settings.ts BRAND_QUERIES, written as the BOGO listing writes it:
- * "ryobi 18v combo kit" is Ntt-ryobi%2B18v%2Bcombo%2Bkit) and an offset; offset 0 has no Nao. Null for a brand with no
- * known filter token.
+ * "ryobi 18v combo kit" is Ntt-ryobi%2B18v%2Bcombo%2Bkit), or with `query` null the brand's whole Bundle list
+ * (`/b/N-5yc1vZbwo64Z4j2`, as the controller gave it), and an offset; offset 0 has no Nao. Null for a brand with no known
+ * filter token.
  */
-export function bundleListingPath(brand: string, query: string, offset: number): string | null {
+export function bundleListingPath(brand: string, query: string | null, offset: number): string | null {
   const token = BRAND_FILTER_TOKENS[brand.trim().toUpperCase()];
   if (token === undefined) return null;
+  const base = `/b/N-${N_BASE}Z${BUNDLE_FILTER_TOKEN}Z${token}`;
+  if (query === null) return `${base}${offset > 0 ? `?Nao=${Math.floor(offset)}` : ''}`;
   const ntt = encodeURIComponent(query.trim().toLowerCase().split(/\s+/).join('+'));
-  return `/b/N-${N_BASE}Z${BUNDLE_FILTER_TOKEN}Z${token}/Ntk-elasticplus/Ntt-${ntt}?NCNI-5${offset > 0 ? `&Nao=${Math.floor(offset)}` : ''}`;
+  return `${base}/Ntk-elasticplus/Ntt-${ntt}?NCNI-5${offset > 0 ? `&Nao=${Math.floor(offset)}` : ''}`;
+}
+
+/** The brand whose filter token a Bundle listing path carries; null for any other path. */
+export function brandOfListingPath(path: string): string | null {
+  if (!isBundleListingPath(path)) return null;
+  for (const [brand, token] of Object.entries(BRAND_FILTER_TOKENS)) if (path.startsWith(`/b/N-${N_BASE}Z${BUNDLE_FILTER_TOKEN}Z${token}`)) return brand;
+  return null;
+}
+
+/** The first words of the problem a list that came back with its page state but no product is said with. */
+export const LIST_EMPTY = "Home Depot's bundle list came back empty";
+
+/** One listing page as the helper read it: its products, and, when it held none, what its state held instead. */
+export interface ListingPage {
+  products: ListedItem[];
+  note?: string;
 }
 
 export interface ListingSourceDeps {
-  /** Brands in Settings; only those with a filter token and a query are read. */
+  /** Brands in Settings; only those with a filter token are read. */
   brands: readonly string[];
-  /** Brand -> the scan's search query (settings.ts BRAND_QUERIES). */
+  /** Brand -> the scan's search query (settings.ts BRAND_QUERIES); each brand's list is also read without it. */
   queries: Readonly<Record<string, string>>;
-  /** One listing page's products, in page order. Throws when Chrome could not read it or Home Depot refused it. */
-  readListing: (path: string) => Promise<ListedItem[]>;
+  /** One listing page. Throws when Chrome could not read it or Home Depot refused it. */
+  readListing: (path: string) => Promise<ListingPage>;
   /** Item pages with their price, one outcome per id (the BOGO pass's reader). Throws as readListing. */
   readPages: (itemIds: string[]) => Promise<PromoPageOutcome[]>;
   /** The item cache the BOGO pass keeps (`homedepot:bogo-item:<id>`). Absent: nothing is reused or kept. */
@@ -78,35 +99,45 @@ export interface ListingSourceDeps {
   itemPagesMax?: number;
 }
 
-export interface ListingBrandResult {
+/** One list read: a brand's Bundle list with the query, or without it. */
+export interface ListingListResult {
   brand: string;
-  query: string;
+  /** The search words; null for the brand's whole Bundle list. */
+  query: string | null;
   /** Listing pages read. */
   pages: number;
-  /** Item ids listed, in listing order, each once (an item already listed by an earlier brand is not counted again). */
+  /** Items this list showed, each once. */
   listed: number;
+  /** Of those, items no list read before it in this pass showed (the union's growth). */
+  added: number;
   /** Every page until one added nothing was read. */
   complete: boolean;
+  /** Its first page came back with its state but no product: said as a problem, never taken as "no bundles". */
+  empty: boolean;
 }
 
 /** One listed product, in the shape a SerpApi listing row has (HdListing), with its page reading when it was read. */
 export interface ListingRow extends HdListing {
   /** The product page's Includes bullets and description, as the scan's page reader saves them (P2); null when not read. */
   page: { bullets: string[]; description: string | null; readAt: number } | null;
+  /** The listing entry or the item page carried a BOGO promotion (the BOGO pass still decides pairs). */
+  bogo: boolean;
 }
 
 export interface ListingSourceResult {
-  brands: ListingBrandResult[];
+  lists: ListingListResult[];
   rows: ListingRow[];
-  /** Listing pages read, all brands. */
+  /** Listing pages read, all lists. */
   listingPages: number;
+  /** Items whose price and was-price came with the listing entry (no item page read for them). */
+  pricedByList: number;
   /** Item pages read now (not from the cache). */
   itemPagesRead: number;
   /** Item pages whose price came from a fresh cached reading. */
   itemPagesCached: number;
-  /** Listed items whose page was not read (the cap, a refusal, a stop): their rows carry no price. */
+  /** Listed items with no price from the list whose page was not read (the cap, a refusal, a stop). */
   itemPagesLeft: number;
-  /** Why the pass ended early, in a sentence; null when every page it wanted was read. */
+  /** Why the pass ended early or a list came back empty, in sentences; null when every page it wanted was read. */
   problem: string | null;
   /** Home Depot refused (or Chrome could not read) a listing or item page: nothing more was read. */
   refused: boolean;
@@ -124,66 +155,86 @@ const sentenceOf = (e: unknown, fallback: string): string => (e instanceof Error
 const percentOff = (price: number | null, was: number | null): number | null =>
   price !== null && was !== null && was > price ? Math.round(((was - price) / was) * 100) : null;
 
-/** A listed item as a listing row: the listing's identifiers, the page's price and reading when there is one. */
+/** Whether the listing entry carried its own pricing entry (the live listing does; the old recordings were slimmed). */
+const listPriced = (p: ListedItem): boolean => p.price !== undefined;
+
+/** A listed item as a listing row: the listing's identifiers; the list's own price when it has one, else the page's. */
 function rowOf(listed: ListedItem, item: BogoItem | null): ListingRow {
   const link = listed.url.startsWith(`${HOME_DEPOT}/p/`) ? listed.url : `${HOME_DEPOT}/p/${listed.itemId}`;
-  const price = item?.price ?? null;
-  const was = price === null ? null : item?.wasPrice ?? null;
+  const price = listPriced(listed) ? listed.price ?? null : item?.price ?? null;
+  const was = price === null ? null : listPriced(listed) ? listed.wasPrice ?? null : item?.wasPrice ?? null;
   return {
     itemId: listed.itemId, title: listed.title || item?.title || listed.model, brand: listed.brand || item?.brand || null, model: listed.model || item?.model || null,
     price, regularPrice: was, percentOff: percentOff(price, was), badge: null, link,
     page: item ? { bullets: [...item.bullets], description: item.description, readAt: item.readAt } : null,
+    bogo: (listed.promotions?.length ?? 0) > 0 || (item?.promotions.length ?? 0) > 0,
   };
 }
 
+const listName = (brand: string, query: string | null): string => (query === null ? `${brand} list without search words` : `${brand} list for "${query}"`);
+
 /**
- * Each brand's whole Bundle listing (pages until one brings no new item id, at most BUNDLE_LISTING_PAGES_MAX; the next
- * offset is the items read so far, as the BOGO pass pages), then each listed item's page for its price, from the shared
- * item cache when it was read in the last LISTING_ITEM_MAX_AGE_MS, at most `itemPagesMax` read now. A listing or item
- * page that fails ends the pass: what came before is kept, later brands and pages are not read, and `problem` says why.
+ * Each brand's Bundle list, with the query and then without it (pages until one brings no new item id, at most
+ * BUNDLE_LISTING_PAGES_MAX a list; the next offset is the list's own items so far, as the BOGO pass pages), merged into one
+ * set of items. A list whose first page comes back with its state but no product is a problem said in words (LIST_EMPTY),
+ * not a refusal: the other lists are still read. Then the price: the listing entry's own when it carries one, else the
+ * item's page, from the shared item cache when it was read in the last LISTING_ITEM_MAX_AGE_MS, at most `itemPagesMax`
+ * read now. A listing or item page that fails ends the pass: what came before is kept, and `problem` says why.
  */
 export async function readBundleListings(deps: ListingSourceDeps): Promise<ListingSourceResult> {
   const stop = (): boolean => deps.shouldStop?.() === true;
-  const out: ListingSourceResult = { brands: [], rows: [], listingPages: 0, itemPagesRead: 0, itemPagesCached: 0, itemPagesLeft: 0, problem: null, refused: false };
+  const out: ListingSourceResult = { lists: [], rows: [], listingPages: 0, pricedByList: 0, itemPagesRead: 0, itemPagesCached: 0, itemPagesLeft: 0, problem: null, refused: false };
+  const problems: string[] = [];
   const listed = new Map<string, ListedItem>();
   for (const raw of deps.brands) {
     const brand = raw.trim().toUpperCase();
+    if (BRAND_FILTER_TOKENS[brand] === undefined) continue;
     const query = deps.queries[brand];
-    if (query === undefined || BRAND_FILTER_TOKENS[brand] === undefined) continue;
-    const r: ListingBrandResult = { brand, query, pages: 0, listed: 0, complete: false };
-    out.brands.push(r);
-    if (out.refused || stop()) continue;
-    // This listing's own items, so a page that repeats another brand's items still moves the offset on.
-    const own = new Set<string>();
-    try {
-      while (r.pages < BUNDLE_LISTING_PAGES_MAX && !stop()) {
-        const path = bundleListingPath(brand, query, own.size)!;
-        const products = await deps.readListing(path);
-        r.pages += 1;
-        out.listingPages += 1;
-        const fresh = products.filter((p) => /^\d{6,12}$/.test(p.itemId) && !own.has(p.itemId));
-        for (const p of fresh) {
-          own.add(p.itemId);
-          if (!listed.has(p.itemId)) {
-            listed.set(p.itemId, p);
+    for (const q of query === undefined ? [null] : [query, null]) {
+      const r: ListingListResult = { brand, query: q, pages: 0, listed: 0, added: 0, complete: false, empty: false };
+      out.lists.push(r);
+      if (out.refused || stop()) continue;
+      // This list's own items, so a page that repeats another list's items still moves the offset on.
+      const own = new Set<string>();
+      try {
+        while (r.pages < BUNDLE_LISTING_PAGES_MAX && !stop()) {
+          const page = await deps.readListing(bundleListingPath(brand, q, own.size)!);
+          r.pages += 1;
+          out.listingPages += 1;
+          const fresh = page.products.filter((p) => /^\d{6,12}$/.test(p.itemId) && !own.has(p.itemId));
+          if (fresh.length === 0 && r.pages === 1) {
+            r.empty = true;
+            problems.push(`${LIST_EMPTY}: the ${listName(brand, q)} had no product${page.note ? ` (${page.note})` : ''}.`);
+            break;
+          }
+          for (const p of fresh) {
+            own.add(p.itemId);
             r.listed += 1;
+            if (!listed.has(p.itemId)) {
+              listed.set(p.itemId, p);
+              r.added += 1;
+            }
+          }
+          if (fresh.length === 0) {
+            r.complete = true;
+            break;
           }
         }
-        if (fresh.length === 0) {
-          r.complete = true;
-          break;
-        }
+      } catch (e) {
+        out.refused = true;
+        problems.push(sentenceOf(e, 'Chrome could not read the Home Depot bundle list.'));
       }
-    } catch (e) {
-      out.refused = true;
-      out.problem = sentenceOf(e, 'Chrome could not read the Home Depot bundle list.');
     }
   }
 
-  // Prices: a fresh cached reading, else the item's page, until the cap, a refusal or a stop.
+  // Prices: the list's own, else a fresh cached reading, else the item's page, until the cap, a refusal or a stop.
   const items = new Map<string, BogoItem>();
   const toRead: string[] = [];
-  for (const id of listed.keys()) {
+  for (const [id, p] of listed) {
+    if (listPriced(p)) {
+      out.pricedByList += 1;
+      continue;
+    }
     const hit = deps.cache ? await deps.cache.get(itemCacheKey(id)) : undefined;
     const item = hit ? freshItem(hit.data, hit.at, deps.now()) : null;
     if (item && item.itemId === id) {
@@ -200,7 +251,7 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
       outcomes = await deps.readPages(batch);
     } catch (e) {
       out.refused = true;
-      out.problem = sentenceOf(e, 'Chrome could not read the bundle pages.');
+      problems.push(sentenceOf(e, 'Chrome could not read the bundle pages.'));
       break;
     }
     const at = deps.now();
@@ -211,17 +262,30 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
         items.set(o.itemId, item);
         out.itemPagesRead += 1;
         if (deps.cache) await deps.cache.set(itemCacheKey(o.itemId), { at, data: item });
-      } else if (o.kind === 'refused') {
+      } else if (o.kind === 'refused' && !out.refused) {
         out.refused = true;
-        out.problem ??= 'Home Depot refused a bundle page.';
+        problems.push('Home Depot refused a bundle page.');
       }
     }
   }
-  out.itemPagesLeft = [...listed.keys()].filter((id) => !items.has(id)).length;
-  if (out.problem === null && out.itemPagesLeft > 0 && toRead.length > cap) out.problem = `${out.itemPagesLeft} bundle ${out.itemPagesLeft === 1 ? 'page waits' : 'pages wait'} for the next scan (at most ${cap} a scan).`;
-  if (out.problem === null && stop()) out.problem = 'stopped';
+  out.itemPagesLeft = toRead.filter((id) => !items.has(id)).length;
+  if (!out.refused && out.itemPagesLeft > 0 && toRead.length > cap) problems.push(`${out.itemPagesLeft} bundle ${out.itemPagesLeft === 1 ? 'page waits' : 'pages wait'} for the next scan (at most ${cap} a scan).`);
+  if (problems.length === 0 && stop()) problems.push('stopped');
+  out.problem = problems.length > 0 ? problems.join(' ') : null;
   out.rows = [...listed.values()].map((p) => rowOf(p, items.get(p.itemId) ?? null));
   return out;
+}
+
+/** "RYOBI: 24 with the search words, 16 more without them; DEWALT: 3 with the search words, 40 more without them." */
+export function listCounts(lists: readonly Pick<ListingListResult, 'brand' | 'query' | 'listed' | 'added' | 'empty' | 'pages'>[]): string {
+  const brands = [...new Set(lists.map((l) => l.brand))];
+  return brands.map((b) => {
+    const parts = lists.filter((l) => l.brand === b && l.pages > 0).map((l) => {
+      const n = l.empty ? 'empty' : String(l.query === null ? l.added : l.listed);
+      return l.query === null ? `${n === 'empty' ? 'empty' : `${n} more`} without them` : `${n} with the search words`;
+    });
+    return parts.length > 0 ? `${b}: ${parts.join(', ')}` : '';
+  }).filter((x) => x !== '').join('; ');
 }
 
 // ---------------------------------------------------------------- which source a scan uses

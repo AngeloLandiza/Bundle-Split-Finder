@@ -2,9 +2,9 @@
 // refuses the same requests from the service worker. Every Chrome call goes through ReaderEnv,
 // so this file touches no chrome.* and is tested with fakes (see hdReader.test.ts).
 
-import { parseBundlePage, parseProductPage, parsePromoPage, parseSearchText } from '@core/hdPage';
+import { parseBundlePage, parseListingText, parseProductPage, parsePromoPage, parseSearchText } from '@core/hdPage';
 import { HOME_DEPOT, isBogoListingPath, type ListedItem, type PromoPageOutcome } from '@core/tracking/bogoPairs';
-import { isBundleListingPath } from '@core/scan/listingSource';
+import { brandOfListingPath, isBundleListingPath } from '@core/scan/listingSource';
 import type { ToolError } from '@core/research/types';
 import { modelForms, sameModel } from '@core/match';
 import {
@@ -759,8 +759,14 @@ export async function fetchPathInTab(path: string): Promise<PathInTab> {
     }
     let text: string | null = null;
     if (res.status === 200) {
-      const end = body.indexOf('</script>', mark);
-      text = end >= 0 ? body.slice(mark, end) : body.slice(mark);
+      // Every state block, each to its own </script>, in page order: a page may carry more than one, and the first is not
+      // always the listing's (free scan fix round, Nov 23).
+      const parts: string[] = [];
+      for (let at = mark; at >= 0; at = body.indexOf('window.__APOLLO_STATE__=', at + 1)) {
+        const end = body.indexOf('</script>', at);
+        parts.push(end >= 0 ? body.slice(at, end) : body.slice(at));
+      }
+      text = parts.join('\n');
     }
     return { status: res.status, text };
   } catch {
@@ -788,7 +794,13 @@ export function createBundleListingReader(
   env: ReaderEnv,
   opts: ListingReaderOptions = {},
 ): (path: string) => Promise<{ products: ListedItem[] } | ToolError> {
-  return createListingReaderOf(env, opts, { accepts: isBundleListingPath, wrongPath: 'That is not a Home Depot Bundle listing address.', name: 'the bundle list', named: 'The bundle list' });
+  return createListingReaderOf(env, opts, {
+    accepts: isBundleListingPath, wrongPath: 'That is not a Home Depot Bundle listing address.', name: 'the bundle list', named: 'The bundle list',
+    // Fix round: the doorway is the brand's search page, as in the owner's working fetch (made from a page that was not
+    // the list itself), and every state block of the answer is read, each entry with its own pricing.
+    doorway: (path) => `/s/${encodeURIComponent((brandOfListingPath(path) ?? 'tools').toLowerCase())}`,
+    allStates: true,
+  });
 }
 
 export interface ListingReaderOptions { pauseMs?: number; settleMs?: number; doorwayStateMs?: number; now?: () => number }
@@ -796,8 +808,14 @@ export interface ListingReaderOptions { pauseMs?: number; settleMs?: number; doo
 function createListingReaderOf(
   env: ReaderEnv,
   opts: ListingReaderOptions,
-  what: { accepts: (path: unknown) => path is string; wrongPath: string; name: string; named: string },
-): (path: string) => Promise<{ products: ListedItem[] } | ToolError> {
+  what: {
+    accepts: (path: unknown) => path is string; wrongPath: string; name: string; named: string;
+    /** The doorway's path for a listing path; default the listing itself. */
+    doorway?: (path: string) => string;
+    /** Read every state block (parseListingText) and say what a state with no product held. */
+    allStates?: boolean;
+  },
+): (path: string) => Promise<{ products: ListedItem[]; note?: string } | ToolError> {
   const pauseMs = opts.pauseMs ?? 1000;
   const settleMs = opts.settleMs ?? 2500;
   const doorwayStateMs = opts.doorwayStateMs ?? DOORWAY_STATE_MS;
@@ -810,11 +828,21 @@ function createListingReaderOf(
       if (left > 0) await env.sleep(left);
     }
     try {
-      const got = await withDoorway(env, `${env.origin}${path}`, { settleMs, doorwayStateMs }, (tabId) => env.runInTab(tabId, fetchPathInTab, [path]));
+      const got = await withDoorway(env, `${env.origin}${what.doorway ? what.doorway(path) : path}`, { settleMs, doorwayStateMs }, (tabId) => env.runInTab(tabId, fetchPathInTab, [path]));
       if (!got.shown) return { error: `Home Depot refused ${what.name} (its own page never showed its data${titled(got.title)}).` };
       const read = got.value;
       if (!read || read.status !== 200) return { error: `Home Depot refused ${what.name} (${read && read.status !== 0 ? `HTTP ${read.status}` : 'no answer'}).` };
       if (read.text === null) return { error: `${what.named} came back without its data${titled(read.note ?? '')}.` };
+      if (what.allStates) {
+        const all = parseListingText(read.text, HOME_DEPOT);
+        if (all === null) return { error: `${what.named} could not be read.` };
+        const products = all.products.map((r) => ({
+          itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url,
+          ...(r.price !== undefined ? { price: r.price, wasPrice: r.wasPrice ?? null, promotions: r.promotions ?? [] } : {}),
+        }));
+        // A state with no product is said with what it held, so the scan can say the list came back empty and why.
+        return products.length > 0 ? { products } : { products, note: `its state had ${all.stateKeys} entries, none a product; kinds: ${all.kinds.join(', ')}`.slice(0, 80) };
+      }
       const rows = parseSearchText(read.text, HOME_DEPOT);
       if (rows === null) return { error: `${what.named} could not be read.` };
       return { products: rows.map((r) => ({ itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url })) };

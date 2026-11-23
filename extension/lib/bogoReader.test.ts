@@ -88,15 +88,39 @@ describe('the BOGO listing reader', () => {
 
 describe('the Bundle listing reader (free scan)', () => {
   const path = bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, 12)!;
-  it('reads a Bundle listing page as the BOGO listing reader does, and only a Bundle listing address', async () => {
+  it('reads a Bundle listing page from a doorway on the brand\'s search page, and only a Bundle listing address', async () => {
     const f = env(() => ({ status: 200, text: listingText(ryobi) }) satisfies PathInTab);
     const got = await createBundleListingReader(f.env, { settleMs: 0 })(path);
     expect('products' in got && got.products.map((p) => p.model)).toEqual(ryobi.map((i) => i.model));
-    expect(f.log).toEqual([`open https://www.homedepot.com${path}`, 'fetch']);
+    expect(f.log).toEqual(['open https://www.homedepot.com/s/ryobi', 'fetch']);
     const g = env(() => ({ status: 200, text: '' }));
     expect(await createBundleListingReader(g.env)(bogoListingPath(BRAND_QUERIES.RYOBI, 0))).toEqual({ error: 'That is not a Home Depot Bundle listing address.' });
     expect(g.log).toEqual([]);
   });
+  it('fix round: the live entry shape (identifiers, pricing with value, original and conditionalPromotions), behind an earlier state block', async () => {
+    const pricing = 'pricing({"isBrandPricingPolicyCompliant":false,"storeId":"121"})';
+    const entry = (i: RecordedItem) => ({
+      __typename: 'BaseProduct', itemId: i.itemId,
+      identifiers: { brandName: i.brand, itemId: i.itemId, productLabel: i.title, modelNumber: i.model, canonicalUrl: `/p/x/${i.itemId}`, parentId: null, productType: 'MERCHANDISE' },
+      [pricing]: { value: i.price, original: i.original, promotion: null, conditionalPromotions: i.conditionalPromotions },
+      availabilityType: { type: 'Shared' }, 'fulfillment({"storeId":"121"})': {}, 'badges({"storeId":"121"})': [],
+    });
+    // A small state block first (a header's), then the listing's.
+    const text = `window.__APOLLO_STATE__={"ROOT_QUERY":{"__typename":"Query"}}\nwindow.__APOLLO_STATE__=${JSON.stringify(Object.fromEntries(ryobi.map((i) => [`base-searchNav-${i.itemId}`, entry(i)])))}`;
+    const got = await createBundleListingReader(env(() => ({ status: 200, text }) satisfies PathInTab).env, { settleMs: 0 })(path);
+    expect('products' in got && got.products).toHaveLength(ryobi.length);
+    const products = 'products' in got ? got.products : [];
+    expect(products[0]).toMatchObject({ itemId: '317987584', model: 'PCL1201K2', price: 179, wasPrice: null, promotions: [{ promotionId: '945815', endsAt: '2027-01-31' }] });
+    expect(products[1]).toMatchObject({ model: 'PCL1201K2-PCL515B', price: 179, wasPrice: 268, promotions: [] });
+  });
+
+  it('fix round: a state with no product comes back empty with what it held, never silently', async () => {
+    const text = 'window.__APOLLO_STATE__={"ROOT_QUERY":{"__typename":"Query"},"searchModel({})":{"products":[]}}';
+    expect(await createBundleListingReader(env(() => ({ status: 200, text }) satisfies PathInTab).env, { settleMs: 0 })(path)).toEqual({
+      products: [], note: 'its state had 2 entries, none a product; kinds: ROOT_QUERY, searchModel',
+    });
+  });
+
   it('a refusal is said in words, and nothing is retried', async () => {
     const f = env(() => ({ status: 403, text: null }));
     expect(await createBundleListingReader(f.env, { settleMs: 0 })(path)).toEqual({ error: 'Home Depot refused the bundle list (HTTP 403).' });
@@ -111,12 +135,15 @@ describe('fetchPathInTab (run from its own source)', () => {
     vi.stubGlobal('fetch', async (url: string) => {
       if (url === '/a') return { status: 200, text: async () => 'x<script>window.__APOLLO_STATE__={"k":1}</script><script>y</script>' };
       if (url === '/b') return { status: 200, text: async () => '<html><title> Access   Denied </title></html>' };
+      if (url === '/two') return { status: 200, text: async () => '<script>window.__APOLLO_STATE__={"h":1}</script><p>x</p><script>window.__APOLLO_STATE__={"k":2}</script>' };
       if (url === '/d') throw new Error('network');
       return { status: 403, text: async () => 'no' };
     });
     const rebuilt = new Function(`return (${fetchPathInTab.toString()})`)() as typeof fetchPathInTab;
     expect(await rebuilt('/a')).toEqual({ status: 200, text: 'window.__APOLLO_STATE__={"k":1}' });
     expect(await rebuilt('/b')).toEqual({ status: 200, text: null, note: 'Access Denied' });
+    // Fix round: every state block, in page order (the first is not always the listing's).
+    expect(await rebuilt('/two')).toEqual({ status: 200, text: 'window.__APOLLO_STATE__={"h":1}\nwindow.__APOLLO_STATE__={"k":2}' });
     expect(await rebuilt('/c')).toEqual({ status: 403, text: null });
     expect(await rebuilt('/d')).toEqual({ status: 0, text: null });
   });

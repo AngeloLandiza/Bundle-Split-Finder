@@ -693,7 +693,17 @@ export interface ScanJob {
    * the list pages read, the bundles they listed, the item pages read for prices, and whether every list was read to its
    * end. `done` once the pass has run, so a continued job does not read the lists again. Absent: SerpApi's listing pages.
    */
-  chromeListing?: { done: boolean; pages: number; bundles: number; itemPagesRead: number; complete: boolean };
+  chromeListing?: {
+    done: boolean; pages: number; bundles: number; itemPagesRead: number; complete: boolean;
+    /** Fix round: each list read (a brand with the query, and without it), so a run shows which lists more. */
+    lists?: { brand: string; query: string | null; pages: number; listed: number; added: number; complete: boolean; empty: boolean }[];
+    /** Items whose price came with the listing entry. */
+    pricedByList?: number;
+    /** Every list came back empty (LIST_EMPTY); the bundles found before are kept. */
+    empty?: boolean;
+    /** The empty lists were searched on SerpApi instead, as the owner allowed. */
+    serpFallback?: boolean;
+  };
   /**
    * Step 10: one plain sentence when the eBay step was skipped or stopped early (keys missing, eBay or the
    * model refused or limited a call). Not a failure of the scan: Home Depot and Amazon results are unaffected.

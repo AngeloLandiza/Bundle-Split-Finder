@@ -11,6 +11,7 @@ import type { CatalogEntry, CatalogLookup, HomeDepotPage, HomeDepotSearch, Resea
 import type { PageOutcome, PartPriceReading, ReadPages, ReadPartPrices, ScanStore } from '../core/src/scan/types';
 import type { PagePromotion, PromoPage } from '../core/src/hdPage';
 import type { ListedItem, PromoPageOutcome } from '../core/src/tracking/bogoPairs';
+import type { ListingPage } from '../core/src/scan/listingSource';
 import type { WorkerJobs } from './workerJobs';
 
 export interface ReaderTimeouts {
@@ -121,15 +122,27 @@ function promoOutcome(v: unknown): PromoPageOutcome | null {
 
 function listedItems(v: unknown): ListedItem[] | null {
   if (!isRecord(v) || !Array.isArray(v.products)) return null;
-  const rows = v.products.filter((r) => isRecord(r) && isText(r.itemId) && ITEM_ID.test(r.itemId) && isText(r.brand) && isText(r.model) && isText(r.title) && onHomeDepot(r.url));
-  return rows.length === v.products.length ? (rows as unknown as ListedItem[]) : null;
+  const out: ListedItem[] = [];
+  for (const r of v.products) {
+    if (!isRecord(r) || !isText(r.itemId) || !ITEM_ID.test(r.itemId) || !isText(r.brand) || !isText(r.model) || !isText(r.title) || !onHomeDepot(r.url)) return null;
+    const item: ListedItem = { itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url as string };
+    // Fix round: a listing entry's own pricing, checked as a promoPage's is; a malformed one makes the answer no answer.
+    if ('price' in r || 'wasPrice' in r || 'promotions' in r) {
+      if (!numOrNull(r.price) || !numOrNull(r.wasPrice ?? null) || !Array.isArray(r.promotions ?? [])) return null;
+      const promotions = ((r.promotions ?? []) as unknown[]).map(promotion);
+      if (promotions.some((p) => p === null)) return null;
+      Object.assign(item, { price: r.price as number | null, wasPrice: (r.wasPrice ?? null) as number | null, promotions: promotions as PagePromotion[] });
+    }
+    out.push(item);
+  }
+  return out;
 }
 
 export interface RemoteReaders {
   /** One page of a Featured BOGO listing. Throws when Chrome could not read it or Home Depot refused it. */
   readBogoListing(path: string): Promise<ListedItem[]>;
-  /** Free scan: one page of a brand's Bundle listing. Throws when Chrome could not read it or Home Depot refused it. */
-  readBundleListing(path: string): Promise<ListedItem[]>;
+  /** Free scan: one page of a brand's Bundle listing, with what its state held when it had no product. Throws when Chrome could not read it or Home Depot refused it. */
+  readBundleListing(path: string): Promise<ListingPage>;
   /** Product pages with their BOGO promotions, one outcome per id. Throws as readPages. */
   readPromoPages(itemIds: string[]): Promise<PromoPageOutcome[]>;
   readPages: ReadPages;
@@ -242,13 +255,14 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
     return items;
   };
 
-  const readBundleListing = async (path: string): Promise<ListedItem[]> => {
+  const readBundleListing = async (path: string): Promise<ListingPage> => {
     const result = await run('bundleListing', { path }, t.pageMs);
     const err = toolError(result);
     if (err) throw new Error(err.error);
     const items = listedItems(result);
     if (items === null) throw new Error('The bundle list Chrome read could not be read.');
-    return items;
+    const note = isRecord(result) ? noteOf(result).note : undefined;
+    return { products: items, ...(note ? { note } : {}) };
   };
 
   const readPromoPages = async (itemIds: string[]): Promise<PromoPageOutcome[]> => {

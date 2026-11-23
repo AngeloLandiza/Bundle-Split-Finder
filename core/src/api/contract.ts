@@ -1171,7 +1171,7 @@ export interface WorkerJobResults {
   /** The listing page's products in page order (its base-searchNav entries); a refusal is a ToolError. */
   bogoListing: { products: ListedItem[] } | ToolError;
   /** As bogoListing: the Bundle listing page's products in page order; a refusal is a ToolError. */
-  bundleListing: { products: ListedItem[] } | ToolError;
+  bundleListing: { products: ListedItem[]; note?: string } | ToolError;
   /** One outcome per item id asked, as `page`'s. */
   promoPage: PromoPageOutcome[];
   /** Posted just before the helper reloads. */

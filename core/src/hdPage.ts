@@ -232,7 +232,17 @@ export function parsePageSections(text: string, itemId?: string): PageSections |
 }
 
 /** One product of a Home Depot search page. */
-export interface SearchProduct { itemId: string; brand: string; model: string; title: string; url: string }
+export interface SearchProduct {
+  itemId: string; brand: string; model: string; title: string; url: string;
+  /**
+   * Free scan, fix round (Nov 23, read live in the owner's Chrome): a listing entry carries the same `pricing(...)` entry a
+   * product page does (`value`, `original`, `conditionalPromotions`). Present only when the entry has one: its price and
+   * was-price as pricingOf reads them, and its BOGO promotions as bogoPromotionsOf reads them.
+   */
+  price?: number | null;
+  wasPrice?: number | null;
+  promotions?: PagePromotion[];
+}
 
 /**
  * The products of a search page's Apollo state: its `base-searchNav-<itemId>` entries, in page order (checked against
@@ -250,15 +260,49 @@ export function parseSearchState(state: unknown, origin = 'https://www.homedepot
     if (model === null) continue;
     const itemId = m[1] as string;
     const path = nonEmpty(ids.canonicalUrl);
+    const entry = asObj(value);
+    const priced = Object.keys(entry).some((k) => k.startsWith('pricing('));
+    const pricing = priced ? pricingOf(entry) : null;
+    const promotions = priced ? Object.keys(entry).filter((k) => k.startsWith('pricing(')).flatMap((k) => bogoPromotionsOf(asObj(entry[k]).conditionalPromotions)) : [];
     out.push({
       itemId,
       brand: nonEmpty(ids.brandName) ?? '',
       model,
       title: nonEmpty(ids.productLabel) ?? '',
       url: `${origin}${path !== null && path.startsWith('/p/') ? path : `/p/${itemId}`}`,
+      ...(pricing ? { price: pricing.price, wasPrice: pricing.wasPrice, promotions: promotions.filter((p, i) => promotions.findIndex((q) => q.promotionId === p.promotionId) === i) } : {}),
     });
   }
   return out;
+}
+
+/**
+ * A listing page's products from every `window.__APOLLO_STATE__=` block in its text (a page may carry more than one; the
+ * first is not always the listing's), merged in page order, each item once. `stateKeys` and `kinds` say what the states
+ * held when no product was found: the entries counted, and up to six distinct key kinds (the key up to its first `-` or
+ * `(`), so an empty answer is said with what came back. Null when the text has no state that parses.
+ */
+export function parseListingText(text: string, origin?: string): { products: SearchProduct[]; stateKeys: number; kinds: string[] } | null {
+  const products: SearchProduct[] = [];
+  const seen = new Set<string>();
+  const kinds = new Set<string>();
+  let stateKeys = 0;
+  let parsed = false;
+  for (let at = text.indexOf(STATE_MARK); at >= 0; at = text.indexOf(STATE_MARK, at + STATE_MARK.length)) {
+    const state = pageState(text.slice(at));
+    if (state === null) continue;
+    parsed = true;
+    for (const k of Object.keys(state)) {
+      stateKeys += 1;
+      if (kinds.size < 6) kinds.add(k.split(/[-(]/)[0] ?? k);
+    }
+    for (const p of parseSearchState(state, origin)) {
+      if (seen.has(p.itemId)) continue;
+      seen.add(p.itemId);
+      products.push(p);
+    }
+  }
+  return parsed ? { products, stateKeys, kinds: [...kinds] } : null;
 }
 
 /** parseSearchState on a search page's text from `window.__APOLLO_STATE__=` on; null when the data is missing or does not parse. */

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { parseSearchState } from '../src/hdPage';
 import {
-  BUNDLE_LISTING_PAGES_MAX, bundleListingPath, chooseListingSource, isBundleListingPath, LISTING_ITEM_MAX_AGE_MS, readBundleListings, type ListingSourceDeps, type SourceInput,
+  brandOfListingPath, BUNDLE_LISTING_PAGES_MAX, bundleListingPath, chooseListingSource, isBundleListingPath, LIST_EMPTY, listCounts, LISTING_ITEM_MAX_AGE_MS, readBundleListings, type ListingSourceDeps, type SourceInput,
 } from '../src/scan/listingSource';
 import { MemoryCache } from '../src/serpapi/client';
 import { BRAND_QUERIES } from '../src/settings';
@@ -28,7 +28,10 @@ const read = (p: ListedItem, price = 199, wasPrice: number | null = 249): PromoP
   page: { itemId: p.itemId, brand: p.brand, model: p.model, title: p.title, price, wasPrice, bullets: [`Includes: ${p.model}`], description: null, promotions: [] },
 });
 
-/** Listing pages by brand token and offset; a `refuse` path throws as the helper's reader does for a refusal. */
+/**
+ * Listing pages by list and offset: `RYOBI` is the list with the search words, `RYOBI:all` the list without them (by
+ * default the same items as the query's list, so it adds none); a `refuse` path throws as the helper's reader does.
+ */
 function fakes(pages: Record<string, ListedItem[][]>, opts: { refuse?: string; refuseItem?: string } = {}) {
   const asked: string[] = [];
   const itemsAsked: string[][] = [];
@@ -38,10 +41,11 @@ function fakes(pages: Record<string, ListedItem[][]>, opts: { refuse?: string; r
     readListing: async (path) => {
       asked.push(path);
       if (path === opts.refuse) throw new Error('Home Depot refused the bundle list (HTTP 403).');
-      const brand = path.includes('Zm5d/') ? 'RYOBI' : 'DEWALT';
+      const brand = path.includes('Zm5d') ? 'RYOBI' : 'DEWALT';
+      const list = path.includes('/Ntt-') ? brand : `${brand}:all`;
       const offset = Number(/Nao=(\d+)/.exec(path)?.[1] ?? 0);
-      const list = (pages[brand] ?? []).flat();
-      return list.slice(offset, offset + 12);
+      const items = (pages[list] ?? pages[brand] ?? []).flat();
+      return { products: items.slice(offset, offset + 12), ...(items.length === 0 ? { note: 'its state had 40 entries, none a product' } : {}) };
     },
     readPages: async (ids) => {
       itemsAsked.push(ids);
@@ -53,38 +57,57 @@ function fakes(pages: Record<string, ListedItem[][]>, opts: { refuse?: string; r
 }
 
 describe('the Bundle listing address', () => {
-  it('is the address checked live in the owner\'s Chrome, with Nao for later pages', () => {
+  it('is the address checked live in the owner\'s Chrome, with Nao for later pages, and the brand list without search words', () => {
     expect(bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, 0)).toBe('/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5');
     expect(bundleListingPath('ryobi', BRAND_QUERIES.RYOBI, 12)).toBe('/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5&Nao=12');
     expect(bundleListingPath('DEWALT', BRAND_QUERIES.DEWALT, 0)).toBe('/b/N-5yc1vZbwo64Z4j2/Ntk-elasticplus/Ntt-dewalt%2B20v%2Bcombo%2Bkit?NCNI-5');
+    expect(bundleListingPath('DEWALT', null, 0)).toBe('/b/N-5yc1vZbwo64Z4j2');
+    expect(bundleListingPath('DEWALT', null, 24)).toBe('/b/N-5yc1vZbwo64Z4j2?Nao=24');
     expect(bundleListingPath('MAKITA', 'makita combo kit', 0)).toBeNull();
+    expect(brandOfListingPath('/b/N-5yc1vZbwo64Z4j2?Nao=24')).toBe('DEWALT');
   });
 
   it('is the only kind of address the reader accepts (security review M2: no other path reaches the helper)', () => {
     expect(isBundleListingPath(bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, 24))).toBe(true);
+    expect(isBundleListingPath(bundleListingPath('RYOBI', null, 12))).toBe(true);
     for (const bad of [
       '/b/Featured-BOGO/N-5yc1vZ1z24hvk/Ntk-elasticplus/Ntt-ryobi%2B18v?NCNI-5', '/b/N-5yc1vZbwo64Zm5dZ123/Ntk-elasticplus/Ntt-x?NCNI-5',
       '/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi?NCNI-5&redirect=x', '//evil.example/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-x?NCNI-5',
+      '/b/N-5yc1vZbwo64Zm5d?redirect=x', '/b/N-5yc1vZbwo64Zm5d/', '/b/N-5yc1vZbwo64Zm5d?NCNI-5&Nao=12',
       '/p/317987584', 'https://www.homedepot.com/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-x?NCNI-5', 42,
     ]) expect(isBundleListingPath(bad)).toBe(false);
   });
 });
 
 describe('readBundleListings with fake readers on the recorded listing shape', () => {
-  it('reads every page until one adds nothing: 24 RYOBI bundles in 3 pages, as the live listing did', async () => {
-    const f = fakes({ RYOBI: [P1, P2], DEWALT: [DEWALT] });
+  it('reads every page until one adds nothing, with the search words and then without them', async () => {
+    const f = fakes({ RYOBI: [P1, P2] });
     const r = await readBundleListings(f.deps({ brands: ['RYOBI'] }));
-    expect(f.asked).toEqual([0, 12, 24].map((o) => bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, o)));
-    expect(r.brands).toEqual([{ brand: 'RYOBI', query: BRAND_QUERIES.RYOBI, pages: 3, listed: 24, complete: true }]);
+    expect(f.asked).toEqual([
+      ...[0, 12, 24].map((o) => bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, o)),
+      ...[0, 12, 24].map((o) => bundleListingPath('RYOBI', null, o)),
+    ]);
+    expect(r.lists).toEqual([
+      { brand: 'RYOBI', query: BRAND_QUERIES.RYOBI, pages: 3, listed: 24, added: 24, complete: true, empty: false },
+      { brand: 'RYOBI', query: null, pages: 3, listed: 24, added: 0, complete: true, empty: false },
+    ]);
     expect(r.rows.map((x) => x.itemId)).toEqual([...P1, ...P2].map((p) => p.itemId));
-    expect(r).toMatchObject({ listingPages: 3, itemPagesRead: 24, itemPagesLeft: 0, problem: null, refused: false });
+    expect(r).toMatchObject({ listingPages: 6, itemPagesRead: 24, itemPagesLeft: 0, problem: null, refused: false });
+  });
+
+  it('the union: the list without search words adds what the query\'s list did not show, and the counts say which listed more', async () => {
+    const f = fakes({ DEWALT: [DEWALT.slice(0, 3)], 'DEWALT:all': [DEWALT, P1] });
+    const r = await readBundleListings(f.deps({ brands: ['DEWALT'] }));
+    expect(r.lists.map((l) => [l.query, l.listed, l.added])).toEqual([[BRAND_QUERIES.DEWALT, 3, 3], [null, 24, 21]]);
+    expect(r.rows).toHaveLength(24);
+    expect(listCounts(r.lists)).toBe('DEWALT: 3 with the search words, 21 more without them');
   });
 
   it('stops at its cap when a listing never ends', async () => {
     let n = 0;
-    const endless: ListingSourceDeps['readListing'] = async () => P1.map((p) => ({ ...p, itemId: String(400000000 + n++) }));
+    const endless: ListingSourceDeps['readListing'] = async () => ({ products: P1.map((p) => ({ ...p, itemId: String(400000000 + n++) })) });
     const r = await readBundleListings({ ...fakes({}).deps({ brands: ['RYOBI'] }), readListing: endless, readPages: async () => [] });
-    expect(r.brands[0]).toMatchObject({ pages: BUNDLE_LISTING_PAGES_MAX, complete: false });
+    expect(r.lists[0]).toMatchObject({ pages: BUNDLE_LISTING_PAGES_MAX, complete: false });
   });
 
   it('dedupes: an item a page repeats moves the offset by the new ones only, and one item listed by both brands is one row', async () => {
@@ -94,9 +117,19 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
     const r = await readBundleListings(f.deps());
     expect(r.rows).toHaveLength(12 + 11 + 8);
     expect(new Set(r.rows.map((x) => x.itemId)).size).toBe(r.rows.length);
-    expect(r.brands.map((b) => [b.brand, b.listed])).toEqual([['DEWALT', 12], ['RYOBI', 19]]);
+    expect(r.lists.filter((l) => l.query !== null).map((b) => [b.brand, b.listed, b.added])).toEqual([['DEWALT', 12, 12], ['RYOBI', 20, 19]]);
     // Each listing still pages by its own items: RYOBI's third page starts at 20 (12 + 8 new).
     expect(f.asked.filter((p) => p.includes('Zm5d/'))).toEqual([0, 12, 20].map((o) => bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, o)));
+  });
+
+  it('a list whose first page has its state but no product is a problem said in words, not "no bundles"; the other lists are read', async () => {
+    const f = fakes({ DEWALT: [], 'DEWALT:all': [DEWALT], RYOBI: [], 'RYOBI:all': [] });
+    const r = await readBundleListings(f.deps());
+    expect(r.refused).toBe(false);
+    expect(r.lists.map((l) => [l.brand, l.query === null, l.empty])).toEqual([['DEWALT', false, true], ['DEWALT', true, false], ['RYOBI', false, true], ['RYOBI', true, true]]);
+    expect(r.rows).toHaveLength(12);
+    expect(r.problem).toContain(`${LIST_EMPTY}: the DEWALT list for "dewalt 20v combo kit" had no product (its state had 40 entries, none a product).`);
+    expect(r.problem).toContain(`${LIST_EMPTY}: the RYOBI list without search words had no product`);
   });
 
   it('a refusal mid-listing keeps what was read, reads nothing more, and says why', async () => {
@@ -104,12 +137,12 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
     const r = await readBundleListings(f.deps());
     expect(r.refused).toBe(true);
     expect(r.problem).toBe('Home Depot refused the bundle list (HTTP 403).');
-    // DEWALT's first page is kept; RYOBI is never asked, nor any item page.
-    expect(f.asked.some((p) => p.includes('Zm5d/'))).toBe(false);
+    // DEWALT's first page is kept; nothing else is asked, nor any item page.
+    expect(f.asked).toHaveLength(2);
     expect(f.itemsAsked).toEqual([]);
     expect(r.rows.map((x) => x.itemId)).toEqual(DEWALT.map((p) => p.itemId));
     expect(r.rows.every((x) => x.price === null && x.page === null)).toBe(true);
-    expect(r.brands.map((b) => [b.brand, b.pages, b.complete])).toEqual([['DEWALT', 1, false], ['RYOBI', 0, false]]);
+    expect(r.lists.map((b) => [b.brand, b.pages, b.complete])).toEqual([['DEWALT', 1, false], ['DEWALT', 0, false], ['RYOBI', 0, false], ['RYOBI', 0, false]]);
   });
 
   it('a refused item page keeps the prices read before it and reads no later batch', async () => {
@@ -126,8 +159,19 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
     const first = P1[0]!;
     expect(r.rows[0]).toEqual({
       itemId: first.itemId, title: first.title, brand: 'RYOBI', model: first.model, price: 199, regularPrice: 249, percentOff: 20, badge: null, link: first.url,
-      page: { bullets: [`Includes: ${first.model}`], description: null, readAt: T0 },
+      page: { bullets: [`Includes: ${first.model}`], description: null, readAt: T0 }, bogo: false,
     });
+  });
+
+  it('a listing entry with its own pricing gives the price and the BOGO flag: no item page is read for it', async () => {
+    const promo = { promotionId: '945815', startsAt: '2026-10-26', endsAt: '2027-01-31', description: 'Purchase Select Ryobi Starter Kit and receive a select FREE Tool' };
+    const priced = P1.map((p, i) => (i < 4 ? { ...p, price: 179, wasPrice: 268, promotions: i === 0 ? [promo] : [] } : p));
+    const f = fakes({ RYOBI: [priced] });
+    const r = await readBundleListings(f.deps({ brands: ['RYOBI'] }));
+    expect(r.pricedByList).toBe(4);
+    expect(f.itemsAsked.flat()).toEqual(P1.slice(4).map((p) => p.itemId));
+    expect(r.rows[0]).toMatchObject({ price: 179, regularPrice: 268, percentOff: 33, page: null, bogo: true });
+    expect(r.rows[1]).toMatchObject({ price: 179, bogo: false });
   });
 
   it('a page read in the last six hours, by this pass or the BOGO pass, is not read again; an older one is', async () => {

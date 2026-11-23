@@ -9,7 +9,7 @@
 // scan's allowance they always had, which is 0 when the budget is short (it skips cleanly).
 
 import type { AppSettings } from '../core/src/api/contract';
-import { chooseListingSource, DEFAULT_LISTING_SOURCE, type ListingSourceSetting, type SourceChoice } from '../core/src/scan/listingSource';
+import { chooseListingSource, DEFAULT_LISTING_SOURCE, listCounts, type ListingSourceSetting, type SourceChoice } from '../core/src/scan/listingSource';
 import type { ScanDeps } from '../core/src/scan/runner';
 import type { ScanJob, ScanSettings } from '../core/src/scan/types';
 import { BRAND_QUERIES } from '../core/src/settings';
@@ -64,9 +64,14 @@ export function discoveryFor(i: {
   const choice = chooseListingSource({ setting: s.listingSource, chromeConnected: i.chromeConnected, trigger: i.trigger, serpWhenChromeClosed: s.serpWhenChromeClosed, serpCanPay: i.serpCanPay });
   const catalogPagesPerScan = i.keepaCanLookUp ? 0 : i.settings.catalogPagesPerScan;
   if (choice.source === 'chrome') {
+    // Fix round: if every Chrome list comes back empty, SerpApi's pages, only where the owner allowed a search with Chrome closed.
+    const mayFallBack = s.listingSource === 'auto' && (i.trigger === 'manual' || s.serpWhenChromeClosed) && i.serpCanPay;
     return {
       source: 'chrome', settings: { ...i.settings, queries: [], catalogPagesPerScan }, note: null,
-      chromeListing: { queries: BRAND_QUERIES, readListing: i.readers.readBundleListing, readPages: i.readers.readPromoPages },
+      chromeListing: {
+        queries: BRAND_QUERIES, readListing: i.readers.readBundleListing, readPages: i.readers.readPromoPages,
+        ...(mayFallBack && i.settings.queries.length > 0 ? { serpFallback: i.settings.queries } : {}),
+      },
     };
   }
   if (choice.source === 'serpapi') {
@@ -80,5 +85,8 @@ export function discoveryFor(i: {
 export function discoveryNote(job: Pick<ScanJob, 'chromeListing'> | null | undefined): string | null {
   const c = job?.chromeListing;
   if (!c?.done || c.pages === 0) return null;
-  return `Bundle lists read in Chrome: ${c.bundles} ${c.bundles === 1 ? 'bundle' : 'bundles'}${c.complete ? '' : ' so far'}.`;
+  // Fix round: the counts per list, so a live run shows whether the list with the search words or without them lists more.
+  const per = c.lists && c.lists.length > 0 ? listCounts(c.lists) : '';
+  if (c.empty) return `Home Depot's bundle lists came back empty${per ? ` (${per})` : ''}; the bundles found before are kept.`;
+  return `Bundle lists read in Chrome: ${c.bundles} ${c.bundles === 1 ? 'bundle' : 'bundles'}${c.complete ? '' : ' so far'}${per ? ` (${per})` : ''}.`;
 }

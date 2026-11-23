@@ -55,6 +55,10 @@ export interface ListedItem {
   model: string;
   title: string;
   url: string;
+  /** The listing entry's own pricing, when it carries one (hdPage.ts SearchProduct); absent otherwise. */
+  price?: number | null;
+  wasPrice?: number | null;
+  promotions?: PagePromotion[];
 }
 
 /** One item page as the BOGO pass read it: the product page and its BOGO promotions. */

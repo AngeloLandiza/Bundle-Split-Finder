@@ -35,7 +35,7 @@ import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, move
 import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
 import { HOME_DEPOT_ITEM_ID, kitCatalog, pickUnread } from './kitPage';
-import { type ListingRow, type ListingSourceDeps, readBundleListings } from './listingSource';
+import { LIST_EMPTY, type ListingRow, type ListingSourceDeps, readBundleListings } from './listingSource';
 import type { HdListing } from '../serpapi/parsers';
 import { bundleKey, PART_PRICE_READS_MAX, partKey, priceActive, resolvedParts } from './types';
 import type {
@@ -113,7 +113,13 @@ export interface ScanDeps {
    * of SerpApi's listing pages, which the job then does not plan. Their rows feed the same store as a listing page's
    * (saveListingRow). Absent: SerpApi's listing pages, as before.
    */
-  chromeListing?: Pick<ListingSourceDeps, 'queries' | 'readListing' | 'readPages'>;
+  chromeListing?: Pick<ListingSourceDeps, 'queries' | 'readListing' | 'readPages'> & {
+    /**
+     * Fix round: when every Chrome list comes back empty, SerpApi's listing pages for these queries (the owner allowed a
+     * search: Settings, scan.listingSource auto, and a scan he started or serpWhenChromeClosed). Absent: none.
+     */
+    serpFallback?: ScanSettings['queries'];
+  };
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -1005,9 +1011,15 @@ async function readChromeListings(run: Run): Promise<void> {
   let bundles = 0;
   for (const row of result.rows) if ((await saveListingRow(run, row, at, false)) === 'bundle') bundles += 1;
   job.counts.pagesRead += result.itemPagesRead;
+  // Fix round: every list read came back with its state but no product. Never "0 bundles, none found": a problem, the
+  // bundles found before are kept, and SerpApi's pages only when the owner allowed a search.
+  const empty = !result.refused && result.rows.length === 0 && result.lists.some((l) => l.empty);
+  const fallback = empty && (cl.serpFallback?.length ?? 0) > 0;
   job.chromeListing = {
     done: true, pages: result.listingPages, bundles, itemPagesRead: result.itemPagesRead,
-    complete: !result.refused && result.brands.every((b) => b.complete),
+    complete: !result.refused && result.lists.every((l) => l.complete || l.empty),
+    lists: result.lists.map((l) => ({ ...l })), pricedByList: result.pricedByList,
+    ...(empty ? { empty: true } : {}), ...(fallback ? { serpFallback: true } : {}),
   };
   if (step) step.found = bundles;
   moveUnits(job, 'hdPages', { done: result.listingPages, remaining: null });
@@ -1015,6 +1027,17 @@ async function readChromeListings(run: Run): Promise<void> {
     run.hdRefused = true;
     noteProblem(job, `${result.problem ?? 'Home Depot refused a page.'} What was read is kept; the rest is read next scan.`);
     if (result.listingPages === 0) failStep(job, 'hdPages', 'Home Depot refused', run.now());
+  } else if (empty) {
+    noteProblem(job, `${result.problem ?? LIST_EMPTY} The bundles found before are kept.${fallback ? ' The lists were searched on SerpApi instead.' : ''}`);
+    if (fallback) {
+      // SerpApi's listing pages, first in the queue, within the scan's budget as always; the step is theirs now.
+      if (step) delete step.source;
+      const pages: Listing[] = [];
+      for (let page = 1; page <= run.settings.pagesPerQuery; page++) {
+        for (const q of cl.serpFallback!) pages.push({ kind: 'listing', q: q.q, page, filterTokens: q.filterTokens ?? null, bundlesOnly: q.bundlesOnly ?? false });
+      }
+      job.queue = [...pages, ...job.queue];
+    } else failStep(job, 'hdPages', 'bundle list empty', run.now());
   } else if (result.problem !== null && result.problem !== 'stopped') noteProblem(job, result.problem);
   await store.putScan(job);
 }

@@ -13,7 +13,7 @@ import { parseSearchState } from '../src/hdPage';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { pipelineView } from '../src/scan/pipeline';
 import { runScan } from '../src/scan/runner';
-import { bundleListingPath } from '../src/scan/listingSource';
+import { bundleListingPath, type ListingPage } from '../src/scan/listingSource';
 import type { BundleRecord, PageOutcome, ReadPages, ScanJob, ScanSettings, ScanStore, SearchClient } from '../src/scan/types';
 import { parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache, type SearchResult } from '../src/serpapi/client';
@@ -47,12 +47,13 @@ function chrome(lists: Record<string, ListedItem[]>, price: (id: string) => { pr
     asked,
     deps: {
       queries: BRAND_QUERIES,
-      readListing: async (path: string): Promise<ListedItem[]> => {
+      readListing: async (path: string): Promise<ListingPage> => {
         asked.push(path);
         if (path === opts.refuseAt) throw new Error('Home Depot refused the bundle list (HTTP 403).');
-        const brand = path.includes('Zm5d/') ? 'RYOBI' : 'DEWALT';
+        const brand = path.includes('Zm5d') ? 'RYOBI' : 'DEWALT';
         const offset = Number(/Nao=(\d+)/.exec(path)?.[1] ?? 0);
-        return (lists[brand] ?? []).slice(offset, offset + 12);
+        // The list without search words lists the same items here (it adds none).
+        return { products: (lists[brand] ?? []).slice(offset, offset + 12) };
       },
       readPages: async (ids: string[]): Promise<PromoPageOutcome[]> =>
         ids.map((id) => {
@@ -101,9 +102,9 @@ describe('a scan with the Chrome bundle lists', () => {
     const { job, calls } = await scan(store, { chromeListing: c.deps, readPages: noPages });
     // No listing search (the Amazon lookups the new bundles want are step 15's routing, as before).
     expect(calls.filter((x) => x.startsWith('home_depot'))).toEqual([]);
-    // 24 a list: page 1 and 2 read, page 3 (offset 24) adds nothing.
-    expect(c.asked).toHaveLength(6);
-    expect(job.chromeListing).toMatchObject({ done: true, pages: 6, complete: true, itemPagesRead: 48 });
+    // 24 a list: page 1 and 2 read, page 3 (offset 24) adds nothing; each brand with the search words and without them.
+    expect(c.asked).toHaveLength(12);
+    expect(job.chromeListing).toMatchObject({ done: true, pages: 12, complete: true, itemPagesRead: 48 });
     const view = pipelineView(job, {}, T0);
     const bundles = (await store.listBundles()).length;
     expect(view.steps[0]).toMatchObject({ label: 'Home Depot bundle lists', state: 'done', figure: `read in Chrome · ${bundles} bundles · 0 searches` });
@@ -212,5 +213,74 @@ describe('replay on the owner\'s store (fixtures/e2e-2026-11-23/after-scan3)', (
     }
     // The BOGO pairs are untouched.
     for (const b of before.filter((x) => x.bogo)) expect(after.find((x) => x.key === b.key)?.bogo).toEqual(b.bogo);
+  });
+});
+
+// Fix round (the owner's first live free scan read 0 bundles and every later step said "none found"). A listing entry in
+// the shape the controller read live in the owner's Chrome: identifiers plus a `pricing({...})` entry with value, original
+// and conditionalPromotions, and the other fields Home Depot sends beside them.
+const PRICING_KEY = 'pricing({"isBrandPricingPolicyCompliant":false,"storeId":"121"})';
+const liveEntry = (p: Record<string, unknown>, promo = false) => ({
+  __typename: 'BaseProduct', itemId: p.product_id,
+  identifiers: {
+    brandName: p.brand, itemId: p.product_id, productLabel: p.title, modelNumber: p.model_number,
+    canonicalUrl: String(p.link).slice(HOME_DEPOT.length), parentId: null, productType: 'MERCHANDISE',
+  },
+  [PRICING_KEY]: {
+    value: p.price ?? null, original: p.price_was ?? null, promotion: null,
+    conditionalPromotions: promo
+      ? [{ experienceTag: 'BOGO', subExperienceTag: 'buyOneGetOne', promotionId: 945815, reward: { tiers: [{ rewardPercent: 100 }] }, dates: { start: '10/26/2026', end: '01/31/2027' }, description: { shortDesc: 'Free tool' } }]
+      : null,
+  },
+  availabilityType: { type: 'Shared' }, 'fulfillment({"storeId":"121"})': {}, 'badges({"storeId":"121"})': [],
+});
+
+describe('fix round: what the live listing really holds', () => {
+  it('entries with their own pricing: the price and was-price come from the list, the bundle pass reads the Includes', async () => {
+    const rows = SERP.RYOBI.products.slice(0, 12);
+    const listed = parseSearchState(Object.fromEntries(rows.map((p, i) => [`base-searchNav-${String(p.product_id)}`, liveEntry(p, i === 0)])), HOME_DEPOT);
+    expect(listed[0]).toMatchObject({ price: rows[0]!.price, promotions: [{ promotionId: '945815', endsAt: '2027-01-31' }] });
+    const store = new MemoryScanStore();
+    const c = chrome({ RYOBI: listed }, () => { throw new Error('no item page is read for a list-priced entry'); });
+    const pages: string[] = [];
+    const { job } = await scan(store, { chromeListing: c.deps, settings: settingsOf({ brands: ['RYOBI'] }), readPages: async (ids) => { pages.push(...ids); return noPages(ids); } });
+    expect(job.chromeListing).toMatchObject({ pricedByList: 12, itemPagesRead: 0 });
+    const bundles = await store.listBundles();
+    expect(bundles.length).toBeGreaterThan(0);
+    for (const b of bundles) {
+      const p = rows.find((r) => r.product_id === b.itemId)!;
+      expect([b.price, b.regularPrice]).toEqual([p.price ?? null, p.price === undefined ? null : (p.price_was ?? null)]);
+    }
+    // The bundle pass still reads each new bundle's own page for its Includes list.
+    expect(pages.sort()).toEqual(bundles.map((b) => b.itemId).sort());
+  });
+
+  it('every list empty: a problem in words, the step fails, the bundles found before are kept, nothing is searched', async () => {
+    const store = new MemoryScanStore();
+    const before: BundleRecord = {
+      key: 'homedepot:324903619', retailer: 'homedepot', itemId: '324903619', title: 'kit', brand: 'RYOBI', model: 'PCL1201K2-PCL515B', upc: null,
+      price: 179, regularPrice: 268, percentOff: 33, link: `${HOME_DEPOT}/p/324903619`, seenAt: T0 - 1000, split: null,
+    };
+    await store.putBundle(before);
+    const c = chrome({}, serpPrice);
+    const { job, calls } = await scan(store, { chromeListing: c.deps, readPages: noPages });
+    expect(calls.filter((x) => x.startsWith('home_depot'))).toEqual([]);
+    expect(job.chromeListing).toMatchObject({ empty: true, bundles: 0 });
+    expect(job.stopMessage).toContain("Home Depot's bundle list came back empty: the DEWALT list for \"dewalt 20v combo kit\" had no product.");
+    expect(job.stopMessage).toContain('The bundles found before are kept.');
+    expect(pipelineView(job, {}, T0).steps[0]).toMatchObject({ label: 'Home Depot bundle lists', state: 'failed', figure: 'bundle list empty' });
+    expect(await store.getBundle(before.key)).toMatchObject({ price: 179, model: 'PCL1201K2-PCL515B' });
+  });
+
+  it('every list empty and the owner allowed a search: SerpApi\'s listing pages instead', async () => {
+    const store = new MemoryScanStore();
+    const c = chrome({}, serpPrice);
+    const queries = toScanSettings(DEFAULT_SETTINGS).queries;
+    const { job, calls } = await scan(store, { chromeListing: { ...c.deps, serpFallback: queries }, readPages: noPages });
+    expect(calls.filter((x) => x.startsWith('home_depot'))).toEqual(['home_depot dewalt 20v combo kit', 'home_depot ryobi 18v combo kit']);
+    expect(job.chromeListing).toMatchObject({ empty: true, serpFallback: true });
+    expect(job.stopMessage).toContain('The lists were searched on SerpApi instead.');
+    expect(pipelineView(job, {}, T0).steps[0]).toMatchObject({ label: 'Home Depot deals pages', state: 'done', figure: '2 searches' });
+    expect((await store.listBundles()).length).toBeGreaterThan(0);
   });
 });

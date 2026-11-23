@@ -7,7 +7,7 @@ import { DEFAULT_SETTINGS, toScanSettings } from '../../core/src/settings';
 import { discoveryFor, discoveryNote, scanSourceOf, scheduledScanWaits } from '../scanSource';
 
 const settings = toScanSettings(DEFAULT_SETTINGS);
-const readers = { readBundleListing: async () => [], readPromoPages: async () => [] };
+const readers = { readBundleListing: async () => ({ products: [] }), readPromoPages: async () => [] };
 const base = { app: {}, trigger: 'scheduled' as const, chromeConnected: true, serpCanPay: true, keepaCanLookUp: true, settings, readers };
 
 describe('discoveryFor', () => {
@@ -19,6 +19,15 @@ describe('discoveryFor', () => {
     expect(d.chromeListing?.queries).toMatchObject({ RYOBI: 'ryobi 18v combo kit', DEWALT: 'dewalt 20v combo kit' });
     expect(d.chromeListing?.readListing).toBe(readers.readBundleListing);
     expect(d.note).toBeNull();
+    // A scheduled scan may not search: an empty list is not searched on SerpApi.
+    expect(d.chromeListing?.serpFallback).toBeUndefined();
+  });
+
+  it('fix round: an empty Chrome list falls back to SerpApi only where the owner allowed a search', () => {
+    expect(discoveryFor({ ...base, trigger: 'manual' }).chromeListing?.serpFallback).toEqual(settings.queries);
+    expect(discoveryFor({ ...base, app: { scan: { listingSource: 'auto', serpWhenChromeClosed: true } } }).chromeListing?.serpFallback).toEqual(settings.queries);
+    expect(discoveryFor({ ...base, trigger: 'manual', serpCanPay: false }).chromeListing?.serpFallback).toBeUndefined();
+    expect(discoveryFor({ ...base, trigger: 'manual', app: { scan: { listingSource: 'chrome', serpWhenChromeClosed: true } } }).chromeListing?.serpFallback).toBeUndefined();
   });
 
   it('without Keepa the brand pages stay, within the scan\'s allowance as before', () => {
@@ -66,5 +75,14 @@ describe('discoveryNote', () => {
     expect(discoveryNote({ chromeListing: { done: true, pages: 1, bundles: 12, itemPagesRead: 0, complete: false } })).toBe('Bundle lists read in Chrome: 12 bundles so far.');
     expect(discoveryNote({ chromeListing: { done: true, pages: 0, bundles: 0, itemPagesRead: 0, complete: false } })).toBeNull();
     expect(discoveryNote(null)).toBeNull();
+    const lists = [
+      { brand: 'DEWALT', query: 'dewalt 20v combo kit', pages: 1, listed: 3, added: 3, complete: true, empty: false },
+      { brand: 'DEWALT', query: null, pages: 4, listed: 40, added: 37, complete: true, empty: false },
+    ];
+    expect(discoveryNote({ chromeListing: { done: true, pages: 5, bundles: 40, itemPagesRead: 0, complete: true, lists } }))
+      .toBe('Bundle lists read in Chrome: 40 bundles (DEWALT: 3 with the search words, 37 more without them).');
+    const empty = lists.map((l) => ({ ...l, pages: 1, listed: 0, added: 0, empty: true }));
+    expect(discoveryNote({ chromeListing: { done: true, pages: 2, bundles: 0, itemPagesRead: 0, complete: true, lists: empty, empty: true } }))
+      .toBe("Home Depot's bundle lists came back empty (DEWALT: empty with the search words, empty without them); the bundles found before are kept.");
   });
 });

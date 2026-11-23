@@ -28,7 +28,7 @@ export interface Readers {
   /** BOGO: one page of a Featured BOGO listing (hdReader.ts createBogoListingReader). Absent: this browser does not read them. */
   readBogoListing?: (path: string) => Promise<{ products: ListedItem[] } | ToolError>;
   /** Free scan: one page of a brand's Bundle listing (hdReader.ts createBundleListingReader). */
-  readBundleListing?: (path: string) => Promise<{ products: ListedItem[] } | ToolError>;
+  readBundleListing?: (path: string) => Promise<{ products: ListedItem[]; note?: string } | ToolError>;
   /** BOGO: product pages with their promotions (createPromoPageReader). */
   readPromoPages?: (itemIds: string[]) => Promise<PromoPageOutcome[]>;
   researchTools: { forQuestion(budget?: QuestionBudget): QuestionTools };
