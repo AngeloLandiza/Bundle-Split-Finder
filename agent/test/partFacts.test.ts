@@ -2,13 +2,12 @@
 // `remember`), "Not sold separately" on a part row (POST /api/facts) and "Change" (DELETE /api/facts/:key), on the owner's
 // scan-3 store (fixtures/e2e-2026-11-23/after-scan3). No network.
 
-import { mkdtempSync } from 'node:fs';
+import { cpSync, mkdtempSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { loadScanFolder } from '../../scripts/data-folder';
 import type { AnswerResponse, DealDetail, FactResponse, ReviewResponse } from '../../core/src/api/contract';
 import { reviewSignature } from '../../core/src/scan/answers';
 import { splitOne, withdrawUnreadSplitQuestions } from '../../core/src/scan/runner';
@@ -30,17 +29,12 @@ beforeEach(async () => {
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const port = (server.address() as { port: number }).port;
   base = `http://127.0.0.1:${port}`;
-  agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-facts-')), port, timers: false, now: () => Date.UTC(2026, 10, 23, 20) });
+  // The scan store's files are the agent's own format: copied in whole before the agent opens them (one write each).
+  const dataDir = mkdtempSync(join(tmpdir(), 'sf-facts-'));
+  cpSync(join(DIR, 'scan'), join(dataDir, 'scan'), { recursive: true });
+  agent = createAgent({ dataDir, port, timers: false, now: () => Date.UTC(2026, 10, 23, 20) });
   server.on('request', agent.handle);
-  const from = await loadScanFolder(DIR);
   const s = agent.work.scanStore;
-  for (const r of await from.listBundles()) await s.putBundle(r);
-  for (const r of await from.listCatalog()) await s.putCatalogEntry(r);
-  for (const r of await from.listMatches()) await s.putMatch(r);
-  for (const r of await from.listListings()) await s.putListing(r);
-  for (const r of await from.listReview()) await s.putReview(r);
-  for (const r of await from.listPartPrices()) await s.putPartPrice(r);
-  for (const m of await from.listMatches()) if (m.asin) { const p = await from.getPrice(m.asin); if (p) await s.putPrice(p); }
   const now = Date.UTC(2026, 10, 23, 19);
   await withdrawUnreadSplitQuestions(s, now);
   const real = (await s.getBundle(bundleKey('320243671')))!;
