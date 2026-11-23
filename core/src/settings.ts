@@ -18,7 +18,19 @@ export interface AlertSettings {
   minRoiPercent: number;
   /** After a scan, notify when any Review question is open. */
   reviewDigest: boolean;
+  /**
+   * Velocity filter for "worth buying now" (core/src/tracking/signals.ts): the slowest part of the way to sell must
+   * have sold at least this many units last month by Keepa's monthlySold. Absent: DEFAULT_MIN_MONTHLY_SOLD.
+   */
+  minMonthlySold?: number;
+  /** "Stop buying" floor: a watched deal's estimated profit falling below it is a marginDown signal. Absent: minProfit. */
+  floorProfit?: number;
+  /** Put marginDown in the digest too (off unless the owner turns it on). */
+  marginDownDigest?: boolean;
 }
+
+/** Keepa's monthlySold figures step 50, 100, 200, ... (as recorded); 50 is the lowest it shows. */
+export const DEFAULT_MIN_MONTHLY_SOLD = 50;
 
 export type DiscoveryMode = 'auto' | 'discovery_heavy' | 'tracking_heavy';
 export type TrackingDepth = 'price_only' | 'price_and_rank' | 'full';
@@ -143,6 +155,8 @@ function feeProblem(f: FeeSettings): string | null {
 function alertProblem(a: AlertSettings): string | null {
   if (!isAtLeastZero(a.minProfit)) return 'Use a profit of $0 or more.';
   if (!isAtLeastZero(a.minRoiPercent)) return 'Use an ROI of 0% or more.';
+  if (a.minMonthlySold !== undefined && !isWhole(a.minMonthlySold, 0, 1_000_000)) return 'Use a whole number of units sold a month, 0 or more.';
+  if (a.floorProfit !== undefined && !Number.isFinite(a.floorProfit)) return 'Use a profit floor in dollars.';
   return null;
 }
 
