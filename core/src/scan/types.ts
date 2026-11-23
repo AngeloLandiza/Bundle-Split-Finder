@@ -764,6 +764,8 @@ export interface ConfirmedPrice {
   /** http or https link to the listing. The proof. */
   link: string;
   confirmedAt: number;
+  /** A line the owner added ("seen at the Milwaukee store"). Never read as data; shown with the price. */
+  note?: string;
 }
 
 /** Step 9: one labelled price for a part. */
@@ -799,6 +801,8 @@ export interface PriceOption {
   singleOffer?: true;
   /** ebay_sold_new only: the value the figure is the median of (listings, units sold, range, up to 3 links). */
   ebay?: EbayValue;
+  /** confirmed only: the owner's note on the price, when he wrote one. */
+  note?: string;
 }
 
 /**

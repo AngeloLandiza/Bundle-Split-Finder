@@ -35,7 +35,7 @@ import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
 import { runScan } from '../core/src/scan/runner';
-import type { PaidAction, ReviewAnswer, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
+import type { ConfirmedPrice, PaidAction, ReviewAnswer, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
 import {
@@ -749,6 +749,26 @@ export class AgentWork {
       }
     }
     await this.refresh();
+  }
+
+  /**
+   * The owner's confirmed price for one part (already planned by core's planConfirmedPrice) stored in the scan's
+   * records, and the report rebuilt so the deal's estimate counts it. One at a time with answers, never beside a scan.
+   */
+  confirmPrice(record: ConfirmedPrice): Promise<ConfirmedPrice> {
+    return this.serialAnswer('A scan or a search is running. Save the price when it has finished.', async () => {
+      await this.scanStore.putConfirmedPrice(record);
+      await this.refresh();
+      return record;
+    });
+  }
+
+  /** Removes a confirmed price and rebuilds the report; the part counts at its Amazon price, or at $0, again. */
+  removeConfirmedPrice(key: string): Promise<void> {
+    return this.serialAnswer('A scan or a search is running. Remove the price when it has finished.', async () => {
+      await this.scanStore.deleteConfirmedPrice(key);
+      await this.refresh();
+    });
   }
 
   /** Approve: the verified suggestion of each question, through the owner's answer path. */

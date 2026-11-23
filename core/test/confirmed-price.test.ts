@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { amazonNet, bundleProfit } from '../src/money';
 import { bundlesCsv, RUN_COLUMNS } from '../src/scan/csv';
-import { parseConfirmedPrice } from '../src/scan/confirmed';
+import { confirmedSourceName, confirmState, ebayListingChoices, parseConfirmedPrice } from '../src/scan/confirmed';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
 import { bundleKey, DEFAULT_SCAN_SETTINGS, partKey, type BundleRecord, type MatchRecord } from '../src/scan/types';
@@ -60,6 +60,38 @@ describe('parseConfirmedPrice', () => {
     expect(parseConfirmedPrice({ brand: 'RYOBI', model: '~18V Charger', price: 15, link: 'https://www.facebook.com/marketplace/item/1' }, T0)).toMatchObject({
       key: 'RYOBI:~18V CHARGER', model: '~18V CHARGER', price: 15,
     });
+  });
+});
+
+describe('the owner’s price form, as rules', () => {
+  it('keeps a trimmed note, drops a blank one, and refuses a long one', () => {
+    expect(parseConfirmedPrice({ brand: 'RYOBI', model: 'A', price: 5, link: LINK, note: '  at the store ' }, T0)).toMatchObject({ note: 'at the store' });
+    expect(parseConfirmedPrice({ brand: 'RYOBI', model: 'A', price: 5, link: LINK, note: '   ' }, T0)).not.toHaveProperty('note');
+    expect(parseConfirmedPrice({ brand: 'RYOBI', model: 'A', price: 5, link: LINK, note: 'x'.repeat(201) }, T0)).toBe('That note is too long to store.');
+  });
+
+  it('names where a link points without reading it', () => {
+    expect(confirmedSourceName('https://www.ebay.com/itm/1')).toBe('eBay');
+    expect(confirmedSourceName('https://m.facebook.com/marketplace/item/1')).toBe('Facebook');
+    expect(confirmedSourceName('https://offerup.com/item/1')).toBe('offerup.com');
+    expect(confirmedSourceName(null)).toBe('a link');
+  });
+
+  it('offers only stored eBay listings that carry their own price and a web link', () => {
+    const option = (links: string[], linkPrices?: number[]) =>
+      ({ prices: [{ kind: 'ebay_sold_new', ebay: { listings: 2, unitsSold: 2, low: 1, high: 2, medianPrice: 1, links, linkPrices } }] }) as never;
+    expect(ebayListingChoices(option(['https://www.ebay.com/itm/1', 'javascript:x'], [60, 70]))).toEqual([{ url: 'https://www.ebay.com/itm/1', price: 60 }]);
+    expect(ebayListingChoices(option(['https://www.ebay.com/itm/1']))).toEqual([]);
+  });
+
+  it('opens the form only when the part has been looked up and no Amazon price counts', () => {
+    const part = (over: object) => ({ status: 'none', availability: 'missing', asin: null, price: null, prices: [], ...over }) as never;
+    expect(confirmState(part({ status: 'review' }))).toBe('answer-first');
+    expect(confirmState(part({ status: 'waiting' }))).toBe('look-up-first');
+    expect(confirmState(part({ status: 'unmatched' }))).toBe('look-up-first');
+    expect(confirmState(part({}))).toBe('open');
+    expect(confirmState(part({ status: 'matched', availability: 'inactive', asin: 'B1', price: null }))).toBe('open');
+    expect(confirmState(part({ status: 'matched', availability: 'active', asin: 'B1', price: 50 }))).toBe('amazon-counts');
   });
 });
 

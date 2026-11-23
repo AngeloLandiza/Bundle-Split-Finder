@@ -13,6 +13,7 @@ import {
   type AiPipelineSetting,
   type AnswerResponse,
   type BogoResponse,
+  type ConfirmPriceResponse,
   type KeyName,
   type NotifyEvent,
   type PaidResponse,
@@ -28,6 +29,7 @@ import {
 } from '../core/src/api/contract';
 import { dealListSections } from '../core/src/deals/sections';
 import { AnswerRefused } from '../core/src/scan/answers';
+import { planConfirmedPrice, planRemoveConfirmedPrice } from '../core/src/scan/confirmed';
 import { bundlesCsv } from '../core/src/scan/csv';
 import { ebaySettingsProblem, validateSettings } from '../core/src/settings';
 import { Auth, type PairError } from './auth';
@@ -515,6 +517,31 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/deals/:id/verify', 'ui', async (ctx) => {
     const model = text(obj(await ctx.body()).model, 'model', 64);
     return refusals(async (): Promise<PaidResponse> => ({ searches: (await work.paid(ctx.params.id!, 'verify', model)).searchesUsed }));
+  });
+
+  // The owner's confirmed sell price for one part: chosen from a stored eBay listing or typed with a link (core/src/scan/confirmed.ts).
+  const dealOf = (id: string) => {
+    const bundle = store.get('deals').bundles.find((b) => b.key === id);
+    if (!bundle) throw new HttpError('not_found', 'No such deal.');
+    return bundle;
+  };
+  r.post('/api/deals/:id/parts/:part/price', 'ui', async (ctx) => {
+    const bundle = dealOf(ctx.params.id!);
+    const b = obj(await ctx.body());
+    const plan = planConfirmedPrice(bundle, ctx.params.part!, b, now());
+    if (!plan.ok) throw new HttpError(plan.code, plan.message);
+    return refusals(async (): Promise<ConfirmPriceResponse> => {
+      const rec = await work.confirmPrice(plan.record);
+      return { confirmed: { price: rec.price, link: rec.link, note: rec.note ?? null, confirmedAt: new Date(rec.confirmedAt).toISOString() } };
+    });
+  });
+  r.delete('/api/deals/:id/parts/:part/price', 'ui', (ctx) => {
+    const plan = planRemoveConfirmedPrice(dealOf(ctx.params.id!), ctx.params.part!);
+    if (!plan.ok) throw new HttpError(plan.code, plan.message);
+    return refusals(async (): Promise<ConfirmPriceResponse> => {
+      await work.removeConfirmedPrice(plan.key);
+      return { confirmed: null };
+    });
   });
 
   // ------------------------------------------------------------ review (applied by the agent, core/src/scan/answers.ts)

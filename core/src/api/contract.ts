@@ -323,6 +323,23 @@ export interface PaidResponse {
   searches: number;
 }
 
+/**
+ * D3: POST /api/deals/:id/parts/:part/price confirms a sell price for one part of a deal (`:part` is the part's model,
+ * or a kit item's '~name' with no model number, URL-encoded); DELETE removes it. A price counts only because the owner
+ * chose it (docs/decisions.md, "A price counts when he confirms it"): `ebay-listing` takes one of the part's stored eBay
+ * listings by its link and counts that listing's own price; `typed` takes a price and a link he typed (a Facebook link
+ * is enough; it is not read). The agent never makes up a figure. Refused (409) while a scan or search runs, and for a
+ * part still in Review.
+ */
+export type ConfirmPriceBody =
+  | { kind: 'ebay-listing'; url: string; price?: number; note?: string }
+  | { kind: 'typed'; price: number; url: string; note?: string };
+
+/** The price now stored for the part, or null after a DELETE. */
+export interface ConfirmPriceResponse {
+  confirmed: { price: number; link: string; note: string | null; confirmedAt: string } | null;
+}
+
 // ---------------------------------------------------------------- review
 
 export type ReviewKind = 'split' | 'match' | 'ebay';

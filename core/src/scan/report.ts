@@ -108,7 +108,7 @@ function priceOptions(
   // Counted while no Amazon New price is. Once one is, the owner's figure stays, as a reference, with its link.
   if (confirmed) {
     const amazonCounts = active && price?.price != null && price.seenAt !== null;
-    out.push({ ...base, kind: 'confirmed', price: confirmed.price, asin: null, link: confirmed.link, seenAt: confirmed.confirmedAt, reference: amazonCounts });
+    out.push({ ...base, kind: 'confirmed', price: confirmed.price, asin: null, link: confirmed.link, seenAt: confirmed.confirmedAt, reference: amazonCounts, ...(confirmed.note ? { note: confirmed.note } : {}) });
   }
   if (hd && hd.price !== null && hd.seenAt !== null) {
     const soldAs = hd.matchedModel ?? hd.model;
