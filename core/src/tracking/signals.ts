@@ -8,7 +8,8 @@
 // is an estimate from the fee settings.
 
 import type { PartTrend } from '../keepa/trends';
-import type { BundleRow, PartRow, ReportSection, SaleOption } from '../scan/types';
+import { fulfillmentGap } from '../scan/report';
+import type { BundleRow, PartFees, PartRow, ReportSection, SaleOption } from '../scan/types';
 import { DEFAULT_MIN_MONTHLY_SOLD, estimateRoiPercent, type AlertSettings } from '../settings';
 
 /** A part's stored Keepa trend by ASIN (keepa:trend:<asin> in the cache). */
@@ -190,6 +191,25 @@ export function noSalesWords(missing: Pick<PartVelocity, 'model' | 'asin' | 'pul
   return out.join('; ');
 }
 
+/**
+ * Signals round 3, no silent mixing: an estimate that counts no fulfillment fee for some part (PartFees 'none', with
+ * fees.fulfillmentSource 'keepa') says so, with why: "before fulfillment for 1 of 2 parts — Keepa is asked next". Such an
+ * estimate is never worth buying now.
+ */
+export function beforeFulfillmentWords(parts: Pick<PartRow, 'model' | 'fees'>[], flat: number, keepa?: boolean): string | null {
+  const gap = fulfillmentGap(parts);
+  if (gap.before.length === 0) return null;
+  const why = (w: NonNullable<PartFees['fulfillmentWhy']>) => gap.before.filter((p) => p.fees!.fulfillmentWhy === w).map((p) => p.model);
+  const out: string[] = [];
+  if (why('not_pulled').length > 0) {
+    const tail = keepa === true ? 'Keepa is asked next' : keepa === false ? "add a Keepa key to read Amazon's FBA fee" : 'Keepa has not been asked yet';
+    out.push(gap.before.length === why('not_pulled').length ? tail : `${tail} for ${names(why('not_pulled'))}`);
+  }
+  if (why('no_keepa_fee').length > 0) out.push(`Keepa has no FBA fee for ${names(why('no_keepa_fee'))} and your flat fee is ${usd(flat)}`);
+  if (why('no_listing').length > 0) out.push(`${names(why('no_listing'))} has a confirmed price, no listing, and your flat fee is ${usd(flat)}`);
+  return `before fulfillment for ${gap.before.length} of ${gap.total} ${gap.total === 1 ? 'part' : 'parts'} — ${out.join('; ')}`;
+}
+
 // ---------------------------------------------------------------- signals
 
 export type SignalKind = 'buyNow' | 'marginUp' | 'marginDown' | 'reviewCleared' | 'discoveryDone';
@@ -264,6 +284,8 @@ export interface SignalInput {
   now: number;
   /** Whether the agent can pull a part's listing on Keepa (a key is set): the "no sales data" words say what happens next. */
   keepa?: boolean;
+  /** The owner's flat fulfillment fee, for the words of an estimate before fulfillment (signals round 3). Default $0. */
+  flatFee?: number;
 }
 
 const SECTION_WORDS: Record<ReportSection, string> = {
@@ -354,16 +376,24 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     else if (profit === null || roi === null) fails.push('no estimate for this way to sell yet');
     else {
       if (profit < alerts.minProfit) {
-        fails.push(`est. profit ${usd(profit)} is below your ${usdShort(alerts.minProfit)}${roi < alerts.minRoiPercent ? ` and ${pct(roi)} ROI below your ${pct(alerts.minRoiPercent)}` : ''}`);
+        fails.push(`est. ${usd(profit)} is below your ${usdShort(alerts.minProfit)}${roi < alerts.minRoiPercent ? ` and ${pct(roi)} ROI below your ${pct(alerts.minRoiPercent)}` : ''}`);
       } else if (roi < alerts.minRoiPercent) {
         fails.push(`est. ROI ${pct(roi)} is below your ${pct(alerts.minRoiPercent)} (profit ${usd(profit)})`);
       }
+      // Signals round 3: an estimate missing a fulfillment fee is never a buy (a profit already below the number binds first).
+      const before = beforeFulfillmentWords(o.parts, input.flatFee ?? 0, input.keepa);
+      if (before !== null) fails.push(before);
       if (o.leftovers.length > 0) fails.push(`it leaves ${names(o.leftovers)} unsold`);
       if (velocity.status === 'slow') {
         const sl = velocity.slowest!;
         fails.push(`${velocity.parts.length > 1 ? `${sl.model} ` : ''}sells about ${sl.monthlySold} a month, below your ${minMonthlySold}`);
       } else if (velocity.status === 'no_data') {
-        fails.push(velocity.parts.length === 0 ? 'no sales data: this way to sell has no parts yet' : noSalesWords(velocity.parts.filter((p) => p.monthlySold === null), input.keepa));
+        // One Keepa pull answers both: a part before fulfillment because Keepa was not asked has no sales figure for the same
+        // reason, and the fee words already say it is asked next.
+        const askedNext = new Set(o.parts.filter((p) => p.fees?.fulfillmentWhy === 'not_pulled' && p.fees.fulfillmentFrom === 'none').map((p) => p.model));
+        const missing = velocity.parts.filter((p) => p.monthlySold === null && !(p.pulledAt === null && askedNext.has(p.model)));
+        if (velocity.parts.length === 0) fails.push('no sales data: this way to sell has no parts yet');
+        else if (missing.length > 0) fails.push(noSalesWords(missing, input.keepa));
       }
       if (fails.length === 0 && why === null) {
         fails.push(`still above ${thresholds}, but no better than ${lastP !== null ? `the last check (${usd(lastP)})` : 'before'}${rolling ? ` or the 7-day average (${usd(rolling.profit)})` : ''}: a buy needs a change`);
@@ -374,7 +404,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     if (buyNow) buys.push({ kind: 'buyNow', optionId: o.id, reason: `${why} ${velocity.reason}`, numbers });
     options.push({ optionId: o.id, label: o.label, profit, roiPercent: roi, meetsThresholds: meets, velocity, baseline, buyNow, notBuyNow });
     verdicts.set(o.id, buyNow
-      ? `Worth buying now: est. profit ${usd(profit!)} (${pct(roi!)} ROI), sells about ${velocity.slowest!.monthlySold} a month, ${whyShort || 'improved'}`
+      ? `Worth buying now: +${usd(profit!)} (${Math.round(roi! * 10) / 10}% ROI), sells about ${velocity.slowest!.monthlySold} a month, ${whyShort || 'improved'}`
       : `Not worth buying now: ${fails.join('; ')}`);
   }
   const best = buys.reduce<Signal | null>((a, b) => (a === null || (b.numbers.profit ?? 0) > (a.numbers.profit ?? 0) ? b : a), null);

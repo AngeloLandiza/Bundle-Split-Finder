@@ -16,20 +16,23 @@ const good = () => bundle([option('whole', 299, [part('DCF921B', ASIN.DCF921B, 2
 const recorded = (name: string) => JSON.parse(readFileSync(new URL(`../../fixtures/recorded/${name}`, import.meta.url), 'utf8')) as Record<string, unknown>;
 
 describe('the watchlist and each scan', () => {
-  it('watches a confirmed, discounted bundle by itself, keeps every bundle history, and signals only the watched', () => {
+  it('watches a confirmed, discounted bundle by itself, keeps every bundle history, and judges every bundle (signals round 3)', () => {
     const plain = { ...good(), key: 'DEWALT:PLAIN', percentOff: null };
     const s = trackReport(emptyTracking(), { bundles: [good(), plain], review: [] }, recordedTrend, alerts, NOW);
     expect(s.watch).toEqual({ 'DEWALT:DCK200D1P1W921B': { watched: true, by: 'auto', since: NOW } });
     expect(Object.keys(s.history)).toEqual(['DEWALT:DCK200D1P1W921B', 'DEWALT:PLAIN']);
-    expect(Object.keys(s.signals)).toEqual(['DEWALT:DCK200D1P1W921B']);
+    expect(Object.keys(s.signals)).toEqual(['DEWALT:DCK200D1P1W921B', 'DEWALT:PLAIN']);
     expect(s.signals['DEWALT:DCK200D1P1W921B']!.buyNow?.kind).toBe('buyNow');
+    // The unwatched one has its verdict too (the row shows it), but only a watched bundle goes in a digest.
+    expect(s.signals['DEWALT:PLAIN']!.verdict).toMatch(/^Worth buying now/);
+    expect(freshSignals(s, ['buyNow'], NOW).lines.map((l) => l.bundleKey)).toEqual(['DEWALT:DCK200D1P1W921B']);
   });
 
   it("the owner's Unwatch holds against the next scan", () => {
     const off = setWatch(emptyTracking(), 'DEWALT:DCK200D1P1W921B', false, NOW);
     const s = trackReport(off, { bundles: [good()], review: [] }, recordedTrend, alerts, NOW);
     expect(s.watch['DEWALT:DCK200D1P1W921B']).toEqual({ watched: false, by: 'owner', since: NOW });
-    expect(s.signals).toEqual({});
+    expect(freshSignals(s, ['buyNow'], NOW).lines).toEqual([]);
   });
 
   it('a split question on the bundle is an open question in its history point', () => {

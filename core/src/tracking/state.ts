@@ -17,7 +17,10 @@ export interface WatchEntry {
 export interface TrackingState {
   watch: Record<string, WatchEntry>;
   history: Record<string, HistoryPoint[]>;
-  /** The last scan's signals of each watched bundle. */
+  /**
+   * The last judged signals of each bundle. Signals round 3: of every bundle (the verdict line shows on every row with an
+   * estimate), watched or not; only a watched bundle's signals go in a digest (freshSignals).
+   */
   signals: Record<string, BundleSignals>;
   /** `${bundleKey}|${signal}|${day}` already sent in a digest, newest last. */
   notified: string[];
@@ -55,6 +58,14 @@ export function bundlesWithOpenQuestions(report: Pick<ScanReport, 'bundles' | 'r
   return out;
 }
 
+/** What the agent knows beside the report: whether Keepa can be asked, and the owner's flat fulfillment fee. */
+export interface SignalOpts {
+  keepa?: boolean;
+  flatFee?: number;
+}
+
+const signalOpts = (o: SignalOpts) => ({ ...(o.keepa !== undefined ? { keepa: o.keepa } : {}), ...(o.flatFee !== undefined ? { flatFee: o.flatFee } : {}) });
+
 /**
  * After a scan: bundles that are now confirmed and discounted become watched (unless the owner unwatched them), every
  * bundle's point is added to its history, and each watched bundle's signals are computed against the history before
@@ -66,7 +77,7 @@ export function trackReport(
   trend: TrendLookup,
   alerts: AlertSettings,
   now: number,
-  opts: { keepa?: boolean } = {},
+  opts: SignalOpts = {},
 ): TrackingState {
   const open = bundlesWithOpenQuestions(report);
   const watch = { ...state.watch };
@@ -75,9 +86,7 @@ export function trackReport(
   for (const row of report.bundles) {
     if (!watch[row.key] && autoWatch(row)) watch[row.key] = { watched: true, by: 'auto', since: now };
     const before = state.history[row.key] ?? [];
-    if (watch[row.key]?.watched) {
-      signals[row.key] = bundleSignals({ row, history: judgedBy(before, historyPoint(row, open.has(row.key), trend, now)), reviewOpen: open.has(row.key), trend, alerts, now, ...(opts.keepa !== undefined ? { keepa: opts.keepa } : {}) });
-    }
+    signals[row.key] = bundleSignals({ row, history: judgedBy(before, historyPoint(row, open.has(row.key), trend, now)), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts) });
     history[row.key] = appendHistory(before, historyPoint(row, open.has(row.key), trend, now), now);
   }
   // Bundles this report does not hold keep their history until it is too old.
@@ -133,7 +142,7 @@ export function retrackReport(
   trend: TrendLookup,
   alerts: AlertSettings,
   now: number,
-  opts: { keepa?: boolean } = {},
+  opts: SignalOpts = {},
 ): { state: TrackingState; evaluated: string[] } {
   const open = bundlesWithOpenQuestions(report);
   const watch = { ...state.watch };
@@ -147,15 +156,11 @@ export function retrackReport(
     const last = before.at(-1);
     const same = last !== undefined && sameFigures(last, point);
     const prior = same ? before.slice(0, -1) : before;
-    if (watch[row.key]?.watched) {
-      const next = bundleSignals({ row, history: judgedBy(prior, point), reviewOpen: open.has(row.key), trend, alerts, now, ...(opts.keepa !== undefined ? { keepa: opts.keepa } : {}) });
-      const old = state.signals[row.key];
-      if (!same || !old || verdictKey(old) !== verdictKey(next) || old.verdict === undefined) {
-        signals[row.key] = next;
-        evaluated.push(row.key);
-      }
-    } else {
-      delete signals[row.key];
+    const next = bundleSignals({ row, history: judgedBy(prior, point), reviewOpen: open.has(row.key), trend, alerts, now, ...signalOpts(opts) });
+    const old = state.signals[row.key];
+    if (!same || !old || verdictKey(old) !== verdictKey(next) || old.verdict === undefined) {
+      signals[row.key] = next;
+      evaluated.push(row.key);
     }
     history[row.key] = same ? [...prior, { ...point, at: last!.at }] : appendHistory(before, point, now);
   }

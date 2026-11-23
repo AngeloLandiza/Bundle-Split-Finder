@@ -139,7 +139,7 @@ describe('the verdict: always which condition fails, the binding one first (sign
 
   it('worth buying now: the estimate, the sales and what changed', () => {
     const s = bundleSignals({ row: good(), history: [], reviewOpen: false, trend: recordedTrend, alerts: owner, now: NOW });
-    expect(s.verdict).toBe('Worth buying now: est. profit $81.80 (27% ROI), sells about 600 a month, first seen with an estimate.');
+    expect(s.verdict).toBe('Worth buying now: +$81.80 (27.4% ROI), sells about 600 a month, first seen with an estimate.');
   });
 
   it('below the profit number: the profit first, in the owner\'s own figure', () => {
@@ -147,12 +147,26 @@ describe('the verdict: always which condition fails, the binding one first (sign
     const row = bundle([option('whole', 179, [part('DCF921B', ASIN.DCF921B, 120), part('DCB606', ASIN.DCB606, 92)])], { price: 179 });
     const s = bundleSignals({ row, history: [], reviewOpen: false, trend: recordedTrend, alerts: owner, now: NOW });
     expect(s.options[0]!.profit).toBe(1.2);
-    expect(s.verdict).toBe('Not worth buying now: est. profit $1.20 is below your $20 and 1% ROI below your 20%.');
+    expect(s.verdict).toBe('Not worth buying now: est. $1.20 is below your $20 and 1% ROI below your 20%.');
   });
 
   it('selling too slowly: the slowest part and its figure against the minimum', () => {
     const s = bundleSignals({ row: good(), history: [], reviewOpen: false, trend: recordedTrend, alerts: { ...owner, minMonthlySold: 700 }, now: NOW });
     expect(s.verdict).toBe('Not worth buying now: DCF921B sells about 600 a month, below your 700.');
+  });
+
+  it('an estimate before fulfillment for a part is never worth buying now, and says why first (signals round 3)', () => {
+    const keepaFee = { fulfillment: 7.6, fulfillmentFrom: 'keepa' as const, referralRate: 0.15, referralFrom: 'flat' as const };
+    const none = { fulfillment: 0, fulfillmentFrom: 'none' as const, fulfillmentWhy: 'not_pulled' as const, referralRate: 0.15, referralFrom: 'flat' as const };
+    const row = good();
+    row.options[0]!.parts = [{ ...row.options[0]!.parts[0]!, fees: keepaFee }, { ...row.options[0]!.parts[1]!, fees: none }];
+    const s = bundleSignals({ row, history: [], reviewOpen: false, trend: recordedTrend, alerts: owner, now: NOW, keepa: true });
+    expect(s.buyNow).toBeNull();
+    expect(s.verdict).toBe('Not worth buying now: before fulfillment for 1 of 2 parts — Keepa is asked next.');
+    // Asked, no FBA fee, flat fee $0: it stays before fulfillment, and says so.
+    row.options[0]!.parts[1] = { ...row.options[0]!.parts[1]!, fees: { ...none, fulfillmentWhy: 'no_keepa_fee' } };
+    const asked = bundleSignals({ row, history: [], reviewOpen: false, trend: recordedTrend, alerts: owner, now: NOW, keepa: true });
+    expect(asked.verdict).toBe('Not worth buying now: before fulfillment for 1 of 2 parts — Keepa has no FBA fee for DCB606 and your flat fee is $0.00.');
   });
 
   it('an incomplete estimate never signals, and says it is not confirmed', () => {
