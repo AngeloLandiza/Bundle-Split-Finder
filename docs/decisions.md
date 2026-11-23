@@ -779,3 +779,72 @@ leave unknown (11 of them are the part, per the answer key): after the code's ch
 (fixtures/listing-judge/judgements-claude-haiku-5-5.json). No confirmation was gained, so `ai.listingJudge` stays off and
 is not wired into the agent. Listings are confirmed by Amazon's catalog record, by the title-plus-brand rule (22 right,
 0 wrong), by the automatic product-page read within its allowance, or by the owner.
+
+## A scan's discovery is free: Home Depot's bundle lists read in Chrome (Nov 23)
+
+The owner's automation was limited by searches: every scan paid SerpApi for Home Depot's listing pages and the Amazon
+brand pages (3 searches a scan in the owner's three scans), with 250 a month, 100 held in reserve and 2 left above it,
+although the paired helper already read Home Depot's pages free (the BOGO pass, the bundle and kit pages, the part prices).
+
+- **The scan reads each brand's Home Depot Bundle list in Chrome** (`core/src/scan/listingSource.ts readBundleListings`;
+  the runner's `ScanDeps.chromeListing`, which plans no SerpApi listing page). *Checked live in the owner's Chrome (free):*
+  the address is the search query's with Home Depot's own filter tokens in its N- value (base `5yc1v`, then `Z` and each
+  token: Bundle `bwo64`, RYOBI `m5d`, DEWALT `4j2`), `/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5`;
+  12 `base-searchNav-<id>` entries a page, `&Nao=12` the next 12, `&Nao=24` none: 24 RYOBI bundles. SerpApi's own pages
+  report hundreds for the query because it applies no filter token reliably (`hd_filter_tokens` accepted and ignored,
+  as recorded before), so its listing is replaced, not filtered. The queries are today's (`BRAND_QUERIES`).
+- **Paging, as the BOGO pass pages:** pages until one adds no new item id, the next offset being this list's own items so
+  far, at most 10 pages a brand (`BUNDLE_LISTING_PAGES_MAX`); an item two lists show is one row. A refusal (a listing or
+  item page) ends the pass: what was read is kept and saved, the problem is said on the scan, and no other Home Depot page
+  is read in that scan (bundle, kit and part-price passes skip with "Home Depot refused"). No retry; the doorway rule.
+- **Prices come from each bundle's own page, read in the same pass.** The recorded listing entries hold identifiers only
+  (`research-2026-11-20.json`: brandName, productLabel, modelNumber, canonicalUrl); the price was not looked for in the
+  listing state because no recording shows one. The item page (`parsePromoPage`, the BOGO reader) gives price, was-price
+  and the Includes bullets, kept in the BOGO pass's item cache (`homedepot:bogo-item:<id>`): either pass reuses a reading
+  for 6 hours (`LISTING_ITEM_MAX_AGE_MS`; the BOGO pass's own rule stays "read today"). The reading is also the bundle's
+  page when none is stored, so a new bundle costs one page read, not two. Item pages count toward `pageReadsPerScan` (60).
+  A bundle whose page was not read this time keeps its stored price; a Chrome row never writes null over it.
+- **The same pipeline:** a Chrome row is saved by the listing page's own code (`saveListingRow`, factored out of
+  `applyListing`): a bundle by its model's shape, else a catalog entry. One change for every row: a stored bundle's
+  `bogo` facts are kept when a listing row rewrites it (before, a SerpApi row of a BOGO pair dropped them until the next
+  BOGO pass).
+- **Not added: the brand + Bundle list without a query.** The brief allowed it if a recording showed it lists more
+  bundles; there is no recording of it, so it is not read (no guessed totals). *Live check:* open the RYOBI
+  Bundle filter in Chrome with no search words (its address form is not recorded either) and compare its item ids with the query's 24.
+- **Where the lists come from: Settings `scan.listingSource`** `auto` (default: Chrome when the helper is connected; SerpApi
+  only when it is not, the owner started the scan, and a search can pay), `chrome` (never a search for them), `serpapi`
+  (as before). **A scheduled scan with Chrome closed waits for Chrome** (`agent/scanSource.ts scheduledScanWaits`; the tick
+  starts it once the helper is back), unless `scan.serpWhenChromeClosed` (default off) lets it search. A scan that can
+  neither read nor search finds no new bundles and says so; its other steps run.
+- **The Amazon brand pages are not read when Keepa looks parts up** (`discoveryFor`: `catalogPagesPerScan` 0). Measured
+  (`npx tsx scripts/measure-catalog-step.ts`, the owner's after-scan3 store): of 421 listings, 92 were saved only by the
+  3 brand pages (20 + 35 + 37); without them **0 of 59 splits change** (38 models are known only from them, none decides a
+  split), and **5 parts** (6 with a B twin: PCL515B/PCL515, DCW600B, P755, DCB606, DCB1404, all `probable`) were matched to
+  a listing only a brand page saved. Each of those is one Keepa lookup (11 tokens) away, against 3 searches for the pages.
+  No Keepa brand search stands in: none is recorded, and the per-part lookup already does the job. Without Keepa the brand
+  pages stay within the fifth of the scan's allowance they always had, which is 0 when the budget is short.
+- **What a scan spends now.** Chrome + Keepa: 0 searches to find bundles and 0 for brand pages; a lookup Keepa cannot pay
+  for still goes to SerpApi within the per-scan cap and never the reserve (step 15, decision 1, unchanged). Chrome without
+  Keepa: 0 to find bundles, up to a fifth of the allowance for brand pages, each new part's lookup a search. Chrome
+  closed: scheduled waits (or searches if allowed); a manual scan searches as before.
+- **The schedule recommendation** (`core/src/schedule/recommend.ts`, `discovery: 'chrome'`): with Keepa a scan plans 0
+  searches, so every choice fits and the first is **"Every 3 hours while Chrome is open"**, bounded by
+  `MIN_SCAN_INTERVAL_HOURS` = 3, Home Depot politeness, not the budget: a scan reads 2 to 3 list pages a brand, the BOGO
+  lists, and at most 60 item pages, each new or older than 6 hours, paced as a tab; 8 such passes a day. The month's
+  searches go to the automatic listing confirmation, the owner's lookups, and lookups Keepa cannot pay for. Without Keepa
+  a free scan plans 6 searches (the lookups), and the budget decides as before. Recent runs are not used in Chrome mode:
+  they paid for listing pages. Settings, Scanning: "Find bundles" (the source, and the Chrome-closed switch), and the
+  forecast says "Finding bundles spends no searches".
+- **The step list** names the step "Home Depot bundle lists" and reads "read in Chrome · 24 bundles · 0 searches" (the
+  searches are the brand pages'); the run's summary adds "Bundle lists read in Chrome: 24 bundles." and its "0 searches.".
+- **A new worker job, `bundleListing`**, rather than a wider `bogoListing`: an older helper answers it "does not know that
+  kind of job", which the agent reads as outdated and reloads it, never as Home Depot failing. Its path is checked by
+  `isBundleListingPath` in the agent and in the helper (security review M2: only the filter tokens above, a query and an
+  offset).
+- *Live checks:* the helper must be rebuilt and reloaded for `bundleListing`; one real scan should show the two lists'
+  page counts and bundle totals (24 RYOBI expected), whether DEWALT's `4j2` list matches its query as RYOBI's did, and
+  whether the 22 bundles the owner's SerpApi listing pages found (after-scan3) are in the Bundle lists: the replay
+  (`core/test/scan-chrome-listing.test.ts`) shows the Chrome rows build the same records as SerpApi's rows, not that Home
+  Depot lists the same products.
+- *For v2:* if Home Depot's listing state carries prices (unrecorded), the item page reads for price could go; record a
+  full listing state once to find out.
