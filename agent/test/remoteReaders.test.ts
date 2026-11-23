@@ -114,3 +114,36 @@ describe('remote Home Depot readers (worker jobs)', () => {
     expect(await tools.catalogLookup({ model: 'PCL206B' })).toMatchObject({ entries: [{ model: 'PCL206B', kind: 'part' }] });
   });
 });
+
+describe('the BOGO readers (worker jobs)', () => {
+  // The recorded starter (bogo-2026-11-23.json) as the extension's promoPage reader answers it.
+  const page = {
+    itemId: '317987584', brand: 'RYOBI', model: 'PCL1201K2', title: 'ONE+ 18V Cordless 2-Tool Combo Kit', price: 179, wasPrice: null, bullets: [], description: null,
+    promotions: [{ promotionId: '945815', startsAt: '2026-10-26', endsAt: '2027-01-31', description: 'Purchase Select Ryobi Starter Kit and receive a select FREE Tool' }],
+  };
+
+  it('a listing job answers its products; a refusal throws its sentence; a product off Home Depot is no answer', async () => {
+    const { readers, worker } = setup();
+    const path = '/b/Featured-BOGO/N-5yc1vZ1z24hvk/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5';
+    const product = { itemId: '317987584', brand: 'RYOBI', model: 'PCL1201K2', title: 'kit', url: 'https://www.homedepot.com/p/x/317987584' };
+    const listing = readers.readBogoListing(path);
+    expect(await worker(() => ({ products: [product] }))).toMatchObject({ kind: 'bogoListing', input: { path } });
+    expect(await listing).toEqual([product]);
+    const refused = readers.readBogoListing(path);
+    await worker(() => ({ error: 'Home Depot refused the BOGO listing (HTTP 403).' }));
+    await expect(refused).rejects.toThrow('Home Depot refused the BOGO listing (HTTP 403).');
+    const odd = readers.readBogoListing(path);
+    await worker(() => ({ products: [{ ...product, url: 'https://evil.example/p/1' }] }));
+    await expect(odd).rejects.toThrow('could not be read');
+  });
+
+  it('a promoPage job keeps only well-formed pages: a promotion date not in the recorded form drops the page', async () => {
+    const { readers, worker } = setup();
+    const reading = readers.readPromoPages(['317987584', '324903619']);
+    await worker(() => [
+      { itemId: '317987584', kind: 'read', page },
+      { itemId: '324903619', kind: 'read', page: { ...page, itemId: '324903619', promotions: [{ ...page.promotions[0], endsAt: 'Jan 31' }] } },
+    ]);
+    expect(await reading).toEqual([{ itemId: '317987584', kind: 'read', page }]);
+  });
+});

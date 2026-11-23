@@ -43,6 +43,7 @@ import { COLLECTIONS, Store, type StoreData, type StoredKeys } from './store';
 import { tryServeUi, uiIndexExists } from './uiStatic';
 import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf } from './views';
 import { setWatch } from '../core/src/tracking/state';
+import { isBogoListingPath } from '../core/src/tracking/bogoPairs';
 import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
 
@@ -126,6 +127,12 @@ function parseJobInput(kind: WorkerJobKind, v: unknown): WorkerJobInputs[WorkerJ
       return { query: text(o.query, 'query', 200), page: typeof o.page === 'number' && o.page >= 1 ? Math.floor(o.page) : 1 };
     case 'researchPage':
       return { itemId: text(String(o.itemId ?? ''), 'itemId', 32) };
+    case 'bogoListing':
+      if (!isBogoListingPath(o.path)) throw new HttpError('bad_request', 'path must be a Featured BOGO listing path.');
+      return { path: o.path };
+    case 'promoPage':
+      if (!Array.isArray(o.itemIds) || !o.itemIds.length || o.itemIds.length > 50) throw new HttpError('bad_request', 'itemIds must list 1 to 50 item ids.');
+      return { itemIds: o.itemIds.map((id) => text(String(id), 'itemId', 32)) };
   }
 }
 

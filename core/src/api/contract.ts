@@ -17,6 +17,7 @@ import type { PipelineView } from '../scan/pipeline';
 import type { AlertSettings, DiscoveryMode, EbaySettings, TrackingDepth } from '../settings';
 import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartPriceReading, ReportSection, ReviewItem } from '../scan/types';
 import type { BogoView, FreeItem } from '../tracking/bogo';
+import type { BogoChoice, BogoGroup, BogoTag, ListedItem, PromoPageOutcome } from '../tracking/bogoPairs';
 import type { FbaEstimate } from '../tracking/fba';
 import type { OptionSignals, Signal, SignalKind, SignalNumbers, Velocity } from '../tracking/signals';
 
@@ -167,6 +168,16 @@ export interface DealRow {
   buyNow?: boolean;
   /** Tracking: on a BOGO promotion the owner entered; 'choose' until he chooses the free tool. */
   bogo?: 'choose' | 'chosen' | null;
+  /**
+   * BOGO found by the agent: this bundle is a starter + free tool pair Home Depot lists at the starter's price
+   * (core/src/tracking/bogoPairs.ts); null when it is not one.
+   */
+  bogoPair?: BogoTag | null;
+  /**
+   * The automatic BOGO group this bundle belongs to (as a pair) or starts (as the starter): "BOGO: 11 free-tool choices —
+   * best: PCL265B +$61.50 est.", how many choices, and the best pair's deal id. Null when none.
+   */
+  bogoChoices?: { label: string; count: number; bestId: string | null; best: boolean } | null;
 }
 
 export interface DealsQuery {
@@ -217,6 +228,12 @@ export interface DealDetail {
   history?: DealHistoryPoint[];
   /** Tracking: the BOGO promotion the owner entered, with its estimate; null when none. */
   bogo?: BogoView | null;
+  /**
+   * BOGO found by the agent: the group of starter + free tool pairs this deal is one of (or starts), each pair ranked by
+   * its own estimate, with its Home Depot page and deal id. Null when the deal is in no group. When it is set, the
+   * owner's BOGO entry is only a fallback.
+   */
+  bogoGroup?: BogoGroup | null;
   /**
    * Tracking: the primary way to sell's estimate with Amazon's FBA fee estimate (Keepa) per part in place of the flat
    * fulfillment setting, beside the estimate (never instead). Null when no part has a Keepa fee stored.
@@ -316,7 +333,7 @@ export interface BogoResponse {
   bogo: BogoView | null;
 }
 
-export type { BogoView, FbaEstimate, FreeItem, OptionSignals, Signal, SignalKind, SignalNumbers, Velocity };
+export type { BogoChoice, BogoGroup, BogoTag, BogoView, FbaEstimate, FreeItem, OptionSignals, Signal, SignalKind, SignalNumbers, Velocity };
 
 /** W4: GET /api/deals/:id/lookup (the quote shown before the click) and the answer to POST /api/deals/:id/lookup and /verify. */
 export interface PaidResponse {
@@ -690,6 +707,13 @@ export interface WorkerJobInputs {
    * its runJob needs a case calling researchTools.forQuestion().readHomeDepotPage({ itemId })).
    */
   researchPage: { itemId: string };
+  /**
+   * BOGO: one page of a brand's Featured BOGO listing, by its path (core/src/tracking/bogoPairs.ts bogoListingPath; the
+   * worker reads only a path isBogoListingPath accepts).
+   */
+  bogoListing: { path: string };
+  /** BOGO: product pages with their price, was-price and BOGO promotions (hdPage.ts parsePromoPage). */
+  promoPage: { itemIds: string[] };
 }
 
 /**
@@ -706,10 +730,14 @@ export interface WorkerJobResults {
   search: HomeDepotSearch | ToolError;
   /** As extension/lib/researchTools.ts readHomeDepotPage returns it. */
   researchPage: HomeDepotPage | ToolError;
+  /** The listing page's products in page order (its base-searchNav entries); a refusal is a ToolError. */
+  bogoListing: { products: ListedItem[] } | ToolError;
+  /** One outcome per item id asked, as `page`'s. */
+  promoPage: PromoPageOutcome[];
 }
 
 export type WorkerJobKind = keyof WorkerJobInputs;
-export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search', 'researchPage'];
+export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search', 'researchPage', 'bogoListing', 'promoPage'];
 
 export type WorkerJobStatus = 'queued' | 'leased' | 'done' | 'failed';
 

@@ -10,7 +10,7 @@ import { appendLedger } from '../lib/ledger';
 import { CONTENT_REQUESTS, type ChipSetting, type Request, type ShowThisPage, type StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
 import { mayAsk } from '../lib/sender';
-import { createItemPriceReader, createPageReader, createPartPriceReader, openDoorway, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
+import { createBogoListingReader, createItemPriceReader, createPageReader, createPartPriceReader, createPromoPageReader, openDoorway, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
 import { createResearchTools } from '../lib/researchTools';
 import { createAgentApi } from '../lib/agentApi';
 import { appJobDeps, createJobLoop, runJob } from '../lib/agentJobs';
@@ -194,6 +194,9 @@ export default defineBackground(() => {
     readPartPrices,
     readItemPrice: createItemPriceReader(chromeReaderEnv(), { settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50, pauseMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 0 }),
     researchTools,
+    // BOGO (Nov 23): the agent's scan reads each brand's Featured BOGO listing and its items' pages through the same doorway.
+    readBogoListing: createBogoListingReader(chromeReaderEnv(), { settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50, pauseMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 0 }),
+    readPromoPages: createPromoPageReader(chromeReaderEnv(), { settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50 }),
   });
   const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
   const link = createLinkStore();

@@ -9,6 +9,8 @@ import type { WorkerJob, WorkerJobInputs, WorkerJobKind } from '../core/src/api/
 import { sameModel } from '../core/src/match';
 import type { CatalogEntry, CatalogLookup, HomeDepotPage, HomeDepotSearch, ResearchTools, ToolError } from '../core/src/research/types';
 import type { PageOutcome, PartPriceReading, ReadPages, ReadPartPrices, ScanStore } from '../core/src/scan/types';
+import type { PagePromotion, PromoPage } from '../core/src/hdPage';
+import type { ListedItem, PromoPageOutcome } from '../core/src/tracking/bogoPairs';
 import type { WorkerJobs } from './workerJobs';
 
 export interface ReaderTimeouts {
@@ -78,7 +80,44 @@ function researchSearch(v: unknown): HomeDepotSearch | ToolError {
   return { sourceId: v.sourceId, label: v.label, url: v.url as string, results: rows.slice(0, 10) as unknown as HomeDepotSearch['results'] };
 }
 
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+function promotion(v: unknown): PagePromotion | null {
+  if (!isRecord(v) || !isText(v.promotionId) || !/^\d{1,12}$/.test(v.promotionId) || !textOrNull(v.description)) return null;
+  const date = (d: unknown) => d === null || (isText(d) && DAY.test(d));
+  if (!date(v.startsAt) || !date(v.endsAt)) return null;
+  return { promotionId: v.promotionId, startsAt: v.startsAt as string | null, endsAt: v.endsAt as string | null, description: v.description as string | null };
+}
+
+/** A promoPage outcome in core's shape, or null: a page whose fields are not all of the right kind is no page. */
+function promoOutcome(v: unknown): PromoPageOutcome | null {
+  if (!isRecord(v) || !isText(v.itemId) || !ITEM_ID.test(v.itemId)) return null;
+  if (v.kind === 'unreadable' || v.kind === 'skipped') return { itemId: v.itemId, kind: v.kind };
+  if (v.kind === 'refused') return { itemId: v.itemId, kind: 'refused', ...(typeof v.status === 'number' ? { status: v.status } : {}) };
+  if (v.kind !== 'read' || !isRecord(v.page)) return null;
+  const p = v.page;
+  if (p.itemId !== v.itemId || !isText(p.brand) || !isText(p.model) || !isText(p.title) || !numOrNull(p.price) || !numOrNull(p.wasPrice)) return null;
+  if (!Array.isArray(p.bullets) || !p.bullets.every(isText) || !textOrNull(p.description) || !Array.isArray(p.promotions)) return null;
+  const promotions = p.promotions.map(promotion);
+  if (promotions.some((x) => x === null)) return null;
+  const page: PromoPage = {
+    itemId: v.itemId, brand: p.brand, model: p.model, title: p.title, price: p.price as number | null, wasPrice: p.wasPrice as number | null,
+    bullets: p.bullets as string[], description: p.description as string | null, promotions: promotions as PagePromotion[],
+  };
+  return { itemId: v.itemId, kind: 'read', page };
+}
+
+function listedItems(v: unknown): ListedItem[] | null {
+  if (!isRecord(v) || !Array.isArray(v.products)) return null;
+  const rows = v.products.filter((r) => isRecord(r) && isText(r.itemId) && ITEM_ID.test(r.itemId) && isText(r.brand) && isText(r.model) && isText(r.title) && onHomeDepot(r.url));
+  return rows.length === v.products.length ? (rows as unknown as ListedItem[]) : null;
+}
+
 export interface RemoteReaders {
+  /** One page of a Featured BOGO listing. Throws when Chrome could not read it or Home Depot refused it. */
+  readBogoListing(path: string): Promise<ListedItem[]>;
+  /** Product pages with their BOGO promotions, one outcome per id. Throws as readPages. */
+  readPromoPages(itemIds: string[]): Promise<PromoPageOutcome[]>;
   readPages: ReadPages;
   readPartPrices: ReadPartPrices;
   /** The research agent's tools for one question: the two Home Depot ones are worker jobs, the catalog is local. */
@@ -180,6 +219,21 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
     return out;
   };
 
+  const readBogoListing = async (path: string): Promise<ListedItem[]> => {
+    const result = await run('bogoListing', { path }, t.pageMs);
+    const err = toolError(result);
+    if (err) throw new Error(err.error);
+    const items = listedItems(result);
+    if (items === null) throw new Error('The BOGO listing Chrome read could not be read.');
+    return items;
+  };
+
+  const readPromoPages = async (itemIds: string[]): Promise<PromoPageOutcome[]> => {
+    const result = await run('promoPage', { itemIds: [...itemIds] }, t.pageMs + t.perItemMs * itemIds.length);
+    if (!Array.isArray(result)) throw new Error('The BOGO pages Chrome read could not be read.');
+    return result.flatMap((r) => promoOutcome(r) ?? []);
+  };
+
   function researchTools(store: ScanStore): ResearchTools {
     let used = 0;
     let refused = false;
@@ -228,7 +282,7 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
     };
   }
 
-  return { readPages, readPartPrices, researchTools };
+  return { readPages, readPartPrices, readBogoListing, readPromoPages, researchTools };
 }
 
 /** As extension/lib/researchTools.ts homeDepotItemId: a 9-digit id, or the last segment of a homedepot.com /p/ address. */

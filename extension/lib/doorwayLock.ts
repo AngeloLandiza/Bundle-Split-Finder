@@ -3,6 +3,8 @@
 // the app queued both read through it, so each call to a reader goes through one lock, whoever asks.
 
 import type { ReadPages, ReadPartPrices } from '@core/scan/types';
+import type { ToolError } from '@core/research/types';
+import type { ListedItem, PromoPageOutcome } from '@core/tracking/bogoPairs';
 import type { ReadItemPrice } from './hdReader';
 import type { QuestionBudget, QuestionTools } from './researchTools';
 
@@ -23,6 +25,10 @@ export interface Readers {
   readPages: ReadPages;
   readPartPrices: ReadPartPrices;
   readItemPrice: ReadItemPrice;
+  /** BOGO: one page of a Featured BOGO listing (hdReader.ts createBogoListingReader). Absent: this browser does not read them. */
+  readBogoListing?: (path: string) => Promise<{ products: ListedItem[] } | ToolError>;
+  /** BOGO: product pages with their promotions (createPromoPageReader). */
+  readPromoPages?: (itemIds: string[]) => Promise<PromoPageOutcome[]>;
   researchTools: { forQuestion(budget?: QuestionBudget): QuestionTools };
 }
 
@@ -32,6 +38,8 @@ export function lockedReaders(lock: Lock, raw: Readers): Readers {
     readPages: (ids) => lock(() => raw.readPages(ids)),
     readPartPrices: (parts) => lock(() => raw.readPartPrices(parts)),
     readItemPrice: (itemId, model) => lock(() => raw.readItemPrice(itemId, model)),
+    ...(raw.readBogoListing ? { readBogoListing: (path: string) => lock(() => raw.readBogoListing!(path)) } : {}),
+    ...(raw.readPromoPages ? { readPromoPages: (ids: string[]) => lock(() => raw.readPromoPages!(ids)) } : {}),
     researchTools: {
       forQuestion(budget) {
         const tools = raw.researchTools.forQuestion(budget);

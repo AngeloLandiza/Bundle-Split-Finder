@@ -2,7 +2,9 @@
 // refuses the same requests from the service worker. Every Chrome call goes through ReaderEnv,
 // so this file touches no chrome.* and is tested with fakes (see hdReader.test.ts).
 
-import { parseBundlePage, parseProductPage } from '@core/hdPage';
+import { parseBundlePage, parseProductPage, parsePromoPage, parseSearchText } from '@core/hdPage';
+import { HOME_DEPOT, isBogoListingPath, type ListedItem, type PromoPageOutcome } from '@core/tracking/bogoPairs';
+import type { ToolError } from '@core/research/types';
 import { modelForms, sameModel } from '@core/match';
 import {
   PART_PRICE_READS_MAX, type PageOutcome, type PartPriceReading, type ReadPages, type ReadPartPrices as CoreReadPartPrices,
@@ -143,10 +145,31 @@ const LOAD_TIMEOUT_MS = 30_000;
  * end of this reader's last call (a scan reads bundle pages, then kit pages, at once), only for
  * what is left of it. `now` is the clock for that, injected in tests.
  */
-export function createPageReader(
+export function createPageReader(env: ReaderEnv, opts: PageReaderOptions = {}): ReadPages {
+  return createPageReaderOf<PageOutcome>(env, (text, itemId) => {
+    const content = parseBundlePage(text, itemId);
+    return content ? { itemId, kind: 'read', content } : null;
+  }, opts);
+}
+
+/** BOGO (Nov 23): the same reader, each page read as hdPage.ts parsePromoPage reads it (price, was-price, promotions). */
+export function createPromoPageReader(env: ReaderEnv, opts: PageReaderOptions = {}): (itemIds: string[]) => Promise<PromoPageOutcome[]> {
+  return createPageReaderOf<PromoPageOutcome>(env, (text, itemId) => {
+    const page = parsePromoPage(text, itemId);
+    return page ? { itemId, kind: 'read', page } : null;
+  }, opts);
+}
+
+export interface PageReaderOptions { concurrency?: number; batch?: number; pauseMs?: number; settleMs?: number; now?: () => number }
+
+type NotRead = { itemId: string; kind: 'unreadable' | 'skipped' } | { itemId: string; kind: 'refused'; status?: number };
+
+/** The page reader, with `parse` turning a page's text into its 'read' outcome (null: unreadable). */
+function createPageReaderOf<O extends { itemId: string }>(
   env: ReaderEnv,
-  opts: { concurrency?: number; batch?: number; pauseMs?: number; settleMs?: number; now?: () => number } = {},
-): ReadPages {
+  parse: (text: string, itemId: string) => O | null,
+  opts: PageReaderOptions,
+): (itemIds: string[]) => Promise<(O | NotRead)[]> {
   const concurrency = opts.concurrency ?? 3;
   const batch = opts.batch ?? 6;
   const pauseMs = opts.pauseMs ?? 1000;
@@ -155,7 +178,7 @@ export function createPageReader(
   // When this reader's last call ended; null before its first.
   let lastEnded: number | null = null;
 
-  return async (itemIds: string[]): Promise<PageOutcome[]> => {
+  return async (itemIds: string[]): Promise<(O | NotRead)[]> => {
     if (itemIds.length === 0) return [];
     if (lastEnded !== null) {
       const left = pauseMs - (now() - lastEnded);
@@ -181,7 +204,7 @@ export function createPageReader(
       // the first scan's fetches with a refusal). Wait once, then fetch; a refusal is still not retried.
       if (settleMs > 0) await env.sleep(settleMs);
 
-      const outcomes: PageOutcome[] = [];
+      const outcomes: (O | NotRead)[] = [];
       let stopped = false;
       for (let start = 0; start < itemIds.length; start += batch) {
         const ids = itemIds.slice(start, start + batch);
@@ -209,8 +232,7 @@ export function createPageReader(
             outcomes.push({ itemId, kind: 'refused', status: r ? r.status : 0 });
             continue;
           }
-          const content = parseBundlePage(r.text, itemId);
-          outcomes.push(content ? { itemId, kind: 'read', content } : { itemId, kind: 'unreadable' });
+          outcomes.push(parse(r.text, itemId) ?? { itemId, kind: 'unreadable' });
         }
       }
       return outcomes;
@@ -505,6 +527,76 @@ export function createItemPriceReader(
         title: page.title === '' ? null : page.title,
         link: `${env.origin}/p/${itemId}`,
       };
+    } finally {
+      await env.closeTab(tabId).catch(() => undefined);
+      await env.remember(null).catch(() => undefined);
+      lastEnded = now();
+    }
+  };
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// BOGO (Nov 23): one page of a brand's Featured BOGO listing. Same doorway, settle and pause as the page reader. The
+// path is checked against the one recorded listing address before it is put in a URL.
+
+/** What the in-tab listing fetch brings back: the HTTP status and, for a 200, the text from the page's Apollo state on. */
+export interface ListingInTab { status: number; text: string | null }
+
+/**
+ * Runs inside the tab. Self-contained, like fetchPagesInTab (serialised by its source: no imports, no outside
+ * variables). Fetches `path` same-origin and returns its status and, for a 200, the text from `window.__APOLLO_STATE__=`
+ * to the next `</script>` (null when the page has none). A fetch that throws gives status 0.
+ */
+export async function fetchListingInTab(path: string): Promise<ListingInTab> {
+  try {
+    const res = await fetch(path, { credentials: 'include' });
+    const body = await res.text();
+    let text: string | null = null;
+    const mark = body.indexOf('window.__APOLLO_STATE__=');
+    if (res.status === 200 && mark >= 0) {
+      const end = body.indexOf('</script>', mark);
+      text = end >= 0 ? body.slice(mark, end) : body.slice(mark);
+    }
+    return { status: res.status, text };
+  } catch {
+    return { status: 0, text: null };
+  }
+}
+
+/** Reads one listing page: its products (the state's base-searchNav entries, as a search page's), or why not, in words. */
+export function createBogoListingReader(
+  env: ReaderEnv,
+  opts: { pauseMs?: number; settleMs?: number; now?: () => number } = {},
+): (path: string) => Promise<{ products: ListedItem[] } | ToolError> {
+  const pauseMs = opts.pauseMs ?? 1000;
+  const settleMs = opts.settleMs ?? 2500;
+  const now = opts.now ?? Date.now;
+  let lastEnded: number | null = null;
+  return async (path) => {
+    if (!isBogoListingPath(path)) return { error: 'That is not a Featured BOGO listing address.' };
+    if (lastEnded !== null) {
+      const left = pauseMs - (now() - lastEnded);
+      if (left > 0) await env.sleep(left);
+    }
+    const stale = await env.remembered();
+    if (stale !== null) {
+      await env.closeTab(stale).catch(() => undefined);
+      await env.remember(null);
+    }
+    const tabId = await env.openTab(`${env.origin}${path}`);
+    try {
+      await env.remember(tabId);
+      try {
+        await env.waitForLoad(tabId, LOAD_TIMEOUT_MS);
+      } catch {
+        return { error: 'The Home Depot tab did not load.' };
+      }
+      if (settleMs > 0) await env.sleep(settleMs);
+      const got = await env.runInTab(tabId, fetchListingInTab, [path]);
+      if (!got || got.status !== 200 || got.text === null) return { error: `Home Depot refused the BOGO listing (${got && got.status !== 0 ? `HTTP ${got.status}` : 'no answer'}).` };
+      const rows = parseSearchText(got.text, HOME_DEPOT);
+      if (rows === null) return { error: 'The BOGO listing could not be read.' };
+      return { products: rows.map((r) => ({ itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url })) };
     } finally {
       await env.closeTab(tabId).catch(() => undefined);
       await env.remember(null).catch(() => undefined);
