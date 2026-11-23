@@ -3,6 +3,22 @@
   white-space: nowrap;
 }
 
+/* A link on a line of its own (a source, "Get a key", "Search Amazon for ...") has a 24px hit area (WCAG 2.2 AA 2.5.8);
+   inside a sentence the inline exemption applies. */
+.source,
+.key-get,
+.part-tags a {
+  position: relative;
+}
+
+.source::after,
+.key-get::after,
+.part-tags a::after {
+  content: '';
+  position: absolute;
+  inset: -4px -2px;
+}
+
 .source-plain {
   color: var(--label-2);
 }

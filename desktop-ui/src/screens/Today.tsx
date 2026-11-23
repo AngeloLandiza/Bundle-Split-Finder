@@ -9,7 +9,7 @@ import { Page } from '../components/Page';
 import { EmptyState, LoadError, LoadingState, Meter } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
 import { Tag } from '../components/Tag';
-import { keepaWords } from '../lib/keyStatus';
+import { keepaWords, rejectedKeys, rejectedKeysWords } from '../lib/keyStatus';
 import { count, money, percentOff, plural, profit, usdSpend, when } from '../lib/format';
 import { SCREEN_KEYS } from '../lib/notices';
 import { bestDeals, buyNowDeals } from '../lib/today';
@@ -303,6 +303,19 @@ function AgentBlock({ state }: { state: AppState }) {
           </span>
           {budget.aiCapUsd ? <Meter value={budget.aiSpentUsd} max={budget.aiCapUsd} label="AI spend against the monthly cap" /> : null}
         </Fact>
+        {rejectedKeys(state).length > 0 ? (
+          <Fact label="Keys">
+            <span className="attention-text">{rejectedKeysWords(state)}</span>
+            {rejectedKeys(state).map((k) => (
+              <span key={k} className="fact-sub">
+                {state.keyProblems?.[k]}
+              </span>
+            ))}
+            <span className="fact-sub">
+              <LinkButton onClick={() => navigate({ screen: 'settings', id: 'keys' })}>Fix in Settings › Keys</LinkButton>
+            </span>
+          </Fact>
+        ) : null}
         <Fact label="Chrome">{helper.connected ? 'Connected' : helper.paired ? `Closed${helper.lastSeenAt ? `, last seen ${when(helper.lastSeenAt)}` : ''}` : 'Not connected'}</Fact>
       </dl>
       {counts.autopilotApplied > 0 ? (

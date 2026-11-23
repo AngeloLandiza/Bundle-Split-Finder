@@ -88,14 +88,14 @@ export function Sidebar({ route, onGo }: { route: Route; onGo: (r: Route) => voi
             end={review > 0 ? <Count n={review} attention label={`${review} open`} /> : null}
           />
           <Item glyph="activity" label="Activity" current={on('activity')} onClick={() => go('activity')} shortcut={modLabel('4', mac)} />
-          {isWindows ? null : <Item glyph="gear" label={systemWords.preferences} current={on('settings')} onClick={() => go('settings')} shortcut={modLabel('5', mac)} />}
+          {isWindows ? null : <Item glyph="gear" label="Settings" current={on('settings')} onClick={() => go('settings')} shortcut={modLabel('5', mac)} />}
         </Group>
       </div>
       <SidebarStatus />
       {/* Microsoft's NavigationView pins Settings last, at the bottom of the pane; a Mac keeps it in its group. */}
       {isWindows ? (
         <ul className="source-list sidebar-settings">
-          <Item glyph="gear" label={systemWords.preferences} current={on('settings')} onClick={() => go('settings')} shortcut={modLabel('5', mac)} />
+          <Item glyph="gear" label="Settings" current={on('settings')} onClick={() => go('settings')} shortcut={modLabel('5', mac)} />
         </ul>
       ) : null}
     </nav>

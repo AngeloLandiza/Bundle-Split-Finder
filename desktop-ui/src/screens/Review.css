@@ -387,6 +387,21 @@
   cursor: default;
 }
 
+.tech summary::before {
+  content: '';
+  inline-size: 5px;
+  block-size: 5px;
+  margin-inline-end: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 120ms ease-out;
+}
+
+.tech[open] summary::before {
+  transform: rotate(45deg);
+}
+
 .tech summary:hover {
   color: var(--label);
 }

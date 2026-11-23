@@ -145,7 +145,7 @@ function KeyRow({ def }: { def: Def }) {
           </a>
         </div>
         {ks.problem ? (
-          <p className="field-status field-status-error" role="alert">
+          <p className="field-status key-problem" role="alert">
             {ks.problem}
           </p>
         ) : null}

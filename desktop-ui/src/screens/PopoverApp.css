@@ -120,6 +120,7 @@
   justify-content: space-between;
   gap: 10px;
   width: calc(100% - 12px);
+  min-height: 24px;
   margin: 0 6px;
   padding: 3px 8px;
   border: 0;

@@ -34,9 +34,9 @@ export function dealReason(r: DealRow, o: { matchShown: boolean }): string | nul
   const parts: string[] = [];
   if (!o.matchShown) {
     const waiting = waitingState(r);
+    // A question is already the "Needs answer" tag that moves into the profit cell when Match hides: not said twice.
     if (waiting) parts.push(waiting);
-    else if (r.needsAnswer) parts.push('What is inside is not settled. Answer in Review.');
-    else if (r.matchState) parts.push(r.matchState);
+    else if (!r.needsAnswer && r.matchState) parts.push(r.matchState);
   }
   if (r.bogoChoices?.label) parts.push(r.bogoChoices.label);
   return parts.length ? parts.join(' · ') : null;

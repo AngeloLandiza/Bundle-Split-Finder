@@ -50,7 +50,7 @@
 .field-box {
   display: inline-flex;
   align-items: center;
-  height: var(--control-h);
+  height: 24px;
   border-radius: 5px;
   background: var(--text-bg);
   box-shadow:
@@ -188,7 +188,7 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  height: var(--control-h);
+  height: 24px;
   border-radius: 5px;
   background: var(--button-bg);
   box-shadow:

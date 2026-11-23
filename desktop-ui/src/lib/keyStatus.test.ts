@@ -65,7 +65,7 @@ describe('a deal row’s reason line', () => {
     expect(dealReason(row({ matchState: '2 of 3 parts matched' }), narrow)).toBe('2 of 3 parts matched');
     expect(dealReason(row({ lookup: { searches: 2 } }), narrow)).toBe('Waiting for an Amazon lookup');
     expect(dealReason(row({ matchKind: 'waiting_parts', lookup: { searches: 2 } }), narrow)).toBe('Waiting for Home Depot’s part pages');
-    expect(dealReason(row({ needsAnswer: true, profit: 12 }), narrow)).toBe('What is inside is not settled. Answer in Review.');
+    expect(dealReason(row({ needsAnswer: true, profit: 12 }), narrow)).toBeNull(); // the Needs answer tag moves into the profit cell
     expect(dealReason(row({}), narrow)).toBeNull();
   });
   it('puts the waiting page before an Amazon lookup', () => {

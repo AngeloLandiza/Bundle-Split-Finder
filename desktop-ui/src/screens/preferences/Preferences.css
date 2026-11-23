@@ -413,7 +413,12 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--loss);
+  color: var(--attention);
+}
+
+/* A key the service did not accept is a state that needs him, in amber like the sidebar's line; red is only for a loss. */
+.field-status.key-problem {
+  color: var(--attention);
 }
 
 .key-actions {

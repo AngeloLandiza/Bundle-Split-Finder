@@ -714,3 +714,8 @@
   flex: none;
   padding: 0 8px 8px;
 }
+
+/* The page title takes focus when a screen opens, for screen readers; it is not a control, so it draws no ring. */
+:root[data-platform='windows'] .toolbar-title .page-title:focus-visible {
+  outline: none;
+}

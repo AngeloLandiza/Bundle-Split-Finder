@@ -218,3 +218,8 @@
   line-height: 16px;
   color: var(--label-2);
 }
+
+/* A key the service did not accept, in the Agent card (the one place besides the sidebar and Settings that says it). */
+.attention-text {
+  color: var(--attention);
+}

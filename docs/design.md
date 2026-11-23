@@ -392,8 +392,12 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   accent when above zero), Activity, Settings. Section heads are 11px semibold tertiary with a
   disclosure on hover; a collapsed section is remembered. Rows are 28px, 6px radius; the selected one
   is a grey rounded rectangle with its glyph in the accent. At the foot: "Finish setup · N of 3" while
-  setup is open, then the agent's state (a spinner and a bar while it runs), the next scan, searches
-  left with a level meter, and Chrome's state.
+  setup is open, then the agent's status in four lines at most (`lib/sidebarStatus.ts`): the state ("Idle", or
+  "Scanning · step 4 of 8" with a bar), "Next scan 5:23 AM" or "Last scan 51 min ago", one usage line ("119 searches ·
+  Keepa 57 tokens"), and one problem line when something is wrong ("eBay key not accepted", "Chrome closed") that goes
+  to where it is fixed. Everything else (reserve, rate, AI spend, parts waiting) is in Today's Agent card. **On
+  Windows**, Settings leaves its group and is the last item of the pane, pinned to the bottom under the status
+  (Microsoft NavigationView); a Mac keeps it in Agent.
 - **Glyphs** (`components/Glyph.tsx`): 16px, monochrome, drawn in the manner of SF Symbols, only where
   a Mac source list, toolbar or field carries one. Never decorative.
 - **Toolbar** (`components/Toolbar.tsx`), 52px, in the title bar: the screen's title (15 semibold) and
@@ -401,8 +405,15 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   N searches** (while a scan runs: a progress ring, "Scanning 34%", and Stop; Resume while paused), the
   search field, **View options** (a popover: the screen's own options, then Appearance, Accent colour,
   Density) and, on Deals and Review, the inspector toggle.
-- **Banners** under the toolbar for the whole app (agent offline, Chrome closed or not connected, no
-  key, at the reserve, a pairing request): one line, a warning glyph when it needs him, its one fix.
+- **One notice region** per screen under the toolbar (`components/NoticeRegion.tsx`, order in `lib/notices.ts`): at most
+  one banner, never a stack. Priority: agent offline, a Chrome pairing request, the Chrome helper older than the app, a
+  scan that left pages unread or stopped early, Chrome closed or not connected, no SerpApi key, searches at the reserve,
+  a saved key the screen works with that its service rejected (Today: SerpApi; Deals: SerpApi and Keepa; Review: the AI
+  keys; the eBay key is said in the sidebar, Today's Agent card and Settings › Keys, not on Deals), parts waiting for a
+  lookup (Deals only, hidden while a scan runs: the scan is doing them), a stale price. One line, a warning glyph when it
+  needs him, its one fix. When more than one applies the banner's trailing area says "1 more", a quiet button that opens
+  a small popover with the others and their actions. What an action just did ("Copied PCL1600K2.", "Looking up 18 parts
+  through Keepa.") is one line in the status bar under the table, not a banner; a failure stays there in amber.
 - **Inspector** (`InspectorSplit` in `components/Layout.tsx`): on Deals and Review, at the right,
   380px by default, 300–640 by dragging the divider (or arrow keys on it), remembered; Cmd+Option+I or
   View > Show or hide inspector. With nothing selected it says "No bundle selected" in the middle.
@@ -419,14 +430,18 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   price, est. profit, ROI with its range; the estimate note under the box; an estimate below zero is never
   listed), and the Agent card
   at 320px (state and stages, Pause, then label / value rows: last scan, next scan, searches left with
-  its meter, Keepa, AI this month, Chrome). One column under 1180px.
+  its meter, Keepa, AI this month, Keys when one is not accepted (with the agent's sentence and a link to Settings › Keys), Chrome). One column under 1180px.
 - **Deals**: the table fills the content; the title is the sidebar's view. Columns drop by the table's
   own width (container queries): Off and Updated under 900px, Match under 720px (its badge moves into
   the profit cell), Price under 560px. A first narrow column holds the **watch star**, a real toggle button
   (hollow, or filled in the accent; `aria-pressed`; Tab and Space): the one glyph in a row, allowed because it acts.
   The title cell carries a green **Buy now** tag (text only) when the last scan found it worth buying and a
-  neutral **BOGO** tag when a promotion was entered. The Section filter is in View options. A status bar at the foot
-  says how many show and that profit and ROI are estimates.
+  neutral **BOGO** tag when a promotion was entered. The Section filter is in View options. A row is two lines (title with tags, brand · model); a third,
+  quieter line is drawn only when it says something no column does (`lib/dealReason.ts`): what the Match column would
+  say while it is hidden under 720px, a waiting state's full words, the BOGO group's sentence. Never a blank third line:
+  the row is 44px, and 56px with the line. The header stays frozen while the rows scroll; Price, Off, Estimated profit,
+  ROI and Updated are right-aligned in tabular figures. A status bar at the foot says how many show and that profit
+  and ROI are estimates.
 - **Deal inspector**: brand, title, model · price · off, "Open on Home Depot" with when the price was
   seen; one box with the estimated profit at 26/32, ROI, and the three figures (Bundle costs, Parts sell
   for, After fees), the fee basis with Change; a banner if it needs an answer; Ways to sell and Parts as
@@ -443,8 +458,11 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   Sales rank. Thin lines, separator gridlines, secondary-label axes, a hover or arrow-key crosshair with a
   value tooltip, a gap where a scan had no figure; under two scans: "History starts after two scans."
 - **Review**: the questions in the content, grouped AI verified (with Approve all N, confirmed in
-  place) then Needs you; a status bar with the keys. The inspector (at least 440px) holds the question:
-  the kind, the question at 15 semibold, the bundle and its links, Why it is asked with its quotes, the
+  place) then Needs you; a status bar with the keys. A row's trailing mark is a green **Verified** chip only for an
+  answer the code verified (so Approve all has something to point at), a quiet "AI suggested" for one it could not
+  check, and nothing otherwise; the full Verified / Not verified state is in the answer pane. The inspector (at least 440px) holds the question:
+  the kind, the question at 15 semibold, the bundle and its links, Why it is asked in plain words (`lib/questionWords.ts`: the agent's technical note becomes one sentence for the owner;
+  the note itself is under a collapsed "Technical detail"; a note it does not know passes through unchanged) with its quotes, the
   AI block in a group box (green edge when the code verified it), the choices as one box of radio rows
   with their number keys, and Approve or Save answer at the foot.
 - **Activity**: Needs attention, Autopilot with Undo, Runs as a plain table in a group box.
@@ -454,7 +472,8 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
 
 ### Controls
 
-- **Push button** (`Button`): 22px (20 small, 28 large); `secondary` is the raised key, `primary` the
+- **Push button** (`Button`): 22px (20 small, 28 large), with the hit area carried to 24px by an invisible layer (WCAG
+  2.2 AA 2.5.8; also the switch, the segments and text buttons) so the toolbar rhythm does not change; `secondary` is the raised key, `primary` the
   default button filled with the accent (one per view), `quiet` borderless, `danger` red words,
   `toolbar` a borderless 28px toolbar item with a glyph. A busy button shows a small spinner and its
   busy words. A paid action keeps its price after a middot.
@@ -586,6 +605,9 @@ the user agent) and take Fluent's conventions; a Mac reads none of this file.
 - **Words and keys** (`lib/platform.ts`, one formatter for every label): Ctrl, Alt and Shift where a Mac shows
   the symbols; Settings for Preferences; "Show in taskbar" and "Show notification area icon" for the Dock and menu
   bar icon; Show in File Explorer; Exit for Quit; PC for Mac. Every key handler accepts Ctrl where it accepts Cmd.
+- **Navigation and dialogs**: Settings is the last navigation item, pinned to the bottom of the pane. A sheet's buttons
+  (`SheetActions`) put the primary button first, then the secondary one, the leading action at the far end; the DOM
+  follows what is drawn. A Mac keeps the primary trailing.
 - **Notification area flyout**: the popover's content on a translucent 8px surface with a hairline and a soft shadow.
 
 ## Behaviour
