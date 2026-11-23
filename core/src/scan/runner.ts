@@ -28,7 +28,7 @@ import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, s
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit } from './split';
-import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, moveUnits, newPipeline, type StepId, setJudge, skipStep, startStep } from './pipeline';
+import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, moveUnits, newPipeline, reopenStep, type StepId, setJudge, skipStep, startStep } from './pipeline';
 import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
 import { HOME_DEPOT_ITEM_ID, pickUnread } from './kitPage';
@@ -164,6 +164,10 @@ interface Run extends PartContext {
    * left them, least recent failure first; planned after every other candidate, in this order.
    */
   failedBefore: string[];
+  /** Step 15: part keys this run's planning has planned (queued or deferred), so a second pass plans only new ones. */
+  plannedKeys: Set<string>;
+  /** Step 15: part keys of the splits this run's part-price pass settled (splitWaiting), for the second lookup pass. */
+  settledParts: Set<string>;
 }
 
 /** Start a scan, or continue the newest one whose status is "running". Resolves with the finished job. */
@@ -197,9 +201,27 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
   // Step 9: then Home Depot's prices for the parts sold alone, free, unless Home Depot refused a page (skipped above),
   // for at most PART_PRICE_MS; what is left is read by the next scan, or by the agent between scans.
   if (stepWaits(run.job, 'partPrices')) await readPartPricesPass(run);
+  // Step 15: the splits the part prices settled have parts nobody looked up yet: a second pass for those only.
+  await lookUpSettled(run);
   // Step 10: then eBay's reference values for the parts, free, whether or not Home Depot refused a page.
   if (run.ebay?.kind === 'skip' || stepWaits(run.job, 'ebay')) await ebayPass(run);
   return finish(run);
+}
+
+/**
+ * Step 15: the lookups for the parts a split settled by the part-price pass (splitWaiting) newly holds, through the same
+ * routing (Keepa above its reserve, then what is left of the per-scan searches), counted in the same Amazon step, which
+ * opens again with the added units. Nothing when the run was halted or stopped, or no new part is wanted.
+ */
+async function lookUpSettled(run: Run): Promise<void> {
+  const { job } = run;
+  if (run.settledParts.size === 0 || run.halted || run.shouldStop() || job.phase !== 'parts' || job.stopReason === 'user') return;
+  const known = new Set([...run.plannedKeys, ...[...job.deferred, ...job.queue].flatMap((s) => (s.kind === 'lookup' || s.kind === 'refresh' || s.kind === 'identify' ? [partKey(s.brand, s.model)] : []))]);
+  const queuedBefore = job.queue.length;
+  await planParts(run, (await knownModels(run.store)).listings, (k) => run.settledParts.has(k) && !known.has(k));
+  if (job.queue.length === queuedBefore || job.queue.length === 0) return;
+  reopenStep(job, 'amazon', { remaining: job.queue.filter(isAmazonStep).length, now: run.now() });
+  await runQueue(run);
 }
 
 /** Step 15: the step has not run in this job yet (a continued job may have run it before the order changed). */
@@ -225,7 +247,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, noReaderReason: deps.noReaderReason, ebay: deps.ebay ?? null,
     keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
     bogoPairs: deps.bogoPairs ?? {}, waitForPages: deps.waitForPages ?? false,
-    job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
+    job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore, plannedKeys: new Set(), settledParts: new Set(),
   });
 
   // An interrupted job is continued as saved: no new plan, whatever budget this run has. A job
@@ -1191,9 +1213,12 @@ export async function partPricesWanted(store: ScanStore, settings: ScanSettings,
   // Step 15: with `waiting` (a run that waits for pages, the agent's), the parts a waiting split needs Home Depot's reading
   // of (scan/settle.ts rule 2), with their bundle's saving.
   const planned = new Set(parts.map((p) => p.key));
+  // Step 15: the parts a waiting split needs are read first, as each one read can settle a split and unblock estimates.
+  const unblocks = new Set<string>();
   for (const b of waiting ? await store.listBundles() : []) {
     const saving = (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0);
     for (const p of waitingParts(b)) {
+      unblocks.add(p.key);
       if (planned.has(p.key)) continue;
       planned.add(p.key);
       parts.push({ ...p, saving });
@@ -1207,7 +1232,7 @@ export async function partPricesWanted(store: ScanStore, settings: ScanSettings,
   const seen = new Set<string>();
   return parts
     .filter((p) => !fresh(p))
-    .sort((a, b) => b.saving - a.saving || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+    .sort((a, b) => Number(unblocks.has(b.key)) - Number(unblocks.has(a.key)) || b.saving - a.saving || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
     .filter((p) => once(seen, kitKey(p.brand, p.model)))
     .map(({ key, brand, model }) => ({ key, brand, model }));
 }
@@ -1372,15 +1397,33 @@ export function waitingParts(b: Pick<BundleRecord, 'brand' | 'split'>): Part[] {
  * readings now stored): settled, still waiting, or a question with its reason. Never a search.
  */
 async function splitWaiting(run: Run): Promise<void> {
-  const waiting = (await run.store.listBundles()).filter((b) => waitingParts(b).length > 0);
-  if (waiting.length === 0) return;
-  const known = await knownModels(run.store);
-  const now = run.now();
+  const out = await settleWaitingSplits(run.store, run.now(), { catalog: run.catalog, waitForPages: run.waitForPages });
+  run.job.counts.bundlesResolved += out.resolved;
+  run.job.counts.reviewsOpened += out.opened;
+  for (const k of out.parts) run.settledParts.add(k);
+}
+
+/**
+ * Step 15: every split that waits for Home Depot's part pages read again with the readings stored now (splitOne): the
+ * scan's part-price pass and the agent's drip both call it. `catalog`: the models the splitter knows (default: read
+ * now). Returns how many it settled and how many Review questions it opened. Never a search.
+ */
+export async function settleWaitingSplits(
+  store: ScanStore, now: number, o: { catalog?: Catalog; waitForPages?: boolean } = {},
+): Promise<{ resolved: number; opened: number; parts: string[] }> {
+  const waiting = (await store.listBundles()).filter((b) => waitingParts(b).length > 0);
+  const out = { resolved: 0, opened: 0, parts: [] as string[] };
+  if (waiting.length === 0) return out;
+  const known = await knownModels(store);
   for (const bundle of waiting) {
-    const { split, opened } = await splitOne(run.store, bundle, { stored: known.stored, catalog: run.catalog, settle: known.settle }, now, run.waitForPages);
-    if (split.status === 'resolved') run.job.counts.bundlesResolved += 1;
-    if (opened) run.job.counts.reviewsOpened += 1;
+    const { split, opened } = await splitOne(store, bundle, { stored: known.stored, catalog: o.catalog ?? known.catalog, settle: known.settle }, now, o.waitForPages ?? true);
+    if (split.status === 'resolved') {
+      out.resolved += 1;
+      for (const m of split.components) out.parts.push(partKey(bundle.brand, m));
+    }
+    if (opened) out.opened += 1;
   }
+  return out;
 }
 
 // ---------------------------------------------------------------- step 10: eBay's reference values for the parts (free)
@@ -1953,10 +1996,15 @@ export async function plannedWork(
 }
 
 /** `listings`: the saved listings, read once for this planning pass. */
-async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
+async function planParts(run: Run, listings: ListingRecord[], only?: (key: string) => boolean): Promise<void> {
   const { job, budget } = run;
   // 2c rule 5 runs even when the listing phase stopped: it spends nothing.
-  const wants = await wantedParts(run.store, run.settings, run.now(), (part) => savedMatch(run, listings, part), run.failedBefore, run.bogoPairs);
+  const all = await wantedParts(run.store, run.settings, run.now(), (part) => savedMatch(run, listings, part), run.failedBefore, run.bogoPairs);
+  // Step 15: the second pass (after the part prices settled waiting splits) plans only the parts newly needed.
+  const wants: Wants = only
+    ? { lookups: all.lookups.filter(only), refreshes: all.refreshes.filter(only), items: all.items.filter(only), steps: all.steps }
+    : all;
+  for (const key of [...wants.lookups, ...wants.refreshes, ...wants.items]) run.plannedKeys.add(key);
   // A stop asked for during the last listing search, when the queue emptied as usual (QA M7), is a stop on request too.
   if (job.stopReason === null && run.shouldStop()) job.stopReason = 'user';
   // In the listing phase only rule 8 or a stop on request (3 rule 1) sets a stop reason: then nothing more is spent.
@@ -1969,8 +2017,10 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
     // Step 15, decision 1: Keepa's tokens above the reserve first, then SerpApi's searches, then the rest waits.
     const scale = run.keepaScale!;
     const work = workOf(wants);
-    const tokens = job.stopReason === null
-      ? keepaTokensForScan({ tokensLeft: run.keepaBudget?.knownBalance ?? scale.tokensLeft, reserve: scale.reserve, tokensPerScan: scale.tokensPerRun })
+    // A per-scan cap counts what this run has spent already (the second pass); 0 is automatic.
+    const capLeft = scale.tokensPerRun > 0 ? scale.tokensPerRun - (run.keepaBudget?.spentThisRun ?? 0) : 0;
+    const tokens = job.stopReason === null && !(scale.tokensPerRun > 0 && capLeft <= 0)
+      ? keepaTokensForScan({ tokensLeft: run.keepaBudget?.knownBalance ?? scale.tokensLeft, reserve: scale.reserve, tokensPerScan: capLeft })
       : 0;
     const plan = routeAmazonWork(work, { tokens, trackingDepth: scale.trackingDepth, lookups: Boolean(run.keepaLookup) }, { spendable: allowance, blockReason: (n) => budget.blockReason(n) });
     const via = new Map<string, 'keepa' | 'serpapi'>([...plan.keepaLookups.map((k) => [k, 'keepa'] as const), ...plan.serpLookups.map((k) => [k, 'serpapi'] as const)]);
@@ -1982,13 +2032,14 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
     queue = [...work.lookups.filter((k) => via.has(k)).map(routed), ...toSteps(plan.keepaIdentifies), ...toSteps(plan.keepaRefreshes)];
     later = toSteps([...plan.deferredLookups, ...plan.deferredIdentifies, ...plan.deferredRefreshes]);
     const pull = productTokenEstimate(scale.trackingDepth, 1);
+    const before = only ? job.keepaPlan : undefined;
     job.keepaPlan = {
-      discoveryTokens: plan.keepaLookups.length * KEEPA_LOOKUP_TOKEN_ESTIMATE + plan.keepaIdentifies.length * pull,
-      trackingTokens: plan.keepaRefreshes.length * pull,
-      lookups: plan.keepaLookups.length,
-      refreshes: plan.keepaRefreshes.length,
+      discoveryTokens: (before?.discoveryTokens ?? 0) + plan.keepaLookups.length * KEEPA_LOOKUP_TOKEN_ESTIMATE + plan.keepaIdentifies.length * pull,
+      trackingTokens: (before?.trackingTokens ?? 0) + plan.keepaRefreshes.length * pull,
+      lookups: (before?.lookups ?? 0) + plan.keepaLookups.length,
+      refreshes: (before?.refreshes ?? 0) + plan.keepaRefreshes.length,
     };
-    job.lookupsBlockedBy = plan.blockedBy;
+    job.lookupsBlockedBy = plan.blockedBy ?? (only ? job.lookupsBlockedBy ?? null : null);
     serpDeferred = false;
   } else {
     const plan = planScan(allowance, { hdPagesWanted: 0, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
@@ -1999,7 +2050,8 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
     queue = [...toSteps(plan.lookups), ...toSteps(plan.refreshes), ...toSteps(items)];
     later = [...toSteps(plan.deferredLookups), ...toSteps(plan.deferredRefreshes), ...toSteps(deferredItems)];
     serpDeferred = later.length > 0;
-    job.lookupsBlockedBy = later.some((s) => s.kind === 'lookup') ? lookupBlockOf(budget.blockReason(Math.floor(allowance) + 1) ?? 'run_cap') : null;
+    const block = later.some((s) => s.kind === 'lookup') ? lookupBlockOf(budget.blockReason(Math.floor(allowance) + 1) ?? 'run_cap') : null;
+    job.lookupsBlockedBy = block ?? (only ? job.lookupsBlockedBy ?? null : null);
   }
   // Ruling 57: a failing part no longer wanted (matched since, decided, or in no bundle) is dropped.
   keepFailing(job, (k) => wants.steps.has(k));
@@ -2007,7 +2059,7 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   job.queue = queue;
   job.deferred.push(...later);
   // Ruling 48: from now on only the parts phase's own deferred steps may move into the queue.
-  run.movable = [...later];
+  run.movable = only ? [...run.movable, ...later] : [...later];
   // Names the limit that made work wait. It does not stop the queue just planned.
   if (job.deferred.length > 0 && job.stopReason === null) {
     if (serpDeferred || job.deferred.some((s) => s.kind === 'listing' || s.kind === 'catalog')) job.stopReason = budget.blockReason(budget.spendable + 1);
@@ -2262,14 +2314,28 @@ export async function keepaLookupOne(d: KeepaOneDeps, step: LookupStep): Promise
   const follow = await applyLookup(ctx, plain, result.data, result.at);
   const match = await d.store.getMatch(partKey(plain.brand, plain.model));
   if (match?.status === 'matched' && match.asin !== null) {
-    const price = await d.store.getPrice(match.asin);
-    if ((!price || price.price === null) && d.keepaBudget.blockReason(productTokenEstimate(d.settings.keepaTrackingDepth, 1)) === null) {
-      const pulled = await d.keepaProduct(match.asin, `${prefix}:refresh:${plain.model}`, d.settings.freshnessMs);
-      if (pulled.source === 'network') tokens += pulled.keepaTokens ?? 0;
-      await applyRefresh(ctx, { kind: 'refresh', brand: plain.brand, model: plain.model, asin: match.asin }, pulled.data, pulled.at);
-    }
+    tokens += await pullMatchedPrice(ctx, plain, d.keepaProduct, d.keepaBudget);
     return { status: 'matched', tokens };
   }
   if (follow) await notePageDue(ctx, plain, follow);
   return { status: match?.status === 'review' ? 'review' : 'none', tokens };
+}
+
+/**
+ * Step 15: a Keepa lookup's search rows carry no price (fixtures/keepa/search-RYOBI-PCL235B.json: no stats, no csv), so
+ * the listing it matched is pulled once with stats (1 token, part of KEEPA_LOOKUP_TOKEN_ESTIMATE) and saved as a refresh.
+ * Nothing when the part is not matched, its listing already has a price, or the budget refuses. Returns the tokens spent.
+ * The drip and the panel's Look up call it; a scan queues the same pull as a refresh step (schedulePricePull).
+ */
+export async function pullMatchedPrice(
+  ctx: PartContext, step: Pick<LookupStep, 'brand' | 'model'>, keepaProduct: NonNullable<ScanDeps['keepaProduct']>, keepaBudget: Pick<TokenBudget, 'blockReason'>,
+): Promise<number> {
+  const match = await ctx.store.getMatch(partKey(step.brand, step.model));
+  if (match?.status !== 'matched' || match.asin === null) return 0;
+  const price = await ctx.store.getPrice(match.asin);
+  if (price && price.price !== null) return 0;
+  if (keepaBudget.blockReason(productTokenEstimate(ctx.settings.keepaTrackingDepth, 1)) !== null) return 0;
+  const pulled = await keepaProduct(match.asin, `${ctx.prefix}:refresh:${step.model}`, ctx.settings.freshnessMs);
+  await applyRefresh(ctx, { kind: 'refresh', brand: step.brand, model: step.model, asin: match.asin }, pulled.data, pulled.at);
+  return pulled.source === 'network' ? (pulled.keepaTokens ?? 0) : 0;
 }

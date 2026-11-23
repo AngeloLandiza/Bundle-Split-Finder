@@ -127,6 +127,24 @@ export function startStep(job: ScanJob, id: StepId, o: StartOptions): void {
   delete s.endedAt;
 }
 
+/**
+ * Step 15: a step that ran (or was skipped with nothing to do) runs again in the same scan with `remaining` more units:
+ * the Amazon lookups for the parts the part prices settled. It is "now" again; what it did stays counted. Never back to
+ * "next", so the list only moves forward.
+ */
+export function reopenStep(job: ScanJob, id: StepId, o: { remaining: number; now: number }): void {
+  const s = stepOf(job, id);
+  if (!s || s.state === 'now') return;
+  if (s.state === 'skipped') {
+    delete s.skippedReason;
+    s.unitsDone = 0;
+  }
+  s.state = 'now';
+  s.startedAt ??= o.now;
+  delete s.endedAt;
+  s.unitsTotal = s.unitsDone + Math.max(0, o.remaining);
+}
+
 /** Units done, and the total when it is given, without leaving the step's state alone otherwise. */
 export function moveUnits(job: ScanJob, id: StepId, o: { done?: number; total?: number | null; remaining?: number | null }): void {
   const s = stepOf(job, id);
