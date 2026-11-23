@@ -18,7 +18,7 @@ import { dewaltBundleForm, type Catalog, type Decomposition, OFFERABLE_PART, PAC
 import { kitPageStored, splitItems, type KitRecord } from '../kitContents';
 import { sameModel } from '../match';
 import { pageReadingOf, RYOBI_TOKEN } from '../pageSplit';
-import { saysToolsOnly, titleTools, toolCounts } from '../research/verify';
+import { kitHalfCount, saysToolsOnly, titleTools, toolCounts } from '../research/verify';
 import { BOGO_JOINERS, HOME_DEPOT } from '../tracking/bogoPairs';
 import { twinKeys } from './twins';
 import { type BundleRecord, partKey, type PartPriceRecord } from './types';
@@ -191,8 +191,9 @@ export function countMisfit(bundle: Pick<BundleRecord, 'title' | 'page'>, parts:
   }
   if (stated.size === 0) return null;
   const n = [...stated][0]!;
+  // Rule 3: "<N>-Tool Combo Kit … and <extra>" counts the kit half, whose own title states the same N.
   const kitTitle = titles.get(parts[0]!) ?? null;
-  const kitHalf = kitTitle !== null && toolCounts(kitTitle)[0] === n;
+  const kitHalf = kitHalfCount(bundle.title) === n && kitTitle !== null && toolCounts(kitTitle)[0] === n;
   const each = parts.map((p) => {
     const t = titles.get(p);
     return t ? titleTools(t) : null;

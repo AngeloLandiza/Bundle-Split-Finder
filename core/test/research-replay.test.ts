@@ -6,7 +6,7 @@
 //     answer key splits into PBP004 + PBP003 + PCG002); a catalogued kit is (PCL1600K2, PCL1800K3N).
 //   - A kit part accounts for "6 Tools", "2 Batteries", "Charger", "Bag", "Accessories" only as its own title
 //     and page state them, counts agreeing (345177929, 345178397); with no Includes list, the bundle's own
-//     title shows the parts (320243671). "6-Tool … and Miter Saw" (320243741) stays unverified.
+//     title shows the parts (320243671). "6-Tool … and Miter Saw" (320243741) stayed unverified until step 15's rule 3.
 
 import { readFileSync } from 'node:fs';
 
@@ -96,9 +96,22 @@ describe('fix round 2 on run 2', () => {
     expect(s).toMatchObject({ status: 'verified', answer: { parts: ['PCL1600K2', 'A986501'] } });
   });
 
-  it('320243741: "6-Tool … and Miter Saw" stays unverified, the kit\'s six tools and the saw make seven', async () => {
+  it('320243741: step 15, rule 3: "6-Tool Combo Kit … and Miter Saw" counts the kit half, whose own title says 6-Tool; verified, as the key', async () => {
     const s = await replay('320243741');
-    expect(reasons(s)).toEqual(['The bundle states 6 tools; the parts hold 7.']);
+    expect(reasons(s)).toEqual([]);
+    expect(s).toMatchObject({ status: 'verified', answer: { parts: ['PCL1600K2', 'P553'] } });
+  });
+
+  it('rule 3 keeps refusing a real mismatch: 343952159 "Brushless Compact 2-Tool Combo Kit w/ … 70PC" whose kit PSBCK102K2 no title counts 2 tools', async () => {
+    const s = await replay('343952159');
+    expect(s.status).toBe('unverified');
+    expect(reasons(s)).toContain('The bundle states 2 tools; the parts hold 0.');
+  });
+
+  it('rule 3 reads only the kit half of a kit + extra model: the same answer under a model that is not kit + extra is refused', async () => {
+    const s = await replay('320243741');
+    const r = verifyResearch(s.answer0, { ...s.c.q, model: 'PCL1600K2P553' }, s.research.ledger, s.c.catalog);
+    expect(reasons(r)).toContain('The bundle states 6 tools; the parts hold 7.');
   });
 
   it('counts that disagree: an 8-Tool kit of three batteries (PCL1800K3N) for "6 Tools, 2 Batteries" is unverified', async () => {

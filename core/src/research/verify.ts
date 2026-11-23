@@ -24,7 +24,7 @@
 
 import { verifySuggestion } from '../assist/verify';
 import type { AssistEvidence, AssistRaw, CheckedSuggestion, EvidenceLine, EvidenceSource, VerifiedQuote } from '../assist/types';
-import { kindsFromTitle } from '../decompose';
+import { dewaltBundleForm, kindsFromTitle } from '../decompose';
 import { findModel, kitBatteryCount, normaliseText } from '../judge/verify';
 import { parseIncludes } from '../kitContents';
 import { modelForms, sameModel } from '../match';
@@ -130,6 +130,46 @@ interface Product {
   kinds: string[];
   kit: boolean;
   titles: string[];
+}
+
+// Step 15, rule 3: a title that counts the kit half of a kit + extra bundle. "6-Tool Combo Kit with 1.5 Ah and 4.0 Ah
+// Batteries, Charger, and Miter Saw" (PCL1600K2-P553), "2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ 13”
+// String Trimmer" (PCL1201K2-P20015BTL), "Combo Kit (5-Tool) and ATOMIC Brushless 5/8 in. Hammer Drill" (DCK540D1WCH172B):
+// the count, then the combo kit, then what comes with it. Read only on a bundle whose model is the kit and the extra.
+const COUNT_WORD = String.raw`(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)`;
+const JOINED_EXTRA = String.raw`.*?(?:\band\b|\bwith\b|\bw\/|&)`;
+const KIT_HALF = [
+  new RegExp(String.raw`\b${COUNT_WORD}\s*-?\s*tools?\b[^,;()]*?\bcombo kit\b${JOINED_EXTRA}`, 'i'),
+  new RegExp(String.raw`\bcombo kit\s*\(\s*${COUNT_WORD}\s*-?\s*tools?\s*\)${JOINED_EXTRA}`, 'i'),
+];
+
+/** Step 15, rule 3: the tool count a "<N>-Tool Combo Kit … and <extra>" title gives its kit half; null when the title has no such phrase. */
+export function kitHalfCount(title: string): number | null {
+  for (const re of KIT_HALF) {
+    const m = re.exec(title);
+    if (m) {
+      const w = m[1]!.toLowerCase();
+      return NUMBER_WORDS[w] ?? Number(w);
+    }
+  }
+  return null;
+}
+
+/**
+ * Step 15, rule 3: the kit a kit + extra bundle's model starts with, when the model is one (a RYOBI "<kit>-<extra>", a
+ * DEWALT "<kit>W<extra>" or "<kit><tool>"); null otherwise.
+ */
+export function kitHalfOf(brand: string, bundleModel: string): string | null {
+  const b = up(brand);
+  if (b === 'RYOBI') {
+    const pieces = up(bundleModel).split('-');
+    return pieces.length === 2 && pieces.every((p) => p !== '') ? pieces[0]! : null;
+  }
+  if (b === 'DEWALT') {
+    const form = dewaltBundleForm(bundleModel);
+    return form && form.kind !== 'pack' ? form.base : null;
+  }
+  return null;
 }
 
 /** Step 15: the tools a product holds by its one title (a kit's count, 1 for a tool, 0 for a battery or an accessory); null when the title does not say. */
@@ -416,7 +456,13 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
     for (const p of unknown) problems.push(`What ${p.model} is cannot be read from its names, so its tools cannot be counted.`);
     if (unknown.length === 0) {
       const total = parts.reduce((n, p) => n + p.product.tools! * p.qty, 0);
-      if (total !== count) problems.push(`The bundle states ${count} tool${count === 1 ? '' : 's'}; the parts hold ${total}.`);
+      // Step 15, rule 3: "<N>-Tool Combo Kit … and <extra>" on a kit + extra bundle counts the kit half: the kit part (the
+      // model's own kit, once) holds N by every one of its own titles, and the extra parts come on top.
+      const base = kitHalfOf(brand, item.model);
+      const kitPart = base === null ? undefined : parts.find((p) => sameModel(brand, p.model, base));
+      const kitHalf = titleTexts[0] !== undefined && kitHalfCount(titleTexts[0]) === count && kitPart !== undefined && kitPart.qty === 1
+        && kitPart.product.kit && kitPart.product.titles.length > 0 && kitPart.product.titles.every((t) => toolCounts(t)[0] === count) && parts.length >= 2;
+      if (total !== count && !kitHalf) problems.push(`The bundle states ${count} tool${count === 1 ? '' : 's'}; the parts hold ${total}.`);
     }
   }
   const said = [...titleTexts, ...bundleLines.map((l) => l.text)];

@@ -6,7 +6,8 @@ import { matchState, WAITING_PARTS_TEXT } from '../src/scan/matchState';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
 import { partPricesWanted, splitOne, waitingParts, withdrawUnreadSplitQuestions } from '../src/scan/runner';
-import { bogoSplit, homeDepotSplit } from '../src/scan/settle';
+import { kitHalfCount, kitHalfOf } from '../src/research/verify';
+import { bogoSplit, countMisfit, homeDepotSplit } from '../src/scan/settle';
 import { knownModels, readSplit } from '../src/scan/split';
 import { type BundleRecord, type CatalogRecord, DEFAULT_SCAN_SETTINGS, type ListingRecord, type PartPriceRecord, type ReviewItem } from '../src/scan/types';
 
@@ -226,5 +227,46 @@ describe('waiting_parts in the scan and at the agent\'s start', () => {
     expect(await store.getReview('split:homedepot:999')).toEqual(answered);
     const pairs = await bundle(store, '344284026');
     expect(pairs.split).toMatchObject({ status: 'resolved', components: ['PCL1201K2', 'FVC51K'] });
+  });
+});
+
+describe('rule 3: "<N>-Tool Combo Kit … and <extra>" counts the kit half, on the real titles', () => {
+  it('reads the count of the kit phrase followed by what comes with it', () => {
+    expect(kitHalfCount('ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and Miter Saw')).toBe(6);
+    expect(kitHalfCount('ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ 13” String Trimmer')).toBe(2);
+    expect(kitHalfCount('20V MAX Lithium-Ion Cordless Combo Kit (5-Tool) and ATOMIC Brushless 5/8 in. Hammer Drill with 2 Ah Battery and Charger')).toBe(5);
+    expect(kitHalfCount('20V MAX ToughSystem Lithium-Ion 6-Tool Cordless Combo Kit and 20V MAX XR Cordless Brushless Jigsaw')).toBe(6);
+    expect(kitHalfCount('20V MAX Cordless 4 Tool Combo Kit, 6-1/2 in. Circular Saw, and (2) 20V 2.0Ah Batteries')).toBe(4);
+    expect(kitHalfCount('ONE+ 18V Cordless 6-Tool Combo Kit')).toBeNull();
+    expect(kitHalfCount('ONE+ 18V Cordless 1/2 in. Drill/Driver (Tool Only)')).toBeNull();
+  });
+
+  it('only on a kit + extra model: the kit it starts with', () => {
+    expect(kitHalfOf('RYOBI', 'PCL1600K2-P553')).toBe('PCL1600K2');
+    expect(kitHalfOf('DEWALT', 'DCK540D1WCH172B')).toBe('DCK540D1');
+    expect(kitHalfOf('DEWALT', 'DCK420D2DCS391B')).toBe('DCK420D2');
+    expect(kitHalfOf('DEWALT', 'DCB346-3WCS334B')).toBeNull();
+    expect(kitHalfOf('RYOBI', 'PCL500525SB')).toBeNull();
+  });
+
+  it('the split rule uses it too: PCL1600K2 + P553 fits "6-Tool … and Miter Saw"; PCL1201K2 + PCL515B fits "3 Tool Combo Kit" by its total', () => {
+    const t = (m: string) => nov18(m).title;
+    expect(countMisfit(
+      { title: 'ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and Miter Saw', page: null },
+      ['PCL1600K2', 'P553'], new Map([['PCL1600K2', t('PCL1600K2')], ['P553', t('P553')]]),
+    )).toBeNull();
+    expect(countMisfit(
+      { title: 'ONE+ 18V 3 Tool Combo Kit With Drill/Driver, Circular Saw, Reciprocating Saw', page: null },
+      ['PCL1201K2', 'PCL515B'],
+      new Map([['PCL1201K2', 'ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger'], ['PCL515B', 'ONE+ 18V Cordless Reciprocating Saw (Tool Only)']]),
+    )).toBeNull();
+  });
+
+  it('and keeps refusing a real mismatch: PSBCK102K2-A967002 says 2-Tool, and no title of its kit counts two tools', () => {
+    const t = (m: string) => nov18(m).title;
+    expect(countMisfit(
+      { title: 'ONE+ 18V Brushless Compact 2-Tool Combo Kit w/ (2) Batteries & Charger w/ 70PC Impact Rated Driving Set', page: null },
+      ['PSBCK102K2', 'A967002'], new Map([['PSBCK102K2', t('PSBCK102K2')], ['A967002', t('A967002')]]),
+    )).toBe('the bundle states 2 tools, which the parts do not make');
   });
 });
