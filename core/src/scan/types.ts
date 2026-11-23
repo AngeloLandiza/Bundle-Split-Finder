@@ -154,15 +154,19 @@ export interface PageReading extends PageContent {
 
 /**
  * read        the page was read
- * unreadable  the page came back but its data could not be read
- * refused     Home Depot answered with something other than the page; reading stopped here
+ * unreadable  the page came back but its data could not be read (a 200 without the page state, or state the parser
+ *             could not read); reading goes on, and stops after two in a row
+ * refused     Home Depot answered with something other than the page (403, 429, 5xx, a thrown request), or the
+ *             doorway tab's own page never showed its state; reading stopped here
  * skipped     not tried, because reading stopped earlier
+ * `note`: what came back instead of the page, in at most 80 characters (its title), when it is known.
  */
 export type PageOutcome =
   | { itemId: string; kind: 'read'; content: PageContent }
-  | { itemId: string; kind: 'unreadable' | 'skipped' }
+  | { itemId: string; kind: 'skipped' }
+  | { itemId: string; kind: 'unreadable'; note?: string }
   /** status: the HTTP status Home Depot answered with; 0 when the request threw; absent when it is not known. */
-  | { itemId: string; kind: 'refused'; status?: number };
+  | { itemId: string; kind: 'refused'; status?: number; note?: string };
 
 /** Reads bundle pages in the owner's browser. Never a search. */
 export type ReadPages = (itemIds: string[]) => Promise<PageOutcome[]>;

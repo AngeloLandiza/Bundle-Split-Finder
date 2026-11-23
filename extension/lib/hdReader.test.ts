@@ -7,6 +7,8 @@ import {
   createItemPriceReader,
   createPartPriceReader,
   doorwayLoaded,
+  doorwayStateInTab,
+  type DoorwayState,
   fetchPagesInTab,
   fetchSearchesInTab,
   openDoorway,
@@ -36,6 +38,8 @@ function fake(opts: {
   runThrows?: boolean;
   runResult?: (ids: string[]) => unknown;
   stored?: number | null;
+  /** The doorway tab's own document at each check (default: its state is there). */
+  doorway?: () => DoorwayState;
 } = {}): Fake {
   const log: string[] = [];
   const batches: string[][] = [];
@@ -50,7 +54,12 @@ function fake(opts: {
       log.push(`wait ${id} ${ms}`);
       if (opts.loadFails) throw new Error('timeout');
     },
-    runInTab: (async (_tab: number, _func: unknown, args: [string[], number]) => {
+    runInTab: (async (_tab: number, func: unknown, args: [string[], number]) => {
+      if (func === doorwayStateInTab) {
+        // The doorway's own document: its state is there unless the test says otherwise.
+        log.push('state');
+        return opts.doorway ? opts.doorway() : { state: true, title: 'Home Depot page' };
+      }
       log.push('run');
       batches.push(args[0]);
       if (opts.runThrows) throw new Error('boom');
@@ -155,10 +164,66 @@ describe('createPageReader', () => {
     expect(f.log.at(-1)).toBe('close 7');
   });
 
-  it('treats 200 with null text as refused and skips the rest of its batch', async () => {
-    const f = fake({ respond: (id) => (id === ids[0] ? { itemId: id, status: 200, text: null } : byId.get(id)!) });
+  it('a 200 without the page state is unreadable with its title, not a refusal, and the next page is read', async () => {
+    const f = fake({ respond: (id) => (id === ids[0] ? { itemId: id, status: 200, text: null, note: 'Oops! Something went wrong' } : byId.get(id)!) });
     const out = await createPageReader(f.env)(ids.slice(0, 3));
-    expect(out.map((o) => o.kind)).toEqual(['refused', 'skipped', 'skipped']);
+    expect(out[0]).toEqual({ itemId: ids[0], kind: 'unreadable', note: 'Oops! Something went wrong' });
+    expect(out.slice(1).map((o) => o.kind)).toEqual(['read', 'read']);
+  });
+
+  it('two 200s in a row without the page state stop the reading: the rest are skipped, across batches too', async () => {
+    const bare = (id: string): InTabResult => ({ itemId: id, status: 200, text: null, note: 'Access Denied' });
+    const f = fake({ respond: (id) => (id === ids[1] || id === ids[2] ? bare(id) : byId.get(id)!) });
+    const out = await createPageReader(f.env, { batch: 2 })(ids.slice(0, 6));
+    expect(out.map((o) => o.kind)).toEqual(['read', 'unreadable', 'unreadable', 'skipped', 'skipped', 'skipped']);
+    expect(f.batches).toHaveLength(2);
+    // The run in a row is handed to the next batch's in-tab fetch, so the tab stops there too.
+    const calls: unknown[][] = [];
+    const g = fake({ respond: (id) => (id === ids[1] ? bare(id) : byId.get(id)!) });
+    const run = g.env.runInTab;
+    g.env.runInTab = (async (tab: number, func: never, args: never[]) => {
+      if (func === (fetchPagesInTab as never)) calls.push(args);
+      return run(tab, func, args);
+    }) as ReaderEnv['runInTab'];
+    await createPageReader(g.env, { batch: 2 })(ids.slice(0, 4));
+    expect(calls.map((a) => [a[2], a[3]])).toEqual([[0, 2], [1, 2]]);
+    // One unreadable between two read pages does not stop anything.
+    const h = fake({ respond: (id) => (id === ids[1] || id === ids[3] ? bare(id) : byId.get(id)!) });
+    expect((await createPageReader(h.env)(ids.slice(0, 5))).map((o) => o.kind)).toEqual(['read', 'unreadable', 'read', 'unreadable', 'read']);
+  });
+
+  it('checks the doorway tab has its own page state before the first fetch, polling until it shows', async () => {
+    let checks = 0;
+    const f = fake({ doorway: () => ({ state: ++checks >= 3, title: 'Home Depot' }) });
+    const out = await createPageReader(f.env, { settleMs: 0 })(ids.slice(0, 2));
+    expect(out.map((o) => o.kind)).toEqual(['read', 'read']);
+    expect(f.log.filter((l) => l === 'state')).toHaveLength(3);
+    expect(f.log.filter((l) => l === 'sleep 500')).toHaveLength(2);
+    expect(f.log.lastIndexOf('state')).toBeLessThan(f.log.indexOf('run'));
+  });
+
+  it('a doorway whose own page never shows its state is the refusal: no page is fetched, its title is said', async () => {
+    const f = fake({ doorway: () => ({ state: false, title: 'Access Denied' }) });
+    const out = await createPageReader(f.env, { settleMs: 0, doorwayStateMs: 2000 })(ids.slice(0, 3));
+    expect(out).toEqual([
+      { itemId: ids[0], kind: 'refused', note: 'Access Denied' },
+      { itemId: ids[1], kind: 'skipped' },
+      { itemId: ids[2], kind: 'skipped' },
+    ]);
+    expect(f.batches).toEqual([]);
+    // Checked at 0, 500, 1000, 1500 and 2000 ms, then given up.
+    expect(f.log.filter((l) => l === 'state')).toHaveLength(5);
+    expect(f.log.at(-1)).toBe('close 7');
+    // A check that throws (Chrome's own error page) is no state, and the tab still closes.
+    const g = fake();
+    const run = g.env.runInTab;
+    g.env.runInTab = (async (tab: number, func: never, args: never[]) => {
+      if (func === (doorwayStateInTab as never)) throw new Error('Cannot access contents of the page');
+      return run(tab, func, args);
+    }) as ReaderEnv['runInTab'];
+    const threw = await createPageReader(g.env, { settleMs: 0, doorwayStateMs: 0 })(ids.slice(0, 2));
+    expect(threw).toEqual([{ itemId: ids[0], kind: 'refused' }, { itemId: ids[1], kind: 'skipped' }]);
+    expect(g.log.at(-1)).toBe('close 7');
   });
 
   it('throws when the doorway does not load, and closes the tab', async () => {
@@ -252,6 +317,26 @@ describe('fetchPagesInTab', () => {
     expect(started).toEqual(['a', 'b']);
     expect(out.map((o) => o.status)).toEqual([200, 403, -1, -1, -1, -1]);
     expect(out[3]).toEqual({ itemId: 'd', status: -1, text: null });
+  });
+
+  it('a 200 without the state carries its title; it stops only at the limit of such pages in a row', async () => {
+    vi.stubGlobal('fetch', async (url: string) => {
+      const id = url.split('/').pop()!;
+      if (id === 'a' || id === 'c') return { status: 200, text: async () => '<html><head><title>\n  Access   Denied </title></head><body>no</body></html>' };
+      if (id === 'd') return { status: 200, text: async () => '<p>Please verify you are a human</p>' };
+      return { status: 200, text: async () => 'window.__APOLLO_STATE__={}</script>' };
+    });
+    const rebuilt = new Function(`return (${fetchPagesInTab.toString()})`)() as typeof fetchPagesInTab;
+    const out = await rebuilt(['a', 'b', 'c', 'd', 'e'], 1, 0, 2);
+    expect(out[0]).toEqual({ itemId: 'a', status: 200, text: null, note: 'Access Denied' });
+    expect(out[1]).toEqual({ itemId: 'b', status: 200, text: 'window.__APOLLO_STATE__={}' });
+    expect(out[3]).toEqual({ itemId: 'd', status: 200, text: null, note: 'Please verify you are a human' });
+    expect(out[4]).toEqual({ itemId: 'e', status: -1, text: null });
+    // The run the last batch ended on counts: one more such page stops it.
+    const again = await rebuilt(['a', 'b'], 1, 1, 2);
+    expect(again.map((o) => o.status)).toEqual([200, -1]);
+    // The defaults (the part price readers) stop at the first one, as before.
+    expect((await rebuilt(['a', 'b'], 1)).map((o) => o.status)).toEqual([200, -1]);
   });
 
   it('runs from its own source against a stubbed fetch, in input order, within the concurrency limit', async () => {

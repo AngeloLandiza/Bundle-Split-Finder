@@ -9,7 +9,7 @@ import { BRAND_QUERIES } from '@core/settings';
 import { bogoListingPath } from '@core/tracking/bogoPairs';
 import { runJob } from './agentJobs';
 import type { Readers } from './doorwayLock';
-import { createBogoListingReader, createPromoPageReader, type InTabResult, type ListingInTab, type ReaderEnv } from './hdReader';
+import { createBogoListingReader, createPromoPageReader, doorwayStateInTab, type InTabResult, type ListingInTab, type ReaderEnv } from './hdReader';
 
 interface RecordedItem { itemId: string; model: string; brand: string; title: string; price: number; original: number | null; conditionalPromotions: unknown[] | null }
 const recording = JSON.parse(readFileSync('fixtures/homedepot-pages/bogo-2026-11-23.json', 'utf8')) as { lists: Record<'ryobi' | 'dewalt', { items: RecordedItem[] }> };
@@ -35,7 +35,8 @@ function env(answer: (args: unknown[]) => unknown): { env: ReaderEnv; log: strin
       openTab: async (url) => (log.push(`open ${url}`), 7),
       closeTab: async () => {},
       waitForLoad: async () => {},
-      runInTab: (async (_t: number, _f: unknown, args: unknown[]) => answer(args)) as ReaderEnv['runInTab'],
+      // The doorway's own page shows its state; every other call is the reader's fetch.
+      runInTab: (async (_t: number, f: unknown, args: unknown[]) => (f === doorwayStateInTab ? { state: true, title: 'Home Depot' } : answer(args))) as ReaderEnv['runInTab'],
       remember: async () => {},
       remembered: async () => null,
       sleep: async () => {},

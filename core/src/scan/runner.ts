@@ -1291,9 +1291,14 @@ async function readInto(run: Run, stage: StepId, targets: PageTarget[]): Promise
   const readAt = run.now();
   const asked = new Map(targets.map((t) => [t.itemId, t]));
   let refused = false;
-  // The first refused page's status, said in the note.
+  // The first refused page's status and note, said in the sentence.
   let refusedStatus: number | undefined;
-  let unreadable = false;
+  let refusedNote: string | undefined;
+  let unreadable = 0;
+  // What the first page that came back without its state showed instead (its title).
+  let unreadableNote: string | undefined;
+  // The reader stopped before the end (a refusal, or pages in a row without their state): nothing more is read this run.
+  let skipped = false;
   let anyRead = false;
   let read = 0;
   for (const outcome of outcomes) {
@@ -1307,24 +1312,36 @@ async function readInto(run: Run, stage: StepId, targets: PageTarget[]): Promise
       read += 1;
       anyRead = true;
     } else if (outcome.kind === 'refused') {
-      if (!refused) refusedStatus = outcome.status;
+      if (!refused) {
+        refusedStatus = outcome.status;
+        refusedNote = outcome.note;
+      }
       refused = true;
     } else if (outcome.kind === 'unreadable') {
-      unreadable = true;
+      unreadable += 1;
+      unreadableNote ??= outcome.note;
+    } else if (outcome.kind === 'skipped') {
+      skipped = true;
     }
   }
+  const titled = (note: string | undefined): string => (note ? `, titled "${note}"` : '');
   if (refused) {
-    const said = refusedStatus === undefined ? '' : refusedStatus === 0 ? ' (no answer)' : ` (HTTP ${refusedStatus})`;
+    const said = refusedStatus === undefined
+      ? refusedNote ? ` (its tab never showed the page${titled(refusedNote)})` : ''
+      : refusedStatus === 0 ? ' (no answer)' : ` (HTTP ${refusedStatus}${titled(refusedNote)})`;
     noteProblem(job, `Home Depot refused a page${said}; the rest are read next scan.`);
   }
-  else if (unreadable) {
-    noteProblem(job, anyRead ? 'A Home Depot page could not be read.' : 'No Home Depot page could be read.');
+  else if (unreadable > 0) {
+    // Nov 23: a 200 without the page's state is said with what came back, and is not a refusal.
+    const what = unreadableNote ? ` (it came back without its data${titled(unreadableNote)})` : '';
+    noteProblem(job, anyRead ? `A Home Depot page could not be read${what}.` : `No Home Depot page could be read${what}.`);
   }
   moveUnits(job, stage, { done: (job.pipeline?.find((p) => p.id === stage)?.unitsDone ?? 0) + read });
   measure(job, stage, run.now() - readStart, targets.length);
   endStep(job, stage, run.now());
   await store.putScan(job);
-  return { goOn: !refused, notRead: targets.length - read, ...(refused ? { why: 'Home Depot refused' } : {}) };
+  const goOn = !refused && !skipped;
+  return { goOn, notRead: targets.length - read, ...(refused ? { why: 'Home Depot refused' } : !goOn ? { why: 'pages not readable' } : {}) };
 }
 
 /**

@@ -26,7 +26,13 @@ export interface ReaderEnv {
   sleep(ms: number): Promise<void>;
 }
 
-export interface InTabResult { itemId: string; status: number; text: string | null }
+export interface InTabResult {
+  itemId: string;
+  status: number;
+  text: string | null;
+  /** A 200 answer without the page state: its <title> (or its first words), at most 80 characters, so the run can say what came back. */
+  note?: string;
+}
 
 /** True once the doorway tab has finished loading a page on `origin`, never on its blank start page. */
 export function doorwayLoaded(tab: { status?: string; url?: string }, origin: string): boolean {
@@ -95,13 +101,17 @@ export async function openDoorway(
  * functions (it is serialised by its source). Fetches `/p/<id>` same-origin, `concurrency` at a
  * time, and returns the text from `window.__APOLLO_STATE__=` to the next `</script>`, or null.
  * Results are in the order of `itemIds`. A fetch that throws gives status 0. It starts no new
- * fetch after the first answer that is not the page (non-200, a thrown fetch, or no embedded
- * data); ids it never fetched come back with status -1.
+ * fetch after the first answer that is a refusal (non-200, or a thrown fetch), nor once
+ * `unreadableLimit` answers in a row (counting `unreadableBefore`, the run the caller's last batch
+ * ended on) were 200 without the page state; each of those carries a `note`: its <title>, or its
+ * first words. Ids it never fetched come back with status -1. The defaults (a limit of 1) stop at
+ * the first such page, as the part price readers want.
  */
-export async function fetchPagesInTab(itemIds: string[], concurrency: number): Promise<InTabResult[]> {
+export async function fetchPagesInTab(itemIds: string[], concurrency: number, unreadableBefore = 0, unreadableLimit = 1): Promise<InTabResult[]> {
   const results: InTabResult[] = new Array(itemIds.length);
   let next = 0;
   let stopped = false;
+  let unreadableRun = unreadableBefore;
   const worker = async (): Promise<void> => {
     while (next < itemIds.length) {
       const i = next++;
@@ -113,6 +123,7 @@ export async function fetchPagesInTab(itemIds: string[], concurrency: number): P
       }
       let status = 0;
       let text: string | null = null;
+      let note: string | undefined;
       try {
         const res = await fetch(`/p/${itemId}`, { credentials: 'include' });
         status = res.status;
@@ -121,13 +132,21 @@ export async function fetchPagesInTab(itemIds: string[], concurrency: number): P
         if (mark >= 0) {
           const end = body.indexOf('</script>', mark);
           text = end >= 0 ? body.slice(mark, end) : body.slice(mark);
+        } else if (status === 200) {
+          const titled = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(body);
+          const words = (titled ? (titled[1] as string) : body.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+          note = words.slice(0, 80);
         }
       } catch {
         status = 0;
         text = null;
       }
-      if (status !== 200 || text === null) stopped = true;
-      results[i] = { itemId, status, text };
+      if (status !== 200) stopped = true;
+      else if (text === null) {
+        unreadableRun += 1;
+        if (unreadableRun >= unreadableLimit) stopped = true;
+      } else unreadableRun = 0;
+      results[i] = note === undefined ? { itemId, status, text } : { itemId, status, text, note };
     }
   };
   const n = Math.max(1, Math.min(concurrency, itemIds.length));
@@ -136,6 +155,53 @@ export async function fetchPagesInTab(itemIds: string[], concurrency: number): P
   await Promise.all(workers);
   return results;
 }
+
+/** What the doorway tab's own document holds: whether its HTML carries Home Depot's page state, and its title. */
+export interface DoorwayState { state: boolean; title: string }
+
+/**
+ * Runs inside the doorway tab. Self-contained, like fetchPagesInTab. Reads the tab's own document as Chrome loaded it:
+ * whether one of its scripts holds `window.__APOLLO_STATE__=` (the ISOLATED world cannot see the page's own variables,
+ * so the document's HTML is what is read), and its title, at most 80 characters.
+ */
+export async function doorwayStateInTab(): Promise<DoorwayState> {
+  let state = false;
+  const scripts = document.getElementsByTagName('script');
+  for (let i = 0; i < scripts.length && !state; i++) {
+    const t = scripts[i]?.textContent ?? '';
+    if (t.indexOf('window.__APOLLO_STATE__=') >= 0) state = true;
+  }
+  return { state, title: (document.title || '').replace(/\s+/g, ' ').trim().slice(0, 80) };
+}
+
+/** How long the doorway's own page may take to show its state, and how often it is checked. */
+export const DOORWAY_STATE_MS = 15_000;
+const DOORWAY_STATE_EVERY_MS = 500;
+
+/**
+ * Nov 23: the doorway's own page must carry its state before any other page is fetched from it (a real scan's first
+ * fetch came back 200 without it, while a normal tab two minutes later read the same ids in full). Checked every
+ * `everyMs` for at most `waitMs`. A check that throws (Chrome showing its own error page) counts as no state. Resolves
+ * with the last check: `state` false means the doorway never showed its page, which is Home Depot refusing.
+ */
+export async function waitForDoorwayState(
+  env: Pick<ReaderEnv, 'runInTab' | 'sleep'>, tabId: number, waitMs = DOORWAY_STATE_MS, everyMs = DOORWAY_STATE_EVERY_MS,
+): Promise<DoorwayState> {
+  let last: DoorwayState = { state: false, title: '' };
+  for (let waited = 0; ; waited += everyMs) {
+    try {
+      const got = await env.runInTab(tabId, doorwayStateInTab, []);
+      if (got && typeof got === 'object') last = { state: got.state === true, title: typeof got.title === 'string' ? got.title.slice(0, 80) : '' };
+    } catch {
+      // No state this time.
+    }
+    if (last.state || waited + everyMs > waitMs) return last;
+    await env.sleep(everyMs);
+  }
+}
+
+/** Two pages in a row that answer 200 without their state end the reading (a third would not be different). */
+const UNREADABLE_IN_A_ROW = 2;
 
 const LOAD_TIMEOUT_MS = 30_000;
 
@@ -160,9 +226,20 @@ export function createPromoPageReader(env: ReaderEnv, opts: PageReaderOptions = 
   }, opts);
 }
 
-export interface PageReaderOptions { concurrency?: number; batch?: number; pauseMs?: number; settleMs?: number; now?: () => number }
+export interface PageReaderOptions {
+  concurrency?: number;
+  batch?: number;
+  pauseMs?: number;
+  settleMs?: number;
+  /** How long the doorway's own page may take to show its state (DOORWAY_STATE_MS). */
+  doorwayStateMs?: number;
+  now?: () => number;
+}
 
-type NotRead = { itemId: string; kind: 'unreadable' | 'skipped' } | { itemId: string; kind: 'refused'; status?: number };
+type NotRead =
+  | { itemId: string; kind: 'skipped' }
+  | { itemId: string; kind: 'unreadable'; note?: string }
+  | { itemId: string; kind: 'refused'; status?: number; note?: string };
 
 /** The page reader, with `parse` turning a page's text into its 'read' outcome (null: unreadable). */
 function createPageReaderOf<O extends { itemId: string }>(
@@ -174,6 +251,7 @@ function createPageReaderOf<O extends { itemId: string }>(
   const batch = opts.batch ?? 6;
   const pauseMs = opts.pauseMs ?? 1000;
   const settleMs = opts.settleMs ?? 2500;
+  const doorwayStateMs = opts.doorwayStateMs ?? DOORWAY_STATE_MS;
   const now = opts.now ?? Date.now;
   // When this reader's last call ended; null before its first.
   let lastEnded: number | null = null;
@@ -205,7 +283,19 @@ function createPageReaderOf<O extends { itemId: string }>(
       if (settleMs > 0) await env.sleep(settleMs);
 
       const outcomes: (O | NotRead)[] = [];
+      // Nov 23: the doorway's own page first. Until it shows its state no other page is fetched from it; if it never
+      // does, Home Depot is not serving this tab its pages, and that is the refusal (no retry, no second doorway).
+      const doorway = await waitForDoorwayState(env, tabId, doorwayStateMs);
+      if (!doorway.state) {
+        const [first, ...rest] = itemIds as [string, ...string[]];
+        outcomes.push({ itemId: first, kind: 'refused', ...(doorway.title !== '' ? { note: doorway.title } : {}) });
+        for (const itemId of rest) outcomes.push({ itemId, kind: 'skipped' });
+        return outcomes;
+      }
+
       let stopped = false;
+      // Pages in a row, in id order, that answered 200 without their state.
+      let unreadableRun = 0;
       for (let start = 0; start < itemIds.length; start += batch) {
         const ids = itemIds.slice(start, start + batch);
         if (stopped) {
@@ -213,7 +303,7 @@ function createPageReaderOf<O extends { itemId: string }>(
           continue;
         }
         if (start > 0) await env.sleep(pauseMs);
-        const answered = await env.runInTab(tabId, fetchPagesInTab, [ids, concurrency]);
+        const answered = await env.runInTab(tabId, fetchPagesInTab, [ids, concurrency, unreadableRun, UNREADABLE_IN_A_ROW]);
         // An empty script result (undefined, not an array) is a batch with no entries.
         const results: InTabResult[] = Array.isArray(answered) ? answered : [];
         for (const itemId of ids) {
@@ -223,7 +313,17 @@ function createPageReaderOf<O extends { itemId: string }>(
           }
           const r = results.find((x) => x.itemId === itemId);
           if (r && r.status === -1) {
+            // The tab stopped fetching: nothing after this is asked for either.
+            stopped = true;
             outcomes.push({ itemId, kind: 'skipped' });
+            continue;
+          }
+          if (r && r.status === 200 && r.text === null) {
+            // A 200 without the page's state is not a refusal: what came back is said, and the next page is tried.
+            unreadableRun += 1;
+            if (unreadableRun >= UNREADABLE_IN_A_ROW) stopped = true;
+            const note = typeof r.note === 'string' ? r.note.slice(0, 80) : '';
+            outcomes.push({ itemId, kind: 'unreadable', ...(note !== '' ? { note } : {}) });
             continue;
           }
           if (!r || r.status !== 200 || r.text === null) {
@@ -232,6 +332,7 @@ function createPageReaderOf<O extends { itemId: string }>(
             outcomes.push({ itemId, kind: 'refused', status: r ? r.status : 0 });
             continue;
           }
+          unreadableRun = 0;
           outcomes.push(parse(r.text, itemId) ?? { itemId, kind: 'unreadable' });
         }
       }

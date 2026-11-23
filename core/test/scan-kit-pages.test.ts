@@ -327,6 +327,39 @@ describe('stopping and failing', () => {
     expect(job.stopMessage).not.toContain('no answer');
   });
 
+  it('Nov 23: a doorway that never showed its page says so with its title; a 200 without the state says its title and is not a refusal', async () => {
+    const w = await answered();
+    w.reads = [];
+    const read = reader(w);
+    const refusedJob = await scan(w, {
+      settings: STORED, cap: 0,
+      readPages: async (ids) => (await read(ids)).map((o, i) => (i === 0 ? { itemId: o.itemId, kind: 'refused' as const, note: 'Access Denied' } : { itemId: o.itemId, kind: 'skipped' as const })),
+    });
+    expect(refusedJob.stopMessage).toContain('Home Depot refused a page (its tab never showed the page, titled "Access Denied"); the rest are read next scan.');
+
+    const v = await answered();
+    v.reads = [];
+    // One page came back 200 without its state; the reader went on and read the others, and the kit page is read after.
+    const job = await scan(v, {
+      settings: STORED, cap: 0,
+      readPages: async (ids) => (await reader(v)(ids)).map((o, i) => (i === 0 && ids.length > 1 ? { itemId: o.itemId, kind: 'unreadable' as const, note: 'Oops! Something went wrong' } : o)),
+    });
+    expect(job.stopMessage).toMatch(/could (not )?be read \(it came back without its data, titled "Oops! Something went wrong"\)\./);
+    expect(job.stopMessage).not.toContain('refused');
+    expect(v.reads.at(-1)).toEqual([KIT_ID]);
+  });
+
+  it('Nov 23: a reader that stopped after pages in a row without their state (skipped) reads no kit page this run', async () => {
+    const w = await answered();
+    w.reads = [];
+    const job = await scan(w, {
+      settings: STORED, cap: 0,
+      readPages: async (ids) => { w.reads.push([...ids]); return ids.map((itemId, i) => (i < 2 ? { itemId, kind: 'unreadable' as const, note: 'Access Denied' } : { itemId, kind: 'skipped' as const })); },
+    });
+    expect(w.reads).toEqual([UNRECORDED]);
+    expect(job.stopMessage).toContain('No Home Depot page could be read (it came back without its data, titled "Access Denied").');
+  });
+
   it('a status of 0 is said as no answer', async () => {
     const w = await answered();
     w.reads = [];

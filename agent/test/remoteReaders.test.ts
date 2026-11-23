@@ -45,6 +45,21 @@ describe('remote Home Depot readers (worker jobs)', () => {
     ]);
   });
 
+  it('Nov 23: keeps what came back instead of a page (its title) as a note, plain text of at most 80 characters', async () => {
+    const { readers, worker } = setup();
+    const reading = readers.readPages(['111111111', '222222222', '333333333']);
+    await worker(() => [
+      { itemId: '111111111', kind: 'unreadable', note: 'Oops!\n\u0007 Something   went wrong' },
+      { itemId: '222222222', kind: 'refused', note: 'x'.repeat(200) },
+      { itemId: '333333333', kind: 'skipped', note: 'ignored' },
+    ]);
+    expect(await reading).toEqual([
+      { itemId: '111111111', kind: 'unreadable', note: 'Oops! Something went wrong' },
+      { itemId: '222222222', kind: 'refused', note: 'x'.repeat(80) },
+      { itemId: '333333333', kind: 'skipped' },
+    ]);
+  });
+
   it('a helper that does not answer in time fails the read (the runner notes it), and the job is not handed out later', async () => {
     const { readers, q } = setup(50);
     await expect(readers.readPages(['111111111'])).rejects.toThrow('Chrome did not answer in time');

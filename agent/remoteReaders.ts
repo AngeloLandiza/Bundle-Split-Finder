@@ -39,12 +39,25 @@ const textOrNull = (v: unknown): boolean => v === null || typeof v === 'string';
 const numOrNull = (v: unknown): boolean => v === null || (typeof v === 'number' && Number.isFinite(v));
 const onHomeDepot = (url: unknown): boolean => isText(url) && (url === HOME_DEPOT || url.startsWith(`${HOME_DEPOT}/`));
 
+/** What came back instead of a page (its title), as the worker said it: plain text of at most 80 characters, or nothing. */
+function noteOf(v: Record<string, unknown>): { note?: string } {
+  if (!isText(v.note)) return {};
+  const note = v.note.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+  return note === '' ? {} : { note };
+}
+
+/** A not-read outcome (unreadable, skipped, refused) in core's shape, keeping the status and the note; null for any other kind. */
+function notReadOutcome(v: Record<string, unknown> & { itemId: string }): Exclude<PageOutcome, { kind: 'read' }> | null {
+  if (v.kind === 'skipped') return { itemId: v.itemId, kind: 'skipped' };
+  if (v.kind === 'unreadable') return { itemId: v.itemId, kind: 'unreadable', ...noteOf(v) };
+  if (v.kind === 'refused') return { itemId: v.itemId, kind: 'refused', ...(typeof v.status === 'number' ? { status: v.status } : {}), ...noteOf(v) };
+  return null;
+}
+
 function pageOutcome(v: unknown): PageOutcome | null {
   if (!isRecord(v) || !isText(v.itemId)) return null;
   if (v.kind === 'read') return isRecord(v.content) ? (v as unknown as PageOutcome) : null;
-  if (v.kind === 'unreadable' || v.kind === 'skipped') return { itemId: v.itemId, kind: v.kind };
-  if (v.kind === 'refused') return { itemId: v.itemId, kind: 'refused', ...(typeof v.status === 'number' ? { status: v.status } : {}) };
-  return null;
+  return notReadOutcome(v as Record<string, unknown> & { itemId: string });
 }
 
 function partPriceReading(v: unknown): PartPriceReading | null {
@@ -92,9 +105,8 @@ function promotion(v: unknown): PagePromotion | null {
 /** A promoPage outcome in core's shape, or null: a page whose fields are not all of the right kind is no page. */
 function promoOutcome(v: unknown): PromoPageOutcome | null {
   if (!isRecord(v) || !isText(v.itemId) || !ITEM_ID.test(v.itemId)) return null;
-  if (v.kind === 'unreadable' || v.kind === 'skipped') return { itemId: v.itemId, kind: v.kind };
-  if (v.kind === 'refused') return { itemId: v.itemId, kind: 'refused', ...(typeof v.status === 'number' ? { status: v.status } : {}) };
-  if (v.kind !== 'read' || !isRecord(v.page)) return null;
+  if (v.kind !== 'read') return notReadOutcome(v as Record<string, unknown> & { itemId: string });
+  if (!isRecord(v.page)) return null;
   const p = v.page;
   if (p.itemId !== v.itemId || !isText(p.brand) || !isText(p.model) || !isText(p.title) || !numOrNull(p.price) || !numOrNull(p.wasPrice)) return null;
   if (!Array.isArray(p.bullets) || !p.bullets.every(isText) || !textOrNull(p.description) || !Array.isArray(p.promotions)) return null;

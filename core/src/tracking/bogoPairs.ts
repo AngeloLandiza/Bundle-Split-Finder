@@ -145,8 +145,9 @@ export const bogoTagOf = (p: BogoPair): BogoTag => ({
 /** One item page's outcome, as the worker answers a promoPage job (core/src/api/contract.ts). */
 export type PromoPageOutcome =
   | { itemId: string; kind: 'read'; page: PromoPage }
-  | { itemId: string; kind: 'unreadable' | 'skipped' }
-  | { itemId: string; kind: 'refused'; status?: number };
+  | { itemId: string; kind: 'skipped' }
+  | { itemId: string; kind: 'unreadable'; note?: string }
+  | { itemId: string; kind: 'refused'; status?: number; note?: string };
 
 export interface BogoPassDeps {
   /** Brands in Settings; only those with a joiner and a query are read. */
