@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  FBA_AT_ZERO,
   RULES,
   checkBaseUrl,
   checkNumber,
@@ -105,5 +106,11 @@ describe('the window height', () => {
     expect(windowHeight(86, 400)).toBe(486);
     expect(windowHeight(86, 100)).toBe(320);
     expect(windowHeight(86, 2000)).toBe(820);
+  });
+});
+
+describe('the fulfillment note', () => {
+  it('says what a $0 fee leaves out and where the other figure is', () => {
+    expect(FBA_AT_ZERO).toBe('At $0 the estimate leaves out Amazon’s fulfillment fee. Keepa’s FBA estimate, when available, shows beside each deal.');
   });
 });

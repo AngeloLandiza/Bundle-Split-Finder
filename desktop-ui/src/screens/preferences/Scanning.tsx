@@ -4,7 +4,7 @@ import { Checkbox, Select, TextField } from '../../components/Fields';
 import { Meter } from '../../components/States';
 import { count } from '../../lib/format';
 import { forecast } from '../../lib/forecast';
-import { RULES, isClock } from '../../lib/prefs';
+import { FBA_AT_ZERO, RULES, isClock } from '../../lib/prefs';
 import { useState } from 'react';
 import { words } from '../../lib/platform';
 import { Inline, NumberField, Note, Pane, Row, Rule, usePrefs } from './form';
@@ -118,7 +118,7 @@ export function ScanningPane() {
       <Row label="Minimum referral">
         <NumberField label="Minimum referral" value={fees.minReferral} rule={RULES.minReferral} prefix="$" step="0.01" onCommit={(v) => setFee('minReferral', v)} />
       </Row>
-      <Row label="Fulfillment, per unit">
+      <Row label="Fulfillment, per unit" help={fees.fulfillmentFee === 0 ? FBA_AT_ZERO : undefined}>
         <NumberField label="Fulfillment per unit" value={fees.fulfillmentFee} rule={RULES.fulfillmentFee} prefix="$" step="0.01" onCommit={(v) => setFee('fulfillmentFee', v)} />
       </Row>
       <Row label="Sales tax you pay">

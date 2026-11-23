@@ -185,3 +185,6 @@ export const fromAppearanceSetting = (a: AppearanceSetting): Look => ({ appearan
 export function windowHeight(barPx: number, paneContentPx: number): number {
   return Math.round(Math.max(320, Math.min(820, barPx + paneContentPx)));
 }
+
+/** Shown under Fulfillment while it is $0: an estimate that leaves out a cost says so (docs/ux-checklist.md, item 4). */
+export const FBA_AT_ZERO = 'At $0 the estimate leaves out Amazon’s fulfillment fee. Keepa’s FBA estimate, when available, shows beside each deal.';
