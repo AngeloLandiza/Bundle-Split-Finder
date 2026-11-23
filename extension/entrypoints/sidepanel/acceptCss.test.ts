@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const css = readFileSync(join(__dirname, 'AcceptSuggested.css'), 'utf8');
-const base = readFileSync(join(__dirname, 'sidepanel.css'), 'utf8');
+const css = readFileSync(join(__dirname, 'AcceptSuggested.css'), 'utf8').replace(/\r\n/g, '\n');
+const base = readFileSync(join(__dirname, 'sidepanel.css'), 'utf8').replace(/\r\n/g, '\n');
 
 describe("Accept all's row link", () => {
   it('is link-coloured (design.md: blue is only for links), under a selector that outranks .fig-sm, which sets ink', () => {

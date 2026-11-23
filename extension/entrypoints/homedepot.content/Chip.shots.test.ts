@@ -17,7 +17,7 @@ import { fontFaceCss } from './fonts';
 import { estimateView, lookupView, noReadingView, oneReadingView } from '../../test-helpers/realViews';
 
 const OUT = resolve('qa-shots');
-const css = readFileSync(join(__dirname, 'chip.css'), 'utf8').replaceAll(':root', ':host');
+const css = readFileSync(join(__dirname, 'chip.css'), 'utf8').replace(/\r\n/g, '\n').replaceAll(':root', ':host');
 // The fonts as the extension serves them to the page (fonts.ts), here as data URLs so a blank page can load them.
 const fonts = fontFaceCss((path) => `data:font/woff2;base64,${readFileSync(resolve('public', path.slice(1))).toString('base64')}`);
 

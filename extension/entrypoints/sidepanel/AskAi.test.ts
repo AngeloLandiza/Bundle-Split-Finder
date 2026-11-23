@@ -363,7 +363,7 @@ describe('Accept all leaves out a question the AI has spoken on', () => {
 });
 
 describe('the Ask AI styles', () => {
-  const css = readFileSync(join(__dirname, 'AiSuggestion.css'), 'utf8');
+  const css = readFileSync(join(__dirname, 'AiSuggestion.css'), 'utf8').replace(/\r\n/g, '\n');
   const rule = (sel: string): string => {
     const at = css.indexOf(`${sel} {`);
     expect(at).toBeGreaterThanOrEqual(0);

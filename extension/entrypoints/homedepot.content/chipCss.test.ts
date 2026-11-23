@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const chip = readFileSync(join(__dirname, 'chip.css'), 'utf8');
-const tokens = readFileSync(join(__dirname, '../../styles/tokens.css'), 'utf8');
+const chip = readFileSync(join(__dirname, 'chip.css'), 'utf8').replace(/\r\n/g, '\n');
+const tokens = readFileSync(join(__dirname, '../../styles/tokens.css'), 'utf8').replace(/\r\n/g, '\n');
 
 const declared = (css: string): Map<string, string> =>
   new Map([...css.matchAll(/(--[a-z0-9-]+):\s*([^;]+);/g)].map((m) => [m[1]!, m[2]!.trim()]));

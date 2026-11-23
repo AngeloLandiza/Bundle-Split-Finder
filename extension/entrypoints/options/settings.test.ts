@@ -381,7 +381,7 @@ describe('Page details', () => {
   });
 
   it('options.css has no literal colors', () => {
-    const css = readFileSync('extension/entrypoints/options/options.css', 'utf8');
+    const css = readFileSync('extension/entrypoints/options/options.css', 'utf8').replace(/\r\n/g, '\n');
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(css).not.toMatch(/\b(rgb|rgba|hsl|hsla)\(/);
   });

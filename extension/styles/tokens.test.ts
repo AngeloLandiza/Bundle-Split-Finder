@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const root = resolve(__dirname, '../..');
-const spec = readFileSync(resolve(root, 'docs/design.md'), 'utf8');
-const css = readFileSync(resolve(root, 'extension/styles/tokens.css'), 'utf8');
+const spec = readFileSync(resolve(root, 'docs/design.md'), 'utf8').replace(/\r\n/g, '\n');
+const css = readFileSync(resolve(root, 'extension/styles/tokens.css'), 'utf8').replace(/\r\n/g, '\n');
 
 function specTokens(): Record<string, string> {
   const block = spec.split('## Tokens')[1]?.split(/\n## /)[0] ?? '';

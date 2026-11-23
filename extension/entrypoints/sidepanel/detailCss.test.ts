@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const css = readFileSync(join(__dirname, 'Detail.css'), 'utf8');
+const css = readFileSync(join(__dirname, 'Detail.css'), 'utf8').replace(/\r\n/g, '\n');
 
 /** The declarations of the rule whose selector list is exactly `selectors`. */
 function declarations(selectors: string): string {

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const css = readFileSync(join(__dirname, 'sidepanel.css'), 'utf8');
+const css = readFileSync(join(__dirname, 'sidepanel.css'), 'utf8').replace(/\r\n/g, '\n');
 
 /** The declarations of the first rule whose selector list is exactly `selectors`, from `from` on. */
 function declarations(selectors: string, from = 0): string {

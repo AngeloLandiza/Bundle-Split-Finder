@@ -566,7 +566,7 @@ describe('the per-question Ask AI button rule', () => {
 });
 
 describe('the styles of the section', () => {
-  const css = readFileSync(join(__dirname, 'AiSuggestions.css'), 'utf8');
+  const css = readFileSync(join(__dirname, 'AiSuggestions.css'), 'utf8').replace(/\r\n/g, '\n');
   const rule = (sel: string): string => {
     const at = css.indexOf(`${sel} {`);
     expect(at, sel).toBeGreaterThanOrEqual(0);
@@ -589,7 +589,7 @@ describe('the styles of the section', () => {
     expect(rule('.ai-confirm')).toMatch(/flex-wrap: wrap/);
   });
   it('an opened suggestion puts each quote\'s source on the quote\'s own line, not a line of its own', () => {
-    const block = readFileSync(join(__dirname, 'AiSuggestion.css'), 'utf8');
+    const block = readFileSync(join(__dirname, 'AiSuggestion.css'), 'utf8').replace(/\r\n/g, '\n');
     const li = block.slice(block.indexOf('.ai-quotes li {'), block.indexOf('}', block.indexOf('.ai-quotes li {')));
     expect(li).toMatch(/display: flex/);
     expect(li).toMatch(/align-items: last baseline/);
