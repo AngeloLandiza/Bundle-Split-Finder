@@ -217,7 +217,12 @@ describe('the schedule', () => {
   });
 
   it('while an answer is being applied no scan starts, and answers go one at a time', async () => {
-    await start();
+    // The last tick() starts a scheduled scan that afterEach waits for; a real replayed scan made this the slowest test
+    // here (and the one to time out its hook when the machine was busy). This test is about the slot, not the scan.
+    const quick = (async () => {
+      throw new Error('stop here');
+    }) as unknown as typeof runScan;
+    await start({ work: { runScan: quick } });
     await put('/api/keys/serpapi', { key: SERP_KEY });
     await patch({ settings: { schedule: { mode: 'interval', hours: 6 } } });
     clock += 6 * 3_600_000;
@@ -232,7 +237,8 @@ describe('the schedule', () => {
     const second = agent.work.answer('second', { none: true }, undefined, false);
     expect(agent.work.tick()).toBe(false);
     expect(() => agent.work.scanNow()).toThrow(/answer is being applied/);
-    await new Promise((r) => setTimeout(r, 10));
+    // 'second' must not have started: let every queued microtask and one macrotask run, then look.
+    await new Promise((r) => setImmediate(r));
     expect(order).toEqual(['first']);
     found(undefined);
     await expect(first).rejects.toThrow('That question was not found.');

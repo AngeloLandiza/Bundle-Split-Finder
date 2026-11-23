@@ -6,7 +6,7 @@
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { endStep, newPipeline, startStep } from '../../core/src/scan/pipeline';
 import type { ScanJob } from '../../core/src/scan/types';
@@ -177,7 +177,7 @@ describe('the live view (step 15)', () => {
     agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-live-')), port: 0, timers: false, fetchFn, now: () => T0, work: { runScan: fakeScan } });
     agent.store.update('keys', (k) => ({ ...k, serpapi: 'serp-secret-key-123' }));
     agent.work.scanNow();
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(agent.work.state().pipeline?.current).toEqual({ label: 'Reading part prices', count: '0 of 40' }));
     const view = agent.work.state().pipeline!;
     expect(view.current).toEqual({ label: 'Reading part prices', count: '0 of 40' });
     expect(view.steps.find((s) => s.label === 'Home Depot part prices')).toMatchObject({ state: 'now', done: 0, total: 40 });

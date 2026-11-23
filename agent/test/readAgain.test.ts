@@ -7,7 +7,7 @@ import { mkdtempSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ActivityResponse, AgentState, ReadPagesResponse } from '../../core/src/api/contract';
 import type { runScan } from '../../core/src/scan/runner';
@@ -98,7 +98,7 @@ describe('Read again (POST /api/scan/read-pages)', () => {
     // Chrome connects: Read again can start, and says what it may spend.
     live = true;
     const polling = chrome();
-    await new Promise((r) => setTimeout(r, 20));
+    await vi.waitFor(() => expect(agent.jobs.pollers()).toBeGreaterThan(0)); // Chrome's poll has arrived
     state = await json<AgentState>('/api/state');
     expect(state.agent.lastScan?.canReadPagesAgain).toBe(true);
     const started = await readAgain();
@@ -131,7 +131,7 @@ describe('Read again (POST /api/scan/read-pages)', () => {
     await agent.work.idle();
     live = true;
     const polling = chrome();
-    await new Promise((r) => setTimeout(r, 20));
+    await vi.waitFor(() => expect(agent.jobs.pollers()).toBeGreaterThan(0)); // Chrome's poll has arrived
     expect(await readAgain()).toEqual({ started: true, reason: 'Reading the Home Depot pages again (free); no Amazon search, because the last scan used its whole limit.' });
     await agent.work.idle();
     live = false;

@@ -3,7 +3,7 @@ import { mkdtempSync } from 'node:fs';
 import { createServer, request, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createAgent, type Agent } from '../app';
 
@@ -211,13 +211,13 @@ describe('agent HTTP', () => {
       (r) => `poll answered ${r.status}`,
       () => 'poll closed',
     );
-    await new Promise((r) => setTimeout(r, 50));
-    expect(agent.jobs.pollers()).toBe(1);
+    await vi.waitFor(() => expect(agent.jobs.pollers()).toBe(1));
     const started = Date.now();
     expect((await ui(`/api/pair/extensions/${EXT}`, { method: 'DELETE' })).status).toBe(200);
     expect(await stream).toBe('stream closed');
     expect(await poll).toBe('poll closed');
-    expect(Date.now() - started).toBeLessThan(2000);
+    // The poll would otherwise wait out its 25 s; anything far under that is "at once" (2 s was too tight on a busy machine).
+    expect(Date.now() - started).toBeLessThan(10_000);
     expect(agent.jobs.pollers()).toBe(0);
   });
 
@@ -245,8 +245,7 @@ describe('agent HTTP', () => {
     server.on('request', agent.handle);
     expect((await fetch(`${base}/api/agent/quit`, { method: 'POST', body: '{}' })).status).toBe(401);
     expect(await (await ui('/api/agent/quit', { method: 'POST', body: '{}' })).json()).toEqual({ ok: true });
-    await new Promise((r) => setTimeout(r, 60));
-    expect(quits).toBe(1);
+    await vi.waitFor(() => expect(quits).toBe(1));
   });
 
   it('streams state first, then notify events, to a caller with no Origin (the shell)', async () => {
