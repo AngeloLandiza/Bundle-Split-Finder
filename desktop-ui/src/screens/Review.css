@@ -75,7 +75,7 @@
 }
 
 :root[data-window-active] .qitem[aria-current='true'] .tag {
-  background: rgb(255 255 255 / 0.22);
+  background: rgb(0 0 0 / 0.22);
   color: #ffffff;
 }
 

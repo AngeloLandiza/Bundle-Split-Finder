@@ -14,11 +14,12 @@
   color: var(--label-2);
 }
 
+/* The tag sits under the figure, so the column keeps its width and the row its place. */
 .figure-before {
   display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
   max-width: 100%;
 }
 

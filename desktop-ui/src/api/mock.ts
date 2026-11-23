@@ -17,10 +17,11 @@ import type * as C from '@core/api/contract';
 import { mapDetail, mapReview, mapRow } from './map';
 import { followUpVariants } from './mockFollowUp';
 import real from './mockReal.json';
+import { applyFees } from './mockFees';
 import { mockBogoView } from './mockTracking';
 import { ApiError, isWorking, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type DealRow, type FollowUp, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
-type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems';
+type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems' | 'real-early';
 
 const ago = (min: number): string => new Date(Date.now() - min * 60_000).toISOString();
 const ahead = (min: number): string => new Date(Date.now() + min * 60_000).toISOString();
@@ -29,7 +30,7 @@ const clone = <T>(x: T): T => structuredClone(x);
 function scenario(): Scenario {
   if (typeof window === 'undefined') return 'normal';
   const s = new URLSearchParams(window.location.search).get('mock');
-  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-ai', 'real-scanning', 'real-problems'];
+  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-ai', 'real-scanning', 'real-problems', 'real-early'];
   return all.find((x) => x === s) ?? 'normal';
 }
 
@@ -127,7 +128,7 @@ export function createMockClient(): ApiClient {
   let paired: PairedExtension[] = [{ extensionId: 'abcdefghijklmnopabcdefghijklmnop', pairedAt: new Date(Date.now() - 3 * 86_400_000).toISOString(), lastSeenAt: new Date(Date.now() - 60_000).toISOString() }];
 
   let ebayNotice: string | null = null;
-  if (mode === 'real' || mode === 'real-ai' || mode === 'real-scanning' || mode === 'real-problems') {
+  if (mode === 'real' || mode === 'real-ai' || mode === 'real-scanning' || mode === 'real-problems' || mode === 'real-early') {
     type RealRow = Parameters<typeof mapRow>[0] & { _parts: string[]; _evidence: NonNullable<DealDetail['splitEvidence']> };
     const scan3 = (real as unknown as { scan3?: { deals: C.DealsResponse; details: Record<string, C.DealDetail>; review: C.ReviewResponse } }).scan3;
     if (scan3) {
@@ -157,7 +158,10 @@ export function createMockClient(): ApiClient {
     state.keyProblems = { ebay: 'eBay did not accept the App ID and Cert ID. Use the production keys from developer.ebay.com, not the sandbox pair.' };
     state.agent.nextScanAt = null;
     const waiting = deals.filter((d) => d.lookup).length;
-    state.agent.drip = { active: true, waiting, nextAt: ahead(4), lastLookupAt: ago(7) };
+    // After-scan3 with fees counted per part (docs/decisions.md, Signals round 3): the replay's figures, 24 fee pulls waiting, 13 tokens.
+    applyFees(deals, details, mode === 'real-early' ? 'early' : 'replay');
+    state.budget = { ...state.budget, keepaTokens: 13 };
+    state.agent.drip = { active: true, waiting, nextAt: ahead(4), lastLookupAt: ago(7), feesWaiting: 24 };
     state.agent.lastScan = { at: ago(51), result: 'finished', newDeals: 0, searches: 1, message: null, waitingLookups: waiting, lookupsDone: { keepa: 0, serpapi: 1 }, lookupsBlockedBy: 'keepa_tokens' };
     ebayNotice = 'eBay did not accept the App ID and Cert ID, so eBay reference values were not checked.';
     activity.runs = activity.runs.slice(0, 3);

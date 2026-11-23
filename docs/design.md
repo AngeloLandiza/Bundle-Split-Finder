@@ -455,7 +455,11 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   say while it is hidden under 720px, a waiting state's full words, the BOGO group's sentence. Never a blank third line:
   the row is 44px, and 56px with the line. The header stays frozen while the rows scroll; Price, Off, Estimated profit,
   ROI and Updated are right-aligned in tabular figures. A status bar at the foot says how many show and that profit
-  and ROI are estimates.
+  and ROI are estimates. The line under the title is the agent's `signalNote` as one short line (cut at its first clause
+  break past about 90 characters; the whole sentence on hover and in the inspector). An estimate before fulfillment
+  (`beforeFulfillment`) shows its profit in the secondary colour with a neutral "before fulfillment" tag under it, and
+  every sort or "best" by profit or ROI (Today, the table heads, the popover) ranks it after full estimates of the same
+  sign and never calls it best or worth buying (`lib/order.ts`).
 - **Deal inspector** reads in the order of the decision, top to bottom: brand, title, model · price · off, "Open on Home
   Depot" with when the price was seen, **Watch / Unwatch** and the "…" menu; the **Verdict** (a watched bundle: the headline
   and one sentence, with "Why" folded under it: margin against the last scan and the 7-day average, sales as "Sells about N a

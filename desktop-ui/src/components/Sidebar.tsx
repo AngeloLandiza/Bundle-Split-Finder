@@ -178,7 +178,7 @@ function SidebarStatus() {
         </p>
         {v.running && agent.pipeline ? <ProgressBar value={agent.pipeline.fraction} label={agent.pipeline.labels?.bar ?? 'Scan progress'} valueText={agent.pipeline.ariaValueText} /> : null}
         {v.when ? <p className="sb-row sb-quiet">{v.when}</p> : null}
-        <p className="sb-row sb-quiet">{v.usage}</p>
+        <p className="sb-row sb-quiet" title={v.usageFull}>{v.usage}</p>
         {v.problem ? (
           <button type="button" className="sb-warn" onClick={() => navigate(v.problem!.to)} title={`Open ${systemWords.preferences} to fix it`}>
             <Glyph name="warning" size={12} />

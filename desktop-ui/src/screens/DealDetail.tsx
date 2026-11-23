@@ -10,7 +10,7 @@ import { LoadError, LoadingState, Notice } from '../components/States';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { amazonSearchUrl, amazonUrl, copyText, openPage } from '../lib/actions';
-import { money, percentOff, plural, when } from '../lib/format';
+import { money, percentOff, plural, profit, when } from '../lib/format';
 import { isMenuKey } from '../lib/keys';
 import { breakEvenWords, kitWords, pricedCount, UNPRICED_ACTION, UNPRICED_STATE } from '../lib/incomplete';
 import { PART_STATE_WORDS, partsSummary } from '../lib/matchWords';
@@ -102,7 +102,7 @@ function Detail({ d }: { d: DealDetail }) {
           ) : e ? (
             <>
               <div className="detail-headline">
-                <Profit value={e.profit} size="xl" />
+                {d.beforeFulfillment && d.beforeFulfillment.parts > 0 ? <span className="fig figure-profit figure-xl figure-quiet">{profit(e.profit)}</span> : <Profit value={e.profit} size="xl" />}
                 <span className="detail-roi">
                   <Roi value={e.roi} label />
                 </span>

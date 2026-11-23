@@ -106,7 +106,7 @@
 /* Best deals: bundle, price, profit, ROI in aligned columns. */
 .deal-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 84px 96px 88px;
+  grid-template-columns: minmax(0, 1fr) 84px 118px 66px;
   align-items: center;
   gap: 10px;
 }

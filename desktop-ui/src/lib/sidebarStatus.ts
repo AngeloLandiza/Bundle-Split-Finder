@@ -15,8 +15,10 @@ export interface SidebarStatus {
   running: boolean;
   /** Line 2: "Next scan 5:23 AM" or "Last scan 51 min ago"; null while a scan runs (line 1 says where it is). */
   when: string | null;
-  /** Line 3: "119 searches · Keepa 57 tokens". */
+  /** Line 3: "119 searches left · Keepa 57 tokens"; short when fee lookups wait. */
   usage: string;
+  /** Line 3 in full, for its tooltip. */
+  usageFull: string;
   /** Line 4: the one thing wrong, with where to go; null when nothing is. */
   problem: { text: string; to: Route } | null;
 }
@@ -48,14 +50,17 @@ export function sidebarStatus(state: AppState, now: number = Date.now()): Sideba
   const keepa = keepaWords(state);
   // "Keepa 57 tokens · 1 a minute": the rate is in Today's Agent card.
   const keepaShort = keepa ? keepa.split(' · ')[0]! : null;
-  // Fee lookups fold into this line (never a fifth): "119 searches left · 24 fee lookups waiting · Keepa 57 tokens".
+  // Fee lookups fold into this line (never a fifth). The sidebar is narrow, so with some waiting the line is short
+  // ("119 searches · 24 fee lookups") and `usageFull` (the row's tooltip) says it all: "119 searches left · 24 fee lookups
+  // waiting · Keepa 57 tokens · 1 a minute".
   const fees = feeLookupWords(agent.drip);
-  const usage = [searches, fees, keepaShort].filter((x): x is string => !!x).join(' · ');
+  const usageFull = [searches, fees, keepa ?? null].filter((x): x is string => !!x).join(' · ');
+  const usage = fees ? `${searches.replace(/ left$/, '')} · ${fees.replace(/ waiting$/, '')}` : keepaShort ? `${searches} · ${keepaShort}` : searches;
 
   let problem: SidebarStatus['problem'] = null;
   const rejected = rejectedKeysWords(state);
   if (rejected) problem = { text: rejected, to: { screen: 'settings', id: 'keys' } };
   else if (helper.paired && !helper.connected) problem = { text: 'Chrome closed', to: { screen: 'settings', id: 'chrome' } };
   else if (!helper.paired) problem = { text: 'Chrome not connected', to: { screen: 'settings', id: 'chrome' } };
-  return { state: head, running, when: line2, usage, problem };
+  return { state: head, running, when: line2, usage, usageFull, problem };
 }

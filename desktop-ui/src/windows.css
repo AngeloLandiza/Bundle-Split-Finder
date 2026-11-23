@@ -461,7 +461,7 @@
   color: inherit;
 }
 
-:root[data-platform='windows'][data-window-active] .tr-on :is(.muted, .deal-sub, .cell-time, .cell-words, .figure-range) {
+:root[data-platform='windows'][data-window-active] .tr-on :is(.muted, .deal-sub, .deal-reason, .cell-time, .cell-words, .figure-range, .figure-quiet) {
   color: var(--label-2);
 }
 
@@ -473,8 +473,12 @@
   color: var(--profit);
 }
 
+:root[data-platform='windows'][data-window-active] .tr-on .figure-profit.figure-quiet {
+  color: var(--label-2);
+}
+
 :root[data-platform='windows'][data-window-active] .tr-on :is(.loss, .figure-profit.loss) {
-  color: var(--loss);
+  color: light-dark(color-mix(in srgb, var(--loss) 82%, black), var(--loss));
 }
 
 :root[data-platform='windows'][data-window-active] .tr-on .tag {

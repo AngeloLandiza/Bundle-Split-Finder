@@ -24,8 +24,8 @@ export function RowProfit({ value, before }: { value: number; before?: { parts: 
   const tip = beforeFulfillmentTip(before);
   return (
     <span className="figure-before" title={tip}>
-      <Tag title={tip}>before fulfillment</Tag>
       <span className="fig figure-profit figure-md figure-quiet">{profit(value)}</span>
+      <Tag title={tip}>before fulfillment</Tag>
     </span>
   );
 }

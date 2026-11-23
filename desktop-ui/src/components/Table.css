@@ -171,18 +171,27 @@ th[aria-sort='descending'] .th-sort {
   border-bottom-color: transparent;
 }
 
+/* The grey selection is lighter than the page in dark mode and darker in light: secondary words on it take the full label colour. */
+.tr-on :is(.muted, .deal-sub, .deal-reason, .cell-time, .cell-words, .cell-none, .figure-range, .figure-quiet, .code) {
+  color: var(--on-selection-quiet);
+}
+
+.tr-on .tag-neutral {
+  color: var(--on-selection-quiet);
+}
+
 :root[data-window-active] .tr-on td,
 :root[data-window-active] .table tbody tr.tr-on:hover td {
   background: var(--selection);
   color: #ffffff;
 }
 
-:root[data-window-active] .tr-on :is(.muted, .deal-sub, .cell-time, .cell-words, .cell-none, .figure-range, .figure-profit, .loss, .code, .fig) {
+:root[data-window-active] .tr-on :is(.muted, .deal-sub, .deal-reason, .cell-time, .cell-words, .cell-none, .figure-range, .figure-profit, .figure-quiet, .loss, .code, .fig) {
   color: rgb(255 255 255 / 0.92);
 }
 
 :root[data-window-active] .tr-on .tag {
-  background: rgb(255 255 255 / 0.22);
+  background: rgb(0 0 0 / 0.22);
   color: #ffffff;
 }
 
