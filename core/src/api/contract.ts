@@ -593,6 +593,12 @@ export interface ReviewQuestion {
    * the rules (`'rules'`). It never changes the suggestion, its status or what Autopilot may apply.
    */
   brief?: ReviewBrief;
+  /**
+   * Step 16: while the suggestion waits for Home Depot's page of a model it names, to confirm the model is real ("Waiting
+   * for Home Depot's page for DCS334B to confirm the model."). A free read in the owner's Chrome; the answer is checked
+   * again when it arrives, with no new AI call. Absent otherwise.
+   */
+  waitingFor?: string;
   /** The question as the scan stored it. */
   item: { kind: 'split' | 'match'; question: ReviewItem } | { kind: 'ebay'; question: EbayQuestion };
 }
@@ -752,6 +758,12 @@ export interface AiAgentSettings {
   brief?: AiPipelineSetting;
   /** Dollars the AI may cost in a calendar month (judge, assist and research together). 0 turns the AI off. */
   monthlyCapUsd: number;
+  /**
+   * Step 16, lever 2: ask a split question again, once per new piece of evidence, when what its AI answer lacked exists
+   * now (a tool that failed works, its page or a kit page is read). Under the monthly cap; the cost shows in Activity.
+   * Absent or false: off (the default until it is measured with paid calls).
+   */
+  reaskOnNewEvidence?: boolean;
 }
 
 /** D2: how the app looks. Stored by the agent; the UI applies it. */

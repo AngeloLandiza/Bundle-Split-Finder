@@ -99,6 +99,11 @@ export interface ScanDeps {
    * line, which reads no page, asks from the title as before.
    */
   waitForPages?: boolean;
+  /**
+   * Step 16: parts to read Home Depot's price page of besides the bundles' own, first (the models an unverified AI
+   * answer names that no source confirms yet; the agent's agent/reverify.ts). Free; the reader's cap and time hold.
+   */
+  partPricesExtra?: readonly { brand: string; model: string }[];
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -146,6 +151,7 @@ interface Run extends PartContext {
   cache?: Cache;
   bogoPairs: Readonly<Record<string, string>>;
   waitForPages: boolean;
+  partPricesExtra: readonly { brand: string; model: string }[];
   job: ScanJob;
   /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
@@ -249,7 +255,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
     readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, noReaderReason: deps.noReaderReason, ebay: deps.ebay ?? null,
     keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
-    bogoPairs: deps.bogoPairs ?? {}, waitForPages: deps.waitForPages ?? false,
+    bogoPairs: deps.bogoPairs ?? {}, waitForPages: deps.waitForPages ?? false, partPricesExtra: deps.partPricesExtra ?? [],
     job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore, plannedKeys: new Set(), settledParts: new Set(),
   });
 
@@ -1303,7 +1309,7 @@ export async function readKitPagesFor(r: {
  * asked for on every scan; a part never read (not_read) has no check and is asked for again. Largest
  * saving first, then key; a RYOBI part written two ways once.
  */
-export async function partPricesWanted(store: ScanStore, settings: ScanSettings, now: number, waiting = false): Promise<Part[]> {
+export async function partPricesWanted(store: ScanStore, settings: ScanSettings, now: number, waiting = false, extra: readonly { brand: string; model: string }[] = []): Promise<Part[]> {
   const parts: { key: string; brand: string; model: string; saving: number }[] = [...(await bundleParts(store)).values()];
   // Step 15: with `waiting` (a run that waits for pages, the agent's), the parts a waiting split needs Home Depot's reading
   // of (scan/settle.ts rule 2), with their bundle's saving.
@@ -1318,6 +1324,14 @@ export async function partPricesWanted(store: ScanStore, settings: ScanSettings,
       planned.add(p.key);
       parts.push({ ...p, saving });
     }
+  }
+  // Step 16: the models an unverified AI answer waits for are read first too; a read can confirm a model is real.
+  for (const e of extra) {
+    const key = partKey(e.brand, e.model);
+    unblocks.add(key);
+    if (planned.has(key)) continue;
+    planned.add(key);
+    parts.push({ key, brand: e.brand.trim().toUpperCase(), model: e.model.trim().toUpperCase(), saving: 0 });
   }
   const checkedAt = new Map((await store.listPartPrices()).map((r) => [r.key, r.checkedAt] as const));
   const fresh = (p: Part): boolean => [p.key, ...twinKeys(p.brand, p.model)].some((k) => {
@@ -1403,6 +1417,8 @@ export interface PartPriceRun {
   maxMs?: number;
   /** Step 15 (P2): also the parts a waiting split needs Home Depot's reading of (partPricesWanted's `waiting`). */
   waiting?: boolean;
+  /** Step 16: also these parts, first (partPricesWanted's `extra`). */
+  extra?: readonly { brand: string; model: string }[];
   /** Called with the parts asked for, before the first read; then after each batch with the readings saved so far. */
   onStart?: (asked: number) => void | Promise<void>;
   onBatch?: (saved: number, processed: number, ms: number) => void | Promise<void>;
@@ -1416,7 +1432,7 @@ export interface PartPriceRun {
  */
 export async function readPartPricesFor(r: PartPriceRun): Promise<{ asked: number; saved: number; stopped: 'time' | 'refused' | 'stop' | null }> {
   const cap = Math.min(PART_PRICE_READS_MAX, Math.max(0, Math.floor(r.cap ?? r.settings.partPriceReadsPerScan)));
-  const asked = (await partPricesWanted(r.store, r.settings, r.now(), r.waiting ?? false)).slice(0, cap);
+  const asked = (await partPricesWanted(r.store, r.settings, r.now(), r.waiting ?? false, r.extra ?? [])).slice(0, cap);
   if (asked.length === 0) return { asked: 0, saved: 0, stopped: null };
   await r.onStart?.(asked.length);
   const began = r.now();
@@ -1449,7 +1465,7 @@ async function readPartPricesPass(run: Run): Promise<void> {
   let counted = 0;
   try {
     const out = await readPartPricesFor({
-      store, settings: run.settings, readPartPrices: run.readPartPrices, now: run.now, shouldStop: run.shouldStop, waiting: run.waitForPages,
+      store, settings: run.settings, readPartPrices: run.readPartPrices, now: run.now, shouldStop: run.shouldStop, waiting: run.waitForPages, extra: run.partPricesExtra,
       onStart: async (asked) => {
         started = true;
         // Step 11: saved before the reader is called, so the row shows "0 of N" while the first part is read.

@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { researchQuestion, type ResearchSuggestion } from '../src/research/loop';
-import { answerModels, ledgerHasText, reverifyResearch, storedReadingEntries, unconfirmedModels, type StoredFacts } from '../src/research';
+import { answerModels, evidenceKey, lacksOf, ledgerHasText, resolvedLacks, reverifyResearch, storedReadingEntries, unconfirmedModels, type StoredFacts } from '../src/research';
 import type { ResearchModel, ResearchTurn } from '../src/research/types';
 import { partKey, type MatchRecord, type PartPriceRecord } from '../src/scan/types';
 import { replayedTools, type ToolCallLog } from '../../scripts/research-tools';
@@ -97,5 +97,35 @@ describe('lever 1: an unverified answer checked again with the readings the scan
     const r = reverifyResearch({ item: s.c.q, answer: s.research.answer!, ledger: s.research.ledger, catalog: s.c.catalog, evidence: s.c.evidence, facts: { partPrices: nov18() } })!;
     expect(r.checked.status).toBe('unverified');
     expect(reasons(r.checked)).toContain('PCL500525SB is a combo of 2 tools that the catalog does not know as a kit; give its tools as the parts.');
+  });
+});
+
+describe('lever 2: what an ask lacked, and when it exists', () => {
+  it('the loop records each client tool that failed (a cold tab), not a wrong input', async () => {
+    const c = await researchCase('split:homedepot:328690510');
+    const stored = LATEST.results.find((r) => r.questionId === c.q.id)!;
+    let i = 0;
+    const model: ResearchModel = { provider: 'replay', model: LATEST.model, send: async () => (stored.turns[i++] as ResearchTurn | undefined) ?? { ok: false, notJudged: { reason: 'no_answer', message: 'x' } } };
+    const down = { error: 'Home Depot did not answer in time.' };
+    const s = await researchQuestion(c.q, c.evidence, { readHomeDepotPage: async () => down, searchHomeDepot: async () => down, catalogLookup: async () => down }, model, { catalog: c.catalog });
+    const names = { readHomeDepotPage: 'read_homedepot_page', searchHomeDepot: 'search_homedepot', catalogLookup: 'catalog_lookup' } as const;
+    expect(s.research.failedTools).toEqual((stored.tools as ToolCallLog[]).map((t) => names[t.tool]));
+    const ok = await replay(LATEST, '328690510');
+    expect(ok.research.failedTools).toBeUndefined();
+  });
+
+  it('lacks are tagged, resolved only by what changed, and two asks on the same evidence share a key', async () => {
+    const c = await researchCase('split:homedepot:320243741');
+    expect(c.evidence.sources.map((s) => s.id)).toContain('kit:PCL1600K2');
+    expect(lacksOf('verified', ['search_homedepot'], c.evidence, [])).toEqual([]);
+    const lacks = lacksOf('cannot_tell', ['search_homedepot', 'search_homedepot'], c.evidence, ['PCL1600K2', 'P553']);
+    expect(lacks).toEqual(['kit:P553', 'tool:search_homedepot']);
+    expect(resolvedLacks(lacks, c.evidence, new Set())).toEqual([]);
+    expect(resolvedLacks(lacks, c.evidence, new Set(['search_homedepot']))).toEqual(['tool:search_homedepot']);
+    const withKit = { ...c.evidence, sources: [...c.evidence.sources, { id: 'kit:P553', kind: 'kit' as const, label: 'x', url: null, lines: [] }] };
+    expect(resolvedLacks(lacks, withKit, new Set())).toEqual(['kit:P553']);
+    expect(evidenceKey(c.evidence)).toBe(evidenceKey({ ...c.evidence }));
+    expect(evidenceKey(c.evidence, ['tool:search_homedepot'])).not.toBe(evidenceKey(c.evidence));
+    expect(evidenceKey(withKit)).not.toBe(evidenceKey(c.evidence));
   });
 });

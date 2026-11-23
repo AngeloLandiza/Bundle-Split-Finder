@@ -154,27 +154,46 @@ export function reverifyResearch(input: ReverifyInput): ReverifyResult | null {
 
 // ---------------------------------------------------------------- lever 2: ask again when the evidence changed
 
-/** A research tool that failed in an earlier ask, and whether one of its kind has worked since (a later ask read with it). */
-export interface ToolHealth {
-  failed: readonly string[];
-  /** Tool names that gave a result in an ask made after this one. */
-  workedSince: ReadonlySet<string>;
+/** The tool a ledger entry's kind came from, so a later ask's ledger shows which tools worked. */
+export const TOOL_OF_KIND: Partial<Record<ResearchLedgerEntry['kind'], string>> = {
+  homedepot_page: 'read_homedepot_page', homedepot_search: 'search_homedepot', catalog: 'catalog_lookup',
+};
+
+/**
+ * What an ask lacked that may arrive later, as tags: `tool:<name>` a client tool that failed (a page Home Depot refused,
+ * a search a cold tab could not run), `missing:<text>` a stored source the evidence said was missing (the bundle's page
+ * not read), `kit:<MODEL>` a kit among the question's readings whose own page was not stored. Only for an answer that is
+ * not verified and not "none fits". A model no source confirmed is lever 1's (checked again with no model call), not here.
+ */
+export function lacksOf(status: string, failedTools: readonly string[] | undefined, evidence: AssistEvidence, kitModels: readonly string[]): string[] {
+  if (status !== 'unverified' && status !== 'cannot_tell') return [];
+  const have = new Set(evidence.sources.map((s) => s.id));
+  return [...new Set([
+    ...(failedTools ?? []).map((t) => `tool:${t}`),
+    ...evidence.missing.map((m) => `missing:${m}`),
+    ...kitModels.map(up).filter((m) => !have.has(`kit:${m}`)).map((m) => `kit:${m}`),
+  ])].sort();
+}
+
+/** The lacks that exist now: the tool worked in a later ask, the source is no longer missing, the kit's page is stored. */
+export function resolvedLacks(lacks: readonly string[], evidence: AssistEvidence, workedSince: ReadonlySet<string>): string[] {
+  const have = new Set(evidence.sources.map((s) => s.id));
+  return lacks.filter((l) => {
+    if (l.startsWith('tool:')) return workedSince.has(l.slice(5));
+    if (l.startsWith('missing:')) return !evidence.missing.includes(l.slice(8));
+    if (l.startsWith('kit:')) return have.has(l);
+    return false;
+  });
 }
 
 /**
- * What an answer may lack that can arrive later, as one string: the stored sources (the kit pages a reading names),
- * the answer's models a found reading confirms, and the failed tools that have worked since. Two asks on the same key
- * saw the same evidence; asking again needs a new key.
+ * The evidence an ask rests on, as one string: the stored sources (with their line counts), what was missing, and which
+ * lacks have been resolved since. Two asks on the same key saw the same evidence: asking again needs a new key.
  */
-export function evidenceKey(evidence: AssistEvidence, models: readonly string[], facts: StoredFacts, tools: ToolHealth): string {
-  const sources = evidence.sources.map((s) => `${s.id}:${s.lines.length}`).sort();
-  const confirmed = models.filter((m) => recordsOf(evidence.brand, m, facts).some((r) => found(r) && sameModel(evidence.brand, r.matchedModel!, m))).sort();
-  const healed = [...new Set(tools.failed)].filter((t) => tools.workedSince.has(t)).sort();
-  return JSON.stringify({ sources, confirmed, healed, missing: [...evidence.missing].sort() });
-}
-
-/** Whether a research result lacked something that may arrive: a tool failed, a stored source was missing, or a model was unconfirmed. */
-export function lackedEvidence(r: { status: string; failedTools?: readonly string[]; missing: readonly string[]; unconfirmed: readonly string[] }): boolean {
-  if (r.status !== 'unverified' && r.status !== 'cannot_tell' && r.status !== 'not_suggested') return false;
-  return (r.failedTools?.length ?? 0) > 0 || r.missing.length > 0 || r.unconfirmed.length > 0;
+export function evidenceKey(evidence: AssistEvidence, resolved: readonly string[] = []): string {
+  return JSON.stringify({
+    sources: evidence.sources.map((s) => `${s.id}:${s.lines.length}`).sort(),
+    missing: [...evidence.missing].sort(),
+    resolved: [...new Set(resolved)].sort(),
+  });
 }

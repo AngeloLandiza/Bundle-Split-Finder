@@ -51,6 +51,23 @@ export interface StoredSuggestion {
   brief?: ReviewBrief;
   /** The attempt behind `brief`, or behind its absence: a failed or fallen-back attempt is not repeated for a day. */
   briefMeta?: StoredBriefMeta;
+  /**
+   * Step 16: the suggestion became verified when new evidence arrived (a Home Depot part-price reading, a kit page read
+   * since), checked by code again with no new model call (core/src/research/reverify.ts). `firstCheck` keeps what the
+   * first check said. Absent on a suggestion verified when asked.
+   */
+  verifiedAfter?: 'new_evidence';
+  firstCheck?: { status: 'unverified'; reasons: string[] };
+  /** Step 16: when the suggestion was last checked again, verified or not. */
+  recheckedAt?: number;
+  /** Step 16: the models whose Home Depot page the check waits for, to confirm each is a real model. Absent when none. */
+  waitingFor?: string[];
+  /** Step 16, lever 2: the evidence the question was asked on (reverify.ts evidenceKey), so it is never asked again on the same. */
+  evidenceKey?: string;
+  /** Step 16, lever 2: what the ask lacked that may arrive later (reverify.ts lacksOf): `tool:`, `missing:` and `kit:` tags. */
+  lacks?: string[];
+  /** Step 16, lever 2: the key of the record this ask asked again, because the evidence changed. Its cost counts like any ask's. */
+  reaskOf?: string;
 }
 
 /** Where the suggestions are kept. The worker holds one; the extension's is IndexedDB, tests use memory. */

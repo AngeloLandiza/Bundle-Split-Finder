@@ -47,6 +47,11 @@ export interface ResearchTrace {
   answer: ResearchAnswer | null;
   /** Brand-site results dropped because their address was not on an allowed domain (the API should never send one). */
   droppedResults: number;
+  /**
+   * Step 16: the client tools that failed to give a result (a page Home Depot refused, a search a cold tab could not run),
+   * by tool name, once per failure. Absent when none failed. A wrong input the model gave is not a failure.
+   */
+  failedTools?: string[];
 }
 
 /** One research result: a Suggestion (as Ask AI's, so the panel and the store take it as they are) and its trace. */
@@ -65,7 +70,7 @@ function addUsage(total: ResearchUsage, u: TokenUsage | undefined): void {
   total.webFetchRequests += u.webFetchRequests ?? 0;
 }
 
-type ToolOutcome = { content: string; isError: boolean };
+type ToolOutcome = { content: string; isError: boolean; failed?: true };
 
 /**
  * Researches one split question and checks the answer. Makes no call for a question the owner has
@@ -182,6 +187,7 @@ export async function researchQuestion(
           const halt2 = stopped();
           if (halt2) return halt2;
           const out = await runTool(use, tools, ledger, bundle, controller.signal);
+          if (out.failed) (trace.failedTools ??= []).push(String(use.name));
           results.push({ type: 'tool_result', tool_use_id: String(use.id), content: out.content, ...(out.isError ? { is_error: true } : {}) });
         }
         messages.push({ role: 'assistant', content: turn.content }, { role: 'user', content: results });
@@ -250,6 +256,7 @@ const ITEM_ID = /^\d{6,12}$/;
 async function runTool(use: Record<string, unknown>, tools: ResearchTools, ledger: ResearchLedgerEntry[], bundle: ReturnType<typeof bundleIdentity>, signal: AbortSignal): Promise<ToolOutcome> {
   const input = isRecord(use.input) ? use.input : {};
   const error = (message: string): ToolOutcome => ({ content: message, isError: true });
+  const failed = (message: string): ToolOutcome => ({ content: message, isError: true, failed: true });
   const add = (entry: ResearchLedgerEntry): ToolOutcome => {
     // The same source read twice keeps its first id: a quote names it either way.
     const same = ledger.find((e) => e.kind === entry.kind && e.url === entry.url && JSON.stringify(e.lines) === JSON.stringify(entry.lines));
@@ -265,7 +272,7 @@ async function runTool(use: Record<string, unknown>, tools: ResearchTools, ledge
         if (itemId !== null && !ITEM_ID.test(itemId)) return error('An item id is the number at the end of a Home Depot product address.');
         if (itemId === null && (url === null || !onHomeDepot(url))) return error('Give a Home Depot item id or a homedepot.com address.');
         const res = await tools.readHomeDepotPage(itemId !== null ? { itemId } : { url: url! }, signal);
-        if ('error' in res) return error(`The page could not be read: ${res.error}`.slice(0, 300));
+        if ('error' in res) return failed(`The page could not be read: ${res.error}`.slice(0, 300));
         if (!onHomeDepot(safeUrl(res.url))) return error('That is not a Home Depot page.');
         return add(pageEntry(freshId(ledger, res.sourceId, 'hd-page'), res, bundle, itemId));
       }
@@ -273,7 +280,7 @@ async function runTool(use: Record<string, unknown>, tools: ResearchTools, ledge
         const query = str(input.query);
         if (query === null || query.length > 200) return error('Give a search of 1 to 200 characters.');
         const res = await tools.searchHomeDepot({ query }, signal);
-        if ('error' in res) return error(`The search could not be run: ${res.error}`.slice(0, 300));
+        if ('error' in res) return failed(`The search could not be run: ${res.error}`.slice(0, 300));
         return add(searchEntry(freshId(ledger, res.sourceId, 'hd-search'), res));
       }
       case 'catalog_lookup': {
@@ -281,13 +288,13 @@ async function runTool(use: Record<string, unknown>, tools: ResearchTools, ledge
         const query = str(input.query);
         if (model === null && query === null) return error('Give a model number or words to look up.');
         const res = await tools.catalogLookup({ ...(model !== null ? { model } : {}), ...(query !== null ? { query } : {}) }, signal);
-        if ('error' in res) return error(`The catalog could not be read: ${res.error}`.slice(0, 300));
+        if ('error' in res) return failed(`The catalog could not be read: ${res.error}`.slice(0, 300));
         return add(catalogLedgerEntry(freshId(ledger, res.sourceId, 'catalog'), res));
       }
       default:
         return error(`There is no tool named ${String(use.name).slice(0, 40)}.`);
     }
   } catch {
-    return error('The tool failed.');
+    return failed('The tool failed.');
   }
 }
