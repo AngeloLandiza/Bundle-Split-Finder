@@ -25,6 +25,7 @@ import type {
   SettledPart,
   Grade,
   KeyName,
+  KeyChecks,
   KeyProblems,
   LastScan,
   LookupBlock,
@@ -141,11 +142,25 @@ export function keyProblemsOf(v: unknown): KeyProblems | undefined {
   return Object.keys(out).length ? out : undefined;
 }
 
+/** When each saved key last got a verdict: only a record with a boolean and a time, for a key the agent knows. */
+export function keyChecksOf(v: unknown): KeyChecks | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const out: KeyChecks = {};
+  for (const name of KEYS_WITH_PROBLEMS) {
+    const r = (v as Record<string, unknown>)[name];
+    if (typeof r !== 'object' || r === null) continue;
+    const { ok, at, detail } = r as Record<string, unknown>;
+    if (typeof ok === 'boolean' && typeof at === 'string' && Number.isFinite(Date.parse(at))) out[name] = { ok, at, ...(typeof detail === 'string' && detail.trim() ? { detail: detail.trim() } : {}) };
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 export function mapState(s: C.AgentState): AppState {
   const a = s.agent;
   const drip = dripOf((a as { drip?: unknown }).drip);
   const refill = num((s.budget as { keepaRefillPerMin?: unknown }).keepaRefillPerMin);
   const problems = keyProblemsOf((s as { keyProblems?: unknown }).keyProblems);
+  const checks = keyChecksOf((s as { keyChecks?: unknown }).keyChecks);
   return {
     agent: {
       status: a.status === 'scanning' && a.busy === 'ask' ? 'asking' : a.status,
@@ -176,6 +191,7 @@ export function mapState(s: C.AgentState): AppState {
     keys: s.keys,
     firstRun: s.firstRun ?? false,
     ...(problems ? { keyProblems: problems } : {}),
+    ...(checks ? { keyChecks: checks } : {}),
   };
 }
 

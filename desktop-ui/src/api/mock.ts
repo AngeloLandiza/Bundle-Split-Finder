@@ -19,13 +19,25 @@ import { followUpVariants } from './mockFollowUp';
 import real from './mockReal.json';
 import { applyFees } from './mockFees';
 import { mockBogoView } from './mockTracking';
-import { ApiError, isWorking, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type DealRow, type FollowUp, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
+import { ApiError, isWorking, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type KeyCheck, type KeyName, type DealDetail, type DealRow, type FollowUp, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
 type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems' | 'real-early';
 
 const ago = (min: number): string => new Date(Date.now() - min * 60_000).toISOString();
 const ahead = (min: number): string => new Date(Date.now() + min * 60_000).toISOString();
 const clone = <T>(x: T): T => structuredClone(x);
+
+/** The words each service gives for a key it refuses, as the agent says them (agent/keyChecks.ts). */
+const REFUSED: Record<KeyName, string> = {
+  serpapi: 'SerpApi did not accept this key (HTTP 401). Copy it again from serpapi.com › Manage API Key.',
+  keepa: 'Keepa did not accept this key (HTTP 401). Copy the access key from keepa.com › Account › API access.',
+  anthropic: 'Claude answered authentication_error: invalid x-api-key (HTTP 401). Copy the key from console.anthropic.com › Settings › API keys.',
+  openai: "DeepSeek answered authentication_error: Authentication Fails (HTTP 401). Copy the key again from that service's API keys page.",
+  ebay: 'eBay answered invalid_client: client authentication failed (HTTP 401). Copy the App ID (Client ID) and Cert ID (Client Secret) from the Production keyset at developer.ebay.com › Application Keys.',
+  telegram: 'Telegram did not accept the bot token. Copy it again from BotFather in Keys. Telegram said: Unauthorized.',
+};
+const SERVICE: Record<KeyName, string> = { serpapi: 'SerpApi', keepa: 'Keepa', anthropic: 'Anthropic', openai: 'the model service', ebay: 'eBay', telegram: 'Telegram' };
+const WORKS: Partial<Record<KeyName, string>> = { serpapi: '118 of 250 searches left', keepa: '60 tokens, 1 a minute', telegram: 'bot @split_finder_bot, chat found' };
 
 function scenario(): Scenario {
   if (typeof window === 'undefined') return 'normal';
@@ -287,6 +299,26 @@ export function createMockClient(): ApiClient {
   const online = async (ms?: number) => {
     await wait(ms);
     if (mode === 'offline') throw new ApiError('offline', `The agent is not running. Open Split Finder from the ${words.trayPlace} to start it.`);
+  };
+
+  /** What the key's own service says, and what the agent records of it (keyProblems, keyChecks). */
+  const checked = (name: KeyName, typed: string, context: 'save' | 'recheck'): KeyCheck => {
+    const at = new Date().toISOString();
+    if (/offline/i.test(typed)) {
+      const problem = `Could not reach ${SERVICE[name]} to check it just now`;
+      return { ok: false, kind: 'network', problem: context === 'save' ? `Saved. ${problem} — it is checked again at the next scan.` : `${problem}. Try again in a moment.` };
+    }
+    if (/bad/i.test(typed)) {
+      state.keyProblems = { ...state.keyProblems, [name]: REFUSED[name] };
+      state.keyChecks = { ...state.keyChecks, [name]: { ok: false, at } };
+      sync();
+      return { ok: false, kind: 'rejected', problem: REFUSED[name] };
+    }
+    const detail = WORKS[name];
+    if (state.keyProblems) delete state.keyProblems[name];
+    state.keyChecks = { ...state.keyChecks, [name]: { ok: true, at, ...(detail ? { detail } : {}) } };
+    sync();
+    return { ok: true, ...(detail ? { detail } : {}) };
   };
 
   return {
@@ -587,11 +619,18 @@ export function createMockClient(): ApiClient {
       return clone(settings);
     },
     async putKey(name, value) {
-      await online(400);
-      if (name === 'serpapi' && (value as { key: string }).key.trim().length < 20) throw new ApiError('refused', 'SerpApi did not accept this key.');
+      // The agent saves, then asks the key's own service (agent/keyChecks.ts). The mock answers by what was typed:
+      // "bad" is refused, "offline" cannot reach the service, anything else works.
       state.keys[name] = true;
       if (state.keyProblems) delete state.keyProblems[name];
+      if (state.keyChecks) delete state.keyChecks[name];
       sync();
+      await online(1300);
+      return checked(name, JSON.stringify(value), 'save');
+    },
+    async checkKey(name) {
+      await online(900);
+      return checked(name, '', 'recheck');
     },
     async deleteKey(name) {
       await online();

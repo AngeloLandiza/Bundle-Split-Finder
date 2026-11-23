@@ -14,6 +14,8 @@ import type { ApiClient } from './client';
 import { createHttpClient } from './http';
 import { ApiError, type AgentEvent } from './types';
 
+// A key saved is checked with its own service (agent/keyChecks.ts); no test reaches one.
+const offline = (async () => { throw new Error('offline'); }) as unknown as typeof fetch;
 const EXT = 'abcdefghijklmnopabcdefghijklmnop';
 const realFetch = globalThis.fetch;
 
@@ -31,7 +33,7 @@ beforeEach(async () => {
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
   const port = (server.address() as { port: number }).port;
   base = `http://127.0.0.1:${port}`;
-  agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-ui-')), port, timers: false });
+  agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-ui-')), port, timers: false, fetchFn: offline });
   server.on('request', agent.handle);
   // The page calls /api/... on its own origin; here that origin is the test's agent.
   vi.stubGlobal('fetch', (input: string | URL | Request, init?: RequestInit) => realFetch(typeof input === 'string' && input.startsWith('/') ? `${base}${input}` : input, init));
@@ -77,8 +79,10 @@ describe('the real client on the real agent', () => {
   });
 
   it('saves keys without ever reading one back, eBay as an App ID and a Cert ID', async () => {
-    await client.putKey('ebay', { appId: 'app-id-1', certId: 'cert-id-1' });
-    await client.putKey('serpapi', { key: 'secret-serp-key-0000' });
+    // The services cannot be reached from here: the key is kept, and the answer says it could not be checked (not that it is wrong).
+    expect(await client.putKey('ebay', { appId: 'app-id-1', certId: 'cert-id-1' })).toMatchObject({ ok: false, kind: 'network' });
+    expect(await client.putKey('serpapi', { key: 'secret-serp-key-0000' })).toMatchObject({ ok: false, kind: 'network' });
+    expect(await client.checkKey('serpapi')).toMatchObject({ ok: false, kind: 'network', problem: 'Could not reach SerpApi to check it just now. Try again in a moment.' });
     const s = await client.state();
     expect(s.keys).toMatchObject({ ebay: true, serpapi: true, keepa: false });
     expect(JSON.stringify(await client.settings())).not.toContain('secret-serp-key');

@@ -1,10 +1,13 @@
 import { useState, type ReactNode } from 'react';
 import { api, useAction, useApp } from '../../api/hooks';
+import type * as C from '@core/api/contract';
 import type { KeyName } from '../../api/types';
 import { Button } from '../../components/Button';
 import { TextField } from '../../components/Fields';
 import { Glyph } from '../../components/Glyph';
+import { KeyCheckLine, useKeyCheck } from '../../components/KeyCheck';
 import { ConfirmInline } from '../../components/States';
+import { ebayHints } from '../../lib/keyCheck';
 import { keyState } from '../../lib/keyStatus';
 import { words } from '../../lib/platform';
 import { Pane, Row } from './form';
@@ -41,7 +44,7 @@ const KEYS: Def[] = [
     name: 'anthropic',
     label: 'Anthropic',
     fields: [{ id: 'key', label: 'Anthropic key' }],
-    what: 'Claude models for the listing check, Ask AI and Research. Not checked when saved: a check costs money.',
+    what: 'Claude models for the listing check, Ask AI and Research. Checked when saved with a free request (it lists models; no tokens are used).',
     getKey: { href: 'https://console.anthropic.com/settings/keys', label: 'Get a key' },
     without: 'Pipelines set to an Anthropic model cannot run.',
   },
@@ -49,7 +52,7 @@ const KEYS: Def[] = [
     name: 'openai',
     label: 'OpenAI-compatible',
     fields: [{ id: 'key', label: 'OpenAI-compatible key' }],
-    what: 'DeepSeek or another OpenAI-compatible service. Its address is set per pipeline under AI.',
+    what: 'DeepSeek or another OpenAI-compatible service. Its address is set per pipeline under AI; the key is checked against it with a free request (its model list).',
     getKey: { href: 'https://platform.deepseek.com/api_keys', label: 'Get a DeepSeek key' },
     without: 'Pipelines set to an OpenAI-compatible model cannot run.',
   },
@@ -57,8 +60,8 @@ const KEYS: Def[] = [
     name: 'ebay',
     label: 'eBay',
     fields: [
-      { id: 'appId', label: 'eBay App ID' },
-      { id: 'certId', label: 'eBay Cert ID' },
+      { id: 'appId', label: 'App ID (Client ID)' },
+      { id: 'certId', label: 'Cert ID (Client Secret)' },
     ],
     what: 'eBay sold prices, as a reference. They are not counted in the estimate.',
     getKey: { href: 'https://developer.ebay.com/my/keys', label: 'Get keys' },
@@ -88,6 +91,12 @@ export function KeysPane() {
   );
 }
 
+/** The eBay shape hints for one field, as one line (a hint, never a block). */
+function hintsFor(id: string, value: string): ReactNode {
+  const lines = ebayHints(id === 'appId' ? 'appId' : 'certId', value);
+  return lines.length ? lines.join(' ') : undefined;
+}
+
 function KeyRow({ def }: { def: Def }) {
   const { state, refreshState } = useApp();
   const has = state?.keys[def.name] ?? false;
@@ -95,7 +104,9 @@ function KeyRow({ def }: { def: Def }) {
   const [editing, setEditing] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
-  const put = useAction((v: Record<string, string>) => (api.putKey as (n: KeyName, v: unknown) => Promise<void>)(def.name, v));
+  const kc = useKeyCheck(def.name);
+  // The key is saved either way; the agent's answer is what its own service said (a rejection is not an error of this form).
+  const put = useAction(async (v: Record<string, string>) => kc.adopt(await (api.putKey as (n: KeyName, v: unknown) => Promise<C.KeyCheck>)(def.name, v)));
   const del = useAction(() => api.deleteKey(def.name));
   const complete = def.fields.every((f) => (values[f.id] ?? '').trim());
   const open = editing || (!has && state !== null);
@@ -132,7 +143,13 @@ function KeyRow({ def }: { def: Def }) {
           )}
           {has && !open && !removing ? (
             <span className="key-actions">
-              <Button size="sm" onClick={() => setEditing(true)}>
+              <Button
+                size="sm"
+                onClick={() => {
+                  kc.forget();
+                  setEditing(true);
+                }}
+              >
                 Replace
               </Button>
               <Button size="sm" variant="danger" onClick={() => setRemoving(true)}>
@@ -144,11 +161,7 @@ function KeyRow({ def }: { def: Def }) {
             {def.getKey.label}
           </a>
         </div>
-        {ks.problem ? (
-          <p className="field-status key-problem" role="alert">
-            {ks.problem}
-          </p>
-        ) : null}
+        <KeyCheckLine name={def.name} checking={put.busy || kc.rechecking} now={kc.now} onCheckAgain={kc.recheck} canCheckAgain={!open && !removing} />
         {removing ? (
           <ConfirmInline
             question={`Remove the ${def.label} key? ${def.without}`}
@@ -183,6 +196,7 @@ function KeyRow({ def }: { def: Def }) {
                 mono
                 width="md"
                 placeholder={def.fields.length > 1 ? f.label : has ? 'Paste the new key' : 'Paste the key'}
+                help={def.name === 'ebay' ? hintsFor(f.id, values[f.id] ?? '') : undefined}
                 value={values[f.id] ?? ''}
                 status={i === def.fields.length - 1 && put.error ? { tone: 'error', text: put.error } : null}
                 onChange={(e) => {

@@ -4,7 +4,7 @@
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
 import type {
-  ActivityError, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyName, ReportSection, ReviewKind, WatchState,
+  ActivityError, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PipelineView as CorePipelineView } from '@core/scan/pipeline';
@@ -29,6 +29,8 @@ export type {
   Signal,
   Velocity,
   WatchState,
+  KeyCheck,
+  KeyCheckRecord,
   KeyName,
   KeysPresence,
   PairedExtension,
@@ -150,9 +152,12 @@ export interface AppState {
   firstRun: boolean;
   /** Why a saved key does not work, in the agent's words, by key; absent when none is rejected. */
   keyProblems?: KeyProblems;
+  /** When each saved key last got a verdict from its own service; absent for a key not yet checked. */
+  keyChecks?: KeyChecks;
 }
 
 export type KeyProblems = Partial<Record<KeyName, string>>;
+export type KeyChecks = Partial<Record<KeyName, KeyCheckRecord>>;
 
 // ------------------------------------------------------------------ GET /api/deals
 

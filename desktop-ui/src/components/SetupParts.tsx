@@ -2,14 +2,35 @@ import { useCallback, useState, type ReactNode } from 'react';
 import type * as C from '@core/api/contract';
 import { api, useAction, useApp } from '../api/hooks';
 import type { KeyName } from '../api/types';
+import { ebayHints } from '../lib/keyCheck';
 import { Button } from './Button';
 import { TextField } from './Fields';
+import { KeyCheckLine, useKeyCheck } from './KeyCheck';
 import { Notice } from './States';
 import './SetupParts.css';
 
 interface KeyFieldDef {
   id: string;
   label: string;
+}
+
+/** The hint, then the help, as one line; nothing when neither is there. */
+function joinHelp(hint: string | null, help: ReactNode): ReactNode {
+  if (!hint) return help;
+  return help ? (
+    <>
+      {hint} {help}
+    </>
+  ) : (
+    hint
+  );
+}
+
+/** The eBay shape hint for one field (a hint, never a block), or null. */
+function ebayHelp(name: KeyName, id: string, value: string): string | null {
+  if (name !== 'ebay') return null;
+  const lines = ebayHints(id === 'appId' ? 'appId' : 'certId', value);
+  return lines.length ? lines.join(' ') : null;
 }
 
 /**
@@ -21,9 +42,10 @@ export function KeyField({ name, label, help, fields }: { name: KeyName; label: 
   const defs: KeyFieldDef[] = fields ?? [{ id: 'key', label }];
   const has = state?.keys[name] ?? false;
   const [values, setValues] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
-  // The agent takes {key}, {appId, certId} or {botToken, chatId} by key name (core/src/api/contract.ts KeyValues).
-  const putKey = useCallback((n: KeyName, v: Record<string, string>) => (api.putKey as (n: KeyName, v: unknown) => Promise<void>)(n, v), []);
+  const kc = useKeyCheck(name);
+  // The agent takes {key}, {appId, certId} or {botToken, chatId} by key name (core/src/api/contract.ts KeyValues). The key is
+  // saved either way; the answer is what its own service said, shown under the field (a rejection is not an error of this form).
+  const putKey = useCallback(async (n: KeyName, v: Record<string, string>) => kc.adopt(await (api.putKey as (n: KeyName, v: unknown) => Promise<C.KeyCheck>)(n, v)), [kc.adopt]);
   const put = useAction(putKey);
   const del = useAction(api.deleteKey);
   const complete = defs.every((d) => (values[d.id] ?? '').trim());
@@ -32,12 +54,11 @@ export function KeyField({ name, label, help, fields }: { name: KeyName; label: 
     void put.run(name, Object.fromEntries(defs.map((d) => [d.id, (values[d.id] ?? '').trim()]))).then((ok) => {
       if (ok) {
         setValues({});
-        setStatus({ tone: 'ok', text: 'Saved' });
         refreshState();
       }
     });
   };
-  const shown = put.error ? { tone: 'error' as const, text: put.error } : (status ?? (has ? { tone: 'ok' as const, text: 'Saved' } : null));
+  const shown = put.error ? { tone: 'error' as const, text: put.error } : null;
   return (
     <form
       className="keyfield"
@@ -58,13 +79,13 @@ export function KeyField({ name, label, help, fields }: { name: KeyName; label: 
           placeholder={has ? 'Paste a new one to replace it' : 'Paste it here'}
           onChange={(e) => {
             setValues((cur) => ({ ...cur, [d.id]: e.target.value }));
-            setStatus(null);
             put.clear();
           }}
-          help={i === defs.length - 1 ? help : undefined}
+          help={joinHelp(ebayHelp(name, d.id, values[d.id] ?? ''), i === defs.length - 1 ? help : undefined)}
           status={i === defs.length - 1 ? shown : null}
         />
       ))}
+      <KeyCheckLine name={name} checking={put.busy || kc.rechecking} now={kc.now} onCheckAgain={kc.recheck} />
       <div className="keyfield-actions">
         <Button type="submit" size="sm" busy={put.busy} busyLabel="Saving…" disabled={!complete}>
           {has ? 'Replace' : 'Save'}
@@ -77,7 +98,7 @@ export function KeyField({ name, label, help, fields }: { name: KeyName; label: 
             onClick={() =>
               void del.run(name).then((ok) => {
                 if (ok) {
-                  setStatus(null);
+                  kc.forget();
                   refreshState();
                 }
               })

@@ -2,7 +2,7 @@
 // the real HTTP client against the agent (same origin, bearer token from the shell). Both answer
 // in the shapes of types.ts, which map.ts builds from the agent's contract.
 
-import type { InstallExtensionResponse, KeyValues } from '@core/api/contract';
+import type { InstallExtensionResponse, KeyCheck, KeyValues } from '@core/api/contract';
 import { createHttpClient } from './http';
 import { createMockClient } from './mock';
 import type {
@@ -85,8 +85,13 @@ export interface ApiClient {
 
   settings(): Promise<AppSettings>;
   patchSettings(patch: SettingsPatch): Promise<AppSettings>;
-  /** Write-only: the agent never sends a key back. eBay takes {appId, certId}, Telegram {botToken, chatId}. */
-  putKey<N extends KeyName>(name: N, value: KeyValues[N]): Promise<void>;
+  /**
+   * Write-only: the agent never sends a key back. eBay takes {appId, certId}, Telegram {botToken, chatId}. The key is saved either
+   * way; the answer is what its own service said within ten seconds (a rejection, a working key with what it found, or "could not reach").
+   */
+  putKey<N extends KeyName>(name: N, value: KeyValues[N]): Promise<KeyCheck>;
+  /** Checks the stored key again with its own service (POST /api/keys/:name/check), from the stored value; nothing is typed. */
+  checkKey(name: KeyName): Promise<KeyCheck>;
   deleteKey(name: KeyName): Promise<void>;
 
   /** Asks the agent for one notification on this Mac (POST /api/notify/test), so the owner can see how they arrive. */

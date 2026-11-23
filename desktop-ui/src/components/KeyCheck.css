@@ -1,0 +1,51 @@
+/* The line under a key: what its own service said when the key was checked (Settings, Keys; the welcome sheet's SerpApi step). */
+.key-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  max-inline-size: 60ch;
+}
+
+.key-check > .glyph,
+.key-check > .spinner {
+  align-self: flex-start;
+  margin-block-start: 2px;
+}
+
+.key-check-text {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/* A check that worked is green; one the service refused is red, in the service's own words; "could not reach" is neither:
+   nothing is known about the key, so it is quiet amber, never red. */
+.key-check-works {
+  color: var(--profit);
+}
+
+.key-check-rejected {
+  color: var(--loss);
+}
+
+.key-check-unreached {
+  color: var(--attention);
+}
+
+.key-check-checking {
+  color: var(--label-2);
+}
+
+.key-check-when {
+  color: var(--label-2);
+}
+
+.key-check-again {
+  font-size: 12px;
+}
+
+.key-check-none {
+  min-block-size: 0;
+}

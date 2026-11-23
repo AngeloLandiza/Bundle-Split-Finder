@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type * as C from '@core/api/contract';
 import type { PartRow } from '@core/scan/types';
 import { mergePatch } from '../lib/patch';
-import { csvSort, gradeOf, mapEvent, mapRow, mapState, mapSuggestion, readBrief, readFollowUp, readSettled, scanResult, splitEvidenceOf } from './map';
+import { csvSort, gradeOf, keyChecksOf, mapEvent, mapRow, mapState, mapSuggestion, readBrief, readFollowUp, readSettled, scanResult, splitEvidenceOf } from './map';
 import { backoffMs, createSseParser } from './sse';
 
 const part = (p: Partial<PartRow>): PartRow =>
@@ -249,5 +249,21 @@ describe('settled and unsettled parts', () => {
   it('maps nothing when both are absent', () => {
     expect(readSettled({})).toEqual({});
     expect(readSettled({ settledParts: [], unsettledParts: [] })).toEqual({});
+  });
+});
+
+describe('keyChecksOf', () => {
+  it('keeps a record with a verdict and a time, for a key the agent knows, and drops the rest', () => {
+    expect(
+      keyChecksOf({
+        ebay: { ok: false, at: '2026-11-23T12:00:00.000Z' },
+        keepa: { ok: true, at: '2026-11-23T12:01:00.000Z', detail: ' 60 tokens, 1 a minute ' },
+        serpapi: { ok: 'yes', at: '2026-11-23T12:00:00.000Z' },
+        anthropic: { ok: true, at: 'not a time' },
+        nobody: { ok: true, at: '2026-11-23T12:00:00.000Z' },
+      }),
+    ).toEqual({ ebay: { ok: false, at: '2026-11-23T12:00:00.000Z' }, keepa: { ok: true, at: '2026-11-23T12:01:00.000Z', detail: '60 tokens, 1 a minute' } });
+    expect(keyChecksOf(undefined)).toBeUndefined();
+    expect(keyChecksOf({})).toBeUndefined();
   });
 });
