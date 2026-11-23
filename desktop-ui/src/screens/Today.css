@@ -1,0 +1,198 @@
+.today {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-areas: 'main agent';
+  gap: 32px;
+  align-items: start;
+  max-width: 1200px;
+}
+
+.today-main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+}
+
+.today-agent {
+  grid-area: agent;
+  min-width: 0;
+}
+
+/* Under 1180px one column: what needs him first, the agent under the lists. */
+@media (max-width: 1180px) {
+  .today {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'main' 'agent';
+    gap: 24px;
+  }
+}
+
+/* A compact list of links: one hairline between rows, no cards. */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+}
+
+.list li + li {
+  border-top: 1px solid var(--line);
+}
+
+.list-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 8px 16px;
+  color: var(--ink);
+}
+
+.list-row:hover {
+  background: var(--paper);
+  text-decoration: none;
+}
+
+.list-row:focus-visible {
+  outline-offset: -2px;
+}
+
+.list-row-deal,
+.list-head {
+  grid-template-columns: minmax(0, 1fr) 104px 112px;
+}
+
+.list-head {
+  display: grid;
+  gap: 16px;
+  padding: 8px 16px 6px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.list-head span:not(:first-child) {
+  text-align: right;
+}
+
+.list-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.list-title {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-sub {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-fig {
+  text-align: right;
+  font-size: 13px;
+}
+
+.list-roi {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.list-end {
+  display: flex;
+  gap: 8px;
+}
+
+.list-more {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--ink-2);
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.section .figure-estimate {
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+/* The agent block */
+.agent {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.agent-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.agent-error {
+  font-size: 13px;
+}
+
+.facts {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.facts > div {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.facts dt {
+  color: var(--ink-2);
+}
+
+.facts dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.facts-meter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.facts-note {
+  grid-column: 1 / -1;
+  color: var(--ink-2);
+}
+
+.agent-autopilot {
+  font-size: 13px;
+  line-height: 18px;
+}

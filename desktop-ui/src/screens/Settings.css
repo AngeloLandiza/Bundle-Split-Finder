@@ -1,0 +1,149 @@
+/* One column, 880px max; each section a two-part row (Settings.dc.html). */
+.settings {
+  max-width: 880px;
+}
+
+.srow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: 12px;
+}
+
+.srow:first-child {
+  padding-top: 4px;
+}
+
+.srow-text {
+  flex: 1 1 220px;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.srow-text h2 {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.srow-text p {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-2);
+}
+
+.srow-controls {
+  flex: 999 1 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.srow-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+}
+
+.srow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px 24px;
+}
+
+.srow-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.srow-fieldset > legend {
+  margin-bottom: 6px;
+}
+
+.forecast {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: var(--sunken);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.forecast p {
+  color: var(--ink-2);
+}
+
+.forecast-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.forecast-head .fig {
+  font-size: 13px;
+}
+
+.forecast-over {
+  background: var(--attention-bg);
+  color: var(--attention);
+}
+
+.forecast-over p {
+  color: var(--attention);
+}
+
+.keyfield {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.keyfield-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pipelines {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.pipeline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.pipeline .field-md {
+  width: 200px;
+}
+
+.pipeline-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chrome-state {
+  font-size: 14px;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--ink-2);
+}

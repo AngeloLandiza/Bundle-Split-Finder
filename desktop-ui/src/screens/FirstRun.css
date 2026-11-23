@@ -1,0 +1,101 @@
+.firstrun {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 56px var(--gutter) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  height: 100vh;
+  overflow: auto;
+}
+
+.firstrun-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.firstrun-head p {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.frsteps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.frstep {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 16px;
+  padding: 20px 16px;
+}
+
+.frstep + .frstep {
+  border-top: 1px solid var(--line);
+}
+
+.frnum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.frstep[aria-current='step'] .frnum {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+}
+
+.frbody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.frbody h2 {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.frstep:not([aria-current='step']) .frbody h2 {
+  color: var(--ink-2);
+}
+
+.frbody p {
+  color: var(--ink-2);
+}
+
+.fractions {
+  display: flex;
+  gap: 10px;
+}
+
+.frquiet {
+  font-size: 13px;
+}
+
+.frfoot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.frdone {
+  font-weight: 500;
+  color: var(--ink-2);
+}
