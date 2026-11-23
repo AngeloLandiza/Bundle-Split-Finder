@@ -41,7 +41,7 @@ describe('who a check is for', () => {
     expect(running.check).toEqual({ text: "Reading Home Depot's page for A21701.", who: 'app', url: 'https://www.homedepot.com/p/335724135', linkLabel: 'Home Depot page' });
     const after = briefForQuestion(ITEM, live, [], [], {
       state: 'gave_up', roundsLeft: 1,
-      tried: [{ what: 'Searched Home Depot for A21701', result: 'found: 5 in. 7-Piece Random Orbit Sand Paper Assortment Set', url: 'https://www.homedepot.com/p/317000001' }],
+      tried: [{ what: 'Searched Home Depot for RYOBI A21701', result: 'found: 5 in. 7-Piece Random Orbit Sand Paper Assortment Set', url: 'https://www.homedepot.com/p/317000001' }],
     });
     expect(after.check?.who).toBe('app');
     expect(after.check?.text).toBe('The app already read what it could for this (1 step); what it found is listed with this question, and the answer is your call.');

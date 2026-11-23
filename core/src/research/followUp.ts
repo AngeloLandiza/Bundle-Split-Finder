@@ -20,6 +20,7 @@
 // Pure: no store, no clock but the one given, no network but the tools given (CLAUDE.md layout).
 
 import type { CheckedSuggestion } from '../assist/types';
+import type { SettledPart, UnsettledPart } from '../decompose';
 import { sameModel } from '../match';
 import { choicesOf } from '../scan/answers';
 import type { ReviewItem } from '../scan/types';
@@ -27,7 +28,7 @@ import { bundleIdentity, catalogLedgerEntry, freshId, pageEntry, searchEntry } f
 import type { ResearchSuggestion, ResearchTrace } from './loop';
 import { ledgerHasText } from './reverify';
 import type { CatalogEntry, HomeDepotPage, HomeDepotSearch, ResearchAnswer, ResearchLedgerEntry, ResearchTools, ToolError, VerifyGap } from './types';
-import { verifyResearch } from './verify';
+import { titleTools, verifyResearch } from './verify';
 
 /** Follow-up asks per question, at most (each only on evidence no ask saw). */
 export const MAX_FOLLOW_UP_ROUNDS = 2;
@@ -72,6 +73,13 @@ export interface FollowUpState {
   askedKeys: string[];
   /** Why it stopped short of a verified answer, in plain words; absent when done. */
   reason?: string;
+  /** Step 16 (round 2): the models whose Home Depot search found no product of exactly that model (a read made, not failed). */
+  notSold?: string[];
+  /**
+   * Step 16 (round 2): when the reads confirmed some parts of the question's one reading and not others, which (narrowOf):
+   * the question is then about the unsettled ones. Absent otherwise.
+   */
+  parts?: { settled: SettledPart[]; unsettled: UnsettledPart[] };
   updatedAt: number;
 }
 
@@ -126,7 +134,8 @@ const TOOLS: readonly FollowUpTool[] = ['search_homedepot', 'read_homedepot_page
  */
 export function deriveTasks(input: DeriveInput): FollowUpTask[] {
   const { item, checked } = input;
-  if (checked.status !== 'unverified' && checked.status !== 'cannot_tell') return [];
+  // 'not_asked': a question the AI has not answered (no key, the cap): its free reads are the app's all the same.
+  if (checked.status !== 'unverified' && checked.status !== 'cannot_tell' && checked.status !== 'not_asked') return [];
   const brand = up(item.brand);
   const known = [...(input.trace?.ledger ?? []), ...input.fetched];
   const confirmed = (m: string): boolean =>
@@ -255,11 +264,11 @@ export async function runFollowUpTasks(
     }
     const page = await readPage(row.itemId);
     if (isError(page) || !sameModel(b, page.sections.model, m)) {
-      out.tried.push({ what: `${what} ${m}`, result: `found: ${cut(row.title, 90)} (its page could not be read)`, url: row.url });
+      out.tried.push({ what: `${what} ${b} ${m}`, result: `found: ${cut(row.title, 90)} (its page could not be read)`, url: row.url });
       return { ids, found: true, failed: isError(page) };
     }
     ids.push(add(pageEntry(fid(page.sourceId, 'fu-page'), page, bundle, row.itemId)));
-    out.tried.push({ what: `${what} ${m}`, result: `found: ${cut(page.sections.title, 90)}`, url: page.url });
+    out.tried.push({ what: `${what} ${b} ${m}`, result: `found: ${cut(page.sections.title, 90)}`, url: page.url });
     return { ids, found: true, failed: false };
   };
 
@@ -444,6 +453,44 @@ export function followUpNotes(input: {
   return out;
 }
 
+// ---------------------------------------------------------------- a narrower question
+
+/**
+ * Step 16 (round 2): what the loop's reads say of each part of the question's one reading, when they say something of every
+ * part and confirm some but not all: `settled`, Home Depot's own page (or search row) of exactly that brand and model, a
+ * product sold on its own; `unsettled`, a model its search found no product of (`not_sold`), a special buy (`special_buy`: a
+ * bundle itself, its page is not proof it is one part, decisions.md step 16 round 2), or a combo of tools the catalog does not
+ * know as a kit (`combo`). Null otherwise (one reading only; a part not read leaves the question whole).
+ */
+export function narrowOf(item: ReviewItem, state: Pick<FollowUpState, 'entries' | 'notSold'>, catalog: readonly CatalogEntry[]): { settled: SettledPart[]; unsettled: UnsettledPart[] } | null {
+  const readings = choicesOf(item);
+  if (readings.length !== 1) return null;
+  const brand = up(item.brand);
+  const exact = (m: string, x: string): boolean => up(x) === up(m);
+  const settled: SettledPart[] = [];
+  const unsettled: UnsettledPart[] = [];
+  for (const m of readings[0]!.map(up)) {
+    const page = state.entries.find((e) => !e.isBundle && e.kind === 'homedepot_page' && e.pageModel !== undefined && exact(m, e.pageModel));
+    const pageTitle = page?.lines.find((l) => l.field === 'title')?.text;
+    const row = state.entries.flatMap((e) => (e.kind === 'homedepot_search' ? e.products.map((p) => ({ p, e })) : []))
+      .find(({ p }) => p.brand !== null && up(p.brand) === brand && exact(m, p.model));
+    const what = pageTitle ?? row?.p.title;
+    // Its own page's link, else the search that showed its row.
+    const url = page?.url ?? row?.e.url ?? undefined;
+    if (what === undefined) {
+      if ((state.notSold ?? []).includes(m)) unsettled.push({ model: m, why: 'not_sold' });
+      else return null;
+      continue;
+    }
+    const kit = catalog.some((c) => c.kind === 'kit' && up(c.brand) === brand && sameModel(brand, c.model, m));
+    const at = url ? { url } : {};
+    if (/SB$/.test(m)) unsettled.push({ model: m, why: 'special_buy', what, ...at });
+    else if (!kit && (titleTools(what) ?? 0) >= 2) unsettled.push({ model: m, why: 'combo', what, ...at });
+    else settled.push({ model: m, what, ...at });
+  }
+  return settled.length > 0 && unsettled.length > 0 ? { settled, unsettled } : null;
+}
+
 // ---------------------------------------------------------------- the loop
 
 /** One follow-up ask: a research run with the loop's sources and question (loop.ts ResearchOptions.followUp). */
@@ -504,6 +551,9 @@ export async function runFollowUp(run: FollowUpRun): Promise<FollowUpResult> {
   };
   const end = (s: 'done' | 'gave_up', reason?: string): FollowUpResult => {
     state.state = s;
+    const parts = s === 'gave_up' ? narrowOf(run.item, state, run.catalog) : null;
+    if (parts) state.parts = parts;
+    else delete state.parts;
     delete state.doing;
     if (reason) state.reason = reason;
     state.updatedAt = run.now();
@@ -528,6 +578,9 @@ export async function runFollowUp(run: FollowUpRun): Promise<FollowUpResult> {
       state.tried.push(...r.tried);
       state.done.push(...r.done);
       outcomes = r.outcomes;
+      for (const o of r.outcomes) {
+        if ((o.task.kind === 'confirm_model' || o.task.kind === 'read_kit_page') && o.found === false && !o.failed) state.notSold = [...new Set([...(state.notSold ?? []), up(o.task.model)])];
+      }
       tell(undefined);
       // (i) The code's check again with what was read: no model call.
       if (r.entries.length > 0) {
@@ -542,7 +595,7 @@ export async function runFollowUp(run: FollowUpRun): Promise<FollowUpResult> {
     if (state.entries.length === 0 || state.askedKeys.includes(key)) {
       return end('gave_up', state.tried.length === 0 ? 'Nothing the app can read would settle this.' : 'The app read what it could; nothing new to ask the AI about.');
     }
-    if (run.ask === null) return end('gave_up', 'The app read the pages; asking the AI again with them is off.');
+    if (run.ask === null) return end('gave_up', cur.checked.status === 'not_asked' ? 'The app read the pages; the AI has not been asked yet.' : 'The app read the pages; asking the AI again with them is off.');
     if (state.rounds >= MAX_FOLLOW_UP_ROUNDS) return end('gave_up', `The AI was asked again ${MAX_FOLLOW_UP_ROUNDS} times with what the app read, and it is still not settled.`);
     if (run.estimateUsd === null) return end('gave_up', 'No price is known for the research model, so it was not asked again.');
     if (spent + run.estimateUsd > run.capUsd) return end('gave_up', `This month's AI limit of ${usd(run.capUsd)} is reached.`);

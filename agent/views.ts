@@ -33,7 +33,7 @@ import { bogoTagOf, type BogoGroup } from '../core/src/tracking/bogoPairs';
 import { DEFAULT_MIN_MONTHLY_SOLD } from '../core/src/settings';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { liveSuggestion, type StoredSuggestion } from '../core/src/assist/stored';
-import { followUpView, followUpWorking } from '../core/src/research/followUp';
+import { followUpView, followUpWorking, type FollowUpState } from '../core/src/research/followUp';
 import { waitingSentence } from './reverify';
 import type { PipelineView } from '../core/src/scan/pipeline';
 import { staleBundleDays } from '../core/src/deals/freshness';
@@ -418,7 +418,11 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
     // Step 16: an unverified answer waiting for Home Depot's page of a model it names (agent/reverify.ts).
     const waiting = live && live.suggestion.status === 'unverified' ? waitingSentence(live.waitingFor) : null;
     // Step 16: what the app is doing or did about it (the follow-up loop), and the check line that says so.
-    const followUp = live?.followUp ? followUpView(live.followUp) : undefined;
+    const state = followUpStateOf(data.review, data.suggestions, q);
+    const followUp = state ? followUpView(state) : undefined;
+    // Step 16 (round 2): when Home Depot's pages confirmed some parts and not others, the question is about those only: from the
+    // scan's own part readings (rule 2), else from the follow-up loop's reads.
+    const narrow = q.kind === 'split' ? (q.unsettledParts?.length ? { settled: q.settledParts ?? [], unsettled: q.unsettledParts } : state?.parts) : undefined;
     questions.push({
       id: q.id,
       kind: q.kind,
@@ -437,7 +441,8 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
       askCostUsd: q.kind === 'match' && q.candidates.length === 0 ? null : estimatedQuestionCost(q.kind, (q.kind === 'split' ? ai.research : ai.assist).model),
       suggestionQuotes: quotesOf(live),
       ...(plain !== null ? { suggestionPlain: plain } : {}),
-      brief: briefForQuestion(q, live, data.review.evidence?.[q.id] ?? [], sources, followUp),
+      brief: briefForQuestion(q, live, data.review.evidence?.[q.id] ?? [], sources, followUp, narrow),
+      ...(narrow ? { unsettledParts: narrow.unsettled.map((p) => p.model), settledParts: narrow.settled.map((p) => ({ model: p.model, what: p.what, ...(p.url ? { url: p.url } : {}) })) } : {}),
       ...(waiting !== null ? { waitingFor: waiting } : {}),
       ...(followUp ? { followUp } : {}),
     });
@@ -471,7 +476,18 @@ export function openReviewCount(review: StoreData['review']): number {
 
 /** Step 16: open questions the app is working on (a follow-up queued or running): not counted in "Needs you". */
 export function workingReviewCount(review: StoreData['review'], suggestions: StoreData['suggestions']): number {
-  return review.questions.filter((q) => q.answer === null && followUpWorking(liveSuggestion(suggestions, q)?.followUp)).length;
+  return review.questions.filter((q) => q.answer === null && followUpWorking(followUpStateOf(review, suggestions, q))).length;
+}
+
+/**
+ * Step 16: the follow-up loop's state of an open question: on its live suggestion, or (round 2) for a question the AI has not
+ * answered, the free reads kept in the review collection for the question as it reads now.
+ */
+export function followUpStateOf(review: StoreData['review'], suggestions: StoreData['suggestions'], q: ReviewItem): FollowUpState | undefined {
+  const live = liveSuggestion(suggestions, q);
+  if (live) return live.followUp;
+  const kept = review.followUps?.[q.id];
+  return kept && kept.seen === reviewSignature(q) ? kept.state : undefined;
 }
 
 export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' | 'suggestions'> & Partial<Pick<StoreData, 'answers'>>, sinceIso: string, now: number): ActivityResponse {

@@ -20,6 +20,7 @@ import type {
   WorkerJob,
 } from '../core/src/api/contract';
 import type { StoredSuggestion } from '../core/src/assist/stored';
+import type { FollowUpState } from '../core/src/research/followUp';
 import { DEFAULT_BRIEF_MODEL } from '../core/src/brief/pipeline';
 import { DEFAULT_CLAUDE_JUDGE_MODEL } from '../core/src/judge/claude';
 import { DEFAULT_FEES } from '../core/src/money';
@@ -73,6 +74,12 @@ export interface ReviewCollection {
   ebayQuestions: EbayQuestion[];
   /** W4: the stored evidence of each open question (core/src/assist/evidence.ts), by question id. */
   evidence?: Record<string, EvidenceQuote[]>;
+  /**
+   * Step 16 (round 2): the follow-up loop's free reads for a split question the AI has not answered (no live suggestion), by
+   * question id, with the question's reviewSignature when they were made (agent/followUp.ts). A question with a live suggestion
+   * keeps its loop on the suggestion (StoredSuggestion.followUp).
+   */
+  followUps?: Record<string, { seen: string; state: FollowUpState }>;
 }
 
 export type HelperLastJob = Pick<

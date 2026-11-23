@@ -4,6 +4,7 @@
 // the app is doing about it or already did (the question's follow-up loop).
 
 import type { StoredSuggestion } from '../assist/stored';
+import type { SettledPart, UnsettledPart } from '../decompose';
 import type { ReviewFollowUp } from '../research/followUp';
 import type { EbayQuestion, ReviewItem } from '../scan/types';
 import { briefInputOf, poolOfLines, type BriefSourceLink } from './input';
@@ -25,6 +26,9 @@ export function cardCheck(check: BriefCheck | (Omit<BriefCheck, 'who'> & { who?:
   let text: string;
   if (followUp && (followUp.state === 'queued' || followUp.state === 'running')) {
     text = followUp.doing ? `${followUp.doing}.` : 'The app is reading the pages this needs.';
+  } else if (followUp && followUp.tried.length === 0) {
+    // The loop ran and found nothing it could read: what is left is a person's call, so the check is the owner's.
+    return { text: 'The app has nothing more it can read for this; the answer is your call.', who: 'owner', ...link };
   } else if (followUp && followUp.tried.length > 0) {
     const n = followUp.tried.length;
     text = state === 'verified'
@@ -42,6 +46,46 @@ export function cardCheck(check: BriefCheck | (Omit<BriefCheck, 'who'> & { who?:
   return { text: cutText(text, MAX_CHECK_CHARS), who: 'app', ...link };
 }
 
+const listOf = (ms: readonly string[]): string => (ms.length <= 1 ? ms[0] ?? '' : `${ms.slice(0, -1).join(', ')} and ${ms[ms.length - 1]}`);
+
+/** What a part's Home Depot reading says, as a clause of the owner's check. */
+function clauseOf(p: UnsettledPart): string {
+  switch (p.why) {
+    case 'not_sold': return `Home Depot does not sell ${p.model} on its own`;
+    case 'other_model': return `Home Depot sells ${p.other ?? 'another model'}, not ${p.model}`;
+    case 'special_buy': return `Home Depot sells ${p.model} as a special buy, itself a set of tools`;
+    case 'combo': return `Home Depot sells ${p.model} as a combo of tools`;
+  }
+}
+
+/** The same, short, for a check naming several parts. */
+function shortClauseOf(p: UnsettledPart): string {
+  switch (p.why) {
+    case 'not_sold': return `${p.model} is not sold on its own`;
+    case 'other_model': return `${p.other ?? 'another model'} is sold, not ${p.model}`;
+    case 'special_buy': return `${p.model} is a special buy`;
+    case 'combo': return `${p.model} is a combo of tools`;
+  }
+}
+
+/**
+ * Step 16 (round 2): the owner's check of a question narrowed to the parts Home Depot did not confirm: only a person can say
+ * these (whether a part not sold on its own is in the box and worth selling, whether a special buy is kept whole), so it is
+ * `owner`. One part: its own sentence. Several: each clause, then what to do. The PO's rule keeps every part with a model
+ * number a part (decisions: everything counts, except manuals), so a part not sold on its own is approved as a part and its
+ * sale is the owner's call on the part, after (mark it not sold separately).
+ */
+export function narrowCheck(unsettled: readonly UnsettledPart[], total: number, link?: { url: string; linkLabel: string }): BriefCheck {
+  const one = unsettled.length === 1 ? unsettled[0]! : null;
+  let text: string;
+  if (one?.why === 'not_sold') text = `${clauseOf(one)}. If it is in this box, approve the ${total} parts; you can mark ${one.model} not sold separately after.`;
+  else if (one?.why === 'special_buy' || one?.why === 'combo') text = `${clauseOf(one)}. Keep it as one part, or enter the tools inside it?`;
+  else if (one) text = `${clauseOf(one)}. Which one is in this box?`;
+  else text = `Home Depot: ${unsettled.map(shortClauseOf).join('; ')}. Approve the parts as listed, or enter them?`;
+  const url = unsettled.find((p) => p.url)?.url;
+  return { text: cutText(text, MAX_CHECK_CHARS), who: 'owner', ...(url ? { url, linkLabel: 'Home Depot page' } : link ? link : {}) };
+}
+
 /** The brief of a split or match question. `live` is the suggestion made for the question as it is now, or null. */
 export function briefForQuestion(
   question: ReviewItem,
@@ -49,8 +93,24 @@ export function briefForQuestion(
   evidence: readonly { text: string; source: { label: string; url: string | null } }[],
   sources: readonly BriefSourceLink[],
   followUp?: ReviewFollowUp,
+  narrow?: { settled: readonly SettledPart[]; unsettled: readonly UnsettledPart[] },
 ): ReviewBrief {
   const brief = live?.brief ?? rulesBrief(briefInputOf(question, live?.suggestion ?? null, poolOfLines(evidence), sources));
+  if (question.kind === 'split' && narrow && narrow.unsettled.length > 0 && brief.state !== 'verified') {
+    // Step 16 (round 2): the question names only the parts Home Depot did not confirm; the confirmed ones are a reason, with a page.
+    const models = narrow.unsettled.map((p) => p.model);
+    const total = narrow.settled.length + narrow.unsettled.length;
+    const first = narrow.settled[0];
+    const settledReason = first
+      ? [{ text: cutText(`Home Depot sells ${listOf(narrow.settled.map((p) => p.model))} on ${narrow.settled.length === 1 ? 'its' : 'their'} own.`, MAX_REASON_CHARS), quote: cutText(first.what, 160), sourceLabel: 'Home Depot page', ...(first.url ? { url: first.url } : {}) }]
+      : [];
+    return {
+      ...brief,
+      ask: `What ${models.length === 1 ? 'is' : 'are'} ${listOf(models)} in this bundle?`,
+      reasons: [...settledReason, ...brief.reasons].slice(0, 3),
+      check: narrowCheck(narrow.unsettled, total),
+    };
+  }
   return { ...brief, check: cardCheck(brief.check, question.kind, brief.state, followUp) };
 }
 

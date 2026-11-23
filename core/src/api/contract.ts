@@ -611,6 +611,13 @@ export interface ReviewQuestion {
    * or running the question is not counted in "Needs you" (AgentState.counts.reviewWorking). Absent when the loop never ran.
    */
   followUp?: ReviewFollowUp;
+  /**
+   * Step 16 (round 2): when Home Depot's own pages confirmed some parts of the question's one reading and not others, the
+   * models the question is still about (`unsettledParts`) and the confirmed ones with what Home Depot's page says each is and its
+   * link (`settledParts`). The brief then names only the unsettled ones. Absent otherwise (the whole reading is asked).
+   */
+  unsettledParts?: string[];
+  settledParts?: { model: string; what: string; url?: string }[];
   /** The question as the scan stored it. */
   item: { kind: 'split' | 'match'; question: ReviewItem } | { kind: 'ebay'; question: EbayQuestion };
 }

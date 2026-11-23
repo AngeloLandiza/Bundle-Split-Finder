@@ -1036,7 +1036,12 @@ export class AgentWork {
     }
     const at = new Date(this.d.now()).toISOString();
     this.d.store.update('deals', (d) => ({ ...d, at, bundles: report.bundles, lookups }));
-    this.d.store.update('review', () => ({ at, questions: report.review, ebayQuestions: report.ebayQuestions ?? [], evidence }));
+    // Step 16 (round 2): the free reads made for open questions the AI has not answered are kept across reports.
+    this.d.store.update('review', (prev) => {
+      const open = new Set(report.review.map((q) => q.id));
+      const followUps = Object.fromEntries(Object.entries(prev.followUps ?? {}).filter(([id]) => open.has(id)));
+      return { at, questions: report.review, ebayQuestions: report.ebayQuestions ?? [], evidence, ...(Object.keys(followUps).length > 0 ? { followUps } : {}) };
+    });
     await this.derive(report);
   }
 
@@ -1172,6 +1177,11 @@ export class AgentWork {
         signal: this.stopCtl.signal,
         now: this.d.now,
         afterKeep: briefAfterKeep(this.briefCtx()),
+        // Step 16 (round 2): a question the AI has not answered gets its free reads too; their state is kept in Review.
+        questionState: {
+          get: (id) => store.get('review').followUps?.[id],
+          put: (id, seen, state) => store.update('review', (r) => ({ ...r, followUps: { ...(r.followUps ?? {}), [id]: { seen, state } } })),
+        },
         ...(only ? { only } : {}),
       });
     } catch {

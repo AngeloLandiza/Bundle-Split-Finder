@@ -57,6 +57,11 @@ export interface FollowUpPassDeps {
   suggestions: () => StoredSuggestion[];
   /** Keeps a record in place of the one with the same key, or adds it. */
   put: (record: StoredSuggestion) => void;
+  /**
+   * Step 16 (round 2): the loop's state for a split question the AI has not answered (no live suggestion), kept in the agent's
+   * review collection with the question's signature. Absent: such questions are left to the AI pass, as before.
+   */
+  questionState?: { get: (id: string) => { seen: string; state: FollowUpState } | undefined; put: (id: string, seen: string, state: FollowUpState) => void };
   /** A question's research tools (the Home Depot ones are Chrome jobs). */
   tools: () => ResearchTools;
   research: ResearchModel | null;
@@ -84,16 +89,36 @@ export interface FollowUpPassResult {
   problem: string | null;
 }
 
-/** The open split questions the loop runs for: unsettled live answers it has not finished (or the ones asked for). */
-async function due(store: ScanStore, records: readonly StoredSuggestion[], only?: readonly string[]): Promise<{ item: ReviewItem; live: StoredSuggestion }[]> {
-  const out: { item: ReviewItem; live: StoredSuggestion }[] = [];
-  for (const item of (await store.listReview()).sort((a, b) => a.openedAt - b.openedAt)) {
+/** The doing line of a question queued while Chrome is closed (the loop runs for it in the next pass with Chrome open). */
+export const WAITING_FOR_CHROME = 'Waiting for Chrome to read the Home Depot pages this needs';
+
+/** One question the loop runs for, with where its state is kept: its live suggestion, or (none yet) the review collection. */
+interface Due {
+  item: ReviewItem;
+  live: StoredSuggestion | null;
+}
+
+/**
+ * The open split questions the loop runs for: unsettled live answers whose loop has not finished, and (round 2) questions the
+ * AI has not answered whose free reads have not been made (or the ones asked for).
+ */
+async function due(d: FollowUpPassDeps): Promise<Due[]> {
+  const out: Due[] = [];
+  const records = d.suggestions();
+  for (const item of (await d.store.listReview()).sort((a, b) => a.openedAt - b.openedAt)) {
     if (item.answer !== null || item.kind !== 'split') continue;
-    if (only && !only.includes(item.id)) continue;
-    const live = liveSuggestion(records, item);
-    if (!live || !unsettled(live) || !traceOf(live)) continue;
-    const f = live.followUp;
-    if (!only && f && (f.state === 'done' || f.state === 'gave_up')) continue;
+    if (d.only && !d.only.includes(item.id)) continue;
+    const live = liveSuggestion(records, item) ?? null;
+    let f: FollowUpState | undefined;
+    if (live) {
+      if (!unsettled(live) || !traceOf(live)) continue;
+      f = live.followUp;
+    } else {
+      if (!d.questionState) continue;
+      const q = d.questionState.get(item.id);
+      f = q && q.seen === reviewSignature(item) ? q.state : undefined;
+    }
+    if (!d.only && f && (f.state === 'done' || f.state === 'gave_up')) continue;
     out.push({ item, live });
   }
   return out;
@@ -102,50 +127,76 @@ async function due(store: ScanStore, records: readonly StoredSuggestion[], only?
 /** Runs the loop for the questions due, one after another. Never throws for one question's trouble. */
 export async function followUpPass(d: FollowUpPassDeps): Promise<FollowUpPassResult> {
   const out: FollowUpPassResult = { ran: 0, verified: 0, asked: 0, costUsd: 0, problem: null };
-  const todo = await due(d.store, d.suggestions(), d.only);
+  const todo = await due(d);
   if (todo.length === 0) return out;
-  if (!d.chromeConnected()) return { ...out, problem: 'Chrome is closed, so the app could not read the pages these questions need.' };
-  const { catalog, kitItemIds } = await catalogOf(d.store);
   const current = (key: string): StoredSuggestion | undefined => d.suggestions().find((r) => r.key === key);
-  const setState = (key: string, state: FollowUpState) => {
-    const r = current(key);
-    if (r) d.put({ ...r, followUp: state });
+  const stateOf = (x: Due): FollowUpState | undefined => {
+    if (x.live) return current(x.live.key)?.followUp;
+    const q = d.questionState!.get(x.item.id);
+    return q && q.seen === reviewSignature(x.item) ? q.state : undefined;
   };
-  // Queued first, all of them, so the counts and the cards say at once that the app has them.
-  for (const { live } of todo) if (!working(live)) setState(live.key, { ...(live.followUp ?? freshFollowUp(d.now())), state: 'queued', updatedAt: d.now() });
+  const setState = (x: Due, state: FollowUpState) => {
+    if (x.live) {
+      const r = current(x.live.key);
+      if (r) d.put({ ...r, followUp: state });
+    } else d.questionState!.put(x.item.id, reviewSignature(x.item), state);
+  };
+  const working = (f: FollowUpState | undefined): boolean => f !== undefined && (f.state === 'running' || f.state === 'queued');
+  // Queued first, all of them, so the counts and the cards say at once that the app has them. With Chrome closed nothing can be
+  // read: they stay queued, saying so, and the next pass with Chrome open runs them (no question waits on the owner meanwhile).
+  const chrome = d.chromeConnected();
+  for (const x of todo) {
+    const f = stateOf(x);
+    if (!chrome) setState(x, { ...(f ?? freshFollowUp(d.now())), state: 'queued', doing: WAITING_FOR_CHROME, updatedAt: d.now() });
+    else if (!working(f) || f!.doing === WAITING_FOR_CHROME) {
+      const { doing: _d, ...rest } = f ?? freshFollowUp(d.now());
+      setState(x, { ...rest, state: 'queued', updatedAt: d.now() });
+    }
+  }
+  if (!chrome) return { ...out, problem: 'Chrome is closed, so the app could not read the pages these questions need.' };
+  const { catalog, kitItemIds } = await catalogOf(d.store);
   let spent = d.spentUsd;
-  for (const { item: first, live } of todo) {
+  for (const x of todo) {
     if (d.signal.aborted) {
-      const r = current(live.key);
-      if (r?.followUp && working(r)) setState(live.key, { ...r.followUp, state: 'gave_up', reason: 'Stopped before the follow-up began.', updatedAt: d.now() });
+      const f = stateOf(x);
+      if (f && working(f)) setState(x, { ...f, state: 'gave_up', reason: 'Stopped before the follow-up began.', updatedAt: d.now() });
       continue;
     }
     // Read again before its turn: the owner may have answered it meanwhile.
-    const item = await d.store.getReview(first.id);
-    const rec = current(live.key);
-    if (!item || item.answer !== null || !rec || reviewSignature(item) !== rec.seen) {
-      if (rec?.followUp && working(rec)) setState(rec.key, { ...rec.followUp, state: 'gave_up', reason: 'The question changed meanwhile.', updatedAt: d.now() });
+    const item = await d.store.getReview(x.item.id);
+    const rec = x.live ? current(x.live.key) : undefined;
+    if (!item || item.answer !== null || reviewSignature(item) !== reviewSignature(x.item) || (x.live && (!rec || rec.seen !== reviewSignature(item)))) {
+      const f = stateOf(x);
+      if (f && working(f)) setState(x, { ...f, state: 'gave_up', reason: 'The question changed meanwhile.', updatedAt: d.now() });
       continue;
     }
     const model = d.research;
     const estimate = model ? estimatedQuestionCost('split', model.model) : null;
-    const ask: FollowUpAsk | null = d.allowAsk && model ? async (followUp, signal) => {
+    // A follow-up ask needs an answer to follow up: a question the AI has not answered is the AI pass's to ask.
+    const ask: FollowUpAsk | null = rec && d.allowAsk && model ? async (followUp, signal) => {
       const evidence = await gatherEvidence(d.store, item);
       const suggestion = await researchQuestion(item, evidence, d.tools(), model, { ...(signal ? { signal } : {}), catalog, followUp });
       return { suggestion, costUsd: researchRecord(item, suggestion, model.model, d.now()).costUsd };
     } : null;
-    const s = rec.suggestion;
+    const s = rec?.suggestion;
+    const prior = stateOf(x);
     out.ran += 1;
     const r = await runFollowUp({
       item, catalog, kitItemIds,
-      start: { checked: { status: s.status, ...(s.status === 'unverified' && s.gaps ? { gaps: s.gaps } : {}) }, answer: answerOf(rec), trace: traceOf(rec) ?? null, ...(rec.lacks ? { lacks: rec.lacks } : {}) },
-      ...(rec.followUp ? { prior: rec.followUp } : {}),
+      start: rec && s
+        ? { checked: { status: s.status, ...(s.status === 'unverified' && s.gaps ? { gaps: s.gaps } : {}) }, answer: answerOf(rec), trace: traceOf(rec) ?? null, ...(rec.lacks ? { lacks: rec.lacks } : {}) }
+        : { checked: { status: 'not_asked' }, answer: null, trace: null },
+      ...(prior ? { prior } : {}),
       tools: d.tools, ask, estimateUsd: estimate, spentUsd: spent, capUsd: d.capUsd, signal: d.signal, now: d.now,
-      progress: (state) => setState(rec.key, state),
+      progress: (state) => setState(x, state),
     });
     spent += r.costUsd;
     out.costUsd += r.costUsd;
     out.asked += r.asks.length;
+    if (!rec || !s) {
+      setState(x, r.state);
+      continue;
+    }
     const base = current(rec.key) ?? rec;
     if (r.rechecked?.status === 'verified') {
       // (i) Verified by the code's check again, with no model call: kept as lever 1 keeps one (agent/reverify.ts).
@@ -201,7 +252,7 @@ export async function askPlan(input: {
   if (!input.model.ok) return { action: 'none', reason: input.model.error };
   if (item.kind === 'split' && !input.chromeConnected) return { action: 'none', reason: 'Chrome is closed: the app reads Home Depot through it. Open Chrome with the Split Finder helper, then ask again.' };
   const live = liveSuggestion(input.suggestions, item);
-  if (working(live)) return { action: 'none', reason: 'The app is already working on this question.' };
+  if (working(live) && live!.followUp!.doing !== WAITING_FOR_CHROME) return { action: 'none', reason: 'The app is already working on this question.' };
   const estimate = estimatedQuestionCost(item.kind, input.model.model);
   const label = questionCostLabel(item.kind, input.model.model);
   const capped = estimate !== null && input.spentUsd + estimate > input.capUsd;
