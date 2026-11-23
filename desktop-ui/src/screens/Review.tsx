@@ -17,6 +17,7 @@ import { copyText, openPage } from '../lib/actions';
 import { AI_INTRO, aiIntroDismissed, dismissAiIntro } from '../lib/aiIntro';
 import { isMenuKey, pressOf, reviewKey } from '../lib/keys';
 import { questionMenu, type QuestionMenuId } from '../lib/menus';
+import { plainReason } from '../lib/questionWords';
 import { KIND_LABEL, groupQuestions, parseTyped, preselected, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
 import './Review.css';
 
@@ -344,6 +345,7 @@ function Question({
     return () => window.removeEventListener('keydown', onKey);
   });
 
+  const why = plainReason(q.reason, { brand: q.bundle.brand, model: q.bundle.model });
   const aiRow = (id: string) => (pre === id && s ? <SuggestionDetail s={s} id={`ai-${q.id}`} /> : null);
 
   return (
@@ -461,7 +463,13 @@ function Question({
 
         <section className="question-section">
           <h3 className="question-section-title">Why it is asked</h3>
-          <p>{q.reason}</p>
+          <p>{why.text}</p>
+          {why.technical ? (
+            <details className="tech">
+              <summary>Technical detail</summary>
+              <p className="tech-note code">{why.technical}</p>
+            </details>
+          ) : null}
           {q.evidence.map((ev, i) => (
             <Quote key={i} quote={ev} />
           ))}

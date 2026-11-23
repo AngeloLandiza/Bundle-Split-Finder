@@ -367,3 +367,26 @@
   line-height: 14px;
   color: var(--loss);
 }
+
+/* "Technical detail": the agent's own note, collapsed under the plain sentence. */
+.tech summary {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+  color: var(--label-2);
+  font-size: 12px;
+  line-height: 16px;
+  cursor: default;
+}
+
+.tech summary:hover {
+  color: var(--label);
+}
+
+.tech-note {
+  margin: 2px 0 4px;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--label-2);
+  overflow-wrap: anywhere;
+}

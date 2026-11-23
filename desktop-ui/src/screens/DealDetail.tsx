@@ -11,6 +11,7 @@ import { useUi } from '../components/ui';
 import { amazonSearchUrl, amazonUrl, copyText, openPage } from '../lib/actions';
 import { money, percentOff, plural, when } from '../lib/format';
 import { isMenuKey } from '../lib/keys';
+import { plainReason } from '../lib/questionWords';
 import { partMenu, type PartMenuId } from '../lib/menus';
 import { BogoChoicesSection, BogoSection, FbaLine, HistorySection, SignalsSection, WatchBar } from './DealTracking';
 import { GRADE_LABEL } from './reviewModel';
@@ -38,6 +39,10 @@ function Detail({ d }: { d: DealDetail }) {
   const [quote] = useResource(() => (d.lookup ? api.lookupQuote(d.id) : Promise.resolve(null)), [d.id, d.lookup !== null], ['deals']);
   const searches = quote.data ?? d.lookup?.searches ?? null;
   const scanRunning = state?.agent.status === 'scanning';
+  // Why the question is asked, in plain words (the agent's note is in Review's Technical detail).
+  const [review] = useResource(() => (d.questionId ? api.review() : Promise.resolve(null)), [d.id, d.questionId], ['review']);
+  const asked = d.questionId ? review.data?.questions.find((q) => q.id === d.questionId) : undefined;
+  const why = asked ? plainReason(asked.reason, { brand: d.brand, model: d.model }).text : null;
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(d.asins.join('\n'));
@@ -145,7 +150,7 @@ function Detail({ d }: { d: DealDetail }) {
               </Button>
             }
           >
-            Its estimate waits for one question.
+            {why ?? 'Its estimate waits for one question.'}
           </Notice>
         ) : null}
 
