@@ -10,6 +10,7 @@ import { dirname, join } from 'node:path';
 
 import type {
   AppSettings,
+  KeyName,
   AutopilotEntry,
   EvidenceQuote,
   LastScanSummary,
@@ -75,6 +76,7 @@ export interface ReviewCollection {
 export type HelperLastJob = Pick<
   ScanJob,
   'status' | 'stopReason' | 'stopMessage' | 'searchesUsed' | 'finishedAt' | 'deferred' | 'ebayNotice'
+> & Partial<Pick<ScanJob, 'lookupsVia' | 'lookupsWaiting' | 'lookupsBlockedBy'>
 >;
 
 /** Meters the extension posts (POST /api/state, legacy). No keys. */
@@ -171,8 +173,14 @@ export interface AgentRuntime {
   scheduleFrom?: number | null;
   /** The last SerpApi account check (free). */
   serp: { left: number; perMonth: number; rateLimitPerHour: number; at: string } | null;
-  /** Keepa's balance as its last answer said. */
-  keepa: { tokensLeft: number; refillIn: number; at: string } | null;
+  /** Keepa's balance as its last answer said; step 15: its refill (tokens a minute) too, from any answer or the free status. */
+  keepa: { tokensLeft: number; refillIn: number; refillRate?: number; at: string } | null;
+  /** Step 15: the last rejection of each key by its service, in plain words; cleared when replaced or next accepted. */
+  keyProblems?: Partial<Record<KeyName, string>>;
+  /** Step 15: one-time changes to stored data already made (applyMigrations), by name. */
+  migrations?: string[];
+  /** Step 15: the drip's last look at Keepa and its last lookup (epoch ms). */
+  drip?: { checkedAt: number | null; lastLookupAt: number | null };
   /** Deal keys already named in a message: a deal alerts once. */
   notifiedDeals: string[];
   /** Question ids already counted in a message: the same questions do not alert again. */
@@ -254,6 +262,8 @@ export function defaultSettings(): StoreData['settings'] {
     // The agent messages the owner (the PO's brief), so alerts start on; the numbers are core's defaults.
     alerts: { ...DEFAULT_SETTINGS.alerts, enabled: true },
     ai: defaultAiSettings(),
+    // Step 15: waiting parts are looked up with Keepa between scans as its tokens refill.
+    lookups: { drip: true },
     appearance: { theme: 'system', accent: 'system', density: 'regular' },
     // Today's behaviour: every kind on, no quiet hours, a message after each run.
     notifications: {
@@ -334,6 +344,7 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
         quietHours: { ...d.notifications.quietHours, ...(s.notifications?.quietHours ?? {}) },
       },
       shell: { ...d.shell, ...(s.shell ?? {}) },
+      lookups: { drip: true, ...(s.lookups ?? {}) },
       ai: {
         ...d.ai,
         ...ai,
@@ -349,6 +360,29 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
     return { ...d, ...r, telegram: { ...d.telegram, ...(r.telegram ?? {}) } } as StoreData[K];
   }
   return { ...(base as object), ...(raw as object) } as StoreData[K];
+}
+
+// ---------------------------------------------------------------- one-time changes to stored data
+
+/**
+ * Step 15: Keepa's per-scan cap was 5 tokens by default, which no lookup (11 tokens) can ever fit (the real Nov 23 scan:
+ * 0 lookups, 18 waiting). A store still at that old default moves to 0 (automatic: every token above the reserve), once;
+ * an owner who sets 5 again afterwards keeps it, because the change is remembered in runtime.migrations.
+ */
+export const KEEPA_AUTO_MIGRATION = 'keepa-tokens-per-scan-auto';
+const OLD_KEEPA_TOKENS_PER_SCAN = 5;
+
+/** Applies each one-time change not made yet; returns the collections it changed. */
+export function applyMigrations(data: StoreData): CollectionName[] {
+  const done = new Set(data.runtime.migrations ?? []);
+  if (done.has(KEEPA_AUTO_MIGRATION)) return [];
+  const changed: CollectionName[] = ['runtime'];
+  if (data.settings.settings.keepaTokensPerScan === OLD_KEEPA_TOKENS_PER_SCAN) {
+    data.settings = { ...data.settings, settings: { ...data.settings.settings, keepaTokensPerScan: 0 } };
+    changed.push('settings');
+  }
+  data.runtime = { ...data.runtime, migrations: [...done, KEEPA_AUTO_MIGRATION] };
+  return changed;
 }
 
 // ---------------------------------------------------------------- files
@@ -705,6 +739,8 @@ export class Store {
       // old files again would bring back keys the owner deleted since.
       if (!existsSync(join(dir, 'keys.json'))) {
         const migratedFrom = migrateLegacyFiles(dataDir, data);
+        // A new store (or one read from the old files) takes the one-time changes now, so they never run on it again.
+        applyMigrations(data);
         const store = new Store(dir, data, lockPath);
         if (lockToken) store.holdLock(lockToken);
         for (const name of COLLECTIONS) store.write(name);
@@ -731,6 +767,8 @@ export class Store {
     const store = new Store(dir, data, lockPath);
     if (lockToken) store.holdLock(lockToken);
     if (unreadable.length) store.startSafe(unreadable);
+    // A read-only open (lock: false) never writes.
+    else if (lockPath) for (const name of applyMigrations(data)) store.write(name);
     return store;
   }
 

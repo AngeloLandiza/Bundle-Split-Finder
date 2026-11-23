@@ -47,7 +47,10 @@ export interface ExtensionSettings {
   pagesPerBrand: number;
   fees: FeeSettings;
   alerts: AlertSettings;
-  /** Keepa tokens a scan may spend; 0 turns Keepa off. */
+  /**
+   * Keepa tokens a scan may spend. Step 15: 0 is automatic, every token the account has above keepaReserve (the default);
+   * Keepa is off without a key or with amazonRefreshViaKeepa off.
+   */
   keepaTokensPerScan: number;
   /** Keepa tokens left untouched once balance is known. */
   keepaReserve: number;
@@ -71,7 +74,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   pagesPerBrand: 1,
   fees: DEFAULT_FEES,
   alerts: { enabled: false, minProfit: 20, minRoiPercent: 20, reviewDigest: true, minMonthlySold: DEFAULT_MIN_MONTHLY_SOLD },
-  keepaTokensPerScan: 5,
+  keepaTokensPerScan: 0,
   keepaReserve: 5,
   discoveryMode: 'auto',
   keepaDiscoveryShare: 90,

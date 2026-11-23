@@ -529,9 +529,10 @@ export function createWorker(env: WorkerEnv): Worker {
 
   async function buildKeepaDeps(s: ExtensionSettings): Promise<KeepaRunDeps> {
     const keepaKey = await prefs.getKeepaKey?.();
-    if (!keepaKey || !s.amazonRefreshViaKeepa || s.keepaTokensPerScan <= 0) return {};
+    // Step 15: 0 tokens per scan is automatic (every token above the reserve), not off.
+    if (!keepaKey || !s.amazonRefreshViaKeepa) return {};
     const acct = (await prefs.getKeepaAccount?.()) ?? null;
-    const keepaBudget = new TokenBudget({ reserve: s.keepaReserve, maxPerRun: s.keepaTokensPerScan }, acct?.tokensLeft ?? null);
+    const keepaBudget = new TokenBudget({ reserve: s.keepaReserve, maxPerRun: s.keepaTokensPerScan > 0 ? s.keepaTokensPerScan : Number.POSITIVE_INFINITY }, acct?.tokensLeft ?? null);
     const keepaAccountTokens = acct?.tokensLeft ?? null;
     const keepa = new KeepaClient({
       apiKey: keepaKey,
