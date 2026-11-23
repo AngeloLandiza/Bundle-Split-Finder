@@ -20,7 +20,8 @@ beforeEach(async () => {
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   port = (server.address() as { port: number }).port;
   base = `http://127.0.0.1:${port}`;
-  agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-http-')), port, timers: false });
+  // No shipped helper build here: these polls name none, and a checkout that holds a built zip would call them outdated.
+  agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-http-')), port, timers: false, shippedHelperVersion: null });
   server.on('request', agent.handle);
 });
 
@@ -239,7 +240,7 @@ describe('agent HTTP', () => {
     expect((await ui('/api/agent/quit', { method: 'POST', body: '{}' })).status).toBe(503);
     agent.close();
     let quits = 0;
-    agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-http-')), port, timers: false, onQuit: () => quits++ });
+    agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-http-')), port, timers: false, shippedHelperVersion: null, onQuit: () => quits++ });
     server.removeAllListeners('request');
     server.on('request', agent.handle);
     expect((await fetch(`${base}/api/agent/quit`, { method: 'POST', body: '{}' })).status).toBe(401);
