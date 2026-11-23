@@ -20,6 +20,7 @@ import type {
   WorkerJob,
 } from '../core/src/api/contract';
 import type { StoredSuggestion } from '../core/src/assist/stored';
+import { DEFAULT_BRIEF_MODEL } from '../core/src/brief/pipeline';
 import { DEFAULT_CLAUDE_JUDGE_MODEL } from '../core/src/judge/claude';
 import { DEFAULT_FEES } from '../core/src/money';
 import type { UnitRates } from '../core/src/scan/pipeline';
@@ -320,7 +321,9 @@ export function defaultAiSettings(): AppSettings['ai'] {
     const claude = { provider: 'anthropic' as const, model: DEFAULT_AI_MODELS[p], apiKeyRef: 'anthropic' };
     return { ...claude, trusted: measuredByDefault(p, claude) };
   };
-  return { judge: of('judge'), assist: of('assist'), research: of('research'), monthlyCapUsd: 25 };
+  // Step 16: the brief's model is the judge's (Haiku): it explains a suggestion and cannot change one, so it is never trusted.
+  const brief = { provider: 'anthropic' as const, model: DEFAULT_BRIEF_MODEL, apiKeyRef: 'anthropic', trusted: false };
+  return { judge: of('judge'), assist: of('assist'), research: of('research'), brief, monthlyCapUsd: 25 };
 }
 
 function defaults(): StoreData {
@@ -378,6 +381,7 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
         judge: { ...d.ai.judge, ...(ai.judge ?? {}) },
         assist: { ...d.ai.assist, ...(ai.assist ?? {}) },
         research: { ...d.ai.research, ...(ai.research ?? {}) },
+        brief: { ...d.ai.brief!, ...(ai.brief ?? {}), trusted: false },
       },
     } as StoreData[K];
   }

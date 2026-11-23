@@ -43,7 +43,7 @@ import { checkSerpApiKey } from './checkSerpKey';
 import { EventHub } from './events';
 import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError, type Ctx } from './http';
 import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus, shippedHelperVersion } from './setup';
-import { COLLECTIONS, Store, type StoreData, type StoredKeys } from './store';
+import { COLLECTIONS, defaultAiSettings, Store, type StoreData, type StoredKeys } from './store';
 import { tryServeUi, uiIndexExists } from './uiStatic';
 import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf } from './views';
 import { setWatch } from '../core/src/tracking/state';
@@ -161,7 +161,7 @@ function flag(v: unknown, field: string): boolean {
 
 const PIPELINES = ['judge', 'assist', 'research'] as const;
 
-export function aiPipelinePatch(cur: AiPipelineSetting, v: unknown, name: (typeof PIPELINES)[number]): AiPipelineSetting {
+export function aiPipelinePatch(cur: AiPipelineSetting, v: unknown, name: (typeof PIPELINES)[number] | 'brief'): AiPipelineSetting {
   const o = obj(v, `ai.${name}`);
   const next: AiPipelineSetting = { ...cur };
   if ('provider' in o) {
@@ -179,8 +179,8 @@ export function aiPipelinePatch(cur: AiPipelineSetting, v: unknown, name: (typeo
   if ('label' in o) next.label = text(o.label, `ai.${name}.label`, 60);
   // Autopilot rule 5: when anything that identifies the model changes (provider, model, address, preset, id), trust
   // goes back to the measured list (autopilot.ts) unless the same patch says `trusted` itself.
-  if (modelIdentity(next) !== modelIdentity(cur)) next.trusted = measuredByDefault(name, next);
-  if ('trusted' in o) next.trusted = flag(o.trusted, `ai.${name}.trusted`);
+  if (modelIdentity(next) !== modelIdentity(cur)) next.trusted = name === 'brief' ? false : measuredByDefault(name, next);
+  if ('trusted' in o) next.trusted = name === 'brief' ? false : flag(o.trusted, `ai.${name}.trusted`);
   if ('rates' in o) {
     const r = obj(o.rates, 'rates');
     const ok = (x: unknown) => typeof x === 'number' && Number.isFinite(x) && x >= 0;
@@ -248,6 +248,8 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
   if ('ai' in patch) {
     const a = obj(patch.ai, 'ai');
     for (const p of PIPELINES) if (p in a) next.ai[p] = aiPipelinePatch(next.ai[p], a[p], p);
+    // Step 16: the brief's model is chosen like the others and is never trusted (it explains a suggestion, it cannot change one).
+    if ('brief' in a) next.ai.brief = aiPipelinePatch({ ...defaultAiSettings().brief!, ...(next.ai.brief ?? {}) }, a.brief, 'brief');
     if ('monthlyCapUsd' in a) {
       if (typeof a.monthlyCapUsd !== 'number' || !Number.isFinite(a.monthlyCapUsd) || a.monthlyCapUsd < 0) throw new HttpError('bad_request', 'ai.monthlyCapUsd must be a number of 0 or more.');
       next.ai.monthlyCapUsd = a.monthlyCapUsd;

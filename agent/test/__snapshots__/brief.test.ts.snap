@@ -1,0 +1,193 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 real questions has a rules brief, snapshot 1`] = `
+{
+  "match:DEWALT:DCF860B": {
+    "ask": "Which Amazon listing is this part?",
+    "check": {
+      "linkLabel": "Amazon listing",
+      "text": "Open the Amazon listings and see which one is this exact part, new.",
+      "url": "https://www.amazon.com/dp/B0FFLV6CML",
+    },
+    "reasons": [
+      {
+        "text": "Why it is asked: 1 listing(s) show the model number, but the brand is not confirmed",
+      },
+    ],
+    "state": "none",
+    "suggestion": null,
+    "writtenBy": "rules",
+  },
+  "match:DEWALT:DCH172B": {
+    "ask": "Which Amazon listing is this part?",
+    "check": {
+      "linkLabel": "Amazon listing",
+      "text": "Open the Amazon listings and see which one is this exact part, new.",
+      "url": "https://www.amazon.com/dp/B0DPDK33YB",
+    },
+    "reasons": [
+      {
+        "text": "Why it is asked: 2 listing(s) show the model number, but the brand is not confirmed",
+      },
+    ],
+    "state": "none",
+    "suggestion": null,
+    "writtenBy": "rules",
+  },
+  "match:RYOBI:A98401": {
+    "ask": "Which Amazon listing is this part?",
+    "check": {
+      "linkLabel": "Amazon listing",
+      "text": "Open the Amazon listings and see which one is this exact part, new.",
+      "url": "https://www.amazon.com/dp/B09V1PG5R1",
+    },
+    "reasons": [
+      {
+        "text": "Why it is asked: title says kit, and a RYOBI model number does not say whether the part is itself a kit",
+      },
+    ],
+    "state": "none",
+    "suggestion": null,
+    "writtenBy": "rules",
+  },
+  "split:homedepot:320243671": {
+    "ask": "What is inside this bundle?",
+    "check": {
+      "linkLabel": "Home Depot page",
+      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671",
+    },
+    "reasons": [
+      {
+        "text": "The title names a drill, and none of these parts is one.",
+      },
+      {
+        "text": "Why it is asked: hyphen split, but a part is not in the catalog; page names no models",
+      },
+    ],
+    "state": "not_verified",
+    "suggestion": "PCL1600K2 + A986501",
+    "writtenBy": "rules",
+  },
+  "split:homedepot:321809549": {
+    "ask": "What is inside this bundle?",
+    "check": {
+      "linkLabel": "Home Depot page",
+      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549",
+    },
+    "reasons": [
+      {
+        "text": ""Bag" on the page belongs to none of these parts.",
+      },
+      {
+        "text": ""Accessories" on the page belongs to none of these parts.",
+      },
+      {
+        "text": "Why it is asked: hyphen split, but a part is not in the catalog",
+      },
+    ],
+    "state": "not_verified",
+    "suggestion": "PCL1600K2 + PBP2003",
+    "writtenBy": "rules",
+  },
+  "split:homedepot:321811428": {
+    "ask": "What is inside this bundle?",
+    "check": {
+      "linkLabel": "Home Depot page",
+      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428",
+    },
+    "reasons": [
+      {
+        "text": ""Charger" is given to two parts.",
+      },
+      {
+        "text": ""Bag" on the page belongs to none of these parts.",
+      },
+      {
+        "text": "Why it is asked: hyphen split, but a part is not in the catalog",
+      },
+    ],
+    "state": "not_verified",
+    "suggestion": "PCL1600K2 + PBP006 + PCG002",
+    "writtenBy": "rules",
+  },
+  "split:homedepot:326894185": {
+    "ask": "What is inside this bundle?",
+    "check": {
+      "linkLabel": "Home Depot page",
+      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185",
+    },
+    "reasons": [
+      {
+        "text": "Nothing the AI read shows DCS334B is a real model.",
+      },
+      {
+        "text": "What DCS334B is could not be told from its name.",
+      },
+      {
+        "text": "Why it is asked: '34' matches nothing in the catalog; page names no models",
+      },
+    ],
+    "state": "not_verified",
+    "suggestion": "DCKTS681D1P1 + DCS334B",
+    "writtenBy": "rules",
+  },
+  "split:homedepot:328690510": {
+    "ask": "What is inside this bundle?",
+    "check": {
+      "linkLabel": "Home Depot page",
+      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510",
+    },
+    "reasons": [
+      {
+        "text": "Nothing the AI read shows PCL500B is a real model.",
+      },
+      {
+        "text": "Nothing the AI read shows PCL525B is a real model.",
+      },
+      {
+        "text": "Why it is asked: no known RYOBI bundle pattern; page names no models",
+      },
+    ],
+    "state": "not_verified",
+    "suggestion": "PCL500B + PCL525B",
+    "writtenBy": "rules",
+  },
+  "split:homedepot:334547201": {
+    "ask": "What is inside this bundle?",
+    "check": {
+      "linkLabel": "Home Depot page",
+      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201",
+    },
+    "reasons": [
+      {
+        "text": "Why it is asked: hyphen split, but a part is not in the catalog; page names no models",
+      },
+    ],
+    "state": "none",
+    "suggestion": null,
+    "writtenBy": "rules",
+  },
+  "split:homedepot:335724135": {
+    "ask": "What is inside this bundle?",
+    "check": {
+      "linkLabel": "Home Depot page",
+      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135",
+    },
+    "reasons": [
+      {
+        "text": "Why it is asked: hyphen split, but a part is not in the catalog",
+      },
+    ],
+    "state": "none",
+    "suggestion": null,
+    "writtenBy": "rules",
+  },
+}
+`;

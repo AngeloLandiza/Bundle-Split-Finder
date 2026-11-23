@@ -38,6 +38,7 @@ import { limitCopy } from '../core/src/deals/limitCopy';
 import { DEAL_SECTION_ORDER } from '../core/src/deals/sections';
 import { DEAL_SORTS, sortDealRows, type DealSortKey } from '../core/src/deals/sort';
 import { plainVerification } from '../core/src/assist/plain';
+import { briefForQuestion, ebayBrief } from '../core/src/brief/view';
 import { choicesOf, reviewSignature } from '../core/src/scan/answers';
 import { matchState, WAITING_PAGE, WAITING_PARTS } from '../core/src/scan/matchState';
 import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
@@ -52,8 +53,10 @@ const monthStartMs = (now: number): number => {
 export function aiSpentThisMonth(data: { suggestions: StoredSuggestion[]; runs: RunRecord[] }, now: number): number {
   const since = monthStartMs(now);
   const asks = data.suggestions.filter((s) => s.askedAt >= since).reduce((n, s) => n + (s.costUsd ?? 0), 0);
+  // Step 16: a suggestion's brief is a model call of its own, counted in the month it was written.
+  const briefs = data.suggestions.reduce((n, s) => n + (s.briefMeta && s.briefMeta.at >= since ? s.briefMeta.costUsd ?? 0 : 0), 0);
   const judge = data.runs.filter((r) => Date.parse(r.startedAt) >= since).reduce((n, r) => n + (r.judgeCostUsd ?? 0), 0);
-  return asks + judge;
+  return asks + briefs + judge;
 }
 
 export const ESTIMATE_BASIS = 'Estimated from your fee settings, not your real Amazon fees.';
@@ -408,6 +411,7 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
       askCostUsd: q.kind === 'match' && q.candidates.length === 0 ? null : estimatedQuestionCost(q.kind, (q.kind === 'split' ? ai.research : ai.assist).model),
       suggestionQuotes: quotesOf(live),
       ...(plain !== null ? { suggestionPlain: plain } : {}),
+      brief: briefForQuestion(q, live, data.review.evidence?.[q.id] ?? [], sources),
     });
   }
   for (const e of data.review.ebayQuestions) {
@@ -427,6 +431,7 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
       choices: [],
       askCostUsd: null,
       suggestionQuotes: [],
+      brief: ebayBrief(e),
     });
   }
   return { at: data.review.at, questions };
