@@ -10,6 +10,8 @@ import type {
   AgentEvent,
   AppSettings,
   AppState,
+  BogoRequest,
+  BogoView,
   ConfirmPriceRequest,
   DealDetail,
   DealSort,
@@ -53,6 +55,10 @@ export interface ApiClient {
   confirmPrice(dealId: string, model: string, body: ConfirmPriceRequest): Promise<void>;
   /** Watches or stops watching a deal (POST /api/deals/:id/watch). */
   watch(dealId: string, watch: boolean): Promise<void>;
+  /** Marks the deal as a BOGO promotion and/or chooses the free tool (POST /api/deals/:id/bogo). Resolves to the promotion with its estimate. */
+  setBogo(dealId: string, body: BogoRequest): Promise<BogoView | null>;
+  /** Removes the promotion (DELETE /api/deals/:id/bogo): the deal is no longer a BOGO. */
+  removeBogo(dealId: string): Promise<void>;
   /** Removes the confirmed price (DELETE on the same path). */
   removePrice(dealId: string, model: string): Promise<void>;
 

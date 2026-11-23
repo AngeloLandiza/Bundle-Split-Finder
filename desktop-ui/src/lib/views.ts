@@ -3,19 +3,27 @@
 
 import type { DealRow } from '../api/types';
 
-export type DealView = 'all' | 'confirmed' | 'needs-answer' | 'waiting' | 'losing';
-export const DEAL_VIEWS: readonly DealView[] = ['all', 'confirmed', 'needs-answer', 'waiting', 'losing'];
+export type DealView = 'buy-now' | 'all' | 'confirmed' | 'needs-answer' | 'waiting' | 'losing' | 'watchlist';
+/** The sidebar's order: Worth buying now leads the group; the Watchlist closes it. */
+export const DEAL_VIEWS: readonly DealView[] = ['buy-now', 'all', 'confirmed', 'needs-answer', 'waiting', 'losing', 'watchlist'];
 
 export const VIEW_LABEL: Record<DealView, string> = {
+  'buy-now': 'Worth buying now',
   all: 'All deals',
   confirmed: 'Confirmed',
   'needs-answer': 'Needs an answer',
   waiting: 'Waiting for a lookup',
   losing: 'Losing money',
+  watchlist: 'Watchlist',
 };
 
 export function inView(r: DealRow, view: DealView): boolean {
   switch (view) {
+    case 'buy-now':
+      // The last scan's own verdict (core/src/tracking/signals.ts); the row never recomputes it.
+      return r.buyNow;
+    case 'watchlist':
+      return r.watched;
     case 'all':
       return true;
     case 'confirmed':
@@ -31,7 +39,7 @@ export function inView(r: DealRow, view: DealView): boolean {
 }
 
 export function viewCounts(rows: DealRow[]): Record<DealView, number> {
-  const out = { all: 0, confirmed: 0, 'needs-answer': 0, waiting: 0, losing: 0 } as Record<DealView, number>;
+  const out = Object.fromEntries(DEAL_VIEWS.map((v) => [v, 0])) as Record<DealView, number>;
   for (const r of rows) for (const v of DEAL_VIEWS) if (inView(r, v)) out[v] += 1;
   return out;
 }

@@ -1,7 +1,7 @@
 // The mock agent for `VITE_MOCK=1`: the fixture-backed data in mockData.ts, kept in memory, with
 // a short delay on every call and events pushed the way the real SSE stream pushes them. It answers
 // in the same shapes as the real client (types.ts), so a screen cannot tell them apart.
-// `?mock=<scenario>` on the URL shows one state: firstrun, empty, offline, chrome-closed, limit,
+// `?mock=<scenario>` on the URL shows one state: nobuynow (no bundle is worth buying now), firstrun, empty, offline, chrome-closed, limit,
 // scanning, paused, error, slow, pairing. Nothing here touches the network.
 
 import type { PipelineView } from '@core/scan/pipeline';
@@ -9,16 +9,17 @@ import type { ApiClient } from './client';
 import { mergePatch } from '../lib/patch';
 import { confirmedSourceName } from '@core/scan/confirmed';
 import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE, net } from './mockData';
-import { ApiError, type AgentEvent, type AppSettings, type AppState, type DealDetail, type PairedExtension, type PendingPairRequest, type ReviewQuestion } from './types';
+import { mockBogoView } from './mockTracking';
+import { ApiError, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type ReviewQuestion } from './types';
 
-type Scenario = 'normal' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing';
+type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing';
 
 const clone = <T>(x: T): T => structuredClone(x);
 
 function scenario(): Scenario {
   if (typeof window === 'undefined') return 'normal';
   const s = new URLSearchParams(window.location.search).get('mock');
-  const all: Scenario[] = ['firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing'];
+  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing'];
   return all.find((x) => x === s) ?? 'normal';
 }
 
@@ -71,6 +72,10 @@ export function createMockClient(): ApiClient {
     activity.autopilot = [];
     activity.errors = [];
     state.counts = { review: 0, autopilotApplied: 0, newDeals: 0 };
+  }
+  if (mode === 'nobuynow') {
+    deals = deals.map((d) => ({ ...d, buyNow: false }));
+    for (const d of Object.values(details)) if (d.signals) d.signals = { ...d.signals, buyNow: null, signals: d.signals.signals.filter((x) => x.kind !== 'buyNow'), options: d.signals.options.map((o) => ({ ...o, buyNow: false, notBuyNow: o.notBuyNow ?? 'Still above your thresholds, but no better than the last scan.' })) };
   }
   if (mode === 'chrome-closed') state.helper = { paired: true, connected: false, lastSeenAt: new Date(Date.now() - 3 * 3600_000).toISOString(), jobsWaiting: 4 };
   if (mode === 'limit') {
@@ -282,7 +287,39 @@ export function createMockClient(): ApiClient {
     },
     async watch(id, watch) {
       await online(200);
-      deals = deals.map((d) => (d.id === id ? { ...d, watched: watch } : d));
+      deals = deals.map((d) => (d.id === id ? { ...d, watched: watch, buyNow: watch ? d.buyNow : false } : d));
+      const d = details[id];
+      if (d) {
+        d.watch = { watched: watch, by: 'owner', since: d.watch?.since ?? new Date().toISOString() };
+        // A scan judges a watched bundle; until the next one there is nothing to say about a bundle just watched.
+        if (!watch) d.signals = null;
+      }
+      emit({ type: 'deals' });
+    },
+    async setBogo(id, body) {
+      await online(350);
+      const d = details[id];
+      if (!d) throw new ApiError('server', 'No such deal.');
+      const prior = d.bogo;
+      const toItem = (x: FreeItemBody): FreeItem => ({ brand: (x.brand?.trim() || d.brand).toUpperCase(), model: x.model.trim().toUpperCase(), title: x.title?.trim() || null, itemId: x.itemId ?? null, link: x.link?.trim() || null, parts: x.parts ?? null });
+      const eligible = 'eligible' in body ? (body.eligible ? body.eligible.map(toItem) : null) : (prior?.eligible ?? null);
+      const chosen = 'chosen' in body ? (body.chosen ?? []).map(toItem) : (prior?.chosen ?? []);
+      const freeCount = body.freeCount ?? prior?.freeCount ?? 1;
+      if (chosen.some((c) => !/^[A-Z0-9][A-Z0-9-./]{0,39}$/.test(c.model))) throw new ApiError('refused', 'Each free item needs a model number.');
+      if (chosen.length > freeCount) throw new ApiError('refused', `Choose at most ${freeCount} free ${freeCount === 1 ? 'item' : 'items'}.`);
+      const off = eligible ? chosen.find((c) => !eligible.some((e) => e.model === c.model)) : undefined;
+      if (off) throw new ApiError('refused', `${off.model} is not on this promotion's eligible list.`);
+      const link = 'link' in body ? (body.link ?? null) : (prior?.link ?? null);
+      d.bogo = mockBogoView(d, { eligible, chosen, freeCount, link });
+      deals = deals.map((r) => (r.id === id ? { ...r, bogo: d.bogo!.status } : r));
+      emit({ type: 'deals' });
+      return clone(d.bogo);
+    },
+    async removeBogo(id) {
+      await online(250);
+      const d = details[id];
+      if (d) d.bogo = null;
+      deals = deals.map((r) => (r.id === id ? { ...r, bogo: null } : r));
       emit({ type: 'deals' });
     },
     async removePrice(id, model) {

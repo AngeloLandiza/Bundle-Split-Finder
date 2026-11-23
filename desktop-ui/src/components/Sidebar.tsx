@@ -15,11 +15,13 @@ import './Sidebar.css';
 const mac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
 
 const VIEW_GLYPH: Record<DealView, GlyphName> = {
+  'buy-now': 'trend-up',
   all: 'tray',
   confirmed: 'seal',
   'needs-answer': 'question',
   waiting: 'clock',
   losing: 'trend-down',
+  watchlist: 'star',
 };
 
 const COLLAPSED_KEY = 'splitFinder.sidebarCollapsed';
@@ -72,7 +74,7 @@ export function Sidebar({ route, onGo }: { route: Route; onGo: (r: Route) => voi
               current={on('deals', v)}
               onClick={() => go('deals', v)}
               shortcut={v === 'all' ? modLabel('2', mac) : undefined}
-              end={counts ? <span className="source-count fig">{count(counts[v])}</span> : null}
+              end={counts ? v === 'buy-now' && counts[v] > 0 ? <Count n={counts[v]} attention label={`${counts[v]} worth buying now`} /> : <span className="source-count fig">{count(counts[v])}</span> : null}
             />
           ))}
         </Group>

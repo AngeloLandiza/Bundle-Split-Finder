@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type * as C from '@core/api/contract';
 import type { PartRow } from '@core/scan/types';
 import { mergePatch } from '../lib/patch';
-import { csvSort, gradeOf, mapEvent, mapState, mapSuggestion, scanResult } from './map';
+import { csvSort, gradeOf, mapEvent, mapRow, mapState, mapSuggestion, scanResult } from './map';
 import { backoffMs, createSseParser } from './sse';
 
 const part = (p: Partial<PartRow>): PartRow =>
@@ -109,5 +109,18 @@ describe('small pieces', () => {
   });
   it('merges two settings edits made inside one wait into one patch', () => {
     expect(mergePatch({ settings: { reserve: 30 } }, { settings: { searchesPerScan: 8 }, autopilot: false } as never)).toEqual({ settings: { reserve: 30, searchesPerScan: 8 }, autopilot: false });
+  });
+});
+
+describe('a deal row\'s tracking flags', () => {
+  const wire = (extra: Partial<C.DealRow>): C.DealRow => ({
+    id: 'hd-1', bundle: { brand: 'DEWALT', model: 'DCK240C2', title: 'Combo Kit', itemId: '204373168', link: null }, section: 'confirmed', price: 149, regularPrice: 239, off: 38,
+    matchState: null, profit: 38.1, roi: 0.2557, roiRange: { low: null, high: null }, needsAnswer: false, updatedAt: '2026-11-23T10:00:00.000Z', ...extra,
+  });
+  it('reads watched, buy now and BOGO as sent', () => {
+    expect(mapRow(wire({ watched: true, buyNow: true, bogo: 'choose' }))).toMatchObject({ watched: true, buyNow: true, bogo: 'choose' });
+  });
+  it('reads an older agent that sends none of them as not watched, not worth buying now and no promotion', () => {
+    expect(mapRow(wire({}))).toMatchObject({ watched: false, buyNow: false, bogo: null });
   });
 });

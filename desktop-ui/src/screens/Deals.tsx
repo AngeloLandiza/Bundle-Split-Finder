@@ -357,11 +357,13 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
 }
 
 const EMPTY_VIEW: Record<DealView, string> = {
+  'buy-now': 'No watched bundle is worth buying now. A scan checks each one against your profit, ROI and monthly-sales numbers.',
   all: '',
   confirmed: 'No bundle has every part matched and priced yet.',
   'needs-answer': 'No bundle waits for one of your answers.',
   waiting: 'Every bundle’s parts have been looked up.',
   losing: 'No bundle’s estimate is below zero.',
+  watchlist: 'No bundle is watched yet. A bundle that is confirmed and discounted is watched by itself; star one to watch it yourself.',
 };
 
 function LookUp({ row, disabled }: { row: DealRow; disabled: boolean }) {

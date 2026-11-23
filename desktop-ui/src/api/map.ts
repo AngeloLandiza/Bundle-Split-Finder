@@ -95,6 +95,8 @@ export function mapRow(r: C.DealRow): DealRow {
     itemId: r.bundle.itemId,
     link: r.bundle.link,
     watched: r.watched ?? false,
+    buyNow: r.buyNow ?? false,
+    bogo: r.bogo ?? null,
     section: r.section,
     price: r.price,
     off: r.off,
@@ -269,6 +271,11 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     questionId,
     asins: parts.map((p) => p.asin).filter((a): a is string => a !== null),
     lookup: d.row.lookup ?? null,
+    watch: d.watch ?? null,
+    signals: d.signals ?? null,
+    history: d.history ?? [],
+    bogo: d.bogo ?? null,
+    fbaEstimate: d.fbaEstimate ?? null,
   };
 }
 

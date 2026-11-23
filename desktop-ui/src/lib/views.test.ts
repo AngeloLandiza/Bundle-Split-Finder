@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEALS } from '../api/mockData';
 import type { DealRow } from '../api/types';
-import { inView, viewCounts } from './views';
+import { DEAL_VIEWS, VIEW_LABEL, inView, viewCounts } from './views';
 
 const row = (model: string): DealRow => {
   const r = DEALS.find((d) => d.model === model);
@@ -27,5 +27,29 @@ describe('deal views', () => {
   });
   it('counts every row under All', () => {
     expect(viewCounts(DEALS).all).toBe(DEALS.length);
+  });
+  it('puts a bundle under Worth buying now only when the last scan said so, and under Watchlist when it is watched', () => {
+    const now = row('DCK240C2'); // watched, and the last scan judged it worth buying now
+    expect(now.buyNow).toBe(true);
+    expect(inView(now, 'buy-now')).toBe(true);
+    expect(inView(now, 'watchlist')).toBe(true);
+    const owned = row('PCL1200K2'); // watched, but it leaves a charger unsold
+    expect(inView(owned, 'watchlist')).toBe(true);
+    expect(inView(owned, 'buy-now')).toBe(false);
+    const plain = row('PCL1600K2-P553');
+    expect(inView(plain, 'watchlist')).toBe(false);
+    expect(inView({ ...plain, watched: false, buyNow: true }, 'buy-now')).toBe(true);
+  });
+  it('counts the two tracking views from the rows', () => {
+    const c = viewCounts(DEALS);
+    expect(c['buy-now']).toBe(DEALS.filter((r) => r.buyNow).length);
+    expect(c.watchlist).toBe(DEALS.filter((r) => r.watched).length);
+    expect(c['buy-now']).toBeGreaterThan(0);
+  });
+  it('lists Worth buying now first and the Watchlist last, each with a label', () => {
+    expect(DEAL_VIEWS[0]).toBe('buy-now');
+    expect(DEAL_VIEWS.at(-1)).toBe('watchlist');
+    expect(VIEW_LABEL['buy-now']).toBe('Worth buying now');
+    expect(VIEW_LABEL.watchlist).toBe('Watchlist');
   });
 });

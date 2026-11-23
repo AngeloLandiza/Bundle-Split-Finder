@@ -6,6 +6,7 @@
 // same fee rule as core/src/money.ts, so the table, the pane and Today agree to the cent.
 
 import { unnamedPartOf } from './map';
+import { MOCK_ALERTS, MOCK_ELIGIBLE, mockBogoView, trackingFor, type TrackSeed } from './mockTracking';
 import type {
   ActivityView,
   AppSettings,
@@ -52,7 +53,7 @@ export const SETTINGS: AppSettings = {
     trackingDepth: 'price_only',
     amazonRefreshViaKeepa: true,
   },
-  alerts: { enabled: true, minProfit: 40, minRoiPercent: 25, reviewDigest: true, minMonthlySold: 50, marginDownDigest: false },
+  alerts: { enabled: true, minProfit: MOCK_ALERTS.minProfit, minRoiPercent: MOCK_ALERTS.minRoiPercent, reviewDigest: true, minMonthlySold: MOCK_ALERTS.minMonthlySold, floorProfit: MOCK_ALERTS.floorProfit, marginDownDigest: false },
   ai: {
     judge: { provider: 'anthropic', model: 'claude-haiku-4-5', apiKeyRef: 'anthropic', trusted: true },
     assist: { provider: 'anthropic', model: 'claude-sonnet-4-5', apiKeyRef: 'anthropic', trusted: true },
@@ -154,6 +155,10 @@ interface DealSeed {
   secondWay?: { label: string; leaves: string[]; profitDelta: number };
   /** Kit items with no model number: never looked up, priced only by a price he confirms. */
   unnamed?: string[];
+  /** On the watchlist, with invented Keepa figures and stored scans (mockTracking.ts). */
+  track?: TrackSeed;
+  /** A BOGO promotion the owner entered, with the free items Home Depot offers; the free tool is not chosen yet. */
+  bogo?: boolean;
 }
 
 function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
@@ -202,7 +207,15 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     questionId: seed.questionId ?? null,
     asins: parts.map((p) => p.asin).filter((a): a is string => a !== null),
     lookup: seed.lookup ? { searches: seed.lookup } : null,
+    watch: null,
+    signals: null,
+    history: [],
+    bogo: null,
+    fbaEstimate: null,
   };
+  const tracked = seed.track && !seed.questionId ? trackingFor(detail, seed.track, NOW, seed.was) : null;
+  if (tracked) Object.assign(detail, { watch: tracked.watch, signals: tracked.signals, history: tracked.history, fbaEstimate: tracked.fbaEstimate });
+  if (seed.bogo) detail.bogo = mockBogoView(detail, { eligible: MOCK_ELIGIBLE, chosen: [], freeCount: 1, link: 'https://www.homedepot.com/b/Special-Values-Buy-One-Get-One-Free/N-5yc1vZ1z24hvk' });
   const row: DealRow = {
     id,
     title: seed.title,
@@ -210,7 +223,9 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     model: seed.model,
     itemId: seed.itemId,
     link,
-    watched: false,
+    watched: tracked !== null,
+    buyNow: tracked?.buyNow ?? false,
+    bogo: detail.bogo?.status ?? null,
     section: seed.section,
     price: seed.price,
     off,
@@ -249,6 +264,7 @@ const SEEDS: DealSeed[] = [
     parts: [RYOBI_DRILL, RYOBI_IMPACT, { ...RYOBI_15, qty: 2 }],
     unnamed: ['18V Charger'],
     leaves: ['18V Charger'],
+    track: { by: 'auto', scans: 12, sold: { PCL206B: 310, PCL235B: 240, PBP002: 38 }, fba: { PCL206B: 4.12, PCL235B: 4.12, PBP002: 3.48 }, rank: 18_400 },
   },
   {
     itemId: '345178210', slug: 'RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-2-Batteries-Charger-300-Piece-Drill-Driving-Kit-PCL1600K2-A983002',
@@ -256,6 +272,7 @@ const SEEDS: DealSeed[] = [
     price: 258.97, was: 368, section: 'confirmed', matchState: 'title_match', updatedMin: 47,
     parts: [RYOBI_DRILL, RYOBI_IMPACT, RYOBI_CIRC, RYOBI_RECIP, RYOBI_MULTI, { ...RYOBI_LIGHT, grade: 'title_match' }, RYOBI_15],
     range: { low: 0.12, high: 0.27 }, leaves: ['4.0 Ah Battery', '18V Charger', '300-Piece Drill and Drive Kit'],
+    track: { by: 'auto', scans: 2, sold: { PCL206B: 310, PCL235B: 240, PCL500B: null, PCL515B: 95, PCL430B: 120, PCL660B: 60, PBP002: 180 } },
   },
   {
     itemId: '204373168', slug: 'DEWALT-20V-MAX-Cordless-Drill-Impact-2-Tool-Combo-Kit-with-2-20V-1-3Ah-Batteries-Charger-and-Bag-DCK240C2',
@@ -266,18 +283,22 @@ const SEEDS: DealSeed[] = [
       { model: 'DCF885B', title: '20V MAX 1/4 in. Cordless Impact Driver (Tool Only)', asin: 'B00DL7QDBW', price: 89, grade: 'verified' },
       { model: 'DCB207', qty: 2, title: '20V MAX 1.3 Ah Compact Battery', asin: 'B00UXDJG9M', price: 39, grade: 'title_match' },
     ],
-    range: { low: 0.19, high: 0.31 }, leaves: ['DCB107 charger', 'Contractor bag'],
+    range: { low: 0.19, high: 0.31 }, leaves: [],
+    // Invented: the mock lets this kit leave nothing unsold, so the buy-now verdict can show.
+    track: { by: 'auto', scans: 14, lastProfit: 24.4, sold: { DCD771B: 450, DCF885B: 380, DCB207: 90 }, fba: { DCD771B: 4.46, DCF885B: 4.46, DCB207: 3.97 } },
+    bogo: true,
   },
   {
     itemId: '322138483', slug: 'DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-with-2-2-0Ah-Batteries-Charger-and-Bag-DCK225D2',
     brand: 'DEWALT', model: 'DCK225D2', title: 'ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) with (2) 2.0Ah Batteries, Charger and Bag',
     price: 169, was: 249, section: 'confirmed', matchState: 'title_match', updatedMin: 47,
     parts: [
-      { model: 'DCD708B', title: 'ATOMIC 20V MAX Brushless 1/2 in. Drill/Driver (Tool Only)', asin: 'B07D4VB6MQ', price: 79, grade: 'verified' },
-      { model: 'DCF809B', title: 'ATOMIC 20V MAX 1/4 in. Impact Driver (Tool Only)', asin: 'B07VK3DWGB', price: 89, grade: 'title_match' },
+      { model: 'DCD708B', title: 'ATOMIC 20V MAX Brushless 1/2 in. Drill/Driver (Tool Only)', asin: 'B07D4VB6MQ', price: 99, grade: 'verified' },
+      { model: 'DCF809B', title: 'ATOMIC 20V MAX 1/4 in. Impact Driver (Tool Only)', asin: 'B07VK3DWGB', price: 109, grade: 'title_match' },
       { model: 'DCB203', qty: 2, title: '20V MAX 2.0 Ah Compact Battery', asin: 'B00BOHW0LM', price: 39, grade: 'verified' },
     ],
-    range: { low: 0.08, high: 0.29 }, leaves: ['DCB112 charger', 'Kit bag'],
+    range: { low: 0.08, high: 0.29 }, leaves: [],
+    track: { by: 'owner', scans: 9, regular: 249, sold: { DCD708B: 210, DCF809B: 64, DCB203: 140 } },
   },
   {
     itemId: '328690510', slug: 'RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB',

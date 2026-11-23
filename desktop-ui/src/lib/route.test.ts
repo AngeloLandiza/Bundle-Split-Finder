@@ -16,6 +16,8 @@ describe('routes', () => {
     expect(parseRoute('#/deals/hd-317987591?view=confirmed')).toEqual({ screen: 'deals', id: 'hd-317987591', view: 'confirmed' });
     expect(hashOf({ screen: 'deals', id: 'hd-1', view: 'waiting' })).toBe('#/deals/hd-1?view=waiting');
     expect(hashOf({ screen: 'deals', id: null, view: 'all' })).toBe('#/deals');
+    expect(parseRoute('#/deals?view=buy-now')).toEqual({ screen: 'deals', id: null, view: 'buy-now' });
+    expect(hashOf({ screen: 'deals', id: null, view: 'watchlist' })).toBe('#/deals?view=watchlist');
     expect(parseRoute('#/deals?view=nonsense')).toEqual({ screen: 'deals', id: null });
   });
   it('round-trips an id with odd characters', () => {

@@ -3,13 +3,24 @@
 // another form (a flatter row, a labelled price line, the pipeline in words) are defined below and
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
-import type { ActivityError, KeyName, ReportSection, ReviewKind } from '@core/api/contract';
+import type { ActivityError, BogoView, DealHistoryPoint, DealSignals, FbaEstimate, KeyName, ReportSection, ReviewKind, WatchState } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PipelineView } from '@core/scan/pipeline';
 
 export type {
   ActivityError,
   AppSettings,
+  BogoBody as BogoRequest,
+  BogoView,
+  DealHistoryPoint,
+  DealSignals,
+  FbaEstimate,
+  FreeItem,
+  FreeItemBody,
+  OptionSignals,
+  Signal,
+  Velocity,
+  WatchState,
   KeyName,
   KeysPresence,
   PairedExtension,
@@ -97,6 +108,10 @@ export interface DealRow {
   link: string | null;
   /** On the watchlist: by itself when confirmed and discounted, or by his Watch. */
   watched: boolean;
+  /** The last scan said a way to sell is worth buying now (only a watched bundle is judged). */
+  buyNow: boolean;
+  /** A BOGO promotion he entered: 'choose' until he picks the free tool. */
+  bogo: 'choose' | 'chosen' | null;
   section: DealSection;
   price: number | null;
   /** Whole percent off, or null. */
@@ -229,6 +244,16 @@ export interface DealDetail {
   questionId: string | null;
   asins: string[];
   lookup: { searches: number } | null;
+  /** Whether the bundle is watched, by whom and since when; null when it never was. */
+  watch: WatchState | null;
+  /** The last scan's judgement of a watched bundle (core/src/tracking/signals.ts); null when not watched or before a scan. */
+  signals: DealSignals | null;
+  /** The stored scan points, oldest first. Nothing is filled in between them. */
+  history: DealHistoryPoint[];
+  /** The BOGO promotion he entered, with its estimate; null when none. */
+  bogo: BogoView | null;
+  /** The estimate with Amazon's FBA fee estimate from Keepa, beside the main one; null when no part has a Keepa fee. */
+  fbaEstimate: FbaEstimate | null;
 }
 
 // ------------------------------------------------------------------ GET /api/review
