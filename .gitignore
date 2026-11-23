@@ -18,3 +18,4 @@ qa-shots/
 qa-shots-2/
 audit/*
 !audit/.gitkeep
+desktop/node-cache/

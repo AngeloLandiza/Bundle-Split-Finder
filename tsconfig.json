@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "paths": { "@core/*": ["./core/src/*"] }
   },
-  "include": ["core", "scripts", "agent", "*.ts"]
+  "include": ["core", "scripts", "agent", "desktop/*.ts", "*.ts"]
 }

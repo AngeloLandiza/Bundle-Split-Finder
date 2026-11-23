@@ -5,5 +5,5 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   // desktop-ui imports the agent's contract as @core (its vite.config.ts and tsconfig say the same).
   resolve: { alias: { '@core': resolve(import.meta.dirname, 'core/src') } },
-  test: { include: ['core/test/**/*.test.ts', 'agent/test/**/*.test.ts', 'desktop-ui/src/**/*.test.ts'] },
+  test: { include: ['core/test/**/*.test.ts', 'agent/test/**/*.test.ts', 'desktop/*.test.ts', 'desktop-ui/src/**/*.test.ts'] },
 });
