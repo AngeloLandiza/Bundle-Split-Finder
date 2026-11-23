@@ -367,9 +367,12 @@ async function bundleRow(
     // Nov 23: not split, its own page not read, and no question open nor answered for it: it waits for its page.
     const pageRead = b.page !== undefined && b.page !== null;
     const waitingPage = !pageRead && base.answer === null && !(question && question.answer === null);
+    // Step 15: read, its split waits for Home Depot's part pages (scan/settle.ts rule 2), and no question open nor answered.
+    const waitingParts = !waitingPage && pageRead && (split?.waitingFor ?? []).length > 0 && base.answer === null && !(question && question.answer === null);
     return {
       ...base, status: 'needs_review', section: 'split', parts: [], estimate: null, uncovered: [], options: [], kitsNotRead: [], kitReads: [], range: NO_RANGE,
       ...(waitingPage ? { waitingPage: true } : {}),
+      ...(waitingParts ? { waitingParts: true } : {}),
     };
   }
   const counts = componentCounts(split.components);
@@ -409,6 +412,8 @@ async function bundleRow(
       return target.kind === 'page' ? [{ model, itemId: target.itemId }] : [];
     }),
     range: primary.option.range,
+    // Step 15: what settled the split, when a settle rule did (the BOGO pair, Home Depot's page of each part).
+    ...(split.evidence && split.evidence.length > 0 ? { splitEvidence: split.evidence } : {}),
   };
 }
 

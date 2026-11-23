@@ -9,6 +9,7 @@
 
 import type { PipelineAiSettings } from '../ai/factory';
 import type { StoredSuggestion } from '../assist/stored';
+import type { SplitEvidence } from '../decompose';
 import type { HomeDepotPage, HomeDepotSearch, ToolError } from '../research/types';
 import type { DealSortKey } from '../deals/sort';
 import type { FeeSettings } from '../money';
@@ -188,8 +189,12 @@ export interface DealRow {
    * Home Depot page", under Waiting for a lookup, never a question: `needsAnswer` is false).
    */
   matchState: string | null;
-  /** Nov 23: `waiting_page` beside matchState for such a bundle; absent otherwise. */
-  matchKind?: 'waiting_page' | null;
+  /**
+   * Nov 23: `waiting_page` beside matchState for such a bundle; absent otherwise. Step 15: `waiting_parts` when its split
+   * waits for Home Depot's part pages (core/src/scan/matchState.ts WAITING_PARTS; shown as "Waiting for Home Depot's part
+   * pages", under Waiting for a lookup, never a question: `needsAnswer` is false).
+   */
+  matchKind?: 'waiting_page' | 'waiting_parts' | null;
   profit: number | null;
   roi: number | null;
   roiRange: { low: number | null; high: number | null };
@@ -275,7 +280,15 @@ export interface DealDetail {
    * fulfillment setting, beside the estimate (never instead). Null when no part has a Keepa fee stored.
    */
   fbaEstimate?: FbaEstimate | null;
+  /**
+   * Step 15: what settled the bundle's split when a settle rule did, each with its link to check it: the BOGO pair
+   * (`bogo_pair`), Home Depot's own page of each part (`hd_part_page`), a quote of the bundle's page (`page_quote`).
+   * Absent when the split was read from the model number and page alone, or chosen by the owner.
+   */
+  splitEvidence?: SplitEvidence[];
 }
+
+export type { SplitEvidence };
 
 // ---------------------------------------------------------------- tracking: watchlist, signals, BOGO
 
@@ -438,6 +451,12 @@ export interface ReviewQuestion {
   askCostUsd?: number | null;
   /** W4: the suggestion's quotes, each with the source it was found in (only quotes code found word for word). */
   suggestionQuotes?: EvidenceQuote[];
+  /**
+   * Step 15: when the suggestion was not verified, why, in one plain sentence for the owner ("Not verified: the page never
+   * names DCK240C2. Check the Home Depot page."; core/src/assist/plain.ts). The technical reasons stay on the suggestion
+   * for Activity. Absent otherwise.
+   */
+  suggestionPlain?: string;
   /** The question as the scan stored it. */
   item: { kind: 'split' | 'match'; question: ReviewItem } | { kind: 'ebay'; question: EbayQuestion };
 }

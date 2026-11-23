@@ -10,10 +10,22 @@ const isWaiting = (p: PartRow): boolean => p.status === 'waiting' || p.status ==
  */
 export const WAITING_PAGE = 'waiting_page';
 export const WAITING_PAGE_TEXT = 'Waiting for its Home Depot page';
+/**
+ * Step 15: the match state of a bundle whose split waits for Home Depot's part pages (BundleRow.waitingParts): the free
+ * part-price read, or a kit's own page, settles it or asks. The DealRow carries the code as WAITING_PAGE's is.
+ */
+export const WAITING_PARTS = 'waiting_parts';
+export const WAITING_PARTS_TEXT = "Waiting for Home Depot's part pages";
+/**
+ * Step 15 (decision 4): a part looked up on Amazon with no listing found. It is the part's state (the owner can confirm
+ * a price for it, or mark it not sold separately), never a question about the bundle's split.
+ */
+export const NO_AMAZON_LISTING_TEXT = 'No Amazon listing found';
 
 /** The match-state line on a Deals row. Shared by the helper and the native app. */
 export function matchState(row: BundleRow): string | null {
   if (row.waitingPage) return WAITING_PAGE_TEXT;
+  if (row.waitingParts) return WAITING_PARTS_TEXT;
   const parts = row.parts;
   if (parts.length === 0) return null;
   const verify = parts.filter((p) => !isWaiting(p) && (p.grade === 'probable' || p.status === 'review')).length;

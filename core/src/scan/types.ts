@@ -5,7 +5,7 @@
 // (tests, the command line) with an in-memory store and in the extension's service
 // worker with IndexedDB behind the same ScanStore.
 
-import type { Decomposition } from '../decompose';
+import type { Decomposition, SplitEvidence } from '../decompose';
 import type { EbayValue, EbayVerdict } from '../ebay/types';
 import type { PageContent } from '../hdPage';
 import type { Grade } from '../match';
@@ -145,6 +145,21 @@ export interface BundleRecord {
   split: Decomposition | null;
   /** What the bundle's own page said. Undefined or null: not read yet. */
   page?: PageReading | null;
+  /**
+   * Step 15: Home Depot lists this bundle as a BOGO pair (tracking/bogoPairs.ts findBogoPairs: the starter's model, its
+   * joiner and the free item, at the starter's price to the cent, the starter carrying the promotion). The pair rule's
+   * own fields; the split reads it (scan/settle.ts rule 1). Absent on any other bundle.
+   */
+  bogo?: BundleBogo | null;
+}
+
+/** Step 15: the pair rule's facts a BOGO pair's split is read from. */
+export interface BundleBogo {
+  promotionId: string;
+  starterItemId: string;
+  starterModel: string;
+  /** After the joiner, as Home Depot writes it ("FVC51K", "921B"). */
+  freeModel: string;
 }
 
 export interface PageReading extends PageContent {
@@ -887,6 +902,14 @@ export interface BundleRow {
    * answered for it: it waits for its page (match state `waiting_page`), not for the owner. Absent otherwise.
    */
   waitingPage?: boolean;
+  /**
+   * Step 15: the split is not resolved, the bundle's page is read, its one reading waits for Home Depot's part pages
+   * (Decomposition.waitingFor: the free part-price read, a kit's own page), and no split question is open or answered for
+   * it: it waits for them (match state `waiting_parts`), not for the owner. Absent otherwise.
+   */
+  waitingParts?: boolean;
+  /** Step 15: what settled the split when a settle rule did (scan/settle.ts), each with its link. Absent otherwise. */
+  splitEvidence?: SplitEvidence[];
   /** Step 9: the primary option's range; all null while the split is not resolved. */
   range: PriceRange;
 }

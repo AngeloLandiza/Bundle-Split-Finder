@@ -96,7 +96,7 @@ const NO_CHARGER = /\bcharger\b[^.;]{0,40}\b(not included|sold separately)\b/i;
 const BRUSHED_SPEC = /^\s*motor type\s*:\s*brushed\s*$/i;
 
 /** The tool counts a text states. */
-function toolCounts(text: string): number[] {
+export function toolCounts(text: string): number[] {
   const out: number[] = [];
   for (const m of text.matchAll(TOOL_COUNT)) {
     const w = m[1]!.toLowerCase();
@@ -131,6 +131,12 @@ interface Product {
   kit: boolean;
   titles: string[];
 }
+
+/** Step 15: the tools a product holds by its one title (a kit's count, 1 for a tool, 0 for a battery or an accessory); null when the title does not say. */
+export const titleTools = (title: string): number | null => productOf([title], false).tools;
+
+/** Step 15: whether a text says "Tools Only" (or "Bare Tool"). */
+export const saysToolsOnly = (text: string): boolean => TOOLS_ONLY.test(text);
 
 /** What a product is, from its names (Home Depot or catalog titles). Names that disagree make it unknown. */
 function productOf(titles: string[], kitFlag: boolean): Product {

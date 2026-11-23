@@ -32,7 +32,7 @@ import { postScanWork } from '../core/src/scan/postScan';
 import { buildReport, partRowsFor } from '../core/src/scan/report';
 import { bogoFromBody, bogoView, freeParts, type BogoView } from '../core/src/tracking/bogo';
 import {
-  bogoDigestLines, bogoGroups, mergeBogoPairs, pairBundleRecord, pairsBehindBest, readBogoPass, todayOf, type BogoBrandResult, type BogoGroup,
+  bogoDigestLines, bogoGroups, mergeBogoPairs, pairBundleRecord, pairFacts, pairsBehindBest, readBogoPass, todayOf, type BogoBrandResult, type BogoGroup,
 } from '../core/src/tracking/bogoPairs';
 import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
@@ -787,8 +787,15 @@ export class AgentWork {
   /**
    * Nov 23, at start: the split questions a scan opened for bundles whose own Home Depot page was never read are withdrawn
    * (core's withdrawUnreadSplitQuestions); those bundles wait for their page. Review is rebuilt when any was. Returns how many.
+   * Step 15: first each stored BOGO pair's facts are put on its bundle record (a record written before step 15 has none),
+   * then every other open split question is read again under the settle rules, and withdrawn when they settle its split or
+   * make it wait for Home Depot's part pages. The owner's answers and the Autopilot and Undo records are not touched.
    */
   async withdrawWaitingQuestions(): Promise<number> {
+    for (const p of Object.values(this.d.store.get('tracking').bogoPairs ?? {})) {
+      const b = await this.scanStore.getBundle(p.key);
+      if (b && !b.bogo && b.model.trim().toUpperCase() === p.model.trim().toUpperCase()) await this.scanStore.putBundle({ ...b, bogo: pairFacts(p) });
+    }
     const ids = await withdrawUnreadSplitQuestions(this.scanStore, this.d.now());
     if (ids.length > 0) await this.refresh();
     return ids.length;

@@ -218,6 +218,8 @@ describe('keeping pairs between scans', () => {
     const rec = pairBundleRecord(pairs[0]!, { ...item, bullets: ['Includes: (1) PCL515B'], readAt: 5 }, undefined, 9);
     expect(rec).toMatchObject({ key: 'homedepot:324903619', itemId: '324903619', brand: 'RYOBI', model: 'PCL1201K2-PCL515B', price: 179, regularPrice: 268, percentOff: 33, seenAt: 9, split: null });
     expect(rec.page).toEqual({ bullets: ['Includes: (1) PCL515B'], description: null, readAt: 5 });
+    // Step 15: it carries the pair rule's facts, which its split reads (scan/settle.ts rule 1).
+    expect(rec.bogo).toEqual({ promotionId: pairs[0]!.promotionId, starterItemId: '317987584', starterModel: 'PCL1201K2', freeModel: 'PCL515B' });
   });
 });
 

@@ -27,6 +27,23 @@ export interface Decomposition {
   notes: string[];
   /** Whole readings the model number allows when it cannot choose, e.g. kit + DCF891B and kit + DCF921B. */
   alternatives?: string[][];
+  /**
+   * Step 15 (decision 4): what settled the split when a settle rule did (scan/settle.ts), each with its link: the BOGO
+   * pair, Home Depot's own page of each part, a quote of the bundle's page. Absent otherwise.
+   */
+  evidence?: SplitEvidence[];
+  /**
+   * Step 15 (decision 4, rule 2): the split waits for Home Depot's reading of these parts (the free part-price read)
+   * before it can be settled; it is not a question yet. Absent otherwise. Never set on a resolved split.
+   */
+  waitingFor?: string[];
+}
+
+/** One piece of evidence for a settled split (step 15). `url` is the page it was read on, when there is one. */
+export interface SplitEvidence {
+  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote';
+  text: string;
+  url?: string;
 }
 
 const norm = (model: string): string => model.toUpperCase().replace(/[-\s]/g, '');

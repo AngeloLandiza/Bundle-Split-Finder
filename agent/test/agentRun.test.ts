@@ -97,9 +97,20 @@ describe('a scan from the app', () => {
     expect((await json<ReviewResponse>('/api/review')).questions.some((x) => x.id === 'split:homedepot:320243741')).toBe(false);
     expect(telegram).toHaveLength(0);
 
-    // Its page read (as the helper would have), the next scan finds the split still uncertain and asks.
+    // Its page read (as the helper would have): the page names no model, so the split PCL1600K2 + P553 waits for Home
+    // Depot's own reading of each part (step 15, rule 2: waiting_parts), still not a question.
     const bundle = (await agent.work.scanStore.getBundle('homedepot:320243741'))!;
     await agent.work.scanStore.putBundle({ ...bundle, page: { ...parseBundlePage(PAGE_320243741, '320243741')!, readAt: clock } });
+    expect((await ui('/api/scan', { method: 'POST' })).status).toBe(200);
+    await agent.work.idle();
+    const parts = (await json<DealsResponse>('/api/deals')).rows.find((r) => r.id === 'homedepot:320243741')!;
+    expect(parts).toMatchObject({ matchState: 'waiting_parts', matchKind: 'waiting_parts', needsAnswer: false });
+    expect((await json<ReviewResponse>('/api/review')).questions.some((x) => x.id === 'split:homedepot:320243741')).toBe(false);
+
+    // Home Depot's search, read as the helper would have, found no P553 sold by itself: the next scan asks.
+    await agent.work.scanStore.putPartPrice({
+      key: 'RYOBI:P553', brand: 'RYOBI', model: 'P553', itemId: null, matchedModel: null, price: null, title: null, link: null, seenAt: null, checkedAt: clock,
+    });
     expect((await ui('/api/scan', { method: 'POST' })).status).toBe(200);
     await agent.work.idle();
 

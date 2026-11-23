@@ -4,7 +4,9 @@
 // its bundle with it, so the two never differ.
 
 import { type Catalog, catalogEntry, type Decomposition, decompose, dewaltBundleForm, kindsFromTitle, PACK_WITH_NOTE } from '../decompose';
+import { kitIndex, kitRecords } from '../kitContents';
 import { splitWithPage } from '../pageSplit';
+import { type SettleData, settleSplit } from './settle';
 import type { BundleRecord, ListingRecord, ScanStore } from './types';
 
 export interface KnownModels {
@@ -13,6 +15,8 @@ export interface KnownModels {
   /** The stored catalog plus an entry for every model in a saved listing's title (2c rule 4). */
   catalog: Catalog;
   listings: ListingRecord[];
+  /** Step 15: what the settle rules read (scan/settle.ts): the stored part-price readings and the kits' records. */
+  settle: SettleData;
 }
 
 /**
@@ -36,15 +40,22 @@ export async function knownModels(store: ScanStore): Promise<KnownModels> {
     }
   }
   for (const [model, entry] of stored) catalog.set(model, entry);
-  return { stored, catalog, listings };
+  const catalogRecords = await store.listCatalog();
+  const settle: SettleData = {
+    partPrices: new Map((await store.listPartPrices()).map((r) => [r.key, r] as const)),
+    kitsOf: kitIndex(kitRecords(await store.listBundles(), catalogRecords)),
+  };
+  return { stored, catalog, listings, settle };
 }
 
 /**
  * The split of one bundle as the data reads it, before any answer of the owner's (P5): the model
- * number's split (splitBundle), then the bundle's own page, when it was read.
+ * number's split (splitBundle), then the bundle's own page, when it was read, then (step 15) the
+ * settle rules on what Home Depot itself says, when `known` carries their data.
  */
-export function readSplit(bundle: BundleRecord, known: Pick<KnownModels, 'stored' | 'catalog'>): Decomposition {
-  return splitWithPage(bundle, splitBundle(bundle, known.stored, known.catalog), bundle.page ?? null, known.catalog);
+export function readSplit(bundle: BundleRecord, known: Pick<KnownModels, 'stored' | 'catalog'> & Partial<Pick<KnownModels, 'settle'>>): Decomposition {
+  const split = splitWithPage(bundle, splitBundle(bundle, known.stored, known.catalog), bundle.page ?? null, known.catalog);
+  return known.settle ? settleSplit(bundle, split, known.catalog, known.settle) : split;
 }
 
 /**

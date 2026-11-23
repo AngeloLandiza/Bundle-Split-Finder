@@ -20,7 +20,7 @@ import type { PagePromotion, PromoPage } from '../hdPage';
 import { dayOf } from './state';
 import { estimateRoiPercent, type AlertSettings } from '../settings';
 import type { Cache } from '../serpapi/client';
-import { bundleKey, type BundleRecord, type BundleRow, type ReportSection } from '../scan/types';
+import { bundleKey, type BundleBogo, type BundleRecord, type BundleRow, type ReportSection } from '../scan/types';
 
 export const HOME_DEPOT = 'https://www.homedepot.com';
 const LISTING_PREFIX = '/b/Featured-BOGO/N-5yc1vZ1z24hvk/Ntk-elasticplus/Ntt-';
@@ -291,9 +291,15 @@ export function mergeBogoPairs(prior: Readonly<Record<string, BogoPair>>, result
 /** YYYY-MM-DD of the owner's local day. */
 export const todayOf = (at: number): string => dayOf(at);
 
+/** Step 15: the pair rule's facts the pair's split is read from (BundleRecord.bogo, scan/settle.ts rule 1). */
+export const pairFacts = (p: Pick<BogoPair, 'promotionId' | 'starterItemId' | 'starterModel' | 'freeModel'>): BundleBogo => ({
+  promotionId: p.promotionId, starterItemId: p.starterItemId, starterModel: p.starterModel, freeModel: p.freeModel,
+});
+
 /**
  * The pair as a bundle record, so the scan reads, splits, matches and estimates it like a listing row. Its page was read
- * by the pass and is saved on it, so the scan does not read it again; a record that already has a page keeps it.
+ * by the pass and is saved on it, so the scan does not read it again; a record that already has a page keeps it. Step 15:
+ * it carries the pair rule's facts (`bogo`), which its split reads.
  */
 export function pairBundleRecord(pair: BogoPair, item: BogoItem | undefined, known: BundleRecord | undefined, at: number): BundleRecord {
   const percentOff = pair.wasPrice !== null && pair.wasPrice > pair.price ? Math.round((1 - pair.price / pair.wasPrice) * 100) : known?.percentOff ?? null;
@@ -303,6 +309,7 @@ export function pairBundleRecord(pair: BogoPair, item: BogoItem | undefined, kno
     upc: known?.upc ?? null, price: pair.price, regularPrice: pair.wasPrice ?? known?.regularPrice ?? null, percentOff, link: pair.link, seenAt: at,
     split: known?.split ?? null,
     ...(page !== undefined ? { page } : {}),
+    bogo: pairFacts(pair),
   };
 }
 

@@ -179,7 +179,7 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
     // Read once for the split and the planning pass that follows it.
     const known = await knownModels(run.store);
     run.catalog = known.catalog;
-    await splitBundles(run, known.stored);
+    await splitBundles(run, known);
     // Step 6: then the pages of the plain kits the splits now hold, free, before the planning, which
     // looks up a kit's items only from its page. Not after Home Depot refused a page, or the reader failed.
     // The bundle pages asked for and not read still count: the two passes never ask for more than the cap.
@@ -1088,7 +1088,9 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
   const judged = new Set<string>();
   const asked = new Set<string>();
   for (const b of [...bundles].sort(newestFirst)) {
-    for (const part of resolvedParts(b)) {
+    // Step 15: a split that waits for a kit's own page (scan/settle.ts rule 2) asks for it as a resolved split's kit is,
+    // in a run that waits for pages (the agent's); elsewhere such a split is a question, as before.
+    for (const part of [...resolvedParts(b), ...(run.waitForPages ? waitingParts(b) : [])]) {
       const kitId = kitKey(part.brand, part.model);
       if (judged.has(kitId)) continue;
       judged.add(kitId);
@@ -1113,8 +1115,19 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
  * asked for on every scan; a part never read (not_read) has no check and is asked for again. Largest
  * saving first, then key; a RYOBI part written two ways once.
  */
-export async function partPricesWanted(store: ScanStore, settings: ScanSettings, now: number): Promise<Part[]> {
-  const parts = [...(await bundleParts(store)).values()];
+export async function partPricesWanted(store: ScanStore, settings: ScanSettings, now: number, waiting = false): Promise<Part[]> {
+  const parts: { key: string; brand: string; model: string; saving: number }[] = [...(await bundleParts(store)).values()];
+  // Step 15: with `waiting` (a run that waits for pages, the agent's), the parts a waiting split needs Home Depot's reading
+  // of (scan/settle.ts rule 2), with their bundle's saving.
+  const planned = new Set(parts.map((p) => p.key));
+  for (const b of waiting ? await store.listBundles() : []) {
+    const saving = (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0);
+    for (const p of waitingParts(b)) {
+      if (planned.has(p.key)) continue;
+      planned.add(p.key);
+      parts.push({ ...p, saving });
+    }
+  }
   const checkedAt = new Map((await store.listPartPrices()).map((r) => [r.key, r.checkedAt] as const));
   const fresh = (p: Part): boolean => [p.key, ...twinKeys(p.brand, p.model)].some((k) => {
     const at = checkedAt.get(k);
@@ -1187,7 +1200,7 @@ async function readPartPricesPass(run: Run): Promise<void> {
   const { store, job } = run;
   if (!run.readPartPrices || run.shouldStop()) return;
   const cap = Math.min(PART_PRICE_READS_MAX, Math.max(0, Math.floor(run.settings.partPriceReadsPerScan)));
-  const asked = (await partPricesWanted(store, run.settings, run.now())).slice(0, cap);
+  const asked = (await partPricesWanted(store, run.settings, run.now(), run.waitForPages)).slice(0, cap);
   if (asked.length === 0) {
     await nothingToRead(run, 'partPrices');
     return;
@@ -1211,6 +1224,30 @@ async function readPartPricesPass(run: Run): Promise<void> {
   measure(job, 'partPrices', run.now() - readStart, asked.length);
   endStep(job, 'partPrices', run.now());
   await store.putScan(job);
+  await splitWaiting(run);
+}
+
+/** Step 15: the parts a split waits for Home Depot's reading of (Decomposition.waitingFor), as parts. */
+export function waitingParts(b: Pick<BundleRecord, 'brand' | 'split'>): Part[] {
+  if (!b.split || b.split.status === 'resolved') return [];
+  const brand = b.brand.trim().toUpperCase();
+  return (b.split.waitingFor ?? []).map((m) => ({ key: partKey(brand, m), brand, model: m.trim().toUpperCase() }));
+}
+
+/**
+ * Step 15: once Home Depot's part prices are read, every split that waited for them is read again (splitOne, with the
+ * readings now stored): settled, still waiting, or a question with its reason. Never a search.
+ */
+async function splitWaiting(run: Run): Promise<void> {
+  const waiting = (await run.store.listBundles()).filter((b) => waitingParts(b).length > 0);
+  if (waiting.length === 0) return;
+  const known = await knownModels(run.store);
+  const now = run.now();
+  for (const bundle of waiting) {
+    const { split, opened } = await splitOne(run.store, bundle, { stored: known.stored, catalog: run.catalog, settle: known.settle }, now, run.waitForPages);
+    if (split.status === 'resolved') run.job.counts.bundlesResolved += 1;
+    if (opened) run.job.counts.reviewsOpened += 1;
+  }
 }
 
 // ---------------------------------------------------------------- step 10: eBay's reference values for the parts (free)
@@ -1395,13 +1432,13 @@ function noteProblem(job: ScanJob, sentence: string): void {
 // knownModels and readSplit live in split.ts, which a reopened split question reads with too.
 export { type KnownModels, knownModels } from './split';
 
-/** `stored`: the stored catalog alone; `run.catalog` adds the listings' models. */
-async function splitBundles(run: Run, stored: Catalog): Promise<void> {
+/** `known.stored`: the stored catalog alone; `run.catalog` adds the listings' models; `known.settle`: what the step 15 settle rules read. */
+async function splitBundles(run: Run, known: KnownModels): Promise<void> {
   const { store, job, catalog } = run;
   const now = run.now();
   let resolved = 0;
   for (const bundle of await store.listBundles()) {
-    const { split, opened } = await splitOne(store, bundle, { stored, catalog }, now, run.waitForPages);
+    const { split, opened } = await splitOne(store, bundle, { stored: known.stored, catalog, settle: known.settle }, now, run.waitForPages);
     if (split.status === 'resolved') resolved += 1;
     if (opened) job.counts.reviewsOpened += 1;
   }
@@ -1421,22 +1458,34 @@ export const pageRead = (bundle: Pick<BundleRecord, 'page'>): boolean => bundle.
  * Nov 23, at the agent's start (the next scan does the same in splitOne): every open split question a scan opened for a
  * bundle whose own page was never read is withdrawn, closed as a scan closes one (RESOLVED_BY_SCAN), so the bundle waits
  * for its page instead of asking the owner. A bundle with no record, or whose split is resolved, is left to the scan.
- * Returns the ids withdrawn.
+ * Step 15: every other open split question is read again under the settle rules, and closed when they now settle its
+ * split or make it wait for Home Depot's part pages. Returns the ids withdrawn or settled.
  */
 export async function withdrawUnreadSplitQuestions(store: ScanStore, now: number): Promise<string[]> {
   const out: string[] = [];
+  let known: KnownModels | null = null;
   for (const item of await store.listReview()) {
     if (item.kind !== 'split' || item.answer !== null) continue;
     const bundle = await store.getBundle(item.subject);
-    if (!bundle || pageRead(bundle) || bundle.split?.status === 'resolved') continue;
-    await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
-    out.push(item.id);
+    if (!bundle || bundle.split?.status === 'resolved') continue;
+    if (!pageRead(bundle)) {
+      await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
+      out.push(item.id);
+      continue;
+    }
+    // Step 15: the question read again under the settle rules (scan/settle.ts), as the next scan would: a split they
+    // settle is saved and its question closed as a scan closes one; one that now waits for Home Depot's part pages is
+    // withdrawn. The owner's answers are never touched (only open questions are read).
+    known ??= await knownModels(store);
+    const { split } = await splitOne(store, bundle, known, now, true);
+    const after = await store.getReview(item.id);
+    if (split.status === 'resolved' || (after && after.answer === RESOLVED_BY_SCAN)) out.push(item.id);
   }
   return out;
 }
 
 export async function splitOne(
-  store: ScanStore, bundle: BundleRecord, known: Pick<KnownModels, 'stored' | 'catalog'>, now: number, waitForPage = false,
+  store: ScanStore, bundle: BundleRecord, known: Pick<KnownModels, 'stored' | 'catalog'> & Partial<Pick<KnownModels, 'settle'>>, now: number, waitForPage = false,
 ): Promise<{ split: Decomposition; opened: boolean }> {
   const id = `split:${bundle.key}`;
   const item = await store.getReview(id);
@@ -1457,6 +1506,13 @@ export async function splitOne(
   // scan closes one), and asked again if the page, once read, still leaves the split uncertain. The
   // owner's own answer is never touched. Rule 4 is unchanged: nothing here makes a split resolved.
   if (waitForPage && owner === null && !pageRead(bundle)) {
+    if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
+    return { split, opened: false };
+  }
+  // Step 15 (decision 4, rule 2): a split whose parts Home Depot has not been read for yet (the free part-price read, a
+  // kit's own page) waits for them (waiting_parts) the same way: a question is opened only once a reading came back not
+  // found or the page contradicts the reading.
+  if (waitForPage && owner === null && (split.waitingFor ?? []).length > 0) {
     if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
     return { split, opened: false };
   }
