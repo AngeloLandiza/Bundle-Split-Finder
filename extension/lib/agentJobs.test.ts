@@ -18,6 +18,7 @@ function readers(over: Partial<Readers> = {}): { readers: Readers; log: string[]
     researchTools: {
       forQuestion: () =>
         ({
+          readHomeDepotPage: async (i: { itemId: string }) => (log.push(`research ${i.itemId}`), { sourceId: `hd-page:${i.itemId}`, label: 'Home Depot page', url: `https://www.homedepot.com/p/${i.itemId}`, sections: [] }),
           searchHomeDepot: async (i: { query: string }) => (log.push(`search ${i.query}`), { sourceId: 'hd-search:x', label: 'Home Depot search', url: 'https://www.homedepot.com/s/x', results: [] }),
         }) as never,
     },
@@ -53,6 +54,15 @@ describe('runJob', () => {
     expect(log).toEqual(['search ryobi drill']);
     const refused = readers({ researchTools: { forQuestion: () => ({ searchHomeDepot: async () => ({ error: 'Home Depot refused the search (HTTP 403); no more are made for this question.' }) }) as never } });
     expect(await runJob({ kind: 'search', input: { query: 'x' } }, refused.readers)).toEqual({ ok: false, error: 'Home Depot refused the search (HTTP 403); no more are made for this question.' });
+  });
+
+  it('researchPage reads the page through the research tool and answers its page, or its tool error as the result', async () => {
+    const { readers: r, log } = readers();
+    expect(await runJob({ kind: 'researchPage', input: { itemId: '328690510' } }, r)).toMatchObject({ ok: true, result: { label: 'Home Depot page' } });
+    expect(log).toEqual(['research 328690510']);
+    expect(await runJob({ kind: 'researchPage', input: { itemId: 'abc' } }, r)).toMatchObject({ ok: false });
+    const refused = readers({ researchTools: { forQuestion: () => ({ readHomeDepotPage: async () => ({ error: 'Home Depot refused the page (HTTP 403).' }) }) as never } });
+    expect(await runJob({ kind: 'researchPage', input: { itemId: '328690510' } }, refused.readers)).toEqual({ ok: true, result: { error: 'Home Depot refused the page (HTTP 403).' } });
   });
 
   it('refuses input that is not digits, names no model, or is too long, and reads nothing', async () => {
@@ -138,7 +148,7 @@ function loopWorld(script: NextJob[], over: Partial<JobLoopDeps> = {}) {
       return n;
     },
     result: async (b) => (results.push(b), events.push(`result ${b.id}`), 'sent'),
-    heartbeat: async () => void events.push('beat'),
+    heartbeat: async (id) => void events.push(id === undefined ? 'beat' : `beat ${id}`),
     run: async (j) => (events.push(`run ${j.id}`), { ok: true, result: `r-${j.id}` }),
     now: () => clock,
     sleep: async (ms) => void (clock += ms),
@@ -192,7 +202,7 @@ describe('the job loop', () => {
     });
     await w.loop.start();
     expect(during).toBe(1);
-    expect(w.events).toContain('beat');
+    expect(w.events).toContain('beat j1');
     expect(w.beats).toHaveLength(0);
   });
 

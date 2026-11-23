@@ -56,6 +56,12 @@ export async function runJob(job: { kind: WorkerJobKind; input: unknown }, reade
         const found = await readers.researchTools.forQuestion().searchHomeDepot({ query });
         return 'error' in found ? { ok: false, error: found.error.slice(0, MAX_ERROR) } : { ok: true, result: found };
       }
+      case 'researchPage': {
+        const id = itemId(input.itemId);
+        if (id === null) return bad('item id');
+        // WorkerJobResults.researchPage is HomeDepotPage | ToolError: a refusal is the result, as the agent reads it.
+        return { ok: true, result: await readers.researchTools.forQuestion().readHomeDepotPage({ itemId: id }) };
+      }
       default:
         return { ok: false, error: 'This browser does not know that kind of job.' };
     }
@@ -80,7 +86,7 @@ export interface JobLoopDeps {
   /** POST /api/worker/result. */
   result(body: WorkerResultBody): Promise<'sent' | 'unpaired' | 'failed'>;
   /** POST /api/worker/heartbeat: still here, though no poll is open (a long job). */
-  heartbeat(): Promise<void>;
+  heartbeat(jobId?: string): Promise<void>;
   run(job: Job): Promise<JobOutcome>;
   now(): number;
   sleep(ms: number): Promise<void>;
@@ -139,7 +145,7 @@ export function createJobLoop(deps: JobLoopDeps): JobLoop {
         continue;
       }
       // A job: a heartbeat keeps the app seeing this browser while the read takes longer than a poll.
-      const stopBeat = deps.every(heartbeatMs, () => void deps.heartbeat().catch(() => undefined));
+      const stopBeat = deps.every(heartbeatMs, () => void deps.heartbeat(next.job.id).catch(() => undefined));
       let outcome: JobOutcome;
       try {
         outcome = await deps.run(next.job);
@@ -203,8 +209,8 @@ export function appJobDeps(api: AgentApi): Pick<JobLoopDeps, 'next' | 'result' |
       if (!reply.ok && reply.kind === 'refused' && reply.status === 404) return 'sent';
       return reply.kind === 'unpaired' ? 'unpaired' : 'failed';
     },
-    async heartbeat() {
-      await api.post('/api/worker/heartbeat');
+    async heartbeat(jobId) {
+      await api.post('/api/worker/heartbeat', jobId === undefined ? undefined : { jobId });
     },
   };
 }
