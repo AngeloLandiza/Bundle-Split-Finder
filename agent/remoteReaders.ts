@@ -128,6 +128,8 @@ function listedItems(v: unknown): ListedItem[] | null {
 export interface RemoteReaders {
   /** One page of a Featured BOGO listing. Throws when Chrome could not read it or Home Depot refused it. */
   readBogoListing(path: string): Promise<ListedItem[]>;
+  /** Free scan: one page of a brand's Bundle listing. Throws when Chrome could not read it or Home Depot refused it. */
+  readBundleListing(path: string): Promise<ListedItem[]>;
   /** Product pages with their BOGO promotions, one outcome per id. Throws as readPages. */
   readPromoPages(itemIds: string[]): Promise<PromoPageOutcome[]>;
   readPages: ReadPages;
@@ -240,6 +242,15 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
     return items;
   };
 
+  const readBundleListing = async (path: string): Promise<ListedItem[]> => {
+    const result = await run('bundleListing', { path }, t.pageMs);
+    const err = toolError(result);
+    if (err) throw new Error(err.error);
+    const items = listedItems(result);
+    if (items === null) throw new Error('The bundle list Chrome read could not be read.');
+    return items;
+  };
+
   const readPromoPages = async (itemIds: string[]): Promise<PromoPageOutcome[]> => {
     const result = await run('promoPage', { itemIds: [...itemIds] }, t.pageMs + t.perItemMs * itemIds.length);
     if (!Array.isArray(result)) throw new Error('The BOGO pages Chrome read could not be read.');
@@ -294,7 +305,7 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
     };
   }
 
-  return { readPages, readPartPrices, readBogoListing, readPromoPages, researchTools };
+  return { readPages, readPartPrices, readBogoListing, readBundleListing, readPromoPages, researchTools };
 }
 
 /** As extension/lib/researchTools.ts homeDepotItemId: a 9-digit id, or the last segment of a homedepot.com /p/ address. */

@@ -7,9 +7,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { BRAND_QUERIES } from '@core/settings';
 import { bogoListingPath } from '@core/tracking/bogoPairs';
+import { bundleListingPath } from '@core/scan/listingSource';
 import { runJob } from './agentJobs';
 import type { Readers } from './doorwayLock';
-import { createBogoListingReader, createPromoPageReader, doorwayStateInTab, fetchPathInTab, type DoorwayState, type InTabResult, type PathInTab, type ReaderEnv } from './hdReader';
+import { createBogoListingReader, createBundleListingReader, createPromoPageReader, doorwayStateInTab, fetchPathInTab, type DoorwayState, type InTabResult, type PathInTab, type ReaderEnv } from './hdReader';
 
 interface RecordedItem { itemId: string; model: string; brand: string; title: string; price: number; original: number | null; conditionalPromotions: unknown[] | null }
 const recording = JSON.parse(readFileSync('fixtures/homedepot-pages/bogo-2026-11-23.json', 'utf8')) as { lists: Record<'ryobi' | 'dewalt', { items: RecordedItem[] }> };
@@ -85,6 +86,24 @@ describe('the BOGO listing reader', () => {
   });
 });
 
+describe('the Bundle listing reader (free scan)', () => {
+  const path = bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, 12)!;
+  it('reads a Bundle listing page as the BOGO listing reader does, and only a Bundle listing address', async () => {
+    const f = env(() => ({ status: 200, text: listingText(ryobi) }) satisfies PathInTab);
+    const got = await createBundleListingReader(f.env, { settleMs: 0 })(path);
+    expect('products' in got && got.products.map((p) => p.model)).toEqual(ryobi.map((i) => i.model));
+    expect(f.log).toEqual([`open https://www.homedepot.com${path}`, 'fetch']);
+    const g = env(() => ({ status: 200, text: '' }));
+    expect(await createBundleListingReader(g.env)(bogoListingPath(BRAND_QUERIES.RYOBI, 0))).toEqual({ error: 'That is not a Home Depot Bundle listing address.' });
+    expect(g.log).toEqual([]);
+  });
+  it('a refusal is said in words, and nothing is retried', async () => {
+    const f = env(() => ({ status: 403, text: null }));
+    expect(await createBundleListingReader(f.env, { settleMs: 0 })(path)).toEqual({ error: 'Home Depot refused the bundle list (HTTP 403).' });
+    expect(f.log.filter((l) => l === 'fetch')).toHaveLength(1);
+  });
+});
+
 describe('fetchPathInTab (run from its own source)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
@@ -152,6 +171,14 @@ describe('the BOGO jobs', () => {
     expect(await runJob({ kind: 'bogoListing', input: { path } }, r)).toEqual({ ok: true, result: { products: [] } });
     expect(await runJob({ kind: 'bogoListing', input: { path: 'https://evil.example/' } }, r)).toEqual({ ok: false, error: 'The job\'s listing address is not one this browser can read.' });
     expect(await runJob({ kind: 'bogoListing', input: { path } }, base)).toEqual({ ok: false, error: 'This browser does not read BOGO listings yet.' });
+  });
+
+  it('bundleListing reads only a Bundle listing address; an older browser without the reader answers as outdated', async () => {
+    const path = bundleListingPath('DEWALT', BRAND_QUERIES.DEWALT, 0)!;
+    const r: Readers = { ...base, readBundleListing: async () => ({ products: [] }) };
+    expect(await runJob({ kind: 'bundleListing', input: { path } }, r)).toEqual({ ok: true, result: { products: [] } });
+    expect(await runJob({ kind: 'bundleListing', input: { path: bogoListingPath(BRAND_QUERIES.RYOBI, 0) } }, r)).toEqual({ ok: false, error: 'The job\'s listing address is not one this browser can read.' });
+    expect(await runJob({ kind: 'bundleListing', input: { path } }, base)).toMatchObject({ ok: false, outdated: true });
   });
 
   it('promoPage takes digits only', async () => {

@@ -5,6 +5,7 @@
 import { UNKNOWN_JOB_KIND, type WorkerJobKind, type WorkerNextResponse, type WorkerResultBody } from '@core/api/contract';
 import { HOME_DEPOT_ITEM_ID } from '@core/scan/kitPage';
 import { isBogoListingPath } from '@core/tracking/bogoPairs';
+import { isBundleListingPath } from '@core/scan/listingSource';
 import type { AgentApi } from './agentApi';
 import type { Readers } from './doorwayLock';
 
@@ -27,6 +28,7 @@ const text = (v: unknown, max: number): string | null => (typeof v === 'string' 
  *   partPrice  a PartPriceReading (found, not_found, or not_read when Home Depot refused); `brand` is the page's own
  *   search     the research tool's HomeDepotSearch (the first page of results only: a later page is refused in words)
  *   bogoListing  one Featured BOGO listing page's products ({products}); a refusal is the result ({error}), as researchPage's
+ *   bundleListing  one Bundle listing page's products ({products}), as bogoListing (free scan, Nov 23)
  *   promoPage  PromoPageOutcome[], one per item id, with each page's price, was-price and BOGO promotions
  * A refusal by Home Depot is a result (kind 'refused', status 'not_read'), not a failure: asking again will not change it.
  */
@@ -69,6 +71,11 @@ export async function runJob(job: { kind: WorkerJobKind; input: unknown }, reade
         if (!isBogoListingPath(input.path)) return bad('listing address');
         if (!readers.readBogoListing) return { ok: false, error: 'This browser does not read BOGO listings yet.' };
         return { ok: true, result: await readers.readBogoListing(input.path) };
+      }
+      case 'bundleListing': {
+        if (!isBundleListingPath(input.path)) return bad('listing address');
+        if (!readers.readBundleListing) return { ok: false, error: UNKNOWN_JOB_KIND, outdated: true };
+        return { ok: true, result: await readers.readBundleListing(input.path) };
       }
       case 'promoPage': {
         const ids = Array.isArray(input.itemIds) ? input.itemIds.map(itemId) : null;

@@ -180,6 +180,10 @@ describe('malformed or oversized worker job input from the app', () => {
       ['bogoListing', { path: 'https://evil.example/' }],
       ['bogoListing', { path: '/p/../../account/settings' }],
       ['bogoListing', { path: '/b/Featured-BOGO/N-5yc1vZ1z24hvk/Ntk-elasticplus/Ntt-ryobi?NCNI-5&redirect=https://evil.example' }],
+      ['bundleListing', { path: '/b/Featured-BOGO/N-5yc1vZ1z24hvk/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5' }],
+      ['bundleListing', { path: '/b/N-5yc1vZbwo64Zm5dZ1z24hvk/Ntk-elasticplus/Ntt-ryobi?NCNI-5' }],
+      ['bundleListing', { path: '/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi?NCNI-5&redirect=https://evil.example' }],
+      ['bundleListing', { path: 'https://www.homedepot.com/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi?NCNI-5' }],
       ['shell', {}],
       ['page', 'itemIds=314'],
     ];
@@ -194,8 +198,9 @@ describe('malformed or oversized worker job input from the app', () => {
     expect((await job('page', { itemIds: ['314', 320222321] })).status).toBe(200);
     expect((await job('search', { query: 'RYOBI PCL1600K2', page: 1 })).status).toBe(200);
     expect((await job('bogoListing', { path: '/b/Featured-BOGO/N-5yc1vZ1z24hvk/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5&Nao=24' })).status).toBe(200);
+    expect((await job('bundleListing', { path: '/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5&Nao=12' })).status).toBe(200);
     expect((await job('reload', {})).status).toBe(200);
-    expect(agent.jobs.waitingCount()).toBe(4);
+    expect(agent.jobs.waitingCount()).toBe(5);
   });
 
   it('refuses a body over the limit and queues nothing', async () => {

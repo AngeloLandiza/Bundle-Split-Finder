@@ -1083,6 +1083,11 @@ export interface WorkerJobInputs {
    * worker reads only a path isBogoListingPath accepts).
    */
   bogoListing: { path: string };
+  /**
+   * Free scan (Nov 23): one page of a brand's Bundle listing, by its path (core/src/scan/listingSource.ts bundleListingPath;
+   * the agent and the worker accept only a path isBundleListingPath accepts).
+   */
+  bundleListing: { path: string };
   /** BOGO: product pages with their price, was-price and BOGO promotions (hdPage.ts parsePromoPage). */
   promoPage: { itemIds: string[] };
   /**
@@ -1108,6 +1113,8 @@ export interface WorkerJobResults {
   researchPage: HomeDepotPage | ToolError;
   /** The listing page's products in page order (its base-searchNav entries); a refusal is a ToolError. */
   bogoListing: { products: ListedItem[] } | ToolError;
+  /** As bogoListing: the Bundle listing page's products in page order; a refusal is a ToolError. */
+  bundleListing: { products: ListedItem[] } | ToolError;
   /** One outcome per item id asked, as `page`'s. */
   promoPage: PromoPageOutcome[];
   /** Posted just before the helper reloads. */
@@ -1115,7 +1122,7 @@ export interface WorkerJobResults {
 }
 
 export type WorkerJobKind = keyof WorkerJobInputs;
-export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search', 'researchPage', 'bogoListing', 'promoPage', 'reload'];
+export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search', 'researchPage', 'bogoListing', 'bundleListing', 'promoPage', 'reload'];
 
 /**
  * Nov 23: the sentence a helper answers a job kind it does not know with. A helper built before `outdated` existed says only

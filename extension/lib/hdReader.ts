@@ -4,6 +4,7 @@
 
 import { parseBundlePage, parseProductPage, parsePromoPage, parseSearchText } from '@core/hdPage';
 import { HOME_DEPOT, isBogoListingPath, type ListedItem, type PromoPageOutcome } from '@core/tracking/bogoPairs';
+import { isBundleListingPath } from '@core/scan/listingSource';
 import type { ToolError } from '@core/research/types';
 import { modelForms, sameModel } from '@core/match';
 import {
@@ -774,7 +775,28 @@ export async function fetchPathInTab(path: string): Promise<PathInTab> {
  */
 export function createBogoListingReader(
   env: ReaderEnv,
-  opts: { pauseMs?: number; settleMs?: number; doorwayStateMs?: number; now?: () => number } = {},
+  opts: ListingReaderOptions = {},
+): (path: string) => Promise<{ products: ListedItem[] } | ToolError> {
+  return createListingReaderOf(env, opts, { accepts: isBogoListingPath, wrongPath: 'That is not a Featured BOGO listing address.', name: 'the BOGO listing', named: 'The BOGO listing' });
+}
+
+/**
+ * Free scan (Nov 23): one page of a brand's Bundle listing (core/src/scan/listingSource.ts), read exactly as a Featured BOGO
+ * listing page is: the same doorway, settle, pause and refusal rules; only a path isBundleListingPath accepts.
+ */
+export function createBundleListingReader(
+  env: ReaderEnv,
+  opts: ListingReaderOptions = {},
+): (path: string) => Promise<{ products: ListedItem[] } | ToolError> {
+  return createListingReaderOf(env, opts, { accepts: isBundleListingPath, wrongPath: 'That is not a Home Depot Bundle listing address.', name: 'the bundle list', named: 'The bundle list' });
+}
+
+export interface ListingReaderOptions { pauseMs?: number; settleMs?: number; doorwayStateMs?: number; now?: () => number }
+
+function createListingReaderOf(
+  env: ReaderEnv,
+  opts: ListingReaderOptions,
+  what: { accepts: (path: unknown) => path is string; wrongPath: string; name: string; named: string },
 ): (path: string) => Promise<{ products: ListedItem[] } | ToolError> {
   const pauseMs = opts.pauseMs ?? 1000;
   const settleMs = opts.settleMs ?? 2500;
@@ -782,19 +804,19 @@ export function createBogoListingReader(
   const now = opts.now ?? Date.now;
   let lastEnded: number | null = null;
   return async (path) => {
-    if (!isBogoListingPath(path)) return { error: 'That is not a Featured BOGO listing address.' };
+    if (!what.accepts(path)) return { error: what.wrongPath };
     if (lastEnded !== null) {
       const left = pauseMs - (now() - lastEnded);
       if (left > 0) await env.sleep(left);
     }
     try {
       const got = await withDoorway(env, `${env.origin}${path}`, { settleMs, doorwayStateMs }, (tabId) => env.runInTab(tabId, fetchPathInTab, [path]));
-      if (!got.shown) return { error: `Home Depot refused the BOGO listing (its own page never showed its data${titled(got.title)}).` };
+      if (!got.shown) return { error: `Home Depot refused ${what.name} (its own page never showed its data${titled(got.title)}).` };
       const read = got.value;
-      if (!read || read.status !== 200) return { error: `Home Depot refused the BOGO listing (${read && read.status !== 0 ? `HTTP ${read.status}` : 'no answer'}).` };
-      if (read.text === null) return { error: `The BOGO listing came back without its data${titled(read.note ?? '')}.` };
+      if (!read || read.status !== 200) return { error: `Home Depot refused ${what.name} (${read && read.status !== 0 ? `HTTP ${read.status}` : 'no answer'}).` };
+      if (read.text === null) return { error: `${what.named} came back without its data${titled(read.note ?? '')}.` };
       const rows = parseSearchText(read.text, HOME_DEPOT);
-      if (rows === null) return { error: 'The BOGO listing could not be read.' };
+      if (rows === null) return { error: `${what.named} could not be read.` };
       return { products: rows.map((r) => ({ itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url })) };
     } catch (e) {
       if (e instanceof Error && e.message === 'The Home Depot tab did not load.') return { error: e.message };

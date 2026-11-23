@@ -152,6 +152,18 @@ describe('the BOGO readers (worker jobs)', () => {
     await expect(odd).rejects.toThrow('could not be read');
   });
 
+  it('free scan: a Bundle listing job answers its products and throws a refusal, as the BOGO listing job', async () => {
+    const { readers, worker } = setup();
+    const path = '/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5&Nao=12';
+    const product = { itemId: '324903619', brand: 'RYOBI', model: 'PCL1201K2-PCL515B', title: 'kit', url: 'https://www.homedepot.com/p/x/324903619' };
+    const listing = readers.readBundleListing(path);
+    expect(await worker(() => ({ products: [product] }))).toMatchObject({ kind: 'bundleListing', input: { path } });
+    expect(await listing).toEqual([product]);
+    const refused = readers.readBundleListing(path);
+    await worker(() => ({ error: 'Home Depot refused the bundle list (HTTP 403).' }));
+    await expect(refused).rejects.toThrow('Home Depot refused the bundle list (HTTP 403).');
+  });
+
   it('a promoPage job keeps only well-formed pages: a promotion date not in the recorded form drops the page', async () => {
     const { readers, worker } = setup();
     const reading = readers.readPromoPages(['317987584', '324903619']);

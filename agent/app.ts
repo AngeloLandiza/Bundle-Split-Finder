@@ -55,6 +55,7 @@ import { tryServeUi, uiIndexExists } from './uiStatic';
 import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf, workingReviewCount } from './views';
 import { setWatch } from '../core/src/tracking/state';
 import { isBogoListingPath } from '../core/src/tracking/bogoPairs';
+import { isBundleListingPath } from '../core/src/scan/listingSource';
 import { HOME_DEPOT_ITEM_ID } from '../core/src/scan/kitPage';
 import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
@@ -170,6 +171,10 @@ function parseJobInput(kind: WorkerJobKind, v: unknown): WorkerJobInputs[WorkerJ
       return { itemId: itemIdOf(o.itemId) };
     case 'bogoListing':
       if (!isBogoListingPath(o.path)) throw new HttpError('bad_request', 'path must be a Featured BOGO listing path.');
+      return { path: o.path };
+    case 'bundleListing':
+      // Security review M2: only the Bundle listing addresses the scan builds (filter tokens, a query, an offset).
+      if (!isBundleListingPath(o.path)) throw new HttpError('bad_request', 'path must be a Home Depot Bundle listing path.');
       return { path: o.path };
     case 'promoPage':
       return { itemIds: itemIdsOf(o.itemIds) };

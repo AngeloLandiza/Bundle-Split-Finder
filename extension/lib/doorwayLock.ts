@@ -27,6 +27,8 @@ export interface Readers {
   readItemPrice: ReadItemPrice;
   /** BOGO: one page of a Featured BOGO listing (hdReader.ts createBogoListingReader). Absent: this browser does not read them. */
   readBogoListing?: (path: string) => Promise<{ products: ListedItem[] } | ToolError>;
+  /** Free scan: one page of a brand's Bundle listing (hdReader.ts createBundleListingReader). */
+  readBundleListing?: (path: string) => Promise<{ products: ListedItem[] } | ToolError>;
   /** BOGO: product pages with their promotions (createPromoPageReader). */
   readPromoPages?: (itemIds: string[]) => Promise<PromoPageOutcome[]>;
   researchTools: { forQuestion(budget?: QuestionBudget): QuestionTools };
@@ -39,6 +41,7 @@ export function lockedReaders(lock: Lock, raw: Readers): Readers {
     readPartPrices: (parts) => lock(() => raw.readPartPrices(parts)),
     readItemPrice: (itemId, model) => lock(() => raw.readItemPrice(itemId, model)),
     ...(raw.readBogoListing ? { readBogoListing: (path: string) => lock(() => raw.readBogoListing!(path)) } : {}),
+    ...(raw.readBundleListing ? { readBundleListing: (path: string) => lock(() => raw.readBundleListing!(path)) } : {}),
     ...(raw.readPromoPages ? { readPromoPages: (ids: string[]) => lock(() => raw.readPromoPages!(ids)) } : {}),
     researchTools: {
       forQuestion(budget) {
