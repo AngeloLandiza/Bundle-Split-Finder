@@ -458,13 +458,34 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   Sales rank. Thin lines, separator gridlines, secondary-label axes, a hover or arrow-key crosshair with a
   value tooltip, a gap where a scan had no figure; under two scans: "History starts after two scans."
 - **Review**: the questions in the content, grouped AI verified (with Approve all N, confirmed in
-  place) then Needs you; a status bar with the keys. A row's trailing mark is a green **Verified** chip only for an
-  answer the code verified (so Approve all has something to point at), a quiet "AI suggested" for one it could not
-  check, and nothing otherwise; the full Verified / Not verified state is in the answer pane. The inspector (at least 440px) holds the question:
-  the kind, the question at 15 semibold, the bundle and its links, Why it is asked in plain words (`lib/questionWords.ts`: the agent's technical note becomes one sentence for the owner;
-  the note itself is under a collapsed "Technical detail"; a note it does not know passes through unchanged) with its quotes, the
-  AI block in a group box (green edge when the code verified it), the choices as one box of radio rows
-  with their number keys, and Approve or Save answer at the foot.
+  place) then Needs you; a status bar with the keys. A row is the model number (mono) with brand and kind under it, and
+  two to four words of state on the right, never a title: "Suggested: 2 parts", "Verified: 3 parts", "AI could not
+  tell", "AI: none fit", "Needs the parts", "Needs a listing" (`lib/reviewBrief.ts` `rowState`). Only a code-verified
+  answer is a green tag, so Approve all has something to point at.
+  **The answer pane is a fixed decision card** (the owner, Nov 23: "too much information ... I don't know what I am
+  supposed to be looking at"; the PO, Alex, is a reseller, not a developer). The inspector is at least 420px and, for
+  the longest real question, fits a 900px window without scrolling by default. Top to bottom, nothing else visible:
+  1. *Header*: the question in one line at 15 semibold ("What is inside this bundle?", "Which Amazon listing is this
+     part?"), the model and the title on one truncated line, the Home Depot page and Open the deal.
+  2. *The card*, one group box: a state chip (**Verified** green; **Suggested, not verified** amber; **AI could not
+     tell** neutral; none when nothing is suggested) with "AI suggestion" beside it; the suggestion in plain words as
+     the largest text (17/22, "PCL1600K2 kit + PBP2003 battery"; what a part is is said only where the data says it);
+     **Why**, at most three lines of 13px, each ending in a small source link ("Home Depot page ↗"); **Check**, one
+     line naming the first thing the code could not confirm, with the page to open. Could not tell has no suggestion:
+     one sentence saying what is missing and **Next** "Pick the parts below, or open the page". Nothing suggested
+     says "No suggestion yet." with why the question is asked.
+  3. *The choices* in one box of radio rows with number keys 1 to 9; the suggested one is preselected and marked
+     **Suggested** in words; then None of these and Enter the parts.
+  4. *Details*, one disclosure, closed by default, open state kept for the session: the AI's own reason and what it
+     answered, what the code checked (and the code's own words in mono), why the question was asked in plain words with
+     the agent's note, what the AI quoted and what the pages say, each grouped by source with the source as a link above
+     its lines, and the cost. Nothing the pane showed before is gone; it moved here.
+  5. *Footer*: Save and next (Enter), Ask AI when there is no suggestion. The first-use AI explanation is a one-line
+     footnote under the card ("AI can be wrong. Only verified answers apply without you."), dismissible, not a block.
+  The card's text is the agent's `brief` (`ReviewBrief`, `api/types.ts`: ask, suggestion, state, at most three reasons,
+  check, writtenBy) when it sends one; otherwise `briefFromQuestion` derives it by rules from the question and the AI's
+  suggestion (`lib/reviewBrief.ts`): the AI's own sentence cut at a claim boundary or a word, never reworded, every line
+  at most 110 characters. A brief that does not have the promised shape is dropped, not repaired.
 - **Activity**: Needs attention, Autopilot with Undo, Runs as a plain table in a group box.
 - **Settings**: not a screen. The sidebar's Settings item, Cmd+5, Cmd+, (app menu and tray) and any
   `#/settings/<section>` link open the Preferences window (below) and leave the screen that was open as
