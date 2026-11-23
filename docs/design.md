@@ -284,6 +284,135 @@ way it counts in, and once a price is stored, that way's estimated profit.
 The bundle stays in Missing listing or Inactive listing: a confirmed price is not an Amazon listing.
 A part not looked up yet has no form. The AI does not invent a dollar amount.
 
+## Desktop app (step 13)
+
+The desktop app is where he works; the side panel is the helper beside a Home Depot page. Same
+tokens, same faces, same words. The app is a work place, not a phone column in a window: a rail,
+a page header, and a body that uses the width. Built in `desktop-ui/src/` (components in
+`components/`, screens in `screens/`); no mockup yet, so this section is the reference.
+
+### Layout grid
+
+- Window: minimum 1000×680, fluid to about 1440; the body never stretches text past a readable
+  measure (Today and Activity stop at 1200px, Settings at 880px, a Review question at 760px).
+- **Rail**, 208px, surface, hairline right: the mark and "Split Finder" (15 semibold) in a 64px
+  band, then the five screens as text links, 36px tall, 4px radius: Today, Deals, Review,
+  Activity, Settings. The current screen is ink, semibold, on sunken; the others ink-2. Review's
+  count is the amber count tag when above zero. No nav icons. At the foot, over a hairline: the
+  agent's status line, the one primary action (Scan now with its price, Stop while running,
+  Resume while paused), searches left with a 4px meter, and Chrome's state in words.
+- **Page header**, 64px, surface, hairline under: the page title (20/28 semibold) with one quiet
+  line under it (13/18 ink-2: the date, a count, "Changes save as you make them."), and the
+  page's actions at the right (Download CSV, Ask AI about all).
+- **App notices** sit under the header, one sentence each with the one action that fixes it.
+- **Body** padding 20px 24px; sections 32px apart. A section is a caps label with its count
+  ("BEST DEALS · 5") and its action at the right, then one white band with hairlines between rows.
+- Two columns only where both are read together: Today (lists, and the agent at 340px; one
+  column under 1180px, what needs him first), Deals with its pane, Review's master and detail.
+
+### Type scale, desktop
+
+    20/28 semibold   page titles, a Review question
+    17/23 semibold   a bundle's title in the detail pane; 17/24 Settings section headings
+    15/22            empty-state titles, first-run lead
+    14/20            body, table titles, buttons
+    13/18            labels, secondary lines, help, table figures
+    12/16            section labels (caps, 600, 0.06em), table heads, figures inside a 13px line
+    30/36 mono 600   the detail pane's headline profit
+
+Every figure, model number and ASIN is JetBrains Mono with tabular figures. Mono runs large beside
+Barlow, so a figure inside a 13px line is set at 12px. On a control that spends something only the
+figure is mono: "Scan now · 5 searches", "Ask AI · about $0.10".
+
+### Tables
+
+- A real `<table>`, fixed layout, on one white band. Heads 32px, 12px semibold ink-2, sticky.
+  Rows 44px with 16px side padding; a hairline between rows; hover is paper, the open row sunken.
+- Each row's first cell holds a real `<button>` stretched over the row, so a click anywhere
+  opens it and the keyboard gets a control. A row's own controls (Look up) sit above it.
+- Sortable heads are buttons with `aria-sort` and an arrow on the sorted one. Figures sort high
+  to low first, words A to Z; rows with no figure sit last either way, ties keep their order. A
+  bundle that needs an answer has no figure to compare and sorts last. The choice is remembered.
+- Figures right aligned. Titles cut with an ellipsis, the full title on hover. A long cell never
+  pushes the table wider.
+- Columns drop by the table's own width (container queries), never by guessing at the window:
+  Off and Updated under 900px, Match under 720px (its "Needs answer" tag moves into the profit
+  cell), Price under 560px.
+- Deals: Bundle (title, then brand · model), Price, Off, Match, Est. profit, ROI with the range
+  on a second line without the word ROI ("−6% to +12%", the full sentence on hover), Updated.
+  The section filter is a segmented control (All, Confirmed, Waiting for lookup, Inactive
+  listing, Missing listing, Contents not known, each with its count), a select when narrow. Under
+  the table, once: "Profit and ROI are estimates from your fee settings, not your real Amazon fees."
+
+### Split pane
+
+The list keeps the left; the pane takes `clamp(380px, 36vw, 520px)` on the right, surface, one
+hairline between. Its top bar holds Close (Esc) and the source link ("Open on Home Depot"); its
+foot holds the primary action (Copy ASINs), sticky. Esc closes the pane and focus returns to the
+row that opened it. The open item is in the URL (`#/deals/<id>`), so the shell can open it.
+
+The deal pane's headline band reads: profit (30/36), ROI, then three figures that are three
+different numbers: **Bundle costs** (price with tax and inbound), **Parts sell for** (the counted
+part prices before fees) and **After fees** (what those parts net). Then the estimate line with
+its fee basis and a Change link to Settings › Fees.
+
+### Review, master and detail
+
+Left, 280-360px: a filter field, then "AI VERIFIED · N" with "Approve all N verified" (quiet ink
+text button, underlined) at its right, then "NEEDS YOU · N". A row is the bundle's title (one
+line, ellipsis) and "Which parts · DCK200D1P1W921B". Right: the kind in caps, the question at
+20/28, the bundle with its Home Depot link and Open the deal, "Why it is asked" with the evidence
+quotes and their sources, the AI block (unchanged from step 11), the choices as a radio group with
+their number keys shown, then Approve or Save answer. Approving moves to the next question.
+Approve all opens the inline confirmation in place ("Approve 3 AI answers? Approve · Cancel").
+
+### States
+
+Every screen has all of these; none is a spinner.
+
+- **Loading**: still skeleton rows in the shape of what will come (sunken bars, no shimmer).
+  After the first load the last data stays on screen while it reloads.
+- **Empty**: a title, the cause in one sentence, and the action that changes it ("No deals yet.
+  The last scan found no discounted DEWALT or RYOBI bundles. The next scan looks again.").
+- **Error**: the agent's sentence on sunken with Retry (and its price when it spends). Not rust:
+  rust is only for a loss.
+- **Offline**: one sunken band, "The agent is not running.", with Retry; sections say "Shown
+  again when the agent is running." instead of repeating the error.
+- **Chrome closed**: sunken band, "Chrome is closed — Home Depot pages wait.", with how many wait.
+- **Not paired, no SerpApi key, searches at the reserve**: amber bands, each with its fix.
+- **Paused**: "Paused · No scheduled scan runs until you resume" in the status line; Resume is
+  the rail's primary action.
+- **Running**: the status line ("Scanning · Checking eBay listings · 23 of 60", "about 4 min")
+  over the 2px bar, as in Scan progress.
+
+No new colours. Every state above uses sunken (a fact about the app) or attention (it needs him).
+
+### Keyboard
+
+    Cmd/Ctrl+1-5     Today, Deals, Review, Activity, Settings (anywhere)
+    Cmd/Ctrl+F       the screen's filter field (also the shell's split-finder:find)
+    J / K, ↓ / ↑     next / previous row or question
+    Enter            open the row; in Review, save or approve
+    1-9              Review: pick that choice
+    A                Review: Ask AI on this question
+    Esc              close the pane, cancel a confirmation
+
+Letters and digits never act while he types in a field, and Enter never takes a press from a
+focused button. The focus ring is the spec's 2px ink outline; inside a row or the rail it is inset.
+
+### Notifications
+
+Native notifications and the Telegram digest use the same words, short, with no keys and no
+links that carry one. Title, then one line:
+
+- "3 new deals" / "PCL1600K2: est. +$124.34, ROI 62%. Open Today to see all three."
+- "2 questions need you" / "Autopilot answered 4. The other 2 wait in Review."
+- "Autopilot applied 4 answers" / "Each can be undone in Activity."
+- "Scan stopped at the limit" / "20 searches left, all in reserve. Scans start again on Dec 1."
+- "Chrome is closed" / "4 Home Depot pages wait. They are read when Chrome opens."
+
+Profit in a message is an estimate and says "est.". No exclamation marks, no emoji.
+
 ## Behaviour
 
 - Keyboard: everything reachable by Tab in reading order; Enter opens a row; Escape goes back
