@@ -7,10 +7,13 @@ import { KeepaSection } from './KeepaSection';
 import { RelaySection } from './RelaySection';
 import { ScanningSection } from './ScanningSection';
 import { realWorker, useAppState, type WorkerApi } from '../../lib/pageClient';
+import type { LinkStore } from '../../lib/agentLink';
+import type { AgentLinkActions } from '../../lib/useAgentLink';
+import { AgentSection } from './AgentSection';
 
 const DEFAULT_PLAN_PER_MONTH = 250;
 
-export function SettingsPage({ api = realWorker }: { api?: WorkerApi }) {
+export function SettingsPage({ api = realWorker, linkStore, linkActions }: { api?: WorkerApi; linkStore?: Pick<LinkStore, 'readLink'>; linkActions?: AgentLinkActions }) {
   const { state, loading, error, save } = useAppState(api);
   const [saveError, setSaveError] = useState<string | null>(null);
   // What is shown and validated on every keystroke.
@@ -72,6 +75,7 @@ export function SettingsPage({ api = realWorker }: { api?: WorkerApi }) {
       <main className="main">
         {loading && !state ? <p className="note">Loading your settings.</p> : null}
         {error && !state ? <p className="note">{error}</p> : null}
+        <AgentSection linkStore={linkStore} actions={linkActions} />
         {state && draft ? (
           <>
             <KeySection api={api} state={state} />

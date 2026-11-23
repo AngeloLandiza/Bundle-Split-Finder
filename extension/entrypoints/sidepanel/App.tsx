@@ -13,11 +13,21 @@ import { ReviewTab } from './ReviewTab';
 import { StatusBar } from './StatusBar';
 import { ThisPageTab, useActiveTab } from './ThisPageTab';
 import { Tabs, type TabId } from './Tabs';
+import { createAgentApi, type AgentApi } from '../../lib/agentApi';
+import { createLinkStore, UNPAIRED, type AgentLink, type LinkStore } from '../../lib/agentLink';
+import { AgentConnect } from '../../lib/AgentConnect';
+import { realAgentLinkActions, useAgentLink, type AgentLinkActions } from '../../lib/useAgentLink';
+import { HelperPanel } from './HelperPanel';
 import { useSort } from './sort';
 import './sidepanel.css';
 
 export interface AppProps {
   api?: WorkerApi;
+  /** The app on this computer, when this browser is paired with it (the helper view). */
+  agent?: AgentApi;
+  /** Where the link to the app is read from, and what Connect and Disconnect do. */
+  linkStore?: Pick<LinkStore, 'readLink'>;
+  linkActions?: AgentLinkActions;
   /** Opens the settings page. */
   openSettings?: () => void;
   now?: () => number;
@@ -27,7 +37,37 @@ const defaultOpenSettings = () => {
   void browser.runtime.openOptionsPage();
 };
 
-export function App({ api = realWorker, openSettings = defaultOpenSettings, now = Date.now }: AppProps) {
+let realAgent: AgentApi | null = null;
+/** The calls the helper view makes to the app, with the stored pairing token. Built when first needed. */
+function theAgent(): AgentApi {
+  if (realAgent === null) realAgent = createAgentApi({ fetchFn: (input, init) => fetch(input, init), store: createLinkStore() });
+  return realAgent;
+}
+
+/**
+ * Paired with the app: the slim helper view. Not paired: the whole panel, with the way to connect. Until the link has been read
+ * nothing is shown, so a paired browser never flashes the full panel.
+ */
+export function App(props: AppProps) {
+  const link = useAgentLink(props.linkStore);
+  const actions = props.linkActions ?? realAgentLinkActions;
+  if (link === null) return <div className="panel" />;
+  if (link.status === 'paired') {
+    return (
+      <HelperPanel
+        api={props.api ?? realWorker}
+        agent={props.agent ?? theAgent()}
+        link={link}
+        actions={actions}
+        now={props.now}
+        openSettings={props.openSettings ?? defaultOpenSettings}
+      />
+    );
+  }
+  return <StandalonePanel {...props} link={link} actions={actions} />;
+}
+
+function StandalonePanel({ api = realWorker, openSettings = defaultOpenSettings, now = Date.now, link = UNPAIRED, actions = realAgentLinkActions }: AppProps & { link?: AgentLink; actions?: AgentLinkActions }) {
   const { state, error: loadError } = useAppState(api);
   const [report, setReport] = useState<PanelReport | null>(null);
   const [tab, setTab] = useState<TabId>('deals');
@@ -173,6 +213,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
           onStop={stop}
           onSettings={openSettings}
         />
+        <AgentConnect link={link} actions={actions} compact now={now} />
         <main className="panel-body">
           <FirstRun state={state} api={api} openSettings={openSettings} />
         </main>
@@ -205,6 +246,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
         reviewCount={(report?.review.length ?? 0) + (report?.ebayQuestions?.length ?? 0)}
         onChange={setTab}
       />
+      <AgentConnect link={link} actions={actions} compact now={now} />
       {state.scanRunning ? <ProgressRow job={state.lastJob} rates={state.rates} /> : state.askAll ? <ProgressRow job={null} rates={state.rates} askAll={state.askAll} /> : null}
       <Notice state={state} api={api} error={scanError ?? reportError} />
       <main className="panel-body">

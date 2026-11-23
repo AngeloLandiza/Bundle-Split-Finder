@@ -1,0 +1,66 @@
+/* The connection to the app. One sunken band like the panel's other notices (6px radius), ink primary button, no new colours. */
+
+.agent-connect {
+  margin: 12px 16px 4px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--sunken);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink);
+}
+.agent-connect-line,
+.agent-connect-text {
+  margin: 0;
+}
+.agent-connect-text {
+  color: var(--ink-2);
+}
+.agent-connect-strong {
+  font-weight: 600;
+}
+.agent-code {
+  font-family: var(--font-figures);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+.agent-btn {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.agent-btn--primary {
+  border: 0;
+  background: var(--ink);
+  color: var(--surface);
+}
+.agent-btn--secondary {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+.agent-btn:disabled {
+  border: 1px solid var(--line);
+  background: var(--sunken);
+  color: var(--ink-3);
+  cursor: default;
+}
+.agent-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* On the settings page the band sits inside a section, which already has its own gutter. */
+.page .agent-connect {
+  margin: 0;
+}
