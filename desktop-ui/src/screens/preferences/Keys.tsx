@@ -5,6 +5,7 @@ import { Button } from '../../components/Button';
 import { TextField } from '../../components/Fields';
 import { Glyph } from '../../components/Glyph';
 import { ConfirmInline } from '../../components/States';
+import { keyState } from '../../lib/keyStatus';
 import { words } from '../../lib/platform';
 import { Pane, Row } from './form';
 
@@ -90,6 +91,7 @@ export function KeysPane() {
 function KeyRow({ def }: { def: Def }) {
   const { state, refreshState } = useApp();
   const has = state?.keys[def.name] ?? false;
+  const ks = keyState(state, def.name);
   const [editing, setEditing] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -114,10 +116,17 @@ function KeyRow({ def }: { def: Def }) {
       <div className="stack">
         <div className="key-status">
           {state === null ? null : has ? (
-            <span className="key-saved">
-              <Glyph name="check" size={12} />
-              Saved
-            </span>
+            ks.state === 'rejected' ? (
+              <span className="key-rejected">
+                <Glyph name="warning" size={12} />
+                Saved, not accepted
+              </span>
+            ) : (
+              <span className="key-saved">
+                <Glyph name="check" size={12} />
+                Saved
+              </span>
+            )
           ) : (
             <span className="muted">Not set</span>
           )}
@@ -135,6 +144,11 @@ function KeyRow({ def }: { def: Def }) {
             {def.getKey.label}
           </a>
         </div>
+        {ks.problem ? (
+          <p className="field-status field-status-error" role="alert">
+            {ks.problem}
+          </p>
+        ) : null}
         {removing ? (
           <ConfirmInline
             question={`Remove the ${def.label} key? ${def.without}`}

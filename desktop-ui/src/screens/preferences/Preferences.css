@@ -409,6 +409,13 @@
   color: var(--profit);
 }
 
+.key-rejected {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--loss);
+}
+
 .key-actions {
   display: inline-flex;
   gap: 6px;

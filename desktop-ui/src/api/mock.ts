@@ -473,6 +473,7 @@ export function createMockClient(): ApiClient {
       await online(400);
       if (name === 'serpapi' && (value as { key: string }).key.trim().length < 20) throw new ApiError('refused', 'SerpApi did not accept this key.');
       state.keys[name] = true;
+      if (state.keyProblems) delete state.keyProblems[name];
       sync();
     },
     async deleteKey(name) {
