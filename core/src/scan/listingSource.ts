@@ -23,6 +23,7 @@ import type { Cache } from '../serpapi/client';
 import { HOME_DEPOT, itemCacheKey, itemOf, type BogoItem, type ListedItem, type ListedSet, type PromoPageOutcome } from '../tracking/bogoPairs';
 import type { HdListing } from '../serpapi/parsers';
 import type { ListingProduct, ListingSample } from '../hdPage';
+import { HD_LIST_REREAD_MS, HdReadBlocked } from './hdPace';
 
 /** Home Depot's "Bundle" filter token (recorded in scripts/fixture-requests.ts; checked live Nov 23). */
 export const BUNDLE_FILTER_TOKEN = 'bwo64';
@@ -152,6 +153,38 @@ export function listedOf(r: ListingProduct): ListedItem {
 /** The first words of the problem a list that came back with its page state but no product is said with. */
 export const LIST_EMPTY = "Home Depot's bundle list came back empty";
 
+/**
+ * Home Depot's pace: where each list stands, kept in the scan's cache (`homedepot:list:<brand>:<kind>:<query>`). `doneAt`:
+ * when it was last read through (null while a scan left it part-way); `base`, `offset`, `pages`, `listed`: where the next
+ * page starts, for a list left part-way; `startedAt`: when this reading through began (a part-way list older than a day
+ * starts again from its first page).
+ */
+export interface ListCursor {
+  doneAt: number | null;
+  startedAt: number;
+  base: string;
+  offset: number;
+  pages: number;
+  listed: number;
+  total: number | null;
+}
+
+export const listCursorKey = (brand: string, source: 'bundle' | 'search', query: string | null): string =>
+  `homedepot:list:${brand.trim().toUpperCase()}:${source}:${query === null ? '-' : query.trim().toLowerCase()}`;
+
+async function readCursor(deps: Pick<ListingSourceDeps, 'cache'>, key: string): Promise<ListCursor | null> {
+  const hit = deps.cache ? await deps.cache.get(key) : undefined;
+  const c = hit?.data as Partial<ListCursor> | undefined;
+  if (!c || typeof c !== 'object' || typeof c.startedAt !== 'number' || typeof c.base !== 'string' || !isBundleListingPath(c.base)) return null;
+  if (c.doneAt !== null && typeof c.doneAt !== 'number') return null;
+  const n = (v: unknown): number => (typeof v === 'number' && Number.isInteger(v) && v >= 0 ? v : 0);
+  return { doneAt: c.doneAt, startedAt: c.startedAt, base: c.base, offset: n(c.offset), pages: n(c.pages), listed: n(c.listed), total: typeof c.total === 'number' ? c.total : null };
+}
+
+async function writeCursor(deps: Pick<ListingSourceDeps, 'cache' | 'now'>, key: string, c: ListCursor): Promise<void> {
+  if (deps.cache) await deps.cache.set(key, { at: deps.now(), data: c });
+}
+
 /** One listing page as the helper read it: its products, and, when it held none, what its state held instead. */
 export interface ListingPage {
   products: ListedItem[];
@@ -179,6 +212,11 @@ export interface ListingSourceDeps {
   shouldStop?: () => boolean;
   /** Default LISTING_ITEM_PAGES_MAX; a continued job passes what is left. */
   itemPagesMax?: number;
+  /**
+   * Home Depot's pace (hdPace.ts): pages this scan may still read, every kind together. No list page or item page is asked
+   * for when it is 0. Absent: no limit beyond this pass's own.
+   */
+  pagesLeft?: () => number;
 }
 
 /** One list read: a brand's Bundle list with the query, or without it. */
@@ -206,6 +244,13 @@ export interface ListingListResult {
   sample?: ListingSample;
   /** Fix round 3: it stopped at a page limit before its end (`total` more than `listed`, or no page that added nothing). */
   cut: boolean;
+  /**
+   * Home Depot's pace: when it was last read through (epoch ms), for a list not read now because that was within
+   * HD_LIST_REREAD_MS (lists change slowly). Absent for a list read now.
+   */
+  readAt?: number;
+  /** Home Depot's pace: the scan's pages (or a refusal, a stop) ended it before its end; the next scan continues where it stopped. */
+  waits?: boolean;
 }
 
 /** One listed product, in the shape a SerpApi listing row has (HdListing), with its page reading when it was read. */
@@ -235,6 +280,8 @@ export interface ListingSourceResult {
   problem: string | null;
   /** Home Depot refused (or Chrome could not read) a listing or item page: nothing more was read. */
   refused: boolean;
+  /** Home Depot's pace allowed no more pages (the scan's cap, a cool-down): not a refusal; the rest wait. */
+  paced?: boolean;
 }
 
 /** A cached item reading younger than LISTING_ITEM_MAX_AGE_MS; anything else is read again. */
@@ -294,27 +341,43 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
     for (const { source, q } of sources) {
       const r: ListingListResult = { brand, source, query: q, pages: 0, listed: 0, added: 0, complete: false, empty: false, total: null, cut: false };
       out.lists.push(r);
-      if (out.refused || stop()) continue;
+      if (out.refused || out.paced || stop()) continue;
       const pagesMax = source === 'search' ? SEARCH_PAGES_MAX : BUNDLE_LISTING_PAGES_MAX;
+      // Home Depot's pace: a list read through within HD_LIST_REREAD_MS is not read now; one a scan left part-way continues.
+      const key = listCursorKey(brand, source, q);
+      const cursor = await readCursor(deps, key);
+      const now = deps.now();
+      if (cursor?.doneAt != null && now - cursor.doneAt < HD_LIST_REREAD_MS && now >= cursor.doneAt) {
+        r.complete = true;
+        r.readAt = cursor.doneAt;
+        continue;
+      }
+      const going = cursor !== null && cursor.doneAt === null && now - cursor.startedAt < HD_LIST_REREAD_MS && now >= cursor.startedAt ? cursor : null;
       // This list's own items, so a page that repeats another list's items still moves the offset on.
       const own = new Set<string>();
       // Fix round 2 (read live): Home Depot redirects a list to its own address and drops a Nao on the way, so later pages
       // are asked on the final address of the first, each offset by the entries the pages so far returned.
-      let base = source === 'search' ? searchListingPath(q!, 0) : bundleListingPath(brand, q, 0)!;
-      let offset = 0;
+      let base = going?.base ?? (source === 'search' ? searchListingPath(q!, 0) : bundleListingPath(brand, q, 0)!);
+      let offset = going?.offset ?? 0;
+      const pagesBefore = going?.pages ?? 0;
+      const listedBefore = going?.listed ?? 0;
+      if (going && going.base !== (source === 'search' ? searchListingPath(q!, 0) : bundleListingPath(brand, q, 0))) r.pagedOn = going.base;
+      if (going?.total != null) r.total = going.total;
+      const startedAt = going?.startedAt ?? now;
+      const room = (): boolean => (deps.pagesLeft?.() ?? Number.POSITIVE_INFINITY) > 0;
       try {
-        while (r.pages < pagesMax && out.listingPages < LISTING_PAGES_PER_SCAN && !stop()) {
+        while (pagesBefore + r.pages < pagesMax && out.listingPages < LISTING_PAGES_PER_SCAN && room() && !stop()) {
           const page = await deps.readListing(withNao(base, offset));
           r.pages += 1;
           out.listingPages += 1;
-          if (r.pages === 1 && page.finalPath !== undefined && isBundleListingPath(page.finalPath) && withNao(page.finalPath, 0) !== base) {
+          if (pagesBefore === 0 && r.pages === 1 && page.finalPath !== undefined && isBundleListingPath(page.finalPath) && withNao(page.finalPath, 0) !== base) {
             base = withNao(page.finalPath, 0);
             r.pagedOn = base;
           }
           if (typeof page.total === 'number' && Number.isInteger(page.total) && page.total >= 0) r.total = page.total;
           offset += page.products.length;
           const fresh = page.products.filter((p) => /^\d{6,12}$/.test(p.itemId) && !own.has(p.itemId));
-          if (fresh.length === 0 && r.pages === 1) {
+          if (fresh.length === 0 && r.pages === 1 && pagesBefore === 0) {
             r.empty = true;
             if (page.sample) r.sample = page.sample;
             problems.push(`${LIST_EMPTY}: the ${listName(brand, q, source)} had no product${page.note ? ` (${page.note})` : ''}.`);
@@ -331,7 +394,7 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
             }
           }
           // A page that adds nothing, or as many as the list says it has: the end.
-          if (fresh.length === 0 || (r.total !== null && own.size >= r.total)) {
+          if (fresh.length === 0 || (r.total !== null && listedBefore + own.size >= r.total)) {
             r.complete = true;
             break;
           }
@@ -340,9 +403,22 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
         // limit by design, and is cut only in that sense.
         if (!r.complete && !r.empty && !stop()) r.cut = true;
       } catch (e) {
-        out.refused = true;
-        problems.push(sentenceOf(e, 'Chrome could not read the Home Depot bundle list.'));
+        if (e instanceof HdReadBlocked) out.paced = true;
+        else {
+          out.refused = true;
+          problems.push(sentenceOf(e, 'Chrome could not read the Home Depot bundle list.'));
+        }
       }
+      // Read through (its end, or its own page limit): not read again for a day. Ended by the scan's pages, a refusal or a
+      // stop: the next scan continues from here. An empty first page is read again next scan (it is a problem, not a list).
+      const byOwnLimit = pagesBefore + r.pages >= pagesMax;
+      if (r.complete || (byOwnLimit && !r.empty)) await writeCursor(deps, key, { doneAt: deps.now(), startedAt, base, offset: 0, pages: 0, listed: 0, total: r.total });
+      else if (!r.empty && r.pages > 0) {
+        r.waits = true;
+        r.cut = true;
+        await writeCursor(deps, key, { doneAt: null, startedAt, base, offset, pages: pagesBefore + r.pages, listed: listedBefore + own.size, total: r.total });
+      } else if (!r.empty && (out.paced || !room())) r.waits = true;
+      if (!room()) out.paced = true;
     }
   }
 
@@ -361,7 +437,7 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
       out.itemPagesCached += 1;
     } else toRead.push(id);
   }
-  const cap = Math.max(0, Math.floor(deps.itemPagesMax ?? LISTING_ITEM_PAGES_MAX));
+  const cap = Math.max(0, Math.floor(Math.min(deps.itemPagesMax ?? LISTING_ITEM_PAGES_MAX, deps.pagesLeft?.() ?? Number.POSITIVE_INFINITY)));
   const ids = out.refused ? [] : toRead.slice(0, cap);
   for (let i = 0; i < ids.length && !out.refused && !stop(); i += LISTING_ITEM_BATCH) {
     const batch = ids.slice(i, i + LISTING_ITEM_BATCH);
@@ -369,6 +445,10 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
     try {
       outcomes = await deps.readPages(batch);
     } catch (e) {
+      if (e instanceof HdReadBlocked) {
+        out.paced = true;
+        break;
+      }
       out.refused = true;
       problems.push(sentenceOf(e, 'Chrome could not read the bundle pages.'));
       break;
@@ -396,7 +476,7 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
 }
 
 /** "RYOBI: 24 with the search words, 16 more without them; DEWALT: 3 with the search words, 40 more without them." */
-export function listCounts(lists: readonly (Pick<ListingListResult, 'brand' | 'query' | 'listed' | 'added' | 'empty' | 'pages'> & { total?: number | null; source?: 'bundle' | 'search'; cut?: boolean })[]): string {
+export function listCounts(lists: readonly (Pick<ListingListResult, 'brand' | 'query' | 'listed' | 'added' | 'empty' | 'pages'> & { total?: number | null; source?: 'bundle' | 'search'; cut?: boolean; waits?: boolean })[]): string {
   // Fix round 3: per list, what it says it has, what was read, in how many pages, whether a page limit cut it, and what
   // it added to the union ("RYOBI list without search words: read 48 of 101 (4 pages, page limit), 40 new").
   return lists.filter((l) => l.pages > 0).map((l) => {
@@ -404,7 +484,7 @@ export function listCounts(lists: readonly (Pick<ListingListResult, 'brand' | 'q
     if (l.empty) return `${name}: empty`;
     const pages = `${l.pages} ${l.pages === 1 ? 'page' : 'pages'}`;
     const count = typeof l.total === 'number' ? `${l.cut ? 'read ' : ''}${l.listed} of ${l.total}` : `${l.listed}`;
-    return `${name}: ${count} (${pages}${l.cut ? ', page limit' : ''}), ${l.added} new`;
+    return `${name}: ${count} (${pages}${l.waits ? ', continues next scan' : l.cut ? ', page limit' : ''}), ${l.added} new`;
   }).join('; ');
 }
 

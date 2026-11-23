@@ -6,6 +6,7 @@ import {
   brandOfListingPath, BUNDLE_LISTING_PAGES_MAX, LISTING_PAGES_PER_SCAN, bundleListingPath, chooseListingSource, isBundleListingPath, LIST_EMPTY, listCounts, LISTING_ITEM_MAX_AGE_MS, readBundleListings, searchListingPath, withNao, type ListingSourceDeps, type SourceInput,
 } from '../src/scan/listingSource';
 import { MemoryCache } from '../src/serpapi/client';
+import { HD_LIST_REREAD_MS } from '../src/scan/hdPace';
 import { BRAND_QUERIES } from '../src/settings';
 import { HOME_DEPOT, itemCacheKey, type ListedItem, type PromoPageOutcome } from '../src/tracking/bogoPairs';
 
@@ -187,7 +188,9 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
   });
 
   it('a page read in the last six hours, by this pass or the BOGO pass, is not read again; an older one is', async () => {
-    const cache = new MemoryCache();
+    // The item readings only: the lists' own cursors (read again a day later, Home Depot's pace) are not kept here.
+    const kept = new MemoryCache();
+    const cache = { get: (k: string) => kept.get(k), set: async (k: string, e: Parameters<MemoryCache['set']>[1]) => (k.startsWith('homedepot:list:') ? undefined : kept.set(k, e)) };
     const f = fakes({ RYOBI: [P1] });
     await readBundleListings(f.deps({ brands: ['RYOBI'], cache }));
     expect(f.itemsAsked.flat()).toHaveLength(12);
@@ -343,5 +346,46 @@ describe('fix round 3: the keyword search, the page limits, and "read 48 of 101"
     const r = await readBundleListings({ brands: ['DEWALT', 'RYOBI'], queries: BRAND_QUERIES, readListing: endless, readPages: async () => [], now: () => T0, itemPagesMax: 0 });
     expect(r.listingPages).toBe(LISTING_PAGES_PER_SCAN);
     expect(r.lists.filter((l) => l.cut).length).toBeGreaterThan(0);
+  });
+});
+
+describe("Home Depot's pace: each list is read at most once a day, and one the scan's pages cut continues next scan", () => {
+  it('a list read through is not read again for 22 hours (no page asked, said as read then); after that it is', async () => {
+    const cache = new MemoryCache();
+    const f = fakes({ RYOBI: [P1, P2] });
+    await readBundleListings(f.deps({ brands: ['RYOBI'], cache }));
+    expect(f.asked).toHaveLength(8);
+    const later = await readBundleListings(f.deps({ brands: ['RYOBI'], cache, now: () => T0 + HD_LIST_REREAD_MS - 60_000 }));
+    expect(f.asked).toHaveLength(8);
+    expect(later.listingPages).toBe(0);
+    expect(later.lists.map((l) => [l.complete, l.readAt])).toEqual([[true, T0], [true, T0], [true, T0]]);
+    const nextDay = await readBundleListings(f.deps({ brands: ['RYOBI'], cache, now: () => T0 + HD_LIST_REREAD_MS }));
+    expect(nextDay.listingPages).toBe(8);
+    expect(f.asked.slice(8)).toEqual(f.asked.slice(0, 8));
+  });
+
+  it("the scan's Home Depot pages end a list part-way: the next scan asks its next page, not its first, and nothing more is asked now", async () => {
+    const cache = new MemoryCache();
+    const f = fakes({ RYOBI: [P1, P2] });
+    let left = 2;
+    const base = f.deps({ brands: ['RYOBI'], cache, itemPagesMax: 0 });
+    const deps: ListingSourceDeps = {
+      ...base,
+      readListing: async (path) => {
+        left -= 1;
+        return base.readListing(path);
+      },
+      pagesLeft: () => left,
+    };
+    const first = await readBundleListings(deps);
+    expect(f.asked).toEqual([0, 12].map((o) => bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, o)));
+    expect(first).toMatchObject({ listingPages: 2, paced: true, refused: false });
+    expect(first.lists[0]).toMatchObject({ pages: 2, complete: false, waits: true });
+    expect(listCounts(first.lists)).toBe('RYOBI list for "ryobi 18v combo kit": 24 (2 pages, continues next scan), 24 new');
+    left = 40;
+    const second = await readBundleListings({ ...deps, now: () => T0 + 3 * 60 * 60_000 });
+    // The list with the search words goes on at its third page (offset 24, which adds nothing: its end), then the others.
+    expect(f.asked.slice(2, 3)).toEqual([bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, 24)]);
+    expect(second.lists[0]).toMatchObject({ pages: 1, complete: true });
   });
 });
