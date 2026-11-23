@@ -13,6 +13,8 @@
 //      none_suggested or not_suggested.
 //   5. The model that made it is the pipeline's model in Settings and marked `trusted` (measured by the evals).
 //   6. approvalOf gives an answer the question takes (the same check Approve uses).
+//   7. Step 16: it is not the answer of a follow-up ask (agent/followUp.ts) while FOLLOW_UP_ASKS_MEASURED is false: the
+//      loop's asks pass the same verifier, and they wait for the owner until research:eval --follow-up measures them.
 
 import type { AiAgentSettings, AiPipelineSetting } from '../core/src/api/contract';
 import { OPENAI_COMPATIBLE_PRESETS } from '../core/src/ai/openai';
@@ -44,6 +46,9 @@ export function modelIdentity(s: AiPipelineSetting): string {
   return JSON.stringify([s.provider, s.model, s.baseUrl ?? null, s.preset ?? null, s.id ?? null]);
 }
 
+/** Step 16: whether follow-up asks were measured at zero wrong on the answer key (docs/decisions.md). Not yet. */
+export const FOLLOW_UP_ASKS_MEASURED = false;
+
 export type AutopilotDecision =
   | { apply: true; answer: ReviewAnswer; applied: string; verifiedBy: string[]; pipeline: 'assist' | 'research' }
   | { apply: false; reason: string };
@@ -68,6 +73,7 @@ export function autopilotDecision(item: ReviewItem, stored: StoredSuggestion | u
   const setting = ai[pipeline];
   if (providerIdOf(setting) !== s.provider || setting.model !== s.model) return no(`The suggestion came from ${s.model}, which is not the ${pipeline} model in Settings.`);
   if (!setting.trusted) return no(`${s.model} is not measured yet, so its suggestions wait for you.`);
+  if (stored.followUpOf !== undefined && !FOLLOW_UP_ASKS_MEASURED) return no('It came from asking the AI again with what the app read, which is not measured yet, so it waits for you.');
   const answer = approvalOf(s, item);
   if (!answer) return no('The suggestion is not an answer this question takes.');
   const parts = s.answer.decision === 'none' ? [] : s.answer.kind === 'split' ? s.answer.parts : [];

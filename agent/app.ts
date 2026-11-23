@@ -20,6 +20,7 @@ import {
   type WatchResponse,
   type PairClaimResponse,
   type PauseResponse,
+  type AskResponse,
   type QueuedResponse,
   type ReviewAnswer,
   type UndoAnswerResponse,
@@ -45,7 +46,7 @@ import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError,
 import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus, shippedHelperVersion } from './setup';
 import { COLLECTIONS, defaultAiSettings, Store, type StoreData, type StoredKeys } from './store';
 import { tryServeUi, uiIndexExists } from './uiStatic';
-import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf } from './views';
+import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf, workingReviewCount } from './views';
 import { setWatch } from '../core/src/tracking/state';
 import { isBogoListingPath } from '../core/src/tracking/bogoPairs';
 import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
@@ -432,7 +433,8 @@ export function createAgent(opts: AgentOptions): Agent {
       } else if (name === 'review') {
         const r = store.get('review');
         const open = openReviewCount(r);
-        events.publish('review', { at: r.at, open, counts: { review: open } });
+        const working = workingReviewCount(r, store.get('suggestions'));
+        events.publish('review', { at: r.at, open, counts: { review: open - working, ...(working > 0 ? { reviewWorking: working } : {}) } });
       } else if (name === 'activity') events.publish('activity', { at: iso() });
     }
     if (names.length) events.publish('state', state());
@@ -659,11 +661,13 @@ export function createAgent(opts: AgentOptions): Agent {
   });
   // The owner takes back an answer he saved (`:id` is the answer entry's id, as in AnswerResponse.answerId).
   r.post('/api/review/:id/undo', 'ui', (ctx) => refusals(async (): Promise<UndoAnswerResponse> => ({ reopened: true, questionId: (await work.undoAnswer(ctx.params.id!)).questionId })));
-  r.post('/api/review/:id/ask', 'ui', (ctx) => refusals(async (): Promise<QueuedResponse> => {
+  // Step 16: never a silent nothing (AskResponse): an ask, the follow-up loop, a fresh ask with { force: true }, or the reason.
+  r.post('/api/review/:id/ask', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    if (b.force !== undefined && typeof b.force !== 'boolean') throw new HttpError('bad_request', 'force must be true or false.');
     if (!store.get('review').questions.some((q) => q.id === ctx.params.id && q.answer === null)) throw new HttpError('not_found', 'No open question with this id.');
-    work.askNow([ctx.params.id!]);
-    return { queued: true };
-  }));
+    return refusals((): Promise<AskResponse> => work.askQuestion(ctx.params.id!, b.force === true));
+  });
 
   // ------------------------------------------------------------ activity, autopilot, scan
   r.get('/api/activity', 'any', () =>

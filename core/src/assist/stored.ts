@@ -5,6 +5,7 @@
 import type { ReviewBrief } from '../brief/types';
 import { costOf, PRICE_TABLE } from '../judge/eval';
 import type { TokenUsage } from '../judge/types';
+import type { FollowUpState } from '../research/followUp';
 import { choicesOf, NONE, reviewSignature } from '../scan/answers';
 import type { ReviewItem } from '../scan/types';
 import type { Suggestion } from './types';
@@ -68,6 +69,13 @@ export interface StoredSuggestion {
   lacks?: string[];
   /** Step 16, lever 2: the key of the record this ask asked again, because the evidence changed. Its cost counts like any ask's. */
   reaskOf?: string;
+  /**
+   * Step 16, the follow-up loop (research/followUp.ts, agent/followUp.ts): what the app read and asked for this question since
+   * this suggestion, while it is the live one. A follow-up ask's record carries it on.
+   */
+  followUp?: FollowUpState;
+  /** Step 16: the key of the record a follow-up ask asked again (with what the app read since). */
+  followUpOf?: string;
 }
 
 /** Where the suggestions are kept. The worker holds one; the extension's is IndexedDB, tests use memory. */

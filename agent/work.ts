@@ -11,7 +11,7 @@
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { AppSettings, DripState, EvidenceQuote, KeyName, LookupsRunResponse, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
+import type { AppSettings, AskResponse, DripState, EvidenceQuote, KeyName, LookupsRunResponse, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
 import { keepaTokensForScan, routeAmazonWork, type KeepaRoom, type SerpRoom } from '../core/src/keepa/route';
 import { lookupsSentence } from '../core/src/deals/lookupCopy';
 import { gatherEvidence } from '../core/src/assist/evidence';
@@ -54,7 +54,9 @@ import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { checksWaiting, verifyMatchesWithKeepa } from './verifyMatches';
-import { reaskDue, reverifyPass, wantedReads, withEvidenceKey } from './reverify';
+import { freshFollowUp } from '../core/src/research/followUp';
+import { askPlan, followUpPass } from './followUp';
+import { reverifyPass, wantedReads, withEvidenceKey } from './reverify';
 import { buildDigest, sendPending } from './alerts';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
@@ -1112,7 +1114,7 @@ export class AgentWork {
 
   // ------------------------------------------------------------------ the AI and Autopilot
 
-  private async aiPass(only?: string[]): Promise<AiPassResult> {
+  private async aiPass(only?: string[], force?: string[]): Promise<AiPassResult> {
     const { store } = this.d;
     const app = store.get('settings');
     const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
@@ -1127,9 +1129,8 @@ export class AgentWork {
       tools: () => readers.researchTools(this.scanStore),
       now: this.d.now,
     }), this.scanStore);
-    const reask = app.ai.reaskOnNewEvidence === true && !only ? await reaskDue(this.scanStore, store.get('suggestions')) : undefined;
     const model = (p: typeof pipelines.assist | typeof pipelines.research) => (p.ok ? { ok: true as const, model: p.value.model } : { ok: false as const, error: p.error });
-    return runAiPass({
+    const pass = await runAiPass({
       store: this.scanStore,
       suggestions: () => store.get('suggestions'),
       keep: (r) => store.update('suggestions', (all) => [...all.filter((x) => x.key !== r.key), r]),
@@ -1142,7 +1143,92 @@ export class AgentWork {
       signal: this.stopCtl.signal,
       now: this.d.now,
       ...(only ? { only } : {}),
-      ...(reask && reask.size > 0 ? { reask } : {}),
+      ...(force && force.length > 0 ? { force } : {}),
+    });
+    // Step 16: the follow-up loop (agent/followUp.ts; it took over lever 2's re-ask) for the answers still not settled: the free
+    // reads and the code's check always, follow-up asks only when the owner's setting allows them. Not after the owner's own ask.
+    if (only || this.stopCtl.signal.aborted) return pass;
+    const f = await this.followUps(app.ai.reaskOnNewEvidence === true);
+    return { ...pass, asked: pass.asked + f.asked, verified: pass.verified + f.verified, costUsd: pass.costUsd + f.costUsd, problem: pass.problem ?? (f.ran > 0 ? f.problem : null) };
+  }
+
+  /** Step 16: the follow-up loop over the open questions (or `only`), with the Chrome tools and the research model. */
+  private async followUps(allowAsk: boolean, only?: string[]) {
+    const { store } = this.d;
+    const app = store.get('settings');
+    const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
+    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal });
+    try {
+      return await followUpPass({
+        store: this.scanStore,
+        suggestions: () => store.get('suggestions'),
+        put: (r) => store.update('suggestions', (all) => (all.some((x) => x.key === r.key) ? all.map((x) => (x.key === r.key ? r : x)) : [...all, r])),
+        tools: () => readers.researchTools(this.scanStore),
+        research: pipelines.research.ok ? pipelines.research.value : null,
+        allowAsk,
+        chromeConnected: this.d.helperConnected,
+        spentUsd: aiSpentThisMonth({ suggestions: store.get('suggestions'), runs: store.get('activity').runs }, this.d.now()),
+        capUsd: app.ai.monthlyCapUsd,
+        signal: this.stopCtl.signal,
+        now: this.d.now,
+        afterKeep: briefAfterKeep(this.briefCtx()),
+        ...(only ? { only } : {}),
+      });
+    } catch {
+      // A loop that could not run changes nothing it has not kept; the next pass tries again.
+      return { ran: 0, verified: 0, asked: 0, costUsd: 0, problem: null };
+    }
+  }
+
+  /**
+   * Step 16: the owner's Ask AI on one question (POST /api/review/:id/ask). Never a silent nothing: an ask, the follow-up loop
+   * (when its answer is not settled and something is left to read or ask about), a fresh ask with `force`, or the reason.
+   */
+  async askQuestion(id: string, force: boolean): Promise<AskResponse> {
+    if (this.live.busy) return { queued: false, reason: this.busySentence('ask') };
+    const { store } = this.d;
+    const item = await this.scanStore.getReview(id);
+    if (!item || item.answer !== null) return { queued: false, reason: 'That question is answered already.' };
+    const app = store.get('settings');
+    const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
+    const p = item.kind === 'split' ? pipelines.research : pipelines.assist;
+    const plan = await askPlan({
+      store: this.scanStore, suggestions: store.get('suggestions'), item, force,
+      model: p.ok ? { ok: true, model: p.value.model } : { ok: false, error: p.error },
+      spentUsd: aiSpentThisMonth({ suggestions: store.get('suggestions'), runs: store.get('activity').runs }, this.d.now()),
+      capUsd: app.ai.monthlyCapUsd, chromeConnected: this.d.helperConnected(),
+    });
+    if (plan.action === 'none') {
+      const { action: _a, ...rest } = plan;
+      return { queued: false, ...rest };
+    }
+    if (this.live.busy) return { queued: false, reason: this.busySentence('ask') };
+    if (plan.action === 'ask') this.askNow([id], plan.force ? [id] : undefined);
+    else {
+      // Queued at once, so the answer to this press and the counts already say the app has it.
+      const live = liveSuggestion(store.get('suggestions'), item);
+      if (live) store.update('suggestions', (all) => all.map((x) => (x.key === live.key ? { ...x, followUp: { ...(x.followUp ?? freshFollowUp(this.d.now())), state: 'queued', updatedAt: this.d.now() } } : x)));
+      this.followUpNow(id);
+    }
+    return { queued: true };
+  }
+
+  /** Step 16: the follow-up loop for one question the owner pressed Ask AI on: asks allowed (the press is his yes), under the cap. */
+  private followUpNow(id: string): void {
+    this.begin('ask', async () => {
+      const startedAt = this.d.now();
+      const run: RunRecord = { id: `run-${startedAt}`, kind: 'ask', startedAt: new Date(startedAt).toISOString(), finishedAt: null, status: 'running', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: 'Reading the pages a question needs.', trigger: 'manual' };
+      this.record(run);
+      const f = await this.followUps(true, [id]);
+      const applied = await this.autopilot();
+      await this.refresh();
+      run.finishedAt = new Date(this.d.now()).toISOString();
+      run.status = this.stopCtl.signal.aborted ? 'stopped' : 'finished';
+      run.aiCostUsd = Math.round(f.costUsd * 10_000) / 10_000;
+      run.questionsAsked = f.asked;
+      run.autopilotApplied = applied;
+      run.summary = [`Followed up on 1 question: ${f.asked === 0 ? 'read its pages' : `read its pages and asked the AI ${f.asked === 1 ? 'once' : `${f.asked} times`}`}, ${f.verified} verified.`, f.problem ?? ''].filter(Boolean).join(' ');
+      this.record(run);
     });
   }
 
@@ -1255,12 +1341,12 @@ export class AgentWork {
   }
 
   /** Ask AI now, about one question or every open one (the app's buttons). Runs in the background. */
-  askNow(only?: string[]): void {
+  askNow(only?: string[], force?: string[]): void {
     this.begin('ask', async () => {
       const startedAt = this.d.now();
       const run: RunRecord = { id: `run-${startedAt}`, kind: 'ask', startedAt: new Date(startedAt).toISOString(), finishedAt: null, status: 'running', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: 'Asking the AI.', trigger: 'manual' };
       this.record(run);
-      const r = await this.aiPass(only);
+      const r = await this.aiPass(only, force);
       const applied = await this.autopilot();
       await this.refresh();
       run.finishedAt = new Date(this.d.now()).toISOString();

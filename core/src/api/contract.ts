@@ -11,6 +11,7 @@ import type { PipelineAiSettings } from '../ai/factory';
 import type { StoredSuggestion } from '../assist/stored';
 import type { ReviewBrief } from '../brief/types';
 import type { SplitEvidence } from '../decompose';
+import type { ReviewFollowUp } from '../research/followUp';
 import type { HomeDepotPage, HomeDepotSearch, ToolError } from '../research/types';
 import type { DealSortKey } from '../deals/sort';
 import type { FeeSettings } from '../money';
@@ -205,7 +206,12 @@ export interface AgentState {
     aiSpentUsd: number;
     aiCapUsd: number | null;
   };
-  counts: { review: number; autopilotApplied: number; newDeals: number; jobsWaiting: number };
+  /**
+   * Step 16: `review` is what needs the owner ("Needs you"): open questions minus those the app is working on (a follow-up queued
+   * or running, ReviewQuestion.followUp), which are `reviewWorking`. A question comes back to `review` when its follow-up is done
+   * or gave up.
+   */
+  counts: { review: number; reviewWorking?: number; autopilotApplied: number; newDeals: number; jobsWaiting: number };
   keys: KeysPresence;
   /**
    * Step 15: the last rejection of each key by its service, in plain words ("eBay did not accept the App ID and Cert ID"),
@@ -599,11 +605,18 @@ export interface ReviewQuestion {
    * again when it arrives, with no new AI call. Absent otherwise.
    */
   waitingFor?: string;
+  /**
+   * Step 16, the follow-up loop: what the app is doing or did about the question before it is the owner's: its Chrome reads
+   * (Home Depot searches and pages, each with its link), its code check, and at most two follow-up asks. While `state` is queued
+   * or running the question is not counted in "Needs you" (AgentState.counts.reviewWorking). Absent when the loop never ran.
+   */
+  followUp?: ReviewFollowUp;
   /** The question as the scan stored it. */
   item: { kind: 'split' | 'match'; question: ReviewItem } | { kind: 'ebay'; question: EbayQuestion };
 }
 
 export type { BriefCheck, BriefReason, BriefState, ReviewBrief } from '../brief/types';
+export type { FollowUpTried, ReviewFollowUp } from '../research/followUp';
 
 export interface ReviewResponse {
   at: string | null;
@@ -635,9 +648,27 @@ export interface ApproveResponse {
   skipped: { id: string; reason: string }[];
 }
 
-/** POST /api/review/ask-all and /api/review/:id/ask: the agent asks in the background. */
+/** POST /api/review/ask-all: the agent asks in the background. */
 export interface QueuedResponse {
   queued: true;
+}
+
+/** Step 16: POST /api/review/:id/ask. `force`: ask afresh even when nothing is new since the last answer (it costs an ask). */
+export interface AskBody {
+  force?: boolean;
+}
+
+/**
+ * Step 16: POST /api/review/:id/ask never does nothing silently. `queued`: an ask, or the follow-up loop, starts in the
+ * background. Otherwise `reason` says why in plain words ("Nothing new to read since the last answer; asking again would cost
+ * about $0.07."), and `canForce` is true when `{ force: true }` would start a fresh ask, with `costUsd` its estimate; absent
+ * when force changes nothing (no key, the cap reached, a scan running, already working on it).
+ */
+export interface AskResponse {
+  queued: boolean;
+  reason?: string;
+  canForce?: boolean;
+  costUsd?: number;
 }
 
 /** W4: POST /api/review/:id/answer. The agent applies the answer itself (core/src/scan/answers.ts). */
@@ -759,9 +790,10 @@ export interface AiAgentSettings {
   /** Dollars the AI may cost in a calendar month (judge, assist and research together). 0 turns the AI off. */
   monthlyCapUsd: number;
   /**
-   * Step 16, lever 2: ask a split question again, once per new piece of evidence, when what its AI answer lacked exists
-   * now (a tool that failed works, its page or a kit page is read). Under the monthly cap; the cost shows in Activity.
-   * Absent or false: off (the default until it is measured with paid calls).
+   * Step 16, the follow-up loop (it took over lever 2's setting): after the app's own free reads for a question the AI could not
+   * settle (research/followUp.ts), ask the research model once more with what was read, at most twice a question, only on new
+   * evidence, under the monthly cap. The reads and the code's check run whatever this says; an owner's Ask AI press asks
+   * whatever this says. Absent or false: off (the default until `research:eval --follow-up` measures it at zero wrong).
    */
   reaskOnNewEvidence?: boolean;
 }
@@ -1062,7 +1094,7 @@ export interface AgentEvents {
   state: AgentState;
   deals: { at: string | null; count: number };
   /** `counts.review` matches AgentState so the shell can update its badge from either event. */
-  review: { at: string | null; open: number; counts: { review: number } };
+  review: { at: string | null; open: number; counts: { review: number; reviewWorking?: number } };
   activity: { at: string };
   notify: NotifyEvent;
 }

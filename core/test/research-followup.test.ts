@@ -17,11 +17,12 @@ import {
 } from '../src/research/followUp';
 import { researchQuestion, type ResearchSuggestion } from '../src/research/loop';
 import { FOLLOW_UP_VERSION_SUFFIX, RESEARCH_PROMPT_VERSION } from '../src/research/prompt';
-import type { HomeDepotPage, HomeDepotSearch, ResearchModel, ResearchPart, ResearchRequest, ResearchTools, ResearchTurn } from '../src/research/types';
+import type { ResearchModel, ResearchPart, ResearchRequest, ResearchTools, ResearchTurn } from '../src/research/types';
 import { verifyResearch } from '../src/research/verify';
 import type { ReviewItem } from '../src/scan/types';
 import { recordedTools } from '../../scripts/research-tools';
 import { PCL500525SB, recorded, researchCase } from './research-world';
+import { HD, ROWS, warmTools, type Calls } from './followup-world';
 
 const turn = (stopReason: string, content: unknown[]): ResearchTurn => ({ ok: true, stopReason, content, usage: { inputTokens: 1000, outputTokens: 100 } });
 const use = (id: string, name: string, input: Record<string, unknown>) => ({ type: 'tool_use', id, name, input });
@@ -46,7 +47,6 @@ const now = () => (clock += 10);
 
 // ---------------------------------------------------------------- world 1: the real "could not tell" question
 
-const HD = 'https://www.homedepot.com';
 const BUNDLE_ID = '335724135';
 const scan3 = JSON.parse(readFileSync('fixtures/e2e-2026-11-23/after-scan3/store/review.json', 'utf8')) as {
   questions: ReviewItem[]; evidence: Record<string, { text: string; source: { label: string; url: string } }[]>;
@@ -62,49 +62,6 @@ const EVIDENCE: AssistEvidence = {
     lines: [{ field: 'title', text: LINES[0]! }, { field: 'model', text: LINES[1]! }, ...LINES.slice(2, -1).map((text) => ({ field: 'bullet' as const, text }))],
   }],
 };
-
-// Constructed rows and pages (see the header): the titles are the bundle page's own words for each part.
-const ROWS: Record<string, { itemId: string; title: string; bullets: string[] }> = {
-  A21701: { itemId: '317000001', title: '5 in. 7-Piece Random Orbit Sand Paper Assortment Set', bullets: ['Includes: (3) 80 grit, (2) 120 grit, and (2) 220 grit'] },
-  A25RS51: { itemId: '317000002', title: 'Straight Router Bit Set (5-Piece)', bullets: ['Includes: 1/4 in., 3/8 in., 1/2 in., 5/8 in. straight router bits with a bonus 5/16 in. bit'] },
-  PCL406424SB: {
-    itemId: '317000003', title: 'ONE+ 18V Cordless 2-Tool Combo Kit w/ Compact Fixed Base Router & 5 in. Random Orbit Sander (Tools Only)',
-    bullets: ['Includes: 18V ONE+ Cordless Compact Router, (1) collet wrench, (1) vacuum Dust Chute, 18V 5" Random Orbit Sander, (3) Pieces of Sandpaper Assortment, Dust Collection Bag, and Operator\'s Manuals'],
-  },
-};
-
-interface Calls { searches: string[]; pages: string[] }
-
-/** Home Depot as the loop would find it with a warm tab: a search for "RYOBI <model>" gives the model's row, its page reads. */
-function warmTools(calls: Calls, opts: { failSearch?: boolean; failAll?: boolean } = {}): ResearchTools {
-  return {
-    async searchHomeDepot({ query }) {
-      calls.searches.push(query);
-      if (opts.failSearch || opts.failAll) return { error: 'Chrome did not answer in time.' };
-      const m = /^RYOBI\s+(\S+)$/i.exec(query.trim())?.[1]?.toUpperCase();
-      const row = m ? ROWS[m] : undefined;
-      const s: HomeDepotSearch = {
-        sourceId: `hd-search:ryobi-${(m ?? 'x').toLowerCase()}`, label: 'Home Depot search', url: `${HD}/s/${encodeURIComponent(query)}`,
-        results: row ? [{ title: row.title, brand: 'RYOBI', model: m!, itemId: row.itemId, url: `${HD}/p/${row.itemId}` }] : [],
-      };
-      return s;
-    },
-    async readHomeDepotPage({ itemId }) {
-      calls.pages.push(itemId ?? '');
-      if (opts.failAll) return { error: 'Home Depot refused the page (HTTP 403).' };
-      const [model, row] = Object.entries(ROWS).find(([, r]) => r.itemId === itemId) ?? [];
-      if (!row) return { error: 'not recorded' };
-      const page: HomeDepotPage = {
-        sourceId: `hd-page:${itemId}`, label: 'Home Depot page', url: `${HD}/p/${itemId}`,
-        sections: { title: row.title, model: model!, bullets: row.bullets, description: '', specifications: [] },
-      };
-      return page;
-    },
-    async catalogLookup() {
-      return { sourceId: 'catalog:none', entries: [] };
-    },
-  };
-}
 
 /** The first ask, as on Nov 23: its search for A21701 failed on a cold tab, and it could not tell. */
 async function firstAsk(): Promise<ResearchSuggestion> {

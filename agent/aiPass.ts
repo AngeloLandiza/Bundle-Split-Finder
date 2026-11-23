@@ -9,12 +9,12 @@ import { afterLead } from '../core/src/ai/factory';
 import { askQueueOf } from '../core/src/assist/askAll';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { gatherEvidence } from '../core/src/assist/evidence';
-import { suggestionCost, suggestionKey, type StoredSuggestion } from '../core/src/assist/stored';
+import { liveSuggestion, suggestionCost, suggestionKey, type StoredSuggestion } from '../core/src/assist/stored';
 import { suggestAnswer } from '../core/src/assist/suggest';
 import type { AssistModel } from '../core/src/assist/types';
 import { PRICE_TABLE } from '../core/src/judge/eval';
 import { researchCost } from '../core/src/research/eval';
-import { researchQuestion } from '../core/src/research/loop';
+import { researchQuestion, type ResearchSuggestion } from '../core/src/research/loop';
 import type { CatalogEntry, ResearchModel, ResearchTools } from '../core/src/research/types';
 import { reviewSignature } from '../core/src/scan/answers';
 import type { ReviewItem, ScanStore } from '../core/src/scan/types';
@@ -55,6 +55,11 @@ export interface AiPassDeps {
    * for its evidence key, after the questions with no suggestion, under the same monthly cap.
    */
   reask?: ReadonlyMap<string, { of: string; evidenceKey: string }>;
+  /**
+   * Step 16: open questions the owner asked about again with Ask anyway (POST /api/review/:id/ask { force }): asked although a
+   * suggestion is on screen, once, under the same cap; the record names the one it asked again (`reaskOf`).
+   */
+  force?: readonly string[];
 }
 
 export interface AiPassResult {
@@ -78,7 +83,8 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
   if (deps.capUsd <= 0) return { ...out, problem: 'The AI is off: its monthly limit is $0.' };
   const open = (await deps.store.listReview()).filter((q) => q.answer === null && (!deps.only || deps.only.includes(q.id))).sort((a, b) => a.openedAt - b.openedAt);
   const first = askQueueOf(open, deps.suggestions());
-  const queue = [...first, ...open.filter((q) => q.kind === 'split' && deps.reask?.has(q.id) && !first.includes(q))];
+  const forced = new Set(deps.force ?? []);
+  const queue = [...first, ...open.filter((q) => ((q.kind === 'split' && deps.reask?.has(q.id)) || forced.has(q.id)) && !first.includes(q))];
   let spent = deps.spentUsd;
   let failures = 0;
   let briefProblem: string | null = null;
@@ -115,6 +121,10 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
     }
     const again = first.includes(item) ? undefined : deps.reask?.get(item.id);
     if (again) record = { ...record, reaskOf: again.of, evidenceKey: again.evidenceKey };
+    else if (!first.includes(item) && forced.has(item.id)) {
+      const before = liveSuggestion(deps.suggestions(), now);
+      if (before) record = { ...record, reaskOf: before.key };
+    }
     if (deps.signal.aborted && record.suggestion.status === 'not_suggested') break;
     const s = record.suggestion;
     const cost = record.costUsd ?? 0;
@@ -168,17 +178,22 @@ export function askOneWith(deps: {
     if (!deps.research) throw new Error('No research model.');
     const catalog = (await deps.store.listCatalog()).map((c): CatalogEntry => ({ brand: c.brand, model: c.model, title: c.title, kind: c.isKit ? 'kit' : 'part' }));
     const result = await researchQuestion(item, evidence, deps.tools(), deps.research, { signal, catalog });
-    const { research: trace, ...suggestion } = result;
-    // What is kept of the trace is each source's name and link, as the extension keeps it: not the pages' text. Step 16:
-    // an answer not verified keeps its ledger whole, so it can be checked again when new evidence arrives
-    // (agent/reverify.ts) with no new model call; the pages' text is the owner's own data, kept in his store.
-    const whole = suggestion.status === 'unverified' || suggestion.status === 'cannot_tell';
-    const slim = whole ? { ...suggestion, research: trace } : { ...suggestion, research: { ...trace, ledger: trace.ledger.map((e) => ({ id: e.id, kind: e.kind, label: e.label, url: e.url, lines: [], products: [], isBundle: e.isBundle })) } };
-    const rates = PRICE_TABLE[deps.research.model];
-    const askedAt = deps.now();
-    return {
-      key: suggestionKey(item.id, askedAt), questionId: item.id, seen: result.seen, askedAt, suggestion: slim as typeof suggestion,
-      costUsd: rates && result.usage ? researchCost({ ...result.usage, webSearchRequests: trace.usage.webSearchRequests }, rates) : null,
-    };
+    return researchRecord(item, result, deps.research.model, deps.now());
+  };
+}
+
+/**
+ * A research result as it is kept. What is kept of the trace is each source's name and link, as the extension keeps it: not the
+ * pages' text. Step 16: an answer not verified keeps its ledger whole, so it can be checked again when new evidence arrives
+ * (agent/reverify.ts, agent/followUp.ts) with no new model call; the pages' text is the owner's own data, kept in his store.
+ */
+export function researchRecord(item: ReviewItem, result: ResearchSuggestion, model: string, askedAt: number): StoredSuggestion {
+  const { research: trace, ...suggestion } = result;
+  const whole = suggestion.status === 'unverified' || suggestion.status === 'cannot_tell';
+  const slim = whole ? { ...suggestion, research: trace } : { ...suggestion, research: { ...trace, ledger: trace.ledger.map((e) => ({ id: e.id, kind: e.kind, label: e.label, url: e.url, lines: [], products: [], isBundle: e.isBundle })) } };
+  const rates = PRICE_TABLE[model];
+  return {
+    key: suggestionKey(item.id, askedAt), questionId: item.id, seen: result.seen, askedAt, suggestion: slim as typeof suggestion,
+    costUsd: rates && result.usage ? researchCost({ ...result.usage, webSearchRequests: trace.usage.webSearchRequests }, rates) : null,
   };
 }

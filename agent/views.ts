@@ -33,6 +33,7 @@ import { bogoTagOf, type BogoGroup } from '../core/src/tracking/bogoPairs';
 import { DEFAULT_MIN_MONTHLY_SOLD } from '../core/src/settings';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { liveSuggestion, type StoredSuggestion } from '../core/src/assist/stored';
+import { followUpView, followUpWorking } from '../core/src/research/followUp';
 import { waitingSentence } from './reverify';
 import type { PipelineView } from '../core/src/scan/pipeline';
 import { staleBundleDays } from '../core/src/deals/freshness';
@@ -416,6 +417,8 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
     const plain = shown && shown.suggestion.status === 'unverified' ? plainVerification(shown.suggestion.reasons, q.kind) : null;
     // Step 16: an unverified answer waiting for Home Depot's page of a model it names (agent/reverify.ts).
     const waiting = live && live.suggestion.status === 'unverified' ? waitingSentence(live.waitingFor) : null;
+    // Step 16: what the app is doing or did about it (the follow-up loop), and the check line that says so.
+    const followUp = live?.followUp ? followUpView(live.followUp) : undefined;
     questions.push({
       id: q.id,
       kind: q.kind,
@@ -434,8 +437,9 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
       askCostUsd: q.kind === 'match' && q.candidates.length === 0 ? null : estimatedQuestionCost(q.kind, (q.kind === 'split' ? ai.research : ai.assist).model),
       suggestionQuotes: quotesOf(live),
       ...(plain !== null ? { suggestionPlain: plain } : {}),
-      brief: briefForQuestion(q, live, data.review.evidence?.[q.id] ?? [], sources),
+      brief: briefForQuestion(q, live, data.review.evidence?.[q.id] ?? [], sources, followUp),
       ...(waiting !== null ? { waitingFor: waiting } : {}),
+      ...(followUp ? { followUp } : {}),
     });
   }
   for (const e of data.review.ebayQuestions) {
@@ -463,6 +467,11 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
 
 export function openReviewCount(review: StoreData['review']): number {
   return review.questions.filter((q) => q.answer === null).length + review.ebayQuestions.length;
+}
+
+/** Step 16: open questions the app is working on (a follow-up queued or running): not counted in "Needs you". */
+export function workingReviewCount(review: StoreData['review'], suggestions: StoreData['suggestions']): number {
+  return review.questions.filter((q) => q.answer === null && followUpWorking(liveSuggestion(suggestions, q)?.followUp)).length;
 }
 
 export function activityResponse(data: Pick<StoreData, 'activity' | 'autopilot' | 'suggestions'> & Partial<Pick<StoreData, 'answers'>>, sinceIso: string, now: number): ActivityResponse {
@@ -547,7 +556,8 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       aiCapUsd: data.settings.ai.monthlyCapUsd,
     },
     counts: {
-      review: openReviewCount(data.review),
+      review: openReviewCount(data.review) - workingReviewCount(data.review, data.suggestions),
+      ...(workingReviewCount(data.review, data.suggestions) > 0 ? { reviewWorking: workingReviewCount(data.review, data.suggestions) } : {}),
       autopilotApplied: data.autopilot.filter((e) => e.undoneAt === null).length,
       newDeals: data.activity.lastScan?.newDeals ?? 0,
       jobsWaiting: live.jobsWaiting,
