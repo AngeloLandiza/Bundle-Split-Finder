@@ -22,8 +22,8 @@ export function AiPane() {
   const spent = state?.budget.aiSpentUsd ?? null;
   return (
     <Pane>
-      <Row label="Autopilot" align="start" help="Applies an AI answer without you only when the code checked it against the pages and the model below is marked trusted. Each one is listed in Activity, and Undo is there. Anything unverified waits in Review. Trust belongs to one model: it goes back to the measured list when the provider, model or address changes, so a new model is off until you turn it on.">
-        <Switch label={settings.autopilot ? 'On' : 'Off'} checked={settings.autopilot} onChange={(autopilot) => update({ autopilot })} />
+      <Row label="Autopilot" align="start" help="Applies verified AI answers without you: the code checked them against the pages, and the model is trusted below. Each one is listed in Activity with Undo. Anything unverified waits in Review.">
+        <Switch label={settings.autopilot ? 'On' : 'Off'} name="Autopilot" checked={settings.autopilot} onChange={(autopilot) => update({ autopilot })} />
       </Row>
       <Row label="Monthly AI cap" align="start" help={cap === 0 ? '0 turns the AI off.' : 'At the cap the AI waits until next month and questions stay in Review. 0 turns the AI off.'}>
         <div className="stack">
@@ -77,8 +77,8 @@ function PipelineRows({ id, label, help }: { id: Pipeline; label: string; help: 
           />
         </Row>
       ) : null}
-      <Row label="Trusted for Autopilot" align="start" help="Resets when the provider, model or address changes.">
-        <Switch label={cur.trusted ? 'Trusted' : 'Not trusted'} checked={cur.trusted} onChange={(trusted) => change({ trusted })} />
+      <Row label="Trusted for Autopilot" align="start" help="Trust belongs to one model. It resets when the provider, model or address changes, so a new model stays off until you turn it on.">
+        <Switch label={cur.trusted ? 'Trusted' : 'Not trusted'} name={`Trust ${label} for Autopilot`} checked={cur.trusted} onChange={(trusted) => change({ trusted })} />
       </Row>
     </>
   );

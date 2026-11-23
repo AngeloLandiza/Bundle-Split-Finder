@@ -9,8 +9,9 @@ import { modLabel } from '../lib/keys';
 import { isMac as mac, words } from '../lib/platform';
 import { bestDeal, isRunning, needsYou, popoverStatus, scanBlocked, scanCost } from '../lib/popover';
 import { popoverDo } from '../lib/popoverShell';
+import { dealVerdict } from '../lib/today';
 import { hashOf } from '../lib/route';
-import { KIND_LABEL, workingNote } from './reviewModel';
+import { workingNote } from './reviewModel';
 import './PopoverApp.css';
 
 declare global {
@@ -192,9 +193,6 @@ export function PopoverApp() {
                       <button type="button" className="pop-row" onClick={() => go(hashOf({ screen: 'review', id: q.id }).slice(1))}>
                         <span className="pop-row-main">
                           <span className="pop-row-title">{q.prompt}</span>
-                          <span className="pop-row-sub">
-                            {q.bundle.brand} · <span className="code">{q.bundle.model}</span> · {KIND_LABEL[q.kind]}
-                          </span>
                         </span>
                       </button>
                     </li>
@@ -220,8 +218,12 @@ export function PopoverApp() {
                         {best.title}
                       </span>
                       <span className="pop-row-sub">
-                        {best.brand} · <span className="code">{best.model}</span>
-                        {percentOff(best.off) ? ` · ${percentOff(best.off)}` : ''}
+                        {dealVerdict(best)?.text ?? (
+                          <>
+                            {best.brand} · <span className="code">{best.model}</span>
+                            {percentOff(best.off) ? ` · ${percentOff(best.off)}` : ''}
+                          </>
+                        )}
                       </span>
                     </span>
                     <span className="pop-deal-figs">
@@ -236,7 +238,12 @@ export function PopoverApp() {
               )}
             </section>
           </>
-        ) : null}
+        ) : (
+          // Never an empty body: say whether it is loading or the agent is not there, and what to do.
+          <p className="pop-quiet" role="status">
+            {online ? 'Loading…' : 'The agent is not running. Open Split Finder to start it.'}
+          </p>
+        )}
       </div>
 
       <Actions state={state} online={online} refreshState={refreshState} />

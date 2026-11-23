@@ -114,7 +114,8 @@ export function Select({ label, help, inline, children, width = 'md', ...rest }:
 }
 
 /** An on/off setting that applies at once: role=switch on a real button, drawn as NSSwitch. */
-export function Switch({ label, help, checked, onChange, disabled }: { label: ReactNode; help?: ReactNode; checked: boolean; onChange: (next: boolean) => void; disabled?: boolean }) {
+/** `name` is what a screen reader hears when the visible words are only the state ("On", "Trusted"): the control's purpose. */
+export function Switch({ label, name, help, checked, onChange, disabled }: { label: ReactNode; name?: string; help?: ReactNode; checked: boolean; onChange: (next: boolean) => void; disabled?: boolean }) {
   const id = useId();
   return (
     <div className="switch-row">
@@ -132,6 +133,7 @@ export function Switch({ label, help, checked, onChange, disabled }: { label: Re
         type="button"
         role="switch"
         id={id}
+        aria-label={name}
         aria-checked={checked}
         disabled={disabled}
         className="switch"
