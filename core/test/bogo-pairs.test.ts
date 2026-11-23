@@ -194,6 +194,13 @@ describe('the pass: each brand’s listing, then each item’s page, once a day'
     const state = Object.fromEntries(ryobi.map((i) => [`base-searchNav-${i.itemId}`, { itemId: i.itemId, identifiers: { brandName: i.brand, modelNumber: i.model, productLabel: i.title, canonicalUrl: `/p/x/${i.itemId}` } }]));
     expect(parseSearchText(`window.__APOLLO_STATE__=${JSON.stringify(state)}`)!.map((p) => p.model)).toEqual(ryobi.map((i) => i.model));
   });
+
+  it('the live listing’s script has more after the state object (controller, Nov 23): only the object is parsed', () => {
+    const state = Object.fromEntries(ryobi.map((i) => [`base-searchNav-${i.itemId}`, { itemId: i.itemId, identifiers: { brandName: i.brand, modelNumber: i.model, productLabel: i.title } }]));
+    const tail = ';window.__x__={"a":"}{"};window.y=1;';
+    expect(parseSearchText(`window.__APOLLO_STATE__=${JSON.stringify(state)}${tail}`)!.map((p) => p.model)).toEqual(ryobi.map((i) => i.model));
+    expect(parsePromoPage(`${pageText(ryobi[0]!)}${tail}`, ryobi[0]!.itemId)!.promotions[0]!.promotionId).toBe('945815');
+  });
 });
 
 describe('keeping pairs between scans', () => {
@@ -235,6 +242,8 @@ describe('grouping, ranking and the digest', () => {
     expect(r.label).toBe('BOGO: 11 free-tool choices — best: PCL265B +$61.50 est.');
     const d = groups.find((g) => g.starterModel === 'DCK200D1P1')!;
     expect(d.label).toBe('BOGO: 2 free-tool choices — best: B606 +$80.00 est.');
+    // "N more choices waiting for a lookup": the pairs whose row waits for an Amazon lookup.
+    expect([r.waitingLookup, d.waitingLookup]).toEqual([0, 1]);
     expect(bogoGroups(pairs, []).find((g) => g.starterModel === 'PCL1201K2')!.label).toBe('BOGO: 11 free-tool choices — none has an estimate yet');
     expect(pairsBehindBest([r]).has('homedepot:337486151')).toBe(false);
     expect(pairsBehindBest([r]).has('homedepot:324903619')).toBe(true);

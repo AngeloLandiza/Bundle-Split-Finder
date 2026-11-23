@@ -340,6 +340,11 @@ export interface BogoGroup {
   choices: BogoChoice[];
   /** The first choice with an estimate; null when none has one yet. */
   best: BogoChoice | null;
+  /**
+   * Choices whose estimate waits for an Amazon lookup (section 'waiting'): the scan looks up a few new pairs per group
+   * each run, after every other bundle (scan/runner.ts pairLookupOrder), so the rest come in later scans.
+   */
+  waitingLookup: number;
   /** "BOGO: 11 free-tool choices — best: PCL515B +$42.10 est." */
   label: string;
 }
@@ -366,7 +371,7 @@ export function bogoGroups(pairs: readonly BogoPair[], rows: readonly RowLike[])
     if (!g) {
       g = {
         id, promotionId: p.promotionId, brand: p.brand, starterItemId: p.starterItemId, starterModel: p.starterModel, starterKey: bundleKey(p.starterItemId),
-        starterLink: `${HOME_DEPOT}/p/${p.starterItemId}`, endsAt: p.endsAt, description: p.description, choices: [], best: null, label: '',
+        starterLink: `${HOME_DEPOT}/p/${p.starterItemId}`, endsAt: p.endsAt, description: p.description, choices: [], best: null, waitingLookup: 0, label: '',
       };
       groups.set(id, g);
     }
@@ -380,6 +385,7 @@ export function bogoGroups(pairs: readonly BogoPair[], rows: readonly RowLike[])
   for (const g of out) {
     g.choices.sort((a, b) => (a.profit === null ? 1 : 0) - (b.profit === null ? 1 : 0) || (b.profit ?? 0) - (a.profit ?? 0) || a.model.localeCompare(b.model));
     g.best = g.choices.find((c) => c.profit !== null) ?? null;
+    g.waitingLookup = g.choices.filter((c) => c.section === 'waiting').length;
     g.label = bogoGroupLabel(g.choices.length, g.best);
   }
   return out.sort((a, b) => (b.best?.profit ?? -Infinity) - (a.best?.profit ?? -Infinity) || a.id.localeCompare(b.id));

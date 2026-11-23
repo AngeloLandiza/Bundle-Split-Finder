@@ -226,6 +226,11 @@ export function BogoChoicesSection({ d, group }: { d: DealDetail; group: BogoGro
             </li>
           ))}
         </ol>
+        {group.waitingLookup > 0 ? (
+          <p className="detail-note">
+            {plural(group.waitingLookup, 'more choice', 'more choices')} waiting for a lookup. Each scan looks up a few, after your other bundles.
+          </p>
+        ) : null}
         <p className="detail-note">
           Found by the agent in Home Depot’s Featured BOGO listing: each choice is listed at the starter’s price ({money(group.choices[0]?.price ?? 0)}), so the free item is in its estimate. A free item may be a battery. Profit and ROI are estimates from your fee settings.
         </p>
