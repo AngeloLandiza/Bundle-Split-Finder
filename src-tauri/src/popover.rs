@@ -15,7 +15,9 @@ use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
-use tauri::{AppHandle, LogicalPosition, Manager, Rect, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent};
+#[cfg(not(windows))]
+use tauri::LogicalPosition;
+use tauri::{AppHandle, Manager, Rect, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent};
 
 use crate::{agent, shell};
 
@@ -291,16 +293,19 @@ static DOCK_SHOWN: AtomicBool = AtomicBool::new(true);
 static APPLIED: Mutex<Option<Option<String>>> = Mutex::new(None);
 
 /// The badge text: the open-question count, nothing at 0, nothing without a Dock icon.
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 pub fn badge_label(questions: u32, dock_shown: bool) -> Option<String> {
   (dock_shown && questions > 0).then(|| questions.to_string())
 }
 
 /// The menu bar icon's count text. With the Dock icon shown the count is its badge, and the menu bar
 /// icon stays a plain icon; with it hidden the count has no other place to be seen at a glance.
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 pub fn tray_title(questions: u32, dock_shown: bool) -> Option<String> {
   (!dock_shown && questions > 0).then(|| questions.to_string())
 }
 
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 pub fn dock_shown() -> bool {
   DOCK_SHOWN.load(Ordering::Relaxed)
 }

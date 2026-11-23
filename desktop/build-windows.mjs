@@ -30,6 +30,6 @@ if (!windows) {
   }
 }
 
-const args = ['tauri', 'build', '--target', TARGET, '--bundles', 'nsis', ...(windows ? [] : ['--runner', 'cargo-xwin'])];
+const args = ['tauri', 'build', '--target', TARGET, ...(windows ? [] : ['--runner', 'cargo-xwin'])];
 const r = spawnSync('npx', args, { stdio: 'inherit', env, shell: windows });
 process.exit(r.status ?? 1);

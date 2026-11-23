@@ -42,7 +42,8 @@ npm run typecheck && npm test
 ## Windows
 
 `npm run desktop:build:windows` (`desktop/build-windows.mjs`) runs `tauri build --runner cargo-xwin
---target x86_64-pc-windows-msvc --bundles nsis`, Tauri's documented route for building Windows apps on
+--target x86_64-pc-windows-msvc` (NSIS only: `bundle.targets` in `src-tauri/tauri.windows.conf.json`;
+the CLI on a Mac refuses `--bundles nsis`), Tauri's documented route for building Windows apps on
 macOS. It writes `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/Split Finder_<version>_x64-setup.exe`.
 One-time setup on the Mac:
 
@@ -53,8 +54,10 @@ brew install nsis llvm lld
 ```
 
 cargo-xwin downloads Microsoft's CRT and Windows SDK headers and libraries into its cache on the first
-build (that download is Microsoft's, under its licence). On a Windows PC the same command builds
-natively without cargo-xwin.
+build (that download is Microsoft's, under its licence, about 1 GB), and the Tauri CLI fetches its
+NSIS plugin (`nsis_tauri_utils.dll`, hash-checked) from Tauri's GitHub releases. On a Windows PC the
+same command builds natively without cargo-xwin. The installer is about 26 MB (0.1.0); the VC runtime
+is linked statically, so nothing else needs installing.
 
 - **Sidecar.** `desktop/bundle-agent.ts` reads `TAURI_ENV_TARGET_TRIPLE`. For Windows it takes the official
   `node-v24.13.0-win-x64.zip` from nodejs.org only, checks its SHA-256 against both the release's
