@@ -271,3 +271,34 @@
   background: var(--grouped-bg);
   border-top: 1px solid var(--separator);
 }
+
+/* How the split is known: each item with the page it came from. */
+.split-evidence {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.detail-subtitle {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--label-2);
+}
+
+.evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.evidence-text {
+  color: var(--label);
+}

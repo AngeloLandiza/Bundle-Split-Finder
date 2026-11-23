@@ -188,6 +188,18 @@ function Detail({ d }: { d: DealDetail }) {
             <h3 className="detail-section-title">
               Parts <span className="fig muted">{d.parts.length}</span>
             </h3>
+            {d.splitEvidence?.length ? (
+              <div className="split-evidence">
+                <h4 className="detail-subtitle">How we know what is inside</h4>
+                <ul className="evidence-list">
+                  {d.splitEvidence.map((e, i) => (
+                    <li key={i}>
+                      <span className="evidence-text">{e.text}</span> <SourceLink source={{ label: EVIDENCE_LABEL[e.kind], url: e.url ?? null }} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             <ul className="detail-list">
               {d.parts.map((p) => (
                 <Part key={p.model} part={p} dealId={d.id} brand={d.brand} questionId={d.questionId} scanRunning={scanRunning} />
@@ -208,6 +220,13 @@ function Detail({ d }: { d: DealDetail }) {
     </>
   );
 }
+
+/** Where each kind of evidence for the split came from, as a labelled link (every claim links its source). */
+const EVIDENCE_LABEL: Record<NonNullable<DealDetail['splitEvidence']>[number]['kind'], string> = {
+  hd_part_page: 'Home Depot part page',
+  bogo_pair: 'Home Depot BOGO listing',
+  page_quote: 'Home Depot bundle page',
+};
 
 function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean }) {
   const verify = useAction(api.verify);
