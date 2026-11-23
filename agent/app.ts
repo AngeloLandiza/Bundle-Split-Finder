@@ -14,6 +14,7 @@ import {
   type AnswerResponse,
   type BogoResponse,
   type ConfirmPriceResponse,
+  type FactResponse,
   type PriceFromLinkResponse,
   type KeyName,
   type CheckKeyResponse,
@@ -738,6 +739,24 @@ export function createAgent(opts: AgentOptions): Agent {
     });
   });
 
+  // Answer once (Nov 23): what he settled about a model, kept per brand and model (core/src/facts).
+  r.post('/api/facts', 'ui', async (ctx) => {
+    const b = obj(await ctx.body());
+    const brand = text(b.brand, 'brand', 40).trim();
+    const model = text(b.model, 'model', 40).trim();
+    if (b.notSoldSeparately !== true) throw new HttpError('bad_request', 'notSoldSeparately must be true.');
+    if (brand === '' || model === '' || model.startsWith('~')) throw new HttpError('bad_request', 'Name the brand and the model.');
+    return refusals(async (): Promise<FactResponse> => {
+      await work.markNotSold(brand, model);
+      return { ok: true };
+    });
+  });
+  r.delete('/api/facts/:key', 'ui', (ctx) => {
+    const field = ctx.url.searchParams.get('field');
+    if (field !== null && field !== 'isPart' && field !== 'sellAs' && field !== 'notSoldSeparately') throw new HttpError('bad_request', 'field must be isPart, sellAs or notSoldSeparately.');
+    return refusals(async (): Promise<FactResponse> => ({ ok: true, reopened: await work.forgetFact(ctx.params.key!, field) }));
+  });
+
   // ------------------------------------------------------------ review (applied by the agent, core/src/scan/answers.ts)
   r.get('/api/review', 'any', () =>
     reviewResponse({ review: store.get('review'), suggestions: store.get('suggestions'), deals: store.get('deals'), settings: store.get('settings') }),
@@ -756,8 +775,13 @@ export function createAgent(opts: AgentOptions): Agent {
     const answer = parseAnswer(b.answer);
     const seen = typeof b.seen === 'string' ? b.seen : undefined;
     return refusals(async (): Promise<AnswerResponse> => {
-      const answerId = await work.answer(ctx.params.id!, answer, seen, b.fromSuggestion === true);
-      return answerId ? { applied: true, answerId } : { applied: true };
+      const remember = b.remember === undefined ? [] : b.remember;
+      if (!Array.isArray(remember) || remember.length > 8 || !remember.every((m) => typeof m === 'string' && m.trim() !== '' && m.length <= 40)) {
+        throw new HttpError('bad_request', 'remember must be a list of up to 8 model numbers.');
+      }
+      const { entryId: answerId, remembered } = await work.answerRemembering(ctx.params.id!, answer, seen, b.fromSuggestion === true, remember as string[]);
+      const r = remembered ? { remembered: { models: remembered.facts.map((f) => f.model), settled: remembered.settled, skipped: remembered.skipped } } : {};
+      return answerId ? { applied: true, answerId, ...r } : { applied: true, ...r };
     });
   });
   // The owner takes back an answer he saved (`:id` is the answer entry's id, as in AnswerResponse.answerId).

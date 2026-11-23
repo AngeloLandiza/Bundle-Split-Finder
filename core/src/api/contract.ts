@@ -613,6 +613,21 @@ export type ConfirmPriceBody =
    */
   | { kind: 'suggested'; suggestion: Pick<PriceSuggestion, 'kind' | 'price'> & Partial<PriceSuggestion>; note?: string };
 
+/**
+ * Answer once (Nov 23): POST /api/facts marks a model "in the box, not sold separately" (or keeps that answer after newer
+ * evidence: a new date); DELETE /api/facts/:key (`BRAND:MODEL`, URL-encoded; `?field=` one of isPart, sellAs,
+ * notSoldSeparately, else all of it) forgets it ("Change"), and the bundles it settled are asked about again (`reopened`).
+ */
+export interface FactBody {
+  brand: string;
+  model: string;
+  notSoldSeparately: true;
+}
+export interface FactResponse {
+  ok: true;
+  reopened?: string[];
+}
+
 /** The price now stored for the part, or null after a DELETE. */
 export interface ConfirmPriceResponse {
   confirmed: { price: number; link: string; note: string | null; confirmedAt: string } | null;
@@ -739,6 +754,11 @@ export interface ReviewAnswerBody {
    * refused (409). Omitted: the question as stored now is assumed (send it; a scan may change the choices meanwhile).
    */
   seen?: string;
+  /**
+   * Answer once (Nov 23): the models of `ReviewQuestion.unsettledParts` he ticked "…and remember this for A986501" for (ticked
+   * by default). What his answer says of each is kept per brand and model and applied to every bundle that holds it.
+   */
+  remember?: string[];
 }
 
 /** POST /api/review/approve: apply the AI suggestion of each question named. */
@@ -778,6 +798,11 @@ export interface AskResponse {
 /** W4: POST /api/review/:id/answer. The agent applies the answer itself (core/src/scan/answers.ts). */
 export interface AnswerResponse {
   applied: true;
+  /**
+   * Answer once (Nov 23): what was remembered (`models`), the open questions that settled (`settled`, by id), and the ticked
+   * models the answer says nothing general about, each with why. Absent when nothing was ticked.
+   */
+  remembered?: { models: string[]; settled: string[]; skipped: { model: string; why: string }[] };
   /**
    * Additive: the id of the entry the agent kept so the owner can take this answer back (POST /api/review/:id/undo,
    * with this id). Absent for an answer that cannot be taken back (an eBay yes or no).

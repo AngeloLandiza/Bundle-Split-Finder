@@ -57,6 +57,8 @@ import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatch
 import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
 import { evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, type SignalsDeps } from './signalsPass';
 import { averagePullsWanted, pullAverages } from './suggestPrices';
+import { forgetFact, markNotSold, rememberAnswer, type Remembered } from '../core/src/facts/apply';
+import type { FactField } from '../core/src/facts/fact';
 import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
 import { reverifyPass, wantedReads, withEvidenceKey } from './reverify';
@@ -1556,7 +1558,35 @@ export class AgentWork {
 
   /** The owner's answer from the app, applied by the agent (core/src/scan/answers.ts). */
   answer(id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean): Promise<string | null> {
-    return this.serialAnswer('A scan or a search is running. Answer again when it has finished.', () => this.answerNow(id, answer, seen, fromSuggestion));
+    return this.answerRemembering(id, answer, seen, fromSuggestion, []).then((r) => r.entryId);
+  }
+
+  /**
+   * Answer once (Nov 23): the answer, then what he ticked "…and remember this for A986501" for, kept per brand and model
+   * (core/src/facts) and applied at once to every open question it settles. `remember` empty: the answer alone.
+   */
+  answerRemembering(
+    id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean,
+    remember: readonly string[],
+  ): Promise<{ entryId: string | null; remembered: Remembered | null }> {
+    return this.serialAnswer('A scan or a search is running. Answer again when it has finished.', () => this.answerNow(id, answer, seen, fromSuggestion, remember));
+  }
+
+  /** Answer once: "In the box, not sold separately" for a model, or that answer kept after newer evidence; the report follows. */
+  markNotSold(brand: string, model: string): Promise<void> {
+    return this.serialAnswer('A scan or a search is running. Save this when it has finished.', async () => {
+      await markNotSold(this.scanStore, brand, model, this.d.now());
+      await this.refresh();
+    });
+  }
+
+  /** Answer once, "Change": forgets what he settled about a model; the bundles it settled are asked about again. */
+  forgetFact(key: string, field: FactField | null): Promise<string[]> {
+    return this.serialAnswer('A scan or a search is running. Change this when it has finished.', async () => {
+      const reopened = await forgetFact(this.scanStore, key, field, this.d.now());
+      await this.refresh();
+      return reopened;
+    });
   }
 
   /**
@@ -1577,14 +1607,17 @@ export class AgentWork {
   }
 
   /** The id of the entry Undo takes (undoAnswer) when the answer can be taken back; null for an eBay answer. */
-  private async answerNow(id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean): Promise<string | null> {
+  private async answerNow(
+    id: string, answer: { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' }, seen: string | undefined, fromSuggestion: boolean,
+    remember: readonly string[] = [],
+  ): Promise<{ entryId: string | null; remembered: Remembered | null }> {
     const now = this.d.now();
     if ('ebay' in answer) {
       const q = this.d.store.get('review').ebayQuestions.find((x) => x.id === id);
       if (!q) throw new AnswerRefused('That question was not found.');
       await applyEbayAnswer(this.scanStore, { key: q.key, itemId: q.itemId, answer: answer.ebay }, now);
       await this.refresh();
-      return null;
+      return { entryId: null, remembered: null };
     }
     const item = await this.scanStore.getReview(id);
     if (!item) throw new AnswerRefused('That question was not found.');
@@ -1597,8 +1630,10 @@ export class AgentWork {
       this.d.store.update('suggestions', (all) => all.map((s) => (s.key === shown.key ? { ...s, outcome: { answeredAt: now, answer: answered.answer ?? '', agreed: agreedWith(s.suggestion, answered) } } : s)));
     }
     const entryId = answered ? await this.keepOwnerAnswer(item, answered, before, shown?.key ?? null, now) : null;
+    // Answer once (Nov 23): what he asked to remember, applied to every open question it settles (core/src/facts/apply.ts).
+    const remembered = answered && answered.kind === 'split' && remember.length > 0 ? await rememberAnswer(this.scanStore, answered, remember, now) : null;
     await this.refresh();
-    return entryId;
+    return { entryId, remembered };
   }
 
   private ownerAnswerSeq = 0;
