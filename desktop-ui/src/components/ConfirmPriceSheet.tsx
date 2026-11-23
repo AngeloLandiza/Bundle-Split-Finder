@@ -9,6 +9,7 @@ import { TextField } from './Fields';
 import { Money } from './Figure';
 import { Sheet, SheetActions } from './Sheet';
 import { SourceLink } from './Source';
+import { webUrl } from '../lib/webUrl';
 import './ConfirmPriceSheet.css';
 
 export interface ConfirmTarget {
@@ -152,9 +153,11 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
                     <span className="cp-choice-price fig">{money(c.price)}</span>
                     <span className="cp-choice-sub">eBay listing {i + 1}, sold New</span>
                   </span>
-                  <a href={c.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                    Open the listing
-                  </a>
+                  {webUrl(c.url) ? (
+                    <a href={webUrl(c.url)!} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                      Open the listing
+                    </a>
+                  ) : null}
                 </label>
               ))}
               <label className={`cp-choice${typed ? ' cp-choice-on' : ''}`}>

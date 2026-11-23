@@ -1,5 +1,7 @@
 // Small things a menu item does: copy text, open a page. Each says whether it worked, so the screen can tell him.
 
+import { webUrl } from './webUrl';
+
 /** Copies text to the clipboard. False when the webview refuses (no permission, no focus). */
 export async function copyText(text: string): Promise<boolean> {
   try {
@@ -10,17 +12,12 @@ export async function copyText(text: string): Promise<boolean> {
   }
 }
 
-/** Opens a web page outside the app (the shell sends it to the default browser). Only http and https. */
+/** Opens a web page outside the app (the shell sends it to the default browser). Only a web address (lib/webUrl.ts). */
 export function openPage(url: string | null | undefined): boolean {
-  if (!url) return false;
-  try {
-    const u = new URL(url);
-    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
-    window.open(u.href, '_blank', 'noopener,noreferrer');
-    return true;
-  } catch {
-    return false;
-  }
+  const href = webUrl(url);
+  if (!href) return false;
+  window.open(href, '_blank', 'noopener,noreferrer');
+  return true;
 }
 
 /** The page that searches Amazon for a part, for a part with no listing chosen. */

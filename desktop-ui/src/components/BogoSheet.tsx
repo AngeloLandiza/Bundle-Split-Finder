@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api, useAction } from '../api/hooks';
 import type { BogoView } from '../api/types';
 import { pickedTools, typedTool, type FreeToolForm } from '../lib/bogo';
+import { webUrl } from '../lib/webUrl';
 import { Button } from './Button';
 import { TextField } from './Fields';
 import { Sheet, SheetActions } from './Sheet';
@@ -104,8 +105,8 @@ export function BogoSheet({ target, onClose }: { target: BogoTarget; onClose: ()
                     <span className="bg-choice-model code">{item.model}</span>
                     {item.title ? <span className="bg-choice-sub">{item.title}</span> : null}
                   </span>
-                  {item.link ? (
-                    <a href={item.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                  {webUrl(item.link) ? (
+                    <a href={webUrl(item.link)!} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                       Open on Home Depot
                     </a>
                   ) : null}

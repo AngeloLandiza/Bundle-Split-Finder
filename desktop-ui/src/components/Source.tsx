@@ -1,16 +1,6 @@
 import type { Quote as QuoteData, Source } from '../api/types';
+import { webUrl } from '../lib/webUrl';
 import './Source.css';
-
-/** A source's link, only when it is a web address (http or https). */
-export function webUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  try {
-    const u = new URL(url);
-    return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : null;
-  } catch {
-    return null;
-  }
-}
 
 /** Every price, match and question links to where it came from ("Home Depot page", "Amazon listing"). */
 export function SourceLink({ source, children }: { source: Source; children?: React.ReactNode }) {
