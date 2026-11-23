@@ -67,6 +67,31 @@ function ext(token: string, path: string, init: RequestInit = {}) {
   });
 }
 
+/**
+ * PATCHes a body (the caller makes it over the limit) and resolves with the status when a response arrives, or 'reset'
+ * when the connection is reset before one does (ECONNRESET or EPIPE: the agent closed on an oversized upload).
+ */
+function sendOversized(path: string, body: string): Promise<number | 'reset'> {
+  return new Promise((resolve, reject) => {
+    const req = request(
+      `${base}${path}`,
+      {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${agent.auth.uiToken}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+      },
+      (res) => {
+        res.resume();
+        resolve(res.statusCode ?? 0);
+      },
+    );
+    req.on('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'ECONNRESET' || err.code === 'EPIPE') resolve('reset');
+      else reject(err);
+    });
+    req.end(body);
+  });
+}
+
 function rawGet(path: string, headers: Record<string, string>): Promise<{ status: number; body: string }> {
   return new Promise((resolve, reject) => {
     const req = request({ host: '127.0.0.1', port, path, headers }, (res) => {
@@ -108,8 +133,12 @@ describe('agent HTTP', () => {
   });
 
   it('refuses a body over the limit and bad JSON', async () => {
-    const big = await ui('/api/settings', { method: 'PATCH', body: JSON.stringify({ pad: 'x'.repeat(1024 * 1024 + 10) }) });
-    expect(big.status).toBe(413);
+    const before = await (await ui('/api/settings')).json();
+    // The agent answers 413 and closes while the client is still sending, so the client may read the 413 or be reset
+    // before it can. Either is a refusal; what must not happen is the patch landing (checked below).
+    const big = await sendOversized('/api/settings', JSON.stringify({ autopilot: false, pad: 'x'.repeat(1024 * 1024 + 10) }));
+    expect(big === 413 || big === 'reset').toBe(true);
+    expect(await (await ui('/api/settings')).json()).toEqual(before);
     const bad = await ui('/api/settings', { method: 'PATCH', body: '{nope' });
     expect(bad.status).toBe(400);
     expect(((await bad.json()) as { error: { code: string } }).error.code).toBe('bad_request');
