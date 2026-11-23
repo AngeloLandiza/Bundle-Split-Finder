@@ -51,6 +51,7 @@ import { tryServeUi, uiIndexExists } from './uiStatic';
 import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf, workingReviewCount } from './views';
 import { setWatch } from '../core/src/tracking/state';
 import { isBogoListingPath } from '../core/src/tracking/bogoPairs';
+import { HOME_DEPOT_ITEM_ID } from '../core/src/scan/kitPage';
 import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
 
@@ -130,26 +131,41 @@ function parseKey(name: KeyName, body: Record<string, unknown>): Partial<StoredK
   }
 }
 
+/**
+ * A Home Depot item id as the helper takes it (extension/lib/agentJobs.ts): digits, at most 12. Security review, Nov 23:
+ * checked here too, so a job the helper would refuse is refused at the door and never sits in the queue.
+ */
+function itemIdOf(v: unknown): string {
+  const id = typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 ? String(v) : v;
+  if (typeof id !== 'string' || id.length > 12 || !HOME_DEPOT_ITEM_ID.test(id)) throw new HttpError('bad_request', 'An item id is the digits of a Home Depot item id.');
+  return id;
+}
+
+function itemIdsOf(v: unknown): string[] {
+  if (!Array.isArray(v) || !v.length || v.length > 50) throw new HttpError('bad_request', 'itemIds must list 1 to 50 item ids.');
+  return v.map(itemIdOf);
+}
+
 function parseJobInput(kind: WorkerJobKind, v: unknown): WorkerJobInputs[WorkerJobKind] {
   const o = obj(v, 'input');
   switch (kind) {
     case 'page':
-      if (!Array.isArray(o.itemIds) || !o.itemIds.length || o.itemIds.length > 50) throw new HttpError('bad_request', 'itemIds must list 1 to 50 item ids.');
-      return { itemIds: o.itemIds.map((id) => text(String(id), 'itemId', 32)) };
+      return { itemIds: itemIdsOf(o.itemIds) };
     case 'kitPage':
-      return { itemId: text(String(o.itemId ?? ''), 'itemId', 32), model: text(o.model, 'model', 64) };
+      return { itemId: itemIdOf(o.itemId), model: text(o.model, 'model', 64) };
     case 'partPrice':
-      return { itemId: text(String(o.itemId ?? ''), 'itemId', 32), model: text(o.model, 'model', 64), ...(typeof o.brand === 'string' ? { brand: text(o.brand, 'brand', 32) } : {}) };
+      return { itemId: itemIdOf(o.itemId), model: text(o.model, 'model', 64), ...(typeof o.brand === 'string' ? { brand: text(o.brand, 'brand', 32) } : {}) };
     case 'search':
-      return { query: text(o.query, 'query', 200), page: typeof o.page === 'number' && o.page >= 1 ? Math.floor(o.page) : 1 };
+      // The helper reads the first page of a search only.
+      if (o.page !== undefined && o.page !== 1) throw new HttpError('bad_request', 'Only the first page of a Home Depot search is read.');
+      return { query: text(o.query, 'query', 200), page: 1 };
     case 'researchPage':
-      return { itemId: text(String(o.itemId ?? ''), 'itemId', 32) };
+      return { itemId: itemIdOf(o.itemId) };
     case 'bogoListing':
       if (!isBogoListingPath(o.path)) throw new HttpError('bad_request', 'path must be a Featured BOGO listing path.');
       return { path: o.path };
     case 'promoPage':
-      if (!Array.isArray(o.itemIds) || !o.itemIds.length || o.itemIds.length > 50) throw new HttpError('bad_request', 'itemIds must list 1 to 50 item ids.');
-      return { itemIds: o.itemIds.map((id) => text(String(id), 'itemId', 32)) };
+      return { itemIds: itemIdsOf(o.itemIds) };
     case 'reload':
       return {};
   }
