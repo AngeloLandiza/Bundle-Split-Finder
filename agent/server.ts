@@ -13,7 +13,7 @@ const extraUiOrigins = (process.env.SPLIT_FINDER_UI_ORIGINS ?? '')
   .map((o) => o.trim())
   .filter(Boolean);
 
-const agent = createAgent({ dataDir: agentDataDir(), port, extraUiOrigins });
+const agent = createAgent({ dataDir: agentDataDir(), port, extraUiOrigins, onQuit: () => stop() });
 const server = createServer(agent.handle);
 // Long polls and event streams stay open; only idle keep-alive sockets are timed out.
 server.requestTimeout = 0;
@@ -30,5 +30,6 @@ function stop(): void {
   server.closeAllConnections();
   setTimeout(() => process.exit(0), 2_000).unref();
 }
+// macOS: the shell sends SIGTERM. Windows has none for a windowless child: the shell POSTs /api/agent/quit (onQuit).
 process.on('SIGTERM', stop);
 process.on('SIGINT', stop);

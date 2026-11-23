@@ -2,7 +2,7 @@
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { join, win32 } from 'node:path';
 
 const INVALID_PERMISSION = 'permissions';
 
@@ -42,11 +42,26 @@ export function manifestLooksValid(dir: string): { ok: boolean; message: string 
   return { ok: true, message: 'Ready for Load unpacked in Chrome.' };
 }
 
+/**
+ * How the zip is unpacked: unzip on macOS and Linux; on Windows the tar.exe that ships in System32 since Windows 10
+ * 1803 (bsdtar, which reads zip files). By its full path, so a GNU tar earlier on PATH (Git for Windows) is not used.
+ */
+export function unzipCommand(
+  zipPath: string,
+  destDir: string,
+  platform: NodeJS.Platform = process.platform,
+  systemRoot: string = process.env.SystemRoot ?? 'C:\\Windows',
+): [string, string[]] {
+  if (platform === 'win32') return [win32.join(systemRoot, 'System32', 'tar.exe'), ['-xf', zipPath, '-C', destDir]];
+  return ['unzip', ['-q', '-o', zipPath, '-d', destDir]];
+}
+
 export function installExtensionFromZip(zipPath: string, destDir: string): void {
   if (!existsSync(zipPath)) throw new Error('Extension zip not found.');
   rmSync(destDir, { recursive: true, force: true });
   mkdirSync(destDir, { recursive: true });
-  execFileSync('unzip', ['-q', '-o', zipPath, '-d', destDir]);
+  const [file, args] = unzipCommand(zipPath, destDir);
+  execFileSync(file, args, { windowsHide: true });
   const inner = readdirSync(destDir)
     .map((name) => join(destDir, name))
     .find((p) => existsSync(join(p, 'manifest.json')));

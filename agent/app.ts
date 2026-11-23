@@ -61,6 +61,11 @@ export interface AgentOptions {
   fetchFn?: typeof fetch;
   /** Tests: the scan itself, reader timeouts, SerpApi's address. */
   work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl'>;
+  /**
+   * POST /api/agent/quit: the desktop shell asks the agent to stop as SIGTERM does. Windows has no SIGTERM for a
+   * windowless child, so the shell asks over HTTP there before it kills. Absent, the route answers unavailable.
+   */
+  onQuit?: () => void;
 }
 
 export interface Agent {
@@ -427,6 +432,13 @@ export function createAgent(opts: AgentOptions): Agent {
     // Resuming is the owner's acknowledgement of a problem the agent paused itself for.
     store.update('agent', () => ({ paused: false, pausedAt: null, problem: null }));
     return { paused: false };
+  });
+  r.post('/api/agent/quit', 'ui', () => {
+    const quit = opts.onQuit;
+    if (!quit) throw new HttpError('unavailable', 'This agent is not run by the desktop app.');
+    // After the answer is out: the shell waits for the port to close.
+    setTimeout(quit, 20).unref?.();
+    return { ok: true };
   });
   r.get('/api/events', 'any', (ctx) => {
     events.attach(ctx.res, { name: 'state', data: state() });

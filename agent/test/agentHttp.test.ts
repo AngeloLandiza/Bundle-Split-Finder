@@ -235,6 +235,19 @@ describe('agent HTTP', () => {
     expect(((await (await ui('/api/state')).json()) as { agent: { status: string } }).agent.status).toBe('idle');
   });
 
+  it('quits when the shell asks (Windows has no SIGTERM), and only the app may ask', async () => {
+    expect((await ui('/api/agent/quit', { method: 'POST', body: '{}' })).status).toBe(503);
+    agent.close();
+    let quits = 0;
+    agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-http-')), port, timers: false, onQuit: () => quits++ });
+    server.removeAllListeners('request');
+    server.on('request', agent.handle);
+    expect((await fetch(`${base}/api/agent/quit`, { method: 'POST', body: '{}' })).status).toBe(401);
+    expect(await (await ui('/api/agent/quit', { method: 'POST', body: '{}' })).json()).toEqual({ ok: true });
+    await new Promise((r) => setTimeout(r, 60));
+    expect(quits).toBe(1);
+  });
+
   it('streams state first, then notify events, to a caller with no Origin (the shell)', async () => {
     const chunks: string[] = [];
     const got = new Promise<void>((resolve, reject) => {

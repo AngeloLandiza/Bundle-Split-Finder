@@ -29,6 +29,7 @@ import type { BogoView } from '../core/src/tracking/bogo';
 import type { BogoGroup } from '../core/src/tracking/bogoPairs';
 import type { FbaEstimate } from '../core/src/tracking/fba';
 import { emptyTracking, type TrackingState } from '../core/src/tracking/state';
+import { restrictToOwner } from './winAcl';
 
 // ---------------------------------------------------------------- collection types
 
@@ -371,6 +372,11 @@ function fsyncDir(dir: string): void {
  */
 export function writeFileAtomic(path: string, text: string, mode = 0o644): void {
   const tmp = `${path}.${process.pid}.tmp`;
+  if (mode === 0o600 && process.platform === 'win32') {
+    // Windows ignores the mode: the empty file gets its owner-only ACL before any content (winAcl.ts).
+    closeSync(openSync(tmp, 'w'));
+    restrictToOwner(tmp);
+  }
   const fd = openSync(tmp, 'w', mode);
   try {
     const buf = Buffer.from(text, 'utf8');
@@ -380,8 +386,27 @@ export function writeFileAtomic(path: string, text: string, mode = 0o644): void 
   } finally {
     closeSync(fd);
   }
-  renameSync(tmp, path);
+  renameOver(tmp, path);
   fsyncDir(dirname(path));
+}
+
+const RENAME_BUSY = new Set(['EPERM', 'EACCES', 'EBUSY']);
+
+/**
+ * renameSync, and on Windows a few more tries over about half a second when the old file is held open without
+ * delete sharing (a virus scanner or the search indexer reading it). Elsewhere a rename over a file does not fail so.
+ */
+export function renameOver(from: string, to: string, platform: NodeJS.Platform = process.platform, rename = renameSync): void {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      rename(from, to);
+      return;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code ?? '';
+      if (platform !== 'win32' || !RENAME_BUSY.has(code) || attempt >= 9) throw err;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
+    }
+  }
 }
 
 function readJson(path: string): unknown {
