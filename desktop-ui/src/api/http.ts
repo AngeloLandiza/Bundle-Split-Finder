@@ -133,10 +133,14 @@ export function createHttpClient(): ApiClient {
 
     review: async () => mapReview(await call<C.ReviewResponse>('GET', '/api/review')),
     answer: async (qid, answer, o) => {
-      const body: C.ReviewAnswerBody = { answer, ...(o.fromSuggestion ? { fromSuggestion: true } : {}), ...(o.seen ? { seen: o.seen } : {}) };
+      const body: C.ReviewAnswerBody = {
+        answer, ...(o.fromSuggestion ? { fromSuggestion: true } : {}), ...(o.seen ? { seen: o.seen } : {}), ...(o.remember?.length ? { remember: o.remember } : {}),
+      };
       const r = await call<C.AnswerResponse>('POST', `/api/review/${id(qid)}/answer`, body);
-      return { answerId: r.answerId ?? null };
+      return { answerId: r.answerId ?? null, ...(r.remembered ? { remembered: r.remembered } : {}) };
     },
+    markNotSold: async (brand, model) => void (await call<C.FactResponse>('POST', '/api/facts', { brand, model, notSoldSeparately: true } satisfies C.FactBody)),
+    forgetFact: async (key, field) => void (await call<C.FactResponse>('DELETE', `/api/facts/${id(key)}${field ? `?field=${field}` : ''}`)),
     undoAnswer: async (aid) => {
       const r = await call<C.UndoAnswerResponse>('POST', `/api/review/${id(aid)}/undo`, {});
       return { questionId: r.questionId };

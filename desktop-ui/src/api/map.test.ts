@@ -159,6 +159,13 @@ describe('the fields the new agent adds', () => {
       { kind: 'page_quote', text: 'Includes: a' },
     ]);
   });
+  it('answer once: keeps the owner\'s answer as evidence with the model "Change" forgets', () => {
+    const text = 'A986501 is a part of the bundles that name it: your answer on Nov 23 (PCL1600K2-A986501).';
+    expect(splitEvidenceOf([{ kind: 'owner_fact', model: 'A986501', text }, { kind: 'hd_part_page', model: 'X', text: 'y' }])).toEqual([
+      { kind: 'owner_fact', model: 'A986501', text },
+      { kind: 'hd_part_page', text: 'y' },
+    ]);
+  });
 });
 
 describe('events', () => {

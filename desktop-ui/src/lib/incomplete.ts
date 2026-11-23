@@ -3,8 +3,47 @@
 // ones must bring to break even. Every figure is the agent's (core/src/scan/report.ts incompleteOf), an estimate from
 // the fee settings (rule 5); nothing is worked out here.
 
-import type { DealIncomplete, DealUnpricedPart } from '../api/types';
-import { money } from './format';
+import type { DealIncomplete, DealIncompleteEstimate, DealUnpricedPart } from '../api/types';
+import { money, profit, roi } from './format';
+
+// ---------------------------------------------------------------- suggested prices and answers kept (Nov 23)
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** "Nov 23", as the agent writes a day (UTC). */
+export const dayOf = (ms: number): string => {
+  const d = new Date(ms);
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+};
+
+/** "$66" for whole dollars, else "$65.50". */
+const short = (n: number): string => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
+
+/**
+ * The part row's one primary action for a suggestion: "Confirm $66 (eBay middle of 6)", "Confirm $48.15 (Keepa 90-day
+ * average)". The figures are the agent's label's; nothing is worked out here.
+ */
+export function suggestionAction(s: NonNullable<DealUnpricedPart['priceSuggestion']>): string {
+  if (s.kind === 'ebay_median') {
+    const n = /^(\d+) eBay listings/.exec(s.label)?.[1];
+    return `Confirm ${short(s.price)} (eBay middle${n ? ` of ${n}` : ''})`;
+  }
+  const days = /its (\d+)-day average/.exec(s.label)?.[1] ?? '90';
+  return `Confirm ${short(s.price)} (Keepa ${days}-day average)`;
+}
+
+/**
+ * The incomplete box's second line, never the headline and never a buy: "If you accept the 2 suggested prices: +$74.56
+ * est., 25% ROI. Nothing counts until you confirm each one." Null when not every unpriced part has a suggestion.
+ */
+export function ifAcceptedLine(i: Pick<DealIncompleteEstimate, 'ifAccepted'>): string | null {
+  const a = i.ifAccepted;
+  if (!a) return null;
+  const what = a.suggested === 1 ? 'the suggested price' : `the ${a.suggested} suggested prices`;
+  return `If you accept ${what}: ${profit(a.profit)} est., ${roi(a.roi)} ROI. Nothing counts until you confirm ${a.suggested === 1 ? 'it' : 'each one'}.`;
+}
+
+/** "from your answer on Nov 23": what a part row says beside a fact he gave. */
+export const fromAnswer = (at: number): string => `from your answer on ${dayOf(at)}`;
 
 /** "A", "A and B", "A, B and C". */
 const listOf = (names: readonly string[]): string => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)!}`);

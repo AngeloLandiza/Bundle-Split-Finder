@@ -276,7 +276,8 @@ function lineOf(o: PriceOption, part: PartRow): PriceLine {
     case 'confirmed':
       return {
         ...base,
-        label: `Confirmed by you · ${confirmedSourceName(o.link)}`,
+        // Suggested prices (Nov 23): a suggestion he confirmed says what it rested on.
+        label: `Confirmed by you · ${o.source ? (o.source.kind === 'ebay_median' ? 'eBay middle' : 'Keepa average') : confirmedSourceName(o.link)}`,
         amount: o.price,
         range: null,
         note: [o.note, ...notes].filter(Boolean).join(' · ') || null,
@@ -350,6 +351,7 @@ function partOf(p: PartRow): DealPart {
     verifySearches: grade === 'title_match' && p.asin ? 1 : null,
     unnamed: false,
     confirm: confirmOf(p),
+    ...(p.fact ? { fact: p.fact } : {}),
   };
 }
 
@@ -383,7 +385,7 @@ function wayOf(o: BundleRow['options'][number], i: number): WayToSell {
   };
 }
 
-const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote'];
+const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote', 'owner_fact'];
 
 /** How the split is known, each item only when it has a kind and a text; an address only when it is http(s). */
 export function splitEvidenceOf(v: unknown): SplitEvidence[] | undefined {
@@ -392,7 +394,8 @@ export function splitEvidenceOf(v: unknown): SplitEvidence[] | undefined {
   for (const e of v as Record<string, unknown>[]) {
     if (typeof e !== 'object' || e === null || typeof e.text !== 'string' || !e.text.trim() || typeof e.kind !== 'string' || !EVIDENCE_KINDS.includes(e.kind)) continue;
     const url = typeof e.url === 'string' && /^https?:\/\//.test(e.url) ? e.url : undefined;
-    out.push({ kind: e.kind as SplitEvidence['kind'], text: e.text.trim(), ...(url ? { url } : {}) });
+    const model = e.kind === 'owner_fact' && typeof e.model === 'string' && e.model.trim() ? e.model.trim() : undefined;
+    out.push({ kind: e.kind as SplitEvidence['kind'], text: e.text.trim(), ...(url ? { url } : {}), ...(model ? { model } : {}) });
   }
   return out.length ? out : undefined;
 }

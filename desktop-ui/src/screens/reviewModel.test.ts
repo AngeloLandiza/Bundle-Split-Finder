@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { QUESTIONS } from '../api/mockData';
 import realData from '../api/mockReal.json';
 import { mapReview } from '../api/map';
-import { checkedLines, groupBySource, groupQuestions, parseTyped, preselected, rowChip, saveHint, stepSource, suggestionChip, typedFromSuggestion, workingNote, workingTitle } from './reviewModel';
+import { checkedLines, groupBySource, groupQuestions, parseTyped, preselected, rememberLabel, rowChip, saveHint, savedWords, stepSource, suggestionChip, typedFromSuggestion, workingNote, workingTitle } from './reviewModel';
 
 const byId = (id: string) => QUESTIONS.find((q) => q.id === id)!;
 
@@ -104,5 +104,20 @@ describe('review model', () => {
       const grouped = groupBySource(quotes);
       for (const qt of quotes) expect(grouped.find((g) => g.source.label === qt.source.label && g.source.url === qt.source.url)?.texts).toContain(qt.text);
     }
+  });
+});
+
+describe('answer once: the footer\'s tick', () => {
+  it('names the parts the question asks about, and none for a question about no part', () => {
+    expect(rememberLabel({ kind: 'split', unsettledParts: ['A986501'] })).toBe('…and remember this for A986501');
+    expect(rememberLabel({ kind: 'split', unsettledParts: ['PCL406424SB', 'A25RS51'] })).toBe('…and remember this for PCL406424SB and A25RS51');
+    expect(rememberLabel({ kind: 'split' })).toBeNull();
+    expect(rememberLabel({ kind: 'match', unsettledParts: ['X'] })).toBeNull();
+  });
+
+  it('the saved row says how many other questions the answer settled', () => {
+    expect(savedWords('PCL1600K2-A986501: PCL1600K2, A986501', { settled: ['split:homedepot:920243671'] })).toBe('PCL1600K2-A986501: PCL1600K2, A986501 · 1 more question settled');
+    expect(savedWords('X: Y', { settled: [] })).toBe('X: Y');
+    expect(savedWords('X: Y', null)).toBe('X: Y');
   });
 });

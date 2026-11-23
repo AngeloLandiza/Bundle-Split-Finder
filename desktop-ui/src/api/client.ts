@@ -40,7 +40,13 @@ export interface ApiClient {
 
   review(): Promise<ReviewView>;
   /** `seen` is the question's signature as it was shown; the agent refuses the answer when the question has changed. */
-  answer(id: string, answer: ReviewAnswer, o: { fromSuggestion: boolean; seen: string | null }): Promise<{ answerId: string | null }>;
+  answer(
+    id: string, answer: ReviewAnswer, o: { fromSuggestion: boolean; seen: string | null; remember?: string[] },
+  ): Promise<{ answerId: string | null; remembered?: { models: string[]; settled: string[]; skipped: { model: string; why: string }[] } }>;
+  /** Answer once (Nov 23): "In the box, not sold separately" for a model, or that answer kept after newer evidence (POST /api/facts). */
+  markNotSold(brand: string, model: string): Promise<void>;
+  /** Answer once, "Change": forgets what he settled about a model (DELETE /api/facts/:key); the bundles it settled are asked about again. */
+  forgetFact(key: string, field?: 'isPart' | 'sellAs' | 'notSoldSeparately'): Promise<void>;
   /** Takes back an answer he saved (POST /api/review/:id/undo, the id `answer` returned): the question is open in Review again. */
   undoAnswer(answerId: string): Promise<{ questionId: string }>;
   /**

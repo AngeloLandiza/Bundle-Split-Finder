@@ -18,6 +18,8 @@ export interface ConfirmTarget {
   part: DealPart;
   /** The open Review question on the deal, so "Open Review" lands on it. */
   questionId: string | null;
+  /** Suggested prices (Nov 23): "Paste a link" opens on the link field, "Type a price" on the price field. */
+  focus?: 'link' | 'price';
 }
 
 /**
@@ -64,7 +66,7 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
   const choices = part.confirm.ebay;
   const [form, setForm] = useState<ConfirmForm>(() => {
     const start = initialForm(part);
-    return choices.length === 0 && start.choice === null ? { ...start, choice: TYPED } : start;
+    return (choices.length === 0 && start.choice === null) || target.focus ? { ...start, choice: TYPED } : start;
   });
   const [problem, setProblem] = useState<string | null>(null);
   const save = useAction(api.confirmPrice);
@@ -240,7 +242,7 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
               placeholder="Paste a link from eBay, Amazon or Home Depot"
               help="The price is read from an eBay, Amazon or Home Depot link. For any other site, such as Facebook, type the price you see."
               value={form.link}
-              autoFocus={choices.length === 0}
+              autoFocus={target.focus === 'link' || (choices.length === 0 && target.focus !== 'price')}
               onChange={(e) => {
                 const value = e.target.value;
                 if (readableLink(value) !== readFor.current) {
@@ -253,7 +255,7 @@ export function ConfirmPriceSheet({ target, onClose }: { target: ConfirmTarget; 
               onBlur={(e) => void readLink(e.currentTarget.value)}
             />
             <ReadResult read={read} />
-            <TextField label="Price" prefix="$" inputMode="decimal" autoComplete="off" mono type="text" width="sm" value={form.price} onChange={(e) => set({ price: e.target.value })} />
+            <TextField label="Price" prefix="$" inputMode="decimal" autoComplete="off" mono type="text" width="sm" autoFocus={target.focus === 'price'} value={form.price} onChange={(e) => set({ price: e.target.value })} />
           </div>
         ) : null}
 

@@ -12,7 +12,7 @@ import { useUi } from '../components/ui';
 import { amazonSearchUrl, amazonUrl, copyText, openPage } from '../lib/actions';
 import { money, percentOff, plural, profit, when } from '../lib/format';
 import { isMenuKey } from '../lib/keys';
-import { breakEvenWords, kitWords, pricedCount, UNPRICED_ACTION, UNPRICED_STATE } from '../lib/incomplete';
+import { breakEvenWords, fromAnswer, ifAcceptedLine, kitWords, pricedCount, suggestionAction, UNPRICED_ACTION, UNPRICED_STATE } from '../lib/incomplete';
 import { PART_STATE_WORDS, partsSummary } from '../lib/matchWords';
 import { plainReason } from '../lib/questionWords';
 import { partMenu, type PartMenuId } from '../lib/menus';
@@ -37,6 +37,8 @@ function Detail({ d }: { d: DealDetail }) {
   const e = d.estimate;
   const [copied, setCopied] = useState<string | null>(null);
   const look = useAction(api.lookUp);
+  // Answer once: "Change" on what his answer settled forgets it; the bundles it settled are asked about again.
+  const forget = useAction(api.forgetFact);
   // The free quote, asked again when the agent's state changes: what a Look up would spend now (the row's figure may be older).
   const [quote] = useResource(() => (d.lookup ? api.lookupQuote(d.id) : Promise.resolve(null)), [d.id, d.lookup !== null], ['deals']);
   const searches = quote.data ?? d.lookup?.searches ?? null;
@@ -186,10 +188,22 @@ function Detail({ d }: { d: DealDetail }) {
                 <ul className="evidence-list">
                   {d.splitEvidence.map((e, i) => (
                     <li key={i}>
-                      <span className="evidence-text">{e.text}</span> <SourceLink source={{ label: EVIDENCE_LABEL[e.kind], url: e.url ?? null }} />
+                      <span className="evidence-text">{e.text}</span>{' '}
+                      {e.kind === 'owner_fact' && e.model ? (
+                        <>
+                          {e.url ? <SourceLink source={{ label: EVIDENCE_LABEL.hd_part_page, url: e.url }} /> : null}
+                          {e.url ? ' · ' : ''}
+                          <LinkButton disabled={forget.busy || scanRunning} onClick={() => void forget.run(`${d.brand}:${e.model}`, e.text.includes(' is sold ') ? 'sellAs' : 'isPart')}>
+                            Change
+                          </LinkButton>
+                        </>
+                      ) : (
+                        <SourceLink source={{ label: EVIDENCE_LABEL[e.kind], url: e.url ?? null }} />
+                      )}
                     </li>
                   ))}
                 </ul>
+                {forget.error ? <p role="alert" className="detail-note">{forget.error}</p> : null}
               </Fold>
             ) : null}
             <ul className="detail-list">
@@ -259,6 +273,10 @@ function IncompleteEstimate({ d, i, look, lookBusy, lookError, searches, scanRun
   const { navigate } = useApp();
   const ui = useUi();
   const lead = breakEvenWords(i);
+  // Suggested prices (Nov 23): one click confirms the agent's suggestion; it counts only then (the PO's rule).
+  const accept = useAction(api.confirmPrice);
+  const notSold = useAction(api.markNotSold);
+  const accepted = ifAcceptedLine(i);
   return (
     <>
       <p className="detail-incomplete-title">Incomplete estimate</p>
@@ -286,11 +304,14 @@ function IncompleteEstimate({ d, i, look, lookBusy, lookError, searches, scanRun
         </div>
       </dl>
       <p className="detail-note">Both after fees. The rest has no price yet, so there is no estimated profit.</p>
+      {accepted ? <p className="detail-note detail-if-accepted">{accepted}</p> : null}
       {i.soldAs ? <p className="detail-note">{i.soldAs}.</p> : null}
       <ul className="unpriced" aria-label="Parts with no price">
         {i.parts.map((p) => {
           const part = d.parts.find((x) => x.model === p.model) ?? null;
           const kit = kitWords(p);
+          const s = p.priceSuggestion;
+          const proof = s?.evidence.find((x) => x.url && !x.text.startsWith('Context:'))?.url ?? null;
           return (
             <li key={p.model} className="unpriced-part">
               <div className="unpriced-text">
@@ -298,15 +319,37 @@ function IncompleteEstimate({ d, i, look, lookBusy, lookError, searches, scanRun
                 {p.qty > 1 ? <span className="fig muted"> ×{p.qty}</span> : null}
                 <span className="unpriced-state">{UNPRICED_STATE[p.state]}</span>
                 {kit ? <span className="detail-note">{kit}</span> : null}
+                {s ? (
+                  <span className="detail-note">
+                    Suggested: {s.label}. {proof ? <SourceLink source={{ label: s.kind === 'ebay_median' ? 'eBay listing' : 'Amazon listing', url: proof }} /> : null}
+                  </span>
+                ) : null}
               </div>
-              {p.action === 'answer' && p.questionId ? (
+              {p.action === 'confirm_price' && part && s ? (
+                <div className="unpriced-actions">
+                  <Button
+                    size="sm" variant="primary" busy={accept.busy} busyLabel="Confirming…" disabled={scanRunning}
+                    onClick={() => void accept.run(d.id, p.model, { kind: 'suggested', suggestion: { kind: s.kind, price: s.price } })}
+                  >
+                    {suggestionAction(s)}
+                  </Button>
+                  <LinkButton onClick={() => ui.openConfirmPrice({ dealId: d.id, part, questionId: d.questionId, focus: 'link' })}>Paste a link</LinkButton>
+                  <LinkButton onClick={() => ui.openConfirmPrice({ dealId: d.id, part, questionId: d.questionId, focus: 'price' })}>Type a price</LinkButton>
+                </div>
+              ) : p.action === 'answer' && p.questionId ? (
                 <Button size="sm" onClick={() => navigate({ screen: 'review', id: p.questionId })}>
                   {UNPRICED_ACTION.answer}
                 </Button>
               ) : p.action === 'confirm_price' && part ? (
-                <Button size="sm" onClick={() => ui.openConfirmPrice({ dealId: d.id, part, questionId: d.questionId })}>
-                  {UNPRICED_ACTION.confirm_price}
-                </Button>
+                <div className="unpriced-actions">
+                  <Button size="sm" onClick={() => ui.openConfirmPrice({ dealId: d.id, part, questionId: d.questionId })}>
+                    {UNPRICED_ACTION.confirm_price}
+                  </Button>
+                  {p.state === 'no_listing' ? (
+                    // Answer once: "in the box, not sold separately" takes it out of the count in every bundle that holds it.
+                    <LinkButton disabled={notSold.busy || scanRunning} onClick={() => void notSold.run(d.brand, p.model)}>Not sold separately</LinkButton>
+                  ) : null}
+                </div>
               ) : p.action === 'look_up' && d.lookup && searches !== null ? (
                 <Button size="sm" busy={lookBusy} busyLabel="Looking up…" disabled={scanRunning} onClick={look} cost={plural(searches, 'search', 'searches')}>
                   {UNPRICED_ACTION.look_up}
@@ -319,6 +362,8 @@ function IncompleteEstimate({ d, i, look, lookBusy, lookError, searches, scanRun
         })}
       </ul>
       {lookError ? <p role="alert" className="detail-note">{lookError}</p> : null}
+      {accept.error ? <p role="alert" className="detail-note">{accept.error}</p> : null}
+      {notSold.error ? <p role="alert" className="detail-note">{notSold.error}</p> : null}
       {i.notCounted.length ? (
         <p className="detail-note">Not counted: {i.notCounted.join(', ')}, with no model number. Confirm a price on the part to count it.</p>
       ) : null}
@@ -334,11 +379,14 @@ const EVIDENCE_LABEL: Record<NonNullable<DealDetail['splitEvidence']>[number]['k
   hd_part_page: 'Home Depot part page',
   bogo_pair: 'Home Depot BOGO listing',
   page_quote: 'Home Depot bundle page',
+  owner_fact: 'Your answer',
 };
 
 function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart; dealId: string; brand: string; questionId: string | null; scanRunning: boolean }) {
   const verify = useAction(api.verify);
   const removePrice = useAction(api.removePrice);
+  const forget = useAction(api.forgetFact);
+  const keep = useAction(api.markNotSold);
   const ui = useUi();
   const menu = useMenu();
   const [said, setSaid] = useState<string | null>(null);
@@ -430,6 +478,26 @@ function Part({ part, dealId, brand, questionId, scanRunning }: { part: DealPart
           </Button>
         ) : null}
       </div>
+      {part.fact ? (
+        // Answer once (Nov 23): what he settled about this model, applied in every bundle that holds it.
+        <p className="detail-note part-fact">
+          {part.fact.text} · {fromAnswer(part.fact.at)} ·{' '}
+          <LinkButton disabled={forget.busy || scanRunning} onClick={() => void forget.run(`${brand}:${part.model}`, part.fact!.field)}>
+            Change
+          </LinkButton>
+          {part.fact.stale ? (
+            <>
+              <br />
+              <span role="status">{part.fact.stale} Your answer is not applied until you keep or change it.</span>{' '}
+              <LinkButton disabled={keep.busy || scanRunning} onClick={() => void keep.run(brand, part.model)}>
+                Keep my answer
+              </LinkButton>
+            </>
+          ) : null}
+        </p>
+      ) : null}
+      {forget.error ? <p role="alert">{forget.error}</p> : null}
+      {keep.error ? <p role="alert">{keep.error}</p> : null}
       {verify.error ? <p role="alert">{verify.error}</p> : null}
       {removePrice.error ? <p role="alert">{removePrice.error}</p> : null}
       {said ? <p className="detail-note" role="status">{said}</p> : null}

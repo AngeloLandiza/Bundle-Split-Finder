@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { breakEvenOrder, breakEvenWords, incompleteLine, kitWords, pricedCount } from './incomplete';
+import { breakEvenOrder, breakEvenWords, fromAnswer, ifAcceptedLine, incompleteLine, kitWords, pricedCount, suggestionAction } from './incomplete';
 
 // The owner's bundles after his third real scan (fixtures/e2e-2026-11-23/after-scan3), as the agent's views give them.
 const DCK200D1P1W921B = { priced: 1, total: 2, pricedNet: 140.25, breakEvenNet: 158.75, breakEvenPrice: 186.76, unpriced: ['DCK200D1P1'] };
@@ -34,5 +34,24 @@ describe('the words for a bundle missing a price', () => {
       { id: 'est2', profit: 6.63 },
     ];
     expect(breakEvenOrder(rows).map((r) => r.id)).toEqual(['est', 'est2', 'small', 'big', 'q']);
+  });
+});
+
+// Suggested prices (Nov 23): the figures and labels are the agent's (core/test/suggest-prices.test.ts, real recordings).
+describe('suggested prices in the incomplete box', () => {
+  it('the part row\'s one primary action names the figure and its source', () => {
+    expect(suggestionAction({ kind: 'ebay_median', price: 274.48, label: '6 eBay listings, $220–$390.15, middle $274.48', evidence: [] })).toBe('Confirm $274.48 (eBay middle of 6)');
+    expect(suggestionAction({ kind: 'ebay_median', price: 66, label: '6 eBay listings, $58–$74, middle $66', evidence: [] })).toBe('Confirm $66 (eBay middle of 6)');
+    expect(suggestionAction({ kind: 'amazon_average', price: 146.37, label: 'Amazon listing not for sale now; its 90-day average was $146.37 (Keepa)', evidence: [] })).toBe('Confirm $146.37 (Keepa 90-day average)');
+  });
+
+  it('the second line says it is if accepted, an estimate, and counts nothing; none without it', () => {
+    expect(ifAcceptedLine({ ifAccepted: { profit: 74.56, roi: 74.56 / 299, suggested: 1 } })).toBe('If you accept the suggested price: +$74.56 est., 25% ROI. Nothing counts until you confirm it.');
+    expect(ifAcceptedLine({ ifAccepted: { profit: -12, roi: -0.04, suggested: 2 } })).toBe('If you accept the 2 suggested prices: −$12.00 est., −4% ROI. Nothing counts until you confirm each one.');
+    expect(ifAcceptedLine({})).toBeNull();
+  });
+
+  it('an answer he gave is dated as the agent dates it', () => {
+    expect(fromAnswer(Date.UTC(2026, 10, 23, 20))).toBe('from your answer on Nov 23');
   });
 });

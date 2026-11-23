@@ -7,6 +7,7 @@ import type {
   ActivityError, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyCheckRecord, KeyName, ReportSection, ReviewKind, WatchState,
 } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
+import type { PartFactView } from '@core/scan/types';
 import type { PipelineView as CorePipelineView } from '@core/scan/pipeline';
 
 export type {
@@ -251,9 +252,11 @@ export interface PriceLine {
 }
 
 export interface SplitEvidence {
-  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote';
+  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact';
   text: string;
   url?: string;
+  /** owner_fact: the model his answer is about ("Change" forgets it). */
+  model?: string;
 }
 
 export type Grade = 'verified' | 'title_match' | 'needs_answer' | 'inactive' | 'missing' | 'not_looked_up';
@@ -275,6 +278,8 @@ export interface DealPart {
   unnamed: boolean;
   /** What he may do about this part's sell price (core/src/scan/confirmed.ts rules). */
   confirm: PartConfirm;
+  /** Answer once (Nov 23): what he settled about this model, applied in every bundle that holds it. */
+  fact?: PartFactView;
 }
 
 /** A part's price form: whether it is open, the stored eBay listings he may choose, and the price he confirmed. */
@@ -288,7 +293,11 @@ export interface PartConfirm {
 }
 
 /** The body of the confirm-price call, as the form builds it (`url` is the listing's link). */
-export type ConfirmPriceRequest = { kind: 'ebay-listing'; url: string; note?: string } | { kind: 'typed'; price: number; url: string; note?: string };
+export type ConfirmPriceRequest =
+  | { kind: 'ebay-listing'; url: string; note?: string }
+  | { kind: 'typed'; price: number; url: string; note?: string }
+  /** Suggested prices (Nov 23): the part's suggestion as shown; the agent checks it against the one it holds now. */
+  | { kind: 'suggested'; suggestion: { kind: 'amazon_average' | 'ebay_median'; price: number } };
 
 export interface WayToSell {
   id: string;

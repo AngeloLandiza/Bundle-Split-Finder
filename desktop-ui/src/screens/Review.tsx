@@ -3,7 +3,7 @@ import { api, useAction, useApp, useResource } from '../api/hooks';
 import { isWorking, type ReviewAnswer, type ReviewQuestion } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
-import { SearchField, TextField } from '../components/Fields';
+import { Checkbox, SearchField, TextField } from '../components/Fields';
 import { InspectorSplit, Kbd } from '../components/Layout';
 import { Page } from '../components/Page';
 import type { RowMenu } from '../components/Table';
@@ -23,7 +23,7 @@ import { SCREEN_KEYS } from '../lib/notices';
 import { briefFor, rowState } from '../lib/reviewBrief';
 import { DecisionCard, Details, WorkingCard } from './ReviewCard';
 import { AskNoteLine, MarkedModels, Own } from './ReviewParts';
-import { modelMarks, KIND_LABEL, SAVED_ROW_MS, groupQuestions, parseTyped, preselected, rowChip, saveHint, typedFromSuggestion, workingNote, workingTitle } from './reviewModel';
+import { modelMarks, KIND_LABEL, SAVED_ROW_MS, groupQuestions, parseTyped, preselected, rememberLabel, rowChip, saveHint, savedWords, typedFromSuggestion, workingNote, workingTitle } from './reviewModel';
 import './Review.css';
 
 const NONE = '__none';
@@ -438,9 +438,16 @@ function Question({
   const [typed, setTyped] = useState(typedStart);
   // The agent's id for the answer just saved, which the row above the list undoes by.
   const answerId = useRef<string | null>(null);
+  // Answer once (Nov 23): what the answer settled elsewhere, for the saved row.
+  const settledMore = useRef<{ settled: string[] } | null>(null);
   const saveAnswer = useCallback(async (...args: Parameters<typeof api.answer>) => {
-    answerId.current = (await api.answer(...args)).answerId;
+    const r = await api.answer(...args);
+    answerId.current = r.answerId;
+    settledMore.current = r.remembered ?? null;
   }, []);
+  // "…and remember this for A986501", checked by default: his answer about that part settles it in every bundle.
+  const rememberText = rememberLabel(q);
+  const [remember, setRemember] = useState(true);
   const save = useAction(saveAnswer);
   const form = useRef<HTMLFormElement>(null);
   // While the app is still working the choices are one disclosure away; a number key opens it.
@@ -470,7 +477,8 @@ function Question({
   const submit = () => {
     const a = answerOf();
     if (!a || save.busy || changed) return;
-    void save.run(q.id, a.answer, { fromSuggestion: fromAi, seen }).then((ok) => ok && onSaved(`${q.bundle.model}: ${a.said}`, answerId.current));
+    const keep = rememberText && remember && choice !== NONE ? (q.unsettledParts ?? []) : [];
+    void save.run(q.id, a.answer, { fromSuggestion: fromAi, seen, remember: [...keep] }).then((ok) => ok && onSaved(savedWords(`${q.bundle.model}: ${a.said}`, settledMore.current), answerId.current));
   };
 
   const optionIds = [...q.choices.map((c) => c.id), ...(q.allowNone ? [NONE] : []), ...(q.allowTyped ? [TYPED] : [])];
@@ -659,6 +667,7 @@ function Question({
             {s ? 'Ask AI again' : 'Ask AI'}
           </Button>
         ) : null}
+        {rememberText && choice !== NONE ? <Checkbox label={rememberText} checked={remember} onChange={setRemember} /> : null}
         <Button type="submit" form={`form-${q.id}`} variant="primary" busy={save.busy} busyLabel="Saving…" disabled={!answerOf() || changed}>
           {hasNext ? 'Save and next' : 'Save answer'}
         </Button>

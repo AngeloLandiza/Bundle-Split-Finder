@@ -146,3 +146,21 @@ export function parseTyped(text: string): string[] {
     .map((m) => m.trim().toUpperCase())
     .filter(Boolean);
 }
+
+/** "A986501", "A986501 and A25RS51", "A, B and C". */
+const andList = (xs: readonly string[]): string => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)!}`);
+
+/**
+ * Answer once (Nov 23): the footer's tick, checked by default, on a question about parts Home Depot did not confirm:
+ * "…and remember this for A986501". Null when the question asks about none (nothing could be remembered).
+ */
+export function rememberLabel(q: { kind: string; unsettledParts?: readonly string[] }): string | null {
+  const models = q.kind === 'split' ? (q.unsettledParts ?? []) : [];
+  return models.length ? `…and remember this for ${andList(models)}` : null;
+}
+
+/** The saved row's words when the answer settled other questions too: "PCL1600K2-A986501: PCL1600K2, A986501 · 2 more settled". */
+export function savedWords(said: string, remembered?: { settled: readonly string[] } | null): string {
+  const n = remembered?.settled.length ?? 0;
+  return n > 0 ? `${said} · ${n} more ${n === 1 ? 'question' : 'questions'} settled` : said;
+}

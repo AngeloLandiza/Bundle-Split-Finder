@@ -522,16 +522,19 @@ export function createMockClient(): ApiClient {
       if (p.confirm.state === 'look-up-first') throw new ApiError('refused', 'Look this part up on Amazon first.');
       if (p.confirm.state === 'amazon-counts' && !p.confirm.confirmed) throw new ApiError('refused', 'This part counts at its Amazon price. A price you confirm counts only when the listing is not for sale.');
       let price: number;
-      let link = body.url.trim();
+      // The mock holds no suggestion's evidence: a suggested price links eBay's search for the part.
+      let link = body.kind === 'suggested' ? `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(model)}` : body.url.trim();
       if (body.kind === 'ebay-listing') {
         const chosen = p.confirm.ebay.find((c) => c.url === link);
         if (!chosen) throw new ApiError('server', 'That is not one of this part’s stored eBay listings.');
         price = chosen.price;
+      } else if (body.kind === 'suggested') {
+        price = body.suggestion.price;
       } else {
         price = body.price;
       }
       link = new URL(link).toString();
-      const note = body.note?.trim() || null;
+      const note = body.kind === 'suggested' ? null : body.note?.trim() || null;
       const line = { label: `Confirmed by you · ${confirmedSourceName(link)}`, amount: price, range: null, counted: true, note, seenAt: new Date().toISOString(), sources: [{ label: 'Open the listing', url: link }], confirmed: true };
       p.prices = [line, ...p.prices.filter((x) => !x.confirmed)];
       p.price = price;
@@ -585,6 +588,15 @@ export function createMockClient(): ApiClient {
         return { found: true, price: 74.99, currency: 'USD', title: 'DEWALT DCF887B 20V MAX XR Brushless Impact Driver Tool Only', condition: 'New', shipping: 8.5, source: 'eBay', url, readAt: new Date().toISOString() };
       }
       return { found: false, reason: link.site === 'other' ? 'Split Finder cannot read this site. Type the price you see.' : 'That link does not name one listing. Type the price you see.' };
+    },
+    async markNotSold() {
+      await online(250);
+      emit({ type: 'deals' });
+    },
+    async forgetFact() {
+      await online(250);
+      emit({ type: 'deals' });
+      emit({ type: 'review' });
     },
     async removePrice(id, model) {
       await online(300);

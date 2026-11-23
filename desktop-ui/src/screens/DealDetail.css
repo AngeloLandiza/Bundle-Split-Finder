@@ -347,3 +347,25 @@
   line-height: 16px;
   color: var(--label-2);
 }
+
+/* Suggested prices (Nov 23): the part's one primary action, then Paste a link and Type a price; wraps under a narrow inspector. */
+.unpriced-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 10px;
+  flex-shrink: 0;
+  max-width: 60%;
+}
+
+/* What the bundle would make if he accepted the suggestions: a second line in the box, never the headline. */
+.detail-if-accepted {
+  padding-top: 6px;
+  border-top: 1px solid var(--separator);
+}
+
+/* Answer once: what he settled about a model, with its date and Change. */
+.part-fact {
+  margin-top: 4px;
+}

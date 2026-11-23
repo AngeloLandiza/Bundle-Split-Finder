@@ -79,9 +79,9 @@ export function ButtonLink({ href, children, variant = 'secondary', size = 'md',
 }
 
 /** A text button in the accent, for a jump inside the app ("Open Review", "Show all"). */
-export function LinkButton({ children, onClick, className }: { children: ReactNode; onClick: () => void; className?: string }) {
+export function LinkButton({ children, onClick, className, disabled }: { children: ReactNode; onClick: () => void; className?: string; disabled?: boolean }) {
   return (
-    <button type="button" className={`link-btn${className ? ` ${className}` : ''}`} onClick={onClick}>
+    <button type="button" className={`link-btn${className ? ` ${className}` : ''}`} onClick={onClick} disabled={disabled}>
       {children}
     </button>
   );
