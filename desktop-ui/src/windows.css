@@ -496,7 +496,7 @@
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
-:root[data-platform='windows'][data-window-active] .qitem[aria-current='true'] :is(.qitem-sub, .code) {
+:root[data-platform='windows'][data-window-active] .qitem[aria-current='true'] :is(.qitem-sub, .qitem-ai, .code) {
   color: var(--label-2);
 }
 
