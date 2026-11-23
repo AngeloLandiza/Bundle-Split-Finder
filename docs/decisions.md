@@ -564,3 +564,10 @@ when it asked him: a three-part hyphen split went straight to a question instead
 - **Telegram can be tested** (`POST /api/notify/test-telegram`, ui role): one send of "Split Finder can reach you here." through the digest's `sendTelegram`; `{ok, problem?}` with HTTP 200 either way; `problem` is Telegram's refusal in plain words plus its own description, with the token (and its secret half) scrubbed. It touches neither the digest queue nor `lastSentAt`.
 - **First-run defaults were already right and are now pinned by a test**: deals worth buying and open questions notify, one digest after each run, the schedule starts manual (nothing spends searches until Welcome or Settings says so). A stored choice is never changed.
 - **One constant names the helper's pairing button** (`core/src/api/labels.ts`): the app's setup text said "Connect to the app" while the button reads "Connect to the Split Finder app".
+- **Security review, Nov 23** (`docs/security-review-2026-11-23.md`). The agent strips keys from eBay's error text before
+  cutting it to length, and strips the Basic credential too. A CSV cell starting with a tab or carriage return is made
+  inert. `POST /api/worker/jobs` refuses what the helper would refuse: item ids are digits, and a search is page 1. Every
+  link the app shows or opens goes through `desktop-ui/src/lib/webUrl.ts` (http or https, no user name). No page gets
+  shell spawn, kill or execute. The CSP loads images only from the app. *Left for v2:* pairing still trusts an Origin that
+  a local program can forge (the code shown in both places is the check), worker results are kept whole, and Install
+  helper replaces Documents/split-finder whatever it holds.
