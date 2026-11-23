@@ -10,6 +10,7 @@ import { choicesOf, ownerAnswer } from './answers';
 import { kitCatalog, kitPageTarget } from './kitPage';
 import { ebayPriceOption } from '../ebay/value';
 import { componentCounts } from './classify';
+import { factView, staleness, type PartFact } from '../facts/fact';
 import { suggestPrice } from './suggest';
 import { twinKeys, twinKeysOf } from './twins';
 import {
@@ -61,6 +62,8 @@ interface RefsOf {
   confirmed(brand: string, model: string): ConfirmedPrice | undefined;
   /** Signals round 2: Keepa's stored figures for a listing (keepa:trend:<asin>), when the caller read them. */
   trend(asin: string): KeepaFees | undefined;
+  /** Answer once (Nov 23): what the owner settled about this model (its own key only: a fact is about that model). */
+  fact(brand: string, model: string): PartFact | undefined;
 }
 
 /** What the estimate may take from a listing's stored Keepa trend; suggested prices (Nov 23) read its averages too. */
@@ -78,6 +81,7 @@ async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsO
   const ebayByKey = new Map(ebayAll.filter((r) => r.value !== null).map((r) => [r.key, r] as const));
   const ebayListed = new Map(ebayAll.filter((r) => r.listings.length > 0).map((r) => [r.key, r] as const));
   const confirmedByKey = new Map((await store.listConfirmedPrices()).map((r) => [r.key, r] as const));
+  const factByKey = new Map((store.listPartFacts ? await store.listPartFacts() : []).map((r) => [r.key, r] as const));
   const first = <T>(by: Map<string, T>, brand: string, model: string): T | undefined => {
     for (const key of [partKey(brand, model), ...twinKeys(brand, model)]) {
       const found = by.get(key);
@@ -91,6 +95,7 @@ async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsO
     ebayListings: (brand, model) => first(ebayListed, brand, model),
     confirmed: (brand, model) => confirmedByKey.get(partKey(brand, model)),
     trend: (asin) => opts.trend?.(asin),
+    fact: (brand, model) => factByKey.get(partKey(brand, model)),
   };
 }
 
@@ -224,8 +229,12 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
     const confirmedOpt = prices.find((o) => o.kind === 'confirmed' && !o.reference);
     // The fees of a counted price: Keepa's for the listing whose Amazon New price counts, the flat settings for a confirmed one.
     const fees = featured && match?.asin ? feesOf(settings.fees, refs.trend(match.asin)) : confirmedOpt ? feesOf(settings.fees, 'confirmed') : undefined;
+    // Answer once (Nov 23): what he settled about the model, unless newer evidence contradicts it (facts/fact.ts staleness).
+    const fact = refs.fact(brand, model);
+    const stale = fact ? staleness(fact, { hd: refs.hd(brand, model), ...(price ? { amazon: price } : {}) }) : null;
+    const notCounted = !!fact?.notSoldSeparately && stale === null && !featured && !confirmedOpt;
     // Suggested prices (Nov 23): at most one, never counted until the owner confirms it (scan/suggest.ts).
-    const suggestion = featured || confirmedOpt
+    const suggestion = featured || confirmedOpt || notCounted
       ? null
       : suggestPrice(
         { status: match?.status ?? 'unmatched', availability, asin: match?.asin ?? null, prices },
@@ -253,6 +262,7 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
       ...verification(match),
       ...(fees ? { fees } : {}),
       ...(suggestion ? { priceSuggestion: suggestion } : {}),
+      ...(fact ? { fact: { ...factView(fact, stale), ...(notCounted ? { notCounted: true as const } : {}) } } : {}),
     });
   }
   return rows;
@@ -423,10 +433,12 @@ async function optionOf(
   // Nov 23 (supersedes "counted at zero"): neither is a part in Review, with no listing, or with an inactive listing.
   // An estimate exists only when every model part has a counted price; otherwise the option is incomplete, with what
   // the priced parts bring and the break-even. An item with no model number is not a reason (it is not counted).
-  const unpriced = parts.filter((p) => listingFor(p) === null);
+  // Answer once (Nov 23): a part he said is in the box and not sold separately is not counted, as an item with no model number.
+  const counted = parts.filter((p) => !p.fact?.notCounted);
+  const unpriced = counted.filter((p) => listingFor(p) === null);
   const estimate = b.price === null || unpriced.length > 0 ? null : evaluation.result;
   const incomplete = b.price !== null && unpriced.length > 0
-    ? { ...incompleteOf(settings, b.price, components, parts, priced, unpriced), ...ifAcceptedOf(settings, b.price, components, priced, unpriced) }
+    ? { ...incompleteOf(settings, b.price, components, counted, priced, unpriced), ...ifAcceptedOf(settings, b.price, components, priced, unpriced) }
     : undefined;
   const uncovered = b.price === null
     ? [...parts.map((p) => p.model), ...unnamed.values()]

@@ -13,6 +13,7 @@ import type {
   BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord,
   PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from '../core/src/scan/types';
+import type { PartFact } from '../core/src/facts/fact';
 import { writeFileAtomic } from './store';
 
 /** Scans kept on file, newest first; older ones are dropped (the runner reads the newest two). */
@@ -32,10 +33,12 @@ interface Kinds {
   judgements: JudgementRecord;
   ebayAnswers: EbayOwnerAnswer;
   scans: ScanJob;
+  partFacts: PartFact;
 }
 type Kind = keyof Kinds;
 const KINDS: readonly Kind[] = [
   'bundles', 'catalog', 'matches', 'prices', 'listings', 'cursors', 'reviews', 'partPrices', 'confirmedPrices', 'ebayValues', 'judgements', 'ebayAnswers', 'scans',
+  'partFacts',
 ];
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
@@ -145,6 +148,15 @@ export class FileScanStore implements ScanStore {
     this.flush('scans');
   }
   async listScans() { return this.list('scans', (a, b) => b.startedAt - a.startedAt); }
+
+  // Answer once (Nov 23): what the owner settled about a model, by partKey (core/src/facts/fact.ts).
+  async getPartFact(key: string) { return this.get('partFacts', key); }
+  async putPartFact(r: PartFact) { this.put('partFacts', r.key, r); }
+  async deletePartFact(key: string) {
+    this.map('partFacts').delete(key);
+    this.flush('partFacts');
+  }
+  async listPartFacts() { return this.list('partFacts', byKey((r) => r.key)); }
 
   async clearAll() {
     for (const kind of KINDS) {

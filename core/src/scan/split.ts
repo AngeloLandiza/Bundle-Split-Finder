@@ -44,6 +44,8 @@ export async function knownModels(store: ScanStore): Promise<KnownModels> {
   const settle: SettleData = {
     partPrices: new Map((await store.listPartPrices()).map((r) => [r.key, r] as const)),
     kitsOf: kitIndex(kitRecords(await store.listBundles(), catalogRecords)),
+    // Answer once (Nov 23): what the owner settled about each model, when the store keeps it (core/src/facts/fact.ts).
+    facts: new Map((store.listPartFacts ? await store.listPartFacts() : []).map((f) => [f.key, f] as const)),
   };
   return { stored, catalog, listings, settle };
 }

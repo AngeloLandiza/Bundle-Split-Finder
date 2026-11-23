@@ -6,6 +6,7 @@
 // worker with IndexedDB behind the same ScanStore.
 
 import type { Decomposition, SettledPart, SplitEvidence, UnsettledPart } from '../decompose';
+import type { PartFact } from '../facts/fact';
 import type { EbayValue, EbayVerdict } from '../ebay/types';
 import type { PageContent } from '../hdPage';
 import type { Grade } from '../match';
@@ -791,6 +792,15 @@ export interface ScanStore {
   putScan(job: ScanJob): Promise<void>;
   listScans(): Promise<ScanJob[]>;
 
+  /**
+   * Answer once (Nov 23): what the owner settled about a model, by partKey (core/src/facts/fact.ts). Optional: a store without
+   * them (the extension's) applies no facts, as before.
+   */
+  getPartFact?(key: string): Promise<PartFact | undefined>;
+  putPartFact?(record: PartFact): Promise<void>;
+  deletePartFact?(key: string): Promise<void>;
+  listPartFacts?(): Promise<PartFact[]>;
+
   /** Drops every record. The next write starts from empty. */
   clearAll(): Promise<void>;
 }
@@ -926,6 +936,8 @@ export interface PartFactView {
   at: number;
   questionId?: string;
   stale?: string;
+  /** True when the fact keeps the part out of the count: in the box, not sold separately, with no counted price and nothing newer. */
+  notCounted?: true;
 }
 
 /** A New sell price the owner confirmed for one part, and the listing that shows it. */

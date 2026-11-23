@@ -20,6 +20,8 @@ import { sameModel } from '../match';
 import { pageReadingOf, RYOBI_TOKEN } from '../pageSplit';
 import { kitHalfCount, saysToolsOnly, titleTools, toolCounts } from '../research/verify';
 import { BOGO_JOINERS, HOME_DEPOT } from '../tracking/bogoPairs';
+import type { PartFact } from '../facts/fact';
+import { dayOf } from './suggest';
 import { twinKeys } from './twins';
 import { type BundleRecord, partKey, type PartPriceRecord } from './types';
 
@@ -29,6 +31,8 @@ export interface SettleData {
   partPrices: ReadonlyMap<string, PartPriceRecord>;
   /** Every stored record of a kit (kitIndex over kitRecords): bundle records and catalog kits, with any page read. */
   kitsOf: (brand: string, model: string) => (KitRecord & { title?: string })[];
+  /** Answer once (Nov 23): what the owner settled about each model, by partKey (core/src/facts/fact.ts). Absent: none. */
+  facts?: ReadonlyMap<string, PartFact>;
 }
 
 const up = (s: string): string => s.trim().toUpperCase();
@@ -118,7 +122,8 @@ function spelledOut(bundle: Pick<BundleRecord, 'brand' | 'model'>, split: Decomp
 }
 
 type PartCheck =
-  | { kind: 'confirmed'; title: string | null; evidence: SplitEvidence }
+  /** `parts`: an owner's fact sells a special buy or combo as these tools in its place (ownerFact). */
+  | { kind: 'confirmed'; title: string | null; evidence: SplitEvidence; parts?: string[] }
   | { kind: 'missing' }
   | { kind: 'refused'; why: string; part: UnsettledPart };
 
@@ -154,6 +159,32 @@ function checkPart(brand: string, model: string, catalog: Catalog, data: SettleD
   if (other) return { kind: 'refused', why: `Home Depot sells ${up(other.matchedModel!)}, not ${m}`, part: { model: m, why: 'other_model', other: up(other.matchedModel!) } };
   if (records.length > 0) return { kind: 'refused', why: `Home Depot's search found no ${m} sold by itself`, part: { model: m, why: 'not_sold' } };
   return { kind: 'missing' };
+}
+
+/**
+ * Answer once (Nov 23): a part Home Depot did not confirm, settled by what the owner already said about that model: a part not
+ * sold on its own (or sold as another model) that he approved as a part ("isPart"), or a special buy or combo he sells whole
+ * or as its tools ("sellAs"). Null when he said nothing that answers this part's question: then it is asked, as before.
+ * Only the question Home Depot left is answered: the page's own contradictions and the tool count are still checked after.
+ */
+function ownerFact(brand: string, part: UnsettledPart, data: SettleData): PartCheck | null {
+  const fact = data.facts?.get(partKey(brand, part.model));
+  if (!fact) return null;
+  const m = up(part.model);
+  const from = (at: number, bundle?: string) => `your answer on ${dayOf(at)}${bundle ? ` (${bundle})` : ''}`;
+  if ((part.why === 'not_sold' || part.why === 'other_model') && fact.isPart) {
+    return { kind: 'confirmed', title: part.what ?? null, evidence: { kind: 'owner_fact', model: m, text: `${m} is a part of the bundles that name it: ${from(fact.isPart.at, fact.isPart.bundle)}.` } };
+  }
+  if ((part.why === 'special_buy' || part.why === 'combo') && fact.sellAs) {
+    const parts = fact.sellAs.parts;
+    const how = parts === null ? `${m} is sold whole` : `${m} is sold as ${parts.join(' and ')}`;
+    return {
+      kind: 'confirmed', title: part.what ?? null,
+      evidence: { kind: 'owner_fact', model: m, text: `${how}: ${from(fact.sellAs.at, fact.sellAs.bundle)}.`, ...(part.url ? { url: part.url } : {}) },
+      ...(parts !== null ? { parts } : {}),
+    };
+  }
+  return null;
 }
 
 /** A kit the catalog knows whose own Home Depot page is not stored yet and can be read (a digit item id): the scan's kit pass reads it. */
@@ -217,7 +248,13 @@ export function homeDepotSplit(
   const reading = spelledOut(bundle, split);
   if (reading === null) return null;
   const brand = up(bundle.brand);
-  const checks = reading.map((p) => [p, checkPart(brand, p, catalog, data)] as const);
+  // Answer once (Nov 23): a part Home Depot did not confirm that the owner already settled is settled here too (ownerFact).
+  const checks = reading.map((p) => {
+    const c = checkPart(brand, p, catalog, data);
+    return [p, c.kind === 'refused' ? (ownerFact(brand, c.part, data) ?? c) : c] as const;
+  });
+  // A special buy he sells as its tools stands for those tools in the reading.
+  const replaced = checks.flatMap(([p, c]) => (c.kind === 'confirmed' && c.parts ? c.parts : [p]));
   const refused = checks.flatMap(([, c]) => (c.kind === 'refused' ? [c.why] : []));
   const missing = checks.filter(([, c]) => c.kind === 'missing').map(([p]) => p);
   // Step 16 (round 2): no question while a part still has a free read to come: the refusals are asked once every part is read.
@@ -230,7 +267,8 @@ export function homeDepotSplit(
   }
   // The page is read before the parts are waited for: a page that names another model asks at once, unless a kit among
   // the parts has its own page still to read, which may list that model (its contents explain it): then it waits too.
-  const named = unexplainedModel(bundle, reading, data);
+  // A model the page names may be explained by the special buy or by the tools he sells in its place.
+  const named = unexplainedModel(bundle, [...new Set([...reading, ...replaced])], data);
   if (named !== null) {
     const unread = reading.filter((p) => kitPageDue(brand, p, catalog, data));
     if (unread.length === 0) return { ...split, notes: [...split.notes, named] };
@@ -238,10 +276,15 @@ export function homeDepotSplit(
   }
   if (missing.length > 0) return { ...split, waitingFor: missing };
   const titles = new Map(checks.map(([p, c]) => [p, c.kind === 'confirmed' ? c.title : null] as const));
-  const misfit = countMisfit(bundle, reading, titles);
+  // The tool count is the bundle's as Home Depot lists it (the special buy whole): his tools in its place do not change it.
+  // A part only the owner's fact settled (no Home Depot title to count) is not counted as a tool: the count still checks
+  // every part Home Depot's pages read (docs/decisions.md, "Answer once").
+  const ownerOnly = new Set(checks.flatMap(([p, c]) => (c.kind === 'confirmed' && c.evidence.kind === 'owner_fact' && c.title === null ? [p] : [])));
+  const misfit = countMisfit(bundle, reading, titles) === null ? null : countMisfit(bundle, reading.filter((p) => !ownerOnly.has(p)), titles);
   if (misfit !== null) return { ...split, notes: [...split.notes, misfit] };
   const evidence = checks.flatMap(([, c]) => (c.kind === 'confirmed' ? [c.evidence] : []));
-  return { components: reading, status: 'resolved', notes: ['Home Depot sells each part under its own model'], evidence };
+  const owner = evidence.some((e) => e.kind === 'owner_fact');
+  return { components: replaced, status: 'resolved', notes: [owner ? 'Home Depot sells each part under its own model, or you said what it is' : 'Home Depot sells each part under its own model'], evidence };
 }
 
 /**

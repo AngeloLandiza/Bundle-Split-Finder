@@ -5,6 +5,7 @@
 import type {
   BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from './types';
+import type { PartFact } from '../facts/fact';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
   const x = key(a);
@@ -64,6 +65,7 @@ export class OverlayStore implements ScanStore {
   private readonly reviews = new Layer<ReviewItem>((r) => r.id, byKey((r) => r.id));
   private readonly partPrices = new Layer<PartPriceRecord>((r) => r.key, byKey((r) => r.key));
   private readonly confirmedPrices = new Layer<ConfirmedPrice>((r) => r.key, byKey((r) => r.key));
+  private readonly partFacts = new Layer<PartFact>((r) => r.key, byKey((r) => r.key));
   private readonly ebayValues = new Layer<EbayValueRecord>((r) => r.key, byKey((r) => r.key));
   private readonly judgements = new Layer<JudgementRecord>((r) => r.key, byKey((r) => r.key));
   private readonly ebayAnswers = new Layer<EbayOwnerAnswer>((r) => r.key, byKey((r) => r.key));
@@ -192,7 +194,22 @@ export class OverlayStore implements ScanStore {
     return this.scans.list(() => this.base.listScans());
   }
 
+  // Answer once: the base's facts, when it keeps any; written ones stay in this layer.
+  getPartFact(key: string) {
+    return this.partFacts.get(key, async (k) => (this.base.getPartFact ? this.base.getPartFact(k) : undefined));
+  }
+  async putPartFact(record: PartFact) {
+    this.partFacts.put(record);
+  }
+  async deletePartFact(key: string) {
+    this.partFacts.remove(key);
+  }
+  listPartFacts() {
+    return this.partFacts.list(async () => (this.base.listPartFacts ? this.base.listPartFacts() : []));
+  }
+
   async clearAll() {
+    this.partFacts.clear();
     await this.base.clearAll();
     this.bundles.clear();
     this.catalog.clear();

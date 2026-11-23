@@ -4,6 +4,7 @@
 import type {
   BundleRecord, CatalogCursor, CatalogRecord, ConfirmedPrice, EbayOwnerAnswer, EbayValueRecord, JudgementRecord, ListingRecord, MatchRecord, PartPriceRecord, PriceRecord, ReviewItem, ScanJob, ScanStore,
 } from './types';
+import type { PartFact } from '../facts/fact';
 
 const byKey = <T>(key: (r: T) => string) => (a: T, b: T): number => {
   const x = key(a);
@@ -25,6 +26,7 @@ export class MemoryScanStore implements ScanStore {
   private readonly judgements = new Map<string, JudgementRecord>();
   private readonly ebayAnswers = new Map<string, EbayOwnerAnswer>();
   private readonly scans = new Map<string, ScanJob>();
+  private readonly partFacts = new Map<string, PartFact>();
 
   private get<T>(map: Map<string, T>, key: string): T | undefined {
     const found = map.get(key);
@@ -156,7 +158,21 @@ export class MemoryScanStore implements ScanStore {
     return this.list(this.scans, (a, b) => b.startedAt - a.startedAt);
   }
 
+  async getPartFact(key: string) {
+    return this.get(this.partFacts, key);
+  }
+  async putPartFact(record: PartFact) {
+    this.partFacts.set(record.key, structuredClone(record));
+  }
+  async deletePartFact(key: string) {
+    this.partFacts.delete(key);
+  }
+  async listPartFacts() {
+    return this.list(this.partFacts, byKey((r) => r.key));
+  }
+
   async clearAll() {
+    this.partFacts.clear();
     this.bundles.clear();
     this.catalog.clear();
     this.matches.clear();
