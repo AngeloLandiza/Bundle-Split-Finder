@@ -254,6 +254,7 @@ export function createAgent(opts: AgentOptions): Agent {
   const store = Store.open(opts.dataDir);
   const auth = new Auth(store, { dataDir: opts.dataDir, port: opts.port, extraUiOrigins: opts.extraUiOrigins, now });
   const jobs = new WorkerJobs(store, { now });
+  jobs.abandonUnfinished('The agent restarted before this read was answered.');
   const events = new EventHub();
   const timers = opts.timers !== false;
 

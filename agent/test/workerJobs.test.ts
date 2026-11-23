@@ -22,6 +22,24 @@ function setup(now = () => 0) {
 }
 
 describe('worker jobs', () => {
+  it('at start, jobs a previous agent left unfinished fail (nobody waits for them) and a late answer is refused', async () => {
+    const q = setup();
+    const queued = q.enqueue('page', { itemIds: ['1'] });
+    const leased = q.enqueue('page', { itemIds: ['2'] });
+    const done = q.enqueue('page', { itemIds: ['3'] });
+    await q.next(0);
+    await q.next(0);
+    await q.next(0);
+    q.complete({ id: done.id, ok: true, result: [] });
+    q.complete({ id: queued.id, ok: false, error: 'tab did not load' }); // back in the queue
+    expect(new WorkerJobs(store!).abandonUnfinished('The agent restarted.')).toBe(2);
+    expect(q.get(queued.id)).toMatchObject({ status: 'failed', error: 'The agent restarted.' });
+    expect(q.get(leased.id)).toMatchObject({ status: 'failed' });
+    expect(q.get(done.id)?.status).toBe('done');
+    expect(q.complete({ id: leased.id, ok: true, result: [] })).toBeNull();
+    expect(q.waitingCount()).toBe(0);
+  });
+
   it('a heartbeat naming the leased job extends its lease, so a long batch is not handed out twice', async () => {
     let t = 0;
     const q = setup(() => t);

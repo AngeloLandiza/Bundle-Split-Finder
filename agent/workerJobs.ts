@@ -121,6 +121,23 @@ export class WorkerJobs {
     return true;
   }
 
+  /**
+   * At start: every job a previous agent process left queued or leased fails with `reason`. Whoever queued it (a
+   * scan's reader, research) was in that process and is gone, so its answer would go nowhere. Returns how many.
+   */
+  abandonUnfinished(reason: string): number {
+    const at = new Date(this.now()).toISOString();
+    let n = 0;
+    this.store.update('jobs', (jobs) =>
+      jobs.map((j) => {
+        if (j.status !== 'queued' && j.status !== 'leased') return j;
+        n += 1;
+        return { ...j, status: 'failed', finishedAt: at, error: reason, leaseExpiresAt: null };
+      }),
+    );
+    return n;
+  }
+
   /** Resolves when the job is done or failed. */
   whenFinished(id: string): Promise<WorkerJob> {
     const job = this.get(id);
