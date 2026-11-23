@@ -52,7 +52,7 @@ describe('a deal row’s reason line', () => {
   const wide = { matchShown: true };
   const narrow = { matchShown: false };
 
-  it('says nothing the Match column already says: a matched row, a question and a waiting row have no third line', () => {
+  it('says nothing the Amazon listings column already says: a matched row, a question and a waiting row have no third line', () => {
     expect(dealReason(row({ profit: 38, matchState: 'All 3 parts matched' }), wide)).toBeNull();
     expect(dealReason(row({ matchState: '2 of 3 parts matched' }), wide)).toBeNull();
     expect(dealReason(row({ lookup: { searches: 2 } }), wide)).toBeNull();
@@ -60,9 +60,9 @@ describe('a deal row’s reason line', () => {
     expect(dealReason(row({ needsAnswer: true, profit: 12 }), wide)).toBeNull();
     expect(dealReason(row({}), wide)).toBeNull();
   });
-  it('says what the hidden Match column would have said when the table is narrow', () => {
-    expect(dealReason(row({ profit: 38, matchState: 'All 3 parts matched' }), narrow)).toBe('All 3 parts matched');
-    expect(dealReason(row({ matchState: '2 of 3 parts matched' }), narrow)).toBe('2 of 3 parts matched');
+  it('says what the hidden Amazon listings column would have said when the table is narrow', () => {
+    expect(dealReason(row({ profit: 38, matchState: '3 parts matched' }), narrow)).toBe('All 3 parts on confirmed listings');
+    expect(dealReason(row({ matchState: '1 title match' }), narrow)).toBe('1 listing not confirmed yet');
     expect(dealReason(row({ lookup: { searches: 2 } }), narrow)).toBe('Waiting for an Amazon lookup');
     expect(dealReason(row({ matchKind: 'waiting_parts', lookup: { searches: 2 } }), narrow)).toBe('Waiting for Home Depot’s part pages');
     expect(dealReason(row({ needsAnswer: true, profit: 12 }), narrow)).toBeNull(); // the Needs answer tag moves into the profit cell
@@ -76,17 +76,17 @@ describe('a deal row’s reason line', () => {
     expect(dealReason(row({ bogoChoices }), wide)).toBe(bogoChoices.label);
     // Only the group's best pair carries the sentence; the other pairs keep two lines.
     expect(dealReason(row({ bogoChoices: { ...bogoChoices, best: false } }), wide)).toBeNull();
-    expect(dealReason(row({ bogoChoices, matchState: '3 parts matched' }), narrow)).toBe(`3 parts matched · ${bogoChoices.label}`);
+    expect(dealReason(row({ bogoChoices, matchState: '3 parts matched' }), narrow)).toBe(`All 3 parts on confirmed listings · ${bogoChoices.label}`);
   });
   it('Nov 23: says how many parts are priced and the break-even for a bundle missing a price, wide or narrow', () => {
     // DCK200D1P1W921B after the owner's third scan: the DEWALT starter kit has no Amazon listing.
     const incomplete = { priced: 1, total: 2, pricedNet: 140.25, breakEvenNet: 158.75, breakEvenPrice: 186.76, unpriced: ['DCK200D1P1'] };
     expect(dealReason(row({ incomplete, matchState: '1 part with no listing' }), wide)).toBe('1 of 2 parts priced · DCK200D1P1 needs about $186.76 to break even');
-    expect(dealReason(row({ incomplete, matchState: '1 part with no listing' }), narrow)).toBe('1 part with no listing · 1 of 2 parts priced · DCK200D1P1 needs about $186.76 to break even');
+    expect(dealReason(row({ incomplete, matchState: '1 part with no listing' }), narrow)).toBe('1 part has no Amazon listing · 1 of 2 parts priced · DCK200D1P1 needs about $186.76 to break even');
     // A row with an estimate never carries one; if it did, the estimate wins.
     expect(dealReason(row({ incomplete, profit: 6.63 }), wide)).toBeNull();
   });
-  it('knows from the table width whether the Match column shows', () => {
+  it('knows from the table width whether the Amazon listings column shows', () => {
     expect(matchColumnShown(900)).toBe(true);
     expect(matchColumnShown(720)).toBe(false);
     expect(matchColumnShown(500)).toBe(false);

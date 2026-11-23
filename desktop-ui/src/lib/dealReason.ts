@@ -2,6 +2,7 @@
 // and the waiting states a row can be in.
 
 import type { DealRow } from '../api/types';
+import { matchWords } from './matchWords';
 import { incompleteLine } from './incomplete';
 import { WAITING_PAGE_LABEL } from './scanProblem';
 
@@ -39,7 +40,7 @@ export function dealReason(r: DealRow, o: { matchShown: boolean }): string | nul
     const waiting = waitingState(r);
     // A question is already the "Needs answer" tag that moves into the profit cell when Match hides: not said twice.
     if (waiting) parts.push(waiting);
-    else if (!r.needsAnswer && r.matchState) parts.push(r.matchState);
+    else if (!r.needsAnswer && r.matchState) parts.push(matchWords(r.matchState) ?? r.matchState);
   }
   if (r.incomplete && r.profit === null) parts.push(incompleteLine(r.incomplete));
   // The group's sentence once, on its best choice: the first real scan showed the same line under all eleven pairs of a

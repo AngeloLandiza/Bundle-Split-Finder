@@ -25,7 +25,7 @@ export type PartMenuId = 'open-amazon' | 'copy-asin' | 'confirm' | 'remove';
 
 const SCAN_LATER = 'A scan is running. Try again when it has finished.';
 
-/** Core's own match line for a row that has parts to verify: "2 title matches". The row carries no part list. */
+/** Core's own match line for a row that has listings to confirm (the agent's words: "2 title matches"; matchWords.ts words it for him). The row carries no part list. */
 export const hasTitleMatches = (row: Pick<DealRow, 'matchState'>): boolean => /\btitle match(es)?\b/.test(row.matchState ?? '');
 
 export function dealMenu(row: DealRow, o: { scanRunning: boolean }): MenuItem[] {
@@ -38,7 +38,7 @@ export function dealMenu(row: DealRow, o: { scanRunning: boolean }): MenuItem[] 
   if (row.lookup) {
     more.push({ id: 'lookup', label: `Look up · ${plural(row.lookup.searches, 'search', 'searches')}`, ...(o.scanRunning ? { disabled: SCAN_LATER } : {}) });
   }
-  if (hasTitleMatches(row)) more.push({ id: 'verify', label: 'Verify title matches…' });
+  if (hasTitleMatches(row)) more.push({ id: 'verify', label: 'Confirm Amazon listings…' });
   if (row.needsAnswer) more.push({ id: 'review', label: 'Show in Review' });
   more.forEach((m, i) => items.push(i === 0 ? { ...m, separatorBefore: true } : m));
   return items;

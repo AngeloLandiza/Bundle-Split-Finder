@@ -15,6 +15,7 @@ import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { copyText, openPage } from '../lib/actions';
 import { dealReason, matchColumnShown, waitingState } from '../lib/dealReason';
+import { matchWords } from '../lib/matchWords';
 import { lookupNotice, lookupsStartedWords } from '../lib/lookups';
 import { scanStrip } from '../lib/scanSteps';
 import { count, percentOff, plural, upToSearches, when } from '../lib/format';
@@ -280,7 +281,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
     { key: 'off', label: 'Off', sortable: true, align: 'right', width: 'col-off', hideBelow: 900, render: (r) => <span className="fig">{percentOff(r.off)?.replace(' off', '') ?? '—'}</span> },
     {
       key: 'match',
-      label: 'Match',
+      label: 'Amazon listings',
       sortable: true,
       natural: 'asc',
       width: 'col-match',
@@ -291,8 +292,8 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
         ) : r.needsAnswer ? (
           <Tag tone="attention">Needs your answer</Tag>
         ) : (
-          <span className="cell-words" title={r.matchState ?? undefined}>
-            {r.matchState ?? '—'}
+          <span className="cell-words" title={matchWords(r.matchState) ?? undefined}>
+            {matchWords(r.matchState) ?? '—'}
           </span>
         ),
     },
