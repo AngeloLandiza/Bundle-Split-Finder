@@ -9,6 +9,7 @@
 
 import type { PipelineAiSettings } from '../ai/factory';
 import type { StoredSuggestion } from '../assist/stored';
+import type { ReviewBrief } from '../brief/types';
 import type { SplitEvidence } from '../decompose';
 import type { HomeDepotPage, HomeDepotSearch, ToolError } from '../research/types';
 import type { DealSortKey } from '../deals/sort';
@@ -568,9 +569,17 @@ export interface ReviewQuestion {
    * for Activity. Absent otherwise.
    */
   suggestionPlain?: string;
+  /**
+   * Step 16: the three-line summary of the question and its suggestion (core/src/brief): what is asked, the suggestion in plain
+   * words, why, and what to check. Always present from the agent; written by a model and checked by code (`writtenBy: 'ai'`) or by
+   * the rules (`'rules'`). It never changes the suggestion, its status or what Autopilot may apply.
+   */
+  brief?: ReviewBrief;
   /** The question as the scan stored it. */
   item: { kind: 'split' | 'match'; question: ReviewItem } | { kind: 'ebay'; question: EbayQuestion };
 }
+
+export type { BriefCheck, BriefReason, BriefState, ReviewBrief } from '../brief/types';
 
 export interface ReviewResponse {
   at: string | null;
@@ -718,6 +727,11 @@ export interface AiAgentSettings {
   judge: AiPipelineSetting;
   assist: AiPipelineSetting;
   research: AiPipelineSetting;
+  /**
+   * Step 16: the model that writes the plain brief above a Review question (core/src/brief). Cheap by default (Claude Haiku);
+   * never trusted (`trusted` is always false): it explains a suggestion and cannot change it. Absent in a store older than it.
+   */
+  brief?: AiPipelineSetting;
   /** Dollars the AI may cost in a calendar month (judge, assist and research together). 0 turns the AI off. */
   monthlyCapUsd: number;
 }
@@ -803,10 +817,11 @@ export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings
     quietHours?: Partial<NotificationSettings['quietHours']>;
   };
   shell?: Partial<ShellSettings>;
-  ai?: Partial<Omit<AiAgentSettings, 'judge' | 'assist' | 'research'>> & {
+  ai?: Partial<Omit<AiAgentSettings, 'judge' | 'assist' | 'research' | 'brief'>> & {
     judge?: Partial<AiPipelineSetting>;
     assist?: Partial<AiPipelineSetting>;
     research?: Partial<AiPipelineSetting>;
+    brief?: Partial<AiPipelineSetting>;
   };
 };
 

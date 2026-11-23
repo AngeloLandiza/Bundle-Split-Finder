@@ -4,6 +4,7 @@
 // reference; this file never sees where keys are kept and never stores one.
 
 import { ProviderAssist } from '../assist/provider';
+import { type BriefModel, DEFAULT_BRIEF_MODEL, ProviderBrief } from '../brief/pipeline';
 import type { AssistModel } from '../assist/types';
 import { type PriceRates, setModelRates } from '../judge/eval';
 import { ProviderJudge } from '../judge/provider';
@@ -32,12 +33,16 @@ export interface PipelineAiSettings {
   rates?: PriceRates;
 }
 
-/** The three pipelines, each with its own choice. */
+/** The pipelines, each with its own choice. `brief` (the plain summary above a Review question) is optional: a store older than it reads as Claude Haiku on the Anthropic key. */
 export interface AiSettings {
   judge: PipelineAiSettings;
   assist: PipelineAiSettings;
   research: PipelineAiSettings;
+  brief?: PipelineAiSettings;
 }
+
+/** What the brief pipeline uses when Settings has no choice for it. */
+export const DEFAULT_BRIEF_SETTINGS: PipelineAiSettings = { provider: 'anthropic', model: DEFAULT_BRIEF_MODEL, apiKeyRef: 'anthropic' };
 
 export interface ProviderDeps {
   /** The key a reference names, or undefined when there is none. */
@@ -100,9 +105,10 @@ export interface Pipelines {
   judge: PipelineResult<ListingJudge>;
   assist: PipelineResult<AssistModel>;
   research: PipelineResult<ResearchModel>;
+  brief: PipelineResult<BriefModel>;
 }
 
-/** The three pipelines' models for the owner's Settings. A pipeline with no usable provider says why; the others still work. */
+/** The pipelines' models for the owner's Settings. A pipeline with no usable provider says why; the others still work. */
 export function pipelinesFrom(ai: AiSettings, deps: ProviderDeps): Pipelines {
   const build = <T>(s: PipelineAiSettings, make: (p: ModelProvider) => T): PipelineResult<T> => {
     const r = providerFrom(s, deps);
@@ -112,5 +118,6 @@ export function pipelinesFrom(ai: AiSettings, deps: ProviderDeps): Pipelines {
     judge: build(ai.judge, (provider) => new ProviderJudge({ provider })),
     assist: build(ai.assist, (provider) => new ProviderAssist({ provider })),
     research: build(ai.research, (provider) => new ProviderResearch({ provider })),
+    brief: build(ai.brief ?? DEFAULT_BRIEF_SETTINGS, (provider) => new ProviderBrief({ provider })),
   };
 }

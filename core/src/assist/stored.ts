@@ -2,6 +2,7 @@
 // has answered, whether the answer is the one suggested. This is its own record, apart from the question: a
 // suggestion is never an answer (CLAUDE.md rule 4), and nothing here changes a ReviewItem.
 
+import type { ReviewBrief } from '../brief/types';
 import { costOf, PRICE_TABLE } from '../judge/eval';
 import type { TokenUsage } from '../judge/types';
 import { choicesOf, NONE, reviewSignature } from '../scan/answers';
@@ -20,6 +21,21 @@ export interface SuggestionOutcome {
   agreed: boolean | null;
 }
 
+/** What one brief attempt for a suggestion left (core/src/brief/pipeline.ts): its cost counts in the month's AI spend. */
+export interface StoredBriefMeta {
+  at: number;
+  provider: string;
+  model: string;
+  promptVersion: string;
+  /** A model call was made. */
+  called: boolean;
+  /** Dollars at the model's published rates; null for a model with no rate or a call with no usage. */
+  costUsd: number | null;
+  usage?: TokenUsage;
+  /** Why the brief is the rules', in a sentence; absent when a model wrote it. */
+  fellBack?: string;
+}
+
 export interface StoredSuggestion {
   /** `${questionId}|${askedAt}`. Asking again keeps the first record: the audit counts every ask. */
   key: string;
@@ -31,6 +47,10 @@ export interface StoredSuggestion {
   /** Dollars at the model's published rates; null for a model with no rate or a call with no usage. */
   costUsd: number | null;
   outcome?: SuggestionOutcome;
+  /** The brief a model wrote for this suggestion and the code checked; absent until one is made (a rules brief is never stored). */
+  brief?: ReviewBrief;
+  /** The attempt behind `brief`, or behind its absence: a failed or fallen-back attempt is not repeated for a day. */
+  briefMeta?: StoredBriefMeta;
 }
 
 /** Where the suggestions are kept. The worker holds one; the extension's is IndexedDB, tests use memory. */
