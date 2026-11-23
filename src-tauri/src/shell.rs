@@ -14,7 +14,7 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 use tauri_plugin_autostart::ManagerExt as _;
 use tauri_plugin_notification::NotificationExt;
 
-use crate::agent;
+use crate::{agent, popover};
 
 /// How long after a native notification a click on the app still counts as "the notification".
 const NOTIFICATION_CLICK_WINDOW: Duration = Duration::from_secs(120);
@@ -65,7 +65,7 @@ struct TrayItems {
 /// `__SPLIT_FINDER_SHELL__.chrome`: "unified" when the window has the macOS unified title bar and the
 /// sidebar material behind a transparent webview (native_chrome below), so the page leaves its
 /// sidebar clear and paints only the content area.
-fn init_script(token: Option<&str>) -> String {
+pub(crate) fn init_script(token: Option<&str>) -> String {
   let token_js = token
     .map(|t| serde_json::to_string(t).unwrap_or_else(|_| "null".into()))
     .unwrap_or_else(|| "null".into());
@@ -262,6 +262,7 @@ pub fn set_open_questions(app: &AppHandle, n: u32) {
   if state.open_questions.swap(n, Ordering::Relaxed) != n {
     refresh_tray(app);
   }
+  popover::set_open_questions(app, n);
 }
 
 pub fn set_paused(app: &AppHandle, paused: bool) {
@@ -293,11 +294,10 @@ pub fn refresh_tray(app: &AppHandle) {
   let _ = items.app_questions.set_text(questions_label(n));
   let _ = items.pause.set_text(pause_label(paused));
   let _ = items.app_pause.set_text(pause_label(paused));
-  // macOS: the count shows as text next to the menu bar icon. Other platforms: tooltip only.
+  // macOS: the menu bar icon is a plain icon while the Dock icon carries the count as its badge. With
+  // the Dock icon hidden the count shows as text next to the icon. Other platforms: tooltip only.
   #[cfg(target_os = "macos")]
-  let _ = items
-    .tray
-    .set_title(if n > 0 { Some(n.to_string()) } else { None });
+  let _ = items.tray.set_title(popover::tray_title(n, popover::dock_shown()));
   let tip = if n > 0 {
     format!("Split Finder - {n} open")
   } else {
@@ -324,6 +324,10 @@ pub fn apply_settings(app: &AppHandle, answer: &serde_json::Value) {
 
   // The window must stay reachable: with the Dock icon hidden the menu bar icon is the way back in
   // (and on other platforms the tray is the only one), so the last of the two cannot be turned off.
+  if popover::set_dock_icon(app, dock) {
+    // Where the count shows (Dock badge or menu bar text) follows the Dock icon.
+    refresh_tray(app);
+  }
   let dock_effective = cfg!(target_os = "macos") && dock;
   let show_tray = menu_bar || !dock_effective;
   if let Ok(guard) = state.items.lock() {
@@ -398,7 +402,8 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
     .icon_as_template(true)
     .tooltip("Split Finder")
     .menu(&tray_menu)
-    .show_menu_on_left_click(true)
+    // macOS: a left click opens the popover and the menu stays on a right click. Elsewhere the menu is the left click's.
+    .show_menu_on_left_click(!cfg!(target_os = "macos"))
     .on_menu_event(|app, event| handle_menu(app, event.id().as_ref()))
     .on_tray_icon_event(|tray, event| {
       // Windows: a left click opens the window (the menu stays on right click there).
@@ -408,10 +413,15 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
       if let TrayIconEvent::Click {
         button: MouseButton::Left,
         button_state: MouseButtonState::Up,
+        rect,
         ..
       } = event
       {
-        consume_pending_nav(tray.app_handle());
+        if cfg!(target_os = "macos") {
+          popover::toggle(tray.app_handle(), &rect);
+        } else {
+          consume_pending_nav(tray.app_handle());
+        }
       }
     })
     .build(app)?;

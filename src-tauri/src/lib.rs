@@ -1,5 +1,6 @@
 mod agent;
 mod events;
+mod popover;
 mod shell;
 
 use std::sync::Mutex;
@@ -42,6 +43,8 @@ pub fn run() {
       // to the tray when the app quit must still show on the next launch.
       tauri_plugin_window_state::Builder::default()
         .with_state_flags(StateFlags::all() - StateFlags::VISIBLE)
+        // The menu bar popover is placed under the icon each time.
+        .with_denylist(&[popover::LABEL])
         .build(),
     )
     .manage(agent::AgentChild(Mutex::new(None)))
@@ -63,6 +66,7 @@ pub fn run() {
         Err(e) => log::warn!("Agent not started: {e}"),
       }
       shell::create_window(&handle)?;
+      popover::prepare(&handle);
 
       // Ask once; macOS remembers the answer.
       let _ = handle.notification().request_permission();
@@ -79,7 +83,8 @@ pub fn run() {
     .invoke_handler(tauri::generate_handler![
       agent_status,
       get_launch_at_login,
-      set_launch_at_login
+      set_launch_at_login,
+      popover::popover_do
     ])
     .build(tauri::generate_context!())
     .expect("error while running tauri application")
@@ -90,10 +95,12 @@ pub fn run() {
         shell::show_window(app);
         shell::consume_pending_nav(app);
       }
+      // The popover taking focus is not the owner opening the app from a notification.
       RunEvent::WindowEvent {
+        label,
         event: WindowEvent::Focused(true),
         ..
-      } => shell::consume_pending_nav(app),
+      } if label != popover::LABEL => shell::consume_pending_nav(app),
       RunEvent::Exit => agent::stop(app),
       _ => {}
     });

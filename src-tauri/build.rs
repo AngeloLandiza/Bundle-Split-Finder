@@ -6,6 +6,7 @@ fn main() {
         "agent_status",
         "get_launch_at_login",
         "set_launch_at_login",
+        "popover_do",
       ]),
     ),
   )
