@@ -33,7 +33,16 @@ describe('velocity from the stored Keepa figures', () => {
     const parts = [part('DCF921B', ASIN.DCF921B, 249), part('DCB205', 'B0NOTPULLED', 99), part('DCB115', null, null)];
     const v = velocityOf(parts, recordedTrend, 0);
     expect(v.status).toBe('no_data');
-    expect(v.reason).toBe('No sales data for DCB205 and DCB115: Keepa has no monthly-sold figure stored for them.');
+    // Signals round 2: why each has none. DCB205's listing was never pulled; DCB115 has no listing of its own.
+    expect(v.reason).toBe('No sales data for DCB205 yet — Keepa has not been asked about its listing; no sales data for DCB115 — no Amazon listing of its own to read.');
+  });
+
+  it('a part Keepa was pulled for but gave no monthlySold: Keepa leaves it out for slow sellers', () => {
+    // fixtures/keepa/search-RYOBI-PCL235B.json: B08L32HTBC has fees and offer counts but no monthlySold.
+    const quiet = (asin: string) => (asin === 'B08L32HTBC' ? { asin, amazonPrice: 99, salesRank: null, offerCount: null, pulledAt: 1_000, monthlySold: null, fbaFee: 8.37 } : recordedTrend(asin));
+    const v = velocityOf([part('DCF921B', ASIN.DCF921B, 249), part('PCL235B', 'B08L32HTBC', 99)], quiet, 50);
+    expect(v.status).toBe('no_data');
+    expect(v.reason).toBe('No sales data for PCL235B — Keepa leaves it out for slow sellers.');
   });
 });
 
@@ -77,7 +86,8 @@ describe('signals: today against the stored baseline', () => {
     const s = bundleSignals({ row: good(), history: [point(NOW - DAY, 81.8, 27.36)], reviewOpen: false, trend: recordedTrend, alerts, now: NOW });
     expect(s.buyNow).toBeNull();
     expect(s.options[0]).toMatchObject({ meetsThresholds: true, buyNow: false });
-    expect(s.options[0]!.notBuyNow).toBe('Still above your $20.00 and 20% thresholds, but no better than the last scan ($81.80) or the 7-day average ($81.80).');
+    expect(s.options[0]!.notBuyNow).toBe('Still above your $20.00 and 20% thresholds, but no better than the last check ($81.80) or the 7-day average ($81.80): a buy needs a change.');
+    expect(s.verdict).toBe('Not worth buying now: still above your $20.00 and 20% thresholds, but no better than the last check ($81.80) or the 7-day average ($81.80): a buy needs a change.');
   });
 
   it('a dollar above its 7-day average counts as improved even when the last scan was close', () => {
@@ -90,7 +100,10 @@ describe('signals: today against the stored baseline', () => {
     const s = bundleSignals({ row, history: [point(NOW - DAY, 15, 5)], reviewOpen: false, trend: recordedTrend, alerts, now: NOW });
     expect(s.buyNow).toBeNull();
     expect(s.signals.map((x) => x.kind)).toEqual(['marginUp']);
-    expect(s.options[0]!.notBuyNow).toBe('No sales data for DCB205: Keepa has no monthly-sold figure stored for it.');
+    expect(s.options[0]!.notBuyNow).toBe('No sales data for DCB205 yet — Keepa has not been asked about its listing.');
+    // With a Keepa key the agent queues the pull, and the verdict says so.
+    const keyed = bundleSignals({ row, history: [point(NOW - DAY, 15, 5)], reviewOpen: false, trend: recordedTrend, alerts, now: NOW, keepa: true });
+    expect(keyed.verdict).toBe('Not worth buying now: no sales data for DCB205 yet — Keepa is asked on the next lookup.');
   });
 
   it('margin fell through the floor: marginDown; a lower floor stays quiet', () => {
@@ -118,5 +131,34 @@ describe('signals: today against the stored baseline', () => {
     const s = bundleSignals({ row: left, history: [point(NOW - DAY, 15, 5)], reviewOpen: false, trend: recordedTrend, alerts, now: NOW });
     expect(s.options[1]!.notBuyNow).toBe('It leaves DCB115 unsold.');
     expect(s.buyNow?.optionId).toBe('whole');
+  });
+});
+
+describe('the verdict: always which condition fails, the binding one first (signals round 2)', () => {
+  const owner = { ...alerts, minProfit: 20, minRoiPercent: 20, minMonthlySold: 50 };
+
+  it('worth buying now: the estimate, the sales and what changed', () => {
+    const s = bundleSignals({ row: good(), history: [], reviewOpen: false, trend: recordedTrend, alerts: owner, now: NOW });
+    expect(s.verdict).toBe('Worth buying now: est. profit $81.80 (27% ROI), sells about 600 a month, first seen with an estimate.');
+  });
+
+  it('below the profit number: the profit first, in the owner\'s own figure', () => {
+    // after-scan3's best before Keepa fees: PCL1201K2-PCL424B at $179, est. +$6.63 (4% ROI).
+    const row = bundle([option('whole', 179, [part('DCF921B', ASIN.DCF921B, 120), part('DCB606', ASIN.DCB606, 92)])], { price: 179 });
+    const s = bundleSignals({ row, history: [], reviewOpen: false, trend: recordedTrend, alerts: owner, now: NOW });
+    expect(s.options[0]!.profit).toBe(1.2);
+    expect(s.verdict).toBe('Not worth buying now: est. profit $1.20 is below your $20 and 1% ROI below your 20%.');
+  });
+
+  it('selling too slowly: the slowest part and its figure against the minimum', () => {
+    const s = bundleSignals({ row: good(), history: [], reviewOpen: false, trend: recordedTrend, alerts: { ...owner, minMonthlySold: 700 }, now: NOW });
+    expect(s.verdict).toBe('Not worth buying now: DCF921B sells about 600 a month, below your 700.');
+  });
+
+  it('an incomplete estimate never signals, and says it is not confirmed', () => {
+    const row = bundle([option('whole', null, [part('DCF921B', ASIN.DCF921B, 249), part('DCB606', 'B0NOTPULLED', null)])], { section: 'waiting', estimate: null });
+    const s = bundleSignals({ row, history: [point(NOW - DAY, 15, 5)], reviewOpen: false, trend: recordedTrend, alerts: owner, now: NOW });
+    expect(s.signals).toEqual([]);
+    expect(s.verdict).toBe('Not worth buying now: not confirmed yet: waiting for a part to be looked up.');
   });
 });

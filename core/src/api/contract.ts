@@ -267,6 +267,12 @@ export interface DealRow {
   watched?: boolean;
   /** Tracking: the last scan said a way to sell is worth buying now (DealSignals.buyNow). */
   buyNow?: boolean;
+  /**
+   * Signals round 2: the watched bundle's one-line verdict (DealSignals.verdict), always saying which condition fails
+   * ("Not worth buying now: est. profit $6.63 is below your $20.") or why it is worth buying. Absent when not watched or not
+   * judged yet. Estimates from the fee settings.
+   */
+  signalNote?: string;
   /** Tracking: on a BOGO promotion the owner entered; 'choose' until he chooses the free tool. */
   bogo?: 'choose' | 'chosen' | null;
   /**
@@ -452,6 +458,8 @@ export interface WatchResponse {
  */
 export interface DealSignals {
   at: string;
+  /** Signals round 2: the one-line verdict (BundleSignals.verdict); absent on signals stored before it. */
+  verdict?: string;
   buyNow: Signal | null;
   signals: Signal[];
   options: OptionSignals[];

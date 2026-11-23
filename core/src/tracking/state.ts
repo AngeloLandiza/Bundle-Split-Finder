@@ -66,6 +66,7 @@ export function trackReport(
   trend: TrendLookup,
   alerts: AlertSettings,
   now: number,
+  opts: { keepa?: boolean } = {},
 ): TrackingState {
   const open = bundlesWithOpenQuestions(report);
   const watch = { ...state.watch };
@@ -75,7 +76,7 @@ export function trackReport(
     if (!watch[row.key] && autoWatch(row)) watch[row.key] = { watched: true, by: 'auto', since: now };
     const before = state.history[row.key] ?? [];
     if (watch[row.key]?.watched) {
-      signals[row.key] = bundleSignals({ row, history: before, reviewOpen: open.has(row.key), trend, alerts, now });
+      signals[row.key] = bundleSignals({ row, history: judgedBy(before, historyPoint(row, open.has(row.key), trend, now)), reviewOpen: open.has(row.key), trend, alerts, now, ...(opts.keepa !== undefined ? { keepa: opts.keepa } : {}) });
     }
     history[row.key] = appendHistory(before, historyPoint(row, open.has(row.key), trend, now), now);
   }
@@ -86,6 +87,79 @@ export function trackReport(
     if (kept.length > 0) history[key] = kept;
   }
   return { ...state, watch, history, signals };
+}
+
+/**
+ * Signals round 2: the history a point is judged against. When the point has every part's sales figure and the points
+ * before it did not, those points are left out: the change they saw (newly confirmed, first seen, risen through the
+ * numbers) was never judged with sales data, so it is judged now, once the figure has come. Otherwise the history as is.
+ */
+export function judgedBy(history: readonly HistoryPoint[], point: HistoryPoint): HistoryPoint[] {
+  let end = history.length;
+  if (point.monthlySold !== null) while (end > 0 && history[end - 1]!.monthlySold === null) end -= 1;
+  return history.slice(0, end);
+}
+
+/** The figures a point is judged on (not the Keepa velocity fields): equal means no estimate, section or Review change. */
+export function sameFigures(a: HistoryPoint, b: HistoryPoint): boolean {
+  return (
+    a.section === b.section && a.price === b.price && a.amazonNew === b.amazonNew && a.reviewOpen === b.reviewOpen &&
+    a.options.length === b.options.length &&
+    a.options.every((o, i) => {
+      const x = b.options[i]!;
+      return o.id === x.id && o.profit === x.profit && o.roiPercent === x.roiPercent;
+    })
+  );
+}
+
+/** What a verdict rests on, to tell a changed verdict from the same one evaluated again. */
+const verdictKey = (s: BundleSignals): string =>
+  [s.signals.map((x) => `${x.kind}:${x.optionId ?? ''}`).join(','), s.options.map((o) => `${o.optionId}:${o.velocity.status}:${o.notBuyNow ?? ''}`).join(',')].join('|');
+
+/**
+ * Signals round 2: the signals evaluated whenever a bundle's estimate or completeness changes between scans (the drip's
+ * lookups and price pulls, the catalog check, an owner's answer, Undo or confirmed price, the agent's start), by the same
+ * rules as a scan (bundleSignals). Bundles confirmed and discounted become watched, as at a scan.
+ *
+ * A bundle whose figures moved since its last stored point is judged against its history and gets a new point (so the next
+ * scan's baseline has it). One whose figures did not move is judged again against the history its last point was judged
+ * by, with the Keepa figures stored now: a sales figure that arrived since can turn the verdict, and nothing else does.
+ * `evaluated`: the bundles whose signals are new or changed (their buy signals may go in a digest, once a day each);
+ * a verdict that came out the same keeps its stored signals.
+ */
+export function retrackReport(
+  state: TrackingState,
+  report: Pick<ScanReport, 'bundles' | 'review'>,
+  trend: TrendLookup,
+  alerts: AlertSettings,
+  now: number,
+  opts: { keepa?: boolean } = {},
+): { state: TrackingState; evaluated: string[] } {
+  const open = bundlesWithOpenQuestions(report);
+  const watch = { ...state.watch };
+  const history = { ...state.history };
+  const signals = { ...state.signals };
+  const evaluated: string[] = [];
+  for (const row of report.bundles) {
+    if (!watch[row.key] && autoWatch(row)) watch[row.key] = { watched: true, by: 'auto', since: now };
+    const before = state.history[row.key] ?? [];
+    const point = historyPoint(row, open.has(row.key), trend, now);
+    const last = before.at(-1);
+    const same = last !== undefined && sameFigures(last, point);
+    const prior = same ? before.slice(0, -1) : before;
+    if (watch[row.key]?.watched) {
+      const next = bundleSignals({ row, history: judgedBy(prior, point), reviewOpen: open.has(row.key), trend, alerts, now, ...(opts.keepa !== undefined ? { keepa: opts.keepa } : {}) });
+      const old = state.signals[row.key];
+      if (!same || !old || verdictKey(old) !== verdictKey(next) || old.verdict === undefined) {
+        signals[row.key] = next;
+        evaluated.push(row.key);
+      }
+    } else {
+      delete signals[row.key];
+    }
+    history[row.key] = same ? [...prior, { ...point, at: last!.at }] : appendHistory(before, point, now);
+  }
+  return { state: { ...state, watch, history, signals }, evaluated };
 }
 
 /** The owner's local calendar day, for "once a day" per bundle and signal. */
@@ -103,12 +177,16 @@ export interface SignalLine {
   signal: Signal;
 }
 
-/** The signals of `kinds` not yet sent today, best estimated profit first, and the notified list with them added. */
-export function freshSignals(state: TrackingState, kinds: readonly SignalKind[], now: number): { lines: SignalLine[]; notified: string[] } {
+/**
+ * The signals of `kinds` not yet sent today, best estimated profit first, and the notified list with them added. `only`:
+ * the bundles to consider (a between-scan evaluation names those it judged again; a scan considers every one).
+ */
+export function freshSignals(state: TrackingState, kinds: readonly SignalKind[], now: number, only?: ReadonlySet<string>): { lines: SignalLine[]; notified: string[] } {
   const sent = new Set(state.notified);
   const lines: SignalLine[] = [];
   for (const s of Object.values(state.signals)) {
     if (!isWatched(state, s.bundleKey)) continue;
+    if (only && !only.has(s.bundleKey)) continue;
     for (const kind of kinds) {
       // One line per bundle and kind: for buyNow the best way to sell, else the first that fired.
       const sig = kind === 'buyNow' ? s.buyNow : s.signals.find((x) => x.kind === kind);

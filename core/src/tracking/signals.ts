@@ -52,6 +52,9 @@ const DAY_MS = 86_400_000;
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 const usd = (n: number): string => (n < 0 ? `-$${(-n).toFixed(2)}` : `$${n.toFixed(2)}`);
 const pct = (n: number): string => `${Math.round(n)}%`;
+/** "$20" for a whole number of dollars (the owner's own numbers), "$6.63" otherwise. */
+const usdShort = (n: number): string => (Number.isInteger(n) ? (n < 0 ? `-$${-n}` : `$${n}`) : usd(n));
+const capital = (t: string): string => t.charAt(0).toUpperCase() + t.slice(1);
 const names = (models: string[]): string => (models.length <= 2 ? models.join(' and ') : `${models.slice(0, -1).join(', ')} and ${models.at(-1)}`);
 
 /** Amazon-sold parts of a way to sell: those with a listing chosen (the ones whose sales say anything). */
@@ -152,11 +155,11 @@ export function velocityOf(parts: PartRow[], trend: TrendLookup, minMonthlySold:
       offers: t?.buyBoxEligibleOffers ?? null, pulledAt: t?.pulledAt ?? null,
     };
   });
-  const missing = rows.filter((r) => r.monthlySold === null).map((r) => r.model);
+  const missing = rows.filter((r) => r.monthlySold === null);
   if (rows.length === 0 || missing.length > 0) {
     return {
       status: 'no_data',
-      reason: rows.length === 0 ? 'No sales data: this way to sell has no parts yet.' : `No sales data for ${names(missing)}: Keepa has no monthly-sold figure stored for ${missing.length === 1 ? 'it' : 'them'}.`,
+      reason: rows.length === 0 ? 'No sales data: this way to sell has no parts yet.' : `${capital(noSalesWords(missing))}.`,
       minMonthlySold, slowest: null, parts: rows,
     };
   }
@@ -166,6 +169,25 @@ export function velocityOf(parts: PartRow[], trend: TrendLookup, minMonthlySold:
     return { status: 'pass', reason: `The slowest part, ${s.model}, sold ${s.monthlySold} last month on Amazon (Keepa); your minimum is ${minMonthlySold}.`, minMonthlySold, slowest: s, parts: rows };
   }
   return { status: 'slow', reason: `${s.model} sold ${s.monthlySold} last month on Amazon (Keepa), under your minimum of ${minMonthlySold}.`, minMonthlySold, slowest: s, parts: rows };
+}
+
+/**
+ * Signals round 2: why a part has no sales figure, in words. A part Keepa was pulled for but gave no monthlySold: Keepa
+ * leaves it out for slow sellers (the existing wording). A listing never pulled: not asked yet, and (`keepa`) asked on the
+ * next lookup when the agent can pull it. A part with no listing of its own (priced by a confirmed price): none to read.
+ */
+export function noSalesWords(missing: Pick<PartVelocity, 'model' | 'asin' | 'pulledAt'>[], keepa?: boolean): string {
+  const noListing = missing.filter((p) => p.asin === null).map((p) => p.model);
+  const unpulled = missing.filter((p) => p.asin !== null && p.pulledAt === null).map((p) => p.model);
+  const quiet = missing.filter((p) => p.asin !== null && p.pulledAt !== null).map((p) => p.model);
+  const out: string[] = [];
+  if (unpulled.length > 0) {
+    const tail = keepa === true ? 'Keepa is asked on the next lookup' : keepa === false ? 'add a Keepa key to read it' : 'Keepa has not been asked about its listing';
+    out.push(`no sales data for ${names(unpulled)} yet — ${tail}`);
+  }
+  if (quiet.length > 0) out.push(`no sales data for ${names(quiet)} — Keepa leaves it out for slow sellers`);
+  if (noListing.length > 0) out.push(`no sales data for ${names(noListing)} — no Amazon listing of ${noListing.length === 1 ? 'its' : 'their'} own to read`);
+  return out.join('; ');
 }
 
 // ---------------------------------------------------------------- signals
@@ -205,7 +227,10 @@ export interface OptionSignals {
   velocity: Velocity;
   baseline: OptionBaseline;
   buyNow: boolean;
-  /** Why it is not worth buying now, in one sentence; null when it is. */
+  /**
+   * Why it is not worth buying now, in one sentence, the binding condition first ("Est. profit $6.63 is below your $20.",
+   * "No sales data for DCS382B yet — Keepa is asked on the next lookup."); null when it is.
+   */
   notBuyNow: string | null;
 }
 
@@ -219,6 +244,13 @@ export interface BundleSignals {
   signals: Signal[];
   /** The best way to sell worth buying now (highest estimated profit), or null. */
   buyNow: Signal | null;
+  /**
+   * Signals round 2: the one-line verdict, always saying which condition fails ("Not worth buying now: sells about 12 a
+   * month, below your 50") or why it is worth buying ("Worth buying now: est. profit $69.15 (26% ROI), sells about 120 a
+   * month, confirmed for the first time"). About the way to sell worth buying, else the primary one. Absent on a stored
+   * signal from before it.
+   */
+  verdict?: string;
 }
 
 export interface SignalInput {
@@ -230,6 +262,8 @@ export interface SignalInput {
   trend: TrendLookup;
   alerts: AlertSettings;
   now: number;
+  /** Whether the agent can pull a part's listing on Keepa (a key is set): the "no sales data" words say what happens next. */
+  keepa?: boolean;
 }
 
 const SECTION_WORDS: Record<ReportSection, string> = {
@@ -267,6 +301,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
 
   const options: OptionSignals[] = [];
   const buys: Signal[] = [];
+  const verdicts = new Map<string, string>();
   for (const o of row.options) {
     const baseline = baselineOf(history, o.id, now);
     const velocity = velocityOf(o.parts, input.trend, minMonthlySold);
@@ -284,39 +319,66 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     const thresholds = `your ${usd(alerts.minProfit)} and ${pct(alerts.minRoiPercent)} thresholds`;
 
     let why: string | null = null;
+    let whyShort = '';
     if (meets && lastP !== null && lastR !== null && (lastP < alerts.minProfit || lastR < alerts.minRoiPercent)) {
       const reason = `Estimated profit rose from ${usd(lastP)} (${pct(lastR)} ROI) to ${usd(profit!)} (${pct(roi!)} ROI), through ${thresholds}.`;
       signals.push({ kind: 'marginUp', optionId: o.id, reason, numbers });
       why = reason;
+      whyShort = `up from ${usd(lastP)} through your numbers`;
     }
     if (profit !== null && lastP !== null && lastP >= floorProfit && profit < floorProfit) {
       signals.push({ kind: 'marginDown', optionId: o.id, reason: `Estimated profit fell from ${usd(lastP)} to ${usd(profit)}, below your ${usd(floorProfit)} floor.`, numbers });
     }
     if (why === null && meets && lastP !== null && profit! - lastP >= IMPROVE_MIN_DOLLARS) {
       why = `Estimated profit is up ${usd(profit! - lastP)} since the last scan, to ${usd(profit!)} (${pct(roi!)} ROI).`;
+      whyShort = `up ${usd(profit! - lastP)} since the last check`;
     }
     const rolling = baseline.rolling7d;
     if (why === null && meets && rolling && profit! - rolling.profit >= IMPROVE_MIN_DOLLARS) {
       why = `Estimated profit of ${usd(profit!)} (${pct(roi!)} ROI) is ${usd(profit! - rolling.profit)} above its 7-day average of ${usd(rolling.profit)}.`;
+      whyShort = `${usd(profit! - rolling.profit)} above its 7-day average`;
     }
     if (why === null && meets && o === row.options[0]) {
-      if (reviewCleared || discoveryDone) why = signals.find((s) => s.kind === 'reviewCleared' || s.kind === 'discoveryDone')!.reason;
-      else if (firstSeen) why = `First seen with an estimate: est. profit ${usd(profit!)} (${pct(roi!)} ROI).`;
+      if (reviewCleared || discoveryDone) {
+        why = signals.find((s) => s.kind === 'reviewCleared' || s.kind === 'discoveryDone')!.reason;
+        whyShort = reviewCleared ? 'your Review answers cleared it' : 'confirmed for the first time';
+      } else if (firstSeen) {
+        why = `First seen with an estimate: est. profit ${usd(profit!)} (${pct(roi!)} ROI).`;
+        whyShort = 'first seen with an estimate';
+      }
     }
 
-    let notBuyNow: string | null = null;
-    if (row.section !== 'confirmed') notBuyNow = `Not confirmed yet: ${SECTION_WORDS[row.section]}.`;
-    else if (profit === null || roi === null) notBuyNow = 'No estimate for this way to sell yet.';
-    else if (o.leftovers.length > 0) notBuyNow = `It leaves ${names(o.leftovers)} unsold.`;
-    else if (!meets) notBuyNow = `Below ${thresholds}: est. profit ${usd(profit)} (${pct(roi)} ROI).`;
-    else if (velocity.status !== 'pass') notBuyNow = velocity.reason;
-    else if (why === null) {
-      notBuyNow = `Still above ${thresholds}, but no better than ${lastP !== null ? `the last scan (${usd(lastP)})` : 'before'}${rolling ? ` or the 7-day average (${usd(rolling.profit)})` : ''}.`;
+    // Signals round 2: every condition that fails, the binding one first, in one sentence (rule 5: estimates).
+    const fails: string[] = [];
+    if (row.section !== 'confirmed') fails.push(`not confirmed yet: ${SECTION_WORDS[row.section]}`);
+    else if (profit === null || roi === null) fails.push('no estimate for this way to sell yet');
+    else {
+      if (profit < alerts.minProfit) {
+        fails.push(`est. profit ${usd(profit)} is below your ${usdShort(alerts.minProfit)}${roi < alerts.minRoiPercent ? ` and ${pct(roi)} ROI below your ${pct(alerts.minRoiPercent)}` : ''}`);
+      } else if (roi < alerts.minRoiPercent) {
+        fails.push(`est. ROI ${pct(roi)} is below your ${pct(alerts.minRoiPercent)} (profit ${usd(profit)})`);
+      }
+      if (o.leftovers.length > 0) fails.push(`it leaves ${names(o.leftovers)} unsold`);
+      if (velocity.status === 'slow') {
+        const sl = velocity.slowest!;
+        fails.push(`${velocity.parts.length > 1 ? `${sl.model} ` : ''}sells about ${sl.monthlySold} a month, below your ${minMonthlySold}`);
+      } else if (velocity.status === 'no_data') {
+        fails.push(velocity.parts.length === 0 ? 'no sales data: this way to sell has no parts yet' : noSalesWords(velocity.parts.filter((p) => p.monthlySold === null), input.keepa));
+      }
+      if (fails.length === 0 && why === null) {
+        fails.push(`still above ${thresholds}, but no better than ${lastP !== null ? `the last check (${usd(lastP)})` : 'before'}${rolling ? ` or the 7-day average (${usd(rolling.profit)})` : ''}: a buy needs a change`);
+      }
     }
+    const notBuyNow = fails.length > 0 ? `${capital(fails.join('; '))}.` : null;
     const buyNow = notBuyNow === null;
     if (buyNow) buys.push({ kind: 'buyNow', optionId: o.id, reason: `${why} ${velocity.reason}`, numbers });
     options.push({ optionId: o.id, label: o.label, profit, roiPercent: roi, meetsThresholds: meets, velocity, baseline, buyNow, notBuyNow });
+    verdicts.set(o.id, buyNow
+      ? `Worth buying now: est. profit ${usd(profit!)} (${pct(roi!)} ROI), sells about ${velocity.slowest!.monthlySold} a month, ${whyShort || 'improved'}`
+      : `Not worth buying now: ${fails.join('; ')}`);
   }
   const best = buys.reduce<Signal | null>((a, b) => (a === null || (b.numbers.profit ?? 0) > (a.numbers.profit ?? 0) ? b : a), null);
-  return { bundleKey: row.key, brand: row.brand, model: row.model, at: now, options, signals: [...signals, ...buys], buyNow: best };
+  const focus = best?.optionId ?? row.options[0]?.id ?? null;
+  const verdict = focus !== null ? `${verdicts.get(focus)!}.` : 'Not worth buying now: no way to sell has an estimate yet.';
+  return { bundleKey: row.key, brand: row.brand, model: row.model, at: now, options, signals: [...signals, ...buys], buyNow: best, verdict };
 }
