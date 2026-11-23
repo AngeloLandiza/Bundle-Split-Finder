@@ -72,3 +72,32 @@ describe('review keys', () => {
     expect(reviewKey(k('ArrowDown', { target: 'choice' }))).toBeNull();
   });
 });
+
+describe('Ctrl on Windows answers wherever Cmd does on a Mac', () => {
+  const chords: [Partial<KeyPress> & { key: string }, ReturnType<typeof globalKey>][] = [
+    [{ key: '1' }, { type: 'go', screen: 'today' }],
+    [{ key: '5' }, { type: 'go', screen: 'settings' }],
+    [{ key: 'f' }, { type: 'find' }],
+    [{ key: 'k' }, { type: 'palette' }],
+    [{ key: '/' }, { type: 'shortcuts' }],
+    [{ key: 'i', code: 'KeyI', alt: true }, { type: 'inspector' }],
+  ];
+  it('gives the same action for meta and for ctrl, in a field or out of one', () => {
+    for (const [press, action] of chords) {
+      for (const target of ['none', 'text'] as const) {
+        expect(globalKey({ ...press, meta: true, target })).toEqual(action);
+        expect(globalKey({ ...press, ctrl: true, target })).toEqual(action);
+      }
+    }
+  });
+  it('leaves a bare letter and the lists alone while Ctrl is down', () => {
+    expect(listKey(k('j', { ctrl: true }))).toBeNull();
+    expect(reviewKey(k('a', { ctrl: true }))).toBeNull();
+    expect(listKey(k('j'))).toEqual({ type: 'next' });
+  });
+  it('opens a context menu with Shift+F10 or the menu key, never with Ctrl held', () => {
+    expect(isMenuKey({ key: 'F10', shift: true })).toBe(true);
+    expect(isMenuKey({ key: 'ContextMenu' })).toBe(true);
+    expect(isMenuKey({ key: 'F10', shift: true, ctrl: true })).toBe(false);
+  });
+});

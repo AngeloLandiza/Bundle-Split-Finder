@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useApp } from '../api/hooks';
 import { plural } from '../lib/format';
+import { words } from '../lib/platform';
 import { Button } from './Button';
 import { PairingNotices } from './PairingNotice';
 import { Notice } from './States';
@@ -20,7 +21,7 @@ export function AppNotices({ inset = false }: { inset?: boolean }) {
   if (!online) {
     out.push(
       <Notice key="offline" tone="attention" title="The agent is not running." action={<Button size="sm" onClick={refreshState}>Try again</Button>}>
-        {offlineSentence ?? 'Open Split Finder from the menu bar to start it.'} What is on screen is from before it stopped.
+        {offlineSentence ?? `Open Split Finder from the ${words.trayPlace} to start it.`} What is on screen is from before it stopped.
       </Notice>,
     );
   } else if (state) {

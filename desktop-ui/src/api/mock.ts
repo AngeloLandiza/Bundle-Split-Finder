@@ -6,6 +6,7 @@
 
 import type { PipelineView } from '@core/scan/pipeline';
 import type { ApiClient } from './client';
+import { words } from '../lib/platform';
 import { mergePatch } from '../lib/patch';
 import { confirmedSourceName } from '@core/scan/confirmed';
 import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE, net } from './mockData';
@@ -140,7 +141,7 @@ export function createMockClient(): ApiClient {
 
   const online = async (ms?: number) => {
     await wait(ms);
-    if (mode === 'offline') throw new ApiError('offline', 'The agent is not running. Open Split Finder from the menu bar to start it.');
+    if (mode === 'offline') throw new ApiError('offline', `The agent is not running. Open Split Finder from the ${words.trayPlace} to start it.`);
   };
 
   return {

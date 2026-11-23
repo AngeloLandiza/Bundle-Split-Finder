@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, useAction } from '../../api/hooks';
 import { Button } from '../../components/Button';
 import { inShell, invokeShell, type AppInfo } from '../../lib/shell';
+import { words } from '../../lib/platform';
 import { Pane, Row } from './form';
 
 /** What the app keeps on this Mac, from the shell (the app's version, its data folder). Null outside the app. */
@@ -45,11 +46,11 @@ export function DataPane() {
           ) : null}
         </div>
       </Row>
-      <Row label="Data folder" align="start" help="Settings, keys, deals and the scan history live here, on this Mac only.">
+      <Row label="Data folder" align="start" help={`Settings, keys, deals and the scan history live here, on this ${words.computer} only.`}>
         <div className="stack">
           {info?.dataDir ? <p className="code path selectable">{info.dataDir}</p> : <p className="muted">{inShell() ? 'Not known yet.' : 'Shown inside the Split Finder app.'}</p>}
           <Button disabled={!info?.dataDir} busy={reveal.busy} onClick={() => void reveal.run()}>
-            Show in Finder
+            {words.revealFolder}
           </Button>
           {reveal.error ? (
             <p className="field-status field-status-error" role="alert">

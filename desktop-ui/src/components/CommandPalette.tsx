@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { api, useApp } from '../api/hooks';
 import { ApiError, type DealRow, type ReviewQuestion } from '../api/types';
 import { plural } from '../lib/format';
+import { isMac as mac, isWindows } from '../lib/platform';
 import { openPreferences } from '../lib/shell';
 import { parseRoute } from '../lib/route';
 import { actionItems, dealItems, flatten, goToItems, questionItems, rank, type CommandId, type PaletteItem } from '../lib/palette';
@@ -12,7 +13,6 @@ import { Spinner } from './States';
 import { useUi } from './ui';
 import './CommandPalette.css';
 
-const mac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
 
 /**
  * The command palette (Cmd+K): a floating panel over the window, in the popover's material. Go to a screen, a Deals
@@ -55,7 +55,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const verifiedIds = (questions ?? []).filter((q) => q.suggestion?.status === 'verified').map((q) => q.id);
   const items = useMemo(
     () => [
-      ...goToItems(mac),
+      ...goToItems(mac, isWindows),
       ...actionItems({ state, askable, verified: verifiedIds.length, deals: deals?.length ?? 0, deal: openDeal }),
       ...dealItems(deals ?? []),
       ...questionItems(questions ?? []),

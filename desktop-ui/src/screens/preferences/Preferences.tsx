@@ -11,6 +11,7 @@ import { ErrorState, LoadingState, Notice } from '../../components/States';
 import { applyLook, onLookChange, readLook, saveLook, shellChrome, type Look } from '../../lib/appearance';
 import { mergePatch } from '../../lib/patch';
 import { PREF_TABS, TAB_GLYPH, TAB_LABEL, nextTab, parsePrefsTab, prefsHash, toAppearanceSetting, windowHeight, type PrefTab } from '../../lib/prefs';
+import { words } from '../../lib/platform';
 import { inShell, invokeShell } from '../../lib/shell';
 import { PrefsContext, type PrefsValue } from './form';
 import { AdvancedPane } from './Advanced';
@@ -212,7 +213,7 @@ function PreferencesWindow() {
             {!online ? (
               <div className="inset-notices">
                 <Notice tone="attention" title="The agent is not running.">
-                  Open Split Finder from the menu bar to start it. Changes cannot be saved until it runs.
+                  Open Split Finder from the {words.trayPlace} to start it. Changes cannot be saved until it runs.
                 </Notice>
               </div>
             ) : null}

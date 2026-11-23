@@ -1,5 +1,6 @@
 import { useApp } from '../../api/hooks';
 import { agentWords } from '../../components/StatusLine';
+import { words as systemWords } from '../../lib/platform';
 import { Pane, Row } from './form';
 import { useAppInfo } from './Data';
 
@@ -10,7 +11,7 @@ export function AdvancedPane() {
   const words = state ? agentWords(state.agent) : null;
   return (
     <Pane>
-      <Row label="Agent" align="start" help="The agent is the small program that scans, answers and keeps your data. It runs inside Split Finder and listens only on this Mac.">
+      <Row label="Agent" align="start" help={`The agent is the small program that scans, answers and keeps your data. It runs inside Split Finder and listens only on this ${systemWords.computer}.`}>
         <div className="stack">
           <p>
             <strong>{online ? 'Running' : 'Not running'}</strong>

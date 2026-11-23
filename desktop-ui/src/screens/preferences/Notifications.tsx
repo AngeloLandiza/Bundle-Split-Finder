@@ -4,6 +4,7 @@ import { Button } from '../../components/Button';
 import { Select, Switch, TextField } from '../../components/Fields';
 import { Glyph } from '../../components/Glyph';
 import { RULES, isClock } from '../../lib/prefs';
+import { words } from '../../lib/platform';
 import { Inline, NumberField, Pane, Row, Rule, usePrefs } from './form';
 
 type Digest = 'each-run' | 'morning' | 'off';
@@ -43,7 +44,7 @@ export function NotificationsPane() {
 
   return (
     <Pane>
-      <Row label="Tell me when" align="start" help="Each kind is a notification on this Mac. Turn a kind off and it is not sent at all.">
+      <Row label="Tell me when" align="start" help={`Each kind is a notification on this ${words.computer}. Turn a kind off and it is not sent at all.`}>
         <div className="stack">
           <Switch label="Something needs your answer" checked={n.kinds.review} onChange={(on) => setKind('review', on)} />
           <Switch
@@ -131,7 +132,7 @@ export function NotificationsPane() {
           </Button>
         </div>
       </Row>
-      <Row label="Test" align="start" help="Sends one notification to this Mac, so you can see how they arrive.">
+      <Row label="Test" align="start" help={`Sends one notification to this ${words.computer}, so you can see how they arrive.`}>
         <div className="stack">
           <Button
             size="sm"

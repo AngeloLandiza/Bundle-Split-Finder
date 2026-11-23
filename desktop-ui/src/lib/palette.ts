@@ -5,6 +5,7 @@ import type { AppState, DealRow, ReviewQuestion } from '../api/types';
 import { KIND_LABEL } from '../screens/reviewModel';
 import { plural } from './format';
 import { modLabel, SCREENS, type Screen } from './keys';
+import { wordsFor } from './platform';
 import { PREF_TABS, TAB_LABEL, type PrefTab } from './prefs';
 import type { Route } from './route';
 import { DEAL_VIEWS, VIEW_LABEL } from './views';
@@ -39,13 +40,14 @@ export interface PaletteItem {
 const SCREEN_LABEL: Record<Screen, string> = { today: 'Today', deals: 'Deals', review: 'Review', activity: 'Activity', settings: 'Preferences' };
 
 /** Where the palette goes: the screens, each Deals view, and each pane of the Preferences window (which opens at that pane). */
-export function goToItems(mac: boolean): PaletteItem[] {
+export function goToItems(mac: boolean, windows = !mac): PaletteItem[] {
+  const prefs = wordsFor(windows).preferences;
   const out: PaletteItem[] = [];
   SCREENS.forEach((screen, i) => {
     out.push({
       id: `go:${screen}`,
       section: 'Go to',
-      title: SCREEN_LABEL[screen],
+      title: screen === 'settings' ? prefs : SCREEN_LABEL[screen],
       hint: modLabel(String(i + 1), mac),
       action: screen === 'settings' ? { type: 'preferences', tab: 'general' } : { type: 'go', route: { screen, id: null } },
     });
@@ -58,7 +60,7 @@ export function goToItems(mac: boolean): PaletteItem[] {
   });
   for (const tab of PREF_TABS) {
     if (tab === 'general') continue;
-    out.push({ id: `pref:${tab}`, section: 'Go to', title: `Preferences · ${TAB_LABEL[tab]}`, keywords: `settings ${TAB_LABEL[tab]}`, action: { type: 'preferences', tab } });
+    out.push({ id: `pref:${tab}`, section: 'Go to', title: `${prefs} · ${TAB_LABEL[tab]}`, keywords: `preferences settings ${TAB_LABEL[tab]}`, action: { type: 'preferences', tab } });
   }
   return out;
 }

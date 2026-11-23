@@ -65,6 +65,17 @@ export function shellChrome(): 'unified' | 'standard' {
   return shell?.chrome === 'unified' ? 'unified' : 'standard';
 }
 
+/**
+ * "mica" when the Windows shell has put the Mica backdrop behind the window (it says so in the same init script as
+ * `chrome`): the window's own ground then goes clear so the material shows. Without it Windows paints a solid Mica-like
+ * ground itself, so a window the shell could not give Mica still looks finished.
+ */
+export function applyBackdrop(root: HTMLElement = document.documentElement): void {
+  const shell = (window as { __SPLIT_FINDER_SHELL__?: { backdrop?: string } }).__SPLIT_FINDER_SHELL__;
+  if (shell?.backdrop === 'mica') root.dataset.backdrop = 'mica';
+  else delete root.dataset.backdrop;
+}
+
 /** Another window of this app (the dashboard, or Preferences) changed the look: the browser tells this one. */
 export function onLookChange(cb: (look: Look) => void): () => void {
   const handler = (e: StorageEvent) => {

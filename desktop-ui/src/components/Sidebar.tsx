@@ -3,6 +3,7 @@ import { api, useApp, useResource } from '../api/hooks';
 import { agentWords } from './StatusLine';
 import { count, when } from '../lib/format';
 import { modLabel, type Screen } from '../lib/keys';
+import { isMac as mac, words as systemWords } from '../lib/platform';
 import type { Route } from '../lib/route';
 import { setupProgress } from '../lib/setup';
 import { DEAL_VIEWS, VIEW_LABEL, viewCounts, type DealView } from '../lib/views';
@@ -12,7 +13,6 @@ import { Count } from './Tag';
 import { useUi } from './ui';
 import './Sidebar.css';
 
-const mac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
 
 const VIEW_GLYPH: Record<DealView, GlyphName> = {
   'buy-now': 'trend-up',
@@ -138,7 +138,7 @@ function SidebarStatus() {
           <p className="sb-row">
             <span className="sb-strong">{online ? 'Connecting…' : 'Agent not running'}</span>
           </p>
-          {online ? null : <p className="sb-row sb-quiet">Open Split Finder from the menu bar</p>}
+          {online ? null : <p className="sb-row sb-quiet">Open Split Finder from the {systemWords.trayPlace}</p>}
         </div>
       </div>
     );

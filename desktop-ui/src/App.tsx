@@ -12,6 +12,7 @@ import { applyLook, onLookChange, readLook, saveLook, shellChrome, type Look } f
 import { globalKey, pressOf } from './lib/keys';
 import { tabForSettingsId } from './lib/prefs';
 import { DEFAULT_ROUTE, hashOf, parseRoute, type Route } from './lib/route';
+import { isMac } from './lib/platform';
 import { openPreferences } from './lib/shell';
 import { ActivityScreen } from './screens/Activity';
 import { DealsScreen } from './screens/Deals';
@@ -136,8 +137,8 @@ export function App() {
     const onInspector = () => setInspector((cur) => ({ ...cur, shown: !cur.shown }));
     const onSetup = () => setSetupOpen(true);
     // The Help menu's items toggle, like the keys they show; the shell's menu takes the key, so one of the two arrives.
-    const onPalette = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }));
-    const onShortcuts = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: '/', metaKey: true, bubbles: true }));
+    const onPalette = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: isMac, ctrlKey: !isMac, bubbles: true }));
+    const onShortcuts = () => document.dispatchEvent(new KeyboardEvent('keydown', { key: '/', metaKey: isMac, ctrlKey: !isMac, bubbles: true }));
     window.addEventListener('hashchange', onHash);
     window.addEventListener('split-finder:navigate', onNav);
     window.addEventListener('split-finder:find', onFind);

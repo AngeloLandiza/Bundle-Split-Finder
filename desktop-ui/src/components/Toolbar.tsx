@@ -3,6 +3,7 @@ import { api, useApp } from '../api/hooks';
 import { ApiError } from '../api/types';
 import { ACCENTS, type Accent, type Appearance, type Density } from '../lib/appearance';
 import { modLabel } from '../lib/keys';
+import { formatShortcut, isMac as mac } from '../lib/platform';
 import { plural } from '../lib/format';
 import { Button } from './Button';
 import { Segmented } from './Fields';
@@ -13,7 +14,6 @@ import { agentWords } from './StatusLine';
 import { useUi } from './ui';
 import './Toolbar.css';
 
-const mac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
 
 /**
  * The toolbar in the unified title bar (design.md, Desktop app > Toolbar): the screen's title and one
@@ -126,7 +126,7 @@ function InspectorToggle() {
       glyph="inspector"
       aria-pressed={ui.inspectorShown}
       aria-label={ui.inspectorShown ? 'Hide inspector' : 'Show inspector'}
-      title={`${ui.inspectorShown ? 'Hide' : 'Show'} inspector (${mac ? '⌥⌘I' : 'Ctrl+Alt+I'})`}
+      title={`${ui.inspectorShown ? 'Hide' : 'Show'} inspector (${formatShortcut(['mod', 'alt', 'I'], mac)})`}
       onClick={() => ui.setInspectorShown(!ui.inspectorShown)}
     />
   );

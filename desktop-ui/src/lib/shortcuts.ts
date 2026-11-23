@@ -1,6 +1,8 @@
 // Every shortcut the app answers to, by area, for the shortcuts sheet (Cmd+/). The keys themselves are decided in
 // keys.ts; this is the list a person reads. A key added there is added here, or the sheet is wrong.
 
+import { wordsFor } from './platform';
+
 export interface Shortcut {
   /** What it does, as a short phrase. */
   does: string;
@@ -17,10 +19,10 @@ export interface ShortcutArea {
 
 /** Cmd on a Mac, Ctrl elsewhere, option as ⌥ or Alt, shift as ⇧ or Shift. */
 export function caps(mac: boolean) {
-  return { mod: mac ? '⌘' : 'Ctrl', alt: mac ? '⌥' : 'Alt', shift: mac ? '⇧' : 'Shift', enter: '↩' };
+  return { mod: mac ? '⌘' : 'Ctrl', alt: mac ? '⌥' : 'Alt', shift: mac ? '⇧' : 'Shift', enter: mac ? '↩' : 'Enter' };
 }
 
-export function shortcutAreas(mac: boolean): ShortcutArea[] {
+export function shortcutAreas(mac: boolean, windows = !mac): ShortcutArea[] {
   const { mod, alt, shift, enter } = caps(mac);
   return [
     {
@@ -34,7 +36,7 @@ export function shortcutAreas(mac: boolean): ShortcutArea[] {
         { does: 'Go to Deals', keys: [mod, '2'] },
         { does: 'Go to Review', keys: [mod, '3'] },
         { does: 'Go to Activity', keys: [mod, '4'] },
-        { does: 'Open Preferences', keys: [mod, '5'] },
+        { does: `Open ${wordsFor(windows).preferences}`, keys: [mod, '5'] },
       ],
     },
     {

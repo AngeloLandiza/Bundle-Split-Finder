@@ -6,6 +6,7 @@ import { count } from '../../lib/format';
 import { forecast } from '../../lib/forecast';
 import { RULES, isClock } from '../../lib/prefs';
 import { useState } from 'react';
+import { words } from '../../lib/platform';
 import { Inline, NumberField, Note, Pane, Row, Rule, usePrefs } from './form';
 
 const BRANDS = ['DEWALT', 'RYOBI'];
@@ -31,7 +32,7 @@ export function ScanningPane() {
 
   return (
     <Pane>
-      <Row label="Scan for bundles" align="start" help="The agent scans on its own only while this Mac is awake and Split Finder is running.">
+      <Row label="Scan for bundles" align="start" help={`The agent scans on its own only while this ${words.computer} is awake and Split Finder is running.`}>
         <div className="stack">
           <Select
             label={<span className="sr-only">Schedule</span>}

@@ -7,6 +7,7 @@ import { Sheet } from '../components/Sheet';
 import { Notice } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
 import { plural } from '../lib/format';
+import { words } from '../lib/platform';
 import { setupProgress, type SetupStepId } from '../lib/setup';
 import { InstallHelper, KeyField } from '../components/SetupParts';
 import './Welcome.css';
@@ -100,7 +101,7 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
         </h2>
         {!online ? (
           <Notice tone="attention" title="The agent is not running.">
-            Open Split Finder from the menu bar; the steps continue once it runs.
+            Open Split Finder from the {words.trayPlace}; the steps continue once it runs.
           </Notice>
         ) : null}
 
@@ -122,7 +123,7 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
 
         {step.id === 'key' ? (
           <>
-            {done('key') ? <Done text="Your SerpApi key is saved in the agent on this Mac." /> : <p>The free plan has 250 searches a month. The key stays in the agent on this Mac and is sent only to SerpApi.</p>}
+            {done('key') ? <Done text={`Your SerpApi key is saved in the agent on this ${words.computer}.`} /> : <p>The free plan has 250 searches a month. The key stays in the agent on this {words.computer} and is sent only to SerpApi.</p>}
             <KeyField
               name="serpapi"
               label="SerpApi key"

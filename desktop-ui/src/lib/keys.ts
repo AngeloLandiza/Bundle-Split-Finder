@@ -5,6 +5,8 @@
 // from a focused button or link (the browser already presses it); Cmd (macOS) or Ctrl (Windows)
 // with 1-5 moves between screens from anywhere.
 
+import { formatShortcut } from './platform';
+
 export type Screen = 'today' | 'deals' | 'review' | 'activity' | 'settings';
 export const SCREENS: readonly Screen[] = ['today', 'deals', 'review', 'activity', 'settings'];
 
@@ -89,5 +91,5 @@ export function pressOf(e: KeyboardEvent): KeyPress {
 
 /** The label a shortcut is shown with: ⌘1 on macOS, Ctrl+1 elsewhere. */
 export function modLabel(key: string, mac: boolean): string {
-  return mac ? `⌘${key}` : `Ctrl+${key}`;
+  return formatShortcut(['mod', key], mac);
 }

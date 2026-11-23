@@ -3,6 +3,7 @@ import { Segmented, Switch } from '../../components/Fields';
 import { Glyph } from '../../components/Glyph';
 import { ACCENTS, type Accent, type Appearance, type Density } from '../../lib/appearance';
 import { ICON_GUARD_SENTENCE, guardIcons, isLastIcon } from '../../lib/prefs';
+import { words } from '../../lib/platform';
 import { Pane, Row, Rule, usePrefs } from './form';
 
 const ACCENT_NAME: Record<Accent, string> = {
@@ -97,15 +98,15 @@ export function GeneralPane() {
         />
       </Row>
       <Rule />
-      <Row label="Startup" align="start" help="Split Finder keeps running in the menu bar when its window is closed.">
+      <Row label="Startup" align="start" help={`Split Finder keeps running in the ${words.trayPlace} when its window is closed.`}>
         <div className="stack">
           <Switch label="Open at login" checked={shell.launchAtLogin} onChange={(launchAtLogin) => update({ shell: { launchAtLogin } })} />
         </div>
       </Row>
       <Row label="Icons" align="start" help={refused || isLastIcon(shell, 'menuBarIcon') || isLastIcon(shell, 'dockIcon') ? ICON_GUARD_SENTENCE : undefined}>
         <div className="stack">
-          <Switch label="Show menu bar icon" checked={shell.menuBarIcon} disabled={isLastIcon(shell, 'menuBarIcon')} onChange={(on) => flip('menuBarIcon', on)} />
-          <Switch label="Show Dock icon" checked={shell.dockIcon} disabled={isLastIcon(shell, 'dockIcon')} onChange={(on) => flip('dockIcon', on)} />
+          <Switch label={words.trayIconSwitch} checked={shell.menuBarIcon} disabled={isLastIcon(shell, 'menuBarIcon')} onChange={(on) => flip('menuBarIcon', on)} />
+          <Switch label={words.dockSwitch} checked={shell.dockIcon} disabled={isLastIcon(shell, 'dockIcon')} onChange={(on) => flip('dockIcon', on)} />
         </div>
       </Row>
       <Rule />

@@ -6,6 +6,7 @@ import { Profit, Roi } from '../components/Figure';
 import { ProgressBar, Spinner } from '../components/States';
 import { count, percentOff } from '../lib/format';
 import { modLabel } from '../lib/keys';
+import { isMac as mac, words } from '../lib/platform';
 import { bestDeal, isRunning, needsYou, popoverStatus, scanBlocked, scanCost } from '../lib/popover';
 import { popoverDo } from '../lib/popoverShell';
 import { hashOf } from '../lib/route';
@@ -19,7 +20,6 @@ declare global {
   }
 }
 
-const mac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
 
 /** The popover shows while the window has focus; in a browser (mock mode) it is always on. */
 function initiallyOpen(): boolean {
@@ -231,7 +231,7 @@ export function PopoverApp() {
                   <p className="pop-note">Profit and ROI are estimates from your fee settings.</p>
                 </>
               ) : (
-                <p className="pop-quiet">{deals && deals.length ? 'No bundle has an estimate yet.' : deals ? 'No bundles found yet.' : 'Loading…'}</p>
+                <p className="pop-quiet">{deals && deals.length ? 'No deal above zero yet.' : deals ? 'No bundles found yet.' : 'Loading…'}</p>
               )}
             </section>
           </>
@@ -248,14 +248,14 @@ export function PopoverApp() {
         </li>
         <li role="none">
           <button type="button" role="menuitem" className="pop-menu-item" onClick={() => void popoverDo('preferences')}>
-            <span>Preferences…</span>
+            <span>{words.preferencesRow}</span>
             <span className="pop-key">{modLabel(',', mac)}</span>
           </button>
         </li>
         <li role="none">
           <button type="button" role="menuitem" className="pop-menu-item" onClick={() => void popoverDo('quit')}>
-            <span>Quit Split Finder</span>
-            <span className="pop-key">{modLabel('Q', mac)}</span>
+            <span>{words.quit}</span>
+            {mac ? <span className="pop-key">{modLabel('Q', mac)}</span> : null}
           </button>
         </li>
       </ul>

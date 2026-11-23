@@ -1,14 +1,14 @@
+import { formatShortcut, isMac as mac, isWindows } from '../lib/platform';
 import { shortcutAreas } from '../lib/shortcuts';
 import { Button } from './Button';
 import { Kbd } from './Layout';
 import { Sheet } from './Sheet';
 import './ShortcutsSheet.css';
 
-const mac = typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
 
 /** Every shortcut, by area (Cmd+/ or Help > Keyboard shortcuts). A sheet over the live window; Escape closes it. */
 export function ShortcutsSheet({ onClose }: { onClose: () => void }) {
-  const areas = shortcutAreas(mac);
+  const areas = shortcutAreas(mac, isWindows);
   return (
     <Sheet
       label="Keyboard shortcuts"
@@ -16,7 +16,7 @@ export function ShortcutsSheet({ onClose }: { onClose: () => void }) {
       onCancel={onClose}
       footer={
         <>
-          <span className="shortcuts-foot">Press {mac ? '⌘' : 'Ctrl'} / again to close.</span>
+          <span className="shortcuts-foot">Press {formatShortcut(['mod', '/'], mac)} again to close.</span>
           <span className="shortcuts-space" />
           <Button variant="primary" onClick={onClose} data-autofocus="">
             Done

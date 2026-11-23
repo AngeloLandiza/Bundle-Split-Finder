@@ -5,6 +5,7 @@ import { Button } from '../../components/Button';
 import { TextField } from '../../components/Fields';
 import { Glyph } from '../../components/Glyph';
 import { ConfirmInline } from '../../components/States';
+import { words } from '../../lib/platform';
 import { Pane, Row } from './form';
 
 interface Def {
@@ -78,7 +79,7 @@ const KEYS: Def[] = [
 export function KeysPane() {
   return (
     <Pane>
-      <p className="pane-lead">Keys stay in the agent on this Mac and go only to their own service. This window can replace or remove one, and never reads it back.</p>
+      <p className="pane-lead">Keys stay in the agent on this {words.computer} and go only to their own service. This window can replace or remove one, and never reads it back.</p>
       {KEYS.map((k) => (
         <KeyRow key={k.name} def={k} />
       ))}
