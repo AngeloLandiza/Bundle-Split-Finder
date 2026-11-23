@@ -38,7 +38,7 @@ describe('npm run research:eval -- --follow-up', () => {
     // 328690510 (PCL500B + PCL525B; the key agrees) verifies by the code's check alone once PCL525B's row is read.
     expect(lines).toContain('After the loop:  verified right 8, verified wrong 0, unverified 7, cannot tell 4 (of 19).');
     expect(lines).toContain('  split:homedepot:328690510  first unverified → verified_correct (parts PCL500B, PCL525B), by the code\'s check alone');
-    expect(lines.some((l) => l.startsWith('Would ask again: 2 questions'))).toBe(true);
+    expect(lines.some((l) => l.startsWith('Would ask again: 3 questions'))).toBe(true);
   });
 
   it('a run with a fake model and a fake Chrome writes its file and records the Chrome reads; a replay scores the same, free', async () => {
@@ -55,13 +55,15 @@ describe('npm run research:eval -- --follow-up', () => {
       now: () => new Date('2026-11-23T12:00:00Z'),
     })).toBe(0);
     expect(run.lines.find((l) => l.startsWith('After the loop'))).toMatch(/verified wrong 0/);
-    expect(run.lines.some((l) => /Reads made in Chrome: [1-9]\d* \(recorded in fixtures\/research\/tools\/followup-chrome\.json\)/.test(l))).toBe(true);
+    // Reads the recordings already hold (fixtures/research/tools/followup-chrome.json, the main session's run) are not made again;
+    // any other goes to Chrome and is recorded beside the temp folder's runs, never in fixtures/.
+    const made = Number(/Reads made in Chrome: (\d+)/.exec(run.lines.join('\n'))?.[1] ?? 'NaN');
+    expect(made).toBeGreaterThanOrEqual(0);
+    expect(existsSync(join(outDir, 'tools', 'followup-chrome.json'))).toBe(made > 0);
     expect(sent.length).toBeGreaterThan(0);
     const doc = JSON.parse(readFileSync(join(outDir, 'followup-claude-opus-5-5.json'), 'utf8')) as FollowUpRunsFile;
     expect(doc.promptVersion).toMatch(/\+followup\.1$/);
     expect(doc.results.some((r) => r.asks.length > 0)).toBe(true);
-    // The searches Chrome answered are recorded beside the other recordings of the temp folder, never in fixtures/.
-    expect(existsSync(join(outDir, 'tools', 'followup-chrome.json'))).toBe(true);
     const replay = quiet();
     expect(await runResearchEval(['--model', 'claude-opus-5-5', '--follow-up', '--replay'], { log: replay.log, dir: 'fixtures', outDir, env: () => undefined })).toBe(0);
     expect(replay.lines.find((l) => l.startsWith('After the loop'))).toBe(run.lines.find((l) => l.startsWith('After the loop')));

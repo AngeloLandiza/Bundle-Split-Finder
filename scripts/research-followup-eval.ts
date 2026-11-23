@@ -74,7 +74,7 @@ export async function runFollowUpEval(input: {
   const shown = `fixtures/research/followup-${model}.json`;
   if (!existsSync(firstFile)) { log(`No recorded first asks for ${model} (fixtures/research/runs-${model}.json): run research:eval --run first.`); return 1; }
   const firsts = new Map((JSON.parse(readFileSync(firstFile, 'utf8')) as ResearchRunsFile).results.map((r) => [r.questionId, r] as const));
-  const sources = loadRecordedSources(deps.dir);
+  const sources = loadRecordedSources(deps.dir, { followUp: true });
   const each = estimatedResearchCost(model);
 
   log(`Follow-up eval, ${mode.slice(2)}. Model ${model}, prompt ${RESEARCH_PROMPT_VERSION}${FOLLOW_UP_VERSION_SUFFIX} for follow-up asks. First asks: fixtures/research/runs-${model}.json, replayed free.`);

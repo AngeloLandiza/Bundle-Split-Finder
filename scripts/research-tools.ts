@@ -89,7 +89,7 @@ const jsonFiles = (dir: string, prefix = ''): string[] =>
  * `partPrices` (fix round 3, off by default): also index the validation set's part price lookups. They were searched
  * by the true parts' model numbers, so they hold the very products the key names and make the eval optimistic.
  */
-export function loadRecordedSources(fixtures: string, opts: { partPrices?: boolean } = {}): RecordedSources {
+export function loadRecordedSources(fixtures: string, opts: { partPrices?: boolean; followUp?: boolean } = {}): RecordedSources {
   const pages = new Map<string, HomeDepotPage>();
   const searches = new Map<string, HomeDepotSearch>();
   const products = new Map<string, HomeDepotSearchRow>();
@@ -99,7 +99,9 @@ export function loadRecordedSources(fixtures: string, opts: { partPrices?: boole
     }
   };
   const read = (f: string): Json => obj(JSON.parse(readFileSync(f, 'utf8')));
-  for (const f of jsonFiles(join(fixtures, 'research', 'tools'))) {
+  // Step 16: what the follow-up eval read in the owner's Chrome (followup-*.json, research-chrome.ts) answers only the
+  // follow-up eval: those reads were made by the true parts' numbers, as the part price lookups were, and would favour them.
+  for (const f of jsonFiles(join(fixtures, 'research', 'tools')).filter((f) => opts.followUp === true || !/[/\\]followup-[^/\\]*\.json$/.test(f))) {
     const doc = read(f) as unknown as ResearchToolsFile;
     for (const [id, p] of Object.entries(doc.pages ?? {})) if (!pages.has(id)) pages.set(id, p);
     for (const [q, s] of Object.entries(doc.searches ?? {})) {
