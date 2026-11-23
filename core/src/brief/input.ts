@@ -8,6 +8,7 @@ import { proposedAnswer } from '../assist/stored';
 import type { AssistEvidence, Suggestion } from '../assist/types';
 import { choicesOf, NONE } from '../scan/answers';
 import type { ReviewItem } from '../scan/types';
+import { ownerSentence } from './ownerWords';
 import type { BriefInput, BriefQuote, BriefState } from './types';
 
 /** Quotes a brief may rest on: the most it is shown. */
@@ -104,8 +105,6 @@ function partsInWords(parts: readonly string[]): { text: string; models: string[
   return { text: models.map((m) => (counts.get(m)! > 1 ? `${counts.get(m)} × ${m}` : m)).join(' + '), models };
 }
 
-const capital = (s: string): string => (s === '' ? s : s[0]!.toUpperCase() + s.slice(1));
-
 const STATE_OF: Record<string, BriefState> = { verified: 'verified', unverified: 'not_verified', none_suggested: 'not_verified', cannot_tell: 'cannot_tell' };
 
 export interface BriefSourceLink {
@@ -142,7 +141,7 @@ export function briefInputOf(question: ReviewItem, suggestion: Suggestion | null
     // What is wrong with the parts and the page first; how the AI quoted last (it means little to the owner).
     const known = [...new Set(shown.reasons.map(plainReason).filter((p): p is string => p !== null))];
     const aboutQuoting = (p: string): boolean => /\bquote\b|written to an AI|a page it did not read/.test(p);
-    for (const p of [...known.filter((x) => !aboutQuoting(x)), ...known.filter(aboutQuoting)].slice(0, MAX_PLAIN_REASONS)) plainReasons.push(`${capital(p)}.`);
+    for (const p of [...known.filter((x) => !aboutQuoting(x)), ...known.filter(aboutQuoting)].slice(0, MAX_PLAIN_REASONS)) plainReasons.push(ownerSentence(p));
     verdict.push(...(plainReasons.length > 0 ? plainReasons : ["The app's checks did not confirm the AI's answer."]));
   } else if (shown?.status === 'verified') verdict.push('The app found every quote below word for word on its page and checked the answer against them.');
   else if (shown?.status === 'cannot_tell') verdict.push('The AI said the pages the app holds do not settle it.');

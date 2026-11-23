@@ -11,7 +11,7 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     },
     "reasons": [
       {
-        "text": "Why it is asked: 1 listing(s) show the model number, but the brand is not confirmed",
+        "text": "One Amazon listing shows the model number, but it does not say it is DEWALT.",
       },
     ],
     "state": "none",
@@ -27,7 +27,7 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     },
     "reasons": [
       {
-        "text": "Why it is asked: 2 listing(s) show the model number, but the brand is not confirmed",
+        "text": "2 Amazon listings show the model number, but none says it is DEWALT.",
       },
     ],
     "state": "none",
@@ -43,7 +43,7 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     },
     "reasons": [
       {
-        "text": "Why it is asked: title says kit, and a RYOBI model number does not say whether the part is itself a kit",
+        "text": "A listing’s title says kit, and the model number alone does not say whether this part is a kit.",
       },
     ],
     "state": "none",
@@ -62,7 +62,7 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
         "text": "The title names a drill, and none of these parts is one.",
       },
       {
-        "text": "Why it is asked: hyphen split, but a part is not in the catalog; page names no models",
+        "text": "The model number reads as two items (PCL1600K2 + A986501), but one of them is not on Amazon’s list of RYOBI tools yet.",
       },
     ],
     "state": "not_verified",
@@ -78,13 +78,13 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     },
     "reasons": [
       {
-        "text": ""Bag" on the page belongs to none of these parts.",
+        "text": "The page also lists "Bag", which none of these parts accounts for.",
       },
       {
-        "text": ""Accessories" on the page belongs to none of these parts.",
+        "text": "The page also lists "Accessories", which none of these parts accounts for.",
       },
       {
-        "text": "Why it is asked: hyphen split, but a part is not in the catalog",
+        "text": "The model number reads as two items (PCL1600K2 + PBP2003), but one of them is not on Amazon’s list of RYOBI tools yet.",
       },
     ],
     "state": "not_verified",
@@ -100,13 +100,13 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     },
     "reasons": [
       {
-        "text": ""Charger" is given to two parts.",
+        "text": "The page lists "Charger" once, but two of the parts both claim it.",
       },
       {
-        "text": ""Bag" on the page belongs to none of these parts.",
+        "text": "The page also lists "Bag", which none of these parts accounts for.",
       },
       {
-        "text": "Why it is asked: hyphen split, but a part is not in the catalog",
+        "text": "The model number reads as two items (PCL1600K2 + PSK005), but one of them is not on Amazon’s list of RYOBI tools yet.",
       },
     ],
     "state": "not_verified",
@@ -122,13 +122,13 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     },
     "reasons": [
       {
-        "text": "Nothing the AI read shows DCS334B is a real model.",
+        "text": "None of the pages the app read lists DCS334B as a model number.",
       },
       {
-        "text": "What DCS334B is could not be told from its name.",
+        "text": "The app cannot tell what DCS334B is from its name.",
       },
       {
-        "text": "Why it is asked: '34' matches nothing in the catalog; page names no models",
+        "text": "The model number ends in 34, which is not on Amazon’s list of DEWALT tools yet.",
       },
     ],
     "state": "not_verified",
@@ -144,13 +144,13 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     },
     "reasons": [
       {
-        "text": "Nothing the AI read shows PCL500B is a real model.",
+        "text": "None of the pages the app read lists PCL500B as a model number.",
       },
       {
-        "text": "Nothing the AI read shows PCL525B is a real model.",
+        "text": "None of the pages the app read lists PCL525B as a model number.",
       },
       {
-        "text": "Why it is asked: no known RYOBI bundle pattern; page names no models",
+        "text": "This model number does not follow a pattern Split Finder knows. Home Depot’s page does not list the model numbers of what is inside.",
       },
     ],
     "state": "not_verified",
@@ -166,7 +166,7 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     },
     "reasons": [
       {
-        "text": "Why it is asked: hyphen split, but a part is not in the catalog; page names no models",
+        "text": "The model number reads as two items (PCL1600K2 + A10FB1G), but one of them is not on Amazon’s list of RYOBI tools yet.",
       },
     ],
     "state": "none",
@@ -182,7 +182,7 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     },
     "reasons": [
       {
-        "text": "Why it is asked: hyphen split, but a part is not in the catalog",
+        "text": "The model number reads as two items, but one of them is not on Amazon’s list of RYOBI tools yet.",
       },
     ],
     "state": "none",
