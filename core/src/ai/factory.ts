@@ -47,6 +47,21 @@ export interface ProviderDeps {
 
 export type ProviderResult = { ok: true; provider: ModelProvider } | { ok: false; error: string };
 
+/** Nov 23: the service a pipeline's key is for, as Settings › Keys names it. */
+export function keyServiceName(settings: Pick<PipelineAiSettings, 'provider' | 'preset' | 'label'>): string {
+  if (settings.provider === 'anthropic') return 'Anthropic';
+  const preset = OPENAI_COMPATIBLE_PRESETS[settings.preset ?? 'generic'];
+  const label = settings.label?.trim() || preset.label;
+  return label === OPENAI_COMPATIBLE_PRESETS.generic.label ? 'OpenAI-compatible' : label;
+}
+
+/** Nov 23: what to do when a pipeline has no key, in one plain sentence that names the service. */
+export const noKeySentence = (settings: Pick<PipelineAiSettings, 'provider' | 'preset' | 'label'>): string =>
+  `No ${keyServiceName(settings)} key yet — add it in Settings › Keys.`;
+
+/** A sentence put after a lead-in ("AI answers skipped: no Anthropic key yet ..."): its first letter in lower case. */
+export const afterLead = (sentence: string): string => (/^[A-Z][a-z]/.test(sentence) ? sentence[0]!.toLowerCase() + sentence.slice(1) : sentence);
+
 /**
  * A provider for one pipeline's settings, or why there is none (a sentence for the owner, never holding a key). Never throws.
  * When the settings carry `rates`, they are registered for the model (setModelRates), so every cost and estimate follows.
@@ -54,7 +69,7 @@ export type ProviderResult = { ok: true; provider: ModelProvider } | { ok: false
 export function providerFrom(settings: PipelineAiSettings, deps: ProviderDeps): ProviderResult {
   if (!settings.model.trim()) return { ok: false, error: 'Choose a model.' };
   const apiKey = deps.resolveKey(settings.apiKeyRef);
-  if (!apiKey) return { ok: false, error: 'There is no API key saved for this model.' };
+  if (!apiKey) return { ok: false, error: noKeySentence(settings) };
   const fetchFn = deps.fetchFn ? { fetchFn: deps.fetchFn } : {};
   try {
     let provider: ModelProvider;

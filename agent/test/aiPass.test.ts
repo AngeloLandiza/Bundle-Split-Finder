@@ -86,8 +86,9 @@ describe('the AI pass after a run', () => {
 
   it('a pipeline with no key says why, and Stop ends the pass', async () => {
     const { store } = await scanned();
-    const r = await runAiPass(deps(store, { models: { assist: { ok: true, model: MODEL }, research: { ok: false, error: 'There is no API key saved for this model.' } } }));
-    expect(r).toMatchObject({ asked: 0, problem: 'There is no API key saved for this model.' });
+    const r = await runAiPass(deps(store, { models: { assist: { ok: true, model: MODEL }, research: { ok: false, error: 'No Anthropic key yet — add it in Settings › Keys.' } } }));
+    // Nov 23: the outcome first, then what to do.
+    expect(r).toMatchObject({ asked: 0, problem: 'AI answers skipped: no Anthropic key yet — add it in Settings › Keys.' });
     const stop = new AbortController();
     stop.abort();
     expect((await runAiPass(deps(store, { signal: stop.signal }))).asked).toBe(0);

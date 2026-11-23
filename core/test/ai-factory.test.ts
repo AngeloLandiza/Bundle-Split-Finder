@@ -32,7 +32,11 @@ describe('providerFrom', () => {
   });
 
   it('says why there is no provider, in a sentence that holds no key', () => {
-    expect(providerFrom({ ...claude, apiKeyRef: 'key:missing' }, deps)).toEqual({ ok: false, error: 'There is no API key saved for this model.' });
+    // Nov 23: the sentence names the service and says where its key goes.
+    expect(providerFrom({ ...claude, apiKeyRef: 'key:missing' }, deps)).toEqual({ ok: false, error: 'No Anthropic key yet — add it in Settings › Keys.' });
+    expect(providerFrom({ ...deepseek, apiKeyRef: 'key:missing' }, deps)).toEqual({ ok: false, error: 'No DeepSeek key yet — add it in Settings › Keys.' });
+    expect(providerFrom({ provider: 'openai-compatible', baseUrl: 'https://llm.example.com', model: 'm', apiKeyRef: 'key:missing' }, deps)).toEqual({ ok: false, error: 'No OpenAI-compatible key yet — add it in Settings › Keys.' });
+    expect(providerFrom({ provider: 'openai-compatible', model: 'm', label: 'Acme', apiKeyRef: 'key:missing' }, deps)).toEqual({ ok: false, error: 'No Acme key yet — add it in Settings › Keys.' });
     expect(providerFrom({ ...claude, model: ' ' }, deps)).toEqual({ ok: false, error: 'Choose a model.' });
     const insecure = providerFrom({ provider: 'openai-compatible', baseUrl: 'http://llm.example.com', model: 'm', apiKeyRef: 'key:deepseek' }, deps);
     expect(insecure).toMatchObject({ ok: false });
@@ -62,7 +66,7 @@ describe('pipelinesFrom', () => {
 
   it('one pipeline without a key does not take the others down', () => {
     const p = pipelinesFrom({ ...ai, judge: { ...deepseek, apiKeyRef: 'key:missing' } }, deps);
-    expect(p.judge).toEqual({ ok: false, error: 'There is no API key saved for this model.' });
+    expect(p.judge).toEqual({ ok: false, error: 'No DeepSeek key yet — add it in Settings › Keys.' });
     expect(p.assist.ok && p.research.ok).toBe(true);
   });
 });

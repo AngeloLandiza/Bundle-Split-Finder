@@ -5,6 +5,7 @@
 // Autopilot (autopilot.ts) applies only what code verified. The month's AI cap holds: a question is asked only when
 // its estimated cost still fits, and a model with no known price is not asked automatically at all (no guessed cost).
 
+import { afterLead } from '../core/src/ai/factory';
 import { askQueueOf } from '../core/src/assist/askAll';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { gatherEvidence } from '../core/src/assist/evidence';
@@ -72,7 +73,8 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
     const route: AskRoute = item.kind === 'split' ? 'research' : 'assist';
     const model = deps.models[route];
     if (!model.ok) {
-      out.problem ??= model.error;
+      // Nov 23: the outcome first, then what to do ("AI answers skipped: no Anthropic key yet — add it in Settings › Keys.").
+      out.problem ??= `AI answers skipped: ${afterLead(model.error)}`;
       continue;
     }
     if (route === 'research' && !deps.chromeConnected()) {

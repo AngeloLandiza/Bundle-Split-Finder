@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import type { AppSettings, EvidenceQuote, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
 import { gatherEvidence } from '../core/src/assist/evidence';
-import { pipelinesFrom } from '../core/src/ai/factory';
+import { afterLead, pipelinesFrom } from '../core/src/ai/factory';
 import { liveSuggestion, agreedWith, type StoredSuggestion } from '../core/src/assist/stored';
 import { approvalOf } from '../core/src/assist/approve';
 import { EbayClient } from '../core/src/ebay/client';
@@ -568,7 +568,7 @@ export class AgentWork {
     const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
     if (!pipelines.judge.ok) {
       if (app.ai.judge.provider === 'anthropic') return { kind: 'skip', notice: 'Add your Anthropic key in Settings to check eBay listings.', missing: ['anthropic'] };
-      notes.push(`eBay listings were not checked: ${pipelines.judge.error}`);
+      notes.push(`eBay listings were not checked: ${afterLead(pipelines.judge.error)}`);
       return null;
     }
     const judge = pipelines.judge.value;
