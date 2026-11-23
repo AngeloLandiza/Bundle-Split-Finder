@@ -1139,3 +1139,48 @@ is the pure logic, `agent/outcomes.ts` the store side, `desktop-ui/src/lib/score
 - *Not done, for the rewrite:* a purchase of a deal whose price was seen long ago has no stale warning; the estimate at purchase
   is the agent's current one, not one re-checked against Home Depot; there is no multi-lot sale of a part and no per-sale fee
   detail; accuracy has no breakdown by cause (price, fees, sale price).
+## Honest spend and honest progress (Nov 23, after the owner's scan 5)
+
+### The reserve is spent only on the owner's explicit say-so, also on a manual scan
+
+The owner started a scan expecting 0 searches (Home Depot's lists are read free in Chrome). Keepa had 7 tokens, so the
+Amazon lookups fell back to SerpApi and the manual scan spent 17 searches, from 97 to 80, under his reserve of 100,
+without a word. A manual scan used reserve 0 (`budgetPolicyFor(.., 'manual')`): "he pressed the button" was taken as
+leave to spend the reserve, but he pressed a button that said nothing about searches, and Home Depot's part of the scan
+is free now. A reserve is money he told the app to keep, so it is spent only when he says so about that spend.
+- **Scan now, Read again and Look up now keep the reserve**, as a scheduled scan does (`work.ts reserveTrigger`); they
+  spend only what the account holds above it, under the per-scan limit. At or below it a scan spends no search: lookups
+  go to Keepa or wait, and the summary says how many wait and what the one action may spend ("Searches are at your reserve
+  (97 searches left, you keep 100), so this scan spent none. To look these up, use searches for them: up to 18 of your 97
+  left."). Above the reserve a scan stops at the reserve rather than crossing it (with 105 left and a limit of 18 it
+  spends 5); the rest waits and the same action offers it. This is stricter than "nothing changes above the reserve" for
+  that one case, and it is the case the rule is about: a scan that quietly crosses the line is the bug.
+- **The explicit yes is `POST /api/lookups/run { useReserve: true }`**, sent only by the button "Use searches for these (up
+  to N of your M left)" on Deals when the balance is at or below the reserve. N is the least of the parts waiting, the
+  per-scan limit and what is left; `useReserve` uses the manual policy (reserve 0), the limit still binds. Without it the
+  route keeps the reserve whoever sends it.
+- **Every control that starts a scan says what it may spend before the press** (`desktop-ui/src/lib/scanSpend.ts`): "May
+  use up to 18 searches for Amazon prices; reading Home Depot is free." (the least of the limit and what is above the
+  reserve), or "Uses no searches: 97 searches left, at your reserve of 100." Scan now is no longer disabled at the reserve:
+  it is free to read Home Depot, so it can run.
+- Not changed: Look up and Verify on one bundle (the owner's click, the cost on the button) still use the manual policy.
+
+### The balance shown is the last account figure less the ledger rows after it
+
+`serpLeft` came only from the account check at a scan's start, so it was 17 too high after the scan. Now it is
+`searchesLeftNow(check, ledgerRows)` (`core/src/serpapi/balance.ts`, pure): the check's figure less the rows of
+`serpapi-ledger.jsonl` written after the check's time. The agent keeps the rows in memory (read once from the file, so a
+restart gets the same number) and takes the rows a new check already counts out of it. The free account check is made
+again when a scan ends, through the same `SerpApiClient.account` path; a failed check leaves the corrected figure.
+Rung 2's gate reads the corrected figure; every spend is still held to a fresh check at its own start.
+
+### The scan line names the long work and shows no time from a guess
+
+The line said "Step 8 of 8, finishing up, less than a minute left" for about ten minutes: the runner's own steps were all
+done, the AI pass on the Review cards (and the follow-ups, and the listings rung 2 reads) came after it, and the view was
+the runner's last. The desktop app now adds two steps after the runner, `review` ("Review cards 3 of 9") and `confirm`
+("Listing confirmation"), each counted per item, and "Finishing up" is only the digest and the messages. eBay and the
+listing check use the words "eBay prices 34 of 80" and "Listing check" in the app (the extension keeps the spec's).
+The time left is shown only from a measured rate (this scan's own after 3 timed items, else the median of earlier scans):
+a seed is a guess and is not shown, so the answer is "no time", not "less than a minute". The AI's per-card time is kept
+for the next scan (`askAi`). The extension is unchanged.
