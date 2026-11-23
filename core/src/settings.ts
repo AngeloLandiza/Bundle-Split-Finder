@@ -92,9 +92,16 @@ export interface EbaySettings {
   judgeModel: string;
   /** Listings a model is asked about in one scan: the owner's cost cap. 1 to MAX_LISTINGS_JUDGED_PER_SCAN. */
   listingsJudgedPerScan: number;
+  /**
+   * Nov 23: ask the owner in Review about each eBay listing the judge is not sure is the same product. Off by default: such
+   * a listing is left out of the part's eBay reference range and listed under the part, answerable there.
+   */
+  askAboutListings?: boolean;
 }
 
-export const DEFAULT_EBAY_SETTINGS: EbaySettings = { judgeModel: DEFAULT_CLAUDE_JUDGE_MODEL, listingsJudgedPerScan: DEFAULT_LISTINGS_JUDGED_PER_SCAN };
+export const DEFAULT_EBAY_SETTINGS: EbaySettings = {
+  judgeModel: DEFAULT_CLAUDE_JUDGE_MODEL, listingsJudgedPerScan: DEFAULT_LISTINGS_JUDGED_PER_SCAN, askAboutListings: false,
+};
 
 /** The problem with these eBay settings in one sentence, or null. Anything that is not a known model and a whole number in range is one. */
 export function ebaySettingsProblem(s: unknown): string | null {
@@ -104,6 +111,7 @@ export function ebaySettingsProblem(s: unknown): string | null {
   if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > MAX_LISTINGS_JUDGED_PER_SCAN) {
     return `Use a whole number of listings from 1 to ${MAX_LISTINGS_JUDGED_PER_SCAN}.`;
   }
+  if (v.askAboutListings !== undefined && typeof v.askAboutListings !== 'boolean') return 'Choose on or off for asking about eBay listings.';
   return null;
 }
 

@@ -93,6 +93,8 @@ export interface ScanDeps {
    * looked up after every other bundle's, at most PAIR_LOOKUPS_PER_GROUP new pairs per group a scan (pairLookupOrder).
    */
   bogoPairs?: Readonly<Record<string, string>>;
+  /** Buy safety (Nov 23): the listings a buy waits on (BundleSignals.buyPending): first in the scan's catalog checks. */
+  catalogFirst?: readonly string[];
   /**
    * Nov 23 (the agent): a bundle whose own Home Depot page is not read yet is not a Review question; it waits for its
    * page (splitOne, waiting_page), and an open question a scan opened for it is withdrawn. Default false: the command
@@ -150,6 +152,7 @@ interface Run extends PartContext {
   trendWriter?: ScanDeps['trendWriter'];
   cache?: Cache;
   bogoPairs: Readonly<Record<string, string>>;
+  catalogFirst: ReadonlySet<string>;
   waitForPages: boolean;
   partPricesExtra: readonly { brand: string; model: string }[];
   job: ScanJob;
@@ -255,7 +258,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
     readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, noReaderReason: deps.noReaderReason, ebay: deps.ebay ?? null,
     keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
-    bogoPairs: deps.bogoPairs ?? {}, waitForPages: deps.waitForPages ?? false, partPricesExtra: deps.partPricesExtra ?? [],
+    bogoPairs: deps.bogoPairs ?? {}, catalogFirst: new Set(deps.catalogFirst ?? []), waitForPages: deps.waitForPages ?? false, partPricesExtra: deps.partPricesExtra ?? [],
     job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore, plannedKeys: new Set(), settledParts: new Set(),
   });
 
@@ -2115,7 +2118,7 @@ export async function plannedWork(
  * a planned Keepa refresh pulls anyway takes that refresh's place at no cost; any other takes `spare` tokens, `pull` each.
  */
 async function plannedChecks(run: Run, refreshes: Refresh[], spare: number, pull: number): Promise<IdentifyStep[]> {
-  const targets = await catalogChecksWanted(run.store, await bundleParts(run.store));
+  const targets = await catalogChecksWanted(run.store, await bundleParts(run.store), run.catalogFirst);
   const refreshed = new Set(refreshes.map((r) => r.asin));
   const out: IdentifyStep[] = [];
   let left = spare;

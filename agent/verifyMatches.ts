@@ -23,6 +23,10 @@ export interface VerifyDeps {
   trackingDepth?: KeepaTrackingDepth;
   /** Asked before each pull: the drip stops when a scan or a paid action claims the store. */
   shouldStop: () => boolean;
+  /** Buy safety (Nov 23): listings a buy waits on, checked before any other. */
+  first?: ReadonlySet<string>;
+  /** Check only the listings in `first` (the drip does them before its lookups). */
+  onlyFirst?: boolean;
 }
 
 export interface VerifyDone {
@@ -31,6 +35,11 @@ export interface VerifyDone {
   verified: number;
   removed: number;
   tokens: number;
+}
+
+/** Buy safety (Nov 23): the listings every held-back buy waits on (BundleSignals.buyPending), watched or not. */
+export function buyWaitsOn(tracking: { signals: Record<string, { buyPending?: { asins: string[] } }> }): Set<string> {
+  return new Set(Object.values(tracking.signals).flatMap((s) => s.buyPending?.asins ?? []));
 }
 
 /** How many listings wait for a catalog check now: the drip runs while this is above 0 even with no lookup waiting. */
@@ -45,7 +54,9 @@ export async function checksWaiting(store: ScanStore): Promise<number> {
 export async function verifyMatchesWithKeepa(d: VerifyDeps): Promise<VerifyDone> {
   const done: VerifyDone = { pulled: 0, verified: 0, removed: 0, tokens: 0 };
   const pull = productTokenEstimate(d.trackingDepth, 1);
-  const targets = await catalogChecksWanted(d.store, await bundleParts(d.store));
+  const first = d.first ?? new Set<string>();
+  const all = await catalogChecksWanted(d.store, await bundleParts(d.store), first);
+  const targets = d.onlyFirst ? all.filter((t) => first.has(t.asin)) : all;
   for (const t of targets) {
     if (d.shouldStop() || d.keepaBudget.blockReason(pull) !== null) break;
     const r = await d.keepaProduct(t.asin, `agent:drip:verify:${t.model}`);

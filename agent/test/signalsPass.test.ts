@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { writePartTrend } from '../../core/src/keepa/trends';
 import { bundleKey } from '../../core/src/scan/types';
 import { validateSettings } from '../../core/src/settings';
 import { createAgent, type Agent } from '../app';
@@ -318,5 +319,64 @@ describe("the fulfillment fee's source (signals round 2)", () => {
     expect(validateSettings({ ...ext, fees: { ...ext.fees, fulfillmentSource: 'amazon' as never } }).fees).toBe("Choose Amazon's FBA fee from Keepa or a flat amount for fulfillment.");
     expect(validateSettings(ext).fees).toBeUndefined();
     store.close();
+  });
+});
+
+describe('buy safety: a buy waits for its listings to be confirmed (Nov 23)', () => {
+  /** PCL235B at $9 on a title match of `asin` ($44.89), its Keepa figures stored (500 sold a month, FBA fee $8.02). */
+  async function titleMatched(asin: string): Promise<void> {
+    const store = agent.work.scanStore;
+    await store.putBundle({
+      key: KEY, retailer: 'homedepot', itemId: '318621812', title: 'RYOBI ONE+ 18V Impact Driver', brand: 'RYOBI', model: 'PCL235B',
+      upc: null, price: 9, regularPrice: 79, percentOff: 89, link: null, seenAt: T0, split: { components: ['PCL235B'], status: 'resolved', notes: [] },
+    });
+    await store.putMatch({ key: 'RYOBI:PCL235B', brand: 'RYOBI', model: 'PCL235B', status: 'matched', asin, grade: 'probable', alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null });
+    await store.putPrice({ asin, price: 44.89, reviews: null, seenAt: T0, checkedAt: T0 });
+    await writePartTrend(agent.work.cache, { asin, amazonPrice: 44.89, salesRank: 1000, offerCount: 5, pulledAt: T0, monthlySold: 500, fbaFee: 8.02 });
+    await agent.work.refresh();
+  }
+  const rowOf = () => {
+    const data = { deals: agent.store.get('deals'), review: agent.store.get('review'), runtime: agent.store.get('runtime'), settings: agent.store.get('settings'), tracking: agent.store.get('tracking') };
+    return dealsResponse(data, { sort: 'profit' }, clock).rows.find((r) => r.id === KEY);
+  };
+
+  it('a title match above the numbers is held back, not announced; the drip checks it first; confirmed, it is a buy, sent once', async () => {
+    tokens = 21;
+    await titleMatched('B0BGYFTPGK');
+    const held = agent.store.get('tracking').signals[KEY]!;
+    expect(held.buyNow).toBeNull();
+    expect(held.buyPending).toEqual({ optionId: 'whole', listings: 1, asins: ['B0BGYFTPGK'] });
+    expect(held.verdict).toBe('Looks worth buying: +$21.14 (234.9% ROI), sells about 500 a month — 1 listing is being confirmed first.');
+    expect(rowOf()).toMatchObject({ buyNow: false, buyPending: { listings: 1 } });
+    expect(telegram).toEqual([]);
+
+    await agent.work.drip();
+    expect(calls).toEqual(['/token', '/product B0BGYFTPGK']);
+    const s = agent.store.get('tracking').signals[KEY]!;
+    expect(s.buyPending).toBeUndefined();
+    expect(s.buyNow).toMatchObject({ kind: 'buyNow', numbers: { profit: 21.14 } });
+    expect(s.verdict).toBe('Worth buying now: +$21.14 (234.9% ROI), sells about 500 a month, its listings confirmed now.');
+    expect(rowOf()).toMatchObject({ buyNow: true });
+    expect(rowOf()!.buyPending).toBeUndefined();
+    expect(telegram).toHaveLength(1);
+    expect(telegram[0]).toMatch(/^1 deal worth buying now\. Top: RYOBI PCL235B, est\. profit \$21\.14 \(235% ROI\)\. Its Amazon listings are confirmed now/);
+
+    clock += 60_000;
+    await agent.work.refresh();
+    expect(telegram).toHaveLength(1);
+  });
+
+  it('a title match the catalog contradicts is removed: no estimate, no buy, nothing sent', async () => {
+    tokens = 21;
+    // B09M3TL9BB is DEWALT's DCF921B: Amazon's catalog contradicts it as RYOBI PCL235B.
+    await titleMatched('B09M3TL9BB');
+    expect(agent.store.get('tracking').signals[KEY]!.buyPending?.asins).toEqual(['B09M3TL9BB']);
+    await agent.work.drip();
+    expect(calls).toEqual(['/token', '/product B09M3TL9BB']);
+    expect(await agent.work.scanStore.getMatch('RYOBI:PCL235B')).toMatchObject({ status: 'none', asin: null, rejectedAsins: ['B09M3TL9BB'] });
+    const s = agent.store.get('tracking').signals[KEY]!;
+    expect(s.buyNow).toBeNull();
+    expect(s.buyPending).toBeUndefined();
+    expect(telegram).toEqual([]);
   });
 });

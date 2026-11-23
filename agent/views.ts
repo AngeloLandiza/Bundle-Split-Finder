@@ -116,6 +116,7 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
     ? {
         watched: tracking.watch[b.key]?.watched === true,
         buyNow: tracking.watch[b.key]?.watched === true && (tracking.signals[b.key]?.buyNow ?? null) !== null,
+        ...(tracking.signals[b.key]?.buyPending ? { buyPending: { listings: tracking.signals[b.key]!.buyPending!.listings } } : {}),
         // Signals round 3: the verdict on every row with a complete estimate, watched or not (and on a watched one always).
         ...((tracking.watch[b.key]?.watched === true || b.estimate !== null) && tracking.signals[b.key]?.verdict ? { signalNote: tracking.signals[b.key]!.verdict! } : {}),
         bogo: tracking.bogo[b.key] ? (tracking.bogo[b.key]!.chosen.length > 0 ? ('chosen' as const) : ('choose' as const)) : null,
@@ -462,7 +463,9 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
       ...(followUp ? { followUp } : {}),
     });
   }
-  for (const e of data.review.ebayQuestions) {
+  // Nov 23: eBay identity questions are in Review only when the owner asked for them (ebaySettings.askAboutListings); else
+  // the listing is left out of the part's eBay reference range and stays answerable by its id under the part.
+  for (const e of asksAboutEbay(data.settings) ? data.review.ebayQuestions : []) {
     questions.push({
       id: e.id,
       kind: 'ebay',
@@ -485,8 +488,12 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
   return { at: data.review.at, questions };
 }
 
-export function openReviewCount(review: StoreData['review']): number {
-  return review.questions.filter((q) => q.answer === null).length + review.ebayQuestions.length;
+/** Nov 23: whether eBay identity questions go to Review (off by default; a stored install without the field is off). */
+export const asksAboutEbay = (settings: Pick<StoreData['settings'], 'ebaySettings'>): boolean => settings.ebaySettings?.askAboutListings === true;
+
+/** Open questions; eBay identity questions only when the owner asks about them (`ebay`, default off). */
+export function openReviewCount(review: StoreData['review'], ebay = false): number {
+  return review.questions.filter((q) => q.answer === null).length + (ebay ? review.ebayQuestions.length : 0);
 }
 
 /** Step 16: open questions the app is working on (a follow-up queued or running): not counted in "Needs you". */
@@ -597,7 +604,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       aiCapUsd: data.settings.ai.monthlyCapUsd,
     },
     counts: {
-      review: openReviewCount(data.review) - workingReviewCount(data.review, data.suggestions),
+      review: openReviewCount(data.review, asksAboutEbay(data.settings)) - workingReviewCount(data.review, data.suggestions),
       ...(workingReviewCount(data.review, data.suggestions) > 0 ? { reviewWorking: workingReviewCount(data.review, data.suggestions) } : {}),
       autopilotApplied: data.autopilot.filter((e) => e.undoneAt === null).length,
       newDeals: data.activity.lastScan?.newDeals ?? 0,

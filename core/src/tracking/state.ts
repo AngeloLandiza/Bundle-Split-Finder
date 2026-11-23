@@ -116,7 +116,7 @@ export function sameFigures(a: HistoryPoint, b: HistoryPoint): boolean {
     a.options.length === b.options.length &&
     a.options.every((o, i) => {
       const x = b.options[i]!;
-      return o.id === x.id && o.profit === x.profit && o.roiPercent === x.roiPercent;
+      return o.id === x.id && o.profit === x.profit && o.roiPercent === x.roiPercent && (o.unconfirmed ?? 0) === (x.unconfirmed ?? 0);
     })
   );
 }

@@ -53,7 +53,7 @@ import {
 import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
-import { checksWaiting, verifyMatchesWithKeepa } from './verifyMatches';
+import { buyWaitsOn, checksWaiting, verifyMatchesWithKeepa } from './verifyMatches';
 import { evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, type SignalsDeps } from './signalsPass';
 import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
@@ -66,7 +66,7 @@ import { answerText, footprintOf, type Footprint, KEEP_OWNER_ANSWERS, restorable
 import { remoteReaders, type ReaderTimeouts, type RemoteReaders } from './remoteReaders';
 import { DirCache, FileScanStore } from './scanStore';
 import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer } from './store';
-import { aiSpentThisMonth } from './views';
+import { aiSpentThisMonth, asksAboutEbay } from './views';
 import type { WorkerJobs } from './workerJobs';
 
 /** How often the scheduler looks whether a scan is due. */
@@ -494,7 +494,8 @@ export class AgentWork {
     const { work, steps } = await plannedWork(this.scanStore, settings, this.d.now(), pairs);
     this.dripWaiting = work.lookups.length;
     // Catalog check: with no lookup waiting, the drip still runs for title matches and questions Amazon's catalog may settle.
-    const checks = keys.keepa && work.lookups.length === 0 ? await checksWaiting(this.scanStore) : 0;
+    const first = buyWaitsOn(store.get('tracking'));
+    const checks = keys.keepa && (work.lookups.length === 0 || first.size > 0) ? await checksWaiting(this.scanStore) : 0;
     // Signals rounds 2 and 3: and for the Keepa fees and sales of parts whose bundle has an estimate.
     const sales = keys.keepa ? (await this.feesWanted(settings.freshnessMs)).length : 0;
     this.dripFeesWaiting = sales;
@@ -515,6 +516,21 @@ export class AgentWork {
     const done = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0, verified: 0, removed: 0, sales: 0 };
     // Signals round 2: every product pull keeps its Keepa trend (sales, FBA fee), as a scan's refresh does.
     const product = pullKeepingTrends(this.cache, (asin, label, maxAgeMs) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: ext.trackingDepth }));
+    // Buy safety (Nov 23): the listings a buy waits on are checked first, before the lookups.
+    if (first.size > 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
+      try {
+        const v = await verifyMatchesWithKeepa({
+          store: this.scanStore, catalog, now: this.d.now, keepaBudget: budget, trackingDepth: ext.trackingDepth,
+          keepaProduct: (asin, label) => product(asin, label), first, onlyFirst: true,
+          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
+        });
+        done.verified += v.verified;
+        done.removed += v.removed;
+        done.tokens += v.tokens;
+      } catch (err) {
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      }
+    }
     for (const key of work.lookups) {
       if (!this.dripAllowed() || this.dripCtl.signal.aborted) break;
       if (budget.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE) !== null) break;
@@ -875,7 +891,7 @@ export class AgentWork {
     const pagesUnread = (await this.scanStore.listBundles().catch(() => [])).filter((b) => !pageRead(b)).length;
     run.summary = `${lookups ? 'Look up all. ' : ''}${this.summaryOf(report, run, notes, again !== undefined, job)}`;
     this.record(run);
-    const open = report ? report.review.length + (report.ebayQuestions?.length ?? 0) : 0;
+    const open = report ? report.review.length + (asksAboutEbay(store.get('settings')) ? report.ebayQuestions?.length ?? 0 : 0) : 0;
     store.update('activity', (a) => ({
       ...a,
       lastScan: {
@@ -959,7 +975,7 @@ export class AgentWork {
     // Step 16: the models unverified AI answers wait for are read with the part prices (free).
     const partPricesExtra = connected ? await wantedReads(this.scanStore, store.get('suggestions')) : [];
     return scan({
-      bogoPairs, partPricesExtra,
+      bogoPairs, partPricesExtra, catalogFirst: [...buyWaitsOn(store.get('tracking'))],
       // Nov 23: a bundle whose own page is not read waits for it (waiting_page); it is never a question before then.
       waitForPages: true,
       client, budget, store: this.watched(this.scanStore), settings: scanSettings, now: this.d.now, labelPrefix: 'agent',
@@ -1675,7 +1691,8 @@ export class AgentWork {
     const behind = pairsBehindBest(groups);
     const bogo = app.alerts.enabled ? bogoDigestLines(groups, app.alerts, fresh.notified, now) : { lines: [], keys: [], pairKeys: [] };
     const digest = buildDigest({
-      report, alerts: app.alerts, notifiedDeals: runtime.notifiedDeals, notifiedQuestions: runtime.notifiedQuestions, autopilotApplied: applied,
+      // Nov 23: eBay identity questions are no Review question unless the owner asks for them.
+      report: asksAboutEbay(app) ? report : { ...report, ebayQuestions: [] }, alerts: app.alerts, notifiedDeals: runtime.notifiedDeals, notifiedQuestions: runtime.notifiedQuestions, autopilotApplied: applied,
       verifiedWaiting: await this.verifiedWaiting(), trendLines,
       buyNow: fresh.lines.filter((l) => l.signal.kind === 'buyNow' && !behind.has(l.bundleKey)), marginDown: fresh.lines.filter((l) => l.signal.kind === 'marginDown'),
       bogoLines: bogo.lines,

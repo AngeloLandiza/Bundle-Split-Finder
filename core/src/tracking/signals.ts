@@ -9,7 +9,7 @@
 
 import type { PartTrend } from '../keepa/trends';
 import { fulfillmentGap } from '../scan/report';
-import type { BundleRow, PartFees, PartRow, ReportSection, SaleOption } from '../scan/types';
+import type { BundleRow, PartFees, PartRow, ReportSection, SaleOption, VerifiedBy } from '../scan/types';
 import { DEFAULT_MIN_MONTHLY_SOLD, estimateRoiPercent, type AlertSettings } from '../settings';
 
 /** A part's stored Keepa trend by ASIN (keepa:trend:<asin> in the cache). */
@@ -21,6 +21,8 @@ export interface OptionPoint {
   id: string;
   profit: number | null;
   roiPercent: number | null;
+  /** Buy safety (Nov 23): counted Amazon listings not confirmed yet (unconfirmedListings); absent when none. */
+  unconfirmed?: number;
 }
 
 /** One scan's figures for a bundle, kept for its baseline and its small chart. Everything here was stored by a scan. */
@@ -61,6 +63,31 @@ const names = (models: string[]): string => (models.length <= 2 ? models.join(' 
 /** Amazon-sold parts of a way to sell: those with a listing chosen (the ones whose sales say anything). */
 const sellingParts = (parts: PartRow[]): PartRow[] => parts.filter((p) => p.qty > 0);
 
+/** What confirms a listing beside its grade: Amazon's catalog (Keepa), a SerpApi product page, or the owner's choice. */
+export const CONFIRMING_SOURCES: readonly VerifiedBy[] = ['keepa_catalog', 'serpapi_product', 'owner'];
+
+/**
+ * Buy safety (Nov 23): a part's Amazon listing is confirmed when its grade is exact (barcode) or strong (manufacturer part
+ * number, or Amazon's catalog confirmed it), or when Amazon's catalog, a product page or the owner verified it. A title
+ * match (grade probable, verifiedBy 'title') is not.
+ */
+export function isConfirmedListing(p: Pick<PartRow, 'grade' | 'verifiedBy'>): boolean {
+  return p.grade === 'exact' || p.grade === 'strong' || (p.verifiedBy !== undefined && CONFIRMING_SOURCES.includes(p.verifiedBy));
+}
+
+/**
+ * The parts whose Amazon listing an estimate counts but nobody has confirmed: sold on Amazon (qty above 0), priced by the
+ * listing's own New price (not a confirmed price), and not isConfirmedListing. A buy never rests on one of them.
+ */
+export function unconfirmedListings(parts: readonly PartRow[]): PartRow[] {
+  return parts.filter(
+    (p) => p.qty > 0 && p.asin !== null && p.availability === 'active' && p.prices.some((o) => o.kind === 'amazon_new' && !o.reference) && !isConfirmedListing(p),
+  );
+}
+
+/** "1 listing not confirmed yet", "2 listings not confirmed yet". */
+export const unconfirmedWords = (n: number): string => `${n} ${n === 1 ? 'listing' : 'listings'} not confirmed yet`;
+
 export function historyPoint(row: BundleRow, reviewOpen: boolean, trend: TrendLookup, at: number): HistoryPoint {
   const primary: SaleOption | undefined = row.options[0];
   const parts = primary ? primary.parts : row.parts;
@@ -77,9 +104,10 @@ export function historyPoint(row: BundleRow, reviewOpen: boolean, trend: TrendLo
     section: row.section,
     price: row.price,
     amazonNew: counted.length > 0 ? round2(counted.reduce((a, b) => a + b, 0)) : null,
-    options: row.options.map((o) => ({
-      id: o.id, profit: o.estimate?.profit ?? null, roiPercent: o.estimate ? estimateRoiPercent(o.estimate.roi) : null,
-    })),
+    options: row.options.map((o) => {
+      const unconfirmed = o.estimate ? unconfirmedListings(o.parts).length : 0;
+      return { id: o.id, profit: o.estimate?.profit ?? null, roiPercent: o.estimate ? estimateRoiPercent(o.estimate.roi) : null, ...(unconfirmed > 0 ? { unconfirmed } : {}) };
+    }),
     reviewOpen,
     monthlySold: sold.length > 0 && sold.every((s) => s !== null) ? Math.min(...(sold as number[])) : null,
     salesRank: ranks.length > 0 ? Math.max(...ranks) : null,
@@ -95,7 +123,7 @@ export function appendHistory(points: readonly HistoryPoint[], point: HistoryPoi
 
 export interface OptionBaseline {
   /** The way to sell's figures at the last stored scan, when that scan had the way to sell. */
-  last: { at: number; profit: number | null; roiPercent: number | null } | null;
+  last: { at: number; profit: number | null; roiPercent: number | null; unconfirmed?: number } | null;
   /** The average of the last 7 days' stored estimates of the way to sell; null without one. */
   rolling7d: { profit: number; roiPercent: number; points: number; since: number } | null;
 }
@@ -110,7 +138,7 @@ export function baselineOf(history: readonly HistoryPoint[], optionId: string, n
     return now - p.at <= 7 * DAY_MS && o && o.profit !== null && o.roiPercent !== null ? [{ at: p.at, profit: o.profit, roi: o.roiPercent }] : [];
   });
   return {
-    last: lastPoint && lastOpt ? { at: lastPoint.at, profit: lastOpt.profit, roiPercent: lastOpt.roiPercent } : null,
+    last: lastPoint && lastOpt ? { at: lastPoint.at, profit: lastOpt.profit, roiPercent: lastOpt.roiPercent, ...(lastOpt.unconfirmed ? { unconfirmed: lastOpt.unconfirmed } : {}) } : null,
     rolling7d:
       week.length === 0
         ? null
@@ -248,6 +276,13 @@ export interface OptionSignals {
   baseline: OptionBaseline;
   buyNow: boolean;
   /**
+   * Buy safety (Nov 23): everything else holds, but the estimate counts listings nobody confirmed yet (unconfirmedListings):
+   * "looks worth buying", never announced, until the catalog check confirms them. Absent otherwise.
+   */
+  buyPending?: { listings: number; asins: string[] };
+  /** Counted Amazon listings not confirmed yet, by ASIN, whatever else fails. Absent when none. */
+  unconfirmed?: string[];
+  /**
    * Why it is not worth buying now, in one sentence, the binding condition first ("Est. profit $6.63 is below your $20.",
    * "No sales data for DCS382B yet — Keepa is asked on the next lookup."); null when it is.
    */
@@ -264,6 +299,11 @@ export interface BundleSignals {
   signals: Signal[];
   /** The best way to sell worth buying now (highest estimated profit), or null. */
   buyNow: Signal | null;
+  /**
+   * Buy safety (Nov 23): when no way to sell is worth buying now, the best one that would be but for listings not confirmed
+   * yet (OptionSignals.buyPending). Absent otherwise.
+   */
+  buyPending?: { optionId: string; listings: number; asins: string[] };
   /**
    * Signals round 2: the one-line verdict, always saying which condition fails ("Not worth buying now: sells about 12 a
    * month, below your 50") or why it is worth buying ("Worth buying now: est. profit $69.15 (26% ROI), sells about 120 a
@@ -323,6 +363,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
 
   const options: OptionSignals[] = [];
   const buys: Signal[] = [];
+  const pendings: { optionId: string; listings: number; asins: string[]; profit: number }[] = [];
   const verdicts = new Map<string, string>();
   for (const o of row.options) {
     const baseline = baselineOf(history, o.id, now);
@@ -355,6 +396,12 @@ export function bundleSignals(input: SignalInput): BundleSignals {
       why = `Estimated profit is up ${usd(profit! - lastP)} since the last scan, to ${usd(profit!)} (${pct(roi!)} ROI).`;
       whyShort = `up ${usd(profit! - lastP)} since the last check`;
     }
+    // Buy safety: the last check held it back for listings not confirmed yet; now every counted listing is confirmed.
+    const pendingAsins = o.estimate ? unconfirmedListings(o.parts).map((p) => p.asin!) : [];
+    if (why === null && meets && (baseline.last?.unconfirmed ?? 0) > 0 && pendingAsins.length === 0) {
+      why = `Its Amazon listings are confirmed now: est. profit ${usd(profit!)} (${pct(roi!)} ROI).`;
+      whyShort = 'its listings confirmed now';
+    }
     const rolling = baseline.rolling7d;
     if (why === null && meets && rolling && profit! - rolling.profit >= IMPROVE_MIN_DOLLARS) {
       why = `Estimated profit of ${usd(profit!)} (${pct(roi!)} ROI) is ${usd(profit! - rolling.profit)} above its 7-day average of ${usd(rolling.profit)}.`;
@@ -372,6 +419,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
 
     // Signals round 2: every condition that fails, the binding one first, in one sentence (rule 5: estimates).
     const fails: string[] = [];
+    let needsChange = false;
     if (row.section !== 'confirmed') fails.push(`not confirmed yet: ${SECTION_WORDS[row.section]}`);
     else if (profit === null || roi === null) fails.push('no estimate for this way to sell yet');
     else {
@@ -396,19 +444,44 @@ export function bundleSignals(input: SignalInput): BundleSignals {
         else if (missing.length > 0) fails.push(noSalesWords(missing, input.keepa));
       }
       if (fails.length === 0 && why === null) {
+        needsChange = true;
         fails.push(`still above ${thresholds}, but no better than ${lastP !== null ? `the last check (${usd(lastP)})` : 'before'}${rolling ? ` or the 7-day average (${usd(rolling.profit)})` : ''}: a buy needs a change`);
       }
+    }
+    // Buy safety (Nov 23): a buy never rests on a listing nobody confirmed. When the estimate meets the owner's numbers, that
+    // is the binding condition and is said first; otherwise after what fails.
+    // A buy held back for its listings needs no other change: their confirmation is the change (the "listings confirmed
+    // now" reason above), so it stays pending from scan to scan.
+    const pending = pendingAsins.length > 0 && (fails.length === 0 || (needsChange && fails.length === 1));
+    if (pending) fails.length = 0;
+    if (pendingAsins.length > 0) {
+      if (meets) fails.unshift(unconfirmedWords(pendingAsins.length));
+      else fails.push(unconfirmedWords(pendingAsins.length));
     }
     const notBuyNow = fails.length > 0 ? `${capital(fails.join('; '))}.` : null;
     const buyNow = notBuyNow === null;
     if (buyNow) buys.push({ kind: 'buyNow', optionId: o.id, reason: `${why} ${velocity.reason}`, numbers });
-    options.push({ optionId: o.id, label: o.label, profit, roiPercent: roi, meetsThresholds: meets, velocity, baseline, buyNow, notBuyNow });
+    if (pending) pendings.push({ optionId: o.id, listings: pendingAsins.length, asins: pendingAsins, profit: profit! });
+    options.push({
+      optionId: o.id, label: o.label, profit, roiPercent: roi, meetsThresholds: meets, velocity, baseline, buyNow,
+      ...(pending ? { buyPending: { listings: pendingAsins.length, asins: pendingAsins } } : {}),
+      ...(pendingAsins.length > 0 ? { unconfirmed: pendingAsins } : {}),
+      notBuyNow,
+    });
+    const figures = () => `+${usd(profit!)} (${Math.round(roi! * 10) / 10}% ROI), sells about ${velocity.slowest!.monthlySold} a month`;
     verdicts.set(o.id, buyNow
-      ? `Worth buying now: +${usd(profit!)} (${Math.round(roi! * 10) / 10}% ROI), sells about ${velocity.slowest!.monthlySold} a month, ${whyShort || 'improved'}`
-      : `Not worth buying now: ${fails.join('; ')}`);
+      ? `Worth buying now: ${figures()}, ${whyShort || 'improved'}`
+      : pending
+        ? `Looks worth buying: ${figures()} — ${pendingAsins.length === 1 ? '1 listing is' : `${pendingAsins.length} listings are`} being confirmed first`
+        : `Not worth buying now: ${fails.join('; ')}`);
   }
   const best = buys.reduce<Signal | null>((a, b) => (a === null || (b.numbers.profit ?? 0) > (a.numbers.profit ?? 0) ? b : a), null);
-  const focus = best?.optionId ?? row.options[0]?.id ?? null;
+  const held = best === null ? pendings.reduce<(typeof pendings)[number] | null>((a, b) => (a === null || b.profit > a.profit ? b : a), null) : null;
+  const focus = best?.optionId ?? held?.optionId ?? row.options[0]?.id ?? null;
   const verdict = focus !== null ? `${verdicts.get(focus)!}.` : 'Not worth buying now: no way to sell has an estimate yet.';
-  return { bundleKey: row.key, brand: row.brand, model: row.model, at: now, options, signals: [...signals, ...buys], buyNow: best, verdict };
+  return {
+    bundleKey: row.key, brand: row.brand, model: row.model, at: now, options, signals: [...signals, ...buys], buyNow: best,
+    ...(held ? { buyPending: { optionId: held.optionId, listings: held.listings, asins: held.asins } } : {}),
+    verdict,
+  };
 }

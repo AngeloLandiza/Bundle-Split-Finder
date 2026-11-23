@@ -304,6 +304,11 @@ export interface DealRow {
   /** Tracking: the last scan said a way to sell is worth buying now (DealSignals.buyNow). */
   buyNow?: boolean;
   /**
+   * Buy safety (Nov 23): it would be worth buying now but for `listings` counted Amazon listings nobody confirmed yet
+   * (title matches the catalog check has not read). Never announced, never in "Worth buying now". Absent otherwise.
+   */
+  buyPending?: { listings: number };
+  /**
    * Signals round 2: the watched bundle's one-line verdict (DealSignals.verdict), always saying which condition fails
    * ("Not worth buying now: est. profit $6.63 is below your $20.") or why it is worth buying. Absent when not watched or not
    * judged yet. Estimates from the fee settings.

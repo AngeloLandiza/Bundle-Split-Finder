@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_EBAY_SETTINGS, ebaySettingsProblem, ESTIMATED_TOKENS_PER_LISTING, estimatedJudgeCost } from '../src/settings';
 
 describe('the eBay settings', () => {
-  it('start at the cheapest model and 60 listings a scan', () => {
-    expect(DEFAULT_EBAY_SETTINGS).toEqual({ judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60 });
+  it('start at the cheapest model and 60 listings a scan, not asking about uncertain listings in Review', () => {
+    expect(DEFAULT_EBAY_SETTINGS).toEqual({ judgeModel: 'claude-haiku-5-5', listingsJudgedPerScan: 60, askAboutListings: false });
     expect(ebaySettingsProblem(DEFAULT_EBAY_SETTINGS)).toBeNull();
   });
 

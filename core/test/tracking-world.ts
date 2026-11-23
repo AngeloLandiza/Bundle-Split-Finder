@@ -18,13 +18,18 @@ export const recordedTrend: TrendLookup = (asin) => RECORDED_TRENDS.get(asin);
 
 export const ASIN = { DCF921B: 'B09M3TL9BB', DCB606: 'B01H9BL8EO' } as const;
 
+/** A part on a listing; matched ones are on a confirmed listing (grade strong) unless `titleMatch` says only its title matched. */
 export function part(model: string, asin: string | null, price: number | null, qty = 1, status: PartRow['status'] = 'matched'): PartRow {
   return {
-    model, qty, status, availability: asin && price !== null ? 'active' : asin ? 'inactive' : 'missing', asin, grade: null, price,
+    model, qty, status, availability: asin && price !== null ? 'active' : asin ? 'inactive' : 'missing', asin,
+    grade: status === 'matched' && asin ? 'strong' : null, price,
     priceSeenAt: price === null ? null : 1_000, image: null, title: null, packaging: undefined,
     prices: price === null ? [] : [{ kind: 'amazon_new', price, condition: 'new', seller: null, shipsFrom: null, offers: null, asin, link: null, seenAt: 1_000, reference: false }],
   } as PartRow;
 }
+
+/** The part on a title match the catalog check has not read: grade probable, verifiedBy 'title'. */
+export const titleMatch = (p: PartRow): PartRow => ({ ...p, grade: 'probable', verifiedBy: 'title' });
 
 export function option(id: string, bundlePrice: number | null, parts: PartRow[], leftovers: string[] = []): SaleOption {
   const priced = parts.filter((p) => p.price !== null);

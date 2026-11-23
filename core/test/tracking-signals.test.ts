@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { DEFAULT_SETTINGS, type AlertSettings } from '../src/settings';
-import { appendHistory, baselineOf, bundleSignals, historyPoint, velocityOf, type HistoryPoint } from '../src/tracking/signals';
-import { ASIN, bundle, option, part, recordedTrend } from './tracking-world';
+import { appendHistory, baselineOf, bundleSignals, historyPoint, isConfirmedListing, velocityOf, type HistoryPoint } from '../src/tracking/signals';
+import { ASIN, bundle, option, part, recordedTrend, titleMatch } from './tracking-world';
 
 const alerts: AlertSettings = { ...DEFAULT_SETTINGS.alerts, enabled: true, minProfit: 20, minRoiPercent: 20 };
 const DAY = 86_400_000;
@@ -174,5 +174,45 @@ describe('the verdict: always which condition fails, the binding one first (sign
     const s = bundleSignals({ row, history: [point(NOW - DAY, 15, 5)], reviewOpen: false, trend: recordedTrend, alerts: owner, now: NOW });
     expect(s.signals).toEqual([]);
     expect(s.verdict).toBe('Not worth buying now: not confirmed yet: waiting for a part to be looked up.');
+  });
+});
+
+describe('buy safety: a buy never rests on a listing nobody confirmed (Nov 23)', () => {
+  // Shaped like PSK1212SB-PCL515B on Nov 23: above the numbers, selling well, but two of its listings are title matches.
+  const titled = () => bundle([option('whole', 299, [titleMatch(part('DCF921B', ASIN.DCF921B, 249)), titleMatch(part('DCB606', ASIN.DCB606, 199))])]);
+
+  it('title matches above the numbers: looks worth buying, held back, the listings named; not a buy', () => {
+    const s = bundleSignals({ row: titled(), history: [], reviewOpen: false, trend: recordedTrend, alerts, now: NOW });
+    expect(s.buyNow).toBeNull();
+    expect(s.signals.some((x) => x.kind === 'buyNow')).toBe(false);
+    expect(s.buyPending).toEqual({ optionId: 'whole', listings: 2, asins: [ASIN.DCF921B, ASIN.DCB606] });
+    expect(s.verdict).toBe('Looks worth buying: +$81.80 (27.4% ROI), sells about 600 a month — 2 listings are being confirmed first.');
+    expect(s.options[0]!.notBuyNow).toBe('2 listings not confirmed yet.');
+  });
+
+  it('an owner-chosen, catalog-verified or part-number listing counts as confirmed; a title match does not', () => {
+    const p = part('DCF921B', ASIN.DCF921B, 249);
+    expect(isConfirmedListing(p)).toBe(true);
+    expect(isConfirmedListing(titleMatch(p))).toBe(false);
+    expect(isConfirmedListing({ ...titleMatch(p), verifiedBy: 'owner' })).toBe(true);
+    expect(isConfirmedListing({ grade: 'strong', verifiedBy: 'keepa_catalog' })).toBe(true);
+    expect(isConfirmedListing({ grade: 'exact' })).toBe(true);
+  });
+
+  it('below the numbers the threshold binds first; the listings follow', () => {
+    const s = bundleSignals({ row: titled(), history: [], reviewOpen: false, trend: recordedTrend, alerts: { ...alerts, minProfit: 100 }, now: NOW });
+    expect(s.buyPending).toBeUndefined();
+    expect(s.verdict).toBe('Not worth buying now: est. $81.80 is below your $100; 2 listings not confirmed yet.');
+  });
+
+  it('stays held back from scan to scan, and is a buy once the catalog confirms every listing', () => {
+    const first = historyPoint(titled(), false, recordedTrend, NOW - DAY);
+    expect(first.options[0]!.unconfirmed).toBe(2);
+    const again = bundleSignals({ row: titled(), history: [first], reviewOpen: false, trend: recordedTrend, alerts, now: NOW });
+    expect(again.buyPending?.listings).toBe(2);
+    const confirmed = bundleSignals({ row: good(), history: [first], reviewOpen: false, trend: recordedTrend, alerts, now: NOW });
+    expect(confirmed.buyNow).toMatchObject({ kind: 'buyNow', optionId: 'whole' });
+    expect(confirmed.buyPending).toBeUndefined();
+    expect(confirmed.verdict).toBe('Worth buying now: +$81.80 (27.4% ROI), sells about 600 a month, its listings confirmed now.');
   });
 });

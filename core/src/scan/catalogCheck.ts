@@ -54,12 +54,14 @@ async function openQuestion(store: ScanStore, key: string): Promise<ReviewItem |
 }
 
 /**
- * The listings to check now, one per ASIN, for the parts `parts` holds (a bundle wants them), most valuable first
+ * The listings to check now, one per ASIN, those in `first` (a buy waits on them) before any other, for the parts `parts` holds (a bundle wants them), most valuable first
  * (`saving`, the largest Home Depot saving among the part's bundles); a title match before a question at a tie. A
  * title match's listing, and each listing an open automatic match question offers for a reason in
  * CATALOG_QUESTION_REASONS, unless already checked for that part.
  */
-export async function catalogChecksWanted(store: ScanStore, parts: ReadonlyMap<string, { saving: number }>): Promise<CatalogTarget[]> {
+export async function catalogChecksWanted(
+  store: ScanStore, parts: ReadonlyMap<string, { saving: number }>, first: ReadonlySet<string> = new Set(),
+): Promise<CatalogTarget[]> {
   const found: (CatalogTarget & { saving: number })[] = [];
   for (const m of await store.listMatches()) {
     const part = parts.get(m.key);
@@ -73,7 +75,8 @@ export async function catalogChecksWanted(store: ScanStore, parts: ReadonlyMap<s
       }
     }
   }
-  found.sort((a, b) => b.saving - a.saving || Number(a.holds === 'question') - Number(b.holds === 'question') || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  // Buy safety (Nov 23): `first`, the listings a buy waits on (BundleSignals.buyPending), go to the front of the queue.
+  found.sort((a, b) => Number(first.has(b.asin)) - Number(first.has(a.asin)) || b.saving - a.saving || Number(a.holds === 'question') - Number(b.holds === 'question') || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
   const seen = new Set<string>();
   return found.filter((t) => !seen.has(t.asin) && !!seen.add(t.asin)).map(({ saving: _s, ...t }) => t);
 }
