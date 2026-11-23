@@ -7,6 +7,7 @@
 // (<data>/agent-token, owner-only) and sent only to the agent; it is never printed or written anywhere.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
 import { AGENT_PORT } from '../core/src/api/contract';
@@ -14,6 +15,29 @@ import type { HomeDepotPage, HomeDepotSearch, ResearchTools, ToolError } from '.
 import type { RecordedSources, ResearchToolsFile, ToolCallLog } from './research-tools';
 
 export const FRESH_FILE = 'followup-chrome.json';
+
+/** The installed app's bundle identifier: Tauri's app_data_dir is the platform's data folder joined with it (desktop/dev-agent.mjs). */
+const IDENTIFIER = 'com.bundlesplitfinder.desktop';
+
+/** Tauri 2's app_data_dir for the installed app, where its agent keeps agent-token. */
+export function installedAppDataDir(platform: NodeJS.Platform = process.platform, env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
+  if (platform === 'darwin') return join(home, 'Library', 'Application Support', IDENTIFIER);
+  if (platform === 'win32') return join(env.APPDATA ?? join(home, 'AppData', 'Roaming'), IDENTIFIER);
+  return join(env.XDG_DATA_HOME ?? join(home, '.local', 'share'), IDENTIFIER);
+}
+
+/**
+ * The data folder whose agent-token reaches the running agent: SPLIT_FINDER_DATA_DIR when set; else the development agent's
+ * (./output, agent/paths.ts) when it has a token; else the installed app's (the main session's first run failed every read
+ * with "No agent token in ./output" while the installed app was the one running).
+ */
+export function agentTokenDir(opts: { env?: NodeJS.ProcessEnv; devDir: string; installedDir?: string; exists?: (p: string) => boolean }): string {
+  const env = opts.env ?? process.env;
+  if (env.SPLIT_FINDER_DATA_DIR) return env.SPLIT_FINDER_DATA_DIR;
+  const exists = opts.exists ?? existsSync;
+  if (exists(join(opts.devDir, 'agent-token'))) return opts.devDir;
+  return opts.installedDir ?? installedAppDataDir();
+}
 const POLL_MS = 1_000;
 const WAIT_MS = 120_000;
 

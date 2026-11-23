@@ -31,7 +31,7 @@ import {
 import { NONE, RESOLVED_BY_SCAN } from '../core/src/scan/answers';
 import type { ReviewItem } from '../core/src/scan/types';
 import { agentDataDir } from '../agent/paths';
-import type { ChromeReader } from './research-chrome';
+import { agentTokenDir, type ChromeReader } from './research-chrome';
 import { chromeFor, runFollowUpEval } from './research-followup-eval';
 import { loadRecordedSources, recordedTools, replayedTools, type ToolCallLog } from './research-tools';
 import { CacheOnlyClient, loadInputs, ResponsesCache, runValidationPipeline, VALIDATION_DATE, validationFiles } from './validate-cli';
@@ -196,7 +196,7 @@ export async function runResearchEval(args: string[], deps: ResearchEvalDeps): P
   if (followUp) {
     return runFollowUpEval({
       mode: mode as '--dry-run' | '--run' | '--replay', model, rates, maxCost, fresh: freshTools, questions, catalog, deps, outDir,
-      ...(freshTools && mode === '--run' ? { chrome: deps.chrome ?? chromeFor(agentDataDir()) } : {}),
+      ...(freshTools && mode === '--run' ? { chrome: deps.chrome ?? chromeFor(agentTokenDir({ devDir: agentDataDir() })) } : {}),
     });
   }
 

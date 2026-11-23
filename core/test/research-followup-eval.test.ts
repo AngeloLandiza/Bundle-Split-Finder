@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { ResearchModel, ResearchTurn } from '../src/research/types';
-import type { ChromeReader } from '../../scripts/research-chrome';
+import { agentTokenDir, installedAppDataDir, type ChromeReader } from '../../scripts/research-chrome';
 import { runResearchEval } from '../../scripts/research-eval-cli';
 import type { FollowUpRunsFile } from '../../scripts/research-followup-eval';
 
@@ -67,5 +67,15 @@ describe('npm run research:eval -- --follow-up', () => {
     const replay = quiet();
     expect(await runResearchEval(['--model', 'claude-opus-5-5', '--follow-up', '--replay'], { log: replay.log, dir: 'fixtures', outDir, env: () => undefined })).toBe(0);
     expect(replay.lines.find((l) => l.startsWith('After the loop'))).toBe(run.lines.find((l) => l.startsWith('After the loop')));
+  });
+});
+
+describe("--fresh-tools finds the running agent's token", () => {
+  it("SPLIT_FINDER_DATA_DIR first; ./output when it has a token; else the installed app's data folder", () => {
+    expect(agentTokenDir({ env: { SPLIT_FINDER_DATA_DIR: '/d' }, devDir: 'output', exists: () => true })).toBe('/d');
+    expect(agentTokenDir({ env: {}, devDir: 'output', exists: () => true })).toBe('output');
+    expect(agentTokenDir({ env: {}, devDir: 'output', installedDir: '/app', exists: () => false })).toBe('/app');
+    expect(installedAppDataDir('darwin', {}, '/Users/o')).toBe('/Users/o/Library/Application Support/com.bundlesplitfinder.desktop');
+    expect(installedAppDataDir('win32', { APPDATA: 'C:\\Users\\o\\AppData\\Roaming' }, 'C:\\Users\\o')).toMatch(/Roaming[\\/]com\.bundlesplitfinder\.desktop$/);
   });
 });
