@@ -9,13 +9,15 @@ import { parsePageSections, parseSearchText } from '@core/hdPage';
 import { sameModel } from '@core/match';
 import type { CatalogEntry, CatalogLookup, ResearchTools } from '@core/research/types';
 import type { ScanStore } from '@core/scan/types';
-import { fetchPagesInTab, type ReaderEnv } from './hdReader';
+import {
+  createUnreadableRun, DOORWAY_STATE_MS, fetchPagesInTab, fetchPathInTab, STOPPED, titled, untilStopped, withDoorway, type DoorwayRun, type PathInTab, type ReaderEnv,
+} from './hdReader';
 
 /** One product of a Home Depot search page, as the parser reads it. */
 export interface SearchRow { title: string; brand: string; model: string; itemId: string }
 
-/** What the in-tab search fetch brings back: the HTTP status and, for a 200, the page text. */
-export interface SearchPageResult { status: number; text: string | null }
+/** What the in-tab search fetch brings back: the HTTP status and, for a 200, the page text (hdReader's fetchPathInTab). */
+export type SearchPageResult = PathInTab;
 
 /** The most page reads plus searches one question may make; the catalog is local and not counted. */
 export const QUESTION_TOOL_LIMIT = 6;
@@ -23,32 +25,6 @@ const SEARCH_RESULTS_MAX = 10;
 const CATALOG_ENTRIES_MAX = 20;
 const QUERY_MAX = 200;
 const HOME_DEPOT = 'https://www.homedepot.com';
-const LOAD_TIMEOUT_MS = 30_000;
-/** What a call ended by the research's signal says; the tools turn it into their `stopped` answer. */
-const STOPPED = 'stopped';
-
-/** `work`'s result, or a rejection the moment `signal` fires. `work` is left to end on its own; its late result or failure is dropped. */
-function untilStopped<T>(work: Promise<T>, signal?: AbortSignal): Promise<T> {
-  if (signal === undefined) return work;
-  if (signal.aborted) {
-    work.catch(() => undefined);
-    return Promise.reject(new Error(STOPPED));
-  }
-  return new Promise<T>((resolve, reject) => {
-    const onAbort = () => reject(new Error(STOPPED));
-    signal.addEventListener('abort', onAbort, { once: true });
-    work.then(
-      (v) => {
-        signal.removeEventListener('abort', onAbort);
-        resolve(v);
-      },
-      (e) => {
-        signal.removeEventListener('abort', onAbort);
-        reject(e);
-      },
-    );
-  });
-}
 
 /** Shared by every tool of one question: `take()` is true while page reads and searches are left. */
 export interface QuestionBudget {
@@ -103,27 +79,6 @@ export function homeDepotItemId(input: { itemId?: string; url?: string }): strin
   return parts.length >= 2 && ITEM_ID.test(last) ? last : null;
 }
 
-/**
- * Runs inside the tab. Self-contained, like fetchPagesInTab (serialised by its source: no imports, no outside
- * variables). Fetches Home Depot's own `/s/<query>` same-origin and returns the status and, for a 200, the text from
- * `window.__APOLLO_STATE__=` to the next `</script>` (null when the page has none). A fetch that throws gives status 0.
- */
-export async function fetchSearchPageInTab(query: string): Promise<SearchPageResult> {
-  try {
-    const res = await fetch(`/s/${encodeURIComponent(query)}`, { credentials: 'include' });
-    const body = await res.text();
-    let text: string | null = null;
-    const mark = body.indexOf('window.__APOLLO_STATE__=');
-    if (res.status === 200 && mark >= 0) {
-      const end = body.indexOf('</script>', mark);
-      text = end >= 0 ? body.slice(mark, end) : body.slice(mark);
-    }
-    return { status: res.status, text };
-  } catch {
-    return { status: 0, text: null };
-  }
-}
-
 export interface ResearchToolsDeps {
   env: ReaderEnv;
   /** Only the catalog is read. */
@@ -136,6 +91,8 @@ export interface ResearchToolsDeps {
   /** As createPageReader: waited once after the doorway tab loads, and between two doorways. */
   settleMs?: number;
   pauseMs?: number;
+  /** How long the doorway's own page may take to show its state (hdReader's DOORWAY_STATE_MS). */
+  doorwayStateMs?: number;
   now?: () => number;
 }
 
@@ -152,6 +109,7 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
   const { env, store } = deps;
   const settleMs = deps.settleMs ?? 2500;
   const pauseMs = deps.pauseMs ?? 1000;
+  const doorwayStateMs = deps.doorwayStateMs ?? DOORWAY_STATE_MS;
   const now = deps.now ?? Date.now;
   let lastEnded: number | null = null;
   let queue: Promise<unknown> = Promise.resolve();
@@ -161,35 +119,17 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
    * time limit. When it fires, the call in flight ends at once (the pause, the load, the settle or the read), the doorway tab is closed
    * and no tab is left open, and a call still waiting its turn opens none. The call then throws STOPPED.
    */
-  const inDoorway = <T>(startUrl: string, run: (tabId: number) => Promise<T>, signal?: AbortSignal): Promise<T> => {
+  const inDoorway = <T>(startUrl: string, run: (tabId: number) => Promise<T>, signal?: AbortSignal): Promise<DoorwayRun<T>> => {
     const job = queue.then(async () => {
       if (signal?.aborted) throw new Error(STOPPED);
       if (lastEnded !== null) {
         const left = pauseMs - (now() - lastEnded);
         if (left > 0) await untilStopped(env.sleep(left), signal);
       }
-      const stale = await env.remembered();
-      if (stale !== null) {
-        await env.closeTab(stale).catch(() => undefined);
-        await env.remember(null);
-      }
-      if (signal?.aborted) throw new Error(STOPPED);
-      const tabId = await env.openTab(startUrl);
       try {
-        await env.remember(tabId);
-        // Stopped while the tab was opening: the tab is known now, and closed below.
-        if (signal?.aborted) throw new Error(STOPPED);
-        try {
-          await untilStopped(env.waitForLoad(tabId, LOAD_TIMEOUT_MS), signal);
-        } catch (e) {
-          if (signal?.aborted) throw new Error(STOPPED);
-          throw new Error('The Home Depot tab did not load.');
-        }
-        if (settleMs > 0) await untilStopped(env.sleep(settleMs), signal);
-        return await untilStopped(run(tabId), signal);
+        // Nov 23: nothing is read until the doorway's own page shows its state (hdReader's withDoorway).
+        return await withDoorway(env, startUrl, { settleMs, doorwayStateMs, ...(signal ? { signal } : {}) }, run);
       } finally {
-        await env.closeTab(tabId).catch(() => undefined);
-        await env.remember(null).catch(() => undefined);
         lastEnded = now();
       }
     });
@@ -200,23 +140,43 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
   return {
     forQuestion(given) {
       const budget = given ?? createQuestionBudget();
-      let refused = false;
+      // Why no more Home Depot calls are made for this question: a real refusal (403, 429, 5xx, a failed fetch, a doorway that
+      // never showed its page's state), or two pages in a row that came back without their data. Null until one happens.
+      const stop: { said: string | null } = { said: null };
+      const unreadableRun = createUnreadableRun();
       const REFUSED_BEFORE = 'Home Depot refused an earlier request; no more are made for this question.';
+      const UNREADABLE_BEFORE = 'Home Depot answered two requests in a row without their data; no more are made for this question.';
+      const refuse = (): void => {
+        stop.said = REFUSED_BEFORE;
+      };
+      // A 200 without the page's state: not a refusal. Said in words with the page's title; two in a row end the question's reads.
+      const unreadable = (what: string, note: string | undefined): { error: string } => {
+        if (unreadableRun.unreadable()) stop.said = UNREADABLE_BEFORE;
+        return { error: `${what} came back without its data${titled(note ?? '')}.` };
+      };
+      const doorwayNever = (what: string, title: string): { error: string } => {
+        refuse();
+        return { error: `Home Depot refused the ${what} (its own page never showed its data${titled(title)}); no more are ${what === 'page' ? 'read' : 'made'} for this question.` };
+      };
 
       const readHomeDepotPage: QuestionTools['readHomeDepotPage'] = async (input, signal) => {
         const itemId = homeDepotItemId(input);
         if (itemId === null) return { error: 'Give a 9-digit Home Depot item id or a https://www.homedepot.com/p/... address. Only homedepot.com pages can be read.' };
         if (signal?.aborted) return { error: 'stopped' };
-        if (refused) return { error: REFUSED_BEFORE };
+        if (stop.said !== null) return { error: stop.said };
         if (!budget.take()) return { error: 'limit' };
         try {
-          const answered = await inDoorway(`${env.origin}/p/${itemId}`, (tabId) => env.runInTab(tabId, fetchPagesInTab, [[itemId], 1]), signal);
+          const door = await inDoorway(`${env.origin}/p/${itemId}`, (tabId) => env.runInTab(tabId, fetchPagesInTab, [[itemId], 1]), signal);
+          if (!door.shown) return doorwayNever('page', door.title);
+          const answered = door.value;
           const got = Array.isArray(answered) ? answered.find((r) => r.itemId === itemId) : undefined;
           if (got && got.status === 404) return { error: `Home Depot has no page for item ${itemId}.` };
+          if (got && got.status === 200 && got.text === null) return unreadable(`The page for item ${itemId}`, got.note);
           if (!got || got.status !== 200 || got.text === null) {
-            refused = true;
+            refuse();
             return { error: `Home Depot refused the page (${statusNote(got ? got.status : 0)}); no more are read for this question.` };
           }
+          unreadableRun.read();
           const sections = parsePageSections(got.text, itemId);
           if (sections === null) return { error: `The page for item ${itemId} could not be read.` };
           return { sourceId: `hd-page:${itemId}`, label: 'Home Depot page', url: `${HOME_DEPOT}/p/${itemId}`, sections };
@@ -230,17 +190,21 @@ export function createResearchTools(deps: ResearchToolsDeps): { forQuestion(budg
         const query = typeof input.query === 'string' ? input.query.trim().replace(/\s+/g, ' ') : '';
         if (query === '' || query.length > QUERY_MAX) return { error: `Give a search of 1 to ${QUERY_MAX} characters.` };
         if (signal?.aborted) return { error: 'stopped' };
-        if (refused) return { error: REFUSED_BEFORE };
+        if (stop.said !== null) return { error: stop.said };
         if (!budget.take()) return { error: 'limit' };
         const url = `${env.origin}/s/${encodeURIComponent(query)}`;
         // The address a quote's source link shows is Home Depot's own, whatever origin the doorway read it from (the end-to-end build reads a local replay).
         const shownUrl = `${HOME_DEPOT}/s/${encodeURIComponent(query)}`;
         try {
-          const answered = await inDoorway(url, (tabId) => env.runInTab(tabId, fetchSearchPageInTab, [query]), signal);
+          const door = await inDoorway(url, (tabId) => env.runInTab(tabId, fetchPathInTab, [`/s/${encodeURIComponent(query)}`]), signal);
+          if (!door.shown) return doorwayNever('search', door.title);
+          const answered = door.value;
+          if (answered && answered.status === 200 && answered.text === null) return unreadable('The search', answered.note);
           if (!answered || answered.status !== 200 || answered.text === null) {
-            refused = true;
+            refuse();
             return { error: `Home Depot refused the search (${statusNote(answered ? answered.status : 0)}); no more are made for this question.` };
           }
+          unreadableRun.read();
           const rows = (deps.parseSearch ?? parseSearchText)(answered.text);
           if (rows === null) return { error: 'The search page could not be read.' };
           return {

@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { MemoryScanStore } from '@core/scan/memoryStore';
 import { partKey, type CatalogRecord } from '@core/scan/types';
 import type { ResearchTools } from '@core/research/types';
-import { fetchPagesInTab, type InTabResult, type ReaderEnv } from './hdReader';
+import { doorwayStateInTab, fetchPagesInTab, fetchPathInTab, type DoorwayState, type InTabResult, type ReaderEnv } from './hdReader';
 import {
-  createQuestionBudget, createResearchTools, fetchSearchPageInTab, homeDepotItemId, QUESTION_TOOL_LIMIT,
+  createQuestionBudget, createResearchTools, homeDepotItemId, QUESTION_TOOL_LIMIT,
   type SearchPageResult, type SearchRow,
 } from './researchTools';
 
@@ -26,6 +26,8 @@ function fake(opts: {
   search?: (query: string) => SearchPageResult;
   loadFails?: boolean;
   stored?: number | null;
+  /** The doorway tab's own document at each check (default: its state is there). */
+  doorway?: () => DoorwayState;
 } = {}): Fake {
   const log: string[] = [];
   let stored: number | null = opts.stored ?? null;
@@ -44,9 +46,11 @@ function fake(opts: {
         log.push(`fetch page ${(args[0] as string[]).join(',')}`);
         return (args[0] as string[]).map(page);
       }
-      if (func === fetchSearchPageInTab) {
-        log.push(`fetch search ${args[0] as string}`);
-        return (opts.search ?? (() => ({ status: 200, text: '<html></html>' })))(args[0] as string);
+      if (func === doorwayStateInTab) return opts.doorway ? opts.doorway() : { state: true, title: 'Home Depot' };
+      if (func === fetchPathInTab) {
+        const query = decodeURIComponent((args[0] as string).replace(/^\/s\//, ''));
+        log.push(`fetch search ${query}`);
+        return (opts.search ?? (() => ({ status: 200, text: '<html></html>' })))(query);
       }
       throw new Error('unexpected function');
     }) as ReaderEnv['runInTab'],
@@ -208,9 +212,13 @@ describe('readHomeDepotPage', () => {
     expect(await q.readHomeDepotPage({ itemId: PAGE })).toHaveProperty('sections');
   });
 
-  it('reports a 200 page with no data as refused, and a page it cannot parse as unreadable', async () => {
-    const empty = fake({ page: (id) => ({ itemId: id, status: 200, text: null }) });
-    expect(await (await tools(empty)).forQuestion().readHomeDepotPage({ itemId: PAGE })).toEqual({ error: expect.stringContaining('HTTP 200') });
+  it('reports a 200 page with no data as unreadable (not a refusal), and a page it cannot parse as unreadable', async () => {
+    const empty = fake({ page: (id) => ({ itemId: id, status: 200, text: null, note: 'Home Depot' }) });
+    const one = (await tools(empty)).forQuestion();
+    expect(await one.readHomeDepotPage({ itemId: PAGE })).toEqual({ error: `The page for item ${PAGE} came back without its data, titled "Home Depot".` });
+    // Not a refusal: the next page is read (here it is the same fake, so it is unreadable again, and two in a row end the question's reads).
+    expect(await one.readHomeDepotPage({ itemId: ids[1] })).toEqual({ error: expect.stringContaining('without its data') });
+    expect(await one.readHomeDepotPage({ itemId: ids[2] })).toEqual({ error: 'Home Depot answered two requests in a row without their data; no more are made for this question.' });
     const odd = fake({ page: (id) => ({ itemId: id, status: 200, text: 'window.__APOLLO_STATE__={"ROOT_QUERY":{}}' }) });
     expect(await (await tools(odd)).forQuestion().readHomeDepotPage({ itemId: PAGE })).toEqual({ error: expect.stringContaining('could not be read') });
   });
@@ -431,5 +439,79 @@ describe('catalogLookup', () => {
     for (let i = 0; i < 30; i++) await store.putCatalogEntry(record('RYOBI', `PCL${100 + i}B`, 'ONE+ drill'));
     const q = createResearchTools({ env: fake().env, store }).forQuestion();
     expect((await q.catalogLookup({ query: 'drill' })).entries).toHaveLength(20);
+  });
+});
+
+// Nov 23: the doorway rule for the research tools (see hdReader.ts withDoorway). A cold doorway shows its state late; a 200
+// without it is one unreadable page, not a refusal; "no more are made" follows only a real refusal.
+describe('the doorway rule: a cold doorway, an empty 200, a real refusal', () => {
+  const searchOk = (q: string): SearchPageResult => ({ status: 200, text: `window.__APOLLO_STATE__=${JSON.stringify(research.searches[q]?.state ?? {})}` });
+  type Q = ReturnType<Awaited<ReturnType<typeof tools>>['forQuestion']>;
+  const calls: [string, (q: Q) => Promise<unknown>][] = [
+    ['page', (q) => q.readHomeDepotPage({ itemId: PAGE })],
+    ['search', (q) => q.searchHomeDepot({ query: 'ryobi pcl500' })],
+  ];
+
+  for (const [name, call] of calls) {
+    it(`${name}: a cold doorway that shows its state after 2 s is read, after the checks and before the fetch`, async () => {
+      let checks = 0;
+      const f = fake({ doorway: () => ({ state: ++checks >= 5, title: 'Home Depot' }), search: searchOk });
+      const out = await call((await tools(f)).forQuestion());
+      expect(out).toHaveProperty('sourceId');
+      expect(f.log.filter((l) => l === 'sleep 500')).toHaveLength(4);
+      expect(checks).toBe(5);
+      expect(f.log.findIndex((l) => l.startsWith('fetch'))).toBeGreaterThan(f.log.lastIndexOf('sleep 500'));
+    });
+
+    it(`${name}: a doorway that never shows its state is the refusal: nothing is fetched, its title is said, no more are made`, async () => {
+      const f = fake({ doorway: () => ({ state: false, title: 'Access Denied' }), search: searchOk });
+      const q = (await tools(f, { doorwayStateMs: 2000 })).forQuestion();
+      const out = await call(q);
+      expect(out).toEqual({ error: expect.stringMatching(/^Home Depot refused the (page|search) \(its own page never showed its data, titled "Access Denied"\); no more are (read|made) for this question\.$/) });
+      expect(f.log.filter((l) => l.startsWith('fetch'))).toEqual([]);
+      expect(f.log.at(-1)).toBe('close 7');
+      f.log.length = 0;
+      expect(await q.readHomeDepotPage({ itemId: ids[1] })).toEqual({ error: expect.stringContaining('refused an earlier request') });
+      expect(f.log).toEqual([]);
+    });
+  }
+
+  it('a 200 search without its state is one unreadable search, never "refused ... no more are made"; the next call is made', async () => {
+    let n = 0;
+    const f = fake({ search: (q) => (++n === 1 ? { status: 200, text: null, note: 'Home Depot' } : searchOk(q)) });
+    const q = (await tools(f)).forQuestion();
+    const first = await q.searchHomeDepot({ query: 'ryobi pcl500' });
+    expect(first).toEqual({ error: 'The search came back without its data, titled "Home Depot".' });
+    expect(JSON.stringify(first)).not.toContain('no more');
+    expect(await q.searchHomeDepot({ query: 'ryobi pcl500' })).toHaveProperty('results');
+    expect(await q.readHomeDepotPage({ itemId: PAGE })).toHaveProperty('sections');
+  });
+
+  it('one empty 200 in the middle: that page is not read, the next ones are', async () => {
+    const f = fake({ page: (id) => (id === ids[1] ? { itemId: id, status: 200, text: null, note: '' } : (byId.get(id) as InTabResult)) });
+    const q = (await tools(f)).forQuestion();
+    expect(await q.readHomeDepotPage({ itemId: ids[0] })).toHaveProperty('sections');
+    expect(await q.readHomeDepotPage({ itemId: ids[1] })).toEqual({ error: `The page for item ${ids[1]} came back without its data.` });
+    expect(await q.readHomeDepotPage({ itemId: ids[2] })).toHaveProperty('sections');
+    expect(f.log.filter((l) => l.startsWith('fetch page'))).toHaveLength(3);
+  });
+
+  it("two unreadable answers in a row, a search then a page, end the question's Home Depot calls", async () => {
+    const f = fake({ page: (id) => ({ itemId: id, status: 200, text: null }), search: () => ({ status: 200, text: null }) });
+    const q = (await tools(f)).forQuestion();
+    expect(await q.searchHomeDepot({ query: 'a' })).toEqual({ error: expect.stringContaining('without its data') });
+    expect(await q.readHomeDepotPage({ itemId: PAGE })).toEqual({ error: expect.stringContaining('without its data') });
+    f.log.length = 0;
+    expect(await q.searchHomeDepot({ query: 'b' })).toEqual({ error: expect.stringContaining('two requests in a row') });
+    expect(f.log).toEqual([]);
+  });
+
+  it('a real 403, 429 or 5xx stops at once, for a search and then a page', async () => {
+    for (const status of [403, 429, 503]) {
+      const f = fake({ search: () => ({ status, text: null }) });
+      const q = (await tools(f)).forQuestion();
+      expect(await q.searchHomeDepot({ query: 'drill' })).toEqual({ error: expect.stringContaining(`HTTP ${status}`) });
+      expect(await q.readHomeDepotPage({ itemId: PAGE })).toEqual({ error: expect.stringContaining('refused an earlier request') });
+    }
   });
 });
