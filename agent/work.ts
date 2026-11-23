@@ -11,7 +11,8 @@
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { AppSettings, DripState, EvidenceQuote, KeyName, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
+import type { AppSettings, DripState, EvidenceQuote, KeyName, LookupsRunResponse, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
+import { keepaTokensForScan, routeAmazonWork, type KeepaRoom, type SerpRoom } from '../core/src/keepa/route';
 import { lookupsSentence } from '../core/src/deals/lookupCopy';
 import { gatherEvidence } from '../core/src/assist/evidence';
 import { afterLead, pipelinesFrom } from '../core/src/ai/factory';
@@ -145,6 +146,11 @@ export function scrub(text: string, keys: StoredKeys): string {
 }
 
 const sentenceOf = (err: unknown): string => (err instanceof Error && err.message ? err.message : 'Something went wrong.');
+
+/** Step 15: Look up all's search cap: the per-scan cap, or `maxSearches` when that is lower. */
+function lookupsCap(ext: ExtensionSettings, maxSearches: number | undefined): ExtensionSettings {
+  return maxSearches === undefined ? ext : { ...ext, searchesPerScan: Math.min(ext.searchesPerScan, Math.max(0, Math.floor(maxSearches))) };
+}
 
 export class AgentWork {
   readonly scanStore: ScanStore;
@@ -581,8 +587,58 @@ export class AgentWork {
     });
   }
 
-  /** `again`: Read again (readPagesAgain), with the searches the last scan used. */
-  private async scan(trigger: ScanTrigger, again?: { usedBefore: number }): Promise<void> {
+  /**
+   * Step 15, POST /api/lookups/run (the owner's "Look up all"): the parts waiting for an Amazon lookup, looked up now as a
+   * scan would (Keepa's tokens above its reserve first, then searches within the per-scan cap, or `maxSearches` when
+   * lower, and the hourly limit; like Scan now, the owner's click may spend the reserve), with no Home Depot page, no
+   * brand page, no Chrome read, no eBay and no AI. Answers before it starts with what it is planned to make on each.
+   */
+  async lookUpAll(maxSearches?: number): Promise<LookupsRunResponse> {
+    const none = (reason: string): LookupsRunResponse => ({ started: false, reason, viaKeepa: 0, viaSerpapi: 0 });
+    if (this.live.busy) return none(this.busySentence('scan'));
+    if (this.answering > 0) return none('An answer is being applied. Try again in a moment.');
+    if (maxSearches !== undefined && (!Number.isInteger(maxSearches) || maxSearches < 0)) return none('maxSearches must be a whole number of 0 or more.');
+    const { store } = this.d;
+    const keys = store.get('keys');
+    if (!keys.serpapi) return none('Add your SerpApi key in Settings.');
+    const ext = extensionSettingsOf(store.get('settings'));
+    const pairs = Object.fromEntries(Object.values(store.get('tracking').bogoPairs ?? {}).map((p) => [p.key, `${p.promotionId}:${p.starterItemId}`]));
+    const { work } = await plannedWork(this.scanStore, toScanSettings(ext), this.d.now(), pairs);
+    if (work.lookups.length === 0) return none('No part waits for an Amazon lookup.');
+    let keepa: KeepaRoom | null = null;
+    if (keys.keepa && ext.amazonRefreshViaKeepa) {
+      const status = await this.keepaStatus(this.keepaClient(keys.keepa, new TokenBudget({ reserve: ext.keepaReserve, maxPerRun: Number.POSITIVE_INFINITY })));
+      keepa = { tokens: keepaTokensForScan({ tokensLeft: status?.tokensLeft ?? null, reserve: ext.keepaReserve, tokensPerScan: ext.keepaTokensPerScan }), trackingDepth: ext.trackingDepth };
+    }
+    let serp: SerpRoom;
+    try {
+      const account = await SerpApiClient.account(keys.serpapi, this.d.fetchFn, this.d.serpBaseUrl);
+      this.keyProblem('serpapi', null);
+      serp = new SearchBudget(account, budgetPolicyFor(lookupsCap(ext, maxSearches), 'manual', 0));
+    } catch (err) {
+      if (err instanceof SerpApiError && err.status === 401) this.keyProblem('serpapi', err.message);
+      return none(err instanceof SerpApiError ? err.message : 'Something went wrong while checking your SerpApi account.');
+    }
+    const plan = routeAmazonWork({ lookups: work.lookups }, keepa, serp);
+    const viaKeepa = plan.keepaLookups.length;
+    const viaSerpapi = plan.serpLookups.length;
+    if (viaKeepa + viaSerpapi === 0) {
+      return none(`Nothing can pay for a lookup now: ${lookupsSentence({ waiting: work.lookups.length, keepa: 0, serpapi: 0, blockedBy: plan.blockedBy, refillPerMin: store.get('runtime').keepa?.refillRate ?? null })}`);
+    }
+    try {
+      this.begin('scan', () => this.scan('manual', undefined, { maxSearches }));
+    } catch (err) {
+      if (err instanceof WorkRefused) return none(err.message);
+      throw err;
+    }
+    const n = viaKeepa + viaSerpapi;
+    const how = [...(viaKeepa > 0 ? [`${viaKeepa} with Keepa`] : []), ...(viaSerpapi > 0 ? [`${viaSerpapi} with ${viaSerpapi === 1 ? 'a search' : 'searches'}`] : [])].join(' and ');
+    const rest = plan.deferredLookups.length;
+    return { started: true, viaKeepa, viaSerpapi, reason: `Looking up ${n} ${n === 1 ? 'part' : 'parts'}: ${how}.${rest > 0 ? ` ${rest} more wait.` : ''}` };
+  }
+
+  /** `again`: Read again (readPagesAgain), with the searches the last scan used. `lookups`: Look up all (lookUpAll). */
+  private async scan(trigger: ScanTrigger, again?: { usedBefore: number }, lookups?: { maxSearches?: number }): Promise<void> {
     const { store } = this.d;
     const startedAt = this.d.now();
     const run: RunRecord = {
@@ -596,7 +652,7 @@ export class AgentWork {
     const notes: string[] = [];
     let job: ScanJob | null = null;
     try {
-      job = await this.runTheScan(trigger, keys, notes, again);
+      job = await this.runTheScan(trigger, keys, notes, again, lookups);
     } catch (err) {
       run.error = scrub(sentenceOf(err), keys);
       run.status = 'failed';
@@ -642,6 +698,12 @@ export class AgentWork {
     if (!scanOk) {
       const tg = await this.resendPending();
       if (tg) notes.push(tg);
+    } else if (report && lookups) {
+      // Look up all spends no AI: the new matches are published and the digest says what is new.
+      await this.publish(report);
+      await this.trackScan(report);
+      const tg = await this.message(report, job, 0);
+      if (tg) notes.push(tg);
     } else if (report && !this.stopCtl.signal.aborted) {
       ai = await this.aiPass();
       if (ai.problem) notes.push(ai.problem);
@@ -660,7 +722,7 @@ export class AgentWork {
     run.finishedAt = new Date(this.d.now()).toISOString();
     // Nov 23: the bundles whose own Home Depot page is still not read, for Read again.
     const pagesUnread = (await this.scanStore.listBundles().catch(() => [])).filter((b) => !pageRead(b)).length;
-    run.summary = this.summaryOf(report, run, notes, again !== undefined, job);
+    run.summary = `${lookups ? 'Look up all. ' : ''}${this.summaryOf(report, run, notes, again !== undefined, job)}`;
     this.record(run);
     const open = report ? report.review.length + (report.ebayQuestions?.length ?? 0) : 0;
     store.update('activity', (a) => ({
@@ -698,12 +760,13 @@ export class AgentWork {
     return [...parts, ...notes].join(' ');
   }
 
-  private async runTheScan(trigger: ScanTrigger, keys: StoredKeys, notes: string[], again?: { usedBefore: number }): Promise<ScanJob> {
+  private async runTheScan(trigger: ScanTrigger, keys: StoredKeys, notes: string[], again?: { usedBefore: number }, lookups?: { maxSearches?: number }): Promise<ScanJob> {
     const { store } = this.d;
     const app = store.get('settings');
     const ext = extensionSettingsOf(app);
     // Read again: no listing page and no Amazon brand page; the lookups get what the last scan left of the limit.
-    const scanSettings = again ? { ...toScanSettings(ext), queries: [], catalogPagesPerScan: 0 } : toScanSettings(ext);
+    // Look up all: the same, and no Chrome read and no eBay either.
+    const scanSettings = again || lookups ? { ...toScanSettings(ext), queries: [], catalogPagesPerScan: 0 } : toScanSettings(ext);
     const problems = Object.values(validateSettings(ext));
     if (problems.length > 0) throw new WorkRefused(`A setting needs fixing before a scan: ${problems[0]}`);
     if (!keys.serpapi) throw new WorkRefused('Add your SerpApi key in Settings.');
@@ -720,19 +783,21 @@ export class AgentWork {
 
     const newest = (await this.scanStore.listScans())[0];
     const continued = newest?.status === 'running' ? newest : undefined;
-    const budget = new SearchBudget(account, budgetPolicyFor(ext, trigger, again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
+    const budget = new SearchBudget(account, budgetPolicyFor(lookups ? lookupsCap(ext, lookups.maxSearches) : ext, trigger, again ? again.usedBefore + (continued?.searchesUsed ?? 0) : continued?.searchesUsed ?? 0));
     const serpLedger = this.ledger('serpapi-ledger.jsonl');
     const client = new SerpApiClient({
       apiKey: keys.serpapi, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl,
       onSpend: (e: LedgerEntry) => serpLedger(e),
     });
     const keepa = await this.keepaDeps(ext, keys, notes);
-    const connected = this.d.helperConnected();
+    const connected = !lookups && this.d.helperConnected();
     const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal });
-    if (!connected) notes.push('Chrome is closed, so Home Depot pages wait for the next scan.');
+    if (lookups) {
+      // Look up all reads nothing in Chrome.
+    } else if (!connected) notes.push('Chrome is closed, so Home Depot pages wait for the next scan.');
     // BOGO found by itself, free, before the scan: the pairs it finds are bundles the scan then reads, splits and matches.
     else await this.bogoPass(ext, readers, notes);
-    const ebay = this.ebayStep(app, keys, notes);
+    const ebay = lookups ? null : this.ebayStep(app, keys, notes);
     const scan = this.d.runScan ?? runScan;
     // BOGO pairs are looked up after every other bundle, a few per group a scan (core's pairLookupOrder).
     const bogoPairs = Object.fromEntries(Object.values(store.get('tracking').bogoPairs ?? {}).map((p) => [p.key, `${p.promotionId}:${p.starterItemId}`]));
@@ -742,7 +807,7 @@ export class AgentWork {
       waitForPages: true,
       client, budget, store: this.watched(this.scanStore), settings: scanSettings, now: this.d.now, labelPrefix: 'agent',
       shouldStop: () => this.stopCtl.signal.aborted,
-      ...(connected ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices } : { noReaderReason: 'Chrome closed' }),
+      ...(connected ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices } : { noReaderReason: lookups ? 'not in this run' : 'Chrome closed' }),
       ...(ebay ? { ebay } : {}),
       ...keepa,
       cache: this.cache,

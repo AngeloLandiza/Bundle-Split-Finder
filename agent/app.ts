@@ -23,6 +23,7 @@ import {
   type QueuedResponse,
   type ReviewAnswer,
   type WorkerJobInputs,
+  type LookupsRunResponse,
   type ReadPagesResponse,
   type HelperReloadResponse,
   type WorkerJobKind,
@@ -657,6 +658,15 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/scan/stop', 'ui', () => ({ stopping: work.stop() }));
   // Nov 23: Read again, free (ReadPagesResponse): a refusal is an answer with its reason, not an error.
   r.post('/api/scan/read-pages', 'ui', (): ReadPagesResponse => work.readPagesAgain());
+  // Step 15, Look up all (LookupsRunResponse): a refusal is an answer with its reason, not an error.
+  r.post('/api/lookups/run', 'ui', async (ctx): Promise<LookupsRunResponse> => {
+    const raw = await ctx.body();
+    const b = raw === undefined || raw === null ? {} : obj(raw);
+    if ('maxSearches' in b && (typeof b.maxSearches !== 'number' || !Number.isInteger(b.maxSearches) || b.maxSearches < 0)) {
+      throw new HttpError('bad_request', 'maxSearches must be a whole number of 0 or more.');
+    }
+    return work.lookUpAll(typeof b.maxSearches === 'number' ? b.maxSearches : undefined);
+  });
 
   // ------------------------------------------------------------ pairing
   r.post('/api/pair/request', 'none', async (ctx) => pairResult(auth.requestPairing(obj(await ctx.body()).extensionId, ctx.origin)));

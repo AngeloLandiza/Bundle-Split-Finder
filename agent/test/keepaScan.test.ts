@@ -185,3 +185,40 @@ describe('the live view (step 15)', () => {
     await agent.work.idle();
   });
 });
+
+describe('Look up all (POST /api/lookups/run)', () => {
+  it('answers with what it will do on each budget, then looks up with no page, brand page, Chrome read, eBay or AI', async () => {
+    const { keepaCalls } = withKeepa({ tokens: 40 });
+    // 35 tokens above the reserve of 5: 3 lookups on Keepa; then the 1 search the per-scan cap allows.
+    const answer = await agent.work.lookUpAll();
+    expect(answer).toMatchObject({ started: true, viaKeepa: 3, viaSerpapi: 1 });
+    expect(answer.reason).toMatch(/^Looking up 4 parts: 3 with Keepa and 1 with a search\. \d+ more wait\.$/);
+    await agent.work.idle();
+    expect(keepaCalls.filter((c) => c === '/search')).toHaveLength(3);
+    const run = agent.store.get('activity').runs.at(-1)!;
+    expect(run.kind).toBe('scan');
+    expect(run.summary).toMatch(/^Look up all\. /);
+    expect(run.searchesUsed).toBeLessThanOrEqual(1);
+    expect(run.aiCostUsd).toBe(0);
+    expect(run.steps?.find((s) => s.label === 'Home Depot deals pages')?.state).not.toBe('done');
+    expect(run.steps?.find((s) => s.label === 'Bundle pages')).toMatchObject({ state: 'skipped', figure: 'not in this run' });
+  }, 30_000);
+
+  it('maxSearches lowers the search cap for this run; with nothing able to pay it does not start, and says why', async () => {
+    withKeepa({ tokens: 40 });
+    expect(await agent.work.lookUpAll(0)).toMatchObject({ started: true, viaKeepa: 3, viaSerpapi: 0 });
+    await agent.work.idle();
+    agent.close();
+    withKeepa({ tokens: 5 });
+    const refused = await agent.work.lookUpAll(0);
+    expect(refused.started).toBe(false);
+    expect(refused.reason).toMatch(/^Nothing can pay for a lookup now: \d+ Amazon lookups wait for Keepa tokens/);
+    expect([refused.viaKeepa, refused.viaSerpapi]).toEqual([0, 0]);
+  }, 30_000);
+
+  it('nothing waiting, or something already running: it does not start', async () => {
+    agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-all-')), port: 0, timers: false, fetchFn: (async () => new Response('{}')) as unknown as typeof fetch, now: () => T0 });
+    agent.store.update('keys', (k) => ({ ...k, serpapi: 'serp-secret-key-123' }));
+    expect(await agent.work.lookUpAll()).toEqual({ started: false, reason: 'No part waits for an Amazon lookup.', viaKeepa: 0, viaSerpapi: 0 });
+  });
+});
