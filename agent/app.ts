@@ -1,5 +1,5 @@
-// The agent's HTTP surface (step 13): checks, routes, store, worker jobs and events, wired together.
-// server.ts only listens. Tests build one on a temp data dir.
+// The agent's HTTP surface (step 13): checks, routes, store, worker jobs, events and the agent's work (work.ts),
+// wired together. server.ts only listens. Tests build one on a temp data dir.
 
 import { randomBytes } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
@@ -9,44 +9,34 @@ import {
   WORKER_JOB_KINDS,
   WORKER_LONG_POLL_MS,
   type AgentEventName,
-  type ApproveResponse,
+  type AiPipelineSetting,
+  type AnswerResponse,
   type KeyName,
   type NotifyEvent,
+  type PaidResponse,
   type PairClaimResponse,
   type PauseResponse,
   type QueuedResponse,
   type ReviewAnswer,
-  type ScanStartResponse,
   type WorkerJobInputs,
   type WorkerJobKind,
   type WorkerNextResponse,
   type WorkerResultBody,
 } from '../core/src/api/contract';
-import type { StoredSuggestion } from '../core/src/assist/stored';
 import { dealListSections } from '../core/src/deals/sections';
+import { AnswerRefused } from '../core/src/scan/answers';
 import { bundlesCsv } from '../core/src/scan/csv';
-import type { BundleRow, EbayQuestion, PaidAction, ReviewItem } from '../core/src/scan/types';
+import { ebaySettingsProblem, validateSettings } from '../core/src/settings';
 import { Auth, type PairError } from './auth';
 import { checkEbayKeysApp } from './checkEbayKeysApp';
 import { checkSerpApiKey } from './checkSerpKey';
 import { EventHub } from './events';
 import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError, type Ctx } from './http';
 import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus } from './setup';
-import { COLLECTIONS, Store, type AuditBundle, type HelperSnapshot, type StoreData, type StoredKeys } from './store';
+import { COLLECTIONS, Store, type StoreData, type StoredKeys } from './store';
 import { tryServeUi, uiIndexExists } from './uiStatic';
-import {
-  activityResponse,
-  agentState,
-  answerFromSuggestion,
-  dealDetail,
-  dealsResponse,
-  latestSuggestion,
-  openReviewCount,
-  parseSection,
-  parseSort,
-  reviewResponse,
-  settingsResponse,
-} from './views';
+import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse } from './views';
+import { AgentWork, extensionSettingsOf, WorkRefused, type WorkDeps } from './work';
 import { WorkerJobs } from './workerJobs';
 
 /** A paired extension counts as connected this long after it was last heard from. */
@@ -57,8 +47,12 @@ export interface AgentOptions {
   port: number;
   extraUiOrigins?: string[];
   now?: () => number;
-  /** Tests turn the background timers off. */
+  /** Tests turn the background timers (and the scheduler) off. */
   timers?: boolean;
+  /** Every paid call's fetch (SerpApi, Keepa, eBay, models, Telegram). Tests pass a fake; default the global fetch. */
+  fetchFn?: typeof fetch;
+  /** Tests: the scan itself, reader timeouts, SerpApi's address. */
+  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl'>;
 }
 
 export interface Agent {
@@ -67,6 +61,7 @@ export interface Agent {
   auth: Auth;
   jobs: WorkerJobs;
   events: EventHub;
+  work: AgentWork;
   notify(n: Omit<NotifyEvent, 'id'>): NotifyEvent;
   close(): void;
 }
@@ -84,24 +79,18 @@ function text(v: unknown, field: string, max = 4096): string {
   return v.trim();
 }
 
-function parseAnswer(v: unknown): ReviewAnswer {
-  const a = obj(v, 'answer');
+type AgentAnswer = { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' };
+
+function parseAnswer(v: unknown): AgentAnswer {
+  const a = obj(v, 'answer') as ReviewAnswer & Record<string, unknown>;
   if (typeof a.choice === 'number' && Number.isInteger(a.choice) && a.choice >= 0) return { choice: a.choice };
+  if (typeof a.choiceId === 'string' && /^choice:\d{1,3}$/.test(a.choiceId)) return { choice: Number(a.choiceId.slice(7)) };
   if (a.none === true) return { none: true };
   if (Array.isArray(a.parts) && a.parts.length >= 1 && a.parts.length <= 8 && a.parts.every((p) => typeof p === 'string' && p.trim())) {
     return { parts: (a.parts as string[]).map((p) => p.trim()) };
   }
   if (a.ebay === 'yes' || a.ebay === 'no') return { ebay: a.ebay };
   throw new HttpError('bad_request', 'answer must be a choice, none, parts, or an eBay yes or no.');
-}
-
-function parsePaid(v: unknown): PaidAction {
-  const a = obj(v, 'action');
-  if (a.kind === 'verify') return { kind: 'verify', brand: text(a.brand, 'brand'), model: text(a.model, 'model'), asin: text(a.asin, 'asin') };
-  if (a.kind === 'lookUp' && Array.isArray(a.parts)) {
-    return { kind: 'lookUp', parts: a.parts.map((p) => { const o = obj(p, 'part'); return { brand: text(o.brand, 'brand'), model: text(o.model, 'model') }; }) };
-  }
-  throw new HttpError('bad_request', 'action must be a verify or a lookUp.');
 }
 
 function parseKey(name: KeyName, body: Record<string, unknown>): Partial<StoredKeys> {
@@ -111,7 +100,8 @@ function parseKey(name: KeyName, body: Record<string, unknown>): Partial<StoredK
     case 'telegram':
       return { telegram: { botToken: text(body.botToken, 'botToken'), chatId: text(body.chatId, 'chatId') } };
     default:
-      return { [name]: text(body.key, 'key') };
+      // `value` is the desktop UI's name for it (W2); `key` the contract's.
+      return { [name]: text(body.key ?? body.value, 'key') };
   }
 }
 
@@ -122,8 +112,9 @@ function parseJobInput(kind: WorkerJobKind, v: unknown): WorkerJobInputs[WorkerJ
       if (!Array.isArray(o.itemIds) || !o.itemIds.length || o.itemIds.length > 50) throw new HttpError('bad_request', 'itemIds must list 1 to 50 item ids.');
       return { itemIds: o.itemIds.map((id) => text(String(id), 'itemId', 32)) };
     case 'kitPage':
-    case 'partPrice':
       return { itemId: text(String(o.itemId ?? ''), 'itemId', 32), model: text(o.model, 'model', 64) };
+    case 'partPrice':
+      return { itemId: text(String(o.itemId ?? ''), 'itemId', 32), model: text(o.model, 'model', 64), ...(typeof o.brand === 'string' ? { brand: text(o.brand, 'brand', 32) } : {}) };
     case 'search':
       return { query: text(o.query, 'query', 200), page: typeof o.page === 'number' && o.page >= 1 ? Math.floor(o.page) : 1 };
     case 'partPrices':
@@ -134,16 +125,45 @@ function parseJobInput(kind: WorkerJobKind, v: unknown): WorkerJobInputs[WorkerJ
   }
 }
 
-const NUMERIC_SETTINGS = ['searchesPerScan', 'reserve', 'keepaTokensPerScan', 'keepaReserve', 'pagesPerBrand'] as const;
-const FLAG_SETTINGS = ['appPrimaryUi', 'compactHelperPanel', 'askAfterScan', 'autopilot'] as const;
+const NUMERIC_SETTINGS = ['searchesPerScan', 'reserve', 'keepaTokensPerScan', 'keepaReserve', 'pagesPerBrand', 'keepaDiscoveryShare'] as const;
+const PIPELINES = ['judge', 'assist', 'research'] as const;
+
+function flag(v: unknown, field: string): boolean {
+  if (typeof v !== 'boolean') throw new HttpError('bad_request', `${field} must be true or false.`);
+  return v;
+}
+
+function aiPipelinePatch(cur: AiPipelineSetting, v: unknown, name: string): AiPipelineSetting {
+  const o = obj(v, `ai.${name}`);
+  const next: AiPipelineSetting = { ...cur };
+  if ('provider' in o) {
+    if (o.provider !== 'anthropic' && o.provider !== 'openai-compatible') throw new HttpError('bad_request', 'provider must be anthropic or openai-compatible.');
+    next.provider = o.provider;
+    next.apiKeyRef = o.provider === 'anthropic' ? 'anthropic' : 'openai';
+    // A model that has not been measured is not trusted until the owner says it is (Autopilot rule 5).
+    if (!('trusted' in o)) next.trusted = o.provider === 'anthropic';
+  }
+  if ('model' in o) next.model = text(o.model, `ai.${name}.model`, 100);
+  if ('baseUrl' in o) next.baseUrl = o.baseUrl === null || o.baseUrl === '' ? undefined : text(o.baseUrl, `ai.${name}.baseUrl`, 300);
+  if ('preset' in o) {
+    if (o.preset !== 'deepseek' && o.preset !== 'generic') throw new HttpError('bad_request', 'preset must be deepseek or generic.');
+    next.preset = o.preset;
+  }
+  if ('id' in o) next.id = text(o.id, `ai.${name}.id`, 40);
+  if ('label' in o) next.label = text(o.label, `ai.${name}.label`, 60);
+  if ('trusted' in o) next.trusted = flag(o.trusted, `ai.${name}.trusted`);
+  if ('rates' in o) {
+    const r = obj(o.rates, 'rates');
+    const ok = (x: unknown) => typeof x === 'number' && Number.isFinite(x) && x >= 0;
+    if (!ok(r.input) || !ok(r.output)) throw new HttpError('bad_request', 'rates need input and output dollars per million tokens.');
+    next.rates = r as unknown as AiPipelineSetting['rates'];
+  }
+  return next;
+}
 
 function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, unknown>, at: string): StoreData['settings'] {
   const next = structuredClone(cur);
-  for (const f of FLAG_SETTINGS) {
-    if (!(f in patch)) continue;
-    if (typeof patch[f] !== 'boolean') throw new HttpError('bad_request', `${f} must be true or false.`);
-    next[f] = patch[f] as boolean;
-  }
+  if ('autopilot' in patch) next.autopilot = flag(patch.autopilot, 'autopilot');
   if ('settings' in patch) {
     const s = obj(patch.settings, 'settings');
     for (const f of NUMERIC_SETTINGS) {
@@ -151,18 +171,43 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
       if (typeof s[f] !== 'number' || !Number.isFinite(s[f]) || (s[f] as number) < 0) throw new HttpError('bad_request', `${f} must be a number of 0 or more.`);
       next.settings[f] = s[f] as number;
     }
-    if ('agentBridgeAfterScan' in s) {
-      if (typeof s.agentBridgeAfterScan !== 'boolean') throw new HttpError('bad_request', 'agentBridgeAfterScan must be true or false.');
-      next.settings.agentBridgeAfterScan = s.agentBridgeAfterScan;
-    }
     if ('brands' in s) {
       if (!Array.isArray(s.brands) || !s.brands.every((b) => typeof b === 'string' && b.trim())) throw new HttpError('bad_request', 'brands must be a list of names.');
-      next.settings.brands = (s.brands as string[]).map((b) => b.trim());
+      next.settings.brands = (s.brands as string[]).map((b) => b.trim().toUpperCase());
     }
     if ('fees' in s) next.settings.fees = { ...next.settings.fees, ...obj(s.fees, 'fees') } as typeof next.settings.fees;
     if ('schedule' in s) next.settings.schedule = obj(s.schedule, 'schedule') as unknown as typeof next.settings.schedule;
+    if ('discoveryMode' in s) next.settings.discoveryMode = s.discoveryMode as typeof next.settings.discoveryMode;
+    if ('trackingDepth' in s) next.settings.trackingDepth = s.trackingDepth as typeof next.settings.trackingDepth;
+    if ('amazonRefreshViaKeepa' in s) next.settings.amazonRefreshViaKeepa = flag(s.amazonRefreshViaKeepa, 'amazonRefreshViaKeepa');
   }
-  if ('ebaySettings' in patch) next.ebaySettings = { ...next.ebaySettings, ...obj(patch.ebaySettings, 'ebaySettings') } as typeof next.ebaySettings;
+  if ('alerts' in patch) {
+    const a = obj(patch.alerts, 'alerts');
+    if ('enabled' in a) next.alerts.enabled = flag(a.enabled, 'alerts.enabled');
+    if ('reviewDigest' in a) next.alerts.reviewDigest = flag(a.reviewDigest, 'alerts.reviewDigest');
+    for (const f of ['minProfit', 'minRoiPercent'] as const) {
+      if (!(f in a)) continue;
+      if (typeof a[f] !== 'number' || !Number.isFinite(a[f]) || (a[f] as number) < 0) throw new HttpError('bad_request', `alerts.${f} must be a number of 0 or more.`);
+      next.alerts[f] = a[f] as number;
+    }
+  }
+  if ('ai' in patch) {
+    const a = obj(patch.ai, 'ai');
+    for (const p of PIPELINES) if (p in a) next.ai[p] = aiPipelinePatch(next.ai[p], a[p], p);
+    if ('monthlyCapUsd' in a) {
+      if (typeof a.monthlyCapUsd !== 'number' || !Number.isFinite(a.monthlyCapUsd) || a.monthlyCapUsd < 0) throw new HttpError('bad_request', 'ai.monthlyCapUsd must be a number of 0 or more.');
+      next.ai.monthlyCapUsd = a.monthlyCapUsd;
+    }
+  }
+  if ('ebaySettings' in patch) {
+    next.ebaySettings = { ...next.ebaySettings, ...obj(patch.ebaySettings, 'ebaySettings') } as typeof next.ebaySettings;
+    const problem = ebaySettingsProblem(next.ebaySettings);
+    if (problem) throw new HttpError('bad_request', problem);
+  }
+  // The scan's own checks (core/src/settings.ts validateSettings): a value no scan could use is refused here.
+  const problems = validateSettings(extensionSettingsOf(next));
+  const first = Object.entries(problems)[0];
+  if (first) throw new HttpError('bad_request', `${first[0]}: ${first[1]}`);
   next.updatedAt = at;
   return next;
 }
@@ -190,24 +235,15 @@ function sendCsv(res: ServerResponse, file: string, csv: string): typeof HANDLED
   return HANDLED;
 }
 
-/** The meters the pre-step-13 extension posts, kept field by field so nothing else is stored. */
-function helperSnapshot(body: Record<string, unknown>, at: string): HelperSnapshot {
-  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
-  const job = body.lastJob && typeof body.lastJob === 'object' ? (body.lastJob as HelperSnapshot['lastJob']) : null;
-  return {
-    at,
-    hasKey: body.hasKey === true,
-    hasAnthropicKey: body.hasAnthropicKey === true,
-    scanRunning: body.scanRunning === true,
-    askAiAllRunning: body.askAiAllRunning === true,
-    searchesLeft: num(body.searchesLeft),
-    searchesPerMonth: num(body.searchesPerMonth),
-    keepaTokensLeft: num(body.keepaTokensLeft),
-    keepaRefillMin: num(body.keepaRefillMin),
-    searchesPerScan: num(body.searchesPerScan) ?? 0,
-    rateLimitPerHour: num(body.rateLimitPerHour),
-    lastJob: job,
-  };
+/** The work's refusals as HTTP: a busy agent or a refused answer is 409, an unknown thing 404. */
+async function refusals<T>(fn: () => T | Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof WorkRefused) throw new HttpError('conflict', err.message);
+    if (err instanceof AnswerRefused) throw new HttpError(/not found|No such/i.test(err.message) ? 'not_found' : 'conflict', err.message);
+    throw err;
+  }
 }
 
 // ---------------------------------------------------------------- the agent
@@ -228,15 +264,35 @@ export function createAgent(opts: AgentOptions): Agent {
       lastSeenAt: seen === null ? null : new Date(seen).toISOString(),
     };
   };
-  const state = () => {
-    const data = Object.fromEntries(COLLECTIONS.map((n) => [n, store.get(n)])) as unknown as StoreData;
-    return agentState(data, { ...helperLive(), jobsWaiting: jobs.waitingCount(), monthStart: monthStart(now()) });
-  };
 
   // Store changes become events, gathered for a moment so a burst of writes is one event each.
   const dirty = new Set<AgentEventName>();
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
-  const flush = () => {
+  const mark = (...names: AgentEventName[]) => {
+    for (const n of names) dirty.add(n);
+    if (!flushTimer) flushTimer = setTimeout(flush, 50);
+  };
+
+  const notify = (n: Omit<NotifyEvent, 'id'>): NotifyEvent => {
+    const event: NotifyEvent = { id: `n-${randomBytes(6).toString('hex')}`, ...n };
+    events.publish('notify', event);
+    return event;
+  };
+
+  const work = new AgentWork({
+    store, jobs, dataDir: opts.dataDir, now, fetchFn: opts.fetchFn ?? fetch, helperConnected: () => helperLive().connected, notify,
+    changed: () => mark('state'), ...(opts.work ?? {}),
+  });
+
+  const state = () => {
+    const data = Object.fromEntries(COLLECTIONS.map((n) => [n, store.get(n)])) as unknown as StoreData;
+    const live = work.state();
+    return agentState(data, {
+      ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(),
+    });
+  };
+
+  function flush(): void {
     flushTimer = null;
     const names = [...dirty];
     dirty.clear();
@@ -251,11 +307,7 @@ export function createAgent(opts: AgentOptions): Agent {
       } else if (name === 'activity') events.publish('activity', { at: iso() });
     }
     if (names.length) events.publish('state', state());
-  };
-  const mark = (...names: AgentEventName[]) => {
-    for (const n of names) dirty.add(n);
-    if (!flushTimer) flushTimer = setTimeout(flush, 50);
-  };
+  }
   store.onChange((name) => {
     if (name === 'deals') mark('deals', 'state');
     else if (name === 'review' || name === 'suggestions') mark('review', 'state');
@@ -274,21 +326,10 @@ export function createAgent(opts: AgentOptions): Agent {
       }, 15_000)
     : null;
   connectionTimer?.unref?.();
-  if (timers) jobs.start();
-
-  const notify = (n: Omit<NotifyEvent, 'id'>): NotifyEvent => {
-    const event: NotifyEvent = { id: `n-${randomBytes(6).toString('hex')}`, ...n };
-    events.publish('notify', event);
-    return event;
-  };
-
-  const pushOutbox = <K extends 'reviewAnswers' | 'paid' | 'ask'>(k: K, item: StoreData['outbox'][K][number]) =>
-    store.update('outbox', (o) => ({ ...o, [k]: [...o[k], item] }));
-
-  const openQuestion = (id: string): ReviewItem | EbayQuestion | null => {
-    const r = store.get('review');
-    return r.questions.find((q) => q.id === id && q.answer === null) ?? r.ebayQuestions.find((q) => q.id === id) ?? null;
-  };
+  if (timers) {
+    jobs.start();
+    work.start();
+  }
 
   const r = new Router();
 
@@ -353,7 +394,7 @@ export function createAgent(opts: AgentOptions): Agent {
   // ------------------------------------------------------------ deals
   r.get('/api/deals', 'any', (ctx) =>
     dealsResponse(
-      { deals: store.get('deals'), review: store.get('review'), activity: store.get('activity') },
+      { deals: store.get('deals'), review: store.get('review'), runtime: store.get('runtime'), settings: store.get('settings') },
       { sort: parseSort(ctx.url.searchParams.get('sort')), section: parseSection(ctx.url.searchParams.get('section')) },
       now(),
     ),
@@ -365,7 +406,7 @@ export function createAgent(opts: AgentOptions): Agent {
     return sendCsv(ctx.res, `split-finder-deals-${csvFileDate(now())}.csv`, bundlesCsv(groups.flatMap((g) => g.rows)));
   });
   r.get('/api/deals/:id', 'any', (ctx) => {
-    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review') }, ctx.params.id!);
+    const detail = dealDetail({ deals: store.get('deals'), review: store.get('review'), settings: store.get('settings') }, ctx.params.id!);
     if (!detail) throw new HttpError('not_found', 'No such deal.');
     return detail;
   });
@@ -374,62 +415,53 @@ export function createAgent(opts: AgentOptions): Agent {
     if (!bundle) throw new HttpError('not_found', 'No such deal.');
     return sendCsv(ctx.res, `split-finder-${bundle.model}.csv`, bundlesCsv([bundle]));
   });
-
-  // ------------------------------------------------------------ review
-  r.get('/api/review', 'any', () => reviewResponse({ review: store.get('review'), suggestions: store.get('suggestions'), deals: store.get('deals') }));
-  r.post('/api/review/ask-all', 'ui', (): QueuedResponse => {
-    pushOutbox('ask', { job: { all: true }, queuedAt: iso() });
-    return { queued: true };
+  // Look up and Verify: the quote first (free), then the owner's click spends within the per-scan limit.
+  r.get('/api/deals/:id/lookup', 'ui', (ctx) => refusals(async (): Promise<PaidResponse> => ({ searches: (await work.paidPlan(ctx.params.id!, 'lookUp')).searches })));
+  r.post('/api/deals/:id/lookup', 'ui', (ctx) => refusals(async (): Promise<PaidResponse> => ({ searches: (await work.paid(ctx.params.id!, 'lookUp')).searchesUsed })));
+  r.post('/api/deals/:id/verify', 'ui', async (ctx) => {
+    const model = text(obj(await ctx.body()).model, 'model', 64);
+    return refusals(async (): Promise<PaidResponse> => ({ searches: (await work.paid(ctx.params.id!, 'verify', model)).searchesUsed }));
   });
-  r.post('/api/review/approve', 'ui', async (ctx): Promise<ApproveResponse> => {
+
+  // ------------------------------------------------------------ review (applied by the agent, core/src/scan/answers.ts)
+  r.get('/api/review', 'any', () =>
+    reviewResponse({ review: store.get('review'), suggestions: store.get('suggestions'), deals: store.get('deals'), settings: store.get('settings') }),
+  );
+  r.post('/api/review/ask-all', 'ui', () => refusals((): QueuedResponse => {
+    work.askNow();
+    return { queued: true };
+  }));
+  r.post('/api/review/approve', 'ui', async (ctx) => {
     const ids = obj(await ctx.body()).ids;
     if (!Array.isArray(ids) || !ids.every((i) => typeof i === 'string')) throw new HttpError('bad_request', 'ids must be a list of question ids.');
-    const suggestions = store.get('suggestions');
-    const out: ApproveResponse = { approved: [], skipped: [] };
-    for (const id of ids as string[]) {
-      const q = store.get('review').questions.find((x) => x.id === id && x.answer === null);
-      if (!q) {
-        out.skipped.push({ id, reason: 'No open question with this id.' });
-        continue;
-      }
-      const res = answerFromSuggestion(q, latestSuggestion(suggestions, id));
-      if ('reason' in res) out.skipped.push({ id, reason: res.reason });
-      else {
-        pushOutbox('reviewAnswers', { id, answer: res.answer, aiSuggestion: true, queuedAt: iso() });
-        out.approved.push(id);
-      }
-    }
-    return out;
+    return refusals(() => work.approve(ids as string[]));
   });
-  r.post('/api/review/:id/answer', 'any', async (ctx): Promise<QueuedResponse> => {
+  r.post('/api/review/:id/answer', 'any', async (ctx) => {
     const b = obj(await ctx.body());
     const answer = parseAnswer(b.answer);
-    if (!openQuestion(ctx.params.id!)) throw new HttpError('not_found', 'No open question with this id.');
-    pushOutbox('reviewAnswers', { id: ctx.params.id!, answer, aiSuggestion: b.fromSuggestion === true ? true : undefined, queuedAt: iso() });
-    return { queued: true };
+    const seen = typeof b.seen === 'string' ? b.seen : undefined;
+    return refusals(async (): Promise<AnswerResponse> => {
+      await work.answer(ctx.params.id!, answer, seen, b.fromSuggestion === true);
+      return { applied: true };
+    });
   });
-  r.post('/api/review/:id/ask', 'ui', (ctx): QueuedResponse => {
-    if (!openQuestion(ctx.params.id!)) throw new HttpError('not_found', 'No open question with this id.');
-    pushOutbox('ask', { job: { questionId: ctx.params.id! }, queuedAt: iso() });
+  r.post('/api/review/:id/ask', 'ui', (ctx) => refusals(async (): Promise<QueuedResponse> => {
+    if (!store.get('review').questions.some((q) => q.id === ctx.params.id && q.answer === null)) throw new HttpError('not_found', 'No open question with this id.');
+    work.askNow([ctx.params.id!]);
     return { queued: true };
-  });
+  }));
 
   // ------------------------------------------------------------ activity, autopilot, scan
   r.get('/api/activity', 'any', () =>
-    activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), suggestions: store.get('suggestions') }, monthStart(now())),
+    activityResponse({ activity: store.get('activity'), autopilot: store.get('autopilot'), suggestions: store.get('suggestions') }, monthStart(now()), now()),
   );
-  r.post('/api/autopilot/:id/undo', 'ui', () => {
-    throw new HttpError('unavailable', 'Autopilot arrives with the agent scans (step 13, Wave 2).');
-  });
-  const requestScan = (): ScanStartResponse => {
-    const pending = { id: `scan-${now()}`, requestedAt: iso() };
-    store.update('outbox', (o) => ({ ...o, scan: pending }));
-    return pending;
-  };
-  r.post('/api/scan', 'ui', () => requestScan());
-  r.post('/api/scan/stop', 'ui', () => {
-    throw new HttpError('unavailable', 'Stopping a scan from the app arrives with the agent scans (step 13, Wave 2).');
-  });
+  r.post('/api/activity/errors/:id/retry', 'ui', (ctx) => refusals(async () => {
+    await work.retry(ctx.params.id!);
+    return { ok: true };
+  }));
+  r.post('/api/autopilot/:id/undo', 'ui', (ctx) => refusals(() => work.undo(ctx.params.id!)));
+  r.post('/api/scan', 'ui', () => refusals(() => work.scanNow()));
+  r.post('/api/scan/stop', 'ui', () => ({ stopping: work.stop() }));
 
   // ------------------------------------------------------------ pairing
   r.post('/api/pair/request', 'none', async (ctx) => pairResult(auth.requestPairing(obj(await ctx.body()).extensionId, ctx.origin)));
@@ -449,6 +481,24 @@ export function createAgent(opts: AgentOptions): Agent {
   r.get('/api/pair/extensions', 'ui', () => auth.pairedExtensions());
   r.delete('/api/pair/extensions/:id', 'ui', (ctx) => {
     if (!auth.revoke(ctx.params.id!)) throw new HttpError('not_found', 'This extension is not paired.');
+    return { ok: true };
+  });
+  // The app's Disconnect: one extension by id, or every paired one when none is named (the app pairs one helper).
+  r.post('/api/pair/revoke', 'ui', async (ctx) => {
+    const raw = await ctx.body().catch(() => ({}));
+    const id = typeof (raw as { extensionId?: unknown })?.extensionId === 'string' ? (raw as { extensionId: string }).extensionId : null;
+    const ids = id ? [id] : auth.pairedExtensions().map((e) => e.extensionId);
+    const revoked = ids.filter((x) => auth.revoke(x));
+    if (id && !revoked.length) throw new HttpError('not_found', 'This extension is not paired.');
+    mark('state');
+    return { ok: true, revoked: revoked.length };
+  });
+  // The extension's own Disconnect: its token stops working.
+  r.delete('/api/pair/self', 'extension', (ctx) => {
+    const p = ctx.principal;
+    if (p?.kind !== 'extension') throw new HttpError('forbidden', 'Only the paired extension can do this.');
+    auth.revoke(p.extensionId);
+    mark('state');
     return { ok: true };
   });
 
@@ -475,7 +525,7 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/worker/jobs', 'ui', async (ctx) => {
     const b = obj(await ctx.body());
     const kind = b.kind as WorkerJobKind;
-    if (!WORKER_JOB_KINDS.includes(kind)) throw new HttpError('bad_request', 'kind must be page, kitPage, partPrice or search.');
+    if (!WORKER_JOB_KINDS.includes(kind)) throw new HttpError('bad_request', `kind must be one of ${WORKER_JOB_KINDS.join(', ')}.`);
     return jobs.enqueue(kind, parseJobInput(kind, b.input));
   });
   r.get('/api/worker/jobs/:id', 'ui', (ctx) => {
@@ -496,129 +546,6 @@ export function createAgent(opts: AgentOptions): Agent {
     } catch (err) {
       throw new HttpError('bad_request', err instanceof Error ? err.message : 'Install failed.');
     }
-  });
-
-  // ------------------------------------------------------------ the pre-step-13 extension mailbox
-  // Today's extension still scans and posts its results. These keep their old bodies, now behind a
-  // paired token, until the extension becomes a worker (W5). Keys are never in any of them.
-  r.post('/api/panel', 'any', async (ctx) => {
-    const b = obj(await ctx.body());
-    if (b.kind !== 'split-finder-panel' || !Array.isArray(b.bundles)) throw new HttpError('bad_request', 'Not a split-finder-panel export.');
-    store.update('deals', (d) => ({ ...d, at: iso(), bundles: b.bundles as BundleRow[] }));
-    return { ok: true };
-  });
-  r.post('/api/bridge', 'any', async (ctx) => {
-    const b = obj(await ctx.body());
-    const at = iso();
-    const bundles = Array.isArray(b.bundles) ? b.bundles : [];
-    store.update('activity', (a) => ({ ...a, bridge: { at, kind: typeof b.kind === 'string' ? b.kind : null, bundleCount: bundles.length } }));
-    if (b.kind !== 'split-finder-audit') return { ok: true };
-    const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null;
-    store.update('deals', (d) => ({
-      ...d,
-      auditAt: at,
-      auditBundles: bundles.filter(isObj).map((x) => ({
-        key: String(x.key),
-        brand: String(x.brand),
-        model: String(x.model),
-        title: String(x.title),
-        section: String(x.section),
-        itemId: typeof x.itemId === 'number' ? x.itemId : null,
-      })) as AuditBundle[],
-    }));
-    store.update('review', () => ({
-      at,
-      questions: (Array.isArray(b.questions) ? b.questions : []).filter((q): q is ReviewItem => isObj(q) && typeof q.id === 'string'),
-      ebayQuestions: (Array.isArray(b.ebayQuestions) ? b.ebayQuestions : []).filter((q): q is EbayQuestion => isObj(q) && typeof q.id === 'string'),
-    }));
-    if (Array.isArray(b.aiSuggestions)) {
-      store.update('suggestions', () => (b.aiSuggestions as unknown[]).filter((s): s is StoredSuggestion => isObj(s) && typeof s.questionId === 'string'));
-    }
-    return { ok: true };
-  });
-  r.get('/api/bridge', 'any', () => {
-    const bridge = store.get('activity').bridge;
-    return bridge ? { ok: true, summary: bridge } : { ok: false, message: 'No extension export yet.' };
-  });
-  r.post('/api/state', 'any', async (ctx) => {
-    const snap = helperSnapshot(obj(await ctx.body()), iso());
-    store.update('activity', (a) => ({ ...a, helper: snap }));
-    return { ok: true };
-  });
-  r.get('/api/helper/settings', 'any', () => {
-    const { settings, keys } = settingsResponse({ settings: store.get('settings'), keys: store.get('keys') });
-    return {
-      ok: true,
-      updatedAt: store.get('settings').updatedAt,
-      appPrimaryUi: settings.appPrimaryUi,
-      compactHelperPanel: settings.compactHelperPanel,
-      askAfterScan: settings.askAfterScan,
-      ebaySettings: settings.ebaySettings,
-      settings: settings.settings,
-      serpApiKeySet: keys.serpapi,
-      keepaKeySet: keys.keepa,
-      ebayKeysSet: keys.ebay,
-      anthropicKeySet: keys.anthropic,
-    };
-  });
-  r.post('/api/scan/start', 'any', () => ({ ok: true, pending: requestScan() }));
-  r.get('/api/scan/pending', 'any', () => ({ ok: true, pending: store.get('outbox').scan }));
-  r.post('/api/scan/ack', 'any', () => {
-    store.update('outbox', (o) => ({ ...o, scan: null }));
-    return { ok: true };
-  });
-  r.get('/api/review/queue', 'any', () => ({ ok: true, jobs: store.get('outbox').reviewAnswers }));
-  r.post('/api/review/queue', 'any', async (ctx) => {
-    const b = obj(await ctx.body());
-    pushOutbox('reviewAnswers', { id: text(b.id, 'id'), answer: parseAnswer(b.answer), aiSuggestion: b.aiSuggestion === true ? true : undefined, queuedAt: iso() });
-    return { ok: true };
-  });
-  r.post('/api/review/queue/ack', 'any', () => {
-    store.update('outbox', (o) => ({ ...o, reviewAnswers: [] }));
-    return { ok: true };
-  });
-  r.get('/api/paid/queue', 'any', () => ({ ok: true, jobs: store.get('outbox').paid }));
-  r.post('/api/paid/queue', 'any', async (ctx) => {
-    pushOutbox('paid', { action: parsePaid(obj(await ctx.body()).action), queuedAt: iso() });
-    return { ok: true };
-  });
-  r.post('/api/paid/queue/ack', 'any', () => {
-    store.update('outbox', (o) => ({ ...o, paid: [] }));
-    return { ok: true };
-  });
-  r.get('/api/review/ask/queue', 'any', () => ({ ok: true, jobs: store.get('outbox').ask }));
-  r.post('/api/review/ask/queue', 'any', async (ctx) => {
-    const b = obj(await ctx.body());
-    if (b.all === true) pushOutbox('ask', { job: { all: true }, queuedAt: iso() });
-    else pushOutbox('ask', { job: { questionId: text(b.questionId, 'questionId') }, queuedAt: iso() });
-    return { ok: true };
-  });
-  r.post('/api/review/ask/queue/ack', 'any', () => {
-    store.update('outbox', (o) => ({ ...o, ask: [] }));
-    return { ok: true };
-  });
-  // Home Depot page reads, now worker jobs of kind 'page'.
-  r.post('/api/hd-read/request', 'any', async (ctx) => {
-    const ids = obj(await ctx.body()).itemIds;
-    const itemIds = Array.isArray(ids) ? [...new Set(ids.filter((id): id is number => Number.isInteger(id) && id > 0))] : [];
-    if (!itemIds.length) throw new HttpError('bad_request', 'No valid Home Depot item ids.');
-    const job = jobs.enqueue('page', { itemIds: itemIds.map(String) });
-    return { ok: true, pending: { id: job.id, itemIds, requestedAt: job.createdAt } };
-  });
-  r.get('/api/hd-read/pending', 'any', () => {
-    const job = jobs.take(['page']);
-    const input = job?.input as WorkerJobInputs['page'] | undefined;
-    return { ok: true, pending: job && input ? { id: job.id, itemIds: input.itemIds.map(Number), requestedAt: job.createdAt } : null };
-  });
-  r.post('/api/hd-read/result', 'any', async (ctx) => {
-    const b = obj(await ctx.body());
-    if (!jobs.complete({ id: text(b.id, 'id', 64), ok: true, result: b.outcomes ?? null })) throw new HttpError('not_found', 'No unfinished read with this id.');
-    return { ok: true };
-  });
-  r.get('/api/hd-read/result', 'any', (ctx) => {
-    const job = jobs.get(ctx.url.searchParams.get('id') ?? '');
-    if (!job || job.status !== 'done') return { ok: false, message: 'No result yet.' };
-    return { ok: true, id: job.id, at: job.finishedAt, outcomes: job.result };
   });
 
   // ------------------------------------------------------------ the request pipeline
@@ -733,10 +660,12 @@ export function createAgent(opts: AgentOptions): Agent {
     auth,
     jobs,
     events,
+    work,
     notify,
     close() {
       if (flushTimer) clearTimeout(flushTimer);
       if (connectionTimer) clearInterval(connectionTimer);
+      work.close();
       jobs.stop();
       events.close();
       store.close();

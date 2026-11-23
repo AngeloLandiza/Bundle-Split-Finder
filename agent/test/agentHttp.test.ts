@@ -183,40 +183,4 @@ describe('agent HTTP', () => {
     expect(all).toContain('"counts":{"review":0');
     expect(all).toMatch(/event: notify\ndata: .*"kind":"review".*"count":2/);
   });
-
-  it('keeps the pre-step-13 extension mailbox working behind a token', async () => {
-    const token = await pairExtension();
-    await ext(token, '/api/panel', {
-      method: 'POST',
-      body: JSON.stringify({
-        kind: 'split-finder-panel',
-        bundles: [
-          {
-            key: 'K', itemId: '9', brand: 'DEWALT', model: 'M', title: 'T', link: 'https://www.homedepot.com/p/9', price: 50, regularPrice: 80,
-            percentOff: 37, seenAt: 1, status: 'complete', section: 'confirmed',
-            parts: [{ model: 'A', qty: 1, status: 'complete', grade: 'strong', availability: 'active', asin: 'B0TEST', price: 30, priceSeenAt: 1, image: null, title: null, prices: [] }],
-            estimate: { profit: 10, roi: 0.25, cost: 40, netRevenue: 50 }, uncovered: [], answer: null, options: [], kitsNotRead: [],
-            range: { lowest: null, amazonNew: null, highest: null },
-          },
-        ],
-      }),
-    });
-    const deals = (await (await ui('/api/deals')).json()) as { rows: { id: string; profit: number; matchState: string }[] };
-    expect(deals.rows[0]).toMatchObject({ id: 'K', profit: 10, matchState: '1 part matched' });
-    const detail = (await (await ui('/api/deals/K')).json()) as { sources: { url: string }[]; estimateBasis: string };
-    expect(detail.sources.map((s) => s.url)).toEqual(['https://www.homedepot.com/p/9', 'https://www.amazon.com/dp/B0TEST']);
-    expect(detail.estimateBasis).toMatch(/Estimated/);
-
-    expect(await (await ui('/api/scan', { method: 'POST', body: '{}' })).json()).toMatchObject({ id: expect.stringMatching(/^scan-/) });
-    const pending = (await (await ext(token, '/api/scan/pending')).json()) as { pending: { id: string } | null };
-    expect(pending.pending).not.toBeNull();
-    await ext(token, '/api/scan/ack', { method: 'POST' });
-    expect(((await (await ext(token, '/api/scan/pending')).json()) as { pending: null }).pending).toBeNull();
-
-    const read = (await (await ext(token, '/api/hd-read/request', { method: 'POST', body: JSON.stringify({ itemIds: [7] }) })).json()) as { pending: { id: string } };
-    const hd = (await (await ext(token, '/api/hd-read/pending')).json()) as { pending: { id: string; itemIds: number[] } };
-    expect(hd.pending).toMatchObject({ id: read.pending.id, itemIds: [7] });
-    await ext(token, '/api/hd-read/result', { method: 'POST', body: JSON.stringify({ id: hd.pending.id, outcomes: ['ok'] }) });
-    expect(await (await ext(token, `/api/hd-read/result?id=${hd.pending.id}`)).json()).toMatchObject({ ok: true, outcomes: ['ok'] });
-  });
 });

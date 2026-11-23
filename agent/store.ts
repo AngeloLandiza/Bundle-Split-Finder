@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import type {
   AppSettings,
   AutopilotEntry,
+  EvidenceQuote,
   LastScanSummary,
   PairedExtension,
   ReviewAnswer,
@@ -60,6 +61,8 @@ export interface ReviewCollection {
   at: string | null;
   questions: ReviewItem[];
   ebayQuestions: EbayQuestion[];
+  /** W4: the stored evidence of each open question (core/src/assist/evidence.ts), by question id. */
+  evidence?: Record<string, EvidenceQuote[]>;
 }
 
 export type HelperLastJob = Pick<
@@ -166,6 +169,8 @@ export interface AgentRuntime {
   telegram: { pending: PendingMessage[]; lastSentAt: string | null; lastError: string | null };
   /** Seconds a unit of each kind took in recent scans, for the progress estimate (pipeline.ts). */
   rates: UnitRates;
+  /** The last scan's job, as the Deals limit notice reads it (core/src/deals/limitCopy.ts). */
+  lastJob: HelperLastJob | null;
 }
 
 export interface StoreData {
@@ -207,16 +212,12 @@ export const STORE_VERSION = 1;
 export function defaultSettings(): StoreData['settings'] {
   return {
     updatedAt: new Date(0).toISOString(),
-    appPrimaryUi: true,
-    compactHelperPanel: false,
-    askAfterScan: false,
     autopilot: true,
     ebaySettings: { ...DEFAULT_EBAY_SETTINGS },
     settings: {
       schedule: DEFAULT_SETTINGS.schedule,
       searchesPerScan: DEFAULT_SETTINGS.searchesPerScan,
       reserve: DEFAULT_SETTINGS.reserve,
-      agentBridgeAfterScan: true,
       keepaTokensPerScan: DEFAULT_SETTINGS.keepaTokensPerScan,
       keepaReserve: DEFAULT_SETTINGS.keepaReserve,
       fees: { ...DEFAULT_FEES },
@@ -254,7 +255,7 @@ function defaults(): StoreData {
     outbox: { scan: null, reviewAnswers: [], paid: [], ask: [] },
     runtime: {
       lastScheduledRunAt: null, serp: null, keepa: null, notifiedDeals: [], notifiedQuestions: [],
-      telegram: { pending: [], lastSentAt: null, lastError: null }, rates: {},
+      telegram: { pending: [], lastSentAt: null, lastError: null }, rates: {}, lastJob: null,
     },
   };
 }
@@ -268,11 +269,14 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
     const s = raw as Partial<StoreData['settings']>;
     const d = base as StoreData['settings'];
     const ai = (s.ai ?? {}) as Partial<AppSettings['ai']>;
+    // Fields of the extension era that W4 removed are not carried on.
+    const { appPrimaryUi: _a, compactHelperPanel: _c, askAfterScan: _k, ...kept } = s as Record<string, unknown>;
+    const { agentBridgeAfterScan: _b, ...keptSettings } = (s.settings ?? {}) as Record<string, unknown>;
     return {
       ...d,
-      ...s,
+      ...(kept as Partial<StoreData['settings']>),
       ebaySettings: { ...d.ebaySettings, ...(s.ebaySettings ?? {}) },
-      settings: { ...d.settings, ...(s.settings ?? {}) },
+      settings: { ...d.settings, ...(keptSettings as Partial<StoreData['settings']['settings']>) },
       alerts: { ...d.alerts, ...(s.alerts ?? {}) },
       ai: {
         ...d.ai,

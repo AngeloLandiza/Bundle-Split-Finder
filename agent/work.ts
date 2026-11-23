@@ -11,7 +11,8 @@
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { AppSettings, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
+import type { AppSettings, EvidenceQuote, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
+import { gatherEvidence } from '../core/src/assist/evidence';
 import { pipelinesFrom } from '../core/src/ai/factory';
 import { liveSuggestion, agreedWith, type StoredSuggestion } from '../core/src/assist/stored';
 import { approvalOf } from '../core/src/assist/approve';
@@ -42,6 +43,7 @@ import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
 import { remoteReaders, type ReaderTimeouts } from './remoteReaders';
 import { DirCache, FileScanStore } from './scanStore';
 import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys } from './store';
+import { aiSpentThisMonth } from './views';
 import type { WorkerJobs } from './workerJobs';
 
 /** How often the scheduler looks whether a scan is due. */
@@ -53,6 +55,8 @@ const KEEP_ERRORS = 50;
 const PROGRESS_MS = 1_000;
 /** One eBay or model call in the scan's eBay step. */
 const CALL_TIMEOUT_MS = 30_000;
+/** Evidence lines shown per question. */
+const EVIDENCE_LINES = 40;
 
 export class WorkRefused extends Error {}
 
@@ -80,19 +84,6 @@ export interface LiveState {
   searchesUsed: number;
 }
 
-const monthStartMs = (now: number): number => {
-  const d = new Date(now);
-  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1);
-};
-
-/** The AI's dollars this calendar month: every suggestion asked, and the eBay judge's share of each run. */
-export function aiSpentThisMonth(data: { suggestions: StoredSuggestion[]; runs: RunRecord[] }, now: number): number {
-  const since = monthStartMs(now);
-  const asks = data.suggestions.filter((s) => s.askedAt >= since).reduce((n, s) => n + (s.costUsd ?? 0), 0);
-  const judge = data.runs.filter((r) => Date.parse(r.startedAt) >= since).reduce((n, r) => n + (r.judgeCostUsd ?? 0), 0);
-  return asks + judge;
-}
-
 /** The extension's settings shape, which core's scan and budget functions take. */
 export function extensionSettingsOf(a: AppSettings): ExtensionSettings {
   const s = a.settings;
@@ -100,7 +91,8 @@ export function extensionSettingsOf(a: AppSettings): ExtensionSettings {
     schedule: s.schedule, searchesPerScan: s.searchesPerScan, reserve: s.reserve, brands: s.brands, pagesPerBrand: s.pagesPerBrand, fees: s.fees,
     alerts: a.alerts, keepaTokensPerScan: s.keepaTokensPerScan, keepaReserve: s.keepaReserve, discoveryMode: s.discoveryMode,
     keepaDiscoveryShare: s.keepaDiscoveryShare, trackingDepth: s.trackingDepth, amazonRefreshViaKeepa: s.amazonRefreshViaKeepa,
-    agentBridgeAfterScan: s.agentBridgeAfterScan,
+    // Core's field for the extension's own scans; nothing posts to the agent after an agent scan.
+    agentBridgeAfterScan: false,
   };
 }
 
@@ -286,7 +278,11 @@ export class AgentWork {
       run.steps = pipelineView(job, store.get('runtime').rates, this.d.now()).steps;
       const judge = pipelineOf(job).find((p) => p.id === 'judge');
       run.judgeCostUsd = judge?.costSoFar ?? 0;
-      store.update('runtime', (r) => ({ ...r, rates: addSamples(r.rates, samplesOf(job!)) }));
+      const j = job;
+      store.update('runtime', (r) => ({
+        ...r, rates: addSamples(r.rates, samplesOf(j)),
+        lastJob: { status: j.status, stopReason: j.stopReason, stopMessage: j.stopMessage ? scrub(j.stopMessage, keys) : null, searchesUsed: j.searchesUsed, finishedAt: j.finishedAt, deferred: j.deferred, ebayNotice: j.ebayNotice ?? null },
+      }));
     }
 
     // After the scan: the report, then (unless the owner stopped it) the AI, Autopilot and the messages.
@@ -446,9 +442,17 @@ export class AgentWork {
       const parts = b.parts.filter((p) => p.status === 'unmatched' || p.status === 'waiting').map((p) => ({ brand: b.brand, model: p.model }));
       if (parts.length > 0) lookups[b.key] = lookupsNeeded(parts, saved);
     }
+    // What the scan stored for each open question, line by line with its source, for Review (never fetched here).
+    const evidence: Record<string, EvidenceQuote[]> = {};
+    for (const q of report.review) {
+      const ev = await gatherEvidence(this.scanStore, q);
+      evidence[q.id] = ev.sources
+        .flatMap((src) => src.lines.filter((l) => !l.suspect).map((l) => ({ text: l.text, source: { label: src.label, url: src.url } })))
+        .slice(0, EVIDENCE_LINES);
+    }
     const at = new Date(this.d.now()).toISOString();
     this.d.store.update('deals', (d) => ({ ...d, at, bundles: report.bundles, lookups }));
-    this.d.store.update('review', () => ({ at, questions: report.review, ebayQuestions: report.ebayQuestions ?? [] }));
+    this.d.store.update('review', () => ({ at, questions: report.review, ebayQuestions: report.ebayQuestions ?? [], evidence }));
   }
 
   // ------------------------------------------------------------------ the AI and Autopilot

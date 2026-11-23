@@ -25,10 +25,10 @@ describe('agent store', () => {
     const s = openStore(dir);
     expect(s.get('settings').autopilot).toBe(true);
     expect(s.get('jobs')).toEqual([]);
-    s.update('settings', (cur) => ({ ...cur, askAfterScan: true }));
+    s.update('settings', (cur) => ({ ...cur, autopilot: false }));
     s.close();
     const again = openStore(dir);
-    expect(again.get('settings').askAfterScan).toBe(true);
+    expect(again.get('settings').autopilot).toBe(false);
   });
 
   it('hands out copies: changing what get returns changes nothing stored', () => {
@@ -96,7 +96,7 @@ describe('agent store', () => {
     writeFileSync(join(dir, 'hd-read-pending.json'), JSON.stringify({ id: 'hd-1', itemIds: [123], requestedAt: 'r' }));
 
     const s = openStore(dir);
-    expect(s.get('settings').appPrimaryUi).toBe(false);
+    expect('appPrimaryUi' in s.get('settings')).toBe(false);
     expect(s.get('settings').settings.searchesPerScan).toBe(7);
     expect(s.get('keys')).toEqual({ serpapi: 'legacy-serp', keepa: 'legacy-keepa', ebay: { appId: 'a', certId: 'c' } });
     expect(JSON.stringify(s.get('settings'))).not.toContain('legacy-serp');

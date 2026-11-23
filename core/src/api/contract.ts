@@ -106,10 +106,14 @@ export interface AgentState {
     /** W4: what the agent is busy with: a scan, or the AI pass on Review questions. */
     busy?: 'scan' | 'ask' | null;
   };
-  /** The paired Chrome extension, the worker that reads Home Depot pages. */
-  helper: { paired: boolean; connected: boolean; lastSeenAt: string | null };
+  /** The paired Chrome extension, the worker that reads Home Depot pages. `jobsWaiting`: reads waiting for it (W4). */
+  helper: { paired: boolean; connected: boolean; lastSeenAt: string | null; jobsWaiting?: number };
   budget: {
     serpLeft: number | null;
+    /** W4: the plan's searches a month, from the last account check; null before one. */
+    serpMonthly?: number | null;
+    /** W4: searches one scan may use (Settings). */
+    serpPerScan?: number;
     serpReserve: number;
     keepaTokens: number | null;
     aiSpentUsd: number;
@@ -117,6 +121,8 @@ export interface AgentState {
   };
   counts: { review: number; autopilotApplied: number; newDeals: number; jobsWaiting: number };
   keys: KeysPresence;
+  /** W4: true until the first scan has finished (the one-time first-run flow). */
+  firstRun?: boolean;
 }
 
 // ---------------------------------------------------------------- deals
@@ -146,6 +152,8 @@ export interface DealRow {
   needsAnswer: boolean;
   /** When Home Depot's price was seen (ISO), or when the row was stored. */
   updatedAt: string;
+  /** W4: searches a Look up of the bundle's unmatched parts would spend now; null when every part is looked up. */
+  lookup?: { searches: number } | null;
 }
 
 export interface DealsQuery {
@@ -163,6 +171,22 @@ export interface DealsResponse {
   notices: { limit: { title: string; text: string } | null; ebay: string | null };
 }
 
+/** W4: the estimate's figures, from the fee settings (CLAUDE.md rule 5: an estimate, never the seller's real fees). */
+export interface DealEstimate {
+  profit: number;
+  roi: number;
+  /** The bundle price with tax and the inbound cost. */
+  cost: number;
+  /** The counted part prices (Amazon New, or a confirmed price), times their quantity, before fees. */
+  partsSellFor: number;
+  /** What those parts net after the referral fee and fulfillment. */
+  afterFees: number;
+  /** The fee settings in words: "15% referral (at least $0.30), $0.00 fulfillment, 0% tax, $0.00 inbound." */
+  basis: string;
+  /** Parts no priced listing covers, counted at $0 (the liquidation rate is 0). */
+  countedAtZero: string[];
+}
+
 /** GET /api/deals/:id. `bundle` holds the parts with every labelled price and the ways to sell. */
 export interface DealDetail {
   row: DealRow;
@@ -170,11 +194,36 @@ export interface DealDetail {
   sources: SourceLink[];
   /** Always says it is an estimate (CLAUDE.md rule 5). */
   estimateBasis: string;
+  /** W4: the figures behind the row's profit; null when there is no estimate. */
+  estimate?: DealEstimate | null;
+}
+
+/** W4: GET /api/deals/:id/lookup (the quote shown before the click) and the answer to POST /api/deals/:id/lookup and /verify. */
+export interface PaidResponse {
+  searches: number;
 }
 
 // ---------------------------------------------------------------- review
 
 export type ReviewKind = 'split' | 'match' | 'ebay';
+
+/** W4: a line of evidence or a quote, with the source it came from. */
+export interface EvidenceQuote {
+  text: string;
+  source: { label: string; url: string | null };
+}
+
+// W4 fields are optional in the types so clients built before them still compile; the agent always sends them.
+
+/** W4: one answer a question offers. Answer it with `{choice: index}` or `{choiceId: id}`. */
+export interface QuestionChoice {
+  id: string;
+  /** "PCL1600K2, P553", or a listing's title. */
+  label: string;
+  models: string[];
+  asin: string | null;
+  source: { label: string; url: string | null } | null;
+}
 
 export interface ReviewQuestion {
   id: string;
@@ -190,6 +239,15 @@ export interface ReviewQuestion {
   suggestion: StoredSuggestion | null;
   /** W4: reviewSignature of the question as stored now; send it back as ReviewAnswerBody.seen. Absent on eBay questions. */
   seen?: string;
+  /** W4: the question in a sentence ("What is inside the RYOBI PCL1600K2-P553?"). */
+  prompt?: string;
+  /** W4: what the scan stored that bears on it (the bundle's page lines, the listings' titles), each with its source. */
+  evidence?: EvidenceQuote[];
+  choices?: QuestionChoice[];
+  /** W4: what Ask AI costs for this question at the model's published rate; null when no rate is known or no call is made. */
+  askCostUsd?: number | null;
+  /** W4: the suggestion's quotes, each with the source it was found in (only quotes code found word for word). */
+  suggestionQuotes?: EvidenceQuote[];
   /** The question as the scan stored it. */
   item: { kind: 'split' | 'match'; question: ReviewItem } | { kind: 'ebay'; question: EbayQuestion };
 }
@@ -199,8 +257,8 @@ export interface ReviewResponse {
   questions: ReviewQuestion[];
 }
 
-/** POST /api/review/:id/answer. */
-export type ReviewAnswer = { choice: number } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' };
+/** POST /api/review/:id/answer. W4: `{choiceId}` is QuestionChoice.id, the same as `{choice: index}`. */
+export type ReviewAnswer = { choice: number } | { choiceId: string } | { none: true } | { parts: string[] } | { ebay: 'yes' | 'no' };
 
 export interface ReviewAnswerBody {
   answer: ReviewAnswer;
@@ -281,10 +339,20 @@ export interface AutopilotEntry {
   undoable?: boolean;
 }
 
+/** W4: something that went wrong, in one sentence, and what Retry does (POST /api/activity/errors/:id/retry). */
+export interface ActivityError {
+  id: string;
+  at: string;
+  sentence: string;
+  retry: { label: string; searches: number; usd: number } | null;
+}
+
 export interface ActivityResponse {
   runs: RunRecord[];
   spend: { serpSearches: number; keepaTokens: number; aiUsd: number; since: string };
   autopilot: AutopilotEntry[];
+  /** W4: open errors, newest first. */
+  errors?: ActivityError[];
 }
 
 // ---------------------------------------------------------------- settings
@@ -306,12 +374,12 @@ export interface AiAgentSettings {
   monthlyCapUsd: number;
 }
 
-/** Every setting the owner can change; keys are not here (see KeyValues). */
+/**
+ * Every setting the owner can change; keys are not here (see KeyValues). W4 removed the extension-era `appPrimaryUi`,
+ * `compactHelperPanel`, `askAfterScan` (the AI pass runs after every run, held by `ai.monthlyCapUsd`) and
+ * `settings.agentBridgeAfterScan` (nothing posts to the agent after a scan any more).
+ */
 export interface AppSettings {
-  /** When true, the extension takes settings and scan requests from the app. */
-  appPrimaryUi: boolean;
-  compactHelperPanel: boolean;
-  askAfterScan: boolean;
   /** Decision 5: apply verified AI suggestions without the owner, with Undo. */
   autopilot: boolean;
   ebaySettings: EbaySettings;
@@ -319,7 +387,6 @@ export interface AppSettings {
     schedule: Schedule;
     searchesPerScan: number;
     reserve: number;
-    agentBridgeAfterScan: boolean;
     keepaTokensPerScan: number;
     keepaReserve: number;
     fees: FeeSettings;
@@ -424,8 +491,8 @@ export interface WorkerJobInputs {
   page: { itemIds: string[] };
   /** Read a kit's own page for its contents. */
   kitPage: { itemId: string; model: string };
-  /** Read one part's Home Depot price. */
-  partPrice: { itemId: string; model: string };
+  /** Read one part's Home Depot price. W4: `brand`, so the worker can check the page names it. */
+  partPrice: { itemId: string; model: string; brand?: string };
   /** A Home Depot search results page (the research agent's searchHomeDepot; `page` is 1). */
   search: { query: string; page: number };
   /** W4: Home Depot's own price for each part sold alone, as the extension's ReadPartPrices reads them (step 9). */
@@ -498,7 +565,10 @@ export interface NotifyEvent {
   route?: string;
 }
 
-/** Server-sent events: `event: <name>` with `data: <json>`. The shell turns `notify` into a native notification. */
+/**
+ * Server-sent events: `event: <name>` with `data: <json>`. The shell turns `notify` into a native notification. W4: each
+ * `data:` object also carries `type: <name>` beside its fields, and the `state` event also carries the whole state as `state`.
+ */
 export interface AgentEvents {
   state: AgentState;
   deals: { at: string | null; count: number };

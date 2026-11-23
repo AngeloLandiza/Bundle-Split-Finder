@@ -8,8 +8,10 @@ import type { AgentEventName, AgentEvents } from '../core/src/api/contract';
 
 export const PING_MS = 20_000;
 
+/** W4: the data object also says its own name (`type`), and a `state` event carries the state whole as `state` too. */
 export function formatEvent(id: number, name: string, data: unknown): string {
-  return `id: ${id}\nevent: ${name}\ndata: ${JSON.stringify(data)}\n\n`;
+  const body = typeof data === 'object' && data !== null && !Array.isArray(data) ? { ...data, type: name, ...(name === 'state' ? { state: data } : {}) } : data;
+  return `id: ${id}\nevent: ${name}\ndata: ${JSON.stringify(body)}\n\n`;
 }
 
 export class EventHub {
