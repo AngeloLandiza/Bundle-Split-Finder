@@ -4,7 +4,8 @@
 // one. Keys and pairing are written owner-only (0600). On the first start the JSON files the agent
 // kept before step 13 are read once into the store; after that they are never read again.
 
-import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import { closeSync, existsSync, fsyncSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, utimesSync, writeSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import type {
@@ -379,23 +380,78 @@ function pidAlive(pid: number): boolean {
   }
 }
 
-function takeLock(path: string): void {
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const fd = openSync(path, 'wx', 0o600);
-      writeSync(fd, String(process.pid));
-      closeSync(fd);
-      return;
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err;
-      const holder = Number(readFileSync(path, 'utf8').trim());
-      if (Number.isInteger(holder) && holder > 0 && holder !== process.pid && pidAlive(holder)) {
+/** The holder touches its lock this often; a lock not touched for LOCK_STALE_MS is a dead holder's (or a reused pid's). */
+export const LOCK_BEAT_MS = 10_000;
+export const LOCK_STALE_MS = 60_000;
+
+/** The pid a lock names: `{"pid":…}` now, a bare number from before. Null when it names none. */
+function lockHolder(text: string): number | null {
+  let pid: unknown;
+  try {
+    pid = (JSON.parse(text) as { pid?: unknown })?.pid ?? JSON.parse(text);
+  } catch {
+    return null;
+  }
+  return typeof pid === 'number' && Number.isInteger(pid) && pid > 0 ? pid : null;
+}
+
+/**
+ * Takes the single-writer lock. The lock is written whole to a temp file first and linked into place (link fails when
+ * the lock exists), so nobody ever reads a half-written lock. A lock is live when its process is alive and it was
+ * touched in the last minute (the heartbeat; a reused pid does not keep a dead agent's lock). A stale lock is moved
+ * aside by rename before it is removed, and if what was moved is not the lock that was judged stale (another agent
+ * took it over meanwhile) it is put back and this start is refused. Returns this holder's token.
+ */
+function takeLock(path: string): string {
+  const token = randomBytes(8).toString('hex');
+  const tmp = `${path}.${process.pid}.${token}.tmp`;
+  writeFileAtomic(tmp, JSON.stringify({ pid: process.pid, token, startedAt: new Date().toISOString() }), 0o600);
+  try {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        linkSync(tmp, path);
+        return token;
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err;
+      }
+      let seen: string;
+      let touched: number;
+      try {
+        seen = readFileSync(path, 'utf8');
+        touched = statSync(path).mtimeMs;
+      } catch {
+        continue; // it went away: try again
+      }
+      const holder = lockHolder(seen);
+      if (holder !== null && holder !== process.pid && pidAlive(holder) && Date.now() - touched < LOCK_STALE_MS) {
         throw new Error(`Another Split Finder agent (process ${holder}) is using this data folder.`);
       }
-      unlinkSync(path);
+      const aside = `${path}.stale-${token}`;
+      try {
+        renameSync(path, aside);
+      } catch {
+        continue;
+      }
+      const moved = readFileSync(aside, 'utf8');
+      if (moved !== seen) {
+        try {
+          linkSync(aside, path);
+        } catch {
+          // a third start holds it now
+        }
+        unlinkSync(aside);
+        throw new Error('Another Split Finder agent is starting on this data folder.');
+      }
+      unlinkSync(aside);
+    }
+    throw new Error('Could not lock the agent store.');
+  } finally {
+    try {
+      unlinkSync(tmp);
+    } catch {
+      // gone already
     }
   }
-  throw new Error('Could not lock the agent store.');
 }
 
 // ---------------------------------------------------------------- migration from the pre-step-13 files
@@ -567,7 +623,7 @@ export class Store {
     const dir = join(dataDir, 'store');
     mkdirSync(dir, { recursive: true, mode: 0o700 });
     const lockPath = opts.lock === false ? null : join(dir, 'store.lock');
-    if (lockPath) takeLock(lockPath);
+    const lockToken = lockPath ? takeLock(lockPath) : null;
 
     const data = defaults();
     const metaPath = join(dir, 'meta.json');
@@ -579,6 +635,7 @@ export class Store {
       if (!existsSync(join(dir, 'keys.json'))) {
         const migratedFrom = migrateLegacyFiles(dataDir, data);
         const store = new Store(dir, data, lockPath);
+        if (lockToken) store.holdLock(lockToken);
         for (const name of COLLECTIONS) store.write(name);
         writeMeta(migratedFrom);
         if (lockPath) scrubLegacyKeys(dataDir);
@@ -601,6 +658,7 @@ export class Store {
       }
     }
     const store = new Store(dir, data, lockPath);
+    if (lockToken) store.holdLock(lockToken);
     if (unreadable.length) store.startSafe(unreadable);
     return store;
   }
@@ -628,7 +686,8 @@ export class Store {
   /** Replaces the collection with what `fn` returns from a copy of it, writes it, and tells listeners. */
   update<K extends CollectionName>(name: K, fn: (current: StoreData[K]) => StoreData[K]): StoreData[K] {
     if (this.closed) throw new Error('The store is closed.');
-    const next = fn(structuredClone(this.data[name]));
+    // A copy of what fn returns, so a caller that keeps (and later changes) its object changes nothing stored.
+    const next = structuredClone(fn(structuredClone(this.data[name])));
     this.data[name] = next;
     this.write(name);
     for (const listener of this.listeners) listener(name);
@@ -644,13 +703,34 @@ export class Store {
     if (this.closed) return;
     this.closed = true;
     this.listeners.clear();
+    if (this.beat) clearInterval(this.beat);
+    this.beat = null;
     if (this.lockPath && existsSync(this.lockPath)) {
       try {
-        if (Number(readFileSync(this.lockPath, 'utf8').trim()) === process.pid) unlinkSync(this.lockPath);
+        const held = JSON.parse(readFileSync(this.lockPath, 'utf8')) as { token?: unknown };
+        if (held.token === this.lockToken) unlinkSync(this.lockPath);
       } catch {
-        // the lock is gone already
+        // the lock is gone already, or is not ours
       }
     }
+  }
+
+  private lockToken: string | null = null;
+  private beat: ReturnType<typeof setInterval> | null = null;
+
+  /** Keeps the lock fresh while this store holds it (LOCK_STALE_MS). */
+  private holdLock(token: string): void {
+    this.lockToken = token;
+    const path = this.lockPath!;
+    this.beat = setInterval(() => {
+      try {
+        const now = new Date();
+        utimesSync(path, now, now);
+      } catch {
+        // the lock went away; close() and the next start sort it out
+      }
+    }, LOCK_BEAT_MS);
+    this.beat.unref?.();
   }
 
   private write(name: CollectionName): void {

@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync, unlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -88,6 +88,29 @@ describe('agent store', () => {
     // A lock held by a live process that is not this one: the parent of this test runner.
     writeFileSync(join(dir, 'store', 'store.lock'), String(process.ppid));
     expect(() => Store.open(dir)).toThrow(/Another Split Finder agent/);
+  });
+
+  it('takes over a lock whose holder stopped touching it (a reused pid), and leaves no temp or stale files', () => {
+    const dir = tempDir();
+    Store.open(dir).close();
+    const lock = join(dir, 'store', 'store.lock');
+    writeFileSync(lock, JSON.stringify({ pid: process.ppid, token: 'old' }));
+    const old = new Date(Date.now() - 2 * 60_000);
+    utimesSync(lock, old, old);
+    const s = openStore(dir);
+    const held = JSON.parse(readFileSync(lock, 'utf8')) as { pid: number; token: string };
+    expect(held.pid).toBe(process.pid);
+    expect(readdirSync(join(dir, 'store')).filter((f) => f.includes('store.lock'))).toEqual(['store.lock']);
+    s.close();
+    expect(existsSync(lock)).toBe(false);
+  });
+
+  it('keeps a copy of what an update returns, so the caller changing it later changes nothing stored', () => {
+    const s = openStore(tempDir());
+    const mine = { ...s.get('settings'), autopilot: false };
+    s.update('settings', () => mine);
+    mine.autopilot = true;
+    expect(s.get('settings').autopilot).toBe(false);
   });
 
   it('takes over a lock left by a process that is gone', () => {
