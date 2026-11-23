@@ -31,6 +31,20 @@ describe('deal views', () => {
     expect(inView(loss, 'losing')).toBe(true);
     expect(inView({ ...loss, profit: null }, 'losing')).toBe(false);
   });
+  it('Nov 23: a bundle missing a price is under Missing a price, never under Losing money, whatever its break-even', () => {
+    // DCK200D1P1W921B after the owner's third scan: before, "-$158.75 est." in Losing money, the kit counted at $0.
+    const incomplete = { priced: 1, total: 2, pricedNet: 140.25, breakEvenNet: 158.75, breakEvenPrice: 186.76, unpriced: ['DCK200D1P1'] };
+    const missing: DealRow = { ...row('PCL1200K2'), profit: null, roi: null, incomplete };
+    expect(inView(missing, 'missing-price')).toBe(true);
+    expect(inView(missing, 'losing')).toBe(false);
+    expect(inView({ ...missing, needsAnswer: true }, 'missing-price')).toBe(true);
+    // A complete estimate below zero is a loss and is not missing a price.
+    const loss: DealRow = { ...row('PCL1200K2'), profit: -0.94, incomplete: null };
+    expect(inView(loss, 'losing')).toBe(true);
+    expect(inView(loss, 'missing-price')).toBe(false);
+    expect(VIEW_LABEL['missing-price']).toBe('Missing a price');
+    expect(DEAL_VIEWS.indexOf('missing-price')).toBe(DEAL_VIEWS.indexOf('losing') - 1);
+  });
   it('counts every row under All', () => {
     expect(viewCounts(DEALS).all).toBe(DEALS.length);
   });

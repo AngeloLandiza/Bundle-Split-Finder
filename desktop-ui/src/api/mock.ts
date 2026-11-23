@@ -174,8 +174,26 @@ export function createMockClient(): ApiClient {
       const afterFees = Math.round(counted.reduce((sum, p) => sum + net(p.price ?? 0) * p.qty, 0) * 100) / 100;
       const profit = Math.round((afterFees - d.estimate.cost) * 100) / 100;
       const roi = Math.round((profit / d.estimate.cost) * 10000) / 10000;
-      d.estimate = { ...d.estimate, partsSellFor, afterFees, profit, roi, countedAtZero: d.parts.filter((p) => p.price === null).map((p) => (p.unnamed ? (p.title ?? p.model) : p.model)) };
+      d.estimate = { ...d.estimate, partsSellFor, afterFees, profit, roi, countedAtZero: d.parts.filter((p) => p.price === null && p.unnamed).map((p) => p.title ?? p.model) };
       deals = deals.map((r) => (r.id === d.id ? { ...r, profit, roi } : r));
+    } else if (d.incomplete) {
+      // Nov 23: a confirmed price fills an unpriced part; once every model part is priced the deal has its estimate.
+      const i = d.incomplete;
+      const afterFees = Math.round(counted.reduce((sum, p) => sum + net(p.price ?? 0) * p.qty, 0) * 100) / 100;
+      const left = i.parts.filter((u) => d.parts.find((p) => p.model === u.model)?.price == null);
+      if (left.length === 0) {
+        const partsSellFor = Math.round(counted.reduce((sum, p) => sum + (p.price ?? 0) * p.qty, 0) * 100) / 100;
+        const profit = Math.round((afterFees - i.cost) * 100) / 100;
+        const roi = Math.round((profit / i.cost) * 10000) / 10000;
+        d.estimate = { profit, roi, roiRange: null, cost: i.cost, partsSellFor, afterFees, basis: i.basis, countedAtZero: i.notCounted };
+        d.incomplete = null;
+        deals = deals.map((r) => (r.id === d.id ? { ...r, profit, roi, incomplete: null } : r));
+      } else {
+        const breakEvenNet = Math.max(0, Math.round((i.cost - afterFees) * 100) / 100);
+        const next = { ...i, priced: i.total - left.length, pricedNet: afterFees, breakEvenNet, breakEvenPrice: null, unpriced: left.map((u) => u.model), parts: left };
+        d.incomplete = next;
+        deals = deals.map((r) => (r.id === d.id ? { ...r, incomplete: { priced: next.priced, total: next.total, pricedNet: afterFees, breakEvenNet, breakEvenPrice: null, unpriced: next.unpriced } } : r));
+      }
     }
   };
 

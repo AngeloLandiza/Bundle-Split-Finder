@@ -211,6 +211,7 @@ export function mapRow(r: C.DealRow): DealRow {
     ...(matchKind ? { matchKind } : {}),
     updatedAt: r.updatedAt,
     lookup: r.lookup ?? null,
+    ...(r.incomplete ? { incomplete: r.incomplete } : {}),
   };
 }
 
@@ -350,6 +351,8 @@ function wayOf(o: BundleRow['options'][number], i: number): WayToSell {
     roi: o.estimate?.roi ?? null,
     roiRange: priceRangeOf(o.range),
     leaves: o.leftovers,
+    ...(o.incomplete ? { incomplete: { priced: o.incomplete.priced, total: o.incomplete.total, breakEvenNet: o.incomplete.breakEvenNet } } : {}),
+    ...(o.splitKits.length ? { soldAs: o.splitKits.map((k) => (o.kitParts?.[k] ? `Sold as ${k}'s ${o.kitParts[k]} parts` : `Sold as ${k}'s parts`)).join('; ') } : {}),
   };
 }
 
@@ -383,6 +386,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     seenAt: iso(b.seenAt),
     link: b.link,
     estimate: e ? { profit: e.profit, roi: e.roi, roiRange: priceRangeOf(b.range), cost: e.cost, partsSellFor: e.partsSellFor, afterFees: e.afterFees, basis: e.basis, countedAtZero: e.countedAtZero } : null,
+    ...(d.incompleteEstimate ? { incomplete: d.incompleteEstimate } : {}),
     noEstimate: e ? null : noEstimateSentence(b),
     ways: b.options.map(wayOf),
     parts,

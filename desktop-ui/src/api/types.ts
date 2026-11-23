@@ -3,7 +3,9 @@
 // another form (a flatter row, a labelled price line, the pipeline in words) are defined below and
 // built from the contract in one place, map.ts. Nothing here is mirrored by hand.
 
-import type { ActivityError, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealSignals, FbaEstimate, KeyName, ReportSection, ReviewKind, WatchState } from '@core/api/contract';
+import type {
+  ActivityError, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealIncomplete, DealIncompleteEstimate, DealSignals, FbaEstimate, KeyName, ReportSection, ReviewKind, WatchState,
+} from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
 import type { PipelineView as CorePipelineView } from '@core/scan/pipeline';
 
@@ -16,7 +18,10 @@ export type {
   BogoTag,
   BogoView,
   DealHistoryPoint,
+  DealIncomplete,
+  DealIncompleteEstimate,
   DealSignals,
+  DealUnpricedPart,
   FbaEstimate,
   FreeItem,
   FreeItemBody,
@@ -189,6 +194,11 @@ export interface DealRow {
   updatedAt: string;
   /** Parts still to look up, and what a lookup of them would cost in searches (the row has no button; the inspector's menu does). */
   lookup: { searches: number } | null;
+  /**
+   * Nov 23: some model part has no counted price, so there is no profit or ROI: how many are priced, what they bring, and
+   * the break-even (the agent's figures, estimates from the fee settings). Absent or null for a complete estimate.
+   */
+  incomplete?: DealIncomplete | null;
 }
 
 export interface DealsView {
@@ -276,6 +286,10 @@ export interface WayToSell {
   roiRange: RoiRange | null;
   /** What this way leaves unsold. Empty when nothing. */
   leaves: string[];
+  /** Nov 23: while a part of this way has no counted price: how many are priced and the break-even after fees. */
+  incomplete?: { priced: number; total: number; breakEvenNet: number };
+  /** Nov 23: when this way sells a kit as its parts: "Sold as PCL1600K2's 19 parts". */
+  soldAs?: string;
 }
 
 export interface Estimate {
@@ -290,7 +304,7 @@ export interface Estimate {
   afterFees: number;
   /** The fee settings in words; the agent's sentence, which also says it is an estimate. */
   basis: string;
-  /** Parts counted at $0: no priced listing chosen. */
+  /** Items with no model number not counted (at $0) until he confirms a price. Never a model part (Nov 23). */
   countedAtZero: string[];
 }
 
@@ -305,6 +319,8 @@ export interface DealDetail {
   seenAt: string | null;
   link: string | null;
   estimate: Estimate | null;
+  /** Nov 23: in place of `estimate` while some model part has no counted price; null otherwise. */
+  incomplete?: DealIncompleteEstimate | null;
   /** Why there is no estimate, in one sentence, when estimate is null. */
   noEstimate: string | null;
   ways: WayToSell[];

@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { DealDetail, DealPart, PriceLine } from '../api/types';
+import type { DealDetail, DealIncompleteEstimate, DealPart, PriceLine } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
 import { Money, Profit, Roi, RoiRangeLine } from '../components/Figure';
@@ -11,6 +11,7 @@ import { useUi } from '../components/ui';
 import { amazonSearchUrl, amazonUrl, copyText, openPage } from '../lib/actions';
 import { money, percentOff, plural, when } from '../lib/format';
 import { isMenuKey } from '../lib/keys';
+import { breakEvenWords, kitWords, pricedCount, UNPRICED_ACTION, UNPRICED_STATE } from '../lib/incomplete';
 import { plainReason } from '../lib/questionWords';
 import { partMenu, type PartMenuId } from '../lib/menus';
 import { BogoChoicesSection, BogoSection, FbaLine, HistorySection, SignalsSection, WatchBar } from './DealTracking';
@@ -76,8 +77,10 @@ function Detail({ d }: { d: DealDetail }) {
 
         {d.signals ? <SignalsSection signals={d.signals} /> : null}
 
-        <section className="detail-box" aria-label="Estimate">
-          {e ? (
+        <section className="detail-box" aria-label={!e && d.incomplete ? 'Incomplete estimate' : 'Estimate'}>
+          {!e && d.incomplete ? (
+            <IncompleteEstimate d={d} i={d.incomplete} look={() => void look.run(d.id)} lookBusy={look.busy} lookError={look.error} searches={searches} scanRunning={scanRunning} />
+          ) : e ? (
             <>
               <div className="detail-headline">
                 <Profit value={e.profit} size="xl" />
@@ -111,15 +114,16 @@ function Detail({ d }: { d: DealDetail }) {
               </p>
               <RoiRangeLine range={e.roiRange} />
               {e.countedAtZero.length ? (
+                // Nov 23: only items with no model number can be here (a model part with no price leaves no estimate).
                 <p className="detail-note">
-                  Counts{' '}
+                  Not counted:{' '}
                   {e.countedAtZero.map((m, i) => (
                     <Fragment key={m}>
                       {i === 0 ? '' : i === e.countedAtZero.length - 1 ? ' and ' : ', '}
-                      <span className="code">{m}</span>
+                      {m}
                     </Fragment>
-                  ))}{' '}
-                  at $0: no priced Amazon listing is chosen.
+                  ))}
+                  , with no model number. Confirm a price on the part to count it.
                 </p>
               ) : null}
               {d.fbaEstimate ? <FbaLine fba={d.fbaEstimate} /> : null}
@@ -174,12 +178,16 @@ function Detail({ d }: { d: DealDetail }) {
                         <Profit value={w.profit} />
                         <Roi value={w.roi} label />
                       </span>
+                    ) : w.incomplete ? (
+                      <span className="detail-note">{pricedCount(w.incomplete)}</span>
                     ) : (
                       <span className="detail-note">No estimate yet</span>
                     )}
                   </div>
                   <p className="detail-note">
                     {w.primary ? 'Shown above. ' : ''}
+                    {w.soldAs ? `${w.soldAs}. ` : ''}
+                    {w.incomplete && w.incomplete.breakEvenNet > 0 ? `Its unpriced parts need about ${money(w.incomplete.breakEvenNet)} after fees to break even. ` : ''}
                     {w.leaves.length ? `Leaves ${plural(w.leaves.length, 'part', 'parts')}: ${w.leaves.join(', ')}` : 'Leaves nothing'}
                   </p>
                 </li>
@@ -222,6 +230,87 @@ function Detail({ d }: { d: DealDetail }) {
           {d.asins.length === 2 ? 'Copy both ASINs' : 'Copy ASINs'}
         </Button>
       </footer>
+    </>
+  );
+}
+
+/**
+ * Nov 23: the estimate box of a bundle missing a price. No headline profit (a part with no price is never $0): how many
+ * parts are priced, what they bring, the break-even, and each unpriced part with its state and the one action that moves
+ * it forward. Every figure is the agent's, an estimate from the fee settings.
+ */
+function IncompleteEstimate({ d, i, look, lookBusy, lookError, searches, scanRunning }: {
+  d: DealDetail; i: DealIncompleteEstimate; look: () => void; lookBusy: boolean; lookError: string | null; searches: number | null; scanRunning: boolean;
+}) {
+  const { navigate } = useApp();
+  const ui = useUi();
+  const lead = breakEvenWords(i);
+  return (
+    <>
+      <p className="detail-incomplete-title">Incomplete estimate</p>
+      <p className="detail-incomplete-lead">
+        {pricedCount(i)}. {lead.charAt(0).toUpperCase() + lead.slice(1)}.
+      </p>
+      <dl className="detail-figures">
+        <div>
+          <dt>Bundle costs</dt>
+          <dd>
+            <Money value={i.cost} />
+          </dd>
+        </div>
+        <div>
+          <dt>Priced parts bring</dt>
+          <dd>
+            <Money value={i.pricedNet} />
+          </dd>
+        </div>
+        <div>
+          <dt>Still needed</dt>
+          <dd>
+            <Money value={i.breakEvenNet} />
+          </dd>
+        </div>
+      </dl>
+      <p className="detail-note">Both after fees. The rest has no price yet, so there is no estimated profit.</p>
+      {i.soldAs ? <p className="detail-note">{i.soldAs}.</p> : null}
+      <ul className="unpriced" aria-label="Parts with no price">
+        {i.parts.map((p) => {
+          const part = d.parts.find((x) => x.model === p.model) ?? null;
+          const kit = kitWords(p);
+          return (
+            <li key={p.model} className="unpriced-part">
+              <div className="unpriced-text">
+                <span className="code">{p.model}</span>
+                {p.qty > 1 ? <span className="fig muted"> ×{p.qty}</span> : null}
+                <span className="unpriced-state">{UNPRICED_STATE[p.state]}</span>
+                {kit ? <span className="detail-note">{kit}</span> : null}
+              </div>
+              {p.action === 'answer' && p.questionId ? (
+                <Button size="sm" onClick={() => navigate({ screen: 'review', id: p.questionId })}>
+                  {UNPRICED_ACTION.answer}
+                </Button>
+              ) : p.action === 'confirm_price' && part ? (
+                <Button size="sm" onClick={() => ui.openConfirmPrice({ dealId: d.id, part, questionId: d.questionId })}>
+                  {UNPRICED_ACTION.confirm_price}
+                </Button>
+              ) : p.action === 'look_up' && d.lookup && searches !== null ? (
+                <Button size="sm" busy={lookBusy} busyLabel="Looking up…" disabled={scanRunning} onClick={look} cost={plural(searches, 'search', 'searches')}>
+                  {UNPRICED_ACTION.look_up}
+                </Button>
+              ) : p.action === 'look_up' ? (
+                <span className="detail-note">Keepa looks it up as its tokens refill.</span>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+      {lookError ? <p role="alert" className="detail-note">{lookError}</p> : null}
+      {i.notCounted.length ? (
+        <p className="detail-note">Not counted: {i.notCounted.join(', ')}, with no model number. Confirm a price on the part to count it.</p>
+      ) : null}
+      <p className="detail-note">
+        {i.basis} <LinkButton onClick={() => navigate({ screen: 'settings', id: 'fees' })}>Change</LinkButton>
+      </p>
     </>
   );
 }

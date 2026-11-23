@@ -9,6 +9,7 @@ export type GlyphName =
   | 'clock'
   | 'trend-down'
   | 'trend-up'
+  | 'tag'
   | 'star'
   | 'star-fill'
   | 'checklist'
@@ -75,6 +76,12 @@ const PATHS: Record<GlyphName, React.ReactNode> = {
     <>
       <path d="M2.5 4.5l4 4 2.2-2.2 4.8 4.8" {...S} />
       <path d="M13.5 7.5v3.6H9.9" {...S} />
+    </>
+  ),
+  tag: (
+    <>
+      <path d="M2.5 3.8v3.6a1.2 1.2 0 0 0 .35.85l5.4 5.4a1.2 1.2 0 0 0 1.7 0l3.6-3.6a1.2 1.2 0 0 0 0-1.7l-5.4-5.4A1.2 1.2 0 0 0 7.3 2.6H3.7a1.2 1.2 0 0 0-1.2 1.2z" {...S} />
+      <circle cx="5.4" cy="5.5" r="0.9" fill="currentColor" />
     </>
   ),
   'trend-up': (

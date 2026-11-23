@@ -48,7 +48,7 @@ describe('Keepa tokens', () => {
 });
 
 describe('a deal row’s reason line', () => {
-  const row = (patch: Partial<DealRow>): DealRow => ({ ...DEALS[0]!, profit: null, roi: null, needsAnswer: false, lookup: null, matchKind: null, matchState: null, bogoChoices: null, ...patch });
+  const row = (patch: Partial<DealRow>): DealRow => ({ ...DEALS[0]!, profit: null, roi: null, needsAnswer: false, lookup: null, matchKind: null, matchState: null, bogoChoices: null, incomplete: null, ...patch });
   const wide = { matchShown: true };
   const narrow = { matchShown: false };
 
@@ -75,6 +75,14 @@ describe('a deal row’s reason line', () => {
     const bogoChoices = { label: 'BOGO: 11 free-tool choices — best: PCL265B +$61.50 est.', count: 11, bestId: 'x', best: true };
     expect(dealReason(row({ bogoChoices }), wide)).toBe(bogoChoices.label);
     expect(dealReason(row({ bogoChoices, matchState: '3 parts matched' }), narrow)).toBe(`3 parts matched · ${bogoChoices.label}`);
+  });
+  it('Nov 23: says how many parts are priced and the break-even for a bundle missing a price, wide or narrow', () => {
+    // DCK200D1P1W921B after the owner's third scan: the DEWALT starter kit has no Amazon listing.
+    const incomplete = { priced: 1, total: 2, pricedNet: 140.25, breakEvenNet: 158.75, breakEvenPrice: 186.76, unpriced: ['DCK200D1P1'] };
+    expect(dealReason(row({ incomplete, matchState: '1 part with no listing' }), wide)).toBe('1 of 2 parts priced · DCK200D1P1 needs about $186.76 to break even');
+    expect(dealReason(row({ incomplete, matchState: '1 part with no listing' }), narrow)).toBe('1 part with no listing · 1 of 2 parts priced · DCK200D1P1 needs about $186.76 to break even');
+    // A row with an estimate never carries one; if it did, the estimate wins.
+    expect(dealReason(row({ incomplete, profit: 6.63 }), wide)).toBeNull();
   });
   it('knows from the table width whether the Match column shows', () => {
     expect(matchColumnShown(900)).toBe(true);

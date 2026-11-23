@@ -147,6 +147,12 @@ describe('the fields the new agent adds', () => {
     const row = { id: 'K', bundle: { brand: 'RYOBI', model: 'PCL1201K2-FVC51K', title: 'T', itemId: null, link: null }, section: 'waiting', price: 179, regularPrice: 199, off: 10, matchState: 'waiting_parts', profit: null, roi: null, roiRange: { low: null, high: null }, needsAnswer: true, updatedAt: '2026-11-23T10:00:00Z' };
     expect(mapRow(row as unknown as C.DealRow)).toMatchObject({ matchKind: 'waiting_parts', matchState: null, needsAnswer: false });
   });
+  it('Nov 23: carries a bundle missing a price as the agent sends it, with no profit, and nothing for a complete one', () => {
+    const incomplete = { priced: 1, total: 2, pricedNet: 140.25, breakEvenNet: 158.75, breakEvenPrice: 186.76, unpriced: ['DCK200D1P1'] };
+    const row = { id: 'K', bundle: { brand: 'DEWALT', model: 'DCK200D1P1W921B', title: 'T', itemId: null, link: null }, section: 'missing_listing', price: 299, regularPrice: 538, off: 44, matchState: '1 part with no listing', profit: null, roi: null, roiRange: { low: null, high: null }, needsAnswer: false, updatedAt: '2026-11-23T10:00:00Z', incomplete };
+    expect(mapRow(row as unknown as C.DealRow)).toMatchObject({ profit: null, roi: null, incomplete });
+    expect(mapRow({ ...row, incomplete: null, profit: 6.63, roi: 0.037 } as unknown as C.DealRow).incomplete).toBeUndefined();
+  });
   it('keeps split evidence with a kind and a text, and an address only when it is http(s)', () => {
     expect(splitEvidenceOf([{ kind: 'hd_part_page', text: 'Home Depot sells PCL1201K2', url: 'https://www.homedepot.com/p/1' }, { kind: 'page_quote', text: 'Includes: a', url: 'javascript:alert(1)' }, { kind: 'mystery', text: 'x' }, { kind: 'bogo_pair', text: '' }])).toEqual([
       { kind: 'hd_part_page', text: 'Home Depot sells PCL1201K2', url: 'https://www.homedepot.com/p/1' },

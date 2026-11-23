@@ -20,6 +20,7 @@ const VIEW_GLYPH: Record<DealView, GlyphName> = {
   confirmed: 'seal',
   'needs-answer': 'question',
   waiting: 'clock',
+  'missing-price': 'tag',
   losing: 'trend-down',
   watchlist: 'star',
 };

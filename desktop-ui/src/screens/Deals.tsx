@@ -20,6 +20,7 @@ import { scanStrip } from '../lib/scanSteps';
 import { count, percentOff, plural, upToSearches, when } from '../lib/format';
 import { dealMenu, type DealMenuId } from '../lib/menus';
 import { SCREEN_KEYS } from '../lib/notices';
+import { breakEvenOrder, incompleteLine } from '../lib/incomplete';
 import { sortRows, type SortState } from '../lib/sort';
 import { VIEW_LABEL, inView, type DealView } from '../lib/views';
 import { DealDetailPane } from './DealDetail';
@@ -103,7 +104,8 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     const shown = inThisView.filter((r) => (section === 'all' || r.section === section) && (!q || `${r.title} ${r.model} ${r.brand}`.toLowerCase().includes(q)));
-    return sortRows(shown, sort, sortValue);
+    // Nov 23: rows with no figure keep this order: the bundles missing a price, smallest break-even first, then the rest.
+    return sortRows(breakEvenOrder(shown), sort, sortValue);
   }, [inThisView, section, query, sort]);
 
   const close = useCallback(() => {
@@ -315,6 +317,11 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
               <Tag>Waiting</Tag>
             </span>
           </span>
+        ) : r.incomplete ? (
+          // Nov 23: missing a price is no figure, never a loss; the reason line under the title says what it needs.
+          <span className="cell-none" title={`No estimate: ${incompleteLine(r.incomplete)}.`}>
+            —
+          </span>
         ) : (
           <span className="cell-none">—</span>
         ),
@@ -490,6 +497,7 @@ const EMPTY_VIEW: Record<DealView, string> = {
   confirmed: 'No bundle has every part matched and priced yet.',
   'needs-answer': 'No bundle waits for one of your answers.',
   waiting: 'Every bundle’s parts have been looked up.',
+  'missing-price': 'Every bundle with a price has every part priced.',
   losing: 'No bundle’s estimate is below zero.',
   watchlist: 'No bundle is watched yet. A bundle that is confirmed and discounted is watched by itself; star one to watch it yourself.',
 };

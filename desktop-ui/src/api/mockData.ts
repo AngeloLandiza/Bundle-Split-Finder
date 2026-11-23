@@ -12,8 +12,10 @@ import type {
   AppSettings,
   AppState,
   DealDetail,
+  DealIncompleteEstimate,
   DealPart,
   DealRow,
+  DealUnpricedPart,
   DealSection,
   ConfirmState,
   Grade,
@@ -167,11 +169,14 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
   const parts = [...seed.parts.map(part), ...(seed.unnamed ?? []).map((name) => unnamedPartOf({ model: `~${name.toUpperCase()}`, name, qty: 1, price: null, link: null }))];
   const cost = r2(seed.price * (1 + fees.salesTaxRate) + fees.inboundCost);
   const countedParts = parts.filter((p) => p.price !== null);
-  const countedAtZero = parts.filter((p) => p.price === null).map((p) => (p.unnamed ? (p.title ?? p.model) : p.model));
+  // Nov 23: only an item with no model number can be not counted; a model part with no price leaves no estimate.
+  const countedAtZero = parts.filter((p) => p.price === null && p.unnamed).map((p) => p.title ?? p.model);
+  const unpriced = parts.filter((p) => p.price === null && !p.unnamed);
   const partsSellFor = r2(countedParts.reduce((s, p) => s + (p.price ?? 0) * p.qty, 0));
   const afterFees = r2(countedParts.reduce((s, p) => s + (p.net ?? 0) * p.qty, 0));
-  const hasEstimate = !seed.noEstimate && countedParts.length > 0;
+  const hasEstimate = !seed.noEstimate && countedParts.length > 0 && unpriced.length === 0;
   const profit = r2(afterFees - cost);
+  const incomplete = !seed.noEstimate && unpriced.length > 0 ? mockIncomplete(parts, unpriced, cost, afterFees) : null;
   const roi = Math.round((profit / cost) * 10000) / 10000;
   const id = `hd-${seed.itemId}`;
   const link = hd(seed.itemId, seed.slug);
@@ -203,6 +208,7 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     seenAt: ago(seed.updatedMin),
     link,
     estimate: hasEstimate ? { profit, roi, roiRange: seed.range ?? null, cost, partsSellFor, afterFees, basis, countedAtZero } : null,
+    ...(incomplete ? { incomplete } : {}),
     noEstimate: hasEstimate ? null : (seed.noEstimate ?? 'No estimate yet.'),
     ways,
     parts,
@@ -241,8 +247,31 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     needsAnswer: Boolean(seed.questionId),
     updatedAt: ago(seed.updatedMin),
     lookup: seed.lookup ? { searches: seed.lookup } : null,
+    ...(incomplete ? { incomplete: { priced: incomplete.priced, total: incomplete.total, pricedNet: incomplete.pricedNet, breakEvenNet: incomplete.breakEvenNet, breakEvenPrice: incomplete.breakEvenPrice, unpriced: incomplete.unpriced } } : {}),
   };
   return { row, detail };
+}
+
+const STATE_OF_GRADE: Partial<Record<DealPart['grade'], DealUnpricedPart['state']>> = { not_looked_up: 'waiting', needs_answer: 'review', missing: 'no_listing', inactive: 'inactive' };
+const ACTION_OF_STATE: Record<DealUnpricedPart['state'], DealUnpricedPart['action']> = { waiting: 'look_up', review: 'answer', no_listing: 'confirm_price', inactive: 'confirm_price' };
+
+/** The mock's incomplete estimate, by the agent's rule (core/src/scan/report.ts incompleteOf): the default fees, 15% referral. */
+function mockIncomplete(parts: DealPart[], unpriced: DealPart[], cost: number, pricedNet: number): DealIncompleteEstimate {
+  const models = parts.filter((p) => !p.unnamed);
+  const breakEvenNet = r2(Math.max(0, cost - pricedNet));
+  const one = unpriced.length === 1 ? unpriced[0]! : null;
+  return {
+    priced: models.length - unpriced.length, total: models.length, cost, pricedNet, breakEvenNet,
+    breakEvenPrice: one && breakEvenNet > 0 ? Math.ceil((breakEvenNet / one.qty / (1 - fees.referralRate)) * 100) / 100 : null,
+    unpriced: unpriced.map((p) => p.model),
+    basis,
+    parts: unpriced.map((p) => {
+      const state = STATE_OF_GRADE[p.grade] ?? 'no_listing';
+      return { model: p.model, qty: p.qty, state, action: ACTION_OF_STATE[state], questionId: null };
+    }),
+    notCounted: parts.filter((p) => p.unnamed && p.price === null).map((p) => p.title ?? p.model),
+    soldAs: null,
+  };
 }
 
 const RYOBI_DRILL: PartSeed = { model: 'PCL206B', title: 'ONE+ 18V Cordless 1/2 in. Drill/Driver (Tool Only)', asin: 'B0BVYFSHXX', price: 56.99, grade: 'verified', ebay: { low: 38.5, high: 54.99, listings: 3, sold: 41 } };

@@ -2,6 +2,7 @@
 // and the waiting states a row can be in.
 
 import type { DealRow } from '../api/types';
+import { incompleteLine } from './incomplete';
 import { WAITING_PAGE_LABEL } from './scanProblem';
 
 export const WAITING_AMAZON_LABEL = 'Waiting for an Amazon lookup';
@@ -27,6 +28,8 @@ export const matchColumnShown = (tableWidth: number): boolean => tableWidth > MA
  * repeating either is the clutter a third line adds to every row. So the line is:
  * - what the Match column would have said, while that column is hidden (a narrow window or a wide inspector);
  * - the BOGO group's own sentence (best pair and its estimate), which no column shows;
+ * - Nov 23: for a bundle missing a price, how many parts are priced and the break-even ("2 of 3 parts priced ·
+ *   DCK200D1P1 needs about $186.76 to break even"), which no column shows: its profit and ROI are "—";
  * and nothing otherwise: the row stays two lines (docs/ux-checklist.md item 1 asks for the reason, not for filler).
  * Built only from what the row already has; nothing is looked up or worked out here.
  */
@@ -38,6 +41,7 @@ export function dealReason(r: DealRow, o: { matchShown: boolean }): string | nul
     if (waiting) parts.push(waiting);
     else if (!r.needsAnswer && r.matchState) parts.push(r.matchState);
   }
+  if (r.incomplete && r.profit === null) parts.push(incompleteLine(r.incomplete));
   if (r.bogoChoices?.label) parts.push(r.bogoChoices.label);
   return parts.length ? parts.join(' · ') : null;
 }

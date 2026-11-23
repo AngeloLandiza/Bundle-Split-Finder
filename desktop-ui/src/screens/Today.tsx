@@ -135,6 +135,8 @@ function NeedsYou({ res, onRetry }: { res: ReturnType<typeof useResource<{ quest
 function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { label: string; view: DealView; actionLabel: string; res: ReturnType<typeof useResource<{ rows: DealRow[] }>>[0]; rows: DealRow[]; note: string; onRetry: () => void }) {
   const { navigate } = useApp();
   const losing = res.data?.rows.filter((r) => !r.needsAnswer && r.profit !== null && r.profit < 0).length ?? 0;
+  // Nov 23: a bundle missing a price has no estimate (never a part at $0): its own view says what each part needs.
+  const missing = res.data?.rows.filter((r) => r.profit === null && r.incomplete).length ?? 0;
   return (
     <Section
       label={label}
@@ -148,10 +150,20 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
         <EmptyState
           compact
           title="No deals with an estimate yet"
-          cause={losing > 0 ? 'No bundle’s estimate is above zero yet. Losing money lists the ones that are below.' : res.data.rows.length ? 'Every bundle found so far is waiting for a lookup or an answer.' : 'The agent has not found a discounted bundle yet. The next scan looks again.'}
+          cause={
+            losing > 0
+              ? 'No bundle’s estimate is above zero yet. Losing money lists the ones that are below.'
+              : missing > 0
+                ? `${missing === 1 ? 'One bundle is' : `${missing} bundles are`} missing a price: an estimate needs every part priced.`
+                : res.data.rows.length
+                  ? 'Every bundle found so far is waiting for a lookup or an answer.'
+                  : 'The agent has not found a discounted bundle yet. The next scan looks again.'
+          }
           action={
             losing > 0 ? (
               <Button onClick={() => navigate({ screen: 'deals', id: null, view: 'losing' })}>Show losing money</Button>
+            ) : missing > 0 ? (
+              <Button onClick={() => navigate({ screen: 'deals', id: null, view: 'missing-price' })}>Show missing a price</Button>
             ) : res.data.rows.length ? (
               <Button onClick={() => navigate({ screen: 'deals', id: null, view: 'waiting' })}>See what is waiting</Button>
             ) : null
