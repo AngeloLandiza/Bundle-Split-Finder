@@ -1,5 +1,6 @@
 import type { BundleRow, ScanJob } from '../scan/types';
 
+import { lookupsSentence } from './lookupCopy';
 import { lookupsWaiting } from './waiting';
 
 const HOUR = 60 * 60_000;
@@ -7,13 +8,15 @@ const HOUR = 60 * 60_000;
 export type LimitJob = Pick<
   ScanJob,
   'status' | 'stopReason' | 'stopMessage' | 'searchesUsed' | 'finishedAt' | 'deferred'
->;
+> & Partial<Pick<ScanJob, 'lookupsVia' | 'lookupsWaiting' | 'lookupsBlockedBy'>>;
 
 export type LimitContext = {
   lastJob: LimitJob | null;
   searchesPerScan: number;
   rateLimitPerHour: number | null;
   now: number;
+  /** Step 15: Keepa's refill, tokens a minute, from its last token status (recorded: 1). */
+  keepaRefillPerMin?: number | null;
 };
 
 function tryAgain(until: number, now: number): string {
@@ -34,6 +37,16 @@ export function limitCopy(ctx: LimitContext, bundles: BundleRow[]): { title: str
       const noun = n === 1 ? 'search' : 'searches';
       const used = job.searchesUsed === n ? `the ${n} ${noun}` : `${job.searchesUsed} of the ${n} ${noun}`;
       return { title: 'Scan stopped at your search limit', text: `It used ${used} allowed per scan.${waiting()}`, limit: true };
+    }
+    case 'keepa_tokens': {
+      // Step 15: never "search limit" for a Keepa cause.
+      const via = job.lookupsVia ?? { keepa: 0, serpapi: 0 };
+      const sentence = lookupsSentence({ waiting: k, keepa: via.keepa, serpapi: via.serpapi, blockedBy: 'keepa_tokens', refillPerMin: ctx.keepaRefillPerMin });
+      return {
+        title: 'Amazon lookups wait for Keepa tokens',
+        text: k === 0 ? 'Keepa refills its tokens over time; the next lookups run as it does.' : `${sentence} They run as Keepa refills, between scans or at the next scan.`,
+        limit: true,
+      };
     }
     case 'reserve':
       return {
