@@ -157,8 +157,10 @@ parallel.
 - **Static files.** `/ui` refuses `..`, encoded dots and slashes (never decoded), backslashes, NUL, double slashes and
   absolute paths, and serves nothing outside its folder (tested on 12 shapes). The CSV and deal exports take no path
   from the request, and the file name is cleaned.
-- **Keys at rest and in errors.** `keys.json`, `pairing.json` and `agent-token` are written 0600, and on Windows the
-  ACL is narrowed before the content goes in. The store directory is 0700. No route returns a key. Run errors go through
+- **Keys at rest and in errors.** `keys.json`, `pairing.json` and `agent-token` are written 0600, and on Windows each is given an explicit ACL (inheritance
+  removed) naming only the user, SYSTEM and Administrators, set before the content goes in and again after the rename, then
+  read back (your keys are readable by your Windows account and by this PC's administrators, the same as SSH keys; a
+  standard other user cannot read them). The store directory is 0700. No route returns a key. Run errors go through
   `scrub`. The OpenAI-compatible provider and the Telegram client take the key out before they cut the text. An
   OpenAI-compatible address must be https (or http on loopback), with no user or query; the Anthropic provider has no
   address setting. The unhandled-error log prints only the error's name.

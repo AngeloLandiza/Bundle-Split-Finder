@@ -276,18 +276,21 @@ if ($listening -and $token) {
 # ---------------------------------------------------------------- 5. owner-only files
 
 if ($listening) {
-  # The three files that hold secrets are narrowed by the agent (agent/winAcl.ts): exactly one entry, the current
-  # user (compared by SID), not inherited. The other store files hold no keys and keep the folder's inherited
-  # per-user permissions (user, SYSTEM, Administrators), the normal state of %APPDATA%; they are not checked here.
+  # The three files that hold secrets are made explicit by the agent (agent/winAcl.ts), the state Microsoft's OpenSSH
+  # uses for key files: no inherited entry, and only the current user, SYSTEM (S-1-5-18) and Administrators
+  # (S-1-5-32-544), compared by SID. The other store files hold no keys and keep the folder's inherited per-user
+  # permissions (user, SYSTEM, Administrators), the normal state of %APPDATA%; they are not checked here.
   foreach ($rel in @('agent-token', 'store\keys.json', 'store\pairing.json')) {
     Invoke-Check "secret file is owner-only: $rel" {
       $path = Join-Path $DataDir $rel
       if (-not (Test-Path -LiteralPath $path)) { return @($false, "$path does not exist") }
       $names = Get-AclNames $path
-      $others = @($names | Where-Object { -not (Test-IsMe $_) })
+      $me = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+      $allowed = @($me, 'S-1-5-18', 'S-1-5-32-544')
+      $strangers = @($names | Where-Object { $allowed -notcontains (Get-EntrySid $_) })
       $text = Get-AclEntryText $path
-      if ($names.Count -eq 1 -and $others.Count -eq 0 -and $text -notmatch '\(I\)') { return @($true, "one entry: $text") }
-      return @($false, "entries: $text (expected one explicit entry for $((& whoami.exe).Trim()))")
+      if ($names.Count -gt 0 -and $strangers.Count -eq 0 -and $text -notmatch '\(I\)' -and ($names | Where-Object { Test-IsMe $_ })) { return @($true, "explicit entries: $text") }
+      return @($false, "entries: $text (expected explicit entries for only $((& whoami.exe).Trim()), SYSTEM and Administrators)")
     }
   }
 
@@ -306,17 +309,16 @@ if ($listening) {
     return @($true, "no Users / Authenticated Users / Everyone entry; entries: $(Get-AclEntryText (Join-Path $DataDir 'store'))")
   }
 
-  # What the agent itself recorded (its open errors, already scrubbed of keys): the reason a file could not be narrowed
-  # is written there, and a windowless app has nowhere else to say it.
+  # What the agent itself recorded (its errors, already scrubbed of keys): a fresh install records none.
   if ($token) {
-    $r = Invoke-Agent -Method GET -Path '/api/activity' -Bearer $script:token
-    if ($r.Status -eq 200) {
-      try {
-        $errs = @((ConvertFrom-Json $r.Body).errors)
-        if ($errs.Count) { foreach ($e in $errs) { Write-Host "NOTE agent error: $($e.sentence)" } }
-        else { Write-Host 'NOTE agent errors: none recorded' }
-      } catch { Write-Host "NOTE agent errors: could not read ($($_.Exception.Message))" }
-    } else { Write-Host "NOTE agent errors: GET /api/activity answered $($r.Status)" }
+    Invoke-Check 'no agent errors on a fresh install' {
+      $r = Invoke-Agent -Method GET -Path '/api/activity' -Bearer $script:token
+      if ($r.Status -ne 200) { return @($false, "GET /api/activity answered $($r.Status)") }
+      $errs = @((ConvertFrom-Json $r.Body).errors | Where-Object { $_ })
+      foreach ($e in $errs) { Write-Host "NOTE agent error: $($e.sentence)" }
+      if ($errs.Count) { return @($false, "$($errs.Count) agent error(s) recorded: $(($errs | ForEach-Object { $_.sentence }) -join ' | ')") }
+      return @($true, 'none recorded')
+    }
   }
 }
 
