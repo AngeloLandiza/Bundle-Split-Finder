@@ -4,6 +4,7 @@
 // records the app holds. It is what the owner sees until (or unless) a model brief passes the checks in ground.ts.
 
 import { plainNote } from '../review/words';
+import { checkWho } from './who';
 import type { BriefCheck, BriefInput, BriefReason, ReviewBrief } from './types';
 
 /** A sentence of a brief is at most this long. */
@@ -34,7 +35,7 @@ export function rulesCheck(input: BriefInput): BriefCheck | null {
       ? 'Open the Amazon listing and see that it is this exact part, new.'
       : 'Open the Amazon listings and see which one is this exact part, new.';
   }
-  return { text: cutText(text, MAX_CHECK_CHARS), ...(link ? { url: link.url, linkLabel: link.label } : {}) };
+  return { text: cutText(text, MAX_CHECK_CHARS), who: checkWho(text, input.kind), ...(link ? { url: link.url, linkLabel: link.label } : {}) };
 }
 
 /** A rules sentence is plain words filled from a template: up to this long (a model's reasons are held to MAX_REASON_CHARS). */

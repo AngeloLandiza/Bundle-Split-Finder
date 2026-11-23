@@ -570,3 +570,27 @@ export async function runFollowUp(run: FollowUpRun): Promise<FollowUpResult> {
     cur = { checked: s, answer: s.research.answer, trace: s.research };
   }
 }
+
+// ---------------------------------------------------------------- what the card shows
+
+/** ReviewQuestion.followUp (GET /api/review): what the app is doing, or did, about a question before it is the owner's. */
+export interface ReviewFollowUp {
+  state: FollowUpState['state'];
+  /** "Reading Home Depot's page for A21701", while it runs. */
+  doing?: string;
+  /** "Searched Home Depot for RYOBI A21701" / "found: 15-Piece Router Bit Set", with the page's link. */
+  tried: FollowUpTried[];
+  roundsLeft: number;
+}
+
+export function followUpView(s: FollowUpState): ReviewFollowUp {
+  return {
+    state: s.state,
+    ...(s.doing && (s.state === 'queued' || s.state === 'running') ? { doing: s.doing } : {}),
+    tried: s.tried.map((t) => ({ ...t })),
+    roundsLeft: Math.max(0, MAX_FOLLOW_UP_ROUNDS - s.rounds),
+  };
+}
+
+/** Whether the question is the app's for now (not counted in "Needs you"). */
+export const followUpWorking = (s: FollowUpState | undefined): boolean => s !== undefined && (s.state === 'queued' || s.state === 'running');

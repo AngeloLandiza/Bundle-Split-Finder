@@ -18,8 +18,14 @@ export interface BriefReason {
 }
 
 export interface BriefCheck {
-  /** What the owner should look at. */
+  /** What the owner should look at, or (who 'app') what the app is doing or did about it. */
   text: string;
+  /**
+   * Step 16: who the check is for, decided by code (who.ts checkWho). 'app': a page read, an Includes-list read, a model-number
+   * lookup or a listing lookup, which the app's own tools do: it is never shown as an instruction; the card says what the app
+   * is doing or did (view.ts cardCheck, ReviewQuestion.followUp). 'owner': something only a person can do.
+   */
+  who: 'app' | 'owner';
   url?: string;
   linkLabel?: string;
 }

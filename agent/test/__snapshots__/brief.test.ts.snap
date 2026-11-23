@@ -6,8 +6,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "Which Amazon listing is this part?",
     "check": {
       "linkLabel": "Amazon listing",
-      "text": "Open the Amazon listings and see which one is this exact part, new.",
+      "text": "The app checks Amazon's catalog record for these listings.",
       "url": "https://www.amazon.com/dp/B0FFLV6CML",
+      "who": "app",
     },
     "reasons": [
       {
@@ -22,8 +23,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "Which Amazon listing is this part?",
     "check": {
       "linkLabel": "Amazon listing",
-      "text": "Open the Amazon listings and see which one is this exact part, new.",
+      "text": "The app checks Amazon's catalog record for these listings.",
       "url": "https://www.amazon.com/dp/B0DPDK33YB",
+      "who": "app",
     },
     "reasons": [
       {
@@ -38,8 +40,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "Which Amazon listing is this part?",
     "check": {
       "linkLabel": "Amazon listing",
-      "text": "Open the Amazon listings and see which one is this exact part, new.",
+      "text": "The app checks Amazon's catalog record for these listings.",
       "url": "https://www.amazon.com/dp/B09V1PG5R1",
+      "who": "app",
     },
     "reasons": [
       {
@@ -54,8 +57,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "text": "The app reads the Home Depot pages this needs when Chrome is open.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671",
+      "who": "app",
     },
     "reasons": [
       {
@@ -73,8 +77,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "text": "The app reads the Home Depot pages this needs when Chrome is open.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549",
+      "who": "app",
     },
     "reasons": [
       {
@@ -95,8 +100,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "text": "The app reads the Home Depot pages this needs when Chrome is open.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428",
+      "who": "app",
     },
     "reasons": [
       {
@@ -117,8 +123,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "text": "The app reads the Home Depot pages this needs when Chrome is open.",
       "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185",
+      "who": "app",
     },
     "reasons": [
       {
@@ -139,8 +146,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "text": "The app reads the Home Depot pages this needs when Chrome is open.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510",
+      "who": "app",
     },
     "reasons": [
       {
@@ -161,8 +169,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "text": "The app reads the Home Depot pages this needs when Chrome is open.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201",
+      "who": "app",
     },
     "reasons": [
       {
@@ -177,8 +186,9 @@ exports[`GET /api/review: brief, from the rules > every one of the owner’s 10 
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Read the Includes list on the Home Depot page and see what the bundle holds.",
+      "text": "The app reads the Home Depot pages this needs when Chrome is open.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135",
+      "who": "app",
     },
     "reasons": [
       {

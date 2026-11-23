@@ -11,6 +11,7 @@
 import { familiesOf, whyKindRefused } from './kinds';
 import { cutText, MAX_CHECK_CHARS, MAX_REASON_CHARS, MAX_REASONS, rulesBrief, rulesCheck } from './rules';
 import type { BriefCheck, BriefInput, BriefQuote, BriefReason, BriefVerdict, ReviewBrief } from './types';
+import { checkWho } from './who';
 
 /** What the model gives back, read (parseBriefRaw) but not yet trusted. */
 export interface RawBrief {
@@ -139,7 +140,7 @@ export function groundBrief(raw: RawBrief, input: BriefInput): { brief: ReviewBr
     verdicts.push({ part: 'check', text: raw.check.text, kept: problem === null, ...(problem ? { why: problem } : {}) });
     if (problem === null && q) {
       const link = q.url ? { url: q.url, linkLabel: q.label } : input.checkLink ? { url: input.checkLink.url, linkLabel: input.checkLink.label } : null;
-      check = { text: cutText(raw.check.text, MAX_CHECK_CHARS), ...(link ?? {}) };
+      check = { text: cutText(raw.check.text, MAX_CHECK_CHARS), who: checkWho(raw.check.text, input.kind), ...(link ?? {}) };
     }
   }
 
