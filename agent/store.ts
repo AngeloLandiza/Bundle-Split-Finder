@@ -52,6 +52,8 @@ export interface DealsCollection {
   bundles: BundleRow[];
   auditAt: string | null;
   auditBundles: AuditBundle[];
+  /** W4: searches a Look up of each bundle's unmatched parts would spend now (paid.ts lookupsNeeded), by bundle key. */
+  lookups?: Record<string, number>;
 }
 
 export interface ReviewCollection {
@@ -81,8 +83,19 @@ export interface HelperSnapshot {
   lastJob: HelperLastJob | null;
 }
 
+/** W4: something that went wrong, in one plain sentence, and what Retry would do. */
+export interface ActivityErrorRecord {
+  id: string;
+  at: string;
+  sentence: string;
+  retry: { kind: 'scan' | 'ask' | 'telegram'; label: string; searches: number; usd: number } | null;
+  resolvedAt: string | null;
+}
+
 export interface ActivityCollection {
   runs: RunRecord[];
+  /** W4: errors the owner may retry, newest last. */
+  errors?: ActivityErrorRecord[];
   helper: HelperSnapshot | null;
   lastScan: LastScanSummary | null;
   bridge: { at: string; kind: string | null; bundleCount: number } | null;
