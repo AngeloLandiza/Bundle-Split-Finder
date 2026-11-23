@@ -223,7 +223,7 @@ export function createJobLoop(deps: JobLoopDeps): JobLoop {
 export function appJobDeps(api: AgentApi, version?: string): Pick<JobLoopDeps, 'next' | 'result' | 'heartbeat'> {
   return {
     async next(waitSeconds, signal) {
-      const reply = await api.get<WorkerNextResponse | undefined>(`/api/worker/next?wait=${waitSeconds}`, { signal });
+      const reply = await api.get<WorkerNextResponse | undefined>(`/api/worker/next?wait=${waitSeconds}${version ? `&v=${encodeURIComponent(version)}` : ''}`, { signal });
       if (signal.aborted) return { kind: 'none' };
       if (!reply.ok) return reply.kind === 'unpaired' ? { kind: 'unpaired' } : { kind: 'unreachable' };
       return reply.status === 200 && reply.data?.job ? { kind: 'job', job: reply.data.job } : { kind: 'none' };

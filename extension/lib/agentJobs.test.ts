@@ -351,4 +351,15 @@ describe('the loop over the app\'s API', () => {
     await appJobDeps(createAgentApi({ fetchFn, store })).heartbeat();
     expect(bodies).toEqual([{ version: '0.1.0+3c92cc7' }, { jobId: 'j1', version: '0.1.0+3c92cc7' }, {}]);
   });
+
+  it('Nov 23: every poll carries this build as v', async () => {
+    const store = createLinkStore(memoryKv());
+    await store.pair('tok', 1);
+    const urls: string[] = [];
+    const fetchFn = (async (input: RequestInfo | URL) => (urls.push(String(input)), new Response(null, { status: 204 }))) as typeof fetch;
+    const signal = new AbortController().signal;
+    await appJobDeps(createAgentApi({ fetchFn, store }), '0.1.0+3c92cc7').next(25, signal);
+    await appJobDeps(createAgentApi({ fetchFn, store })).next(25, signal);
+    expect(urls).toEqual(['http://127.0.0.1:8790/api/worker/next?wait=25&v=0.1.0%2B3c92cc7', 'http://127.0.0.1:8790/api/worker/next?wait=25']);
+  });
 });

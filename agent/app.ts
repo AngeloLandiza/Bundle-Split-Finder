@@ -357,6 +357,20 @@ export function createAgent(opts: AgentOptions): Agent {
     helper.reloadsFor.add(key);
     queueReload();
   };
+  /** Nov 23: the helper's build, from a heartbeat's `version` or a poll's `v`. A new one clears what the old one reported, and may be outdated itself. */
+  const noteHelperVersion = (version: unknown): void => {
+    if (typeof version === 'string' && HELPER_VERSION.test(version) && version !== helper.version) {
+      helper.version = version;
+      reloadIfOutdated();
+      mark('state');
+    } else if (version === undefined && helper.version === null && shipped !== null) {
+      // A helper built before Nov 23 sends no build at all: it is older than the app, so the app says so instead of
+      // waiting for a job it cannot run.
+      helper.version = 'unversioned';
+      reloadIfOutdated();
+      mark('state');
+    }
+  };
   jobs.onOutdated = () => {
     helper.reportedBy = helper.version;
     reloadIfOutdated();
@@ -716,6 +730,8 @@ export function createAgent(opts: AgentOptions): Agent {
   r.get('/api/worker/next', 'extension', async (ctx) => {
     const wait = Number(ctx.url.searchParams.get('wait') ?? NaN);
     const ms = Number.isFinite(wait) ? Math.max(0, Math.min(wait * 1000, WORKER_LONG_POLL_MS)) : WORKER_LONG_POLL_MS;
+    // Every poll names the helper's build, so a restarted app learns it at once, not at the next heartbeat.
+    noteHelperVersion(ctx.url.searchParams.get('v') ?? undefined);
     mark('state');
     const job = await jobs.next(ms, ctx.signal);
     mark('state');
@@ -737,19 +753,7 @@ export function createAgent(opts: AgentOptions): Agent {
     const b = (await ctx.body()) as { jobId?: unknown; version?: unknown } | null;
     const jobId = b?.jobId;
     if (typeof jobId === 'string' && jobId !== '' && jobId.length <= 64) jobs.extendLease(jobId);
-    // Nov 23: the helper's build. A new one clears what the old one reported, and may be outdated itself.
-    const version = b?.version;
-    if (typeof version === 'string' && HELPER_VERSION.test(version) && version !== helper.version) {
-      helper.version = version;
-      reloadIfOutdated();
-      mark('state');
-    } else if (version === undefined && helper.version === null && shipped !== null) {
-      // A helper built before Nov 23 sends no build at all (today's sends it in every heartbeat, the first one at
-      // start): it is older than the app, so the app says so instead of waiting for a job it cannot run.
-      helper.version = 'unversioned';
-      reloadIfOutdated();
-      mark('state');
-    }
+    noteHelperVersion(b?.version);
     return { ok: true };
   });
   // Nov 23: the app's Reload helper button: one reload job, unless one is waiting already (HelperReloadResponse).

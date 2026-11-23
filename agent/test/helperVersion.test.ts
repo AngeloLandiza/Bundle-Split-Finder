@@ -87,7 +87,7 @@ describe('the helper build', () => {
   it('a job the helper does not know fails at once as an outdated helper, not Home Depot, and a reload is queued once', async () => {
     const token = await pair();
     const listing = agent.jobs.enqueue('bogoListing', { path: '/b/x' });
-    const next = (await (await ext(token, '/api/worker/next?wait=1')).json()) as { job: { id: string } };
+    const next = (await (await ext(token, `/api/worker/next?wait=1&v=${SHIPPED}`)).json()) as { job: { id: string } };
     expect(next.job.id).toBe(listing.id);
     // An older build answers as it did on Nov 23, with no `outdated` field.
     const done = await ext(token, '/api/worker/result', { method: 'POST', body: JSON.stringify({ id: listing.id, ok: false, error: 'This browser does not know that kind of job.' }) });
@@ -97,7 +97,7 @@ describe('the helper build', () => {
     expect(reloads()).toHaveLength(1);
 
     // The old build does not know `reload` either: that fails the same way, and nothing more is queued for it.
-    const reload = (await (await ext(token, '/api/worker/next?wait=1')).json()) as { job: WorkerJob };
+    const reload = (await (await ext(token, `/api/worker/next?wait=1&v=${SHIPPED}`)).json()) as { job: WorkerJob };
     expect(reload.job.kind).toBe('reload');
     await ext(token, '/api/worker/result', { method: 'POST', body: JSON.stringify({ id: reload.job.id, ok: false, error: 'This browser does not know that kind of job.', outdated: true }) });
     expect(reloads()).toHaveLength(0);
@@ -108,6 +108,26 @@ describe('the helper build', () => {
     expect(reloads()).toHaveLength(1);
     // The extension cannot ask for it itself.
     expect((await ext(token, '/api/helper/reload', { method: 'POST', body: '{}' })).status).toBe(403);
+  });
+
+  it('a poll names the build like a heartbeat: another build is outdated with one reload, the shipped one clears it, none is unversioned', async () => {
+    const token = await pair();
+    const poll = (q: string) => ext(token, `/api/worker/next?wait=0${q}`);
+    expect((await poll('&v=0.1.0%2B3c92cc7')).status).toBe(200);
+    expect(await helperState()).toMatchObject({ outdated: true, version: '0.1.0+3c92cc7' });
+    expect(agent.store.get('jobs').filter((j) => j.kind === 'reload')).toHaveLength(1);
+    await poll('&v=0.1.0%2B3c92cc7');
+    expect(agent.store.get('jobs').filter((j) => j.kind === 'reload')).toHaveLength(1);
+    await poll(`&v=${encodeURIComponent(SHIPPED)}`);
+    const h = await helperState();
+    expect(h.version).toBe(SHIPPED);
+    expect(h).not.toHaveProperty('outdated');
+  });
+
+  it('a poll with no v from a helper with no known build marks it unversioned', async () => {
+    const token = await pair();
+    await ext(token, '/api/worker/next?wait=0');
+    expect(await helperState()).toMatchObject({ outdated: true, version: 'unversioned' });
   });
 
   it('a Home Depot refusal is still a failure that is handed out once more, never an outdated helper', () => {
