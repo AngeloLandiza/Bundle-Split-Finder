@@ -671,3 +671,40 @@ looked worse than one whose fee was simply missing), and the PO would act on it.
   Deals top 8 by profit: DCK540D1WCS382B -$0.94, DCK540D1WCS565B -$7.11, DCK540D1WCB1404 -$7.70 (2 of 2 before fulfillment),
   PCL1201K2-PCL424B -$8.38, -P755 -$11.75, -PCL445B -$13.69 (1 of 2), DCK540D1WDCB606 -$14.83 (2 of 2), PCL1201K2-PCL515B -$15.15
   (1 of 2); none worth buying.
+
+## Buy safety and eBay questions out of Review (Nov 23)
+
+The first real scan with eBay working (Nov 23, 80 bundles, 27 estimated) announced two deals as Buy now,
+PSK1212SB-PCL515B (+$43.19, 43.6% ROI) and PSK1212SB-PCL633B (+$38.79), whose estimates each rested on two title matches the
+catalog check had not read yet; and Review went from 4 to 26 questions, 20 of them eBay identity questions about reference
+listings that count in no estimate.
+
+- **A buy needs confirmed listings** (`core/src/tracking/signals.ts isConfirmedListing, unconfirmedListings`). A counted part's
+  Amazon listing (qty above 0, priced by the listing's own non-reference New price) is confirmed when its grade is `exact`
+  (barcode) or `strong` (manufacturer part number; a catalog confirmation sets strong too), or `verifiedBy` is `keepa_catalog`,
+  `serpapi_product` or `owner`. A title match (`probable`, `verifiedBy: 'title'`) is not. A part priced by the owner's confirmed
+  price has no listing to confirm.
+- **Held back, not announced**: when every other condition holds but a counted listing is unconfirmed, the way to sell is not
+  `buyNow`; `BundleSignals.buyPending {optionId, listings, asins}`, `OptionSignals.buyPending`, and the verdict "Looks worth
+  buying: +$43.19 (43.6% ROI), sells about 200 a month — 2 listings are being confirmed first". No digest line, no
+  notification, not in "Worth buying now"; `DealRow.buyPending {listings}`. When the estimate meets the owner's numbers but
+  something else fails too, "N listings not confirmed yet" is said first; below the numbers the threshold binds first.
+- **Confirmation is the change**: a held-back buy needs no other change to stay held back from scan to scan (its "no better
+  than the last check" is not said). `OptionPoint.unconfirmed` is stored in the history, and `sameFigures` compares it, so when
+  the last listing is confirmed (by the drip's catalog check, a scan's, or the owner) the bundle is judged again at once and the
+  reason is "Its Amazon listings are confirmed now: …"; it goes out once a day like every buy signal. A listing the check
+  contradicts is removed as before and the estimate recomputed (with no other listing, no estimate and no buy).
+- **The listings a buy waits on go first** (`catalogChecksWanted(store, parts, first)`): the scan's catalog checks take them
+  before any other (`ScanDeps.catalogFirst`, from the stored signals); the drip checks them before its lookups, then the rest
+  of the catalog checks and the fee pulls as before. A deal first held back in a scan is checked first in the next drip.
+- **eBay identity questions leave Review by default** (`ebaySettings.askAboutListings`, default off; a stored install without
+  the field reads off, so it is migrated by its default). A listing the judge is not sure of was already left out of the
+  part's eBay range (`core/src/ebay/value.ts` counts only `match`); now its question is not in Review, `counts.review`, the
+  activity's `reviewOpen` or the digest's "questions need you" either. The questions stay stored and answerable by id through
+  the same answer path. The PO's rule stands: eBay values are a reference and count only when he chooses a listing or types
+  a price.
+- **Not done in this round**: the "N eBay listings left out: not sure they are the same product" line with a "Review them"
+  disclosure under the part's reference prices; the Activity sentence "eBay: 73 calls, 20 listings left out as uncertain";
+  the shared comparator rule that an estimate on an unconfirmed listing never ranks above confirmed ones of the same sign; the
+  replay on after-scan3. `agent/app.ts`'s SSE review count calls `openReviewCount` without the setting (another change owns
+  that file), so with the setting on its pushed count leaves eBay questions out until the next state poll.
