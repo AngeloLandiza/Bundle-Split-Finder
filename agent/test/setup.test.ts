@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -26,7 +26,8 @@ describe('Lane D: install browser helper folder', () => {
     expect(manifestLooksValid(dir).ok).toBe(false);
   });
 
-  it('unpacks the chrome zip to a load-ready folder', () => {
+  // Needs `npm run package` first; a fresh checkout or worktree has no zip.
+  it.skipIf(!existsSync(zipFixture))('unpacks the chrome zip to a load-ready folder', () => {
     const dir = mkdtempSync(join(tmpdir(), 'sf-unpack-'));
     temps.push(dir);
     installExtensionFromZip(zipFixture, dir);
