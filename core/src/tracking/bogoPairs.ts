@@ -176,9 +176,10 @@ export interface BogoBrandResult {
   problem: string | null;
 }
 
-const itemCacheKey = (itemId: string): string => `homedepot:bogo-item:${itemId}`;
+/** The item cache key, shared with the Bundle listing pass (scan/listingSource.ts): a page either pass read is reused. */
+export const itemCacheKey = (itemId: string): string => `homedepot:bogo-item:${itemId}`;
 
-function itemOf(page: PromoPage, listed: ListedItem | undefined, at: number): BogoItem {
+export function itemOf(page: PromoPage, listed: ListedItem | undefined, at: number): BogoItem {
   return {
     itemId: page.itemId, brand: page.brand, model: page.model, title: page.title || listed?.title || '', price: page.price, wasPrice: page.wasPrice,
     link: listed?.url && listed.url.startsWith(`${HOME_DEPOT}/p/`) ? listed.url : `${HOME_DEPOT}/p/${page.itemId}`,
