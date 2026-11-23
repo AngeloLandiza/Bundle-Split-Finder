@@ -750,6 +750,11 @@ export interface WorkerJobInputs {
   bogoListing: { path: string };
   /** BOGO: product pages with their price, was-price and BOGO promotions (hdPage.ts parsePromoPage). */
   promoPage: { itemIds: string[] };
+  /**
+   * Nov 23: the helper reloads itself (chrome.runtime.reload(); an unpacked install loads the files in its folder again).
+   * Queued once by the agent when it sees an outdated helper, and by POST /api/helper/reload. No input.
+   */
+  reload: Record<string, never>;
 }
 
 /**
@@ -770,10 +775,18 @@ export interface WorkerJobResults {
   bogoListing: { products: ListedItem[] } | ToolError;
   /** One outcome per item id asked, as `page`'s. */
   promoPage: PromoPageOutcome[];
+  /** Posted just before the helper reloads. */
+  reload: { reloading: true };
 }
 
 export type WorkerJobKind = keyof WorkerJobInputs;
-export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search', 'researchPage', 'bogoListing', 'promoPage'];
+export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search', 'researchPage', 'bogoListing', 'promoPage', 'reload'];
+
+/**
+ * Nov 23: the sentence a helper answers a job kind it does not know with. A helper built before `outdated` existed says only
+ * this, so the agent reads it as `outdated` too (never as a Home Depot failure).
+ */
+export const UNKNOWN_JOB_KIND = 'This browser does not know that kind of job.';
 
 export type WorkerJobStatus = 'queued' | 'leased' | 'done' | 'failed';
 
@@ -798,11 +811,24 @@ export interface WorkerNextResponse {
 }
 
 /** POST /api/worker/result. */
-export type WorkerResultBody = { id: string; ok: true; result: unknown } | { id: string; ok: false; error: string };
+export type WorkerResultBody =
+  | { id: string; ok: true; result: unknown }
+  /** Nov 23 `outdated`: the helper does not know this kind of job (it is an older build); the job fails at once, not retried. */
+  | { id: string; ok: false; error: string; outdated?: boolean };
 
 /** POST /api/worker/heartbeat: `jobId` names the job the helper is running, so the agent extends its lease (additive; omitted when idle). */
 export interface WorkerHeartbeatBody {
   jobId?: string;
+  /**
+   * Nov 23: the helper's build, its manifest's version_name ("0.1.0+3c92cc7": the version and the build id baked in at
+   * build time). Sent when its job loop starts and with every heartbeat during a job.
+   */
+  version?: string;
+}
+
+/** Nov 23, POST /api/helper/reload (UI, no body): a `reload` job is queued for the helper. */
+export interface HelperReloadResponse {
+  queued: true;
 }
 
 export interface WorkerResultResponse {

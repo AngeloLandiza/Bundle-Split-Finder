@@ -82,6 +82,13 @@ describe('runJob', () => {
     expect(log).toEqual([]);
   });
 
+  it('Nov 23: a kind this build does not know is answered as an outdated helper, never a Home Depot failure', async () => {
+    const { readers: r, log } = readers();
+    expect(await runJob({ kind: 'nextYear' as never, input: {} }, r)).toEqual({ ok: false, error: 'This browser does not know that kind of job.', outdated: true });
+    expect(await runJob({ kind: 'reload', input: {} }, r)).toEqual({ ok: true, result: { reloading: true } });
+    expect(log).toEqual([]);
+  });
+
   it('a reader that throws is a failure with its sentence, not a crash', async () => {
     const { readers: r } = readers({ readPages: async () => Promise.reject(new Error('The Home Depot tab did not load.')) });
     expect(await runJob({ kind: 'page', input: { itemIds: ['300'] } }, r)).toEqual({ ok: false, error: 'The Home Depot tab did not load.' });
@@ -164,7 +171,8 @@ describe('the job loop', () => {
   it('runs jobs one at a time in the order the app gave them, posts each result, and notes when the last one finished', async () => {
     const w = loopWorld([job('j1'), job('j2')], { idleStopMs: 60_000 });
     await w.loop.start();
-    expect(w.events).toEqual(['run j1', 'result j1', 'run j2', 'result j2']);
+    // Nov 23: a heartbeat first, so the app learns this build at once.
+    expect(w.events).toEqual(['beat', 'run j1', 'result j1', 'run j2', 'result j2']);
     expect(w.results).toEqual([
       { id: 'j1', ok: true, result: 'r-j1' },
       { id: 'j2', ok: true, result: 'r-j2' },
@@ -238,7 +246,7 @@ describe('the job loop', () => {
     const w = loopWorld([{ kind: 'unpaired' }, job('never')]);
     await w.loop.start();
     expect(w.unpaired()).toBe(1);
-    expect(w.events).toEqual([]);
+    expect(w.events).toEqual(['beat']);
     const late = loopWorld([job('j1')], { result: async () => 'unpaired' });
     await late.loop.start();
     expect(late.unpaired()).toBe(1);
@@ -248,11 +256,26 @@ describe('the job loop', () => {
     const w = loopWorld([{ kind: 'unreachable' }, { kind: 'unreachable' }, { kind: 'unreachable' }, job('never')]);
     await w.loop.start();
     expect(w.polls()).toBe(3);
-    expect(w.events).toEqual([]);
+    expect(w.events).toEqual(['beat']);
     // One failure then a job: the count starts over.
     const ok = loopWorld([{ kind: 'unreachable' }, job('j1')], { idleStopMs: 25_000 });
     await ok.loop.start();
-    expect(ok.events).toEqual(['run j1', 'result j1']);
+    expect(ok.events).toEqual(['beat', 'run j1', 'result j1']);
+  });
+
+  it('Nov 23: a reload job is answered, then the extension reloads and the loop ends', async () => {
+    let reloads = 0;
+    const w = loopWorld([{ kind: 'job', job: { id: 'r1', kind: 'reload', input: {}, attempt: 1 } }, job('after')], {
+      run: (j) => runJob(j, readers().readers),
+      reload: () => {
+        w.events.push('reload');
+        reloads++;
+      },
+    });
+    await w.loop.start();
+    expect(w.results).toEqual([{ id: 'r1', ok: true, result: { reloading: true } }]);
+    expect(w.events).toEqual(['beat', 'result r1', 'reload']);
+    expect(reloads).toBe(1);
   });
 
   it('a result that could not be delivered is not counted as finished work', async () => {
@@ -316,5 +339,16 @@ describe('the loop over the app\'s API', () => {
     expect(await deps.result({ id: 'j2', ok: false, error: 'x' })).toBe('sent');
     expect(await deps.result({ id: 'j3', ok: true, result: null })).toBe('failed');
     expect(bodies[0]).toEqual({ id: 'j1', ok: true, result: [1] });
+  });
+
+  it('Nov 23: every heartbeat carries this build, with the job when one runs', async () => {
+    const store = createLinkStore(memoryKv());
+    await store.pair('tok', 1);
+    const bodies: unknown[] = [];
+    const fetchFn = (async (_i: RequestInfo | URL, init?: RequestInit) => (bodies.push(init?.body === undefined ? undefined : JSON.parse(String(init.body))), new Response('{"ok":true}', { status: 200 }))) as typeof fetch;
+    await appJobDeps(createAgentApi({ fetchFn, store }), '0.1.0+3c92cc7').heartbeat();
+    await appJobDeps(createAgentApi({ fetchFn, store }), '0.1.0+3c92cc7').heartbeat('j1');
+    await appJobDeps(createAgentApi({ fetchFn, store })).heartbeat();
+    expect(bodies).toEqual([{ version: '0.1.0+3c92cc7' }, { jobId: 'j1', version: '0.1.0+3c92cc7' }, {}]);
   });
 });

@@ -2,13 +2,13 @@
 // app by a long poll, run one at a time through the shared doorway tab, and answered. Nothing here touches chrome.*: the
 // readers and the calls to the app are injected, so the loop is tested with fakes.
 
-import type { WorkerJobKind, WorkerNextResponse, WorkerResultBody } from '@core/api/contract';
+import { UNKNOWN_JOB_KIND, type WorkerJobKind, type WorkerNextResponse, type WorkerResultBody } from '@core/api/contract';
 import { HOME_DEPOT_ITEM_ID } from '@core/scan/kitPage';
 import { isBogoListingPath } from '@core/tracking/bogoPairs';
 import type { AgentApi } from './agentApi';
 import type { Readers } from './doorwayLock';
 
-export type JobOutcome = { ok: true; result: unknown } | { ok: false; error: string };
+export type JobOutcome = { ok: true; result: unknown } | { ok: false; error: string; outdated?: boolean };
 export type Job = WorkerNextResponse['job'];
 
 const MAX_PAGE_ITEMS = 50;
@@ -76,8 +76,12 @@ export async function runJob(job: { kind: WorkerJobKind; input: unknown }, reade
         if (!readers.readPromoPages) return { ok: false, error: 'This browser does not read BOGO pages yet.' };
         return { ok: true, result: await readers.readPromoPages(ids as string[]) };
       }
+      case 'reload':
+        // Nov 23: answered first; the loop reloads the extension once the answer is posted (JobLoopDeps.reload).
+        return { ok: true, result: { reloading: true } };
       default:
-        return { ok: false, error: 'This browser does not know that kind of job.' };
+        // An older build than the app's: said as such, so the app reads it as an outdated helper, not a Home Depot failure.
+        return { ok: false, error: UNKNOWN_JOB_KIND, outdated: true };
     }
   } catch (e) {
     return { ok: false, error: (e instanceof Error && e.message !== '' ? e.message : 'The Home Depot read failed.').slice(0, MAX_ERROR) };
@@ -99,8 +103,10 @@ export interface JobLoopDeps {
   next(waitSeconds: number, signal: AbortSignal): Promise<NextJob>;
   /** POST /api/worker/result. */
   result(body: WorkerResultBody): Promise<'sent' | 'unpaired' | 'failed'>;
-  /** POST /api/worker/heartbeat: still here, though no poll is open (a long job). */
+  /** POST /api/worker/heartbeat: still here, though no poll is open (a long job); with no job when the loop starts. */
   heartbeat(jobId?: string): Promise<void>;
+  /** Nov 23: after a `reload` job's answer is posted: chrome.runtime.reload(). Absent: the loop just goes on. */
+  reload?(): void;
   run(job: Job): Promise<JobOutcome>;
   now(): number;
   sleep(ms: number): Promise<void>;
@@ -141,6 +147,8 @@ export function createJobLoop(deps: JobLoopDeps): JobLoop {
   async function loop(signal: AbortSignal): Promise<void> {
     let lastWork = deps.now();
     let failures = 0;
+    // Nov 23: the app learns this helper's build at once (the heartbeat carries it), not only during a long job.
+    void deps.heartbeat().catch(() => undefined);
     while (!signal.aborted) {
       const next = await deps.next(waitSeconds, signal);
       if (next.kind === 'unpaired') {
@@ -181,6 +189,10 @@ export function createJobLoop(deps: JobLoopDeps): JobLoop {
       }
       lastWork = deps.now();
       await deps.onJobDone(lastWork);
+      if (next.job.kind === 'reload' && outcome.ok && deps.reload) {
+        deps.reload();
+        return;
+      }
     }
   }
 
@@ -208,7 +220,7 @@ export function createJobLoop(deps: JobLoopDeps): JobLoop {
 }
 
 /** The loop's calls to the app, over the API client: a 204 or an aborted poll is `none`. */
-export function appJobDeps(api: AgentApi): Pick<JobLoopDeps, 'next' | 'result' | 'heartbeat'> {
+export function appJobDeps(api: AgentApi, version?: string): Pick<JobLoopDeps, 'next' | 'result' | 'heartbeat'> {
   return {
     async next(waitSeconds, signal) {
       const reply = await api.get<WorkerNextResponse | undefined>(`/api/worker/next?wait=${waitSeconds}`, { signal });
@@ -224,7 +236,9 @@ export function appJobDeps(api: AgentApi): Pick<JobLoopDeps, 'next' | 'result' |
       return reply.kind === 'unpaired' ? 'unpaired' : 'failed';
     },
     async heartbeat(jobId) {
-      await api.post('/api/worker/heartbeat', jobId === undefined ? undefined : { jobId });
+      // Nov 23: the build goes with every heartbeat, so the app can tell an outdated helper.
+      const body = { ...(jobId === undefined ? {} : { jobId }), ...(version ? { version } : {}) };
+      await api.post('/api/worker/heartbeat', Object.keys(body).length === 0 ? undefined : body);
     },
   };
 }

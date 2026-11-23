@@ -1,5 +1,24 @@
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'wxt';
+
+/**
+ * Nov 23: the helper's build, baked in at build time as the manifest's version_name ("0.1.0+3c92cc7"): the package
+ * version and the commit it was built from (SPLIT_FINDER_BUILD_ID overrides; "dev" outside a git checkout). The helper
+ * sends it in its heartbeats and the app reads the same field from the zip it ships, so an older helper is told apart.
+ */
+function buildId(): string {
+  const set = process.env.SPLIT_FINDER_BUILD_ID?.trim();
+  if (set && /^[0-9A-Za-z._-]{1,40}$/.test(set)) return set;
+  try {
+    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() || 'dev';
+  } catch {
+    return 'dev';
+  }
+}
+const PACKAGE_VERSION = (JSON.parse(readFileSync(resolve('package.json'), 'utf8')) as { version: string }).version;
+export const HELPER_VERSION = `${PACKAGE_VERSION}+${buildId()}`;
 
 /** End-to-end build only: the replay server's port, fixed because the base URL is baked in at build time. */
 export const E2E_PORT = Number(process.env.SPLIT_FINDER_E2E_PORT ?? 47831);
@@ -23,6 +42,8 @@ export default defineConfig({
     },
   }),
   manifest: {
+    version: PACKAGE_VERSION,
+    version_name: HELPER_VERSION,
     name: process.env.SPLIT_FINDER_HELPER === '1' ? 'Split Finder Helper' : 'Split Finder',
     description:
       process.env.SPLIT_FINDER_HELPER === '1'

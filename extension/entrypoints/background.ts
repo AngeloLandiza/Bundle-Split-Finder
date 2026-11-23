@@ -201,9 +201,13 @@ export default defineBackground(() => {
   const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
   const link = createLinkStore();
   const agent = createAgentApi({ fetchFn: (input, init) => fetch(input, init), store: link });
+  // Nov 23: this build, as the manifest names it (version_name: the version and the build id baked in by wxt.config.ts).
+  const manifest = browser.runtime.getManifest();
   const jobLoop = createJobLoop({
-    ...appJobDeps(agent),
+    ...appJobDeps(agent, manifest.version_name ?? manifest.version),
     run: (job) => runJob(job, shared),
+    // Nov 23: the app's reload job; for an unpacked install this loads the files in its folder again.
+    reload: () => browser.runtime.reload(),
     now: Date.now,
     sleep,
     onJobDone: (at) => link.markJob(at),

@@ -24,6 +24,7 @@ import {
   type ReviewAnswer,
   type WorkerJobInputs,
   type ReadPagesResponse,
+  type HelperReloadResponse,
   type WorkerJobKind,
   type WorkerNextResponse,
   type WorkerResultBody,
@@ -39,7 +40,7 @@ import { checkEbayKeysApp } from './checkEbayKeysApp';
 import { checkSerpApiKey } from './checkSerpKey';
 import { EventHub } from './events';
 import { HANDLED, HttpError, readJsonBody, reply, Router, runHandler, sendError, type Ctx } from './http';
-import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus } from './setup';
+import { extensionInstallDir, extensionZipSource, installExtensionFromZip, setupStatus, shippedHelperVersion } from './setup';
 import { COLLECTIONS, Store, type StoreData, type StoredKeys } from './store';
 import { tryServeUi, uiIndexExists } from './uiStatic';
 import { activityResponse, agentState, dealDetail, dealsResponse, openReviewCount, parseSection, parseSort, reviewResponse, settingsResponse, watchlistResponse, watchStateOf } from './views';
@@ -67,7 +68,12 @@ export interface AgentOptions {
    * windowless child, so the shell asks over HTTP there before it kills. Absent, the route answers unavailable.
    */
   onQuit?: () => void;
+  /** Nov 23: the helper build this app ships; default the bundled zip's manifest (setup.ts shippedHelperVersion). Tests set it. */
+  shippedHelperVersion?: string | null;
 }
+
+/** Nov 23: a helper build as a heartbeat may name it ("0.1.0+3c92cc7"). */
+const HELPER_VERSION = /^[0-9A-Za-z][0-9A-Za-z.+_-]{0,63}$/;
 
 export interface Agent {
   handle(req: IncomingMessage, res: ServerResponse): void;
@@ -139,6 +145,8 @@ function parseJobInput(kind: WorkerJobKind, v: unknown): WorkerJobInputs[WorkerJ
     case 'promoPage':
       if (!Array.isArray(o.itemIds) || !o.itemIds.length || o.itemIds.length > 50) throw new HttpError('bad_request', 'itemIds must list 1 to 50 item ids.');
       return { itemIds: o.itemIds.map((id) => text(String(id), 'itemId', 32)) };
+    case 'reload':
+      return {};
   }
 }
 
@@ -325,11 +333,37 @@ export function createAgent(opts: AgentOptions): Agent {
   const events = new EventHub();
   const timers = opts.timers !== false;
 
+  // Nov 23: which helper build is connected, and whether it is the one this app ships. `reportedBy`: the build that answered
+  // a job with "does not know that kind of job" (undefined: none did). A reload is queued once per outdated build.
+  const shipped = opts.shippedHelperVersion !== undefined ? opts.shippedHelperVersion : shippedHelperVersion();
+  const helper: { version: string | null; reportedBy: string | null | undefined; reloadsFor: Set<string> } = { version: null, reportedBy: undefined, reloadsFor: new Set() };
+  const helperOutdated = (): boolean =>
+    (helper.version !== null && shipped !== null && helper.version !== shipped) || (helper.reportedBy !== undefined && helper.reportedBy === helper.version);
+  const queueReload = (): boolean => {
+    if (jobs.hasWaiting('reload')) return false;
+    jobs.enqueue('reload', {});
+    return true;
+  };
+  const reloadIfOutdated = (): void => {
+    if (!helperOutdated()) return;
+    const key = helper.version ?? '';
+    if (helper.reloadsFor.has(key)) return;
+    helper.reloadsFor.add(key);
+    queueReload();
+  };
+  jobs.onOutdated = () => {
+    helper.reportedBy = helper.version;
+    reloadIfOutdated();
+    mark('state');
+  };
+
   const helperLive = () => {
     const seen = auth.lastSeen();
     return {
       connected: jobs.pollers() > 0 || (seen !== null && now() - seen < HELPER_CONNECTED_MS),
       lastSeenAt: seen === null ? null : new Date(seen).toISOString(),
+      helperVersion: helper.version,
+      helperOutdated: helperOutdated(),
     };
   };
 
@@ -664,15 +698,31 @@ export function createAgent(opts: AgentOptions): Agent {
   r.post('/api/worker/result', 'extension', async (ctx) => {
     const b = obj(await ctx.body());
     const id = text(b.id, 'id', 64);
-    const body: WorkerResultBody = b.ok === true ? { id, ok: true, result: b.result ?? null } : { id, ok: false, error: text(b.error, 'error', 2000) };
+    const body: WorkerResultBody = b.ok === true
+      ? { id, ok: true, result: b.result ?? null }
+      : { id, ok: false, error: text(b.error, 'error', 2000), ...(b.outdated === true ? { outdated: true } : {}) };
     const status = jobs.complete(body);
     if (!status) throw new HttpError('not_found', 'No unfinished job with this id.');
     return { status };
   });
   r.post('/api/worker/heartbeat', 'extension', async (ctx) => {
-    const jobId = (await ctx.body()).jobId;
+    const b = (await ctx.body()) as { jobId?: unknown; version?: unknown } | null;
+    const jobId = b?.jobId;
     if (typeof jobId === 'string' && jobId !== '' && jobId.length <= 64) jobs.extendLease(jobId);
+    // Nov 23: the helper's build. A new one clears what the old one reported, and may be outdated itself.
+    const version = b?.version;
+    if (typeof version === 'string' && HELPER_VERSION.test(version) && version !== helper.version) {
+      helper.version = version;
+      reloadIfOutdated();
+      mark('state');
+    }
     return { ok: true };
+  });
+  // Nov 23: the app's Reload helper button: one reload job, unless one is waiting already (HelperReloadResponse).
+  r.post('/api/helper/reload', 'ui', (): HelperReloadResponse => {
+    queueReload();
+    mark('state');
+    return { queued: true };
   });
   r.post('/api/worker/jobs', 'ui', async (ctx) => {
     const b = obj(await ctx.body());

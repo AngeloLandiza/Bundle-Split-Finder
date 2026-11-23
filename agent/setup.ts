@@ -1,6 +1,7 @@
 // P1: guided browser-helper install (Lane D). No network.
 import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { closeSync, cpSync, existsSync, fstatSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, rmSync } from 'node:fs';
+import { inflateRawSync } from 'node:zlib';
 import { homedir } from 'node:os';
 import { join, win32 } from 'node:path';
 
@@ -93,4 +94,77 @@ export function setupStatus(): SetupStatus {
     zipAvailable: extensionZipSource() !== null,
     lane: 'D',
   };
+}
+// ---------------------------------------------------------------- the helper build the app ships (Nov 23)
+
+/**
+ * One file of a zip, as text, found by its name (the entry named `name`, or the shortest entry ending with `/name`), or
+ * null when the zip has none or cannot be read. Reads the central directory at the end of the file; stored and deflated
+ * entries only (what `wxt zip` writes). Never runs a program.
+ */
+export function zipEntryText(zipPath: string, name: string, maxBytes = 1024 * 1024): string | null {
+  let fd: number | null = null;
+  try {
+    fd = openSync(zipPath, 'r');
+    const size = fstatSync(fd).size;
+    const read = (at: number, length: number): Buffer => {
+      const b = Buffer.alloc(length);
+      const got = readSync(fd!, b, 0, length, at);
+      return b.subarray(0, got);
+    };
+    // The end of central directory record: 22 bytes, plus a comment of at most 65535.
+    const tailLength = Math.min(size, 22 + 65_535);
+    const tail = read(size - tailLength, tailLength);
+    let eocd = -1;
+    for (let i = tail.length - 22; i >= 0; i--) {
+      if (tail.readUInt32LE(i) === 0x06054b50) {
+        eocd = i;
+        break;
+      }
+    }
+    if (eocd < 0) return null;
+    const count = tail.readUInt16LE(eocd + 10);
+    const dirSize = tail.readUInt32LE(eocd + 12);
+    const dirAt = tail.readUInt32LE(eocd + 16);
+    const dir = read(dirAt, dirSize);
+    let best: { method: number; compressed: number; local: number; name: string } | null = null;
+    for (let p = 0, n = 0; n < count && p + 46 <= dir.length; n++) {
+      if (dir.readUInt32LE(p) !== 0x02014b50) return null;
+      const nameLength = dir.readUInt16LE(p + 28);
+      const entry = {
+        method: dir.readUInt16LE(p + 10), compressed: dir.readUInt32LE(p + 20), local: dir.readUInt32LE(p + 42),
+        name: dir.subarray(p + 46, p + 46 + nameLength).toString('utf8'),
+      };
+      if ((entry.name === name || entry.name.endsWith(`/${name}`)) && (!best || entry.name.length < best.name.length)) best = entry;
+      p += 46 + nameLength + dir.readUInt16LE(p + 30) + dir.readUInt16LE(p + 32);
+    }
+    if (!best || best.compressed > maxBytes) return null;
+    const local = read(best.local, 30);
+    if (local.length < 30 || local.readUInt32LE(0) !== 0x04034b50) return null;
+    const data = read(best.local + 30 + local.readUInt16LE(26) + local.readUInt16LE(28), best.compressed);
+    if (best.method === 0) return data.toString('utf8');
+    if (best.method === 8) return inflateRawSync(data, { maxOutputLength: maxBytes }).toString('utf8');
+    return null;
+  } catch {
+    return null;
+  } finally {
+    if (fd !== null) closeSync(fd);
+  }
+}
+
+/** A helper build as its manifest names it: version_name ("0.1.0+3c92cc7"), else version. Null when neither is text. */
+export function manifestBuild(manifestText: string | null): string | null {
+  if (manifestText === null) return null;
+  try {
+    const m = JSON.parse(manifestText) as { version_name?: unknown; version?: unknown };
+    const v = typeof m.version_name === 'string' && m.version_name.trim() !== '' ? m.version_name : m.version;
+    return typeof v === 'string' && v.trim() !== '' ? v.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Nov 23: the build of the helper zip this app ships (extensionZipSource), from its manifest; null without one. */
+export function shippedHelperVersion(zip: string | null = extensionZipSource()): string | null {
+  return zip === null ? null : manifestBuild(zipEntryText(zip, 'manifest.json'));
 }

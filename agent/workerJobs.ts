@@ -5,7 +5,7 @@
 
 import { randomBytes } from 'node:crypto';
 
-import type { WorkerJob, WorkerJobInputs, WorkerJobKind, WorkerJobStatus, WorkerResultBody } from '../core/src/api/contract';
+import { UNKNOWN_JOB_KIND, type WorkerJob, type WorkerJobInputs, type WorkerJobKind, type WorkerJobStatus, type WorkerResultBody } from '../core/src/api/contract';
 import type { Store } from './store';
 
 /** How long a worker has to answer a job before it is handed out again. */
@@ -14,6 +14,20 @@ export const LEASE_MS = 2 * 60_000;
 export const MAX_ATTEMPTS = 2;
 /** Finished jobs kept for the record, newest last. */
 const KEEP_FINISHED = 200;
+
+/** Nov 23: what a job a helper did not know fails with: the helper is out of date, not Home Depot. */
+export const HELPER_OUTDATED = 'The Chrome helper is older than this app and cannot do this yet; it is being reloaded.';
+
+/**
+ * Nov 23: a helper's answer that says it is an older build: `outdated`, or the sentences a helper built before that field
+ * answers an unknown job kind (or a BOGO read it does not have) with.
+ */
+export function outdatedAnswer(body: WorkerResultBody): boolean {
+  if (body.ok) return false;
+  if (body.outdated === true) return true;
+  const e = body.error.trim();
+  return e === UNKNOWN_JOB_KIND || e === 'This browser does not read BOGO listings yet.' || e === 'This browser does not read BOGO pages yet.';
+}
 
 type Waiter = { resolve: (job: WorkerJob | null) => void; timer: ReturnType<typeof setTimeout> };
 
@@ -26,10 +40,19 @@ export class WorkerJobs {
 
   constructor(
     private readonly store: Store,
-    opts: { now?: () => number; leaseMs?: number } = {},
+    opts: { now?: () => number; leaseMs?: number; onOutdated?: (kind: WorkerJobKind) => void } = {},
   ) {
     this.now = opts.now ?? Date.now;
     this.leaseMs = opts.leaseMs ?? LEASE_MS;
+    this.onOutdated = opts.onOutdated;
+  }
+
+  /** Nov 23: told when a helper answers that it does not know a job's kind. */
+  onOutdated: ((kind: WorkerJobKind) => void) | undefined;
+
+  /** Nov 23: a job of this kind is waiting (queued or leased). */
+  hasWaiting(kind: WorkerJobKind): boolean {
+    return this.store.get('jobs').some((j) => j.kind === kind && (j.status === 'queued' || j.status === 'leased'));
   }
 
   enqueue<K extends WorkerJobKind>(kind: K, input: WorkerJobInputs[K]): WorkerJob<K> {
@@ -99,12 +122,16 @@ export class WorkerJobs {
     if (!job || job.status === 'done' || job.status === 'failed') return null;
     const at = new Date(this.now()).toISOString();
     let next: WorkerJob;
+    const outdated = outdatedAnswer(body);
     if (body.ok) next = { ...job, status: 'done', finishedAt: at, result: body.result, error: null, leaseExpiresAt: null };
+    // An older helper: asking it again gives the same answer, so the job fails now, as the helper's, not Home Depot's.
+    else if (outdated) next = { ...job, status: 'failed', finishedAt: at, error: HELPER_OUTDATED, leaseExpiresAt: null };
     else if (job.attempts < MAX_ATTEMPTS) next = { ...job, status: 'queued', error: body.error, leasedAt: null, leaseExpiresAt: null };
     else next = { ...job, status: 'failed', finishedAt: at, error: body.error, leaseExpiresAt: null };
     this.save(next);
     if (next.status === 'queued') this.feedWaiters();
     else this.finished(next);
+    if (outdated) this.onOutdated?.(job.kind);
     return next.status;
   }
 
