@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Split Finder: a bundle split into three parts">
+  <!-- Split Finder app icon. A bundle (one block) opened into three parts: the main piece above, two below,
+       gaps between them. Flat colour, no text, no brand marks. The 824 px squircle leaves the 100 px margin
+       macOS icons keep; the three tiles stay distinct when the icon is drawn at 16 px. -->
+  <rect x="100" y="100" width="824" height="824" rx="190" ry="190" fill="#14233A"/>
+  <rect x="262" y="214" width="500" height="236" rx="44" ry="44" fill="#FFFFFF"/>
+  <rect x="262" y="506" width="222" height="304" rx="44" ry="44" fill="#8CCBFF"/>
+  <rect x="540" y="506" width="222" height="304" rx="44" ry="44" fill="#34D3B6"/>
+</svg>
