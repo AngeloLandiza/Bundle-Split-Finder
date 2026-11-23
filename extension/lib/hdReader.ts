@@ -185,7 +185,7 @@ const DOORWAY_STATE_EVERY_MS = 500;
  * with the last check: `state` false means the doorway never showed its page, which is Home Depot refusing.
  */
 export async function waitForDoorwayState(
-  env: Pick<ReaderEnv, 'runInTab' | 'sleep'>, tabId: number, waitMs = DOORWAY_STATE_MS, everyMs = DOORWAY_STATE_EVERY_MS,
+  env: Pick<ReaderEnv, 'runInTab' | 'sleep'>, tabId: number, waitMs = DOORWAY_STATE_MS, everyMs = DOORWAY_STATE_EVERY_MS, signal?: AbortSignal,
 ): Promise<DoorwayState> {
   let last: DoorwayState = { state: false, title: '' };
   for (let waited = 0; ; waited += everyMs) {
@@ -195,15 +195,118 @@ export async function waitForDoorwayState(
     } catch {
       // No state this time.
     }
-    if (last.state || waited + everyMs > waitMs) return last;
+    if (last.state || waited + everyMs > waitMs || signal?.aborted) return last;
     await env.sleep(everyMs);
   }
 }
 
 /** Two pages in a row that answer 200 without their state end the reading (a third would not be different). */
-const UNREADABLE_IN_A_ROW = 2;
+export const UNREADABLE_IN_A_ROW = 2;
 
 const LOAD_TIMEOUT_MS = 30_000;
+
+/** What a call ended by its signal says (Stop, or a time limit); see untilStopped. */
+export const STOPPED = 'stopped';
+
+/** `work`'s result, or a rejection the moment `signal` fires. `work` is left to end on its own; its late result or failure is dropped. */
+export function untilStopped<T>(work: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (signal === undefined) return work;
+  if (signal.aborted) {
+    work.catch(() => undefined);
+    return Promise.reject(new Error(STOPPED));
+  }
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(new Error(STOPPED));
+    signal.addEventListener('abort', onAbort, { once: true });
+    work.then(
+      (v) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(v);
+      },
+      (e) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(e);
+      },
+    );
+  });
+}
+
+/**
+ * Nov 23 (the doorway rule, in one place for every reader): pages in a row that answered 200 without their data.
+ * `unreadable()` counts one and says whether that ends the reading (`limit` in a row); a page that was read resets the
+ * count. A refusal (403, 429, 5xx, a failed fetch, a doorway that never shows its state) is not counted here: it stops at once.
+ */
+export function createUnreadableRun(limit = UNREADABLE_IN_A_ROW): { readonly run: number; unreadable(): boolean; read(): void } {
+  let run = 0;
+  return {
+    get run() { return run; },
+    unreadable() {
+      run += 1;
+      return run >= limit;
+    },
+    read() {
+      run = 0;
+    },
+  };
+}
+
+export interface DoorwayOptions {
+  /** Waited once after the doorway tab has loaded, before anything is read. */
+  settleMs: number;
+  /** How long the doorway's own page may take to show its state (DOORWAY_STATE_MS). */
+  doorwayStateMs: number;
+  /** The owner's Stop or a question's time limit: ends the call at once, closes the tab, and throws Error(STOPPED). */
+  signal?: AbortSignal;
+}
+
+/** What withDoorway gives: `run`'s value, or, when the doorway never showed its own page's state (Home Depot refusing), its title. */
+export type DoorwayRun<T> = { shown: true; value: T } | { shown: false; title: string };
+
+/**
+ * Nov 23: the one way every reader opens its doorway. Closes a doorway a stopped worker left, opens `startUrl` in a
+ * background tab, remembers it, waits for it to load (else throws Error('The Home Depot tab did not load.')) and for
+ * `settleMs`, then for the tab's own document to carry Home Depot's page state (waitForDoorwayState): until it does, no
+ * other page is fetched from the tab. Only then is `run(tabId)` called and its value returned. A doorway that never
+ * shows its state is the refusal: `run` is not called and the result is `shown: false` with the page's title. The tab
+ * is closed and forgotten in every case. No retry, no second doorway. The caller keeps its own pause and `lastEnded`.
+ */
+export async function withDoorway<T>(
+  env: ReaderEnv, startUrl: string, opts: DoorwayOptions, run: (tabId: number) => Promise<T>,
+): Promise<DoorwayRun<T>> {
+  const { signal } = opts;
+  const checkStopped = (): void => {
+    if (signal?.aborted) throw new Error(STOPPED);
+  };
+  checkStopped();
+  // A doorway left by a worker that was stopped mid-scan.
+  const left = await env.remembered();
+  if (left !== null) {
+    await env.closeTab(left).catch(() => undefined);
+    await env.remember(null);
+  }
+  checkStopped();
+  const tabId = await env.openTab(startUrl);
+  try {
+    await env.remember(tabId);
+    // Stopped while the tab was opening: the tab is known now, and closed below.
+    checkStopped();
+    try {
+      await untilStopped(env.waitForLoad(tabId, LOAD_TIMEOUT_MS), signal);
+    } catch {
+      checkStopped();
+      throw new Error('The Home Depot tab did not load.');
+    }
+    // Home Depot's own page has not always settled when the tab reports complete (a cold session answered the first
+    // scan's fetches with a refusal). Wait once, then look; a refusal is still not retried.
+    if (opts.settleMs > 0) await untilStopped(env.sleep(opts.settleMs), signal);
+    const doorway = await untilStopped(waitForDoorwayState(env, tabId, opts.doorwayStateMs, DOORWAY_STATE_EVERY_MS, signal), signal);
+    if (!doorway.state) return { shown: false, title: doorway.title };
+    return { shown: true, value: await untilStopped(run(tabId), signal) };
+  } finally {
+    await env.closeTab(tabId).catch(() => undefined);
+    await env.remember(null).catch(() => undefined);
+  }
+}
 
 /**
  * `settleMs` is waited once after the doorway tab has loaded, before the first fetch.
@@ -263,83 +366,60 @@ function createPageReaderOf<O extends { itemId: string }>(
       if (left > 0) await env.sleep(left);
     }
 
-    // A doorway left by a worker that was stopped mid-scan.
-    const left = await env.remembered();
-    if (left !== null) {
-      await env.closeTab(left).catch(() => undefined);
-      await env.remember(null);
-    }
-
-    const tabId = await env.openTab(`${env.origin}/p/${itemIds[0]}`);
     try {
-      await env.remember(tabId);
-      try {
-        await env.waitForLoad(tabId, LOAD_TIMEOUT_MS);
-      } catch {
-        throw new Error('The Home Depot tab did not load.');
-      }
-      // Home Depot's own page has not always settled when the tab reports complete (a cold session answered
-      // the first scan's fetches with a refusal). Wait once, then fetch; a refusal is still not retried.
-      if (settleMs > 0) await env.sleep(settleMs);
-
-      const outcomes: (O | NotRead)[] = [];
-      // Nov 23: the doorway's own page first. Until it shows its state no other page is fetched from it; if it never
-      // does, Home Depot is not serving this tab its pages, and that is the refusal (no retry, no second doorway).
-      const doorway = await waitForDoorwayState(env, tabId, doorwayStateMs);
-      if (!doorway.state) {
-        const [first, ...rest] = itemIds as [string, ...string[]];
-        outcomes.push({ itemId: first, kind: 'refused', ...(doorway.title !== '' ? { note: doorway.title } : {}) });
-        for (const itemId of rest) outcomes.push({ itemId, kind: 'skipped' });
-        return outcomes;
-      }
-
-      let stopped = false;
-      // Pages in a row, in id order, that answered 200 without their state.
-      let unreadableRun = 0;
-      for (let start = 0; start < itemIds.length; start += batch) {
-        const ids = itemIds.slice(start, start + batch);
-        if (stopped) {
-          for (const itemId of ids) outcomes.push({ itemId, kind: 'skipped' });
-          continue;
-        }
-        if (start > 0) await env.sleep(pauseMs);
-        const answered = await env.runInTab(tabId, fetchPagesInTab, [ids, concurrency, unreadableRun, UNREADABLE_IN_A_ROW]);
-        // An empty script result (undefined, not an array) is a batch with no entries.
-        const results: InTabResult[] = Array.isArray(answered) ? answered : [];
-        for (const itemId of ids) {
+      const doorway = await withDoorway(env, `${env.origin}/p/${itemIds[0]}`, { settleMs, doorwayStateMs }, async (tabId) => {
+        const outcomes: (O | NotRead)[] = [];
+        let stopped = false;
+        // Pages in a row, in id order, that answered 200 without their state.
+        const unreadableRun = createUnreadableRun();
+        for (let start = 0; start < itemIds.length; start += batch) {
+          const ids = itemIds.slice(start, start + batch);
           if (stopped) {
-            outcomes.push({ itemId, kind: 'skipped' });
+            for (const itemId of ids) outcomes.push({ itemId, kind: 'skipped' });
             continue;
           }
-          const r = results.find((x) => x.itemId === itemId);
-          if (r && r.status === -1) {
-            // The tab stopped fetching: nothing after this is asked for either.
-            stopped = true;
-            outcomes.push({ itemId, kind: 'skipped' });
-            continue;
+          if (start > 0) await env.sleep(pauseMs);
+          const answered = await env.runInTab(tabId, fetchPagesInTab, [ids, concurrency, unreadableRun.run, UNREADABLE_IN_A_ROW]);
+          // An empty script result (undefined, not an array) is a batch with no entries.
+          const results: InTabResult[] = Array.isArray(answered) ? answered : [];
+          for (const itemId of ids) {
+            if (stopped) {
+              outcomes.push({ itemId, kind: 'skipped' });
+              continue;
+            }
+            const r = results.find((x) => x.itemId === itemId);
+            if (r && r.status === -1) {
+              // The tab stopped fetching: nothing after this is asked for either.
+              stopped = true;
+              outcomes.push({ itemId, kind: 'skipped' });
+              continue;
+            }
+            if (r && r.status === 200 && r.text === null) {
+              // A 200 without the page's state is not a refusal: what came back is said, and the next page is tried.
+              if (unreadableRun.unreadable()) stopped = true;
+              const note = typeof r.note === 'string' ? r.note.slice(0, 80) : '';
+              outcomes.push({ itemId, kind: 'unreadable', ...(note !== '' ? { note } : {}) });
+              continue;
+            }
+            if (!r || r.status !== 200 || r.text === null) {
+              stopped = true;
+              // status 0: the fetch threw, or the script gave no answer for this id.
+              outcomes.push({ itemId, kind: 'refused', status: r ? r.status : 0 });
+              continue;
+            }
+            unreadableRun.read();
+            outcomes.push(parse(r.text, itemId) ?? { itemId, kind: 'unreadable' });
           }
-          if (r && r.status === 200 && r.text === null) {
-            // A 200 without the page's state is not a refusal: what came back is said, and the next page is tried.
-            unreadableRun += 1;
-            if (unreadableRun >= UNREADABLE_IN_A_ROW) stopped = true;
-            const note = typeof r.note === 'string' ? r.note.slice(0, 80) : '';
-            outcomes.push({ itemId, kind: 'unreadable', ...(note !== '' ? { note } : {}) });
-            continue;
-          }
-          if (!r || r.status !== 200 || r.text === null) {
-            stopped = true;
-            // status 0: the fetch threw, or the script gave no answer for this id.
-            outcomes.push({ itemId, kind: 'refused', status: r ? r.status : 0 });
-            continue;
-          }
-          unreadableRun = 0;
-          outcomes.push(parse(r.text, itemId) ?? { itemId, kind: 'unreadable' });
         }
-      }
+        return outcomes;
+      });
+      if (doorway.shown) return doorway.value;
+      // Nov 23: a doorway whose own page never shows its state is the refusal (Home Depot is not serving this tab its pages).
+      const [first, ...rest] = itemIds as [string, ...string[]];
+      const outcomes: (O | NotRead)[] = [{ itemId: first, kind: 'refused', ...(doorway.title !== '' ? { note: doorway.title } : {}) }];
+      for (const itemId of rest) outcomes.push({ itemId, kind: 'skipped' });
       return outcomes;
     } finally {
-      await env.closeTab(tabId).catch(() => undefined);
-      await env.remember(null).catch(() => undefined);
       lastEnded = now();
     }
   };
