@@ -103,6 +103,41 @@ export interface LastScanSummary {
    * connected and nothing else runs.
    */
   canReadPagesAgain?: boolean;
+  /**
+   * Step 15: the Amazon lookups the last scan left waiting, those it did by what paid for them, and why the rest wait
+   * (null when none waits). `keepa_tokens`: Keepa's tokens above its reserve ran out (they refill; the drip carries on).
+   */
+  waitingLookups?: number;
+  lookupsDone?: { keepa: number; serpapi: number };
+  lookupsBlockedBy?: 'keepa_tokens' | 'search_cap' | 'reserve' | 'hourly_limit' | null;
+}
+
+/**
+ * Step 15, POST /api/lookups/run (UI, the owner's "Look up all"): the parts that wait for an Amazon lookup, looked up
+ * now within the same budgets as a scan (Keepa's tokens above its reserve first, then searches within the per-scan cap,
+ * the monthly reserve and the hourly limit). `maxSearches` lowers the search cap for this run only.
+ */
+export interface LookupsRunRequest {
+  maxSearches?: number;
+}
+
+/** `viaKeepa` / `viaSerpapi`: the lookups the run is planned to make on each; `reason` says why it did not start. */
+export interface LookupsRunResponse {
+  started: boolean;
+  reason?: string;
+  viaKeepa: number;
+  viaSerpapi: number;
+}
+
+/** Step 15: the drip, which looks up waiting parts with Keepa between scans as its tokens refill. */
+export interface DripState {
+  /** A lookup is being made now. */
+  active: boolean;
+  /** Parts waiting for a lookup. */
+  waiting: number;
+  /** When the drip looks at Keepa's tokens next (ISO), or null when it is off or nothing waits. */
+  nextAt: string | null;
+  lastLookupAt: string | null;
 }
 
 /**
@@ -124,12 +159,18 @@ export interface AgentState {
     progress?: { done: number; total: number };
     nextScanAt: string | null;
     lastScan: LastScanSummary | null;
-    /** W4: the running scan's stages as core's pipeline view says them (absent when nothing runs). */
+    /**
+     * W4: the running scan's stages as core's pipeline view says them (absent when nothing runs). Step 15: each step is
+     * `{ label, state: 'done' | 'now' | 'next' | 'skipped' | 'failed', figure, done?, total? }`, and `estimateText` is '' while the time left
+     * is not known (the view then gives counts only).
+     */
     pipeline?: PipelineView;
     /** W4: what the agent is busy with: a scan, or the AI pass on Review questions. */
     busy?: 'scan' | 'ask' | null;
     /** Why the agent paused itself at start (saved settings or keys it could not read); gone after Resume. */
     problem?: string;
+    /** Step 15: the drip of Keepa lookups between scans; absent before the agent has looked. */
+    drip?: DripState;
   };
   /** The paired Chrome extension, the worker that reads Home Depot pages. `jobsWaiting`: reads waiting for it (W4). */
   helper: {
@@ -153,11 +194,18 @@ export interface AgentState {
     serpPerScan?: number;
     serpReserve: number;
     keepaTokens: number | null;
+    /** Step 15: Keepa's refill, tokens a minute, from its free token status (at a scan's start, after each call, and by the drip). */
+    keepaRefillPerMin?: number | null;
     aiSpentUsd: number;
     aiCapUsd: number | null;
   };
   counts: { review: number; autopilotApplied: number; newDeals: number; jobsWaiting: number };
   keys: KeysPresence;
+  /**
+   * Step 15: the last rejection of each key by its service, in plain words ("eBay did not accept the App ID and Cert ID"),
+   * cleared when the key is replaced or next accepted. Never the key itself.
+   */
+  keyProblems?: Partial<Record<KeyName, string>>;
   /** W4: true until the first scan has finished (the one-time first-run flow). */
   firstRun?: boolean;
   /** D2: when the settings last changed; the shell re-reads GET /api/settings when this moves. */
@@ -640,6 +688,8 @@ export interface AppSettings {
   alerts: AlertSettings;
   /** W4: the AI pipelines' models and the month's cap. */
   ai: AiAgentSettings;
+  /** Step 15: `drip`: look up waiting parts with Keepa between scans as its tokens refill (default on). */
+  lookups?: { drip: boolean };
   appearance: AppearanceSettings;
   notifications: NotificationSettings;
   shell: ShellSettings;
