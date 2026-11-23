@@ -23,7 +23,7 @@ import { partPriceDropMessage } from '../core/src/keepa/alerts';
 import { TokenBudget } from '../core/src/keepa/budget';
 import { KeepaClient, KeepaError } from '../core/src/keepa/client';
 import { keepaLookupSearchResult, keepaProductSearchResult } from '../core/src/keepa/fetchStep';
-import { readPartTrend, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
+import { readPartTrend, readTrends, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
 import { nextRun } from '../core/src/schedule';
 import { AnswerRefused, applyReviewAnswer, reviewSignature } from '../core/src/scan/answers';
 import { applyEbayAnswer } from '../core/src/scan/ebayAnswers';
@@ -56,6 +56,7 @@ import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { buyWaitsOn, checksWaiting, checksWanted, repickUnconfirmed, verifyMatchesWithKeepa } from './verifyMatches';
 import { autoConfirmWanted, confirmationQueue, keepaCanPull, repickTargets, rung2CanRun, runAutoConfirm, unconfirmableOf, type AutoConfirmDone } from './autoConfirm';
 import { evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, type SignalsDeps } from './signalsPass';
+import { averagePullsWanted, pullAverages } from './suggestPrices';
 import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
 import { reverifyPass, wantedReads, withEvidenceKey } from './reverify';
@@ -622,6 +623,15 @@ export class AgentWork {
         }, await this.feesWanted(settings.freshnessMs));
         done.sales += s.pulled;
         done.tokens += s.tokens;
+        // Suggested prices (Nov 23): an inactive listing's Keepa average for its suggestion, 1 token each (agent/suggestPrices.ts).
+        const bundles = store.get('deals').bundles;
+        const wanted = averagePullsWanted(bundles, await readTrends(this.cache, bundles.flatMap((b) => b.parts.flatMap((p) => (p.asin ? [p.asin] : [])))));
+        const a = await pullAverages({
+          cache: this.cache, keepaBudget: budget, pull: product, trackingDepth: ext.trackingDepth,
+          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
+        }, wanted);
+        done.sales += a.pulled;
+        done.tokens += a.tokens;
       } catch (err) {
         if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
       }

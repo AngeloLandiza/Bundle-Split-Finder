@@ -308,6 +308,8 @@ export function defaultSettings(): StoreData['settings'] {
     lookups: { drip: true },
     // Free scan: the bundle lists are read in Chrome when it is connected; a scheduled scan with Chrome closed waits for it.
     scan: { listingSource: DEFAULT_LISTING_SOURCE, serpWhenChromeClosed: false },
+    // Suggested prices (Nov 23): a suggestion counts only when the owner confirms it. Exists, stays off, not in the UI.
+    prices: { autoAcceptSuggestions: false },
     appearance: { theme: 'system', accent: 'system', density: 'regular' },
     // Today's behaviour: every kind on, no quiet hours, a message after each run.
     notifications: {
@@ -398,6 +400,8 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
       shell: { ...d.shell, ...(s.shell ?? {}) },
       lookups: { drip: true, ...(s.lookups ?? {}) },
       scan: { listingSource: DEFAULT_LISTING_SOURCE, serpWhenChromeClosed: false, ...(s.scan ?? {}) },
+      // Suggested prices (Nov 23): off, and kept off whatever a stored file says. The PO: his approval is the answer.
+      prices: { autoAcceptSuggestions: false },
       ai: {
         ...d.ai,
         ...ai,

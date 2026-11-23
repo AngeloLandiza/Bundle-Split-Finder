@@ -19,7 +19,7 @@ import type { FeeSettings } from '../money';
 import type { Schedule } from '../schedule';
 import type { PipelineView } from '../scan/pipeline';
 import type { AlertSettings, DiscoveryMode, EbaySettings, TrackingDepth } from '../settings';
-import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartPriceReading, ReportSection, ReviewItem, UnpricedState } from '../scan/types';
+import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartFactView, PartPriceReading, PriceSuggestion, ReportSection, ReviewItem, UnpricedState } from '../scan/types';
 import type { BogoView, FreeItem } from '../tracking/bogo';
 import type { BogoChoice, BogoGroup, BogoTag, ListedItem, PromoPageOutcome } from '../tracking/bogoPairs';
 import type { FbaEstimate } from '../tracking/fba';
@@ -380,6 +380,13 @@ export interface DealUnpricedPart {
    * that is no kit the store knows.
    */
   kit?: { pageRead: boolean; parts: number | null; waiting: number };
+  /**
+   * Suggested prices (Nov 23): the part's one suggestion with its evidence (PartRow.priceSuggestion), for "Confirm $66 (eBay
+   * middle of 6)". Never counted until he confirms it (POST …/price `{kind: 'suggested', suggestion}`). Absent when none.
+   */
+  priceSuggestion?: PriceSuggestion;
+  /** Answer once (Nov 23): what he settled about this model, when he did ("from your answer on Nov 23 · Change"). */
+  fact?: PartFactView;
 }
 
 /** Nov 23: GET /api/deals/:id's incomplete estimate: the row's figures, each unpriced part with its state, and the basis. */
@@ -393,6 +400,11 @@ export interface DealIncompleteEstimate extends DealIncomplete {
   notCounted: string[];
   /** When the primary way sells a kit as its parts: "Sold as PCL1600K2's 19 parts"; else null. */
   soldAs: string | null;
+  /**
+   * Suggested prices (Nov 23): what the bundle would make if he accepted every unpriced part's suggestion, from the fee
+   * settings (rule 5). A second, labelled line: never the headline, never a buy. Absent unless every unpriced part has one.
+   */
+  ifAccepted?: { profit: number; roi: number; suggested: number };
 }
 
 export interface DealsQuery {
@@ -594,7 +606,12 @@ export interface PaidResponse {
  */
 export type ConfirmPriceBody =
   | { kind: 'ebay-listing'; url: string; price?: number; note?: string }
-  | { kind: 'typed'; price: number; url: string; note?: string };
+  | { kind: 'typed'; price: number; url: string; note?: string }
+  /**
+   * Suggested prices (Nov 23): the part's suggestion as he was shown it. The agent checks it against the one the part carries
+   * now (kind and price to the cent; 409 when it changed) and stores it as a price he confirmed, with its source.
+   */
+  | { kind: 'suggested'; suggestion: Pick<PriceSuggestion, 'kind' | 'price'> & Partial<PriceSuggestion>; note?: string };
 
 /** The price now stored for the part, or null after a DELETE. */
 export interface ConfirmPriceResponse {
@@ -964,6 +981,11 @@ export interface AppSettings {
    * (default off): a scheduled scan with Chrome closed searches SerpApi instead of waiting for Chrome. Absent: the defaults.
    */
   scan?: { listingSource: ListingSourceSetting; serpWhenChromeClosed: boolean };
+  /**
+   * Suggested prices (Nov 23): `autoAcceptSuggestions` exists and is always false. It is not offered in the UI and no PATCH
+   * changes it: the PO ruled that a price counts when he confirms it (docs/decisions.md).
+   */
+  prices?: { autoAcceptSuggestions: false };
   appearance: AppearanceSettings;
   notifications: NotificationSettings;
   shell: ShellSettings;
@@ -976,7 +998,7 @@ export interface SettingsResponse {
   keys: KeysPresence;
 }
 
-export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings' | 'alerts' | 'ai' | 'appearance' | 'notifications' | 'shell' | 'scan'>> & {
+export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings' | 'alerts' | 'ai' | 'appearance' | 'notifications' | 'shell' | 'scan' | 'prices'>> & {
   settings?: Partial<AppSettings['settings']>;
   scan?: Partial<NonNullable<AppSettings['scan']>>;
   ebaySettings?: Partial<EbaySettings>;

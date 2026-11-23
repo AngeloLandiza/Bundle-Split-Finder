@@ -344,7 +344,12 @@ function incompleteEstimateOf(
       ? { pageRead: true, parts: way.kitParts?.[u.model] ?? null, waiting: way.parts.filter((p) => p.status === 'waiting' || p.status === 'unmatched').length }
       : unread ? { pageRead: false, parts: null, waiting: 0 } : undefined;
     const questionId = u.state === 'review' ? questionOf(partKey(b.brand, u.model)) : null;
-    return { model: u.model, qty: u.qty, state: u.state, action: ACTION_OF[u.state], questionId, ...(kit ? { kit } : {}) };
+    const row = primary?.parts.find((p) => p.model === u.model);
+    return {
+      model: u.model, qty: u.qty, state: u.state, action: ACTION_OF[u.state], questionId, ...(kit ? { kit } : {}),
+      ...(row?.priceSuggestion ? { priceSuggestion: row.priceSuggestion } : {}),
+      ...(row?.fact ? { fact: row.fact } : {}),
+    };
   });
   const sold = (primary?.splitKits ?? []).map((k) => `Sold as ${k}'s ${primary?.kitParts?.[k] ?? 'listed'} parts`);
   return {
@@ -354,6 +359,7 @@ function incompleteEstimateOf(
     parts,
     notCounted: (primary?.unnamed ?? []).filter((x) => x.price === null).map((x) => x.name),
     soldAs: sold.length ? sold.join('; ') : null,
+    ...(i.ifAccepted ? { ifAccepted: i.ifAccepted } : {}),
   };
 }
 
