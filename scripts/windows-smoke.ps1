@@ -305,6 +305,19 @@ if ($listening) {
     if ($bad.Count) { return @($false, ($bad -join ' | ') + " ; entries: $(Get-AclEntryText (Join-Path $DataDir 'store'))") }
     return @($true, "no Users / Authenticated Users / Everyone entry; entries: $(Get-AclEntryText (Join-Path $DataDir 'store'))")
   }
+
+  # What the agent itself recorded (its open errors, already scrubbed of keys): the reason a file could not be narrowed
+  # is written there, and a windowless app has nowhere else to say it.
+  if ($token) {
+    $r = Invoke-Agent -Method GET -Path '/api/activity' -Bearer $script:token
+    if ($r.Status -eq 200) {
+      try {
+        $errs = @((ConvertFrom-Json $r.Body).errors)
+        if ($errs.Count) { foreach ($e in $errs) { Write-Host "NOTE agent error: $($e.sentence)" } }
+        else { Write-Host 'NOTE agent errors: none recorded' }
+      } catch { Write-Host "NOTE agent errors: could not read ($($_.Exception.Message))" }
+    } else { Write-Host "NOTE agent errors: GET /api/activity answered $($r.Status)" }
+  }
 }
 
 # ---------------------------------------------------------------- 6. quit
