@@ -34,7 +34,7 @@ export function popoverStatus(state: AppState | null, online: boolean): PopoverS
     const word = agent.status === 'scanning' ? 'Scanning' : 'Asking AI';
     if (!p) return { state: word, detail: agent.step ?? 'Starting', progress: null, attention: false };
     const step = Math.min(p.stepsTotal, p.stepsDone + 1);
-    const stage = p.current.count ? `${p.current.label} · ${p.current.count}` : p.current.label;
+    const stage = p.current.count ? `${p.current.label} ${p.current.count}` : p.current.label;
     return {
       state: word,
       detail: `Step ${step} of ${p.stepsTotal} · ${stage}`,

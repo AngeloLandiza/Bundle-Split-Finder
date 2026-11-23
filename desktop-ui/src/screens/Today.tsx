@@ -9,6 +9,7 @@ import { Page } from '../components/Page';
 import { EmptyState, LoadError, LoadingState, Meter } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
 import { Tag } from '../components/Tag';
+import { keepaWords } from '../lib/keyStatus';
 import { count, money, percentOff, plural, profit, usdSpend, when } from '../lib/format';
 import { bestDeals, buyNowDeals } from '../lib/today';
 import type { DealView } from '../lib/views';
@@ -203,6 +204,7 @@ function AgentBlock({ state }: { state: AppState }) {
   const last = agent.lastScan;
   const paused = agent.status === 'paused';
   const running = agent.status === 'scanning' || agent.status === 'asking';
+  const keepa = keepaWords(state);
   return (
     <Section
       label="Agent"
@@ -227,6 +229,8 @@ function AgentBlock({ state }: { state: AppState }) {
         ) : null}
       </div>
       <dl className="facts">
+        {/* While a scan runs the steps above say where it is; the last one's problems are not news now. */}
+        {running ? null : (
         <Fact label="Last scan">
           {last ? (
             <>
@@ -240,6 +244,7 @@ function AgentBlock({ state }: { state: AppState }) {
             'None yet'
           )}
         </Fact>
+        )}
         <Fact label="Next scan">{scheduleWords(state)}</Fact>
         <Fact label="Searches left">
           {budget.serpLeft === null ? (
@@ -262,9 +267,20 @@ function AgentBlock({ state }: { state: AppState }) {
             </>
           )}
         </Fact>
-        {budget.keepaTokens !== null ? (
-          <Fact label="Keepa tokens">
-            <span className="fig">{count(budget.keepaTokens)}</span>
+        {keepa ? (
+          <Fact label="Keepa">
+            <span>{keepa.replace(/^Keepa /, '')}</span>
+            {agent.drip ? (
+              <span className="fact-sub">
+                {agent.drip.waiting > 0 ? (
+                  <>
+                    <span className="fig">{count(agent.drip.waiting)}</span> parts wait for a lookup{agent.drip.active && agent.drip.nextAt ? `; next ${when(agent.drip.nextAt)}` : ''}
+                  </>
+                ) : (
+                  'No parts wait for a lookup'
+                )}
+              </span>
+            ) : null}
           </Fact>
         ) : null}
         <Fact label="AI this month">

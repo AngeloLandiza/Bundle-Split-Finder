@@ -30,7 +30,7 @@ describe('popover status', () => {
     });
     expect(popoverStatus(s, true)).toEqual({
       state: 'Scanning',
-      detail: 'Step 3 of 6 · Checking eBay listings · 23 of 60',
+      detail: 'Step 3 of 6 · Checking eBay listings 23 of 60',
       progress: { step: 3, of: 6, fraction: 0.4 },
       attention: false,
     });

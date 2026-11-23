@@ -204,3 +204,36 @@
   flex-direction: column;
   gap: 3px;
 }
+
+/* The running step may take two lines: "Step 4 of 8 · Reading part prices 31 of 40". */
+.sb-wrap {
+  align-items: flex-start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* A key the service did not accept: said in words with the warning mark, one press to the place that fixes it. */
+.sb-warn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  line-height: 14px;
+  text-align: left;
+  color: var(--attention);
+  cursor: default;
+}
+
+.sb-warn:hover span {
+  text-decoration: underline;
+}
+
+.sb-warn:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 1px;
+}

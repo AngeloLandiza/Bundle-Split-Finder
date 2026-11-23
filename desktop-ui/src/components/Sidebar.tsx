@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import { api, useApp, useResource } from '../api/hooks';
 import { agentWords } from './StatusLine';
-import { count, when } from '../lib/format';
+import { keepaWords, rejectedKeysWords } from '../lib/keyStatus';
+import { count, plural, when } from '../lib/format';
 import { modLabel, type Screen } from '../lib/keys';
 import { isMac as mac, words as systemWords } from '../lib/platform';
 import type { Route } from '../lib/route';
@@ -129,7 +130,7 @@ function Item({ glyph, label, current, onClick, end, shortcut }: { glyph: GlyphN
 
 /** The foot of the sidebar: the agent's state, the next scan, searches left, Chrome, and setup while it is open. */
 function SidebarStatus() {
-  const { state, online } = useApp();
+  const { state, online, navigate } = useApp();
   const ui = useUi();
   if (!state) {
     return (
@@ -147,6 +148,9 @@ function SidebarStatus() {
   const running = agent.status === 'scanning' || agent.status === 'asking' || agent.status === 'stopping';
   const words = agentWords(agent);
   const setup = setupProgress(state);
+  const keepa = keepaWords(state);
+  const rejected = rejectedKeysWords(state);
+  const waiting = agent.lastScan?.waitingLookups ?? 0;
   return (
     <div className="sidebar-foot">
       {!setup.complete ? (
@@ -164,8 +168,8 @@ function SidebarStatus() {
         <p className="sb-row">
           {running ? <Spinner size={12} /> : null}
           <span className="sb-strong">{words.state}</span>
-          {running && words.detail ? <span className="sb-detail">{words.detail}</span> : null}
         </p>
+        {running && words.detail ? <p className="sb-row sb-quiet sb-wrap">{words.detail}</p> : null}
         {running && agent.pipeline ? <ProgressBar value={agent.pipeline.fraction} label={agent.pipeline.labels?.bar ?? 'Scan progress'} valueText={agent.pipeline.ariaValueText} /> : null}
         {!running ? (
           <p className="sb-row sb-quiet">
@@ -190,7 +194,15 @@ function SidebarStatus() {
             {budget.serpMonthly ? <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" /> : null}
           </div>
         )}
+        {!running && waiting > 0 ? <p className="sb-row sb-quiet">{plural(waiting, 'part waits', 'parts wait')} for a lookup</p> : null}
+        {keepa ? <p className="sb-row sb-quiet">{keepa}</p> : null}
         <p className="sb-row sb-quiet">{helper.connected ? 'Chrome connected' : helper.paired ? 'Chrome closed' : 'Chrome not connected'}</p>
+        {rejected ? (
+          <button type="button" className="sb-warn" onClick={() => navigate({ screen: 'settings', id: 'keys' })} title="Open Settings › Keys">
+            <Glyph name="warning" size={12} />
+            <span>{rejected}</span>
+          </button>
+        ) : null}
       </div>
     </div>
   );

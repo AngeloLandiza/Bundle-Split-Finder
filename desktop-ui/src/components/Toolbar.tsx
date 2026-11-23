@@ -5,6 +5,7 @@ import { ACCENTS, type Accent, type Appearance, type Density } from '../lib/appe
 import { modLabel } from '../lib/keys';
 import { formatShortcut, isMac as mac } from '../lib/platform';
 import { upToSearches } from '../lib/format';
+import { estimateShown } from '../lib/scanSteps';
 import { Button } from './Button';
 import { Segmented } from './Fields';
 import { Glyph } from './Glyph';
@@ -64,7 +65,7 @@ export function ScanControl() {
     const pct = p ? Math.round(p.fraction * 100) : null;
     return (
       <span className="scan-progress" aria-live="polite">
-        <button type="button" className="scan-progress-text" onClick={() => navigate({ screen: 'today', id: null })} title={[words.state, words.detail, p?.estimateText].filter(Boolean).join(' · ')}>
+        <button type="button" className="scan-progress-text" onClick={() => navigate({ screen: 'today', id: null })} title={[words.state, words.detail, estimateShown(p)].filter(Boolean).join(' · ')}>
           {p ? <Ring value={p.fraction} /> : <Spinner size={14} />}
           <span className="scan-progress-words">
             <span className="scan-progress-state">{words.state}</span>

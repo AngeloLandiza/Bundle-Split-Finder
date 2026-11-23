@@ -1,12 +1,13 @@
 import type { AgentView } from '../api/types';
 import { when } from '../lib/format';
-import { ProgressBar, Spinner } from './States';
+import { estimateShown, stepLook } from '../lib/scanSteps';
+import { ProgressBar, Spinner, StepMark } from './States';
 import './StatusLine.css';
 
 /** What the agent is doing, in words: the state, then the step the agent reports with its own count. */
 export function agentWords(agent: AgentView, now = Date.now()): { state: string; detail: string | null } {
   const p = agent.pipeline;
-  const stage = p ? (p.current.count ? `${p.current.label} · ${p.current.count}` : p.current.label) : agent.step;
+  const stage = p ? `Step ${Math.min(p.stepsTotal, p.stepsDone + 1)} of ${p.stepsTotal} · ${p.current.count ? `${p.current.label} ${p.current.count}` : p.current.label}` : agent.step;
   switch (agent.status) {
     case 'scanning':
       return { state: 'Scanning', detail: stage ?? 'Starting' };
@@ -40,17 +41,21 @@ export function StatusLine({ agent, compact = false }: { agent: AgentView; compa
             {words.detail ? <span className="status-detail"> · {words.detail}</span> : null}
           </span>
         </span>
-        {running && p && !compact ? <span className="status-right fig">{p.estimateText}</span> : null}
+        {running && p && !compact && estimateShown(p) ? <span className="status-right fig">{estimateShown(p)}</span> : null}
       </div>
       {running && p ? <ProgressBar value={p.fraction} label={p.labels?.bar ?? 'Scan progress'} valueText={p.ariaValueText} /> : null}
       {running && p && !compact ? (
         <ol className="status-steps" aria-label={p.labels?.steps ?? 'Scan steps'}>
-          {p.steps.map((s) => (
-            <li key={s.label} className={`status-step status-step-${s.state}`} aria-current={s.state === 'now' ? 'step' : undefined}>
-              <span>{s.label}</span>
-              <span className="fig">{s.figure}</span>
-            </li>
-          ))}
+          {p.steps.map((s) => {
+            const look = stepLook(s);
+            return (
+              <li key={s.label} className={`status-step status-step-${s.state}`} aria-current={s.state === 'now' ? 'step' : undefined}>
+                <StepMark mark={look.mark} word={look.markWord} />
+                <span className="status-step-label">{s.label}</span>
+                <span className="fig status-step-figure">{look.figure}</span>
+              </li>
+            );
+          })}
         </ol>
       ) : null}
     </div>
