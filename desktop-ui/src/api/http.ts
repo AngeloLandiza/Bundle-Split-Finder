@@ -129,7 +129,12 @@ export function createHttpClient(): ApiClient {
     review: async () => mapReview(await call<C.ReviewResponse>('GET', '/api/review')),
     answer: async (qid, answer, o) => {
       const body: C.ReviewAnswerBody = { answer, ...(o.fromSuggestion ? { fromSuggestion: true } : {}), ...(o.seen ? { seen: o.seen } : {}) };
-      await call<C.AnswerResponse>('POST', `/api/review/${id(qid)}/answer`, body);
+      const r = await call<C.AnswerResponse>('POST', `/api/review/${id(qid)}/answer`, body);
+      return { answerId: r.answerId ?? null };
+    },
+    undoAnswer: async (aid) => {
+      const r = await call<C.UndoAnswerResponse>('POST', `/api/review/${id(aid)}/undo`, {});
+      return { questionId: r.questionId };
     },
     ask: async (qid) => void (await call<C.QueuedResponse>('POST', `/api/review/${id(qid)}/ask`, {})),
     askAll: async () => void (await call<C.QueuedResponse>('POST', '/api/review/ask-all', {})),

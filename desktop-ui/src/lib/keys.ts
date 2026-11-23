@@ -28,7 +28,7 @@ export type GlobalAction = { type: 'go'; screen: Screen } | { type: 'find' } | {
 /** Keys a Mac gets from the app menu, which Windows does not attach: the page has to take them itself. */
 export type WindowsAction = { type: 'scan' } | { type: 'settings' } | { type: 'refresh' };
 export type ListAction = { type: 'next' } | { type: 'prev' } | { type: 'open' } | { type: 'close' };
-export type ReviewAction = ListAction | { type: 'choose'; index: number } | { type: 'save' } | { type: 'ask' };
+export type ReviewAction = ListAction | { type: 'choose'; index: number } | { type: 'save' } | { type: 'ask' } | { type: 'undo' };
 
 const plain = (p: KeyPress): boolean => !p.meta && !p.ctrl && !p.alt;
 
@@ -74,10 +74,12 @@ export function listKey(p: KeyPress): ListAction | null {
 
 /**
  * Review: J/K move between questions, 1-9 pick a choice, Enter saves (or approves), A asks the AI.
+ * Cmd/Ctrl+Z takes back the answer just saved, except in a text field, where it is the field's own undo.
  * Arrow keys are left to the radio group, which already moves its own selection with them.
  */
 export function reviewKey(p: KeyPress): ReviewAction | null {
   if (p.key === 'Escape') return { type: 'close' };
+  if ((p.meta || p.ctrl) && !p.alt && !p.shift && (p.key === 'z' || p.key === 'Z')) return p.target === 'text' ? null : { type: 'undo' };
   if (!plain(p) || p.target === 'text') return null;
   if (p.key === 'j' || p.key === 'J') return { type: 'next' };
   if (p.key === 'k' || p.key === 'K') return { type: 'prev' };

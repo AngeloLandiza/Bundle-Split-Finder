@@ -35,7 +35,9 @@ export interface ApiClient {
 
   review(): Promise<ReviewView>;
   /** `seen` is the question's signature as it was shown; the agent refuses the answer when the question has changed. */
-  answer(id: string, answer: ReviewAnswer, o: { fromSuggestion: boolean; seen: string | null }): Promise<void>;
+  answer(id: string, answer: ReviewAnswer, o: { fromSuggestion: boolean; seen: string | null }): Promise<{ answerId: string | null }>;
+  /** Takes back an answer he saved (POST /api/review/:id/undo, the id `answer` returned): the question is open in Review again. */
+  undoAnswer(answerId: string): Promise<{ questionId: string }>;
   ask(id: string): Promise<void>;
   askAll(): Promise<void>;
   approve(ids: string[]): Promise<{ approved: number; skipped: { id: string; reason: string }[] }>;

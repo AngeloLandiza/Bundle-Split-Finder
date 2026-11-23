@@ -1,5 +1,8 @@
 import type { AiSuggestion, DealSection, Grade, QuestionKind, ReviewQuestion } from '../api/types';
 
+/** How long the "Saved · Undo" row stays at the top of Review. */
+export const SAVED_ROW_MS = 8000;
+
 export const KIND_LABEL: Record<QuestionKind, string> = {
   split: 'Which parts',
   match: 'Which listing',

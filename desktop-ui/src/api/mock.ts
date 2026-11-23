@@ -94,6 +94,8 @@ export function createMockClient(): ApiClient {
   const details: Record<string, DealDetail> = clone(DETAILS);
   let questions: ReviewQuestion[] = clone(QUESTIONS);
   const activity = clone(ACTIVITY);
+  /** The questions he answered, by answer id, for Undo. */
+  const kept = new Map<string, ReviewQuestion>();
   let settings: AppSettings = clone(SETTINGS);
   let pairRequests: PendingPairRequest[] = [];
   let paired: PairedExtension[] = [{ extensionId: 'abcdefghijklmnopabcdefghijklmnop', pairedAt: new Date(Date.now() - 3 * 86_400_000).toISOString(), lastSeenAt: new Date(Date.now() - 60_000).toISOString() }];
@@ -275,12 +277,33 @@ export function createMockClient(): ApiClient {
       if (mode === 'error') throw new ApiError('server', 'The agent could not read the questions. Try again.');
       return { questions: clone(questions) };
     },
-    async answer(id) {
+    async answer(id, a) {
       await online();
-      questions = questions.filter((q) => q.id !== id);
-      deals = deals.map((d) => (questions.some((q) => q.bundle.id === d.id) ? d : { ...d, needsAnswer: false }));
+      const q = questions.find((x) => x.id === id);
+      questions = questions.filter((x) => x.id !== id);
+      deals = deals.map((d) => (questions.some((x) => x.bundle.id === d.id) ? d : { ...d, needsAnswer: false }));
       sync();
       emit({ type: 'review' });
+      if (!q || 'ebay' in a) return { answerId: null };
+      const answerId = `oa-${Date.now()}-${kept.size}`;
+      kept.set(answerId, q);
+      const said = 'none' in a ? 'None of these' : 'parts' in a ? a.parts.join(', ') : (q.choices.find((c) => 'choiceId' in a && c.id === a.choiceId)?.label ?? 'the answer');
+      activity.answers = [{ id: answerId, questionId: id, title: q.bundle.title, answer: said, at: new Date().toISOString(), undone: false, undoable: true }, ...activity.answers];
+      emit({ type: 'activity' });
+      return { answerId };
+    },
+    async undoAnswer(answerId) {
+      await online();
+      const q = kept.get(answerId);
+      const entry = activity.answers.find((x) => x.id === answerId);
+      if (!q || !entry || entry.undone) throw new ApiError('refused', 'That answer was undone already.');
+      questions = [q, ...questions];
+      deals = deals.map((d) => (d.id === q.bundle.id ? { ...d, needsAnswer: true } : d));
+      activity.answers = activity.answers.map((x) => (x.id === answerId ? { ...x, undone: true, undoable: false } : x));
+      sync();
+      emit({ type: 'review' });
+      emit({ type: 'activity' });
+      return { questionId: q.id };
     },
     async ask(id) {
       await online(1400);

@@ -63,6 +63,7 @@ export function shortcutAreas(mac: boolean, windows = !mac): ShortcutArea[] {
         { does: 'Choose an answer', keys: ['1'], or: ['9'] },
         { does: 'Save the answer, or approve the AI’s', keys: [enter] },
         { does: 'Ask AI about the question', keys: ['A'] },
+        { does: 'Undo the answer just saved', keys: [mod, 'Z'] },
       ],
     },
     {

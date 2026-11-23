@@ -68,6 +68,13 @@ describe('review keys', () => {
     expect(reviewKey(k('a', { target: 'text' }))).toBeNull();
     expect(reviewKey(k('0'))).toBeNull();
   });
+  it('takes back the last answer with Cmd or Ctrl+Z, but not inside a text field', () => {
+    expect(reviewKey(k('z', { meta: true }))).toEqual({ type: 'undo' });
+    expect(reviewKey(k('z', { ctrl: true, target: 'choice' }))).toEqual({ type: 'undo' });
+    expect(reviewKey(k('z', { meta: true, target: 'text' }))).toBeNull();
+    expect(reviewKey(k('z', { meta: true, shift: true }))).toBeNull();
+    expect(reviewKey(k('z'))).toBeNull();
+  });
   it('leaves arrows to the radio group', () => {
     expect(reviewKey(k('ArrowDown', { target: 'choice' }))).toBeNull();
   });

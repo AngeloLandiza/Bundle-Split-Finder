@@ -16,10 +16,11 @@ import { scanStrip } from '../lib/scanSteps';
 import { copyText, openPage } from '../lib/actions';
 import { AI_INTRO, aiIntroDismissed, dismissAiIntro } from '../lib/aiIntro';
 import { isMenuKey, pressOf, reviewKey } from '../lib/keys';
+import { formatShortcut, isMac } from '../lib/platform';
 import { questionMenu, type QuestionMenuId } from '../lib/menus';
 import { SCREEN_KEYS } from '../lib/notices';
 import { plainReason } from '../lib/questionWords';
-import { KIND_LABEL, groupQuestions, parseTyped, preselected, rowChip, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
+import { KIND_LABEL, SAVED_ROW_MS, groupQuestions, parseTyped, preselected, rowChip, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
 import './Review.css';
 
 const NONE = '__none';
@@ -60,16 +61,40 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
     select(ordered[Math.max(0, Math.min(ordered.length - 1, i + step))]);
   };
   // Saved: the next question opens with its choice focused, the list follows, and what was saved stays said until the next save.
-  const [saved, setSaved] = useState<string | null>(null);
+  const [saved, setSaved] = useState<{ said: string; answerId: string | null } | null>(null);
   const [focusChoice, setFocusChoice] = useState(false);
-  const afterSave = (said: string) => {
+  const afterSave = (said: string, answerId: string | null) => {
     const i = current ? ordered.indexOf(current) : -1;
     const next = ordered[i + 1] ?? ordered[i - 1];
-    setSaved(said);
+    setSaved({ said, answerId });
     setFocusChoice(true);
     if (next) navigate({ screen: 'review', id: next.id });
   };
   const hasNext = current ? ordered.indexOf(current) < ordered.length - 1 : false;
+
+  const clearSaved = useCallback(() => setSaved(null), []);
+  // Undo of the answer just saved: the question is open in Review again and selected; the row says so and goes.
+  const undoSaved = useCallback(
+    async (answerId: string) => {
+      const r = await api.undoAnswer(answerId);
+      setSaved(null);
+      setNotice('Undone. The question is back in the list.');
+      navigate({ screen: 'review', id: r.questionId });
+    },
+    [navigate],
+  );
+  const undo = useAction(undoSaved);
+  // Cmd/Ctrl+Z takes back the answer in the row (never one he can no longer see), except in a text field.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || document.querySelector('[aria-modal="true"]')) return;
+      if (reviewKey(pressOf(e))?.type !== 'undo' || !saved?.answerId || undo.busy) return;
+      e.preventDefault();
+      void undo.run(saved.answerId);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   // The right-click menu of a question row (design.md, Context menus).
   const [menuError, setMenuError] = useState<string | null>(null);
@@ -110,6 +135,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
   const list = (
     <div className="review">
       {scanLine ? <ScanStrip text={scanLine} /> : null}
+      {saved ? <SavedRow saved={saved} busy={undo.busy} error={undo.error} onUndo={(id) => void undo.run(id)} onGone={clearSaved} /> : null}
       {askAll.error || approve.error || menuError || notice ? (
         <Notice tone={askAll.error || approve.error || menuError ? 'attention' : 'quiet'}>{askAll.error ?? approve.error ?? menuError ?? notice}</Notice>
       ) : null}
@@ -162,11 +188,6 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
           </section>
         ) : null}
       </div>
-      {saved ? (
-        <p className="review-saved" role="status">
-          Saved · {saved}
-        </p>
-      ) : null}
       {all.length > 0 ? (
         <p className="status-bar review-keys">
           <Kbd>J</Kbd> <Kbd>K</Kbd> move · <Kbd>1</Kbd>–<Kbd>9</Kbd> choose · <Kbd>↩</Kbd> {saveHint({ hasAnswer: true, hasNext }).replace('↩ ', '')} · <Kbd>A</Kbd> ask AI
@@ -213,6 +234,34 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
         }
       />
     </Page>
+  );
+}
+
+/**
+ * "Saved · what · Undo", at the top of the list for SAVED_ROW_MS: inline, not a toast. It stays while the pointer or
+ * focus is on it or Undo has failed (its sentence is there to read), and Cmd/Ctrl+Z does what its button does.
+ */
+function SavedRow({ saved, busy, error, onUndo, onGone }: { saved: { said: string; answerId: string | null }; busy: boolean; error: string | null; onUndo: (id: string) => void; onGone: () => void }) {
+  const [held, setHeld] = useState(false);
+  useEffect(() => {
+    if (held || busy || error) return;
+    const t = window.setTimeout(onGone, SAVED_ROW_MS);
+    return () => window.clearTimeout(t);
+    // The row restarts its eight seconds for each new save, and while it is held, busy or in error it does not run.
+  }, [saved, held, busy, error, onGone]);
+  return (
+    <div className="review-saved" role="status" onMouseEnter={() => setHeld(true)} onMouseLeave={() => setHeld(false)} onFocus={() => setHeld(true)} onBlur={() => setHeld(false)}>
+      <span className="review-saved-text">Saved · {saved.said}</span>
+      {saved.answerId ? (
+        <>
+          {error ? <span className="review-saved-error">{error}</span> : null}
+          <button type="button" className="link-btn" disabled={busy} onClick={() => onUndo(saved.answerId!)}>
+            {busy ? 'Undoing…' : 'Undo'}
+          </button>
+          <Kbd>{formatShortcut(['mod', 'Z'], isMac)}</Kbd>
+        </>
+      ) : null}
+    </div>
   );
 }
 
@@ -281,7 +330,7 @@ function Question({
   /** Focus goes to the selected choice: he just saved the one before and the keyboard follows. */
   focusChoice: boolean;
   onMove: (step: number) => void;
-  onSaved: (said: string) => void;
+  onSaved: (said: string, answerId: string | null) => void;
   onEscape: () => void;
   onOpenDeal: (() => void) | null;
 }) {
@@ -289,7 +338,12 @@ function Question({
   const typedStart = typedFromSuggestion(q);
   const [choice, setChoice] = useState<string | null>(pre ?? (typedStart ? TYPED : null));
   const [typed, setTyped] = useState(typedStart);
-  const save = useAction(api.answer);
+  // The agent's id for the answer just saved, which the row above the list undoes by.
+  const answerId = useRef<string | null>(null);
+  const saveAnswer = useCallback(async (...args: Parameters<typeof api.answer>) => {
+    answerId.current = (await api.answer(...args)).answerId;
+  }, []);
+  const save = useAction(saveAnswer);
   const ask = useAction(api.ask);
   const form = useRef<HTMLFormElement>(null);
   // The question as the owner first saw it. An event may bring a changed question (a scan moved the choices) while he
@@ -315,7 +369,7 @@ function Question({
   const submit = () => {
     const a = answerOf();
     if (!a || save.busy || changed) return;
-    void save.run(q.id, a.answer, { fromSuggestion: fromAi, seen }).then((ok) => ok && onSaved(`${q.bundle.model}: ${a.said}`));
+    void save.run(q.id, a.answer, { fromSuggestion: fromAi, seen }).then((ok) => ok && onSaved(`${q.bundle.model}: ${a.said}`, answerId.current));
   };
 
   const optionIds = [...q.choices.map((c) => c.id), ...(q.allowNone ? [NONE] : []), ...(q.allowTyped ? [TYPED] : [])];

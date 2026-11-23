@@ -447,9 +447,25 @@ export interface AutopilotEntry {
   undoable: boolean;
 }
 
+/** An answer the owner saved himself, kept so Undo can reopen the question (the newest 50). */
+export interface OwnerAnswer {
+  id: string;
+  questionId: string;
+  /** The bundle's title. */
+  title: string;
+  /** What he answered, in plain words. */
+  answer: string;
+  at: string;
+  undone: boolean;
+  /** False once a later scan or answer changed what it saved, or after it was undone. */
+  undoable: boolean;
+}
+
 export interface ActivityView {
   runs: Run[];
   autopilot: AutopilotEntry[];
+  /** The answers he saved, newest first. */
+  answers: OwnerAnswer[];
   errors: ActivityError[];
   /** This month's spend, from the agent's own count. */
   month: { searches: number; keepaTokens: number; aiUsd: number };

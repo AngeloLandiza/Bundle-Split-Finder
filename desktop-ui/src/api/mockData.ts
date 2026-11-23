@@ -550,6 +550,7 @@ export const ACTIVITY: ActivityView = {
     run({ id: 'r2', kind: 'scan', byYou: false, startedAt: ago(772), finishedAt: ago(766), searches: 5, keepaTokens: 41, aiUsd: 0.18, result: 'limit', summary: 'Scan stopped at the limit.', error: 'Stopped at the hourly limit of 50 searches.' }),
     run({ id: 'r1', kind: 'scan', byYou: true, startedAt: ago(1500), finishedAt: ago(1493), searches: 5, keepaTokens: 44, aiUsd: 0.4, result: 'finished', summary: '9 bundles, 1 with an estimate.' }),
   ],
+  answers: [],
   autopilot: [
     { id: 'a3', at: ago(48), bundleId: 'hd-317987595', title: DETAILS['hd-317987595']!.title, model: 'PCL1200K2', kind: 'match', applied: 'PCL235B · B0BGYFTPGK', verifiedBy: ['the quote was found word for word on the Amazon listing', 'the quote names PCL235B'], by: 'claude-sonnet-4-5', undone: false, undoable: true },
     { id: 'a2', at: ago(48), bundleId: 'hd-345178210', title: DETAILS['hd-345178210']!.title, model: 'PCL1600K2-A983002', kind: 'split', applied: 'PCL1600K2 + A983002', verifiedBy: ['the quote was found word for word on the Home Depot page', 'the answer is one of the question’s readings'], by: 'claude-sonnet-4-5', undone: false, undoable: true },

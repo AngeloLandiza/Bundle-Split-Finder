@@ -264,11 +264,26 @@
 }
 
 .review-saved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 5px var(--gutter);
-  border-top: 1px solid var(--separator);
+  border-bottom: 1px solid var(--separator);
   background: var(--verified-bg);
   font-size: 12px;
   line-height: 16px;
+}
+
+.review-saved-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-saved-error {
+  color: var(--attention);
 }
 
 .question-meta {

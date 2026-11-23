@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { ActivityError, AutopilotEntry, Run } from '../api/types';
+import type { ActivityError, AutopilotEntry, OwnerAnswer, Run } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { Section } from '../components/Layout';
 import { Page } from '../components/Page';
@@ -44,6 +44,19 @@ export function ActivityScreen() {
                 <ErrorRow key={e.id} e={e} />
               ))}
             </ul>
+          </Section>
+        ) : null}
+        {d ? (
+          <Section label="Your answers" count={d.answers.length} flush={d.answers.length === 0}>
+            {d.answers.length === 0 ? (
+              <EmptyState compact title="No answers saved yet" cause="An answer you save in Review is listed here, newest first, with an Undo that opens the question again." />
+            ) : (
+              <ul className="rows">
+                {d.answers.map((a) => (
+                  <OwnerAnswerRow key={a.id} a={a} />
+                ))}
+              </ul>
+            )}
           </Section>
         ) : null}
         {d ? (
@@ -157,6 +170,37 @@ function ErrorRow({ e }: { e: ActivityError }) {
       {e.retry ? (
         <Button size="sm" busy={retry.busy} busyLabel="Starting…" onClick={() => void retry.run(e.id)} cost={e.retry.searches ? plural(e.retry.searches, 'search', 'searches') : e.retry.usd ? `about ${money(e.retry.usd)}` : undefined}>
           {e.retry.label}
+        </Button>
+      ) : null}
+    </li>
+  );
+}
+
+/** An answer he saved: Undo opens the question again, or says why it cannot (a later scan or answer changed what it saved). */
+function OwnerAnswerRow({ a }: { a: OwnerAnswer }) {
+  const { navigate } = useApp();
+  const undo = useAction(api.undoAnswer);
+  return (
+    <li className="arow">
+      <span className="arow-time">{when(a.at)}</span>
+      <div className="arow-main">
+        <p className="arow-title">{a.title}</p>
+        <p className="arow-sub">
+          You answered <span className="code arow-answer">{a.answer}</span>
+        </p>
+        {a.undone ? (
+          <p className="arow-sub">
+            Undone. The question is back in <LinkButton onClick={() => navigate({ screen: 'review', id: a.questionId })}>Review</LinkButton>.
+          </p>
+        ) : null}
+        {!a.undone && !a.undoable ? <p className="arow-sub">A later scan or answer changed what this saved, so it cannot be undone from here.</p> : null}
+        {undo.error ? <p className="arow-sub arow-error" role="alert">{undo.error}</p> : null}
+      </div>
+      {a.undone ? (
+        <Tag>Undone</Tag>
+      ) : a.undoable ? (
+        <Button size="sm" busy={undo.busy} busyLabel="Undoing…" onClick={() => void undo.run(a.id)}>
+          Undo
         </Button>
       ) : null}
     </li>
