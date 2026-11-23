@@ -217,6 +217,8 @@ export interface AgentRuntime {
   migrationLog?: { name: string; at: string; sentence: string }[];
   /** Step 15: the drip's last look at Keepa and its last lookup (epoch ms). */
   drip?: { checkedAt: number | null; lastLookupAt: number | null };
+  /** The listing ladder, rung 2 (agent/autoConfirm.ts): today's searches and every listing it read. */
+  autoConfirm?: { day: string; spent: number; tried: string[]; queue?: string[]; nextAt?: number | null };
   /** Deal keys already named in a message: a deal alerts once. */
   notifiedDeals: string[];
   /** Question ids already counted in a message: the same questions do not alert again. */

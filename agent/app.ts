@@ -232,6 +232,13 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
   if ('lookups' in patch) {
     const l = obj(patch.lookups, 'lookups');
     if ('drip' in l) next.lookups = { ...(next.lookups ?? { drip: true }), drip: flag(l.drip, 'lookups.drip') };
+    // The listing ladder, rung 2: the agent's own Confirm listing reads, and how many searches a day they may spend.
+    if ('autoVerify' in l) next.lookups = { ...(next.lookups ?? { drip: true }), autoVerify: flag(l.autoVerify, 'lookups.autoVerify') };
+    if ('verifySearchesPerDay' in l) {
+      const v = l.verifySearchesPerDay;
+      if (v !== null && (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 250)) throw new HttpError('bad_request', 'lookups.verifySearchesPerDay must be a whole number from 0 to 250, or null for automatic.');
+      next.lookups = { ...(next.lookups ?? { drip: true }), verifySearchesPerDay: v as number | null };
+    }
   }
   if ('settings' in patch) {
     const s = obj(patch.settings, 'settings');

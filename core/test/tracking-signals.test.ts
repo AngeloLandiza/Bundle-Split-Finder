@@ -186,7 +186,7 @@ describe('buy safety: a buy never rests on a listing nobody confirmed (Nov 23)',
     expect(s.buyNow).toBeNull();
     expect(s.signals.some((x) => x.kind === 'buyNow')).toBe(false);
     expect(s.buyPending).toEqual({ optionId: 'whole', listings: 2, asins: [ASIN.DCF921B, ASIN.DCB606] });
-    expect(s.verdict).toBe('Looks worth buying: +$81.80 (27.4% ROI), sells about 600 a month — 2 listings are being confirmed first.');
+    expect(s.verdict).toBe('Looks worth buying: +$81.80 (27.4% ROI), sells about 600 a month — 2 listings not confirmed yet.');
     expect(s.options[0]!.notBuyNow).toBe('2 listings not confirmed yet.');
   });
 

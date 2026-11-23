@@ -1,5 +1,6 @@
 // What the agent's endpoints answer, built from the store (pure functions; the contract's shapes).
 
+import { beingConfirmedWords } from '../core/src/scan/autoConfirm';
 import type {
   ActivityResponse,
   AgentState,
@@ -200,12 +201,37 @@ function allRows(data: WithTracking<'deals' | 'review'>): DealRow[] {
   return rows;
 }
 
+/** A queue whose next look is this far past is stale (the agent stopped): it no longer says "being confirmed". */
+const QUEUE_STALE_MS = 15 * 60_000;
+
+/**
+ * The listing ladder: a deal's counted listings that nobody confirmed, in words that say what is really happening, from
+ * the agent's queue (AgentRuntime.autoConfirm): "2 listings are being confirmed — next check in about 4 min" only for
+ * listings an automatic rung will read at a known time; otherwise "2 listings could not be confirmed from Amazon's data
+ * — Confirm them (1 search each)", the owner's one action. Never a claim with nothing behind it.
+ */
+export function confirmingNote(r: DealRow, data: WithTracking<'runtime'>, now: number): DealRow {
+  const s = data.tracking?.signals[r.id];
+  if (!s || r.signalNote === undefined) return r;
+  const unconfirmed = new Set(s.options.flatMap((o) => o.unconfirmed ?? []));
+  if (unconfirmed.size === 0) return r;
+  const q = data.runtime.autoConfirm;
+  const live = q?.nextAt !== undefined && q.nextAt !== null && q.nextAt >= now - QUEUE_STALE_MS;
+  const queued = live ? [...unconfirmed].filter((a) => (q!.queue ?? []).includes(a)).length : 0;
+  const n = unconfirmed.size;
+  const words = queued > 0
+    ? beingConfirmedWords(queued, q!.nextAt!, now)
+    : `${n} ${n === 1 ? 'listing' : 'listings'} could not be confirmed from Amazon's data — Confirm ${n === 1 ? 'it' : 'them'} (1 search each)`;
+  const said = r.signalNote.replace(/\d+ listings? not confirmed yet/, words);
+  return said === r.signalNote ? r : { ...r, signalNote: said };
+}
+
 export function dealsResponse(
   data: WithTracking<'deals' | 'review' | 'runtime' | 'settings'>,
   query: { sort: DealSortKey; section?: ReportSection },
   now: number,
 ): DealsResponse {
-  const rows = allRows(data).filter((r) => !query.section || r.section === query.section);
+  const rows = allRows(data).filter((r) => !query.section || r.section === query.section).map((r) => confirmingNote(r, data, now));
   const ordered = DEAL_SECTION_ORDER.flatMap((s) =>
     sortDealRows(
       rows.filter((r) => r.section === s).map((r) => ({

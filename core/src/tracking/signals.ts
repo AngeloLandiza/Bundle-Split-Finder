@@ -474,7 +474,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
     verdicts.set(o.id, buyNow
       ? `Worth buying now: ${figures()}, ${whyShort || 'improved'}`
       : pending
-        ? `Looks worth buying: ${figures()} — ${pendingAsins.length === 1 ? '1 listing is' : `${pendingAsins.length} listings are`} being confirmed first`
+        ? `Looks worth buying: ${figures()} — ${unconfirmedWords(pendingAsins.length)}`
         : `Not worth buying now: ${fails.join('; ')}`);
   }
   const best = buys.reduce<Signal | null>((a, b) => (a === null || (b.numbers.profit ?? 0) > (a.numbers.profit ?? 0) ? b : a), null);

@@ -53,7 +53,8 @@ import {
 import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
-import { buyWaitsOn, checksWaiting, verifyMatchesWithKeepa } from './verifyMatches';
+import { buyWaitsOn, checksWaiting, checksWanted, verifyMatchesWithKeepa } from './verifyMatches';
+import { autoConfirmWanted, confirmationQueue, runAutoConfirm, type AutoConfirmDone } from './autoConfirm';
 import { evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, type SignalsDeps } from './signalsPass';
 import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
@@ -130,6 +131,8 @@ export interface LiveState {
  * minute (recorded), so a lookup's 11 tokens come back in 11 minutes; looking every 5 is enough and costs nothing.
  */
 export const DRIP_POLL_MS = 5 * 60_000;
+/** The listing ladder, rung 2: its looks in the drip are at least this far apart. */
+export const AUTO_CONFIRM_EVERY_MS = 10 * 60_000;
 /** Step 15: the drip's lookups are one Activity run per hour. */
 export const DRIP_RUN_MS = 60 * 60_000;
 
@@ -237,6 +240,8 @@ export class AgentWork {
     if (!this.dealsAtStart || this.live.busy !== null) return;
     if ((await this.scanStore.listBundles()).length === 0) return;
     await this.refresh();
+    // The listing ladder: the deals' words rest on what the rungs will really read, from the start.
+    await this.noteConfirmQueue();
   }
 
   // ------------------------------------------------------------------ state and the schedule
@@ -448,9 +453,11 @@ export class AgentWork {
     return {
       active: this.dripActive,
       waiting: this.dripWaiting,
-      nextAt: this.dripWaiting + this.dripFeesWaiting > 0 && this.dripNextAt !== null ? new Date(this.dripNextAt).toISOString() : null,
+      nextAt: this.dripWaiting + this.dripFeesWaiting + this.confirmWaiting > 0 && this.dripNextAt !== null ? new Date(this.dripNextAt).toISOString() : null,
       lastLookupAt: last === null ? null : new Date(last).toISOString(),
       ...(this.dripFeesWaiting > 0 ? { feesWaiting: this.dripFeesWaiting } : {}),
+      // The listing ladder: listings an automatic rung will read (the catalog check, rung 2).
+      ...(this.confirmWaiting > 0 ? { confirmWaiting: this.confirmWaiting } : {}),
     };
   }
 
@@ -465,7 +472,8 @@ export class AgentWork {
     if (this.dripping || !this.dripAllowed()) return;
     if (this.dripNextAt !== null && this.d.now() < this.dripNextAt) return;
     this.dripCtl = new AbortController();
-    this.dripping = this.dripRound().finally(() => {
+    // The listing ladder, rung 2: after the round's catalog check, the listings it left unconfirmed (agent/autoConfirm.ts).
+    this.dripping = this.dripRound().then(() => this.autoConfirmPass('drip')).then(() => this.noteConfirmQueue()).finally(() => {
       this.dripping = null;
       this.dripActive = false;
       this.d.changed();
@@ -521,7 +529,7 @@ export class AgentWork {
       try {
         const v = await verifyMatchesWithKeepa({
           store: this.scanStore, catalog, now: this.d.now, keepaBudget: budget, trackingDepth: ext.trackingDepth,
-          keepaProduct: (asin, label) => product(asin, label), first, onlyFirst: true,
+          keepaProduct: (asin, label, maxAgeMs) => product(asin, label, maxAgeMs), first, onlyFirst: true,
           shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
         });
         done.verified += v.verified;
@@ -568,7 +576,7 @@ export class AgentWork {
       try {
         const v = await verifyMatchesWithKeepa({
           store: this.scanStore, catalog, now: this.d.now, keepaBudget: budget, trackingDepth: ext.trackingDepth,
-          keepaProduct: (asin, label) => product(asin, label),
+          keepaProduct: (asin, label, maxAgeMs) => product(asin, label, maxAgeMs),
           shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
         });
         done.verified += v.verified;
@@ -879,6 +887,17 @@ export class AgentWork {
       if (applied > 0 || ai.asked > 0) report = await reportWithTrends(this.scanStore, toScanSettings(extensionSettingsOf(store.get('settings'))), this.cache);
       await this.publish(report);
       await this.trackScan(report);
+      // The listing ladder, rung 2: within what the scan's cap leaves, the listings its catalog check left unconfirmed.
+      const auto = await this.autoConfirmPass('scan', (again?.usedBefore ?? 0) + run.searchesUsed);
+      await this.noteConfirmQueue();
+      if (auto && auto.tried.length > 0) {
+        run.searchesUsed += auto.searches;
+        if (auto.summary) notes.push(auto.summary);
+        if (auto.confirmed > 0) {
+          report = await this.rebuild();
+          await this.trackScan(report);
+        }
+      }
       const tg = await this.message(report, job, applied);
       if (tg) notes.push(tg);
     }
@@ -1613,6 +1632,90 @@ export class AgentWork {
       }
     }
     return out;
+  }
+
+  /** The listing ladder, rung 2's next look in the drip (epoch ms); null before the first. */
+  private autoConfirmNextAt: number | null = null;
+
+  /**
+   * The listing ladder, rung 2 (agent/autoConfirm.ts): the owner's Confirm listing click, done by the agent for the
+   * listings a buy waits on or a deal within reach rests on, within today's allowance, never the reserve. Records an
+   * Activity run when it read anything. Null when off, with no SerpApi key, or (in the drip) before its next look.
+   */
+  private async autoConfirmPass(mode: 'scan' | 'drip', usedThisScan = 0): Promise<AutoConfirmDone | null> {
+    const { store } = this.d;
+    const app = store.get('settings');
+    const keys = store.get('keys');
+    const now = this.d.now();
+    if (app.lookups?.autoVerify === false || !keys.serpapi || store.get('agent').paused) return null;
+    if (mode === 'drip' && this.autoConfirmNextAt !== null && now < this.autoConfirmNextAt) return null;
+    const ext = extensionSettingsOf(app);
+    const tracking = store.get('tracking');
+    const runtime = store.get('runtime');
+    const base = {
+      store: this.scanStore, signals: tracking.signals, alerts: app.alerts, bundles: store.get('deals').bundles, state: runtime.autoConfirm,
+      keepaReads: Boolean(keys.keepa) && app.settings.amazonRefreshViaKeepa,
+    };
+    const wanted = await autoConfirmWanted(base);
+    this.autoConfirmNextAt = now + AUTO_CONFIRM_EVERY_MS;
+    if (wanted.length === 0) return null;
+    const ledger = this.ledger('serpapi-ledger.jsonl');
+    const startedAt = this.d.now();
+    const stop = (): boolean => (mode === 'drip' ? !this.dripAllowed() || this.dripCtl.signal.aborted : this.stopCtl.signal.aborted);
+    let done: AutoConfirmDone;
+    try {
+      done = await runAutoConfirm({
+        ...base, ext, perDay: app.lookups?.verifySearchesPerDay ?? null, mode, usedThisScan, now: this.d.now,
+        saveState: (st) => store.update('runtime', (r) => ({ ...r, autoConfirm: { ...st, queue: r.autoConfirm?.queue ?? [], nextAt: r.autoConfirm?.nextAt ?? null } })),
+        account: () => SerpApiClient.account(keys.serpapi!, this.d.fetchFn, this.d.serpBaseUrl),
+        verify: (t, budget) => runPaid({
+          client: new SerpApiClient({ apiKey: keys.serpapi!, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl, onSpend: (e) => ledger(e) }),
+          budget, store: this.scanStore, now: this.d.now, settings: toScanSettings(ext), shouldStop: () => (stop() ? 'Stopped.' : null),
+        }, { kind: 'verify', brand: t.brand, model: t.model, asin: t.asin }),
+        shouldStop: stop,
+      });
+    } catch {
+      // The account check failed: nothing was spent; the next look tries again.
+      return null;
+    }
+    // In a scan, the scan's own run counts the searches and says the sentence; in the drip, a run of its own.
+    if (done.tried.length > 0 && mode === 'drip') {
+      this.record({
+        id: `run-${startedAt}-confirm`, kind: 'verify', startedAt: new Date(startedAt).toISOString(), finishedAt: new Date(this.d.now()).toISOString(),
+        status: 'finished', searchesUsed: done.searches, keepaTokensUsed: 0, aiCostUsd: 0, summary: done.summary ?? '', trigger: 'scheduled',
+      });
+      await this.refresh();
+    }
+    return done;
+  }
+
+  /** Listings an automatic rung will read (AgentRuntime.autoConfirm.queue), as the last look counted them. */
+  private confirmWaiting = 0;
+
+  /**
+   * The listing ladder: what the deals' words rest on. The listings the drip's catalog check (rungs 0 and 1) and rung 2
+   * will really read, with the earliest next look; none when their rung is off. Saved in AgentRuntime.autoConfirm.
+   */
+  private async noteConfirmQueue(): Promise<void> {
+    const { store } = this.d;
+    const app = store.get('settings');
+    const keys = store.get('keys');
+    const now = this.d.now();
+    const runtime = store.get('runtime');
+    const dripOn = app.lookups?.drip !== false && Boolean(keys.keepa) && app.settings.amazonRefreshViaKeepa && !store.get('agent').paused;
+    const verifyOn = app.lookups?.autoVerify !== false && Boolean(keys.serpapi) && !store.get('agent').paused;
+    const verify = verifyOn
+      ? (await autoConfirmWanted({
+          store: this.scanStore, signals: store.get('tracking').signals, alerts: app.alerts, bundles: store.get('deals').bundles, state: runtime.autoConfirm,
+          keepaReads: Boolean(keys.keepa) && app.settings.amazonRefreshViaKeepa,
+        })).map((t) => t.asin)
+      : [];
+    const q = confirmationQueue({
+      catalog: dripOn ? await checksWanted(this.scanStore) : [], dripNextAt: dripOn ? Math.max(now, this.dripNextAt ?? now) : null,
+      verify, verifyNextAt: Math.max(now, this.autoConfirmNextAt ?? now), state: runtime.autoConfirm, now,
+    });
+    this.confirmWaiting = q.queue.length;
+    store.update('runtime', (r) => ({ ...r, autoConfirm: { ...(r.autoConfirm ?? { day: '', spent: 0, tried: [] }), queue: q.queue, nextAt: q.nextAt } }));
   }
 
   /** What a Look up of a deal's unmatched parts, or a Verify of one part, would spend now: the quote the UI shows first. */

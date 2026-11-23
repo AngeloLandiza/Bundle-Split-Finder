@@ -346,7 +346,7 @@ describe('buy safety: a buy waits for its listings to be confirmed (Nov 23)', ()
     const held = agent.store.get('tracking').signals[KEY]!;
     expect(held.buyNow).toBeNull();
     expect(held.buyPending).toEqual({ optionId: 'whole', listings: 1, asins: ['B0BGYFTPGK'] });
-    expect(held.verdict).toBe('Looks worth buying: +$21.14 (234.9% ROI), sells about 500 a month — 1 listing is being confirmed first.');
+    expect(held.verdict).toBe('Looks worth buying: +$21.14 (234.9% ROI), sells about 500 a month — 1 listing not confirmed yet.');
     expect(rowOf()).toMatchObject({ buyNow: false, buyPending: { listings: 1 } });
     expect(telegram).toEqual([]);
 

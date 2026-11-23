@@ -179,6 +179,8 @@ export interface DripState {
    * after the lookups and catalog checks), for the parts of bundles with an estimate; absent when none waits.
    */
   feesWaiting?: number;
+  /** The listing ladder: counted Amazon listings an automatic rung (the catalog check, rung 2) will read; absent when none. */
+  confirmWaiting?: number;
 }
 
 /**
@@ -940,8 +942,13 @@ export interface AppSettings {
   alerts: AlertSettings;
   /** W4: the AI pipelines' models and the month's cap. */
   ai: AiAgentSettings;
-  /** Step 15: `drip`: look up waiting parts with Keepa between scans as its tokens refill (default on). */
-  lookups?: { drip: boolean };
+  /**
+   * Step 15: `drip`: look up waiting parts with Keepa between scans as its tokens refill (default on). The listing ladder
+   * (Nov 23): `autoVerify`: read a listing still not confirmed on SerpApi's product page when a buy waits on it or its
+   * deal is within reach (default on); `verifySearchesPerDay`: at most this many searches a day for it, null (default)
+   * for automatic: what the month above the reserve leaves per remaining day, at most 5.
+   */
+  lookups?: { drip: boolean; autoVerify?: boolean; verifySearchesPerDay?: number | null };
   appearance: AppearanceSettings;
   notifications: NotificationSettings;
   shell: ShellSettings;
