@@ -129,7 +129,16 @@ export function sddlProblem(sddl: string, sid: string): string | null {
   if (aces.length === 0) return 'its access list is empty';
   const parts: string[] = [];
   if (!d[1]!.includes('P')) parts.push('it still inherits permissions from its folder');
-  const name = (f: string[]) => SDDL_ALIASES[f[5]!] ?? f[5]!;
+  // SDDL writes some accounts by a two-letter alias that depends on the account's RID, not as a SID: the built-in
+  // Administrator account (RID 500) is `LA`, Guest (501) `LG`. Seen on the first Windows runs, where the user WAS the
+  // built-in Administrator and the file read "it also grants LA; it does not list your account".
+  const ridAlias: Record<string, string> = { LA: '-500', LG: '-501' };
+  const name = (f: string[]) => {
+    const t = f[5]!;
+    const rid = ridAlias[t.toUpperCase()];
+    if (rid && /^S-1-5-21-/i.test(sid) && sid.endsWith(rid)) return sid;
+    return SDDL_ALIASES[t] ?? t;
+  };
   const inherited = aces.filter((f) => (f[1] ?? '').includes('ID'));
   if (inherited.length) parts.push(`it carries ${inherited.length} inherited entries`);
   const denies = aces.filter((f) => f[0] !== 'A');

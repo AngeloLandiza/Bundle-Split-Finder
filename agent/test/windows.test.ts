@@ -87,6 +87,10 @@ describe('owner-only files on Windows (winAcl)', () => {
     // accepted: protected, three explicit allow entries (SY and BA are aliases of S-1-5-18 and S-1-5-32-544)
     expect(sddlProblem(`${head}D:PAI(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;${U})`, U)).toBeNull();
     expect(sddlProblem(`D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;${U})`, U)).toBeNull();
+    // Run 6 on a real runner: the user was the built-in Administrator (RID 500), which SDDL writes as LA.
+    expect(sddlProblem('D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;LA)', 'S-1-5-21-1111111111-2222222222-3333333333-500')).toBeNull();
+    // LA is only the user when the user's own SID is the RID-500 account; for anyone else it is a stranger.
+    expect(sddlProblem(`D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;LA)(A;;FA;;;${U})`, U)).toBe('it also grants LA');
     expect(sddlProblem(`D:P(A;;FA;;;S-1-5-18)(A;;FA;;;S-1-5-32-544)(A;;FA;;;${U})`, U)).toBeNull();
     // inheriting: not protected, inherited ACEs
     expect(sddlProblem(`${head}D:AI(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;FA;;;${U})`, U)).toBe(
