@@ -142,7 +142,8 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
       used += 1;
       try {
         const out = check(await run(kind, input as never, t.toolMs, signal));
-        if (isRecord(out) && isText((out as ToolError).error) && /refused/i.test((out as ToolError).error)) refused = true;
+        const err = toolError(out);
+        if (err && /refused/i.test(err.error)) refused = true;
         return out;
       } catch (e) {
         return { error: e instanceof Error ? e.message : 'Chrome could not read Home Depot.' };
