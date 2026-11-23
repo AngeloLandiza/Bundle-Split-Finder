@@ -10,22 +10,21 @@ import { EmptyState, LoadError, LoadingState, Meter } from '../components/States
 import { StatusLine } from '../components/StatusLine';
 import { Tag } from '../components/Tag';
 import { keepaWords, rejectedKeys, rejectedKeysWords } from '../lib/keyStatus';
-import { count, money, percentOff, plural, profit, usdSpend, when } from '../lib/format';
+import { count, money, percentOff, plural, usdSpend, when } from '../lib/format';
+import { rowState } from '../lib/reviewBrief';
 import { SCREEN_KEYS } from '../lib/notices';
-import { bestDeals, buyNowDeals } from '../lib/today';
+import { bestDeals, buyNowDeals, dealVerdict } from '../lib/today';
 import type { DealView } from '../lib/views';
 import { KIND_LABEL, workingNote } from './reviewModel';
 import './Today.css';
 
 const TOP = 5;
 
-/** The dashboard: four figures, what needs him, the best deals, and what the agent is doing. */
+/** The dashboard, in the order he acts: the best deals with their one-line verdict, what needs him, then what the agent is doing. */
 export function TodayScreen() {
   const { state, online } = useApp();
   const [deals, reloadDeals] = useResource(() => api.deals(), [], ['deals']);
   const [review, reloadReview] = useResource(() => api.review(), [], ['review']);
-  // The questions the app is still checking are not his yet: the count is what needs him, the rest is said beside it.
-  const openQuestions = review.data ? review.data.questions.filter((q) => !isWorking(q.followUp)) : null;
 
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const best = bestDeals(deals.data?.rows ?? []);
@@ -34,10 +33,8 @@ export function TodayScreen() {
   return (
     <Page title="Today" sub={date} grouped scanNotices keys={SCREEN_KEYS.today}>
       <div className="today">
-        <Figures state={state} deals={deals.data?.rows ?? null} best={best[0] ?? null} questions={openQuestions?.length ?? null} />
         <div className="today-grid">
           <div className="today-main">
-            <NeedsYou res={review} onRetry={reloadReview} />
             {buy.length > 0 ? (
               <DealsBlock
                 label="Worth buying now"
@@ -49,50 +46,22 @@ export function TodayScreen() {
                 onRetry={reloadDeals}
               />
             ) : (
-              <DealsBlock label="Best deals" view="all" actionLabel="All deals" res={deals} rows={best} note="Profit and ROI are estimates from your fee settings, not your real Amazon fees." onRetry={reloadDeals} />
+              <DealsBlock
+                label="Best deals"
+                view="all"
+                actionLabel={deals.data ? `All ${count(deals.data.rows.length)} deals` : 'All deals'}
+                res={deals}
+                rows={best}
+                note="Nothing is marked Buy now yet, so these are the best estimates. Profit and ROI are estimates from your fee settings, not your real Amazon fees."
+                onRetry={reloadDeals}
+              />
             )}
+            <NeedsYou res={review} onRetry={reloadReview} />
           </div>
           <div className="today-side">{state ? <AgentBlock state={state} /> : <Section label="Agent">{online ? <LoadingState label="Loading the agent" compact /> : <EmptyState title="The agent is not running" compact />}</Section>}</div>
         </div>
       </div>
     </Page>
-  );
-}
-
-/** Four large figures across the top, each a fact the owner can act on. The profit says it is an estimate. */
-function Figures({ state, deals, best, questions }: { state: AppState | null; deals: DealRow[] | null; best: DealRow | null; questions: number | null }) {
-  const { navigate } = useApp();
-  const left = state?.budget.serpLeft ?? null;
-  return (
-    <dl className="figures">
-      <Figure label="Open questions" onClick={() => navigate({ screen: 'review', id: null })} value={questions === null ? '—' : count(questions)} note={`${questions ? 'Waiting in Review' : 'Nothing needs you'}${state?.counts.reviewWorking ? ` · ${workingNote(state.counts.reviewWorking)}` : ''}`} />
-      <Figure
-        label="Best estimated profit"
-        onClick={best ? () => navigate({ screen: 'deals', id: best.id }) : undefined}
-        value={best?.profit != null ? profit(best.profit) : '—'}
-        tone={best?.profit != null ? (best.profit < 0 ? 'loss' : 'profit') : undefined}
-        note={best ? <span className="code">{best.model}</span> : 'No estimate yet'}
-      />
-      <Figure label="Bundles found" onClick={() => navigate({ screen: 'deals', id: null })} value={deals === null ? '—' : count(deals.length)} note={state?.counts.newDeals ? `${plural(state.counts.newDeals, 'new one', 'new ones')} since the last scan` : 'From the last scan'} />
-      <Figure label="Searches left" value={left === null ? '—' : count(left)} note={state?.budget.serpMonthly ? `of ${count(state.budget.serpMonthly)} this month` : 'Not checked yet'} />
-    </dl>
-  );
-}
-
-function Figure({ label, value, note, tone, onClick }: { label: string; value: string; note: ReactNode; tone?: 'profit' | 'loss'; onClick?: () => void }) {
-  const body = (
-    <>
-      <dt className="figure-label">{label}</dt>
-      <dd className={`t-figure${tone ? ` ${tone}` : ''}`}>{value}</dd>
-      <dd className="figure-note">{note}</dd>
-    </>
-  );
-  return onClick ? (
-    <button type="button" className="figure figure-link" onClick={onClick}>
-      {body}
-    </button>
-  ) : (
-    <div className="figure">{body}</div>
   );
 }
 
@@ -119,11 +88,9 @@ function NeedsYou({ res, onRetry }: { res: ReturnType<typeof useResource<{ quest
               <button type="button" className="nav-row" onClick={() => navigate({ screen: 'review', id: q.id })}>
                 <span className="nav-main">
                   <span className="nav-title">{q.prompt}</span>
-                  <span className="nav-sub">
-                    {q.bundle.brand} · <span className="code">{q.bundle.model}</span> · {KIND_LABEL[q.kind]}
-                  </span>
+                  <span className="nav-sub">{q.bundle.brand} · {KIND_LABEL[q.kind]}</span>
                 </span>
-                {q.suggestion?.status === 'verified' ? <Tag tone="verified">Verified</Tag> : null}
+                {q.suggestion?.status === 'verified' ? <Tag tone="verified">{rowState(q)}</Tag> : <span className="nav-state">{rowState(q)}</span>}
                 <Glyph name="chevron-right" size={12} className="nav-chevron" />
               </button>
             </li>
@@ -186,12 +153,14 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
                 <button type="button" className="nav-row deal-grid" onClick={() => navigate({ screen: 'deals', id: r.id })}>
                   <span className="nav-main">
                     <span className="nav-title" title={r.title}>
+                      {r.buyNow ? <Tag tone="buy">Buy now</Tag> : null}
                       {r.title}
                     </span>
                     <span className="nav-sub">
                       {r.brand} · <span className="code">{r.model}</span>
                       {percentOff(r.off) ? ` · ${percentOff(r.off)}` : ''}
                     </span>
+                    {verdictOf(r) ? <span className="nav-verdict">{verdictOf(r)}</span> : null}
                   </span>
                   <span className="fig deal-grid-fig muted">{r.price !== null ? money(r.price) : '—'}</span>
                   <span className="deal-grid-fig">
@@ -210,6 +179,9 @@ function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { la
     </Section>
   );
 }
+
+/** The line under a deal: the agent's note, else how far its parts are confirmed. */
+const verdictOf = (r: DealRow): string | null => dealVerdict(r)?.text ?? null;
 
 const RESULT: Record<string, string> = { finished: 'finished', stopped: 'stopped', limit: 'stopped at the limit', failed: 'failed' };
 

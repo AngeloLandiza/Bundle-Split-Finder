@@ -44,7 +44,7 @@ export function sidebarStatus(state: AppState, now: number = Date.now()): Sideba
     else line2 = 'Scans when you press Scan now';
   }
 
-  const searches = budget.serpLeft === null ? 'Searches not checked yet' : `${count(budget.serpLeft)} ${budget.serpLeft === 1 ? 'search' : 'searches'}`;
+  const searches = budget.serpLeft === null ? 'Searches not checked yet' : `${count(budget.serpLeft)} ${budget.serpLeft === 1 ? 'search' : 'searches'} left`;
   const keepa = keepaWords(state);
   // "Keepa 57 tokens · 1 a minute": the rate is in Today's Agent card.
   const keepaShort = keepa ? keepa.split(' · ')[0]! : null;

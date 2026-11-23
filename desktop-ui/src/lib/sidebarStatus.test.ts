@@ -22,7 +22,7 @@ describe('the sidebar status', () => {
       }),
       NOW,
     );
-    expect(v).toEqual({ state: 'Idle', running: false, when: 'Last scan 51 min ago', usage: '119 searches · Keepa 57 tokens', problem: { text: 'eBay key not accepted', to: { screen: 'settings', id: 'keys' } } });
+    expect(v).toEqual({ state: 'Idle', running: false, when: 'Last scan 51 min ago', usage: '119 searches left · Keepa 57 tokens', problem: { text: 'eBay key not accepted', to: { screen: 'settings', id: 'keys' } } });
   });
 
   it('says the next scan when one is planned', () => {
@@ -54,8 +54,8 @@ describe('the sidebar status', () => {
   });
 
   it('leaves Keepa out of the usage line without a key, and says when searches are not checked', () => {
-    expect(sidebarStatus(make((s) => { s.keys.keepa = false; }), NOW).usage).toBe('187 searches');
+    expect(sidebarStatus(make((s) => { s.keys.keepa = false; }), NOW).usage).toBe('187 searches left');
     expect(sidebarStatus(make((s) => { s.budget.serpLeft = null; s.keys.keepa = false; }), NOW).usage).toBe('Searches not checked yet');
-    expect(sidebarStatus(make((s) => { s.budget.serpLeft = 1; s.keys.keepa = false; }), NOW).usage).toBe('1 search');
+    expect(sidebarStatus(make((s) => { s.budget.serpLeft = 1; s.keys.keepa = false; }), NOW).usage).toBe('1 search left');
   });
 });
