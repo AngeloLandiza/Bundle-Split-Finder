@@ -11,6 +11,7 @@ export * from './schedule';
 export * from './schedule/recommend';
 export * from './scanPlan';
 export * from './serpapi/budget';
+export * from './serpapi/balance';
 export * from './serpapi/client';
 export * from './serpapi/parsers';
 export * from './scan/types';
