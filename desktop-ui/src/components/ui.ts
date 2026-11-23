@@ -3,6 +3,7 @@
 
 import { createContext, useContext } from 'react';
 import type { Look } from '../lib/appearance';
+import type { BogoTarget } from './BogoSheet';
 import type { ConfirmTarget } from './ConfirmPriceSheet';
 
 export interface UiValue {
@@ -20,6 +21,8 @@ export interface UiValue {
   openShortcuts: () => void;
   /** The Confirm a price sheet for one part of a deal; a sheet over the window, so App holds it. */
   openConfirmPrice: (target: ConfirmTarget) => void;
+  /** The BOGO sheet for one deal: choose the free tool, or mark the deal as a BOGO promotion. */
+  openBogo: (target: BogoTarget) => void;
 }
 
 export const UiContext = createContext<UiValue | null>(null);

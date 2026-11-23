@@ -12,6 +12,7 @@ import { amazonSearchUrl, amazonUrl, copyText, openPage } from '../lib/actions';
 import { money, percentOff, plural, when } from '../lib/format';
 import { isMenuKey } from '../lib/keys';
 import { partMenu, type PartMenuId } from '../lib/menus';
+import { BogoSection, FbaLine, HistorySection, SignalsSection, WatchBar } from './DealTracking';
 import { GRADE_LABEL } from './reviewModel';
 import './DealDetail.css';
 
@@ -65,7 +66,10 @@ function Detail({ d }: { d: DealDetail }) {
             <SourceLink source={{ label: 'Open on Home Depot', url: d.link }} />
             {d.seenAt ? <span className="muted"> · price seen {when(d.seenAt)}</span> : null}
           </p>
+          <WatchBar d={d} />
         </header>
+
+        {d.signals ? <SignalsSection signals={d.signals} /> : null}
 
         <section className="detail-box" aria-label="Estimate">
           {e ? (
@@ -113,6 +117,7 @@ function Detail({ d }: { d: DealDetail }) {
                   at $0: no priced Amazon listing is chosen.
                 </p>
               ) : null}
+              {d.fbaEstimate ? <FbaLine fba={d.fbaEstimate} /> : null}
             </>
           ) : (
             <>
@@ -143,6 +148,10 @@ function Detail({ d }: { d: DealDetail }) {
             Its estimate waits for one question.
           </Notice>
         ) : null}
+
+        {d.bogo ? <BogoSection d={d} bogo={d.bogo} /> : null}
+
+        <HistorySection d={d} />
 
         {d.ways.length > 1 ? (
           <section className="detail-section">

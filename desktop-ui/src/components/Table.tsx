@@ -12,6 +12,8 @@ export interface Column<T, K extends string> {
   /** A short visible head when the label would not fit; the full label stays for screen readers. */
   short?: string;
   sortable?: boolean;
+  /** A narrow column whose control says what it is: the head is read by screen readers and not drawn. */
+  hideLabel?: boolean;
   /** Figures start high to low, words A to Z. */
   natural?: SortDirection;
   align?: 'left' | 'right';
@@ -133,7 +135,7 @@ export function Table<T, K extends string>({
                     </span>
                   </button>
                 ) : (
-                  <span className="th-plain">{c.label}</span>
+                  <span className={c.hideLabel ? 'sr-only' : 'th-plain'}>{c.label}</span>
                 )}
               </th>
             ))}

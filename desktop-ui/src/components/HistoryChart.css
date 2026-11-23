@@ -1,0 +1,197 @@
+/* The history chart in the inspector: thin system-colour lines, light gridlines, secondary-label axes. No fills, no gradients. */
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-empty {
+  padding: 2px 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+.chart-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.chart-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+.chart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* A line sample: the series' own stroke, as a short rule. */
+.chart-key {
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 0;
+  border-top: 1.5px solid var(--label);
+}
+
+.chart-key-accent {
+  border-top-color: var(--accent);
+}
+
+.chart-key-profit {
+  border-top-color: var(--profit);
+}
+
+.chart-key-dashed {
+  border-top-style: dashed;
+}
+
+.chart-box {
+  position: relative;
+  border-radius: 6px;
+  outline: none;
+}
+
+.chart-box:focus-visible {
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.chart-box svg {
+  display: block;
+  overflow: visible;
+}
+
+.chart-grid {
+  stroke: var(--separator);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.chart-grid-zero {
+  stroke: var(--label-3);
+}
+
+.chart-axis {
+  font-size: 10px;
+  fill: var(--label-2);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.chart-line {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart-line-ink {
+  stroke: var(--label);
+}
+
+.chart-line-accent {
+  stroke: var(--accent);
+}
+
+.chart-line-profit {
+  stroke: var(--profit);
+}
+
+.chart-line-loss {
+  stroke: var(--loss);
+}
+
+.chart-line-dashed {
+  stroke-dasharray: 4 3;
+}
+
+.chart-dot {
+  fill: var(--group-bg);
+  stroke-width: 1.5;
+}
+
+.chart-dot-ink {
+  stroke: var(--label);
+}
+
+.chart-dot-accent {
+  stroke: var(--accent);
+}
+
+.chart-dot-profit {
+  stroke: var(--profit);
+}
+
+.chart-dot-loss {
+  stroke: var(--loss);
+}
+
+.chart-cross {
+  stroke: var(--label-3);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.chart-hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+/* The value tooltip: the popover's material, the system's small shadow; it never takes the pointer. */
+.chart-tip {
+  position: absolute;
+  top: 6px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--popover-bg);
+  box-shadow:
+    0 0 0 0.5px var(--separator),
+    0 4px 12px rgb(0 0 0 / 0.16);
+  font-size: 11px;
+  line-height: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.chart-tip-time {
+  color: var(--label-2);
+}
+
+.chart-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chart-tip-label {
+  color: var(--label-2);
+}
+
+.chart-tip-value {
+  margin-left: auto;
+  padding-left: 10px;
+  font-weight: 600;
+  color: var(--label);
+}
+
+.chart-note {
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--label-2);
+}

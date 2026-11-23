@@ -8,8 +8,14 @@ const ids = (items: { id: string }[]) => items.map((i) => i.id);
 
 describe('a deal row\'s menu', () => {
   it('always opens, copies the model and the ASINs, and opens Home Depot when it has the page', () => {
-    expect(ids(dealMenu(row(), { scanRunning: false }))).toEqual(['open', 'open-hd', 'copy-model', 'copy-asins', 'watch']);
-    expect(ids(dealMenu(row({ link: null }), { scanRunning: false }))).toEqual(['open', 'copy-model', 'copy-asins', 'watch']);
+    expect(ids(dealMenu(row(), { scanRunning: false }))).toEqual(['open', 'open-hd', 'copy-model', 'copy-asins', 'watch', 'bogo']);
+    expect(ids(dealMenu(row({ link: null }), { scanRunning: false }))).toEqual(['open', 'copy-model', 'copy-asins', 'watch', 'bogo']);
+  });
+  it('words the BOGO item by where the promotion stands', () => {
+    const label = (bogo: DealRow['bogo']) => dealMenu(row({ bogo }), { scanRunning: false }).find((i) => i.id === 'bogo')!.label;
+    expect(label(null)).toBe('Mark as BOGO…');
+    expect(label('choose')).toBe('Choose the free tool…');
+    expect(label('chosen')).toBe('Change the free tool…');
   });
   it('offers Watch for a deal that is not watched and Unwatch for one that is', () => {
     expect(ids(dealMenu(row(), { scanRunning: false }))).toContain('watch');

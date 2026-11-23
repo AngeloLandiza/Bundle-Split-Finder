@@ -5,8 +5,9 @@ import './Tag.css';
  * attention: amber, only for "needs you" (Needs your answer, Title match, at the limit).
  * neutral: sunken, for plain states (Inactive listing, Undone).
  * verified: ink outline with a check, the one icon a grade carries.
+ * buy: system green words, no icon: "Buy now" on a deal the last scan found worth buying.
  */
-export function Tag({ tone = 'neutral', children, title }: { tone?: 'attention' | 'neutral' | 'verified'; children: ReactNode; title?: string }) {
+export function Tag({ tone = 'neutral', children, title }: { tone?: 'attention' | 'neutral' | 'verified' | 'buy'; children: ReactNode; title?: string }) {
   return (
     <span className={`tag tag-${tone}`} title={title}>
       {tone === 'verified' ? (

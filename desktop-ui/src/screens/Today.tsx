@@ -10,6 +10,8 @@ import { EmptyState, LoadError, LoadingState, Meter } from '../components/States
 import { StatusLine } from '../components/StatusLine';
 import { Tag } from '../components/Tag';
 import { count, money, percentOff, plural, profit, usdSpend, when } from '../lib/format';
+import { bestDeals, buyNowDeals } from '../lib/today';
+import type { DealView } from '../lib/views';
 import { KIND_LABEL } from './reviewModel';
 import './Today.css';
 
@@ -22,7 +24,9 @@ export function TodayScreen() {
   const [review, reloadReview] = useResource(() => api.review(), [], ['review']);
 
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  const best = (deals.data?.rows ?? []).filter((r) => r.profit !== null && !r.needsAnswer).sort((a, b) => (b.profit ?? 0) - (a.profit ?? 0));
+  const best = bestDeals(deals.data?.rows ?? []);
+  // The last scan's verdicts lead when there are any; otherwise the best estimates (a loss is never a best deal).
+  const buy = buyNowDeals(deals.data?.rows ?? []);
   return (
     <Page title="Today" sub={date} grouped>
       <div className="today">
@@ -30,7 +34,19 @@ export function TodayScreen() {
         <div className="today-grid">
           <div className="today-main">
             <NeedsYou res={review} onRetry={reloadReview} />
-            <BestDeals res={deals} rows={best} onRetry={reloadDeals} />
+            {buy.length > 0 ? (
+              <DealsBlock
+                label="Worth buying now"
+                view="buy-now"
+                actionLabel="Open the list"
+                res={deals}
+                rows={buy}
+                note="Profit and ROI are estimates from your fee settings, not your real Amazon fees. A scan judged each bundle against your numbers and Keepa’s monthly sales."
+                onRetry={reloadDeals}
+              />
+            ) : (
+              <DealsBlock label="Best deals" view="all" actionLabel="All deals" res={deals} rows={best} note="Profit and ROI are estimates from your fee settings, not your real Amazon fees." onRetry={reloadDeals} />
+            )}
           </div>
           <div className="today-side">{state ? <AgentBlock state={state} /> : <Section label="Agent">{online ? <LoadingState label="Loading the agent" compact /> : <EmptyState title="The agent is not running" compact />}</Section>}</div>
         </div>
@@ -114,19 +130,24 @@ function NeedsYou({ res, onRetry }: { res: ReturnType<typeof useResource<{ quest
   );
 }
 
-function BestDeals({ res, rows, onRetry }: { res: ReturnType<typeof useResource<{ rows: DealRow[] }>>[0]; rows: DealRow[]; onRetry: () => void }) {
+function DealsBlock({ label, view, actionLabel, res, rows, note, onRetry }: { label: string; view: DealView; actionLabel: string; res: ReturnType<typeof useResource<{ rows: DealRow[] }>>[0]; rows: DealRow[]; note: string; onRetry: () => void }) {
   const { navigate } = useApp();
+  const losing = res.data?.rows.filter((r) => !r.needsAnswer && r.profit !== null && r.profit < 0).length ?? 0;
   return (
     <Section
-      label="Best deals"
+      label={label}
       count={res.data ? Math.min(TOP, rows.length) : undefined}
-      action={rows.length ? <LinkButton onClick={() => navigate({ screen: 'deals', id: null })}>All deals</LinkButton> : null}
-      note={rows.length ? 'Profit and ROI are estimates from your fee settings, not your real Amazon fees.' : undefined}
+      action={rows.length ? <LinkButton onClick={() => navigate({ screen: 'deals', id: null, view })}>{actionLabel}</LinkButton> : null}
+      note={rows.length ? note : undefined}
     >
       {res.status === 'loading' ? <LoadingState compact /> : null}
       {res.status === 'error' && !res.data ? <LoadError error={res.error} onRetry={onRetry} /> : null}
       {res.data && rows.length === 0 ? (
-        <EmptyState compact title="No deals with an estimate yet" cause={res.data.rows.length ? 'Every bundle found so far is waiting for a lookup or an answer.' : 'The agent has not found a discounted bundle yet. The next scan looks again.'} />
+        <EmptyState
+          compact
+          title="No deals with an estimate yet"
+          cause={losing > 0 ? 'No bundle’s estimate is above zero yet. Losing money lists the ones that are below.' : res.data.rows.length ? 'Every bundle found so far is waiting for a lookup or an answer.' : 'The agent has not found a discounted bundle yet. The next scan looks again.'}
+        />
       ) : null}
       {rows.length > 0 ? (
         <>

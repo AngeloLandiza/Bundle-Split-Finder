@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppContext, api, type AppContextValue, type PairingValue } from './api/hooks';
 import { ApiError, type AgentEvent, type AppState, type PendingPairRequest } from './api/types';
 import { CommandPalette } from './components/CommandPalette';
+import { BogoSheet, type BogoTarget } from './components/BogoSheet';
 import { ConfirmPriceSheet, type ConfirmTarget } from './components/ConfirmPriceSheet';
 import { MenuProvider } from './components/ContextMenu';
 import { ShortcutsSheet } from './components/ShortcutsSheet';
@@ -66,6 +67,8 @@ export function App() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null);
+  const [bogoTarget, setBogoTarget] = useState<BogoTarget | null>(null);
+  const sheetOpen = confirmTarget !== null || bogoTarget !== null;
   // Where focus was when the palette or a sheet opened, so closing it puts him back.
   const returnTo = useRef<HTMLElement | null>(null);
   const [look, setLookState] = useState<Look>(readLook);
@@ -279,22 +282,22 @@ export function App() {
       // The palette and the shortcuts sheet toggle with their own keys; the other layers keep the rest of the keys quiet.
       if (a.type === 'palette') {
         if (paletteOpen) closeOver(() => setPaletteOpen(false));
-        else if (!shortcutsOpen && !confirmTarget) openOver(() => setPaletteOpen(true));
+        else if (!shortcutsOpen && !sheetOpen) openOver(() => setPaletteOpen(true));
         return;
       }
       if (a.type === 'shortcuts') {
         if (shortcutsOpen) closeOver(() => setShortcutsOpen(false));
-        else if (!paletteOpen && !confirmTarget) openOver(() => setShortcutsOpen(true));
+        else if (!paletteOpen && !sheetOpen) openOver(() => setShortcutsOpen(true));
         return;
       }
-      if (paletteOpen || shortcutsOpen || confirmTarget) return;
+      if (paletteOpen || shortcutsOpen || sheetOpen) return;
       if (a.type === 'go') navigate({ screen: a.screen, id: null });
       else if (a.type === 'inspector') setInspector((cur) => ({ ...cur, shown: !cur.shown }));
       else focusFind();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [navigate, setupOpen, paletteOpen, shortcutsOpen, confirmTarget, openOver, closeOver]);
+  }, [navigate, setupOpen, paletteOpen, shortcutsOpen, sheetOpen, openOver, closeOver]);
 
   // Move focus to the screen's title on a screen change, so a screen reader hears where it is.
   useEffect(() => {
@@ -326,6 +329,7 @@ export function App() {
       openPalette: () => openOver(() => setPaletteOpen(true)),
       openShortcuts: () => openOver(() => setShortcutsOpen(true)),
       openConfirmPrice: (target) => openOver(() => setConfirmTarget(target)),
+      openBogo: (target) => openOver(() => setBogoTarget(target)),
     }),
     [inspector, setInspectorShown, look, openOver],
   );
@@ -343,7 +347,7 @@ export function App() {
     <AppContext.Provider value={ctx}>
       <UiContext.Provider value={ui}>
         <MenuProvider>
-          <div className="window" inert={setupOpen || paletteOpen || shortcutsOpen || confirmTarget !== null}>
+          <div className="window" inert={setupOpen || paletteOpen || shortcutsOpen || sheetOpen}>
             <Sidebar route={route} onGo={navigate} />
             <main className="window-content">
               {route.screen === 'today' ? <TodayScreen /> : null}
@@ -356,6 +360,7 @@ export function App() {
           {paletteOpen ? <CommandPalette onClose={() => closeOver(() => setPaletteOpen(false))} /> : null}
           {shortcutsOpen ? <ShortcutsSheet onClose={() => closeOver(() => setShortcutsOpen(false))} /> : null}
           {confirmTarget ? <ConfirmPriceSheet target={confirmTarget} onClose={() => closeOver(() => setConfirmTarget(null))} /> : null}
+          {bogoTarget ? <BogoSheet target={bogoTarget} onClose={() => closeOver(() => setBogoTarget(null))} /> : null}
         </MenuProvider>
       </UiContext.Provider>
     </AppContext.Provider>

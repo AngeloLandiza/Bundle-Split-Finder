@@ -1,0 +1,143 @@
+/* The tracking parts of the deal inspector: the watch bar, Signals, the FBA line, BOGO and History. They reuse the
+   inspector's group box and notes (DealDetail.css); one level only, no box in a box. */
+.track-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.track-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Signals */
+.signals {
+  gap: 8px;
+}
+
+.signals-verdict {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.signals-sentence {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.signals-reasons {
+  margin: 2px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--separator);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signals-reasons > div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.signals-reasons dt {
+  color: var(--label-2);
+}
+
+.signals-reasons dd {
+  margin: 0;
+}
+
+.signals-sub {
+  color: var(--label-2);
+}
+
+.signals-attention dt,
+.signals-attention dd {
+  color: var(--attention);
+}
+
+/* FBA estimate, in the estimate box */
+.fba {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 8px;
+  border-top: 1px solid var(--separator);
+}
+
+.fba-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fba-label {
+  font-weight: 500;
+}
+
+.fba-figures {
+  display: flex;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+/* BOGO */
+.bogo {
+  gap: 8px;
+}
+
+.bogo-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bogo-label {
+  font-weight: 600;
+}
+
+.bogo-headline {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--label-2);
+}
+
+.bogo-counted {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.bogo-counted-money {
+  margin-left: 8px;
+  color: var(--label-2);
+}
+
+.bogo-note {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--attention);
+}
+
+.bogo-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

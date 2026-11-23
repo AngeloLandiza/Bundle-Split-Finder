@@ -385,8 +385,9 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
 ### Layout
 
 - **Sidebar** (`components/Sidebar.tsx`), 220px: a 52px band for the traffic lights, then a source
-  list. Today; **Deals** with its saved views, each with its count: All deals, Confirmed, Needs an
-  answer, Waiting for a lookup, Losing money (`lib/views.ts`; a view is a question about the row's own
+  list. Today; **Deals** with its saved views, each with its count: **Worth buying now** (first, its count
+  in the accent: the last scan's own verdict, `buyNow`), All deals, Confirmed, Needs an answer, Waiting
+  for a lookup, Losing money, **Watchlist** (`lib/views.ts`; a view is a question about the row's own
   fields, and a bundle with no estimate is never "losing"); **Agent**: Review with its badge (the
   accent when above zero), Activity, Settings. Section heads are 11px semibold tertiary with a
   disclosure on hover; a collapsed section is remembered. Rows are 28px, 6px radius; the selected one
@@ -413,19 +414,34 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
 ### Screens
 
 - **Today**: four large figures (Open questions, Best estimated profit with its model, Bundles found,
-  Searches left), then Needs you (rows with a badge and a chevron, AI-verified first), Best deals
-  (bundle, price, est. profit, ROI with its range; the estimate note under the box), and the Agent card
+  Searches left), then Needs you (rows with a badge and a chevron, AI-verified first), **Worth buying now**
+  when any bundle has that verdict (the same rows; the link opens that view), otherwise Best deals (bundle,
+  price, est. profit, ROI with its range; the estimate note under the box; an estimate below zero is never
+  listed), and the Agent card
   at 320px (state and stages, Pause, then label / value rows: last scan, next scan, searches left with
   its meter, Keepa, AI this month, Chrome). One column under 1180px.
 - **Deals**: the table fills the content; the title is the sidebar's view. Columns drop by the table's
   own width (container queries): Off and Updated under 900px, Match under 720px (its badge moves into
-  the profit cell), Price under 560px. The Section filter is in View options. A status bar at the foot
+  the profit cell), Price under 560px. A first narrow column holds the **watch star**, a real toggle button
+  (hollow, or filled in the accent; `aria-pressed`; Tab and Space): the one glyph in a row, allowed because it acts.
+  The title cell carries a green **Buy now** tag (text only) when the last scan found it worth buying and a
+  neutral **BOGO** tag when a promotion was entered. The Section filter is in View options. A status bar at the foot
   says how many show and that profit and ROI are estimates.
 - **Deal inspector**: brand, title, model · price · off, "Open on Home Depot" with when the price was
   seen; one box with the estimated profit at 26/32, ROI, and the three figures (Bundle costs, Parts sell
   for, After fees), the fee basis with Change; a banner if it needs an answer; Ways to sell and Parts as
   group boxes (each part with its grade badge, ASIN link, prices and their sources); Copy ASINs at the
-  foot.
+  foot. A watched bundle adds, in this order: **Watch / Unwatch** under the title; **Signals** (the verdict
+  as a headline and one sentence, then Margin against the last scan and the 7-day average with the figures,
+  Sales as "Sells about N a month (Keepa)" or "No sales data — Keepa leaves it out for slow sellers", and
+  Review cleared or Confirmed when the scan said so; labelled as estimates); a **FBA estimate (Keepa)** line
+  inside the estimate box, beside the main figure and never replacing it; **BOGO** when a promotion exists
+  ("BOGO: choose your free tool", Choose or Change in a sheet, the estimate with the free tool's parts and
+  "+ free tool not counted yet" until they are priced, Remove); and **History**, inline SVG
+  (`components/HistoryChart.tsx`): a segmented Prices (what you pay at Home Depot dashed, Amazon New counted
+  parts in the accent), Profit (green above zero, red below), Sold a month and, only when a scan stored one,
+  Sales rank. Thin lines, separator gridlines, secondary-label axes, a hover or arrow-key crosshair with a
+  value tooltip, a gap where a scan had no figure; under two scans: "History starts after two scans."
 - **Review**: the questions in the content, grouped AI verified (with Approve all N, confirmed in
   place) then Needs you; a status bar with the keys. The inspector (at least 440px) holds the question:
   the kind, the question at 15 semibold, the bundle and its links, Why it is asked with its quotes, the

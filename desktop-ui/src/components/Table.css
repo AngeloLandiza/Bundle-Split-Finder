@@ -40,6 +40,10 @@
   width: 120px;
 }
 
+.col-watch {
+  width: 36px;
+}
+
 .col-what {
   width: auto;
 }

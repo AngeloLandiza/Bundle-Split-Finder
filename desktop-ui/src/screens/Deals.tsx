@@ -9,6 +9,7 @@ import { Page } from '../components/Page';
 import { PopoverSection } from '../components/Popover';
 import { EmptyState, LoadError, LoadingState, Notice } from '../components/States';
 import { Table, type Column, type RowMenu, type TableHandle } from '../components/Table';
+import { WatchToggle } from '../components/WatchToggle';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { copyText, openPage } from '../lib/actions';
@@ -22,7 +23,7 @@ import './Deals.css';
 
 const SORT_KEY = 'splitFinder.desktopDealsSort';
 type Filter = DealSection | 'all';
-type Col = DealSort | 'match';
+type Col = DealSort | 'match' | 'watch';
 
 function readSort(): SortState<Col> {
   try {
@@ -51,6 +52,8 @@ function sortValue(r: DealRow, key: Col): number | string | null {
       return r.title;
     case 'match':
       return r.matchState;
+    case 'watch':
+      return r.watched ? 1 : 0;
   }
 }
 
@@ -107,6 +110,25 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
     ui.setInspectorShown(true);
     navigate({ screen: 'deals', id: r.id, view });
   };
+  // Watch or Unwatch from the star or the menu: the agent keeps his choice over what a scan would do by itself.
+  const [watching, setWatching] = useState<ReadonlySet<string>>(new Set());
+  const setWatch = (r: DealRow, watch: boolean) => {
+    setWatching((cur) => new Set(cur).add(r.id));
+    api
+      .watch(r.id, watch)
+      .then(() => {
+        setSaid({ tone: 'quiet', text: watch ? `Watching ${r.model}. Each scan judges it.` : `Stopped watching ${r.model}.` });
+        reload();
+      })
+      .catch(failed)
+      .finally(() =>
+        setWatching((cur) => {
+          const next = new Set(cur);
+          next.delete(r.id);
+          return next;
+        }),
+      );
+  };
   const pick = (id: DealMenuId, r: DealRow) => {
     switch (id) {
       case 'open':
@@ -131,12 +153,13 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
         return;
       case 'watch':
       case 'unwatch':
+        setWatch(r, id === 'watch');
+        return;
+      case 'bogo':
+        // The sheet needs the promotion as it stands (its eligible list), which the row does not carry.
         api
-          .watch(r.id, id === 'watch')
-          .then(() => {
-            setSaid({ tone: 'quiet', text: id === 'watch' ? `Watching ${r.model}.` : `Stopped watching ${r.model}.` });
-            reload();
-          })
+          .deal(r.id)
+          .then((d) => ui.openBogo({ dealId: r.id, model: r.model, bogo: d.bogo }))
           .catch(failed);
         return;
       case 'lookup':
@@ -154,6 +177,13 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
 
   const columns: Column<DealRow, Col>[] = [
     {
+      key: 'watch',
+      label: 'Watched',
+      hideLabel: true,
+      width: 'col-watch',
+      render: (r) => <WatchToggle watched={r.watched} label={r.title} busy={watching.has(r.id)} onToggle={() => setWatch(r, !r.watched)} />,
+    },
+    {
       key: 'title',
       label: 'Bundle',
       sortable: true,
@@ -161,8 +191,16 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       width: 'col-title',
       render: (r) => (
         <div className="deal-cell">
-          <span className="deal-title" title={r.title}>
-            {r.title}
+          <span className="deal-line">
+            <span className="deal-title" title={r.title}>
+              {r.title}
+            </span>
+            {r.buyNow ? (
+              <Tag tone="buy" title="The last scan found this worth buying now: above your profit and ROI numbers, selling well, and better than before.">
+                Buy now
+              </Tag>
+            ) : null}
+            {r.bogo ? <Tag title={r.bogo === 'choose' ? 'A BOGO promotion: the free tool is not chosen yet.' : 'A BOGO promotion with its free tool chosen.'}>BOGO</Tag> : null}
           </span>
           <span className="deal-sub">
             {r.brand} · <span className="code">{r.model}</span>

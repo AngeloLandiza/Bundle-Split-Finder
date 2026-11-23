@@ -1,0 +1,58 @@
+/* The star toggle in a Deals row: quiet while hollow, the accent while the bundle is watched. */
+.watch-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.watch-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--label-3);
+  cursor: default;
+}
+
+.watch-toggle:hover:not(:disabled) {
+  color: var(--label-2);
+  background: var(--fill);
+}
+
+.watch-toggle:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -1px;
+}
+
+.watch-toggle:disabled {
+  opacity: 0.5;
+}
+
+.watch-on,
+.watch-on:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+/* On the selected row (grey while the window is not key) the star stays readable. */
+.tr-on .watch-toggle {
+  color: var(--label-2);
+}
+
+.tr-on .watch-on {
+  color: var(--label);
+}
+
+/* While the window is key the selected row is the accent with white text; so is the star. */
+:root[data-window-active] .tr-on .watch-toggle {
+  color: rgb(255 255 255 / 0.7);
+}
+
+:root[data-window-active] .tr-on .watch-on,
+:root[data-window-active] .tr-on .watch-toggle:hover:not(:disabled) {
+  color: #ffffff;
+}

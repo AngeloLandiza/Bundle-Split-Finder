@@ -31,7 +31,19 @@
   min-width: 0;
 }
 
+.deal-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.deal-line .tag {
+  flex: none;
+}
+
 .deal-title {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

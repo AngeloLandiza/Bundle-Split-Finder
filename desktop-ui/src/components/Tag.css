@@ -22,6 +22,11 @@
   color: var(--label-2);
 }
 
+.tag-buy {
+  background: var(--verified-bg);
+  color: var(--profit);
+}
+
 .tag-verified {
   background: var(--verified-bg);
   color: var(--profit);
