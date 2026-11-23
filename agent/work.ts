@@ -39,6 +39,7 @@ import {
 } from '../core/src/settings';
 import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { buildDigest, sendPending } from './alerts';
+import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
 import { remoteReaders, type ReaderTimeouts } from './remoteReaders';
 import { DirCache, FileScanStore } from './scanStore';
@@ -115,6 +116,8 @@ export class AgentWork {
   readonly scanStore: ScanStore;
   readonly cache: DirCache;
   private readonly d: WorkDeps;
+  /** D2: the kinds, quiet hours and digest timing the owner set. */
+  readonly policy: NotifyPolicy;
   private readonly live: LiveState = { busy: null, stopping: false, pipeline: null, searchesUsed: 0 };
   private stopCtl = new AbortController();
   private current: Promise<void> | null = null;
@@ -126,6 +129,7 @@ export class AgentWork {
 
   constructor(deps: WorkDeps) {
     this.d = deps;
+    this.policy = new NotifyPolicy({ settings: () => deps.store.get('settings').notifications, now: deps.now, emit: deps.notify });
     mkdirSync(deps.dataDir, { recursive: true });
     this.scanStore = new FileScanStore(join(deps.dataDir, 'scan'));
     this.cache = new DirCache(join(deps.dataDir, 'cache'));
@@ -161,7 +165,10 @@ export class AgentWork {
 
   start(): void {
     if (this.timer) return;
-    this.timer = setInterval(() => void this.tick(), TICK_MS);
+    this.timer = setInterval(() => {
+      void this.tick();
+      void this.flushMessages();
+    }, TICK_MS);
     this.timer.unref?.();
   }
 
@@ -778,11 +785,23 @@ export class AgentWork {
     }
     const digest = buildDigest({ report, alerts: app.alerts, notifiedDeals: runtime.notifiedDeals, notifiedQuestions: runtime.notifiedQuestions, autopilotApplied: applied, verifiedWaiting: await this.verifiedWaiting(), trendLines });
     store.update('runtime', (r) => ({ ...r, notifiedDeals: digest.notifiedDeals, notifiedQuestions: digest.notifiedQuestions }));
-    if (digest.event) this.d.notify(digest.event);
+    const text = digest.event && digest.text ? this.policy.digest(digest.event, digest.text) : null;
+    return this.sendTelegram(text);
+  }
+
+  /** Quiet hours ended or the morning came: the held notifications go out, and the morning digest to Telegram. */
+  async flushMessages(): Promise<void> {
+    const text = this.policy.flush();
+    if (text) await this.sendTelegram(text);
+  }
+
+  /** The waiting Telegram messages and `text` (when there is one), in order. Returns a sentence when Telegram failed. */
+  private async sendTelegram(text: string | null): Promise<string | null> {
+    const { store } = this.d;
     const tg = store.get('keys').telegram;
     const pending = store.get('runtime').telegram.pending;
-    if (!tg || (!digest.text && pending.length === 0)) return null;
-    const sent = await sendPending(this.d.fetchFn, tg, pending, digest.text ? { text: digest.text, at: new Date(this.d.now()).toISOString() } : null);
+    if (!tg || (!text && pending.length === 0)) return null;
+    const sent = await sendPending(this.d.fetchFn, tg, pending, text ? { text, at: new Date(this.d.now()).toISOString() } : null);
     const at = new Date(this.d.now()).toISOString();
     store.update('runtime', (r) => ({ ...r, telegram: { pending: sent.pending, lastSentAt: sent.sent > 0 ? at : r.telegram.lastSentAt, lastError: sent.error } }));
     if (!sent.error) return null;

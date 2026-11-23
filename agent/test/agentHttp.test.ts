@@ -150,6 +150,27 @@ describe('agent HTTP', () => {
     expect((await ui('/api/settings', { method: 'PATCH', body: JSON.stringify({ autopilot: 'yes' }) })).status).toBe(400);
   });
 
+  it('stores appearance, notification and shell settings, merged, with defaults that keep today\'s behaviour', async () => {
+    const got = (await (await ui('/api/settings')).json()) as { settings: Record<string, unknown> };
+    expect(got.settings).toMatchObject({
+      appearance: { theme: 'system', accent: 'system', density: 'regular' },
+      notifications: { sound: false, digest: 'each-run', quietHours: { enabled: false }, kinds: { review: true, deal: true, autopilot: true, scan: true, error: true } },
+      shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false },
+    });
+    const patch = { appearance: { theme: 'dark' }, notifications: { kinds: { scan: false }, quietHours: { enabled: true, from: '21:30' }, digest: 'morning' }, shell: { dockIcon: false } };
+    const ok = await ui('/api/settings', { method: 'PATCH', body: JSON.stringify(patch) });
+    expect(await ok.json()).toMatchObject({
+      settings: {
+        appearance: { theme: 'dark', accent: 'system' },
+        notifications: { kinds: { scan: false, deal: true }, quietHours: { enabled: true, from: '21:30', to: '07:00' }, digest: 'morning', morningAt: '08:00' },
+        shell: { dockIcon: false, menuBarIcon: true },
+      },
+    });
+    for (const bad of [{ appearance: { theme: 'neon' } }, { notifications: { morningAt: '25:00' } }, { notifications: { kinds: { deal: 'no' } } }, { shell: { dockIcon: 1 } }]) {
+      expect((await ui('/api/settings', { method: 'PATCH', body: JSON.stringify(bad) })).status).toBe(400);
+    }
+  });
+
   it('pairs an extension, which then works jobs but cannot do what only the app may', async () => {
     const token = await pairExtension();
     expect((await ext(token, '/api/keys/serpapi', { method: 'PUT', body: '{"key":"x"}' })).status).toBe(403);

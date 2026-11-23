@@ -6,6 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import {
   KEY_NAMES,
+  NOTIFY_KINDS,
   WORKER_JOB_KINDS,
   WORKER_LONG_POLL_MS,
   type AgentEventName,
@@ -161,6 +162,16 @@ export function aiPipelinePatch(cur: AiPipelineSetting, v: unknown, name: (typeo
   return next;
 }
 
+function oneOf<T extends string>(v: unknown, allowed: readonly T[], name: string): T {
+  if (typeof v !== 'string' || !(allowed as readonly string[]).includes(v)) throw new HttpError('bad_request', `${name} must be one of ${allowed.join(', ')}.`);
+  return v as T;
+}
+
+function clock(v: unknown, name: string): string {
+  if (typeof v !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(v)) throw new HttpError('bad_request', `${name} must be a time like 22:30.`);
+  return v;
+}
+
 function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, unknown>, at: string): StoreData['settings'] {
   const next = structuredClone(cur);
   if ('autopilot' in patch) next.autopilot = flag(patch.autopilot, 'autopilot');
@@ -198,6 +209,33 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
       if (typeof a.monthlyCapUsd !== 'number' || !Number.isFinite(a.monthlyCapUsd) || a.monthlyCapUsd < 0) throw new HttpError('bad_request', 'ai.monthlyCapUsd must be a number of 0 or more.');
       next.ai.monthlyCapUsd = a.monthlyCapUsd;
     }
+  }
+  if ('appearance' in patch) {
+    const a = obj(patch.appearance, 'appearance');
+    if ('theme' in a) next.appearance.theme = oneOf(a.theme, ['system', 'light', 'dark'], 'appearance.theme');
+    if ('accent' in a) next.appearance.accent = oneOf(a.accent, ['system', 'blue', 'purple', 'pink', 'red', 'orange', 'yellow', 'green', 'graphite'], 'appearance.accent');
+    if ('density' in a) next.appearance.density = oneOf(a.density, ['regular', 'compact'], 'appearance.density');
+  }
+  if ('notifications' in patch) {
+    const n = obj(patch.notifications, 'notifications');
+    const out = next.notifications;
+    if ('kinds' in n) {
+      const k = obj(n.kinds, 'notifications.kinds');
+      for (const kind of NOTIFY_KINDS) if (kind in k) out.kinds[kind] = flag(k[kind], `notifications.kinds.${kind}`);
+    }
+    if ('sound' in n) out.sound = flag(n.sound, 'notifications.sound');
+    if ('quietHours' in n) {
+      const q = obj(n.quietHours, 'notifications.quietHours');
+      if ('enabled' in q) out.quietHours.enabled = flag(q.enabled, 'notifications.quietHours.enabled');
+      if ('from' in q) out.quietHours.from = clock(q.from, 'notifications.quietHours.from');
+      if ('to' in q) out.quietHours.to = clock(q.to, 'notifications.quietHours.to');
+    }
+    if ('digest' in n) out.digest = oneOf(n.digest, ['each-run', 'morning', 'off'], 'notifications.digest');
+    if ('morningAt' in n) out.morningAt = clock(n.morningAt, 'notifications.morningAt');
+  }
+  if ('shell' in patch) {
+    const sh = obj(patch.shell, 'shell');
+    for (const f of ['menuBarIcon', 'dockIcon', 'launchAtLogin'] as const) if (f in sh) next.shell[f] = flag(sh[f], `shell.${f}`);
   }
   if ('ebaySettings' in patch) {
     next.ebaySettings = { ...next.ebaySettings, ...obj(patch.ebaySettings, 'ebaySettings') } as typeof next.ebaySettings;

@@ -237,6 +237,16 @@ export function defaultSettings(): StoreData['settings'] {
     // The agent messages the owner (the PO's brief), so alerts start on; the numbers are core's defaults.
     alerts: { ...DEFAULT_SETTINGS.alerts, enabled: true },
     ai: defaultAiSettings(),
+    appearance: { theme: 'system', accent: 'system', density: 'regular' },
+    // Today's behaviour: every kind on, no quiet hours, a message after each run.
+    notifications: {
+      kinds: { review: true, deal: true, autopilot: true, scan: true, error: true },
+      sound: false,
+      quietHours: { enabled: false, from: '22:00', to: '07:00' },
+      digest: 'each-run',
+      morningAt: '08:00',
+    },
+    shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false },
   };
 }
 
@@ -298,6 +308,14 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
       ebaySettings: { ...d.ebaySettings, ...(s.ebaySettings ?? {}) },
       settings: { ...d.settings, ...(keptSettings as Partial<StoreData['settings']['settings']>) },
       alerts: { ...d.alerts, ...(s.alerts ?? {}) },
+      appearance: { ...d.appearance, ...(s.appearance ?? {}) },
+      notifications: {
+        ...d.notifications,
+        ...(s.notifications ?? {}),
+        kinds: { ...d.notifications.kinds, ...(s.notifications?.kinds ?? {}) },
+        quietHours: { ...d.notifications.quietHours, ...(s.notifications?.quietHours ?? {}) },
+      },
+      shell: { ...d.shell, ...(s.shell ?? {}) },
       ai: {
         ...d.ai,
         ...ai,

@@ -376,6 +376,35 @@ export interface AiAgentSettings {
   monthlyCapUsd: number;
 }
 
+/** D2: how the app looks. Stored by the agent; the UI applies it. */
+export interface AppearanceSettings {
+  theme: 'system' | 'light' | 'dark';
+  accent: 'system' | 'blue' | 'purple' | 'pink' | 'red' | 'orange' | 'yellow' | 'green' | 'graphite';
+  density: 'regular' | 'compact';
+}
+
+export const NOTIFY_KINDS = ['review', 'deal', 'autopilot', 'scan', 'error'] as const;
+
+/** D2: which messages reach the owner and when. Times are local "HH:MM". */
+export interface NotificationSettings {
+  /** A kind turned off emits no notify event of that kind. */
+  kinds: Record<(typeof NOTIFY_KINDS)[number], boolean>;
+  /** The shell plays the default sound with a native notification. */
+  sound: boolean;
+  /** In quiet hours notifications are held and sent as one digest when they end; 'scan' ones are dropped. */
+  quietHours: { enabled: boolean; from: string; to: string };
+  /** 'each-run' sends the run's digest at once; 'morning' holds deal/review/autopilot lines until morningAt; 'off' sends none (Telegram too). */
+  digest: 'each-run' | 'morning' | 'off';
+  morningAt: string;
+}
+
+/** D2: the desktop shell's own switches (src-tauri applies them). */
+export interface ShellSettings {
+  menuBarIcon: boolean;
+  dockIcon: boolean;
+  launchAtLogin: boolean;
+}
+
 /**
  * Every setting the owner can change; keys are not here (see KeyValues). W4 removed the extension-era `appPrimaryUi`,
  * `compactHelperPanel`, `askAfterScan` (the AI pass runs after every run, held by `ai.monthlyCapUsd`) and
@@ -404,6 +433,9 @@ export interface AppSettings {
   alerts: AlertSettings;
   /** W4: the AI pipelines' models and the month's cap. */
   ai: AiAgentSettings;
+  appearance: AppearanceSettings;
+  notifications: NotificationSettings;
+  shell: ShellSettings;
 }
 
 /** GET /api/settings and the answer to PATCH /api/settings (whose body is a SettingsPatch). */
@@ -413,10 +445,16 @@ export interface SettingsResponse {
   keys: KeysPresence;
 }
 
-export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings' | 'alerts' | 'ai'>> & {
+export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings' | 'alerts' | 'ai' | 'appearance' | 'notifications' | 'shell'>> & {
   settings?: Partial<AppSettings['settings']>;
   ebaySettings?: Partial<EbaySettings>;
   alerts?: Partial<AlertSettings>;
+  appearance?: Partial<AppearanceSettings>;
+  notifications?: Partial<Omit<NotificationSettings, 'kinds' | 'quietHours'>> & {
+    kinds?: Partial<NotificationSettings['kinds']>;
+    quietHours?: Partial<NotificationSettings['quietHours']>;
+  };
+  shell?: Partial<ShellSettings>;
   ai?: Partial<Omit<AiAgentSettings, 'judge' | 'assist' | 'research'>> & {
     judge?: Partial<AiPipelineSetting>;
     assist?: Partial<AiPipelineSetting>;
