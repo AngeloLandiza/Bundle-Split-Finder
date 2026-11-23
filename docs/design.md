@@ -3,6 +3,11 @@
 The look is a workshop ledger: paper, ink, hairlines and aligned figures. It is a tool a
 reseller keeps open beside a product page all day, so it is dense, quiet and exact.
 
+This is the Chrome extension's system. The desktop app is a native Mac app with its own system on
+the system's colours and font: see **Desktop app** below. Principle 3 ("Ink does the work") and the Tokens, Type, Behaviour
+and Do not sections describe the extension; the product rules (estimates labelled, sources linked,
+prices on paid controls, no emoji, the Words) hold for both.
+
 The mockups in `docs/design/mockups/` are the reference. They are plain HTML with inline
 styles; open one to read exact sizes, colors and spacing. Build to them, then keep to the
 rules below for anything the mockups do not show.
@@ -284,121 +289,170 @@ way it counts in, and once a price is stored, that way's estimated profit.
 The bundle stays in Missing listing or Inactive listing: a confirmed price is not an Amazon listing.
 A part not looked up yet has no form. The AI does not invent a dollar amount.
 
-## Desktop app (step 13)
+## Desktop app (step 14: native)
 
-The desktop app is where he works; the side panel is the helper beside a Home Depot page. Same
-tokens, same faces, same words. The app is a work place, not a phone column in a window: a rail,
-a page header, and a body that uses the width. Built in `desktop-ui/src/` (components in
-`components/`, screens in `screens/`); no mockup yet, so this section is the reference.
+The desktop app is a Mac app, not a web page in a window. It follows macOS conventions, not this
+spec's ledger system: **the Chrome extension keeps its own system** (paper, ink, Barlow, JetBrains
+Mono, everything above this section), and nothing below applies to it. The product rules carry over
+unchanged: every estimate is labelled as one, every price, match and question links to its source, a
+paid action shows its price on the control, no emoji, a real minus on a loss, sentence case, the
+fixed vocabulary in Words. Built in `desktop-ui/src/` (components in `components/`, screens in
+`screens/`); there is no mockup, so this section is the reference.
 
-### Layout grid
+### Window
 
-- Window: minimum 1000×680, fluid to about 1440; the body never stretches text past a readable
-  measure (Today and Activity stop at 1200px, Settings at 880px, a Review question at 760px).
-- **Rail**, 208px, surface, hairline right: the mark and "Split Finder" (15 semibold) in a 64px
-  band, then the five screens as text links, 36px tall, 4px radius: Today, Deals, Review,
-  Activity, Settings. The current screen is ink, semibold, on sunken; the others ink-2. Review's
-  count is the amber count tag when above zero. No nav icons. At the foot, over a hairline: the
-  agent's status line, the one primary action (Scan now with its price, Stop while running,
-  Resume while paused), searches left with a 4px meter, and Chrome's state in words.
-- **Page header**, 64px, surface, hairline under: the page title (20/28 semibold) with one quiet
-  line under it (13/18 ink-2: the date, a count, "Changes save as you make them."), and the
-  page's actions at the right (Download CSV, Ask AI about all).
-- **App notices** sit under the header, one sentence each with the one action that fixes it.
-- **Body** padding 20px 24px; sections 32px apart. A section is a caps label with its count
-  ("BEST DEALS · 5") and its action at the right, then one white band with hairlines between rows.
-- Two columns only where both are read together: Today (lists, and the agent at 340px; one
-  column under 1180px, what needs him first), Deals with its pane, Review's master and detail.
+- Created in code (`src-tauri/src/shell.rs`, `native_chrome`): `TitleBarStyle::Overlay`, title
+  hidden, traffic lights at (20, 26) so they sit centred in the 52px toolbar band, full-size
+  content, minimum 1000×680. `transparent(true)` plus the **Sidebar** window effect following the
+  window's active state (needs `macOSPrivateApi`); the page leaves its sidebar clear so the material
+  shows through, and paints the content column solid (`--content-bg`).
+- The init script tells the page `__SPLIT_FINDER_SHELL__.chrome = 'unified'`; the page sets
+  `data-chrome="unified"` on `<html>`. In a browser (`npm run ui:mock`) the sidebar gets a flat
+  stand-in colour instead; vibrancy only exists in the app.
+- Drag regions: the toolbar (`data-tauri-drag-region="deep"`: anywhere but a control), the sidebar's
+  52px title band and its empty space. Double-click zooms. The remote dashboard may call only
+  `start_dragging` and `internal_toggle_maximize` (capabilities/agent-ui.json).
+- Close hides to the menu bar; the menus carry the shortcuts (below).
 
-### Type scale, desktop
+### Tokens (`desktop-ui/src/base.css`)
 
-    20/28 semibold   page titles, a Review question
-    17/23 semibold   a bundle's title in the detail pane; 17/24 Settings section headings
-    15/22            empty-state titles, first-run lead
-    14/20            body, table titles, buttons
-    13/18            labels, secondary lines, help, table figures
-    12/16            section labels (caps, 600, 0.06em), table heads, figures inside a 13px line
-    30/36 mono 600   the detail pane's headline profit
+Every colour is a `light-dark()` literal first, then WebKit's semantic system colour where one
+exists (`@supports (color: -apple-system-label)`), so inside the app the window reads the real system
+colours, including Increase Contrast; another browser reads close copies.
 
-Every figure, model number and ASIN is JetBrains Mono with tabular figures. Mono runs large beside
-Barlow, so a figure inside a 13px line is set at 12px. On a control that spends something only the
-figure is mono: "Scan now · 5 searches", "Ask AI · about $0.10".
+    --label, --label-2, --label-3, --label-4   -apple-system-label / secondary / tertiary / quaternary
+    --placeholder                             -apple-system-placeholder-text
+    --separator, --grid                       -apple-system-separator / -grid
+    --content-bg, --control-bg, --text-bg     -apple-system-control-background / text-background
+    --grouped-bg, --group-bg                  the grouped ground and its boxes (System Settings)
+    --sidebar-bg                              stand-in for the sidebar material outside the app
+    --accent                                  -apple-system-control-accent, or a chosen accent
+    --selection, --selection-quiet            -apple-system-selected-content-background / unemphasized
+    --profit, --loss, --attention             system green / red / orange, darkened in light mode
+                                              for 13px text; tinted backgrounds for badges
+    --fill, --fill-2, --hover                 quiet fills for tracks, wells and hover
 
-### Tables
+- **Appearance**: `color-scheme: light dark` follows the system; `data-appearance="light|dark"` on
+  `<html>` forces one. **Accent**: the system's, or `data-accent` = blue, purple, pink, red, orange,
+  yellow, green, graphite (the macOS accent colours). **Density**: `data-density="compact"` tightens
+  rows (`--row` 28→24, `--row-2` 44→36) and the gutter. The look lives in the browser storage of this
+  Mac (`lib/appearance.ts`), set from View options now and from Preferences (D2) later.
+- Profit is green and a loss red, from the system palette; "needs you" is orange. Nothing else carries
+  a colour except the accent.
+- Radius: 5px controls, 6px toolbar items and selection, 10px group boxes, 12px a sheet's corners.
 
-- A real `<table>`, fixed layout, on one white band. Heads 32px, 12px semibold ink-2, sticky.
-  Rows 44px with 16px side padding; a hairline between rows; hover is paper, the open row sunken.
-- Each row's first cell holds a real `<button>` stretched over the row, so a click anywhere
-  opens it and the keyboard gets a control. A row's own controls (Look up) sit above it.
-- Sortable heads are buttons with `aria-sort` and an arrow on the sorted one. Figures sort high
-  to low first, words A to Z; rows with no figure sit last either way, ties keep their order. A
-  bundle that needs an answer has no figure to compare and sorts last. The choice is remembered.
-- Figures right aligned. Titles cut with an ellipsis, the full title on hover. A long cell never
-  pushes the table wider.
-- Columns drop by the table's own width (container queries), never by guessing at the window:
-  Off and Updated under 900px, Match under 720px (its "Needs answer" tag moves into the profit
-  cell), Price under 560px.
-- Deals: Bundle (title, then brand · model), Price, Off, Match, Est. profit, ROI with the range
-  on a second line without the word ROI ("−6% to +12%", the full sentence on hover), Updated.
-  The section filter is a segmented control (All, Confirmed, Waiting for lookup, Inactive
-  listing, Missing listing, Contents not known, each with its count), a select when narrow. Under
-  the table, once: "Profit and ROI are estimates from your fee settings, not your real Amazon fees."
+### Type
 
-### Split pane
+The system font: `-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui`.
 
-The list keeps the left; the pane takes `clamp(380px, 36vw, 520px)` on the right, surface, one
-hairline between. Its top bar holds Close (Esc) and the source link ("Open on Home Depot"); its
-foot holds the primary action (Copy ASINs), sticky. Esc closes the pane and focus returns to the
-row that opened it. The open item is in the URL (`#/deals/<id>`), so the shell can open it.
+    13/16           body, table rows, controls (AppKit's regular size)
+    11/14           small labels, secondary lines, status bars, table heads, sidebar section heads
+    15/20 semibold  headline: the toolbar title, a bundle or question in the inspector
+    20/24 semibold  page title (the welcome sheet)
+    26/32 semibold  large figures: Today's four figures, the inspector's estimated profit
 
-The deal pane's headline band reads: profit (30/36), ROI, then three figures that are three
-different numbers: **Bundle costs** (price with tax and inbound), **Parts sell for** (the counted
-part prices before fees) and **After fees** (what those parts net). Then the estimate line with
-its fee basis and a Change link to Settings › Fees.
+Money, ROI and counts take tabular numerals (`.fig`). SF Mono (`ui-monospace`, `.code`) is only for
+model numbers and ASINs (and keys typed into a field); a number field is tabular, not mono.
 
-### Review, master and detail
+### Layout
 
-Left, 280-360px: a filter field, then "AI VERIFIED · N" with "Approve all N verified" (quiet ink
-text button, underlined) at its right, then "NEEDS YOU · N". A row is the bundle's title (one
-line, ellipsis) and "Which parts · DCK200D1P1W921B". Right: the kind in caps, the question at
-20/28, the bundle with its Home Depot link and Open the deal, "Why it is asked" with the evidence
-quotes and their sources, the AI block (unchanged from step 11), the choices as a radio group with
-their number keys shown, then Approve or Save answer. Approving moves to the next question.
-Approve all opens the inline confirmation in place ("Approve 3 AI answers? Approve · Cancel").
+- **Sidebar** (`components/Sidebar.tsx`), 220px: a 52px band for the traffic lights, then a source
+  list. Today; **Deals** with its saved views, each with its count: All deals, Confirmed, Needs an
+  answer, Waiting for a lookup, Losing money (`lib/views.ts`; a view is a question about the row's own
+  fields, and a bundle with no estimate is never "losing"); **Agent**: Review with its badge (the
+  accent when above zero), Activity, Settings. Section heads are 11px semibold tertiary with a
+  disclosure on hover; a collapsed section is remembered. Rows are 28px, 6px radius; the selected one
+  is a grey rounded rectangle with its glyph in the accent. At the foot: "Finish setup · N of 3" while
+  setup is open, then the agent's state (a spinner and a bar while it runs), the next scan, searches
+  left with a level meter, and Chrome's state.
+- **Glyphs** (`components/Glyph.tsx`): 16px, monochrome, drawn in the manner of SF Symbols, only where
+  a Mac source list, toolbar or field carries one. Never decorative.
+- **Toolbar** (`components/Toolbar.tsx`), 52px, in the title bar: the screen's title (15 semibold) and
+  one 11px line under it; then the screen's own items (Download CSV, Ask AI about all), **Scan now ·
+  N searches** (while a scan runs: a progress ring, "Scanning 34%", and Stop; Resume while paused), the
+  search field, **View options** (a popover: the screen's own options, then Appearance, Accent colour,
+  Density) and, on Deals and Review, the inspector toggle.
+- **Banners** under the toolbar for the whole app (agent offline, Chrome closed or not connected, no
+  key, at the reserve, a pairing request): one line, a warning glyph when it needs him, its one fix.
+- **Inspector** (`InspectorSplit` in `components/Layout.tsx`): on Deals and Review, at the right,
+  380px by default, 300–640 by dragging the divider (or arrow keys on it), remembered; Cmd+Option+I or
+  View > Show or hide inspector. With nothing selected it says "No bundle selected" in the middle.
+  Opening a row shows it again if it was hidden. Esc deselects and focus returns to the row.
+- **Grouped screens** (Today, Activity, Settings): the grouped ground, sections as a 13px semibold
+  title with its count and action, over one rounded group box; rows inside separated by inset
+  hairlines. One level: no box in a box.
 
-### States
+### Screens
 
-Every screen has all of these; none is a spinner.
+- **Today**: four large figures (Open questions, Best estimated profit with its model, Bundles found,
+  Searches left), then Needs you (rows with a badge and a chevron, AI-verified first), Best deals
+  (bundle, price, est. profit, ROI with its range; the estimate note under the box), and the Agent card
+  at 320px (state and stages, Pause, then label / value rows: last scan, next scan, searches left with
+  its meter, Keepa, AI this month, Chrome). One column under 1180px.
+- **Deals**: the table fills the content; the title is the sidebar's view. Columns drop by the table's
+  own width (container queries): Off and Updated under 900px, Match under 720px (its badge moves into
+  the profit cell), Price under 560px. The Section filter is in View options. A status bar at the foot
+  says how many show and that profit and ROI are estimates.
+- **Deal inspector**: brand, title, model · price · off, "Open on Home Depot" with when the price was
+  seen; one box with the estimated profit at 26/32, ROI, and the three figures (Bundle costs, Parts sell
+  for, After fees), the fee basis with Change; a banner if it needs an answer; Ways to sell and Parts as
+  group boxes (each part with its grade badge, ASIN link, prices and their sources); Copy ASINs at the
+  foot.
+- **Review**: the questions in the content, grouped AI verified (with Approve all N, confirmed in
+  place) then Needs you; a status bar with the keys. The inspector (at least 440px) holds the question:
+  the kind, the question at 15 semibold, the bundle and its links, Why it is asked with its quotes, the
+  AI block in a group box (green edge when the code verified it), the choices as one box of radio rows
+  with their number keys, and Approve or Save answer at the foot.
+- **Activity**: Needs attention, Autopilot with Undo, Runs as a plain table in a group box.
+- **Settings**: System Settings sections until D2 moves them into a Preferences window.
 
-- **Loading**: still skeleton rows in the shape of what will come (sunken bars, no shimmer).
-  After the first load the last data stays on screen while it reloads.
-- **Empty**: a title, the cause in one sentence, and the action that changes it ("No deals yet.
-  The last scan found no discounted DEWALT or RYOBI bundles. The next scan looks again.").
-- **Error**: the agent's sentence on sunken with Retry (and its price when it spends). Not rust:
-  rust is only for a loss.
-- **Offline**: one sunken band, "The agent is not running.", with Retry; sections say "Shown
-  again when the agent is running." instead of repeating the error.
-- **Chrome closed**: sunken band, "Chrome is closed — Home Depot pages wait.", with how many wait.
-- **Not paired, no SerpApi key, searches at the reserve**: amber bands, each with its fix.
-- **Paused**: "Paused · No scheduled scan runs until you resume" in the status line; Resume is
-  the rail's primary action.
-- **Running**: the status line ("Scanning · Checking eBay listings · 23 of 60", "about 4 min")
-  over the 2px bar, as in Scan progress.
+### Controls
 
-No new colours. Every state above uses sunken (a fact about the app) or attention (it needs him).
+- **Push button** (`Button`): 22px (20 small, 28 large); `secondary` is the raised key, `primary` the
+  default button filled with the accent (one per view), `quiet` borderless, `danger` red words,
+  `toolbar` a borderless 28px toolbar item with a glyph. A busy button shows a small spinner and its
+  busy words. A paid action keeps its price after a middot.
+- **Pop-up button** (`Select`): a push button with the double chevron in an accent well.
+- **Switch**: NSSwitch, the words at the start, the switch at the end. **Checkbox, radio**: the
+  system's, in the accent. **Segmented control**: a sunken track, the chosen segment raised.
+- **Search field**: a rounded well, the magnifier, a clear button once typed; Esc clears it; Cmd+F
+  focuses it.
+- **Text field**: a hairline inset, the focus ring in the accent (3px at half strength).
+- **Table**: a header with column lines and a sort chevron, no zebra, a hover tint, the selection in
+  the accent with white text while the window is key and grey when it is not, the focus ring inset.
+- **Badges** (`Tag`): 18px, 4px radius: attention (orange), verified (green, with a check), neutral.
+- **Progress**: a determinate 4px bar in the accent; an eight-spoke spinner for work of unknown
+  length (a first load, a busy button). Loading is a spinner and the word, centred.
+- **Empty views**: centred, grey, a 15px title, one line that says why, one action. Never invented data.
+- **Tooltips**: the native ones (`title`), with the shortcut where there is one.
+- **Popover**: from a toolbar item; a light panel with the system's shadow; Esc or a click outside
+  closes it.
+
+### Sheet and first run
+
+The welcome **sheet** (`components/Sheet.tsx`, `screens/Welcome.tsx`) slides down from under the
+title bar over the live window, which dims and goes inert behind it. Header: the app's mark in an
+icon tile, "Welcome to Split Finder" and one paragraph. A three-step indicator (Chrome, SerpApi key,
+First scan; a check on each done), then the step as a short form: Install the Chrome helper and allow
+the pairing code; the SerpApi key field; Scan now with its price and the scan's progress. Footer:
+**Skip for now** at the start, Back and **Continue** (Done on the last step) at the end. Esc skips;
+Tab stays inside. It opens by itself once on a first run; the sidebar's "Finish setup · N of 3" and
+Help > Finish setup open it again at the first step still open. **Setup never blocks the app.**
 
 ### Keyboard
 
-    Cmd/Ctrl+1-5     Today, Deals, Review, Activity, Settings (anywhere)
-    Cmd/Ctrl+F       the screen's filter field (also the shell's split-finder:find)
-    J / K, ↓ / ↑     next / previous row or question
-    Enter            open the row; in Review, save or approve
-    1-9              Review: pick that choice
-    A                Review: Ask AI on this question
-    Esc              close the pane, cancel a confirmation
+    Cmd+1-5            Today, Deals, Review, Activity, Settings
+    Cmd+F              the screen's search field (also the shell's Edit > Find)
+    Cmd+Option+I       show or hide the inspector (also View > Show or hide inspector)
+    Cmd+R              Scan now (Agent menu)
+    J / K, ↓ / ↑       next / previous row or question
+    Return             open the row; in Review, save or approve
+    1-9                Review: pick that choice
+    A                  Review: Ask AI on this question
+    Esc                close a popover or the sheet, clear the search, deselect
 
-Letters and digits never act while he types in a field, and Enter never takes a press from a
-focused button. The focus ring is the spec's 2px ink outline; inside a row or the rail it is inset.
+Letters and digits never act while he types in a field, and Return never takes a press from a
+focused button. The focus ring is the accent at half strength, 3px.
 
 ### Notifications
 
@@ -413,6 +467,18 @@ links that carry one. Title, then one line:
 
 Profit in a message is an estimate and says "est.". No exclamation marks, no emoji.
 
+### What D2, D3 and D4 build on
+
+- **D2 Preferences window**: a second Tauri window created in `shell.rs` the same way
+  (`native_chrome` gives the unified title bar; a preferences window wants no sidebar effect, so pass
+  a plain background). Reuse `Switch`, `Select`, `Segmented`, `TextField`, `Section` group boxes and
+  `lib/appearance.ts` (`readLook`, `saveLook`, `applyLook`) so General > Appearance writes the same look.
+- **D3**: the command palette and context menus are popovers (`components/Popover.tsx` styling, the
+  `--popover-bg` material); shortcuts go through `lib/keys.ts` `globalKey`; rows already carry their
+  route (`hashOf`).
+- **D4**: the menu bar popover is its own small window; it reads the same tokens (`base.css`) and
+  `agentWords` / `ProgressBar` / `Spinner` for the agent's state.
+
 ## Behaviour
 
 - Keyboard: everything reachable by Tab in reading order; Enter opens a row; Escape goes back
@@ -424,7 +490,8 @@ Profit in a message is an estimate and says "est.". No exclamation marks, no emo
   whole percent. Times in his locale, relative only when under an hour.
 - Real elements only: `<button>`, `<a href>`, `<input>` with `<label>`, `<fieldset>` and
   `<legend>` for groups. No clickable `<div>`.
-- Dark mode is not in v1. Do not half-build it.
+- Dark mode is not in the extension's v1. Do not half-build it. (The desktop app has light, dark and
+  follow the system; see Desktop app > Tokens.)
 
 ## Words
 
