@@ -24,3 +24,4 @@ export * from './ebay';
 export * from './judge';
 export * from './assist';
 export * from './research';
+export * from './ai';

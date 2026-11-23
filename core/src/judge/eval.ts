@@ -23,7 +23,24 @@ export interface PriceRates { input: number; output: number; cacheRead?: number 
 export const PRICE_TABLE: Record<string, PriceRates> = {
   'claude-haiku-5-5': { input: 0.1, output: 0.5, cacheRead: 0.01 },
   'claude-opus-5-5': { input: 4, output: 20, cacheRead: 0.2 },
+  // DeepSeek, read Nov 22, 2026 at https://api-docs.deepseek.com/quick_start/pricing: input = the cache-miss rate, cacheRead = the
+  // cache-hit rate, at the PEAK price (01:00-04:00 and 06:00-10:00 UTC on weekdays; off-peak is half), so an estimate never undershoots.
+  // The page states no effective date for these prices. A model id is its own key: the same model through another host has another id.
+  'deepseek-flash': { input: 0.3, output: 1.2, cacheRead: 0.006 },
+  'deepseek-v4-flash': { input: 0.3, output: 1.2, cacheRead: 0.006 }, // the legacy name, served by deepseek-flash (same page)
+  'deepseek-v4-pro': { input: 1.32, output: 3.96, cacheRead: 0.044 },
 };
+
+/** The rates for a model, or null when none is known (a price is then never guessed). */
+export const ratesFor = (model: string): PriceRates | null => PRICE_TABLE[model] ?? null;
+
+/**
+ * Sets (or replaces) a model's rates: the way a price that changed, or a model this file has never heard of, gets a cost. The agent
+ * calls it with the owner's Settings; every cost and estimate in core reads PRICE_TABLE, so they follow.
+ */
+export function setModelRates(model: string, rates: PriceRates): void {
+  PRICE_TABLE[model] = { ...rates };
+}
 
 export const costOf = (usage: { inputTokens: number; outputTokens: number }, rates: PriceRates): number =>
   (usage.inputTokens * rates.input + usage.outputTokens * rates.output) / 1_000_000;

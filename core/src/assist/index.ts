@@ -13,3 +13,4 @@ export * from './cost';
 export * from './stored';
 export * from './approve';
 export * from './askAll';
+export * from './provider';

@@ -3,6 +3,7 @@
 // of a question, so a suggestion depends on the model and RESEARCH_PROMPT_VERSION only. Change the
 // prompt or the tools, change the version.
 
+import { WEB_FETCH_TOOL_TYPE, WEB_SEARCH_TOOL_TYPE } from '../ai/claude';
 import { choicesOf } from '../scan/answers';
 import type { ReviewItem } from '../scan/types';
 import { BRAND_SITE_DOMAINS, defuse, renderEntry } from './ledger';
@@ -11,10 +12,8 @@ import type { ResearchLedgerEntry, ResearchLimits } from './types';
 
 export const RESEARCH_PROMPT_VERSION = 'review-research-2026-11-20.4';
 
-/** The web search server tool's type: the version with dynamic filtering, called directly (below). */
-export const WEB_SEARCH_TOOL_TYPE = 'web_search_20260209';
-/** The web fetch server tool's type (fix round 1): the same generation as web search, called directly. */
-export const WEB_FETCH_TOOL_TYPE = 'web_fetch_20260209';
+// The server tools' types live with the Claude provider (ai/claude.ts); kept exported here for the callers that know them from here.
+export { WEB_FETCH_TOOL_TYPE, WEB_SEARCH_TOOL_TYPE };
 
 export const DEFAULT_RESEARCH_LIMITS: ResearchLimits = {
   maxToolCalls: 8, maxWebSearches: 2, maxWebFetches: 2, maxFetchTokens: 6000, timeLimitMs: 60_000, maxTokens: 4000, maxRequests: 12,
@@ -39,11 +38,29 @@ Quotes: copy each quote word for word from one line of one tool result, and give
 
 Fields: decision is parts, choose, none or cannot_tell. For parts, fill parts and leave quotes empty and choiceIndex null. For choose, fill quotes and choiceIndex and leave parts empty. For none and cannot_tell, put any quotes that show it in quotes, leave parts empty and choiceIndex null. reason is one short sentence for the owner saying why. Answer only by calling submit_answer.`;
 
+const WEB_BULLET = RESEARCH_PROMPT.split('\n').find((l) => l.startsWith('- web_search and web_fetch:'));
+
+/** The prompt of a run without the brand-site tools: the same words, the web bullet replaced by a statement that there are none. */
+export const RESEARCH_PROMPT_HOMEDEPOT_ONLY = RESEARCH_PROMPT.replace(
+  WEB_BULLET ?? '',
+  "- You have no web search and no brand-site tools: only the Home Depot tools and the catalog above. Home Depot's own listings and pages must settle the question; when they do not, answer cannot_tell.",
+);
+
+/** The suffix of the prompt version of a run without the brand-site tools: a suggestion depends on the words it was given. */
+export const HOMEDEPOT_ONLY_VERSION_SUFFIX = '+homedepot-only';
+
+/** The system prompt and its version for a run with or without the brand-site tools (web search and web fetch). */
+export function researchPromptFor(web: boolean): { prompt: string; version: string } {
+  return web
+    ? { prompt: RESEARCH_PROMPT, version: RESEARCH_PROMPT_VERSION }
+    : { prompt: RESEARCH_PROMPT_HOMEDEPOT_ONLY, version: RESEARCH_PROMPT_VERSION + HOMEDEPOT_ONLY_VERSION_SUFFIX };
+}
+
 const nullable = (schema: Record<string, unknown>) => ({ anyOf: [schema, { type: 'null' }] });
 
 /** The tool definitions of every request: the three client tools, the answer tool, and the web search server tool. */
-export function researchTools(limits: ResearchLimits = DEFAULT_RESEARCH_LIMITS): Record<string, unknown>[] {
-  return [
+export function researchTools(limits: ResearchLimits = DEFAULT_RESEARCH_LIMITS, web = true): Record<string, unknown>[] {
+  const all: Record<string, unknown>[] = [
     {
       name: 'read_homedepot_page',
       description: 'Reads one Home Depot product page, by its item id (the number at the end of its address) or its homedepot.com address, and returns its title, model number, highlights, specifications and description. Free; homedepot.com only.',
@@ -98,10 +115,14 @@ export function researchTools(limits: ResearchLimits = DEFAULT_RESEARCH_LIMITS):
       allowed_callers: ['direct'],
     },
   ];
+  // A provider without server tools gets the Home Depot tools and the answer tool only.
+  return web ? all : all.filter((t) => t.type !== WEB_SEARCH_TOOL_TYPE && t.type !== WEB_FETCH_TOOL_TYPE);
 }
 
 /** The user message for one question: the question, its readings and notes, and the stored evidence. */
-export function renderResearchInput(item: ReviewItem, stored: ResearchLedgerEntry[], missing: string[], limits: ResearchLimits = DEFAULT_RESEARCH_LIMITS): string {
+export function renderResearchInput(
+  item: ReviewItem, stored: ResearchLedgerEntry[], missing: string[], limits: ResearchLimits = DEFAULT_RESEARCH_LIMITS, web = true,
+): string {
   const id = /^homedepot:(\d+)$/.exec(item.subject)?.[1];
   const out = [
     '<question kind="split">',
@@ -116,7 +137,11 @@ export function renderResearchInput(item: ReviewItem, stored: ResearchLedgerEntr
   if (choices.length === 0) out.push('(the tool offers no reading: find the parts)');
   out.push('</readings>', '<notes>', `Why the tool asks: ${defuse(item.reason)}`);
   for (const m of missing) out.push(`Not stored: ${defuse(m)}`);
-  out.push(`Limits: at most ${limits.maxToolCalls} tool calls in all, of them at most ${limits.maxWebSearches} web searches and ${limits.maxWebFetches} web fetches.`);
+  out.push(
+    web
+      ? `Limits: at most ${limits.maxToolCalls} tool calls in all, of them at most ${limits.maxWebSearches} web searches and ${limits.maxWebFetches} web fetches.`
+      : `Limits: at most ${limits.maxToolCalls} tool calls in all. There is no web search.`,
+  );
   out.push('</notes>', '</question>', '', '<evidence>');
   for (const e of stored) out.push(renderEntry(e));
   out.push('</evidence>');

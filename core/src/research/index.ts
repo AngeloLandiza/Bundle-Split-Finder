@@ -9,3 +9,4 @@ export * from './claude';
 export * from './loop';
 export * from './verify';
 export * from './eval';
+export * from './provider';

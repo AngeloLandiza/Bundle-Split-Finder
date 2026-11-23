@@ -17,7 +17,7 @@ import type { NotJudged, TokenUsage } from '../judge/types';
 import {
   addCited, addFetched, bundleIdentity, catalogLedgerEntry, freshId, ledgerFromEvidence, onHomeDepot, pageEntry, renderEntry, safeUrl, searchEntry, webEntry,
 } from './ledger';
-import { DEFAULT_RESEARCH_LIMITS, RESEARCH_PROMPT, RESEARCH_PROMPT_VERSION, renderResearchInput, researchTools } from './prompt';
+import { DEFAULT_RESEARCH_LIMITS, renderResearchInput, researchPromptFor, researchTools } from './prompt';
 import type { CatalogEntry, ResearchLedgerEntry, ResearchAnswer, ResearchLimits, ResearchModel, ResearchRequest, ResearchTools, ResearchUsage } from './types';
 import { parseResearchAnswer } from './schema';
 import { verifyResearch } from './verify';
@@ -83,7 +83,11 @@ export async function researchQuestion(
   const ledger: ResearchLedgerEntry[] = [];
   const usage: ResearchUsage = { inputTokens: 0, outputTokens: 0, webSearchRequests: 0, webFetchRequests: 0 };
   const trace: ResearchTrace = { ledger, toolCalls: 0, webSearches: 0, webFetches: 0, requests: 0, usage, answer: null, droppedResults: 0 };
-  const meta = { questionId: item.id, seen: reviewSignature(item), provider: model.provider, model: model.model, promptVersion: RESEARCH_PROMPT_VERSION };
+  // A model without the brand-site server tools (an OpenAI-compatible one) is offered the Home Depot tools only, and told so.
+  const web = model.webTools !== false;
+  const { prompt, version } = researchPromptFor(web);
+  const who = model.label ?? 'Claude';
+  const meta = { questionId: item.id, seen: reviewSignature(item), provider: model.provider, model: model.model, promptVersion: version };
   const withUsage = () => (usage.inputTokens + usage.outputTokens + usage.webSearchRequests > 0 ? { usage: { ...usage } } : {});
   const notSuggested = (reason: string, notJudged?: NotJudged): ResearchSuggestion => ({
     ...meta, status: 'not_suggested', reason, ...(notJudged ? { notSuggested: notJudged } : {}), ...withUsage(), research: trace,
@@ -92,12 +96,13 @@ export async function researchQuestion(
   if (item.answer !== null) return notSuggested('That question was already answered.');
   if (item.kind !== 'split') return notSuggested('Research is for split questions; a match question is asked as before.');
   if (evidence.questionId !== item.id || evidence.kind !== item.kind) return notSuggested('The evidence is for another question.');
-  if (opts.signal?.aborted) return notSuggested('Stopped before the research began.', { reason: 'aborted', message: 'The call to Claude was cancelled.' });
+  const named = (s: string): string => (who === 'Claude' ? s : s.split('Claude').join(who));
+  if (opts.signal?.aborted) return notSuggested('Stopped before the research began.', { reason: 'aborted', message: named('The call to Claude was cancelled.') });
 
   ledger.push(...ledgerFromEvidence(evidence));
   const bundle = bundleIdentity(item);
-  const toolDefs = researchTools(limits);
-  const messages: ResearchRequest['messages'] = [{ role: 'user', content: renderResearchInput(item, ledger, evidence.missing, limits) }];
+  const toolDefs = researchTools(limits, web);
+  const messages: ResearchRequest['messages'] = [{ role: 'user', content: renderResearchInput(item, ledger, evidence.missing, limits, web) }];
 
   // One signal for everything in flight: the owner's Stop or the question's time limit.
   const controller = new AbortController();
@@ -113,7 +118,7 @@ export async function researchQuestion(
   const limit = (message: string): ResearchSuggestion => notSuggested(message, { reason: 'limit', message });
   const stopped = (): ResearchSuggestion | null => {
     if (timedOut || now() >= deadline) return limit(`The research ran past its time limit of ${Math.round(limits.timeLimitMs / 1000)} seconds before an answer.`);
-    if (opts.signal?.aborted) return notSuggested('Stopped before an answer.', { reason: 'aborted', message: 'The call to Claude was cancelled.' });
+    if (opts.signal?.aborted) return notSuggested('Stopped before an answer.', { reason: 'aborted', message: named('The call to Claude was cancelled.') });
     return null;
   };
   const overLimit = (): ResearchSuggestion | null =>
@@ -134,7 +139,7 @@ export async function researchQuestion(
 
       let turn;
       try {
-        turn = await model.send({ system: RESEARCH_PROMPT, tools: toolDefs, messages: [...messages], maxTokens: limits.maxTokens }, controller.signal);
+        turn = await model.send({ system: prompt, tools: toolDefs, messages: [...messages], maxTokens: limits.maxTokens }, controller.signal);
       } catch {
         return stopped() ?? notSuggested('The model failed without an answer.');
       }
@@ -150,8 +155,11 @@ export async function researchQuestion(
       if (over) return over;
 
       const body: ClaudeMessageBody = { stop_reason: turn.stopReason, content: turn.content, ...(turn.stopDetails !== undefined ? { stop_details: turn.stopDetails } : {}) };
-      const failed = stopFailure(body, 'Claude declined to research this question.');
-      if (failed) return notSuggested(failed.message, failed);
+      const failed = stopFailure(body, named('Claude declined to research this question.'));
+      if (failed) {
+        const f = { ...failed, message: named(failed.message) };
+        return notSuggested(f.message, f);
+      }
 
       const blocks = turn.content.filter(isRecord);
       const toolUses = blocks.filter((b) => b.type === 'tool_use');
@@ -183,12 +191,12 @@ export async function researchQuestion(
         // No submit_answer: a plain-text JSON answer (the last text block; earlier ones carry citations) is read, and checked like any other.
         const texts = blocks.filter((b) => b.type === 'text' && typeof b.text === 'string').map((b) => (b.text as string).trim()).filter((t) => t !== '');
         const text = texts[texts.length - 1] ?? '';
-        if (text === '') return notSuggested('Claude finished without an answer.', { reason: 'no_answer', message: 'Claude’s answer had no text.' });
+        if (text === '') return notSuggested(named('Claude finished without an answer.'), { reason: 'no_answer', message: named('Claude’s answer had no text.') });
         answer = text;
         break;
       }
-      return notSuggested(`Claude stopped for an unexpected reason (${turn.stopReason.slice(0, 40)}).`, {
-        reason: 'unexpected_stop', message: `Claude stopped for an unexpected reason (${turn.stopReason.slice(0, 40)}).`,
+      return notSuggested(`${who} stopped for an unexpected reason (${turn.stopReason.slice(0, 40)}).`, {
+        reason: 'unexpected_stop', message: `${who} stopped for an unexpected reason (${turn.stopReason.slice(0, 40)}).`,
       });
     }
 

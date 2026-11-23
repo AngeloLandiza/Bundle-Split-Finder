@@ -180,6 +180,13 @@ export type ResearchTurn =
 export interface ResearchModel {
   readonly provider: string;
   readonly model: string;
+  /** How a message names the model ("DeepSeek"); "Claude" when absent. */
+  readonly label?: string;
+  /**
+   * Whether the model runs the brand-site server tools (web search and web fetch). Absent: it does (Claude). false: the run offers the
+   * Home Depot tools only, with a prompt that says so (step 13, W6: an OpenAI-compatible model has no server tools).
+   */
+  readonly webTools?: boolean;
   send(request: ResearchRequest, signal?: AbortSignal): Promise<ResearchTurn>;
 }
 
