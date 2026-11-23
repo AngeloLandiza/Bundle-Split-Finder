@@ -36,7 +36,9 @@ export function shortcutAreas(mac: boolean, windows = !mac): ShortcutArea[] {
         { does: 'Go to Deals', keys: [mod, '2'] },
         { does: 'Go to Review', keys: [mod, '3'] },
         { does: 'Go to Activity', keys: [mod, '4'] },
-        { does: `Open ${wordsFor(windows).preferences}`, keys: [mod, '5'] },
+        { does: `Open ${wordsFor(windows).preferences}`, keys: [mod, ','], or: [mod, '5'] },
+        { does: 'Scan now', keys: [mod, 'R'] },
+        ...(windows ? [{ does: 'Refresh the deals and questions', keys: ['F5'] }] : []),
       ],
     },
     {
