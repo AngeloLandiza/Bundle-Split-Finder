@@ -35,6 +35,14 @@ Its data folder is `%APPDATA%\com.bundlesplitfinder.desktop`. The Chrome helper 
 `Documents\split-finder`. Everything else below is the same, with Settings in place of
 Preferences and File Explorer in place of Finder.
 
+**How the Windows build is checked.** The installer is built on a Mac, so it has not been proven
+on Windows by hand. `.github/workflows/windows-smoke.yml` does that on a GitHub Windows machine: it
+builds the installer there, runs `scripts/windows-smoke.ps1` (silent install, start, the agent's
+challenge and state, a refused request with no token or a foreign origin, owner-only token and
+store files, quit leaving no agent, silent uninstall), and keeps the installer as a download. It
+starts by hand (Actions tab, Run workflow) or on a tag `v*`. It cannot see the window, so Mica,
+where the tray flyout opens, and pairing with a real Chrome still need a person on a Windows PC.
+
 ## 2. Install the extension
 
 1. In the app, open Settings, Chrome helper (or the first-run setup, step 1) and press
