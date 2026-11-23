@@ -385,3 +385,25 @@ wrong ones through; it disagreed on 9 right and 2 wrong. The bar is zero wrong, 
 Autopilot, not as a "two models agree" label on the card. Why it fails is as predicted in the harness's note: the second
 model reads the first model's chosen quotes, and a hyphen model number spells its own split, so the two are not
 independent. Answers are released only by code rules measured at zero wrong (step 15 P2, step 16 levers 1 and 3).
+
+### The card never tells him to do what the app can do (Nov 23 2026, desktop-ui only)
+The owner, on "Next: On the Home Depot page, see whether the Includes list names the accessories sold as A21701 and
+A25RS51": "if I'm told to do this, why can't an AI pipeline do it for me". The card is built against an agent contract that
+is being written in parallel (all fields optional; `api/types.ts`): `brief.check.who` ('app' | 'owner'), `followUp`
+(queued, running, done, gave_up, with `doing`, `tried`, `roundsLeft`), `counts.reviewWorking`, and `POST
+/api/review/:id/ask` answering `{ queued, reason? }` with `force`. Decisions the code does not explain:
+- **Only `who: 'owner'` is drawn as Check/Next.** An older agent sends no `who`; then `checkWho` reads the words (read, look
+  up, see whether, the Includes list, on the Home Depot page) and calls it the app's. The rules brief tags its own checks
+  `who: 'app'`; its "could not tell" Next is now only "Pick the parts below." (it no longer says to open the page).
+- **A question the app is still on is not his.** It is out of `counts.review`, out of J/K and the default selection, and in
+  a collapsed "The app is still working on N" section under Needs you; a link to one opens the section. Its card is
+  neutral ("Working on it", `doing` with a spinner, `tried`), and the choices wait under "or answer it yourself" (a number
+  key opens it), so he can still answer early. Done or gave-up, it is his again with "What the app checked" (three lines,
+  the rest in Details) above Why; for gave_up the sentence is what is still missing, so he is asked only that.
+- **Ask AI is never silent.** The press answers at once: "Checking again…" with the spinner on the row and card, or the
+  agent's `reason` on the card. "Ask anyway · about $0.07" (force) is offered only for a reason of the "nothing new" kind
+  (`askAi.ts` NOTHING_NEW): the contract does not say which reasons force can change, so any other reason is said without an
+  action. The agent side should word that reason so it matches, or add a field. The A key answers too (no key, nothing to
+  read, already working) instead of doing nothing. Ask AI is also offered again after "could not tell".
+- `?mock=real-ai` shows all four follow-up states on copies of the real PCL406424SB question; what the app "tried" there is
+  invented (marked in `api/mockFollowUp.ts`).

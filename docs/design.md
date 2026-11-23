@@ -470,10 +470,16 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   2. *The card*, one group box: a state chip (**Verified** green; **Suggested, not verified** amber; **AI could not
      tell** neutral; none when nothing is suggested) with "AI suggestion" beside it; the suggestion in plain words as
      the largest text (17/22, "PCL1600K2 kit + PBP2003 battery"; what a part is is said only where the data says it);
-     **Why**, at most three lines of 13px, each ending in a small source link ("Home Depot page ↗"); **Check**, one
-     line naming the first thing the code could not confirm, with the page to open. Could not tell has no suggestion:
-     one sentence saying what is missing and **Next** "Pick the parts below, or open the page". Nothing suggested
-     says "No suggestion yet." with why the question is asked.
+     **What the app checked** when the app looked at the question on its own (at most three lines, each "what — result"
+     with its link, the rest in Details); **Why**, at most three lines of 13px, each ending in a small source link
+     ("Home Depot page ↗"); **Check**, only a call that needs a person (`check.who` is 'owner'), never a page the app can
+     read: it reads it. Could not tell has no suggestion: one sentence saying what is still missing and **Next** "Pick the
+     parts below." Nothing suggested says "No suggestion yet." with why the question is asked.
+     While the app is still working on a question (`followUp` queued or running) it is not his: it sits in a collapsed
+     "The app is still working on N" section under Needs you, outside `counts.review` ("N more being checked" says it
+     quietly), and its card is neutral: "Working on it", what it is doing with a spinner, what it has tried; the choices
+     stay under "or answer it yourself". Ask AI answers at once: "Checking again…" with the spinner on the row, or the
+     reason on the card with the one action it implies ("Nothing new to read since the last answer", Ask anyway · about $0.07).
   3. *The choices* in one box of radio rows with number keys 1 to 9; the suggested one is preselected and marked
      **Suggested** in words; then None of these and Enter the parts.
   4. *Details*, one disclosure, closed by default, open state kept for the session: the AI's own reason and what it
