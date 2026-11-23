@@ -146,12 +146,12 @@ async function validation(): Promise<void> {
   // Every part the file read, as the part-price store holds it (found or not found).
   const data: SettleData = { kitsOf: kits, partPrices: new Map([...inputs.partPrices].map(([k, r]) => [k, reading(k, r)] as const)) };
   // The Nov 23 BOGO recording: pairs whose item ids are validation bundles.
-  const bogo = read<{ lists: Record<string, { items: { itemId: string; model: string; brand: string; price: number | null; conditionalPromotions: number | null }[] }> }>(join(ROOT, 'fixtures', 'homedepot-pages', 'bogo-2026-11-23.json'));
+  const bogo = read<{ lists: Record<string, { items: { itemId: string; model: string; brand: string; price: number | null; conditionalPromotions: unknown[] | null }[] }> }>(join(ROOT, 'fixtures', 'homedepot-pages', 'bogo-2026-11-23.json'));
   const items = Object.values(bogo.lists).flatMap((l) => l.items);
-  const starters = items.filter((i) => i.conditionalPromotions === 1);
+  const starters = items.filter((i) => (i.conditionalPromotions ?? []).length === 1);
   const tagOf = (b: BundleRecord): BundleRecord['bogo'] => {
     const it = items.find((i) => i.itemId === b.itemId);
-    if (!it || it.conditionalPromotions) return null;
+    if (!it || (it.conditionalPromotions ?? []).length > 0) return null;
     const joiner = it.brand.toUpperCase() === 'RYOBI' ? '-' : 'W';
     const fits = starters.filter((s) => it.model.startsWith(`${s.model}${joiner}`) && s.price === it.price);
     return fits.length === 1 ? { promotionId: 'recorded', starterItemId: fits[0]!.itemId, starterModel: fits[0]!.model, freeModel: it.model.slice(fits[0]!.model.length + 1) } : null;
