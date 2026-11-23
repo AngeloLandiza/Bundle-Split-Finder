@@ -448,19 +448,26 @@ export interface SearchInTab {
   status: number;
   /** `/p/<slug>/<9-digit id>` paths on the search page, in page order. Null unless status is 200. */
   links: string[] | null;
+  /** A 200 answer without the page state: its <title> (or its first words), at most 80 characters. */
+  note?: string;
 }
 
 /**
  * Runs inside the tab. Self-contained, like fetchPagesInTab (serialised by its source). Fetches Home Depot's own
  * `/s/<model>` same-origin, `concurrency` at a time, and returns the product links each page holds. A search that
  * Home Depot sent straight to one product also gives that product's own address. A fetch that throws gives status 0.
- * It starts no new fetch after the first answer that is not 200 (or a thrown fetch); models it never fetched come
- * back with status -1. A 200 page with no product link is a search with no result, not a refusal.
+ * A search page, like every Home Depot page, carries `window.__APOLLO_STATE__=`; a 200 without it is a page that did
+ * not come back whole (a cold session), not a search with no result: its links are null and it carries a `note`, its
+ * <title> or first words. It starts no new fetch after the first answer that is not 200 (or a thrown fetch), nor once
+ * `unreadableLimit` answers in a row (counting `unreadableBefore`, the run the caller's last call ended on) were 200
+ * without the state; models it never fetched come back with status -1. A 200 page with its state and no product link
+ * is a search with no result.
  */
-export async function fetchSearchesInTab(models: string[], concurrency: number): Promise<SearchInTab[]> {
+export async function fetchSearchesInTab(models: string[], concurrency: number, unreadableBefore = 0, unreadableLimit = 1): Promise<SearchInTab[]> {
   const results: SearchInTab[] = new Array(models.length);
   let next = 0;
   let stopped = false;
+  let unreadableRun = unreadableBefore;
   const worker = async (): Promise<void> => {
     while (next < models.length) {
       const i = next++;
@@ -471,11 +478,16 @@ export async function fetchSearchesInTab(models: string[], concurrency: number):
       }
       let status = 0;
       let links: string[] | null = null;
+      let note: string | undefined;
       try {
         const res = await fetch(`/s/${encodeURIComponent(model)}`, { credentials: 'include' });
         status = res.status;
         const body = await res.text();
-        if (status === 200) {
+        if (status === 200 && body.indexOf('window.__APOLLO_STATE__=') < 0) {
+          const titled = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(body);
+          const words = (titled ? (titled[1] as string) : body.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+          note = words.slice(0, 80);
+        } else if (status === 200) {
           const found: string[] = [];
           const seen: Record<string, boolean> = {};
           const pattern = /\/p\/([A-Za-z0-9._~%+-]+)\/(\d{9})(?![0-9])/g;
@@ -499,7 +511,11 @@ export async function fetchSearchesInTab(models: string[], concurrency: number):
         links = null;
       }
       if (status !== 200) stopped = true;
-      results[i] = { model, status, links };
+      else if (links === null) {
+        unreadableRun += 1;
+        if (unreadableRun >= unreadableLimit) stopped = true;
+      } else unreadableRun = 0;
+      results[i] = note === undefined ? { model, status, links } : { model, status, links, note };
     }
   };
   const n = Math.max(1, Math.min(concurrency, models.length));
@@ -537,19 +553,22 @@ const partKeyOf = (p: PartAsked): string => `${p.brand.trim().toUpperCase()}:${p
  * then the chosen product's page `/p/<id>`, read with parseProductPage. A product whose page does not name the
  * part's brand and model (sameModel) gives nothing: an id is never guessed.
  * `cap` is the most distinct parts one call looks up, by default PART_PRICE_READS_MAX, the most the scan asks for (the
- * rest come back not_read); `pauseMs` and `settleMs` as for createPageReader. A non-200 answer, a thrown fetch, or a
- * product page with no embedded data stops the call: that part comes back not_read, and so does every part not yet
- * read. Each reading's status says which (PartPriceRead).
+ * rest come back not_read); `pauseMs`, `settleMs` and `doorwayStateMs` as for createPageReader (Nov 23: nothing is fetched
+ * until the doorway's own page shows its state; if it never does, every part comes back not_read). A non-200 answer or a
+ * thrown fetch stops the call: that part comes back not_read, and so does every part not yet read. A 200 without the
+ * page's state (a search or a product page) is that part not_read and the next is tried; two in a row stop the call.
+ * Each reading's status says which (PartPriceRead).
  */
 export function createPartPriceReader(
   env: ReaderEnv,
-  opts: { concurrency?: number; batch?: number; cap?: number; pauseMs?: number; settleMs?: number; now?: () => number } = {},
+  opts: { concurrency?: number; batch?: number; cap?: number; pauseMs?: number; settleMs?: number; doorwayStateMs?: number; now?: () => number } = {},
 ): ReadPartPrices {
   const concurrency = opts.concurrency ?? 2;
   const batch = opts.batch ?? 4;
   const cap = opts.cap ?? PART_PRICE_READS_MAX;
   const pauseMs = opts.pauseMs ?? 1000;
   const settleMs = opts.settleMs ?? 2500;
+  const doorwayStateMs = opts.doorwayStateMs ?? DOORWAY_STATE_MS;
   const now = opts.now ?? Date.now;
   let lastEnded: number | null = null;
 
@@ -570,83 +589,84 @@ export function createPartPriceReader(
       const left = pauseMs - (now() - lastEnded);
       if (left > 0) await env.sleep(left);
     }
-    const left = await env.remembered();
-    if (left !== null) {
-      await env.closeTab(left).catch(() => undefined);
-      await env.remember(null);
-    }
-
     const answers = new Map<string, PartPriceRead>();
-    const tabId = await env.openTab(`${env.origin}/s/${encodeURIComponent(first.model)}`);
     try {
-      await env.remember(tabId);
-      try {
-        await env.waitForLoad(tabId, LOAD_TIMEOUT_MS);
-      } catch {
-        throw new Error('The Home Depot tab did not load.');
-      }
-      if (settleMs > 0) await env.sleep(settleMs);
-
-      let calls = 0;
-      const pause = async (): Promise<void> => {
-        if (calls++ > 0) await env.sleep(pauseMs);
-      };
-      let stopped = false;
-      for (let start = 0; start < parts.length && !stopped; start += batch) {
-        const group = parts.slice(start, start + batch);
-        await pause();
-        const found = await env.runInTab(tabId, fetchSearchesInTab, [group.map((p) => p.model), concurrency]);
-        // An empty script result (undefined, not an array) is a batch with no entries.
-        const searches: SearchInTab[] = Array.isArray(found) ? found : [];
-        const answeredFor = (p: PartAsked) => searches.find((x) => x.model === p.model);
-        // Any part whose search was not answered 200 is a refusal; no page is fetched after it.
-        if (group.some((p) => { const s = answeredFor(p); return !s || (s.status !== 200 && s.status !== -1); })) stopped = true;
-        const chosen: { part: PartAsked; itemId: string; path: string }[] = [];
-        for (const part of group) {
-          const s = answeredFor(part);
-          if (s && s.status === 200 && s.links !== null) {
+      await withDoorway(env, `${env.origin}/s/${encodeURIComponent(first.model)}`, { settleMs, doorwayStateMs }, async (tabId) => {
+        let calls = 0;
+        const pause = async (): Promise<void> => {
+          if (calls++ > 0) await env.sleep(pauseMs);
+        };
+        let stopped = false;
+        // Searches and product pages in a row, in the order read, that answered 200 without their state.
+        const unreadableRun = createUnreadableRun();
+        for (let start = 0; start < parts.length && !stopped; start += batch) {
+          const group = parts.slice(start, start + batch);
+          await pause();
+          const found = await env.runInTab(tabId, fetchSearchesInTab, [group.map((p) => p.model), concurrency, unreadableRun.run, UNREADABLE_IN_A_ROW]);
+          // An empty script result (undefined, not an array) is a batch with no entries.
+          const searches: SearchInTab[] = Array.isArray(found) ? found : [];
+          const answeredFor = (p: PartAsked) => searches.find((x) => x.model === p.model);
+          // Any part whose search was not answered 200 is a refusal; no page is fetched after it.
+          if (group.some((p) => { const s = answeredFor(p); return !s || (s.status !== 200 && s.status !== -1); })) stopped = true;
+          const chosen: { part: PartAsked; itemId: string; path: string }[] = [];
+          for (const part of group) {
+            const s = answeredFor(part);
+            if (s && s.status === -1) stopped = true;
+            if (!s || s.status !== 200) continue;
+            if (s.links === null) {
+              // A 200 without the page's state: not a search with no result. This part is not read; the next is tried.
+              if (unreadableRun.unreadable()) stopped = true;
+              continue;
+            }
+            unreadableRun.read();
             const pick = pickPartLink(part.brand, part.model, s.links);
             // Home Depot answered and showed no product for the model: not found, even if a later search is refused.
             if (pick) chosen.push({ part, ...pick });
             else answers.set(partKeyOf(part), emptyRead(part, 'not_found'));
           }
-        }
-        if (stopped || chosen.length === 0) continue;
+          if (stopped || chosen.length === 0) continue;
 
-        await pause();
-        const fetched = await env.runInTab(tabId, fetchPagesInTab, [chosen.map((c) => c.itemId), concurrency]);
-        const pages: InTabResult[] = Array.isArray(fetched) ? fetched : [];
-        for (const c of chosen) {
-          const r = pages.find((x) => x.itemId === c.itemId);
-          if (r && r.status === -1) continue;
-          if (!r || r.status !== 200 || r.text === null) {
-            stopped = true;
-            continue;
+          await pause();
+          const fetched = await env.runInTab(tabId, fetchPagesInTab, [chosen.map((c) => c.itemId), concurrency, unreadableRun.run, UNREADABLE_IN_A_ROW]);
+          const pages: InTabResult[] = Array.isArray(fetched) ? fetched : [];
+          for (const c of chosen) {
+            const r = pages.find((x) => x.itemId === c.itemId);
+            if (r && r.status === -1) {
+              stopped = true;
+              continue;
+            }
+            if (r && r.status === 200 && r.text === null) {
+              if (unreadableRun.unreadable()) stopped = true;
+              continue;
+            }
+            if (!r || r.status !== 200 || r.text === null) {
+              stopped = true;
+              continue;
+            }
+            unreadableRun.read();
+            const page = parseProductPage(r.text, c.itemId);
+            // A page whose data could not be parsed says nothing: not read.
+            if (page === null) continue;
+            // The product the search showed is not the part (a kit whose address ends with the model, another brand).
+            if (page.brand.toUpperCase() !== c.part.brand.trim().toUpperCase() || !sameModel(c.part.brand, page.model, c.part.model)) {
+              answers.set(partKeyOf(c.part), emptyRead(c.part, 'not_found'));
+              continue;
+            }
+            answers.set(partKeyOf(c.part), {
+              brand: c.part.brand,
+              model: c.part.model,
+              // A confirmed page with no price: Home Depot has no price for the part sold alone.
+              status: page.price === null ? 'not_found' : 'found',
+              itemId: c.itemId,
+              matchedModel: page.model.trim(),
+              price: page.price,
+              title: page.title === '' ? null : page.title,
+              link: `${env.origin}${c.path}`,
+            });
           }
-          const page = parseProductPage(r.text, c.itemId);
-          // A page whose data could not be parsed says nothing: not read.
-          if (page === null) continue;
-          // The product the search showed is not the part (a kit whose address ends with the model, another brand).
-          if (page.brand.toUpperCase() !== c.part.brand.trim().toUpperCase() || !sameModel(c.part.brand, page.model, c.part.model)) {
-            answers.set(partKeyOf(c.part), emptyRead(c.part, 'not_found'));
-            continue;
-          }
-          answers.set(partKeyOf(c.part), {
-            brand: c.part.brand,
-            model: c.part.model,
-            // A confirmed page with no price: Home Depot has no price for the part sold alone.
-            status: page.price === null ? 'not_found' : 'found',
-            itemId: c.itemId,
-            matchedModel: page.model.trim(),
-            price: page.price,
-            title: page.title === '' ? null : page.title,
-            link: `${env.origin}${c.path}`,
-          });
         }
-      }
+      });
     } finally {
-      await env.closeTab(tabId).catch(() => undefined);
-      await env.remember(null).catch(() => undefined);
       lastEnded = now();
     }
     return asked.map((p) => ({ ...(answers.get(partKeyOf(p)) ?? emptyRead(p)), brand: p.brand, model: p.model }));
@@ -663,10 +683,11 @@ export type ReadItemPrice = (itemId: string, model: string) => Promise<PartPrice
 
 export function createItemPriceReader(
   env: ReaderEnv,
-  opts: { pauseMs?: number; settleMs?: number; now?: () => number } = {},
+  opts: { pauseMs?: number; settleMs?: number; doorwayStateMs?: number; now?: () => number } = {},
 ): ReadItemPrice {
   const pauseMs = opts.pauseMs ?? 1000;
   const settleMs = opts.settleMs ?? 2500;
+  const doorwayStateMs = opts.doorwayStateMs ?? DOORWAY_STATE_MS;
   const now = opts.now ?? Date.now;
   let lastEnded: number | null = null;
 
@@ -676,22 +697,15 @@ export function createItemPriceReader(
       const left = pauseMs - (now() - lastEnded);
       if (left > 0) await env.sleep(left);
     }
-    const stale = await env.remembered();
-    if (stale !== null) {
-      await env.closeTab(stale).catch(() => undefined);
-      await env.remember(null);
-    }
-    const tabId = await env.openTab(`${env.origin}/p/${itemId}`);
     try {
-      await env.remember(tabId);
-      try {
-        await env.waitForLoad(tabId, LOAD_TIMEOUT_MS);
-      } catch {
-        throw new Error('The Home Depot tab did not load.');
-      }
-      if (settleMs > 0) await env.sleep(settleMs);
-      const answered = await env.runInTab(tabId, fetchPagesInTab, [[itemId], 1]);
-      const r = (Array.isArray(answered) ? answered : []).find((x) => x.itemId === itemId);
+      // Nov 23: nothing is fetched until the doorway's own page shows its state; a doorway that never does, a page that
+      // comes back 200 without its state, and a refusal each say nothing (not_read), and none is retried.
+      const got = await withDoorway(env, `${env.origin}/p/${itemId}`, { settleMs, doorwayStateMs }, async (tabId) => {
+        const answered = await env.runInTab(tabId, fetchPagesInTab, [[itemId], 1]);
+        return (Array.isArray(answered) ? answered : []).find((x) => x.itemId === itemId);
+      });
+      if (!got.shown) return empty('not_read');
+      const r = got.value;
       if (r && r.status === 404) return empty('not_found');
       if (!r || r.status !== 200 || r.text === null) return empty('not_read');
       const page = parseProductPage(r.text, itemId);
@@ -709,8 +723,6 @@ export function createItemPriceReader(
         link: `${env.origin}/p/${itemId}`,
       };
     } finally {
-      await env.closeTab(tabId).catch(() => undefined);
-      await env.remember(null).catch(() => undefined);
       lastEnded = now();
     }
   };
@@ -720,21 +732,32 @@ export function createItemPriceReader(
 // BOGO (Nov 23): one page of a brand's Featured BOGO listing. Same doorway, settle and pause as the page reader. The
 // path is checked against the one recorded listing address before it is put in a URL.
 
-/** What the in-tab listing fetch brings back: the HTTP status and, for a 200, the text from the page's Apollo state on. */
-export interface ListingInTab { status: number; text: string | null }
+/** What the in-tab path fetch brings back: the HTTP status and, for a 200, the text from the page's Apollo state on. */
+export interface PathInTab {
+  status: number;
+  text: string | null;
+  /** A 200 answer without the page state: its <title> (or its first words), at most 80 characters. */
+  note?: string;
+}
 
 /**
  * Runs inside the tab. Self-contained, like fetchPagesInTab (serialised by its source: no imports, no outside
- * variables). Fetches `path` same-origin and returns its status and, for a 200, the text from `window.__APOLLO_STATE__=`
- * to the next `</script>` (null when the page has none). A fetch that throws gives status 0.
+ * variables). Fetches `path` same-origin (a Featured BOGO listing, or a search `/s/<query>`) and returns its status and,
+ * for a 200, the text from `window.__APOLLO_STATE__=` to the next `</script>`. A 200 without it comes back with text
+ * null and a `note`, its <title> or first words (80 characters). A fetch that throws gives status 0.
  */
-export async function fetchListingInTab(path: string): Promise<ListingInTab> {
+export async function fetchPathInTab(path: string): Promise<PathInTab> {
   try {
     const res = await fetch(path, { credentials: 'include' });
     const body = await res.text();
-    let text: string | null = null;
     const mark = body.indexOf('window.__APOLLO_STATE__=');
-    if (res.status === 200 && mark >= 0) {
+    if (res.status === 200 && mark < 0) {
+      const titled = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(body);
+      const words = (titled ? (titled[1] as string) : body.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+      return { status: 200, text: null, note: words.slice(0, 80) };
+    }
+    let text: string | null = null;
+    if (res.status === 200) {
       const end = body.indexOf('</script>', mark);
       text = end >= 0 ? body.slice(mark, end) : body.slice(mark);
     }
@@ -744,13 +767,18 @@ export async function fetchListingInTab(path: string): Promise<ListingInTab> {
   }
 }
 
-/** Reads one listing page: its products (the state's base-searchNav entries, as a search page's), or why not, in words. */
+/**
+ * Reads one listing page: its products (the state's base-searchNav entries, as a search page's), or why not, in words.
+ * Nov 23: nothing is fetched until the doorway's own page shows its state. A doorway that never does, and a 403, 429, 5xx
+ * or failed fetch, are a refusal; a 200 without the page's state is a listing that came back without its data, said so.
+ */
 export function createBogoListingReader(
   env: ReaderEnv,
-  opts: { pauseMs?: number; settleMs?: number; now?: () => number } = {},
+  opts: { pauseMs?: number; settleMs?: number; doorwayStateMs?: number; now?: () => number } = {},
 ): (path: string) => Promise<{ products: ListedItem[] } | ToolError> {
   const pauseMs = opts.pauseMs ?? 1000;
   const settleMs = opts.settleMs ?? 2500;
+  const doorwayStateMs = opts.doorwayStateMs ?? DOORWAY_STATE_MS;
   const now = opts.now ?? Date.now;
   let lastEnded: number | null = null;
   return async (path) => {
@@ -759,29 +787,25 @@ export function createBogoListingReader(
       const left = pauseMs - (now() - lastEnded);
       if (left > 0) await env.sleep(left);
     }
-    const stale = await env.remembered();
-    if (stale !== null) {
-      await env.closeTab(stale).catch(() => undefined);
-      await env.remember(null);
-    }
-    const tabId = await env.openTab(`${env.origin}${path}`);
     try {
-      await env.remember(tabId);
-      try {
-        await env.waitForLoad(tabId, LOAD_TIMEOUT_MS);
-      } catch {
-        return { error: 'The Home Depot tab did not load.' };
-      }
-      if (settleMs > 0) await env.sleep(settleMs);
-      const got = await env.runInTab(tabId, fetchListingInTab, [path]);
-      if (!got || got.status !== 200 || got.text === null) return { error: `Home Depot refused the BOGO listing (${got && got.status !== 0 ? `HTTP ${got.status}` : 'no answer'}).` };
-      const rows = parseSearchText(got.text, HOME_DEPOT);
+      const got = await withDoorway(env, `${env.origin}${path}`, { settleMs, doorwayStateMs }, (tabId) => env.runInTab(tabId, fetchPathInTab, [path]));
+      if (!got.shown) return { error: `Home Depot refused the BOGO listing (its own page never showed its data${titled(got.title)}).` };
+      const read = got.value;
+      if (!read || read.status !== 200) return { error: `Home Depot refused the BOGO listing (${read && read.status !== 0 ? `HTTP ${read.status}` : 'no answer'}).` };
+      if (read.text === null) return { error: `The BOGO listing came back without its data${titled(read.note ?? '')}.` };
+      const rows = parseSearchText(read.text, HOME_DEPOT);
       if (rows === null) return { error: 'The BOGO listing could not be read.' };
       return { products: rows.map((r) => ({ itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url })) };
+    } catch (e) {
+      if (e instanceof Error && e.message === 'The Home Depot tab did not load.') return { error: e.message };
+      throw e;
     } finally {
-      await env.closeTab(tabId).catch(() => undefined);
-      await env.remember(null).catch(() => undefined);
       lastEnded = now();
     }
   };
+}
+
+/** `, titled "<title>"` for a sentence about a page that came back without its data; nothing when it has no title. */
+export function titled(title: string): string {
+  return title === '' ? '' : `, titled "${title}"`;
 }

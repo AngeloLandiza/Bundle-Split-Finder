@@ -510,7 +510,11 @@ function partFake(opts: {
   pages?: Record<string, string>;
   searchStatus?: (model: string) => number;
   pageStatus?: (id: string) => number;
+  /** Searches that answer 200 without the page state (a cold session): their <title>. */
+  searchEmpty?: (model: string) => string | null;
   stored?: number | null;
+  /** The doorway tab's own document at each check (default: its state is there). */
+  doorway?: () => DoorwayState;
 }): PartFake {
   const log: string[] = [];
   const searched: string[][] = [];
@@ -522,15 +526,26 @@ function partFake(opts: {
     closeTab: async (id) => { log.push(`close ${id}`); },
     waitForLoad: async (id, ms) => { log.push(`wait ${id} ${ms}`); },
     runInTab: (async (_tab: number, func: unknown, args: [string[], number]) => {
+      if (func === doorwayStateInTab) return opts.doorway ? opts.doorway() : { state: true, title: 'Home Depot' };
       if (func === fetchSearchesInTab) {
         log.push('search');
         searched.push(args[0]);
         const out: SearchInTab[] = args[0].map((model) => {
           const status = opts.searchStatus?.(model) ?? 200;
+          const empty = status === 200 ? (opts.searchEmpty?.(model) ?? null) : null;
+          if (empty !== null) return { model, status, links: null, note: empty };
           return { model, status, links: status === 200 ? (opts.search?.[model] ?? []) : null };
         });
-        const bad = out.findIndex((o) => o.status !== 200);
-        return out.map((o, i) => (bad >= 0 && i > bad ? { model: o.model, status: -1, links: null } : o));
+        // As fetchSearchesInTab: nothing is fetched after a refusal, nor after two unreadable answers in a row (counting the caller's run).
+        let run = (args as unknown as [string[], number, number?])[2] ?? 0;
+        let stopAt = -1;
+        out.forEach((o, i) => {
+          if (stopAt >= 0) return;
+          if (o.status !== 200) stopAt = i;
+          else if (o.links === null && ++run >= 2) stopAt = i;
+          else if (o.links !== null) run = 0;
+        });
+        return out.map((o, i) => (stopAt >= 0 && i > stopAt ? { model: o.model, status: -1, links: null } : o));
       }
       log.push('page');
       fetched.push(args[0]);
@@ -540,8 +555,16 @@ function partFake(opts: {
         // As fetchPagesInTab: a 200 page with no embedded data has no text.
         return { itemId: id, status, text: text !== null && text.includes('window.__APOLLO_STATE__=') ? text : null };
       });
-      const bad = out.findIndex((o) => o.status !== 200 || o.text === null);
-      return out.map((o, i) => (bad >= 0 && i > bad ? { itemId: o.itemId, status: -1, text: null } : o));
+      // As fetchPagesInTab: nothing is fetched after a refusal, nor after two 200s without the state in a row (counting the caller's run).
+      let run = (args as unknown as [string[], number, number?])[2] ?? 0;
+      let stopAt = -1;
+      out.forEach((o, i) => {
+        if (stopAt >= 0) return;
+        if (o.status !== 200) stopAt = i;
+        else if (o.text === null && ++run >= 2) stopAt = i;
+        else if (o.text !== null) run = 0;
+      });
+      return out.map((o, i) => (stopAt >= 0 && i > stopAt ? { itemId: o.itemId, status: -1, text: null } : o));
     }) as ReaderEnv['runInTab'],
     remember: async (id) => { stored = id; },
     remembered: async () => stored,
@@ -748,11 +771,53 @@ describe('createPartPriceReader', () => {
     expect(out.map((o) => o.status)).toEqual(['found', 'not_read', 'not_read']);
     expect(refused.searched).toEqual([['A1', 'A2']]);
     expect(refused.log.at(-1)).toBe('close 7');
+    // One 200 without the page state (Nov 23) is that part not read, not a refusal: the next batch is still searched and read.
     const nodata = partFake({ search, pages: { ...pages, '300000032': '<html>blocked</html>' } });
     const out2 = await createPartPriceReader(nodata.env, { batch: 2, settleMs: 0 })(parts);
-    expect(out2.map((o) => o.price)).toEqual([10, null, null]);
-    expect(out2.map((o) => o.status)).toEqual(['found', 'not_read', 'not_read']);
-    expect(nodata.searched).toHaveLength(1);
+    expect(out2.map((o) => o.price)).toEqual([10, null, 30]);
+    expect(out2.map((o) => o.status)).toEqual(['found', 'not_read', 'found']);
+    expect(nodata.searched).toHaveLength(2);
+  });
+
+  it('Nov 23: waits for the doorway to show its state (a cold tab: 2 s) before the first search, then reads fine', async () => {
+    let checks = 0;
+    const f = partFake({
+      search: { PCL265B: [tool] }, pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99) },
+      doorway: () => ({ state: ++checks >= 5, title: 'Home Depot' }),
+    });
+    const out = await createPartPriceReader(f.env, { settleMs: 0 })([{ brand: 'RYOBI', model: 'PCL265B' }]);
+    expect(out[0]).toMatchObject({ status: 'found', price: 99 });
+    expect(f.log.filter((l) => l === 'sleep 500')).toHaveLength(4);
+    expect(f.log.indexOf('search')).toBeGreaterThan(f.log.lastIndexOf('sleep 500'));
+  });
+
+  it('Nov 23: a doorway that never shows its state is the refusal: nothing is searched, every part is not_read, the tab closes', async () => {
+    const f = partFake({ search: { PCL265B: [tool] }, doorway: () => ({ state: false, title: 'Access Denied' }) });
+    const out = await createPartPriceReader(f.env, { settleMs: 0, doorwayStateMs: 2000 })([{ brand: 'RYOBI', model: 'PCL265B' }, { brand: 'RYOBI', model: 'A2' }]);
+    expect(out).toEqual([nothingFor('RYOBI', 'PCL265B'), nothingFor('RYOBI', 'A2')]);
+    expect(f.searched).toEqual([]);
+    expect(f.fetched).toEqual([]);
+    expect(f.log.at(-1)).toBe('close 7');
+  });
+
+  it('Nov 23: one search that comes back 200 without its state is that part not_read (not not_found); the next parts are read', async () => {
+    const f = partFake({
+      search: { A1: ['/p/RYOBI-X-A1/300000031'], A3: ['/p/RYOBI-X-A3/300000033'] },
+      pages: { '300000031': productText('300000031', 'RYOBI', 'A1', 10), '300000033': productText('300000033', 'RYOBI', 'A3', 30) },
+      searchEmpty: (m) => (m === 'A2' ? 'Home Depot' : null),
+    });
+    const out = await createPartPriceReader(f.env, { batch: 3, settleMs: 0 })(['A1', 'A2', 'A3'].map((model) => ({ brand: 'RYOBI', model })));
+    expect(out.map((o) => o.status)).toEqual(['found', 'not_read', 'found']);
+    expect(f.fetched).toEqual([['300000031', '300000033']]);
+  });
+
+  it('Nov 23: two unreadable answers in a row end the call; the parts after them are not_read and nothing more is searched or fetched', async () => {
+    const f = partFake({ search: { A1: ['/p/RYOBI-X-A1/300000031'] }, pages: { '300000031': productText('300000031', 'RYOBI', 'A1', 10) }, searchEmpty: (m) => (m === 'A2' || m === 'A3' ? 'Home Depot' : null) });
+    const out = await createPartPriceReader(f.env, { batch: 2, settleMs: 0 })(['A2', 'A3', 'A1', 'A4'].map((model) => ({ brand: 'RYOBI', model })));
+    expect(out.map((o) => o.status)).toEqual(['not_read', 'not_read', 'not_read', 'not_read']);
+    expect(f.searched).toEqual([['A2', 'A3']]);
+    expect(f.fetched).toEqual([]);
+    expect(f.log.at(-1)).toBe('close 7');
   });
 
   it('an empty script result (undefined) is a refusal: everything null, tab closed', async () => {
@@ -782,9 +847,9 @@ describe('fetchSearchesInTab', () => {
     vi.stubGlobal('location', { href: 'https://www.homedepot.com/s/PCL265B' });
     vi.stubGlobal('fetch', async (url: string) => {
       asked.push(url);
-      if (url.includes('NONE')) return { status: 200, url: 'https://www.homedepot.com/s/NONE', text: async () => '<html>no results</html>' };
+      if (url.includes('NONE')) return { status: 200, url: 'https://www.homedepot.com/s/NONE', text: async () => '<html>no results<script>window.__APOLLO_STATE__={}</script></html>' };
       const body =
-        '<a href="/p/RYOBI-Wrench-Tool-Only-PCL265B/300000002">x</a><a href="https://www.homedepot.com/p/RYOBI-Wrench-Tool-Only-PCL265B/300000002?x=1">y</a>' +
+        '<script>window.__APOLLO_STATE__={}</script><a href="/p/RYOBI-Wrench-Tool-Only-PCL265B/300000002">x</a><a href="https://www.homedepot.com/p/RYOBI-Wrench-Tool-Only-PCL265B/300000002?x=1">y</a>' +
         '<a href="/p/RYOBI-Kit-PSK0114-PCL265B/300000003">z</a> /p/short/123 /p/RYOBI-Too-Long/1234567890';
       return { status: 200, url: 'https://www.homedepot.com/p/RYOBI-Final-Tool/300000001', text: async () => body };
     });
@@ -811,7 +876,7 @@ describe('fetchSearchesInTab', () => {
       asked.push(url);
       if (url === '/s/B') return { status: 403, url: 'https://www.homedepot.com/s/B', text: async () => 'no' };
       if (url === '/s/D') throw new Error('network');
-      return { status: 200, url: 'https://www.homedepot.com/s/x', text: async () => '' };
+      return { status: 200, url: 'https://www.homedepot.com/s/x', text: async () => 'window.__APOLLO_STATE__={}' };
     });
     const rebuilt = new Function(`return (${fetchSearchesInTab.toString()})`)() as typeof fetchSearchesInTab;
     const out = await rebuilt(['A', 'B', 'C', 'D'], 1);
@@ -820,6 +885,24 @@ describe('fetchSearchesInTab', () => {
     expect(out[1]).toEqual({ model: 'B', status: 403, links: null });
     const threw = await rebuilt(['D', 'E'], 1);
     expect(threw.map((o) => o.status)).toEqual([0, -1]);
+  });
+
+  it('Nov 23: a 200 without the page state is not a search with no result: links null and its title as the note; two in a row (counting the caller\'s run) stop it', async () => {
+    vi.stubGlobal('location', { href: 'https://www.homedepot.com/' });
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (url: string) => {
+      asked.push(url);
+      return { status: 200, url: `https://www.homedepot.com${url}`, text: async () => (url === '/s/B' ? '<html><head><title> Home   Depot </title></head></html>' : 'window.__APOLLO_STATE__={}') };
+    });
+    const rebuilt = new Function(`return (${fetchSearchesInTab.toString()})`)() as typeof fetchSearchesInTab;
+    const out = await rebuilt(['A', 'B', 'C'], 1, 0, 2);
+    expect(out[1]).toEqual({ model: 'B', status: 200, links: null, note: 'Home Depot' });
+    expect(out.map((o) => o.status)).toEqual([200, 200, 200]);
+    // The caller's last call ended on one empty page: this one is the second in a row, so C is never fetched.
+    asked.length = 0;
+    const carried = await rebuilt(['B', 'C'], 1, 1, 2);
+    expect(asked).toEqual(['/s/B']);
+    expect(carried.map((o) => o.status)).toEqual([200, -1]);
   });
 });
 
@@ -853,6 +936,18 @@ describe('createItemPriceReader (the partPrice job)', () => {
     expect(refused.fetched).toHaveLength(1);
     const nodata = partFake({ pages: { '300000002': 'window.__APOLLO_STATE__={}' } });
     expect(await createItemPriceReader(nodata.env, { settleMs: 0 })('300000002', 'PCL265B')).toMatchObject({ status: 'not_read' });
+  });
+
+  it('Nov 23: waits for the doorway to show its state before the fetch; a doorway that never does is not_read with nothing fetched', async () => {
+    let checks = 0;
+    const cold = partFake({ pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99) }, doorway: () => ({ state: ++checks >= 5, title: 'Home Depot' }) });
+    expect(await createItemPriceReader(cold.env, { settleMs: 0 })('300000002', 'PCL265B')).toMatchObject({ status: 'found', price: 99 });
+    expect(cold.log.filter((l) => l === 'sleep 500')).toHaveLength(4);
+    expect(cold.log.indexOf('page')).toBeGreaterThan(cold.log.lastIndexOf('sleep 500'));
+    const never = partFake({ pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99) }, doorway: () => ({ state: false, title: 'Access Denied' }) });
+    expect(await createItemPriceReader(never.env, { settleMs: 0, doorwayStateMs: 1000 })('300000002', 'PCL265B')).toMatchObject({ status: 'not_read', price: null });
+    expect(never.fetched).toEqual([]);
+    expect(never.log.at(-1)).toBe('close 7');
   });
 
   it('closes a doorway a stopped worker left, pauses between two calls, and closes its own tab when the load fails', async () => {
