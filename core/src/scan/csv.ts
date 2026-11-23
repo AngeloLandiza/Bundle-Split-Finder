@@ -21,7 +21,8 @@ export const REVIEW_COLUMNS: readonly string[] = ['kind', 'brand', 'model', 'tit
 function cell(value: string | number | null): string {
   if (value === null) return '';
   if (typeof value === 'number') return String(value);
-  const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
+  // OWASP's list: = + - @, and a tab or carriage return, which a spreadsheet skips before reading a formula.
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
   return /[,"\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }
 
