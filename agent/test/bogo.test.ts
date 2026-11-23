@@ -145,5 +145,5 @@ describe('BOGO found by the agent', () => {
     live = false;
     await polling;
     // Every job and cached page is a store write; with the other agent suites running beside it this takes several seconds.
-  }, 30_000);
+  });
 });

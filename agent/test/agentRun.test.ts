@@ -149,7 +149,7 @@ describe('a scan from the app', () => {
       const body = readFileSync(f, 'utf8');
       expect(body.includes(SERP_KEY) || body.includes('bot-secret'), f).toBe(false);
     }
-   }, 20_000);
+  });
 
   it('Nov 23 migration: a "What is inside" question opened for a bundle whose page was never read is withdrawn at start', async () => {
     // As the owner's store was left: the bundle unread, its split question open (opened from the title by the old rule).

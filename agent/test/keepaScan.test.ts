@@ -137,7 +137,7 @@ describe('a scan with Keepa', () => {
     const state = stateOf(agent);
     expect(state.budget).toMatchObject({ keepaTokens: 11, keepaRefillPerMin: 1 });
     expect(state.agent.lastScan).toMatchObject({ lookupsBlockedBy: 'keepa_tokens', lookupsDone: { keepa: 1, serpapi: 0 } });
-  }, 30_000);
+  });
 
   it('a Keepa key Keepa rejects is a key problem in plain words, and the scan goes on without Keepa', async () => {
     const { keepaCalls } = withKeepa({ tokens: 0, keepaStatus: 401 });
@@ -148,7 +148,7 @@ describe('a scan with Keepa', () => {
     const run = agent.store.get('activity').runs.at(-1)!;
     expect(run.summary).toContain('Keepa: Keepa did not accept this key.');
     expect(JSON.stringify(agent.store.get('activity'))).not.toContain('keepa-secret');
-  }, 30_000);
+  });
 });
 
 describe('the live view (step 15)', () => {
@@ -202,7 +202,7 @@ describe('Look up all (POST /api/lookups/run)', () => {
     expect(run.aiCostUsd).toBe(0);
     expect(run.steps?.find((s) => s.label === 'Home Depot deals pages')?.state).not.toBe('done');
     expect(run.steps?.find((s) => s.label === 'Bundle pages')).toMatchObject({ state: 'skipped', figure: 'not in this run' });
-  }, 30_000);
+  });
 
   it('maxSearches lowers the search cap for this run; with nothing able to pay it does not start, and says why', async () => {
     withKeepa({ tokens: 40 });
@@ -214,7 +214,7 @@ describe('Look up all (POST /api/lookups/run)', () => {
     expect(refused.started).toBe(false);
     expect(refused.reason).toMatch(/^Nothing can pay for a lookup now: \d+ Amazon lookups wait for Keepa tokens/);
     expect([refused.viaKeepa, refused.viaSerpapi]).toEqual([0, 0]);
-  }, 30_000);
+  });
 
   it('nothing waiting, or something already running: it does not start', async () => {
     agent = createAgent({ dataDir: mkdtempSync(join(tmpdir(), 'sf-all-')), port: 0, timers: false, fetchFn: (async () => new Response('{}')) as unknown as typeof fetch, now: () => T0 });

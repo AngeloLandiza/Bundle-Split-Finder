@@ -172,5 +172,5 @@ describe('Undo of the owner’s answer to a match question', () => {
     expect(answers[0]!.questionId).toBe(`match:${partKey('RYOBI', 'P151')}`);
     expect(answers[49]!.questionId).toBe(`match:${partKey('RYOBI', 'P102')}`);
     expect(answers.every((a) => a.undoable)).toBe(true);
-  }, 60_000);
+  });
 });
