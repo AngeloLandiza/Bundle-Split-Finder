@@ -27,7 +27,11 @@ export interface FbaEstimate {
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
-/** Null when the way to sell has no estimate or no counted part has a Keepa FBA fee stored. */
+/**
+ * Null when the way to sell has no estimate, no counted part has a Keepa FBA fee stored, or the estimate already used
+ * every one of them (fees.fulfillmentSource 'keepa', report.ts feesOf): the line shows only when it differs from the
+ * estimate. A part's own fee in the estimate (PartRow.fees) is what Keepa's replaces, else the flat setting.
+ */
 export function fbaEstimateOf(option: SaleOption | undefined, trend: TrendLookup, fees: FeeSettings): FbaEstimate | null {
   const base = option?.estimate;
   if (!option || !base) return null;
@@ -37,14 +41,15 @@ export function fbaEstimateOf(option: SaleOption | undefined, trend: TrendLookup
   for (const p of option.parts) {
     if (left.has(p.model) || p.price === null) continue;
     const fee = p.asin ? trend(p.asin)?.fbaFee ?? null : null;
+    const used = p.fees?.fulfillment ?? fees.fulfillmentFee;
     if (fee === null || fee === undefined) {
-      parts.push({ model: p.model, qty: p.qty, fee: fees.fulfillmentFee, source: 'settings' });
+      parts.push({ model: p.model, qty: p.qty, fee: used, source: p.fees?.fulfillmentFrom === 'keepa' ? 'keepa' : 'settings' });
       continue;
     }
     parts.push({ model: p.model, qty: p.qty, fee, source: 'keepa' });
-    delta += (fees.fulfillmentFee - fee) * p.qty;
+    delta += (used - fee) * p.qty;
   }
-  if (!parts.some((p) => p.source === 'keepa')) return null;
+  if (!parts.some((p) => p.source === 'keepa') || Math.abs(delta) < 0.005) return null;
   const netRevenue = round2(base.netRevenue + delta);
   const profit = round2(netRevenue - base.cost);
   return {

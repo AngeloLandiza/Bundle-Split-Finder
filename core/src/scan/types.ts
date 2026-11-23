@@ -819,6 +819,21 @@ export interface PartRow {
   verifiedBy?: VerifiedBy;
   /** The evidence of verifiedBy, or why Amazon's catalog removed a listing, with the listing's link (MatchRecord.verifyEvidence). */
   verifyEvidence?: string;
+  /**
+   * Signals round 2: the fees the estimate used for one unit of this part, each with where it came from: Keepa's figure for
+   * the part's listing (fees.fulfillmentSource / referralSource 'keepa' and a stored figure) or the flat setting. Absent
+   * while the part has no counted price.
+   */
+  fees?: PartFees;
+}
+
+/** Signals round 2: one part's fees in the estimate (report.ts feesOf). Estimates, never the seller's real fees. */
+export interface PartFees {
+  fulfillment: number;
+  fulfillmentFrom: 'keepa' | 'flat';
+  /** A fraction (0.15). */
+  referralRate: number;
+  referralFrom: 'keepa' | 'flat';
 }
 
 /**

@@ -152,6 +152,9 @@ function feeProblem(f: FeeSettings): string | null {
   if (!isAtLeastZero(f.minReferral)) return 'Use a minimum referral fee of $0 or more.';
   if (!isAtLeastZero(f.salesTaxRate)) return 'Use a sales tax of 0% or more.';
   if (!isAtLeastZero(f.inboundCost)) return 'Use an inbound cost per bundle of $0 or more.';
+  const sources: (string | undefined)[] = [undefined, 'keepa', 'flat'];
+  if (!sources.includes(f.fulfillmentSource)) return "Choose Amazon's FBA fee from Keepa or a flat amount for fulfillment.";
+  if (!sources.includes(f.referralSource)) return "Choose Keepa's referral rate or your own.";
   return null;
 }
 

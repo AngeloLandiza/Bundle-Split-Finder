@@ -14,7 +14,17 @@ export interface FeeSettings {
   salesTaxRate: number;
   /** Per-bundle cost to get stock to Amazon or to the buyer. */
   inboundCost: number;
+  /**
+   * Signals round 2: where a part's fulfillment fee comes from. 'keepa': Amazon's FBA pick-and-pack fee Keepa stored for
+   * the part's listing, else `fulfillmentFee`; 'flat': `fulfillmentFee` for every unit. Absent reads as 'flat' (a store
+   * written before it; the agent migrates once, agent/store.ts FULFILLMENT_KEEPA_MIGRATION).
+   */
+  fulfillmentSource?: FeeSource;
+  /** Where a part's referral rate comes from: 'keepa' (Keepa's referralFeePercentage when stored) or 'flat' (`referralRate`). Absent: 'flat'. */
+  referralSource?: FeeSource;
 }
+
+export type FeeSource = 'keepa' | 'flat';
 
 export const DEFAULT_FEES: FeeSettings = {
   referralRate: 0.15,
@@ -22,13 +32,21 @@ export const DEFAULT_FEES: FeeSettings = {
   minReferral: 0.3,
   salesTaxRate: 0,
   inboundCost: 0,
+  fulfillmentSource: 'keepa',
+  referralSource: 'flat',
 };
+
+/** One listing's own fees in place of the settings' (Keepa's, for its listing). Absent fields keep the settings. */
+export interface ListingFees {
+  fulfillmentFee?: number;
+  referralRate?: number;
+}
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
-export function amazonNet(price: number, fees: FeeSettings = DEFAULT_FEES): number {
-  const referral = Math.max(price * fees.referralRate, fees.minReferral);
-  return round2(price - referral - fees.fulfillmentFee);
+export function amazonNet(price: number, fees: FeeSettings = DEFAULT_FEES, own: ListingFees = {}): number {
+  const referral = Math.max(price * (own.referralRate ?? fees.referralRate), fees.minReferral);
+  return round2(price - referral - (own.fulfillmentFee ?? fees.fulfillmentFee));
 }
 
 export interface BundleResult {

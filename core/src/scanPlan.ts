@@ -9,7 +9,7 @@
 // next scan and reported, never silently dropped.
 
 import { bestPlan, type Listing, type Plan } from './optimize';
-import { amazonNet, bundleProfit, type BundleResult, DEFAULT_FEES, type FeeSettings } from './money';
+import { amazonNet, bundleProfit, type BundleResult, DEFAULT_FEES, type FeeSettings, type ListingFees } from './money';
 
 export interface ScanRequest {
   /** Listing pages the settings ask for (brands x pages). */
@@ -63,6 +63,8 @@ export interface PricedListing {
   covers: Record<string, number>;
   /** Current Amazon price. */
   price: number;
+  /** Signals round 2: this listing's own fees (Keepa's FBA fee, referral rate) in place of the settings'. */
+  fees?: ListingFees;
 }
 
 export interface BundleEvaluation {
@@ -84,7 +86,7 @@ export function evaluateBundle(
   fees: FeeSettings = DEFAULT_FEES,
   liquidationRate = 0,
 ): BundleEvaluation {
-  const listings: Listing[] = priced.map((p) => ({ id: p.asin, covers: p.covers, net: amazonNet(p.price, fees) }));
+  const listings: Listing[] = priced.map((p) => ({ id: p.asin, covers: p.covers, net: amazonNet(p.price, fees, p.fees) }));
   const units = Object.values(components).reduce((a, b) => a + b, 0) || 1;
   const perPart = (bundlePrice / units) * liquidationRate;
   const liquidation = Object.fromEntries(Object.keys(components).map((m) => [m, Math.round(perPart * 100) / 100]));

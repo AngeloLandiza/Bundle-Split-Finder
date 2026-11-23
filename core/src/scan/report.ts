@@ -3,7 +3,8 @@
 
 import { type KitItem, kitIndex, kitItemParts, kitPageStored, kitPageUnread, type KitRecord, kitRecords, splitItems } from '../kitContents';
 import { isBulkPackaging } from '../match';
-import { priceForNet, type BundleResult } from '../money';
+import { priceForNet, type BundleResult, type FeeSettings, type ListingFees } from '../money';
+import type { PartTrend } from '../keepa/trends';
 import { evaluateBundle, type PricedListing } from '../scanPlan';
 import { choicesOf, ownerAnswer } from './answers';
 import { kitCatalog, kitPageTarget } from './kitPage';
@@ -24,6 +25,7 @@ import {
   type MatchRecord,
   type VerifiedBy,
   type PartAvailability,
+  type PartFees,
   type PartPriceRecord,
   type PartRow,
   type PriceKind,
@@ -54,9 +56,20 @@ interface RefsOf {
   ebay(brand: string, model: string): EbayValueRecord | undefined;
   /** The owner's confirmed price for this part only. A twin's price is a different product. */
   confirmed(brand: string, model: string): ConfirmedPrice | undefined;
+  /** Signals round 2: Keepa's stored figures for a listing (keepa:trend:<asin>), when the caller read them. */
+  trend(asin: string): KeepaFees | undefined;
 }
 
-async function refsOf(store: ScanStore): Promise<RefsOf> {
+/** What the estimate may take from a listing's stored Keepa trend. */
+export type KeepaFees = Pick<PartTrend, 'fbaFee' | 'referralPercent'>;
+
+/** Signals round 2: what buildReport may read beside the store. Without `trend`, every part takes the flat settings. */
+export interface ReportOptions {
+  /** A listing's stored Keepa trend (core/src/keepa/trends.ts readTrends), or undefined. */
+  trend?: (asin: string) => KeepaFees | undefined;
+}
+
+async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsOf> {
   const hdByKey = new Map((await store.listPartPrices()).filter((r) => r.price !== null).map((r) => [r.key, r] as const));
   const ebayByKey = new Map((await store.listEbayValues()).filter((r) => r.value !== null).map((r) => [r.key, r] as const));
   const confirmedByKey = new Map((await store.listConfirmedPrices()).map((r) => [r.key, r] as const));
@@ -71,8 +84,32 @@ async function refsOf(store: ScanStore): Promise<RefsOf> {
     hd: (brand, model) => first(hdByKey, brand, model),
     ebay: (brand, model) => first(ebayByKey, brand, model),
     confirmed: (brand, model) => confirmedByKey.get(partKey(brand, model)),
+    trend: (asin) => opts.trend?.(asin),
   };
 }
+
+/**
+ * Signals round 2: the fees one unit of a part is estimated with. With fulfillmentSource 'keepa', Amazon's FBA
+ * pick-and-pack fee Keepa stored for the part's own listing, else the flat fee; with referralSource 'keepa', Keepa's
+ * referral percentage for the listing, else the owner's rate. A part priced by a confirmed price (no listing of its own
+ * counted) takes the flat settings. Never a figure from another listing (rule 4).
+ */
+export function feesOf(fees: FeeSettings, listing: KeepaFees | undefined): PartFees {
+  const fba = fees.fulfillmentSource === 'keepa' && typeof listing?.fbaFee === 'number' && listing.fbaFee >= 0 ? listing.fbaFee : null;
+  const ref = fees.referralSource === 'keepa' && typeof listing?.referralPercent === 'number' && listing.referralPercent > 0 && listing.referralPercent < 100
+    ? Math.round(listing.referralPercent * 100) / 10_000
+    : null;
+  return {
+    fulfillment: fba ?? fees.fulfillmentFee, fulfillmentFrom: fba === null ? 'flat' : 'keepa',
+    referralRate: ref ?? fees.referralRate, referralFrom: ref === null ? 'flat' : 'keepa',
+  };
+}
+
+/** The listing's own fees for evaluateBundle: only those taken from Keepa (the flat ones are the settings already). */
+const ownFees = (f: PartFees | undefined): ListingFees | undefined =>
+  !f || (f.fulfillmentFrom === 'flat' && f.referralFrom === 'flat')
+    ? undefined
+    : { ...(f.fulfillmentFrom === 'keepa' ? { fulfillmentFee: f.fulfillment } : {}), ...(f.referralFrom === 'keepa' ? { referralRate: f.referralRate } : {}) };
 
 /** Ties among equal prices go in this order. */
 const KIND_ORDER: Record<PriceKind, number> = { amazon_new: 0, amazon_buybox: 1, confirmed: 2, ebay_sold_new: 3, amazon_list: 4, homedepot: 5 };
@@ -137,7 +174,8 @@ const countedPrices = (p: PartRow): number[] =>
 function listingFor(p: PartRow): PricedListing | null {
   if (p.availability === 'active' && p.asin !== null) {
     const featured = p.prices.find((o) => o.kind === 'amazon_new' && !o.reference);
-    if (featured) return { asin: p.asin, covers: { [p.model]: 1 }, price: featured.price };
+    const own = ownFees(p.fees);
+    if (featured) return { asin: p.asin, covers: { [p.model]: 1 }, price: featured.price, ...(own ? { fees: own } : {}) };
   }
   const confirmed = p.prices.find((o) => o.kind === 'confirmed' && !o.reference);
   return confirmed ? { asin: `confirmed:${p.model}`, covers: { [p.model]: 1 }, price: confirmed.price } : null;
@@ -160,6 +198,8 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
     );
     const featured = prices.find((o) => o.kind === 'amazon_new' && !o.reference);
     const confirmedOpt = prices.find((o) => o.kind === 'confirmed' && !o.reference);
+    // The fees of a counted price: Keepa's for the listing whose Amazon New price counts, the flat settings for a confirmed one.
+    const fees = featured && match?.asin ? feesOf(settings.fees, refs.trend(match.asin)) : confirmedOpt ? feesOf({ ...settings.fees, fulfillmentSource: 'flat', referralSource: 'flat' }, undefined) : undefined;
     rows.push({
       model,
       qty: counts[model]!,
@@ -175,6 +215,7 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
       // The PO (Nov 18): a New listing in bulk packaging is a place to sell; the panel labels it.
       ...(listing && isBulkPackaging(listing.title) ? { packaging: 'bulk' as const } : {}),
       ...verification(match),
+      ...(fees ? { fees } : {}),
     });
   }
   return rows;
@@ -378,7 +419,8 @@ function rangeOf(
     const priced: PricedListing[] = [
       ...parts.flatMap((p) => {
         const prices = countedPrices(p);
-        return prices.length > 0 ? [{ asin: p.model, covers: { [p.model]: 1 }, price: end(prices) }] : [];
+        const own = ownFees(p.fees);
+        return prices.length > 0 ? [{ asin: p.model, covers: { [p.model]: 1 }, price: end(prices), ...(own ? { fees: own } : {}) }] : [];
       }),
       ...extras,
     ];
@@ -486,22 +528,22 @@ async function bundleRow(
  * Part rows for models no bundle's split holds, as the report builds a bundle's parts (a BOGO's free items,
  * core/src/tracking/bogo.ts): the stored match, listing and every labelled price. Reads only.
  */
-export async function partRowsFor(store: ScanStore, settings: ScanSettings, parts: { brand: string; model: string; qty: number }[]): Promise<PartRow[]> {
-  const refs = await refsOf(store);
+export async function partRowsFor(store: ScanStore, settings: ScanSettings, parts: { brand: string; model: string; qty: number }[], opts: ReportOptions = {}): Promise<PartRow[]> {
+  const refs = await refsOf(store, opts);
   const out: PartRow[] = [];
   for (const p of parts) out.push(...(await partRows(store, settings, refs, p.brand, { [p.model]: p.qty })));
   return out;
 }
 
 /** One bundle's row, exactly as buildReport builds it. A product page the owner has open shows it (pageView.ts). Reads only. */
-export async function reportRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
+export async function reportRow(store: ScanStore, settings: ScanSettings, b: BundleRecord, opts: ReportOptions = {}): Promise<BundleRow> {
   const stored = await store.listBundles();
   // Nov 23: with the kits Home Depot's part pages name (partPriceKits), so a kit no listing page showed is "not read".
   const catalog = await kitCatalog(store);
-  return bundleRow(store, settings, b, kitIndex(kitRecords(stored, catalog)), await refsOf(store), stored, catalog);
+  return bundleRow(store, settings, b, kitIndex(kitRecords(stored, catalog)), await refsOf(store, opts), stored, catalog);
 }
 
-export async function buildReport(store: ScanStore, settings: ScanSettings): Promise<ScanReport> {
+export async function buildReport(store: ScanStore, settings: ScanSettings, opts: ReportOptions = {}): Promise<ScanReport> {
   const bundles: BundleRow[] = [];
   // The parts some bundle's split holds now, as the lookups see them (resolved splits only, bundleParts):
   // with the items of every kit a bundle's options split, whatever the kit's own listing, as those
@@ -511,7 +553,7 @@ export async function buildReport(store: ScanStore, settings: ScanSettings): Pro
   // Nov 23: with the kits Home Depot's part pages name (partPriceKits), so a kit no listing page showed is "not read".
   const catalog = await kitCatalog(store);
   const recordsOf = kitIndex(kitRecords(stored, catalog));
-  const refs = await refsOf(store);
+  const refs = await refsOf(store, opts);
   for (const b of stored) {
     bundles.push(await bundleRow(store, settings, b, recordsOf, refs, stored, catalog));
     for (const part of [...resolvedParts(b), ...kitItemParts(b, recordsOf)]) held.add(part.key);
@@ -554,4 +596,48 @@ async function ebayQuestions(store: ScanStore, held: Set<string>): Promise<EbayQ
     }
   }
   return out.sort((a, b) => a.openedAt - b.openedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+}
+
+// ---------------------------------------------------------------- the estimate's basis (rule 5)
+
+const basisPct = (rate: number): string => `${Math.round(rate * 10_000) / 100}%`;
+const basisUsd = (n: number): string => `$${n.toFixed(2)}`;
+const basisList = (xs: string[]): string => (xs.length <= 2 ? xs.join(' and ') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
+const perUnit = (fee: string, qty: number): string => (qty > 1 ? `${fee} ×${qty}` : fee);
+
+/**
+ * Signals round 2: the fees an estimate rests on, in one sentence that says exactly what was used. With the flat settings,
+ * the settings in words ("15% referral (at least $0.30), $0.00 fulfillment, 0% tax, $0.00 inbound. An estimate from your
+ * fee settings, not your real Amazon fees."). With Keepa's FBA fee, for how many of the counted parts it was stored, each
+ * part's fee, and the flat fee the others took ("15% referral (at least $0.30); Amazon's FBA fee from Keepa for 2 of 2 parts
+ * ($5.40, $7.12); 0% tax; $0.00 inbound. An estimate, not your real Amazon fees."). `parts`: the counted parts, each with
+ * the fees the estimate used (PartRow.fees).
+ */
+export function estimateBasis(fees: FeeSettings, parts: Pick<PartRow, 'model' | 'qty' | 'fees'>[]): string {
+  const counted = parts.filter((p): p is typeof p & { fees: PartFees } => p.fees !== undefined);
+  const keepaFba = fees.fulfillmentSource === 'keepa';
+  const keepaRef = fees.referralSource === 'keepa';
+  const minRef = `(at least ${basisUsd(fees.minReferral)})`;
+  if (!keepaFba && !keepaRef) {
+    return `${basisPct(fees.referralRate)} referral ${minRef}, ${basisUsd(fees.fulfillmentFee)} fulfillment, ${basisPct(fees.salesTaxRate)} tax, ${basisUsd(fees.inboundCost)} inbound. An estimate from your fee settings, not your real Amazon fees.`;
+  }
+  const n = counted.length;
+  const noun = n === 1 ? 'part' : 'parts';
+  let referral = `${basisPct(fees.referralRate)} referral ${minRef}`;
+  if (keepaRef) {
+    const from = counted.filter((p) => p.fees.referralFrom === 'keepa');
+    const flat = counted.filter((p) => p.fees.referralFrom === 'flat').map((p) => p.model);
+    referral = from.length === 0
+      ? `your ${basisPct(fees.referralRate)} referral ${minRef}: Keepa's referral rate is stored for none of the ${n} ${noun}`
+      : `Keepa's referral rate for ${from.length} of ${n} ${noun} (${from.map((p) => basisPct(p.fees.referralRate)).join(', ')})${flat.length ? `, your ${basisPct(fees.referralRate)} for ${basisList(flat)}` : ''}, at least ${basisUsd(fees.minReferral)}`;
+  }
+  let fulfillment = `${basisUsd(fees.fulfillmentFee)} fulfillment`;
+  if (keepaFba) {
+    const from = counted.filter((p) => p.fees.fulfillmentFrom === 'keepa');
+    const flat = counted.filter((p) => p.fees.fulfillmentFrom === 'flat').map((p) => p.model);
+    fulfillment = from.length === 0
+      ? `no FBA fee from Keepa stored for the ${n} ${noun} yet, so your flat ${basisUsd(fees.fulfillmentFee)} fulfillment`
+      : `Amazon's FBA fee from Keepa for ${from.length} of ${n} ${noun} (${from.map((p) => perUnit(basisUsd(p.fees.fulfillment), p.qty)).join(', ')})${flat.length ? `, your flat ${basisUsd(fees.fulfillmentFee)} for ${basisList(flat)}` : ''}`;
+  }
+  return `${referral}; ${fulfillment}; ${basisPct(fees.salesTaxRate)} tax; ${basisUsd(fees.inboundCost)} inbound. An estimate, not your real Amazon fees.`;
 }
