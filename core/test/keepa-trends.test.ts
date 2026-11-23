@@ -53,12 +53,25 @@ describe('the Keepa fields tracking reads, from the recorded product response', 
     expect([bare.monthlySold, bare.fbaFee, bare.buyBoxEligibleOffers]).toEqual([null, null, null]);
   });
 
-  it('a price_only refresh asks for stats (free), so a recorded product with stats.current yields its New price and rank', async () => {
+  // Recorded Nov 23 with stats (b40df37): Amazon itself (stats.current[0]) is -1 for all three, so the price is the lowest
+  // New offer (current[1]); without that fallback every refresh of these parts would carry no price.
+  const withStats = JSON.parse(
+    readFileSync(new URL('../../fixtures/keepa/product-B0BGYFTPGK-B01H9BL8EO-B09M3TL9BB-stats.json', import.meta.url), 'utf8'),
+  ) as Record<string, unknown>;
+
+  it('the stats recording: Amazon offers none of the three, so each price is the lowest New offer', () => {
+    const recorded = withStats.products as { asin: string; stats: { current: number[] } }[];
+    expect(recorded.map((p) => p.stats.current[0])).toEqual([-1, -1, -1]);
+    const parsed = parseProductResponse(withStats).products;
+    expect(parsed.map((p) => [p.asin, p.amazonPrice, p.amazonPriceSource, p.monthlySold])).toEqual([
+      ['B0BGYFTPGK', 4489, 'new_lowest', 500],
+      ['B01H9BL8EO', 10596, 'new_lowest', 1000],
+      ['B09M3TL9BB', 15499, 'new_lowest', 600],
+    ]);
+  });
+
+  it('a price_only refresh asks for stats (free), so the recorded DCF921B yields its lowest New price and rank', async () => {
     const urls: string[] = [];
-    // The recorded DCF921B product as Keepa answers once stats is asked for: Keepa's documented stats.current
-    // (statistics-object.html: 0 AMAZON, 1 NEW, 3 SALES; -1 no offer). Amazon does not sell it; the lowest New offer is $199.00.
-    const recorded = (body.products as Record<string, unknown>[]).find((p) => p.asin === 'B09M3TL9BB')!;
-    const withStats = { ...body, products: [{ ...recorded, stats: { current: [-1, 19900, -1, 2345] } }] };
     const fetchFn = (async (url: string) => {
       urls.push(url);
       return new Response(JSON.stringify(urls.length === 1 ? withStats : body), { status: 200 });
@@ -67,9 +80,9 @@ describe('the Keepa fields tracking reads, from the recorded product response', 
     const r = await keepaProductSearchResult(client, 'B09M3TL9BB', { label: 'refresh', trackingDepth: 'price_only' });
     expect(new URL(urls[0]!).searchParams.get('stats')).toBe('180');
     expect(new URL(urls[0]!).searchParams.get('offers')).toBeNull();
-    expect((r.data as { product_results: { extracted_price: number } }).product_results.extracted_price).toBe(199);
-    expect(r.keepaProduct).toMatchObject({ amazonPrice: 19900, amazonPriceSource: 'new_lowest', statsSalesRank: 2345 });
-    expect(partTrendFromProduct(r.keepaProduct!, 1)).toMatchObject({ amazonPrice: 199, salesRank: 2345, monthlySold: 600 });
+    expect((r.data as { product_results: { extracted_price: number } }).product_results.extracted_price).toBe(154.99);
+    expect(r.keepaProduct).toMatchObject({ amazonPrice: 15499, amazonPriceSource: 'new_lowest', statsSalesRank: 20250 });
+    expect(partTrendFromProduct(r.keepaProduct!, 1)).toMatchObject({ amazonPrice: 154.99, salesRank: 20250, monthlySold: 600 });
 
     // The response recorded on Nov 22 was pulled without stats: it has no price at all, which is why refreshes were blind.
     await client.getProducts(['B09M3TL9BB', 'X'], 1, { trackingDepth: 'full', estimate: 26 });
