@@ -19,7 +19,7 @@ const server = createServer(agent.handle);
 server.requestTimeout = 0;
 server.headersTimeout = 30_000;
 
-server.listen(port, '127.0.0.1', () => console.log(`Split Finder agent on http://127.0.0.1:${port}/`));
+server.listen(port, '127.0.0.1', () => console.log(`Split Finder agent on http://127.0.0.1:${port}/ (node ${process.version})`));
 
 let stopping = false;
 function stop(): void {

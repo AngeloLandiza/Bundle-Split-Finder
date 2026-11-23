@@ -16,7 +16,7 @@ Honest status: working on macOS. Not done: Windows packaging, keychain for keys,
 
 | Piece | Detail |
 | --- | --- |
-| Processes | The Tauri shell starts the agent as a bundled sidecar (`binaries/agent-dashboard`, built from `agent/` by `desktop:bundle-agent`). The UI runs in the shell's window. The extension runs in Chrome. |
+| Processes | The Tauri shell starts the agent as a bundled sidecar (`binaries/agent-dashboard`, a Node single executable built from `agent/` by `desktop:bundle-agent`). The UI runs in the shell's window. The extension runs in Chrome. |
 | Port | `127.0.0.1:8790` only. The agent checks Host (no DNS rebinding) and Origin (the app's own or the paired extension's). |
 | Auth | The app uses a token file, `<app-data>/agent-token` (owner-only). The shell injects it into the UI. The extension pairs once: a 6-digit code approved in the app returns its own token. Only a hash of each token is kept. No endpoint returns a key. |
 | Store | One writer, the agent. JSON files under `<app-data>/store/`, written to a temp file and renamed. A lock file refuses a second agent on the same folder. Keys are in `store/keys.json`, mode 0600. |
