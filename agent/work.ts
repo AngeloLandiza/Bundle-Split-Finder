@@ -171,8 +171,6 @@ export class AgentWork {
 
   /** Scan now (the owner's button). A scan the owner starts may spend the reserve, as in the extension. */
   scanNow(): ScanStartResponse {
-    if (this.live.busy === 'scan') throw new WorkRefused('A scan is already running.');
-    if (this.live.busy) throw new WorkRefused(this.live.busy === 'ask' ? 'The AI is asking about Review questions. Stop it first, or wait for it to finish.' : 'A Look up or Verify is running. Scan when it has finished.');
     const at = this.d.now();
     this.begin('scan', () => this.scan('manual'));
     return { id: `scan-${at}`, requestedAt: new Date(at).toISOString() };
@@ -187,24 +185,54 @@ export class AgentWork {
     return true;
   }
 
-  private begin(kind: 'scan' | 'ask' | 'paid', work: () => Promise<void>): void {
+  /**
+   * Claims the one slot synchronously, before any await, so two clicks or a tick in between cannot start two paid
+   * runs (each would get its own SearchBudget and spend the per-scan cap twice). Throws WorkRefused when taken.
+   */
+  private claim(kind: 'scan' | 'ask' | 'paid'): void {
+    if (this.live.busy) throw new WorkRefused(this.busySentence(kind));
     this.live.busy = kind;
     this.live.stopping = false;
     this.live.pipeline = null;
     this.live.searchesUsed = 0;
     this.stopCtl = new AbortController();
     this.d.changed();
-    this.current = work()
-      .catch(() => {
-        // Each piece of work records its own failure; nothing escapes.
-      })
+  }
+
+  private busySentence(want: 'scan' | 'ask' | 'paid'): string {
+    const busy = this.live.busy;
+    if (want === 'scan') {
+      if (busy === 'scan') return 'A scan is already running.';
+      if (busy === 'ask') return 'The AI is asking about Review questions. Stop it first, or wait for it to finish.';
+      return 'A Look up or Verify is running. Scan when it has finished.';
+    }
+    if (want === 'ask') return busy === 'scan' ? 'A scan is running. Ask again when it has finished.' : 'Something is running. Ask again when it has finished.';
+    return 'Something is running. Try again when it has finished.';
+  }
+
+  /** Runs claimed work in the background; the slot is free again when it ends, however it ends. */
+  private track<T>(work: Promise<T>): Promise<T> {
+    const done = work
+      .then(
+        () => undefined,
+        () => {
+          // Each piece of work records its own failure; nothing escapes here (the caller still sees `work` reject).
+        },
+      )
       .finally(() => {
         this.live.busy = null;
         this.live.stopping = false;
         this.live.pipeline = null;
-        this.current = null;
+        if (this.current === done) this.current = null;
         this.d.changed();
       });
+    this.current = done;
+    return work;
+  }
+
+  private begin(kind: 'scan' | 'ask' | 'paid', work: () => Promise<void>): void {
+    this.claim(kind);
+    void this.track(work()).catch(() => {});
   }
 
   // ------------------------------------------------------------------ the run
@@ -542,7 +570,6 @@ export class AgentWork {
 
   /** Ask AI now, about one question or every open one (the app's buttons). Runs in the background. */
   askNow(only?: string[]): void {
-    if (this.live.busy) throw new WorkRefused(this.live.busy === 'scan' ? 'A scan is running. Ask again when it has finished.' : 'Something is running. Ask again when it has finished.');
     this.begin('ask', async () => {
       const startedAt = this.d.now();
       const run: RunRecord = { id: `run-${startedAt}`, kind: 'ask', startedAt: new Date(startedAt).toISOString(), finishedAt: null, status: 'running', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: 'Asking the AI.', trigger: 'manual' };
@@ -626,8 +653,13 @@ export class AgentWork {
   }
 
   /** Look up or Verify, the owner's click: within the per-scan limit, and like Scan now it may spend the reserve. */
-  async paid(bundleKey: string, kind: 'lookUp' | 'verify', model?: string): Promise<{ searchesUsed: number }> {
-    if (this.live.busy) throw new WorkRefused('Something is running. Try again when it has finished.');
+  paid(bundleKey: string, kind: 'lookUp' | 'verify', model?: string): Promise<{ searchesUsed: number }> {
+    // The slot is taken before the first await; a refusal below frees it (track).
+    this.claim('paid');
+    return this.track(this.paidClaimed(bundleKey, kind, model));
+  }
+
+  private async paidClaimed(bundleKey: string, kind: 'lookUp' | 'verify', model?: string): Promise<{ searchesUsed: number }> {
     const keys = this.d.store.get('keys');
     if (!keys.serpapi) throw new WorkRefused('Add your SerpApi key in Settings.');
     const { action } = await this.paidPlan(bundleKey, kind, model);
@@ -643,33 +675,24 @@ export class AgentWork {
     if (quote.refusal) throw new WorkRefused(quote.refusal);
     const ledger = this.ledger('serpapi-ledger.jsonl');
     const client = new SerpApiClient({ apiKey: keys.serpapi, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl, onSpend: (e) => ledger(e) });
-    let resolveDone: (v: number) => void = () => {};
-    let rejectDone: (e: unknown) => void = () => {};
-    const done = new Promise<number>((res, rej) => {
-      resolveDone = res;
-      rejectDone = rej;
-    });
-    this.begin('paid', async () => {
-      const startedAt = this.d.now();
-      const run: RunRecord = { id: `run-${startedAt}`, kind: kind === 'verify' ? 'verify' : 'lookup', startedAt: new Date(startedAt).toISOString(), finishedAt: null, status: 'running', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: '', trigger: 'manual' };
-      try {
-        await runPaid({ client, budget, store: this.scanStore, now: this.d.now, settings: toScanSettings(ext), shouldStop: () => (this.stopCtl.signal.aborted ? 'Stopped.' : null) }, action);
-        run.status = 'finished';
-        run.summary = `${kind === 'verify' ? 'Verify' : 'Look up'}: ${budget.spentThisRun} ${budget.spentThisRun === 1 ? 'search' : 'searches'}.`;
-        await this.refresh();
-        resolveDone(budget.spentThisRun);
-      } catch (err) {
-        run.status = 'failed';
-        run.error = scrub(err instanceof PaidProblem ? err.message : sentenceOf(err), keys);
-        run.summary = run.error;
-        rejectDone(new WorkRefused(run.error));
-      } finally {
-        run.searchesUsed = budget.spentThisRun;
-        run.finishedAt = new Date(this.d.now()).toISOString();
-        this.record(run);
-      }
-    });
-    return { searchesUsed: await done };
+    const startedAt = this.d.now();
+    const run: RunRecord = { id: `run-${startedAt}`, kind: kind === 'verify' ? 'verify' : 'lookup', startedAt: new Date(startedAt).toISOString(), finishedAt: null, status: 'running', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: '', trigger: 'manual' };
+    try {
+      await runPaid({ client, budget, store: this.scanStore, now: this.d.now, settings: toScanSettings(ext), shouldStop: () => (this.stopCtl.signal.aborted ? 'Stopped.' : null) }, action);
+      run.status = 'finished';
+      run.summary = `${kind === 'verify' ? 'Verify' : 'Look up'}: ${budget.spentThisRun} ${budget.spentThisRun === 1 ? 'search' : 'searches'}.`;
+      await this.refresh();
+      return { searchesUsed: budget.spentThisRun };
+    } catch (err) {
+      run.status = 'failed';
+      run.error = scrub(err instanceof PaidProblem ? err.message : sentenceOf(err), keys);
+      run.summary = run.error;
+      throw new WorkRefused(run.error);
+    } finally {
+      run.searchesUsed = budget.spentThisRun;
+      run.finishedAt = new Date(this.d.now()).toISOString();
+      this.record(run);
+    }
   }
 
   // ------------------------------------------------------------------ messages

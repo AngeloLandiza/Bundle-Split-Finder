@@ -5,10 +5,12 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { ActivityResponse, AgentState, ReviewResponse } from '../../core/src/api/contract';
+import { AnswerRefused } from '../../core/src/scan/answers';
 import type { runScan } from '../../core/src/scan/runner';
 import * as fx from '../../core/test/fixtures';
 import { replayRecorded } from '../../scripts/replay';
 import { createAgent, type Agent, type AgentOptions } from '../app';
+import { WorkRefused } from '../work';
 
 // The agent scans by itself: the owner's SerpApi key from the store, the recorded responses behind a fake fetch
 // (the real SerpApiClient and SearchBudget, nothing reaches the network), no Chrome connected, and a Telegram bot.
@@ -168,5 +170,26 @@ describe('the schedule', () => {
     expect(await json('/api/scan/stop', { method: 'POST' })).toEqual({ stopping: true });
     await agent.work.idle();
     expect(sawStop).toBe(true);
+  });
+
+  it('a Look up holds the one slot from the click, before its first await: nothing else starts meanwhile', async () => {
+    await start();
+    await put('/api/keys/serpapi', { key: SERP_KEY });
+    let fail: (e: unknown) => void = () => {};
+    const planned = new Promise<never>((_res, rej) => (fail = rej));
+    agent.work.paidPlan = () => planned;
+    const first = agent.work.paid('B', 'lookUp');
+    expect(agent.work.state().busy).toBe('paid');
+    expect(() => agent.work.scanNow()).toThrow(WorkRefused);
+    expect(() => agent.work.askNow()).toThrow(WorkRefused);
+    expect(() => agent.work.paid('B', 'lookUp')).toThrow(WorkRefused);
+    await patch({ settings: { schedule: { mode: 'interval', hours: 6 } } });
+    clock += 6 * 3_600_000;
+    expect(agent.work.tick()).toBe(false);
+    // A refusal after the claim frees the slot.
+    fail(new AnswerRefused('No such deal.'));
+    await expect(first).rejects.toThrow('No such deal.');
+    await agent.work.idle();
+    expect(agent.work.state().busy).toBeNull();
   });
 });
