@@ -35,6 +35,12 @@ export function rejectedKeysWords(state: Pick<AppState, 'keys' | 'keyProblems'> 
 }
 
 /** "Keepa 57 tokens · 1 a minute", only when a Keepa key is saved and the agent has said its tokens. */
+/** "24 fee lookups waiting": the Keepa pulls that fill in Amazon's fulfillment fee, when the agent says some wait. */
+export function feeLookupWords(drip: { feesWaiting?: number } | undefined): string | null {
+  const n = drip?.feesWaiting ?? 0;
+  return n > 0 ? `${new Intl.NumberFormat('en-US').format(n)} fee ${n === 1 ? 'lookup' : 'lookups'} waiting` : null;
+}
+
 export function keepaWords(state: Pick<AppState, 'keys' | 'budget'> | null): string | null {
   if (!state || !state.keys.keepa || state.budget.keepaTokens === null) return null;
   const tokens = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(state.budget.keepaTokens);

@@ -125,7 +125,7 @@ function dripOf(v: unknown): Drip | undefined {
   const o = v as Record<string, unknown>;
   const waiting = num(o.waiting);
   if (typeof o.active !== 'boolean' || waiting === undefined) return undefined;
-  return { active: o.active, waiting, nextAt: typeof o.nextAt === 'string' ? o.nextAt : null, lastLookupAt: typeof o.lastLookupAt === 'string' ? o.lastLookupAt : null };
+  return { active: o.active, waiting, nextAt: typeof o.nextAt === 'string' ? o.nextAt : null, lastLookupAt: typeof o.lastLookupAt === 'string' ? o.lastLookupAt : null, ...(num(o.feesWaiting) ? { feesWaiting: num(o.feesWaiting)! } : {}) };
 }
 
 const KEYS_WITH_PROBLEMS: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram'];
@@ -397,6 +397,8 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     seenAt: iso(b.seenAt),
     link: b.link,
     estimate: e ? { profit: e.profit, roi: e.roi, roiRange: priceRangeOf(b.range), cost: e.cost, partsSellFor: e.partsSellFor, afterFees: e.afterFees, basis: e.basis, countedAtZero: e.countedAtZero } : null,
+    signalNote: d.row.signalNote ?? null,
+    beforeFulfillment: d.row.beforeFulfillment ?? null,
     ...(d.incompleteEstimate ? { incomplete: d.incompleteEstimate } : {}),
     noEstimate: e ? null : noEstimateSentence(b),
     ways: b.options.map(wayOf),

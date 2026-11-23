@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { STATE } from '../api/mockData';
 import type { AppState } from '../api/types';
+import { feeLookupWords } from './keyStatus';
 import { sidebarStatus } from './sidebarStatus';
 
 const NOW = Date.parse('2026-11-23T10:00:00');
@@ -23,6 +24,13 @@ describe('the sidebar status', () => {
       NOW,
     );
     expect(v).toEqual({ state: 'Idle', running: false, when: 'Last scan 51 min ago', usage: '119 searches left · Keepa 57 tokens', problem: { text: 'eBay key not accepted', to: { screen: 'settings', id: 'keys' } } });
+  });
+
+  it('folds the fee lookups into the usage line when some wait, never a fifth line', () => {
+    const v = sidebarStatus(make((s) => { s.budget = { ...s.budget, serpLeft: 119, keepaTokens: 13, keepaRefillPerMin: 1 }; s.agent.drip = { active: true, waiting: 0, nextAt: null, lastLookupAt: null, feesWaiting: 24 }; }), NOW);
+    expect(v.usage).toBe('119 searches left · 24 fee lookups waiting · Keepa 13 tokens');
+    expect(sidebarStatus(make((s) => { s.agent.drip = { active: true, waiting: 0, nextAt: null, lastLookupAt: null }; }), NOW).usage).not.toMatch(/fee lookup/);
+    expect(feeLookupWords({ feesWaiting: 1 })).toBe('1 fee lookup waiting');
   });
 
   it('says the next scan when one is planned', () => {

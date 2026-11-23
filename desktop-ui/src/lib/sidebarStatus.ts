@@ -4,7 +4,7 @@
 
 import type { AppState } from '../api/types';
 import { count, when } from './format';
-import { keepaWords, rejectedKeysWords } from './keyStatus';
+import { feeLookupWords, keepaWords, rejectedKeysWords } from './keyStatus';
 import { agentWords } from '../components/StatusLine';
 import type { Route } from './route';
 
@@ -48,7 +48,9 @@ export function sidebarStatus(state: AppState, now: number = Date.now()): Sideba
   const keepa = keepaWords(state);
   // "Keepa 57 tokens · 1 a minute": the rate is in Today's Agent card.
   const keepaShort = keepa ? keepa.split(' · ')[0]! : null;
-  const usage = keepaShort ? `${searches} · ${keepaShort}` : searches;
+  // Fee lookups fold into this line (never a fifth): "119 searches left · 24 fee lookups waiting · Keepa 57 tokens".
+  const fees = feeLookupWords(agent.drip);
+  const usage = [searches, fees, keepaShort].filter((x): x is string => !!x).join(' · ');
 
   let problem: SidebarStatus['problem'] = null;
   const rejected = rejectedKeysWords(state);

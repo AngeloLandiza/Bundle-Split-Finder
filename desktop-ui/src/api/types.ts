@@ -97,6 +97,8 @@ export interface Drip {
   waiting: number;
   nextAt: string | null;
   lastLookupAt: string | null;
+  /** Keepa fee pulls waiting (Amazon's fulfillment fee for parts of bundles with an estimate); absent when none. */
+  feesWaiting?: number;
 }
 
 export interface AgentView {
@@ -325,6 +327,10 @@ export interface DealDetail {
   seenAt: string | null;
   link: string | null;
   estimate: Estimate | null;
+  /** The row's one-sentence verdict, in full (every row with an estimate carries one). */
+  signalNote?: string | null;
+  /** The estimate counts no fulfillment fee for `parts` of its `of` parts. */
+  beforeFulfillment?: { parts: number; of: number } | null;
   /** Nov 23: in place of `estimate` while some model part has no counted price; null otherwise. */
   incomplete?: DealIncompleteEstimate | null;
   /** Why there is no estimate, in one sentence, when estimate is null. */
