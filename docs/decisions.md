@@ -955,3 +955,31 @@ rule 5). Replayed with `npx tsx scripts/replay-suggestions.ts` (free, no network
   or the page names PBP003/PBP006 that no part explains). Match questions were already per model (DCF860B is held by 2 bundles).
   The test of "one answer settles the others" (`core/test/part-facts.test.ts`, `agent/test/partFacts.test.ts`) uses the real
   PCL1600K2-A986501 record under a second item id as the stand-in for the owner's live data, where parts repeat.
+
+### Free scan, fix round: the first live scan read 0 bundles (Nov 23)
+The installed app's first free scan said "Home Depot bundle lists · read in Chrome · 0 bundles · 0 searches" and every
+later step "none found": both `bundleListing` jobs answered `{"products": []}`, while the same two paths fetched by hand
+from a product-page tab in the owner's Chrome held 12 (RYOBI) and 3 (DEWALT) `base-searchNav-<id>` entries. The path was
+neither rewritten nor refused (agent and helper pass it as is); the helper parsed a state that held no product.
+- *What differed from the working fetch, and is changed:* (1) the reader parsed only the first `window.__APOLLO_STATE__=`
+  block of the answer (`fetchPathInTab` cut at its first `</script>`), so a page whose first block is not the listing's
+  reads as empty; every block is now kept and read (`hdPage.ts parseListingText`, items merged in page order). (2) the
+  doorway was the list's own address; the owner's working fetch was made from another page, so the Bundle reader's doorway
+  is now the brand's search page (`/s/ryobi`, `/s/dewalt`). Which of the two was the cause is not known offline: no
+  recording of the empty answer exists. *Live check:* the next scan's step list and its run line.
+- **An empty list is never "0 bundles"** (`LIST_EMPTY`): a list whose first page comes back with its state but no product
+  is a problem said in words, with what the state held ("its state had N entries, none a product; kinds: …", from the
+  helper), and the other lists are still read. When every list is empty, the step fails "bundle list empty", the bundles
+  found before stay as they were, and SerpApi's listing pages run instead only where the owner allowed a search
+  (`scan.listingSource` auto, and a scan he started or `serpWhenChromeClosed`; `ScanDeps.chromeListing.serpFallback`).
+- **Prices come from the list when its entries carry them.** The live entries hold a
+  `pricing({"isBrandPricingPolicyCompliant":false,"storeId":"121"})` entry with `value`, `original` and
+  `conditionalPromotions` (the old recordings were trimmed to identifiers). `parseSearchState` reads it as a product page's
+  pricing is read (two entries that disagree give no price) and its BOGO promotions as `bogoPromotionsOf` does; such an
+  item's page is not read for its price (`pricedByList`), and the bundle pass still reads its page for the Includes list.
+  A row carries `bogo` (the list or page showed a BOGO promotion); the BOGO pass still decides the pairs.
+- **Each brand's Bundle list is read twice: with the search words and without them** (`/b/N-5yc1vZbwo64Z4j2`, `?Nao=12` for
+  later pages, the form given by the controller; `isBundleListingPath` accepts exactly these), and the two are united.
+  DEWALT's list for "dewalt 20v combo kit" held 3 entries live. The job keeps each list's pages, items and how many it
+  added (`ScanJob.chromeListing.lists`), and the run line says "DEWALT: 3 with the search words, 37 more without them" so a
+  live run shows which lists more. Neither list is dropped until a run shows that.
