@@ -18,8 +18,8 @@
 import { KIND_WORDS } from './decompose';
 import { toUpc12 } from './identifiers';
 
-const RENEWED = /\b(renewed|refurbished|reconditioned|used|pre-owned|open box)\b/i;
-const AFTERMARKET = /\b(replacement for|compatible with|for use with|fits|aftermarket)\b/i;
+export const RENEWED = /\b(renewed|refurbished|reconditioned|used|pre-owned|open box)\b/i;
+export const AFTERMARKET = /\b(replacement for|compatible with|for use with|fits|aftermarket)\b/i;
 // A spare part for the tool, not the tool (Ruling 65). Each form is taken from recorded titles that
 // carry the RYOBI brand and the model as a whole word, so the title test alone made them "probable":
 //   "OEM 89240027010 Replacement Miter Saw Inlet Dust Chute P553 TS1144"
@@ -28,12 +28,12 @@ const AFTERMARKET = /\b(replacement for|compatible with|for use with|fits|afterm
 // part's name anywhere in the title it is the part. Either signal alone is not enough: a genuine
 // battery can carry an OEM number, and a genuine sander can come "with 3 Replacement Sanding Pads".
 // The part names are the ones in recorded spare-part titles.
-const OEM_PART_NUMBER = /\bOEM\s+\d{6,}\b/i;
-const PART_NAME = /\b(chute|knob|cap|indicator|pads?|sleeve|wheels?)\b/i;
+export const OEM_PART_NUMBER = /\bOEM\s+\d{6,}\b/i;
+export const PART_NAME = /\b(chute|knob|cap|indicator|pads?|sleeve|wheels?)\b/i;
 // Possibly a spare part: "OEM" or "Replacement" anywhere else. The title alone then cannot make a
 // listing "probable"; the owner decides. No genuine tool, battery, charger or kit row in the
 // recordings uses either word.
-const MAYBE_SPARE_PART = /\b(OEM|replacement)\b/i;
+export const MAYBE_SPARE_PART = /\b(OEM|replacement)\b/i;
 // Bulk or non-retail packaging: the listing is New but not in the retail box (PO, Nov 18: "(bulk
 // packaging)", "repackaged"). Recorded forms: "Bulk Packaged", "Bulk Packed" (B0D4XZWVP3), "NO Retail
 // Packaging", "No-Retail Packaging" (B0896TLNM4), "Non-Retail Packaging" (B07RB2ZC6H). "Bulk" is read as
@@ -48,19 +48,19 @@ const BULK = /\bbulk[\s-]+pack(?:ed|aged|aging)\b|\bnon?[\s-]*retail[\s-]+packag
  */
 export const isBulkPackaging = (title: string): boolean => BULK.test(title);
 // "2Pk" too (fix round 1): "18V LED Light, PCL660 2Pk - Bulk Packaged" (B0CRSVC28P).
-const MULTI = /\b(\d+)\s*-?\s*pack\b|\bpack of (\d+)\b|\bset of (\d+)\b|\b(\d+)\s*-?\s*pk\b/i;
-const KIT_WORDS = /\b(kit|combo|bundle|with battery|with charger|w\/ battery|and charger)\b/i;
+export const MULTI = /\b(\d+)\s*-?\s*pack\b|\bpack of (\d+)\b|\bset of (\d+)\b|\b(\d+)\s*-?\s*pk\b/i;
+export const KIT_WORDS = /\b(kit|combo|bundle|with battery|with charger|w\/ battery|and charger)\b/i;
 // What says a listing carries more than a tool: a combo or bundle, or any battery, charger or amp-hours
 // ("Inflator Kit with 4Ah Battery", B0DY31QJ4Q). A title that says "kit" with none of these may be a kit
 // that is itself the part (A986501, a 65-piece accessory kit).
-const KIT_CONTENTS = /\b(combo|bundle|batter(?:y|ies)|chargers?|\d+(?:\.\d+)?\s*ah)\b/i;
+export const KIT_CONTENTS = /\b(combo|bundle|batter(?:y|ies)|chargers?|\d+(?:\.\d+)?\s*ah)\b/i;
 // Step 8b: "Battery and Charger NOT Included" (B0BL8BC8MF, PSBDD01, P2900B) says the opposite of a
 // kit. Only the battery and charger the phrase names are taken out, joined by "and", "&" or "or" (a
 // comma may end the list: "with Battery, Charger Not Included"); any other kit word still counts.
 // "Sold Separately" is not read: such a title stays rejected (conservative, fix round 1).
-const NOT_INCLUDED_PHRASE = /\b(?:batter(?:y|ies)|charger)(?:\s+(?:and|&|or)\s+(?:batter(?:y|ies)|charger))*\s+(?:(?:is|are)\s+)?not\s+included\b/gi;
+export const NOT_INCLUDED_PHRASE = /\b(?:batter(?:y|ies)|charger)(?:\s+(?:and|&|or)\s+(?:batter(?:y|ies)|charger))*\s+(?:(?:is|are)\s+)?not\s+included\b/gi;
 // Step 8b: a third-party title says what it is for. Never a reason to lift a reject.
-const FOR_BRAND = /\bfor\s+(ryobi|dewalt)\b/i;
+export const FOR_BRAND = /\bfor\s+(ryobi|dewalt)\b/i;
 // Step 8b: TTI makes RYOBI; "TTI Ryobi PBP004 …" (B09HDZ5MPV) states the brand with no brand field.
 const MAKER_PREFIX: Record<string, RegExp> = { RYOBI: /^\s*TTI\s+RYOBI\b/i };
 // Model numbers as whole tokens, per brand; titles are upper-cased first (scan/listings.ts modelsInTitle).
@@ -127,7 +127,7 @@ function otherModel(want: Wanted, text: string): boolean {
 }
 
 /** The title sells the kit with more: an accessory set, or something added after a joining word. */
-function addsToKit(want: Wanted, title: string): boolean {
+export function addsToKit(want: Wanted, title: string): boolean {
   if (ACCESSORY_SET.test(title.replace(POWER_TOOL_SET, ' '))) return true;
   const [first = '', ...after] = title.split(JOINING);
   if (after.length === 0) return false;

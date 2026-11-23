@@ -1,0 +1,27 @@
+{
+  "about": "Answer key for the catalog check (core/src/keepa/verify.ts) on the recorded Keepa products. Each row: a product of fixtures/keepa/search-RYOBI-PCL235B.json checked against the part a lookup of that model would ask for (brand RYOBI unless said), labelled by reading the title against the model only, never from the check's output. is: the listing is that part, new and alone (a kit when the part is the kit); not: it is another product; uncertain: the title does not settle it. isKit is what the scan would know (classify.ts wantedFor with no catalog entry: RYOBI parts are not known kits).",
+  "rows": [
+    { "asin": "B0BGYFTPGK", "model": "PCL235B", "label": "is", "note": "RYOBI ONE+ 18V 1/4 in. Impact Driver, Tool Only - PCL235B." },
+    { "asin": "B08512HJ14", "model": "P235A", "label": "uncertain", "note": "Ryobi R18ID2-0 (Body Only): the European model; the title names no US model, only the part number field says P235A." },
+    { "asin": "B08L32HTBC", "model": "PSBID01", "label": "is", "note": "Ryobi ONE+ HP Impact Driver PSBID01 (Tool ONLY- Battery and Charger NOT Included)." },
+    { "asin": "B08L38QFFW", "model": "PSBDD01", "label": "is", "note": "Ryobi ONE+ HP Drill/Driver PSBDD01 (TOOL ONLY); manufacturer field Partyreal." },
+    { "asin": "B0FD1B8BG5", "model": "PCL201", "label": "is", "note": "Ryobi 18V 3/8 in. Drill/Driver (Tool Only) PCL201." },
+    { "asin": "B09PQT543P", "model": "P235AB", "label": "is", "note": "RYOBI ONE+ 18V Impact Driver Tool ONLY P235AB." },
+    { "asin": "B0DY31QJ4Q", "model": "PCL001B", "label": "not", "note": "Titled PCL001B but an Inflator Kit with 4Ah Battery: the kit (part number PCL001K), not the bare tool." },
+    { "asin": "B0DY31QJ4Q", "model": "PCL001K", "label": "uncertain", "note": "A kit with a 4Ah battery whose title names PCL001B; whether PCL001K is this kit the title does not say." },
+    { "asin": "B0DNNZ1W52", "model": "PCL540", "label": "not", "note": "Cut-Out Tool Kit with Battery and Charger; the part PCL540 is the tool alone." },
+    { "asin": "B09SN6Y6TS", "model": "P215BN", "label": "is", "note": "RYOBI ONE+ 18V 1/2 in. Drill/Driver (Tool Only) P215BN." },
+    { "asin": "B09SN6Y6TS", "model": "P215", "label": "uncertain", "note": "Part number field P215, title P215BN: whether P215 and P215BN are one product the title does not say." },
+    { "asin": "B0D6ZPQ25M", "model": "PBLMT51B", "label": "is", "note": "RYOBI ONE+ HP Brushless Oscillating Multi-Tool (Tool Only) PBLMT51B." },
+    { "asin": "B0BXQZ1QFK", "model": "P322", "label": "is", "note": "RYOBI P322 18-Gauge Brad Nailer (Tool Only)." },
+    { "asin": "B00CRFEZFC", "model": "P320", "label": "is", "note": "Ryobi P320 Airstrike Brad Nailer (Power Tool Only)." },
+    { "asin": "B0FS9KLHRD", "model": "PCL001K1", "label": "uncertain", "note": "INFLATOR KIT with 2.0 AH Battery and Charger, title cut at PCL0; only the part number field says PCL001K1." },
+    { "asin": "B07BQC68YC", "model": "P1895", "label": "uncertain", "note": "10-Tool Combo Kit; only the model field says Ryobi+P1895." },
+    { "asin": "B0GJR5VS14", "model": "PSBDD02KSB30", "label": "uncertain", "note": "30th Anniversary Drill Kit with 4.0Ah Battery & Charger; the title names no model." },
+    { "asin": "B0HFS4PFLN", "model": "PCL235B", "label": "not", "note": "Hard Case for RYOBI PCL235B, brand Tourmate." },
+    { "asin": "B0BL8BC8MF", "model": "PCL265B", "label": "is", "note": "Ryobi PCL265 Impact Wrench (Tool ONLY); brand field FIRE ROSE, manufacturer Ryobi. The validation set labels it correct for PCL265B too." },
+    { "asin": "B0HL8FNQB5", "model": "PCL235B", "label": "not", "note": "Hex Shank Drill Bit Set for RYOBI PCL235B, brand Generic." },
+    { "asin": "B0H1S2BGF6", "model": "PSK1212SB", "label": "is", "note": "RYOBI ONE+ Starter KIT with 2.0 AH Battery, 4.0 AH Battery, and Charger; part number PSK1212SB." },
+    { "asin": "B07DCH48YK", "model": "PCL235B", "label": "not", "note": "Ryobi 18V Tool Pack (Impact Drill, Grinder, 2 & 4Ah), part number 5133003842: not the PCL235B." }
+  ]
+}

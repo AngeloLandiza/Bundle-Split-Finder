@@ -77,6 +77,11 @@ function parseOneProduct(raw: Record<string, unknown>): KeepaProduct {
     brand: typeof raw.brand === 'string' ? raw.brand : null,
     manufacturer: typeof raw.manufacturer === 'string' ? raw.manufacturer : null,
     partNumber: typeof raw.partNumber === 'string' ? raw.partNumber : null,
+    // Identity fields for the catalog check (keepa/verify.ts). Keepa writes -1 or 0 for "no data" in the two counts.
+    model: typeof raw.model === 'string' ? raw.model : null,
+    numberOfItems: typeof raw.numberOfItems === 'number' && raw.numberOfItems > 0 ? raw.numberOfItems : null,
+    packageQuantity: typeof raw.packageQuantity === 'number' && raw.packageQuantity > 0 ? raw.packageQuantity : null,
+    ...(typeof raw.type === 'string' ? { type: raw.type } : {}),
     productType: typeof raw.productType === 'number' ? raw.productType : undefined,
     amazonPrice: price?.cents ?? null,
   };

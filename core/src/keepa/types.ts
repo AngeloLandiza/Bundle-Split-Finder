@@ -18,6 +18,17 @@ export interface KeepaProduct {
   brand?: string | null;
   manufacturer?: string | null;
   partNumber?: string | null;
+  /**
+   * Keepa's `model`: often the part number again (DCF921B), sometimes a packaging variant (DCB606YY for DCB606) or a
+   * barcode fragment (33287199938 for PCL235B), as recorded in fixtures/keepa/. Read by the catalog check only.
+   */
+  model?: string | null;
+  /** Keepa's `numberOfItems`, null for its -1 or 0 ("no data"). Recorded: 1 for most, 4 for a tool pack or a kit. */
+  numberOfItems?: number | null;
+  /** Keepa's `packageQuantity`, null for its -1 or 0 ("no data"). */
+  packageQuantity?: number | null;
+  /** Keepa's `type` (DRILL, BATTERY, POWER_TOOL_SET …). Not read by any rule: recorded values are unreliable (a brad nailer, Tool Only, is POWER_TOOL_SET). */
+  type?: string;
   productType?: number;
   /** Amazon price in the marketplace's smallest currency unit (cents). */
   amazonPrice?: number | null;
