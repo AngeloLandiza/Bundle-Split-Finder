@@ -63,6 +63,11 @@ export interface ScanDeps {
    */
   readPartPrices?: ReadPartPrices;
   /**
+   * Step 13 (W4): what the progress row says for the page and price steps when there is no reader, in four words or
+   * fewer. Default "no page reader" / "no price reader". The agent says "Chrome closed" when no helper is connected.
+   */
+  noReaderReason?: string;
+  /**
    * Step 10: the eBay step, after Home Depot's part prices (ebayPass.ts): eBay's search and item reads and a
    * model's judgement of each listing, as a reference value per part. `skip` says why it does not run (keys
    * missing). Absent: the step does not exist (the command line). It never stops a scan.
@@ -118,6 +123,7 @@ interface Run extends PartContext {
   shouldStop: () => boolean;
   readPages: ReadPages | null;
   readPartPrices: ReadPartPrices | null;
+  noReaderReason?: string;
   ebay: EbayStep | null;
   keepaProduct: ScanDeps['keepaProduct'];
   keepaLookup?: ScanDeps['keepaLookup'];
@@ -196,7 +202,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const failedBefore = failingBefore(scans);
   const run = (job: ScanJob): Run => ({
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
-    readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, ebay: deps.ebay ?? null,
+    readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, noReaderReason: deps.noReaderReason, ebay: deps.ebay ?? null,
     keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
     job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
   });
@@ -1330,8 +1336,8 @@ async function nothingToRead(run: Run, stage: StepId, why = NONE_FOUND): Promise
 function beginPipeline(run: Run): void {
   const { job, ebay } = run;
   ensurePipeline(job);
-  if (!run.readPages) for (const id of ['bundlePages', 'kitPages'] as const) skipStep(job, id, 'no page reader');
-  if (!run.readPartPrices) skipStep(job, 'partPrices', 'no price reader');
+  if (!run.readPages) for (const id of ['bundlePages', 'kitPages'] as const) skipStep(job, id, run.noReaderReason ?? 'no page reader');
+  if (!run.readPartPrices) skipStep(job, 'partPrices', run.noReaderReason ?? 'no price reader');
   if (!ebay) for (const id of ['ebay', 'judge'] as const) skipStep(job, id, 'not in this run');
   else if (ebay.kind === 'skip') {
     const missing = ebay.missing ?? [];

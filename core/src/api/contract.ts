@@ -7,12 +7,15 @@
 // as window.__SPLIT_FINDER_TOKEN__. A paired extension gets its own token from POST /api/pair/claim.
 // A failed request answers with an HTTP status and an ApiErrorBody. No response ever holds a key.
 
+import type { PipelineAiSettings } from '../ai/factory';
 import type { StoredSuggestion } from '../assist/stored';
+import type { HomeDepotPage, HomeDepotSearch, ToolError } from '../research/types';
 import type { DealSortKey } from '../deals/sort';
 import type { FeeSettings } from '../money';
 import type { Schedule } from '../schedule';
-import type { EbaySettings } from '../settings';
-import type { BundleRow, EbayQuestion, PaidAction, ReportSection, ReviewItem } from '../scan/types';
+import type { PipelineView } from '../scan/pipeline';
+import type { AlertSettings, DiscoveryMode, EbaySettings, TrackingDepth } from '../settings';
+import type { BundleRow, EbayQuestion, PageOutcome, PaidAction, PartPriceReading, ReportSection, ReviewItem } from '../scan/types';
 
 export const AGENT_PORT = 8790;
 /** The app's bearer token, in the agent's data dir; read by the desktop shell (src-tauri agent.rs TOKEN_FILE). */
@@ -98,6 +101,10 @@ export interface AgentState {
     progress?: { done: number; total: number };
     nextScanAt: string | null;
     lastScan: LastScanSummary | null;
+    /** W4: the running scan's stages as core's pipeline view says them (absent when nothing runs). */
+    pipeline?: PipelineView;
+    /** W4: what the agent is busy with: a scan, or the AI pass on Review questions. */
+    busy?: 'scan' | 'ask' | null;
   };
   /** The paired Chrome extension, the worker that reads Home Depot pages. */
   helper: { paired: boolean; connected: boolean; lastSeenAt: string | null };
@@ -181,6 +188,8 @@ export interface ReviewQuestion {
   sources: SourceLink[];
   /** The latest AI suggestion for this question; a suggestion is never an answer (rule 4). */
   suggestion: StoredSuggestion | null;
+  /** W4: reviewSignature of the question as stored now; send it back as ReviewAnswerBody.seen. Absent on eBay questions. */
+  seen?: string;
   /** The question as the scan stored it. */
   item: { kind: 'split' | 'match'; question: ReviewItem } | { kind: 'ebay'; question: EbayQuestion };
 }
@@ -197,6 +206,11 @@ export interface ReviewAnswerBody {
   answer: ReviewAnswer;
   /** True when the owner approved the AI suggestion, so its outcome is tracked. */
   fromSuggestion?: boolean;
+  /**
+   * W4: ReviewQuestion.seen of the question the owner was shown. When given and the question changed since, the answer is
+   * refused (409). Omitted: the question as stored now is assumed (send it; a scan may change the choices meanwhile).
+   */
+  seen?: string;
 }
 
 /** POST /api/review/approve: apply the AI suggestion of each question named. */
@@ -210,9 +224,14 @@ export interface ApproveResponse {
   skipped: { id: string; reason: string }[];
 }
 
-/** POST /api/review/:id/answer and POST /api/scan: queued for the worker that applies it. */
+/** POST /api/review/ask-all and /api/review/:id/ask: the agent asks in the background. */
 export interface QueuedResponse {
   queued: true;
+}
+
+/** W4: POST /api/review/:id/answer. The agent applies the answer itself (core/src/scan/answers.ts). */
+export interface AnswerResponse {
+  applied: true;
 }
 
 // ---------------------------------------------------------------- activity
@@ -227,6 +246,19 @@ export interface RunRecord {
   keepaTokensUsed: number;
   aiCostUsd: number;
   summary: string;
+  /** W4: who started the run. */
+  trigger?: 'scheduled' | 'manual';
+  /** W4: why the scan ended early ("user", "budget", ...), or null. */
+  stopReason?: string | null;
+  /** W4: what went wrong, in one plain sentence, or null. Never holds a key. */
+  error?: string | null;
+  /** W4: the scan's stages at its end (core's pipeline view). */
+  steps?: { label: string; state: string; figure: string }[];
+  /** W4: of aiCostUsd, what the eBay listing judge cost (counted once in the month's AI spend). */
+  judgeCostUsd?: number;
+  /** W4: Review questions the AI was asked about, and answers Autopilot applied, after the scan. */
+  questionsAsked?: number;
+  autopilotApplied?: number;
 }
 
 export interface AutopilotEntry {
@@ -238,6 +270,15 @@ export interface AutopilotEntry {
   /** The code checks the suggestion passed (rule 4: evidence-checked by code). */
   verifiedBy: string[];
   undoneAt: string | null;
+  /** W4: the question's stored answer Autopilot wrote (the parts joined by ","). */
+  answer?: string;
+  /** W4: the model that made the suggestion. */
+  provider?: string;
+  model?: string;
+  /** W4: the bundle the question was about. */
+  bundleId?: string | null;
+  /** W4: false once the owner changed the answer since, so Undo would undo the owner's answer. */
+  undoable?: boolean;
 }
 
 export interface ActivityResponse {
@@ -247,6 +288,23 @@ export interface ActivityResponse {
 }
 
 // ---------------------------------------------------------------- settings
+
+/**
+ * W4: one AI pipeline's model. `trusted` says the model was measured (judge:eval / assist:eval / research:eval) well
+ * enough for Autopilot to apply its verified suggestions without the owner; Claude starts trusted, any other model not.
+ * `apiKeyRef` names a key the agent holds: "anthropic" or "openai".
+ */
+export interface AiPipelineSetting extends PipelineAiSettings {
+  trusted: boolean;
+}
+
+export interface AiAgentSettings {
+  judge: AiPipelineSetting;
+  assist: AiPipelineSetting;
+  research: AiPipelineSetting;
+  /** Dollars the AI may cost in a calendar month (judge, assist and research together). 0 turns the AI off. */
+  monthlyCapUsd: number;
+}
 
 /** Every setting the owner can change; keys are not here (see KeyValues). */
 export interface AppSettings {
@@ -267,7 +325,16 @@ export interface AppSettings {
     fees: FeeSettings;
     brands: string[];
     pagesPerBrand: number;
+    /** W4: Keepa's discovery/tracking split (core/src/keepa/plan.ts), as the extension's settings have them. */
+    discoveryMode: DiscoveryMode;
+    keepaDiscoveryShare: number;
+    trackingDepth: TrackingDepth;
+    amazonRefreshViaKeepa: boolean;
   };
+  /** W4: when a deal is worth a message (profit and ROI are estimates), and whether open questions are. */
+  alerts: AlertSettings;
+  /** W4: the AI pipelines' models and the month's cap. */
+  ai: AiAgentSettings;
 }
 
 /** GET /api/settings and the answer to PATCH /api/settings (whose body is a SettingsPatch). */
@@ -277,9 +344,15 @@ export interface SettingsResponse {
   keys: KeysPresence;
 }
 
-export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings'>> & {
+export type SettingsPatch = Partial<Omit<AppSettings, 'settings' | 'ebaySettings' | 'alerts' | 'ai'>> & {
   settings?: Partial<AppSettings['settings']>;
   ebaySettings?: Partial<EbaySettings>;
+  alerts?: Partial<AlertSettings>;
+  ai?: Partial<Omit<AiAgentSettings, 'judge' | 'assist' | 'research'>> & {
+    judge?: Partial<AiPipelineSetting>;
+    assist?: Partial<AiPipelineSetting>;
+    research?: Partial<AiPipelineSetting>;
+  };
 };
 
 // ---------------------------------------------------------------- agent control
@@ -353,12 +426,34 @@ export interface WorkerJobInputs {
   kitPage: { itemId: string; model: string };
   /** Read one part's Home Depot price. */
   partPrice: { itemId: string; model: string };
-  /** A Home Depot search results page. */
+  /** A Home Depot search results page (the research agent's searchHomeDepot; `page` is 1). */
   search: { query: string; page: number };
+  /** W4: Home Depot's own price for each part sold alone, as the extension's ReadPartPrices reads them (step 9). */
+  partPrices: { parts: { brand: string; model: string }[] };
+  /** W4: one product page as text sections, for the research agent's readHomeDepotPage. */
+  researchPage: { itemId: string };
+}
+
+/**
+ * W4: what each job's `result` must be (POST /api/worker/result). The agent checks the shape; anything else counts as a
+ * failed read, never as data.
+ */
+export interface WorkerJobResults {
+  /** One outcome per item id asked, in any order (core/src/scan/types.ts PageOutcome). */
+  page: PageOutcome[];
+  /** The kit page's outcome. */
+  kitPage: PageOutcome;
+  partPrice: PartPriceReading;
+  /** As extension/lib/researchTools.ts searchHomeDepot returns it; a refusal is a ToolError, never an empty list. */
+  search: HomeDepotSearch | ToolError;
+  /** One reading per part asked, in order (core/src/scan/types.ts PartPriceReading). */
+  partPrices: PartPriceReading[];
+  /** As extension/lib/researchTools.ts readHomeDepotPage returns it. */
+  researchPage: HomeDepotPage | ToolError;
 }
 
 export type WorkerJobKind = keyof WorkerJobInputs;
-export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search'];
+export const WORKER_JOB_KINDS: readonly WorkerJobKind[] = ['page', 'kitPage', 'partPrice', 'search', 'partPrices', 'researchPage'];
 
 export type WorkerJobStatus = 'queued' | 'leased' | 'done' | 'failed';
 

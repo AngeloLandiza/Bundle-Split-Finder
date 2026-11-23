@@ -126,6 +126,11 @@ function parseJobInput(kind: WorkerJobKind, v: unknown): WorkerJobInputs[WorkerJ
       return { itemId: text(String(o.itemId ?? ''), 'itemId', 32), model: text(o.model, 'model', 64) };
     case 'search':
       return { query: text(o.query, 'query', 200), page: typeof o.page === 'number' && o.page >= 1 ? Math.floor(o.page) : 1 };
+    case 'partPrices':
+      if (!Array.isArray(o.parts) || !o.parts.length || o.parts.length > 40) throw new HttpError('bad_request', 'parts must list 1 to 40 parts.');
+      return { parts: o.parts.map((p) => { const x = obj(p, 'part'); return { brand: text(x.brand, 'brand', 32), model: text(x.model, 'model', 64) }; }) };
+    case 'researchPage':
+      return { itemId: text(String(o.itemId ?? ''), 'itemId', 32) };
   }
 }
 

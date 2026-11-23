@@ -17,7 +17,9 @@ import type {
   WorkerJob,
 } from '../core/src/api/contract';
 import type { StoredSuggestion } from '../core/src/assist/stored';
+import { DEFAULT_CLAUDE_JUDGE_MODEL } from '../core/src/judge/claude';
 import { DEFAULT_FEES } from '../core/src/money';
+import type { UnitRates } from '../core/src/scan/pipeline';
 import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS } from '../core/src/settings';
 import type { BundleRow, EbayQuestion, PaidAction, ReportSection, ReviewItem, ScanJob } from '../core/src/scan/types';
 
@@ -120,6 +122,39 @@ export interface AgentControl {
   pausedAt: string | null;
 }
 
+/** W4: an Autopilot application as the agent keeps it: the contract's entry and what Undo needs. */
+export interface StoredAutopilotEntry extends AutopilotEntry {
+  answer: string;
+  /** The item's answeredAt Autopilot wrote; Undo refuses once the owner answered again. */
+  answeredAt: number;
+  /** The suggestion it applied (StoredSuggestion.key). */
+  suggestionKey: string;
+}
+
+/** A digest Telegram has not taken yet; tried again after the next run. */
+export interface PendingMessage {
+  text: string;
+  at: string;
+  tries: number;
+}
+
+/** W4: what the scheduler, the meters and the alert engine keep between runs. Never a key. */
+export interface AgentRuntime {
+  /** When the last scheduled scan started (epoch ms); the schedule counts from it. */
+  lastScheduledRunAt: number | null;
+  /** The last SerpApi account check (free). */
+  serp: { left: number; perMonth: number; rateLimitPerHour: number; at: string } | null;
+  /** Keepa's balance as its last answer said. */
+  keepa: { tokensLeft: number; refillIn: number; at: string } | null;
+  /** Deal keys already named in a message: a deal alerts once. */
+  notifiedDeals: string[];
+  /** Question ids already counted in a message: the same questions do not alert again. */
+  notifiedQuestions: string[];
+  telegram: { pending: PendingMessage[]; lastSentAt: string | null; lastError: string | null };
+  /** Seconds a unit of each kind took in recent scans, for the progress estimate (pipeline.ts). */
+  rates: UnitRates;
+}
+
 export interface StoreData {
   agent: AgentControl;
   settings: AppSettings & { updatedAt: string };
@@ -128,10 +163,11 @@ export interface StoreData {
   review: ReviewCollection;
   suggestions: StoredSuggestion[];
   activity: ActivityCollection;
-  autopilot: AutopilotEntry[];
+  autopilot: StoredAutopilotEntry[];
   jobs: WorkerJob[];
   pairing: PairingCollection;
   outbox: HelperOutbox;
+  runtime: AgentRuntime;
 }
 
 export type CollectionName = keyof StoreData;
@@ -148,6 +184,7 @@ export const COLLECTIONS: readonly CollectionName[] = [
   'jobs',
   'pairing',
   'outbox',
+  'runtime',
 ];
 
 const OWNER_ONLY: ReadonlySet<CollectionName> = new Set(['keys', 'pairing']);
@@ -172,8 +209,21 @@ export function defaultSettings(): StoreData['settings'] {
       fees: { ...DEFAULT_FEES },
       brands: [...DEFAULT_SETTINGS.brands],
       pagesPerBrand: DEFAULT_SETTINGS.pagesPerBrand,
+      discoveryMode: DEFAULT_SETTINGS.discoveryMode,
+      keepaDiscoveryShare: DEFAULT_SETTINGS.keepaDiscoveryShare,
+      trackingDepth: DEFAULT_SETTINGS.trackingDepth,
+      amazonRefreshViaKeepa: DEFAULT_SETTINGS.amazonRefreshViaKeepa,
     },
+    // The agent messages the owner (the PO's brief), so alerts start on; the numbers are core's defaults.
+    alerts: { ...DEFAULT_SETTINGS.alerts, enabled: true },
+    ai: defaultAiSettings(),
   };
+}
+
+/** Claude for every pipeline, trusted (measured by the step 10 to 12 evals); $25 a month until the owner says otherwise. */
+export function defaultAiSettings(): AppSettings['ai'] {
+  const claude = { provider: 'anthropic' as const, model: DEFAULT_CLAUDE_JUDGE_MODEL, apiKeyRef: 'anthropic', trusted: true };
+  return { judge: { ...claude }, assist: { ...claude }, research: { ...claude }, monthlyCapUsd: 25 };
 }
 
 function defaults(): StoreData {
@@ -189,6 +239,10 @@ function defaults(): StoreData {
     jobs: [],
     pairing: { extensions: [], requests: [] },
     outbox: { scan: null, reviewAnswers: [], paid: [], ask: [] },
+    runtime: {
+      lastScheduledRunAt: null, serp: null, keepa: null, notifiedDeals: [], notifiedQuestions: [],
+      telegram: { pending: [], lastSentAt: null, lastError: null }, rates: {},
+    },
   };
 }
 
@@ -200,12 +254,26 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
   if (name === 'settings') {
     const s = raw as Partial<StoreData['settings']>;
     const d = base as StoreData['settings'];
+    const ai = (s.ai ?? {}) as Partial<AppSettings['ai']>;
     return {
       ...d,
       ...s,
       ebaySettings: { ...d.ebaySettings, ...(s.ebaySettings ?? {}) },
       settings: { ...d.settings, ...(s.settings ?? {}) },
+      alerts: { ...d.alerts, ...(s.alerts ?? {}) },
+      ai: {
+        ...d.ai,
+        ...ai,
+        judge: { ...d.ai.judge, ...(ai.judge ?? {}) },
+        assist: { ...d.ai.assist, ...(ai.assist ?? {}) },
+        research: { ...d.ai.research, ...(ai.research ?? {}) },
+      },
     } as StoreData[K];
+  }
+  if (name === 'runtime') {
+    const r = raw as Partial<AgentRuntime>;
+    const d = base as AgentRuntime;
+    return { ...d, ...r, telegram: { ...d.telegram, ...(r.telegram ?? {}) } } as StoreData[K];
   }
   return { ...(base as object), ...(raw as object) } as StoreData[K];
 }
