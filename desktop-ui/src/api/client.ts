@@ -10,6 +10,7 @@ import type {
   AgentEvent,
   AppSettings,
   AppState,
+  AskAiResult,
   BogoRequest,
   BogoView,
   ConfirmPriceRequest,
@@ -38,7 +39,11 @@ export interface ApiClient {
   answer(id: string, answer: ReviewAnswer, o: { fromSuggestion: boolean; seen: string | null }): Promise<{ answerId: string | null }>;
   /** Takes back an answer he saved (POST /api/review/:id/undo, the id `answer` returned): the question is open in Review again. */
   undoAnswer(answerId: string): Promise<{ questionId: string }>;
-  ask(id: string): Promise<void>;
+  /**
+   * Asks the AI about one question (POST /api/review/:id/ask). Never silent: `queued`, or the agent's `reason` nothing was
+   * started. `force` asks again though nothing new has been read since the last answer.
+   */
+  askAi(id: string, o?: { force?: boolean }): Promise<AskAiResult>;
   askAll(): Promise<void>;
   approve(ids: string[]): Promise<{ approved: number; skipped: { id: string; reason: string }[] }>;
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type * as C from '@core/api/contract';
 import type { PartRow } from '@core/scan/types';
 import { mergePatch } from '../lib/patch';
-import { csvSort, gradeOf, mapEvent, mapRow, mapState, mapSuggestion, scanResult, splitEvidenceOf } from './map';
+import { csvSort, gradeOf, mapEvent, mapRow, mapState, mapSuggestion, readBrief, readFollowUp, scanResult, splitEvidenceOf } from './map';
 import { backoffMs, createSseParser } from './sse';
 
 const part = (p: Partial<PartRow>): PartRow =>
@@ -210,5 +210,29 @@ describe('a deal row\'s tracking flags', () => {
     const bogoPair = { promotionId: '945972', starterItemId: '334337675', starterModel: 'DCK200D1P1', freeModel: '921B', endsAt: '2027-01-31', description: 'BUY A DEWALT CORDLESS KIT GET A FREE BARE TOOL' };
     const bogoChoices = { label: 'BOGO: 2 free-tool choices \u2014 none has an estimate yet', count: 2, bestId: null, best: false };
     expect(mapRow(wire({ bogoPair, bogoChoices }))).toMatchObject({ bogoPair, bogoChoices });
+  });
+});
+
+describe('what the app did about a question', () => {
+  const step = { what: 'Searched Home Depot for RYOBI A21701', result: 'found: 15-Piece Router Bit Set', url: 'https://www.homedepot.com/s/A21701' };
+  it('reads a follow-up as sent, and drops one without the promised shape', () => {
+    expect(readFollowUp({ state: 'running', doing: " Reading Home Depot's page for A21701 ", tried: [step], roundsLeft: 2 })).toEqual({ state: 'running', doing: "Reading Home Depot's page for A21701", tried: [step], roundsLeft: 2 });
+    expect(readFollowUp({ state: 'done', tried: [], roundsLeft: 0 })).toEqual({ state: 'done', tried: [], roundsLeft: 0 });
+    expect(readFollowUp({ state: 'thinking', tried: [], roundsLeft: 0 })).toBeUndefined();
+    expect(readFollowUp({ state: 'done', tried: [{ what: 'x' }], roundsLeft: 0 })).toBeUndefined();
+    expect(readFollowUp({ state: 'done', tried: [], roundsLeft: '1' })).toBeUndefined();
+    expect(readFollowUp(null)).toBeUndefined();
+  });
+  it("reads who does the brief's check, and ignores a value it does not know", () => {
+    const brief = (who: unknown) => ({ ask: 'What is inside this bundle?', suggestion: null, state: 'none', reasons: [], check: { text: 'Decide whether they are worth listing apart.', who }, writtenBy: 'ai' });
+    expect(readBrief(brief('owner'))?.check?.who).toBe('owner');
+    expect(readBrief(brief('app'))?.check?.who).toBe('app');
+    expect(readBrief(brief('robot'))?.check).not.toHaveProperty('who');
+  });
+  it('carries the working count when the agent sends it, and nothing from an older one', () => {
+    const state = { agent: { status: 'idle', nextScanAt: null, lastScan: null }, helper: { paired: true, connected: true, lastSeenAt: null }, budget: { serpLeft: 100, serpReserve: 20, keepaTokens: null, aiSpentUsd: 0, aiCapUsd: 20 }, keys: { serpapi: true, keepa: false, anthropic: true, openai: false, ebay: false, telegram: false } };
+    const counts = (c: object) => mapState({ ...state, counts: { review: 3, autopilotApplied: 0, newDeals: 0, jobsWaiting: 0, ...c } } as unknown as C.AgentState).counts;
+    expect(counts({ reviewWorking: 2 })).toEqual({ review: 3, autopilotApplied: 0, newDeals: 0, reviewWorking: 2 });
+    expect(counts({})).not.toHaveProperty('reviewWorking');
   });
 });

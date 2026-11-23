@@ -136,7 +136,11 @@ export function createHttpClient(): ApiClient {
       const r = await call<C.UndoAnswerResponse>('POST', `/api/review/${id(aid)}/undo`, {});
       return { questionId: r.questionId };
     },
-    ask: async (qid) => void (await call<C.QueuedResponse>('POST', `/api/review/${id(qid)}/ask`, {})),
+    // The agent answers `{ queued, reason? }`; core's QueuedResponse still says `queued: true`, so the body is read as a wider type.
+    askAi: async (qid, o) => {
+      const r = await call<{ queued: boolean; reason?: string }>('POST', `/api/review/${id(qid)}/ask`, o?.force ? { force: true } : {});
+      return { queued: r.queued !== false, ...(typeof r.reason === 'string' && r.reason ? { reason: r.reason } : {}) };
+    },
     askAll: async () => void (await call<C.QueuedResponse>('POST', '/api/review/ask-all', {})),
     approve: (ids) => call<C.ApproveResponse>('POST', '/api/review/approve', { ids } satisfies C.ApproveBody).then((r) => ({ approved: r.approved.length, skipped: r.skipped })),
 

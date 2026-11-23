@@ -140,7 +140,8 @@ export interface AppState {
   agent: AgentView;
   helper: HelperState;
   budget: BudgetState;
-  counts: { review: number; autopilotApplied: number; newDeals: number };
+  /** `review` counts the questions that need him; `reviewWorking` the ones the app is still checking itself (not in `review`). Absent from an older agent. */
+  counts: { review: number; autopilotApplied: number; newDeals: number; reviewWorking?: number };
   keys: Record<KeyName, boolean>;
   /** True until the first scan has finished; drives the one-time first-run flow. */
   firstRun: boolean;
@@ -396,10 +397,38 @@ export interface ReviewBrief {
   state: 'verified' | 'not_verified' | 'cannot_tell' | 'none';
   /** At most three short lines, each with the source it rests on when it has one. */
   reasons: { text: string; quote?: string; sourceLabel?: string; url?: string }[];
-  /** The one thing to check, and where. */
-  check: { text: string; url?: string; linkLabel?: string } | null;
+  /**
+   * The one thing left to check, and where. `who: 'app'` is a step the app carries out itself (read a page, look up a
+   * model): the card never shows it as an instruction. Only `who: 'owner'`, a call that needs a person's judgement, is
+   * shown ("Next"). Absent from an older agent: `checkWho` decides from the words.
+   */
+  check: { text: string; url?: string; linkLabel?: string; who?: 'app' | 'owner' } | null;
   writtenBy: 'ai' | 'rules';
 }
+
+/** One thing the app did on its own while it worked on a question: what it did and what came of it. */
+export interface FollowUpStep {
+  /** "Searched Home Depot for RYOBI A21701" */
+  what: string;
+  /** "found: 15-Piece Router Bit Set" */
+  result: string;
+  url?: string;
+}
+
+/**
+ * The app's own second look at a question, before it asks the owner (the agent carries out the steps a card used to
+ * tell him to do). queued/running: the app is still working; done/gave_up: it finished, and `tried` is what it did.
+ */
+export interface FollowUp {
+  state: 'queued' | 'running' | 'done' | 'gave_up';
+  /** What it is doing now: "Reading Home Depot's page for A21701". */
+  doing?: string;
+  tried: FollowUpStep[];
+  roundsLeft: number;
+}
+
+/** Whether the app is still on a question: it is not the owner's yet. */
+export const isWorking = (f: FollowUp | undefined): boolean => f?.state === 'queued' || f?.state === 'running';
 
 export interface ReviewQuestion {
   id: string;
@@ -422,6 +451,14 @@ export interface ReviewQuestion {
   seen: string | null;
   /** The decision card's text from the agent; absent from an older one (`briefFromQuestion` derives it). */
   brief?: ReviewBrief;
+  /** What the app did on its own about this question; absent when it did nothing (or from an older agent). */
+  followUp?: FollowUp;
+}
+
+/** The agent's answer to Ask AI (POST /api/review/:id/ask): queued, or why nothing was started. */
+export interface AskAiResult {
+  queued: boolean;
+  reason?: string;
 }
 
 export interface ReviewView {

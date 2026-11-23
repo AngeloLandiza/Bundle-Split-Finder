@@ -15,9 +15,10 @@ import { confirmedSourceName } from '@core/scan/confirmed';
 import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE, net } from './mockData';
 import type * as C from '@core/api/contract';
 import { mapDetail, mapReview, mapRow } from './map';
+import { followUpVariants } from './mockFollowUp';
 import real from './mockReal.json';
 import { mockBogoView } from './mockTracking';
-import { ApiError, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type DealRow, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
+import { ApiError, isWorking, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type DealRow, type FollowUp, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
 type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems';
 
@@ -90,6 +91,12 @@ function withRecordedSuggestions(r: C.ReviewResponse): C.ReviewResponse {
   };
 }
 
+/** The agent's counts: a question the app is still checking is not in `review` (it does not need him yet). */
+function reviewCounts(questions: readonly ReviewQuestion[]): { review: number; reviewWorking: number } {
+  const working = questions.filter((q) => isWorking(q.followUp)).length;
+  return { review: questions.length - working, reviewWorking: working };
+}
+
 /** A real bundle row as a deal's detail: no estimate yet, the parts as the scan split them, how the split is known. */
 function realDetail(row: DealRow, parts: string[], evidence: NonNullable<DealDetail['splitEvidence']>): DealDetail {
   return {
@@ -129,6 +136,8 @@ export function createMockClient(): ApiClient {
       // `real-ai`: the same ten questions with the AI answers the second scan recorded for them (a suggestion made for other
       // choices is dropped by mapSuggestion, as in the app), and the "could not tell" the owner saw on PCL406424SB.
       questions = mapReview(mode === 'real-ai' ? withRecordedSuggestions(scan3.review) : scan3.review).questions;
+      // `real-ai` also shows the app's own follow-up in each of its four states, copies of the owner's PCL406424SB question.
+      if (mode === 'real-ai') questions = questions.flatMap((q) => [q, ...followUpVariants(q)]);
       for (const [id, d] of Object.entries(scan3.details)) details[id] = mapDetail(d, questions.find((q) => q.bundle.id === id)?.id ?? null);
     } else {
       const rows = real.rows as unknown as RealRow[];
@@ -138,9 +147,11 @@ export function createMockClient(): ApiClient {
     }
     for (const q of questions) {
       const d = q.bundle.id ? details[q.bundle.id] : undefined;
-      if (d) d.questionId = q.id;
+      // The follow-up copies (`~` in the id) show a state; the deal's own question is the real one.
+      if (d && !q.id.includes('~')) d.questionId = q.id;
     }
-    state.counts = { review: questions.length, autopilotApplied: 2, newDeals: 0 };
+    state.counts = { ...reviewCounts(questions), autopilotApplied: 2, newDeals: 0 };
+    if (!state.counts.reviewWorking) delete state.counts.reviewWorking;
     state.budget = { ...state.budget, serpLeft: 119, serpMonthly: 250, serpReserve: 100, serpPerScan: 18, keepaTokens: 57, keepaRefillPerMin: 1, aiSpentUsd: 0.7, aiCapUsd: 25 };
     state.keys = { serpapi: true, keepa: true, anthropic: true, openai: false, ebay: true, telegram: false };
     state.keyProblems = { ebay: 'eBay did not accept the App ID and Cert ID. Use the production keys from developer.ebay.com, not the sandbox pair.' };
@@ -231,7 +242,8 @@ export function createMockClient(): ApiClient {
   };
 
   const sync = () => {
-    state.counts.review = questions.length;
+    state.counts = { ...state.counts, ...reviewCounts(questions) };
+    if (!state.counts.reviewWorking) delete state.counts.reviewWorking;
     emit({ type: 'state', state: clone(state) });
   };
 
@@ -326,14 +338,27 @@ export function createMockClient(): ApiClient {
       emit({ type: 'activity' });
       return { questionId: q.id };
     },
-    async ask(id) {
-      await online(1400);
-      questions = questions.map((q) =>
-        q.id === id && !q.suggestion && q.askCostUsd !== null
-          ? { ...q, suggestion: { status: 'cannot_tell', choiceId: null, answer: '', reason: 'The listing title and page do not name the model.', quotes: [], costUsd: q.askCostUsd } }
-          : q,
-      );
-      emit({ type: 'review' });
+    async askAi(id, o) {
+      await online(700);
+      const q = questions.find((x) => x.id === id);
+      if (!q) throw new ApiError('refused', 'That question is not open any more.');
+      if (isWorking(q.followUp)) return { queued: false, reason: 'The app is already working on this one.' };
+      if (q.askCostUsd === null) return { queued: false, reason: 'There is nothing more the AI could read for this question.' };
+      if (q.suggestion && !o?.force) return { queued: false, reason: 'Nothing new to read since the last answer.' };
+      // The app takes it: queued, then running with what it is doing, then done with what it tried (invented here).
+      const tried = q.followUp?.tried ?? [];
+      const set = (followUp: FollowUp, suggestion = q.suggestion) => {
+        questions = questions.map((x) => (x.id === id ? { ...x, followUp, suggestion } : x));
+        sync();
+        emit({ type: 'review' });
+      };
+      set({ state: 'queued', tried, roundsLeft: 2 });
+      setTimeout(() => set({ state: 'running', doing: `Reading Home Depot's page for ${q.subject}`, tried, roundsLeft: 2 }), 1500);
+      setTimeout(() => {
+        const next: FollowUp = { state: 'done', tried: [...tried, { what: `Read Home Depot's page for ${q.subject}`, result: 'the Includes list names the same parts as before', ...(q.bundle.link ? { url: q.bundle.link } : {}) }], roundsLeft: 1 };
+        set(next, q.askCostUsd === null ? q.suggestion : { status: 'cannot_tell', choiceId: null, answer: '', reason: 'The listing title and page do not name the model.', quotes: [], costUsd: q.askCostUsd });
+      }, 4000);
+      return { queued: true };
     },
     async askAll() {
       await online();

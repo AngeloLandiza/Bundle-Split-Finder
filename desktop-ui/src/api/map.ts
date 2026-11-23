@@ -21,6 +21,7 @@ import type {
   DealsView,
   DealSort,
   Drip,
+  FollowUp,
   Grade,
   KeyName,
   KeyProblems,
@@ -164,7 +165,13 @@ export function mapState(s: C.AgentState): AppState {
       aiSpentUsd: s.budget.aiSpentUsd,
       aiCapUsd: s.budget.aiCapUsd,
     },
-    counts: { review: s.counts.review, autopilotApplied: s.counts.autopilotApplied, newDeals: s.counts.newDeals },
+    counts: {
+      review: s.counts.review,
+      autopilotApplied: s.counts.autopilotApplied,
+      newDeals: s.counts.newDeals,
+      // Questions the app is still checking itself; not in `review`. An older agent sends none.
+      ...(num((s.counts as { reviewWorking?: unknown }).reviewWorking) !== undefined ? { reviewWorking: num((s.counts as { reviewWorking?: unknown }).reviewWorking)! } : {}),
+    },
     keys: s.keys,
     firstRun: s.firstRun ?? false,
     ...(problems ? { keyProblems: problems } : {}),
@@ -571,13 +578,37 @@ export function readBrief(raw: unknown): ReviewBrief | undefined {
   if (b.check !== null && b.check !== undefined) {
     const c = b.check as Record<string, unknown>;
     if (typeof c !== 'object' || !str(c.text) || !opt(c.url) || !opt(c.linkLabel)) return undefined;
-    check = { text: c.text, ...(c.url ? { url: c.url } : {}), ...(c.linkLabel ? { linkLabel: c.linkLabel } : {}) };
+    // `who` is the agent's word for who does this step; a value it does not know is dropped (the words decide then).
+    const who = c.who === 'app' || c.who === 'owner' ? c.who : undefined;
+    check = { text: c.text, ...(c.url ? { url: c.url } : {}), ...(c.linkLabel ? { linkLabel: c.linkLabel } : {}), ...(who ? { who } : {}) };
   }
   return { ask: b.ask, suggestion: b.suggestion, state: b.state, reasons, check, writtenBy: b.writtenBy };
 }
 
+/**
+ * What the app did on its own about a question, kept only when it has the promised shape (a state it knows, a list of
+ * steps with words, a whole number of rounds). Anything else is dropped: the card then behaves as before.
+ */
+export function readFollowUp(raw: unknown): FollowUp | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const f = raw as Record<string, unknown>;
+  const str = (v: unknown): v is string => typeof v === 'string';
+  if (f.state !== 'queued' && f.state !== 'running' && f.state !== 'done' && f.state !== 'gave_up') return undefined;
+  if (!Array.isArray(f.tried) || typeof f.roundsLeft !== 'number' || !Number.isFinite(f.roundsLeft)) return undefined;
+  if (f.doing !== undefined && !str(f.doing)) return undefined;
+  const tried: FollowUp['tried'] = [];
+  for (const t of f.tried) {
+    const x = t as Record<string, unknown> | null;
+    if (!x || !str(x.what) || !str(x.result) || (x.url !== undefined && !str(x.url))) return undefined;
+    tried.push({ what: x.what, result: x.result, ...(x.url ? { url: x.url } : {}) });
+  }
+  const doing = typeof f.doing === 'string' ? f.doing.trim() : '';
+  return { state: f.state, ...(doing ? { doing } : {}), tried, roundsLeft: f.roundsLeft };
+}
+
 export function mapQuestion(q: C.ReviewQuestion): ReviewQuestion {
   const brief = readBrief((q as C.ReviewQuestion & { brief?: unknown }).brief);
+  const followUp = readFollowUp((q as C.ReviewQuestion & { followUp?: unknown }).followUp);
   const choices: Choice[] = q.kind === 'ebay' ? EBAY_CHOICES : (q.choices ?? []).map((c) => ({ id: c.id, label: c.label, models: c.models, asin: c.asin, source: c.source ? { label: c.source.label, url: c.source.url } : null }));
   return {
     id: q.id,
@@ -601,6 +632,7 @@ export function mapQuestion(q: C.ReviewQuestion): ReviewQuestion {
     openedAt: iso(q.item.question.openedAt),
     seen: q.seen ?? null,
     ...(brief ? { brief } : {}),
+    ...(followUp ? { followUp } : {}),
   };
 }
 
