@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { RESOLVED_BY_SCAN } from '../src/scan/answers';
-import { matchState, WAITING_PARTS_TEXT } from '../src/scan/matchState';
+import { matchState, NO_AMAZON_LISTING_TEXT, partState, WAITING_PARTS_TEXT } from '../src/scan/matchState';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { buildReport } from '../src/scan/report';
 import { partPricesWanted, splitOne, waitingParts, withdrawUnreadSplitQuestions } from '../src/scan/runner';
@@ -121,6 +121,22 @@ describe('rule 2: Home Depot sells each part under exactly that model', () => {
       ['hd_part_page', 'https://www.homedepot.com/p/307298546'],
     ]);
     expect(s.evidence![1]!.text).toBe('Home Depot sells P553 by itself: ONE+ 18V Cordless 7-1/4 in. Compound Miter Saw (Tool Only) ($189.00).');
+  });
+
+  it('rule 4: no Amazon listing found for P553 is its part\'s state, never a reason to question the split', async () => {
+    const store = await realStore();
+    await store.putPartPrice(nov18('P553'));
+    await store.putMatch({ key: 'RYOBI:P553', brand: 'RYOBI', model: 'P553', status: 'none', asin: null, grade: null, alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null });
+    const b = await bundle(store, '320243741');
+    const { split, opened } = await splitOne(store, b, await knownModels(store), T0, true);
+    expect(split).toMatchObject({ status: 'resolved', components: ['PCL1600K2', 'P553'] });
+    expect(opened).toBe(false);
+    expect((await store.getReview('split:homedepot:320243741'))!.answer).toBe(RESOLVED_BY_SCAN);
+    const row = (await buildReport(store, DEFAULT_SCAN_SETTINGS)).bundles.find((r) => r.key === b.key)!;
+    const p553 = row.parts.find((p) => p.model === 'P553')!;
+    expect(partState(p553)).toBe(NO_AMAZON_LISTING_TEXT);
+    expect(row.splitEvidence?.map((e) => e.kind)).toEqual(['hd_part_page', 'hd_part_page']);
+    expect(partState(row.parts.find((p) => p.model === 'PCL1600K2')!)).toBeNull();
   });
 
   it('a reading that came back not found keeps the question, with the reason', async () => {

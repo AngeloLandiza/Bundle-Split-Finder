@@ -22,6 +22,12 @@ export const WAITING_PARTS_TEXT = "Waiting for Home Depot's part pages";
  */
 export const NO_AMAZON_LISTING_TEXT = 'No Amazon listing found';
 
+/**
+ * Step 15: a part's own state line, or null: NO_AMAZON_LISTING_TEXT once a lookup found no Amazon listing for it (match
+ * status `none`). Nothing reads it to question the bundle's split (scan/settle.ts reads no Amazon match).
+ */
+export const partState = (p: Pick<PartRow, 'status'>): string | null => (p.status === 'none' ? NO_AMAZON_LISTING_TEXT : null);
+
 /** The match-state line on a Deals row. Shared by the helper and the native app. */
 export function matchState(row: BundleRow): string | null {
   if (row.waitingPage) return WAITING_PAGE_TEXT;
