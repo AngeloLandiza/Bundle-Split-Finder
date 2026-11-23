@@ -260,6 +260,16 @@ function SettingsForm({ initial, onSaved }: { initial: AppSettings; onSaved: (te
           <TextField label="ROI at least" type="number" mono width="sm" suffix="%" value={s.alerts.minRoiPercent} onChange={(e) => alertsSave({ minRoiPercent: Math.max(0, num(e.target.value, s.alerts.minRoiPercent)) })} />
           <TextField label="Estimated profit at least" type="number" mono width="sm" prefix="$" value={s.alerts.minProfit} onChange={(e) => alertsSave({ minProfit: Math.max(0, num(e.target.value, s.alerts.minProfit)) })} />
         </div>
+        <TextField
+          label="Sold a month at least"
+          type="number"
+          min={0}
+          mono
+          width="sm"
+          value={s.alerts.minMonthlySold ?? 50}
+          help="Units the slowest part sold on Amazon last month, by Keepa. Keepa leaves the figure out for slow sellers, so a part without one reads as no sales data and the deal is not called worth buying now."
+          onChange={(e) => alertsSave({ minMonthlySold: Math.max(0, Math.round(num(e.target.value, s.alerts.minMonthlySold ?? 50))) })}
+        />
         <Checkbox label="Also tell me when questions are waiting in Review" checked={s.alerts.reviewDigest} onChange={(reviewDigest) => alertsSave({ reviewDigest }, 0)} />
         <KeyField
           name="telegram"

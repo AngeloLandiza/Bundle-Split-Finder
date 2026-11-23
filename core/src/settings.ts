@@ -70,7 +70,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   brands: ['DEWALT', 'RYOBI'],
   pagesPerBrand: 1,
   fees: DEFAULT_FEES,
-  alerts: { enabled: false, minProfit: 20, minRoiPercent: 20, reviewDigest: true },
+  alerts: { enabled: false, minProfit: 20, minRoiPercent: 20, reviewDigest: true, minMonthlySold: DEFAULT_MIN_MONTHLY_SOLD },
   keepaTokensPerScan: 5,
   keepaReserve: 5,
   discoveryMode: 'auto',
