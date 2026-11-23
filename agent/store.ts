@@ -218,7 +218,7 @@ export const STORE_VERSION = 1;
 export function defaultSettings(): StoreData['settings'] {
   return {
     updatedAt: new Date(0).toISOString(),
-    autopilot: true,
+    autopilot: false,
     ebaySettings: { ...DEFAULT_EBAY_SETTINGS },
     settings: {
       schedule: DEFAULT_SETTINGS.schedule,
@@ -242,7 +242,7 @@ export function defaultSettings(): StoreData['settings'] {
 
 /**
  * The model each pipeline starts on: Haiku 5.5 for the judge (the cheapest, measured on the listings); Opus 5.5 for Ask AI
- * and Research (owner ruling, Nov 23: measured with 0 wrong verified answers, so Autopilot runs unattended). $25 a month
+ * and Research (owner ruling, Nov 23: measured with 0 wrong verified answers, so their verified answers can be approved in one tap, or applied by Autopilot once the owner switches it on). $25 a month
  * until the owner says otherwise. Trusted only where the evals measured that exact model for that pipeline
  * (autopilot.ts MEASURED_MODELS). Stored settings keep whatever the owner has; this only fills new installs.
  */

@@ -16,31 +16,42 @@ describe('the digest: at most one message after a run', () => {
       bundles: [deal('a', 'DCK240C2', 30, 0.25), deal('b', 'DCK283D2', 45.1, 0.34), deal('c', 'DCK2100D1T1', 5, 0.5), deal('d', 'DCK300', 60, 0.6, 'waiting')],
       review: [],
     };
-    const first = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 0, trendLines: [] });
+    const first = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [] });
     expect(first.event).toMatchObject({ kind: 'deal', count: 2, route: '/deals' });
     expect(first.text).toContain('2 new deals above 20% ROI');
     expect(first.text).toContain('Top: DEWALT DCK283D2, est. profit $45.10 (34% ROI)');
     expect(first.text).toMatch(/estimate/i);
     expect(first.notifiedDeals).toEqual(['b', 'a']);
 
-    const again = buildDigest({ report, alerts, notifiedDeals: first.notifiedDeals, notifiedQuestions: [], autopilotApplied: 0, trendLines: [] });
+    const again = buildDigest({ report, alerts, notifiedDeals: first.notifiedDeals, notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [] });
     expect(again.event).toBeNull();
     expect(again.text).toBeNull();
   });
 
   it('says how many questions need the owner when one is new, and what Autopilot applied, in the same message', () => {
     const report = { bundles: [], review: [question('split:1'), question('match:2')] };
-    const d = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: ['split:1'], autopilotApplied: 3, trendLines: [] });
+    const d = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: ['split:1'], autopilotApplied: 3, verifiedWaiting: 0, trendLines: [] });
     expect(d.event).toMatchObject({ kind: 'review', count: 2, route: '/review' });
     expect(d.text).toBe('2 questions need you.\nAutopilot applied 3 answers (Undo in Activity).');
     expect(d.notifiedQuestions).toEqual(['split:1', 'match:2']);
-    const quiet = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: d.notifiedQuestions, autopilotApplied: 0, trendLines: [] });
+    const quiet = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: d.notifiedQuestions, autopilotApplied: 0, verifiedWaiting: 0, trendLines: [] });
     expect(quiet.event).toBeNull();
+  });
+
+  it('says how many AI answers wait for the owner in Review, one line, when Autopilot did not apply them', () => {
+    const report = { bundles: [], review: [question('split:1')] };
+    const d = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: ['split:1'], autopilotApplied: 0, verifiedWaiting: 4, trendLines: [] });
+    expect(d.text).toBe('4 answers verified by AI — approve them in Review.');
+    expect(d.event).toMatchObject({ kind: 'review', count: 4, route: '/review' });
+    const one = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: ['split:1'], autopilotApplied: 0, verifiedWaiting: 1, trendLines: [] });
+    expect(one.text).toBe('1 answer verified by AI — approve it in Review.');
+    const hidden = buildDigest({ report, alerts: { ...alerts, reviewDigest: false }, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 4, trendLines: [] });
+    expect(hidden.text).toBeNull();
   });
 
   it('nothing when alerts are off, except what Autopilot did', () => {
     const report = { bundles: [deal('b', 'DCK283D2', 45, 0.34)], review: [question('split:1')] };
-    const off = buildDigest({ report, alerts: { ...alerts, enabled: false, reviewDigest: false }, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 1, trendLines: [] });
+    const off = buildDigest({ report, alerts: { ...alerts, enabled: false, reviewDigest: false }, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 1, verifiedWaiting: 0, trendLines: [] });
     expect(off.text).toBe('Autopilot applied 1 answer (Undo in Activity).');
     expect(off.event).toMatchObject({ kind: 'autopilot', count: 1 });
   });

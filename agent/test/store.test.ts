@@ -23,12 +23,12 @@ describe('agent store', () => {
   it('starts with defaults and keeps an update across a reopen', () => {
     const dir = tempDir();
     const s = openStore(dir);
-    expect(s.get('settings').autopilot).toBe(true);
+    expect(s.get('settings').autopilot).toBe(false);
     expect(s.get('jobs')).toEqual([]);
-    s.update('settings', (cur) => ({ ...cur, autopilot: false }));
+    s.update('settings', (cur) => ({ ...cur, autopilot: true }));
     s.close();
     const again = openStore(dir);
-    expect(again.get('settings').autopilot).toBe(false);
+    expect(again.get('settings').autopilot).toBe(true);
   });
 
   it('hands out copies: changing what get returns changes nothing stored', () => {

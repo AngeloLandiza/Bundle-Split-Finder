@@ -68,7 +68,7 @@ hours, or once a day. While the app is running and not paused, the agent then:
 - pulls Keepa data inside the scan, if a Keepa key is set;
 - runs the **AI pass** on open Review questions and saves suggestions. A suggestion is never
   an answer by itself;
-- runs **Autopilot** (a switch in Settings, on by default): it applies a suggestion only when
+- runs **Autopilot** (a switch in Settings, off by default; turn it on to apply without a tap): it applies a suggestion only when
   the code checked its quotes against the source, it is a split question, and the model is one
   you marked trusted. Each one is in **Activity** with **Undo**. Anything unverified, "cannot
   tell" or "none fits" waits in Review for you;

@@ -574,6 +574,18 @@ export class AgentWork {
     return applied;
   }
 
+  /** Open split questions whose suggestion the code verified and the owner has not used: what Approve all verified takes. */
+  private async verifiedWaiting(): Promise<number> {
+    const suggestions = this.d.store.get('suggestions');
+    let n = 0;
+    for (const item of await this.scanStore.listReview()) {
+      if (item.answer !== null) continue;
+      const stored = liveSuggestion(suggestions, item);
+      if (stored && stored.outcome === undefined && approvalOf(stored.suggestion, item)) n += 1;
+    }
+    return n;
+  }
+
   /** Undo: the question opens again, the suggestion shows again for the owner, and Autopilot leaves that question alone. */
   undo(entryId: string): Promise<StoredAutopilotEntry> {
     return this.serialAnswer('A scan or a search is running. Undo when it has finished.', () => this.undoNow(entryId));
@@ -764,7 +776,7 @@ export class AgentWork {
         await writeAlertBaseline(this.cache, { bundleKey: row.key, profit: row.estimate.profit, roiPercent: roi, notifiedAt: this.d.now() });
       }
     }
-    const digest = buildDigest({ report, alerts: app.alerts, notifiedDeals: runtime.notifiedDeals, notifiedQuestions: runtime.notifiedQuestions, autopilotApplied: applied, trendLines });
+    const digest = buildDigest({ report, alerts: app.alerts, notifiedDeals: runtime.notifiedDeals, notifiedQuestions: runtime.notifiedQuestions, autopilotApplied: applied, verifiedWaiting: await this.verifiedWaiting(), trendLines });
     store.update('runtime', (r) => ({ ...r, notifiedDeals: digest.notifiedDeals, notifiedQuestions: digest.notifiedQuestions }));
     if (digest.event) this.d.notify(digest.event);
     const tg = store.get('keys').telegram;

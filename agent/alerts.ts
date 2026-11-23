@@ -20,6 +20,8 @@ export interface DigestInput {
   notifiedDeals: string[];
   notifiedQuestions: string[];
   autopilotApplied: number;
+  /** Open questions whose AI suggestion the code verified and nothing has applied yet (what Approve all verified takes). */
+  verifiedWaiting: number;
   /** Trend lines already worded (core/src/keepa/alerts.ts). */
   trendLines: string[];
 }
@@ -77,6 +79,16 @@ export function buildDigest(input: DigestInput): Digest {
       kind = 'autopilot';
       count = input.autopilotApplied;
       route = '/activity';
+    }
+  }
+
+  if (alerts.reviewDigest && input.verifiedWaiting > 0) {
+    const n = input.verifiedWaiting;
+    lines.push(`${plural(n, 'answer', 'answers')} verified by AI — approve ${n === 1 ? 'it' : 'them'} in Review.`);
+    if (!kind) {
+      kind = 'review';
+      count = n;
+      route = '/review';
     }
   }
 
