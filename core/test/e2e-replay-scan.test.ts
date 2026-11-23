@@ -41,10 +41,14 @@ async function realStore(): Promise<ScanStore> {
   return store;
 }
 
+/** Every row handed out, by ASIN: Keepa's product pull of a listing answers with the row's own title and brand. */
+const rowsByAsin = new Map<string, { title: string; brand: string }>();
+
 /** One listing that names the part, as a search row; Keepa's carries no price. */
 const row = (k: string, priced: boolean) => {
   const [brand, model] = k.split(' ') as [string, string];
   const asin = `B0${model.replace(/[^A-Z0-9]/gi, '').slice(0, 8).padEnd(8, 'X')}`.toUpperCase();
+  rowsByAsin.set(asin, { title: `${brand} ${model} Tool Only`, brand });
   return { asin, title: `${brand} ${model} Tool Only`, brand, price: priced ? 99 : null, extracted_price: priced ? 99 : null, reviews: null };
 };
 
@@ -111,7 +115,8 @@ async function scanWith(searches: number) {
       keepaProduct: async (asin) => {
         keepaCalls.push(`product ${asin}`);
         spend(1);
-        const p = { asin, title: 'x', brand: 'RYOBI', amazonPrice: 9_900 };
+        // The row's own title and brand and no part number, so the catalog check leaves every listing as it is (unknown).
+        const p = { asin, title: rowsByAsin.get(asin)?.title ?? 'x', brand: rowsByAsin.get(asin)?.brand ?? null, amazonPrice: 9_900 };
         return { data: serpApiProductBodyFromKeepa(p), source: 'network', at: clock, billAs: 'keepa', keepaTokens: 1, keepaProduct: p };
       },
     });

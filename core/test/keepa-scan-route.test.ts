@@ -26,6 +26,8 @@ interface Opts {
   maxPerRun?: number;
   /** Searches this scan may make. */
   searches: number;
+  /** Catalog fields Keepa answers a product pull with, by ASIN (from the recorded product pages); none by default. */
+  catalog?: Record<string, { partNumber: string; manufacturer: string }>;
 }
 
 async function world(o: Opts) {
@@ -56,7 +58,7 @@ async function world(o: Opts) {
   const keepaProduct = async (asin: string, label: string): Promise<SearchResult> => {
     keepaCalls.push(`product ${asin} ${label.split(':')[1]}`);
     spend(1);
-    const p = { asin, title: 'RYOBI ONE+ HP 18V Brushless Extended Reach Ratchet', brand: 'RYOBI', amazonPrice: 12_345 };
+    const p = { asin, title: 'RYOBI ONE+ HP 18V Brushless Extended Reach Ratchet', brand: 'RYOBI', amazonPrice: 12_345, ...(o.catalog?.[asin] ?? {}) };
     return { data: serpApiProductBodyFromKeepa(p), source: 'network', at: clock, billAs: 'keepa', keepaTokens: 1, keepaProduct: p };
   };
   const job = await runScan({
@@ -75,16 +77,36 @@ describe('the scan routes lookups: Keepa first, then SerpApi, then they wait', (
     expect(job.lookupsVia).toEqual({ keepa: 1, serpapi: 1 });
     expect(job.lookupsWaiting).toBe(0);
     expect(job.lookupsBlockedBy).toBeNull();
-    // The Keepa search, then the price pull of the listing it matched, as a refresh, right after it.
-    expect(keepaCalls).toHaveLength(2);
+    // The Keepa search, then the price pull of the listing it matched, as a refresh, right after it; then the catalog
+    // check of the SerpApi lookup's title match, from one of the 5 tokens left above the reserve.
+    expect(keepaCalls).toHaveLength(3);
     expect(keepaCalls[0]).toMatch(/^search /);
     expect(keepaCalls[1]).toMatch(/^product B\w+ refresh$/);
+    expect(keepaCalls[2]).toMatch(/^product B\w+ identify$/);
     // The listing page and the SerpApi lookup.
     expect(job.searchesUsed).toBe(2);
-    expect(job.keepaTokensUsed).toBe(11);
+    expect(job.keepaTokensUsed).toBe(12);
     const report = await buildReport(store, RATCHET);
     expect(report.bundles.every((b) => b.parts.every((p) => p.status !== 'waiting'))).toBe(true);
     expect(report.bundles.some((b) => b.estimate !== null)).toBe(true);
+  });
+
+  it('catalog check: the SerpApi lookup\'s title match is pulled on Keepa after the lookups and verified from its part number', async () => {
+    // The fields the recorded SerpApi product pages show for the two ratchets (fixtures/recorded/amazon-product-*.json).
+    const catalog = {
+      B0B3JWF5ZV: { partNumber: 'PBLRC25B', manufacturer: 'RYOBI' },
+      B0B6Z2ZGVK: { partNumber: 'PBLRC01B', manufacturer: 'RYOBI' },
+    };
+    const { job, store, keepaCalls } = await world({ tokensLeft: 21, searches: 10, catalog });
+    expect(keepaCalls.map((c) => (c.startsWith('search') ? 'search' : c.replace(/ B\w+ /, ' ')))).toEqual(['search', 'product refresh', 'product identify']);
+    const verified = (await store.listMatches()).filter((m) => m.verifiedBy === 'keepa_catalog');
+    expect(verified.map((m) => [m.model, m.grade, m.verifyEvidence])).toEqual([
+      [verified[0]!.model, 'strong', `Amazon's catalog lists brand RYOBI, part number ${verified[0]!.model}: https://www.amazon.com/dp/${verified[0]!.asin}`],
+      [verified[1]!.model, 'strong', `Amazon's catalog lists brand RYOBI, part number ${verified[1]!.model}: https://www.amazon.com/dp/${verified[1]!.asin}`],
+    ]);
+    // Both: the Keepa lookup's price pull carries the same fields, so its title match is verified at no extra token.
+    expect(job.matchesVerified).toBe(2);
+    expect(job.keepaTokensUsed).toBe(12);
   });
 
   it('no search left: Keepa does what its tokens cover, the rest waits for Keepa tokens, and the job says so, not "search limit"', async () => {
@@ -112,7 +134,8 @@ describe('the scan routes lookups: Keepa first, then SerpApi, then they wait', (
   it('Keepa refusing a planned lookup before it is sent sends it to SerpApi when a search can pay: no failure, no part marked failing', async () => {
     // The plan sees 52 tokens; the run's own Keepa cap is 5, so Keepa refuses each lookup before anything is sent.
     const { job, keepaCalls } = await world({ tokensLeft: 57, maxPerRun: 5, searches: 10 });
-    expect(keepaCalls).toEqual([]);
+    // No lookup on Keepa; a 1-token catalog check of each SerpApi title match fits under the run's cap.
+    expect(keepaCalls.filter((c) => !c.endsWith(' identify'))).toEqual([]);
     expect(job.lookupsVia).toEqual({ keepa: 0, serpapi: 2 });
     expect(job.failingParts ?? []).toEqual([]);
     expect(job.stopMessage).toBeNull();

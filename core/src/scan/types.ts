@@ -406,7 +406,8 @@ export interface MatchRecord {
   /** When the part first had to wait; null unless status is "waiting". */
   waitingSince: number | null;
   /**
-   * Q1a fix round 2: 'page' when Verify wrote this result from a listing's detail page. A scan never
+   * Q1a fix round 2: 'page' when Verify wrote this result from a listing's detail page (or, since the catalog check,
+   * when Amazon's catalog verified the listing: scan/catalogCheck.ts). A scan never
    * judges such a result again from search rows, which carry no part number or packaging. Absent
    * otherwise, and on records saved before it existed.
    */
@@ -422,6 +423,29 @@ export interface MatchRecord {
    * Matching from saved listings never chooses one of them for the part or its twin. Absent when none.
    */
   rejectedAsins?: string[];
+  /**
+   * Catalog check (scan/catalogCheck.ts): what verified this match's listing. 'keepa_catalog' or 'serpapi_product' when
+   * Amazon's structured fields confirmed it (keepa/verify.ts). Absent otherwise; a report derives 'owner' and 'title'.
+   */
+  verifiedBy?: VerifiedBy;
+  /**
+   * The evidence in one plain sentence with the listing's link: what confirmed it ("Amazon's catalog lists brand
+   * DEWALT, part number DCF921B: https://www.amazon.com/dp/B09M3TL9BB"), or why the catalog removed the listing.
+   */
+  verifyEvidence?: string;
+  /** Listings Amazon's catalog was read for, for this part, each once: none is pulled twice. Absent when none. */
+  catalogChecks?: CatalogCheckRecord[];
+}
+
+/** How a match's listing was verified: Amazon's catalog by Keepa, a SerpApi product page, the owner, or only its title. */
+export type VerifiedBy = 'keepa_catalog' | 'serpapi_product' | 'owner' | 'title';
+
+/** One catalog check of one listing for one part (keepa/verify.ts checkIdentity), when it was read. */
+export interface CatalogCheckRecord {
+  asin: string;
+  status: 'confirmed' | 'contradicted' | 'unknown';
+  reason: string;
+  at: number;
 }
 
 export interface PriceRecord {
@@ -551,7 +575,11 @@ export type ScanStep =
    */
   | { kind: 'lookup'; brand: string; model: string; via?: 'keepa' | 'serpapi' }
   | { kind: 'refresh'; brand: string; model: string; asin: string }
-  | { kind: 'identify'; brand: string; model: string; asin: string };
+  /**
+   * A product page owed (pageDue). `check: 'catalog'`: a catalog check of a title match or a match question's listing
+   * (scan/catalogCheck.ts), pulled only on Keepa (1 token), after the lookups and before the refreshes.
+   */
+  | { kind: 'identify'; brand: string; model: string; asin: string; check?: 'catalog' };
 
 /**
  * A budget limit, SerpApi's own 429, Keepa with no tokens, a failed request, or the user pressing Stop. Step 15:
@@ -668,6 +696,12 @@ export interface ScanJob {
   lookupsVia?: { keepa: number; serpapi: number };
   lookupsWaiting?: number;
   lookupsBlockedBy?: LookupBlock | null;
+  /**
+   * Catalog check (scan/catalogCheck.ts): listings Amazon's catalog verified for a part in this job, and listings it
+   * showed are not the part's and were removed, each ASIN once. Absent when none was checked.
+   */
+  matchesVerified?: number;
+  matchesRemoved?: number;
   /** Part refreshes where Amazon price fell vs the previous Keepa trend cache. */
   partPriceDrops?: { partModel: string; delta: number }[];
   counts: ScanCounts;

@@ -22,6 +22,9 @@ import { planScan } from '../scanPlan';
 import { estimatedJudgeCost } from '../settings';
 import type { TokenBudget } from '../keepa/budget';
 import { KeepaBudgetExceededError } from '../keepa/client';
+import type { KeepaProduct } from '../keepa/types';
+import { identityFromKeepa } from '../keepa/verify';
+import { applyCatalogCheck, catalogChecksWanted } from './catalogCheck';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonProduct, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
@@ -454,6 +457,14 @@ async function runQueue(run: Run): Promise<void> {
     try {
       result = await send(run, step);
     } catch (err) {
+      // Catalog check: a check Keepa cannot pay for, or that failed, is dropped (no failure, no message, nothing owed):
+      // the next scan or the drip plans it again.
+      if (step.kind === 'identify' && step.check) {
+        job.queue.shift();
+        moveUnits(job, stage, { remaining: queued() });
+        await run.store.putScan(job);
+        continue;
+      }
       if (err instanceof KeepaBudgetExceededError) {
         const sentence = err.message;
         // Step 15: Keepa refused before anything was sent, so nothing was spent and nothing failed. A lookup goes to
@@ -529,12 +540,15 @@ async function runQueue(run: Run): Promise<void> {
       } catch {
         // Trend cache failures must not stop the scan (worker digests and alerts still run).
       }
+      // Catalog check: every Keepa product pulled is read against the title matches and questions holding it (free).
+      await noteCatalog(run, job, result.keepaProduct);
     }
     if (step.kind === 'lookup') {
       const via = result.billAs === 'keepa' ? 'keepa' : 'serpapi';
       job.lookupsVia = { keepa: job.lookupsVia?.keepa ?? 0, serpapi: job.lookupsVia?.serpapi ?? 0 };
       job.lookupsVia[via] += 1;
       if (via === 'keepa' && follow === null) await schedulePricePull(run, step);
+      if (follow === null) await scheduleCatalogCheck(run, step);
     }
     if (step.kind === 'lookup' && follow) await schedulePageRead(run, step, follow);
     // Ruling 57: a part answered is no longer failing.
@@ -618,6 +632,38 @@ async function schedulePricePull(run: Run, step: Lookup): Promise<void> {
   const price = await run.store.getPrice(match.asin);
   if (price && price.price !== null) return;
   run.job.queue.splice(1, 0, { kind: 'refresh', brand: step.brand, model: step.model, asin: match.asin });
+}
+
+/**
+ * Catalog check: a Keepa product pulled in this job (a refresh, a product page, a check) read against every automatic
+ * title match or match question that holds it unchecked (catalogCheck.ts). Counted once per ASIN on the job.
+ */
+async function noteCatalog(ctx: PartContext, job: Pick<ScanJob, 'matchesVerified' | 'matchesRemoved'>, product: KeepaProduct): Promise<void> {
+  const outcomes = await applyCatalogCheck(ctx, identityFromKeepa(product));
+  if (outcomes.some((o) => o.change === 'verified')) job.matchesVerified = (job.matchesVerified ?? 0) + 1;
+  if (outcomes.some((o) => o.change === 'removed')) job.matchesRemoved = (job.matchesRemoved ?? 0) + 1;
+}
+
+/**
+ * Catalog check: a lookup that left the part with only a title match has its listing pulled on Keepa (1 token) and
+ * checked, after the lookups still queued: the check goes in front of the first refresh, and only when the tokens the
+ * queued Keepa work holds leave one more above the reserve and no lookup waits. Nothing when a price pull is already queued for it (that
+ * pull carries the same fields), when Keepa is not in play, or when the listing was checked for the part.
+ */
+async function scheduleCatalogCheck(run: Run, step: Lookup): Promise<void> {
+  if (!keepaInPlay(run) || !run.keepaBudget) return;
+  // A part with no listing comes first: while a lookup waits, its tokens are not spent on a check.
+  if (run.job.deferred.some((s) => s.kind === 'lookup')) return;
+  const match = await run.store.getMatch(partKey(step.brand, step.model));
+  if (!match || match.decidedBy !== 'auto' || match.status !== 'matched' || match.asin === null || match.grade !== 'probable') return;
+  if ((match.catalogChecks ?? []).some((c) => c.asin === match.asin)) return;
+  const rest = run.job.queue.slice(1);
+  if (rest.some((s) => (s.kind === 'refresh' || s.kind === 'identify') && s.asin === match.asin)) return;
+  const pull = productTokenEstimate(run.settings.keepaTrackingDepth, 1);
+  const held = rest.reduce((n, s) => n + (s.kind === 'lookup' && s.via !== 'serpapi' ? KEEPA_LOOKUP_TOKEN_ESTIMATE : s.kind === 'refresh' || s.kind === 'identify' ? pull : 0), 0);
+  if (run.keepaBudget.blockReason(held + pull) !== null) return;
+  const at = rest.findIndex((s) => s.kind === 'refresh');
+  run.job.queue.splice(at < 0 ? run.job.queue.length : at + 1, 0, { kind: 'identify', brand: step.brand, model: step.model, asin: match.asin, check: 'catalog' });
 }
 
 /**
@@ -741,6 +787,8 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
       }
       return sendLookup(run, step);
     case 'identify':
+      // Catalog check: only Keepa pays for one (1 token); never a SerpApi search.
+      if (step.check && !(run.keepaProduct && settings.amazonRefreshViaKeepa)) throw new KeepaBudgetExceededError('no_tokens');
       if (run.keepaProduct && settings.amazonRefreshViaKeepa) {
         const block = run.keepaBudget?.blockReason(productTokenEstimate(settings.keepaTrackingDepth, 1));
         if (block) throw new KeepaBudgetExceededError(block);
@@ -790,6 +838,11 @@ async function apply(run: Run, step: ScanStep, result: SearchResult): Promise<st
     case 'lookup':
       return applyLookup(run, step, data, at);
     case 'identify':
+      if (step.check) {
+        const page = parseAmazonProduct(data, step.asin);
+        if (page && page.asin === step.asin) await savePrice(run, step.asin, page, at);
+        return null;
+      }
       await applyIdentify(run, step, data, at);
       return null;
     case 'refresh':
@@ -2037,6 +2090,25 @@ export async function plannedWork(
   return { work: workOf(wants), steps: wants.steps };
 }
 
+/**
+ * Catalog check: the checks a scan plans (catalogCheck.ts catalogChecksWanted, most valuable first). A check of a listing
+ * a planned Keepa refresh pulls anyway takes that refresh's place at no cost; any other takes `spare` tokens, `pull` each.
+ */
+async function plannedChecks(run: Run, refreshes: Refresh[], spare: number, pull: number): Promise<IdentifyStep[]> {
+  const targets = await catalogChecksWanted(run.store, await bundleParts(run.store));
+  const refreshed = new Set(refreshes.map((r) => r.asin));
+  const out: IdentifyStep[] = [];
+  let left = spare;
+  for (const t of targets) {
+    if (!refreshed.has(t.asin)) {
+      if (left < pull) continue;
+      left -= pull;
+    }
+    out.push({ kind: 'identify', brand: t.brand, model: t.model, asin: t.asin, check: 'catalog' });
+  }
+  return out;
+}
+
 /** `listings`: the saved listings, read once for this planning pass. */
 async function planParts(run: Run, listings: ListingRecord[], only?: (key: string) => boolean): Promise<void> {
   const { job, budget } = run;
@@ -2071,7 +2143,18 @@ async function planParts(run: Run, listings: ListingRecord[], only?: (key: strin
       const v = via.get(k);
       return step.kind === 'lookup' && v ? { ...step, via: v } : step;
     };
-    queue = [...work.lookups.filter((k) => via.has(k)).map(routed), ...toSteps(plan.keepaIdentifies), ...toSteps(plan.keepaRefreshes)];
+    // Catalog check: the title matches and questions to settle, after the lookups and product pages owed and before the
+    // refreshes. A check replaces its listing's refresh (the same pull carries the price), else takes the tokens the plan
+    // left, and none while a lookup waits (a part with no listing comes first: those tokens refill toward its lookup).
+    // One that does not fit is not planned (no wait, no stop): the next scan or the drip plans it again.
+    const refreshes = toSteps(plan.keepaRefreshes) as Refresh[];
+    const spare = plan.deferredLookups.length > 0 ? 0 : Math.max(0, tokens - plan.keepaTokens);
+    const checks = only ? [] : await plannedChecks(run, refreshes, spare, productTokenEstimate(scale.trackingDepth, 1));
+    const checked = new Set(checks.map((c) => c.asin));
+    queue = [
+      ...work.lookups.filter((k) => via.has(k)).map(routed), ...toSteps(plan.keepaIdentifies), ...checks,
+      ...refreshes.filter((r) => !checked.has(r.asin)),
+    ];
     later = toSteps([...plan.deferredLookups, ...plan.deferredIdentifies, ...plan.deferredRefreshes]);
     const pull = productTokenEstimate(scale.trackingDepth, 1);
     const before = only ? job.keepaPlan : undefined;
@@ -2331,7 +2414,13 @@ export interface KeepaOneDeps {
 }
 
 /** What one lookup did: matched (and priced), sent to Review, no Amazon listing, or refused before anything was sent. */
-export type KeepaOneOutcome = { status: 'matched' | 'review' | 'none' | 'refused'; tokens: number };
+export type KeepaOneOutcome = {
+  status: 'matched' | 'review' | 'none' | 'refused';
+  tokens: number;
+  /** Catalog check: the price pull's fields verified the match's listing (1), or showed it is not the part (removed: 1). */
+  verified?: number;
+  removed?: number;
+};
 
 /** A search client that refuses: the drip never searches SerpApi. */
 const NO_SEARCH: SearchClient = { search: () => Promise.reject(new Error('The drip makes no SerpApi search.')) };
@@ -2356,8 +2445,9 @@ export async function keepaLookupOne(d: KeepaOneDeps, step: LookupStep): Promise
   const follow = await applyLookup(ctx, plain, result.data, result.at);
   const match = await d.store.getMatch(partKey(plain.brand, plain.model));
   if (match?.status === 'matched' && match.asin !== null) {
-    tokens += await pullMatchedPrice(ctx, plain, d.keepaProduct, d.keepaBudget);
-    return { status: 'matched', tokens };
+    const tally: Pick<ScanJob, 'matchesVerified' | 'matchesRemoved'> = {};
+    tokens += await pullMatchedPrice(ctx, plain, d.keepaProduct, d.keepaBudget, tally);
+    return { status: 'matched', tokens, ...(tally.matchesVerified ? { verified: tally.matchesVerified } : {}), ...(tally.matchesRemoved ? { removed: tally.matchesRemoved } : {}) };
   }
   if (follow) await notePageDue(ctx, plain, follow);
   return { status: match?.status === 'review' ? 'review' : 'none', tokens };
@@ -2367,10 +2457,12 @@ export async function keepaLookupOne(d: KeepaOneDeps, step: LookupStep): Promise
  * Step 15: a Keepa lookup's search rows carry no price (fixtures/keepa/search-RYOBI-PCL235B.json: no stats, no csv), so
  * the listing it matched is pulled once with stats (1 token, part of KEEPA_LOOKUP_TOKEN_ESTIMATE) and saved as a refresh.
  * Nothing when the part is not matched, its listing already has a price, or the budget refuses. Returns the tokens spent.
- * The drip and the panel's Look up call it; a scan queues the same pull as a refresh step (schedulePricePull).
+ * The drip and the panel's Look up call it; a scan queues the same pull as a refresh step (schedulePricePull). The pull's
+ * Keepa fields are read by the catalog check too (free), counted on `tally` when given.
  */
 export async function pullMatchedPrice(
   ctx: PartContext, step: Pick<LookupStep, 'brand' | 'model'>, keepaProduct: NonNullable<ScanDeps['keepaProduct']>, keepaBudget: Pick<TokenBudget, 'blockReason'>,
+  tally: Pick<ScanJob, 'matchesVerified' | 'matchesRemoved'> = {},
 ): Promise<number> {
   const match = await ctx.store.getMatch(partKey(step.brand, step.model));
   if (match?.status !== 'matched' || match.asin === null) return 0;
@@ -2379,5 +2471,6 @@ export async function pullMatchedPrice(
   if (keepaBudget.blockReason(productTokenEstimate(ctx.settings.keepaTrackingDepth, 1)) !== null) return 0;
   const pulled = await keepaProduct(match.asin, `${ctx.prefix}:refresh:${step.model}`, ctx.settings.freshnessMs);
   await applyRefresh(ctx, { kind: 'refresh', brand: step.brand, model: step.model, asin: match.asin }, pulled.data, pulled.at);
+  if (pulled.keepaProduct) await noteCatalog(ctx, tally, pulled.keepaProduct);
   return pulled.source === 'network' ? (pulled.keepaTokens ?? 0) : 0;
 }
