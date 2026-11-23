@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { QUESTIONS } from '../api/mockData';
-import { groupQuestions, parseTyped, preselected, typedFromSuggestion } from './reviewModel';
+import realData from '../api/mockReal.json';
+import { mapReview } from '../api/map';
+import { groupQuestions, parseTyped, preselected, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
 
 const byId = (id: string) => QUESTIONS.find((q) => q.id === id)!;
 
@@ -10,10 +12,38 @@ describe('review model', () => {
     expect(g.verified.map((q) => q.id)).toEqual(['q-dck200', 'q-pcl660', 'q-dckts']);
     expect(g.needsYou.every((q) => q.suggestion?.status !== 'verified')).toBe(true);
   });
-  it('preselects only a verified choice, never an unverified or cannot-tell one', () => {
+  it('preselects the choice a suggestion names, verified or not; nothing when the AI could not tell or named none', () => {
     expect(preselected(byId('q-dck200'))).toBe('c2');
-    expect(preselected(byId('q-pcl500'))).toBeNull();
+    expect(preselected(byId('q-pcl500'))).toBe('B0B1F877F3');
     expect(preselected(byId('q-pcl2001'))).toBeNull();
+    expect(preselected({ ...byId('q-pcl500'), suggestion: { ...byId('q-pcl500').suggestion!, status: 'unmatched', choiceId: null } })).toBeNull();
+  });
+  it('preselects a real unverified suggestion from the owner’s second scan, and shows it as not verified with the agent’s words', () => {
+    const real = mapReview(realData.review as never).questions;
+    const named = real.filter((q) => preselected(q) !== null);
+    expect(named.length).toBe(4);
+    for (const q of named) {
+      expect(q.suggestion?.status).toBe('unverified');
+      expect(q.suggestion?.quotes.length).toBeGreaterThan(0);
+      expect(q.suggestion?.quotes.every((x) => x.source.label.length > 0)).toBe(true);
+      expect(suggestionChip(q.suggestion!)).toMatchObject({ label: 'Not verified', tone: 'attention' });
+    }
+    // The rest typed in parts that are none of the choices: nothing is preselected for them.
+    const unmatched = real.filter((q) => q.suggestion?.status === 'unmatched');
+    expect(unmatched.length).toBe(11);
+    expect(unmatched.every((q) => preselected(q) === null)).toBe(true);
+  });
+  it('words the chip: verified says the quoted text says so; not verified says why', () => {
+    const v = byId('q-dck200').suggestion!;
+    expect(suggestionChip(v)).toEqual({ label: 'Verified', tone: 'verified', why: 'The page text quoted below says so.' });
+    expect(suggestionChip({ ...v, status: 'unverified', plain: 'The page never names the saw.' })?.why).toBe('The page never names the saw.');
+    expect(suggestionChip({ ...v, status: 'unverified', plain: null, notVerified: 'No quote names DCK240C2.' })?.why).toBe('No quote names DCK240C2.');
+    expect(suggestionChip({ ...v, status: 'cannot_tell' })).toBeNull();
+  });
+  it('updates the key hint: Enter saves and moves on, the last one just saves, and with no choice it says so', () => {
+    expect(saveHint({ hasAnswer: true, hasNext: true })).toBe('↩ save and next');
+    expect(saveHint({ hasAnswer: true, hasNext: false })).toBe('↩ save');
+    expect(saveHint({ hasAnswer: false, hasNext: true })).toBe('Choose an answer to save');
   });
   it('types in the parts a research suggestion found when no choice holds them', () => {
     expect(typedFromSuggestion(byId('q-dckts'))).toBe('DCD771B, DCF885B, DCS381B, DCS391B, DCG412B, DCL040');

@@ -1,4 +1,4 @@
-import type { DealSection, Grade, QuestionKind, ReviewQuestion } from '../api/types';
+import type { AiSuggestion, DealSection, Grade, QuestionKind, ReviewQuestion } from '../api/types';
 
 export const KIND_LABEL: Record<QuestionKind, string> = {
   split: 'Which parts',
@@ -32,11 +32,32 @@ export function groupQuestions(questions: ReviewQuestion[]): { verified: ReviewQ
   return { verified, needsYou };
 }
 
-/** The choice a suggestion preselects: only a verified suggestion that names one of the choices. */
+/**
+ * The choice a suggestion preselects: any suggestion that names one of the offered choices, verified or not, so one key
+ * accepts it (HAX G7-G9). Whether it is verified is shown beside it; an answer that matches no choice preselects nothing.
+ */
 export function preselected(q: ReviewQuestion): string | null {
   const s = q.suggestion;
-  if (!s || s.status !== 'verified' || !s.choiceId) return null;
+  if (!s || (s.status !== 'verified' && s.status !== 'unverified') || !s.choiceId) return null;
   return q.choices.some((c) => c.id === s.choiceId) ? s.choiceId : null;
+}
+
+/** What the chip beside a suggested choice says and how it looks; the why is the agent's own plain sentence when it sends one. */
+export function suggestionChip(s: AiSuggestion): { label: string; tone: 'verified' | 'attention'; why: string } | null {
+  if (s.status === 'verified') return { label: 'Verified', tone: 'verified', why: 'The page text quoted below says so.' };
+  if (s.status === 'unverified' || s.status === 'unmatched') {
+    return { label: 'Not verified', tone: 'attention', why: s.plain?.trim() || s.notVerified?.trim() || 'The code could not find these quotes on the page. Check the sources below.' };
+  }
+  return null;
+}
+
+/**
+ * The footer's key hint: Enter saves the selected choice and moves to the next question. Without a choice it says what
+ * is missing instead of a key that would do nothing.
+ */
+export function saveHint(o: { hasAnswer: boolean; hasNext: boolean }): string {
+  if (!o.hasAnswer) return 'Choose an answer to save';
+  return o.hasNext ? '↩ save and next' : '↩ save';
 }
 
 /** The parts a verified research suggestion typed in, when it is not one of the choices. */

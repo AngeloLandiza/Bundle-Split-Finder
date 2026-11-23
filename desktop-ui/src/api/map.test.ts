@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type * as C from '@core/api/contract';
 import type { PartRow } from '@core/scan/types';
 import { mergePatch } from '../lib/patch';
-import { csvSort, gradeOf, mapEvent, mapRow, mapState, mapSuggestion, scanResult } from './map';
+import { csvSort, gradeOf, mapEvent, mapRow, mapState, mapSuggestion, scanResult, splitEvidenceOf } from './map';
 import { backoffMs, createSseParser } from './sse';
 
 const part = (p: Partial<PartRow>): PartRow =>
@@ -92,12 +92,59 @@ describe('a suggestion', () => {
   it('is never verified when the AI said none fits', () => {
     const sig = '[["DCF891B","DCD708B"],["DCF921B","DCD708B"]]';
     const got = mapSuggestion(question(stored({ status: 'none_suggested', reason: 'No reading fits.', quotes: [quote] }, sig)), choices);
-    expect(got).toMatchObject({ status: 'unverified', choiceId: null, answer: 'None of these fits' });
+    expect(got).toMatchObject({ status: 'unmatched', choiceId: null, answer: 'None of these fits' });
+  });
+  it('names the offered choice an unverified answer claims, with the AI’s quotes linked to their sources', () => {
+    const sig = '[["DCF891B","DCD708B"],["DCF921B","DCD708B"]]';
+    const claimed = { evidence: [{ quote: 'DCK240C2DCS380B', source: 'bundle' }, { quote: 'DEWALT DCK240C2 (kit): 20V MAX Cordless Drill/Impact 2 Tool Combo Kit', source: 'catalog:dck240c2' }], reason: 'The page names DCS380B.', decision: 'choose', choiceIndex: 1, asin: null };
+    const q = { ...question(stored({ status: 'unverified', reasons: ['No quote names DCF921B.'], claimed }, sig)), bundleId: 'homedepot:306554196', sources: [{ source: 'homedepot', label: 'Home Depot', url: 'https://www.homedepot.com/p/306554196' }] } as C.ReviewQuestion;
+    const got = mapSuggestion(q, choices);
+    expect(got).toMatchObject({ status: 'unverified', choiceId: 'choice:1', reason: 'The page names DCS380B.', notVerified: 'No quote names DCF921B.' });
+    expect(got?.quotes.map((x) => x.source)).toEqual([{ label: 'Home Depot bundle page', url: 'https://www.homedepot.com/p/306554196' }, { label: 'Catalog entry', url: null }]);
+  });
+  it('keeps the parts a research answer typed in as its own state when no choice holds them', () => {
+    const sig = '[["DCF891B","DCD708B"],["DCF921B","DCD708B"]]';
+    const researchClaim = { decision: 'parts', reason: 'Two kits.', parts: [{ model: 'PCL1600K2', qty: 1, quotes: [{ quote: 'Includes ONE+ 18V 6-Tool Combo Kit', sourceId: 'hd-page:320243671' }] }, { model: 'A986501', qty: 1, quotes: [] }] };
+    const got = mapSuggestion({ ...question(stored({ status: 'unverified', reasons: ['The bundle’s title names a drill that no part is or holds.'], claimed: null, researchClaim }, sig)), bundleId: 'homedepot:111' } as C.ReviewQuestion, choices);
+    expect(got).toMatchObject({ status: 'unmatched', choiceId: null, answer: 'PCL1600K2 + A986501' });
+    expect(got?.quotes[0]?.source).toEqual({ label: 'Home Depot part page', url: 'https://www.homedepot.com/p/320243671' });
+  });
+  it('carries the agent’s plain words for why it is not verified', () => {
+    const sig = '[["DCF891B","DCD708B"],["DCF921B","DCD708B"]]';
+    const q = { ...question(stored({ status: 'unverified', reasons: ['x'], claimed: { decision: 'choose', choiceIndex: 0, evidence: [] } }, sig)), suggestionPlain: 'The page never names the saw.' } as C.ReviewQuestion;
+    expect(mapSuggestion(q, choices)?.plain).toBe('The page never names the saw.');
   });
   it('says why it could not tell, with no choice preselected', () => {
     const sig = '[["DCF891B","DCD708B"],["DCF921B","DCD708B"]]';
     const got = mapSuggestion(question(stored({ status: 'cannot_tell', reason: 'The pages disagree.', quotes: [] }, sig)), choices);
     expect(got).toMatchObject({ status: 'cannot_tell', choiceId: null, reason: 'The pages disagree.' });
+  });
+});
+
+describe('the fields the new agent adds', () => {
+  const base = { agent: { status: 'idle', nextScanAt: null, lastScan: { at: '2026-11-23T10:00:00Z', status: 'finished', stopMessage: null, searchesUsed: 1, keepaTokensUsed: 0, newDeals: 0, reviewOpen: 0, waitingLookups: 18, lookupsDone: { keepa: 2, serpapi: 1 }, lookupsBlockedBy: 'keepa_tokens' }, drip: { active: true, waiting: 18, nextAt: '2026-11-23T10:10:00Z', lastLookupAt: null } }, helper: { paired: true, connected: true, lastSeenAt: null }, budget: { serpLeft: 119, serpReserve: 100, keepaTokens: 57, keepaRefillPerMin: 1, aiSpentUsd: 0, aiCapUsd: null }, counts: { review: 0, autopilotApplied: 0, newDeals: 0, jobsWaiting: 0 }, keys: { ebay: true }, keyProblems: { ebay: 'eBay did not accept the App ID and Cert ID.', telegram: '  ', bogus: 'x' } };
+  it('reads the lookups, the drip, Keepa’s refill and the key problems, and only with their types', () => {
+    const got = mapState(base as unknown as C.AgentState);
+    expect(got.agent.lastScan).toMatchObject({ waitingLookups: 18, lookupsDone: { keepa: 2, serpapi: 1 }, lookupsBlockedBy: 'keepa_tokens' });
+    expect(got.agent.drip).toEqual({ active: true, waiting: 18, nextAt: '2026-11-23T10:10:00Z', lastLookupAt: null });
+    expect(got.budget.keepaRefillPerMin).toBe(1);
+    expect(got.keyProblems).toEqual({ ebay: 'eBay did not accept the App ID and Cert ID.' });
+  });
+  it('leaves them out for an older agent', () => {
+    const old = mapState({ ...base, agent: { status: 'idle', nextScanAt: null, lastScan: null }, keyProblems: undefined, budget: { ...base.budget, keepaRefillPerMin: undefined } } as unknown as C.AgentState);
+    expect(old.agent.drip).toBeUndefined();
+    expect(old.keyProblems).toBeUndefined();
+    expect(old.budget.keepaRefillPerMin).toBeUndefined();
+  });
+  it('reads a bundle waiting for Home Depot’s part pages as a waiting state, not a question', () => {
+    const row = { id: 'K', bundle: { brand: 'RYOBI', model: 'PCL1201K2-FVC51K', title: 'T', itemId: null, link: null }, section: 'waiting', price: 179, regularPrice: 199, off: 10, matchState: 'waiting_parts', profit: null, roi: null, roiRange: { low: null, high: null }, needsAnswer: true, updatedAt: '2026-11-23T10:00:00Z' };
+    expect(mapRow(row as unknown as C.DealRow)).toMatchObject({ matchKind: 'waiting_parts', matchState: null, needsAnswer: false });
+  });
+  it('keeps split evidence with a kind and a text, and an address only when it is http(s)', () => {
+    expect(splitEvidenceOf([{ kind: 'hd_part_page', text: 'Home Depot sells PCL1201K2', url: 'https://www.homedepot.com/p/1' }, { kind: 'page_quote', text: 'Includes: a', url: 'javascript:alert(1)' }, { kind: 'mystery', text: 'x' }, { kind: 'bogo_pair', text: '' }])).toEqual([
+      { kind: 'hd_part_page', text: 'Home Depot sells PCL1201K2', url: 'https://www.homedepot.com/p/1' },
+      { kind: 'page_quote', text: 'Includes: a' },
+    ]);
   });
 });
 

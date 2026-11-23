@@ -464,7 +464,7 @@ const RAW_QUESTIONS: Omit<ReviewQuestion, 'seen'>[] = [
     ],
     allowNone: true, allowTyped: false,
     suggestion: {
-      status: 'unverified', choiceId: null, answer: 'ONEAND 18V Cordless 5 1/2 in. Circular Saw Tool ONLY · B0B1F877F3',
+      status: 'unverified', choiceId: 'B0B1F877F3', answer: 'ONEAND 18V Cordless 5 1/2 in. Circular Saw Tool ONLY',
       reason: 'The listing’s title does not name PCL500B, and its page was not read.', costUsd: 0.02,
       quotes: [{ text: 'ONEAND 18V Cordless 5 1/2 in. Circular Saw Tool ONLY', source: src('Amazon listing', amazon('B0B1F877F3')) }],
     },

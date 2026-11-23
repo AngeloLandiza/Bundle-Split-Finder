@@ -10,6 +10,7 @@ import { money } from '../lib/format';
 import type {
   ActivityView,
   AgentEvent,
+  AgentView,
   AiSuggestion,
   AppState,
   AutopilotEntry,
@@ -19,8 +20,12 @@ import type {
   DealRow,
   DealsView,
   DealSort,
+  Drip,
   Grade,
+  KeyName,
+  KeyProblems,
   LastScan,
+  LookupBlock,
   PriceLine,
   Quote,
   ReviewQuestion,
@@ -29,6 +34,7 @@ import type {
   Run,
   ScanResult,
   Source,
+  SplitEvidence,
   WayToSell,
 } from './types';
 
@@ -49,6 +55,9 @@ export function scanResult(status: string): ScanResult | 'running' {
  * yet, so they are read as optional and only when they have the right type; an older agent simply lacks them.
  */
 interface StateExtras {
+  waitingLookups?: unknown;
+  lookupsDone?: unknown;
+  lookupsBlockedBy?: unknown;
   pagesUnread?: unknown;
   canReadPagesAgain?: unknown;
   outdated?: unknown;
@@ -58,11 +67,26 @@ interface StateExtras {
 const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 const bool = (v: unknown): boolean | undefined => (typeof v === 'boolean' ? v : undefined);
 
+const BLOCKS: readonly string[] = ['keepa_tokens', 'search_cap', 'reserve', 'hourly_limit'];
+
+/** The counts of the lookups the scan made, only when both are numbers. */
+function lookupsDoneOf(v: unknown): LastScan['lookupsDone'] | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const o = v as { keepa?: unknown; serpapi?: unknown };
+  const keepa = num(o.keepa);
+  const serpapi = num(o.serpapi);
+  return keepa !== undefined && serpapi !== undefined ? { keepa, serpapi } : undefined;
+}
+
 function lastScanOf(s: C.LastScanSummary): LastScan {
   const result = scanResult(s.status);
   const x = s as C.LastScanSummary & StateExtras;
   const pagesUnread = num(x.pagesUnread);
   const canReadPagesAgain = bool(x.canReadPagesAgain);
+  const waitingLookups = num(x.waitingLookups);
+  const lookupsDone = lookupsDoneOf(x.lookupsDone);
+  const rawBlock: unknown = x.lookupsBlockedBy;
+  const blocked: LookupBlock | null | undefined = typeof rawBlock === 'string' && BLOCKS.includes(rawBlock) ? (rawBlock as LookupBlock) : rawBlock === null ? null : undefined;
   return {
     at: s.at,
     result: result === 'running' ? 'finished' : result,
@@ -71,6 +95,9 @@ function lastScanOf(s: C.LastScanSummary): LastScan {
     message: s.stopMessage ?? (s.status === 'stopped' ? 'You stopped the scan. Prices found so far are kept.' : null),
     ...(pagesUnread !== undefined ? { pagesUnread } : {}),
     ...(canReadPagesAgain !== undefined ? { canReadPagesAgain } : {}),
+    ...(waitingLookups !== undefined ? { waitingLookups } : {}),
+    ...(lookupsDone ? { lookupsDone } : {}),
+    ...(blocked !== undefined ? { lookupsBlockedBy: blocked } : {}),
     ...(s.status === 'stopped' && !s.stopMessage ? { userStopped: true } : {}),
   };
 }
@@ -89,15 +116,41 @@ function helperOf(s: C.AgentState): AppState['helper'] {
   };
 }
 
+/** The agent's drip (lookups between scans), when it sends one and every field has its type. */
+function dripOf(v: unknown): Drip | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const o = v as Record<string, unknown>;
+  const waiting = num(o.waiting);
+  if (typeof o.active !== 'boolean' || waiting === undefined) return undefined;
+  return { active: o.active, waiting, nextAt: typeof o.nextAt === 'string' ? o.nextAt : null, lastLookupAt: typeof o.lastLookupAt === 'string' ? o.lastLookupAt : null };
+}
+
+const KEYS_WITH_PROBLEMS: readonly KeyName[] = ['serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram'];
+
+/** The sentences the agent says about keys it holds but a service did not accept: only a non-empty sentence for a key it knows. */
+export function keyProblemsOf(v: unknown): KeyProblems | undefined {
+  if (typeof v !== 'object' || v === null) return undefined;
+  const out: KeyProblems = {};
+  for (const name of KEYS_WITH_PROBLEMS) {
+    const t = (v as Record<string, unknown>)[name];
+    if (typeof t === 'string' && t.trim()) out[name] = t.trim();
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 export function mapState(s: C.AgentState): AppState {
   const a = s.agent;
+  const drip = dripOf((a as { drip?: unknown }).drip);
+  const refill = num((s.budget as { keepaRefillPerMin?: unknown }).keepaRefillPerMin);
+  const problems = keyProblemsOf((s as { keyProblems?: unknown }).keyProblems);
   return {
     agent: {
       status: a.status === 'scanning' && a.busy === 'ask' ? 'asking' : a.status,
-      pipeline: a.pipeline ?? null,
+      pipeline: (a.pipeline as AgentView['pipeline']) ?? null,
       step: a.step ?? null,
       nextScanAt: a.nextScanAt,
       lastScan: a.lastScan ? lastScanOf(a.lastScan) : null,
+      ...(drip ? { drip } : {}),
     },
     helper: helperOf(s),
     budget: {
@@ -106,12 +159,14 @@ export function mapState(s: C.AgentState): AppState {
       serpReserve: s.budget.serpReserve,
       serpPerScan: s.budget.serpPerScan ?? 0,
       keepaTokens: s.budget.keepaTokens,
+      ...(refill !== undefined ? { keepaRefillPerMin: refill } : {}),
       aiSpentUsd: s.budget.aiSpentUsd,
       aiCapUsd: s.budget.aiCapUsd,
     },
     counts: { review: s.counts.review, autopilotApplied: s.counts.autopilotApplied, newDeals: s.counts.newDeals },
     keys: s.keys,
     firstRun: s.firstRun ?? false,
+    ...(problems ? { keyProblems: problems } : {}),
   };
 }
 
@@ -122,8 +177,11 @@ const priceRangeOf = (r: PriceRange): RoiRange | null => rangeOf(r.lowest?.roi ?
 
 /** A bundle whose Home Depot page could not be read: the agent says so as the row's `matchKind`, or as its match state. */
 function matchKindOf(r: C.DealRow): DealRow['matchKind'] {
-  const x = r as C.DealRow & StateExtras;
-  return x.matchKind === 'waiting_page' || r.matchState === 'waiting_page' ? 'waiting_page' : null;
+  const kind: unknown = (r as { matchKind?: unknown }).matchKind;
+  if (kind === 'waiting_page' || r.matchState === 'waiting_page') return 'waiting_page';
+  // Its split waits for Home Depot's own pages of the parts (a free read); not a question, and not an Amazon lookup.
+  if (kind === 'waiting_parts' || r.matchState === 'waiting_parts') return 'waiting_parts';
+  return null;
 }
 
 export function mapRow(r: C.DealRow): DealRow {
@@ -143,7 +201,8 @@ export function mapRow(r: C.DealRow): DealRow {
     section: r.section,
     price: r.price,
     off: r.off,
-    matchState: r.matchState,
+    // The agent's code for a waiting bundle is a state, not a sentence the row would print.
+    matchState: matchKind ? null : r.matchState,
     profit: r.profit,
     roi: r.roi,
     roiRange: rangeOf(r.roiRange.low, r.roiRange.high),
@@ -294,6 +353,20 @@ function wayOf(o: BundleRow['options'][number], i: number): WayToSell {
   };
 }
 
+const EVIDENCE_KINDS: readonly string[] = ['hd_part_page', 'bogo_pair', 'page_quote'];
+
+/** How the split is known, each item only when it has a kind and a text; an address only when it is http(s). */
+export function splitEvidenceOf(v: unknown): SplitEvidence[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: SplitEvidence[] = [];
+  for (const e of v as Record<string, unknown>[]) {
+    if (typeof e !== 'object' || e === null || typeof e.text !== 'string' || !e.text.trim() || typeof e.kind !== 'string' || !EVIDENCE_KINDS.includes(e.kind)) continue;
+    const url = typeof e.url === 'string' && /^https?:\/\//.test(e.url) ? e.url : undefined;
+    out.push({ kind: e.kind as SplitEvidence['kind'], text: e.text.trim(), ...(url ? { url } : {}) });
+  }
+  return out.length ? out : undefined;
+}
+
 /** `questionId`: the open Review question on this bundle, from GET /api/review (the detail does not carry it). */
 export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetail {
   const b = d.bundle;
@@ -322,6 +395,7 @@ export function mapDetail(d: C.DealDetail, questionId: string | null): DealDetai
     bogo: d.bogo ?? null,
     bogoGroup: d.bogoGroup ?? null,
     fbaEstimate: d.fbaEstimate ?? null,
+    ...(splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence) ? { splitEvidence: splitEvidenceOf((d as { splitEvidence?: unknown }).splitEvidence)! } : {}),
   };
 }
 
@@ -341,9 +415,79 @@ function verifiedQuotes(s: Stored['suggestion']): Quote[] {
   return s.quotes.map((q) => ({ text: q.quote, source: { label: q.label, url: q.url } }));
 }
 
+/** What a research run records of each source it read (the ledger): the id a quote names, its label and its page. */
+type Ledger = ReadonlyMap<string, { label: string; url: string | null }>;
+interface ClaimContext {
+  bundleId: string | null;
+  bundleLink: string | null;
+  ledger: Ledger;
+}
+
+/**
+ * A quote's source as the AI named it ("bundle", "hd-page:306554196", "catalog:pcl1600k2", "kit:PCL1200K2",
+ * "listing:B0…", "hd-search:ryobi-p553") as a labelled link. A source with no page of its own (the catalog) is a plain
+ * label: nothing here makes up an address (rule 4).
+ */
+export function claimSource(id: string, ctx: ClaimContext): Source {
+  const known = ctx.ledger.get(id);
+  const url = known?.url ?? null;
+  const colon = id.indexOf(':');
+  const kind = colon < 0 ? id : id.slice(0, colon);
+  const rest = colon < 0 ? '' : id.slice(colon + 1);
+  switch (kind) {
+    case 'bundle':
+      return { label: 'Home Depot bundle page', url: url ?? ctx.bundleLink };
+    case 'hd-page': {
+      const own = ctx.bundleId !== null && ctx.bundleId.endsWith(`:${rest}`);
+      return { label: own ? 'Home Depot bundle page' : 'Home Depot part page', url: url ?? (own ? ctx.bundleLink : `https://www.homedepot.com/p/${rest}`) };
+    }
+    case 'kit':
+      return { label: 'Home Depot kit page', url };
+    case 'hd-search':
+      return { label: 'Home Depot search', url };
+    case 'catalog':
+      return { label: 'Catalog entry', url: null };
+    case 'listing':
+      return { label: 'Amazon listing', url: rest ? `https://www.amazon.com/dp/${rest}` : url };
+    default:
+      return { label: known?.label ?? 'Source', url };
+  }
+}
+
+interface ClaimShape {
+  evidence?: { quote: string; source: string }[];
+  quotes?: { quote: string; sourceId: string }[];
+  parts?: { model: string; qty: number; quotes?: { quote: string; sourceId: string }[] }[];
+  reason?: string;
+  decision?: string;
+  choiceIndex?: number | null;
+  asin?: string | null;
+}
+
+/** The quotes a claim rests on, each with its source linked; a quote named twice once. */
+function claimQuotes(claim: ClaimShape | null, research: ClaimShape | null, ctx: ClaimContext): Quote[] {
+  const raw: { text: string; id: string }[] = [];
+  for (const e of claim?.evidence ?? []) raw.push({ text: e.quote, id: e.source });
+  if (raw.length === 0) {
+    for (const e of research?.quotes ?? []) raw.push({ text: e.quote, id: e.sourceId });
+    for (const part of research?.parts ?? []) for (const e of part.quotes ?? []) raw.push({ text: e.quote, id: e.sourceId });
+  }
+  const seen = new Set<string>();
+  const out: Quote[] = [];
+  for (const r of raw) {
+    const key = `${r.id}|${r.text}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ text: r.text, source: claimSource(r.id, ctx) });
+  }
+  return out;
+}
+
 /**
  * The AI block of a question. A suggestion made for the question as it was is dropped when the question has since
  * changed (its signature differs): it was made for other choices and may not be applied to these (rule 4).
+ * An answer the code could not confirm still names its choice when it names an offered one: the owner sees it
+ * preselected and labelled Not verified (HAX G7-G9); only a verified one is ever applied without him.
  */
 export function mapSuggestion(q: C.ReviewQuestion, choices: Choice[]): AiSuggestion | null {
   const rec = q.suggestion;
@@ -351,30 +495,46 @@ export function mapSuggestion(q: C.ReviewQuestion, choices: Choice[]): AiSuggest
   if (q.seen !== undefined && rec.seen !== q.seen) return null;
   const s = rec.suggestion;
   const costUsd = rec.costUsd ?? 0;
-  const quotes = q.suggestionQuotes ? q.suggestionQuotes.map(quoteOf) : verifiedQuotes(s);
+  const plainRaw = (q as C.ReviewQuestion & { suggestionPlain?: unknown }).suggestionPlain;
+  const plain = typeof plainRaw === 'string' && plainRaw.trim() ? plainRaw.trim() : null;
+  const quotes = q.suggestionQuotes && q.suggestionQuotes.length ? q.suggestionQuotes.map(quoteOf) : verifiedQuotes(s);
+  const base = { notVerified: null, plain, costUsd };
+  const noneFits = 'One quote cannot show that nothing fits.';
   switch (s.status) {
     case 'verified': {
       const a = s.answer;
-      if (a.decision === 'choose' && a.kind === 'split') return { status: 'verified', choiceId: `choice:${a.choiceIndex}`, answer: a.parts.join(' + '), reason: null, quotes, costUsd };
+      const reason = s.reason || null;
+      if (a.decision === 'choose' && a.kind === 'split') return { ...base, status: 'verified', choiceId: choices[a.choiceIndex]?.id ?? `choice:${a.choiceIndex}`, answer: a.parts.join(' + '), reason, quotes };
       if (a.decision === 'choose') {
         const pick = choices.find((c) => c.asin === a.asin);
-        return { status: 'verified', choiceId: pick?.id ?? null, answer: `${a.title} · ${a.asin}`, reason: null, quotes, costUsd };
+        return { ...base, status: 'verified', choiceId: pick?.id ?? null, answer: `${a.title} · ${a.asin}`, reason, quotes };
       }
-      if (a.decision === 'parts') return { status: 'verified', choiceId: null, answer: a.parts.join(' + '), reason: null, quotes, costUsd };
-      // "None fits" is never verified (core/src/assist/types.ts); read here as the AI's view only.
-      return { status: 'unverified', choiceId: null, answer: 'None of these fits', reason: s.reason, quotes, costUsd };
+      if (a.decision === 'parts') return { ...base, status: 'verified', choiceId: null, answer: a.parts.join(' + '), reason, quotes };
+      // "None fits" is never verified (core/src/assist/types.ts); it is the AI's view only.
+      return { ...base, status: 'unmatched', choiceId: null, answer: 'None of these fits', reason, quotes, notVerified: noneFits };
     }
     case 'unverified': {
-      const claimed = s.claimed;
-      const pick = claimed?.choiceIndex != null ? choices[claimed.choiceIndex] : claimed?.asin ? choices.find((c) => c.asin === claimed.asin) : undefined;
-      return { status: 'unverified', choiceId: null, answer: pick ? pick.label : '', reason: s.reasons.join(' '), quotes, costUsd };
+      const claim = (s.claimed as ClaimShape | null | undefined) ?? null;
+      const research = (s.researchClaim as ClaimShape | null | undefined) ?? null;
+      const ledger = (s as { research?: { ledger?: { id: string; label: string; url: string | null }[] } }).research?.ledger ?? [];
+      const ctx: ClaimContext = { bundleId: q.bundleId, bundleLink: q.sources.find((x) => x.source === 'homedepot')?.url ?? null, ledger: new Map(ledger.map((l) => [l.id, { label: l.label, url: l.url }])) };
+      const claimQ = claimQuotes(claim, research, ctx);
+      const reason = claim?.reason ?? research?.reason ?? null;
+      const why = s.reasons.join(' ');
+      const index = claim?.decision === 'choose' ? (claim.choiceIndex ?? null) : research?.decision === 'choose' ? (research.choiceIndex ?? null) : null;
+      const asin = claim?.decision === 'choose' ? (claim.asin ?? null) : null;
+      const pick = index !== null ? choices[index] : asin ? choices.find((c) => c.asin === asin) : undefined;
+      if (pick) return { ...base, status: 'unverified', choiceId: pick.id, answer: pick.label, reason, quotes: claimQ, notVerified: why };
+      const typed = research?.decision === 'parts' ? (research.parts ?? []) : [];
+      const answer = typed.length ? typed.map((p) => (p.qty > 1 ? `${p.model} ×${p.qty}` : p.model)).join(' + ') : 'None of these fits';
+      return { ...base, status: 'unmatched', choiceId: null, answer, reason, quotes: claimQ, notVerified: why };
     }
     case 'cannot_tell':
-      return { status: 'cannot_tell', choiceId: null, answer: '', reason: s.reason, quotes, costUsd };
+      return { ...base, status: 'cannot_tell', choiceId: null, answer: '', reason: s.reason, quotes };
     case 'none_suggested':
-      return { status: 'unverified', choiceId: null, answer: 'None of these fits', reason: s.reason, quotes, costUsd };
+      return { ...base, status: 'unmatched', choiceId: null, answer: 'None of these fits', reason: s.reason, quotes, notVerified: noneFits };
     case 'not_suggested':
-      return { status: 'cannot_tell', choiceId: null, answer: '', reason: s.reason, quotes: [], costUsd };
+      return { ...base, status: 'cannot_tell', choiceId: null, answer: '', reason: s.reason, quotes: [] };
   }
 }
 

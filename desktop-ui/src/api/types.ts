@@ -5,7 +5,7 @@
 
 import type { ActivityError, BogoGroup, BogoTag, BogoView, DealHistoryPoint, DealSignals, FbaEstimate, KeyName, ReportSection, ReviewKind, WatchState } from '@core/api/contract';
 import type { ConfirmState } from '@core/scan/confirmed';
-import type { PipelineView } from '@core/scan/pipeline';
+import type { PipelineView as CorePipelineView } from '@core/scan/pipeline';
 
 export type {
   ActivityError,
@@ -33,7 +33,19 @@ export type {
 } from '@core/api/contract';
 export type { ConfirmState } from '@core/scan/confirmed';
 export type { Schedule } from '@core/schedule';
-export type { PipelineView } from '@core/scan/pipeline';
+
+/** One scan step as the agent now says it: a mark, a label, its figure, and its own count when it has one. */
+export interface PipelineStepView {
+  label: string;
+  state: 'done' | 'now' | 'next' | 'skipped' | 'failed';
+  /** "13 read", "est. $0.03"; for a skipped or failed step, why. */
+  figure: string;
+  done?: number;
+  total?: number;
+}
+
+/** The scan's stages (core/src/scan/pipeline.ts) with the failed state and per-step counts. `estimateText` is '' when unknown. */
+export type PipelineView = Omit<CorePipelineView, 'steps'> & { steps: PipelineStepView[] };
 
 export type DealSection = ReportSection;
 export type QuestionKind = ReviewKind;
@@ -55,6 +67,30 @@ export interface LastScan {
   canReadPagesAgain?: boolean;
   /** True when the owner pressed Stop: a stop he asked for is not a problem to show. Set by map.ts. */
   userStopped?: boolean;
+  /** Parts still waiting for an Amazon lookup when the scan ended. Absent from an older agent. */
+  waitingLookups?: number;
+  /** What the scan's lookups went through: Keepa tokens, SerpApi searches. */
+  lookupsDone?: { keepa: number; serpapi: number };
+  /** Why lookups still wait, when they do. */
+  lookupsBlockedBy?: LookupBlock | null;
+}
+
+/** POST /api/lookups/run: whether it started, why not, and how many lookups go through Keepa and through SerpApi. */
+export interface LookupsRun {
+  started: boolean;
+  reason?: string;
+  viaKeepa: number;
+  viaSerpapi: number;
+}
+
+export type LookupBlock = 'keepa_tokens' | 'search_cap' | 'reserve' | 'hourly_limit';
+
+/** Lookups between scans: Keepa refills and the agent looks up the next part by itself (no SerpApi). */
+export interface Drip {
+  active: boolean;
+  waiting: number;
+  nextAt: string | null;
+  lastLookupAt: string | null;
 }
 
 export interface AgentView {
@@ -66,6 +102,8 @@ export interface AgentView {
   step: string | null;
   nextScanAt: string | null;
   lastScan: LastScan | null;
+  /** The background lookups; absent from an older agent. */
+  drip?: Drip;
 }
 
 export interface HelperState {
@@ -87,6 +125,8 @@ export interface BudgetState {
   serpReserve: number;
   serpPerScan: number;
   keepaTokens: number | null;
+  /** Tokens the Keepa account refills each minute, when the agent knows it. */
+  keepaRefillPerMin?: number | null;
   aiSpentUsd: number;
   aiCapUsd: number | null;
 }
@@ -99,7 +139,11 @@ export interface AppState {
   keys: Record<KeyName, boolean>;
   /** True until the first scan has finished; drives the one-time first-run flow. */
   firstRun: boolean;
+  /** Why a saved key does not work, in the agent's words, by key; absent when none is rejected. */
+  keyProblems?: KeyProblems;
 }
+
+export type KeyProblems = Partial<Record<KeyName, string>>;
 
 // ------------------------------------------------------------------ GET /api/deals
 
@@ -141,9 +185,9 @@ export interface DealRow {
   roiRange: RoiRange | null;
   needsAnswer: boolean;
   /** 'waiting_page': the bundle's own Home Depot page could not be read, so its parts are not known yet (not a question for him). */
-  matchKind?: 'waiting_page' | null;
+  matchKind?: 'waiting_page' | 'waiting_parts' | null;
   updatedAt: string;
-  /** Parts still to look up and what that costs, for "Look up · 2 searches". */
+  /** Parts still to look up, and what a lookup of them would cost in searches (the row has no button; the inspector's menu does). */
   lookup: { searches: number } | null;
 }
 
@@ -181,6 +225,12 @@ export interface PriceLine {
   sources: Source[];
   /** The owner's own confirmed price: Remove is offered on it. */
   confirmed?: boolean;
+}
+
+export interface SplitEvidence {
+  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote';
+  text: string;
+  url?: string;
 }
 
 export type Grade = 'verified' | 'title_match' | 'needs_answer' | 'inactive' | 'missing' | 'not_looked_up';
@@ -273,6 +323,8 @@ export interface DealDetail {
   bogo: BogoView | null;
   /** BOGO found by the agent: the starter's pairs, ranked by each pair's estimate; null when the deal is in none. */
   bogoGroup: BogoGroup | null;
+  /** How the split is known, each with its source: Home Depot part pages, the BOGO pair rule, a quote from the page. */
+  splitEvidence?: SplitEvidence[];
   /** The estimate with Amazon's FBA fee estimate from Keepa, beside the main one; null when no part has a Keepa fee. */
   fbaEstimate: FbaEstimate | null;
 }
@@ -292,7 +344,13 @@ export interface Choice {
   source: Source | null;
 }
 
-export type SuggestionStatus = 'verified' | 'unverified' | 'cannot_tell';
+/**
+ * verified: the code found the quotes and the answer names an offered choice.
+ * unverified: the AI names an offered choice the code could not confirm (preselected, labelled Not verified).
+ * unmatched: the AI's answer is none of the offered choices (none fits, or parts it typed in); nothing is preselected.
+ * cannot_tell: the AI said the evidence does not settle it.
+ */
+export type SuggestionStatus = 'verified' | 'unverified' | 'unmatched' | 'cannot_tell';
 
 export interface AiSuggestion {
   status: SuggestionStatus;
@@ -300,8 +358,12 @@ export interface AiSuggestion {
   choiceId: string | null;
   /** What it proposes in words ("PCL206 + PCL235"), or the listing. */
   answer: string;
-  /** Why it could not tell, or why the code could not confirm it. */
+  /** The AI's own reason: why it chose that, or why it could not tell. */
   reason: string | null;
+  /** Why the code could not confirm it, in the code's words; null when verified. */
+  notVerified?: string | null;
+  /** Why it is not verified in plain words (the agent's suggestionPlain), when it says one. */
+  plain?: string | null;
   quotes: Quote[];
   costUsd: number;
 }

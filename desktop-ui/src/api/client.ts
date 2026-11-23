@@ -17,6 +17,7 @@ import type {
   DealSort,
   DealsView,
   KeyName,
+  LookupsRun,
   PairedExtension,
   PendingPairRequest,
   ReviewAnswer,
@@ -46,6 +47,11 @@ export interface ApiClient {
   scan(): Promise<void>;
   /** Reads again the Home Depot pages the last scan could not read (POST /api/scan/read-pages). Free: no search is spent. */
   readPagesAgain(): Promise<{ started: boolean; reason?: string }>;
+  /**
+   * Looks up the parts that wait for an Amazon lookup now (POST /api/lookups/run): Keepa tokens first, then up to
+   * `maxSearches` SerpApi searches within the per-scan cap and above the reserve. `started: false` carries the reason.
+   */
+  runLookups(body?: { maxSearches?: number }): Promise<LookupsRun>;
   /** Asks Chrome to reload the helper extension when it is older than the app (POST /api/helper/reload). */
   reloadHelper(): Promise<void>;
   stop(): Promise<void>;

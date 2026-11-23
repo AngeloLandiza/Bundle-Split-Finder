@@ -15,10 +15,11 @@ export interface SetupProgress {
   current: SetupStepId;
 }
 
-export function setupProgress(state: Pick<AppState, 'helper' | 'keys' | 'agent' | 'firstRun'>): SetupProgress {
+export function setupProgress(state: Pick<AppState, 'helper' | 'keys' | 'agent' | 'firstRun' | 'keyProblems'>): SetupProgress {
   const steps: SetupProgress['steps'] = [
     { id: 'chrome', done: state.helper.paired },
-    { id: 'key', done: state.keys.serpapi },
+    // A key the service did not accept is saved but not working: the step is not done.
+    { id: 'key', done: state.keys.serpapi && !state.keyProblems?.serpapi },
     { id: 'scan', done: !state.firstRun || state.agent.lastScan !== null },
   ];
   const done = steps.filter((s) => s.done).length;

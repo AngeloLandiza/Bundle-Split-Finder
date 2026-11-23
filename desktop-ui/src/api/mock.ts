@@ -1,32 +1,38 @@
 // The mock agent for `VITE_MOCK=1`: the fixture-backed data in mockData.ts, kept in memory, with
 // a short delay on every call and events pushed the way the real SSE stream pushes them. It answers
 // in the same shapes as the real client (types.ts), so a screen cannot tell them apart.
+// `?mock=real` is the owner's real data after two scans (mockReal.json, from fixtures/e2e-2026-11-23): 53 bundles waiting for
+// lookups, 15 open questions with the AI's real suggestions, Keepa tokens, a rejected eBay key. `?mock=real-scanning` is the
+// same app mid-scan, with a step in every state.
 // `?mock=<scenario>` on the URL shows one state: nobuynow (no bundle is worth buying now), firstrun, empty, offline, chrome-closed, limit,
 // scanning, paused, error, slow, pairing, unread (a scan stopped on unread Home Depot pages), helper-old. Nothing here touches the network.
 
-import type { PipelineView } from '@core/scan/pipeline';
 import type { ApiClient } from './client';
 import { words } from '../lib/platform';
 import { mergePatch } from '../lib/patch';
 import { confirmedSourceName } from '@core/scan/confirmed';
 import { ACTIVITY, DEALS, DETAILS, QUESTIONS, SETTINGS, STATE, net } from './mockData';
+import { mapReview, mapRow } from './map';
+import real from './mockReal.json';
 import { mockBogoView } from './mockTracking';
-import { ApiError, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type ReviewQuestion } from './types';
+import { ApiError, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type DealRow, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
-type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old';
+type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-scanning';
 
+const ago = (min: number): string => new Date(Date.now() - min * 60_000).toISOString();
+const ahead = (min: number): string => new Date(Date.now() + min * 60_000).toISOString();
 const clone = <T>(x: T): T => structuredClone(x);
 
 function scenario(): Scenario {
   if (typeof window === 'undefined') return 'normal';
   const s = new URLSearchParams(window.location.search).get('mock');
-  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old'];
+  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-scanning'];
   return all.find((x) => x === s) ?? 'normal';
 }
 
 const STEPS = ['Home Depot deals pages', 'Bundle pages', 'Home Depot part prices', 'eBay listings', 'Amazon lookups', 'Finish'];
 
-/** The scan's stages as core's pipelineView words them, for a scan `tick` of `total` ticks in. */
+/** The scan's stages as core's pipelineView words them, for a scan `tick` of `total` ticks in. The time shows once a rate is known. */
 function pipelineAt(tick: number, total: number): PipelineView {
   const per = total / STEPS.length;
   const now = Math.min(STEPS.length - 1, Math.floor(tick / per));
@@ -34,12 +40,44 @@ function pipelineAt(tick: number, total: number): PipelineView {
   const eta = (total - tick) * 14;
   return {
     current: { label: ['Fetching deals pages', 'Reading bundle pages', 'Reading part prices', 'Checking eBay listings', 'Looking up parts', 'Finishing up'][now]!, count: `${done} of 24` },
-    estimateText: tick < 2 ? 'estimating' : eta < 60 ? 'under a minute' : `about ${Math.round(eta / 60)} min`,
+    estimateText: tick < 3 ? '' : eta < 60 ? 'under a minute' : `about ${Math.round(eta / 60)} min`,
     stepsDone: now,
     stepsTotal: STEPS.length,
     fraction: tick / total,
     ariaValueText: `Step ${now + 1} of ${STEPS.length}, ${STEPS[now]!.toLowerCase()}`,
-    steps: STEPS.map((label, i) => ({ label, state: i < now ? 'done' : i === now ? 'now' : 'next', figure: i < now ? '24 read' : i === now ? `${done} of 24` : '' })),
+    steps: STEPS.map((label, i) => ({ label, state: i < now ? ('done' as const) : i === now ? ('now' as const) : ('next' as const), figure: i < now ? '24 read' : i === now ? `${done} of 24` : '', ...(i === now ? { done, total: 24 } : {}) })),
+  };
+}
+
+/** The real second scan, mid-way: every mark once. Home Depot part prices at 31 of 40; the listing check failed; eBay skipped. */
+const REAL_PIPELINE: PipelineView = {
+  current: { label: 'Reading part prices', count: '31 of 40' },
+  estimateText: '',
+  stepsDone: 3,
+  stepsTotal: 8,
+  fraction: 0.46,
+  ariaValueText: 'Step 4 of 8, reading part prices, 31 of 40',
+  steps: [
+    { label: 'Home Depot deals pages', state: 'done', figure: '1 read' },
+    { label: 'Bundle pages', state: 'done', figure: '16 read', done: 16, total: 16 },
+    { label: 'Kit pages', state: 'done', figure: '3 read', done: 3, total: 3 },
+    { label: 'Home Depot part prices', state: 'now', figure: '31 of 40', done: 31, total: 40 },
+    { label: 'eBay listings', state: 'skipped', figure: 'key not accepted' },
+    { label: 'Listing check (Claude)', state: 'failed', figure: 'Anthropic did not answer' },
+    { label: 'Amazon lookups', state: 'next', figure: '' },
+    { label: 'Finish', state: 'next', figure: '' },
+  ],
+};
+
+/** A real bundle row as a deal's detail: no estimate yet, the parts as the scan split them, how the split is known. */
+function realDetail(row: DealRow, parts: string[], evidence: NonNullable<DealDetail['splitEvidence']>): DealDetail {
+  return {
+    id: row.id, title: row.title, brand: row.brand, model: row.model, section: row.section, price: row.price, off: row.off, seenAt: row.updatedAt, link: row.link,
+    estimate: null,
+    noEstimate: row.needsAnswer ? 'No estimate yet: what is inside this bundle is not settled.' : `No estimate yet: ${parts.length} ${parts.length === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup.`,
+    ways: [], questionId: null, asins: [], lookup: row.lookup, watch: null, signals: null, history: [], bogo: null, bogoGroup: null, fbaEstimate: null,
+    parts: parts.map((m) => ({ model: m, qty: 1, title: null, grade: 'not_looked_up' as const, asin: null, price: null, net: null, prices: [], verifySearches: null, unnamed: false, confirm: { state: 'look-up-first' as const, ebay: [], confirmed: null, inactive: false } })),
+    ...(evidence.length ? { splitEvidence: evidence } : {}),
   };
 }
 
@@ -58,6 +96,32 @@ export function createMockClient(): ApiClient {
   let pairRequests: PendingPairRequest[] = [];
   let paired: PairedExtension[] = [{ extensionId: 'abcdefghijklmnopabcdefghijklmnop', pairedAt: new Date(Date.now() - 3 * 86_400_000).toISOString(), lastSeenAt: new Date(Date.now() - 60_000).toISOString() }];
 
+  let ebayNotice: string | null = null;
+  if (mode === 'real' || mode === 'real-scanning') {
+    type RealRow = Parameters<typeof mapRow>[0] & { _parts: string[]; _evidence: NonNullable<DealDetail['splitEvidence']> };
+    const rows = real.rows as unknown as RealRow[];
+    deals = rows.map(mapRow);
+    questions = mapReview(real.review as unknown as Parameters<typeof mapReview>[0]).questions;
+    for (const r of rows) details[r.id] = realDetail(mapRow(r), r._parts, r._evidence);
+    for (const q of questions) {
+      const d = q.bundle.id ? details[q.bundle.id] : undefined;
+      if (d) d.questionId = q.id;
+    }
+    state.counts = { review: questions.length, autopilotApplied: 2, newDeals: 0 };
+    state.budget = { ...state.budget, serpLeft: 119, serpMonthly: 250, serpReserve: 100, serpPerScan: 18, keepaTokens: 57, keepaRefillPerMin: 1, aiSpentUsd: 0.7, aiCapUsd: 25 };
+    state.keys = { serpapi: true, keepa: true, anthropic: true, openai: false, ebay: true, telegram: false };
+    state.keyProblems = { ebay: 'eBay did not accept the App ID and Cert ID. Use the production keys from developer.ebay.com, not the sandbox pair.' };
+    state.agent.nextScanAt = null;
+    const waiting = deals.filter((d) => d.lookup).length;
+    state.agent.drip = { active: true, waiting, nextAt: ahead(4), lastLookupAt: ago(7) };
+    state.agent.lastScan = { at: ago(51), result: 'finished', newDeals: 0, searches: 1, message: null, waitingLookups: waiting, lookupsDone: { keepa: 0, serpapi: 1 }, lookupsBlockedBy: 'keepa_tokens' };
+    ebayNotice = 'eBay did not accept the App ID and Cert ID, so eBay reference values were not checked.';
+    activity.runs = activity.runs.slice(0, 3);
+  }
+  if (mode === 'real-scanning') {
+    state.agent.status = 'scanning';
+    state.agent.pipeline = REAL_PIPELINE;
+  }
   if (mode === 'firstrun') {
     state.firstRun = true;
     state.keys = { serpapi: false, keepa: false, anthropic: false, openai: false, ebay: false, telegram: false };
@@ -161,7 +225,7 @@ export function createMockClient(): ApiClient {
     async deals() {
       await online();
       if (mode === 'error') throw new ApiError('server', 'The agent could not read the deals. Try again.');
-      return { rows: clone(deals), at: deals.length ? new Date(Date.now() - 47 * 60_000).toISOString() : null, ebayNotice: null, limitNotice: null, staleDays: null };
+      return { rows: clone(deals), at: deals.length ? new Date(Date.now() - 47 * 60_000).toISOString() : null, ebayNotice, limitNotice: null, staleDays: null };
     },
     async deal(id) {
       await online();
@@ -244,6 +308,26 @@ export function createMockClient(): ApiClient {
       sync();
       emit({ type: 'deals' });
       return { started: true };
+    },
+    async runLookups(body) {
+      await online(500);
+      if (state.agent.status === 'scanning') return { started: false, reason: 'A scan is running. Look up when it has finished.', viaKeepa: 0, viaSerpapi: 0 };
+      const waiting = deals.filter((d) => d.lookup);
+      const viaKeepa = Math.min(waiting.length, Math.floor((state.budget.keepaTokens ?? 0) / 10));
+      const viaSerpapi = Math.min(Math.max(0, waiting.length - viaKeepa), body?.maxSearches ?? 0);
+      if (viaKeepa + viaSerpapi === 0) return { started: false, reason: 'Nothing can be looked up now: Keepa has no tokens to spare and no searches are allowed.', viaKeepa: 0, viaSerpapi: 0 };
+      const done = new Set(waiting.slice(0, viaKeepa + viaSerpapi).map((d) => d.id));
+      setTimeout(() => {
+        deals = deals.map((d) => (done.has(d.id) ? { ...d, lookup: null } : d));
+        const left = deals.filter((d) => d.lookup).length;
+        state.budget.keepaTokens = Math.max(0, (state.budget.keepaTokens ?? 0) - viaKeepa * 10);
+        state.budget.serpLeft = (state.budget.serpLeft ?? 0) - viaSerpapi;
+        if (state.agent.drip) state.agent.drip = { ...state.agent.drip, waiting: left };
+        if (state.agent.lastScan) state.agent.lastScan = { ...state.agent.lastScan, waitingLookups: left };
+        sync();
+        emit({ type: 'deals' });
+      }, 1500);
+      return { started: true, viaKeepa, viaSerpapi };
     },
     async reloadHelper() {
       await online(400);

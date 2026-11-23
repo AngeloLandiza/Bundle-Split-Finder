@@ -23,7 +23,9 @@ export function scanProblem(state: AppState | null): ScanProblem | null {
   const unread = last.pagesUnread ?? 0;
   // A stop at the reserve is already said by the app's own notice under the toolbar (AppNotices); not twice.
   const atReserve = state.budget.serpLeft !== null && state.budget.serpLeft <= state.budget.serpReserve;
-  const stoppedEarly = (last.result === 'stopped' && !last.userStopped) || last.result === 'failed' || (last.result === 'limit' && !atReserve);
+  // When the agent says what is waiting and why (`waitingLookups`), the lookup notice on Deals owns a stop at a limit.
+  const lookupsSaid = last.waitingLookups !== undefined;
+  const stoppedEarly = (last.result === 'stopped' && !last.userStopped) || last.result === 'failed' || (last.result === 'limit' && !atReserve && !lookupsSaid);
   if (unread <= 0 && !stoppedEarly) return null;
 
   let what: string;

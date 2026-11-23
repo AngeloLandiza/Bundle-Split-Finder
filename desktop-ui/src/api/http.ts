@@ -8,7 +8,7 @@ import type * as C from '@core/api/contract';
 import type { ApiClient } from './client';
 import { mapActivity, mapDeals, mapDetail, mapEvent, mapReview, mapState, csvSort } from './map';
 import { openEventStream } from './sse';
-import { ApiError, type KeyName } from './types';
+import { ApiError, type KeyName, type LookupsRun } from './types';
 import { words } from '../lib/platform';
 
 declare global {
@@ -144,6 +144,7 @@ export function createHttpClient(): ApiClient {
 
     scan: async () => void (await call<C.ScanStartResponse>('POST', '/api/scan', {})),
     readPagesAgain: () => call<{ started: boolean; reason?: string }>('POST', '/api/scan/read-pages', {}),
+    runLookups: (body) => call<LookupsRun>('POST', '/api/lookups/run', body ?? {}),
     reloadHelper: async () => void (await call('POST', '/api/helper/reload', {})),
     stop: async () => void (await call('POST', '/api/scan/stop', {})),
     pause: async () => void (await call<C.PauseResponse>('POST', '/api/agent/pause', {})),
