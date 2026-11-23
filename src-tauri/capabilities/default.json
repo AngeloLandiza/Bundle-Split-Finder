@@ -1,22 +1,11 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Split Finder desktop shell (Rust side and local content)",
+  "description": "Split Finder desktop shell: local content only (a release window loads the agent's page, which agent-ui.json scopes). No shell commands: the Rust side starts and stops the sidecar itself, and no page may spawn or kill a process.",
   "windows": ["main"],
   "permissions": [
     "core:default",
     "opener:default",
-    "shell:allow-spawn",
-    "shell:allow-kill",
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "agent-dashboard",
-          "sidecar": true
-        }
-      ]
-    },
     "notification:default",
     "autostart:default",
     "window-state:default"
