@@ -1,15 +1,14 @@
 import { useState, type ReactNode } from 'react';
 import { api, useApp, useResource } from '../api/hooks';
-import { agentWords } from './StatusLine';
-import { keepaWords, rejectedKeysWords } from '../lib/keyStatus';
-import { count, plural, when } from '../lib/format';
+import { count } from '../lib/format';
 import { modLabel, type Screen } from '../lib/keys';
-import { isMac as mac, words as systemWords } from '../lib/platform';
+import { isMac as mac, isWindows, words as systemWords } from '../lib/platform';
 import type { Route } from '../lib/route';
 import { setupProgress } from '../lib/setup';
+import { sidebarStatus } from '../lib/sidebarStatus';
 import { DEAL_VIEWS, VIEW_LABEL, viewCounts, type DealView } from '../lib/views';
 import { Glyph, type GlyphName } from './Glyph';
-import { Meter, ProgressBar, Spinner } from './States';
+import { ProgressBar, Spinner } from './States';
 import { Count } from './Tag';
 import { useUi } from './ui';
 import './Sidebar.css';
@@ -89,10 +88,16 @@ export function Sidebar({ route, onGo }: { route: Route; onGo: (r: Route) => voi
             end={review > 0 ? <Count n={review} attention label={`${review} open`} /> : null}
           />
           <Item glyph="activity" label="Activity" current={on('activity')} onClick={() => go('activity')} shortcut={modLabel('4', mac)} />
-          <Item glyph="gear" label="Settings" current={on('settings')} onClick={() => go('settings')} shortcut={modLabel('5', mac)} />
+          {isWindows ? null : <Item glyph="gear" label={systemWords.preferences} current={on('settings')} onClick={() => go('settings')} shortcut={modLabel('5', mac)} />}
         </Group>
       </div>
       <SidebarStatus />
+      {/* Microsoft's NavigationView pins Settings last, at the bottom of the pane; a Mac keeps it in its group. */}
+      {isWindows ? (
+        <ul className="source-list sidebar-settings">
+          <Item glyph="gear" label={systemWords.preferences} current={on('settings')} onClick={() => go('settings')} shortcut={modLabel('5', mac)} />
+        </ul>
+      ) : null}
     </nav>
   );
 }
@@ -128,7 +133,10 @@ function Item({ glyph, label, current, onClick, end, shortcut }: { glyph: GlyphN
   );
 }
 
-/** The foot of the sidebar: the agent's state, the next scan, searches left, Chrome, and setup while it is open. */
+/**
+ * The foot of the sidebar: four lines at most (lib/sidebarStatus.ts), and setup while it is open. The state, when the
+ * scan is, what is left to spend, and one problem that goes to where it is fixed. The rest is in Today's Agent card.
+ */
 function SidebarStatus() {
   const { state, online, navigate } = useApp();
   const ui = useUi();
@@ -144,13 +152,9 @@ function SidebarStatus() {
       </div>
     );
   }
-  const { agent, budget, helper } = state;
-  const running = agent.status === 'scanning' || agent.status === 'asking' || agent.status === 'stopping';
-  const words = agentWords(agent);
+  const { agent } = state;
+  const v = sidebarStatus(state);
   const setup = setupProgress(state);
-  const keepa = keepaWords(state);
-  const rejected = rejectedKeysWords(state);
-  const waiting = agent.lastScan?.waitingLookups ?? 0;
   return (
     <div className="sidebar-foot">
       {!setup.complete ? (
@@ -166,41 +170,16 @@ function SidebarStatus() {
       ) : null}
       <div className="sb-status" aria-live="polite">
         <p className="sb-row">
-          {running ? <Spinner size={12} /> : null}
-          <span className="sb-strong">{words.state}</span>
+          {v.running ? <Spinner size={12} /> : null}
+          <span className="sb-strong">{v.state}</span>
         </p>
-        {running && words.detail ? <p className="sb-row sb-quiet sb-wrap">{words.detail}</p> : null}
-        {running && agent.pipeline ? <ProgressBar value={agent.pipeline.fraction} label={agent.pipeline.labels?.bar ?? 'Scan progress'} valueText={agent.pipeline.ariaValueText} /> : null}
-        {!running ? (
-          <p className="sb-row sb-quiet">
-            {agent.status === 'paused' ? 'No scheduled scan until you resume' : agent.nextScanAt ? `Next scan ${when(agent.nextScanAt)}` : 'Scans when you press Scan now'}
-          </p>
-        ) : null}
-        {!running && agent.lastScan ? (
-          <p className="sb-row sb-quiet">
-            Last scan {when(agent.lastScan.at)}
-            {agent.lastScan.result === 'finished' || agent.lastScan.userStopped ? '' : agent.lastScan.result === 'limit' ? ', stopped at the limit' : `, ${agent.lastScan.result}`}
-          </p>
-        ) : null}
-        {budget.serpLeft === null ? (
-          <p className="sb-row sb-quiet">Searches not checked yet</p>
-        ) : (
-          <div className="sb-meter">
-            <p className="sb-row sb-quiet">
-              <span>
-                <span className="fig">{count(budget.serpLeft)}</span> {budget.serpLeft === 1 ? 'search' : 'searches'} left
-              </span>
-            </p>
-            {budget.serpMonthly ? <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" /> : null}
-          </div>
-        )}
-        {!running && waiting > 0 ? <p className="sb-row sb-quiet">{plural(waiting, 'part waits', 'parts wait')} for a lookup</p> : null}
-        {keepa ? <p className="sb-row sb-quiet">{keepa}</p> : null}
-        <p className="sb-row sb-quiet">{helper.connected ? 'Chrome connected' : helper.paired ? 'Chrome closed' : 'Chrome not connected'}</p>
-        {rejected ? (
-          <button type="button" className="sb-warn" onClick={() => navigate({ screen: 'settings', id: 'keys' })} title="Open Settings › Keys">
+        {v.running && agent.pipeline ? <ProgressBar value={agent.pipeline.fraction} label={agent.pipeline.labels?.bar ?? 'Scan progress'} valueText={agent.pipeline.ariaValueText} /> : null}
+        {v.when ? <p className="sb-row sb-quiet">{v.when}</p> : null}
+        <p className="sb-row sb-quiet">{v.usage}</p>
+        {v.problem ? (
+          <button type="button" className="sb-warn" onClick={() => navigate(v.problem!.to)} title={`Open ${systemWords.preferences} to fix it`}>
             <Glyph name="warning" size={12} />
-            <span>{rejected}</span>
+            <span>{v.problem.text}</span>
           </button>
         ) : null}
       </div>

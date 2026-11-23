@@ -708,3 +708,9 @@
 :root[data-platform='windows'] .pop-key {
   font-size: 12px;
 }
+
+/* Settings is the last item of the navigation, pinned to the bottom of the pane (Microsoft NavigationView). */
+:root[data-platform='windows'] .sidebar-settings {
+  flex: none;
+  padding: 0 8px 8px;
+}

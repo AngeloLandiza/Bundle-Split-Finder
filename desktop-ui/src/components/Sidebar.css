@@ -187,30 +187,12 @@
   color: var(--label);
 }
 
-.sb-detail {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--label-2);
-}
 
 .sb-quiet {
   color: var(--label-2);
 }
 
-.sb-meter {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
 
-/* The running step may take two lines: "Step 4 of 8 · Reading part prices 31 of 40". */
-.sb-wrap {
-  align-items: flex-start;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
 
 /* A key the service did not accept: said in words with the warning mark, one press to the place that fixes it. */
 .sb-warn {
