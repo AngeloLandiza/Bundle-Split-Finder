@@ -891,6 +891,52 @@ reads "Amazon lists it under TTI, the maker of RYOBI; its title names PBP004" an
 spelling of RYOBI ONE+; its title names PCG002". `LADDER_VERSION` is 2, so a stored unknown is read again once (from the
 cached pull) and the deals are judged again. B096WHWDNB (TTI, part number PCG002, bulk packaged) would now confirm for
 PCG002; the key holds it uncertain, so it counts neither way.
+
+## The manufacturer field for rungs 0 and 1 and the listing judge (Nov 23)
+
+The fifth real scan (`fixtures/e2e-2026-11-23/after-scan5`) found the three best deals so far, RYOBI $99 kits
+PSK1212SB-PCL515B (+$43.19), -PCL633B (+$38.79) and -PCL031B (+$26.47), and held each at "Looks worth buying": the catalog
+check, rung 1 and the judge's check held any listing whose manufacturer field was not the brand itself, and Amazon's record
+for PBP004 (B09HDZ5MPV) and PCL031B (B0CRFS4F6G) says manufacturer **TTI**, for PCG002 (B0B1QRQYK2) **RYOBI Tools**.
+
+**Rule** (`core/src/keepa/brandAliases.ts makerAgrees`, one function for `verify.ts checkIdentity`,
+`listingFields.ts listingProblem` and `listingJudge checkListingJudge`): given the brand field is the part's brand (or a
+recorded brand alias) and every other condition of the rung holds, a manufacturer field that is (a) a recorded
+manufacturer alias of the brand (RYOBI ← TTI, with its listings), or (b) the brand's name followed by the one word
+"Tools" is not a reason to hold the listing. Only "Tools" because it is the only company word in any recorded listing
+("RYOBI Tools" is also RYOBI's own site's name); "Power Tools", "Inc", "Co", "Industrial" stay held. Anything else stays
+unknown as before, and a manufacturer alias never makes another brand in the brand field the part's (a brand field Tolxh
+with manufacturer TTI is still contradicted). A confirmation says so: "…; manufacturer TTI: TTI (Techtronic Industries)
+makes RYOBI". `LADDER_VERSION` is 3, so a stored unknown is read again once from the cached pull.
+
+**Every manufacturer value recorded with brand field RYOBI or DEWALT** (distinct listings; the Keepa search and pulls, the
+two SerpApi product pages, the catalog-check reasons of after-scan3 and after-scan5):
+
+| Brand | Manufacturer | Listings | Reading | Why |
+|---|---|---|---|---|
+| RYOBI | RYOBI | 16 | the brand | already accepted |
+| RYOBI | Ryobi | 2 | the brand | already accepted |
+| DEWALT | DEWALT | 2 | the brand | already accepted |
+| RYOBI | TTI | 2 | **adopted alias** | B09HDZ5MPV (PBP004, key right); B0CRFS4F6G (PCL031B, no key) |
+| RYOBI | RYOBI Tools | 2 | **adopted form** | B0B1QRQYK2 (PCG002, key right); B0CM7TMB22 (PCL615B, no key) |
+| RYOBI | Partyreal | 1 | not adopted | B08L38QFFW (PSBDD01, key right), but a seller's name nothing ties to RYOBI; stays held |
+
+No DEWALT listing carries another manufacturer, so the "DEWALT Tools" form is written but unmeasured on DEWALT.
+
+**Measured** (`npm run measure:autoconfirm`, `measureManufacturerRule`): rungs 0 and 1 with the rule off and on over 332
+rows (every row of `measureIdentity`, the two live listings, and the four after-scan5 listings whose check quotes a
+manufacturer, keyed by the validation labels, `fixtures/keepa/identity-labels.json` and `fixtures/audit/corpus.json`):
+**4 change from unknown to confirmed: 2 right (PBP004 B09HDZ5MPV, PCG002 B0B1QRQYK2), 0 wrong, 2 with no key (PCL031B
+B0CRFS4F6G, PCL615B B0CM7TMB22).** Adopted at zero wrong; each value rests on one right listing. The after-scan5 rows hold
+only what the fixture has word for word (stored title and brand, the manufacturer the reason quotes): no part number and
+no counts, so they confirm through rung 1's title rule; the real record also had a part number that is the part's (the
+check reaches its manufacturer test only after one), and its counts are read again when the listing is.
+
+**Replay** (`replayScan5Deals`: the stored deal rows, history and Keepa sales figures, the app's default numbers $20, 20%,
+50 a month): all three become "Worth buying now … its listings confirmed now" (PCL515B and PCL633B: PBP004 and PCG002;
+PCL031B: those two and PCL031B). None still waits on the recorded fields; in the app each waits only for the re-read of
+its cached pull, which can still hold it if a count field (pack or item count) disagrees.
+
 ## Nov 23: suggested prices and "answer once"
 Two places the owner's manual work was cut, inside the PO's rules ("A price counts when he confirms it", Nov 20; rule 4;
 rule 5). Replayed with `npx tsx scripts/replay-suggestions.ts` (free, no network; `core/test/replay-suggestions.test.ts`).
