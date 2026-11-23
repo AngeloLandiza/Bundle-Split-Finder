@@ -8,6 +8,7 @@ export * from './match';
 export * from './optimize';
 export * from './money';
 export * from './schedule';
+export * from './schedule/recommend';
 export * from './scanPlan';
 export * from './serpapi/budget';
 export * from './serpapi/client';
