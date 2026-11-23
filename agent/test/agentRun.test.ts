@@ -136,7 +136,12 @@ describe('the schedule', () => {
     await put('/api/keys/serpapi', { key: SERP_KEY });
     expect(agent.work.nextScanAt()).toBeNull();
     await patch({ settings: { schedule: { mode: 'interval', hours: 6 } } });
-    expect(agent.work.nextScanAt()).toBe(new Date(T0).toISOString());
+    // Switching on the schedule spends nothing at the next tick: the first scheduled scan is one interval later.
+    expect(agent.work.nextScanAt()).toBe(new Date(T0 + 6 * 3_600_000).toISOString());
+    expect(((await json<AgentState>('/api/state')).agent.nextScanAt)).toBe(new Date(T0 + 6 * 3_600_000).toISOString());
+    expect(agent.work.tick()).toBe(false);
+    clock = T0 + 6 * 3_600_000;
+    const firstAt = clock;
 
     await ui('/api/agent/pause', { method: 'POST' });
     expect(agent.work.tick()).toBe(false);
@@ -150,7 +155,7 @@ describe('the schedule', () => {
     release();
     await agent.work.idle();
     expect(calls).toBe(1);
-    expect(agent.work.nextScanAt()).toBe(new Date(T0 + 6 * 3_600_000).toISOString());
+    expect(agent.work.nextScanAt()).toBe(new Date(firstAt + 6 * 3_600_000).toISOString());
     expect(agent.work.tick()).toBe(false);
     const activity = await json<ActivityResponse>('/api/activity');
     expect(activity.runs[0]).toMatchObject({ trigger: 'scheduled', status: 'failed', error: 'stop here' });

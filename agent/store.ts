@@ -162,6 +162,8 @@ export interface PendingMessage {
 export interface AgentRuntime {
   /** When the last scheduled scan started (epoch ms); the schedule counts from it. */
   lastScheduledRunAt: number | null;
+  /** When the schedule was switched on from manual (epoch ms): the first scheduled scan counts from here, not now. */
+  scheduleFrom?: number | null;
   /** The last SerpApi account check (free). */
   serp: { left: number; perMonth: number; rateLimitPerHour: number; at: string } | null;
   /** Keepa's balance as its last answer said. */

@@ -138,9 +138,22 @@ export class AgentWork {
   nextScanAt(): string | null {
     if (this.d.store.get('agent').paused) return null;
     const { schedule } = this.d.store.get('settings').settings;
-    const last = this.d.store.get('runtime').lastScheduledRunAt;
+    const runtime = this.d.store.get('runtime');
+    const anchors = [runtime.lastScheduledRunAt, runtime.scheduleFrom ?? null].filter((t): t is number => t !== null);
+    const last = anchors.length ? Math.max(...anchors) : null;
     const due = nextRun(schedule, new Date(this.d.now()), last === null ? null : new Date(last));
     return due === null ? null : due.toISOString();
+  }
+
+  /**
+   * Settings were saved. Switching from manual to a schedule does not start a paid scan at the next tick: the first
+   * scheduled scan is one interval from now (or the next daily slot), and nextScanAt in the state says when.
+   */
+  settingsChanged(before: AppSettings, after: AppSettings): void {
+    if (before.settings.schedule.mode === 'manual' && after.settings.schedule.mode !== 'manual') {
+      const at = this.d.now();
+      this.d.store.update('runtime', (r) => ({ ...r, scheduleFrom: at }));
+    }
   }
 
   start(): void {

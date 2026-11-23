@@ -360,8 +360,10 @@ export function createAgent(opts: AgentOptions): Agent {
   r.get('/api/settings', 'any', () => settingsResponse({ settings: store.get('settings'), keys: store.get('keys') }));
   r.patch('/api/settings', 'ui', async (ctx) => {
     const patch = obj(await ctx.body());
-    const next = applySettingsPatch(store.get('settings'), patch, iso());
+    const before = store.get('settings');
+    const next = applySettingsPatch(before, patch, iso());
     store.update('settings', () => next);
+    work.settingsChanged(before, next);
     return settingsResponse({ settings: next, keys: store.get('keys') });
   });
   const keyName = (ctx: Ctx): KeyName => {
