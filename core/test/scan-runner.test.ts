@@ -1247,7 +1247,7 @@ describe('runScan: stop on request (step 3 rule 1)', () => {
     const next = await scan(w, { settings: COMBO, policy: NO_SEARCH, readPages: reader.readPages });
     expect(next.id).toBe(String(T0 + 5 * MINUTE));
     expect(next.stopReason).not.toBe('user');
-    expect(reader.calls).toEqual([COMBO_IDS]);
+    expect(reader.calls).toEqual([COMBO_READ]);
     expect(next.counts.pagesRead).toBe(4);
     // The listing page came from the cache: nothing more was sent.
     expect(w.replay.calls).toEqual([DEWALT_COMBO]);
@@ -1709,6 +1709,8 @@ function pageReader(opts: { refuse?: string; garble?: string[]; misfit?: Record<
 /** Test B's page: four DEWALT bundles, every one with a recorded page. */
 const COMBO: ScanSettings = { ...STEP2, queries: [{ q: 'dewalt 20v combo kit' }] };
 const COMBO_IDS = ['337440459', '337440461', '343992132', '343992133'];
+/** The order their pages are read in (Home Depot's pace, hdOrder.ts): a Home Depot saving first, the biggest percent off first. */
+const COMBO_READ = ['337440459', '337440461', '343992133', '343992132'];
 /** Room for the listing page and nothing else: the parts the pages resolve have no recorded lookup. */
 const ONE_SEARCH: BudgetPolicy = { reserve: 0, maxPerRun: 1 };
 /** Room for nothing: a continued job that sends a request is refused, and the tests see it. */
@@ -1747,7 +1749,7 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
     const reader = pageReader();
     const job = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader.readPages });
     // All four seen at T0: by key.
-    expect(reader.calls).toEqual([COMBO_IDS]);
+    expect(reader.calls).toEqual([COMBO_READ]);
     // Reading a page is never a search: the client saw test B's one request.
     expect(w.replay.calls).toEqual([DEWALT_COMBO]);
     expect(w.ledger).toEqual(['scan:listing:dewalt 20v combo kit:p1']);
@@ -1773,7 +1775,7 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
     // A day later the listing page is paid for again and its rows are saved over the bundles.
     w.clock = T0 + DAY;
     const second = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader.readPages });
-    expect(reader.calls).toEqual([['337440459', '337440461'], ['343992132', '343992133']]);
+    expect(reader.calls).toEqual([['337440459', '337440461'], ['343992133', '343992132']]);
     expect(second.counts).toMatchObject({ pagesFetched: 1, pagesRead: 2, bundlesResolved: 4 });
     const bundle = await w.store.getBundle('homedepot:337440459');
     expect(bundle).toMatchObject({ seenAt: T0 + DAY, split: { status: 'resolved', components: ['DCK200D1P1', 'DCF921B'] } });
@@ -1794,7 +1796,7 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
     const w = world();
     const reader = pageReader({ refuse: '337440461' });
     const job = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader.readPages });
-    expect(reader.calls).toEqual([COMBO_IDS]);
+    expect(reader.calls).toEqual([COMBO_READ]);
     expect(await pagesOf(w.store)).toEqual([
       ['337440459', T0, 'resolved'], ['337440461', null, 'needs_review'], ['343992132', null, 'needs_review'], ['343992133', null, 'needs_review'],
     ]);
@@ -1817,7 +1819,7 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
     ]);
 
     const both = world();
-    const job2 = await scan(both, { settings: COMBO, policy: ONE_SEARCH, readPages: pageReader({ garble: ['337440461'], refuse: '343992133' }).readPages });
+    const job2 = await scan(both, { settings: COMBO, policy: ONE_SEARCH, readPages: pageReader({ garble: ['337440461'], refuse: '343992132' }).readPages });
     expect(job2.stopMessage).toBe(REFUSED);
     expect(job2.counts.pagesRead).toBe(2);
   });
@@ -1844,11 +1846,11 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
 
   it('interrupted after reading, before the split: the continued job asks only for the pages still unread and spends nothing (P4)', async () => {
     const w = world();
-    const first = pageReader({ refuse: '343992132' });
+    const first = pageReader({ refuse: '343992133' });
     // The pages read are saved on their bundles; the job save that follows them fails.
     const store = interruptSave(w, (job) => job.counts.pagesRead > 0);
     await expect(scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: first.readPages, store })).rejects.toThrow('interrupted');
-    expect(first.calls).toEqual([COMBO_IDS]);
+    expect(first.calls).toEqual([COMBO_READ]);
     expect((await w.store.listScans())[0]).toMatchObject({
       status: 'running', phase: 'listing', queue: [], searchesUsed: 1, stopMessage: null, counts: { pagesFetched: 1, pagesRead: 0 },
     });
@@ -1857,7 +1859,7 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
     w.clock = T0 + 5 * MINUTE;
     const again = pageReader();
     const job = await scan(w, { settings: COMBO, policy: NO_SEARCH, readPages: again.readPages });
-    expect(again.calls).toEqual([['343992132', '343992133']]);
+    expect(again.calls).toEqual([['343992133', '343992132']]);
     expect(job).toMatchObject({ id: String(T0), status: 'stopped', stopReason: 'run_cap', stopMessage: null, searchesUsed: 1 });
     // The listing step was saved before the interruption: it is not repeated, from the network or the cache.
     expect(job.counts).toMatchObject({ pagesFetched: 1, pagesRead: 2, bundlesResolved: 4 });
@@ -1872,16 +1874,16 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
   it('interrupted in the split, after the job was saved: the continued job keeps the count and reads only what is left of pageReadsPerScan (P4)', async () => {
     const w = world();
     const settings: ScanSettings = { ...COMBO, pageReadsPerScan: 3 };
-    const first = pageReader({ refuse: '343992132' });
+    const first = pageReader({ refuse: '343992133' });
     await expect(scan(w, { settings, policy: ONE_SEARCH, readPages: first.readPages, store: interruptSplit(w) })).rejects.toThrow('interrupted');
-    expect(first.calls).toEqual([['337440459', '337440461', '343992132']]);
+    expect(first.calls).toEqual([['337440459', '337440461', '343992133']]);
     expect((await w.store.listScans())[0]).toMatchObject({ status: 'running', phase: 'listing', stopMessage: REFUSED, counts: { pagesRead: 2 } });
 
     w.clock = T0 + 5 * MINUTE;
     const again = pageReader();
     const job = await scan(w, { settings, policy: NO_SEARCH, readPages: again.readPages });
-    // Three pages a scan, two read before the interruption: one is left, the newest unread.
-    expect(again.calls).toEqual([['343992132']]);
+    // Three pages a scan, two read before the interruption: one is left, the next unread in the reading order.
+    expect(again.calls).toEqual([['343992133']]);
     expect(job).toMatchObject({ id: String(T0), status: 'stopped', stopReason: 'run_cap', stopMessage: REFUSED, searchesUsed: 1 });
     expect(job.counts).toMatchObject({ pagesFetched: 1, pagesRead: 3, bundlesResolved: 3 });
     expect(w.replay.calls).toEqual([DEWALT_COMBO]);
@@ -1889,11 +1891,11 @@ describe('runScan: a bundle split from its own page (step 4)', () => {
 
   it('a continued job refused again notes the refusal once (P3, P4)', async () => {
     const w = world();
-    const reader = pageReader({ refuse: '343992132' });
+    const reader = pageReader({ refuse: '343992133' });
     await expect(scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader.readPages, store: interruptSplit(w) })).rejects.toThrow('interrupted');
     w.clock = T0 + 5 * MINUTE;
     const job = await scan(w, { settings: COMBO, policy: NO_SEARCH, readPages: reader.readPages });
-    expect(reader.calls).toEqual([COMBO_IDS, ['343992132', '343992133']]);
+    expect(reader.calls).toEqual([COMBO_READ, ['343992133', '343992132']]);
     expect(job).toMatchObject({ id: String(T0), stopMessage: REFUSED });
     expect(job.counts.pagesRead).toBe(2);
   });
@@ -2156,7 +2158,7 @@ describe('runScan: pages and old jobs (step 4, fix round 1)', () => {
     const w = world();
     const reader = pageReader({ garble: COMBO_IDS });
     const job = await scan(w, { settings: COMBO, policy: OPEN, readPages: reader.readPages });
-    expect(reader.calls).toEqual([COMBO_IDS]);
+    expect(reader.calls).toEqual([COMBO_READ]);
     expect(job).toMatchObject({ status: 'done', stopReason: null, stopMessage: NONE_READABLE, searchesUsed: 1 });
     expect(job.counts).toMatchObject({ pagesRead: 0, bundlesResolved: 0, reviewsOpened: 4 });
     expect((await w.store.listBundles()).some((b) => 'page' in b)).toBe(false);
@@ -2183,7 +2185,7 @@ describe('runScan: pages and old jobs (step 4, fix round 1)', () => {
     const reader = pageReader();
     const job = await scan(w, { settings: COMBO, policy: ONE_SEARCH, readPages: reader.readPages });
     expect(job.id).toBe(String(T0 - MINUTE));
-    expect(reader.calls).toEqual([COMBO_IDS]);
+    expect(reader.calls).toEqual([COMBO_READ]);
     expect(job.counts).toMatchObject({ pagesFetched: 1, pagesRead: 4, bundlesResolved: 4 });
     expect((await w.store.listScans())[0]!.counts.pagesRead).toBe(4);
   });

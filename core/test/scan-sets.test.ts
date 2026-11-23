@@ -14,6 +14,7 @@ import { buildReport } from '../src/scan/report';
 import { runScan } from '../src/scan/runner';
 import { listedOf, listCounts, type ListingPage } from '../src/scan/listingSource';
 import { setSplit } from '../src/scan/split';
+import { bySaving, pagesWanted } from '../src/scan/hdOrder';
 import type { BundleRecord, ScanStore, SearchClient } from '../src/scan/types';
 import { parseAccount, SearchBudget } from '../src/serpapi/budget';
 import { MemoryCache } from '../src/serpapi/client';
@@ -76,17 +77,23 @@ describe('the listing parser keeps every product entry, model number or not (A)'
 /** Made-up readings of the set items' own pages (none is recorded): RYOBI, model `C<item id>`, $10 each. */
 const itemPage = (itemId: string): PromoPage => ({ itemId, brand: 'RYOBI', model: `C${itemId}`, title: `Item ${itemId}`, price: 10, wasPrice: null, bullets: [], description: null, promotions: [] });
 
-async function scanSets(opts: { unreadable?: string[] } = {}) {
+async function scanSets(opts: { unreadable?: string[]; hdCap?: number } = {}) {
   const store = new MemoryScanStore();
   const listed = parseListingState(stateOf(LIST)).map(listedOf);
   const asked: string[][] = [];
+  // Home Depot's pace: every page any reader is asked for counts against the scan's pages (the agent's HdPace does this).
+  let left = opts.hdCap ?? Number.POSITIVE_INFINITY;
+  const lists: string[] = [];
   const readListing = async (path: string): Promise<ListingPage> => {
+    left -= 1;
+    lists.push(path);
     // The RYOBI list for the query is the recording; every other list and the keyword search hold nothing more here.
     if (path.includes('Zm5d/Ntk-elasticplus') && !path.includes('Nao=')) return { products: listed, total: 24 };
     return { products: path.startsWith('/s/') || path.includes('Zm5d') ? listed : [] };
   };
   const readPages = async (ids: string[]): Promise<PromoPageOutcome[]> => {
     asked.push(ids);
+    left -= ids.length;
     return ids.map((id) => (opts.unreadable?.includes(id) ? { itemId: id, kind: 'unreadable' } : { itemId: id, kind: 'read', page: itemPage(id) }));
   };
   let clock = T0;
@@ -95,8 +102,9 @@ async function scanSets(opts: { unreadable?: string[] } = {}) {
   const job = await runScan({
     client, budget, store, settings: { ...toScanSettings(DEFAULT_SETTINGS), brands: ['RYOBI'], queries: [], catalogPagesPerScan: 0 }, now: () => (clock += 100), cache: new MemoryCache(),
     chromeListing: { queries: BRAND_QUERIES, readListing, readPages }, readPages: async (ids) => ids.map((itemId) => ({ itemId, kind: 'skipped' as const })), waitForPages: true,
+    ...(opts.hdCap !== undefined ? { hdPagesLeft: () => Math.max(0, left) } : {}),
   });
-  return { store, job, asked };
+  return { store, job, asked, lists };
 }
 
 const sets = async (store: ScanStore): Promise<BundleRecord[]> => (await store.listBundles()).filter((b) => b.set);
@@ -163,5 +171,27 @@ describe('replay on the two fixtures (D): what a scan now makes of the RYOBI Bun
     expect(listCounts(job.chromeListing!.lists!)).toBe(
       'RYOBI list for "ryobi 18v combo kit": 12 of 24 (2 pages), 12 new; RYOBI list without search words: 12 (2 pages), 0 new; RYOBI search for "ryobi 18v combo kit": 12 (2 pages), 0 new',
     );
+  });
+});
+
+describe("Home Depot's pace in a scan (hdPagesLeft)", () => {
+  it('lists and set item pages together stay within the scan\'s pages; the items read are the sets with the biggest saving, whole sets first', async () => {
+    const cap = 12;
+    const { store, asked, lists, job } = await scanSets({ hdCap: cap });
+    expect(lists.length + asked.flat().length).toBe(cap);
+    const read = asked.flat();
+    // The order the sets waited in before any item was read (hdOrder.ts), cut at what the lists left.
+    const unread = (await store.listBundles()).map((b) => (b.set ? { ...b, set: { ...b.set, items: b.set.items.map(({ itemId, quantity }) => ({ itemId, quantity })) } } : b));
+    const order = pagesWanted(unread).map((w) => w.itemId);
+    expect(read.length).toBeGreaterThan(0);
+    expect(read).toEqual(order.slice(0, read.length));
+    const before = new Set(read);
+    // Every set whose items were all read has a saving at least as big as any set left waiting.
+    const all = (await store.listBundles()).filter((b) => b.set).sort(bySaving);
+    const done = all.filter((b) => b.set!.items.every((i) => before.has(i.itemId) || i.readAt !== undefined));
+    expect(done.length).toBeGreaterThan(0);
+    const firstWaiting = all.findIndex((b) => !done.includes(b));
+    expect(all.slice(0, firstWaiting)).toEqual(done);
+    expect(job.setItemsRead).toBe(read.length);
   });
 });

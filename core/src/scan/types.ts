@@ -730,6 +730,8 @@ export interface ScanJob {
       source?: 'bundle' | 'search'; cut?: boolean;
       /** Fix round 2: the list's own totalProducts, the final address it was paged on, and what an empty state held. */
       total?: number | null; pagedOn?: string; sample?: import('../hdPage').ListingSample;
+      /** Home Depot's pace: not read now, read through at this time (within a day); or left part-way for the next scan. */
+      readAt?: number; waits?: boolean;
     }[];
     /** Items whose price came with the listing entry. */
     pricedByList?: number;
@@ -737,6 +739,8 @@ export interface ScanJob {
     empty?: boolean;
     /** The empty lists were searched on SerpApi instead, as the owner allowed. */
     serpFallback?: boolean;
+    /** Home Depot's pace: lists not read now because they were read through in the last day (HD_LIST_REREAD_MS). */
+    readToday?: number;
   };
   /**
    * Step 10: one plain sentence when the eBay step was skipped or stopped early (keys missing, eBay or the

@@ -33,6 +33,8 @@ const STORED: ScanSettings = { ...SETTINGS, queries: [] };
 
 /** The bundle pages scan 1 asks for and the replay has no recording of: they stay unread, so every later scan asks again. */
 const UNRECORDED = ['341644756', '341645227', '343659640', '345177929'];
+/** The order a scan reads them in (Home Depot's pace, hdOrder.ts): a Home Depot saving first, the biggest percent off first. */
+const UNRECORDED_READ = ['343659640', '345177929', '341644756', '341645227'];
 
 const PAGES = (
   JSON.parse(readFileSync(new URL('../../fixtures/homedepot-pages/pages-2026-11-10.json', import.meta.url), 'utf8')) as {
@@ -134,7 +136,7 @@ describe('a plain kit in a scan of the default searches', () => {
     expect(w.ledger).toHaveLength(2);
     expect(job.searchesUsed).toBe(0);
     // Bundle pages first, as today (the ones the replay has no page for), then the kit's, by its own item id.
-    expect(w.reads).toEqual([UNRECORDED, [KIT_ID]]);
+    expect(w.reads).toEqual([UNRECORDED_READ, [KIT_ID]]);
     expect(job.counts.pagesRead).toBe(1);
     const kit = (await w.store.getCatalogEntry(KIT))!;
     expect(kit.page).toMatchObject({ readAt: T0 });
@@ -153,7 +155,7 @@ describe('a plain kit in a scan of the default searches', () => {
     w.reads = [];
     await scan(w);
     await scan(w, { settings: STORED });
-    expect(w.reads).toEqual([UNRECORDED, UNRECORDED]);
+    expect(w.reads).toEqual([UNRECORDED_READ, UNRECORDED_READ]);
     expect((await rowOf(w, P553)).options).toHaveLength(2);
   });
 
@@ -193,7 +195,7 @@ describe('a plain kit in a scan of the default searches', () => {
       w.reads = [];
       await scan(w, { settings: { ...STORED, pageReadsPerScan: cap }, cap: 0 });
       expect(w.reads.flat().length).toBeLessThanOrEqual(cap);
-      expect(w.reads.flat()).toEqual(kit ? [...UNRECORDED, KIT_ID] : UNRECORDED.slice(0, cap));
+      expect(w.reads.flat()).toEqual(kit ? [...UNRECORDED_READ, KIT_ID] : UNRECORDED_READ.slice(0, cap));
     }
   });
 
@@ -248,7 +250,7 @@ describe('only a kit some resolved split holds, by its own item id', () => {
     await w.store.putCatalogEntry({ ...(await w.store.getCatalogEntry(KIT))!, itemId: '../317987591' });
     w.reads = [];
     await scan(w, { settings: STORED });
-    expect(w.reads).toEqual([UNRECORDED]);
+    expect(w.reads).toEqual([UNRECORDED_READ]);
     expect((await rowOf(w, P553)).kitsNotRead).toEqual(['PCL1600K2']);
   });
 
@@ -259,7 +261,7 @@ describe('only a kit some resolved split holds, by its own item id', () => {
     await w.store.putCatalogEntry({ ...kit, key: partKey('RYOBI', 'PCL1600K2B'), model: 'PCL1600K2B', itemId: '317987592' });
     w.reads = [];
     await scan(w, { settings: STORED, cap: 0 });
-    expect(w.reads).toEqual([UNRECORDED, [KIT_ID]]);
+    expect(w.reads).toEqual([UNRECORDED_READ, [KIT_ID]]);
     expect((await w.store.getCatalogEntry(partKey('RYOBI', 'PCL1600K2B')))!.page).toBeUndefined();
     expect((await rowOf(w, P553)).options).toHaveLength(2);
   });
@@ -286,7 +288,7 @@ describe('stopping and failing', () => {
     let stop = false;
     const read = reader(w);
     const job = await scan(w, { readPages: async (ids) => { stop = true; return read(ids); }, shouldStop: () => stop });
-    expect(w.reads).toEqual([UNRECORDED]);
+    expect(w.reads).toEqual([UNRECORDED_READ]);
     expect(job.stopReason).toBe('user');
     expect((await rowOf(w, P553)).kitsNotRead).toEqual(['PCL1600K2']);
   });
@@ -295,7 +297,7 @@ describe('stopping and failing', () => {
     const w = await answered();
     w.reads = [];
     const job = await scan(w, { settings: STORED, cap: 0, readPages: reader(w, UNRECORDED.slice(0, 1)) });
-    expect(w.reads).toEqual([UNRECORDED]);
+    expect(w.reads).toEqual([UNRECORDED_READ]);
     expect(job.stopMessage).toContain('Home Depot refused a page');
     await scan(w);
     expect(w.reads.at(-1)).toEqual([KIT_ID]);
@@ -307,7 +309,7 @@ describe('stopping and failing', () => {
     const job = await scan(w, {
       settings: STORED, cap: 0, readPages: async (ids) => { w.reads.push([...ids]); return ids.map((itemId) => ({ itemId, kind: 'unreadable' })); },
     });
-    expect(w.reads).toEqual([UNRECORDED, [KIT_ID]]);
+    expect(w.reads).toEqual([UNRECORDED_READ, [KIT_ID]]);
     expect(job.stopMessage).toContain('No Home Depot page could be read.');
     expect((await w.store.getCatalogEntry(KIT))!.page).toBeUndefined();
     await scan(w);
@@ -356,7 +358,7 @@ describe('stopping and failing', () => {
       settings: STORED, cap: 0,
       readPages: async (ids) => { w.reads.push([...ids]); return ids.map((itemId, i) => (i < 2 ? { itemId, kind: 'unreadable' as const, note: 'Access Denied' } : { itemId, kind: 'skipped' as const })); },
     });
-    expect(w.reads).toEqual([UNRECORDED]);
+    expect(w.reads).toEqual([UNRECORDED_READ]);
     expect(job.stopMessage).toContain('No Home Depot page could be read (it came back without its data, titled "Access Denied").');
   });
 
@@ -375,7 +377,7 @@ describe('stopping and failing', () => {
     const w = await answered();
     w.reads = [];
     const job = await scan(w, { settings: STORED, cap: 0, readPages: reader(w, [KIT_ID]) });
-    expect(w.reads).toEqual([UNRECORDED, [KIT_ID]]);
+    expect(w.reads).toEqual([UNRECORDED_READ, [KIT_ID]]);
     expect(job.stopMessage).toContain('Home Depot refused a page; the rest are read next scan.');
     await scan(w);
     expect(w.reads.at(-1)).toEqual([KIT_ID]);
@@ -418,7 +420,7 @@ describe('an interrupted kit pass', () => {
     const job = await run();
     expect(job.id).toBe(interrupted.id);
     // The continued job asks again only for the pages still unread: the four with no recording, then the kit.
-    expect(w.reads.slice(2)).toEqual([UNRECORDED, [KIT_ID]]);
+    expect(w.reads.slice(2)).toEqual([UNRECORDED_READ, [KIT_ID]]);
     expect(saves).toBe(1);
     expect(job.counts.pagesRead).toBe(12);
     expect((await w.store.getCatalogEntry(KIT))!.page).toMatchObject({ readAt: T0 });

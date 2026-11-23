@@ -36,6 +36,7 @@ import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
 import { HOME_DEPOT_ITEM_ID, kitCatalog, pickUnread } from './kitPage';
 import { LIST_EMPTY, type ListingRow, type ListingSourceDeps, readBundleListings } from './listingSource';
+import { type PageWant, pagesWanted } from './hdOrder';
 import type { PromoPage } from '../hdPage';
 import type { PromoPageOutcome } from '../tracking/bogoPairs';
 
@@ -124,6 +125,14 @@ export interface ScanDeps {
      */
     serpFallback?: ScanSettings['queries'];
   };
+  /**
+   * Home Depot's pace (hdPace.ts, the agent's HdPace): pages this scan may still read, every kind together (lists, bundle
+   * pages, set item pages, kit pages, part prices: two each). The page passes ask for no more, in their order (hdOrder.ts).
+   * Absent: only pageReadsPerScan and the passes' own limits.
+   */
+  hdPagesLeft?: () => number;
+  /** Item pages with their price (the BOGO pass's reader), for a set's items when the lists are not read in this run (Read again). */
+  readItemPages?: (itemIds: string[]) => Promise<PromoPageOutcome[]>;
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -176,6 +185,10 @@ interface Run extends PartContext {
   chromeListing: ScanDeps['chromeListing'];
   /** Free scan: Home Depot refused a list or page in this run: no other Home Depot page is read in it (the doorway rule). */
   hdRefused: boolean;
+  hdPagesLeft?: () => number;
+  readItemPages?: (itemIds: string[]) => Promise<PromoPageOutcome[]>;
+  /** Home Depot's pace: pages kept for the part prices that complete an estimate (read after the lookups), not given to page passes. */
+  priceReserve: number;
   job: ScanJob;
   /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
@@ -212,10 +225,14 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
     // when there is no Chrome list): one queue.
     if (run.chromeListing && run.job.chromeListing?.done !== true) await readChromeListings(run);
     await runQueue(run);
-    // P1: the bundles' own pages, free, once the queue is empty and before the split. Not after Home Depot refused a list.
-    const bundlePass = run.hdRefused ? await refusedEarlier(run) : await readBundlePages(run);
+    // Home Depot's pace: the part prices that complete an estimate keep their pages (two each), read after the lookups.
+    run.priceReserve = await priceReserveOf(run);
+    // P1: the bundles' own pages and the set items' pages, free, once the queue is empty and before the split, in one order
+    // (hdOrder.ts: a saving first, the biggest percent off first), within the scan's Home Depot pages. Not after a refusal.
+    const plan = run.hdRefused ? null : await pagePlan(run);
+    const bundlePass = run.hdRefused || !plan ? await refusedEarlier(run) : await readBundlePages(run, plan.bundles);
     // Fix round 3: then each set item's own page, so the sets split in this scan.
-    if (bundlePass.goOn) await readSetItems(run);
+    if (bundlePass.goOn && plan) await readSetItems(run, plan.items);
     // Read once for the split and the planning pass that follows it.
     const known = await knownModels(run.store);
     run.catalog = known.catalog;
@@ -284,7 +301,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, noReaderReason: deps.noReaderReason, ebay: deps.ebay ?? null,
     keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
     bogoPairs: deps.bogoPairs ?? {}, catalogFirst: new Set(deps.catalogFirst ?? []), waitForPages: deps.waitForPages ?? false, partPricesExtra: deps.partPricesExtra ?? [],
-    chromeListing: deps.chromeListing, hdRefused: false,
+    chromeListing: deps.chromeListing, hdRefused: false, hdPagesLeft: deps.hdPagesLeft, readItemPages: deps.readItemPages, priceReserve: 0,
     job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore, plannedKeys: new Set(), settledParts: new Set(),
   });
 
@@ -1035,44 +1052,93 @@ async function saveSet(run: Run, row: HdListing & { set: NonNullable<ListingRow[
  * it from the split on. An item whose page could not be read keeps its set waiting (no question); a refusal ends this
  * run's Home Depot reading. Item pages count toward pageReadsPerScan.
  */
-async function readSetItems(run: Run): Promise<void> {
+async function readSetItems(run: Run, wanted: readonly string[]): Promise<void> {
   const { store, job } = run;
-  const read = run.chromeListing?.readPages;
-  if (!read || run.hdRefused || run.shouldStop()) return;
-  const sets = (await store.listBundles()).filter((b) => b.set);
-  const wanted = [...new Set(sets.flatMap((b) => setItemsUnread(b).map((i) => i.itemId)))].slice(0, pagesLeft(run));
-  if (wanted.length === 0) return;
-  let outcomes: PromoPageOutcome[];
+  const read = run.chromeListing?.readPages ?? run.readItemPages;
+  if (!read || run.hdRefused || run.shouldStop() || wanted.length === 0) return;
+  let out: SetItemsRead;
   try {
-    outcomes = await read(wanted);
+    out = await readSetItemsFor({ store, read, itemIds: wanted, now: run.now });
   } catch (err) {
     noteProblem(job, `Reading the set items' Home Depot pages failed: ${(err instanceof Error && err.message) || String(err)}`);
     return;
   }
-  const at = run.now();
+  if (out.refused) run.hdRefused = true;
+  job.counts.pagesRead += out.read;
+  job.setItemsRead = (job.setItemsRead ?? 0) + out.read;
+  if (run.hdRefused) noteProblem(job, 'Home Depot refused a set item page; the rest are read next scan.');
+  await store.putScan(job);
+}
+
+export interface SetItemsRead {
+  /** Item pages read. */
+  read: number;
+  /** Home Depot refused one: nothing after it was read. */
+  refused: boolean;
+  /** The sets an item read now belongs to (their split may settle now). */
+  sets: string[];
+}
+
+/**
+ * Fix round 3, shared by a scan and the drip between scans: the set items' own pages (`itemIds`, in the order given), each
+ * reading kept on every set listing that item and saved as the item's Home Depot part price (savePartPrices). Throws what
+ * the reader throws, having saved nothing.
+ */
+export async function readSetItemsFor(r: {
+  store: ScanStore; read: (itemIds: string[]) => Promise<PromoPageOutcome[]>; itemIds: readonly string[]; now: () => number;
+}): Promise<SetItemsRead> {
+  const { store } = r;
+  const wanted = [...new Set(r.itemIds)];
+  if (wanted.length === 0) return { read: 0, refused: false, sets: [] };
+  const outcomes = await r.read(wanted);
+  const at = r.now();
   const pages = new Map<string, PromoPage>();
+  let refused = false;
   for (const o of outcomes) {
     if (!wanted.includes(o.itemId)) continue;
     if (o.kind === 'read' && o.page.itemId === o.itemId) pages.set(o.itemId, o.page);
-    else if (o.kind === 'refused') run.hdRefused = true;
+    else if (o.kind === 'refused') refused = true;
   }
-  job.counts.pagesRead += pages.size;
-  job.setItemsRead = (job.setItemsRead ?? 0) + pages.size;
-  if (run.hdRefused) noteProblem(job, 'Home Depot refused a set item page; the rest are read next scan.');
-  for (const b of sets) {
+  const sets: string[] = [];
+  for (const b of (await store.listBundles()).filter((x) => x.set)) {
     if (!b.set!.items.some((i) => pages.has(i.itemId))) continue;
     const items = b.set!.items.map((i) => {
       const p = pages.get(i.itemId);
       return p ? { ...i, brand: p.brand, model: p.model, title: p.title, price: p.price, readAt: at } : i;
     });
     await store.putBundle({ ...b, set: { ...b.set!, items } });
+    sets.push(b.key);
   }
   // Each item's price sold alone, as Home Depot's part price reading of its model (the part pipeline's own record).
-  const readings = [...pages.values()].map((p) => ({
+  const readings = [...pages.values()].filter((p) => p.model.trim() !== '').map((p) => ({
     brand: p.brand, model: p.model, status: 'found' as const, itemId: p.itemId, matchedModel: p.model, price: p.price, title: p.title, link: `${HOME_DEPOT_ORIGIN}/p/${p.itemId}`,
   }));
-  if (readings.length > 0) await savePartPrices(store, readings.map((r) => ({ brand: r.brand, model: r.model })), readings, at);
-  await store.putScan(job);
+  if (readings.length > 0) await savePartPrices(store, readings.map((x) => ({ brand: x.brand, model: x.model })), readings, at);
+  return { read: pages.size, refused, sets };
+}
+
+/**
+ * Home Depot's pace: the pages the page passes read in this scan, in hdOrder.ts's order (a saving first, the biggest percent
+ * off first, a set's items together, a shared item once), within what the scan may still read less what the completing part
+ * prices keep. Only the kinds this run has a reader for.
+ */
+async function pagePlan(run: Run): Promise<{ bundles: BundleRecord[]; items: string[] }> {
+  const kinds = new Set<PageWant['kind']>([...(run.readPages ? ['bundle' as const] : []), ...(run.chromeListing?.readPages ?? run.readItemPages ? ['item' as const] : [])]);
+  const bundles = await run.store.listBundles();
+  const room = Math.max(0, pagesLeft(run) - run.priceReserve);
+  const chosen = pagesWanted(bundles, kinds).slice(0, room);
+  const byKey = new Map(bundles.map((b) => [b.key, b] as const));
+  return {
+    bundles: chosen.flatMap((w) => (w.kind === 'bundle' ? [byKey.get(w.bundle)!] : [])),
+    items: chosen.flatMap((w) => (w.kind === 'item' ? [w.itemId] : [])),
+  };
+}
+
+/** Home Depot's pace: two pages (a search and a page) for each part price that completes an estimate, from what the scan may read. */
+async function priceReserveOf(run: Run): Promise<number> {
+  if (!run.readPartPrices || !run.hdPagesLeft) return 0;
+  const completing = (await partPricesWanted(run.store, run.settings, run.now(), run.waitForPages, run.partPricesExtra)).filter((p) => p.completes).length;
+  return Math.min(pagesLeft(run), 2 * Math.min(completing, run.settings.partPriceReadsPerScan));
 }
 
 /**
@@ -1090,7 +1156,7 @@ async function readChromeListings(run: Run): Promise<void> {
   const cl = run.chromeListing!;
   const result = await readBundleListings({
     brands: run.settings.brands, queries: cl.queries, readListing: cl.readListing, readPages: cl.readPages, cache: run.cache, now: run.now,
-    shouldStop: run.shouldStop, itemPagesMax: pagesLeft(run),
+    shouldStop: run.shouldStop, itemPagesMax: pagesLeft(run), ...(run.hdPagesLeft ? { pagesLeft: run.hdPagesLeft } : {}),
   });
   const at = run.now();
   let bundles = 0;
@@ -1109,6 +1175,10 @@ async function readChromeListings(run: Run): Promise<void> {
   };
   if (step) step.found = bundles;
   moveUnits(job, 'hdPages', { done: result.listingPages, remaining: null });
+  // Home Depot's pace: lists read through in the last day are not read again; lists the scan's pages ended continue next scan.
+  const today = result.lists.filter((l) => l.readAt !== undefined).length;
+  if (today > 0) job.chromeListing.readToday = today;
+  if (result.paced && !result.refused) noteProblem(job, 'Some bundle lists continue next scan: Home Depot pages are read at a slow pace, a few dozen a scan.');
   if (result.refused) {
     run.hdRefused = true;
     noteProblem(job, `${result.problem ?? 'Home Depot refused a page.'} What was read is kept; the rest is read next scan.`);
@@ -1360,7 +1430,8 @@ const unique = (xs: string[]): string[] => [...new Set(xs)];
 // ---------------------------------------------------------------- P1 to P4: the bundles' own pages, then the kits' (free)
 
 /** What is left of pageReadsPerScan in this job: bundle pages and kit pages read count alike. */
-const pagesLeft = (run: Run): number => Math.max(0, Math.floor(run.settings.pageReadsPerScan) - run.job.counts.pagesRead);
+const pagesLeft = (run: Run): number =>
+  Math.max(0, Math.min(Math.floor(run.settings.pageReadsPerScan) - run.job.counts.pagesRead, run.hdPagesLeft?.() ?? Number.POSITIVE_INFINITY));
 
 /** A page to read, and where its reading is saved. */
 interface PageTarget {
@@ -1387,15 +1458,14 @@ interface PassResult {
  * P4: the bundles are saved, then the job, once, before the split. goOn is false when Home Depot
  * refused a page or the reader threw: then no kit page is read this run (step 6).
  */
-async function readBundlePages(run: Run): Promise<PassResult> {
+async function readBundlePages(run: Run, chosen: readonly BundleRecord[]): Promise<PassResult> {
   const { store } = run;
   if (!run.readPages) return { goOn: true, notRead: 0 };
-  const unread = (await store.listBundles())
-    // Fix round 3: a set's own page is not read (its items' pages are, readSetItems).
-    .filter((b) => !b.set && (b.page === undefined || b.page === null))
-    .sort(newestFirst)
-    .slice(0, pagesLeft(run));
+  // Fix round 3: a set's own page is not read (its items' pages are, readSetItems). Home Depot's pace: the bundles pagePlan
+  // chose, in its order (a saving first), within the scan's pages.
+  const unread = chosen.filter((b) => !b.set && (b.page === undefined || b.page === null));
   if (run.shouldStop()) return { goOn: true, notRead: 0 };
+  if (unread.length === 0 && (await store.listBundles()).some((b) => !b.set && (b.page === undefined || b.page === null))) return nothingToRead(run, 'bundlePages', 'page limit reached');
   if (unread.length === 0) return nothingToRead(run, 'bundlePages');
   return readInto(run, 'bundlePages', unread.map((b) => ({ itemId: b.itemId, save: (page) => store.putBundle({ ...b, page }) })));
 }
@@ -1417,7 +1487,7 @@ async function readKitPages(run: Run, bundleNotRead: number): Promise<PassResult
   const { store } = run;
   const none = { goOn: true, notRead: 0 };
   if (!run.readPages) return none;
-  const room = Math.max(0, pagesLeft(run) - bundleNotRead);
+  const room = Math.max(0, pagesLeft(run) - bundleNotRead - run.priceReserve);
   if (run.shouldStop()) return none;
   if (room === 0) return nothingToRead(run, 'kitPages', 'page limit reached');
   const wanted = await kitPagesWanted(store, run.waitForPages);
@@ -1499,17 +1569,22 @@ export async function readKitPagesFor(r: {
  * asked for on every scan; a part never read (not_read) has no check and is asked for again. Largest
  * saving first, then key; a RYOBI part written two ways once.
  */
-export async function partPricesWanted(store: ScanStore, settings: ScanSettings, now: number, waiting = false, extra: readonly { brand: string; model: string }[] = []): Promise<Part[]> {
+export async function partPricesWanted(store: ScanStore, settings: ScanSettings, now: number, waiting = false, extra: readonly { brand: string; model: string }[] = []): Promise<(Part & { completes?: true })[]> {
   const parts: { key: string; brand: string; model: string; saving: number }[] = [...(await bundleParts(store)).values()];
   // Step 15: with `waiting` (a run that waits for pages, the agent's), the parts a waiting split needs Home Depot's reading
   // of (scan/settle.ts rule 2), with their bundle's saving.
   const planned = new Set(parts.map((p) => p.key));
   // Step 15: the parts a waiting split needs are read first, as each one read can settle a split and unblock estimates.
   const unblocks = new Set<string>();
+  // Home Depot's pace: a waiting part of a bundle whose other parts already have an Amazon price completes an estimate when
+  // read, so it is read before every other part (and a scan keeps its pages for it first, priceReserveOf).
+  const completes = new Set<string>();
   for (const b of waiting ? await store.listBundles() : []) {
     const saving = (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0);
+    const priced = waitingParts(b).length > 0 && (await amazonPriced(store, b));
     for (const p of waitingParts(b)) {
       unblocks.add(p.key);
+      if (priced) completes.add(p.key);
       if (planned.has(p.key)) continue;
       planned.add(p.key);
       parts.push({ ...p, saving });
@@ -1531,9 +1606,18 @@ export async function partPricesWanted(store: ScanStore, settings: ScanSettings,
   const seen = new Set<string>();
   return parts
     .filter((p) => !fresh(p))
-    .sort((a, b) => Number(unblocks.has(b.key)) - Number(unblocks.has(a.key)) || b.saving - a.saving || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+    .sort((a, b) => Number(completes.has(b.key)) - Number(completes.has(a.key)) || Number(unblocks.has(b.key)) - Number(unblocks.has(a.key)) || b.saving - a.saving || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
     .filter((p) => once(seen, kitKey(p.brand, p.model)))
-    .map(({ key, brand, model }) => ({ key, brand, model }));
+    .map(({ key, brand, model }) => ({ key, brand, model, ...(completes.has(key) ? { completes: true as const } : {}) }));
+}
+
+/** Home Depot's pace: some part of the bundle's split already has an Amazon price (its matched listing's price is stored). */
+async function amazonPriced(store: ScanStore, b: Pick<BundleRecord, 'brand' | 'split'>): Promise<boolean> {
+  for (const model of b.split?.components ?? []) {
+    const match = await store.getMatch(partKey(b.brand.trim().toUpperCase(), model.trim().toUpperCase()));
+    if (match?.asin && (await store.getPrice(match.asin))?.price != null) return true;
+  }
+  return false;
 }
 
 /** A Home Depot link the panel may open: http or https only. Stored data and the reader's answer are untrusted. */
@@ -1656,6 +1740,8 @@ async function readPartPricesPass(run: Run): Promise<void> {
   try {
     const out = await readPartPricesFor({
       store, settings: run.settings, readPartPrices: run.readPartPrices, now: run.now, shouldStop: run.shouldStop, waiting: run.waitForPages, extra: run.partPricesExtra,
+      // Home Depot's pace: two pages each (its search and its page), within what the scan may still read.
+      ...(run.hdPagesLeft ? { cap: Math.min(run.settings.partPriceReadsPerScan, Math.floor(run.hdPagesLeft() / 2)) } : {}),
       onStart: async (asked) => {
         started = true;
         // Step 11: saved before the reader is called, so the row shows "0 of N" while the first part is read.
