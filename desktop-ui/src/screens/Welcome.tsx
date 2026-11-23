@@ -8,7 +8,7 @@ import { Notice } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
 import { plural } from '../lib/format';
 import { setupProgress, type SetupStepId } from '../lib/setup';
-import { InstallHelper, KeyField } from './Settings';
+import { InstallHelper, KeyField } from '../components/SetupParts';
 import './Welcome.css';
 
 const STEPS: { id: SetupStepId; title: string; short: string }[] = [

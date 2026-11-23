@@ -154,6 +154,8 @@ export function createHttpClient(): ApiClient {
     putKey: async <N extends KeyName>(name: N, value: KeyValues[N]) => void (await call<C.KeysPresence>('PUT', `/api/keys/${name}`, value)),
     deleteKey: async (name) => void (await call<C.KeysPresence>('DELETE', `/api/keys/${name}`)),
 
+    testNotification: async () => void (await call('POST', '/api/notify/test', {})),
+
     pairRequests: () => call<C.PendingPairRequest[]>('GET', '/api/pair/requests'),
     decidePairing: async (requestId, allow) => void (await call('POST', allow ? '/api/pair/approve' : '/api/pair/deny', { requestId } satisfies C.PairDecisionBody)),
     pairedExtensions: () => call<C.PairedExtension[]>('GET', '/api/pair/extensions'),

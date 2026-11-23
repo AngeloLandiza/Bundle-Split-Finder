@@ -55,6 +55,9 @@ export interface ApiClient {
   putKey<N extends KeyName>(name: N, value: KeyValues[N]): Promise<void>;
   deleteKey(name: KeyName): Promise<void>;
 
+  /** Asks the agent for one notification on this Mac (POST /api/notify/test), so the owner can see how they arrive. */
+  testNotification(): Promise<void>;
+
   /** Chrome's pairing requests waiting for the owner, newest last. */
   pairRequests(): Promise<PendingPairRequest[]>;
   decidePairing(requestId: string, allow: boolean): Promise<void>;

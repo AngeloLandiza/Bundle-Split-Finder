@@ -1,0 +1,29 @@
+/* The SerpApi key field and the Chrome helper install button, used by the welcome sheet. */
+.keyfield {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.keyfield + .keyfield {
+  padding-top: 14px;
+  border-top: 1px solid var(--separator);
+}
+
+.keyfield-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.install-helper {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.install-helper .notice {
+  border: 0;
+  border-radius: var(--radius);
+  padding: 8px 10px;
+}

@@ -1,0 +1,488 @@
+/* The Preferences window (docs/design.md, Desktop app > Preferences): a title bar that carries the toolbar of
+   tabs, then one pane of two-column form rows (a right-aligned label, then its control), as in a Mac preference
+   pane. The window is 720pt wide and as tall as its pane. */
+
+:root[data-window='preferences'] body {
+  min-width: 0;
+  min-height: 0;
+  background: var(--grouped-bg);
+}
+
+.prefs {
+  --label-col: 190px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--grouped-bg);
+  --glyph-knock: var(--window-bg);
+}
+
+/* ---- the title bar: the pane's name over the tabs */
+.prefs-bar {
+  flex: none;
+  background: var(--window-bg);
+  box-shadow: 0 0.5px 0 var(--separator);
+}
+
+.prefs-titleband {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+}
+
+.prefs-title {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.prefs-saved {
+  position: absolute;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+.prefs-saved .glyph {
+  color: var(--profit);
+}
+
+.prefs-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 12px 6px;
+}
+
+.prefs-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 78px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--label-2);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.prefs-tab:hover {
+  background: var(--hover);
+}
+
+.prefs-tab[aria-selected='true'] {
+  background: var(--fill-2);
+  color: var(--label);
+}
+
+.prefs-tab[aria-selected='true'] .glyph {
+  color: var(--accent);
+}
+
+/* ---- the pane */
+.prefs-pane {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.prefs-content {
+  padding: 18px 28px 26px;
+}
+
+.prefs-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: var(--notice-bg);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.prefs-error .glyph {
+  flex: none;
+  margin-top: 1px;
+  color: var(--attention);
+}
+
+.prefs-content .inset-notices {
+  margin-bottom: 14px;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pane-lead {
+  padding-left: calc(var(--label-col) + 14px);
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--label-2);
+}
+
+/* ---- rows */
+.frow {
+  display: grid;
+  grid-template-columns: var(--label-col) minmax(0, 1fr);
+  column-gap: 14px;
+  align-items: center;
+}
+
+.frow-start {
+  align-items: start;
+}
+
+.frow-label {
+  text-align: right;
+  font-size: 13px;
+  line-height: 16px;
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.frow-start .frow-label {
+  align-items: flex-start;
+  padding-top: 3px;
+}
+
+.frow-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.frow-help {
+  max-width: 400px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+.frow-note {
+  grid-column: 2;
+  max-width: 400px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+.frow-note-attention {
+  color: var(--attention);
+}
+
+.frule {
+  height: 0;
+  margin: 6px 0;
+  border: 0;
+  border-top: 0.5px solid var(--separator);
+}
+
+.frow-inline {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.frow-inline > span:not(.field-box):not([class]) {
+  line-height: 22px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Switches in a form read as a label with its switch at the end of a short line. */
+.prefs .switch-row {
+  width: 300px;
+  align-items: center;
+}
+
+.prefs .switch {
+  margin-top: 0;
+}
+
+.prefs .field-status {
+  margin-top: 2px;
+}
+
+.prefs .field {
+  gap: 2px;
+}
+
+.path {
+  max-width: 400px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* ---- General: the appearance previews and the accent swatches */
+.looks {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.look {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.look input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.look-thumb {
+  position: relative;
+  display: block;
+  width: 72px;
+  height: 48px;
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.25);
+}
+
+.look-on .look-thumb {
+  box-shadow: 0 0 0 2.5px var(--accent);
+}
+
+.look-on .look-name {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.look-name {
+  padding: 0 7px;
+  border-radius: 8px;
+}
+
+.look:has(input:focus-visible) .look-thumb {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.mini {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+
+.mini-light {
+  --m-bg: #f5f5f7;
+  --m-side: #e1dfe4;
+  --m-line: #c9c9cd;
+  --m-title: #5a5a5f;
+  background: var(--m-bg);
+}
+
+.mini-dark {
+  --m-bg: #1e1e1e;
+  --m-side: #353537;
+  --m-line: #4a4a4d;
+  --m-title: #b9b9bd;
+  background: var(--m-bg);
+}
+
+.mini-side {
+  flex: none;
+  width: 18px;
+  background: var(--m-side);
+}
+
+.mini-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 7px;
+}
+
+.mini-line {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--m-line);
+}
+
+.mini-line-title {
+  width: 55%;
+  height: 4px;
+  background: var(--m-title);
+}
+
+.mini-line-short {
+  width: 60%;
+}
+
+/* System shows both: the dark window on the lower right half of the light one. */
+.mini-dark-half {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.swatches-large {
+  gap: 9px;
+}
+
+.swatches-large .swatch {
+  width: 22px;
+  height: 22px;
+}
+
+/* ---- Scanning: the month forecast */
+.forecast {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 400px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: var(--fill);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.forecast .meter {
+  margin-top: 4px;
+}
+
+.forecast-head strong {
+  font-weight: 600;
+}
+
+.forecast-over {
+  background: var(--attention-bg);
+}
+
+.forecast-over strong {
+  color: var(--attention);
+}
+
+/* ---- Keys */
+.key-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 22px;
+}
+
+.key-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.key-saved .glyph {
+  color: var(--profit);
+}
+
+.key-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.key-get {
+  font-size: 12px;
+}
+
+.key-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ---- AI */
+.spend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 240px;
+  font-size: 12px;
+}
+
+/* ---- Chrome */
+.chrome-state {
+  font-size: 13px;
+}
+
+.people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 0.5px solid var(--separator);
+}
+
+.person:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.person-what {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.person-id {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-actions {
+  display: inline-flex;
+  gap: 6px;
+  flex: none;
+}
+
+.prefs .confirm {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}

@@ -25,7 +25,12 @@ export type GlyphName =
   | 'check'
   | 'warning'
   | 'external'
-  | 'setup';
+  | 'setup'
+  | 'key'
+  | 'sparkle'
+  | 'bell'
+  | 'globe'
+  | 'drive';
 
 const S = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 
@@ -144,6 +149,37 @@ const PATHS: Record<GlyphName, React.ReactNode> = {
     <>
       <circle cx="8" cy="8" r="6" {...S} />
       <path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor" />
+    </>
+  ),
+  key: (
+    <>
+      <circle cx="5.2" cy="10.8" r="2.8" {...S} />
+      <path d="M7.2 8.8L13 3M10.8 5.2l1.8 1.8M9 7l1.4 1.4" {...S} />
+    </>
+  ),
+  sparkle: (
+    <>
+      <path d="M6.5 2.5l1.2 3.3 3.3 1.2-3.3 1.2-1.2 3.3-1.2-3.3L2 7l3.3-1.2z" {...S} />
+      <path d="M12 9.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z" {...S} />
+    </>
+  ),
+  bell: (
+    <>
+      <path d="M3.8 11.2h8.4c-.9-.9-1.3-2-1.3-3.2V6.6a2.9 2.9 0 0 0-5.8 0V8c0 1.2-.4 2.3-1.3 3.2z" {...S} />
+      <path d="M6.6 13.2a1.5 1.5 0 0 0 2.8 0" {...S} />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="8" cy="8" r="6" {...S} />
+      <path d="M2 8h12M8 2c1.8 1.7 2.7 3.7 2.7 6S9.8 12.3 8 14M8 2C6.2 3.7 5.3 5.7 5.3 8s.9 4.3 2.7 6" {...S} />
+    </>
+  ),
+  drive: (
+    <>
+      <path d="M2.2 9.5l1.8-5.2a1.5 1.5 0 0 1 1.4-1h5.2a1.5 1.5 0 0 1 1.4 1l1.8 5.2v2.2a1.6 1.6 0 0 1-1.6 1.6H3.8a1.6 1.6 0 0 1-1.6-1.6z" {...S} />
+      <path d="M2.2 9.5h11.6" {...S} />
+      <circle cx="11.4" cy="11.4" r="0.7" fill="currentColor" />
     </>
   ),
 };

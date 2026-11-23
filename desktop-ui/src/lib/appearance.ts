@@ -64,3 +64,12 @@ export function shellChrome(): 'unified' | 'standard' {
   const shell = (window as { __SPLIT_FINDER_SHELL__?: { chrome?: string } }).__SPLIT_FINDER_SHELL__;
   return shell?.chrome === 'unified' ? 'unified' : 'standard';
 }
+
+/** Another window of this app (the dashboard, or Preferences) changed the look: the browser tells this one. */
+export function onLookChange(cb: (look: Look) => void): () => void {
+  const handler = (e: StorageEvent) => {
+    if (e.key === KEY || e.key === null) cb(readLook());
+  };
+  window.addEventListener('storage', handler);
+  return () => window.removeEventListener('storage', handler);
+}

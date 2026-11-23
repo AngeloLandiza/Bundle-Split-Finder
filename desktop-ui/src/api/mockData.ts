@@ -50,7 +50,7 @@ export const SETTINGS: AppSettings = {
     trackingDepth: 'price_only',
     amazonRefreshViaKeepa: true,
   },
-  alerts: { enabled: true, minProfit: 40, minRoiPercent: 25, reviewDigest: true },
+  alerts: { enabled: true, minProfit: 40, minRoiPercent: 25, reviewDigest: true, minMonthlySold: 50, marginDownDigest: false },
   ai: {
     judge: { provider: 'anthropic', model: 'claude-haiku-4-5', apiKeyRef: 'anthropic', trusted: true },
     assist: { provider: 'anthropic', model: 'claude-sonnet-4-5', apiKeyRef: 'anthropic', trusted: true },

@@ -1,0 +1,139 @@
+import { useApp } from '../../api/hooks';
+import type { Schedule } from '../../api/types';
+import { Checkbox, Select, TextField } from '../../components/Fields';
+import { Meter } from '../../components/States';
+import { count } from '../../lib/format';
+import { forecast } from '../../lib/forecast';
+import { RULES, isClock } from '../../lib/prefs';
+import { useState } from 'react';
+import { Inline, NumberField, Note, Pane, Row, Rule, usePrefs } from './form';
+
+const BRANDS = ['DEWALT', 'RYOBI'];
+const round = (n: number) => Math.round(n * 100) / 100;
+
+type Mode = Schedule['mode'];
+const DEFAULT_SCHEDULE: Record<Mode, Schedule> = {
+  manual: { mode: 'manual' },
+  interval: { mode: 'interval', hours: 6 },
+  daily: { mode: 'daily', at: '06:00' },
+};
+
+export function ScanningPane() {
+  const { settings, update } = usePrefs();
+  const { state } = useApp();
+  const cfg = settings.settings;
+  const fees = cfg.fees;
+  const budget = state?.budget;
+  const f = forecast(cfg.schedule, cfg.searchesPerScan, budget?.serpMonthly ?? 250, cfg.reserve);
+  const setCfg = (part: Partial<typeof cfg>, delay = 0) => update({ settings: part }, { delay });
+  const setFee = (key: keyof typeof fees, value: number) => update({ settings: { fees: { ...fees, [key]: value } } }, { delay: 600 });
+  const [timeError, setTimeError] = useState<string | null>(null);
+
+  return (
+    <Pane>
+      <Row label="Scan for bundles" align="start" help="The agent scans on its own only while this Mac is awake and Split Finder is running.">
+        <div className="stack">
+          <Select
+            label={<span className="sr-only">Schedule</span>}
+            value={cfg.schedule.mode}
+            width="md"
+            onChange={(e) => {
+              setTimeError(null);
+              setCfg({ schedule: DEFAULT_SCHEDULE[e.target.value as Mode] });
+            }}
+          >
+            <option value="manual">Off, only when I press Scan now</option>
+            <option value="interval">Every few hours</option>
+            <option value="daily">Daily at a time</option>
+          </Select>
+          {cfg.schedule.mode === 'interval' ? (
+            <Inline>
+              <span>Every</span>
+              <NumberField label="Hours between scans" value={cfg.schedule.hours} rule={RULES.scheduleHours} width="xs" onCommit={(hours) => setCfg({ schedule: { mode: 'interval', hours } }, 600)} />
+              <span>hours</span>
+            </Inline>
+          ) : null}
+          {cfg.schedule.mode === 'daily' ? (
+            <TextField
+              label={<span className="sr-only">Time of day</span>}
+              type="time"
+              mono
+              width="sm"
+              value={cfg.schedule.at}
+              status={timeError ? { tone: 'error', text: timeError } : null}
+              onChange={(e) => {
+                const at = e.target.value;
+                if (!isClock(at)) {
+                  setTimeError('Time: use a 24-hour time such as 06:00.');
+                  return;
+                }
+                setTimeError(null);
+                setCfg({ schedule: { mode: 'daily', at } }, 600);
+              }}
+            />
+          ) : null}
+        </div>
+      </Row>
+      <Row label="Searches per scan" help="A scan stops at this many SerpApi searches.">
+        <NumberField label="Searches per scan" value={cfg.searchesPerScan} rule={RULES.searchesPerScan} onCommit={(searchesPerScan) => setCfg({ searchesPerScan }, 600)} />
+      </Row>
+      <Row label="Reserve" help="Kept back from scheduled scans for lookups you start yourself.">
+        <NumberField label="Reserve" value={cfg.reserve} rule={RULES.reserve} onCommit={(reserve) => setCfg({ reserve }, 600)} />
+      </Row>
+      <Row label="This month" align="start">
+        <div className={`forecast${f.fits ? '' : ' forecast-over'}`} role="status">
+          <p className="forecast-head">
+            <strong>{f.sentence}</strong>
+          </p>
+          {f.fits && f.scansPerMonth > 0 ? (
+            <p className="muted">
+              <span className="fig">{count(f.needed)}</span> of <span className="fig">{count(f.usable)}</span> usable searches a month
+            </p>
+          ) : null}
+          <p className="muted">{f.detail}</p>
+          {budget?.serpLeft !== null && budget?.serpLeft !== undefined && budget.serpMonthly ? <Meter value={budget.serpLeft} max={budget.serpMonthly} label="Searches left this month" /> : null}
+        </div>
+      </Row>
+      <Rule />
+      <Row label="Brands" align="start" help="Each brand costs searches on every scan. At least one stays on.">
+        <div className="stack">
+          {BRANDS.map((b) => (
+            <Checkbox
+              key={b}
+              label={b}
+              checked={cfg.brands.includes(b)}
+              onChange={(on) => {
+                const brands = on ? [...cfg.brands, b] : cfg.brands.filter((x) => x !== b);
+                if (brands.length > 0) setCfg({ brands });
+              }}
+            />
+          ))}
+        </div>
+      </Row>
+      <Rule />
+      <Row label="Referral fee" help="Amazon's cut of each sale, as a share of the price.">
+        <NumberField label="Referral fee" value={round(fees.referralRate * 100)} rule={RULES.referralPercent} suffix="%" step="0.5" onCommit={(v) => setFee('referralRate', round(v / 100))} />
+      </Row>
+      <Row label="Minimum referral">
+        <NumberField label="Minimum referral" value={fees.minReferral} rule={RULES.minReferral} prefix="$" step="0.01" onCommit={(v) => setFee('minReferral', v)} />
+      </Row>
+      <Row label="Fulfillment, per unit">
+        <NumberField label="Fulfillment per unit" value={fees.fulfillmentFee} rule={RULES.fulfillmentFee} prefix="$" step="0.01" onCommit={(v) => setFee('fulfillmentFee', v)} />
+      </Row>
+      <Row label="Sales tax you pay">
+        <NumberField label="Sales tax" value={round(fees.salesTaxRate * 100)} rule={RULES.salesTaxPercent} suffix="%" step="0.25" onCommit={(v) => setFee('salesTaxRate', round(v / 100))} />
+      </Row>
+      <Row label="Inbound, per bundle">
+        <NumberField label="Inbound cost per bundle" value={fees.inboundCost} rule={RULES.inboundCost} prefix="$" step="0.01" onCommit={(v) => setFee('inboundCost', v)} />
+      </Row>
+      <Note>Estimates only: the real fees on your Amazon account may differ.</Note>
+      <Rule />
+      <Row label="Keepa tokens per scan" help="A scan stops at this many Keepa tokens.">
+        <NumberField label="Keepa tokens per scan" value={cfg.keepaTokensPerScan} rule={RULES.keepaTokensPerScan} onCommit={(keepaTokensPerScan) => setCfg({ keepaTokensPerScan }, 600)} />
+      </Row>
+      <Row label="Keepa reserve" help="Tokens kept back from scheduled scans.">
+        <NumberField label="Keepa reserve" value={cfg.keepaReserve} rule={RULES.keepaReserve} onCommit={(keepaReserve) => setCfg({ keepaReserve }, 600)} />
+      </Row>
+    </Pane>
+  );
+}

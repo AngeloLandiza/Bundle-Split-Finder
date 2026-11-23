@@ -243,9 +243,20 @@ export function createMockClient(): ApiClient {
       await online();
       return clone(settings);
     },
+    async testNotification() {
+      await online(300);
+    },
     async patchSettings(patch) {
       await online(150);
+      const before = settings;
       settings = mergePatch(settings, patch as AppSettings);
+      // The agent takes trust back to its measured list when a model's identity changes (agent/app.ts aiPipelinePatch).
+      for (const p of ['judge', 'assist', 'research'] as const) {
+        const a = before.ai[p];
+        const b = settings.ai[p];
+        const changed = a.provider !== b.provider || a.model !== b.model || (a.baseUrl ?? '') !== (b.baseUrl ?? '');
+        if (changed && !(patch.ai?.[p] && 'trusted' in patch.ai[p]!)) settings.ai[p] = { ...b, trusted: b.provider === 'anthropic' };
+      }
       state.budget.serpPerScan = settings.settings.searchesPerScan;
       state.budget.serpReserve = settings.settings.reserve;
       state.budget.aiCapUsd = settings.ai.monthlyCapUsd;

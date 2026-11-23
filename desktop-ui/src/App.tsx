@@ -3,13 +3,14 @@ import { AppContext, api, type AppContextValue, type PairingValue } from './api/
 import { ApiError, type AgentEvent, type AppState, type PendingPairRequest } from './api/types';
 import { Sidebar } from './components/Sidebar';
 import { INSPECTOR_DEFAULT, UiContext, clampInspector, type UiValue } from './components/ui';
-import { applyLook, readLook, saveLook, shellChrome, type Look } from './lib/appearance';
+import { applyLook, onLookChange, readLook, saveLook, shellChrome, type Look } from './lib/appearance';
 import { globalKey, pressOf } from './lib/keys';
+import { tabForSettingsId } from './lib/prefs';
 import { DEFAULT_ROUTE, hashOf, parseRoute, type Route } from './lib/route';
+import { openPreferences } from './lib/shell';
 import { ActivityScreen } from './screens/Activity';
 import { DealsScreen } from './screens/Deals';
 import { ReviewScreen } from './screens/Review';
-import { SettingsScreen } from './screens/Settings';
 import { TodayScreen } from './screens/Today';
 import { WelcomeSheet } from './screens/Welcome';
 import './shell.css';
@@ -63,6 +64,7 @@ export function App() {
 
   // The look on <html>; the shell's chrome; whether the window is key (selection is the accent only then).
   useEffect(() => applyLook(look), [look]);
+  useEffect(() => onLookChange(setLookState), []);
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.chrome = shellChrome();
@@ -78,6 +80,18 @@ export function App() {
       window.removeEventListener('blur', set);
     };
   }, []);
+
+  // Settings is the Preferences window. Its route (from the shell, a link, Cmd+5) opens that window and leaves the
+  // screen that was open where it was.
+  const shownRoute = useRef<Route>(DEFAULT_ROUTE);
+  useEffect(() => {
+    if (route.screen !== 'settings') {
+      shownRoute.current = route;
+      return;
+    }
+    openPreferences(tabForSettingsId(route.id));
+    window.location.hash = hashOf(shownRoute.current);
+  }, [route]);
 
   const navigate = useCallback((r: Route) => {
     const next = hashOf(r);
@@ -292,7 +306,6 @@ export function App() {
             {route.screen === 'deals' ? <DealsScreen openId={route.id} view={route.view ?? 'all'} /> : null}
             {route.screen === 'review' ? <ReviewScreen openId={route.id} /> : null}
             {route.screen === 'activity' ? <ActivityScreen /> : null}
-            {route.screen === 'settings' ? <SettingsScreen focus={route.id} /> : null}
           </main>
         </div>
         {setupOpen ? <WelcomeSheet onClose={closeSetup} /> : null}
