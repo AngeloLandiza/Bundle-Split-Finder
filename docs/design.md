@@ -314,6 +314,34 @@ fixed vocabulary in Words. Built in `desktop-ui/src/` (components in `components
   `start_dragging` and `internal_toggle_maximize` (capabilities/agent-ui.json).
 - Close hides to the menu bar; the menus carry the shortcuts (below).
 
+### Menu bar popover
+
+A left click on the menu bar icon toggles a small borderless window under it (`src-tauri/src/popover.rs`;
+the page is the same dashboard at `#/popover`, `screens/PopoverApp.tsx`); a right click keeps the tray
+menu. 340x420, the Popover material with 10pt corners, floating above other windows and on every Space,
+no title bar, no Dock or Cmd+Tab entry of its own. It hides when it loses focus, on Esc, and when a row
+or a menu item opens something else.
+
+- **Header**: the name, and the agent's state at the right: Idle, Scanning (a spinner), Asking AI,
+  Paused, Chrome closed and Agent offline (both in the attention colour). While a scan runs a quiet line
+  says "Step N of M" with the agent's own stage, over a 3px bar.
+- **Needs you · N**: the agent's open count, then the first three questions as the Today screen orders
+  them (AI-verified first, then oldest). A row opens the main window at that question. "N more
+  questions in Review" when there are more; "Nothing needs you" at zero.
+- **Best deal**: the highest estimated profit among bundles with an estimate and no open question, with
+  its profit and ROI, and the line "Profit and ROI are estimates from your fee settings." A row opens it.
+  The deal rows carry no "first seen" date, so this is the best of what the last scan holds, not only of
+  what it found new.
+- **Actions**: Scan now with its price (Stop while one runs), Pause (Resume while paused). Under a hairline,
+  the menu rows: Open Split Finder, Preferences... (Cmd+,), Quit Split Finder (Cmd+Q); the row under the
+  pointer takes the selection colour, as in a menu.
+- It reads the agent only while it is on screen: when it opens it loads the state, the questions and the
+  deals once, then follows the event stream (a review or deals event reloads that list once after 400ms
+  of quiet). Hidden, it holds no stream and makes no request.
+- **Dock badge**: the open-question count on the Dock icon, clear at 0, and none while the Dock icon is
+  hidden (Preferences > General). With the Dock icon hidden the menu bar icon carries the count as text
+  instead; with it shown the menu bar icon is the plain icon.
+
 ### Tokens (`desktop-ui/src/base.css`)
 
 Every colour is a `light-dark()` literal first, then WebKit's semantic system colour where one
