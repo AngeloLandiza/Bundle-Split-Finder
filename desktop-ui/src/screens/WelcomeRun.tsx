@@ -49,6 +49,8 @@ export function useRunPlan(choice: RunChoice): { plan: RunPlan | null; failed: b
       hasKeepa: hasKeepa && s.settings.amazonRefreshViaKeepa,
       searchesLeft: serpLeft,
       recentRuns: (runs ?? []).filter((r) => r.result !== 'running').map((r) => ({ kind: r.kind, status: r.result, searchesUsed: r.searches })),
+      // Free scan: the bundle lists are read in Chrome unless the owner chose SerpApi for them.
+      discovery: s.scan?.listingSource === 'serpapi' ? 'serpapi' : 'chrome',
       now: new Date(),
     });
   }, [s, runs, serpMonthly, serpLeft, hasKeepa]);
@@ -70,6 +72,7 @@ export function useRunPlan(choice: RunChoice): { plan: RunPlan | null; failed: b
 
 const basisSentence = (rec: ScheduleRecommendation, hasKeepa: boolean): string => {
   if (rec.perScanBasis === 'recent') return 'The searches a scan uses come from your recent scans.';
+  if (rec.perScanBasis === 'chrome') return 'Home Depot’s lists are read in Chrome; without a Keepa key each new Amazon lookup is a search.';
   return hasKeepa ? 'A scan with a Keepa key uses about that many.' : 'Without a Keepa key each new Amazon lookup also costs a search; real scans will correct this.';
 };
 
@@ -128,6 +131,10 @@ export function RunStep({ plan, failed, choice, onChoose, saved }: { plan: RunPl
         {chosen.id === 'manual' ? (
           <>
             <strong>Scans run only when you press Scan now.</strong> {rec.arithmetic}
+          </>
+        ) : rec.perScan === 0 ? (
+          <>
+            <strong>A scan spends no searches to find bundles.</strong> {rec.arithmetic} These are estimates.
           </>
         ) : (
           <>

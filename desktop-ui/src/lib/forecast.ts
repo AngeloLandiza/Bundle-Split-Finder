@@ -22,8 +22,20 @@ export function scansPerMonth(s: Schedule): number {
   return Math.floor((30 * 24) / Math.max(1, s.hours));
 }
 
-export function forecast(s: Schedule, perScan: number, monthly: number, reserve: number): Forecast {
+/**
+ * `free`: the free scan (the bundle lists read in Chrome, Amazon lookups on Keepa first). Finding bundles spends no search;
+ * a scheduled scan searches only for a lookup Keepa cannot pay for, at most `perScan`, and never the reserve, so the
+ * schedule is not bounded by the plan.
+ */
+export function forecast(s: Schedule, perScan: number, monthly: number, reserve: number, opts: { free?: boolean } = {}): Forecast {
   const scans = scansPerMonth(s);
+  if (opts.free) {
+    const usable = Math.max(0, monthly - reserve);
+    const detail = scans === 0
+      ? 'Scans run only when you press Scan now.'
+      : `${count(scans)} scans a month read Home Depot’s lists in Chrome. A lookup Keepa cannot pay for uses a search, at most ${count(perScan)} a scan and never the reserve.`;
+    return { scansPerMonth: scans, needed: 0, usable, fits: true, sentence: 'Finding bundles spends no searches', detail };
+  }
   const needed = scans * perScan;
   const usable = Math.max(0, monthly - reserve);
   const fits = needed <= usable;

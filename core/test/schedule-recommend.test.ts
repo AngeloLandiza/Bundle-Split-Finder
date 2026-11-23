@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { runsPerMonth, validateSchedule } from '../src/schedule';
-import { HEADROOM, KEEPA_SCAN_SEARCHES, NO_KEEPA_SCAN_SEARCHES, recommendSchedule, SCHEDULE_OPTIONS, typicalScanSearches } from '../src/schedule/recommend';
+import { CHROME_NO_KEEPA_SCAN_SEARCHES, HEADROOM, KEEPA_SCAN_SEARCHES, MIN_SCAN_INTERVAL_HOURS, NO_KEEPA_SCAN_SEARCHES, recommendSchedule, SCHEDULE_OPTIONS, typicalScanSearches } from '../src/schedule/recommend';
 
 // Nov 23, 2026 at noon: 8 days left in the month, today included.
 const NOV_23 = new Date(2026, 10, 23, 12, 0, 0);
@@ -131,5 +131,41 @@ describe('the options', () => {
       ['weekly', true],
       ['manual', true],
     ]);
+  });
+});
+
+describe('the free scan (bundle lists read in Chrome)', () => {
+  it('with Keepa a scan spends no search: every 3 hours while Chrome is open, bounded by Home Depot, not the budget', () => {
+    // The owner's account today: 2 searches above the reserve, and recent scans that paid for listing pages.
+    const r = recommendSchedule({ ...owner, hasKeepa: true, discovery: 'chrome', searchesLeft: 102, recentRuns: [scan(16), scan(3), scan(3)] });
+    expect(r.option.id).toBe('every-3-hours');
+    expect(r.option.schedule).toEqual({ mode: 'interval', hours: MIN_SCAN_INTERVAL_HOURS });
+    expect(r.option.scansPerMonth).toBe(240);
+    expect(r).toMatchObject({ perScan: 0, perScanBasis: 'chrome-keepa' });
+    expect(r.option.searchesPerMonth).toBe(0);
+    expect(r.sentence).toBe('Every 3 hours while Chrome is open. A scan spends no searches to find bundles: Home Depot\'s lists are read in Chrome and Amazon lookups go to Keepa first.');
+    expect(r.arithmetic).toBe('Home Depot is read at most every 3 hours, so the schedule is set by that, not by searches. Your plan gives 250 a month and the reserve keeps 100, so 150 are left to spend. They go to confirming listings, the lookups you start, and a lookup Keepa cannot pay for (never the reserve).');
+    // Every choice fits: none spends a search.
+    expect(r.options.every((o) => o.fits)).toBe(true);
+  });
+
+  it('nothing more often than the politeness limit is offered', () => {
+    const r = recommendSchedule({ ...owner, hasKeepa: true, discovery: 'chrome' });
+    const hours = r.options.flatMap((o) => (o.schedule.mode === 'interval' ? [o.schedule.hours] : []));
+    expect(Math.min(...hours)).toBe(MIN_SCAN_INTERVAL_HOURS);
+  });
+
+  it('without Keepa the lookups are still searches (about 6 a scan), so the budget decides again', () => {
+    const r = recommendSchedule({ ...owner, hasKeepa: false, discovery: 'chrome' });
+    expect(r).toMatchObject({ perScan: CHROME_NO_KEEPA_SCAN_SEARCHES, perScanBasis: 'chrome' });
+    expect(CHROME_NO_KEEPA_SCAN_SEARCHES).toBe(6);
+    // 15 scans × 6 = 90 fits the 127 of headroom; daily (180) does not.
+    expect(r.option.id).toBe('every-2-days');
+  });
+
+  it('SerpApi discovery is unchanged: no 3-hour option, recent runs as before', () => {
+    const r = recommendSchedule({ ...owner, hasKeepa: true, discovery: 'serpapi' });
+    expect(r.options.map((o) => o.id)).toEqual(SCHEDULE_OPTIONS.map((o) => o.id));
+    expect(r.option.id).toBe('daily');
   });
 });

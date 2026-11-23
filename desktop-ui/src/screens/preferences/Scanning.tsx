@@ -28,7 +28,10 @@ export function ScanningPane() {
   // A store written before the choice existed reads as the flat amount (the agent migrates it once).
   const fromKeepa = fees.fulfillmentSource === 'keepa';
   const budget = state?.budget;
-  const f = forecast(cfg.schedule, cfg.searchesPerScan, budget?.serpMonthly ?? 250, cfg.reserve);
+  // Free scan: the bundle lists are read in Chrome unless the owner chose SerpApi; with Keepa, finding bundles spends nothing.
+  const source = settings.scan ?? { listingSource: 'auto' as const, serpWhenChromeClosed: false };
+  const free = source.listingSource !== 'serpapi' && Boolean(state?.keys.keepa) && cfg.amazonRefreshViaKeepa;
+  const f = forecast(cfg.schedule, cfg.searchesPerScan, budget?.serpMonthly ?? 250, cfg.reserve, { free });
   const setCfg = (part: Partial<typeof cfg>, delay = 0) => update({ settings: part }, { delay });
   const setFee = (key: keyof typeof fees, value: number) => update({ settings: { fees: { ...fees, [key]: value } } }, { delay: 600 });
   const [timeError, setTimeError] = useState<string | null>(null);
@@ -79,6 +82,27 @@ export function ScanningPane() {
           <RecommendedScheduleLink />
         </div>
       </Row>
+      <Row label="Find bundles" align="start" help="Home Depot’s bundle lists, read in Chrome the way a tab loads them, cost no searches.">
+        <div className="stack">
+          <Select
+            label={<span className="sr-only">Find bundles</span>}
+            value={source.listingSource}
+            width="md"
+            onChange={(e) => update({ scan: { listingSource: e.target.value as typeof source.listingSource } })}
+          >
+            <option value="auto">In Chrome; SerpApi when Chrome is closed</option>
+            <option value="chrome">Only in Chrome</option>
+            <option value="serpapi">With SerpApi searches</option>
+          </Select>
+          {source.listingSource === 'auto' ? (
+            <Checkbox
+              label="Scheduled scans search SerpApi while Chrome is closed"
+              checked={source.serpWhenChromeClosed}
+              onChange={(serpWhenChromeClosed) => update({ scan: { serpWhenChromeClosed } })}
+            />
+          ) : null}
+        </div>
+      </Row>
       <Row label="Searches per scan" help="A scan stops at this many SerpApi searches.">
         <NumberField label="Searches per scan" value={cfg.searchesPerScan} rule={RULES.searchesPerScan} onCommit={(searchesPerScan) => setCfg({ searchesPerScan }, 600)} />
       </Row>
@@ -100,7 +124,7 @@ export function ScanningPane() {
         </div>
       </Row>
       <Rule />
-      <Row label="Brands" align="start" help="Each brand costs searches on every scan. At least one stays on.">
+      <Row label="Brands" align="start" help={source.listingSource === 'serpapi' ? 'Each brand costs searches on every scan. At least one stays on.' : 'Each brand adds its Home Depot list to every scan. At least one stays on.'}>
         <div className="stack">
           {BRANDS.map((b) => (
             <Checkbox

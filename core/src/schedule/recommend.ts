@@ -9,6 +9,12 @@
 // documented default. With a Keepa key the Amazon lookups are paid from Keepa's tokens, so a scan spends searches only
 // on Home Depot's listing pages and catalog pages (3 to 5 recorded; 4 here). Without it every new part's Amazon lookup is
 // one more search; 10 is that 4 plus about 6 new parts a scan, an assumption the first real runs replace.
+//
+// Free scan (Nov 23): with the bundle lists read in Chrome (scan/listingSource.ts) a scan spends no search to find bundles,
+// and with Keepa none on Amazon either (the brand pages are not read; lookups go to Keepa). The schedule is then bounded
+// by how often Home Depot should be read, MIN_SCAN_INTERVAL_HOURS, not by the search budget, and the month's searches go
+// to the automatic listing confirmation and the lookups the owner starts. Without Keepa each new part's lookup is still
+// a search (about 6 a scan).
 
 import type { Schedule } from '../schedule';
 
@@ -16,12 +22,25 @@ import type { Schedule } from '../schedule';
 export const KEEPA_SCAN_SEARCHES = 4;
 /** Searches a scan is assumed to use without Keepa: the pages plus about 6 Amazon lookups. Replaced by recent runs. */
 export const NO_KEEPA_SCAN_SEARCHES = 10;
+/** Free scan without Keepa: only the new parts' Amazon lookups are searches (the 6 of NO_KEEPA_SCAN_SEARCHES beyond the pages). */
+export const CHROME_NO_KEEPA_SCAN_SEARCHES = NO_KEEPA_SCAN_SEARCHES - KEEPA_SCAN_SEARCHES;
+/**
+ * The most often a schedule reads Home Depot, in hours (politeness, not budget). A scan reads each brand's Bundle list (2 to 3
+ * pages a brand), the BOGO lists (up to 15 pages a brand), and item pages only when they are new or older than 6 hours
+ * (listingSource.ts LISTING_ITEM_MAX_AGE_MS; BOGO items once a day), at most 60 page reads a scan, paced as a person's tab.
+ * Every 3 hours is at most 8 such passes a day, each a few minutes long: the reads of a person checking the deals now and then.
+ */
+export const MIN_SCAN_INTERVAL_HOURS = 3;
+/** The free scan's own option, first: offered only when the lists are read in Chrome. */
+export const FREE_SCAN_OPTION: ScheduleOption = {
+  id: 'every-3-hours', label: 'Every 3 hours while Chrome is open', schedule: { mode: 'interval', hours: MIN_SCAN_INTERVAL_HOURS }, scansPerMonth: (30 * 24) / MIN_SCAN_INTERVAL_HOURS,
+};
 /** The share of the usable searches a recommendation may plan to spend. */
 export const HEADROOM = 0.85;
 /** Hours in the 30-day month the forecast in Settings uses; the monthly figures here follow it. */
 const MONTH_HOURS = 30 * 24;
 
-export type ScheduleOptionId = 'twice-a-day' | 'daily' | 'every-2-days' | 'twice-a-week' | 'weekly' | 'manual';
+export type ScheduleOptionId = 'every-3-hours' | 'twice-a-day' | 'daily' | 'every-2-days' | 'twice-a-week' | 'weekly' | 'manual';
 
 export interface ScheduleOption {
   id: ScheduleOptionId;
@@ -55,6 +74,12 @@ export interface RecommendInput {
   searchesLeft?: number | null;
   /** Recent scans, newest first. Only finished or limited scans that spent something say what a scan uses. */
   recentRuns?: readonly { kind: string; status: string; searchesUsed: number }[];
+  /**
+   * Free scan: 'chrome' when the bundle lists are read in Chrome (Settings scan.listingSource auto or chrome). Its scans
+   * spend no search to find bundles, so recent runs (which paid for listing pages) do not say what a scan spends now.
+   * Absent or 'serpapi': SerpApi's listing pages, as before.
+   */
+  discovery?: 'chrome' | 'serpapi';
   now: Date;
 }
 
@@ -68,7 +93,7 @@ export interface ScheduleRecommendation {
   option: ScheduleChoice;
   /** Searches a scan is planned to use, never above the per-scan cap. */
   perScan: number;
-  perScanBasis: 'recent' | 'keepa' | 'no-keepa';
+  perScanBasis: 'recent' | 'keepa' | 'no-keepa' | 'chrome-keepa' | 'chrome';
   /** The plan's searches a month after the reserve. */
   usable: number;
   /** The headline: "Daily at 7:00. About 4 searches a scan, about 120 a month, inside your 150." */
@@ -80,8 +105,10 @@ export interface ScheduleRecommendation {
 }
 
 /** How many searches a scan uses: the median of its recent runs, else the documented default. Never below 1, never above the cap. */
-export function typicalScanSearches(input: Pick<RecommendInput, 'hasKeepa' | 'recentRuns' | 'perScanCap'>): { perScan: number; basis: ScheduleRecommendation['perScanBasis'] } {
+export function typicalScanSearches(input: Pick<RecommendInput, 'hasKeepa' | 'recentRuns' | 'perScanCap' | 'discovery'>): { perScan: number; basis: ScheduleRecommendation['perScanBasis'] } {
   const cap = Math.max(1, Number.isFinite(input.perScanCap) ? Math.floor(input.perScanCap) : 1);
+  // Free scan: nothing is searched to find bundles; with Keepa nothing is searched on Amazon either.
+  if (input.discovery === 'chrome') return input.hasKeepa ? { perScan: 0, basis: 'chrome-keepa' } : { perScan: Math.min(cap, CHROME_NO_KEEPA_SCAN_SEARCHES), basis: 'chrome' };
   const used = (input.recentRuns ?? [])
     .filter((r) => r.kind === 'scan' && (r.status === 'finished' || r.status === 'limit') && Number.isFinite(r.searchesUsed) && r.searchesUsed > 0)
     .slice(0, 5)
@@ -117,7 +144,8 @@ export function recommendSchedule(input: RecommendInput): ScheduleRecommendation
   const thisMonth = Math.min(usable, left);
   const daysLeft = daysLeftIn(input.now);
 
-  const options: ScheduleChoice[] = SCHEDULE_OPTIONS.map((o) => {
+  const offered = input.discovery === 'chrome' ? [FREE_SCAN_OPTION, ...SCHEDULE_OPTIONS] : SCHEDULE_OPTIONS;
+  const options: ScheduleChoice[] = offered.map((o) => {
     const searchesPerMonth = o.scansPerMonth * perScan;
     const hours = o.schedule.mode === 'interval' ? o.schedule.hours : o.schedule.mode === 'daily' ? 24 : 0;
     // The first scan is one interval after the schedule is switched on; counting every interval of what is left
@@ -129,6 +157,18 @@ export function recommendSchedule(input: RecommendInput): ScheduleRecommendation
   const option = options.find((o) => o.fits)!;
 
   const plan = `Your plan gives ${n(monthly)} a month and the reserve keeps ${n(reserve)}, so ${n(usable)} are left to spend.`;
+  if (perScan === 0) {
+    // Free scan with Keepa: the budget does not bound the schedule; Home Depot's politeness limit does.
+    return {
+      option,
+      perScan,
+      perScanBasis: basis,
+      usable,
+      sentence: `${option.label}. A scan spends no searches to find bundles: Home Depot's lists are read in Chrome and Amazon lookups go to Keepa first.`,
+      arithmetic: `Home Depot is read at most every ${MIN_SCAN_INTERVAL_HOURS} hours, so the schedule is set by that, not by searches. ${plan} They go to confirming listings, the lookups you start, and a lookup Keepa cannot pay for (never the reserve).`,
+      options,
+    };
+  }
   if (option.id === 'manual') {
     const weekly = options.find((o) => o.id === 'weekly')!;
     return {
