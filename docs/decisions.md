@@ -985,3 +985,28 @@ neither rewritten nor refused (agent and helper pass it as is); the helper parse
   live run shows which lists more. Neither list is dropped until a run shows that.
 
 - **Windows owner-only files, second pass** (Nov 23, after the first windows-latest smoke run). The run showed `agent-token`, `keys.json` and `pairing.json` with the folder's three inherited entries (SYSTEM, Administrators, the user) although `winAcl.ts` narrows the temp file before the content goes in. The cause is not proven from here: Microsoft documents that `MoveFileEx` keeps the moved file's security descriptor on a same-volume move and only a cross-volume move assigns the destination's default (learn.microsoft.com, MoveFileExW, Remarks), so the rename is not the established culprit; the only silent path was an `icacls` failure whose single `console.warn` went to a windowless sidecar nobody reads. Now: (1) the narrowing is applied again on the FINAL path after the rename (idempotent) and read back with `icacls <file>`, parsed (one explicit entry for the current user, by SID or name, no `(I)`); (2) when that does not hold, one sentence goes to Activity errors, "Windows did not let Split Finder restrict keys.json to your account: <reason>. It is readable by this PC's administrators.", and the write is never failed; (3) only the three secret files are narrowed. The other store files hold no keys and keep %APPDATA%'s inherited per-user permissions (user, SYSTEM, Administrators), which is the normal Windows state and which a standard other user cannot read; the smoke script checks the three files (SID comparison, no `(I)`) and that the store folder grants nothing to Users, Authenticated Users or Everyone, printing the entries on failure. The next real run settles the cause: if the Activity sentence appears, its reason names it. *For v2:* the OS credential store instead of files.
+### Free scan, fix round 2: the list is fetched in the page's own world, and paged on Home Depot's final address (Nov 23)
+The second live scan read 6 bundles. Hand fetches in the owner's Chrome (from the `/s/ryobi` doorway, in the console:
+the page's MAIN world) got 12 `base-searchNav` entries a page and `"totalProducts":24` (with the search words) or `101`
+(without them), while the helper's own job got 6 a page, or for the query list a state of other kinds (36 entries:
+numeric ids, ROOT_QUERY, "BundleI…"). The helper fetched with `chrome.scripting.executeScript` in the **ISOLATED**
+world (`ReaderEnv.runInTab`, as every reader does), `credentials: 'include'`, no headers of its own.
+- **The Bundle list reader now fetches in the page's own world** (`ReaderEnv.runInPage`, `world: 'MAIN'`), as the
+  owner's working fetch was made; the doorway, settle, pause and refusal rules are unchanged. Every other reader stays in
+  the ISOLATED world (their pages read right there). *Live check:* whether the page world answers 12 a page.
+- **Paging follows the redirect.** `/b/N-5yc1vZbwo64Zm5d` answers from `/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64`, and a Nao on the
+  first address is dropped by that redirect, so the reader returns the answer's same-origin final address
+  (`fetchPathInTab` `finalPath`, from `res.url`) and the scan pages on it (`withNao`), each offset by the entries the
+  pages so far returned, until the list's own `totalProducts` (the first `"totalProducts":<n>` in the state) is reached, a
+  page adds nothing, or 10 pages. Both path checks accept that canonical shape: `/b/`, up to three name segments of
+  letters, digits and `-`, the N- value with exactly the base, the Bundle token and one brand token in either order, an
+  optional `/Ntk-elasticplus/Ntt-<query>`, and only `NCNI-5` and `Nao=<n>` as parameters, each once.
+- **A state with entries and no product is sampled, not guessed.** The reader returns `sample` (hdPage.ts `sampleOf`): each
+  key's kind (runs of 5+ digits written `#`) with its count, and the first entry of the 3 largest kinds as JSON cut to
+  1,500 characters, any property named like a credential (token, cookie, session, auth, secret, password, csrf) dropped.
+  The agent checks its shape, keeps it on the list, and the run's Activity details carry every list
+  (`RunRecord.bundleLists`: total, pages, products found, the address paged on, the sample).
+  `npx tsx scripts/record-listing-sample.ts <app data folder>` writes the newest sample to
+  `fixtures/homedepot-pages/listing-sample-<date>.json`; the other shape is parsed only once that fixture exists.
+- **Per list counts** in the run line: "RYOBI: 24 of 24, 2 pages with the search words, 77 more without them (101 of 101,
+  9 pages)".
