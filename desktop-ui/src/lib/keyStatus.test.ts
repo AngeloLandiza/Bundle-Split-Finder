@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DEALS, STATE } from '../api/mockData';
 import type { AppState, DealRow } from '../api/types';
 import { AI_INTRO, aiIntroDismissed, dismissAiIntro } from './aiIntro';
-import { dealReason, waitingState } from './dealReason';
+import { dealReason, matchColumnShown, waitingState } from './dealReason';
 import { keepaWords, keyState, rejectedKeys, rejectedKeysWords } from './keyStatus';
 import { setupProgress } from './setup';
 
@@ -47,23 +47,39 @@ describe('Keepa tokens', () => {
   });
 });
 
-describe('a deal row’s one line', () => {
-  const row = (patch: Partial<DealRow>): DealRow => ({ ...DEALS[0]!, profit: null, roi: null, needsAnswer: false, lookup: null, matchKind: null, matchState: null, ...patch });
-  it('says the estimate with its label and how far the parts are matched', () => {
-    expect(dealReason(row({ profit: 38, matchState: 'All 3 parts matched' }))).toBe('+$38.00 est. · all 3 parts matched');
-    expect(dealReason(row({ profit: 38 }))).toBe('+$38.00 est.');
+describe('a deal row’s reason line', () => {
+  const row = (patch: Partial<DealRow>): DealRow => ({ ...DEALS[0]!, profit: null, roi: null, needsAnswer: false, lookup: null, matchKind: null, matchState: null, bogoChoices: null, ...patch });
+  const wide = { matchShown: true };
+  const narrow = { matchShown: false };
+
+  it('says nothing the Match column already says: a matched row, a question and a waiting row have no third line', () => {
+    expect(dealReason(row({ profit: 38, matchState: 'All 3 parts matched' }), wide)).toBeNull();
+    expect(dealReason(row({ matchState: '2 of 3 parts matched' }), wide)).toBeNull();
+    expect(dealReason(row({ lookup: { searches: 2 } }), wide)).toBeNull();
+    expect(dealReason(row({ matchKind: 'waiting_parts', lookup: { searches: 2 } }), wide)).toBeNull();
+    expect(dealReason(row({ needsAnswer: true, profit: 12 }), wide)).toBeNull();
+    expect(dealReason(row({}), wide)).toBeNull();
   });
-  it('says the match state when there is no estimate', () => {
-    expect(dealReason(row({ matchState: '2 of 3 parts matched' }))).toBe('2 of 3 parts matched');
-    expect(dealReason(row({}))).toBeNull();
+  it('says what the hidden Match column would have said when the table is narrow', () => {
+    expect(dealReason(row({ profit: 38, matchState: 'All 3 parts matched' }), narrow)).toBe('All 3 parts matched');
+    expect(dealReason(row({ matchState: '2 of 3 parts matched' }), narrow)).toBe('2 of 3 parts matched');
+    expect(dealReason(row({ lookup: { searches: 2 } }), narrow)).toBe('Waiting for an Amazon lookup');
+    expect(dealReason(row({ matchKind: 'waiting_parts', lookup: { searches: 2 } }), narrow)).toBe('Waiting for Home Depot’s part pages');
+    expect(dealReason(row({ needsAnswer: true, profit: 12 }), narrow)).toBe('What is inside is not settled. Answer in Review.');
+    expect(dealReason(row({}), narrow)).toBeNull();
   });
-  it('says what a bundle waits for, the page first', () => {
-    expect(dealReason(row({ lookup: { searches: 2 } }))).toBe('Waiting for an Amazon lookup');
-    expect(dealReason(row({ matchKind: 'waiting_parts', lookup: { searches: 2 } }))).toBe('Waiting for Home Depot’s part pages');
+  it('puts the waiting page before an Amazon lookup', () => {
     expect(waitingState(row({ matchKind: 'waiting_page', lookup: { searches: 2 } }))).toBe('Waiting for its Home Depot page');
   });
-  it('sends a question to Review instead of showing a figure', () => {
-    expect(dealReason(row({ needsAnswer: true, profit: 12 }))).toBe('What is inside is not settled. Answer in Review.');
+  it('adds the BOGO group sentence, which no column shows', () => {
+    const bogoChoices = { label: 'BOGO: 11 free-tool choices — best: PCL265B +$61.50 est.', count: 11, bestId: 'x', best: true };
+    expect(dealReason(row({ bogoChoices }), wide)).toBe(bogoChoices.label);
+    expect(dealReason(row({ bogoChoices, matchState: '3 parts matched' }), narrow)).toBe(`3 parts matched · ${bogoChoices.label}`);
+  });
+  it('knows from the table width whether the Match column shows', () => {
+    expect(matchColumnShown(900)).toBe(true);
+    expect(matchColumnShown(720)).toBe(false);
+    expect(matchColumnShown(500)).toBe(false);
   });
 });
 

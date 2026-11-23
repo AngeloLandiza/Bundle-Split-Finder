@@ -80,8 +80,8 @@
   text-overflow: ellipsis;
 }
 
-/* The line under a deal's model: the estimate with its label and why, or what the bundle waits for. One height for every row
-   (a row with nothing to say keeps the line, empty); Compact density hides it and returns to the two-line row. */
+/* The line under a deal's model, only when it says something the other columns do not (lib/dealReason.ts). A row without
+   one is the two-line row (--row-2); a row with one grows to three lines. Compact density hides the line and keeps two. */
 .deal-reason {
   font-size: 11px;
   line-height: 14px;
@@ -91,21 +91,15 @@
   white-space: nowrap;
 }
 
-.deal-reason-dup {
-  visibility: hidden;
-}
-
-@container (max-width: 720px) {
-  .deal-reason-dup {
-    visibility: visible;
-  }
-}
-
 .deals .table td {
+  height: var(--row-2);
+}
+
+.deals .table tr:has(.deal-reason) td {
   height: 56px;
 }
 
-:root[data-density='compact'] .deals .table td {
+:root[data-density='compact'] .deals .table tr:has(.deal-reason) td {
   height: var(--row-2);
 }
 

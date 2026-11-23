@@ -3,7 +3,7 @@
 // in the same shapes as the real client (types.ts), so a screen cannot tell them apart.
 // `?mock=real` is the owner's real data after two scans (mockReal.json, from fixtures/e2e-2026-11-23): 53 bundles waiting for
 // lookups, 15 open questions with the AI's real suggestions, Keepa tokens, a rejected eBay key. `?mock=real-scanning` is the
-// same app mid-scan, with a step in every state.
+// same app mid-scan, with a step in every state; `real-problems` the same app with an outdated helper and unread pages besides the waiting lookups.
 // `?mock=<scenario>` on the URL shows one state: nobuynow (no bundle is worth buying now), firstrun, empty, offline, chrome-closed, limit,
 // scanning, paused, error, slow, pairing, unread (a scan stopped on unread Home Depot pages), helper-old. Nothing here touches the network.
 
@@ -17,7 +17,7 @@ import real from './mockReal.json';
 import { mockBogoView } from './mockTracking';
 import { ApiError, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type DealRow, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
-type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-scanning';
+type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-scanning' | 'real-problems';
 
 const ago = (min: number): string => new Date(Date.now() - min * 60_000).toISOString();
 const ahead = (min: number): string => new Date(Date.now() + min * 60_000).toISOString();
@@ -26,7 +26,7 @@ const clone = <T>(x: T): T => structuredClone(x);
 function scenario(): Scenario {
   if (typeof window === 'undefined') return 'normal';
   const s = new URLSearchParams(window.location.search).get('mock');
-  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-scanning'];
+  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-scanning', 'real-problems'];
   return all.find((x) => x === s) ?? 'normal';
 }
 
@@ -97,7 +97,7 @@ export function createMockClient(): ApiClient {
   let paired: PairedExtension[] = [{ extensionId: 'abcdefghijklmnopabcdefghijklmnop', pairedAt: new Date(Date.now() - 3 * 86_400_000).toISOString(), lastSeenAt: new Date(Date.now() - 60_000).toISOString() }];
 
   let ebayNotice: string | null = null;
-  if (mode === 'real' || mode === 'real-scanning') {
+  if (mode === 'real' || mode === 'real-scanning' || mode === 'real-problems') {
     type RealRow = Parameters<typeof mapRow>[0] & { _parts: string[]; _evidence: NonNullable<DealDetail['splitEvidence']> };
     const rows = real.rows as unknown as RealRow[];
     deals = rows.map(mapRow);
@@ -117,6 +117,11 @@ export function createMockClient(): ApiClient {
     state.agent.lastScan = { at: ago(51), result: 'finished', newDeals: 0, searches: 1, message: null, waitingLookups: waiting, lookupsDone: { keepa: 0, serpapi: 1 }, lookupsBlockedBy: 'keepa_tokens' };
     ebayNotice = 'eBay did not accept the App ID and Cert ID, so eBay reference values were not checked.';
     activity.runs = activity.runs.slice(0, 3);
+  }
+  if (mode === 'real-problems') {
+    // Three things true at once: an outdated helper, a scan that left pages unread, lookups waiting (one banner, "2 more").
+    state.helper = { ...state.helper, outdated: true, version: '0.4.1' };
+    state.agent.lastScan = { ...state.agent.lastScan!, result: 'stopped', message: 'Home Depot refused a page (HTTP 200); the rest are read next scan.', pagesUnread: 6, canReadPagesAgain: true };
   }
   if (mode === 'real-scanning') {
     state.agent.status = 'scanning';

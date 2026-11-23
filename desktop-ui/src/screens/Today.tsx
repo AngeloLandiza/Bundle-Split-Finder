@@ -11,6 +11,7 @@ import { StatusLine } from '../components/StatusLine';
 import { Tag } from '../components/Tag';
 import { keepaWords } from '../lib/keyStatus';
 import { count, money, percentOff, plural, profit, usdSpend, when } from '../lib/format';
+import { SCREEN_KEYS } from '../lib/notices';
 import { bestDeals, buyNowDeals } from '../lib/today';
 import type { DealView } from '../lib/views';
 import { KIND_LABEL } from './reviewModel';
@@ -29,7 +30,7 @@ export function TodayScreen() {
   // The last scan's verdicts lead when there are any; otherwise the best estimates (a loss is never a best deal).
   const buy = buyNowDeals(deals.data?.rows ?? []);
   return (
-    <Page title="Today" sub={date} grouped scanNotices>
+    <Page title="Today" sub={date} grouped scanNotices keys={SCREEN_KEYS.today}>
       <div className="today">
         <Figures state={state} deals={deals.data?.rows ?? null} best={best[0] ?? null} questions={review.data?.questions.length ?? null} />
         <div className="today-grid">

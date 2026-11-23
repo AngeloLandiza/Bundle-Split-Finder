@@ -1,0 +1,44 @@
+/* The "N more" list under a notice: a small popover, one row per other notice, its action beneath. */
+.notice-popover {
+  inline-size: 380px;
+  max-inline-size: calc(100vw - 2 * var(--gutter));
+  gap: 0;
+  padding: 4px 14px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.notice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notice-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 0;
+}
+
+.notice-row + .notice-row {
+  border-top: 1px solid var(--separator);
+}
+
+.notice-row-text {
+  margin: 0;
+}
+
+.notice-row-text strong {
+  font-weight: 600;
+}
+
+.notice-row-text > span {
+  color: var(--label-2);
+}
+
+.notice-row-action {
+  display: flex;
+  gap: 8px;
+}

@@ -196,3 +196,8 @@
   line-height: 14px;
   color: var(--label-2);
 }
+
+/* What the last action said, in the status bar; a failure is in the attention colour and stays until the next action. */
+.status-attention {
+  color: var(--attention);
+}

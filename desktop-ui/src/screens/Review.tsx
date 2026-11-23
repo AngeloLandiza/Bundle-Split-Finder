@@ -17,6 +17,7 @@ import { copyText, openPage } from '../lib/actions';
 import { AI_INTRO, aiIntroDismissed, dismissAiIntro } from '../lib/aiIntro';
 import { isMenuKey, pressOf, reviewKey } from '../lib/keys';
 import { questionMenu, type QuestionMenuId } from '../lib/menus';
+import { SCREEN_KEYS } from '../lib/notices';
 import { plainReason } from '../lib/questionWords';
 import { KIND_LABEL, groupQuestions, parseTyped, preselected, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
 import './Review.css';
@@ -179,6 +180,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
       title="Review"
       sub={sub}
       inspector
+      keys={SCREEN_KEYS.review}
       search={all.length ? <SearchField label="Search questions" placeholder="Bundle or model" value={query} onChange={setQuery} /> : null}
       actions={
         // While the AI runs the toolbar's own status and Stop are the one indicator; this button is not shown a second time.

@@ -7,18 +7,19 @@ import { SearchField, Select } from '../components/Fields';
 import { InspectorSplit } from '../components/Layout';
 import { Page } from '../components/Page';
 import { PopoverSection } from '../components/Popover';
-import { EmptyState, LoadError, LoadingState, Notice, ScanStrip } from '../components/States';
+import { EmptyState, LoadError, LoadingState, ScanStrip } from '../components/States';
+import type { NoticeItem } from '../components/NoticeRegion';
 import { Table, type Column, type RowMenu, type TableHandle } from '../components/Table';
 import { WatchToggle } from '../components/WatchToggle';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { copyText, openPage } from '../lib/actions';
-import { dealReason, waitingState } from '../lib/dealReason';
+import { dealReason, matchColumnShown, waitingState } from '../lib/dealReason';
 import { lookupNotice, lookupsStartedWords } from '../lib/lookups';
 import { scanStrip } from '../lib/scanSteps';
 import { count, percentOff, plural, upToSearches, when } from '../lib/format';
-import { keyState } from '../lib/keyStatus';
 import { dealMenu, type DealMenuId } from '../lib/menus';
+import { SCREEN_KEYS } from '../lib/notices';
 import { sortRows, type SortState } from '../lib/sort';
 import { VIEW_LABEL, inView, type DealView } from '../lib/views';
 import { DealDetailPane } from './DealDetail';
@@ -70,6 +71,18 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
   const [section, setSection] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const table = useRef<TableHandle>(null);
+  // The table's width decides whether the Match column shows, and so whether a row's reason line has anything to add.
+  const frame = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(1000);
+  useEffect(() => {
+    const el = frame.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setWidth(el.clientWidth));
+    ro.observe(el);
+    setWidth(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+  const matchShown = matchColumnShown(width);
 
   const setSort = (s: SortState<Col>) => {
     setSortState(s);
@@ -103,22 +116,49 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
   const scanRunning = state?.agent.status === 'scanning';
   const scanLine = state ? scanStrip(state.agent) : null;
   const lookups = useMemo(() => lookupNotice(state, all), [state, all]);
-  const [lookupSaid, setLookupSaid] = useState<string | null>(null);
-  const runLook = useAction(async (maxSearches: number) => {
-    const r = await api.runLookups({ maxSearches });
-    if (!r.started) throw new ApiError('refused', lookupsStartedWords(r));
-    setLookupSaid(lookupsStartedWords(r));
-  });
-  const ebay = keyState(state, 'ebay');
-  const reasonOf = (r: DealRow) => dealReason(r);
-
-  // What a row's menu says it did, for a moment: "Copied PCL1600K2." or why it could not.
+  // What an action says it did, for a moment: "Copied PCL1600K2.", "Looking up 18 parts through Keepa." or why it could not.
+  // One line at a time, in the status bar under the table; a failure stays until the next action.
   const [said, setSaid] = useState<{ tone: 'quiet' | 'attention'; text: string } | null>(null);
   useEffect(() => {
     if (!said || said.tone === 'attention') return;
-    const t = setTimeout(() => setSaid(null), 4000);
+    const t = setTimeout(() => setSaid(null), Math.max(4000, said.text.length * 90));
     return () => clearTimeout(t);
   }, [said]);
+  const runLook = useAction(async (maxSearches: number) => {
+    const r = await api.runLookups({ maxSearches });
+    if (!r.started) throw new ApiError('refused', lookupsStartedWords(r));
+    setSaid({ tone: 'quiet', text: lookupsStartedWords(r) });
+  });
+  const noticeItems: NoticeItem[] = [];
+  if (lookups) {
+    noticeItems.push({
+      kind: 'lookups',
+      key: 'lookups',
+      tone: 'quiet',
+      title: lookups.title,
+      body: (
+        <>
+          {lookups.text}
+          {lookups.action.reason ? (
+            <span className="notice-more" id="lookups-reason">
+              {lookups.action.reason}
+            </span>
+          ) : null}
+          {runLook.error ? (
+            <span className="notice-more" role="alert">
+              {runLook.error}
+            </span>
+          ) : null}
+        </>
+      ),
+      action: (
+        <Button size="sm" busy={runLook.busy} busyLabel="Starting…" disabled={!lookups.action.enabled} cost={lookups.action.cost ?? undefined} title={lookups.action.reason ?? undefined} aria-describedby={lookups.action.reason ? 'lookups-reason' : undefined} onClick={() => void runLook.run(lookups.action.maxSearches)}>
+          {lookups.action.label}
+        </Button>
+      ),
+    });
+  }
+  if (res.data?.staleDays) noticeItems.push({ kind: 'stale', key: 'stale', tone: 'quiet', body: `The oldest price here was seen ${plural(res.data.staleDays, 'day', 'days')} ago. A scan refreshes them.` });
   const failed = (e: unknown) => setSaid({ tone: 'attention', text: e instanceof Error ? e.message : 'That did not work. Try again.' });
   const openRow = (r: DealRow) => {
     ui.setInspectorShown(true);
@@ -225,8 +265,8 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
           <span className="deal-sub">
             {r.brand} · <span className="code">{r.model}</span>
           </span>
-          {/* A state the Match column already says is hidden here while that column shows (it stays in the row's height). */}
-          <span className={`deal-reason${waitingState(r) || r.needsAnswer ? ' deal-reason-dup' : ''}`}>{reasonOf(r) ?? ' '}</span>
+          {/* Only when it adds something the other columns do not say; a row without one is two lines. */}
+          {dealReason(r, { matchShown }) ? <span className="deal-reason">{dealReason(r, { matchShown })}</span> : null}
         </div>
       ),
     },
@@ -298,58 +338,20 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
     { key: 'updated', label: 'Updated', sortable: true, align: 'right', width: 'col-time', hideBelow: 900, render: (r) => <span className="cell-time">{when(r.updatedAt)}</span> },
   ];
 
-  const csv = useAction(api.downloadDealsCsv);
+  const csv = useAction(async (opts: { sort: DealSort }) => {
+    try {
+      await api.downloadDealsCsv(opts);
+    } catch (e) {
+      setSaid({ tone: 'attention', text: `The CSV was not saved. ${e instanceof Error ? e.message : ''}`.trim() });
+    }
+  });
   const title = view === 'all' ? 'Deals' : VIEW_LABEL[view];
   const sub = res.data ? `${plural(inThisView.length, 'bundle', 'bundles')}${res.data.at ? ` · updated ${when(res.data.at)}` : ''}` : undefined;
   const filtered = query.trim() !== '' || section !== 'all';
 
   const list = (
-    <div className="deals">
+    <div className="deals" ref={frame}>
       {scanLine ? <ScanStrip text={scanLine} /> : null}
-      {lookups ? (
-        <Notice
-          title={lookups.title}
-          action={
-            <Button size="sm" busy={runLook.busy} busyLabel="Starting…" disabled={!lookups.action.enabled} cost={lookups.action.cost ?? undefined} title={lookups.action.reason ?? undefined} aria-describedby={lookups.action.reason ? 'lookups-reason' : undefined} onClick={() => void runLook.run(lookups.action.maxSearches)}>
-              {lookups.action.label}
-            </Button>
-          }
-        >
-          {lookups.text}
-          {lookups.action.reason ? (
-            <span className="notice-more" id="lookups-reason">
-              {lookups.action.reason}
-            </span>
-          ) : null}
-          {runLook.error ? (
-            <span className="notice-more" role="alert">
-              {runLook.error}
-            </span>
-          ) : null}
-        </Notice>
-      ) : null}
-      {lookupSaid ? <Notice>{lookupSaid}</Notice> : null}
-      {res.data?.staleDays ? <Notice>The oldest price here was seen {plural(res.data.staleDays, 'day', 'days')} ago. A scan refreshes them.</Notice> : null}
-      {res.data?.ebayNotice ? (
-        <Notice
-          tone={ebay.state === 'rejected' ? 'attention' : 'quiet'}
-          action={
-            ebay.state === 'rejected' ? (
-              <Button size="sm" onClick={() => navigate({ screen: 'settings', id: 'keys' })}>
-                Fix in Settings › Keys
-              </Button>
-            ) : undefined
-          }
-        >
-          {ebay.problem ?? res.data.ebayNotice}
-        </Notice>
-      ) : null}
-      {csv.error ? (
-        <Notice tone="attention" title="The CSV was not saved.">
-          {csv.error}
-        </Notice>
-      ) : null}
-      {said ? <Notice tone={said.tone}>{said.text}</Notice> : null}
       <div className="list-scroll">
         {res.status === 'loading' ? <LoadingState label="Loading deals" /> : null}
         {res.status === 'error' ? <LoadError error={res.error} onRetry={reload} /> : null}
@@ -402,27 +404,37 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
           />
         ) : null}
       </div>
-      {rows.length > 0 ? (
+      {rows.length > 0 || said ? (
         <p className="status-bar">
-          <span>
-            {filtered ? (
-              <>
-                <span className="fig">{count(rows.length)}</span> of <span className="fig">{count(inThisView.length)}</span>
-              </>
-            ) : (
-              plural(rows.length, 'bundle', 'bundles')
-            )}
-          </span>
-          {section !== 'all' ? (
+          {rows.length > 0 ? (
             <>
-              <span aria-hidden="true">·</span>
               <span>
-                Section: {SECTION_LABEL[section]} <LinkButton onClick={() => setSection('all')}>Show all sections</LinkButton>
+                {filtered ? (
+                  <>
+                    <span className="fig">{count(rows.length)}</span> of <span className="fig">{count(inThisView.length)}</span>
+                  </>
+                ) : (
+                  plural(rows.length, 'bundle', 'bundles')
+                )}
               </span>
+              {section !== 'all' ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span>
+                    Section: {SECTION_LABEL[section]} <LinkButton onClick={() => setSection('all')}>Show all sections</LinkButton>
+                  </span>
+                </>
+              ) : null}
+              <span aria-hidden="true">·</span>
             </>
           ) : null}
-          <span aria-hidden="true">·</span>
-          <span>Profit and ROI are estimates from your fee settings, not your real Amazon fees.</span>
+          {said ? (
+            <span className={said.tone === 'attention' ? 'status-attention' : undefined} role={said.tone === 'attention' ? 'alert' : 'status'}>
+              {said.text}
+            </span>
+          ) : (
+            <span>Profit and ROI are estimates from your fee settings, not your real Amazon fees.</span>
+          )}
         </p>
       ) : null}
     </div>
@@ -436,6 +448,8 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       sub={sub}
       inspector
       scanNotices
+      keys={SCREEN_KEYS.deals}
+      notices={noticeItems}
       search={all.length ? <SearchField label="Search deals" placeholder="Title or model" value={query} onChange={setQuery} /> : null}
       viewOptions={
         all.length ? (
