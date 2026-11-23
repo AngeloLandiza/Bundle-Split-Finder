@@ -3,15 +3,22 @@
 // (scripts/measure-identity.ts measureIdentity: the Keepa search, its labels, the three pulls, the two SerpApi pages and
 // the validation search rows), one sub-rule at a time, on the rows the catalog check left unknown: right, wrong, unknown.
 // A sub-rule is adopted only at zero wrong (docs/decisions.md). Then the replay on the owner's third scan
-// (fixtures/e2e-2026-11-23/after-scan3): how many of its title matches each rung would settle offline.
+// (fixtures/e2e-2026-11-23/after-scan3): how many of its title matches each rung would settle offline. First, the
+// manufacturer rule (core/src/keepa/brandAliases.ts makerAgrees): every manufacturer value recorded with brand RYOBI or
+// DEWALT, the rows it changes against every answer key, and the fifth scan's three held deals replayed with it.
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { makerReading, MANUFACTURER_ALIASES } from '../core/src/keepa/brandAliases';
 import { ADOPTED_RULES, checkListingFields, type FieldRule } from '../core/src/keepa/listingFields';
 import { identityFromKeepa, identityFromSerpProduct, narrowBrandContradiction, type ListingIdentity } from '../core/src/keepa/verify';
 import { parseProductResponse, parseSearchResponse } from '../core/src/keepa/parse';
 import { wantedFor } from '../core/src/scan/classify';
+import type { BundleRow } from '../core/src/scan/types';
+import { DEFAULT_SETTINGS } from '../core/src/settings';
+import type { PartTrend } from '../core/src/keepa/trends';
+import { bundleSignals, isConfirmedListing, type HistoryPoint, type TrendLookup } from '../core/src/tracking/signals';
 import { measureIdentity, verdictOf, type MeasuredRow, type Verdict } from './measure-identity';
 import { ROOT } from './node-store';
 
@@ -168,7 +175,231 @@ export function measureBrandAliases(root = ROOT): { before: Tally; after: Tally;
   return out;
 }
 
+type Key = 'is' | 'not' | 'uncertain';
+
+/**
+ * Every answer key the measurements use, by `${model}|${asin}`: fixtures/keepa/identity-labels.json, the validation labels
+ * (fixtures/validation/labels-2026-11-18.json: correct is, uncertain uncertain) and the audit corpus
+ * (fixtures/audit/corpus.json: part is, not-part not, uncertain uncertain). The first key read for a pair stands.
+ */
+export function answerKeys(root = ROOT): Map<string, Key> {
+  const out = new Map<string, Key>();
+  const put = (model: string, asin: string, k: Key) => { if (!out.has(`${model}|${asin}`)) out.set(`${model}|${asin}`, k); };
+  for (const r of (read(join(root, 'fixtures/keepa/identity-labels.json')) as { rows: { asin: string; model: string; label: Key }[] }).rows) put(r.model, r.asin, r.label);
+  const labels = (read(join(root, 'fixtures/validation/labels-2026-11-18.json')) as { labels: Record<string, Record<string, { correct: string[] | 'none'; uncertain?: string[] }>> }).labels;
+  for (const bundle of Object.values(labels)) {
+    for (const [model, l] of Object.entries(bundle)) {
+      for (const a of l.correct === 'none' ? [] : l.correct) put(model, a, 'is');
+      for (const a of l.uncertain ?? []) put(model, a, 'uncertain');
+    }
+  }
+  const corpus = (read(join(root, 'fixtures/audit/corpus.json')) as { pairs: { part: { model: string }; listing: { asin: string }; label: string }[] }).pairs;
+  for (const p of corpus) put(p.part.model, p.listing.asin, p.label === 'part' ? 'is' : p.label === 'not-part' ? 'not' : 'uncertain');
+  return out;
+}
+
+/** A catalog check's reason that quotes the listing's fields: "Amazon's catalog lists brand RYOBI but manufacturer TTI; …". */
+const QUOTES_MAKER = /^Amazon's (?:catalog|product page) lists brand (.+?) but manufacturer (.+?)(?:;|$)/;
+
+export interface Scan5MakerRow {
+  model: string;
+  brand: string;
+  asin: string;
+  key: Key | 'no key';
+  listing: ListingIdentity;
+}
+
+/**
+ * The owner's fifth scan (fixtures/e2e-2026-11-23/after-scan5): every catalog check whose recorded reason quotes the
+ * listing's manufacturer, as the listing it read. Only what the fixture holds word for word: the title and brand the
+ * scan stored (scan/listings.json) and the brand and manufacturer the reason quotes. The part number and the counts were
+ * not stored, so they are left empty: the check reached its manufacturer test only after a part number or model field
+ * was the part's, so the real record carries more evidence than this, never less. With no part number, rung 1's title
+ * rule is what confirms here.
+ */
+export function scan5MakerRows(root = ROOT): Scan5MakerRow[] {
+  const dir = join(root, 'fixtures/e2e-2026-11-23/after-scan5/scan');
+  const matches = read(join(dir, 'matches.json')) as [string, { brand: string; model: string; catalogChecks?: { asin: string; reason: string }[] }][];
+  const listings = new Map(read(join(dir, 'listings.json')) as [string, { asin: string; brand: string | null; title: string }][]);
+  const keys = answerKeys(root);
+  const out: Scan5MakerRow[] = [];
+  for (const [, m] of matches) {
+    for (const c of m.catalogChecks ?? []) {
+      const q = QUOTES_MAKER.exec(c.reason);
+      const row = listings.get(c.asin);
+      if (!q || !row) continue;
+      out.push({
+        model: m.model, brand: m.brand, asin: c.asin, key: keys.get(`${m.model}|${c.asin}`) ?? 'no key',
+        listing: { asin: c.asin, title: row.title, brand: q[1]!, manufacturer: q[2]!, partNumber: null, model: null, numberOfItems: null, packageQuantity: null, source: 'keepa_catalog' },
+      });
+    }
+  }
+  return out;
+}
+
+export interface MakerValue {
+  brand: 'RYOBI' | 'DEWALT';
+  manufacturer: string;
+  /** The listings carrying it, `${asin} (${where})`, each once. */
+  listings: string[];
+  reading: ReturnType<typeof makerReading>['as'];
+}
+
+/**
+ * Every manufacturer value recorded with brand field RYOBI or DEWALT, per distinct listing: the recorded Keepa products
+ * (the search and the product pulls), the two recorded SerpApi product pages, and the catalog checks of the owner's third
+ * and fifth scans whose reason quotes it.
+ */
+export function manufacturerValues(root = ROOT): MakerValue[] {
+  const seen = new Map<string, { brand: string; manufacturer: string; where: string }>();
+  const add = (asin: string, brand: string | null, manufacturer: string | null, where: string) => {
+    const b = (brand ?? '').replace(/^brand:\s*/i, '').trim().toUpperCase();
+    if ((b !== 'RYOBI' && b !== 'DEWALT') || !manufacturer) return;
+    const k = `${asin}|${manufacturer}`;
+    if (!seen.has(k)) seen.set(k, { brand: b, manufacturer, where });
+  };
+  for (const f of ['product-B0BGYFTPGK-B01H9BL8EO-B09M3TL9BB.json', 'product-B0BGYFTPGK-B01H9BL8EO-B09M3TL9BB-stats.json']) {
+    for (const p of parseProductResponse(read(join(root, 'fixtures/keepa', f)) as Record<string, unknown>).products) add(p.asin, p.brand ?? null, p.manufacturer ?? null, 'Keepa pull');
+  }
+  for (const p of parseSearchResponse(read(join(root, 'fixtures/keepa/search-RYOBI-PCL235B.json')) as Record<string, unknown>).products ?? []) {
+    add(p.asin, p.brand ?? null, p.manufacturer ?? null, 'Keepa search');
+  }
+  for (const asin of ['B0B3JWF5ZV', 'B0B6Z2ZGVK']) {
+    const l = identityFromSerpProduct(read(join(root, `fixtures/recorded/amazon-product-${asin}.json`)), asin);
+    if (l) add(asin, l.brand, l.manufacturer, 'SerpApi page');
+  }
+  for (const scan of ['after-scan3', 'after-scan5']) {
+    const matches = read(join(root, `fixtures/e2e-2026-11-23/${scan}/scan/matches.json`)) as [string, { catalogChecks?: { asin: string; reason: string }[] }][];
+    for (const [, m] of matches) {
+      for (const c of m.catalogChecks ?? []) {
+        const q = QUOTES_MAKER.exec(c.reason);
+        if (q) add(c.asin, q[1]!, q[2]!, `${scan} check`);
+      }
+    }
+  }
+  const by = new Map<string, MakerValue>();
+  for (const [k, v] of seen) {
+    const id = `${v.brand}|${v.manufacturer}`;
+    const row = by.get(id) ?? { brand: v.brand as MakerValue['brand'], manufacturer: v.manufacturer, listings: [], reading: makerReading(v.brand, v.manufacturer).as };
+    row.listings.push(`${k.split('|')[0]} (${v.where})`);
+    by.set(id, row);
+  }
+  return [...by.values()].sort((a, b) => a.brand.localeCompare(b.brand) || b.listings.length - a.listings.length || a.manufacturer.localeCompare(b.manufacturer));
+}
+
+export interface MakerScore {
+  rows: number;
+  changed: number;
+  right: number;
+  wrong: number;
+  unknown: number;
+  lines: string[];
+}
+
+/**
+ * The manufacturer rule (brandAliases.ts makerAgrees): rungs 0 and 1 without and with it, on every recorded row with an
+ * answer key (measureIdentity), the two live listings, and the fifth scan's listings whose manufacturer a check quotes.
+ * A changed row is right when the key says it is the part, wrong when it says it is not, unknown when the key is
+ * uncertain or there is none. Adopted only at 0 wrong.
+ */
+export function measureManufacturerRule(root = ROOT): MakerScore {
+  const catalog = new Map(
+    (read(join(root, 'fixtures/e2e-2026-11-23/after-scan5/scan/catalog.json')) as [string, { model: string; isKit?: boolean; upc?: string | null }][]).map(([, c]) => [c.model, c]),
+  );
+  const rows: { want: ReturnType<typeof wantedFor>; listing: ListingIdentity; key: Key | 'no key'; label: string }[] = [
+    ...measureIdentity(root).rows.map((r) => ({ want: r.want, listing: r.listing, key: r.key, label: `${r.asin} for ${r.model} (${r.set})` })),
+    ...LIVE_HELD.map((h) => ({ want: wantedFor('RYOBI', h.model, new Map()), listing: h.listing, key: h.key, label: `${h.listing.asin} for ${h.model} (live)` })),
+    ...scan5MakerRows(root).map((r) => ({ want: wantedFor(r.brand, r.model, catalog as never), listing: r.listing, key: r.key, label: `${r.asin} for ${r.model} (after-scan5)` })),
+  ];
+  const out: MakerScore = { rows: rows.length, changed: 0, right: 0, wrong: 0, unknown: 0, lines: [] };
+  for (const r of rows) {
+    const off = checkListingFields(r.want, r.listing, { makers: false });
+    const on = checkListingFields(r.want, r.listing);
+    if (off.status === on.status) continue;
+    out.changed += 1;
+    const says = on.status === 'confirmed' ? 'is' : on.status === 'contradicted' ? 'not' : null;
+    const v = r.key !== 'is' && r.key !== 'not' ? 'unknown' : says === r.key ? 'right' : 'wrong';
+    out[v] += 1;
+    out.lines.push(`${r.label}, manufacturer ${r.listing.manufacturer}, key ${r.key}: ${off.status} -> ${on.status} (${v})`);
+  }
+  return out;
+}
+
+export interface DealReplay {
+  key: string;
+  model: string;
+  before: string;
+  after: string;
+  buyNow: boolean;
+  /** The parts the bundle counts whose listing is still not confirmed with the rule on, and why. */
+  waiting: string[];
+}
+
+/**
+ * The fifth scan's three RYOBI $99 deals the manufacturer field held (store/deals.json), judged again by the scan's own
+ * rule (tracking/signals.ts bundleSignals): each part a catalog check quoting its manufacturer held is read again with the
+ * rule on (scan5MakerRows: title, brand, manufacturer) and, when confirmed, marked as applyCatalogCheck marks it (grade
+ * strong, verifiedBy). The history is the stored one, the sales figures the stored signal's (Keepa monthlySold per
+ * listing), the owner's numbers the app's defaults ($20, 20%, 50 a month: the fixture holds no settings).
+ */
+export function replayScan5Deals(root = ROOT, keys = ['homedepot:341966856', 'homedepot:344305163', 'homedepot:341965772']): DealReplay[] {
+  const dir = join(root, 'fixtures/e2e-2026-11-23/after-scan5');
+  const deals = (read(join(dir, 'store/deals.json')) as { bundles: BundleRow[] }).bundles;
+  type StoredVelocity = { asin: string | null; monthlySold: number | null; salesRank: number | null; offers: number | null; pulledAt: number | null };
+  const tracking = read(join(dir, 'store/tracking.json')) as {
+    history: Record<string, HistoryPoint[]>;
+    signals: Record<string, { at: number; verdict?: string; options: { velocity: { parts: StoredVelocity[] } }[] }>;
+  };
+  const catalog = new Map(
+    (read(join(dir, 'scan/catalog.json')) as [string, { model: string; isKit?: boolean; upc?: string | null }][]).map(([, c]) => [c.model, c]),
+  );
+  const reread = new Map(scan5MakerRows(root).map((r) => [`${r.model}|${r.asin}`, r]));
+  const out: DealReplay[] = [];
+  for (const key of keys) {
+    const row = deals.find((b) => b.key === key);
+    const stored = tracking.signals[key];
+    if (!row || !stored) throw new Error(`after-scan5 holds no deal ${key}`);
+    const waiting = new Set<string>();
+    const confirm = (p: BundleRow['parts'][number]): BundleRow['parts'][number] => {
+      if (p.asin === null || isConfirmedListing(p)) return p;
+      const r = reread.get(`${p.model}|${p.asin}`);
+      if (!r) { waiting.add(`${p.model} ${p.asin}: no recorded check quotes its fields`); return p; }
+      const res = checkListingFields(wantedFor(row.brand, p.model, catalog as never), r.listing);
+      if (res.status !== 'confirmed') { waiting.add(`${p.model} ${p.asin}: ${res.reason}`); return p; }
+      return { ...p, grade: 'strong', verifiedBy: res.rule !== null ? 'listing_fields' : 'keepa_catalog', verifyEvidence: `${res.reason}: https://www.amazon.com/dp/${p.asin}` };
+    };
+    const next: BundleRow = { ...row, parts: row.parts.map(confirm), options: row.options.map((o) => ({ ...o, parts: o.parts.map(confirm) })) };
+    const trends = new Map<string, PartTrend>();
+    for (const o of stored.options) {
+      for (const v of o.velocity.parts) {
+        if (v.asin && v.pulledAt !== null) {
+          trends.set(v.asin, { asin: v.asin, amazonPrice: null, salesRank: v.salesRank, offerCount: null, pulledAt: v.pulledAt, monthlySold: v.monthlySold, buyBoxEligibleOffers: v.offers });
+        }
+      }
+    }
+    const trend: TrendLookup = (asin) => trends.get(asin);
+    const s = bundleSignals({
+      row: next, history: tracking.history[key] ?? [], reviewOpen: false, trend, alerts: DEFAULT_SETTINGS.alerts, now: stored.at + 60_000, keepa: true,
+    });
+    out.push({ key, model: row.model, before: stored.verdict ?? '', after: s.verdict ?? '', buyNow: s.buyNow !== null, waiting: [...waiting] });
+  }
+  return out;
+}
+
 if (process.argv[1] && /measure-autoconfirm\.ts$/.test(process.argv[1])) {
+  console.log('Manufacturer values recorded with brand RYOBI or DEWALT (distinct listings):');
+  for (const v of manufacturerValues()) console.log(`  ${v.brand.padEnd(6)} ${v.manufacturer.padEnd(12)} ${String(v.listings.length).padStart(2)}  ${v.reading.padEnd(7)} ${v.listings.join(', ')}`);
+  console.log(`  manufacturer aliases adopted: ${Object.entries(MANUFACTURER_ALIASES).map(([b, a]) => `${b} ${a.map((x) => x.maker).join(', ')}`).join('; ')}`);
+  const mr = measureManufacturerRule();
+  console.log(`Manufacturer rule, rungs 0 and 1, ${mr.rows} rows: ${mr.changed} changed: ${mr.right} right, ${mr.wrong} wrong, ${mr.unknown} unknown`);
+  for (const l of mr.lines) console.log(`  ${l}`);
+  for (const d of replayScan5Deals()) {
+    console.log(`Replay ${d.key} ${d.model}: ${d.buyNow ? 'buy now' : 'still waits'}`);
+    console.log(`  before: ${d.before}`);
+    console.log(`  after:  ${d.after}`);
+    for (const w of d.waiting) console.log(`  waiting: ${w}`);
+  }
+  console.log('');
   const a = measureBrandAliases();
   const t = (x: Tally) => `${x.right} right, ${x.wrong} wrong, ${x.unknown} unknown`;
   console.log(`Brand aliases, rungs 0 and 1, recorded rows: before ${t(a.before)}; after ${t(a.after)}. Live listings: before ${t(a.liveBefore)}; after ${t(a.liveAfter)}.`);
