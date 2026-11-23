@@ -125,6 +125,8 @@ export interface AgentState {
   keys: KeysPresence;
   /** W4: true until the first scan has finished (the one-time first-run flow). */
   firstRun?: boolean;
+  /** D2: when the settings last changed; the shell re-reads GET /api/settings when this moves. */
+  settingsAt?: string;
 }
 
 // ---------------------------------------------------------------- deals

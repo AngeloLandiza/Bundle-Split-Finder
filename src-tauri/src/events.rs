@@ -5,7 +5,7 @@ use std::io::{BufRead, BufReader};
 use std::time::{Duration, Instant};
 
 use serde::Deserialize;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::{agent, shell};
 
@@ -98,10 +98,30 @@ fn apply_state(app: &AppHandle, v: Option<&serde_json::Value>) -> bool {
     shell::set_paused(app, s == "paused");
     found = true;
   }
+  // The settings changed since the last ones applied: read them again.
+  if let Some(at) = v.get("settingsAt").and_then(|s| s.as_str()) {
+    let seen = app
+      .state::<shell::ShellState>()
+      .settings_at
+      .lock()
+      .ok()
+      .and_then(|g| g.clone());
+    if seen.as_deref() != Some(at) {
+      sync_settings(app);
+    }
+  }
   found
 }
 
+fn sync_settings(app: &AppHandle) {
+  match agent::http_get_json(app, "/api/settings") {
+    Ok(v) => shell::apply_settings(app, &v),
+    Err(e) => log::debug!("settings sync failed: {e}"),
+  }
+}
+
 fn sync_state(app: &AppHandle) {
+  sync_settings(app);
   match agent::http_get_json(app, "/api/state") {
     Ok(v) => {
       apply_state(app, Some(&v));

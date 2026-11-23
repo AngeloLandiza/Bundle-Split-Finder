@@ -24,6 +24,10 @@ pub const MAIN: &str = "main";
 pub struct ShellState {
   pub open_questions: AtomicU32,
   pub paused: AtomicBool,
+  /// settings.notifications.sound: the native notification plays the default sound.
+  sound: AtomicBool,
+  /// settings.updatedAt of the settings last applied; the state event carries it as `settingsAt`.
+  pub settings_at: Mutex<Option<String>>,
   /// The window shows the "not our agent" message instead of the dashboard; showing it again
   /// rebuilds it once the agent proves itself.
   error_page: AtomicBool,
@@ -38,6 +42,8 @@ impl ShellState {
     Self {
       open_questions: AtomicU32::new(0),
       paused: AtomicBool::new(false),
+      sound: AtomicBool::new(false),
+      settings_at: Mutex::new(None),
       error_page: AtomicBool::new(false),
       pending_nav: Mutex::new(None),
       items: Mutex::new(None),
@@ -225,7 +231,12 @@ pub fn notify(app: &AppHandle, title: &str, body: &str, kind: &str) {
   if let Ok(mut p) = state.pending_nav.lock() {
     *p = Some((Instant::now(), route_for_kind(kind).to_string()));
   }
-  if let Err(e) = app.notification().builder().title(title).body(body).show() {
+  let mut builder = app.notification().builder().title(title).body(body);
+  if state.sound.load(Ordering::Relaxed) {
+    // "default" is the system notification sound on macOS.
+    builder = builder.sound("default");
+  }
+  if let Err(e) = builder.show() {
     log::warn!("notification failed: {e}");
   }
 }
@@ -293,6 +304,49 @@ pub fn refresh_tray(app: &AppHandle) {
     "Split Finder".to_string()
   };
   let _ = items.tray.set_tooltip(Some(tip));
+}
+
+/// Applies `settings.shell` and `settings.notifications.sound` from a GET /api/settings answer. Each switch is
+/// compared with what is in effect, so applying the same settings twice does nothing.
+pub fn apply_settings(app: &AppHandle, answer: &serde_json::Value) {
+  let Some(settings) = answer.get("settings") else { return };
+  let flag = |path: &str, default: bool| settings.pointer(path).and_then(|v| v.as_bool()).unwrap_or(default);
+  let menu_bar = flag("/shell/menuBarIcon", true);
+  let dock = flag("/shell/dockIcon", true);
+  let login = flag("/shell/launchAtLogin", false);
+  let state = app.state::<ShellState>();
+  state.sound.store(flag("/notifications/sound", false), Ordering::Relaxed);
+  if let Some(at) = answer.get("updatedAt").and_then(|v| v.as_str()) {
+    if let Ok(mut g) = state.settings_at.lock() {
+      *g = Some(at.to_string());
+    }
+  }
+
+  // The window must stay reachable: with the Dock icon hidden the menu bar icon is the way back in
+  // (and on other platforms the tray is the only one), so the last of the two cannot be turned off.
+  let dock_effective = cfg!(target_os = "macos") && dock;
+  let show_tray = menu_bar || !dock_effective;
+  if let Ok(guard) = state.items.lock() {
+    if let Some(items) = guard.as_ref() {
+      let _ = items.tray.set_visible(show_tray);
+    }
+  }
+  #[cfg(target_os = "macos")]
+  {
+    let policy = if dock {
+      tauri::ActivationPolicy::Regular
+    } else {
+      tauri::ActivationPolicy::Accessory
+    };
+    if let Err(e) = app.set_activation_policy(policy) {
+      log::warn!("dock icon: {e}");
+    }
+  }
+  if launch_at_login(app) != login {
+    if let Err(e) = set_launch_at_login(app, login) {
+      log::warn!("launch at login: {e}");
+    }
+  }
 }
 
 pub fn launch_at_login(app: &AppHandle) -> bool {

@@ -358,5 +358,6 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
     },
     keys: keysPresence(data.keys),
     firstRun: data.activity.lastScan === null && data.deals.bundles.length === 0,
+    settingsAt: data.settings.updatedAt,
   };
 }
