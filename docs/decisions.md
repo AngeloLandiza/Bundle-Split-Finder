@@ -474,3 +474,18 @@ of Ask AI returned `{queued: true}` and did nothing (askQueueOf skips a question
   for turning the default on, and `FOLLOW_UP_ASKS_MEASURED`: zero verified wrong after the loop. *Caveat:* the loop's
   value on the 19 is small because most unverified answers there are refused for `untied` or `leftover`, which no read
   settles; its real target is the live app's failed-tool and unread-model cases, which the key set holds few of.
+
+### Step 16, the follow-up loop measured (Nov 23 2026)
+`SPLIT_FINDER_DATA_DIR=<the installed app's data folder> npm run research:eval -- --model claude-opus-5-5 --follow-up
+--fresh-tools --run --max-cost 0.60` on the 19-question key (fixtures/research/followup-claude-opus-5-5.json; 8 Home Depot
+reads made free in the owner's Chrome, recorded in fixtures/research/tools/followup-chrome.json): the free reads and the
+code's re-check verified one more answer (328690510: Home Depot's own page for PCL525B, "ONE+ 18V Cordless Jig Saw (Tool
+Only)"), 0 wrong. The three paid follow-up asks ($0.1388 in all) each stayed "cannot tell". So the free reads and the
+re-check stay on, and the paid follow-up ask stays OFF (`FOLLOW_UP_ASKS_MEASURED` false): no measured gain for its cost.
+The script reads the agent token from `agentDataDir()`, which is `./output` unless SPLIT_FINDER_DATA_DIR is set; the first
+run failed every read for that reason and spent nothing.
+
+The owner's own example, PCL406424SB-A21701-A25RS51 (fixtures/homedepot-pages/followup-PCL406424SB-2026-11-23.json, read
+free through the app the same day): Home Depot sells PCL406424SB as its own product (item 328690521, the 2-tool kit) and
+A21701 (item 316546864, a 7-piece sandpaper set); it has no product for A25RS51. The app held none of these readings
+when it asked him: a three-part hyphen split went straight to a question instead of waiting for Home Depot's part pages.

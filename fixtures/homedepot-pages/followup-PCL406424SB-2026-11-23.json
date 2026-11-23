@@ -1,0 +1,509 @@
+{
+ "recordedAt": "2026-11-23T15:37:08Z",
+ "source": "Home Depot read free in the owner's Chrome through the installed app's worker jobs (search, researchPage)",
+ "bundle": {
+  "itemId": "335724135",
+  "model": "PCL406424SB-A21701-A25RS51"
+ },
+ "calls": [
+  {
+   "kind": "search",
+   "input": {
+    "query": "RYOBI PCL406424SB",
+    "page": 1
+   },
+   "status": "done",
+   "result": {
+    "sourceId": "hd-search:ryobi-pcl406424sb",
+    "label": "Home Depot search",
+    "url": "https://www.homedepot.com/s/RYOBI%20PCL406424SB",
+    "results": [
+     {
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with Compact Fixed Base Router and 5 in. Random Orbit Sander (Tools Only)",
+      "brand": "RYOBI",
+      "model": "PCL406424SB",
+      "itemId": "328690521",
+      "url": "https://www.homedepot.com/p/328690521"
+     },
+     {
+      "title": "ONE+ 18V Cordless 1/4 Sheet Sander (Tool Only)",
+      "brand": "RYOBI",
+      "model": "PCL401B",
+      "itemId": "318531842",
+      "url": "https://www.homedepot.com/p/318531842"
+     },
+     {
+      "title": "ONE+ 18V Cordless 5 in. Random Orbit Sander (Tool Only)",
+      "brand": "RYOBI",
+      "model": "PCL406B",
+      "itemId": "318531838",
+      "url": "https://www.homedepot.com/p/318531838"
+     },
+     {
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Compact Fixed Base Router & 5 in. Random Orbit Sander (Tools Only) w/ Accessories",
+      "brand": "RYOBI",
+      "model": "PCL406424SB-A21701-A25RS51",
+      "itemId": "335724135",
+      "url": "https://www.homedepot.com/p/335724135"
+     },
+     {
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with Random Orbit Sander and Corner Cat Finish Sander (Tools Only)",
+      "brand": "RYOBI",
+      "model": "PCL406416SB",
+      "itemId": "328690517",
+      "url": "https://www.homedepot.com/p/328690517"
+     },
+     {
+      "title": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+      "brand": "RYOBI",
+      "model": "PCL1600K2",
+      "itemId": "317987591",
+      "url": "https://www.homedepot.com/p/317987591"
+     },
+     {
+      "title": "ONE+ 18V Cordless Compact Fixed Base Router (Tool Only)",
+      "brand": "RYOBI",
+      "model": "PCL424B",
+      "itemId": "320033032",
+      "url": "https://www.homedepot.com/p/320033032"
+     },
+     {
+      "title": "ONE+ 18V Cordless 1/4 Sheet Sander Kit with 4.0 Ah Battery and Charger",
+      "brand": "RYOBI",
+      "model": "PCL401K1",
+      "itemId": "318531843",
+      "url": "https://www.homedepot.com/p/318531843"
+     },
+     {
+      "title": "ONE+ 18V Cordless 5 in. Random Orbit Sander (Tool Only) with 7-Piece 5 in. Random Orbit Sand Paper Assortment",
+      "brand": "RYOBI",
+      "model": "PCL406B-A21701",
+      "itemId": "321345980",
+      "url": "https://www.homedepot.com/p/321345980"
+     },
+     {
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with Compact Fixed Base Router and 5 in. Random Orbit Sander (Tools Only)",
+      "brand": "RYOBI",
+      "model": "PCL424B-PCL406B",
+      "itemId": "324615781",
+      "url": "https://www.homedepot.com/p/324615781"
+     }
+    ]
+   },
+   "error": null
+  },
+  {
+   "kind": "search",
+   "input": {
+    "query": "RYOBI A21701",
+    "page": 1
+   },
+   "status": "done",
+   "result": {
+    "sourceId": "hd-search:ryobi-a21701",
+    "label": "Home Depot search",
+    "url": "https://www.homedepot.com/s/RYOBI%20A21701",
+    "results": [
+     {
+      "title": "7-Piece 5 in. Random Orbit Sand Paper Assortment Set - 80, 120, and 220 Grit",
+      "brand": "RYOBI",
+      "model": "A21701",
+      "itemId": "316546864",
+      "url": "https://www.homedepot.com/p/316546864"
+     },
+     {
+      "title": "35-Piece 5 in. Random Orbit Sand Paper Assortment Set - 80, 120, and 220 Grit",
+      "brand": "RYOBI",
+      "model": "A21701-5",
+      "itemId": "316651634",
+      "url": "https://www.homedepot.com/p/316651634"
+     },
+     {
+      "title": "14-Piece 5 in. Random Orbit Sand Paper Assortment Set - 80, 120, and 220 Grit",
+      "brand": "RYOBI",
+      "model": "A21701-2",
+      "itemId": "316651275",
+      "url": "https://www.homedepot.com/p/316651275"
+     },
+     {
+      "title": "4-Piece Wood and Metal Oscillating Multi-Tool Blade Set",
+      "brand": "RYOBI",
+      "model": "A24402",
+      "itemId": "314892336",
+      "url": "https://www.homedepot.com/p/314892336"
+     },
+     {
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Compact Fixed Base Router & 5 in. Random Orbit Sander (Tools Only) w/ Accessories",
+      "brand": "RYOBI",
+      "model": "PCL406424SB-A21701-A25RS51",
+      "itemId": "335724135",
+      "url": "https://www.homedepot.com/p/335724135"
+     },
+     {
+      "title": "4-Piece Wood Oscillating Multi-Tool Blade Set",
+      "brand": "RYOBI",
+      "model": "A24401",
+      "itemId": "314892335",
+      "url": "https://www.homedepot.com/p/314892335"
+     },
+     {
+      "title": "ONE+ 18V Cordless 5 in. Random Orbit Sander (Tool Only)",
+      "brand": "RYOBI",
+      "model": "PCL406B",
+      "itemId": "318531838",
+      "url": "https://www.homedepot.com/p/318531838"
+     },
+     {
+      "title": "22-Piece Oscillating Blade Set",
+      "brand": "RYOBI",
+      "model": "A242201",
+      "itemId": "318905420",
+      "url": "https://www.homedepot.com/p/318905420"
+     },
+     {
+      "title": "4-Piece Wood Oscillating Multi-Tool Blade Set with 16-Piece Oscillating Multi-Tool Blade Accessory Set",
+      "brand": "RYOBI",
+      "model": "A24401-A241601",
+      "itemId": "330992051",
+      "url": "https://www.homedepot.com/p/330992051"
+     },
+     {
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with Random Orbit Sander and Corner Cat Finish Sander (Tools Only)",
+      "brand": "RYOBI",
+      "model": "PCL406416SB",
+      "itemId": "328690517",
+      "url": "https://www.homedepot.com/p/328690517"
+     }
+    ]
+   },
+   "error": null
+  },
+  {
+   "kind": "search",
+   "input": {
+    "query": "RYOBI A25RS51",
+    "page": 1
+   },
+   "status": "done",
+   "result": {
+    "sourceId": "hd-search:ryobi-a25rs51",
+    "label": "Home Depot search",
+    "url": "https://www.homedepot.com/s/RYOBI%20A25RS51",
+    "results": []
+   },
+   "error": null
+  },
+  {
+   "kind": "search",
+   "input": {
+    "query": "A25RS51",
+    "page": 1
+   },
+   "status": "done",
+   "result": {
+    "sourceId": "hd-search:a25rs51",
+    "label": "Home Depot search",
+    "url": "https://www.homedepot.com/s/A25RS51",
+    "results": []
+   },
+   "error": null
+  },
+  {
+   "kind": "researchPage",
+   "input": {
+    "itemId": "328690521"
+   },
+   "status": "done",
+   "result": {
+    "sourceId": "hd-page:328690521",
+    "label": "Home Depot page",
+    "url": "https://www.homedepot.com/p/328690521",
+    "sections": {
+     "title": "ONE+ 18V Cordless 2-Tool Combo Kit with Compact Fixed Base Router and 5 in. Random Orbit Sander (Tools Only)",
+     "model": "PCL406424SB",
+     "bullets": [
+      "Perfect Kit For Woodworking Projects",
+      "Includes: Router, Random Orbit Sander, And Accessories",
+      "Over 300 ONE+ Products \u2013 All Work With Any RYOBI ONE+ 18V Battery",
+      "Compact Router: 20,000-30,000 RPM for fast, powerful cutting",
+      "Compact Router: Variable speed dial provides precision and accuracy for multiple applications",
+      "Compact Router: Compact and ergonomic size provides comfort and control during extended use",
+      "Compact Router: Micro-adjustment dial provides easy and precise depth control",
+      "Compact Router: Quick release lever for easy depth adjustments and base removal",
+      "5\u201d Random Orbit Sander: 40% reduced vibration for maximum control",
+      "5\u201d Random Orbit Sander: 10,000 orbits per minute for a smooth, swirl-free finish",
+      "5\u201d Random Orbit Sander: Hook &amp; Loop sanding pad for easy sandpaper attachment",
+      "5\u201d Random Orbit Sander: On-board dust collection ensures a clean work space",
+      "5\u201d Random Orbit Sander: Multiple grip zones increases user comfort during extended use",
+      "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+      "3-year manufacturer's warranty",
+      "Includes: 18V Compact Router, 18V 5\" Random Orbit Sander, Collet&nbsp;Wrench, Vacuum Dust Chute, (3) Pieces of Sandpaper&nbsp;Assortment, Dust Collection Bag, and Operator's Manuals",
+      "Battery and charger sold separately",
+      "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>"
+     ],
+     "description": "The RYOBI 2-Tool Combo is the perfect solution for woodworking projects. The 18V Compact Router operates between 20,000 - 30,000 RPM, allowing users the ability to trim with enhanced power and accuracy in all applications. Easily change depth of cut with micro and macro depth adjustment. The new ONE+ Cordless Compact Router is 20% more compact (than P601) and the new ergonomic design helps to provide comfort and control during extended use. The 18V 5\u201d Random Orbit Sander features a fast 10,000 orbits per minute (OPM) that will provide a swirl-free finish to each new project. This sander delivers optimized control and comfort while sanding with 40% reduced vibration vs the previous model. Quickly and easily change sandpaper with the easy hook and loop sanding pad base.\u00a0This 18V ONE+ 2-Tool Combo is backed by the RYOBI 3-Year Manufacturer's Warranty and includes PCL424 18V Compact Router, PCL406 18V 5\" Random Orbit Sander, Collet\u00a0Wrench, Vacuum Dust Chute, (3) Pieces of Sandpaper\u00a0Assortment, Dust Collection Bag and Operator's Manuals. Battery and charger sold separately.",
+     "specifications": [
+      {
+       "name": "Battery Power Type",
+       "value": "Lithium Ion"
+      },
+      {
+       "name": "Battery Voltage (V)",
+       "value": "18V"
+      },
+      {
+       "name": "Charger Included",
+       "value": "Charger Not Included"
+      },
+      {
+       "name": "Color Family",
+       "value": "Green"
+      },
+      {
+       "name": "Cordless Tool Type",
+       "value": "Combo Kit"
+      },
+      {
+       "name": "Cordless/Corded",
+       "value": "Cordless"
+      },
+      {
+       "name": "Included",
+       "value": "Bits"
+      },
+      {
+       "name": "Motor Type",
+       "value": "Brushed"
+      },
+      {
+       "name": "Number of Tools (Bonus Tool Not Included)",
+       "value": "2"
+      },
+      {
+       "name": "Number of Total Batteries Included",
+       "value": "0"
+      },
+      {
+       "name": "Power Tool Features",
+       "value": "Depth Adjustment,Multiple Base,Variable Speed"
+      },
+      {
+       "name": "Returnable",
+       "value": "90-Day"
+      },
+      {
+       "name": "Tools Included",
+       "value": "Router,Sander"
+      },
+      {
+       "name": "Tools Product Type",
+       "value": "Power Tool"
+      },
+      {
+       "name": "Voltage (V)",
+       "value": "18 V"
+      },
+      {
+       "name": "Manufacturer Warranty",
+       "value": "3-Year Manufacturer's Warranty"
+      }
+     ]
+    }
+   },
+   "error": null
+  },
+  {
+   "kind": "researchPage",
+   "input": {
+    "itemId": "316546864"
+   },
+   "status": "done",
+   "result": {
+    "sourceId": "hd-page:316546864",
+    "label": "Home Depot page",
+    "url": "https://www.homedepot.com/p/316546864",
+    "sections": {
+     "title": "7-Piece 5 in. Random Orbit Sand Paper Assortment Set - 80, 120, and 220 Grit",
+     "model": "A21701",
+     "bullets": [
+      "Hook and Loop Backing For Quick Disc Change",
+      "Vented Hole Pattern for Maximum Dust Collection",
+      "Compatible with all 5 in. Random Orbit Sanders",
+      "Varying assortment of sandpaper grit - 80 grit for stripping, 120 grit for smoothing, and 220 grit for finishing",
+      "5 in. hook and loop backing allows for quick and convenient changing on and off of the tool",
+      "Pre-cut holes for uniform elimination of dust and wood chips",
+      "Applications: Wood, Metal, Drywall, Fiberglass, and Painted Surfaces",
+      "Compatible with most 5 in. random orbit sanders",
+      "Consumable item",
+      "Includes: (1) A21701 7-Piece 5 in. Random Orbit Sand Paper Assortment Set with (3) 80 grit,(2) 120 grit, and (2) 220 grit",
+      "<a href=\"https://www.homedepot.com/collection/Hardware/RYOBI-LINK-Modular-Storage/Family-319189263?omsid=317939878\" target=\"_blank\"><img src=\"https://inlinecontent.thdstatic.com/25T/ONE WORLD TECHNOLOGIES I/RYOBILINK.jpg\"></a>",
+      "<a href=\"https://www.homedepot.com/b/RYOBI/N-5yc1vZm5d\" target=\"_blank\"><img src=\"https://inlinecontent.thdstatic.com/25H/ONE WORLD TECHNOLOGIES I/2959164.jpg\"></a>"
+     ],
+     "description": "RYOBI 5\" Random Orbit Sand Paper is compatible with all 5\" random orbit sanders. This set comes with multiple grit options (80 grit/120 grit/220 grit) to help tackle most jobs. The hook and loop backing on each pad allows for quick and convenient changing on and off of the tool. Each pad features pre-cut holes for uniform elimination of dust and wood chips. This set is a great replacement for when it's time to upgrade your previous sanding pad. Ideal for Wood, Metal, Drywall, Fiberglass and painted surfaces.",
+     "specifications": [
+      {
+       "name": "Grit",
+       "value": "80;120;220"
+      },
+      {
+       "name": "Kit",
+       "value": "No"
+      },
+      {
+       "name": "Package Quantity",
+       "value": "7"
+      },
+      {
+       "name": "Power Tool Accessory Type",
+       "value": "Sanding/Grinding/Polishing Accessory"
+      },
+      {
+       "name": "Returnable",
+       "value": "90-Day"
+      },
+      {
+       "name": "Sanding Grade",
+       "value": "Multi-Grade"
+      },
+      {
+       "name": "Sanding, Grinding and Polishing Accessory Type",
+       "value": "Sandpaper"
+      },
+      {
+       "name": "Sandpaper Type",
+       "value": "RYOBI 5 in. Random Orbit Sand Paper Assortment"
+      },
+      {
+       "name": "Tools Product Type",
+       "value": "Power Tool"
+      },
+      {
+       "name": "Product Height (in.)",
+       "value": "0.354 in"
+      },
+      {
+       "name": "Product Length (in.)",
+       "value": "8.661 in"
+      },
+      {
+       "name": "Product Width (in.)",
+       "value": "5.906 in"
+      },
+      {
+       "name": "Size (in.)",
+       "value": "5"
+      }
+     ]
+    }
+   },
+   "error": null
+  },
+  {
+   "kind": "researchPage",
+   "input": {
+    "itemId": "335724135"
+   },
+   "status": "done",
+   "result": {
+    "sourceId": "hd-page:335724135",
+    "label": "Home Depot page",
+    "url": "https://www.homedepot.com/p/335724135",
+    "sections": {
+     "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Compact Fixed Base Router & 5 in. Random Orbit Sander (Tools Only) w/ Accessories",
+     "model": "PCL406424SB-A21701-A25RS51",
+     "bullets": [
+      "Includes: 5\" Random Orbit Sander and Compact Router",
+      "Includes: Accessories and Sandpaper Assortments",
+      "Over 300 ONE+ Products - All Work With Any RYOBI ONE+ 18V Battery",
+      "Compact Router: 20,000-30,000 RPM for fast, powerful cutting",
+      "Compact Router: Variable speed dial provides precision and accuracy for multiple applications",
+      "Compact Router: Compact and ergonomic size provides comfort and control during extended use",
+      "Compact Router: Micro-adjustment dial provides easy and precise depth control",
+      "Compact Router: Quick release lever for easy depth adjustments and base removal",
+      "5\u201d Random Orbit Sander: 40% reduced vibration for maximum control",
+      "5\u201d Random Orbit Sander: 10,000 orbits per minute for a smooth, swirl-free finish",
+      "5\u201d Random Orbit Sander: Hook &amp; Loop sanding pad for easy sandpaper attachment",
+      "5\u201d Random Orbit Sander: On-board dust collection ensures a clean work space",
+      "5\u201d Random Orbit Sander: Multiple grip zones increases user comfort during extended use",
+      "Download the all-inclusive RYOBI app for registration in seconds, a personalized digital tool box, exclusive access, customer service, and more",
+      "Part of the RYOBI 18V ONE+ System of over 300 Cordless Products",
+      "3-year manufacturer\u2019s warranty",
+      "Includes: 18V ONE+ Cordless Compact Router, (1) collet wrench, (1) vacuum Dust Chute, 18V 5\" Random Orbit Sander, (3) Pieces of Sandpaper&nbsp;Assortment, Dust Collection Bag, and Operator's Manuals",
+      "Battery and charger sold separately",
+      "Includes: (1) A21701 7-Piece 5 in. Random Orbit Sand Paper Assortment Set with (3) 80 grit,(2) 120 grit, and (2) 220 grit",
+      "Includes: A25RS51 1/4 in., 3/8 in., 1/2 in., 5/8 in. straight router bits with a bonus 5/16 in. bit",
+      "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>"
+     ],
+     "description": "RYOBI introduces the ONE+ 18V Cordless 2-Tool Combo Kit w/ Random Orbit Sander & Compact Fixed Base Router (Tools Only) w/ Assorted Sandpaper. The 18V 5\u201d Random Orbit Sander features a fast 10,000 orbits per minute (OPM) that will provide a swirl-free finish to each new project. This sander delivers optimized control and comfort while sanding with 40% reduced vibration vs the previous model. Quickly and easily change sandpaper with the easy hook and loop sanding pad base. The 18V ONE+ Cordless Compact Router operates between 20,000 - 30,000 RPM, allowing users the ability to trim with enhanced power and accuracy in all applications. Easily change depth of cut with micro and macro depth adjustment. This 18V ONE+ 2-Tool Combo is backed by the RYOBI 3-Year Manufacturer's Warranty and includes the PCL424 18VCordless Compact Router includes a collet wrench, vacuum dust chute, PCL406 18V 5\" Random Orbit Sander, (3) Pieces of Sandpaper Assortment, Dust Collection Bag, and Operator's Manuals Battery and charger sold separately.",
+     "specifications": [
+      {
+       "name": "Battery Power Type",
+       "value": "Lithium Ion"
+      },
+      {
+       "name": "Battery Voltage (V)",
+       "value": "18V"
+      },
+      {
+       "name": "Charger Included",
+       "value": "Charger Not Included"
+      },
+      {
+       "name": "Color Family",
+       "value": "Green"
+      },
+      {
+       "name": "Cordless Tool Type",
+       "value": "Combo Kit"
+      },
+      {
+       "name": "Cordless/Corded",
+       "value": "Cordless"
+      },
+      {
+       "name": "Included",
+       "value": "Bits"
+      },
+      {
+       "name": "Motor Type",
+       "value": "Brushed"
+      },
+      {
+       "name": "Number of Tools (Bonus Tool Not Included)",
+       "value": "2"
+      },
+      {
+       "name": "Number of Total Batteries Included",
+       "value": "0"
+      },
+      {
+       "name": "Power Tool Features",
+       "value": "Depth Adjustment,Multiple Base,Variable Speed"
+      },
+      {
+       "name": "Returnable",
+       "value": "90-Day"
+      },
+      {
+       "name": "Tools Included",
+       "value": "Router,Sander"
+      },
+      {
+       "name": "Tools Product Type",
+       "value": "Power Tool"
+      },
+      {
+       "name": "Voltage (V)",
+       "value": "18 V"
+      },
+      {
+       "name": "Manufacturer Warranty",
+       "value": "3-Year Manufacturer's Warranty"
+      }
+     ]
+    }
+   },
+   "error": null
+  }
+ ]
+}
