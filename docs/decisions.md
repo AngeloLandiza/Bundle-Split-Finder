@@ -407,3 +407,70 @@ is being written in parallel (all fields optional; `api/types.ts`): `brief.check
   read, already working) instead of doing nothing. Ask AI is also offered again after "could not tell".
 - `?mock=real-ai` shows all four follow-up states on copies of the real PCL406424SB question; what the app "tried" there is
   invented (marked in `api/mockFollowUp.ts`).
+### Step 16: the follow-up loop, the app does the reads it used to tell the owner to do (Nov 23 2026)
+The owner, on the card for PCL406424SB-A21701-A25RS51 ("Next: On the Home Depot page, see whether the Includes list names
+the accessories sold as A21701 and A25RS51"): "if I'm told to do this… why can't an AI pipeline do it for me". Two facts
+from the live app: the first ask said cannot tell because its Home Depot search failed on a cold tab, and a second press
+of Ask AI returned `{queued: true}` and did nothing (askQueueOf skips a question that has a suggestion).
+- *Tasks come from structured records only, never from a sentence* (`core/src/research/followUp.ts` deriveTasks). The
+  verifier now returns, beside each refusal a free read could change, a `VerifyGap` (`model_unconfirmed`, `kind_unknown`,
+  `kit_contents`, `untied`, `leftover`, `bundle_unread`) on the unverified result's `gaps`; the research trace keeps each
+  failed client call with its input (`failedCalls`). Mapping: `model_unconfirmed` → `catalog_lookup` (the stored catalog,
+  local) and `confirm_model(brand, model)` (Home Depot search for "<brand> <model>", the one row whose own model field is
+  the model, exactly or by sameModel, then its page by item id: the part-price reader's rule, as Chrome jobs);
+  `kind_unknown` → `confirm_model`; `kit_contents` (a kit part whose own page is not among the sources) → `read_kit_page`
+  (by the catalog's item id, else found as confirm_model finds a page); `bundle_unread`, a `missing:` lack, or no bundle
+  page with lines → `read_bundle_page`; a failed call → `tool_failed` (that same call once more; a failed search for
+  "<brand> <model>" of a model the question names is left to confirm_model); a `kit:` lack → `read_kit_page`; a model the
+  question's readings or the answer name that no ledger product or catalog entry shows → `confirm_model`. `untied` and
+  `leftover` have no read that settles them: they are told to the follow-up ask. Each task runs once per question.
+  Keepa is not used here: the catalog check already reads Amazon's record for every match question (`catalogCheck.ts`).
+- *A round*: the tasks (Chrome reads first, at most six; the catalog is local), each result kept as a ledger entry with its
+  link (`FollowUpState.entries`) and a plain line for the card (`tried`: "Searched Home Depot for A21701 — found: …", the
+  page's link); (i) the answer checked again by code with no model call, exactly as lever 1 (a model's page or row is a
+  `reading`, products only; a kit part's page keeps its lines; the bundle's page joins only when the ask had none); (ii) only
+  when still not verified and the evidence key (`followUpKey`: every entry read, an empty search included, a failed read not)
+  is one no follow-up ask saw, ONE research ask (`RESEARCH_PROMPT_VERSION + '+followup.1'`): the same system prompt, the
+  stored evidence, the sources the first ask read with its own tools, the loop's sources (ids "fu-…"), and a `<follow_up>`
+  block written by code (`followUpNotes`: what the first ask came to, each new source by id and model, which models Home
+  Depot shows no product for, and the gaps in fixed sentences; never a page's words, which stay in the evidence as data).
+  Its answer goes through verifyResearch: no new acceptance path. At most `MAX_FOLLOW_UP_ROUNDS` = 2 follow-up asks per
+  question, each on new evidence, each under the monthly cap (`estimatedQuestionCost`; an unpriced model is not asked).
+  Measured free on the real case's shape (`core/test/research-followup.test.ts`, constructed rows: no recording of those
+  three models exists): the loop reads the three models, asks once, the answer "PCL406424SB + A21701 + A25RS51" is refused
+  (a 2-tool combo the catalog does not know as a kit, the PO's rule), round 2 has nothing new, and the question comes back
+  `gave_up` with its four `tried` lines.
+- *Where it runs* (`agent/followUp.ts`, two hooks in `agent/work.ts`): after every AI pass (scan, Ask about all), for the
+  open split questions whose live answer is unverified or cannot tell and whose loop has not run for that answer, with
+  Chrome connected: the free reads and the code's check always; follow-up asks only when `ai.reaskOnNewEvidence` is true.
+  That setting is lever 2's, now this loop (lever 2's `reaskDue` is no longer called; its stamps `evidenceKey`/`lacks` feed
+  the tasks). **Default OFF**: whether follow-up asks keep zero wrong needs paid calls; the harness is ready (below). An
+  owner's press of Ask AI runs the loop with asks allowed whatever the setting: the press is his yes to an ask's cost.
+  A follow-up ask's answer is its own suggestion (`followUpOf` names the record it asked again; `followUp` travels with it).
+  Autopilot leaves a follow-up ask's verified answer to the owner while `FOLLOW_UP_ASKS_MEASURED` is false; a code check
+  that verifies with what was read is lever 1's and Autopilot's rules apply as to any.
+- *Ask AI is never a silent no-op* (`POST /api/review/:id/ask`, body `{ force?: boolean }`, `AskResponse { queued, reason?,
+  canForce?, costUsd? }`, `askPlan`): no suggestion yet → an ask; the loop already queued or running → "The app is already
+  working on this question."; `force` → a fresh ask under the cap (`reaskOf` names the record); an unsettled split answer
+  with a task left or reads no ask saw → the loop; otherwise "Nothing new to read since the last answer; asking again would
+  cost about $0.08." with `canForce: true` and the estimate. No key, Chrome closed (split), the cap or a scan running: the
+  reason, no `canForce`.
+- *The card's check line is only for a person* (`core/src/brief/who.ts`, `view.ts cardCheck`). `BriefCheck.who` is set by
+  code: a check whose words are a page or Includes read, a model-number lookup (a model token) or a listing/catalog lookup is
+  `app`; anything else, and every eBay check (no tool reads an eBay listing for him), is `owner`. An `app` check is never
+  shown as an instruction: GET /api/review puts in its place what the app is doing (`followUp.doing`), did ("The app already
+  read what it could for this (4 steps); …"), or did to verify; its link stays. A brief stored before this has no `who` and
+  is classed at view time. The rule is deliberately wide (most checks are reads): an owner check is what remains. While a
+  follow-up is queued or running the question is left out of "Needs you" (`counts.review`) and counted in
+  `counts.reviewWorking`; it comes back when the loop is done or gave up, with `tried` filled.
+- *Measurement* (`npm run research:eval -- --model claude-opus-5-5 --follow-up --dry-run | --run --max-cost <usd> | --replay
+  [--fresh-tools]`, `scripts/research-followup-eval.ts`): the first asks are the recorded run replayed free; "before" and
+  "after" are scored against the key, with what each question's loop read. Dry run today (free, recorded reads only):
+  before 7 right / 0 wrong / 8 unverified / 4 cannot tell; after the free part 8 / 0 / 7 / 4 (328690510 PCL500B + PCL525B,
+  by the code's check once PCL525B's row is read, the key agrees); 2 questions would be asked again, about $0.15, at most
+  $0.29. With `--fresh-tools` the five reads no recording holds (searches for DEWALT DCB346-3, RYOBI PCL525B, PSK12B,
+  PSK00B; page 326415387) are made in the owner's Chrome through the running app's worker jobs and recorded on first use in
+  `fixtures/research/tools/followup-chrome.json`; up to 4 questions may then be asked, about $0.29, at most $0.58. The bar
+  for turning the default on, and `FOLLOW_UP_ASKS_MEASURED`: zero verified wrong after the loop. *Caveat:* the loop's
+  value on the 19 is small because most unverified answers there are refused for `untied` or `leftover`, which no read
+  settles; its real target is the live app's failed-tool and unread-model cases, which the key set holds few of.
