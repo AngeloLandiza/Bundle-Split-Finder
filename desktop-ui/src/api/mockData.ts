@@ -25,7 +25,16 @@ const ago = (min: number) => new Date(NOW - min * 60_000).toISOString();
 const ahead = (min: number) => new Date(NOW + min * 60_000).toISOString();
 
 export const SETTINGS: AppSettings = {
-  autopilot: true,
+  autopilot: false,
+  appearance: { theme: 'system', accent: 'system', density: 'regular' },
+  notifications: {
+    kinds: { review: true, deal: true, autopilot: true, scan: true, error: true },
+    sound: false,
+    quietHours: { enabled: false, from: '22:00', to: '07:00' },
+    digest: 'each-run',
+    morningAt: '08:00',
+  },
+  shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false },
   ebaySettings: { judgeModel: 'claude-haiku-4-5', listingsJudgedPerScan: 20 },
   settings: {
     schedule: { mode: 'daily', at: '06:00' },
