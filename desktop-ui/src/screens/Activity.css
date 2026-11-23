@@ -59,33 +59,62 @@
   color: var(--loss);
 }
 
-.cell-small {
+.arow-say {
+  color: var(--label);
   font-size: 12px;
-  white-space: nowrap;
 }
 
-.activity .col-time {
-  width: 156px;
+.arow-outcome {
+  color: var(--label-2);
+  font-weight: 400;
 }
 
-.activity .col-fig {
-  width: 84px;
+.arow-outcome-bad {
+  color: var(--loss);
+  font-weight: 600;
 }
 
-.run-what {
-  display: block;
+/* A day heading is a row in the same box, quiet, so the list is not a box in a box. */
+.arow-day {
+  padding: 8px 12px 2px;
 }
 
-.run-summary {
-  display: block;
+/* The hairline goes between days, not between a heading and its first row. */
+.rows > .arow-day + li::before {
+  display: none;
+}
+
+.arow-day h3 {
   font-size: 11px;
   line-height: 14px;
+  font-weight: 600;
   color: var(--label-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.run-failed {
-  font-weight: 600;
+/* What needs him is tinted and carries a warning mark, so a failure is not read as history. */
+.arow-attention {
+  background: var(--attention-bg);
+}
+
+.arow-problem {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.arow-glyph {
+  flex: none;
+  margin-top: 1px;
+  color: var(--attention);
+}
+
+.arow-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding-left: 16px;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--label-2);
 }

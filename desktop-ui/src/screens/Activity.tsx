@@ -1,18 +1,18 @@
-import { useEffect } from 'react';
+import { Fragment, useEffect, type ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
 import type { ActivityError, AutopilotEntry, OwnerAnswer, Run } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
+import { Fold } from '../components/Fold';
+import { Glyph } from '../components/Glyph';
 import { Section } from '../components/Layout';
 import { Page } from '../components/Page';
 import { EmptyState, LoadError, LoadingState } from '../components/States';
+import { SourceLink } from '../components/Source';
 import { Tag } from '../components/Tag';
+import { byDay, clock, linkPieces, runWords } from '../lib/activity';
 import { count, money, plural, usdSpend, when } from '../lib/format';
 import { KIND_LABEL } from './reviewModel';
-import '../components/Table.css';
 import './Activity.css';
-
-const KIND: Record<Run['kind'], string> = { scan: 'Scan', ask: 'Ask AI', lookup: 'Look up', verify: 'Verify' };
-const RESULT: Record<Run['result'], string> = { finished: 'Finished', stopped: 'Stopped', limit: 'Stopped at the limit', failed: 'Failed', running: 'Running' };
 
 /** What the agent did: errors to act on, Autopilot's answers with Undo, and every run with its spend. */
 export function ActivityScreen() {
@@ -51,17 +51,13 @@ export function ActivityScreen() {
             {d.answers.length === 0 ? (
               <EmptyState compact title="No answers saved yet" cause="An answer you save in Review is listed here, newest first, with an Undo that opens the question again." />
             ) : (
-              <ul className="rows">
-                {d.answers.map((a) => (
-                  <OwnerAnswerRow key={a.id} a={a} />
-                ))}
-              </ul>
+              <DayRows items={d.answers} at={(a) => a.at} row={(a) => <OwnerAnswerRow key={a.id} a={a} />} />
             )}
           </Section>
         ) : null}
         {d ? (
           <Section
-            label="Autopilot"
+            label="Autopilot applied"
             count={d.autopilot.length}
             flush={d.autopilot.length === 0}
             note={autopilot === false && d.autopilot.length > 0 ? <>Autopilot is off now. Verified AI answers wait in Review for your approval. Turn it on in {toSettings}.</> : undefined}
@@ -75,11 +71,7 @@ export function ActivityScreen() {
                 <EmptyState compact title="Nothing applied by Autopilot" cause="Answers it applies are listed here with an Undo. Everything it does not apply waits in Review." />
               )
             ) : (
-              <ul className="rows">
-                {d.autopilot.map((a) => (
-                  <AutopilotRow key={a.id} a={a} />
-                ))}
-              </ul>
+              <DayRows items={d.autopilot} at={(a) => a.at} row={(a) => <AutopilotRow key={a.id} a={a} />} />
             )}
           </Section>
         ) : null}
@@ -88,68 +80,7 @@ export function ActivityScreen() {
             {d.runs.length === 0 ? (
               <EmptyState compact title="No runs yet" cause="Scans, lookups and AI runs are listed here with what each one spent." />
             ) : (
-              <div className="table-wrap">
-                <table className="table table-plain">
-                  <caption className="sr-only">Runs, newest first</caption>
-                  <colgroup>
-                    <col className="col-time" />
-                    <col className="col-what" />
-                    <col className="col-fig" />
-                    <col className="col-fig" />
-                    <col className="col-fig" />
-                    <col className="col-result" />
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th scope="col" className="th-left">
-                        Started
-                      </th>
-                      <th scope="col" className="th-left">
-                        Run
-                      </th>
-                      <th scope="col" className="th-right">
-                        Searches
-                      </th>
-                      <th scope="col" className="th-right">
-                        Keepa
-                      </th>
-                      <th scope="col" className="th-right">
-                        AI
-                      </th>
-                      <th scope="col" className="th-left">
-                        Result
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {d.runs.map((r) => (
-                      <tr key={r.id}>
-                        <td className="cell-small">{when(r.startedAt)}</td>
-                        <td>
-                          <span className="run-what">
-                            {KIND[r.kind]}
-                            <span className="muted"> · {r.byYou ? 'by you' : 'scheduled'}</span>
-                          </span>
-                          <span className="run-summary">{r.summary}</span>
-                          {r.error && r.error !== r.summary ? <span className="run-summary">{r.error}</span> : null}
-                          {r.steps
-                            .filter((st) => st.state === 'failed' || st.state === 'skipped')
-                            .map((st) => (
-                              <span key={st.label} className="run-summary">
-                                {st.state === 'failed' ? 'Failed step' : 'Skipped'}: {st.label}
-                                {st.figure ? ` · ${st.figure}` : ''}
-                              </span>
-                            ))}
-                        </td>
-                        <td className="td-right fig cell-small">{count(r.searches)}</td>
-                        <td className="td-right fig cell-small">{count(r.keepaTokens)}</td>
-                        <td className="td-right fig cell-small">{r.aiUsd ? money(r.aiUsd) : '—'}</td>
-                        <td className="cell-small">{r.result === 'finished' ? RESULT[r.result] : <span className="run-failed">{RESULT[r.result]}</span>}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DayRows items={d.runs} at={(r) => r.startedAt} row={(r) => <RunRow key={r.id} r={r} />} />
             )}
           </Section>
         ) : null}
@@ -161,10 +92,13 @@ export function ActivityScreen() {
 function ErrorRow({ e }: { e: ActivityError }) {
   const retry = useAction(api.retry);
   return (
-    <li className="arow">
+    <li className="arow arow-attention">
       <span className="arow-time">{when(e.at)}</span>
       <div className="arow-main">
-        <p>{e.sentence}</p>
+        <p className="arow-problem">
+          <Glyph name="warning" size={14} className="arow-glyph" />
+          <span>{e.sentence}</span>
+        </p>
         {retry.error ? <p className="arow-sub arow-error" role="alert">{retry.error}</p> : null}
       </div>
       {e.retry ? (
@@ -182,7 +116,7 @@ function OwnerAnswerRow({ a }: { a: OwnerAnswer }) {
   const undo = useAction(api.undoAnswer);
   return (
     <li className="arow">
-      <span className="arow-time">{when(a.at)}</span>
+      <span className="arow-time">{clock(a.at)}</span>
       <div className="arow-main">
         <p className="arow-title">{a.title}</p>
         <p className="arow-sub">
@@ -212,7 +146,7 @@ function AutopilotRow({ a }: { a: AutopilotEntry }) {
   const undo = useAction(api.undo);
   return (
     <li className="arow">
-      <span className="arow-time">{when(a.at)}</span>
+      <span className="arow-time">{clock(a.at)}</span>
       <div className="arow-main">
         <p className="arow-title">
           {a.bundleId ? (
@@ -237,16 +171,22 @@ function AutopilotRow({ a }: { a: AutopilotEntry }) {
               <span className="code">{a.model}</span>
             </>
           ) : null}
-          {' · Autopilot applied '}
-          <span className="code arow-answer">{a.applied}</span>
-          {a.by ? (
-            <>
-              {' · suggested by '}
-              <span className="code">{a.by}</span>
-            </>
-          ) : null}
         </p>
-        {a.verifiedBy.length ? <p className="arow-sub">Checked by the code: {a.verifiedBy.join('; ')}.</p> : null}
+        <p className="arow-sub">
+          Autopilot applied <span className="code arow-answer">{a.applied}</span>
+          {a.by ? <> · AI suggestion from <span className="code">{a.by}</span></> : null}
+        </p>
+        {a.verifiedBy.length ? (
+          <Fold id={`checked-${a.id}`} title="What the code checked" aside={plural(a.verifiedBy.length, 'check', 'checks')} sub>
+            <ul className="arow-checks">
+              {a.verifiedBy.map((line, i) => (
+                <li key={i}>
+                  {linkPieces(line).map((p, k) => (p.url ? <SourceLink key={k} source={{ label: p.text, url: p.url }} /> : <span key={k}>{p.text}</span>))}
+                </li>
+              ))}
+            </ul>
+          </Fold>
+        ) : null}
         {a.undone ? <p className="arow-sub">Undone. The question is back in Review.</p> : null}
         {!a.undone && !a.undoable ? <p className="arow-sub">You changed this answer since, so it cannot be undone from here.</p> : null}
         {undo.error ? <p className="arow-sub arow-error" role="alert">{undo.error}</p> : null}
@@ -258,6 +198,47 @@ function AutopilotRow({ a }: { a: AutopilotEntry }) {
           Undo
         </Button>
       ) : null}
+    </li>
+  );
+}
+
+/** Items newest first under a heading for each day, in one list: the heading is a row, not a box inside the box. */
+function DayRows<T>({ items, at, row }: { items: T[]; at: (item: T) => string; row: (item: T) => ReactNode }) {
+  return (
+    <ul className="rows">
+      {byDay(items, at).map((g) => (
+        <Fragment key={g.key}>
+          <li className="arow-day">
+            <h3>{g.label}</h3>
+          </li>
+          {g.items.map((item) => row(item))}
+        </Fragment>
+      ))}
+    </ul>
+  );
+}
+
+/** A run as a sentence: what it was, how it ended, what it used; the agent's own words under it, a failure in its own colour. */
+function RunRow({ r }: { r: Run }) {
+  const w = runWords(r);
+  const failedSteps = r.steps.filter((st) => st.state === 'failed' || st.state === 'skipped');
+  return (
+    <li className={w.problem ? 'arow arow-attention' : 'arow'}>
+      <span className="arow-time">{clock(r.startedAt)}</span>
+      <div className="arow-main">
+        <p className="arow-title">
+          {w.title} <span className={w.problem ? 'arow-outcome arow-outcome-bad' : 'arow-outcome'}>· {w.outcome.toLowerCase()}</span>
+        </p>
+        {r.summary ? <p className="arow-sub arow-say">{r.summary}</p> : null}
+        {r.error && r.error !== r.summary ? <p className="arow-sub arow-error">{r.error}</p> : null}
+        {failedSteps.map((st) => (
+          <p key={st.label} className="arow-sub">
+            {st.state === 'failed' ? 'Did not finish' : 'Skipped'}: {st.label}
+            {st.figure ? ` · ${st.figure}` : ''}
+          </p>
+        ))}
+        {w.spent ? <p className="arow-sub">{w.spent}.</p> : null}
+      </div>
     </li>
   );
 }

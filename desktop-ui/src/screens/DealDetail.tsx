@@ -168,7 +168,7 @@ function Detail({ d }: { d: DealDetail }) {
         ) : null}
 
         {d.parts.length ? (
-          <Fold id="parts" title="Parts" aside={summary ?? plural(d.parts.length, 'part', 'parts')} defaultOpen={d.parts.length <= 4}>
+          <Fold id="parts" title="Parts" aside={allConfirmed ? `${d.parts.length}, all on confirmed listings` : plural(d.parts.length, 'part', 'parts')} defaultOpen={d.parts.length <= 4}>
             {d.splitEvidence?.length ? (
               <Fold id="evidence" title="How we know what is inside" sub>
                 <ul className="evidence-list">
