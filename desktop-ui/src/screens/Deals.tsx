@@ -129,6 +129,16 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
           })
           .catch(failed);
         return;
+      case 'watch':
+      case 'unwatch':
+        api
+          .watch(r.id, id === 'watch')
+          .then(() => {
+            setSaid({ tone: 'quiet', text: id === 'watch' ? `Watching ${r.model}.` : `Stopped watching ${r.model}.` });
+            reload();
+          })
+          .catch(failed);
+        return;
       case 'lookup':
         api.lookUp(r.id).then(() => setSaid({ tone: 'quiet', text: `Looked up ${r.model}.` })).catch(failed);
         return;

@@ -12,7 +12,7 @@ const state = (over: { status?: AppState['agent']['status']; keys?: Partial<AppS
 });
 
 const deal = (id: string, model: string, title: string, itemId: string | null = null): DealRow =>
-  ({ id, title, brand: 'RYOBI', model, itemId, link: null, section: 'confirmed', price: 100, off: 10, matchState: null, profit: 10, roi: 0.1, roiRange: null, needsAnswer: false, updatedAt: '2026-11-22T00:00:00Z', lookup: null }) as DealRow;
+  ({ id, title, brand: 'RYOBI', model, itemId, link: null, section: 'confirmed', price: 100, off: 10, matchState: null, profit: 10, roi: 0.1, roiRange: null, needsAnswer: false, updatedAt: '2026-11-22T00:00:00Z', lookup: null, watched: false }) as DealRow;
 
 const titles = (items: PaletteItem[]) => items.map((i) => i.title);
 
@@ -51,13 +51,14 @@ describe('the palette list', () => {
   it('shows the screens, the Deals views and the actions when nothing is typed, and not the deals or the panes', () => {
     const groups = rank(all, '');
     expect(groups.map((g) => g.section)).toEqual(['Go to', 'Actions']);
-    expect(titles(groups[0]!.items)).toEqual(['Today', 'Deals', 'Deals · Confirmed', 'Deals · Needs an answer', 'Deals · Waiting for a lookup', 'Deals · Losing money', 'Review', 'Activity', 'Settings']);
+    expect(titles(groups[0]!.items)).toEqual(['Today', 'Deals', 'Deals · Confirmed', 'Deals · Needs an answer', 'Deals · Waiting for a lookup', 'Deals · Losing money', 'Review', 'Activity', 'Preferences']);
   });
 
   it('shows the Preferences panes once a word names them', () => {
-    const settings = rank(all, 'fees')[0]!;
-    expect(settings.section).toBe('Go to');
-    expect(settings.items[0]!.title).toBe('Settings · Fees');
+    const prefs = rank(all, 'notif')[0]!;
+    expect(prefs.section).toBe('Go to');
+    expect(prefs.items[0]).toMatchObject({ title: 'Preferences · Notifications', action: { type: 'preferences', tab: 'notifications' } });
+    expect(goToItems(true).find((i) => i.id === 'go:settings')!.action).toEqual({ type: 'preferences', tab: 'general' });
   });
 
   it('finds a deal by model, by item number, and by title', () => {
@@ -70,7 +71,7 @@ describe('the palette list', () => {
   it('puts the better match first and keeps the sections in order', () => {
     const groups = rank(all, 'scan');
     expect(groups.map((g) => g.section)).toEqual(['Go to', 'Actions']);
-    expect(titles(groups[0]!.items)).toContain('Settings · Scanning');
+    expect(titles(groups[0]!.items)).toContain('Preferences · Scanning');
     expect(groups[1]!.items[0]!.title).toBe('Scan now');
   });
 
@@ -113,6 +114,14 @@ describe('the actions he may run', () => {
     expect(approve.title).toBe('Approve all 3 verified');
     expect(approve.confirm).toBe('Approve 3 verified AI answers? Each is applied as your answer.');
     expect(actionItems({ state: state(), askable: 0, verified: 0, deals: 0 }).some((i) => i.id === 'cmd:approve-all')).toBe(false);
+  });
+  it('offers Watch or Unwatch for the deal that is open, and none when no deal is open', () => {
+    const watch = actionItems({ state: state(), askable: 0, verified: 0, deals: 1, deal: { id: 'hd-1', model: 'PCL1600K2', watched: false } }).find((i) => i.id === 'cmd:watch')!;
+    expect(watch.title).toBe('Watch PCL1600K2');
+    expect(watch.action).toEqual({ type: 'command', command: 'watch', dealId: 'hd-1' });
+    const un = actionItems({ state: state(), askable: 0, verified: 0, deals: 1, deal: { id: 'hd-1', model: 'PCL1600K2', watched: true } });
+    expect(un.map((i) => i.title)).toContain('Unwatch PCL1600K2');
+    expect(ids(actionItems({ state: state(), askable: 0, verified: 0, deals: 1 }))).not.toContain('watch');
   });
   it('has nothing to run before the agent has answered', () => {
     expect(actionItems({ state: null, askable: 0, verified: 0, deals: 0 })).toEqual([]);

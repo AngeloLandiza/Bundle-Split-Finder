@@ -210,6 +210,7 @@ function build(seed: DealSeed): { row: DealRow; detail: DealDetail } {
     model: seed.model,
     itemId: seed.itemId,
     link,
+    watched: false,
     section: seed.section,
     price: seed.price,
     off,

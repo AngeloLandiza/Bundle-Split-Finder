@@ -17,7 +17,7 @@ export interface MenuItem {
   separatorBefore?: boolean;
 }
 
-export type DealMenuId = 'open' | 'open-hd' | 'copy-model' | 'copy-asins' | 'lookup' | 'verify' | 'review';
+export type DealMenuId = 'open' | 'open-hd' | 'copy-model' | 'copy-asins' | 'watch' | 'unwatch' | 'lookup' | 'verify' | 'review';
 export type QuestionMenuId = 'ask' | 'approve' | 'open-deal' | 'open-hd' | 'copy-question';
 export type PartMenuId = 'open-amazon' | 'copy-asin' | 'confirm' | 'remove';
 
@@ -30,7 +30,7 @@ export function dealMenu(row: DealRow, o: { scanRunning: boolean }): MenuItem[] 
   const items: MenuItem[] = [{ id: 'open', label: 'Open', hint: '↩' }];
   if (row.link) items.push({ id: 'open-hd', label: 'Open on Home Depot' });
   items.push({ id: 'copy-model', label: 'Copy model', separatorBefore: true }, { id: 'copy-asins', label: 'Copy ASINs' });
-  const more: MenuItem[] = [];
+  const more: MenuItem[] = [row.watched ? { id: 'unwatch', label: 'Unwatch' } : { id: 'watch', label: 'Watch' }];
   if (row.lookup) {
     more.push({ id: 'lookup', label: `Look up · ${plural(row.lookup.searches, 'search', 'searches')}`, ...(o.scanRunning ? { disabled: SCAN_LATER } : {}) });
   }

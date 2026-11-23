@@ -3,13 +3,19 @@ import type { AiSuggestion, DealPart, DealRow, ReviewQuestion } from '../api/typ
 import { dealMenu, hasTitleMatches, partMenu, questionMenu, stepMenu } from './menus';
 
 const row = (over: Partial<DealRow> = {}): DealRow =>
-  ({ id: 'hd-1', title: 'Kit', brand: 'RYOBI', model: 'PCL1600K2', itemId: '1', link: 'https://www.homedepot.com/p/1', section: 'confirmed', price: 100, off: 10, matchState: '4 parts matched', profit: 10, roi: 0.1, roiRange: null, needsAnswer: false, updatedAt: '2026-11-22T00:00:00Z', lookup: null, ...over }) as DealRow;
+  ({ id: 'hd-1', title: 'Kit', brand: 'RYOBI', model: 'PCL1600K2', itemId: '1', link: 'https://www.homedepot.com/p/1', section: 'confirmed', price: 100, off: 10, matchState: '4 parts matched', profit: 10, roi: 0.1, roiRange: null, needsAnswer: false, updatedAt: '2026-11-22T00:00:00Z', lookup: null, watched: false, ...over }) as DealRow;
 const ids = (items: { id: string }[]) => items.map((i) => i.id);
 
 describe('a deal row\'s menu', () => {
   it('always opens, copies the model and the ASINs, and opens Home Depot when it has the page', () => {
-    expect(ids(dealMenu(row(), { scanRunning: false }))).toEqual(['open', 'open-hd', 'copy-model', 'copy-asins']);
-    expect(ids(dealMenu(row({ link: null }), { scanRunning: false }))).toEqual(['open', 'copy-model', 'copy-asins']);
+    expect(ids(dealMenu(row(), { scanRunning: false }))).toEqual(['open', 'open-hd', 'copy-model', 'copy-asins', 'watch']);
+    expect(ids(dealMenu(row({ link: null }), { scanRunning: false }))).toEqual(['open', 'copy-model', 'copy-asins', 'watch']);
+  });
+  it('offers Watch for a deal that is not watched and Unwatch for one that is', () => {
+    expect(ids(dealMenu(row(), { scanRunning: false }))).toContain('watch');
+    const watched = dealMenu(row({ watched: true }), { scanRunning: false });
+    expect(ids(watched)).toContain('unwatch');
+    expect(ids(watched)).not.toContain('watch');
   });
   it('offers Look up with its price, and greys it while a scan runs, saying why', () => {
     const idle = dealMenu(row({ lookup: { searches: 2 } }), { scanRunning: false }).find((i) => i.id === 'lookup')!;
@@ -27,7 +33,7 @@ describe('a deal row\'s menu', () => {
   });
   it('puts a hairline before the copies and before the actions that spend or move', () => {
     const items = dealMenu(row({ lookup: { searches: 2 }, needsAnswer: true }), { scanRunning: false });
-    expect(items.filter((i) => i.separatorBefore).map((i) => i.id)).toEqual(['copy-model', 'lookup']);
+    expect(items.filter((i) => i.separatorBefore).map((i) => i.id)).toEqual(['copy-model', 'watch']);
   });
 });
 

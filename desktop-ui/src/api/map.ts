@@ -94,6 +94,7 @@ export function mapRow(r: C.DealRow): DealRow {
     model: r.bundle.model,
     itemId: r.bundle.itemId,
     link: r.bundle.link,
+    watched: r.watched ?? false,
     section: r.section,
     price: r.price,
     off: r.off,

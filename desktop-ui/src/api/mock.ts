@@ -280,6 +280,11 @@ export function createMockClient(): ApiClient {
       recount(d);
       emit({ type: 'deals' });
     },
+    async watch(id, watch) {
+      await online(200);
+      deals = deals.map((d) => (d.id === id ? { ...d, watched: watch } : d));
+      emit({ type: 'deals' });
+    },
     async removePrice(id, model) {
       await online(300);
       const d = details[id];

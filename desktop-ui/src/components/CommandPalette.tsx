@@ -2,6 +2,8 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { api, useApp } from '../api/hooks';
 import { ApiError, type DealRow, type ReviewQuestion } from '../api/types';
 import { plural } from '../lib/format';
+import { openPreferences } from '../lib/shell';
+import { parseRoute } from '../lib/route';
 import { actionItems, dealItems, flatten, goToItems, questionItems, rank, type CommandId, type PaletteItem } from '../lib/palette';
 import { Button } from './Button';
 import { Glyph } from './Glyph';
@@ -43,18 +45,24 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     };
   }, []);
 
+  // The deal open in the inspector, for Watch and Unwatch.
+  const openDeal = useMemo(() => {
+    const r = parseRoute(window.location.hash);
+    const row = r.screen === 'deals' && r.id ? (deals ?? []).find((d) => d.id === r.id) : undefined;
+    return row ? { id: row.id, model: row.model, watched: row.watched } : null;
+  }, [deals]);
   const askable = (questions ?? []).filter((q) => q.askCostUsd !== null && q.suggestion === null && q.kind !== 'ebay').length;
   const verifiedIds = (questions ?? []).filter((q) => q.suggestion?.status === 'verified').map((q) => q.id);
   const items = useMemo(
     () => [
       ...goToItems(mac),
-      ...actionItems({ state, askable, verified: verifiedIds.length, deals: deals?.length ?? 0 }),
+      ...actionItems({ state, askable, verified: verifiedIds.length, deals: deals?.length ?? 0, deal: openDeal }),
       ...dealItems(deals ?? []),
       ...questionItems(questions ?? []),
     ],
     // verifiedIds is rebuilt each render from `questions`; its length is the figure the items read.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state, askable, verifiedIds.length, deals, questions],
+    [state, askable, verifiedIds.length, deals, questions, openDeal],
   );
   const groups = useMemo(() => rank(items, query), [items, query]);
   const flat = useMemo(() => flatten(groups), [groups]);
@@ -67,8 +75,12 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
 
   const fail = (e: unknown) => setProblem(e instanceof ApiError ? e.message : 'That did not work. Try again.');
 
-  const command = async (id: CommandId) => {
+  const command = async (id: CommandId, dealId?: string) => {
     switch (id) {
+      case 'watch':
+      case 'unwatch':
+        if (dealId) await api.watch(dealId, id === 'watch');
+        return;
       case 'scan':
         return api.scan();
       case 'stop':
@@ -97,7 +109,10 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       setConfirming(item);
       return;
     }
-    if (a.type === 'go') {
+    if (a.type === 'preferences') {
+      openPreferences(a.tab);
+      onClose();
+    } else if (a.type === 'go') {
       navigate(a.route);
       onClose();
     } else if (a.type === 'deal') {
@@ -111,7 +126,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     } else {
       setBusy(true);
       try {
-        await command(a.command);
+        await command(a.command, a.dealId);
         // A result he should read stays on screen; a command whose effect shows in the window just closes.
         if (a.command !== 'approve-all') onClose();
       } catch (e) {

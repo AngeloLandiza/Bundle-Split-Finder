@@ -5,17 +5,19 @@ import type { AppState, DealRow, ReviewQuestion } from '../api/types';
 import { KIND_LABEL } from '../screens/reviewModel';
 import { plural } from './format';
 import { modLabel, SCREENS, type Screen } from './keys';
+import { PREF_TABS, TAB_LABEL, type PrefTab } from './prefs';
 import type { Route } from './route';
 import { DEAL_VIEWS, VIEW_LABEL } from './views';
 
 export type PaletteSection = 'Go to' | 'Actions' | 'Deals' | 'Questions';
 export const PALETTE_SECTIONS: readonly PaletteSection[] = ['Go to', 'Actions', 'Deals', 'Questions'];
 
-export type CommandId = 'scan' | 'stop' | 'pause' | 'resume' | 'ask-all' | 'approve-all' | 'csv';
+export type CommandId = 'scan' | 'stop' | 'pause' | 'resume' | 'ask-all' | 'approve-all' | 'csv' | 'watch' | 'unwatch';
 
 export type PaletteAction =
   | { type: 'go'; route: Route }
-  | { type: 'command'; command: CommandId }
+  | { type: 'preferences'; tab: PrefTab }
+  | { type: 'command'; command: CommandId; dealId?: string }
   | { type: 'deal'; id: string }
   | { type: 'question'; id: string };
 
@@ -34,25 +36,19 @@ export interface PaletteItem {
   confirm?: string;
 }
 
-/** The Preferences panes the Settings screen holds (its section ids). */
-export const SETTINGS_PANES: readonly { id: string; label: string }[] = [
-  { id: 'scanning', label: 'Scanning' },
-  { id: 'fees', label: 'Fees' },
-  { id: 'brands', label: 'What to scan' },
-  { id: 'keys', label: 'Keys' },
-  { id: 'ai', label: 'AI and Autopilot' },
-  { id: 'alerts', label: 'Alerts' },
-  { id: 'chrome', label: 'Chrome helper' },
-  { id: 'general', label: 'General' },
-];
+const SCREEN_LABEL: Record<Screen, string> = { today: 'Today', deals: 'Deals', review: 'Review', activity: 'Activity', settings: 'Preferences' };
 
-const SCREEN_LABEL: Record<Screen, string> = { today: 'Today', deals: 'Deals', review: 'Review', activity: 'Activity', settings: 'Settings' };
-
-/** Where the palette goes: the five screens, each Deals view, each Preferences pane. */
+/** Where the palette goes: the screens, each Deals view, and each pane of the Preferences window (which opens at that pane). */
 export function goToItems(mac: boolean): PaletteItem[] {
   const out: PaletteItem[] = [];
   SCREENS.forEach((screen, i) => {
-    out.push({ id: `go:${screen}`, section: 'Go to', title: SCREEN_LABEL[screen], hint: modLabel(String(i + 1), mac), action: { type: 'go', route: { screen, id: null } } });
+    out.push({
+      id: `go:${screen}`,
+      section: 'Go to',
+      title: SCREEN_LABEL[screen],
+      hint: modLabel(String(i + 1), mac),
+      action: screen === 'settings' ? { type: 'preferences', tab: 'general' } : { type: 'go', route: { screen, id: null } },
+    });
     if (screen === 'deals') {
       for (const v of DEAL_VIEWS) {
         if (v === 'all') continue;
@@ -60,8 +56,9 @@ export function goToItems(mac: boolean): PaletteItem[] {
       }
     }
   });
-  for (const pane of SETTINGS_PANES) {
-    out.push({ id: `go:settings:${pane.id}`, section: 'Go to', title: `Settings · ${pane.label}`, keywords: `preferences ${pane.label}`, action: { type: 'go', route: { screen: 'settings', id: pane.id } } });
+  for (const tab of PREF_TABS) {
+    if (tab === 'general') continue;
+    out.push({ id: `pref:${tab}`, section: 'Go to', title: `Preferences · ${TAB_LABEL[tab]}`, keywords: `settings ${TAB_LABEL[tab]}`, action: { type: 'preferences', tab } });
   }
   return out;
 }
@@ -74,6 +71,8 @@ export interface ActionContext {
   verified: number;
   /** Deals the agent holds (a CSV needs one). */
   deals: number;
+  /** The deal open in the inspector, so Watch and Unwatch can name it; null when none is open. */
+  deal?: { id: string; model: string; watched: boolean } | null;
 }
 
 /** The commands he may run now. A command that cannot run is left out, not greyed: the list is short and honest. */
@@ -96,6 +95,16 @@ export function actionItems(c: ActionContext): PaletteItem[] {
     act('approve-all', `Approve all ${c.verified} verified`, {
       keywords: 'answers ai review',
       confirm: `Approve ${plural(c.verified, 'verified AI answer', 'verified AI answers')}? Each is applied as your answer.`,
+    });
+  }
+  if (c.deal) {
+    const d = c.deal;
+    out.push({
+      id: `cmd:${d.watched ? 'unwatch' : 'watch'}`,
+      section: 'Actions',
+      title: `${d.watched ? 'Unwatch' : 'Watch'} ${d.model}`,
+      keywords: 'watchlist track deal',
+      action: { type: 'command', command: d.watched ? 'unwatch' : 'watch', dealId: d.id },
     });
   }
   if (c.deals > 0) act('csv', 'Download CSV', { keywords: 'export deals' });
@@ -192,7 +201,7 @@ export function rank(items: readonly PaletteItem[], query: string): PaletteGroup
     if (q === '') {
       if (section === 'Deals' || section === 'Questions') continue;
       // The Preferences panes wait for a word ("fees", "keys"): the quiet list is the screens and the Deals views.
-      const quiet = own.filter((i) => !i.id.startsWith('go:settings:'));
+      const quiet = own.filter((i) => !i.id.startsWith('pref:'));
       if (quiet.length) groups.push({ section, items: quiet });
       continue;
     }

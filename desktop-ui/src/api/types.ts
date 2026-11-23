@@ -95,6 +95,8 @@ export interface DealRow {
   itemId: string | null;
   /** The bundle's Home Depot page, or null. */
   link: string | null;
+  /** On the watchlist: by itself when confirmed and discounted, or by his Watch. */
+  watched: boolean;
   section: DealSection;
   price: number | null;
   /** Whole percent off, or null. */
