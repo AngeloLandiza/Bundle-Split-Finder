@@ -76,6 +76,7 @@ describe("--fresh-tools finds the running agent's token", () => {
     expect(agentTokenDir({ env: {}, devDir: 'output', exists: () => true })).toBe('output');
     expect(agentTokenDir({ env: {}, devDir: 'output', installedDir: '/app', exists: () => false })).toBe('/app');
     expect(installedAppDataDir('darwin', {}, '/Users/o')).toBe('/Users/o/Library/Application Support/com.bundlesplitfinder.desktop');
-    expect(installedAppDataDir('win32', { APPDATA: 'C:\\Users\\o\\AppData\\Roaming' }, 'C:\\Users\\o')).toMatch(/Roaming[\\/]com\.bundlesplitfinder\.desktop$/);
+    expect(installedAppDataDir('win32', { APPDATA: 'C:\\Users\\o\\AppData\\Roaming' }, 'C:\\Users\\o')).toBe('C:\\Users\\o\\AppData\\Roaming\\com.bundlesplitfinder.desktop');
+    expect(installedAppDataDir('win32', {}, 'C:\\Users\\o')).toBe('C:\\Users\\o\\AppData\\Roaming\\com.bundlesplitfinder.desktop');
   });
 });

@@ -8,7 +8,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, posix, win32 } from 'node:path';
 
 import { AGENT_PORT } from '../core/src/api/contract';
 import type { HomeDepotPage, HomeDepotSearch, ResearchTools, ToolError } from '../core/src/research/types';
@@ -21,9 +21,10 @@ const IDENTIFIER = 'com.bundlesplitfinder.desktop';
 
 /** Tauri 2's app_data_dir for the installed app, where its agent keeps agent-token. */
 export function installedAppDataDir(platform: NodeJS.Platform = process.platform, env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
-  if (platform === 'darwin') return join(home, 'Library', 'Application Support', IDENTIFIER);
-  if (platform === 'win32') return join(env.APPDATA ?? join(home, 'AppData', 'Roaming'), IDENTIFIER);
-  return join(env.XDG_DATA_HOME ?? join(home, '.local', 'share'), IDENTIFIER);
+  // The separator follows the target platform, not the machine running this (a test checks each one anywhere).
+  if (platform === 'darwin') return posix.join(home, 'Library', 'Application Support', IDENTIFIER);
+  if (platform === 'win32') return win32.join(env.APPDATA ?? win32.join(home, 'AppData', 'Roaming'), IDENTIFIER);
+  return posix.join(env.XDG_DATA_HOME ?? posix.join(home, '.local', 'share'), IDENTIFIER);
 }
 
 /**
