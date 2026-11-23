@@ -48,7 +48,9 @@ const fetchFn = (async (input: string | URL | Request, init?: RequestInit) => {
   }
   if (url.pathname === '/product') {
     const asins = (url.searchParams.get('asin') ?? '').split(',');
-    return keepaBody(asins.length, { products: PRODUCTS.products.filter((p) => asins.includes(p.asin)) });
+    // The stats pull's three products, and for any other ASIN the full product the recorded search returned.
+    const all = [...PRODUCTS.products, ...(SEARCH.products as { asin: string }[]).filter((p) => !PRODUCTS.products.some((x) => x.asin === p.asin))];
+    return keepaBody(asins.length, { products: all.filter((p) => asins.includes(p.asin)) });
   }
   return new Response('{}', { status: 404 });
 }) as typeof fetch;
@@ -93,7 +95,11 @@ describe('the drip', () => {
     expect(agent.store.get('deals').bundles[0]!.estimate).not.toBeNull();
     const runs = agent.store.get('activity').runs;
     expect(runs).toHaveLength(1);
-    expect(runs[0]).toMatchObject({ kind: 'lookup', trigger: 'scheduled', searchesUsed: 0, keepaTokensUsed: 11, summary: 'Looked up 1 part with Keepa: 1 matched.' });
+    // The price pull carries Amazon's catalog fields (brand RYOBI, part number PCL235B): the title match is verified, free.
+    expect(runs[0]).toMatchObject({
+      kind: 'lookup', trigger: 'scheduled', searchesUsed: 0, keepaTokensUsed: 11, summary: "Looked up 1 part with Keepa: 1 matched. Verified 1 listing from Amazon's catalog.",
+    });
+    expect(match).toMatchObject({ grade: 'strong', verifiedBy: 'keepa_catalog' });
     expect(telegram).toEqual(['Keepa lookups between scans gave 1 new estimate (from your fee settings, not your real fees).']);
     expect(agent.store.get('runtime').keepa).toMatchObject({ tokensLeft: 10, refillRate: 1 });
     expect(agent.work.state().drip).toMatchObject({ active: false, waiting: 0, lastLookupAt: new Date(T0).toISOString() });
@@ -146,7 +152,7 @@ describe('the drip', () => {
     clock += DRIP_POLL_MS + 11 * 60_000;
     await agent.work.drip();
     expect(agent.store.get('activity').runs).toHaveLength(1);
-    expect(agent.store.get('activity').runs[0]!.summary).toBe('Looked up 2 parts with Keepa: 1 matched, 1 no Amazon listing.');
+    expect(agent.store.get('activity').runs[0]!.summary).toBe("Looked up 2 parts with Keepa: 1 matched, 1 no Amazon listing. Verified 1 listing from Amazon's catalog.");
     await agent.work.scanStore.putBundle({
       key: bundleKey('2'), retailer: 'homedepot', itemId: '2', title: 'RYOBI kit', brand: 'RYOBI', model: 'PZZZ2',
       upc: null, price: 50, regularPrice: 90, percentOff: 44, link: null, seenAt: T0, split: { components: ['PZZZ2'], status: 'resolved', notes: [] },
@@ -154,11 +160,40 @@ describe('the drip', () => {
     clock = T0 + DRIP_RUN_MS + 1;
     await agent.work.drip();
     expect(agent.store.get('activity').runs.map((r) => r.summary)).toEqual([
-      'Looked up 2 parts with Keepa: 1 matched, 1 no Amazon listing.',
+      "Looked up 2 parts with Keepa: 1 matched, 1 no Amazon listing. Verified 1 listing from Amazon's catalog.",
       'Looked up 1 part with Keepa: 0 matched, 1 no Amazon listing.',
     ]);
     // Never a SerpApi call.
     expect(calls.filter((c) => c.startsWith('other'))).toEqual([]);
+  });
+
+  it('catalog check: with no lookup waiting, title matches are pulled (1 token each) and settled from Amazon\'s catalog', async () => {
+    tokens = 21;
+    const store = agent.work.scanStore;
+    // Two resolved bundles whose parts are title matches, as a lookup leaves them: PCL235B on its own listing, and
+    // PCL201 on the Tourmate case for the PCL235B (another brand in Amazon's catalog).
+    for (const [itemId, model, asin] of [['318621812', 'PCL235B', 'B0BGYFTPGK'], ['318621813', 'PCL201', 'B0HFS4PFLN']] as const) {
+      await store.putBundle({
+        key: bundleKey(itemId), retailer: 'homedepot', itemId, title: `RYOBI ${model} Kit`, brand: 'RYOBI', model, upc: null, price: 39, regularPrice: 79, percentOff: 50,
+        link: null, seenAt: T0, split: { components: [model], status: 'resolved', notes: [] },
+      });
+      await store.putMatch({ key: `RYOBI:${model}`, brand: 'RYOBI', model, status: 'matched', asin, grade: 'probable', alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null });
+      await store.putPrice({ asin, price: 60, reviews: null, seenAt: T0, checkedAt: T0 });
+    }
+    await agent.work.refresh();
+    await agent.work.drip();
+    // The same saving on both bundles: by part key, PCL201 first.
+    expect(calls).toEqual(['/token', '/product B0HFS4PFLN', '/product B0BGYFTPGK']);
+    expect(await store.getMatch('RYOBI:PCL235B')).toMatchObject({ grade: 'strong', verifiedBy: 'keepa_catalog' });
+    expect(await store.getMatch('RYOBI:PCL201')).toMatchObject({
+      status: 'none', asin: null, rejectedAsins: ['B0HFS4PFLN'], verifyEvidence: "Amazon's catalog lists brand Tourmate, not RYOBI: https://www.amazon.com/dp/B0HFS4PFLN",
+    });
+    const run = agent.store.get('activity').runs.at(-1)!;
+    expect(run).toMatchObject({ kind: 'lookup', keepaTokensUsed: 2, summary: "Verified 1 listing from Amazon's catalog; 1 did not match and was removed." });
+    // Checked once: the next round pulls nothing.
+    clock += DRIP_POLL_MS;
+    await agent.work.drip();
+    expect(calls.filter((c) => c.startsWith('/product'))).toHaveLength(2);
   });
 
   it('a scan claimed while the drip runs starts once the drip has finished its part', async () => {

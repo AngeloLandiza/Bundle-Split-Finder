@@ -111,6 +111,11 @@ export interface LastScanSummary {
   waitingLookups?: number;
   lookupsDone?: { keepa: number; serpapi: number };
   lookupsBlockedBy?: 'keepa_tokens' | 'search_cap' | 'reserve' | 'hourly_limit' | null;
+  /**
+   * Catalog check: listings Amazon's catalog verified in the last scan (title matches made strong, questions withdrawn),
+   * each ASIN once. Absent when the scan checked none.
+   */
+  matchesVerified?: number;
 }
 
 /**

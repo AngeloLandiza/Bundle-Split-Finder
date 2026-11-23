@@ -52,6 +52,8 @@ import {
 } from '../core/src/settings';
 import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
+import { catalogSentence } from '../core/src/scan/catalogCheck';
+import { checksWaiting, verifyMatchesWithKeepa } from './verifyMatches';
 import { buildDigest, sendPending } from './alerts';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
@@ -359,7 +361,7 @@ export class AgentWork {
   private dripActive = false;
   private dripWaiting = 0;
   private dripNextAt: number | null = null;
-  private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number } | null = null;
+  private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number; verified: number; removed: number } | null = null;
 
   /** Whether the drip may run now: its setting on, a Keepa key, Keepa on, not paused, and nothing else running. */
   private dripAllowed(): boolean {
@@ -419,7 +421,9 @@ export class AgentWork {
     }
     const { work, steps } = await plannedWork(this.scanStore, settings, this.d.now(), pairs);
     this.dripWaiting = work.lookups.length;
-    if (work.lookups.length === 0 || !keys.keepa) {
+    // Catalog check: with no lookup waiting, the drip still runs for title matches and questions Amazon's catalog may settle.
+    const checks = keys.keepa && work.lookups.length === 0 ? await checksWaiting(this.scanStore) : 0;
+    if ((work.lookups.length === 0 && checks === 0) || !keys.keepa) {
       if (prices > 0) await this.refresh();
       return;
     }
@@ -433,7 +437,7 @@ export class AgentWork {
     }
     const before = this.estimatedKeys();
     const catalog = (await knownModels(this.scanStore)).catalog;
-    const done = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0 };
+    const done = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0, verified: 0, removed: 0 };
     for (const key of work.lookups) {
       if (!this.dripAllowed() || this.dripCtl.signal.aborted) break;
       if (budget.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE) !== null) break;
@@ -455,6 +459,8 @@ export class AgentWork {
       if (out.status === 'refused') break;
       done.looked += 1;
       done.tokens += out.tokens;
+      done.verified += out.verified ?? 0;
+      done.removed += out.removed ?? 0;
       if (out.status === 'matched') done.matched += 1;
       else if (out.status === 'review') done.review += 1;
       else done.none += 1;
@@ -462,14 +468,32 @@ export class AgentWork {
       const at = this.d.now();
       store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: at } }));
     }
+    // Catalog check: once every waiting part is looked up, the title matches and questions are read against Keepa's fields.
+    if (this.dripWaiting === 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
+      this.dripActive = true;
+      this.d.changed();
+      try {
+        const v = await verifyMatchesWithKeepa({
+          store: this.scanStore, catalog, now: this.d.now, keepaBudget: budget, trackingDepth: ext.trackingDepth,
+          keepaProduct: (asin, label) => keepaProductSearchResult(keepa, asin, { label, trackingDepth: ext.trackingDepth }),
+          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
+        });
+        done.verified += v.verified;
+        done.removed += v.removed;
+        done.tokens += v.tokens;
+        if (v.pulled > 0) store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: this.d.now() } }));
+      } catch (err) {
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      }
+    }
     this.dripActive = false;
     // The next look: when a lookup's tokens will have refilled above the reserve, and never sooner than DRIP_POLL_MS.
     const left = (budget.knownBalance ?? status.tokensLeft) - ext.keepaReserve;
     const short = KEEPA_LOOKUP_TOKEN_ESTIMATE - left;
     const perMin = status.refillRate > 0 ? status.refillRate : 1;
     this.dripNextAt = this.d.now() + Math.max(DRIP_POLL_MS, short > 0 ? Math.ceil(short / perMin) * 60_000 : 0);
-    if (done.looked === 0) {
-      if (prices > 0) await this.refresh();
+    if (done.looked === 0 && done.verified === 0 && done.removed === 0) {
+      if (prices > 0 || done.tokens > 0) await this.refresh();
       return;
     }
     await this.refresh();
@@ -518,25 +542,31 @@ export class AgentWork {
     return new Set(this.d.store.get('deals').bundles.filter((b) => b.estimate !== null).map((b) => b.key));
   }
 
-  /** One Activity run an hour of drip: "Looked up 6 parts with Keepa: 4 matched, 2 no Amazon listing." */
-  private dripRecord(done: { looked: number; matched: number; none: number; review: number; tokens: number }): void {
+  /**
+   * One Activity run an hour of drip: "Looked up 6 parts with Keepa: 4 matched, 2 no Amazon listing." and, from the catalog
+   * check, "Verified 6 listings from Amazon's catalog; 1 did not match and was removed."
+   */
+  private dripRecord(done: { looked: number; matched: number; none: number; review: number; tokens: number; verified: number; removed: number }): void {
     const now = this.d.now();
     if (!this.dripRun || now - this.dripRun.startedAt >= DRIP_RUN_MS) {
       const record: RunRecord = {
         id: `run-${now}-drip`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: null, status: 'finished', searchesUsed: 0, keepaTokensUsed: 0,
         aiCostUsd: 0, summary: '', trigger: 'scheduled',
       };
-      this.dripRun = { record, startedAt: now, looked: 0, matched: 0, none: 0, review: 0 };
+      this.dripRun = { record, startedAt: now, looked: 0, matched: 0, none: 0, review: 0, verified: 0, removed: 0 };
     }
     const r = this.dripRun;
     r.looked += done.looked;
     r.matched += done.matched;
     r.none += done.none;
     r.review += done.review;
+    r.verified += done.verified;
+    r.removed += done.removed;
     r.record.keepaTokensUsed += done.tokens;
     r.record.finishedAt = new Date(now).toISOString();
     const parts = [`${r.matched} matched`, ...(r.none > 0 ? [`${r.none} no Amazon listing`] : []), ...(r.review > 0 ? [`${r.review} to review`] : [])];
-    r.record.summary = `Looked up ${r.looked} ${r.looked === 1 ? 'part' : 'parts'} with Keepa: ${parts.join(', ')}.`;
+    const looked = r.looked > 0 ? `Looked up ${r.looked} ${r.looked === 1 ? 'part' : 'parts'} with Keepa: ${parts.join(', ')}.` : null;
+    r.record.summary = [looked, catalogSentence(r.verified, r.removed)].filter(Boolean).join(' ');
     this.record({ ...r.record });
   }
 
@@ -762,6 +792,8 @@ export class AgentWork {
         ...(job?.lookupsWaiting !== undefined ? { waitingLookups: job.lookupsWaiting } : {}),
         ...(job?.lookupsVia ? { lookupsDone: { ...job.lookupsVia } } : {}),
         ...(job && job.lookupsWaiting !== undefined ? { lookupsBlockedBy: job.lookupsBlockedBy ?? null } : {}),
+        // Catalog check: the listings Amazon's catalog verified in this scan.
+        ...(job?.matchesVerified !== undefined || job?.matchesRemoved !== undefined ? { matchesVerified: job.matchesVerified ?? 0 } : {}),
       },
     }));
   }
@@ -779,6 +811,8 @@ export class AgentWork {
       });
       if (sentence) parts.push(sentence);
     }
+    const verified = job ? catalogSentence(job.matchesVerified ?? 0, job.matchesRemoved ?? 0) : null;
+    if (verified) parts.push(verified);
     if (run.searchesUsed > 0 || run.status !== 'failed') parts.push(`${run.searchesUsed} ${run.searchesUsed === 1 ? 'search' : 'searches'}.`);
     if (run.questionsAsked) parts.push(`AI asked about ${run.questionsAsked}.`);
     if (run.autopilotApplied) parts.push(`Autopilot applied ${run.autopilotApplied}.`);
