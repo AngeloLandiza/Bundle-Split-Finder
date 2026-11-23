@@ -1,7 +1,7 @@
 // Owner-only files on Windows. Node ignores a file mode there (0600 sets nothing), so a file the agent writes
 // owner-only (the three that hold secrets: agent-token, store/keys.json, store/pairing.json) would carry the ACL it
-// inherits from its folder. Under %APPDATA% that is the user, SYSTEM and Administrators; this narrows the file to the
-// user alone, as 0600 does on macOS.
+// inherits from its folder. Under %APPDATA% that is the user, SYSTEM and Administrators, as INHERITED entries; this makes the file carry the
+// user, SYSTEM and the Administrators group, as explicit entries (no inheritance), as Microsoft's OpenSSH does for keys.
 //
 // The narrowing is applied to the empty temp file before the content is written, and again to the FINAL path after
 // the rename (idempotent), and the result is read back with `icacls <file>`. The first real Windows run (Nov 23, GitHub
@@ -31,9 +31,18 @@ export function parseUserName(out: string): string | null {
   return /^\s*"([^"]+)"\s*,\s*"S-1-/.exec(out)?.[1] ?? null;
 }
 
-/** Inherited entries removed, and the one left grants the user (by SID, so no name lookup) full control. */
+export const SID_SYSTEM = 'S-1-5-18';
+export const SID_ADMINISTRATORS = 'S-1-5-32-544';
+
+/**
+ * The state Microsoft's OpenSSH for Windows asks of its key files: an explicit ACL (`icacls /inheritance:r /grant`) that
+ * allows access only to administrators and SYSTEM, with SIDs (`*S-1-5-32-544`) for non-English systems
+ * (https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_keymanagement, "Host key generation"
+ * and "Administrative user"). Ours adds the owner. SYSTEM and administrators can take any file regardless, and removing
+ * them breaks backup and repair tools, so a user-only ACL is not the target. Granted by SID, so no name lookup.
+ */
 export function icaclsOwnerOnlyArgs(path: string, sid: string): string[] {
-  return [path, '/inheritance:r', '/grant:r', `*${sid}:F`, '/q'];
+  return [path, '/inheritance:r', '/grant:r', `*${sid}:F`, `*${SID_SYSTEM}:F`, `*${SID_ADMINISTRATORS}:F`, '/q'];
 }
 
 export interface AclEntry {
@@ -62,20 +71,38 @@ export function parseIcaclsEntries(out: string, path: string): AclEntry[] {
   return entries;
 }
 
-/** Null when the entries are exactly one explicit entry for the user; otherwise what is wrong, in one phrase. */
+const SYSTEM_NAMES = ['NT AUTHORITY\\SYSTEM', SID_SYSTEM];
+const ADMIN_NAMES = ['BUILTIN\\ADMINISTRATORS', SID_ADMINISTRATORS];
+
+/**
+ * Null when the entries are explicit (none inherited) and name only the user, SYSTEM and Administrators, with the user
+ * present; otherwise what is wrong, in one phrase. Names are matched as icacls prints them (English); a localized
+ * Windows would be reported, never accepted by guess.
+ */
 export function ownerOnlyProblem(entries: AclEntry[], sid: string, name: string | null): string | null {
   if (entries.length === 0) return 'icacls listed no entries';
-  const isMe = (who: string) => who.toUpperCase() === sid.toUpperCase() || (name !== null && who.toLowerCase() === name.toLowerCase());
-  const others = entries.filter((e) => !isMe(e.who));
+  const kind = (who: string): 'me' | 'system' | 'admins' | null => {
+    const u = who.toUpperCase();
+    if (u === sid.toUpperCase() || (name !== null && u === name.toUpperCase())) return 'me';
+    if (SYSTEM_NAMES.includes(u)) return 'system';
+    if (ADMIN_NAMES.includes(u)) return 'admins';
+    return null;
+  };
   const inherited = entries.filter((e) => e.inherited);
-  if (entries.length === 1 && others.length === 0 && inherited.length === 0) return null;
-  return `it still lists ${entries.map((e) => e.who).join(', ')}${inherited.length ? ' (inherited from its folder)' : ''}`;
+  const strangers = entries.filter((e) => kind(e.who) === null || /DENY/i.test(e.rights));
+  const hasMe = entries.some((e) => kind(e.who) === 'me');
+  if (inherited.length === 0 && strangers.length === 0 && hasMe) return null;
+  const parts: string[] = [];
+  if (inherited.length) parts.push(`it still inherits ${inherited.map((e) => e.who).join(', ')} from its folder`);
+  if (strangers.length) parts.push(`it also lists ${strangers.map((e) => e.who).join(', ')}`);
+  if (!hasMe) parts.push('it does not list your account');
+  return parts.join('; ');
 }
 
 export interface OwnerOnly {
   /** Narrows `path` to the current user. Null when done, else why not. Does not read it back. */
   narrow(path: string): string | null;
-  /** Narrows, then reads the ACL back. Null only when the file has exactly the one entry. */
+  /** Narrows, then reads the ACL back. Null only when the file holds exactly the allowed explicit entries. */
   ensure(path: string): string | null;
 }
 

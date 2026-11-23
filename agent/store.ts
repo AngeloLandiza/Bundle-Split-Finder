@@ -503,9 +503,13 @@ function fsyncDir(dir: string): void {
  * Writes the whole file to a temp name beside it, flushes it to disk, renames it over the old one and flushes the
  * directory, so after a crash or a power cut the file is the old one or the new one, never empty or half written.
  */
+/** The files that hold a key or a token. Lock and temp files are written 0600 too but are not secret: no ACL work on them. */
+const SECRET_FILES: ReadonlySet<string> = new Set(['agent-token', 'keys.json', 'pairing.json']);
+
 export function writeFileAtomic(path: string, text: string, mode = 0o644): void {
   const tmp = `${path}.${process.pid}.tmp`;
-  if (mode === 0o600 && process.platform === 'win32') {
+  const secret = mode === 0o600 && process.platform === 'win32' && SECRET_FILES.has(basename(path));
+  if (secret) {
     // Windows ignores the mode: the empty file gets its owner-only ACL before any content (winAcl.ts).
     closeSync(openSync(tmp, 'w'));
     restrictToOwner(tmp);
@@ -521,7 +525,7 @@ export function writeFileAtomic(path: string, text: string, mode = 0o644): void 
   }
   renameOver(tmp, path);
   // Again on the final path, then read back; a failure goes to Activity, the write is never failed (winAcl.ts).
-  if (mode === 0o600 && process.platform === 'win32') ensureOwnerOnlyFinal(path, basename(path));
+  if (secret) ensureOwnerOnlyFinal(path, basename(path));
   fsyncDir(dirname(path));
 }
 

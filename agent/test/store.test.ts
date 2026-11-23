@@ -64,7 +64,7 @@ describe('agent store', () => {
     expect(s.get('agent')).toMatchObject({ paused: true, problem: expect.stringMatching(/^Settings could not be read; the agent is paused\. Your saved keys could not be read/) });
     expect(s.get('settings').autopilot).toBe(false);
     expect(s.get('settings').alerts.enabled).toBe(false);
-    expect(s.get('activity').errors?.[0]?.sentence).toBe(s.get('agent').problem);
+    expect(s.get('activity').errors?.some((e) => e.sentence === s.get('agent').problem)).toBe(true);
     // The state survives a restart (the defaults it wrote are readable), and the kept files stay.
     s.close();
     open.pop();

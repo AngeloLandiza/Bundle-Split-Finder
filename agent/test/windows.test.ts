@@ -30,37 +30,51 @@ const INHERITED = [
   '',
 ].join('\r\n');
 // After the narrowing: one explicit entry (no (I)).
-const NARROWED = [`${FILE} DESKTOP-7Q2K\\alex:(F)`, '', 'Successfully processed 1 files; Failed processing 0 files', ''].join('\r\n');
+// After the narrowing, as run 4 on windows-latest printed it: three explicit entries, no (I).
+const NARROWED = [
+  `${FILE} NT AUTHORITY\\SYSTEM:(F)`,
+  '                                                                   BUILTIN\\Administrators:(F)',
+  '                                                                   DESKTOP-7Q2K\\alex:(F)',
+  '',
+  'Successfully processed 1 files; Failed processing 0 files',
+  '',
+].join('\r\n');
 const SYS32 = 'C:\\Windows\\System32';
 
 describe('owner-only files on Windows (winAcl)', () => {
-  it('reads the SID and name from whoami and grants the SID alone, with inheritance removed', () => {
+  it('reads the SID and name from whoami and grants the user, SYSTEM and Administrators by SID, with inheritance removed', () => {
     expect(parseUserSid(WHOAMI)).toBe(SID);
     expect(parseUserName(WHOAMI)).toBe('desktop-7q2k\\alex');
     expect(parseUserSid('INFO: nothing\r\n')).toBeNull();
-    expect(icaclsOwnerOnlyArgs(FILE, SID)).toEqual([FILE, '/inheritance:r', '/grant:r', `*${SID}:F`, '/q']);
+    expect(icaclsOwnerOnlyArgs(FILE, SID)).toEqual([FILE, '/inheritance:r', '/grant:r', `*${SID}:F`, '*S-1-5-18:F', '*S-1-5-32-544:F', '/q']);
   });
 
-  it('parses icacls output: three inherited entries, and the one explicit entry', () => {
-    const three = parseIcaclsEntries(INHERITED, FILE);
-    expect(three.map((e) => [e.who, e.inherited])).toEqual([
+  it('parses icacls output and accepts exactly the explicit user, SYSTEM, Administrators set', () => {
+    const inherited = parseIcaclsEntries(INHERITED, FILE);
+    expect(inherited.map((e) => [e.who, e.inherited])).toEqual([
       ['NT AUTHORITY\\SYSTEM', true],
       ['BUILTIN\\Administrators', true],
       ['DESKTOP-7Q2K\\alex', true],
     ]);
-    const one = parseIcaclsEntries(NARROWED, FILE);
-    expect(one).toEqual([{ who: 'DESKTOP-7Q2K\\alex', inherited: false, rights: '(F)' }]);
-    expect(ownerOnlyProblem(three, SID, 'desktop-7q2k\\alex')).toBe(
-      'it still lists NT AUTHORITY\\SYSTEM, BUILTIN\\Administrators, DESKTOP-7Q2K\\alex (inherited from its folder)',
-    );
-    expect(ownerOnlyProblem(one, SID, 'desktop-7q2k\\alex')).toBeNull();
-    expect(ownerOnlyProblem([{ who: SID, inherited: false, rights: '(F)' }], SID, null)).toBeNull();
-    expect(ownerOnlyProblem([{ who: 'BUILTIN\\Users', inherited: false, rights: '(R)' }], SID, 'x\\y')).toContain('BUILTIN\\Users');
-    const pair = [
-      { who: 'x\\y', inherited: false, rights: '(F)' },
-      { who: 'NT AUTHORITY\\SYSTEM', inherited: false, rights: '(F)' },
-    ];
-    expect(ownerOnlyProblem(pair, SID, 'x\\y')).not.toBeNull();
+    const good = parseIcaclsEntries(NARROWED, FILE);
+    expect(good.map((e) => [e.who, e.inherited])).toEqual([
+      ['NT AUTHORITY\\SYSTEM', false],
+      ['BUILTIN\\Administrators', false],
+      ['DESKTOP-7Q2K\\alex', false],
+    ]);
+    const me = 'desktop-7q2k\\alex';
+    expect(ownerOnlyProblem(good, SID, me)).toBeNull();
+    // the real run-4 line
+    const run4 = parseIcaclsEntries('C:\\d\\agent-token NT AUTHORITY\\SYSTEM:(F), BUILTIN\\Administrators:(F), runnervmbpeip\\runneradmin:(F)'.split(', ').join('\r\n'), 'C:\\d\\agent-token');
+    expect(ownerOnlyProblem(run4, 'S-1-5-21-1-2-3-500', 'runnervmbpeip\\runneradmin')).toBeNull();
+    // inherited (I)(F) fails, whatever the names
+    expect(ownerOnlyProblem(inherited, SID, me)).toBe('it still inherits NT AUTHORITY\\SYSTEM, BUILTIN\\Administrators, DESKTOP-7Q2K\\alex from its folder');
+    // another account fails
+    const users = [...good, { who: 'BUILTIN\\Users', inherited: false, rights: '(RX)' }];
+    expect(ownerOnlyProblem(users, SID, me)).toBe('it also lists BUILTIN\\Users');
+    // by SID, and without the user it fails
+    expect(ownerOnlyProblem([{ who: SID, inherited: false, rights: '(F)' }, { who: 'S-1-5-18', inherited: false, rights: '(F)' }], SID, null)).toBeNull();
+    expect(ownerOnlyProblem([{ who: 'BUILTIN\\Administrators', inherited: false, rights: '(F)' }], SID, me)).toBe('it does not list your account');
     expect(ownerOnlyProblem([], SID, null)).toBe('icacls listed no entries');
   });
 
@@ -88,13 +102,13 @@ describe('owner-only files on Windows (winAcl)', () => {
   it('verify-then-report: a file that stays inherited is reported with the reason', () => {
     const run = (file: string, args: string[]) => (file.endsWith('whoami.exe') ? WHOAMI : args.length === 1 ? INHERITED : '');
     const why = makeOwnerOnly(run, SYS32).ensure(FILE);
-    expect(why).toContain('it still lists NT AUTHORITY\\SYSTEM');
+    expect(why).toContain('it still inherits NT AUTHORITY\\SYSTEM');
     const sentences: string[] = [];
     setAclReporter((s) => sentences.push(s));
     reportAclProblem('keys.json', why!);
     setAclReporter(null);
     expect(sentences).toHaveLength(1);
-    expect(sentences[0]).toMatch(/^Windows did not let Split Finder restrict keys\.json to your account: it still lists .*\. It is readable by this PC's administrators\.$/);
+    expect(sentences[0]).toMatch(/^Windows did not let Split Finder restrict keys\.json to your account: it still inherits .*\. It is readable by this PC's administrators\.$/);
   });
 
   it('an icacls that throws is the reason, and ensure still reads back', () => {
