@@ -6,7 +6,7 @@
 //                      and the total cost. Writes nothing. Costs money: the main session runs it after the owner's yes.
 //   --data scan3|scan2 scan3 (default): the 10 open questions of the third real scan (after-scan3) with the suggestions the AI gave
 //                      them on the second (5 of them have one); scan2: the 15 questions of the second scan, each with its suggestion.
-//   --model <id>       the model that writes the briefs (default claude-haiku-5-5).
+//   --model <id>       the model that writes the briefs (default claude-opus-5-5, the brief's own default).
 //   --max-cost <usd>   stops before the next call once the calls made cost this much.
 //
 // The suggestions are the AI's real answers, read from fixtures/e2e-2026-11-23/store/suggestions.json; the pages are the stored
@@ -20,7 +20,7 @@ import { gatherEvidence } from '../core/src/assist/evidence';
 import type { StoredSuggestion } from '../core/src/assist/stored';
 import { briefInputOf, linksOfEvidence, poolOfEvidence } from '../core/src/brief/input';
 import { BRIEF_PROMPT_VERSION, briefRequest } from '../core/src/brief/prompt';
-import { type BriefModel, ESTIMATED_BRIEF_TOKENS, ProviderBrief, worthABrief, writeBrief } from '../core/src/brief/pipeline';
+import { type BriefModel, DEFAULT_BRIEF_MODEL, ESTIMATED_BRIEF_TOKENS, ProviderBrief, worthABrief, writeBrief } from '../core/src/brief/pipeline';
 import type { BriefInput, ReviewBrief } from '../core/src/brief/types';
 import { costOf, PRICE_TABLE } from '../core/src/judge/eval';
 import type { ReviewItem } from '../core/src/scan/types';
@@ -28,7 +28,7 @@ import { loadScanFolder, readStoreFile } from './data-folder';
 
 export const DEFAULT_PAUSE_MS = 300;
 export const CHARS_PER_TOKEN = 4;
-const DEFAULT_MODEL = 'claude-haiku-5-5';
+const DEFAULT_MODEL = DEFAULT_BRIEF_MODEL;
 
 export interface BriefEvalDeps {
   log: (line: string) => void;

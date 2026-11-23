@@ -22,7 +22,7 @@ describe('brief:eval --dry-run', () => {
     expect(text).toContain('Questions: 10. With a suggestion and at least one quote the code found: 5');
     expect(text).toContain('--- system prompt');
     expect(text).toContain('--- user message: split:homedepot:328690510 ---');
-    expect(text).toMatch(/Estimated cost: \$0\.00\d+/);
+    expect(text).toMatch(/Estimated cost: \$0\.0\d+/);
     expect(text).toContain('split:homedepot:335724135  no suggestion  (no call)');
   });
 
@@ -43,7 +43,7 @@ describe('brief:eval, a run', () => {
   it('prints each brief, each sentence’s verdict, and the total cost; the key is never printed', async () => {
     const asked: string[] = [];
     const model: BriefModel = {
-      provider: 'fake', model: 'claude-haiku-5-5',
+      provider: 'fake', model: 'claude-opus-5-5',
       async ask(request) {
         asked.push(request.user);
         const good = { suggestion: null, reasons: [{ text: 'The page lists what the bundle holds.', quoteIndex: 1 }, { text: 'It costs $99.', quoteIndex: 1 }], check: null };
@@ -56,13 +56,13 @@ describe('brief:eval, a run', () => {
     expect(text).toContain('kept    reason: The page lists what the bundle holds.');
     expect(text).toMatch(/dropped reason: It costs \$99\.   <- It says 99, which is in neither the quote, the question nor the answer\./);
     expect(text).toContain('Calls: 5. Model briefs that passed the checks: 5 of 5. Sentences written: 10, dropped by the checks: 5.');
-    expect(text).toContain('Total cost: $0.00100 (claude-haiku-5-5).');
+    expect(text).toContain('Total cost: $0.0400 (claude-opus-5-5).');
     expect(text).not.toContain('sk-ant-secret-key');
   });
 
   it('stops asking once --max-cost is reached', async () => {
     let n = 0;
-    const model: BriefModel = { provider: 'fake', model: 'claude-haiku-5-5', async ask() { n += 1; return { ok: true, answer: '{"suggestion":null,"reasons":[],"check":null}', usage: { inputTokens: 1_000_000, outputTokens: 0 } }; } };
+    const model: BriefModel = { provider: 'fake', model: 'claude-opus-5-5', async ask() { n += 1; return { ok: true, answer: '{"suggestion":null,"reasons":[],"check":null}', usage: { inputTokens: 1_000_000, outputTokens: 0 } }; } };
     const { text } = await run(['--max-cost', '0.05'], { env: () => 'k', makeModel: () => model });
     expect(n).toBe(1);
     expect(text).toContain('not asked: the calls made cost');

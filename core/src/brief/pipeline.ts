@@ -1,4 +1,4 @@
-// The brief pipeline: one small model call per question that has a suggestion, on any ModelProvider (Haiku by default,
+// The brief pipeline: one small model call per question that has a suggestion, on any ModelProvider (Opus by default,
 // DeepSeek or another later), then the code's check of what came back (ground.ts). One call, no retries. A call that gives
 // nothing usable, a model that is not set up, or a brief with no sentence that survives leaves the owner the rules brief:
 // the pipeline never throws and never changes the suggestion it explains.
@@ -13,8 +13,17 @@ import { BRIEF_PROMPT_VERSION, briefRequest, type BriefRequest } from './prompt'
 import { rulesBrief } from './rules';
 import type { BriefInput, BriefVerdict, ReviewBrief } from './types';
 
-/** The model a fresh install writes briefs with: the judge's (the cheapest Claude model the app uses). */
-export const DEFAULT_BRIEF_MODEL = 'claude-haiku-5-5';
+/**
+ * The model a fresh install writes briefs with. The card is what the owner reads, so it is the model that wrote it best, measured
+ * on his 15 real questions (npm run brief:eval --data scan2, Nov 23 2026), same prompt, no retries:
+ *   claude-haiku-5-5  $0.00518 in all; 12 of 15 briefs passed the checks; 17 of 57 sentences dropped; wordy suggestions
+ *                     ("PCL1201K2 kit + P20015BTL part, as the two parts that make up this bundle"); one check line invented a
+ *                     fact ("confirm P553 is the battery or charger" on a title that says Miter Saw).
+ *   claude-opus-5-5   $0.1768 (about 1.2 cents a question); 15 of 15 passed; 3 of 70 sentences dropped; suggestions named each
+ *                     part ("PCL1600K2 kit + P553 miter saw"); checks specific and correct.
+ * Settings can point the brief at a cheaper model (ai.brief), and the prompt and checks are tightened for it (BRIEF_PROMPT_VERSION).
+ */
+export const DEFAULT_BRIEF_MODEL = 'claude-opus-5-5';
 /** Room for the answer and the model's thinking; running out is "no brief", never a half brief. */
 export const BRIEF_MAX_TOKENS = 1500;
 export const BRIEF_EFFORT: ClaudeEffort = 'low';

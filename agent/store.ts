@@ -321,7 +321,7 @@ export function defaultAiSettings(): AppSettings['ai'] {
     const claude = { provider: 'anthropic' as const, model: DEFAULT_AI_MODELS[p], apiKeyRef: 'anthropic' };
     return { ...claude, trusted: measuredByDefault(p, claude) };
   };
-  // Step 16: the brief's model is the judge's (Haiku): it explains a suggestion and cannot change one, so it is never trusted.
+  // Step 16: the brief's model (Opus, measured: core/src/brief/pipeline.ts) explains a suggestion and cannot change one, so it is never trusted.
   const brief = { provider: 'anthropic' as const, model: DEFAULT_BRIEF_MODEL, apiKeyRef: 'anthropic', trusted: false };
   return { judge: of('judge'), assist: of('assist'), research: of('research'), brief, monthlyCapUsd: 25 };
 }
@@ -403,17 +403,37 @@ function normalize<K extends CollectionName>(name: K, raw: unknown): StoreData[K
 export const KEEPA_AUTO_MIGRATION = 'keepa-tokens-per-scan-auto';
 const OLD_KEEPA_TOKENS_PER_SCAN = 5;
 
+/**
+ * Step 16: the brief's model started as Haiku (the judge's) and became Opus after the owner's 15 real questions (Haiku $0.00518,
+ * 12 of 15 briefs passed the checks, one check line invented a fact; Opus $0.1768, 15 of 15 passed). A store still on the Haiku
+ * default moves to Opus once: the owner never chose it. One who sets Haiku again afterwards keeps it: the change is remembered.
+ */
+export const BRIEF_OPUS_MIGRATION = 'brief-model-opus';
+
 /** Applies each one-time change not made yet; returns the collections it changed. */
 export function applyMigrations(data: StoreData): CollectionName[] {
-  const done = new Set(data.runtime.migrations ?? []);
-  if (done.has(KEEPA_AUTO_MIGRATION)) return [];
-  const changed: CollectionName[] = ['runtime'];
-  if (data.settings.settings.keepaTokensPerScan === OLD_KEEPA_TOKENS_PER_SCAN) {
-    data.settings = { ...data.settings, settings: { ...data.settings.settings, keepaTokensPerScan: 0 } };
-    changed.push('settings');
+  const before = data.runtime.migrations ?? [];
+  const done = new Set(before);
+  const changed = new Set<CollectionName>();
+  if (!done.has(KEEPA_AUTO_MIGRATION)) {
+    if (data.settings.settings.keepaTokensPerScan === OLD_KEEPA_TOKENS_PER_SCAN) {
+      data.settings = { ...data.settings, settings: { ...data.settings.settings, keepaTokensPerScan: 0 } };
+      changed.add('settings');
+    }
+    done.add(KEEPA_AUTO_MIGRATION);
   }
-  data.runtime = { ...data.runtime, migrations: [...done, KEEPA_AUTO_MIGRATION] };
-  return changed;
+  if (!done.has(BRIEF_OPUS_MIGRATION)) {
+    const brief = data.settings.ai.brief;
+    if (brief && brief.provider === 'anthropic' && !brief.baseUrl && brief.model === 'claude-haiku-5-5') {
+      data.settings = { ...data.settings, ai: { ...data.settings.ai, brief: { ...brief, model: DEFAULT_BRIEF_MODEL } } };
+      changed.add('settings');
+    }
+    done.add(BRIEF_OPUS_MIGRATION);
+  }
+  if (done.size === before.length) return [];
+  data.runtime = { ...data.runtime, migrations: [...done] };
+  changed.add('runtime');
+  return [...changed];
 }
 
 // ---------------------------------------------------------------- files

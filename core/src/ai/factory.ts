@@ -33,7 +33,7 @@ export interface PipelineAiSettings {
   rates?: PriceRates;
 }
 
-/** The pipelines, each with its own choice. `brief` (the plain summary above a Review question) is optional: a store older than it reads as Claude Haiku on the Anthropic key. */
+/** The pipelines, each with its own choice. `brief` (the plain summary above a Review question) is optional: a store older than it reads as the brief's default model on the Anthropic key. */
 export interface AiSettings {
   judge: PipelineAiSettings;
   assist: PipelineAiSettings;

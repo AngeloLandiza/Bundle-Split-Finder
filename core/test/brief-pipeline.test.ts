@@ -16,13 +16,13 @@ const batteries = input.quotes.findIndex((q) => q.text.includes('(2) PBP003')) +
 const GOOD = JSON.stringify({
   suggestion: 'PCL1600K2 6-tool kit + PBP2003 battery pack',
   reasons: [{ text: 'The page lists (2) PBP003 2.0 Ah batteries.', quoteIndex: batteries }],
-  check: { text: 'Read the Includes list on the Home Depot page.', quoteIndex: null },
+  check: { text: 'Read the Includes list on the Home Depot page.', quoteIndex: batteries },
 });
 
 function fake(reply: (req: ModelRequest) => ModelResponse): ModelProvider & { requests: ModelRequest[] } {
   const requests: ModelRequest[] = [];
   return {
-    id: 'fake', label: 'Fake', model: 'claude-haiku-5-5', capabilities: { serverTools: [] }, requests,
+    id: 'fake', label: 'Fake', model: 'claude-opus-5-5', capabilities: { serverTools: [] }, requests,
     async send(req) {
       requests.push(req);
       return reply(req);
@@ -48,8 +48,8 @@ describe('the brief pipeline', () => {
     expect(out.brief.writtenBy).toBe('ai');
     expect(out.brief.reasons).toHaveLength(1);
     expect(out.promptVersion).toBe(BRIEF_PROMPT_VERSION);
-    // (1200 x $0.10 + 200 x $0.50) per million tokens.
-    expect(out.costUsd).toBeCloseTo(0.00022, 8);
+    // (1200 x $4 + 200 x $20) per million tokens.
+    expect(out.costUsd).toBeCloseTo(0.0088, 8);
     expect(out.fellBack).toBeUndefined();
   });
 
@@ -98,7 +98,7 @@ describe('the brief pipeline', () => {
   });
 
   it('reads the answer’s JSON and drops what is off its shape', () => {
-    expect(parseBriefRaw(GOOD)).toMatchObject({ ok: true, raw: { reasons: [{ quoteIndex: batteries }], check: { quoteIndex: null } } });
+    expect(parseBriefRaw(GOOD)).toMatchObject({ ok: true, raw: { reasons: [{ quoteIndex: batteries }], check: { quoteIndex: batteries } } });
     expect(parseBriefRaw('{"suggestion":null,"reasons":[{"text":"a"},{"text":"b","quoteIndex":1}],"check":null}')).toMatchObject({ ok: true, raw: { reasons: [{ text: 'b', quoteIndex: 1 }], check: null } });
     expect(parseBriefRaw('{')).toMatchObject({ ok: false });
   });
@@ -111,6 +111,7 @@ describe('what a brief costs', () => {
     expect(briefCost('no-such-model', { inputTokens: 5, outputTokens: 5 })).toBeNull();
     expect(briefCost('claude-haiku-5-5', undefined)).toBeNull();
     expect(estimatedBriefCost('claude-haiku-5-5')).toBeCloseTo((1500 * 0.1 + 500 * 0.5) / 1e6, 8);
+    expect(estimatedBriefCost('claude-opus-5-5')).toBeCloseTo((1500 * 4 + 500 * 20) / 1e6, 8);
     expect(estimatedBriefCost('no-such-model')).toBeNull();
   });
 });
@@ -123,9 +124,9 @@ describe('the brief in Settings', () => {
     research: { provider: 'anthropic' as const, model: 'claude-opus-5-5', apiKeyRef: 'anthropic' },
   };
 
-  it('a store with no choice for it uses Claude Haiku on the Anthropic key', () => {
+  it('a store with no choice for it uses Claude Opus on the Anthropic key (measured: DEFAULT_BRIEF_MODEL)', () => {
     const p = pipelinesFrom(base, { resolveKey: (r) => keys[r] });
-    expect(p.brief).toMatchObject({ ok: true, value: { provider: 'claude', model: 'claude-haiku-5-5' } });
+    expect(p.brief).toMatchObject({ ok: true, value: { provider: 'claude', model: 'claude-opus-5-5' } });
     expect(pipelinesFrom(base, { resolveKey: () => undefined }).brief).toEqual({ ok: false, error: 'No Anthropic key yet — add it in Settings › Keys.' });
   });
 
