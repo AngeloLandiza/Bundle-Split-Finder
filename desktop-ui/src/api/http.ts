@@ -124,6 +124,11 @@ export function createHttpClient(): ApiClient {
       const [detail, questionId] = await Promise.all([call<C.DealDetail>('GET', `/api/deals/${id(dealId)}`), questionOn(dealId)]);
       return mapDetail(detail, questionId);
     },
+    downloadAudit: () => saveAs('/api/export/audit', 'split-finder-audit.json'),
+    resetScanData: async () => {
+      const r = await call<{ backup: string }>('POST', '/api/data/reset', { confirm: 'RESET' });
+      return { backup: r.backup };
+    },
     downloadDealsCsv: ({ sort }) => saveAs(`/api/deals/export.csv?sort=${id(csvSort(sort))}`, 'split-finder-deals.csv'),
 
     review: async () => mapReview(await call<C.ReviewResponse>('GET', '/api/review')),

@@ -33,6 +33,10 @@ export interface ApiClient {
   deal(id: string): Promise<DealDetail>;
   /** Saves the deals as CSV (GET /api/deals/export.csv): the token goes in a header, so a plain link cannot fetch it. */
   downloadDealsCsv(query: { sort: DealSort }): Promise<void>;
+  /** Saves the audit file (GET /api/export/audit): what a developer needs to see what happened. No key is in it. */
+  downloadAudit(): Promise<void>;
+  /** Clears the scan data only (POST /api/data/reset); the agent keeps a backup and says where. Keys, settings and pairing stay. */
+  resetScanData(): Promise<{ backup: string }>;
 
   review(): Promise<ReviewView>;
   /** `seen` is the question's signature as it was shown; the agent refuses the answer when the question has changed. */

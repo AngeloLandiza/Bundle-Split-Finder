@@ -127,6 +127,13 @@ describe('the real client on the real agent', () => {
     }
   });
 
+  it('resets the scan data and says where the backup is; the keys stay', async () => {
+    agent.store.update('keys', (k) => ({ ...k, serpapi: 'serp-secret-0123456789' }));
+    const { backup } = await client.resetScanData();
+    expect(existsSync(backup)).toBe(true);
+    expect(agent.store.get('keys').serpapi).toBe('serp-secret-0123456789');
+  });
+
   it('streams the agent\'s events through fetch with the token, the state first and then a change', async () => {
     const events: AgentEvent[] = [];
     const statuses: string[] = [];

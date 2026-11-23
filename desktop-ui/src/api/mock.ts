@@ -301,6 +301,13 @@ export function createMockClient(): ApiClient {
       if (!d) throw new ApiError('server', 'This bundle is no longer in the deals. The last scan dropped it.');
       return clone(d);
     },
+    async downloadAudit() {
+      await online();
+    },
+    async resetScanData() {
+      await online();
+      return { backup: '/Users/you/Library/Application Support/Split Finder/backup-before-reset-2026-11-23T12-00-00-000Z' };
+    },
     async downloadDealsCsv() {
       await online();
     },
