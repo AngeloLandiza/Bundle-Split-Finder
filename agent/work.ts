@@ -11,7 +11,8 @@
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { AppSettings, EvidenceQuote, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
+import type { AppSettings, DripState, EvidenceQuote, KeyName, NotifyEvent, RunRecord, ScanStartResponse } from '../core/src/api/contract';
+import { lookupsSentence } from '../core/src/deals/lookupCopy';
 import { gatherEvidence } from '../core/src/assist/evidence';
 import { afterLead, pipelinesFrom } from '../core/src/ai/factory';
 import { liveSuggestion, agreedWith, type StoredSuggestion } from '../core/src/assist/stored';
@@ -19,13 +20,13 @@ import { approvalOf } from '../core/src/assist/approve';
 import { EbayClient } from '../core/src/ebay/client';
 import { partPriceDropMessage } from '../core/src/keepa/alerts';
 import { TokenBudget } from '../core/src/keepa/budget';
-import { KeepaClient } from '../core/src/keepa/client';
+import { KeepaClient, KeepaError } from '../core/src/keepa/client';
 import { keepaLookupSearchResult, keepaProductSearchResult } from '../core/src/keepa/fetchStep';
 import { readPartTrend, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
 import { nextRun } from '../core/src/schedule';
 import { AnswerRefused, applyReviewAnswer, reviewSignature } from '../core/src/scan/answers';
 import { applyEbayAnswer } from '../core/src/scan/ebayAnswers';
-import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep } from '../core/src/scan/ebayPass';
+import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep, NOTICE as EBAY_NOTICE } from '../core/src/scan/ebayPass';
 import { PaidProblem, lookupsNeeded, quotePaid, runPaid, savedAnswers } from '../core/src/scan/paid';
 import { addSamples, pipelineOf, pipelineView, samplesOf, type PipelineView } from '../core/src/scan/pipeline';
 import { postScanWork } from '../core/src/scan/postScan';
@@ -37,7 +38,9 @@ import {
 import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
-import { pageRead, runScan, withdrawUnreadSplitQuestions } from '../core/src/scan/runner';
+import { keepaLookupOne, type LookupStep, pageRead, PART_PRICE_MS, plannedWork, readPartPricesFor, runScan, withdrawUnreadSplitQuestions } from '../core/src/scan/runner';
+import { knownModels } from '../core/src/scan/split';
+import { KEEPA_LOOKUP_TOKEN_ESTIMATE } from '../core/src/keepa/estimates';
 import type { ConfirmedPrice, PaidAction, ReviewAnswer, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
@@ -104,7 +107,17 @@ export interface LiveState {
   stopping: boolean;
   pipeline: PipelineView | null;
   searchesUsed: number;
+  /** Step 15: the drip of Keepa lookups between scans; absent while it is off (setting, no Keepa key). */
+  drip?: DripState;
 }
+
+/**
+ * Step 15, decision 2: the drip looks at Keepa's free token status at most this often. The account refills 1 token a
+ * minute (recorded), so a lookup's 11 tokens come back in 11 minutes; looking every 5 is enough and costs nothing.
+ */
+export const DRIP_POLL_MS = 5 * 60_000;
+/** Step 15: the drip's lookups are one Activity run per hour. */
+export const DRIP_RUN_MS = 60 * 60_000;
 
 /** The extension's settings shape, which core's scan and budget functions take. */
 export function extensionSettingsOf(a: AppSettings): ExtensionSettings {
@@ -159,7 +172,8 @@ export class AgentWork {
   // ------------------------------------------------------------------ state and the schedule
 
   state(): LiveState {
-    return { ...this.live };
+    const drip = this.dripState();
+    return { ...this.live, ...(drip ? { drip } : {}) };
   }
 
   /** When the next scheduled scan is due (ISO), or null: manual schedule, or paused. */
@@ -196,19 +210,25 @@ export class AgentWork {
   close(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+    if (this.progressTimer) clearTimeout(this.progressTimer);
+    this.progressTimer = null;
     this.stopCtl.abort();
   }
 
   /** Resolves when whatever runs now has ended (tests, and shutdown). */
   async idle(): Promise<void> {
-    while (this.current) await this.current;
+    while (this.current || this.dripping) await (this.current ?? this.dripping!.catch(() => {}));
   }
 
   /** The scheduler: a due scan starts unless the agent is paused or busy. Returns whether one started. */
   tick(): boolean {
     if (this.live.busy || this.answering > 0 || this.d.store.get('agent').paused) return false;
     const next = this.nextScanAt();
-    if (next === null || Date.parse(next) > this.d.now()) return false;
+    if (next === null || Date.parse(next) > this.d.now()) {
+      // Step 15: nothing else runs, so the drip may look up a waiting part with Keepa.
+      void this.drip().catch(() => {});
+      return false;
+    }
     this.begin('scan', () => this.scan('scheduled'));
     return true;
   }
@@ -274,6 +294,8 @@ export class AgentWork {
     this.live.pipeline = null;
     this.live.searchesUsed = 0;
     this.stopCtl = new AbortController();
+    // Step 15: the drip ends before its next part; the claimed work starts once it has (begin, paid).
+    this.dripCtl.abort();
     this.d.changed();
   }
 
@@ -310,7 +332,180 @@ export class AgentWork {
 
   private begin(kind: 'scan' | 'ask' | 'paid', work: () => Promise<void>): void {
     this.claim(kind);
-    void this.track(work()).catch(() => {});
+    void this.track(this.afterDrip(work)).catch(() => {});
+  }
+
+  /** Step 15: claimed work starts once a drip in flight has finished its part (claim stopped it): never two writers. */
+  private async afterDrip<T>(work: () => Promise<T>): Promise<T> {
+    if (this.dripping) await this.dripping.catch(() => {});
+    return work();
+  }
+
+  // ------------------------------------------------------------------ step 15: the drip of Keepa lookups between scans
+
+  private dripping: Promise<void> | null = null;
+  private dripCtl = new AbortController();
+  private dripActive = false;
+  private dripWaiting = 0;
+  private dripNextAt: number | null = null;
+  private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number } | null = null;
+
+  /** Whether the drip may run now: its setting on, a Keepa key, Keepa on, not paused, and nothing else running. */
+  private dripAllowed(): boolean {
+    const app = this.d.store.get('settings');
+    return app.lookups?.drip !== false && Boolean(this.d.store.get('keys').keepa) && app.settings.amazonRefreshViaKeepa
+      && !this.d.store.get('agent').paused && this.live.busy === null && this.answering === 0;
+  }
+
+  private dripState(): DripState | undefined {
+    const app = this.d.store.get('settings');
+    if (app.lookups?.drip === false || !this.d.store.get('keys').keepa || !app.settings.amazonRefreshViaKeepa) return undefined;
+    const last = this.d.store.get('runtime').drip?.lastLookupAt ?? null;
+    return {
+      active: this.dripActive,
+      waiting: this.dripWaiting,
+      nextAt: this.dripWaiting > 0 && this.dripNextAt !== null ? new Date(this.dripNextAt).toISOString() : null,
+      lastLookupAt: last === null ? null : new Date(last).toISOString(),
+    };
+  }
+
+  /**
+   * Step 15, decision 2: while parts wait for a lookup and nothing else runs, look the next ones up with Keepa whenever
+   * the account has a lookup's tokens above the reserve; the free token status is asked at most every DRIP_POLL_MS. No
+   * SerpApi search. Each match is saved and the deals rebuilt; one Activity run an hour; one digest line when new
+   * estimates appear. With Chrome connected, the Home Depot part prices a scan left are read too (free), for at most
+   * PART_PRICE_MS. Quiet hours hold only the messages (notifyPolicy), never the work. Resolves when the round ends.
+   */
+  async drip(): Promise<void> {
+    if (this.dripping || !this.dripAllowed()) return;
+    if (this.dripNextAt !== null && this.d.now() < this.dripNextAt) return;
+    this.dripCtl = new AbortController();
+    this.dripping = this.dripRound().finally(() => {
+      this.dripping = null;
+      this.dripActive = false;
+      this.d.changed();
+    });
+    return this.dripping;
+  }
+
+  private async dripRound(): Promise<void> {
+    const { store } = this.d;
+    const now = this.d.now();
+    const app = store.get('settings');
+    const ext = extensionSettingsOf(app);
+    const settings = toScanSettings(ext);
+    const keys = store.get('keys');
+    const pairs = Object.fromEntries(Object.values(store.get('tracking').bogoPairs ?? {}).map((p) => [p.key, `${p.promotionId}:${p.starterItemId}`]));
+    const { work, steps } = await plannedWork(this.scanStore, settings, now, pairs);
+    this.dripWaiting = work.lookups.length;
+    this.dripNextAt = now + DRIP_POLL_MS;
+    const prices = await this.dripPartPrices(settings);
+    if (work.lookups.length === 0 || !keys.keepa) {
+      if (prices > 0) await this.refresh();
+      return;
+    }
+    const budget = new TokenBudget({ reserve: ext.keepaReserve, maxPerRun: Number.POSITIVE_INFINITY });
+    const keepa = this.keepaClient(keys.keepa, budget);
+    store.update('runtime', (r) => ({ ...r, drip: { checkedAt: now, lastLookupAt: r.drip?.lastLookupAt ?? null } }));
+    const status = await this.keepaStatus(keepa);
+    if (status === null) {
+      if (prices > 0) await this.refresh();
+      return;
+    }
+    const before = this.estimatedKeys();
+    const catalog = (await knownModels(this.scanStore)).catalog;
+    const done = { looked: 0, matched: 0, none: 0, review: 0, tokens: 0 };
+    for (const key of work.lookups) {
+      if (!this.dripAllowed() || this.dripCtl.signal.aborted) break;
+      if (budget.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE) !== null) break;
+      const step = steps.get(key) as LookupStep;
+      this.dripActive = true;
+      this.d.changed();
+      let out: Awaited<ReturnType<typeof keepaLookupOne>>;
+      try {
+        out = await keepaLookupOne({
+          store: this.scanStore, settings, now: this.d.now, keepaBudget: budget, catalog, prefix: 'agent:drip',
+          keepaLookup: (brand, model, label) => keepaLookupSearchResult(keepa, `${brand} ${model}`, { label }),
+          keepaProduct: (asin, label, maxAgeMs) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: ext.trackingDepth }),
+        }, step);
+      } catch (err) {
+        // A refusal or a network error: the part keeps waiting; the next look is after DRIP_POLL_MS.
+        if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+        break;
+      }
+      if (out.status === 'refused') break;
+      done.looked += 1;
+      done.tokens += out.tokens;
+      if (out.status === 'matched') done.matched += 1;
+      else if (out.status === 'review') done.review += 1;
+      else done.none += 1;
+      this.dripWaiting = Math.max(0, this.dripWaiting - 1);
+      const at = this.d.now();
+      store.update('runtime', (r) => ({ ...r, drip: { checkedAt: r.drip?.checkedAt ?? now, lastLookupAt: at } }));
+    }
+    this.dripActive = false;
+    // The next look: when a lookup's tokens will have refilled above the reserve, and never sooner than DRIP_POLL_MS.
+    const left = (budget.knownBalance ?? status.tokensLeft) - ext.keepaReserve;
+    const short = KEEPA_LOOKUP_TOKEN_ESTIMATE - left;
+    const perMin = status.refillRate > 0 ? status.refillRate : 1;
+    this.dripNextAt = this.d.now() + Math.max(DRIP_POLL_MS, short > 0 ? Math.ceil(short / perMin) * 60_000 : 0);
+    if (done.looked === 0) {
+      if (prices > 0) await this.refresh();
+      return;
+    }
+    await this.refresh();
+    this.dripRecord(done);
+    const fresh = [...this.estimatedKeys()].filter((k) => !before.has(k)).length;
+    if (fresh > 0) {
+      const text = `Keepa lookups between scans gave ${fresh} new ${fresh === 1 ? 'estimate' : 'estimates'} (from your fee settings, not your real fees).`;
+      const tg = this.policy.digest({ kind: 'deal', title: 'Split Finder', body: text, count: fresh, route: '/' }, text);
+      const problem = await this.sendTelegram(tg);
+      if (problem) this.addError(problem, { kind: 'telegram', label: 'Send again', searches: 0, usd: 0 });
+    }
+  }
+
+  /** Step 15: the free Home Depot part prices a scan left, read in the paired Chrome while nothing else runs. Returns how many were saved. */
+  private async dripPartPrices(settings: ReturnType<typeof toScanSettings>): Promise<number> {
+    if (!this.d.helperConnected()) return 0;
+    const signal = this.dripCtl.signal;
+    const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => signal });
+    try {
+      const out = await readPartPricesFor({
+        store: this.scanStore, settings, readPartPrices: readers.readPartPrices, now: this.d.now, maxMs: PART_PRICE_MS,
+        shouldStop: () => signal.aborted || !this.dripAllowed(),
+      });
+      return out.saved;
+    } catch {
+      // A read Chrome could not make: the parts are asked for again next time.
+      return 0;
+    }
+  }
+
+  /** The deals with an estimate now, by key. */
+  private estimatedKeys(): Set<string> {
+    return new Set(this.d.store.get('deals').bundles.filter((b) => b.estimate !== null).map((b) => b.key));
+  }
+
+  /** One Activity run an hour of drip: "Looked up 6 parts with Keepa: 4 matched, 2 no Amazon listing." */
+  private dripRecord(done: { looked: number; matched: number; none: number; review: number; tokens: number }): void {
+    const now = this.d.now();
+    if (!this.dripRun || now - this.dripRun.startedAt >= DRIP_RUN_MS) {
+      const record: RunRecord = {
+        id: `run-${now}-drip`, kind: 'lookup', startedAt: new Date(now).toISOString(), finishedAt: null, status: 'finished', searchesUsed: 0, keepaTokensUsed: 0,
+        aiCostUsd: 0, summary: '', trigger: 'scheduled',
+      };
+      this.dripRun = { record, startedAt: now, looked: 0, matched: 0, none: 0, review: 0 };
+    }
+    const r = this.dripRun;
+    r.looked += done.looked;
+    r.matched += done.matched;
+    r.none += done.none;
+    r.review += done.review;
+    r.record.keepaTokensUsed += done.tokens;
+    r.record.finishedAt = new Date(now).toISOString();
+    const parts = [`${r.matched} matched`, ...(r.none > 0 ? [`${r.none} no Amazon listing`] : []), ...(r.review > 0 ? [`${r.review} to review`] : [])];
+    r.record.summary = `Looked up ${r.looked} ${r.looked === 1 ? 'part' : 'parts'} with Keepa: ${parts.join(', ')}.`;
+    this.record({ ...r.record });
   }
 
   // ------------------------------------------------------------------ the run
@@ -335,7 +530,12 @@ export class AgentWork {
     };
   }
 
-  /** A store that tells the app how the scan is going, at most once a second. */
+  /**
+   * A store that tells the app how the scan is going, at most once a second. Step 15: the live view is kept on every
+   * save, and a save inside the second is told when the second is up (a trailing call): the real Nov 23 scan saved the
+   * part-price step's start 14 ms after the kit pages ended, the save was dropped, and the app showed the step as
+   * "next" with no figure for the 9 minutes it ran.
+   */
   private watched(store: ScanStore): ScanStore {
     const self = this;
     return new Proxy(store, {
@@ -345,13 +545,39 @@ export class AgentWork {
           await target.putScan(job);
           self.live.searchesUsed = job.searchesUsed;
           const now = self.d.now();
-          if (now - self.progressAt >= PROGRESS_MS || job.status !== 'running') {
-            self.progressAt = now;
-            self.live.pipeline = pipelineView(job, self.d.store.get('runtime').rates, now);
-            self.d.changed();
-          }
+          self.live.pipeline = pipelineView(job, self.d.store.get('runtime').rates, now, { unknown: '' });
+          if (now - self.progressAt >= PROGRESS_MS || job.status !== 'running') self.tellProgress(now);
+          else self.progressSoon();
         };
       },
+    });
+  }
+
+  private progressTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private tellProgress(now: number): void {
+    if (this.progressTimer) clearTimeout(this.progressTimer);
+    this.progressTimer = null;
+    this.progressAt = now;
+    this.d.changed();
+  }
+
+  /** The latest save is told once the second since the last one is up. */
+  private progressSoon(): void {
+    if (this.progressTimer) return;
+    this.progressTimer = setTimeout(() => this.tellProgress(this.d.now()), PROGRESS_MS);
+    this.progressTimer.unref?.();
+  }
+
+  /** Step 15: the last rejection of a key by its service, in plain words, or null when it was accepted. */
+  private keyProblem(name: KeyName, sentence: string | null): void {
+    const cur = this.d.store.get('runtime').keyProblems ?? {};
+    if ((cur[name] ?? null) === sentence) return;
+    this.d.store.update('runtime', (r) => {
+      const next = { ...(r.keyProblems ?? {}) };
+      if (sentence === null) delete next[name];
+      else next[name] = sentence;
+      return { ...r, keyProblems: next };
     });
   }
 
@@ -382,13 +608,17 @@ export class AgentWork {
       run.stopReason = job.stopReason;
       run.status = job.stopReason === 'user' ? 'stopped' : job.stopReason === null ? 'finished' : job.stopReason === 'error' ? 'failed' : 'limit';
       if (job.stopMessage) run.error = scrub(job.stopMessage, keys);
-      run.steps = pipelineView(job, store.get('runtime').rates, this.d.now()).steps;
+      run.steps = pipelineView(job, store.get('runtime').rates, this.d.now(), { unknown: '' }).steps;
       const judge = pipelineOf(job).find((p) => p.id === 'judge');
       run.judgeCostUsd = judge?.costSoFar ?? 0;
+      this.notedEbayKeys(job);
       const j = job;
       store.update('runtime', (r) => ({
         ...r, rates: addSamples(r.rates, samplesOf(j)),
-        lastJob: { status: j.status, stopReason: j.stopReason, stopMessage: j.stopMessage ? scrub(j.stopMessage, keys) : null, searchesUsed: j.searchesUsed, finishedAt: j.finishedAt, deferred: j.deferred, ebayNotice: j.ebayNotice ?? null },
+        lastJob: {
+          status: j.status, stopReason: j.stopReason, stopMessage: j.stopMessage ? scrub(j.stopMessage, keys) : null, searchesUsed: j.searchesUsed, finishedAt: j.finishedAt, deferred: j.deferred, ebayNotice: j.ebayNotice ?? null,
+          ...(j.lookupsVia ? { lookupsVia: j.lookupsVia } : {}), ...(j.lookupsWaiting !== undefined ? { lookupsWaiting: j.lookupsWaiting } : {}), lookupsBlockedBy: j.lookupsBlockedBy ?? null,
+        },
       }));
     }
 
@@ -430,7 +660,7 @@ export class AgentWork {
     run.finishedAt = new Date(this.d.now()).toISOString();
     // Nov 23: the bundles whose own Home Depot page is still not read, for Read again.
     const pagesUnread = (await this.scanStore.listBundles().catch(() => [])).filter((b) => !pageRead(b)).length;
-    run.summary = this.summaryOf(report, run, notes, again !== undefined);
+    run.summary = this.summaryOf(report, run, notes, again !== undefined, job);
     this.record(run);
     const open = report ? report.review.length + (report.ebayQuestions?.length ?? 0) : 0;
     store.update('activity', (a) => ({
@@ -440,15 +670,27 @@ export class AgentWork {
         // Read again spends from what the scan before it left, so the two count as one scan against the limit.
         searchesUsed: (again?.usedBefore ?? 0) + run.searchesUsed, keepaTokensUsed: run.keepaTokensUsed,
         newDeals: report ? report.bundles.filter((b) => b.section === 'confirmed').length : 0, reviewOpen: open, pagesUnread,
+        // Step 15: what the lookups did, and why the rest wait.
+        ...(job?.lookupsWaiting !== undefined ? { waitingLookups: job.lookupsWaiting } : {}),
+        ...(job?.lookupsVia ? { lookupsDone: { ...job.lookupsVia } } : {}),
+        ...(job && job.lookupsWaiting !== undefined ? { lookupsBlockedBy: job.lookupsBlockedBy ?? null } : {}),
       },
     }));
   }
 
   /** Nov 23: the run's outcome first ("Found 16 bundles; 0 estimated because ..."), then what it spent, then the problems. */
-  private summaryOf(report: ScanReport | null, run: RunRecord, notes: string[], again = false): string {
+  private summaryOf(report: ScanReport | null, run: RunRecord, notes: string[], again = false, job: ScanJob | null = null): string {
     const parts: string[] = [];
     if (again) parts.push('Read again.');
     if (report) parts.push(outcomeSentence(report));
+    // Step 15: what the lookups did and the real cause of any that wait ("12 Amazon lookups wait for Keepa tokens ...").
+    if (job?.lookupsVia) {
+      const via = job.lookupsVia;
+      const sentence = lookupsSentence({
+        waiting: job.lookupsWaiting ?? 0, keepa: via.keepa, serpapi: via.serpapi, blockedBy: job.lookupsBlockedBy, refillPerMin: this.d.store.get('runtime').keepa?.refillRate ?? null,
+      });
+      if (sentence) parts.push(sentence);
+    }
     if (run.searchesUsed > 0 || run.status !== 'failed') parts.push(`${run.searchesUsed} ${run.searchesUsed === 1 ? 'search' : 'searches'}.`);
     if (run.questionsAsked) parts.push(`AI asked about ${run.questionsAsked}.`);
     if (run.autopilotApplied) parts.push(`Autopilot applied ${run.autopilotApplied}.`);
@@ -469,8 +711,10 @@ export class AgentWork {
     try {
       account = await SerpApiClient.account(keys.serpapi, this.d.fetchFn, this.d.serpBaseUrl);
     } catch (err) {
+      if (err instanceof SerpApiError && err.status === 401) this.keyProblem('serpapi', err.message);
       throw new WorkRefused(err instanceof SerpApiError ? err.message : 'Something went wrong while checking your SerpApi account.');
     }
+    this.keyProblem('serpapi', null);
     const at = new Date(this.d.now()).toISOString();
     store.update('runtime', (r) => ({ ...r, serp: { left: account.totalSearchesLeft, perMonth: account.searchesPerMonth, rateLimitPerHour: account.rateLimitPerHour, at } }));
 
@@ -482,7 +726,7 @@ export class AgentWork {
       apiKey: keys.serpapi, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now, baseUrl: this.d.serpBaseUrl,
       onSpend: (e: LedgerEntry) => serpLedger(e),
     });
-    const keepa = this.keepaDeps(ext, keys);
+    const keepa = await this.keepaDeps(ext, keys, notes);
     const connected = this.d.helperConnected();
     const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal });
     if (!connected) notes.push('Chrome is closed, so Home Depot pages wait for the next scan.');
@@ -538,28 +782,71 @@ export class AgentWork {
     if (short.length > 0) notes.push(`BOGO: ${short.map((r) => r.brand).join(' and ')} not read in full (${short[0]!.problem}); the pairs found before are kept.`);
   }
 
-  /** Keepa inside the scan, as the extension builds it (worker.ts buildKeepaDeps): discovery and tracking are core's plan. */
-  private keepaDeps(s: ExtensionSettings, keys: StoredKeys) {
-    if (!keys.keepa || !s.amazonRefreshViaKeepa || s.keepaTokensPerScan <= 0) return {};
-    const acct = this.d.store.get('runtime').keepa;
-    const keepaBudget = new TokenBudget({ reserve: s.keepaReserve, maxPerRun: s.keepaTokensPerScan }, acct?.tokensLeft ?? null);
+  /** Step 15: a Keepa client on the owner's key whose every answer keeps the balance and refill in runtime.keepa. */
+  private keepaClient(key: string, budget: TokenBudget): KeepaClient {
     const ledger = this.ledger('keepa-ledger.jsonl');
-    const keepa = new KeepaClient({
-      apiKey: keys.keepa, budget: keepaBudget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now,
+    return new KeepaClient({
+      apiKey: key, budget, cache: this.cache, fetchFn: this.d.fetchFn, now: this.d.now,
       onSpend: (entry) => {
         ledger(entry);
-        this.d.store.update('runtime', (r) => ({ ...r, keepa: { tokensLeft: entry.tokensLeft, refillIn: entry.refillIn, at: new Date(this.d.now()).toISOString() } }));
+        this.d.store.update('runtime', (r) => ({
+          ...r, keepa: { tokensLeft: entry.tokensLeft, refillIn: entry.refillIn, refillRate: entry.refillRate ?? r.keepa?.refillRate, at: new Date(this.d.now()).toISOString() },
+        }));
       },
     });
+  }
+
+  /**
+   * Step 15: Keepa's free token status, kept in runtime.keepa; null when it could not be read (a rejected key is a key
+   * problem, said beside the key in Settings). Never spends a token.
+   */
+  async keepaStatus(client: KeepaClient): Promise<{ tokensLeft: number; refillRate: number } | null> {
+    try {
+      const st = await client.tokenStatus();
+      const at = new Date(this.d.now()).toISOString();
+      this.d.store.update('runtime', (r) => ({ ...r, keepa: { tokensLeft: st.tokensLeft, refillIn: st.refillIn, refillRate: st.refillRate, at } }));
+      this.keyProblem('keepa', null);
+      return st;
+    } catch (err) {
+      if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
+      return null;
+    }
+  }
+
+  /**
+   * Keepa inside the scan (step 15, decision 1): the free token status first, so the plan knows what the account has
+   * above the reserve now; `keepaTokensPerScan` 0 is automatic (no cap of its own). Without a status the plan puts no
+   * lookup on Keepa (never a guess) and SerpApi takes them within its own limits.
+   */
+  private async keepaDeps(s: ExtensionSettings, keys: StoredKeys, notes: string[]) {
+    if (!keys.keepa || !s.amazonRefreshViaKeepa) return {};
+    const keepaBudget = new TokenBudget({ reserve: s.keepaReserve, maxPerRun: s.keepaTokensPerScan > 0 ? s.keepaTokensPerScan : Number.POSITIVE_INFINITY });
+    const keepa = this.keepaClient(keys.keepa, keepaBudget);
+    const status = await this.keepaStatus(keepa);
+    if (status === null) {
+      const problem = this.d.store.get('runtime').keyProblems?.keepa;
+      notes.push(problem ? `Keepa: ${problem}` : "Keepa's token count could not be read, so no lookup went to Keepa this scan.");
+      if (problem) return {};
+    }
     return {
       keepaBudget,
       keepaProduct: (asin: string, label: string, maxAgeMs?: number) => keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: s.trackingDepth }),
       keepaLookup: (brand: string, model: string, label: string) => keepaLookupSearchResult(keepa, `${brand} ${model}`, { label }),
       keepaScale: {
         tokensPerRun: s.keepaTokensPerScan, discoveryShare: s.keepaDiscoveryShare, reserve: s.keepaReserve, mode: s.discoveryMode,
-        tokensLeft: acct?.tokensLeft ?? null, trackingDepth: s.trackingDepth,
+        tokensLeft: status?.tokensLeft ?? null, trackingDepth: s.trackingDepth,
       },
     };
+  }
+
+  /** Step 15: the eBay step's notice says whether eBay or Claude rejected its key; a step that ran clean clears them. */
+  private notedEbayKeys(job: ScanJob): void {
+    const notice = job.ebayNotice ?? '';
+    const ran = pipelineOf(job).find((p) => p.id === 'ebay')?.state === 'done';
+    if (notice.includes(EBAY_NOTICE.ebayKeys)) this.keyProblem('ebay', 'eBay did not accept the App ID and Cert ID.');
+    else if (ran) this.keyProblem('ebay', null);
+    if (notice.includes(EBAY_NOTICE.claudeKey)) this.keyProblem('anthropic', 'Claude did not accept the Anthropic key.');
+    else if (pipelineOf(job).find((p) => p.id === 'judge')?.state === 'done' && (job.counts.listingsJudged ?? 0) > 0) this.keyProblem('anthropic', null);
   }
 
   /** The scan's eBay step: the keys, the judge pipeline, and room under the month's AI cap. */
@@ -934,7 +1221,7 @@ export class AgentWork {
   paid(bundleKey: string, kind: 'lookUp' | 'verify', model?: string): Promise<{ searchesUsed: number }> {
     // The slot is taken before the first await; a refusal below frees it (track).
     this.claim('paid');
-    return this.track(this.paidClaimed(bundleKey, kind, model));
+    return this.track(this.afterDrip(() => this.paidClaimed(bundleKey, kind, model)));
   }
 
   private async paidClaimed(bundleKey: string, kind: 'lookUp' | 'verify', model?: string): Promise<{ searchesUsed: number }> {

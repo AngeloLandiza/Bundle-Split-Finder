@@ -201,6 +201,10 @@ function clock(v: unknown, name: string): string {
 function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, unknown>, at: string): StoreData['settings'] {
   const next = structuredClone(cur);
   if ('autopilot' in patch) next.autopilot = flag(patch.autopilot, 'autopilot');
+  if ('lookups' in patch) {
+    const l = obj(patch.lookups, 'lookups');
+    if ('drip' in l) next.lookups = { ...(next.lookups ?? { drip: true }), drip: flag(l.drip, 'lookups.drip') };
+  }
   if ('settings' in patch) {
     const s = obj(patch.settings, 'settings');
     for (const f of NUMERIC_SETTINGS) {
@@ -394,6 +398,7 @@ export function createAgent(opts: AgentOptions): Agent {
     const live = work.state();
     return agentState(data, {
       ...helperLive(), jobsWaiting: jobs.waitingCount(), now: now(), busy: live.busy, stopping: live.stopping, pipeline: live.pipeline, nextScanAt: work.nextScanAt(),
+      ...(live.drip ? { drip: live.drip } : {}),
     });
   };
 
@@ -499,11 +504,20 @@ export function createAgent(opts: AgentOptions): Agent {
     if (!KEY_NAMES.includes(n)) throw new HttpError('not_found', 'No such key.');
     return n;
   };
+  // Step 15: a key replaced or removed has no problem any more until its service says otherwise.
+  const clearKeyProblem = (name: KeyName) => {
+    if (store.get('runtime').keyProblems?.[name] === undefined) return;
+    store.update('runtime', (rt) => {
+      const { [name]: _gone, ...rest } = rt.keyProblems ?? {};
+      return { ...rt, keyProblems: rest };
+    });
+  };
   // Keys go in and never come out: both answer with which keys are set.
   r.put('/api/keys/:name', 'ui', async (ctx) => {
     const name = keyName(ctx);
     const value = parseKey(name, obj(await ctx.body()));
     const keys = store.update('keys', (k) => ({ ...k, ...value }));
+    clearKeyProblem(name);
     return settingsResponse({ settings: store.get('settings'), keys }).keys;
   });
   r.delete('/api/keys/:name', 'ui', (ctx) => {
@@ -513,6 +527,7 @@ export function createAgent(opts: AgentOptions): Agent {
       delete next[name];
       return next;
     });
+    clearKeyProblem(name);
     return settingsResponse({ settings: store.get('settings'), keys }).keys;
   });
   // Free account checks for a key typed in the app (the key is sent only to its own service).

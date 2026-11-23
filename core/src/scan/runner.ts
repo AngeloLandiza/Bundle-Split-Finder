@@ -1038,7 +1038,7 @@ export async function openMatchReview(ctx: PartContext, part: Part, reason: stri
   job.counts.reviewsOpened += 1;
 }
 
-async function applyRefresh(run: Run, step: Refresh, data: unknown, at: number): Promise<void> {
+export async function applyRefresh(run: PartContext, step: Refresh, data: unknown, at: number): Promise<void> {
   const product = parseAmazonProduct(data, step.asin);
   if (product) {
     await savePrice(run, step.asin, product, at);
@@ -2219,4 +2219,57 @@ async function finish(run: Run): Promise<ScanJob> {
   job.finishedAt = run.now();
   await run.store.putScan(job);
   return job;
+}
+
+// ---------------------------------------------------------------- step 15: one lookup between scans (the drip)
+
+export interface KeepaOneDeps {
+  store: ScanStore;
+  settings: ScanSettings;
+  now: () => number;
+  keepaBudget: Pick<TokenBudget, 'blockReason'>;
+  keepaLookup: NonNullable<ScanDeps['keepaLookup']>;
+  keepaProduct: NonNullable<ScanDeps['keepaProduct']>;
+  /** The models the splitter knows (knownModels), read once for a round of lookups. */
+  catalog: Catalog;
+  /** First part of every ledger label. Default 'drip'. */
+  prefix?: string;
+}
+
+/** What one lookup did: matched (and priced), sent to Review, no Amazon listing, or refused before anything was sent. */
+export type KeepaOneOutcome = { status: 'matched' | 'review' | 'none' | 'refused'; tokens: number };
+
+/** A search client that refuses: the drip never searches SerpApi. */
+const NO_SEARCH: SearchClient = { search: () => Promise.reject(new Error('The drip makes no SerpApi search.')) };
+
+/**
+ * Step 15, decision 2: one waiting part looked up on Keepa, outside a scan, exactly as a scan's Keepa lookup is: the
+ * search (applyLookup, so the same match rules and questions), then the matched listing's price pulled (applyRefresh), as
+ * the recorded search rows carry no price. A product page the lookup could not name is owed to the next scan
+ * (notePageDue). Never a SerpApi search. Throws what Keepa throws (a network error, a 429): the part keeps waiting.
+ */
+export async function keepaLookupOne(d: KeepaOneDeps, step: LookupStep): Promise<KeepaOneOutcome> {
+  if (d.keepaBudget.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE) !== null) return { status: 'refused', tokens: 0 };
+  const prefix = d.prefix ?? 'drip';
+  const counts: ScanJob['counts'] = {
+    pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0, catalogPages: 0,
+    listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0,
+  };
+  const ctx: PartContext = { client: NO_SEARCH, store: d.store, settings: d.settings, now: d.now, prefix, catalog: d.catalog, job: { counts } };
+  const plain: LookupStep = { kind: 'lookup', brand: step.brand, model: step.model };
+  const result = await d.keepaLookup(plain.brand, plain.model, `${prefix}:lookup:${plain.model}`);
+  let tokens = result.source === 'network' ? (result.keepaTokens ?? 0) : 0;
+  const follow = await applyLookup(ctx, plain, result.data, result.at);
+  const match = await d.store.getMatch(partKey(plain.brand, plain.model));
+  if (match?.status === 'matched' && match.asin !== null) {
+    const price = await d.store.getPrice(match.asin);
+    if ((!price || price.price === null) && d.keepaBudget.blockReason(productTokenEstimate(d.settings.keepaTrackingDepth, 1)) === null) {
+      const pulled = await d.keepaProduct(match.asin, `${prefix}:refresh:${plain.model}`, d.settings.freshnessMs);
+      if (pulled.source === 'network') tokens += pulled.keepaTokens ?? 0;
+      await applyRefresh(ctx, { kind: 'refresh', brand: plain.brand, model: plain.model, asin: match.asin }, pulled.data, pulled.at);
+    }
+    return { status: 'matched', tokens };
+  }
+  if (follow) await notePageDue(ctx, plain, follow);
+  return { status: match?.status === 'review' ? 'review' : 'none', tokens };
 }

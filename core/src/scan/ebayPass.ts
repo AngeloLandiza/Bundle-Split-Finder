@@ -85,7 +85,7 @@ export interface EbayPassArgs {
   callTimeoutMs?: number;
 }
 
-const NOTICE = {
+export const NOTICE = {
   ebayKeys: 'eBay did not accept the App ID and Cert ID, so eBay reference values were not checked. Check them in Settings.',
   ebayForbidden: 'eBay says these keys may not make this call, so eBay reference values were not checked.',
   ebayLimited: 'eBay is limiting calls, so the rest of the eBay reference values wait for the next scan.',

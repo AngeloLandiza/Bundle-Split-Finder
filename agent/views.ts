@@ -4,6 +4,7 @@ import type {
   ActivityResponse,
   AgentState,
   AutopilotEntry,
+  DripState,
   DealDetail,
   DealEstimate,
   DealHistoryPoint,
@@ -184,7 +185,7 @@ export function dealsResponse(
   const limit =
     lastJob && bundles.length
       ? limitCopy(
-          { lastJob, searchesPerScan: data.settings.settings.searchesPerScan, rateLimitPerHour: data.runtime.serp?.rateLimitPerHour ?? null, now },
+          { lastJob, searchesPerScan: data.settings.settings.searchesPerScan, rateLimitPerHour: data.runtime.serp?.rateLimitPerHour ?? null, now, keepaRefillPerMin: data.runtime.keepa?.refillRate ?? null },
           bundles,
         )
       : null;
@@ -418,6 +419,8 @@ export interface LiveView {
   /** Nov 23: the helper's build, from its heartbeat, and whether it is not the one this app ships. */
   helperVersion?: string | null;
   helperOutdated?: boolean;
+  /** Step 15: the drip of Keepa lookups between scans (work.ts dripState). */
+  drip?: DripState;
 }
 
 /** Nov 23: the last scan, with whether Read again can start now (some page unread, Chrome connected, nothing running). */
@@ -439,6 +442,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       nextScanAt: live.nextScanAt,
       lastScan: lastScanOf(data, live),
       ...(data.agent.problem ? { problem: data.agent.problem } : {}),
+      ...(live.drip ? { drip: live.drip } : {}),
     },
     helper: {
       paired: data.pairing.extensions.length > 0, connected: live.connected, lastSeenAt: live.lastSeenAt, jobsWaiting: live.jobsWaiting,
@@ -451,6 +455,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       serpPerScan: data.settings.settings.searchesPerScan,
       serpReserve: data.settings.settings.reserve,
       keepaTokens: data.runtime.keepa?.tokensLeft ?? null,
+      keepaRefillPerMin: data.runtime.keepa?.refillRate ?? null,
       aiSpentUsd: Math.round(aiSpentThisMonth({ suggestions: data.suggestions, runs: data.activity.runs }, live.now) * 100) / 100,
       aiCapUsd: data.settings.ai.monthlyCapUsd,
     },
@@ -461,6 +466,7 @@ export function agentState(data: StoreData, live: LiveView): AgentState {
       jobsWaiting: live.jobsWaiting,
     },
     keys: keysPresence(data.keys),
+    ...(data.runtime.keyProblems && Object.keys(data.runtime.keyProblems).length > 0 ? { keyProblems: { ...data.runtime.keyProblems } } : {}),
     firstRun: data.activity.lastScan === null && data.deals.bundles.length === 0,
     settingsAt: data.settings.updatedAt,
   };
