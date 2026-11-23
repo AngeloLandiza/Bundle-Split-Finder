@@ -565,6 +565,29 @@ Export audit file, Restart agent, and the agent's own version and Node version.
 - **D4**: the menu bar popover is its own small window; it reads the same tokens (`base.css`) and
   `agentWords` / `ProgressBar` / `Spinner` for the agent's state.
 
+### Windows 11 (`desktop-ui/src/windows.css`)
+
+The Alex build runs in WebView2. The same screens read `<html data-platform="windows">` (`lib/platform.ts`, from
+the user agent) and take Fluent's conventions; a Mac reads none of this file.
+
+- **Type**: Segoe UI Variable Text 14/20 body, Display for titles, Cascadia Mono for model numbers and ASINs.
+- **Shape**: 4px controls, 8px surfaces (menus, flyouts, the palette, a sheet, which is a centred dialog here),
+  32px controls and rows (28 compact). Buttons have a 1px hairline and a stronger stroke under them; text fields
+  show a 2px accent line under while typing; the focus ring is 2px in the text colour, off the control.
+- **Toggle**: a 40 x 20 pill, outlined when off, the accent when on, a 12px knob that grows to 14px under the pointer.
+- **Accent**: CSS `AccentColor` where the webview has it (the user's Windows accent, lightened in dark mode),
+  else #005FB8 light and #60CDFF dark. A chosen accent in Preferences replaces it, as on a Mac. Text on the
+  system accent is white in light and black in dark, as Windows does.
+- **Selection** is a tint with a 3px accent pill, not a solid accent, so a selected row keeps its own colours.
+- **Mica**: the sidebar and title area paint nothing, over the window ground, which is the solid Mica base colour.
+  When the shell has put the real Mica behind the window it sets `__SPLIT_FINDER_SHELL__.backdrop = 'mica'` and
+  the ground goes clear. The content is a layer above with an 8px top-left corner. No traffic-light band: the
+  native title bar, with its caption buttons, sits above the app.
+- **Words and keys** (`lib/platform.ts`, one formatter for every label): Ctrl, Alt and Shift where a Mac shows
+  the symbols; Settings for Preferences; "Show in taskbar" and "Show notification area icon" for the Dock and menu
+  bar icon; Show in File Explorer; Exit for Quit; PC for Mac. Every key handler accepts Ctrl where it accepts Cmd.
+- **Notification area flyout**: the popover's content on a translucent 8px surface with a hairline and a soft shadow.
+
 ## Behaviour
 
 - Keyboard: everything reachable by Tab in reading order; Enter opens a row; Escape goes back
