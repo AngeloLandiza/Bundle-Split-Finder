@@ -205,15 +205,7 @@ export function AlertsSection({ draft, problems, onChange, onCommit, chip = real
 const localDate = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-export function DataSection({
-  api,
-  draft,
-  onChange,
-}: {
-  api: WorkerApi;
-  draft?: ExtensionSettings;
-  onChange?: (patch: Partial<ExtensionSettings>, commit?: boolean) => void;
-}) {
+export function DataSection({ api }: { api: WorkerApi }) {
   const [note, setNote] = useState<string | null>(null);
 
   async function exportFile(type: 'exportDeals' | 'exportMatches' | 'exportAudit', filename: string, mime: string) {
@@ -249,16 +241,6 @@ export function DataSection({
 
   return (
     <Section title="Your data" help="Everything stays in this browser. Export it to keep a copy or move to another computer.">
-      {draft && onChange ? (
-        <label className="choice">
-          <input
-            type="checkbox"
-            checked={draft.agentBridgeAfterScan}
-            onChange={() => onChange({ agentBridgeAfterScan: !draft.agentBridgeAfterScan }, true)}
-          />
-          After each scan, send the audit file to the local agent (npm run agent:dashboard on port 8790)
-        </label>
-      ) : null}
       <div className="row">
         <button type="button" className="btn" onClick={() => exportFile('exportDeals', 'split-finder-deals.csv', 'text/csv')}>
           Export deals as CSV

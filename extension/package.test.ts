@@ -43,7 +43,8 @@ describe('npm run package', () => {
       expect(/\b[0-9a-f]{64}\b/.test(text), `${f} holds a 64-character hex string`).toBe(false);
       if (envKey && envKey.length >= 8) expect(text.includes(envKey), `${f} holds the .env key`).toBe(false);
       expect(text.includes('localhost'), `${f} mentions localhost`).toBe(false);
-      expect(text.includes('127.0.0.1'), `${f} mentions 127.0.0.1`).toBe(false);
+      // The paired app is the one loopback address the extension may name (docs/decisions.md, step 13), and only its port.
+      for (const m of text.matchAll(/127\.0\.0\.1(?!:8790)/g)) expect.fail(`${f} names 127.0.0.1 without port 8790 at ${m.index}`);
       expect(text.includes('sourceMappingURL'), `${f} points at a source map`).toBe(false);
       expect(text.includes('/Users/'), `${f} holds an absolute path`).toBe(false);
       expect(text.includes('.output-e2e'), `${f} names the end-to-end build`).toBe(false);

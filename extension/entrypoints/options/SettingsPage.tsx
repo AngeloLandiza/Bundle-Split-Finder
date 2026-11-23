@@ -88,7 +88,7 @@ export function SettingsPage({ api = realWorker }: { api?: WorkerApi }) {
             <FeesSection draft={draft} problems={problems} onChange={change} onCommit={commit} />
             <AlertsSection draft={draft} problems={problems} onChange={change} onCommit={commit} />
             <RelaySection api={api} state={state} />
-            <DataSection api={api} draft={draft} onChange={change} />
+            <DataSection api={api} />
           </>
         ) : null}
       </main>

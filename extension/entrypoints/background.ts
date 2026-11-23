@@ -12,16 +12,12 @@ import * as prefs from '../lib/prefs';
 import { mayAsk } from '../lib/sender';
 import { createPageReader, createPartPriceReader, openDoorway, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
 import { createResearchTools } from '../lib/researchTools';
-import { appHomeUrl, applyToolbarPanelBehavior } from '../lib/appPrimaryUi';
-import { APP_SYNC_ALARM } from '../lib/appSync';
-import { runAppSync } from '../lib/appSyncRun';
 import { createWorker, type DeferredPage, type PageEnv } from '../lib/worker';
 import type { ProductPage } from '../../core/src/hdPage';
 
 declare const __SPLIT_FINDER_BASE_URL__: string | undefined;
 declare const __SPLIT_FINDER_HD_ORIGIN__: string;
 declare const __SPLIT_FINDER_DEBUG__: boolean;
-declare const __SPLIT_FINDER_HELPER__: boolean;
 
 const DOORWAY_KEY = 'hdReaderTab';
 
@@ -158,7 +154,6 @@ async function notifyText(message: string): Promise<void> {
 }
 
 export default defineBackground(() => {
-  let appPrimaryUi = false;
   const readPages = createPageReader(chromeReaderEnv(), {
     // The end-to-end build reads from the local replay server, which needs no settling.
     settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50,
@@ -215,18 +210,10 @@ export default defineBackground(() => {
         body,
       });
     },
-    agentBridgePost: async (url, body) => {
-      await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
-    },
     requestHostPermission: async (originPattern) => {
       const granted = await browser.permissions.contains({ origins: [originPattern] });
       if (granted) return true;
       return browser.permissions.request({ origins: [originPattern] });
-    },
-    appPrimaryUi: () => appPrimaryUi,
-    openAppHome: () => {
-      if (!appPrimaryUi) return Promise.resolve(false);
-      return browser.tabs.create({ url: appHomeUrl(), active: true }).then(() => true, () => false);
     },
     broadcast: (state) => {
       // No page may be open to receive it.
@@ -235,21 +222,6 @@ export default defineBackground(() => {
   });
 
   browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (
-      __SPLIT_FINDER_BASE_URL__ !== undefined
-      && typeof request === 'object'
-      && request !== null
-      && (request as { type?: string }).type === 'runAppSync'
-    ) {
-      void runAppSync(worker, {
-        readPages,
-        onPrimaryUi: (primary, compactPanel) => {
-          appPrimaryUi = primary;
-          void applyToolbarPanelBehavior(primary, compactPanel);
-        },
-      }).then(() => sendResponse({ ok: true }), () => sendResponse({ ok: false, error: 'App sync failed.' }));
-      return true;
-    }
     // This extension's own pages may ask the worker anything; its content script, only the chip's messages.
     if (!mayAsk(sender, browser.runtime.id, (request as { type?: unknown } | null)?.type, CONTENT_REQUESTS)) {
       sendResponse({ ok: false, error: 'This request is not allowed from here.' });
@@ -270,15 +242,6 @@ export default defineBackground(() => {
 
   browser.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === TICK) void worker.onTick();
-    if (alarm.name === APP_SYNC_ALARM) {
-      void runAppSync(worker, {
-        readPages,
-        onPrimaryUi: (primary, compactPanel) => {
-          appPrimaryUi = primary;
-          void applyToolbarPanelBehavior(primary, compactPanel);
-        },
-      });
-    }
   });
 
   void browser.alarms
@@ -288,25 +251,8 @@ export default defineBackground(() => {
     })
     .catch(() => {});
 
-  void browser.alarms
-    .get(APP_SYNC_ALARM)
-    .then((alarm) => {
-      if (!alarm) return browser.alarms.create(APP_SYNC_ALARM, { periodInMinutes: 1 });
-    })
-    .catch(() => {});
-
-  void prefs
-    .getAppPrimaryUi()
-    .then(async (primary) => {
-      const compact = await prefs.getCompactHelperPanel();
-      appPrimaryUi = primary;
-      await applyToolbarPanelBehavior(primary, compact);
-    })
-  .catch(() => {});
+  // The panel opens on a click of the toolbar button (set once; it is kept by Chrome).
+  void browser.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true })?.catch?.(() => {});
 
   void worker.onStart();
-
-  if (typeof __SPLIT_FINDER_HELPER__ !== 'undefined' && __SPLIT_FINDER_HELPER__) {
-    void runAppSync(worker, { readPages, onPrimaryUi: (primary, compactPanel) => { appPrimaryUi = primary; void applyToolbarPanelBehavior(primary, compactPanel); } });
-  }
 });

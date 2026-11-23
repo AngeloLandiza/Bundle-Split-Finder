@@ -115,12 +115,8 @@ class FakePrefs implements Prefs {
     this.data.account = structuredClone(v);
   }
   showChip = true;
-  appPrimaryUi = false;
   async getShowChip() {
     return this.showChip;
-  }
-  async getAppPrimaryUi() {
-    return this.appPrimaryUi;
   }
   // Step 11: how long a unit of each kind took, as prefs.ts keeps it.
   rates: unknown = {};
@@ -292,7 +288,6 @@ interface World {
   notified: BundleRow[][];
   notifyTexts: string[];
   relayPosts: { url: string; body: string; signature: string }[];
-  agentBridgePosts: { url: string; body: string }[];
   hostPermissionRequests: string[];
   broadcasts: AppState[];
   /** Origin and path of every request, account checks included. Never the query: it holds the key. */
@@ -330,7 +325,6 @@ function world(setup: Setup = {}): World {
     notified: [],
     notifyTexts: [],
     relayPosts: [],
-    agentBridgePosts: [],
     hostPermissionRequests: [],
     broadcasts: [],
     pages: new FakePages(),
@@ -374,9 +368,6 @@ function workerOver(w: World, store: ScanStore = w.store, over?: Partial<WorkerO
     notifyText: (message) => void w.notifyTexts.push(message),
     relayPost: async (url, body, signature) => {
       w.relayPosts.push({ url, body, signature });
-    },
-    agentBridgePost: async (url, body) => {
-      w.agentBridgePosts.push({ url, body });
     },
     requestHostPermission: async (pattern) => {
       w.hostPermissionRequests.push(pattern);
@@ -442,6 +433,22 @@ describe('worker: the key (acceptance criteria 1 and 2)', () => {
     expect((await state(w)).problem).toBe('Add your SerpApi key in Settings.');
     // Still due: nothing was run, so nothing moved the schedule on.
     expect(w.prefs.data.lastScheduledRunAt).toBe(T0 - 7 * HOUR);
+  });
+
+  it('paired with the app: a due scheduled scan starts nothing, and Scan now says the app runs the scans', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR });
+    w.worker = workerOver(w, w.store, { paired: async () => true });
+    await w.worker.onTick();
+    expect(w.requests).toEqual([]);
+    expect(await w.store.listScans()).toEqual([]);
+    const reply = await send(w, { type: 'scanNow' });
+    expect(reply).toMatchObject({ ok: false });
+    expect((reply as { error: string }).error).toMatch(/connected to the Split Finder app/);
+    expect(w.requests).toEqual([]);
+    // Disconnected, the same worker scans again as before.
+    w.worker = workerOver(w, w.store, { paired: async () => false });
+    await w.worker.onTick();
+    expect((await w.store.listScans()).length).toBeGreaterThan(0);
   });
 
   it('checkKey with a 401 replies in plain words and saves nothing', async () => {
@@ -1035,30 +1042,6 @@ describe('worker: alerts', () => {
     expect(digest.reviewDigest).toMatch(/need you/);
     expect(verifyRelayPayload(post.body, post.signature, 'relay-test-secret')).toBe(true);
   });
-
-  it('after a scan, skips the agent bridge when host permission is denied', async () => {
-    const w = world({ key: KEY, settings: { ...RYOBI, agentBridgeAfterScan: true } });
-    w.worker = workerOver(w, w.store, { requestHostPermission: async () => false });
-    await send(w, { type: 'scanNow' });
-    await untilIdle(w);
-    expect(w.agentBridgePosts).toHaveLength(0);
-    expect((await w.store.listScans())[0]?.status).not.toBe('running');
-  });
-
-  it('after a scan, posts the audit to the local agent bridge when enabled', async () => {
-    const w = world({ key: KEY, settings: { ...RYOBI, agentBridgeAfterScan: true } });
-    await send(w, { type: 'scanNow' });
-    await untilIdle(w);
-    expect(w.agentBridgePosts).toHaveLength(2);
-    const auditPost = w.agentBridgePosts.find((p) => p.url.endsWith('/api/bridge'))!;
-    const panelPost = w.agentBridgePosts.find((p) => p.url.endsWith('/api/panel'))!;
-    expect(auditPost.url).toBe('http://127.0.0.1:8790/api/bridge');
-    const audit = JSON.parse(auditPost.body) as { kind: string };
-    expect(audit.kind).toBe('split-finder-audit');
-    const panel = JSON.parse(panelPost.body) as { kind: string };
-    expect(panel.kind).toBe('split-finder-panel');
-    expect(w.hostPermissionRequests).toContain('http://127.0.0.1:8790/*');
-  });
 });
 
 describe('worker: keepa key', () => {
@@ -1069,15 +1052,6 @@ describe('worker: keepa key', () => {
     expect((await state(w)).keepa?.hasKeepaKey).toBe(true);
     await send(w, { type: 'forgetKeepaKey' });
     expect((await state(w)).keepa?.hasKeepaKey).toBe(false);
-  });
-});
-
-describe('worker: agent bridge settings', () => {
-  it('saveSettings requests host permission when the bridge is turned on', async () => {
-    const w = world({ settings: RYOBI });
-    const reply = await send(w, { type: 'saveSettings', settings: { ...RYOBI, agentBridgeAfterScan: true } });
-    expect(reply).toEqual({ ok: true, data: null });
-    expect(w.hostPermissionRequests).toContain('http://127.0.0.1:8790/*');
   });
 });
 
@@ -2391,21 +2365,6 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     expect(await send(w, { type: 'takeShowThisPage', tabId: 99 })).toEqual({ ok: true, data: false });
     expect(await send(w, { type: 'takeShowThisPage', tabId: TAB })).toEqual({ ok: true, data: true });
     expect(await send(w, { type: 'takeShowThisPage', tabId: TAB })).toEqual({ ok: true, data: false });
-  });
-
-  it('openThisPage when the app is primary opens the app home instead of the side panel', async () => {
-    const w = world({ key: KEY, settings: RYOBI });
-    let appOpened = 0;
-    w.worker = workerOver(w, w.store, {
-      appPrimaryUi: () => true,
-      openAppHome: () => {
-        appOpened += 1;
-        return Promise.resolve(true);
-      },
-    });
-    expect(await send(w, { type: 'openThisPage' }, { tabId: TAB })).toEqual({ ok: true, data: { opened: true } });
-    expect(appOpened).toBe(1);
-    expect(w.pages.opened).toEqual([]);
   });
 
   it('openThisPage when Chrome refuses to open the panel: opened is false, nothing is left for the panel, nobody is told', async () => {

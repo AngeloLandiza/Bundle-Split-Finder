@@ -36,6 +36,9 @@ export default defineConfig({
       'https://api.ebay.com/*',
       'https://api.anthropic.com/*',
       'https://api.keepa.com/*',
+      // Step 13: the paired Split Finder app, on this computer only. The owner's own agent (agent/server.ts) listens here and
+      // nowhere else; every call to it carries the pairing token. See docs/decisions.md, "the extension is a paired worker".
+      'http://127.0.0.1:8790/*',
       ...(e2e ? ['http://localhost/*', 'http://127.0.0.1/*'] : []),
     ],
     optional_host_permissions: e2e ? undefined : ['http://*/*', 'https://*/*'],

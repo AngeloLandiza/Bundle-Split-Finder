@@ -315,32 +315,3 @@ export const setEbayToken = (t: CachedEbayToken): Promise<void> => browser.stora
 export async function clearEbayToken(): Promise<void> {
   await browser.storage.session.remove('ebayToken');
 }
-
-// ---------------------------------------------------------------- Lane D: native app as primary UI
-
-export async function getAppPrimaryUi(): Promise<boolean> {
-  const v = await read('appPrimaryUi');
-  return v === true;
-}
-
-export async function setAppPrimaryUi(on: boolean): Promise<void> {
-  await write('appPrimaryUi', on);
-}
-
-export async function getCompactHelperPanel(): Promise<boolean> {
-  const v = await read('compactHelperPanel');
-  return v === true;
-}
-
-export async function setCompactHelperPanel(on: boolean): Promise<void> {
-  await write('compactHelperPanel', on);
-}
-
-export async function getAppKeySyncFingerprint(): Promise<string | null> {
-  const v = await read('appKeySyncFingerprint');
-  return typeof v === 'string' ? v : null;
-}
-
-export async function setAppKeySyncFingerprint(fp: string): Promise<void> {
-  await write('appKeySyncFingerprint', fp);
-}

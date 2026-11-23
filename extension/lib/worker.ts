@@ -38,7 +38,6 @@ import type { KeepaScaleSettings } from '@core/keepa/plan';
 import { bundlesNewlyConfirmed, partPriceDropMessage, reviewDigestMessage, trendCrosses } from '@core/keepa/alerts';
 import { readAlertBaseline, writeAlertBaseline, writePartTrend } from '@core/keepa/trends';
 import { relayPayload } from '@core/relay';
-import { agentBridgeEndpoints, agentPanelUrl } from './agentBridge';
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
 import {
@@ -86,7 +85,6 @@ export interface Prefs {
   setAccount(v: StoredAccount | null): Promise<void>;
   /** Whether the chip shows on Home Depot pages (chrome.storage.local `showChip`); true unless the owner turned it off. */
   getShowChip(): Promise<boolean>;
-  getAppPrimaryUi?(): Promise<boolean>;
   /** Step 11: how long a unit of each kind took in recent scans, for the progress estimate. Optional: without it no timing is kept. */
   getRates?(): Promise<UnitRates>;
   setRates?(v: UnitRates): Promise<void>;
@@ -186,8 +184,6 @@ export interface WorkerEnv {
   notifyText?: (message: string) => void | Promise<void>;
   /** Optional signed POST after a scan (plan Phase 4). */
   relayPost?: (url: string, body: string, signature: string) => Promise<void>;
-  /** Optional unsigned POST of the audit export to the local agent bridge. */
-  agentBridgePost?: (url: string, body: string) => Promise<void>;
   /** Chrome host permission for a saved relay origin (MV3). */
   requestHostPermission?: (originPattern: string) => Promise<boolean>;
   /** Tells every open page the new state. */
@@ -209,10 +205,11 @@ export interface WorkerEnv {
   judgeFetchFn?: typeof fetch;
   /** The chip's page visits (step 7). Without it, pages are kept in memory and the panel cannot be opened from the chip. */
   pages?: PageEnv;
-  /** Lane D: open Split Finder.app home (sync start) when the app is the primary UI. */
-  openAppHome?: () => Promise<boolean>;
-  /** Lane D: cached flag so openThisPage does not await storage inside the user gesture. */
-  appPrimaryUi?: () => boolean;
+  /**
+   * Step 13: true while this browser is paired with the Split Finder app. The app runs scans, AI and answers then, so a
+   * scheduled or manual scan here is refused and the tick starts nothing. Absent: never paired (standalone, as before).
+   */
+  paired?: () => Promise<boolean>;
   /** Step 11: where Ask AI keeps its suggestions, apart from the scan's store. Without it they are kept in memory, lost with the worker. */
   suggestions?: SuggestionStore;
   /** Step 12: how one question is asked, for Ask AI and for Ask AI about all. Default: a split question is researched, any other is asked as in step 11. */
@@ -246,6 +243,7 @@ const ENTER_KEY = 'Enter your SerpApi key.';
 const ACCOUNT_FAILED = 'Something went wrong while checking your SerpApi account.';
 const FAILED = 'Something went wrong. Try again.';
 const RUNNING = 'A scan is already running.';
+const PAIRED_SCAN = 'This browser is connected to the Split Finder app, which runs the scans. Scan in the app, or disconnect here.';
 const GAVE_UP = 'The scan could not be saved, so it was stopped. Check that Chrome has free storage, then scan again.';
 const STOPPED = 'The scan was stopped before it began.';
 const BAD_PACKAGING = 'Choose retail boxed or loose.';
@@ -883,21 +881,6 @@ export function createWorker(env: WorkerEnv): Worker {
         // Relay failure must not fail the scan.
       }
     }
-    if (s.agentBridgeAfterScan && env.agentBridgePost) {
-      try {
-        const bridge = agentBridgeEndpoints();
-        const mayPost =
-          !env.requestHostPermission || (await env.requestHostPermission(bridge.originPattern));
-        if (mayPost) {
-          const audit = await exportAudit();
-          if (audit.ok) await env.agentBridgePost(bridge.url, audit.data);
-          const panel = await exportPanelBridge();
-          if (panel.ok) await env.agentBridgePost(agentPanelUrl(), panel.data);
-        }
-      } catch {
-        // Agent bridge failure must not fail the scan.
-      }
-    }
   }
 
   async function fail(sentence: string): Promise<Reply<never>> {
@@ -939,6 +922,11 @@ export function createWorker(env: WorkerEnv): Worker {
     }
     let started: Promise<void> | null = null;
     try {
+      // Step 13: paired, the app runs the scans; this tick starts nothing and continues nothing.
+      if (await env.paired?.()) {
+        settleDeferred();
+        return;
+      }
       started = await serial(async () => {
         // Rule 3: a tick while a scan is active does nothing; nor while a Verify, a Look up, or a kit page read runs.
         // Step 12: nor while Ask AI about all runs: the scan waits for its turn, and the next tick tries again.
@@ -964,6 +952,7 @@ export function createWorker(env: WorkerEnv): Worker {
   const scanNow = (): Promise<Reply<null>> =>
     serial(async () => {
       if (scan !== null) return refuse(RUNNING);
+      if (await env.paired?.()) return refuse(PAIRED_SCAN);
       if (paid !== null) return refuse(PAID_RUNNING);
       if (reading !== null) return refuse(SCAN_AFTER_KIT);
       if (askAll !== null || singleAsks > 0) return refuse(SCAN_AFTER_ASK_ALL);
@@ -1127,9 +1116,6 @@ export function createWorker(env: WorkerEnv): Worker {
       if (problems.length > 0) return refuse(problems[0]!);
       if (!sameSchedule(prev.schedule, clean.schedule)) await prefs.setLastScheduledRunAt(env.now());
       await prefs.saveSettings(clean);
-      if (!prev.agentBridgeAfterScan && clean.agentBridgeAfterScan && env.requestHostPermission) {
-        await env.requestHostPermission(agentBridgeEndpoints().originPattern);
-      }
       await broadcast();
       return ok(null);
     });
@@ -1143,21 +1129,6 @@ export function createWorker(env: WorkerEnv): Worker {
     const matches = await store.listMatches();
     const answers = (await store.listReview()).filter((r) => r.answer !== null);
     return ok(JSON.stringify({ matches, answers }, null, 2));
-  }
-
-  /**
-   * The audit file (docs step 8c): what the scan chose, with every saved listing, so a blind checker
-   * can label the right ones. Parts are the report's primary rows. Never the key, never settings.
-   */
-  async function exportPanelBridge(): Promise<Reply<string>> {
-    const report = await buildReport(store, toScanSettings(await settings()));
-    const panel = {
-      kind: 'split-finder-panel',
-      version: 1,
-      exportedAt: env.now(),
-      bundles: report.bundles,
-    };
-    return ok(JSON.stringify(panel, null, 2));
   }
 
   async function exportAudit(): Promise<Reply<string>> {
@@ -1895,15 +1866,6 @@ export function createWorker(env: WorkerEnv): Worker {
    */
   async function openThisPage(tabId: number | undefined): Promise<Reply<OpenThisPageReply>> {
     if (tabId === undefined) return refuse(NO_TAB);
-    if (env.appPrimaryUi?.() && env.openAppHome) {
-      let opening: Promise<boolean>;
-      try {
-        opening = env.openAppHome();
-      } catch {
-        opening = Promise.resolve(false);
-      }
-      return ok({ opened: await opening });
-    }
     let opening: Promise<void>;
     try {
       opening = pages.openPanel(tabId);

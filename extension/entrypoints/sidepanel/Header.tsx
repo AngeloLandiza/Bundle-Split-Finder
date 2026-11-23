@@ -8,12 +8,9 @@ export interface HeaderProps {
   noKey: boolean;
   /** When set, Scan now is disabled and this is its title. */
   scanBlockedTitle?: string;
-  /** When the app is primary, scan and settings live in the native app (P5). */
-  appPrimary?: boolean;
   onScan: () => void;
   onStop: () => void;
   onSettings: () => void;
-  onOpenApp?: () => void;
 }
 
 export function Header({
@@ -21,15 +18,12 @@ export function Header({
   stopping = false,
   noKey,
   scanBlockedTitle,
-  appPrimary = false,
   onScan,
   onStop,
   onSettings,
-  onOpenApp,
 }: HeaderProps) {
   const brand =
     typeof __SPLIT_FINDER_HELPER__ !== 'undefined' && __SPLIT_FINDER_HELPER__ ? 'Split Finder Helper' : 'Split Finder';
-  const openApp = onOpenApp ?? onSettings;
 
   return (
     <header className="header">
@@ -45,16 +39,12 @@ export function Header({
           <button type="button" id="scan-control" className="btn btn-secondary" aria-disabled={stopping ? 'true' : undefined} onClick={onStop}>
             {stopping ? 'Stopping…' : 'Stop'}
           </button>
-        ) : appPrimary ? (
-          <button type="button" id="scan-control" className="btn btn-primary" disabled={noKey} title={noKey ? 'Add your key in the app first.' : undefined} onClick={openApp}>
-            Open app
-          </button>
         ) : (
           <button type="button" id="scan-control" className="btn btn-primary" disabled={noKey || scanBlockedTitle !== undefined} title={noKey ? 'Add your SerpApi key first.' : scanBlockedTitle} onClick={onScan}>
             Scan now
           </button>
         )}
-        {noKey || appPrimary ? null : (
+        {noKey ? null : (
           <button type="button" className="icon-btn" aria-label="Settings" onClick={onSettings}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
               <path d="M3 5h12M3 9h12M3 13h12" />

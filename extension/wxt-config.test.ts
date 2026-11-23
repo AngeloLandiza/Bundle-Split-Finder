@@ -24,9 +24,9 @@ async function configFor(e2e: boolean) {
 afterEach(() => vi.unstubAllEnvs());
 
 describe('wxt.config', () => {
-  it('the production manifest has exactly the four host permissions and no localhost', async () => {
+  it('the production manifest has exactly these host permissions: five services and the paired app on 127.0.0.1:8790, no localhost', async () => {
     const c = await configFor(false);
-    expect(c.manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', 'https://api.keepa.com/*']);
+    expect(c.manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', 'https://api.keepa.com/*', 'http://127.0.0.1:8790/*']);
     // The chip's fonts are fetchable by Home Depot pages only.
     expect(c.manifest.web_accessible_resources).toEqual([{ resources: ['fonts/*.woff2'], use_dynamic_url: true, matches: ['https://www.homedepot.com/*'] }]);
     expect(c.manifest.permissions).toEqual(['storage', 'alarms', 'sidePanel', 'notifications', 'scripting']);
@@ -46,6 +46,7 @@ describe('wxt.config', () => {
       'https://api.ebay.com/*',
       'https://api.anthropic.com/*',
       'https://api.keepa.com/*',
+      'http://127.0.0.1:8790/*',
       'http://localhost/*',
       'http://127.0.0.1/*',
     ]);
@@ -82,7 +83,7 @@ describe('the production build', () => {
       };
       expect(manifest.permissions).toEqual(['storage', 'alarms', 'sidePanel', 'notifications', 'scripting']);
       expect(manifest.optional_host_permissions).toEqual(['http://*/*', 'https://*/*']);
-      expect(manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', 'https://api.keepa.com/*']);
+      expect(manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', 'https://api.keepa.com/*', 'http://127.0.0.1:8790/*']);
       // Settings are a full tab; Chrome's embedded options dialog cut the key field off.
       expect((manifest as unknown as { options_ui: { open_in_tab: boolean } }).options_ui.open_in_tab).toBe(true);
       // Home Depot pages may fetch the fonts and the chip's stylesheet, and nothing else of the extension's.
