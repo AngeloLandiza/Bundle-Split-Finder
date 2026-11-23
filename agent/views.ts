@@ -24,6 +24,7 @@ import type {
   WatchState,
 } from '../core/src/api/contract';
 import type { BundleSignals, HistoryPoint } from '../core/src/tracking/signals';
+import { bogoTagOf, type BogoGroup } from '../core/src/tracking/bogoPairs';
 import { DEFAULT_MIN_MONTHLY_SOLD } from '../core/src/settings';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { liveSuggestion, type StoredSuggestion } from '../core/src/assist/stored';
@@ -87,13 +88,23 @@ function bundlesNeedingAnswer(bundles: readonly BundleRow[], questions: readonly
 type Tracking = StoreData['tracking'];
 type WithTracking<K extends keyof StoreData> = Pick<StoreData, K> & Partial<Pick<StoreData, 'tracking'>>;
 
+/** The automatic BOGO group a deal is a pair of, or the starter of; null when none. */
+function bogoGroupOf(tracking: Tracking | undefined, key: string): BogoGroup | null {
+  const groups = Object.values(tracking?.derived.groups ?? {});
+  return groups.find((g) => g.choices.some((c) => c.key === key)) ?? groups.find((g) => g.starterKey === key) ?? null;
+}
+
 function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, number>, tracking?: Tracking): DealRow {
+  const group = tracking ? bogoGroupOf(tracking, b.key) : null;
+  const pair = tracking?.bogoPairs?.[b.key];
   const searches = lookups?.[b.key];
   const track = tracking
     ? {
         watched: tracking.watch[b.key]?.watched === true,
         buyNow: tracking.watch[b.key]?.watched === true && (tracking.signals[b.key]?.buyNow ?? null) !== null,
         bogo: tracking.bogo[b.key] ? (tracking.bogo[b.key]!.chosen.length > 0 ? ('chosen' as const) : ('choose' as const)) : null,
+        bogoPair: pair ? bogoTagOf(pair) : null,
+        bogoChoices: group ? { label: group.label, count: group.choices.length, bestId: group.best?.key ?? null, best: group.best?.key === b.key } : null,
       }
     : {};
   return {
@@ -254,6 +265,8 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'>, 
   if (bogo?.link) sources.push({ label: 'Home Depot: the BOGO promotion', url: bogo.link, source: 'homedepot' });
   for (const c of bogo?.chosen ?? []) if (c.link) sources.push({ label: `Home Depot: free ${c.model}`, url: c.link, source: 'homedepot' });
   for (const c of bogo?.counted ?? []) if (c.asin) sources.push({ label: `Amazon: free ${c.model}`, url: amazonLink(c.asin), source: 'amazon' });
+  const group = t ? bogoGroupOf(t, id) : null;
+  if (group) sources.push({ label: `Home Depot: the BOGO starter ${group.starterModel}`, url: group.starterLink, source: 'homedepot' });
   return {
     row: rowOf(bundle, need.has(bundle.key), data.deals.lookups, t),
     bundle,
@@ -266,6 +279,7 @@ export function dealDetail(data: WithTracking<'deals' | 'review' | 'settings'>, 
           signals: t.watch[id]?.watched ? signalsView(t.signals[id]) : null,
           history: historyView(t.history[id]),
           bogo: bogo ?? null,
+          bogoGroup: group,
           fbaEstimate: t.derived.fba[id] ?? null,
         }
       : {}),

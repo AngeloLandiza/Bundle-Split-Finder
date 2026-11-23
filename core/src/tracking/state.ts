@@ -4,6 +4,7 @@
 import type { AlertSettings } from '../settings';
 import { partKey, type BundleRow, type ScanReport } from '../scan/types';
 import type { BogoPromotion } from './bogo';
+import type { BogoPair } from './bogoPairs';
 import { appendHistory, bundleSignals, HISTORY_DAYS, historyPoint, type BundleSignals, type HistoryPoint, type Signal, type SignalKind, type TrendLookup } from './signals';
 
 /** auto: watched because it was confirmed and discounted; owner: the owner pressed Watch or Unwatch. */
@@ -22,9 +23,11 @@ export interface TrackingState {
   notified: string[];
   /** The owner's BOGO promotions by bundle key (bogo.ts). */
   bogo: Record<string, BogoPromotion>;
+  /** BOGO found by the agent: the starter + free tool pairs Home Depot lists, by the pair's bundle key (bogoPairs.ts). */
+  bogoPairs: Record<string, BogoPair>;
 }
 
-export const emptyTracking = (): TrackingState => ({ watch: {}, history: {}, signals: {}, notified: [], bogo: {} });
+export const emptyTracking = (): TrackingState => ({ watch: {}, history: {}, signals: {}, notified: [], bogo: {}, bogoPairs: {} });
 
 const KEEP_NOTIFIED = 2000;
 

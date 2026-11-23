@@ -75,6 +75,17 @@ describe('the digest: at most one message after a run', () => {
     expect(off.text).toBe('Autopilot applied 1 answer (Undo in Activity).');
     expect(off.event).toMatchObject({ kind: 'autopilot', count: 1 });
   });
+
+  it('a BOGO line alone is a deal message and says the figures are estimates; none when alerts are off', () => {
+    const report = { bundles: [], review: [] };
+    // The line as core's bogoDigestLines words it for the recorded DEWALT pair (the estimate is invented).
+    const bogoLines = ['BOGO: buy DCK200D1P1 and choose 921B (DCK200D1P1W921B) — +$41.20 est., ends Jan 31.'];
+    const on = buildDigest({ report, alerts, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [], bogoLines });
+    expect(on.text).toBe(`${bogoLines[0]}\nEstimates from your fee settings.`);
+    expect(on.event).toMatchObject({ kind: 'deal', count: 1, route: '/deals' });
+    const off = buildDigest({ report, alerts: { ...alerts, enabled: false }, notifiedDeals: [], notifiedQuestions: [], autopilotApplied: 0, verifiedWaiting: 0, trendLines: [], bogoLines });
+    expect(off.text).toBeNull();
+  });
 });
 
 describe('Telegram (Bot API sendMessage)', () => {

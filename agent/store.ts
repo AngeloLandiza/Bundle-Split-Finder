@@ -26,6 +26,7 @@ import { measuredByDefault } from './autopilot';
 import { DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS } from '../core/src/settings';
 import type { BundleRow, EbayQuestion, PaidAction, ReportSection, ReviewItem, ScanJob } from '../core/src/scan/types';
 import type { BogoView } from '../core/src/tracking/bogo';
+import type { BogoGroup } from '../core/src/tracking/bogoPairs';
 import type { FbaEstimate } from '../core/src/tracking/fba';
 import { emptyTracking, type TrackingState } from '../core/src/tracking/state';
 
@@ -188,7 +189,8 @@ export interface AgentRuntime {
  * deals are published, so the views stay synchronous: each BOGO promotion's view and each bundle's FBA-fee estimate.
  */
 export interface TrackingCollection extends TrackingState {
-  derived: { bogo: Record<string, BogoView>; fba: Record<string, FbaEstimate> };
+  /** `groups`: the automatic BOGO groups by id (bogoPairs.ts bogoGroups); absent in a store written before them. */
+  derived: { bogo: Record<string, BogoView>; fba: Record<string, FbaEstimate>; groups?: Record<string, BogoGroup> };
 }
 
 export interface StoreData {
@@ -301,7 +303,7 @@ function defaults(): StoreData {
       lastScheduledRunAt: null, serp: null, keepa: null, notifiedDeals: [], notifiedQuestions: [],
       telegram: { pending: [], lastSentAt: null, lastError: null }, rates: {}, lastJob: null,
     },
-    tracking: { ...emptyTracking(), derived: { bogo: {}, fba: {} } },
+    tracking: { ...emptyTracking(), derived: { bogo: {}, fba: {}, groups: {} } },
   };
 }
 

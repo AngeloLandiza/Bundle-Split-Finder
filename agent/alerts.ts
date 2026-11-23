@@ -31,6 +31,8 @@ export interface DigestInput {
   buyNow?: SignalLine[];
   /** Watched deals whose estimate fell through the floor, not yet sent today; used when the owner turned it on. */
   marginDown?: SignalLine[];
+  /** BOGO found by the agent: the best choice of each promotion not yet named today (core/src/tracking/bogoPairs.ts). */
+  bogoLines?: string[];
 }
 
 export interface Digest {
@@ -66,6 +68,17 @@ export function buildDigest(input: DigestInput): Digest {
     kind = 'deal';
     count = fresh.length;
     route = '/deals';
+  }
+  const bogo = alerts.enabled ? (input.bogoLines ?? []) : [];
+  if (bogo.length > 0) {
+    lines.push(...bogo.slice(0, 3));
+    if (bogo.length > 3) lines.push(`${bogo.length - 3} more BOGO promotions in Deals.`);
+    if (fresh.length === 0) lines.push('Estimates from your fee settings.');
+    if (!kind) {
+      kind = 'deal';
+      count = bogo.length;
+      route = '/deals';
+    }
   }
   const down = alerts.enabled && alerts.marginDownDigest ? (input.marginDown ?? []) : [];
   if (down.length > 0) {

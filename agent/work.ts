@@ -31,6 +31,9 @@ import { addSamples, pipelineOf, pipelineView, samplesOf, type PipelineView } fr
 import { postScanWork } from '../core/src/scan/postScan';
 import { buildReport, partRowsFor } from '../core/src/scan/report';
 import { bogoFromBody, bogoView, freeParts, type BogoView } from '../core/src/tracking/bogo';
+import {
+  bogoDigestLines, bogoGroups, mergeBogoPairs, pairBundleRecord, pairsBehindBest, readBogoPass, todayOf, type BogoBrandResult, type BogoGroup,
+} from '../core/src/tracking/bogoPairs';
 import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
@@ -39,13 +42,13 @@ import type { ConfirmedPrice, PaidAction, ReviewAnswer, ScanJob, ScanReport, Sca
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
 import {
-  budgetPolicyFor, estimatedJudgeCost, type ExtensionSettings, type ScanTrigger, toScanSettings, validateSettings,
+  BRAND_QUERIES, budgetPolicyFor, estimatedJudgeCost, type ExtensionSettings, type ScanTrigger, toScanSettings, validateSettings,
 } from '../core/src/settings';
 import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { buildDigest, sendPending } from './alerts';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
-import { remoteReaders, type ReaderTimeouts } from './remoteReaders';
+import { remoteReaders, type ReaderTimeouts, type RemoteReaders } from './remoteReaders';
 import { DirCache, FileScanStore } from './scanStore';
 import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys } from './store';
 import { aiSpentThisMonth } from './views';
@@ -430,6 +433,8 @@ export class AgentWork {
     const connected = this.d.helperConnected();
     const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal });
     if (!connected) notes.push('Chrome is closed, so Home Depot pages wait for the next scan.');
+    // BOGO found by itself, free, before the scan: the pairs it finds are bundles the scan then reads, splits and matches.
+    else await this.bogoPass(ext, readers, notes);
     const ebay = this.ebayStep(app, keys, notes);
     const scan = this.d.runScan ?? runScan;
     return scan({
@@ -441,6 +446,38 @@ export class AgentWork {
       cache: this.cache,
       ...(keepa.keepaProduct ? { trendWriter: (t) => writePartTrend(this.cache, t) } : {}),
     });
+  }
+
+  /**
+   * Each brand's Featured BOGO listing and its items' pages, read in the paired Chrome (free; an item page once a day).
+   * The pairs found (core/src/tracking/bogoPairs.ts: starter + joiner + free model, at the starter's price) are stored
+   * on the tracking collection and put in the scan store as bundles, with the page the pass read. A brand not read in
+   * full keeps the pairs found before. A failure is a note on the run; the scan goes on.
+   */
+  private async bogoPass(ext: ExtensionSettings, readers: RemoteReaders, notes: string[]): Promise<void> {
+    const now = this.d.now();
+    let results: BogoBrandResult[];
+    try {
+      results = await readBogoPass({
+        brands: ext.brands, queries: BRAND_QUERIES, readListing: readers.readBogoListing, readPages: readers.readPromoPages,
+        cache: this.cache, now: this.d.now, shouldStop: () => this.stopCtl.signal.aborted,
+      });
+    } catch (err) {
+      notes.push(`BOGO deals were not read: ${sentenceOf(err)}`);
+      return;
+    }
+    if (results.length === 0) return;
+    const pairs = mergeBogoPairs(this.d.store.get('tracking').bogoPairs ?? {}, results, todayOf(now));
+    const items = new Map(results.flatMap((r) => r.items).map((i) => [i.itemId, i]));
+    for (const r of results) {
+      for (const p of r.pairs) {
+        const known = await this.scanStore.getBundle(p.key);
+        await this.scanStore.putBundle(pairBundleRecord(p, items.get(p.itemId), known ?? undefined, now));
+      }
+    }
+    this.d.store.update('tracking', (t) => ({ ...t, bogoPairs: pairs }));
+    const short = results.filter((r) => !r.complete && r.problem !== 'stopped');
+    if (short.length > 0) notes.push(`BOGO: ${short.map((r) => r.brand).join(' and ')} not read in full (${short[0]!.problem}); the pairs found before are kept.`);
   }
 
   /** Keepa inside the scan, as the extension builds it (worker.ts buildKeepaDeps): discovery and tracking are core's plan. */
@@ -559,14 +596,24 @@ export class AgentWork {
       const f = fbaEstimateOf(b.options[0], trend, settings.fees);
       if (f) fba[b.key] = f;
     }
-    this.d.store.update('tracking', (t) => ({ ...t, derived: { bogo, fba } }));
+    // BOGO found by itself: each starter's pairs, ranked by each pair's own estimate in this report.
+    const groups: Record<string, BogoGroup> = {};
+    for (const g of bogoGroups(Object.values(this.d.store.get('tracking').bogoPairs ?? {}), report.bundles)) groups[g.id] = g;
+    this.d.store.update('tracking', (t) => ({ ...t, derived: { bogo, fba, groups } }));
   }
 
   /** The owner's BOGO entry for a deal (POST /api/deals/:id/bogo), or null to remove it. Answers with its view. */
   async saveBogo(bundleKey: string, body: Record<string, unknown> | null): Promise<BogoView | null> {
     const bundle = this.d.store.get('deals').bundles.find((b) => b.key === bundleKey);
     if (!bundle) throw new AnswerRefused('No such deal.');
-    const prior = this.d.store.get('tracking').bogo[bundleKey];
+    const tracking = this.d.store.get('tracking');
+    const prior = tracking.bogo[bundleKey];
+    // The owner's entry is the fallback for a promotion Home Depot lists no pairs for; a pair already holds its free tool.
+    if (body !== null) {
+      if (tracking.bogoPairs?.[bundleKey]) throw new WorkRefused('Home Depot lists this bundle as a BOGO pair: its free tool is already in it.');
+      const group = Object.values(tracking.derived.groups ?? {}).find((g) => g.starterKey === bundleKey);
+      if (group) throw new WorkRefused(`Home Depot lists ${group.choices.length} pairs for this promotion. Choose one of them in BOGO choices.`);
+    }
     if (body === null) {
       this.d.store.update('tracking', (t) => {
         const { [bundleKey]: _gone, ...bogo } = t.bogo;
@@ -864,13 +911,18 @@ export class AgentWork {
     const now = this.d.now();
     const kinds = app.alerts.marginDownDigest ? (['buyNow', 'marginDown'] as const) : (['buyNow'] as const);
     const fresh = app.alerts.enabled ? freshSignals(tracking, kinds, now) : { lines: [], notified: tracking.notified };
+    // BOGO: the best choice of each promotion once a day; a pair behind its group's best is not named on its own.
+    const groups = Object.values(tracking.derived.groups ?? {});
+    const behind = pairsBehindBest(groups);
+    const bogo = app.alerts.enabled ? bogoDigestLines(groups, app.alerts, fresh.notified, now) : { lines: [], keys: [], pairKeys: [] };
     const digest = buildDigest({
       report, alerts: app.alerts, notifiedDeals: runtime.notifiedDeals, notifiedQuestions: runtime.notifiedQuestions, autopilotApplied: applied,
       verifiedWaiting: await this.verifiedWaiting(), trendLines,
-      buyNow: fresh.lines.filter((l) => l.signal.kind === 'buyNow'), marginDown: fresh.lines.filter((l) => l.signal.kind === 'marginDown'),
+      buyNow: fresh.lines.filter((l) => l.signal.kind === 'buyNow' && !behind.has(l.bundleKey)), marginDown: fresh.lines.filter((l) => l.signal.kind === 'marginDown'),
+      bogoLines: bogo.lines,
     });
     store.update('runtime', (r) => ({ ...r, notifiedDeals: digest.notifiedDeals, notifiedQuestions: digest.notifiedQuestions }));
-    store.update('tracking', (t) => ({ ...t, notified: fresh.notified }));
+    store.update('tracking', (t) => ({ ...t, notified: [...fresh.notified, ...bogo.keys].slice(-2000) }));
     // Through the notification policy (its kinds, quiet hours and the morning digest): a deal line goes as kind 'deal'.
     const text = digest.event && digest.text ? this.policy.digest(digest.event, digest.text) : null;
     return this.sendTelegram(text);
