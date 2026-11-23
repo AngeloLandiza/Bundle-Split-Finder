@@ -472,11 +472,15 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
       model, qty: p.qty, quotes, product,
       // What the quotes naming the model say it is; a quote of a part's own page (its model line) says what its title says.
       // A row of another product (a sibling listing naming the part among others) says nothing of what the part is.
-      quotedKinds: [...new Set(naming.filter((q) => q.lineModels.length === 0 || q.lineModels.some((m) => sameModel(brand, m, model))).flatMap((q) => [
+      quotedKinds: [...new Set([...naming.filter((q) => q.lineModels.length === 0 || q.lineModels.some((m) => sameModel(brand, m, model))).flatMap((q) => [
         ...kindsOf(q.quote),
         ...(q.entry.pageModel !== undefined && !q.entry.isBundle && sameModel(brand, q.entry.pageModel, model)
           ? q.entry.lines.filter((l) => l.field === 'title' && !l.suspect).flatMap((l) => kindsOf(l.text)) : []),
-      ]))],
+      ]),
+      // Step 16 (lever 1): Home Depot's own page for exactly this model, read by the scan (a part-price reading,
+      // reverify.ts), says what the part is, as its own page quoted would. Never a tie: that is still asked for.
+      ...ledger.filter((e) => e.kind === 'reading').flatMap((e) => e.products)
+        .filter((x) => x.title !== '' && sameModel(brand, x.model, model)).flatMap((x) => kindsOf(x.title))])],
       contents,
       catalogKit,
     });

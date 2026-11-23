@@ -206,6 +206,7 @@ const WHAT: Record<ResearchLedgerEntry['kind'], string> = {
   homedepot_search: 'Home Depot search results',
   catalog: 'catalog entries',
   brand_site: "a page of the brand's own site",
+  reading: 'a reading the scan stored',
 };
 
 /** A ledger entry as the model reads it: a source block with its id, each line in its own tag. */

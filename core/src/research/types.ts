@@ -92,9 +92,11 @@ export interface ResearchTools {
 /**
  * Where a ledger entry came from. `stored`: the evidence the scan stored (the bundle's page, a kit's
  * page), given before any tool ran. `brand_site`: a web search result or a page web_fetch opened, on
- * ryobitools.com or dewalt.com (a subdomain included).
+ * ryobitools.com or dewalt.com (a subdomain included). `reading` (step 16): a reading the scan stored by itself and the
+ * model never saw (a Home Depot part-price reading, an exact Amazon match), added when an answer is checked again
+ * (reverify.ts): products only, never lines, so nothing can be quoted from it.
  */
-export type LedgerKind = 'stored' | 'homedepot_page' | 'homedepot_search' | 'catalog' | 'brand_site';
+export type LedgerKind = 'stored' | 'homedepot_page' | 'homedepot_search' | 'catalog' | 'brand_site' | 'reading';
 
 /** One line of a source: what the model is shown, and what a quote is searched in (a quote never spans two lines). */
 export interface LedgerLine {
