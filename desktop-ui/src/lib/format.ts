@@ -57,6 +57,11 @@ export function plural(n: number, one: string, many: string): string {
 }
 
 /** A whole percent off: 34% off. */
+/** What a scan may spend: a scan stops early or finds nothing to look up, so the figure is a ceiling ("up to 18 searches"). */
+export function upToSearches(n: number): string {
+  return `up to ${plural(n, 'search', 'searches')}`;
+}
+
 export function percentOff(n: number | null | undefined): string | null {
   return typeof n === 'number' && n > 0 ? `${Math.round(n)}% off` : null;
 }

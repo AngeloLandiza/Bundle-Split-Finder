@@ -28,7 +28,7 @@ export function TodayScreen() {
   // The last scan's verdicts lead when there are any; otherwise the best estimates (a loss is never a best deal).
   const buy = buyNowDeals(deals.data?.rows ?? []);
   return (
-    <Page title="Today" sub={date} grouped>
+    <Page title="Today" sub={date} grouped scanNotices>
       <div className="today">
         <Figures state={state} deals={deals.data?.rows ?? null} best={best[0] ?? null} questions={review.data?.questions.length ?? null} />
         <div className="today-grid">

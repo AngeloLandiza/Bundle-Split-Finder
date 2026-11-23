@@ -4,7 +4,7 @@ import { ApiError } from '../api/types';
 import { ACCENTS, type Accent, type Appearance, type Density } from '../lib/appearance';
 import { modLabel } from '../lib/keys';
 import { formatShortcut, isMac as mac } from '../lib/platform';
-import { plural } from '../lib/format';
+import { upToSearches } from '../lib/format';
 import { Button } from './Button';
 import { Segmented } from './Fields';
 import { Glyph } from './Glyph';
@@ -96,7 +96,7 @@ export function ScanControl() {
         disabled={Boolean(blocked)}
         title={error ?? blocked ?? `Scan now (${modLabel('R', mac)})`}
         onClick={() => act(api.scan)}
-        cost={budget.serpPerScan > 0 ? plural(budget.serpPerScan, 'search', 'searches') : undefined}
+        cost={budget.serpPerScan > 0 ? upToSearches(budget.serpPerScan) : undefined}
       >
         Scan now
       </Button>

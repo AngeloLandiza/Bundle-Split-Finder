@@ -13,7 +13,7 @@ import { WatchToggle } from '../components/WatchToggle';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { copyText, openPage } from '../lib/actions';
-import { count, percentOff, plural, when } from '../lib/format';
+import { count, percentOff, plural, upToSearches, when } from '../lib/format';
 import { dealMenu, type DealMenuId } from '../lib/menus';
 import { sortRows, type SortState } from '../lib/sort';
 import { VIEW_LABEL, inView, type DealView } from '../lib/views';
@@ -304,7 +304,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
             title="No deals yet"
             cause={state?.agent.lastScan ? 'The last scan found no discounted DEWALT or RYOBI bundles. The next scan looks again.' : 'The agent has not run a scan yet.'}
             action={
-              <Button variant="primary" onClick={() => void api.scan()} disabled={!state?.keys.serpapi || scanRunning} cost={state && state.budget.serpPerScan > 0 ? plural(state.budget.serpPerScan, 'search', 'searches') : undefined}>
+              <Button variant="primary" onClick={() => void api.scan()} disabled={!state?.keys.serpapi || scanRunning} cost={state && state.budget.serpPerScan > 0 ? upToSearches(state.budget.serpPerScan) : undefined}>
                 Scan now
               </Button>
             }
@@ -373,6 +373,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
       title={title}
       sub={sub}
       inspector
+      scanNotices
       search={all.length ? <SearchField label="Search deals" placeholder="Title or model" value={query} onChange={setQuery} /> : null}
       viewOptions={
         all.length ? (

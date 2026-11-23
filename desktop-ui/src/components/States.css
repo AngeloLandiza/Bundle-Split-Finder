@@ -128,6 +128,11 @@
   color: var(--label-2);
 }
 
+.notice-more {
+  display: block;
+  flex-basis: 100%;
+}
+
 .notice-action {
   flex: none;
   display: flex;

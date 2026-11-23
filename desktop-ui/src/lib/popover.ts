@@ -2,7 +2,7 @@
 // choices live here so a test can read them; PopoverApp.tsx only draws them.
 
 import type { AppState, DealRow, ReviewQuestion } from '../api/types';
-import { plural } from './format';
+import { upToSearches } from './format';
 import { bestDeals } from './today';
 import { words } from './platform';
 
@@ -84,7 +84,7 @@ export function scanBlocked(state: AppState | null, online: boolean): string | n
 /** "5 searches" for the Scan now button, or undefined when the agent has not said what a scan costs. */
 export function scanCost(state: AppState | null): string | undefined {
   const n = state?.budget.serpPerScan ?? 0;
-  return n > 0 ? plural(n, 'search', 'searches') : undefined;
+  return n > 0 ? upToSearches(n) : undefined;
 }
 
 export const isRunning = (state: AppState | null): boolean => state?.agent.status === 'scanning' || state?.agent.status === 'asking' || state?.agent.status === 'stopping';

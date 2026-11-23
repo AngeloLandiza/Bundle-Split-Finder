@@ -98,7 +98,7 @@ describe('the actions he may run', () => {
   it('offers Scan now with its cost and Pause when the agent is idle', () => {
     const items = actionItems({ state: state(), askable: 0, verified: 0, deals: 0 });
     expect(ids(items)).toEqual(['scan', 'pause']);
-    expect(items[0]!.hint).toBe('5 searches');
+    expect(items[0]!.hint).toBe('up to 5 searches');
   });
   it('offers Stop, not Scan now, while a scan runs; and Resume while paused', () => {
     expect(ids(actionItems({ state: state({ status: 'scanning' }), askable: 2, verified: 0, deals: 1 }))).toEqual(['stop', 'pause', 'csv']);

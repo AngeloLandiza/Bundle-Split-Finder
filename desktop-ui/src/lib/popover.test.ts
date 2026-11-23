@@ -96,7 +96,7 @@ describe('best deal', () => {
 
 describe('scan button', () => {
   it('shows what a scan costs and can be pressed', () => {
-    expect(scanCost(STATE)).toBe('5 searches');
+    expect(scanCost(STATE)).toBe('up to 5 searches');
     expect(scanBlocked(STATE, true)).toBeNull();
   });
   it('says why it cannot: offline, paused, no key, at the reserve', () => {

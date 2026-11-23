@@ -4,6 +4,7 @@ import { plural } from '../lib/format';
 import { words } from '../lib/platform';
 import { Button } from './Button';
 import { PairingNotices } from './PairingNotice';
+import { ScanNotices } from './ScanNotices';
 import { Notice } from './States';
 import { Toolbar } from './Toolbar';
 import { useUi } from './ui';
@@ -13,7 +14,7 @@ import './Page.css';
  * The banners under the toolbar for the whole app: the agent offline, Chrome closed or not connected, a
  * missing SerpApi key, the searches at their reserve. One sentence each, with the one action that fixes it.
  */
-export function AppNotices({ inset = false }: { inset?: boolean }) {
+export function AppNotices({ inset = false, scan = false }: { inset?: boolean; /** Today and Deals: also the banners for a scan that left pages unread and for an outdated Chrome helper. */ scan?: boolean }) {
   const { state, online, offlineSentence, refreshState, pairing } = useApp();
   const ui = useUi();
   const out: ReactNode[] = [];
@@ -55,6 +56,7 @@ export function AppNotices({ inset = false }: { inset?: boolean }) {
       );
     }
   }
+  if (scan && online && state) out.push(<ScanNotices key="scan" />);
   if (out.length === 0) return null;
   return <div className={`notices${inset ? ' inset-notices' : ''}`}>{out}</div>;
 }
@@ -72,6 +74,7 @@ export function Page({
   viewOptions,
   inspector = false,
   grouped = false,
+  scanNotices = false,
   children,
   bodyClass,
 }: {
@@ -82,13 +85,15 @@ export function Page({
   viewOptions?: ReactNode;
   inspector?: boolean;
   grouped?: boolean;
+  /** Today and Deals show the scan-problem and outdated-helper banners. */
+  scanNotices?: boolean;
   children: ReactNode;
   bodyClass?: string;
 }) {
   return (
     <div className="page">
       <Toolbar title={title} sub={sub} actions={actions} search={search} viewOptions={viewOptions} inspector={inspector} />
-      <AppNotices />
+      <AppNotices scan={scanNotices} />
       <div className={`page-body${grouped ? ' page-body-grouped' : ' page-body-fill'}${bodyClass ? ` ${bodyClass}` : ''}`}>{children}</div>
     </div>
   );

@@ -6,7 +6,7 @@ import { PairingNotices } from '../components/PairingNotice';
 import { Sheet } from '../components/Sheet';
 import { Notice } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
-import { plural } from '../lib/format';
+import { plural, upToSearches } from '../lib/format';
 import { words } from '../lib/platform';
 import { setupProgress, type SetupStepId } from '../lib/setup';
 import { InstallHelper, KeyField } from '../components/SetupParts';
@@ -152,7 +152,7 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
                   busy={scan.busy}
                   busyLabel="Starting…"
                   onClick={() => void scan.run().then(refreshState)}
-                  cost={state.budget.serpPerScan > 0 ? plural(state.budget.serpPerScan, 'search', 'searches') : undefined}
+                  cost={state.budget.serpPerScan > 0 ? upToSearches(state.budget.serpPerScan) : undefined}
                 >
                   {done('scan') ? 'Scan again' : 'Scan now'}
                 </Button>
