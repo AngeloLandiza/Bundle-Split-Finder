@@ -355,15 +355,22 @@ async function bundleRow(
   store: ScanStore, settings: ScanSettings, b: BundleRecord, recordsOf: (brand: string, model: string) => KitRecord[], refs: RefsOf,
   bundles: BundleRecord[], catalog: CatalogRecord[],
 ): Promise<BundleRow> {
+  // The split question's id is the runner's: `split:` and the bundle key.
+  const question = await store.getReview(`split:${b.key}`);
   const base = {
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
     price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff, seenAt: b.seenAt,
-    // The split question's id is the runner's: `split:` and the bundle key.
-    answer: ownerAnswer(await store.getReview(`split:${b.key}`), b.split ?? null),
+    answer: ownerAnswer(question, b.split ?? null),
   };
   const split = b.split;
   if (!split || split.status !== 'resolved') {
-    return { ...base, status: 'needs_review', section: 'split', parts: [], estimate: null, uncovered: [], options: [], kitsNotRead: [], kitReads: [], range: NO_RANGE };
+    // Nov 23: not split, its own page not read, and no question open nor answered for it: it waits for its page.
+    const pageRead = b.page !== undefined && b.page !== null;
+    const waitingPage = !pageRead && base.answer === null && !(question && question.answer === null);
+    return {
+      ...base, status: 'needs_review', section: 'split', parts: [], estimate: null, uncovered: [], options: [], kitsNotRead: [], kitReads: [], range: NO_RANGE,
+      ...(waitingPage ? { waitingPage: true } : {}),
+    };
   }
   const counts = componentCounts(split.components);
   // The kits whose own stored page lists their items, in part order. Contents come only from that page.

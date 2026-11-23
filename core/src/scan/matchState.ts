@@ -4,8 +4,16 @@ const count = (n: number, tail: string): string => `${n} ${n === 1 ? 'part' : 'p
 
 const isWaiting = (p: PartRow): boolean => p.status === 'waiting' || p.status === 'unmatched';
 
+/**
+ * Nov 23: the match state of a bundle whose own Home Depot page is not read yet (BundleRow.waitingPage). The agent's
+ * DealRow carries the code in `matchState` (and `matchKind`); a screen shows WAITING_PAGE_TEXT for it.
+ */
+export const WAITING_PAGE = 'waiting_page';
+export const WAITING_PAGE_TEXT = 'Waiting for its Home Depot page';
+
 /** The match-state line on a Deals row. Shared by the helper and the native app. */
 export function matchState(row: BundleRow): string | null {
+  if (row.waitingPage) return WAITING_PAGE_TEXT;
   const parts = row.parts;
   if (parts.length === 0) return null;
   const verify = parts.filter((p) => !isWaiting(p) && (p.grade === 'probable' || p.status === 'review')).length;

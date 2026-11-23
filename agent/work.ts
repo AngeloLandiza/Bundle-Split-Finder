@@ -37,7 +37,7 @@ import {
 import { fbaEstimateOf, type FbaEstimate } from '../core/src/tracking/fba';
 import type { TrendLookup } from '../core/src/tracking/signals';
 import { freshSignals, trackReport } from '../core/src/tracking/state';
-import { runScan } from '../core/src/scan/runner';
+import { runScan, withdrawUnreadSplitQuestions } from '../core/src/scan/runner';
 import type { ConfirmedPrice, PaidAction, ReviewAnswer, ScanJob, ScanReport, ScanStore } from '../core/src/scan/types';
 import { type AccountInfo, SearchBudget } from '../core/src/serpapi/budget';
 import { type LedgerEntry, SerpApiClient, SerpApiError } from '../core/src/serpapi/client';
@@ -441,6 +441,8 @@ export class AgentWork {
     const bogoPairs = Object.fromEntries(Object.values(store.get('tracking').bogoPairs ?? {}).map((p) => [p.key, `${p.promotionId}:${p.starterItemId}`]));
     return scan({
       bogoPairs,
+      // Nov 23: a bundle whose own page is not read waits for it (waiting_page); it is never a question before then.
+      waitForPages: true,
       client, budget, store: this.watched(this.scanStore), settings: toScanSettings(ext), now: this.d.now, labelPrefix: 'agent',
       shouldStop: () => this.stopCtl.signal.aborted,
       ...(connected ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices } : { noReaderReason: 'Chrome closed' }),
@@ -727,6 +729,16 @@ export class AgentWork {
     store.update('suggestions', (all) => all.map((s) => (s.key === entry.suggestionKey ? (({ outcome: _o, ...rest }) => rest)(s) : s)));
     await this.refresh();
     return undone;
+  }
+
+  /**
+   * Nov 23, at start: the split questions a scan opened for bundles whose own Home Depot page was never read are withdrawn
+   * (core's withdrawUnreadSplitQuestions); those bundles wait for their page. Review is rebuilt when any was. Returns how many.
+   */
+  async withdrawWaitingQuestions(): Promise<number> {
+    const ids = await withdrawUnreadSplitQuestions(this.scanStore, this.d.now());
+    if (ids.length > 0) await this.refresh();
+    return ids.length;
   }
 
   /** The report rebuilt from the scan's store, for the app (after an answer, an undo, a Look up). */

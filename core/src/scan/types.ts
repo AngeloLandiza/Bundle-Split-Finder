@@ -882,6 +882,11 @@ export interface BundleRow {
    * built before this field.
    */
   kitReads?: { model: string; itemId: string }[];
+  /**
+   * Nov 23: the split is not resolved, the bundle's own Home Depot page is not read, and no split question is open or
+   * answered for it: it waits for its page (match state `waiting_page`), not for the owner. Absent otherwise.
+   */
+  waitingPage?: boolean;
   /** Step 9: the primary option's range; all null while the split is not resolved. */
   range: PriceRange;
 }

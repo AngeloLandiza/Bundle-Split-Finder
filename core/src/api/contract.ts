@@ -152,8 +152,14 @@ export interface DealRow {
   regularPrice: number | null;
   /** Percent off Home Depot's regular price. */
   off: number | null;
-  /** One line on how far the parts are matched ("2 of 3 parts matched"), or null. */
+  /**
+   * One line on how far the parts are matched ("2 of 3 parts matched"), or null. Nov 23: the code `waiting_page` when the
+   * bundle's own Home Depot page is not read yet (core/src/scan/matchState.ts WAITING_PAGE; shown as "Waiting for its
+   * Home Depot page", under Waiting for a lookup, never a question: `needsAnswer` is false).
+   */
   matchState: string | null;
+  /** Nov 23: `waiting_page` beside matchState for such a bundle; absent otherwise. */
+  matchKind?: 'waiting_page' | null;
   profit: number | null;
   roi: number | null;
   roiRange: { low: number | null; high: number | null };

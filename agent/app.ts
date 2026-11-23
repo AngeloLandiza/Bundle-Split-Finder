@@ -351,6 +351,9 @@ export function createAgent(opts: AgentOptions): Agent {
     changed: () => mark('state'), ...(opts.work ?? {}),
   });
 
+  // Nov 23: questions opened for bundles whose page was never read are withdrawn once at start (the next scan would too).
+  void work.withdrawWaitingQuestions().catch(() => 0);
+
   const state = () => {
     const data = Object.fromEntries(COLLECTIONS.map((n) => [n, store.get(n)])) as unknown as StoreData;
     const live = work.state();

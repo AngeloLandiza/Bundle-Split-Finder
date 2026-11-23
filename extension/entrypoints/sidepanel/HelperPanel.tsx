@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { DealDetail, DealRow, ReviewAnswer as ApiAnswer, ReviewQuestion as ApiQuestion, ReviewResponse, DealsResponse } from '@core/api/contract';
 import type { ReviewAnswer } from '@core/scan/types';
+import { WAITING_PAGE, WAITING_PAGE_TEXT } from '@core/scan/matchState';
 import type { AgentApi } from '../../lib/agentApi';
 import type { AgentLink } from '../../lib/agentLink';
 import { AgentConnect } from '../../lib/AgentConnect';
@@ -222,7 +223,7 @@ function Bundle({ row, detail }: { row: DealRow; detail: DealDetail | null }) {
         {row.matchState !== null ? (
           <div>
             <dt>Parts</dt>
-            <dd>{row.matchState}</dd>
+            <dd>{row.matchState === WAITING_PAGE ? WAITING_PAGE_TEXT : row.matchState}</dd>
           </div>
         ) : null}
         <div>

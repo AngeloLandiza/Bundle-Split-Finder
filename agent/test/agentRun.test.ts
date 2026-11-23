@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ActivityResponse, AgentState, ReviewResponse } from '../../core/src/api/contract';
+import type { ActivityResponse, AgentState, DealsResponse, ReviewResponse } from '../../core/src/api/contract';
+import { parseBundlePage } from '../../core/src/hdPage';
 import { AnswerRefused } from '../../core/src/scan/answers';
 import type { runScan } from '../../core/src/scan/runner';
 import * as fx from '../../core/test/fixtures';
@@ -18,6 +19,8 @@ import { WorkRefused } from '../work';
 const SERP_KEY = 'serp-secret-key-123';
 const BOT = '999:bot-secret-token';
 const T0 = Date.UTC(2026, 10, 22, 15);
+/** The recorded Home Depot page of PCL1600K2-P553 (it names no models, so the split stays a question). */
+const PAGE_320243741 = (JSON.parse(readFileSync('fixtures/homedepot-pages/pages-2026-11-10.json', 'utf8')) as { pages: { itemId: string; text: string }[] }).pages.find((p) => p.itemId === '320243741')!.text;
 
 let server: Server;
 let agent: Agent;
@@ -79,13 +82,26 @@ describe('a scan from the app', () => {
     await agent.work.idle();
 
     const activity = await json<ActivityResponse>('/api/activity');
-    const run = activity.runs[0]!;
+    const run = activity.runs.at(-1)!;
     expect(run).toMatchObject({ kind: 'scan', trigger: 'manual', status: 'finished', searchesUsed: 1 });
     expect(run.summary).toContain('Chrome is closed');
     expect(run.steps?.find((s) => s.label === 'Bundle pages')).toMatchObject({ state: 'skipped', figure: 'Chrome closed' });
 
     const state = await json<AgentState>('/api/state');
     expect(state).toMatchObject({ firstRun: false, agent: { status: 'idle' }, budget: { serpMonthly: 250, serpPerScan: 1, serpLeft: 250 } });
+
+    // Nov 23: with Chrome closed no bundle page is read, so a bundle the title does not split waits for its page: it is
+    // under Waiting for a lookup (waiting_page) and is not a question.
+    const waiting = (await json<DealsResponse>('/api/deals')).rows.find((r) => r.id === 'homedepot:320243741')!;
+    expect(waiting).toMatchObject({ matchState: 'waiting_page', matchKind: 'waiting_page', needsAnswer: false });
+    expect((await json<ReviewResponse>('/api/review')).questions.some((x) => x.id === 'split:homedepot:320243741')).toBe(false);
+    expect(telegram).toHaveLength(0);
+
+    // Its page read (as the helper would have), the next scan finds the split still uncertain and asks.
+    const bundle = (await agent.work.scanStore.getBundle('homedepot:320243741'))!;
+    await agent.work.scanStore.putBundle({ ...bundle, page: { ...parseBundlePage(PAGE_320243741, '320243741')!, readAt: clock } });
+    expect((await ui('/api/scan', { method: 'POST' })).status).toBe(200);
+    await agent.work.idle();
 
     const review = await json<ReviewResponse>('/api/review');
     const q = review.questions.find((x) => x.id === 'split:homedepot:320243741')!;
@@ -100,7 +116,7 @@ describe('a scan from the app', () => {
     // One digest after the run, on Telegram too, with no key in it.
     expect(telegram).toHaveLength(1);
     expect(telegram[0]!.url).toBe(`https://api.telegram.org/bot${BOT}/sendMessage`);
-    expect(telegram[0]!.text).toMatch(/questions need you/);
+    expect(telegram[0]!.text).toMatch(/1 question needs you/);
     expect(telegram[0]!.text).not.toContain('secret');
 
     // The owner's answer is applied by the agent, through answers.ts.
@@ -117,6 +133,24 @@ describe('a scan from the app', () => {
       const body = readFileSync(f, 'utf8');
       expect(body.includes(SERP_KEY) || body.includes('bot-secret'), f).toBe(false);
     }
+   }, 20_000);
+
+  it('Nov 23 migration: a "What is inside" question opened for a bundle whose page was never read is withdrawn at start', async () => {
+    // As the owner's store was left: the bundle unread, its split question open (opened from the title by the old rule).
+    const { splitOne } = await import('../../core/src/scan/runner');
+    const record = {
+      key: 'homedepot:320243741', retailer: 'homedepot' as const, itemId: '320243741', title: 'RYOBI kit', brand: 'RYOBI', model: 'PCL1600K2-P553',
+      upc: null, price: 199, regularPrice: 268, percentOff: 26, link: null, seenAt: T0, split: null,
+    };
+    await agent.work.scanStore.putBundle(record);
+    await splitOne(agent.work.scanStore, record, { stored: new Map(), catalog: new Map() }, T0);
+    await agent.work.refresh();
+    expect((await json<ReviewResponse>('/api/review')).questions.map((q) => q.id)).toEqual(['split:homedepot:320243741']);
+
+    expect(await agent.work.withdrawWaitingQuestions()).toBe(1);
+    expect((await json<ReviewResponse>('/api/review')).questions).toEqual([]);
+    expect((await json<DealsResponse>('/api/deals')).rows[0]).toMatchObject({ matchState: 'waiting_page', needsAnswer: false });
+    expect(await agent.work.withdrawWaitingQuestions()).toBe(0);
   });
 
   it('without a key the run says so in a sentence, offers Retry, and spends nothing', async () => {

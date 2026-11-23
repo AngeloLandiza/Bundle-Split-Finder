@@ -34,7 +34,7 @@ import { limitCopy } from '../core/src/deals/limitCopy';
 import { DEAL_SECTION_ORDER } from '../core/src/deals/sections';
 import { DEAL_SORTS, sortDealRows, type DealSortKey } from '../core/src/deals/sort';
 import { choicesOf, reviewSignature } from '../core/src/scan/answers';
-import { matchState } from '../core/src/scan/matchState';
+import { matchState, WAITING_PAGE } from '../core/src/scan/matchState';
 import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
 import type { AuditBundle, StoreData, StoredKeys } from './store';
 
@@ -115,11 +115,13 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
     price: b.price,
     regularPrice: b.regularPrice,
     off: b.percentOff,
-    matchState: matchState(b),
+    // Nov 23: a bundle waiting for its own Home Depot page carries the code, and is no question for the owner.
+    matchState: b.waitingPage ? WAITING_PAGE : matchState(b),
+    ...(b.waitingPage ? { matchKind: WAITING_PAGE } : {}),
     profit: b.estimate?.profit ?? null,
     roi: b.estimate?.roi ?? null,
     roiRange: { low: b.range.lowest?.roi ?? null, high: b.range.highest?.roi ?? null },
-    needsAnswer,
+    needsAnswer: needsAnswer && !b.waitingPage,
     updatedAt: new Date(b.seenAt).toISOString(),
     lookup: searches === undefined ? null : { searches },
   };

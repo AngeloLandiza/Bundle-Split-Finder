@@ -91,6 +91,12 @@ export interface ScanDeps {
    * looked up after every other bundle's, at most PAIR_LOOKUPS_PER_GROUP new pairs per group a scan (pairLookupOrder).
    */
   bogoPairs?: Readonly<Record<string, string>>;
+  /**
+   * Nov 23 (the agent): a bundle whose own Home Depot page is not read yet is not a Review question; it waits for its
+   * page (splitOne, waiting_page), and an open question a scan opened for it is withdrawn. Default false: the command
+   * line, which reads no page, asks from the title as before.
+   */
+  waitForPages?: boolean;
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -137,6 +143,7 @@ interface Run extends PartContext {
   trendWriter?: ScanDeps['trendWriter'];
   cache?: Cache;
   bogoPairs: Readonly<Record<string, string>>;
+  waitForPages: boolean;
   job: ScanJob;
   /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
@@ -210,7 +217,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
     readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, noReaderReason: deps.noReaderReason, ebay: deps.ebay ?? null,
     keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
-    bogoPairs: deps.bogoPairs ?? {},
+    bogoPairs: deps.bogoPairs ?? {}, waitForPages: deps.waitForPages ?? false,
     job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
   });
 
@@ -1394,7 +1401,7 @@ async function splitBundles(run: Run, stored: Catalog): Promise<void> {
   const now = run.now();
   let resolved = 0;
   for (const bundle of await store.listBundles()) {
-    const { split, opened } = await splitOne(store, bundle, { stored, catalog }, now);
+    const { split, opened } = await splitOne(store, bundle, { stored, catalog }, now, run.waitForPages);
     if (split.status === 'resolved') resolved += 1;
     if (opened) job.counts.reviewsOpened += 1;
   }
@@ -1407,8 +1414,29 @@ async function splitBundles(run: Run, stored: Catalog): Promise<void> {
  * reading. `opened`: a question was opened, new or asked again. A product page the owner has open is
  * split by it too (pageView.ts), so the two never differ. Never a search.
  */
+/** Nov 23: the bundle's own Home Depot page has been read (and saved on it). */
+export const pageRead = (bundle: Pick<BundleRecord, 'page'>): boolean => bundle.page !== undefined && bundle.page !== null;
+
+/**
+ * Nov 23, at the agent's start (the next scan does the same in splitOne): every open split question a scan opened for a
+ * bundle whose own page was never read is withdrawn, closed as a scan closes one (RESOLVED_BY_SCAN), so the bundle waits
+ * for its page instead of asking the owner. A bundle with no record, or whose split is resolved, is left to the scan.
+ * Returns the ids withdrawn.
+ */
+export async function withdrawUnreadSplitQuestions(store: ScanStore, now: number): Promise<string[]> {
+  const out: string[] = [];
+  for (const item of await store.listReview()) {
+    if (item.kind !== 'split' || item.answer !== null) continue;
+    const bundle = await store.getBundle(item.subject);
+    if (!bundle || pageRead(bundle) || bundle.split?.status === 'resolved') continue;
+    await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
+    out.push(item.id);
+  }
+  return out;
+}
+
 export async function splitOne(
-  store: ScanStore, bundle: BundleRecord, known: Pick<KnownModels, 'stored' | 'catalog'>, now: number,
+  store: ScanStore, bundle: BundleRecord, known: Pick<KnownModels, 'stored' | 'catalog'>, now: number, waitForPage = false,
 ): Promise<{ split: Decomposition; opened: boolean }> {
   const id = `split:${bundle.key}`;
   const item = await store.getReview(id);
@@ -1420,6 +1448,15 @@ export async function splitOne(
   const split = owner === null ? read() : owner === NONE ? notKnown(read()) : owner;
   await store.putBundle({ ...bundle, split });
   if (split.status === 'resolved') {
+    if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
+    return { split, opened: false };
+  }
+  // Nov 23: a bundle whose own Home Depot page has not been read is not a question yet (it waits for its
+  // page, waiting_page): the page is what says what is inside, so asking the owner before it is read asks
+  // him for what a free read may answer. An open question a scan opened for it is withdrawn (closed as a
+  // scan closes one), and asked again if the page, once read, still leaves the split uncertain. The
+  // owner's own answer is never touched. Rule 4 is unchanged: nothing here makes a split resolved.
+  if (waitForPage && owner === null && !pageRead(bundle)) {
     if (item && item.answer === null) await store.putReview({ ...item, answer: RESOLVED_BY_SCAN, answeredAt: now });
     return { split, opened: false };
   }
