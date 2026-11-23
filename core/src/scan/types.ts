@@ -450,6 +450,11 @@ export interface CatalogCheckRecord {
   status: 'confirmed' | 'contradicted' | 'unknown';
   reason: string;
   at: number;
+  /**
+   * The listing ladder's version that read it (catalogCheck.ts LADDER_VERSION). An unknown from before rung 1 (absent) is
+   * read again once, from the cached pull when there is one, so rung 1 runs over every listing already checked.
+   */
+  ladder?: number;
 }
 
 export interface PriceRecord {

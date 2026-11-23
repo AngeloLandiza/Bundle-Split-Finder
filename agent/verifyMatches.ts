@@ -13,13 +13,16 @@ import type { ScanStore } from '../core/src/scan/types';
 import type { SearchResult } from '../core/src/serpapi/client';
 import { parseAmazonProduct } from '../core/src/serpapi/parsers';
 
+/** A cached pull this young is read again for rung 1 instead of a new pull: a listing's identity fields do not go stale. */
+export const RECHECK_MAX_AGE_MS = 90 * 86_400_000;
+
 export interface VerifyDeps {
   store: ScanStore;
   catalog: Catalog;
   now: () => number;
   keepaBudget: Pick<TokenBudget, 'blockReason'>;
   /** One Keepa product pull (keepa/fetchStep.ts keepaProductSearchResult): its result carries `keepaProduct`. */
-  keepaProduct: (asin: string, label: string) => Promise<SearchResult>;
+  keepaProduct: (asin: string, label: string, maxAgeMs?: number) => Promise<SearchResult>;
   trackingDepth?: KeepaTrackingDepth;
   /** Asked before each pull: the drip stops when a scan or a paid action claims the store. */
   shouldStop: () => boolean;
@@ -47,6 +50,11 @@ export async function checksWaiting(store: ScanStore): Promise<number> {
   return (await catalogChecksWanted(store, await bundleParts(store))).length;
 }
 
+/** The listings waiting for a catalog check now (rungs 0 and 1), by ASIN. */
+export async function checksWanted(store: ScanStore): Promise<string[]> {
+  return (await catalogChecksWanted(store, await bundleParts(store))).map((t) => t.asin);
+}
+
 /**
  * The listings to check, most valuable first, each pulled once while a pull's tokens are above the reserve. A pull's
  * price is saved as a refresh's is. Throws what Keepa throws (a network error, a 401): what was done before stays done.
@@ -59,7 +67,8 @@ export async function verifyMatchesWithKeepa(d: VerifyDeps): Promise<VerifyDone>
   const targets = d.onlyFirst ? all.filter((t) => first.has(t.asin)) : all;
   for (const t of targets) {
     if (d.shouldStop() || d.keepaBudget.blockReason(pull) !== null) break;
-    const r = await d.keepaProduct(t.asin, `agent:drip:verify:${t.model}`);
+    // The listing ladder: a listing read before rung 1 is read again from the cached pull when there is one (free).
+    const r = await d.keepaProduct(t.asin, `agent:drip:verify:${t.model}`, t.recheck ? RECHECK_MAX_AGE_MS : undefined);
     done.pulled += 1;
     if (r.source === 'network') done.tokens += r.keepaTokens ?? pull;
     const page = parseAmazonProduct(r.data, t.asin);

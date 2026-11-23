@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ADOPTED_RULES, checkListingFields } from '../src/keepa/listingFields';
 import { identityFromKeepa } from '../src/keepa/verify';
-import { applyCatalogCheck } from '../src/scan/catalogCheck';
+import { applyCatalogCheck, catalogChecksWanted } from '../src/scan/catalogCheck';
 import { wantedFor } from '../src/scan/classify';
 import { MemoryScanStore } from '../src/scan/memoryStore';
 import { isConfirmedListing } from '../src/tracking/signals';
@@ -72,5 +72,19 @@ describe('rung 1, the listing fields', () => {
     expect(m).toMatchObject({ grade: 'strong', verifiedBy: 'listing_fields', verifyEvidence: "Amazon's catalog lists brand DEWALT, and its title names DCS334B: https://www.amazon.com/dp/B07JPFHQKG" });
     expect(isConfirmedListing({ grade: 'probable', verifiedBy: 'listing_fields' })).toBe(true);
     expect(isConfirmedListing({ grade: 'probable', verifiedBy: 'ai_checked' })).toBe(false);
+  });
+
+  it('an unknown stored before rung 1 is read again once (recheck), then stands', async () => {
+    const store = new MemoryScanStore();
+    await store.putMatch({
+      key: 'DEWALT:DCS334B', brand: 'DEWALT', model: 'DCS334B', status: 'matched', asin: 'B07JPFHQKG', grade: 'probable', alternatives: [], decidedBy: 'auto', updatedAt: 1, waitingSince: null,
+      catalogChecks: [{ asin: 'B07JPFHQKG', status: 'unknown', reason: "Amazon's catalog lists no part number that is DCS334B", at: 1 }],
+    });
+    const parts = new Map([['DEWALT:DCS334B', { saving: 10 }]]);
+    expect(await catalogChecksWanted(store, parts)).toEqual([expect.objectContaining({ asin: 'B07JPFHQKG', recheck: true })]);
+    await applyCatalogCheck({ store, catalog: new Map(), now: () => 5 }, { ...row('B07JPFHQKG', 'DCS334B').listing, source: 'keepa_catalog' });
+    const m = await store.getMatch('DEWALT:DCS334B');
+    expect(m?.catalogChecks).toEqual([expect.objectContaining({ asin: 'B07JPFHQKG', status: 'confirmed', ladder: 1 })]);
+    expect(await catalogChecksWanted(store, parts)).toEqual([]);
   });
 });

@@ -35,6 +35,8 @@ export interface CatalogTarget {
   asin: string;
   /** A title match ('match') or a listing an open match question offers ('question'). */
   holds: 'match' | 'question';
+  /** Read before rung 1 and left unknown: read again, from the cached pull when there is one. */
+  recheck?: boolean;
 }
 
 /** What one check changed for one part. */
@@ -51,7 +53,14 @@ export interface CatalogOutcome {
 
 export const amazonListingLink = (asin: string): string => `https://www.amazon.com/dp/${encodeURIComponent(asin)}`;
 
-const checkedFor = (m: MatchRecord, asin: string): boolean => (m.catalogChecks ?? []).some((c) => c.asin === asin);
+/** The listing ladder's version: 1 added rung 1 (keepa/listingFields.ts) to the catalog check. */
+export const LADDER_VERSION = 1;
+
+/** Whether a stored check still stands: an unknown from before rung 1 is read again once. */
+const stands = (c: CatalogCheckRecord): boolean => c.status !== 'unknown' || (c.ladder ?? 0) >= LADDER_VERSION;
+const checkedFor = (m: MatchRecord, asin: string): boolean => (m.catalogChecks ?? []).some((c) => c.asin === asin && stands(c));
+/** Whether the listing was read before (an unknown read again): its pull may come from the cache. */
+const readBefore = (m: MatchRecord, asin: string): boolean => (m.catalogChecks ?? []).some((c) => c.asin === asin);
 const isTitleMatch = (m: MatchRecord): boolean => m.decidedBy === 'auto' && m.status === 'matched' && m.asin !== null && m.grade === 'probable';
 
 async function openQuestion(store: ScanStore, key: string): Promise<ReviewItem | null> {
@@ -72,12 +81,14 @@ export async function catalogChecksWanted(
   for (const m of await store.listMatches()) {
     const part = parts.get(m.key);
     if (!part || m.decidedBy !== 'auto') continue;
-    if (isTitleMatch(m) && !checkedFor(m, m.asin!)) found.push({ key: m.key, brand: m.brand, model: m.model, asin: m.asin!, holds: 'match', saving: part.saving });
+    if (isTitleMatch(m) && !checkedFor(m, m.asin!)) {
+      found.push({ key: m.key, brand: m.brand, model: m.model, asin: m.asin!, holds: 'match', saving: part.saving, ...(readBefore(m, m.asin!) ? { recheck: true } : {}) });
+    }
     if (m.status !== 'review') continue;
     const q = await openQuestion(store, m.key);
     for (const c of q?.candidates ?? []) {
       if (c.reasons.some((r) => CATALOG_QUESTION_REASONS.includes(r)) && !checkedFor(m, c.asin)) {
-        found.push({ key: m.key, brand: m.brand, model: m.model, asin: c.asin, holds: 'question', saving: part.saving });
+        found.push({ key: m.key, brand: m.brand, model: m.model, asin: c.asin, holds: 'question', saving: part.saving, ...(readBefore(m, c.asin) ? { recheck: true } : {}) });
       }
     }
   }
@@ -105,7 +116,7 @@ export async function applyCatalogCheck(
     if (!onMatch && !offered) continue;
     const now = ctx.now();
     const res = checkListingFields(wantedFor(m.brand, m.model, ctx.catalog), identity);
-    const checks: CatalogCheckRecord[] = [...(m.catalogChecks ?? []), { asin, status: res.status, reason: res.reason, at: now }];
+    const checks: CatalogCheckRecord[] = [...(m.catalogChecks ?? []).filter((c) => c.asin !== asin), { asin, status: res.status, reason: res.reason, at: now, ladder: LADDER_VERSION }];
     const evidence = `${res.reason}: ${amazonListingLink(asin)}`;
     const rejected = [...new Set([...(m.rejectedAsins ?? []), asin])];
     let change: CatalogOutcome['change'] = 'kept';

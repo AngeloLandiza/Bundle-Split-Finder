@@ -473,11 +473,14 @@ describe('runPaid verify: one detail page upgrades or rejects a title match', ()
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({ status: 'none', decidedBy: 'user' });
   });
 
-  it('a page that shows no part number or barcode match confirms no more than the title: the match stays as it was', async () => {
+  it('a page with no part number, barcode or brand field confirms no more than the title: the match stays as it was', async () => {
     const w = await bothMatched();
     productPage(w, (page) => {
       delete page.product_details!.manufacturer_part_number;
       delete page.product_details!.model_number;
+      delete page.product_results!.brand;
+      delete page.product_details!.brand_name;
+      delete (page as { item_specifications?: Record<string, unknown> }).item_specifications;
     });
     const before = await w.store.getMatch('RYOBI:PBLRC25B');
     w.clock = T0 + 2 * MINUTE;
@@ -486,6 +489,19 @@ describe('runPaid verify: one detail page upgrades or rejects a title match', ()
     expect(await w.store.getMatch('RYOBI:PBLRC25B')).toEqual(before);
     expect(await w.store.getPrice('B0B3JWF5ZV')).toMatchObject({ price: 169, checkedAt: T0 + 2 * MINUTE });
     expect(await w.store.getReview('match:RYOBI:PBLRC25B')).toBeUndefined();
+  });
+
+  it('the listing ladder: a page with no part number but its brand field and a title naming the model confirms by rung 1', async () => {
+    const w = await bothMatched();
+    productPage(w, (page) => {
+      delete page.product_details!.manufacturer_part_number;
+      delete page.product_details!.model_number;
+    });
+    await paid(w, VERIFY_25B);
+    expect(await w.store.getMatch('RYOBI:PBLRC25B')).toMatchObject({
+      status: 'matched', asin: 'B0B3JWF5ZV', grade: 'strong', verifiedBy: 'listing_fields',
+      verifyEvidence: "Amazon's product page lists brand RYOBI, and its title names PBLRC25B: https://www.amazon.com/dp/B0B3JWF5ZV",
+    });
   });
 
   it('a page that says bulk packaging confirms the part as any page does: no review for packaging alone (PO, Nov 18)', async () => {

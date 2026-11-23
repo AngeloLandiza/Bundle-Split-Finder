@@ -12,6 +12,9 @@ import { productTokenEstimate } from '../keepa/estimates';
 import type { KeepaTrackingDepth } from '../keepa/types';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { parseAmazonProduct, parseBuyBox } from '../serpapi/parsers';
+import { checkListingFields } from '../keepa/listingFields';
+import { identityFromKeepa, identityFromSerpProduct } from '../keepa/verify';
+import { amazonListingLink } from './catalogCheck';
 import { wantedFor } from './classify';
 import { listingFrom } from './listings';
 import {
@@ -331,6 +334,19 @@ async function verify(
       const upgraded: MatchRecord = { ...match, grade: chosen.grade, alternatives: [], updatedAt: now };
       await ctx.store.putMatch(upgraded);
       await writeTwins(ctx.store, upgraded, sameListing);
+      return;
+    }
+    // The listing ladder (Nov 23): a page that grades only probable is read as the catalog check reads a pull (rungs 0
+    // and 1, keepa/listingFields.ts): brand, part number or model field, and the adopted listing-field rules.
+    const identity = result.keepaProduct ? identityFromKeepa(result.keepaProduct) : identityFromSerpProduct(data, asin);
+    const read = identity ? checkListingFields(want, identity) : null;
+    if (identity && read?.status === 'confirmed') {
+      const confirmed: MatchRecord = {
+        ...match, grade: 'strong', alternatives: [], updatedAt: now, source: 'page',
+        verifiedBy: read.rule !== null ? 'listing_fields' : identity.source, verifyEvidence: `${read.reason}: ${amazonListingLink(asin)}`,
+      };
+      await ctx.store.putMatch(confirmed);
+      await writeTwins(ctx.store, confirmed, sameListing);
     }
     return;
   }
