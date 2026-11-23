@@ -156,7 +156,7 @@ describe('agent HTTP', () => {
     expect(got.settings).toMatchObject({
       appearance: { theme: 'system', accent: 'system', density: 'regular' },
       notifications: { sound: false, digest: 'each-run', quietHours: { enabled: false }, kinds: { review: true, deal: true, autopilot: true, scan: true, error: true } },
-      shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false },
+      shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
     });
     const patch = { appearance: { theme: 'dark' }, notifications: { kinds: { scan: false }, quietHours: { enabled: true, from: '21:30' }, digest: 'morning' }, shell: { dockIcon: false } };
     const ok = await ui('/api/settings', { method: 'PATCH', body: JSON.stringify(patch) });

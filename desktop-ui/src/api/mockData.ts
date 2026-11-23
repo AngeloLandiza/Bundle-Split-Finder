@@ -39,7 +39,7 @@ export const SETTINGS: AppSettings = {
     digest: 'each-run',
     morningAt: '08:00',
   },
-  shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false },
+  shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
   ebaySettings: { judgeModel: 'claude-haiku-4-5', listingsJudgedPerScan: 20 },
   settings: {
     schedule: { mode: 'daily', at: '06:00' },

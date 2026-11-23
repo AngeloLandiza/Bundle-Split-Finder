@@ -307,7 +307,7 @@ export function defaultSettings(): StoreData['settings'] {
       digest: 'each-run',
       morningAt: '08:00',
     },
-    shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false },
+    shell: { menuBarIcon: true, dockIcon: true, launchAtLogin: false, keepAwakeDuringScan: true },
   };
 }
 

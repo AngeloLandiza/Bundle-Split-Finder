@@ -5,6 +5,7 @@ import { createServer } from 'node:http';
 
 import { AGENT_PORT } from '../core/src/api/contract';
 import { createAgent } from './app';
+import { KeepAwake } from './keepAwake';
 import { agentDataDir } from './paths';
 
 const port = Number(process.env.AGENT_PORT ?? AGENT_PORT);
@@ -13,7 +14,8 @@ const extraUiOrigins = (process.env.SPLIT_FINDER_UI_ORIGINS ?? '')
   .map((o) => o.trim())
   .filter(Boolean);
 
-const agent = createAgent({ dataDir: agentDataDir(), port, extraUiOrigins, onQuit: () => stop() });
+// The real agent keeps the computer awake while a scan runs (shell.keepAwakeDuringScan); tests build theirs without it.
+const agent = createAgent({ dataDir: agentDataDir(), port, extraUiOrigins, onQuit: () => stop(), work: { keepAwake: new KeepAwake() } });
 const server = createServer(agent.handle);
 // Long polls and event streams stay open; only idle keep-alive sockets are timed out.
 server.requestTimeout = 0;

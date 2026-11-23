@@ -66,7 +66,7 @@ export interface AgentOptions {
   /** Every paid call's fetch (SerpApi, Keepa, eBay, models, Telegram). Tests pass a fake; default the global fetch. */
   fetchFn?: typeof fetch;
   /** Tests: the scan itself, reader timeouts, SerpApi's address. */
-  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl'>;
+  work?: Pick<Partial<WorkDeps>, 'runScan' | 'readerTimeouts' | 'serpBaseUrl' | 'keepAwake'>;
   /**
    * POST /api/agent/quit: the desktop shell asks the agent to stop as SIGTERM does. Windows has no SIGTERM for a
    * windowless child, so the shell asks over HTTP there before it kills. Absent, the route answers unavailable.
@@ -283,7 +283,7 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
   }
   if ('shell' in patch) {
     const sh = obj(patch.shell, 'shell');
-    for (const f of ['menuBarIcon', 'dockIcon', 'launchAtLogin'] as const) if (f in sh) next.shell[f] = flag(sh[f], `shell.${f}`);
+    for (const f of ['menuBarIcon', 'dockIcon', 'launchAtLogin', 'keepAwakeDuringScan'] as const) if (f in sh) next.shell[f] = flag(sh[f], `shell.${f}`);
   }
   if ('ebaySettings' in patch) {
     next.ebaySettings = { ...next.ebaySettings, ...obj(patch.ebaySettings, 'ebaySettings') } as typeof next.ebaySettings;

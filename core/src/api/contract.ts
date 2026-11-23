@@ -832,6 +832,8 @@ export interface ShellSettings {
   menuBarIcon: boolean;
   dockIcon: boolean;
   launchAtLogin: boolean;
+  /** The agent holds the computer awake while a scan or Look up all runs (agent/keepAwake.ts). Default on. */
+  keepAwakeDuringScan: boolean;
 }
 
 /**

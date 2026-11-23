@@ -110,6 +110,8 @@ export interface WorkDeps {
   serpBaseUrl?: string;
   /** Tests replace the scan itself. */
   runScan?: typeof runScan;
+  /** Holds the computer awake while a scan or Look up all runs (agent/keepAwake.ts). Absent: nothing is held (tests). */
+  keepAwake?: { hold(): () => void };
 }
 
 export interface LiveState {
@@ -169,6 +171,8 @@ export class AgentWork {
   readonly policy: NotifyPolicy;
   private readonly live: LiveState = { busy: null, stopping: false, pipeline: null, searchesUsed: 0 };
   private stopCtl = new AbortController();
+  /** Ends the keep-awake hold the running scan took (claim), or null. */
+  private releaseAwake: (() => void) | null = null;
   private current: Promise<void> | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private progressAt = 0;
@@ -234,6 +238,8 @@ export class AgentWork {
     if (this.progressTimer) clearTimeout(this.progressTimer);
     this.progressTimer = null;
     this.stopCtl.abort();
+    this.releaseAwake?.();
+    this.releaseAwake = null;
   }
 
   /** Resolves when whatever runs now has ended (tests, and shutdown). */
@@ -315,6 +321,8 @@ export class AgentWork {
     this.live.pipeline = null;
     this.live.searchesUsed = 0;
     this.stopCtl = new AbortController();
+    // A scan (Look up all is one) keeps the computer awake while it runs, when the owner has not turned that off.
+    if (kind === 'scan' && this.d.keepAwake && this.d.store.get('settings').shell.keepAwakeDuringScan !== false) this.releaseAwake = this.d.keepAwake.hold();
     // Step 15: the drip ends before its next part; the claimed work starts once it has (begin, paid).
     this.dripCtl.abort();
     this.d.changed();
@@ -341,6 +349,8 @@ export class AgentWork {
         },
       )
       .finally(() => {
+        this.releaseAwake?.();
+        this.releaseAwake = null;
         this.live.busy = null;
         this.live.stopping = false;
         this.live.pipeline = null;
