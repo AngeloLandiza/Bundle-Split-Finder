@@ -54,7 +54,7 @@ import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { checksWaiting, verifyMatchesWithKeepa } from './verifyMatches';
-import { evaluateSignals, pullKeepingTrends, pullSales, reportWithTrends, salesPullsWanted, type SignalsDeps } from './signalsPass';
+import { evaluateSignals, pullKeepingTrends, pullSales, pullsWanted, reportWithTrends, type SignalsDeps } from './signalsPass';
 import { freshFollowUp } from '../core/src/research/followUp';
 import { askPlan, followUpPass } from './followUp';
 import { reverifyPass, wantedReads, withEvidenceKey } from './reverify';
@@ -205,7 +205,13 @@ export class AgentWork {
         const app = this.d.store.get('settings');
         return Boolean(this.d.store.get('keys').keepa) && app.settings.amazonRefreshViaKeepa && app.lookups?.drip !== false;
       },
+      flatFee: () => this.d.store.get('settings').settings.fees.fulfillmentFee,
     };
+  }
+
+  /** Signals round 3: the listings the drip pulls for their Keepa fees and sales after its lookups (signalsPass.pullsWanted). */
+  private feesWanted(freshnessMs: number): Promise<{ asin: string; model: string }[]> {
+    return pullsWanted({ store: this.d.store, cache: this.cache, now: this.d.now(), freshnessMs });
   }
 
   /**
@@ -422,6 +428,8 @@ export class AgentWork {
   private dripCtl = new AbortController();
   private dripActive = false;
   private dripWaiting = 0;
+  /** Signals round 3: listings waiting for their Keepa fee pull, as the last round counted them. */
+  private dripFeesWaiting = 0;
   private dripNextAt: number | null = null;
   private dripRun: { record: RunRecord; startedAt: number; looked: number; matched: number; none: number; review: number; verified: number; removed: number; sales: number } | null = null;
 
@@ -439,8 +447,9 @@ export class AgentWork {
     return {
       active: this.dripActive,
       waiting: this.dripWaiting,
-      nextAt: this.dripWaiting > 0 && this.dripNextAt !== null ? new Date(this.dripNextAt).toISOString() : null,
+      nextAt: this.dripWaiting + this.dripFeesWaiting > 0 && this.dripNextAt !== null ? new Date(this.dripNextAt).toISOString() : null,
       lastLookupAt: last === null ? null : new Date(last).toISOString(),
+      ...(this.dripFeesWaiting > 0 ? { feesWaiting: this.dripFeesWaiting } : {}),
     };
   }
 
@@ -485,8 +494,9 @@ export class AgentWork {
     this.dripWaiting = work.lookups.length;
     // Catalog check: with no lookup waiting, the drip still runs for title matches and questions Amazon's catalog may settle.
     const checks = keys.keepa && work.lookups.length === 0 ? await checksWaiting(this.scanStore) : 0;
-    // Signals round 2: and for the sales figures watched deals miss only for want of a pull.
-    const sales = keys.keepa ? salesPullsWanted(store.get('tracking')).length : 0;
+    // Signals rounds 2 and 3: and for the Keepa fees and sales of parts whose bundle has an estimate.
+    const sales = keys.keepa ? (await this.feesWanted(settings.freshnessMs)).length : 0;
+    this.dripFeesWaiting = sales;
     if ((work.lookups.length === 0 && checks === 0 && sales === 0) || !keys.keepa) {
       if (prices > 0) await this.refresh();
       return;
@@ -552,13 +562,14 @@ export class AgentWork {
         if (err instanceof KeepaError && err.status === 401) this.keyProblem('keepa', err.message);
       }
     }
-    // Signals round 2: then the sales pulls (1 token each), for watched deals' parts Keepa was never asked about.
+    // Signals rounds 2 and 3: then the fee and sales pulls (1 token each), after the lookups and the catalog check, the
+    // bundles with the highest estimate first; a listing pulled within the freshness window is not pulled again.
     if (this.dripWaiting === 0 && this.dripAllowed() && !this.dripCtl.signal.aborted) {
       try {
         const s = await pullSales({
           store: this.scanStore, cache: this.cache, keepaBudget: budget, pull: product, trackingDepth: ext.trackingDepth,
-          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted,
-        }, salesPullsWanted(store.get('tracking')));
+          shouldStop: () => !this.dripAllowed() || this.dripCtl.signal.aborted, freshnessMs: settings.freshnessMs, now: this.d.now,
+        }, await this.feesWanted(settings.freshnessMs));
         done.sales += s.pulled;
         done.tokens += s.tokens;
       } catch (err) {
@@ -568,7 +579,8 @@ export class AgentWork {
     this.dripActive = false;
     // The next look: when a lookup's tokens will have refilled above the reserve, and never sooner than DRIP_POLL_MS.
     const left = (budget.knownBalance ?? status.tokensLeft) - ext.keepaReserve;
-    const short = KEEPA_LOOKUP_TOKEN_ESTIMATE - left;
+    // Signals round 3: with no lookup waiting, a fee pull needs only its 1 token.
+    const short = (this.dripWaiting > 0 ? KEEPA_LOOKUP_TOKEN_ESTIMATE : 1) - left;
     const perMin = status.refillRate > 0 ? status.refillRate : 1;
     this.dripNextAt = this.d.now() + Math.max(DRIP_POLL_MS, short > 0 ? Math.ceil(short / perMin) * 60_000 : 0);
     if (done.looked === 0 && done.verified === 0 && done.removed === 0 && done.sales === 0) {
@@ -576,6 +588,7 @@ export class AgentWork {
       return;
     }
     const report = await this.rebuild();
+    this.dripFeesWaiting = (await this.feesWanted(settings.freshnessMs)).length;
     this.dripRecord(done);
     const fresh = [...this.estimatedKeys()].filter((k) => !before.has(k)).length;
     const text = `Keepa lookups between scans gave ${fresh} new ${fresh === 1 ? 'estimate' : 'estimates'} (from your fee settings, not your real fees).`;
@@ -1138,7 +1151,8 @@ export class AgentWork {
     const trend = await this.trendsFor(report);
     const alerts = this.d.store.get('settings').alerts;
     const now = this.d.now();
-    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: this.signalsDeps().keepa() }) }));
+    const opts = this.signalsDeps();
+    this.d.store.update('tracking', (t) => ({ ...t, ...trackReport(t, report, trend, alerts, now, { keepa: opts.keepa(), flatFee: opts.flatFee!() }) }));
   }
 
   /** What the views show beside each deal: its BOGO promotion's estimate and the FBA-fee estimate, from stored data. */

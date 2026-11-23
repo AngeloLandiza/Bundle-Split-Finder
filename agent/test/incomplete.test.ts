@@ -50,7 +50,7 @@ describe('a deal missing a price, in the agent\'s views', () => {
     });
     // Signals round 2: Keepa's FBA fee is the default; the priced part has none stored here, so the flat $0 is said to stand in.
     expect(kit.incompleteEstimate!.basis).toBe(
-      '15% referral (at least $0.30); no FBA fee from Keepa stored for the 1 part yet, so your flat $0.00 fulfillment; 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.',
+      '15% referral (at least $0.30); before fulfillment for 1 of 1 part: none yet for DCF921B: Keepa has not been asked about its listing; 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.',
     );
     const review = dealDetail(d, key('DCK540D1WCF860B'))!;
     expect(review.incompleteEstimate!.parts).toEqual([{ model: 'DCF860B', qty: 1, state: 'review', action: 'answer', questionId: 'match:DEWALT:DCF860B' }]);

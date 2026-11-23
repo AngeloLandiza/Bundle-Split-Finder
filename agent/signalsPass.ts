@@ -12,11 +12,11 @@
 import type { NotifyEvent } from '../core/src/api/contract';
 import type { TokenBudget } from '../core/src/keepa/budget';
 import { productTokenEstimate } from '../core/src/keepa/estimates';
-import { keepingTrends, readPartTrend, readTrends, writePartTrend } from '../core/src/keepa/trends';
+import { keepingTrends, readPartTrend, readTrends, writePartTrend, type PartTrend } from '../core/src/keepa/trends';
 import type { KeepaTrackingDepth } from '../core/src/keepa/types';
 import { buildReport } from '../core/src/scan/report';
 import { savePrice } from '../core/src/scan/runner';
-import type { ScanReport, ScanSettings, ScanStore } from '../core/src/scan/types';
+import type { BundleRow, ScanReport, ScanSettings, ScanStore } from '../core/src/scan/types';
 import type { Cache, SearchResult } from '../core/src/serpapi/client';
 import { parseAmazonProduct } from '../core/src/serpapi/parsers';
 import { pairsBehindBest } from '../core/src/tracking/bogoPairs';
@@ -54,6 +54,8 @@ export interface SignalsDeps {
   telegram: (text: string | null) => Promise<void>;
   /** Whether a Keepa pull can be made now (a key, Keepa on): the "no sales data" words say what happens next. */
   keepa: () => boolean;
+  /** Signals round 3: the owner's flat fulfillment fee, for the words of an estimate before fulfillment. */
+  flatFee?: () => number;
 }
 
 export interface SignalsOutcome {
@@ -75,7 +77,7 @@ export async function evaluateSignals(d: SignalsDeps, report: Pick<ScanReport, '
   const trend = await trendsOfReport(d.cache, report);
   let evaluated: string[] = [];
   store.update('tracking', (t) => {
-    const r = retrackReport(t as TrackingState, report, trend, app.alerts, now, { keepa: d.keepa() });
+    const r = retrackReport(t as TrackingState, report, trend, app.alerts, now, { keepa: d.keepa(), ...(d.flatFee ? { flatFee: d.flatFee() } : {}) });
     evaluated = r.evaluated;
     return { ...t, watch: r.state.watch, history: r.state.history, signals: r.state.signals };
   });
@@ -119,6 +121,48 @@ export function salesPullsWanted(tracking: Pick<TrackingState, 'watch' | 'signal
   return [...out].map(([asin, model]) => ({ asin, model }));
 }
 
+/**
+ * Signals round 3, fees for every part that counts: with fees.fulfillmentSource 'keepa', every matched part of every bundle
+ * with a complete estimate, or one part short of one (an incomplete estimate with one unpriced part), whose listing Keepa
+ * has not been asked about within the freshness window. Bundles by estimate, highest first, then the one-short ones by
+ * smallest break-even; each listing once. A part pulled for any reason (a scan's refresh, a lookup's price pull, a catalog
+ * check) has a trend and is not pulled again within the window.
+ */
+export function feePullsWanted(
+  bundles: readonly BundleRow[], trend: (asin: string) => PartTrend | undefined, now: number, freshnessMs: number,
+): { asin: string; model: string }[] {
+  const complete = bundles.filter((b) => b.estimate !== null).sort((a, b) => b.estimate!.profit - a.estimate!.profit);
+  const short = bundles
+    .filter((b) => b.estimate === null && b.incomplete !== undefined && b.incomplete.unpriced.length === 1)
+    .sort((a, b) => a.incomplete!.breakEvenNet - b.incomplete!.breakEvenNet);
+  const out = new Map<string, string>();
+  for (const b of [...complete, ...short]) {
+    for (const p of b.parts) {
+      if (p.status !== 'matched' || !p.asin || out.has(p.asin)) continue;
+      const t = trend(p.asin);
+      if (t && now - t.pulledAt <= freshnessMs) continue;
+      out.set(p.asin, p.model);
+    }
+  }
+  return [...out].map(([asin, model]) => ({ asin, model }));
+}
+
+/**
+ * What the drip pulls after its lookups and catalog checks, in order: the fee pulls (feePullsWanted, with Keepa's FBA fee
+ * chosen), then the sales pulls of watched deals (salesPullsWanted); each listing once.
+ */
+export async function pullsWanted(d: { store: Store; cache: Cache; now: number; freshnessMs: number }): Promise<{ asin: string; model: string }[]> {
+  const bundles = d.store.get('deals').bundles;
+  const fees = d.store.get('settings').settings.fees.fulfillmentSource === 'keepa';
+  const asins = bundles.flatMap((b) => b.parts.flatMap((p) => (p.asin ? [p.asin] : [])));
+  const trend = await readTrends(d.cache, asins);
+  const out = new Map<string, string>();
+  for (const w of [...(fees ? feePullsWanted(bundles, trend, d.now, d.freshnessMs) : []), ...salesPullsWanted(d.store.get('tracking'))]) {
+    if (!out.has(w.asin)) out.set(w.asin, w.model);
+  }
+  return [...out].map(([asin, model]) => ({ asin, model }));
+}
+
 export interface SalesPullDeps {
   store: ScanStore;
   cache: Cache;
@@ -127,6 +171,9 @@ export interface SalesPullDeps {
   pull: ProductPull;
   trackingDepth?: KeepaTrackingDepth;
   shouldStop: () => boolean;
+  /** Signals round 3: a listing pulled within this window is not pulled again (and a cached answer older is not used). */
+  freshnessMs?: number;
+  now?: () => number;
 }
 
 /**
@@ -140,8 +187,9 @@ export async function pullSales(d: SalesPullDeps, wanted: { asin: string; model:
   const cost = productTokenEstimate(d.trackingDepth, 1);
   for (const w of wanted) {
     if (d.shouldStop() || d.keepaBudget.blockReason(cost) !== null) break;
-    if (await readPartTrend(d.cache, w.asin).catch(() => undefined)) continue;
-    const r = await d.pull(w.asin, `agent:drip:sales:${w.model}`);
+    const had = await readPartTrend(d.cache, w.asin).catch(() => undefined);
+    if (had && (d.freshnessMs === undefined || (d.now ?? Date.now)() - had.pulledAt <= d.freshnessMs)) continue;
+    const r = await d.pull(w.asin, `agent:drip:fees:${w.model}`, d.freshnessMs);
     done.pulled += 1;
     if (r.source === 'network') done.tokens += r.keepaTokens ?? cost;
     const page = parseAmazonProduct(r.data, w.asin);

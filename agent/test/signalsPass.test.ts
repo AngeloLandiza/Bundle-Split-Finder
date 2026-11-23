@@ -93,7 +93,8 @@ describe('buy signals between scans', () => {
     tokens = 21;
     await waitingPart();
     // Not confirmed yet (waiting for its lookup): not watched, no signal, no message.
-    expect(agent.store.get('tracking').signals[KEY]).toBeUndefined();
+    // Signals round 3: judged all the same (the row shows the verdict), never a buy.
+    expect(agent.store.get('tracking').signals[KEY]).toMatchObject({ buyNow: null, verdict: 'Not worth buying now: not confirmed yet: waiting for a part to be looked up.' });
     await agent.work.drip();
     expect(calls).toEqual(['/token', '/search RYOBI PCL235B', '/product B0BGYFTPGK']);
 
@@ -103,7 +104,7 @@ describe('buy signals between scans', () => {
     // $44.89 - 15% referral - Amazon's FBA fee $8.02 (Keepa) = $30.14 net; - $9 = $21.14, 235% ROI.
     expect(s.buyNow).toMatchObject({ kind: 'buyNow', numbers: { profit: 21.14, minProfit: 20, monthlySold: 500 } });
     // Its earlier points (waiting for the lookup) had no sales figure, so it is judged as first seen (core judgedBy).
-    expect(s.verdict).toBe('Worth buying now: est. profit $21.14 (235% ROI), sells about 500 a month, first seen with an estimate.');
+    expect(s.verdict).toBe('Worth buying now: +$21.14 (234.9% ROI), sells about 500 a month, first seen with an estimate.');
 
     // One message: the drip's line and the buy line together.
     expect(telegram).toHaveLength(1);
@@ -116,7 +117,7 @@ describe('buy signals between scans', () => {
     const data = { deals: agent.store.get('deals'), review: agent.store.get('review'), runtime: agent.store.get('runtime'), settings: agent.store.get('settings'), tracking: agent.store.get('tracking') };
     expect(dealsResponse(data, { sort: 'profit' }, clock).rows.find((r) => r.id === KEY)).toMatchObject({ buyNow: true, signalNote: s.verdict });
     const detail = dealDetail(data, KEY)!;
-    expect(detail.estimate!.basis).toBe("15% referral (at least $0.30); Amazon's FBA fee from Keepa for 1 of 1 part ($8.02); 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.");
+    expect(detail.estimate!.basis).toBe("15% referral (at least $0.30); Amazon's FBA fee from Keepa for the 1 part ($8.02); 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.");
     expect(detail.fbaEstimate).toBeNull();
 
     // Judged again the same day (an owner's action rebuilds the deals): nothing new is sent.
@@ -139,7 +140,8 @@ describe('buy signals between scans', () => {
     await agent.work.refresh();
     const before = agent.store.get('tracking').signals[KEY]!;
     expect(before.buyNow).toBeNull();
-    expect(before.verdict).toBe('Not worth buying now: no sales data for PCL235B yet — Keepa is asked on the next lookup.');
+    // Signals round 3: no Keepa fee either; one pull answers both, and the verdict says so once.
+    expect(before.verdict).toBe('Not worth buying now: before fulfillment for 1 of 1 part — Keepa is asked next.');
     expect(telegram).toEqual([]);
 
     await agent.work.drip();
@@ -149,7 +151,7 @@ describe('buy signals between scans', () => {
     expect(after.options[0]!.velocity.status).toBe('pass');
     // Keepa's FBA fee came with the pull: $29.16 at the flat $0 became $21.14, still above $20. The change it was first seen
     // with was never judged with sales data, so it is judged now.
-    expect(after.verdict).toBe('Worth buying now: est. profit $21.14 (235% ROI), sells about 500 a month, first seen with an estimate.');
+    expect(after.verdict).toBe('Worth buying now: +$21.14 (234.9% ROI), sells about 500 a month, first seen with an estimate.');
     expect(after.buyNow).not.toBeNull();
     expect(telegram).toHaveLength(1);
     expect(telegram[0]).toMatch(/^1 deal worth buying now\. Top: RYOBI PCL235B, est\. profit \$21\.14 \(235% ROI\)\./);
@@ -184,6 +186,90 @@ describe('buy signals between scans', () => {
     expect(telegram[0]).toMatch(/^1 deal worth buying now\. Top: RYOBI PCL235B/);
     // Nothing was fetched at start.
     expect(calls).toEqual(['/token', '/search RYOBI PCL235B', '/product B0BGYFTPGK']);
+  });
+});
+
+describe('fees for every part that counts (signals round 3)', () => {
+  const DEAL_B = bundleKey('337440459');
+
+  /** Two unwatched bundles with complete estimates (no discount), both parts verified and priced, Keepa never asked. */
+  async function twoDeals(): Promise<void> {
+    const store = agent.work.scanStore;
+    for (const [itemId, brand, model, asin, price, amazon] of [
+      ['318621812', 'RYOBI', 'PCL235B', 'B0BGYFTPGK', 9, 44.89],
+      ['337440459', 'DEWALT', 'DCF921B', 'B09M3TL9BB', 120, 154.99],
+    ] as const) {
+      await store.putBundle({
+        key: bundleKey(itemId), retailer: 'homedepot', itemId, title: `${brand} ${model}`, brand, model, upc: null, price, regularPrice: null, percentOff: null,
+        link: null, seenAt: T0, split: { components: [model], status: 'resolved', notes: [] },
+      });
+      await store.putMatch({ key: `${brand}:${model}`, brand, model, status: 'matched', asin, grade: 'strong', alternatives: [], decidedBy: 'auto', updatedAt: T0, waitingSince: null });
+      await store.putPrice({ asin, price: amazon, reviews: null, seenAt: T0, checkedAt: T0 });
+    }
+    await agent.work.refresh();
+  }
+
+  const view = () => {
+    const data = { deals: agent.store.get('deals'), review: agent.store.get('review'), runtime: agent.store.get('runtime'), settings: agent.store.get('settings'), tracking: agent.store.get('tracking') };
+    return dealsResponse(data, { sort: 'profit' }, clock).rows;
+  };
+
+  it('unwatched deals get their Keepa fees, the highest estimate first, 1 token each above the reserve; the queue is shown; no pull again within the window', async () => {
+    tokens = 6; // the reserve (5) and one pull
+    await twoDeals();
+    // Before any pull: both estimates are before fulfillment, labelled so, never a buy, whatever the margin.
+    expect(view().map((r) => [r.bundle.model, r.profit, r.beforeFulfillment, r.buyNow ?? false, r.signalNote])).toEqual([
+      ['PCL235B', 29.16, { parts: 1, of: 1 }, false, 'Not worth buying now: before fulfillment for 1 of 1 part — Keepa is asked next.'],
+      ['DCF921B', 11.74, { parts: 1, of: 1 }, false, 'Not worth buying now: est. $11.74 is below your $20 and 10% ROI below your 20%; before fulfillment for 1 of 1 part — Keepa is asked next.'],
+    ]);
+    expect(agent.store.get('tracking').watch).toEqual({});
+
+    await agent.work.drip();
+    // PCL235B first (the higher estimate): its pull brings Amazon's FBA fee ($8.02) and its sales; DCF921B waits.
+    expect(calls).toEqual(['/token', '/product B0BGYFTPGK']);
+    expect(agent.work.state().drip).toMatchObject({ feesWaiting: 1 });
+    const first = view().find((r) => r.id === KEY)!;
+    expect(first).toMatchObject({ profit: 21.14, signalNote: 'Worth buying now: +$21.14 (234.9% ROI), sells about 500 a month, first seen with an estimate.' });
+    expect(first.beforeFulfillment).toBeUndefined();
+    // Unwatched: the verdict shows, but nothing is sent and the row is not a buy.
+    expect(first.buyNow).toBe(false);
+    expect(telegram).toEqual([]);
+
+    tokens = 6;
+    clock += DRIP_POLL_MS;
+    await agent.work.drip();
+    expect(calls.slice(2)).toEqual(['/token', '/product B09M3TL9BB']);
+    expect(agent.work.state().drip?.feesWaiting).toBeUndefined();
+    const b = view().find((r) => r.id === DEAL_B)!;
+    // $154.99 - $23.25 (15%) - $7.60 (Keepa) = $124.14; - $120 = $4.14.
+    expect(b).toMatchObject({ profit: 4.14, signalNote: 'Not worth buying now: est. $4.14 is below your $20 and 3% ROI below your 20%.' });
+
+    // Pulled within the freshness window: not again.
+    tokens = 50;
+    clock += DRIP_POLL_MS;
+    await agent.work.drip();
+    expect(calls.filter((c) => c.startsWith('/product'))).toHaveLength(2);
+  });
+
+  it('Deals order: a full estimate before one that leaves a fee out, of the same sign', async () => {
+    tokens = 6;
+    await twoDeals();
+    // Before any pull PCL235B ($29.16) leads; give DCF921B its fee and lower its price so it is fully fee'd but smaller.
+    agent.store.update('settings', (st) => ({ ...st }));
+    await agent.work.scanStore.putBundle({ ...(await agent.work.scanStore.getBundle(DEAL_B))!, price: 100 });
+    tokens = 5;
+    await agent.work.refresh();
+    expect(view().map((r) => r.bundle.model)).toEqual(['DCF921B', 'PCL235B']);
+    expect(view().map((r) => r.profit)).toEqual([31.74, 29.16]);
+    // Neither is fee'd yet: plain order by estimate. Now DCF921B's fee comes (the highest first: DCF921B at $31.74).
+    tokens = 6;
+    await agent.work.drip();
+    expect(calls).toEqual(['/token', '/product B09M3TL9BB']);
+    // DCF921B, fully fee'd at $24.14, comes before PCL235B at $29.16 before fulfillment: both above zero.
+    expect(view().map((r) => [r.bundle.model, r.profit, r.beforeFulfillment ?? null])).toEqual([
+      ['DCF921B', 24.14, null],
+      ['PCL235B', 29.16, { parts: 1, of: 1 }],
+    ]);
   });
 });
 

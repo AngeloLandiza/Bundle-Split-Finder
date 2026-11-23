@@ -45,7 +45,7 @@ import { briefForQuestion, ebayBrief } from '../core/src/brief/view';
 import { choicesOf, reviewSignature } from '../core/src/scan/answers';
 import { matchState, WAITING_PAGE, WAITING_PARTS } from '../core/src/scan/matchState';
 import { DEFAULT_SCAN_SETTINGS, partKey, type BundleRow, type PartRow, type ReportSection, type ReviewItem } from '../core/src/scan/types';
-import { estimateBasis } from '../core/src/scan/report';
+import { estimateBasis, fulfillmentGap } from '../core/src/scan/report';
 import type { AuditBundle, StoreData, StoredKeys } from './store';
 
 const monthStartMs = (now: number): number => {
@@ -114,7 +114,8 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
     ? {
         watched: tracking.watch[b.key]?.watched === true,
         buyNow: tracking.watch[b.key]?.watched === true && (tracking.signals[b.key]?.buyNow ?? null) !== null,
-        ...(tracking.watch[b.key]?.watched === true && tracking.signals[b.key]?.verdict ? { signalNote: tracking.signals[b.key]!.verdict! } : {}),
+        // Signals round 3: the verdict on every row with a complete estimate, watched or not (and on a watched one always).
+        ...((tracking.watch[b.key]?.watched === true || b.estimate !== null) && tracking.signals[b.key]?.verdict ? { signalNote: tracking.signals[b.key]!.verdict! } : {}),
         bogo: tracking.bogo[b.key] ? (tracking.bogo[b.key]!.chosen.length > 0 ? ('chosen' as const) : ('choose' as const)) : null,
         bogoPair: pair ? bogoTagOf(pair) : null,
         bogoChoices: group ? { label: group.label, count: group.choices.length, bestId: group.best?.key ?? null, best: group.best?.key === b.key } : null,
@@ -133,6 +134,7 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
     matchState: b.waitingPage ? WAITING_PAGE : b.waitingParts ? WAITING_PARTS : matchState(b),
     ...(b.waitingPage ? { matchKind: WAITING_PAGE } : b.waitingParts ? { matchKind: WAITING_PARTS } : {}),
     profit: b.estimate?.profit ?? null,
+    ...beforeFulfillmentOf(b),
     roi: b.estimate?.roi ?? null,
     roiRange: { low: b.range.lowest?.roi ?? null, high: b.range.highest?.roi ?? null },
     needsAnswer: needsAnswer && !b.waitingPage && !b.waitingParts,
@@ -140,6 +142,14 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
     lookup: searches === undefined ? null : { searches },
     ...(b.incomplete ? { incomplete: incompleteOf(b) } : {}),
   };
+}
+
+/** Signals round 3: how many of the estimate's counted parts it counts no fulfillment fee for; nothing when none. */
+function beforeFulfillmentOf(b: BundleRow): Pick<DealRow, 'beforeFulfillment'> {
+  if (!b.estimate) return {};
+  const uncovered = new Set(b.uncovered);
+  const gap = fulfillmentGap(b.parts.filter((p) => !uncovered.has(p.model)));
+  return gap.before.length > 0 ? { beforeFulfillment: { parts: gap.before.length, of: gap.total } } : {};
 }
 
 /** Nov 23: the row's incomplete estimate (BundleRow.incomplete, the primary way's). */
@@ -197,6 +207,7 @@ export function dealsResponse(
     sortDealRows(
       rows.filter((r) => r.section === s).map((r) => ({
         r, percentOff: r.off, profit: r.profit, roi: r.roi, roiLowest: r.roiRange.low, roiHighest: r.roiRange.high, breakEven: r.incomplete?.breakEvenNet ?? null,
+        beforeFulfillment: (r.beforeFulfillment?.parts ?? 0) > 0,
       })),
       query.sort,
     ).map((x) => x.r),

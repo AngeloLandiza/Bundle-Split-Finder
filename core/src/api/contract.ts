@@ -145,6 +145,11 @@ export interface DripState {
   /** When the drip looks at Keepa's tokens next (ISO), or null when it is off or nothing waits. */
   nextAt: string | null;
   lastLookupAt: string | null;
+  /**
+   * Signals round 3: listings waiting for their Keepa fee pull (Amazon's FBA fee, sales, referral, rank: 1 token each,
+   * after the lookups and catalog checks), for the parts of bundles with an estimate; absent when none waits.
+   */
+  feesWaiting?: number;
 }
 
 /**
@@ -273,6 +278,12 @@ export interface DealRow {
    * judged yet. Estimates from the fee settings.
    */
   signalNote?: string;
+  /**
+   * Signals round 3, no silent mixing: the estimate counts no fulfillment fee for `parts` of its `of` counted parts (Keepa
+   * not asked yet, or no FBA fee and a flat fee of $0). Such a row is never worth buying now and sorts after full estimates
+   * of the same sign. Absent or null when every counted part has a fee, or with no estimate.
+   */
+  beforeFulfillment?: { parts: number; of: number } | null;
   /** Tracking: on a BOGO promotion the owner entered; 'choose' until he chooses the free tool. */
   bogo?: 'choose' | 'chosen' | null;
   /**
