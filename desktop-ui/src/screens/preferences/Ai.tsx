@@ -38,14 +38,15 @@ export function AiPane() {
           ) : null}
         </div>
       </Row>
-      {PIPELINES.map((p) => (
-        <PipelineRows key={p.id} id={p.id} label={p.label} help={p.help} />
+      {PIPELINES.map((p, i) => (
+        <PipelineRows key={p.id} id={p.id} label={p.label} help={p.help} first={i === 0} />
       ))}
     </Pane>
   );
 }
 
-function PipelineRows({ id, label, help }: { id: Pipeline; label: string; help: string }) {
+/** `first`: the trust sentence is said once, under the first pipeline's switch, not under all three. */
+function PipelineRows({ id, label, help, first }: { id: Pipeline; label: string; help: string; first: boolean }) {
   const { settings, update } = usePrefs();
   const cur: Setting = settings.ai[id];
   const change = (next: Partial<Setting>, delay = 0) => update({ ai: { [id]: next } }, { delay });
@@ -77,7 +78,7 @@ function PipelineRows({ id, label, help }: { id: Pipeline; label: string; help: 
           />
         </Row>
       ) : null}
-      <Row label="Trusted for Autopilot" align="start" help="Trust belongs to one model. It resets when the provider, model or address changes, so a new model stays off until you turn it on.">
+      <Row label="Trusted for Autopilot" align="start" help={first ? "Trust belongs to one model. It resets when the provider, model or address changes, so a new model stays off until you turn it on." : undefined}>
         <Switch label={cur.trusted ? 'Trusted' : 'Not trusted'} name={`Trust ${label} for Autopilot`} checked={cur.trusted} onChange={(trusted) => change({ trusted })} />
       </Row>
     </>

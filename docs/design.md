@@ -369,6 +369,16 @@ colours, including Increase Contrast; another browser reads close copies.
   a colour except the accent.
 - Radius: 5px controls, 6px toolbar items and selection, 10px group boxes, 12px a sheet's corners.
 
+### Contrast
+
+Text is at least 4.5:1 in light and dark, on a Mac and on Windows (docs/ux-checklist.md, Accessibility; measured by a script
+over every text node of every screen). Three values are the app's own, not the system's, because the system's measured
+lower: `--label-2` (4.0:1 on white) is not swapped for WebKit's secondary label; links use `--accent-text` (the accent
+deepened in light, lightened in dark) and a default button or badge with white words uses `--accent-fill` (the system blue
+under white was 4.0:1 in light and 3.65:1 in dark). Red and orange text are deeper in light and lighter in dark than the
+system's. A chosen accent goes through the same two derivations. Section heads and the dash for "no figure" use `--label-2`;
+`--label-3` is for disabled controls, chevrons and gridlines only.
+
 ### Type
 
 The system font: `-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui`.
@@ -424,13 +434,17 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
 
 ### Screens
 
-- **Today**: four large figures (Open questions, Best estimated profit with its model, Bundles found,
-  Searches left), then Needs you (rows with a badge and a chevron, AI-verified first), **Worth buying now**
-  when any bundle has that verdict (the same rows; the link opens that view), otherwise Best deals (bundle,
-  price, est. profit, ROI with its range; the estimate note under the box; an estimate below zero is never
-  listed), and the Agent card
-  at 320px (state and stages, Pause, then label / value rows: last scan, next scan, searches left with
-  its meter, Keepa, AI this month, Keys when one is not accepted (with the agent's sentence and a link to Settings › Keys), Chrome). One column under 1180px.
+- **Today** answers "what should I do now?" in its first screenful, in the order he acts (`screens/Today.tsx`). First
+  **Worth buying now** when any bundle has that verdict, otherwise **Best deals** (the five best estimates; an estimate
+  below zero is never listed), each row the bundle (a green Buy now tag when the scan said so), brand · model · % off, price,
+  est. profit, ROI with its range, and a **one-line verdict** under it (`lib/today.ts` `dealVerdict`): the agent's
+  `signalNote` when the row carries one, else how far its parts are confirmed on Amazon in the owner's words
+  (`lib/matchWords.ts`); the estimate note under the box. Then **Needs you** (AI-verified first, then oldest; each row the
+  question, brand · kind, and its state at the end: "Suggested: 2 parts", "AI could not tell"; a verified one is a green tag).
+  Then the **Agent** card at 320px beside them (state and stages, Pause, last scan, next scan, searches left with its meter,
+  Keepa, AI this month, Keys when one is not accepted, Chrome, what Autopilot applied). One column under 1180px. There are
+  no figure tiles: Open questions, Best profit, Bundles found and Searches left were each said again by the lists, the sidebar
+  badge and the Agent card.
 - **Deals**: the table fills the content; the title is the sidebar's view. Columns drop by the table's
   own width (container queries): Off and Updated under 900px, Match under 720px (its badge moves into
   the profit cell), Price under 560px. A first narrow column holds the **watch star**, a real toggle button
@@ -442,21 +456,20 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   the row is 44px, and 56px with the line. The header stays frozen while the rows scroll; Price, Off, Estimated profit,
   ROI and Updated are right-aligned in tabular figures. A status bar at the foot says how many show and that profit
   and ROI are estimates.
-- **Deal inspector**: brand, title, model · price · off, "Open on Home Depot" with when the price was
-  seen; one box with the estimated profit at 26/32, ROI, and the three figures (Bundle costs, Parts sell
-  for, After fees), the fee basis with Change; a banner if it needs an answer; Ways to sell and Parts as
-  group boxes (each part with its grade badge, ASIN link, prices and their sources); Copy ASINs at the
-  foot. A watched bundle adds, in this order: **Watch / Unwatch** under the title; **Signals** (the verdict
-  as a headline and one sentence, then Margin against the last scan and the 7-day average with the figures,
-  Sales as "Sells about N a month (Keepa)" or "No sales data — Keepa leaves it out for slow sellers", and
-  Review cleared or Confirmed when the scan said so; labelled as estimates); a **FBA estimate (Keepa)** line
-  inside the estimate box, beside the main figure and never replacing it; **BOGO** when a promotion exists
-  ("BOGO: choose your free tool", Choose or Change in a sheet, the estimate with the free tool's parts and
-  "+ free tool not counted yet" until they are priced, Remove); and **History**, inline SVG
-  (`components/HistoryChart.tsx`): a segmented Prices (what you pay at Home Depot dashed, Amazon New counted
-  parts in the accent), Profit (green above zero, red below), Sold a month and, only when a scan stored one,
-  Sales rank. Thin lines, separator gridlines, secondary-label axes, a hover or arrow-key crosshair with a
-  value tooltip, a gap where a scan had no figure; under two scans: "History starts after two scans."
+- **Deal inspector** reads in the order of the decision, top to bottom: brand, title, model · price · off, "Open on Home
+  Depot" with when the price was seen, **Watch / Unwatch** and the "…" menu; the **Verdict** (a watched bundle: the headline
+  and one sentence, with "Why" folded under it: margin against the last scan and the 7-day average, sales as "Sells about N a
+  month (Keepa)" or "No sales data — Keepa leaves it out for slow sellers", Confirmed or Review cleared; it opens by itself
+  only when a reason needs him); the **estimate box** (estimated profit at 26/32, ROI, Bundle costs, Parts sell for, After
+  fees, the fee basis with Change, and the FBA estimate (Keepa) line beside it, never replacing it); **what is not
+  confirmed** (a banner: "Needs your answer." with Answer in Review, else "Not everything is confirmed." and which parts:
+  `lib/matchWords.ts` `partsSummary`); then the long sections, each a fold (`components/Fold.tsx`, a native disclosure, his
+  choice kept for the session): **Parts** (open for four or fewer; each part's state in words, its ASIN link, the counted
+  price with its source, and the reference prices folded under it as "Other prices · not counted"; "How we know what is
+  inside" folded), **BOGO** (the owner's promotion with Choose or Change, or the agent's choices, folded), **Other ways to
+  sell** and **History** (inline SVG, `components/HistoryChart.tsx`: Prices, Profit, Sold a month, Sales rank; under two
+  scans: "History starts after two scans."). **One primary action**: Answer in Review when a question is open, else Look up
+  when the bundle has no estimate and parts to look up, else Copy ASINs in the footer; the others are plain buttons.
 - **Review**: the questions in the content, grouped AI verified (with Approve all N, confirmed in
   place) then Needs you; a status bar with the keys. A row is the model number (mono) with brand and kind under it, and
   two to four words of state on the right, never a title: "Suggested: 2 parts", "Verified: 3 parts", "AI could not
@@ -492,7 +505,12 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   check, writtenBy) when it sends one; otherwise `briefFromQuestion` derives it by rules from the question and the AI's
   suggestion (`lib/reviewBrief.ts`): the AI's own sentence cut at a claim boundary or a word, never reworded, every line
   at most 110 characters. A brief that does not have the promised shape is dropped, not repaired.
-- **Activity**: Needs attention, Autopilot with Undo, Runs as a plain table in a group box.
+- **Activity**: three lists and a failure strip, all newest first and grouped by day (`lib/activity.ts`: a quiet day
+  heading as a row of the same box, then the time of day). **Needs attention** is tinted and marked with a warning glyph
+  (a failure is not history), each with its Retry and price. **Your answers** and **Autopilot applied** each carry an Undo
+  (or "Undone" / why it cannot be undone); Autopilot's "What the code checked" is folded and its addresses are links. **Runs**
+  read as sentences, not a table: "Scheduled scan · finished", the agent's own summary, "Used 3 searches, 16 Keepa tokens and
+  $0.04 of AI" (nothing when it spent nothing); a failed run or one stopped at the limit is tinted.
 - **Settings**: not a screen. The sidebar's Settings item, Cmd+5, Cmd+, (app menu and tray) and any
   `#/settings/<section>` link open the Preferences window (below) and leave the screen that was open as
   it was.
@@ -537,7 +555,9 @@ Help > Finish setup open it again at the first step still open. **Setup never bl
     Cmd+, or Cmd+5     Settings: the Preferences window
     Cmd+F              the screen's search field (also the shell's Edit > Find)
     Cmd+Option+I       show or hide the inspector (also View > Show or hide inspector)
-    Cmd+R              Scan now (Agent menu)
+    Cmd+R              Scan now (Agent menu; Ctrl+R handled by the page on Windows)
+    F5                 Windows only: refresh the deals and questions (the page is never reloaded)
+    Cmd+/              The shortcuts sheet, which lists every key above (a test keeps it complete)
     J / K, ↓ / ↑       next / previous row or question
     Return             open the row; in Review, save or approve
     1-9                Review: pick that choice
@@ -657,6 +677,11 @@ the user agent) and take Fluent's conventions; a Mac reads none of this file.
 - Errors say what happened and what to do, in one sentence.
 - Vocabulary is fixed: bundle, part, listing, search, scan, estimate. Do not mix in
   "item", "component", "query" or "credit" in the UI.
+- How sure a match is is said one way everywhere (`desktop-ui/src/lib/matchWords.ts`, the only place the agent's
+  "2 title matches" or "1 part with no listing · 1 to verify" is turned into words): a listing is *confirmed* (the app
+  checked it), *not confirmed yet* (only the title matched), *not for sale right now* (inactive) or the part has *no Amazon
+  listing*; "title match", "to verify", "inactive" and "matched" are the code's words and do not appear. The Deals column is
+  "Amazon listings"; Verify on a part is "Confirm listing".
 
 ## Do not
 
