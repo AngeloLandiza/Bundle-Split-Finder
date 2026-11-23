@@ -59,6 +59,9 @@ class FakePrefs {
   getAnthropicKey = async () => this.anthropic;
   setAnthropicKey = async (k: string) => void (this.anthropic = k);
   forgetAnthropicKey = async () => void (this.anthropic = null);
+  getKeepaKey = async () => null;
+  setKeepaKey = async () => {};
+  forgetKeepaKey = async () => {};
   getEbaySettings = async () => ({ ...this.ebaySettings });
   getActiveScan = async () => null;
   setActiveScan = async () => {};

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
 import { createElement } from 'react';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -34,7 +34,7 @@ describe('Show the chip on Home Depot pages', () => {
     const box = await screen.findByLabelText(LABEL);
     expect(alerts).toContainElement(box);
     expect(box).toBeChecked();
-    expect(screen.queryByRole('button', { name: /^save/i })).toBeNull();
+    expect(within(alerts).queryByRole('button', { name: /^save/i })).toBeNull();
 
     await user.click(box);
     expect(box).not.toBeChecked();

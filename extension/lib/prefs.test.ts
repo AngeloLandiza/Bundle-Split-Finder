@@ -47,6 +47,18 @@ describe('settings', () => {
     expect(await getSettings()).toEqual(s);
   });
 
+  it('defaults Keepa discovery share and agent bridge when missing from storage', async () => {
+    await fakeBrowser.storage.local.set({ settings: { searchesPerScan: 10 } });
+    expect(await getSettings()).toMatchObject({
+      keepaDiscoveryShare: DEFAULT_SETTINGS.keepaDiscoveryShare,
+      agentBridgeAfterScan: DEFAULT_SETTINGS.agentBridgeAfterScan,
+      discoveryMode: DEFAULT_SETTINGS.discoveryMode,
+    });
+    await fakeBrowser.storage.local.set({ settings: { keepaDiscoveryShare: 5, agentBridgeAfterScan: 'yes' } });
+    expect((await getSettings()).keepaDiscoveryShare).toBe(DEFAULT_SETTINGS.keepaDiscoveryShare);
+    expect((await getSettings()).agentBridgeAfterScan).toBe(DEFAULT_SETTINGS.agentBridgeAfterScan);
+  });
+
   it('replace wrong or out-of-range fields with defaults, field by field', async () => {
     await fakeBrowser.storage.local.set({
       settings: { searchesPerScan: -3, reserve: 12, pagesPerBrand: 2.5, brands: [] },

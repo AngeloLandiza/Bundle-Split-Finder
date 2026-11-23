@@ -12,7 +12,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { MemoryScanStore } from '../core/src/scan/memoryStore';
-import { buildReport } from '../core/src/scan/report';
+import { postScanWork } from '../core/src/scan/postScan';
 import { reviewCsv, runCsv } from '../core/src/scan/csv';
 import { runScan } from '../core/src/scan/runner';
 import { DEFAULT_SCAN_SETTINGS, type ScanJob, type ScanSettings, type StopReason } from '../core/src/scan/types';
@@ -43,6 +43,7 @@ const STOP_WORDS: Record<Exclude<StopReason, 'error'>, string> = {
   reserve: 'the search reserve would be touched',
   run_cap: 'this run reached its search limit',
   hourly_limit: "the plan's hourly limit is reached",
+  no_tokens: 'Keepa returned no tokens left',
   rate_limited: 'SerpApi refused the request (HTTP 429)',
   user: 'stopped by you',
 };
@@ -151,7 +152,7 @@ export async function runScanCli(args: string[], deps: CliDeps): Promise<number>
     throw err;
   }
 
-  const report = await buildReport(store, settings);
+  const { report } = await postScanWork({ store, settings, now: deps.now });
   const name = stamp(deps.now());
   mkdirSync(deps.outDir, { recursive: true });
   const runPath = join(deps.outDir, `run_${name}.csv`);

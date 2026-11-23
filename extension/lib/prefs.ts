@@ -1,4 +1,4 @@
-// Settings and the SerpApi key, in chrome.storage.local. The key is returned only by
+// Settings and the SerpApi and Keepa keys, in chrome.storage.local. Keys are returned only by
 // getKey. It is never logged and never written anywhere else.
 
 import { browser } from 'wxt/browser';
@@ -66,11 +66,52 @@ export async function getSettings(): Promise<ExtensionSettings> {
   const d = structuredClone(DEFAULT_SETTINGS);
   return {
     ...d,
-    ...Object.fromEntries(Object.entries(s).filter(([k]) => k in d && k !== 'searchesPerScan' && k !== 'reserve' && k !== 'pagesPerBrand' && k !== 'brands')),
+    ...Object.fromEntries(
+      Object.entries(s).filter(
+        ([k]) =>
+          k in d
+          && ![
+            'searchesPerScan',
+            'reserve',
+            'pagesPerBrand',
+            'brands',
+            'alerts',
+            'keepaTokensPerScan',
+            'keepaReserve',
+            'discoveryMode',
+            'keepaDiscoveryShare',
+            'trackingDepth',
+            'amazonRefreshViaKeepa',
+            'agentBridgeAfterScan',
+          ].includes(k),
+      ),
+    ),
     searchesPerScan: wholeIn(s.searchesPerScan, 1, 250) ? s.searchesPerScan : d.searchesPerScan,
     reserve: wholeIn(s.reserve, 0, 250) ? s.reserve : d.reserve,
     pagesPerBrand: wholeIn(s.pagesPerBrand, 1, 5) ? s.pagesPerBrand : d.pagesPerBrand,
     brands: validBrands(s.brands) ? [...s.brands] : d.brands,
+    keepaTokensPerScan: wholeIn(s.keepaTokensPerScan, 0, 250) ? s.keepaTokensPerScan : d.keepaTokensPerScan,
+    keepaReserve: wholeIn(s.keepaReserve, 0, 250) ? s.keepaReserve : d.keepaReserve,
+    discoveryMode:
+      s.discoveryMode === 'auto' || s.discoveryMode === 'discovery_heavy' || s.discoveryMode === 'tracking_heavy'
+        ? s.discoveryMode
+        : d.discoveryMode,
+    keepaDiscoveryShare: wholeIn(s.keepaDiscoveryShare, 10, 90) ? s.keepaDiscoveryShare : d.keepaDiscoveryShare,
+    trackingDepth:
+      s.trackingDepth === 'price_only' || s.trackingDepth === 'price_and_rank' || s.trackingDepth === 'full'
+        ? s.trackingDepth
+        : d.trackingDepth,
+    amazonRefreshViaKeepa: typeof s.amazonRefreshViaKeepa === 'boolean' ? s.amazonRefreshViaKeepa : d.amazonRefreshViaKeepa,
+    agentBridgeAfterScan: typeof s.agentBridgeAfterScan === 'boolean' ? s.agentBridgeAfterScan : d.agentBridgeAfterScan,
+    alerts: {
+      ...d.alerts,
+      ...(typeof s.alerts === 'object' && s.alerts !== null ? s.alerts : {}),
+      enabled: typeof (s.alerts as { enabled?: unknown } | undefined)?.enabled === 'boolean' ? (s.alerts as { enabled: boolean }).enabled : d.alerts.enabled,
+      reviewDigest:
+        typeof (s.alerts as { reviewDigest?: unknown } | undefined)?.reviewDigest === 'boolean'
+          ? (s.alerts as { reviewDigest: boolean }).reviewDigest
+          : d.alerts.reviewDigest,
+    },
   };
 }
 
@@ -140,6 +181,43 @@ export async function getNotified(): Promise<string[]> {
 }
 export const setNotified = (v: string[]): Promise<void> => write('notified', v);
 
+/** Last known report section per bundle key; null when never saved (first scan seeds, no discovery ping). */
+export async function getDiscoverySections(): Promise<Record<string, string> | null> {
+  const v = await read('discoverySections');
+  if (v === null || v === undefined) return null;
+  if (typeof v !== 'object') return null;
+  const out: Record<string, string> = {};
+  for (const [k, s] of Object.entries(v as Record<string, unknown>)) {
+    if (typeof k === 'string' && typeof s === 'string') out[k] = s;
+  }
+  return out;
+}
+export const setDiscoverySections = (v: Record<string, string>): Promise<void> => write('discoverySections', v);
+export async function clearDiscoverySections(): Promise<void> {
+  await local().remove('discoverySections');
+}
+
+export interface RelayConfig {
+  url: string;
+  secret: string;
+}
+
+export async function getRelayConfig(): Promise<RelayConfig | null> {
+  const v = await read('relayConfig');
+  if (typeof v !== 'object' || v === null) return null;
+  const o = v as Record<string, unknown>;
+  if (typeof o.url !== 'string' || o.url === '' || typeof o.secret !== 'string' || o.secret === '') return null;
+  return { url: o.url, secret: o.secret };
+}
+
+export async function setRelayConfig(cfg: RelayConfig): Promise<void> {
+  await write('relayConfig', cfg);
+}
+
+export async function forgetRelayConfig(): Promise<void> {
+  await local().remove('relayConfig');
+}
+
 export async function getAccount(): Promise<StoredAccount | null> {
   const v = await read('account');
   return typeof v === 'object' && v !== null ? (v as StoredAccount) : null;
@@ -177,6 +255,31 @@ export async function forgetAnthropicKey(): Promise<void> {
   await local().remove('anthropicKey');
 }
 
+export async function getKeepaKey(): Promise<string | null> {
+  const v = await read('keepaApiKey');
+  return typeof v === 'string' && v !== '' ? v : null;
+}
+export const setKeepaKey = (key: string): Promise<void> => write('keepaApiKey', key);
+export async function forgetKeepaKey(): Promise<void> {
+  await local().remove('keepaApiKey');
+  await local().remove('keepaAccount');
+}
+
+export interface StoredKeepaAccount {
+  tokensLeft: number;
+  refillIn: number;
+  at: number;
+}
+
+export async function getKeepaAccount(): Promise<StoredKeepaAccount | null> {
+  const v = await read('keepaAccount');
+  if (typeof v !== 'object' || v === null) return null;
+  const o = v as Record<string, unknown>;
+  if (typeof o.tokensLeft !== 'number' || typeof o.refillIn !== 'number' || typeof o.at !== 'number') return null;
+  return { tokensLeft: o.tokensLeft, refillIn: o.refillIn, at: o.at };
+}
+export const setKeepaAccount = (v: StoredKeepaAccount): Promise<void> => write('keepaAccount', v);
+
 const knownModel = (v: unknown): v is string => typeof v === 'string' && (CLAUDE_JUDGE_MODELS as readonly string[]).includes(v);
 
 /** Defaults under whatever is stored, field by field. */
@@ -211,4 +314,33 @@ export async function getEbayToken(): Promise<CachedEbayToken | null> {
 export const setEbayToken = (t: CachedEbayToken): Promise<void> => browser.storage.session.set({ ebayToken: t });
 export async function clearEbayToken(): Promise<void> {
   await browser.storage.session.remove('ebayToken');
+}
+
+// ---------------------------------------------------------------- Lane D: native app as primary UI
+
+export async function getAppPrimaryUi(): Promise<boolean> {
+  const v = await read('appPrimaryUi');
+  return v === true;
+}
+
+export async function setAppPrimaryUi(on: boolean): Promise<void> {
+  await write('appPrimaryUi', on);
+}
+
+export async function getCompactHelperPanel(): Promise<boolean> {
+  const v = await read('compactHelperPanel');
+  return v === true;
+}
+
+export async function setCompactHelperPanel(on: boolean): Promise<void> {
+  await write('compactHelperPanel', on);
+}
+
+export async function getAppKeySyncFingerprint(): Promise<string | null> {
+  const v = await read('appKeySyncFingerprint');
+  return typeof v === 'string' ? v : null;
+}
+
+export async function setAppKeySyncFingerprint(fp: string): Promise<void> {
+  await write('appKeySyncFingerprint', fp);
 }

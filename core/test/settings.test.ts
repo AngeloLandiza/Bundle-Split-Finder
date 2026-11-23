@@ -54,7 +54,7 @@ describe('validateSettings', () => {
       { brands: ['DEWALT'] }, { brands: ['RYOBI'] }, { brands: ['RYOBI', 'DEWALT'] },
       { fees: fees({ referralRate: 0, fulfillmentFee: 0, minReferral: 0, salesTaxRate: 0, inboundCost: 0 }) },
       { fees: fees({ referralRate: 1, fulfillmentFee: 6.5, minReferral: 0.3, salesTaxRate: 0.07, inboundCost: 2 }) },
-      { alerts: { enabled: true, minProfit: 0, minRoiPercent: 0 } },
+      { alerts: { enabled: true, minProfit: 0, minRoiPercent: 0, reviewDigest: true } },
       { schedule: { mode: 'interval', hours: 6 } }, { schedule: { mode: 'daily', at: '07:00' } },
     ];
     for (const over of valid) expect(validateSettings(settings(over)), JSON.stringify(over)).toEqual({});
@@ -123,6 +123,14 @@ describe('validateSettings', () => {
     for (const n of [0, 6, 1.5, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
       expect(validateSettings(settings({ pagesPerBrand: n })), String(n)).toEqual({ pagesPerBrand: PAGES });
     }
+  });
+
+  it('takes whole numbers from 10 to 90 for Keepa discovery share cap', () => {
+    const msg = 'Use a whole number from 10 to 90.';
+    for (const n of [9, 91, 2.5, Number.NaN]) {
+      expect(validateSettings(settings({ keepaDiscoveryShare: n })), String(n)).toEqual({ keepaDiscoveryShare: msg });
+    }
+    expect(validateSettings(settings({ keepaDiscoveryShare: 40 }))).toEqual({});
   });
 
   it('needs at least one brand', () => {
@@ -196,7 +204,11 @@ describe('validateSettings', () => {
 
 describe('toScanSettings', () => {
   it('gives the default scan settings for the default settings', () => {
-    expect(toScanSettings(DEFAULT_SETTINGS)).toEqual(DEFAULT_SCAN_SETTINGS);
+    expect(toScanSettings(DEFAULT_SETTINGS)).toEqual({
+      ...DEFAULT_SCAN_SETTINGS,
+      keepaTrackingDepth: DEFAULT_SETTINGS.trackingDepth,
+      amazonRefreshViaKeepa: DEFAULT_SETTINGS.amazonRefreshViaKeepa,
+    });
   });
 
   it('makes one query per brand, in the known brand order', () => {
@@ -220,9 +232,13 @@ describe('toScanSettings', () => {
     expect(scan.fees).toEqual(own);
     const { brands: _b, queries: _q, pagesPerQuery: _p, fees: _f, ...rest } = scan;
     const { brands: _db, queries: _dq, pagesPerQuery: _dp, fees: _df, ...defaults } = DEFAULT_SCAN_SETTINGS;
-    expect(rest).toEqual(defaults);
+    expect(rest).toEqual({
+      ...defaults,
+      keepaTrackingDepth: DEFAULT_SETTINGS.trackingDepth,
+      amazonRefreshViaKeepa: DEFAULT_SETTINGS.amazonRefreshViaKeepa,
+    });
     expect(Object.keys(rest).sort()).toEqual(
-      ['amazonDomain', 'brandFilters', 'catalogPagesPerScan', 'freshnessMs', 'liquidationRate', 'listingMaxAgeMs', 'pageReadsPerScan', 'partPriceReadsPerScan'],
+      ['amazonDomain', 'amazonRefreshViaKeepa', 'brandFilters', 'catalogPagesPerScan', 'freshnessMs', 'keepaTrackingDepth', 'liquidationRate', 'listingMaxAgeMs', 'pageReadsPerScan', 'partPriceReadsPerScan'],
     );
   });
 
@@ -355,7 +371,7 @@ describe('dealsToNotify', () => {
   beforeAll(async () => {
     report = await founderReport();
   });
-  const on = (minProfit: number, minRoiPercent: number): AlertSettings => ({ enabled: true, minProfit, minRoiPercent });
+  const on = (minProfit: number, minRoiPercent: number): AlertSettings => ({ enabled: true, minProfit, minRoiPercent, reviewDigest: true });
   const models = (rows: { model: string }[]) => rows.map((r) => r.model);
 
   it("is the founder's report from step 2", () => {
@@ -377,8 +393,8 @@ describe('dealsToNotify', () => {
   });
 
   it('notifies nothing when alerts are off', () => {
-    expect(dealsToNotify(report, { enabled: false, minProfit: 50, minRoiPercent: 30 }, [])).toEqual([]);
-    expect(dealsToNotify(report, { enabled: false, minProfit: 0, minRoiPercent: 0 }, [])).toEqual([]);
+    expect(dealsToNotify(report, { enabled: false, minProfit: 50, minRoiPercent: 30, reviewDigest: true }, [])).toEqual([]);
+    expect(dealsToNotify(report, { enabled: false, minProfit: 0, minRoiPercent: 0, reviewDigest: true }, [])).toEqual([]);
   });
 
   it('needs both numbers cleared', () => {

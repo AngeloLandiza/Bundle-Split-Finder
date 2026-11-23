@@ -3,6 +3,8 @@ import { validateSettings, type ExtensionSettings } from '@core/settings';
 import { AlertsSection, DataSection, FeesSection, WhatToScanSection } from './OtherSections';
 import { EbayKeysSection, ListingCheckSection } from './EbaySection';
 import { KeySection } from './KeySection';
+import { KeepaSection } from './KeepaSection';
+import { RelaySection } from './RelaySection';
 import { ScanningSection } from './ScanningSection';
 import { realWorker, useAppState, type WorkerApi } from '../../lib/pageClient';
 
@@ -73,6 +75,7 @@ export function SettingsPage({ api = realWorker }: { api?: WorkerApi }) {
         {state && draft ? (
           <>
             <KeySection api={api} state={state} />
+            <KeepaSection api={api} state={state} draft={draft} problems={problems} onChange={change} onCommit={commit} />
             <EbayKeysSection api={api} state={state} />
             <ListingCheckSection api={api} state={state} />
             <ScanningSection
@@ -84,7 +87,8 @@ export function SettingsPage({ api = realWorker }: { api?: WorkerApi }) {
             <WhatToScanSection draft={draft} problems={problems} onChange={change} onCommit={commit} />
             <FeesSection draft={draft} problems={problems} onChange={change} onCommit={commit} />
             <AlertsSection draft={draft} problems={problems} onChange={change} onCommit={commit} />
-            <DataSection api={api} />
+            <RelaySection api={api} state={state} />
+            <DataSection api={api} draft={draft} onChange={change} />
           </>
         ) : null}
       </main>

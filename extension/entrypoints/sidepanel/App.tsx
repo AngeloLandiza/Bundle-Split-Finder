@@ -12,6 +12,8 @@ import { ProgressRow } from './ProgressRow';
 import { ReviewTab } from './ReviewTab';
 import { StatusBar } from './StatusBar';
 import { ThisPageTab, useActiveTab } from './ThisPageTab';
+import { useAppPrimaryUi } from '../../lib/useAppPrimaryUi';
+import { AppPrimaryNotice } from './AppPrimaryNotice';
 import { Tabs, type TabId } from './Tabs';
 import { useSort } from './sort';
 import './sidepanel.css';
@@ -28,6 +30,7 @@ const defaultOpenSettings = () => {
 };
 
 export function App({ api = realWorker, openSettings = defaultOpenSettings, now = Date.now }: AppProps) {
+  const { primary: appPrimary, openApp } = useAppPrimaryUi();
   const { state, error: loadError } = useAppState(api);
   const [report, setReport] = useState<PanelReport | null>(null);
   const [tab, setTab] = useState<TabId>('deals');
@@ -166,7 +169,15 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
   if (!state.hasKey) {
     return (
       <div className="panel">
-        <Header scanRunning={false} noKey onScan={send('scanNow')} onStop={stop} onSettings={openSettings} />
+        <Header
+          scanRunning={false}
+          noKey
+          appPrimary={appPrimary}
+          onScan={send('scanNow')}
+          onStop={stop}
+          onSettings={appPrimary ? openApp : openSettings}
+          onOpenApp={openApp}
+        />
         <main className="panel-body">
           <FirstRun state={state} api={api} openSettings={openSettings} />
         </main>
@@ -188,10 +199,12 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
         scanRunning={state.scanRunning || asking}
         stopping={stopping || state.askAll?.stopping === true}
         noKey={false}
-        scanBlockedTitle={hourlyBlockTitle(state, clock)}
+        appPrimary={appPrimary}
+        scanBlockedTitle={appPrimary ? 'Scan in the Split Finder app.' : hourlyBlockTitle(state, clock)}
         onScan={send('scanNow')}
         onStop={stop}
-        onSettings={openSettings}
+        onSettings={appPrimary ? openApp : openSettings}
+        onOpenApp={openApp}
       />
       <Tabs
         active={tab}
@@ -199,6 +212,7 @@ export function App({ api = realWorker, openSettings = defaultOpenSettings, now 
         reviewCount={(report?.review.length ?? 0) + (report?.ebayQuestions?.length ?? 0)}
         onChange={setTab}
       />
+      <AppPrimaryNotice />
       {state.scanRunning ? <ProgressRow job={state.lastJob} rates={state.rates} /> : state.askAll ? <ProgressRow job={null} rates={state.rates} askAll={state.askAll} /> : null}
       <Notice state={state} api={api} error={scanError ?? reportError} />
       <main className="panel-body">

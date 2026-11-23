@@ -13,11 +13,19 @@
 import { type Catalog, catalogEntry, type Decomposition } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
 import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, isReviewCap, maySparePart, pick, type Picked, sameModel, toolPageToRead } from '../match';
+import { keepaQueuePressure, reportStructuralDiscoveryPressure } from '../keepa/discovery';
+import { KEEPA_LOOKUP_TOKEN_ESTIMATE, productTokenEstimate } from '../keepa/estimates';
+import { amazonPriceDelta, partTrendFromProduct, readPartTrend } from '../keepa/trends';
+import type { Cache } from '../serpapi/client';
+import { type KeepaScaleSettings, planKeepaItemKeys, planKeepaRun, type KeepaItemStepKind } from '../keepa/plan';
 import { planScan } from '../scanPlan';
 import { estimatedJudgeCost } from '../settings';
+import type { TokenBudget } from '../keepa/budget';
+import { KeepaBudgetExceededError } from '../keepa/client';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonProduct, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
+import { buildReport } from './report';
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit } from './split';
@@ -60,6 +68,19 @@ export interface ScanDeps {
    * missing). Absent: the step does not exist (the command line). It never stops a scan.
    */
   ebay?: EbayStep;
+  /**
+   * v2 Keepa: product pulls for refresh and identify (1 token each when not cached).
+   * SerpApi still owns HD pages and amazon text search.
+   */
+  keepaProduct?: (asin: string, label: string, maxAgeMs?: number) => Promise<SearchResult>;
+  keepaLookup?: (brand: string, model: string, label: string) => Promise<SearchResult>;
+  keepaBudget?: TokenBudget;
+  /** When set with keepaProduct, refresh steps are capped by planKeepaRun instead of SerpApi. */
+  keepaScale?: KeepaScaleSettings;
+  /** Plan §6: cache part trends after Keepa refreshes. */
+  trendWriter?: (trend: import('../keepa/trends').PartTrend) => void | Promise<void>;
+  /** Optional cache for part-trend reads on Keepa refresh (extension and agent). */
+  cache?: Cache;
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -98,6 +119,12 @@ interface Run extends PartContext {
   readPages: ReadPages | null;
   readPartPrices: ReadPartPrices | null;
   ebay: EbayStep | null;
+  keepaProduct: ScanDeps['keepaProduct'];
+  keepaLookup?: ScanDeps['keepaLookup'];
+  keepaBudget: ScanDeps['keepaBudget'];
+  keepaScale?: ScanDeps['keepaScale'];
+  trendWriter?: ScanDeps['trendWriter'];
+  cache?: Cache;
   job: ScanJob;
   /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
@@ -169,7 +196,9 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const failedBefore = failingBefore(scans);
   const run = (job: ScanJob): Run => ({
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
-    readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, ebay: deps.ebay ?? null, job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
+    readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, ebay: deps.ebay ?? null,
+    keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
+    job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
   });
 
   // An interrupted job is continued as saved: no new plan, whatever budget this run has. A job
@@ -205,7 +234,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const movable = deferred.filter((p) => !failedPages.has(pageKey(p)));
   const job: ScanJob = {
     id: String(startedAt), startedAt, finishedAt: null, status: 'running', stopReason: null, stopMessage: null, phase: 'listing',
-    queue: [...catalog.slice(0, catalogPages), ...pages.slice(0, plan.hdPages)], deferred, searchesUsed: 0,
+    queue: [...catalog.slice(0, catalogPages), ...pages.slice(0, plan.hdPages)], deferred, searchesUsed: 0, keepaTokensUsed: 0,
     counts: {
       pagesFetched: 0, productsSeen: 0, bundlesSeen: 0, bundlesResolved: 0, reviewsOpened: 0, lookupsDone: 0, refreshesDone: 0, partsMatched: 0,
       catalogPages: 0, listingsSaved: 0, partsFromCatalog: 0, pagesRead: 0, partPricesRead: 0,
@@ -376,6 +405,22 @@ async function runQueue(run: Run): Promise<void> {
     try {
       result = await send(run, step);
     } catch (err) {
+      if (err instanceof KeepaBudgetExceededError) {
+        const sentence = err.message;
+        if (step.kind === 'lookup' || step.kind === 'refresh') {
+          await setAside(run, step, sentence);
+          continue;
+        }
+        if (step.kind === 'identify') {
+          job.queue.shift();
+          job.deferred.push(step);
+          moveUnits(job, stage, { remaining: queued() });
+          if (job.stopMessage === null) job.stopMessage = `Keepa: ${sentence}`;
+          else if (!job.stopMessage.includes(sentence)) job.stopMessage = `${job.stopMessage} Keepa: ${sentence}`;
+          await run.store.putScan(job);
+          continue;
+        }
+      }
       const stop = stopFor(err);
       if (step.kind === 'catalog' && stop.reason === 'error') {
         // 2c rule 3: a brand page that failed is dropped, not deferred, and the scan goes on.
@@ -411,6 +456,19 @@ async function runQueue(run: Run): Promise<void> {
     run.lastFailed = false;
     // Rule 3: the store first, then the job.
     const follow = await apply(run, step, result);
+    if (step.kind === 'refresh' && result.keepaProduct) {
+      try {
+        const next = partTrendFromProduct(result.keepaProduct, result.at);
+        const prev = run.cache ? await readPartTrend(run.cache, step.asin) : undefined;
+        if (run.trendWriter) await run.trendWriter(next);
+        const delta = amazonPriceDelta(prev, next);
+        if (delta !== null && delta >= 2) {
+          (job.partPriceDrops ??= []).push({ partModel: step.model, delta });
+        }
+      } catch {
+        // Trend cache failures must not stop the scan (worker digests and alerts still run).
+      }
+    }
     if (step.kind === 'lookup' && follow) await schedulePageRead(run, step, follow);
     // Ruling 57: a part answered is no longer failing.
     if (step.kind === 'lookup' || step.kind === 'refresh') {
@@ -420,7 +478,10 @@ async function runQueue(run: Run): Promise<void> {
     // searchesUsed counts the paid steps this job saved. A search in flight when the worker
     // was interrupted was paid (the ledger has it) but its step was never saved, so it is
     // not counted; the continued job answers that step from the cache, which is free.
-    if (result.source === 'network') job.searchesUsed += 1;
+    if (result.source === 'network' && result.billAs !== 'keepa') job.searchesUsed += 1;
+    if (result.source === 'network' && result.billAs === 'keepa') {
+      job.keepaTokensUsed = (job.keepaTokensUsed ?? 0) + (result.keepaTokens ?? 1);
+    }
     job.queue.shift();
     if (result.source === 'cache') topUp(run);
     // Step 11: a cached answer is free and instant, so it counts but is not timed.
@@ -440,6 +501,7 @@ function whyNot(reason: StopReason | null): string {
     case null: return 'nothing to do';
     case 'user': return 'stopped';
     case 'rate_limited': return 'rate limited';
+    case 'no_tokens': return 'no Keepa tokens';
     case 'error': return 'search failed';
     default: return 'search limit';
   }
@@ -479,6 +541,7 @@ function topUp(run: Run): void {
 type Stop = { reason: 'error'; message: string } | { reason: Exclude<StopReason, 'error' | 'user'>; message: string | null };
 
 function stopFor(err: unknown): Stop {
+  if (err instanceof KeepaBudgetExceededError) return { reason: err.reason, message: err.message };
   if (err instanceof BudgetExceededError) return { reason: err.reason, message: null };
   // RateLimitedError extends SerpApiError, so it is checked before the general case.
   if (err instanceof RateLimitedError) return { reason: 'rate_limited', message: err.message };
@@ -557,13 +620,28 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
         { label: `${prefix}:listing:${step.q}:p${step.page}`, maxAgeMs: Math.max(settings.listingMaxAgeMs, run.now() - job.startedAt) },
       );
     case 'lookup':
+      if (run.keepaLookup && run.settings.amazonRefreshViaKeepa) {
+        const block = run.keepaBudget?.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE);
+        if (block) throw new KeepaBudgetExceededError(block);
+        return run.keepaLookup(step.brand, step.model, `${prefix}:lookup:${step.model}`);
+      }
       return sendLookup(run, step);
     case 'identify':
+      if (run.keepaProduct && settings.amazonRefreshViaKeepa) {
+        const block = run.keepaBudget?.blockReason(productTokenEstimate(settings.keepaTrackingDepth, 1));
+        if (block) throw new KeepaBudgetExceededError(block);
+        return run.keepaProduct(step.asin, `${prefix}:identify:${step.model}`);
+      }
       return run.client.search(
         { engine: 'amazon_product', asin: step.asin, amazon_domain: settings.amazonDomain },
         { label: `${prefix}:identify:${step.model}` },
       );
     case 'refresh':
+      if (run.keepaProduct && settings.amazonRefreshViaKeepa) {
+        const block = run.keepaBudget?.blockReason(productTokenEstimate(settings.keepaTrackingDepth, 1));
+        if (block) throw new KeepaBudgetExceededError(block);
+        return run.keepaProduct(step.asin, `${prefix}:refresh:${step.model}`, settings.freshnessMs);
+      }
       return run.client.search(amazonPart(run, step), { label: `${prefix}:refresh:${step.model}`, maxAgeMs: settings.freshnessMs });
     default:
       return unknownStep(step);
@@ -869,6 +947,12 @@ export async function openMatchReview(ctx: PartContext, part: Part, reason: stri
 }
 
 async function applyRefresh(run: Run, step: Refresh, data: unknown, at: number): Promise<void> {
+  const product = parseAmazonProduct(data, step.asin);
+  if (product) {
+    await savePrice(run, step.asin, product, at);
+    run.job.counts.refreshesDone += 1;
+    return;
+  }
   const candidates = parseAmazonSearch(data);
   await saveListings(run, candidates, at);
   // A listing missing from the results keeps its old price; the check is still recorded,
@@ -1522,21 +1606,96 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   if (job.stopReason === null && run.shouldStop()) job.stopReason = 'user';
   // In the listing phase only rule 8 or a stop on request (3 rule 1) sets a stop reason: then nothing more is spent.
   const allowance = job.stopReason === null ? budget.spendable : 0;
-  const plan = planScan(allowance, { hdPagesWanted: 0, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
-  // Step 6: kit items only from what every other lookup and refresh leaves.
+  const useKeepaRefresh = Boolean(run.keepaProduct && run.settings.amazonRefreshViaKeepa && run.keepaScale);
+  let refreshKeys = wants.refreshes;
+  let lookupKeys = wants.lookups;
+  let deferredKeepaRefreshes: string[] = [];
+  let deferredKeepaLookups: string[] = [];
+  let plannedItemKeys: string[] = [];
+  let deferredItemKeys: string[] = [];
+  const serpRefreshes = useKeepaRefresh ? [] : wants.refreshes;
+  if (useKeepaRefresh && run.keepaScale) {
+    const [scaleReport, scaleReview] = await Promise.all([buildReport(run.store, run.settings), run.store.listReview()]);
+    const openReview = scaleReview.filter((q) => q.answer === null).length;
+    const structural = reportStructuralDiscoveryPressure(scaleReport, openReview);
+    const { openDiscoveryWork, totalWork } = keepaQueuePressure({
+      partLookups: wants.lookups.length,
+      partRefreshes: wants.refreshes.length,
+      itemKeys: wants.items,
+      stepKind: (k) => wants.steps.get(k)?.kind,
+      structural,
+    });
+    const keepaPlan = planKeepaRun(run.keepaScale, {
+      pendingLookups: wants.lookups,
+      staleRefreshes: wants.refreshes,
+      openDiscoveryWork,
+      totalWork,
+    });
+    refreshKeys = keepaPlan.refreshes;
+    deferredKeepaRefreshes = keepaPlan.deferredRefreshes;
+    lookupKeys = keepaPlan.lookups;
+    deferredKeepaLookups = keepaPlan.deferredLookups;
+    job.keepaPlan = {
+      discoveryTokens: keepaPlan.discoveryTokens,
+      trackingTokens: keepaPlan.trackingTokens,
+      lookups: keepaPlan.lookups.length,
+      refreshes: keepaPlan.refreshes.length,
+    };
+    const depth = run.keepaScale.trackingDepth;
+    const discoveryLeft =
+      keepaPlan.discoveryTokens - keepaPlan.lookups.length * KEEPA_LOOKUP_TOKEN_ESTIMATE;
+    const trackingLeft =
+      keepaPlan.trackingTokens - keepaPlan.refreshes.length * productTokenEstimate(depth, 1);
+    const itemPlan = planKeepaItemKeys(
+      wants.items,
+      (k) => wants.steps.get(k)?.kind as KeepaItemStepKind | undefined,
+      discoveryLeft,
+      trackingLeft,
+      depth,
+    );
+    plannedItemKeys = itemPlan.planned;
+    deferredItemKeys = itemPlan.deferred;
+  }
+  const plan = planScan(allowance, {
+    hdPagesWanted: 0,
+    pendingLookups: useKeepaRefresh ? [] : wants.lookups,
+    staleRefreshes: serpRefreshes,
+  });
+  // Step 6: kit items from SerpApi headroom, or the Keepa discovery/tracking slices when Keepa owns Amazon.
   const room = Math.max(0, Math.floor(allowance) - plan.searches);
-  const items = wants.items.slice(0, room);
+  const items = useKeepaRefresh ? plannedItemKeys : wants.items.slice(0, room);
+  const serpDeferredItems = useKeepaRefresh ? [] : wants.items.slice(items.length);
   const toSteps = (keys: string[]) => keys.map((k) => wants.steps.get(k)!);
-  const later = [...toSteps(plan.deferredLookups), ...toSteps(plan.deferredRefreshes), ...toSteps(wants.items.slice(items.length))];
+  const later = [
+    ...toSteps(plan.deferredLookups),
+    ...toSteps(deferredKeepaLookups),
+    ...toSteps(plan.deferredRefreshes),
+    ...toSteps(deferredKeepaRefreshes),
+    ...toSteps(useKeepaRefresh ? deferredItemKeys : serpDeferredItems),
+  ];
   // Ruling 57: a failing part no longer wanted (matched since, decided, or in no bundle) is dropped.
   keepFailing(job, (k) => wants.steps.has(k));
   for (const step of later) if (step.kind === 'lookup') await markWaiting(run, step);
-  job.queue = [...toSteps(plan.lookups), ...toSteps(plan.refreshes), ...toSteps(items)];
+  job.queue = [
+    ...toSteps(useKeepaRefresh ? lookupKeys : plan.lookups),
+    ...toSteps(useKeepaRefresh ? refreshKeys : plan.refreshes),
+    ...toSteps(items),
+  ];
   job.deferred.push(...later);
   // Ruling 48: from now on only the parts phase's own deferred steps may move into the queue.
   run.movable = [...later];
   // Names the limit that made work wait. It does not stop the queue just planned.
-  if (job.deferred.length > 0 && job.stopReason === null) job.stopReason = budget.blockReason(budget.spendable + 1);
+  if (job.deferred.length > 0 && job.stopReason === null) {
+    const serpDeferred =
+      plan.deferredLookups.length + plan.deferredRefreshes.length > 0
+      || serpDeferredItems.length > 0
+      || job.deferred.some((s) => s.kind === 'listing' || s.kind === 'catalog');
+    if (serpDeferred) job.stopReason = budget.blockReason(budget.spendable + 1);
+    else if (useKeepaRefresh && run.keepaBudget) {
+      const kr = run.keepaBudget.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE);
+      job.stopReason = kr === 'run_cap' || kr === 'reserve' ? kr : 'no_tokens';
+    }
+  }
   job.phase = 'parts';
   await run.store.putScan(job);
 }

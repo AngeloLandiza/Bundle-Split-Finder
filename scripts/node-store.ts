@@ -143,8 +143,9 @@ export function acquireSpendLock(owner: string): () => void {
       const held = readLock(file);
       if (held?.pid === process.pid) return release; // this process already holds it
       if (held && isAlive(held.pid)) {
+        const what = held.owner === 'keepa' ? 'Keepa tokens' : 'searches';
         throw new SpendLockError(
-          `Another process is already spending searches (${held.owner}, pid ${held.pid}, since ${held.at}). ` +
+          `Another process is already spending ${what} (${held.owner}, pid ${held.pid}, since ${held.at}). ` +
             'Only one may spend at a time. Wait for it to finish.',
         );
       }

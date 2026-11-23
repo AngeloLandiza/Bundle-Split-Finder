@@ -1,12 +1,20 @@
 # Bundle Split Finder
 
-A Chrome extension for one Amazon seller. It finds discounted DEWALT and RYOBI bundles on
-Home Depot, splits each bundle into its parts, matches every part to an Amazon New listing,
-and ranks the bundles by estimated profit. Prices come from the seller's own SerpApi key.
-Everything stays in the browser.
+Finds discounted DEWALT and RYOBI bundles on Home Depot, splits each bundle into parts,
+matches them to Amazon listings, and ranks bundles by estimated profit.
 
-The install guide for the person who will use it is [`docs/install.md`](docs/install.md).
-The steps below are the same setup.
+**Lane D (app-first, in repo):** The native **Split Finder** app is the main UI; Chrome runs a thin
+**Split Finder Helper** for Home Depot page reads and background sync. Start with
+[`docs/install.md`](docs/install.md) §0 (app + helper). The extension-only path below
+remains for development and for users who have not installed the app yet.
+
+## Native app (recommended path)
+
+1. `npm run desktop:build` (or use a packaged `.app` / installer).
+2. Open **Split Finder**, complete **Home**, paste your SerpApi key in **Settings**.
+3. Install and load the helper in Chrome — see [`docs/install.md`](docs/install.md).
+
+## Chrome extension only (legacy / dev)
 
 ## Setup
 
@@ -91,8 +99,13 @@ npm run typecheck
 npm test                 # no network
 cp .env.example .env     # then paste a SerpApi key; never commit .env
 npm run budget           # free: what the account has, and what may be spent
+npm run keepa:budget     # free from cache: Keepa tokens left (add KEEPA_API_KEY to .env)
+npm run keepa:measure    # free: tokens/part vs SerpApi on fixtures
 npm run scan -- --fixtures
 npm run package          # output/bundle-split-finder-<version>-chrome.zip
+npm run vm:bundle        # output/split-finder-vm-kit.zip for a Windows VM (see docs/windows-vm.md)
+npm run desktop:dev      # native agent shell + dashboard (needs Rust: docs/desktop-app.md)
+npm run desktop:build    # macOS .dmg / Windows .exe + bundled extension zip
 ```
 
 Nothing may call serpapi.com except through `SerpApiClient`. Before a command that can spend
@@ -101,6 +114,7 @@ searches, run `npm run budget`.
 | Read | For |
 | --- | --- |
 | `docs/install.md` | The same setup, as the one-page guide to send with the zip |
+| `docs/superpowers/plans/2026-11-22-keepa-agent-discovery-tracking.md` | Keepa, discovery/tracking scale, both combination scopes, agent alerts (planned) |
 | `docs/v1-plan.md` | Scope, architecture, scan flow, acceptance criteria |
 | `docs/search-budget.md` | How searches are counted and how the free 250 are spent |
 | `docs/design.md` | The extension's design |

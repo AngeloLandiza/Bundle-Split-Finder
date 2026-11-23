@@ -10,7 +10,12 @@ async function configFor(e2e: boolean) {
   else vi.stubEnv('SPLIT_FINDER_E2E', '');
   const mod = await import('../wxt.config');
   return mod.default as unknown as {
-    manifest: { host_permissions: string[]; permissions: string[]; web_accessible_resources: { resources: string[]; matches: string[]; use_dynamic_url?: boolean }[] };
+    manifest: {
+      host_permissions: string[];
+      permissions: string[];
+      optional_host_permissions?: string[];
+      web_accessible_resources: { resources: string[]; matches: string[]; use_dynamic_url?: boolean }[];
+    };
     outDir?: string;
     vite: () => { define: Record<string, string> };
   };
@@ -21,10 +26,11 @@ afterEach(() => vi.unstubAllEnvs());
 describe('wxt.config', () => {
   it('the production manifest has exactly the four host permissions and no localhost', async () => {
     const c = await configFor(false);
-    expect(c.manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*']);
+    expect(c.manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', 'https://api.keepa.com/*']);
     // The chip's fonts are fetchable by Home Depot pages only.
     expect(c.manifest.web_accessible_resources).toEqual([{ resources: ['fonts/*.woff2'], use_dynamic_url: true, matches: ['https://www.homedepot.com/*'] }]);
     expect(c.manifest.permissions).toEqual(['storage', 'alarms', 'sidePanel', 'notifications', 'scripting']);
+    expect(c.manifest.optional_host_permissions).toEqual(['http://*/*', 'https://*/*']);
     expect(c.outDir).toBeUndefined();
     expect(c.vite().define.__SPLIT_FINDER_BASE_URL__).toBe('undefined');
     expect(c.vite().define.__SPLIT_FINDER_HD_ORIGIN__).toBe('"https://www.homedepot.com"');
@@ -34,7 +40,15 @@ describe('wxt.config', () => {
 
   it('the end-to-end build adds only http://localhost/* and a localhost base URL', async () => {
     const c = await configFor(true);
-    expect(c.manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', 'http://localhost/*']);
+    expect(c.manifest.host_permissions).toEqual([
+      'https://serpapi.com/*',
+      'https://www.homedepot.com/*',
+      'https://api.ebay.com/*',
+      'https://api.anthropic.com/*',
+      'https://api.keepa.com/*',
+      'http://localhost/*',
+      'http://127.0.0.1/*',
+    ]);
     expect(c.manifest.web_accessible_resources).toEqual([{ resources: ['fonts/*.woff2'], use_dynamic_url: true, matches: ['https://www.homedepot.com/*', 'http://localhost/*'] }]);
     expect(c.outDir).toBe('.output-e2e');
     expect(c.vite().define.__SPLIT_FINDER_BASE_URL__).toMatch(/^"http:\/\/localhost:\d+"$/);
@@ -61,9 +75,14 @@ describe('the production build', () => {
     expect(existsSync(loaded) ? statSync(loaded).mtimeMs : null).toBe(before);
     {
       const dir = join('.output-prod-check', 'chrome-mv3');
-      const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8')) as { permissions: string[]; host_permissions: string[] };
+      const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8')) as {
+        permissions: string[];
+        host_permissions: string[];
+        optional_host_permissions?: string[];
+      };
       expect(manifest.permissions).toEqual(['storage', 'alarms', 'sidePanel', 'notifications', 'scripting']);
-      expect(manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*']);
+      expect(manifest.optional_host_permissions).toEqual(['http://*/*', 'https://*/*']);
+      expect(manifest.host_permissions).toEqual(['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', 'https://api.keepa.com/*']);
       // Settings are a full tab; Chrome's embedded options dialog cut the key field off.
       expect((manifest as unknown as { options_ui: { open_in_tab: boolean } }).options_ui.open_in_tab).toBe(true);
       // Home Depot pages may fetch the fonts and the chip's stylesheet, and nothing else of the extension's.

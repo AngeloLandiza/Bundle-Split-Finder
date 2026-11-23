@@ -78,6 +78,6 @@ export const getState = (page: Page): Promise<{ ok: boolean; data: AppState }> =
 
 /** Saves the key through the page's own UI. */
 export async function saveKey(page: Page, key: string): Promise<void> {
-  await page.getByLabel('API key').fill(key);
+  await page.getByLabel('API key', { exact: true }).fill(key);
   await page.getByRole('button', { name: 'Check key' }).click();
 }

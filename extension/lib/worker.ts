@@ -23,7 +23,7 @@ import { applyEbayAnswer, ebayLabelsOf } from '@core/scan/ebayAnswers';
 import { EBAY_ITEM_READS_MAX, EBAY_SEARCHES_MAX, type EbayStep, JUDGE_CALL_TIMEOUT_MS } from '@core/scan/ebayPass';
 import type { ProductPage } from '@core/hdPage';
 import { notePage } from '@core/scan/pageView';
-import { PaidProblem, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
+import { PaidProblem, type ProductPage as AmazonProductPage, type QuoteKeepaOpts, quotePaid, refusalFor, requestProblem, runPaid, savedAnswers } from '@core/scan/paid';
 import { wantedFor } from '@core/scan/classify';
 import { addSamples, samplesOf, type UnitRates } from '@core/scan/pipeline';
 import { runScan } from '@core/scan/runner';
@@ -31,13 +31,22 @@ import { knownModels } from '@core/scan/split';
 import { CONFIRMED_BRAND_MAX, CONFIRMED_MODEL_MAX, parseConfirmedPrice } from '@core/scan/confirmed';
 import { kitPageTarget } from '@core/scan/kitPage';
 import { partKey, type BudgetView, type BundleRow, type PageOutcome, type PageReading, type PaidAction, type Quote, type ReadPages, type ReadPartPrices, type ReviewAnswer, type ScanJob, type ScanStore } from '@core/scan/types';
+import { TokenBudget } from '@core/keepa/budget';
+import { KeepaClient } from '@core/keepa/client';
+import { keepaLookupSearchResult, keepaProductSearchResult } from '@core/keepa/fetchStep';
+import type { KeepaScaleSettings } from '@core/keepa/plan';
+import { bundlesNewlyConfirmed, partPriceDropMessage, reviewDigestMessage, trendCrosses } from '@core/keepa/alerts';
+import { readAlertBaseline, writeAlertBaseline, writePartTrend } from '@core/keepa/trends';
+import { relayPayload } from '@core/relay';
+import { agentBridgeEndpoints, agentPanelUrl } from './agentBridge';
 import { type AccountInfo, SearchBudget } from '@core/serpapi/budget';
 import { type Cache, type LedgerEntry, SerpApiClient, SerpApiError } from '@core/serpapi/client';
 import {
-  budgetPolicyFor, dealsToNotify, DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS, type EbaySettings, ebaySettingsProblem, type ExtensionSettings, type ScanTrigger, type SettingsField, toScanSettings, validateSettings,
+  budgetPolicyFor, dealsToNotify, DEFAULT_EBAY_SETTINGS, DEFAULT_SETTINGS, estimateRoiPercent, type EbaySettings, ebaySettingsProblem, type ExtensionSettings, type ScanTrigger, type SettingsField, toScanSettings, validateSettings,
 } from '@core/settings';
 import { runCsv } from '@core/scan/csv';
 import { buildReport } from '@core/scan/report';
+import { postScanWork } from '@core/scan/postScan';
 import { nextRun, type Schedule } from '@core/schedule';
 import { cachingTokenFetch, checkEbayKeys, type TokenStore } from './ebayEnv';
 import type { AppState, AskAllResult, OpenThisPageReply, Packaging, PageSeenReply, PanelReport, Reply, Request, ThisPage } from './messages';
@@ -65,12 +74,19 @@ export interface Prefs {
   setLastScheduledRunAt(v: number | null): Promise<void>;
   getNotified(): Promise<string[]>;
   setNotified(v: string[]): Promise<void>;
+  getDiscoverySections?(): Promise<Record<string, string> | null>;
+  setDiscoverySections?(v: Record<string, string>): Promise<void>;
+  clearDiscoverySections?(): Promise<void>;
+  getRelayConfig?(): Promise<{ url: string; secret: string } | null>;
+  setRelayConfig?(cfg: { url: string; secret: string }): Promise<void>;
+  forgetRelayConfig?(): Promise<void>;
   getPackaging(): Promise<Record<string, Packaging>>;
   savePackaging(v: Record<string, Packaging>): Promise<void>;
   getAccount(): Promise<StoredAccount | null>;
   setAccount(v: StoredAccount | null): Promise<void>;
   /** Whether the chip shows on Home Depot pages (chrome.storage.local `showChip`); true unless the owner turned it off. */
   getShowChip(): Promise<boolean>;
+  getAppPrimaryUi?(): Promise<boolean>;
   /** Step 11: how long a unit of each kind took in recent scans, for the progress estimate. Optional: without it no timing is kept. */
   getRates?(): Promise<UnitRates>;
   setRates?(v: UnitRates): Promise<void>;
@@ -84,6 +100,11 @@ export interface Prefs {
   getAnthropicKey(): Promise<string | null>;
   setAnthropicKey(key: string): Promise<void>;
   forgetAnthropicKey(): Promise<void>;
+  getKeepaKey(): Promise<string | null>;
+  setKeepaKey(key: string): Promise<void>;
+  forgetKeepaKey(): Promise<void>;
+  getKeepaAccount?(): Promise<{ tokensLeft: number; refillIn: number; at: number } | null>;
+  setKeepaAccount?(v: { tokensLeft: number; refillIn: number; at: number }): Promise<void>;
   getEbaySettings(): Promise<EbaySettings>;
   saveEbaySettings(s: EbaySettings): Promise<void>;
   getEbayToken(): Promise<CachedEbayToken | null>;
@@ -161,6 +182,14 @@ export interface WorkerEnv {
   now: () => number;
   /** Shows the deals that cleared the alert numbers, at most three. */
   notify: (rows: BundleRow[]) => void | Promise<void>;
+  /** Optional desktop line for scan digests (Review, discovery complete). */
+  notifyText?: (message: string) => void | Promise<void>;
+  /** Optional signed POST after a scan (plan Phase 4). */
+  relayPost?: (url: string, body: string, signature: string) => Promise<void>;
+  /** Optional unsigned POST of the audit export to the local agent bridge. */
+  agentBridgePost?: (url: string, body: string) => Promise<void>;
+  /** Chrome host permission for a saved relay origin (MV3). */
+  requestHostPermission?: (originPattern: string) => Promise<boolean>;
   /** Tells every open page the new state. */
   broadcast: (state: AppState) => void;
   /** Default https://serpapi.com, for the Account API and for searches. */
@@ -180,6 +209,10 @@ export interface WorkerEnv {
   judgeFetchFn?: typeof fetch;
   /** The chip's page visits (step 7). Without it, pages are kept in memory and the panel cannot be opened from the chip. */
   pages?: PageEnv;
+  /** Lane D: open Split Finder.app home (sync start) when the app is the primary UI. */
+  openAppHome?: () => Promise<boolean>;
+  /** Lane D: cached flag so openThisPage does not await storage inside the user gesture. */
+  appPrimaryUi?: () => boolean;
   /** Step 11: where Ask AI keeps its suggestions, apart from the scan's store. Without it they are kept in memory, lost with the worker. */
   suggestions?: SuggestionStore;
   /** Step 12: how one question is asked, for Ask AI and for Ask AI about all. Default: a split question is researched, any other is asked as in step 11. */
@@ -299,7 +332,11 @@ const refuse = (error: string): Reply<never> => ({ ok: false, error });
 
 // ---------------------------------------------------------------- settings from storage (rule 5)
 
-const FIELDS: readonly SettingsField[] = ['schedule', 'searchesPerScan', 'reserve', 'brands', 'pagesPerBrand', 'fees', 'alerts'];
+const FIELDS: readonly SettingsField[] = [
+  'schedule', 'searchesPerScan', 'reserve', 'brands', 'pagesPerBrand', 'fees', 'alerts',
+  'keepaTokensPerScan', 'keepaReserve', 'discoveryMode', 'keepaDiscoveryShare', 'trackingDepth', 'amazonRefreshViaKeepa',
+  'agentBridgeAfterScan',
+];
 const UNREADABLE = 'These settings could not be read. Reload this page and try again.';
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -325,7 +362,17 @@ function readable(field: SettingsField, v: unknown): { value: unknown } | null {
       };
     case 'alerts':
       if (!isRecord(v) || typeof v.enabled !== 'boolean') return null;
-      return { value: { enabled: v.enabled, minProfit: v.minProfit, minRoiPercent: v.minRoiPercent } };
+      return {
+        value: {
+          enabled: v.enabled,
+          minProfit: v.minProfit,
+          minRoiPercent: v.minRoiPercent,
+          reviewDigest: v.reviewDigest !== false,
+        },
+      };
+    case 'amazonRefreshViaKeepa':
+    case 'agentBridgeAfterScan':
+      return typeof v === 'boolean' ? { value: v } : null;
     default:
       // searchesPerScan, reserve, pagesPerBrand: validateSettings reads any value.
       return { value: v };
@@ -473,13 +520,61 @@ export function createWorker(env: WorkerEnv): Worker {
     return { kind: 'run', ebay, judge, listingsJudgedPerScan: es.listingsJudgedPerScan, halted: () => ebayKeyEpoch !== epoch, signal: stop, callTimeoutMs };
   }
 
+  type KeepaRunDeps = {
+    keepaProduct?: (asin: string, label: string, maxAgeMs?: number) => ReturnType<typeof keepaProductSearchResult>;
+    keepaLookup?: (brand: string, model: string, label: string) => ReturnType<typeof keepaLookupSearchResult>;
+    keepaBudget?: TokenBudget;
+    keepaScale?: KeepaScaleSettings;
+    productPage?: AmazonProductPage;
+    quoteKeepa?: QuoteKeepaOpts;
+  };
+
+  async function buildKeepaDeps(s: ExtensionSettings): Promise<KeepaRunDeps> {
+    const keepaKey = await prefs.getKeepaKey?.();
+    if (!keepaKey || !s.amazonRefreshViaKeepa || s.keepaTokensPerScan <= 0) return {};
+    const acct = (await prefs.getKeepaAccount?.()) ?? null;
+    const keepaBudget = new TokenBudget({ reserve: s.keepaReserve, maxPerRun: s.keepaTokensPerScan }, acct?.tokensLeft ?? null);
+    const keepaAccountTokens = acct?.tokensLeft ?? null;
+    const keepa = new KeepaClient({
+      apiKey: keepaKey,
+      budget: keepaBudget,
+      cache: env.cache,
+      fetchFn: env.fetchFn,
+      now: env.now,
+      onSpend: async (entry) => {
+        await env.ledger({ at: entry.at, engine: `keepa:${entry.kind}`, key: entry.key, label: entry.label });
+        await prefs.setKeepaAccount?.({ tokensLeft: entry.tokensLeft, refillIn: entry.refillIn, at: env.now() });
+      },
+    });
+    const keepaProduct = (asin: string, label: string, maxAgeMs?: number) =>
+      keepaProductSearchResult(keepa, asin, { label, maxAgeMs, trackingDepth: s.trackingDepth });
+    const keepaLookup = (brand: string, model: string, label: string) =>
+      keepaLookupSearchResult(keepa, `${brand} ${model}`, { label });
+    return {
+      keepaProduct,
+      keepaLookup,
+      keepaBudget,
+      keepaScale: {
+        tokensPerRun: s.keepaTokensPerScan,
+        discoveryShare: s.keepaDiscoveryShare,
+        reserve: s.keepaReserve,
+        mode: s.discoveryMode,
+        tokensLeft: keepaAccountTokens,
+        trackingDepth: s.trackingDepth,
+      },
+      productPage: keepaProduct,
+      quoteKeepa: { verifyUsesKeepa: true, lookupUsesKeepa: true, keepaBudget, trackingDepth: s.trackingDepth },
+    };
+  }
+
   /**
    * The value with every copy of the key replaced. Error text from a failed search (a job's
    * stopMessage) is the only way the key could get in; this is the last door before a page.
    */
   async function scrubbed<T>(value: T): Promise<T> {
     const ebayKeys = await prefs.getEbayKeys();
-    const keys = [await prefs.getKey(), scanKey, ebayKeys?.certId ?? null, ebayKeys?.appId ?? null, await prefs.getAnthropicKey(), ebayKeysHeld.appId, ebayKeysHeld.certId, ebayKeysHeld.anthropic].filter(
+    const relay = (await prefs.getRelayConfig?.()) ?? null;
+    const keys = [await prefs.getKey(), scanKey, ebayKeys?.certId ?? null, ebayKeys?.appId ?? null, await prefs.getAnthropicKey(), await prefs.getKeepaKey(), relay?.secret ?? null, ebayKeysHeld.appId, ebayKeysHeld.certId, ebayKeysHeld.anthropic].filter(
       (k): k is string => k !== null && k !== '',
     );
     let text = JSON.stringify(value);
@@ -498,6 +593,19 @@ export function createWorker(env: WorkerEnv): Worker {
     return {
       hasKey: (await prefs.getKey()) !== null,
       ebay: { hasEbayKeys: (await prefs.getEbayKeys()) !== null, hasAnthropicKey: (await prefs.getAnthropicKey()) !== null, ...(await ebaySettings()) },
+      keepa: await (async () => {
+        const acct = (await prefs.getKeepaAccount?.()) ?? null;
+        return {
+          hasKeepaKey: (await prefs.getKeepaKey()) !== null,
+          tokensPerScan: s.keepaTokensPerScan,
+          reserve: s.keepaReserve,
+          discoveryMode: s.discoveryMode,
+          trackingDepth: s.trackingDepth,
+          tokensLeft: acct?.tokensLeft ?? null,
+          refillIn: acct?.refillIn ?? null,
+        };
+      })(),
+      relay: { hasRelayConfig: (await prefs.getRelayConfig?.()) !== null },
       account: account?.info ?? null,
       accountCheckedAt: account?.at ?? null,
       problem,
@@ -601,6 +709,7 @@ export function createWorker(env: WorkerEnv): Worker {
     const s = await settings();
     const budget = new SearchBudget(account, budgetPolicyFor(s, trigger, continued?.searchesUsed ?? 0));
     const client = new SerpApiClient({ apiKey: key, budget, cache: env.cache, fetchFn: env.fetchFn, onSpend: env.ledger, now: env.now, baseUrl });
+    const { keepaProduct, keepaLookup, keepaBudget, keepaScale } = await buildKeepaDeps(s);
     const scanSettings = toScanSettings(s);
     const startedAt = env.now();
 
@@ -637,7 +746,13 @@ export function createWorker(env: WorkerEnv): Worker {
     let askAfter = false;
     scan = (async () => {
       try {
-        const ended = await runScan({ client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested, readPages: env.readPages, readPartPrices: env.readPartPrices, ebay });
+        const ended = await runScan({
+          client, budget, store: saving, settings: scanSettings, now: env.now, labelPrefix: 'scan', shouldStop: () => stopRequested,
+          readPages: env.readPages, readPartPrices: env.readPartPrices, ebay, keepaProduct, keepaLookup, keepaBudget,
+          keepaScale,
+          cache: env.cache,
+          trendWriter: keepaProduct ? (t) => writePartTrend(env.cache, t) : undefined,
+        });
         await keepRates(ended);
         askAfter = ended.stopReason !== 'user';
       } catch {
@@ -696,11 +811,93 @@ export function createWorker(env: WorkerEnv): Worker {
     }
     // Current settings: alerts the owner turned off during the scan are off.
     const s = await settings();
+    const scanSettings = toScanSettings(s);
+    const now = env.now();
+    const { report } = await postScanWork({ store, settings: scanSettings, cache: env.cache, now: () => now });
+    const unanswered = (await store.listReview()).filter((q) => q.answer === null);
     const notified = await prefs.getNotified();
-    const deals = dealsToNotify(await buildReport(store, toScanSettings(s)), s.alerts, notified).slice(0, MAX_NOTIFIED);
-    if (deals.length === 0) return;
-    await env.notify(deals);
-    await prefs.setNotified([...notified, ...deals.map((d) => d.key)]);
+    const deals = dealsToNotify(report, s.alerts, notified).slice(0, MAX_NOTIFIED);
+    const dealKeys = new Set(deals.map((d) => d.key));
+    if (deals.length > 0) {
+      await env.notify(deals);
+      await prefs.setNotified([...notified, ...deals.map((d) => d.key)]);
+    }
+    const reviewDigest =
+      s.alerts.reviewDigest
+        ? reviewDigestMessage({
+            match: unanswered.filter((q) => q.kind === 'match').length,
+            split: unanswered.filter((q) => q.kind === 'split').length,
+          })
+        : null;
+    if (reviewDigest && env.notifyText) await env.notifyText(reviewDigest);
+    const discoveryComplete: string[] = [];
+    if (prefs.getDiscoverySections && prefs.setDiscoverySections) {
+      const lastRecord = await prefs.getDiscoverySections();
+      const lastSection = new Map(Object.entries(lastRecord ?? {}));
+      const sectionsSeeded = lastRecord !== null && Object.keys(lastRecord).length > 0;
+      const ready = bundlesNewlyConfirmed(report.bundles, lastSection, sectionsSeeded);
+      for (const row of ready) {
+        const line = `Discovery complete for ${row.model}.`;
+        discoveryComplete.push(line);
+        if (env.notifyText) await env.notifyText(line);
+      }
+      if (report.bundles.length > 0) {
+        await prefs.setDiscoverySections(Object.fromEntries(report.bundles.map((b) => [b.key, b.section])));
+      }
+    }
+    const trendAlerts: string[] = [];
+    const lastJob = (await store.listScans())[0];
+    for (const drop of lastJob?.partPriceDrops ?? []) {
+      const msg = partPriceDropMessage(drop.partModel, drop.delta);
+      trendAlerts.push(msg);
+      if (env.notifyText) await env.notifyText(msg);
+    }
+    if (s.alerts.enabled) {
+      for (const row of report.bundles) {
+        if (!row.estimate) continue;
+        const roiPct = estimateRoiPercent(row.estimate.roi);
+        const baseline = await readAlertBaseline(env.cache, row.key);
+        const trendMsg =
+          !dealKeys.has(row.key) ? trendCrosses(row.model, row.estimate.profit, roiPct, baseline, s.alerts) : null;
+        if (trendMsg) {
+          trendAlerts.push(trendMsg);
+          if (env.notifyText) await env.notifyText(trendMsg);
+        }
+        await writeAlertBaseline(env.cache, { bundleKey: row.key, profit: row.estimate.profit, roiPercent: roiPct, notifiedAt: now });
+      }
+    }
+    const relay = await prefs.getRelayConfig?.();
+    if (relay && env.relayPost) {
+      try {
+        const digest = {
+          at: new Date(now).toISOString(),
+          reviewOpen: unanswered.length,
+          roiHits: deals.map((d) => ({ model: d.model, profit: d.estimate?.profit ?? 0 })),
+          ...(reviewDigest ? { reviewDigest } : {}),
+          ...(discoveryComplete.length > 0 ? { discoveryComplete } : {}),
+          ...(trendAlerts.length > 0 ? { trendAlerts } : {}),
+        };
+        const { body, signature } = await relayPayload(digest, relay.secret);
+        await env.relayPost(relay.url, body, signature);
+      } catch {
+        // Relay failure must not fail the scan.
+      }
+    }
+    if (s.agentBridgeAfterScan && env.agentBridgePost) {
+      try {
+        const bridge = agentBridgeEndpoints();
+        const mayPost =
+          !env.requestHostPermission || (await env.requestHostPermission(bridge.originPattern));
+        if (mayPost) {
+          const audit = await exportAudit();
+          if (audit.ok) await env.agentBridgePost(bridge.url, audit.data);
+          const panel = await exportPanelBridge();
+          if (panel.ok) await env.agentBridgePost(agentPanelUrl(), panel.data);
+        }
+      } catch {
+        // Agent bridge failure must not fail the scan.
+      }
+    }
   }
 
   async function fail(sentence: string): Promise<Reply<never>> {
@@ -846,6 +1043,51 @@ export function createWorker(env: WorkerEnv): Worker {
     return ok(null);
   }
 
+  const ENTER_KEEPA_KEY = 'Enter your Keepa API key.';
+
+  async function saveKeepaKey(apiKey: unknown): Promise<Reply<null>> {
+    const k = typeof apiKey === 'string' ? apiKey.trim() : '';
+    if (k === '') return refuse(ENTER_KEEPA_KEY);
+    await prefs.setKeepaKey(k);
+    await broadcast();
+    return ok(null);
+  }
+
+  async function forgetKeepaKey(): Promise<Reply<null>> {
+    await prefs.forgetKeepaKey();
+    await broadcast();
+    return ok(null);
+  }
+
+  async function saveRelayConfig(url: unknown, secret: unknown): Promise<Reply<null>> {
+    const u = typeof url === 'string' ? url.trim() : '';
+    const s = typeof secret === 'string' ? secret.trim() : '';
+    if (u === '' || s === '') return refuse('Enter a relay URL and shared secret.');
+    let parsed: URL;
+    try {
+      parsed = new URL(u);
+    } catch {
+      return refuse('Relay URL is not valid.');
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return refuse('Relay URL must start with http:// or https://');
+    if (!prefs.setRelayConfig) return refuse('Relay is not available in this build.');
+    const pattern = `${parsed.origin}/*`;
+    if (env.requestHostPermission) {
+      const granted = await env.requestHostPermission(pattern);
+      if (!granted) return refuse('Chrome did not allow posts to that host.');
+    }
+    await prefs.setRelayConfig({ url: u, secret: s });
+    await broadcast();
+    return ok(null);
+  }
+
+  async function forgetRelayConfig(): Promise<Reply<null>> {
+    if (!prefs.forgetRelayConfig) return refuse('Relay is not available in this build.');
+    await prefs.forgetRelayConfig();
+    await broadcast();
+    return ok(null);
+  }
+
   async function saveEbaySettings(judgeModel: unknown, listingsJudgedPerScan: unknown): Promise<Reply<null>> {
     const next = { judgeModel, listingsJudgedPerScan };
     const problem = ebaySettingsProblem(next);
@@ -880,10 +1122,14 @@ export function createWorker(env: WorkerEnv): Worker {
    */
   const saveSettings = (given: ExtensionSettings): Promise<Reply<null>> =>
     serial(async () => {
+      const prev = await settings();
       const { clean, problems } = checkSettings(given);
       if (problems.length > 0) return refuse(problems[0]!);
-      if (!sameSchedule((await settings()).schedule, clean.schedule)) await prefs.setLastScheduledRunAt(env.now());
+      if (!sameSchedule(prev.schedule, clean.schedule)) await prefs.setLastScheduledRunAt(env.now());
       await prefs.saveSettings(clean);
+      if (!prev.agentBridgeAfterScan && clean.agentBridgeAfterScan && env.requestHostPermission) {
+        await env.requestHostPermission(agentBridgeEndpoints().originPattern);
+      }
       await broadcast();
       return ok(null);
     });
@@ -903,6 +1149,17 @@ export function createWorker(env: WorkerEnv): Worker {
    * The audit file (docs step 8c): what the scan chose, with every saved listing, so a blind checker
    * can label the right ones. Parts are the report's primary rows. Never the key, never settings.
    */
+  async function exportPanelBridge(): Promise<Reply<string>> {
+    const report = await buildReport(store, toScanSettings(await settings()));
+    const panel = {
+      kind: 'split-finder-panel',
+      version: 1,
+      exportedAt: env.now(),
+      bundles: report.bundles,
+    };
+    return ok(JSON.stringify(panel, null, 2));
+  }
+
   async function exportAudit(): Promise<Reply<string>> {
     const report = await buildReport(store, toScanSettings(await settings()));
     // The catalog the scan's own lookups use (knownModels), so isKit is what wantedFor asks.
@@ -1451,7 +1708,9 @@ export function createWorker(env: WorkerEnv): Worker {
       else budget = new SearchBudget(account, budgetPolicyFor(await settings(), 'manual', 0));
     }
     refusal ??= await refusalFor(store, action);
-    const q = quotePaid(action, await savedAnswers(store), budget);
+    const s = await settings();
+    const keepa = await buildKeepaDeps(s);
+    const q = quotePaid(action, await savedAnswers(store), budget, keepa.quoteKeepa);
     // The whole quote, with the parts a Look up leaves for the next press (Ruling 72).
     return ok({ ...q, refusal: refusal ?? q.refusal });
   }
@@ -1504,8 +1763,12 @@ export function createWorker(env: WorkerEnv): Worker {
       const s = await settings();
       const budget = new SearchBudget(account, budgetPolicyFor(s, 'manual', 0));
       const client = new SerpApiClient({ apiKey: key, budget, cache: env.cache, fetchFn: env.fetchFn, onSpend: env.ledger, now: env.now, baseUrl });
+      const keepa = await buildKeepaDeps(s);
       try {
-        await runPaid({ client, budget, store, now: env.now, settings: toScanSettings(s), shouldStop: () => (paidStop ? PAID_STOPPED : null) }, action);
+        await runPaid({
+          client, budget, store, now: env.now, settings: toScanSettings(s), shouldStop: () => (paidStop ? PAID_STOPPED : null),
+          productPage: keepa.productPage, keepaBudget: keepa.keepaBudget, keepaLookup: keepa.keepaLookup,
+        }, action);
         return ok(null);
       } catch (err) {
         if (err instanceof PaidProblem) return refuse(err.message);
@@ -1632,6 +1895,15 @@ export function createWorker(env: WorkerEnv): Worker {
    */
   async function openThisPage(tabId: number | undefined): Promise<Reply<OpenThisPageReply>> {
     if (tabId === undefined) return refuse(NO_TAB);
+    if (env.appPrimaryUi?.() && env.openAppHome) {
+      let opening: Promise<boolean>;
+      try {
+        opening = env.openAppHome();
+      } catch {
+        opening = Promise.resolve(false);
+      }
+      return ok({ opened: await opening });
+    }
     let opening: Promise<void>;
     try {
       opening = pages.openPanel(tabId);
@@ -1668,6 +1940,8 @@ export function createWorker(env: WorkerEnv): Worker {
     if (askAll !== null || singleAsks > 0) return refuse(DELETE_LATER_ASK);
     await store.clearAll();
     await env.cache.clear();
+    await prefs.setNotified([]);
+    await prefs.clearDiscoverySections?.();
     await suggestions.clear();
     for (const d of await pages.deferredAll()) await pages.setDeferred(d.tabId, d.page.itemId, null);
     await broadcast();
@@ -1690,6 +1964,14 @@ export function createWorker(env: WorkerEnv): Worker {
         return saveAnthropicKey(request.apiKey);
       case 'forgetAnthropicKey':
         return forgetAnthropicKey();
+      case 'saveKeepaKey':
+        return saveKeepaKey(request.apiKey);
+      case 'forgetKeepaKey':
+        return forgetKeepaKey();
+      case 'saveRelayConfig':
+        return saveRelayConfig(request.url, request.secret);
+      case 'forgetRelayConfig':
+        return forgetRelayConfig();
       case 'saveEbaySettings':
         return saveEbaySettings(request.judgeModel, request.listingsJudgedPerScan);
       case 'answerEbay':

@@ -4,6 +4,7 @@
 // Runs in a Chrome extension service worker and in Node (tests, scripts): it
 // only needs a fetch function, a cache and a budget.
 
+import type { KeepaProduct } from '../keepa/types';
 import { type AccountInfo, type BlockReason, BLOCK_MESSAGE, parseAccount, SearchBudget } from './budget';
 
 export type Params = Record<string, string | number | boolean | undefined>;
@@ -96,6 +97,12 @@ export interface SearchResult {
   source: 'cache' | 'network';
   /** When this response was received from SerpApi, epoch ms. */
   at: number;
+  /** Default serpapi: counts toward searchesUsed. Keepa product pulls use billAs keepa. */
+  billAs?: 'serpapi' | 'keepa';
+  /** Tokens charged when billAs is keepa and source is network. */
+  keepaTokens?: number;
+  /** Parsed Keepa product when the step used Keepa (for trend cache). */
+  keepaProduct?: KeepaProduct;
 }
 
 export class SerpApiClient {

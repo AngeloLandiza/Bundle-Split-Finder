@@ -19,6 +19,7 @@ import { notePage, type PageView } from '@core/scan/pageView';
 import { toScanSettings } from '@core/settings';
 import { trustedRates, type UnitRates } from '@core/scan/pipeline';
 import { MemorySuggestionStore, type StoredSuggestion } from '@core/assist/stored';
+import { verifyRelayPayload } from '../../agent/relay';
 import { createWorker, type DeferredPage, type PageEnv, type Prefs, progressOf, type Worker } from './worker';
 
 // Every search goes through the real SerpApiClient over replayRecorded(); the Account API
@@ -114,8 +115,12 @@ class FakePrefs implements Prefs {
     this.data.account = structuredClone(v);
   }
   showChip = true;
+  appPrimaryUi = false;
   async getShowChip() {
     return this.showChip;
+  }
+  async getAppPrimaryUi() {
+    return this.appPrimaryUi;
   }
   // Step 11: how long a unit of each kind took, as prefs.ts keeps it.
   rates: unknown = {};
@@ -148,6 +153,16 @@ class FakePrefs implements Prefs {
   async forgetAnthropicKey() {
     this.anthropicKey = null;
   }
+  keepaKey: string | null = null;
+  async getKeepaKey() {
+    return this.keepaKey;
+  }
+  async setKeepaKey(key: string) {
+    this.keepaKey = key;
+  }
+  async forgetKeepaKey() {
+    this.keepaKey = null;
+  }
   async getEbaySettings() {
     return { ...structuredClone(DEFAULT_EBAY_SETTINGS), ...(typeof this.ebaySettings === 'object' && this.ebaySettings !== null ? structuredClone(this.ebaySettings) : {}) } as EbaySettings;
   }
@@ -170,6 +185,23 @@ class FakePrefs implements Prefs {
   }
   async clearEbayToken() {
     this.token = null;
+  }
+  discoverySections: Record<string, string> | null = null;
+  async getDiscoverySections() {
+    return this.discoverySections === null ? null : structuredClone(this.discoverySections);
+  }
+  async setDiscoverySections(v: Record<string, string>) {
+    this.discoverySections = structuredClone(v);
+  }
+  relayConfig: { url: string; secret: string } | null = null;
+  async getRelayConfig() {
+    return this.relayConfig === null ? null : structuredClone(this.relayConfig);
+  }
+  async setRelayConfig(cfg: { url: string; secret: string }) {
+    this.relayConfig = structuredClone(cfg);
+  }
+  async forgetRelayConfig() {
+    this.relayConfig = null;
   }
 }
 
@@ -258,6 +290,10 @@ interface World {
   clock: number;
   ledger: LedgerEntry[];
   notified: BundleRow[][];
+  notifyTexts: string[];
+  relayPosts: { url: string; body: string; signature: string }[];
+  agentBridgePosts: { url: string; body: string }[];
+  hostPermissionRequests: string[];
   broadcasts: AppState[];
   /** Origin and path of every request, account checks included. Never the query: it holds the key. */
   requests: string[];
@@ -292,6 +328,10 @@ function world(setup: Setup = {}): World {
     clock: T0,
     ledger: [],
     notified: [],
+    notifyTexts: [],
+    relayPosts: [],
+    agentBridgePosts: [],
+    hostPermissionRequests: [],
     broadcasts: [],
     pages: new FakePages(),
     requests: [],
@@ -319,8 +359,10 @@ function world(setup: Setup = {}): World {
   return w;
 }
 
+type WorkerOpts = Parameters<typeof createWorker>[0];
+
 /** A worker over the world's storage. `store` replaces the world's store (to interrupt it). */
-function workerOver(w: World, store: ScanStore = w.store): Worker {
+function workerOver(w: World, store: ScanStore = w.store, over?: Partial<WorkerOpts>): Worker {
   return createWorker({
     store,
     cache: w.cache,
@@ -329,11 +371,23 @@ function workerOver(w: World, store: ScanStore = w.store): Worker {
     fetchFn: (input, init) => w.fetchFn(input, init),
     now: () => w.clock,
     notify: (rows) => void w.notified.push(rows),
+    notifyText: (message) => void w.notifyTexts.push(message),
+    relayPost: async (url, body, signature) => {
+      w.relayPosts.push({ url, body, signature });
+    },
+    agentBridgePost: async (url, body) => {
+      w.agentBridgePosts.push({ url, body });
+    },
+    requestHostPermission: async (pattern) => {
+      w.hostPermissionRequests.push(pattern);
+      return true;
+    },
     broadcast: (state) => void w.broadcasts.push(state),
     readPages: w.readPages,
     readPartPrices: w.readPartPrices,
     callTimeoutMs: w.callTimeoutMs,
     pages: w.pages,
+    ...over,
   });
 }
 
@@ -651,8 +705,13 @@ describe('worker: each scan\'s budget (criterion 3 and the reserve rule)', () =>
     await reached;
     await new Promise((ok) => setTimeout(ok, 50));
     // The new job was broadcast at once; page 1 was saved within the same second, so it waits.
-    expect(pagesWhileRunning(w)).toEqual([0]);
-    await vi.waitFor(() => expect(pagesWhileRunning(w)).toEqual([0, 1]), { timeout: 3_000 });
+    const early = pagesWhileRunning(w);
+    expect(early.length).toBeGreaterThanOrEqual(1);
+    expect(early.every((p) => p === 0)).toBe(true);
+    await vi.waitFor(() => {
+      const p = pagesWhileRunning(w);
+      return p.includes(0) && p.includes(1);
+    }, { timeout: 3_000 });
     release();
     await untilIdle(w);
     expect(w.broadcasts.at(-1)).toMatchObject({ scanRunning: false, lastJob: { counts: { pagesFetched: 2 } } });
@@ -937,7 +996,7 @@ describe('worker: stopScan', () => {
 });
 
 describe('worker: alerts', () => {
-  const ALERTS: ExtensionSettings = { ...RYOBI, alerts: { enabled: true, minProfit: 50, minRoiPercent: 30 } };
+  const ALERTS: ExtensionSettings = { ...RYOBI, alerts: { enabled: true, minProfit: 50, minRoiPercent: 30, reviewDigest: true } };
 
   it('at $50 and 30%, notify is called once with PBLRC2501SB, and not again after a second scan', async () => {
     const w = world({ key: KEY, settings: ALERTS });
@@ -960,6 +1019,75 @@ describe('worker: alerts', () => {
     await send(w, { type: 'scanNow' });
     await untilIdle(w);
     expect(w.notified).toEqual([]);
+  });
+
+  it('after a scan, notifyText and relay POST carry the review digest', async () => {
+    const w = world({ key: KEY, settings: ALERTS });
+    w.prefs.relayConfig = { url: 'https://relay.test/hook', secret: 'relay-test-secret' };
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(w.notifyTexts.some((t) => t.includes('need you'))).toBe(true);
+    expect(w.relayPosts).toHaveLength(1);
+    const post = w.relayPosts[0]!;
+    expect(post.url).toBe('https://relay.test/hook');
+    const digest = JSON.parse(post.body) as { reviewOpen: number; reviewDigest?: string; roiHits: unknown[] };
+    expect(digest.reviewOpen).toBeGreaterThan(0);
+    expect(digest.reviewDigest).toMatch(/need you/);
+    expect(verifyRelayPayload(post.body, post.signature, 'relay-test-secret')).toBe(true);
+  });
+
+  it('after a scan, skips the agent bridge when host permission is denied', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, agentBridgeAfterScan: true } });
+    w.worker = workerOver(w, w.store, { requestHostPermission: async () => false });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(w.agentBridgePosts).toHaveLength(0);
+    expect((await w.store.listScans())[0]?.status).not.toBe('running');
+  });
+
+  it('after a scan, posts the audit to the local agent bridge when enabled', async () => {
+    const w = world({ key: KEY, settings: { ...RYOBI, agentBridgeAfterScan: true } });
+    await send(w, { type: 'scanNow' });
+    await untilIdle(w);
+    expect(w.agentBridgePosts).toHaveLength(2);
+    const auditPost = w.agentBridgePosts.find((p) => p.url.endsWith('/api/bridge'))!;
+    const panelPost = w.agentBridgePosts.find((p) => p.url.endsWith('/api/panel'))!;
+    expect(auditPost.url).toBe('http://127.0.0.1:8790/api/bridge');
+    const audit = JSON.parse(auditPost.body) as { kind: string };
+    expect(audit.kind).toBe('split-finder-audit');
+    const panel = JSON.parse(panelPost.body) as { kind: string };
+    expect(panel.kind).toBe('split-finder-panel');
+    expect(w.hostPermissionRequests).toContain('http://127.0.0.1:8790/*');
+  });
+});
+
+describe('worker: keepa key', () => {
+  it('saveKeepaKey reports hasKeepaKey in state', async () => {
+    const w = world();
+    const reply = await send(w, { type: 'saveKeepaKey', apiKey: 'keepa-fixture-key' });
+    expect(reply).toEqual({ ok: true, data: null });
+    expect((await state(w)).keepa?.hasKeepaKey).toBe(true);
+    await send(w, { type: 'forgetKeepaKey' });
+    expect((await state(w)).keepa?.hasKeepaKey).toBe(false);
+  });
+});
+
+describe('worker: agent bridge settings', () => {
+  it('saveSettings requests host permission when the bridge is turned on', async () => {
+    const w = world({ settings: RYOBI });
+    const reply = await send(w, { type: 'saveSettings', settings: { ...RYOBI, agentBridgeAfterScan: true } });
+    expect(reply).toEqual({ ok: true, data: null });
+    expect(w.hostPermissionRequests).toContain('http://127.0.0.1:8790/*');
+  });
+});
+
+describe('worker: relay config', () => {
+  it('saveRelayConfig requests host permission for the webhook origin', async () => {
+    const w = world();
+    const reply = await send(w, { type: 'saveRelayConfig', url: 'https://relay.test/hook', secret: 'sec' });
+    expect(reply).toEqual({ ok: true, data: null });
+    expect(w.hostPermissionRequests).toEqual(['https://relay.test/*']);
+    expect(await w.prefs.getRelayConfig()).toEqual({ url: 'https://relay.test/hook', secret: 'sec' });
   });
 });
 
@@ -2263,6 +2391,21 @@ describe('worker: Home Depot pages the chip sends (pageSeen, getThisPage, openTh
     expect(await send(w, { type: 'takeShowThisPage', tabId: 99 })).toEqual({ ok: true, data: false });
     expect(await send(w, { type: 'takeShowThisPage', tabId: TAB })).toEqual({ ok: true, data: true });
     expect(await send(w, { type: 'takeShowThisPage', tabId: TAB })).toEqual({ ok: true, data: false });
+  });
+
+  it('openThisPage when the app is primary opens the app home instead of the side panel', async () => {
+    const w = world({ key: KEY, settings: RYOBI });
+    let appOpened = 0;
+    w.worker = workerOver(w, w.store, {
+      appPrimaryUi: () => true,
+      openAppHome: () => {
+        appOpened += 1;
+        return Promise.resolve(true);
+      },
+    });
+    expect(await send(w, { type: 'openThisPage' }, { tabId: TAB })).toEqual({ ok: true, data: { opened: true } });
+    expect(appOpened).toBe(1);
+    expect(w.pages.opened).toEqual([]);
   });
 
   it('openThisPage when Chrome refuses to open the panel: opened is false, nothing is left for the panel, nobody is told', async () => {

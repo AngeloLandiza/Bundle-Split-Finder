@@ -20,6 +20,10 @@ export type Request =
   /** Step 10: saves the Anthropic key. It is not checked: a check is a call that costs money. Reply data: null. */
   | { type: 'saveAnthropicKey'; apiKey: string }
   | { type: 'forgetAnthropicKey' }
+  | { type: 'saveKeepaKey'; apiKey: string }
+  | { type: 'forgetKeepaKey' }
+  | { type: 'saveRelayConfig'; url: string; secret: string }
+  | { type: 'forgetRelayConfig' }
   /** Step 10: the judge model and the listings judged per scan. Reply data: null. */
   | { type: 'saveEbaySettings'; judgeModel: string; listingsJudgedPerScan: number }
   /** Step 10: the owner's Yes or No to an eBay listing question (core/src/scan/ebayAnswers.ts). Reply data: null. */
@@ -148,6 +152,17 @@ export interface EbayState {
   listingsJudgedPerScan: number;
 }
 
+export interface KeepaState {
+  hasKeepaKey: boolean;
+  tokensPerScan: number;
+  reserve: number;
+  discoveryMode: ExtensionSettings['discoveryMode'];
+  trackingDepth: ExtensionSettings['trackingDepth'];
+  /** Last Keepa response balance, if the key has been used this browser. */
+  tokensLeft: number | null;
+  refillIn: number | null;
+}
+
 /** How the last Ask AI about all ended: what it did and what it cost. Kept until the next one starts. */
 export interface AskAllResult {
   /** Questions in the queue when it began. */
@@ -168,10 +183,16 @@ export interface AskAllResult {
   overspent: boolean;
 }
 
+export interface RelayState {
+  hasRelayConfig: boolean;
+}
+
 export interface AppState {
   hasKey: boolean;
   /** Step 10. Absent in a state built before it (tests): it reads as no keys and the default settings. */
   ebay?: EbayState;
+  keepa?: KeepaState;
+  relay?: RelayState;
   account: AccountInfo | null;
   accountCheckedAt: number | null;
   /** One plain sentence when the last account check or scan start failed; null otherwise. */

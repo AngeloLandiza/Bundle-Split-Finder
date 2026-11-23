@@ -19,13 +19,26 @@ export default defineConfig({
       __SPLIT_FINDER_HD_ORIGIN__: JSON.stringify(e2e ? `http://localhost:${E2E_PORT}` : 'https://www.homedepot.com'),
       // True only with SPLIT_FINDER_DEBUG=1: exposes the page reader on the worker's global for a manual check.
       __SPLIT_FINDER_DEBUG__: process.env.SPLIT_FINDER_DEBUG === '1' ? 'true' : 'false',
+      __SPLIT_FINDER_HELPER__: process.env.SPLIT_FINDER_HELPER === '1' ? 'true' : 'false',
     },
   }),
   manifest: {
-    name: 'Split Finder',
+    name: process.env.SPLIT_FINDER_HELPER === '1' ? 'Split Finder Helper' : 'Split Finder',
+    description:
+      process.env.SPLIT_FINDER_HELPER === '1'
+        ? 'Home Depot chip and page reads for Split Finder.'
+        : 'Find discounted DEWALT and RYOBI bundles on Home Depot and estimate split profit.',
     permissions: ['storage', 'alarms', 'sidePanel', 'notifications', 'scripting'],
     // Step 10: eBay's API and the listing judge's model, each with the owner's own key. No other host ever gets either.
-    host_permissions: ['https://serpapi.com/*', 'https://www.homedepot.com/*', 'https://api.ebay.com/*', 'https://api.anthropic.com/*', ...(e2e ? ['http://localhost/*'] : [])],
+    host_permissions: [
+      'https://serpapi.com/*',
+      'https://www.homedepot.com/*',
+      'https://api.ebay.com/*',
+      'https://api.anthropic.com/*',
+      'https://api.keepa.com/*',
+      ...(e2e ? ['http://localhost/*', 'http://127.0.0.1/*'] : []),
+    ],
+    optional_host_permissions: e2e ? undefined : ['http://*/*', 'https://*/*'],
     // The chip's fonts are declared in the Home Depot page's own document (a shadow root cannot load @font-face),
     // so only Home Depot pages may fetch them. use_dynamic_url gives the files a per-session address, so a page cannot
     // probe for the extension by a fixed URL. The content script's stylesheet is added by WXT.

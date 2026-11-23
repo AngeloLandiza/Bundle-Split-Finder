@@ -16,7 +16,12 @@ export interface AlertSettings {
   minProfit: number;
   /** Estimated return a bundle must reach, in percent. */
   minRoiPercent: number;
+  /** After a scan, notify when any Review question is open. */
+  reviewDigest: boolean;
 }
+
+export type DiscoveryMode = 'auto' | 'discovery_heavy' | 'tracking_heavy';
+export type TrackingDepth = 'price_only' | 'price_and_rank' | 'full';
 
 export interface ExtensionSettings {
   schedule: Schedule;
@@ -30,6 +35,18 @@ export interface ExtensionSettings {
   pagesPerBrand: number;
   fees: FeeSettings;
   alerts: AlertSettings;
+  /** Keepa tokens a scan may spend; 0 turns Keepa off. */
+  keepaTokensPerScan: number;
+  /** Keepa tokens left untouched once balance is known. */
+  keepaReserve: number;
+  discoveryMode: DiscoveryMode;
+  /** In auto mode, caps how much of the Keepa cap may go to discovery (10–90%). */
+  keepaDiscoveryShare: number;
+  trackingDepth: TrackingDepth;
+  /** When a Keepa key is saved, refresh and identify use product tokens instead of SerpApi. */
+  amazonRefreshViaKeepa: boolean;
+  /** After each scan, POST the audit JSON to the local agent bridge (127.0.0.1:8790). */
+  agentBridgeAfterScan: boolean;
 }
 
 export const KNOWN_BRANDS = ['DEWALT', 'RYOBI'] as const;
@@ -41,7 +58,14 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   brands: ['DEWALT', 'RYOBI'],
   pagesPerBrand: 1,
   fees: DEFAULT_FEES,
-  alerts: { enabled: false, minProfit: 20, minRoiPercent: 20 },
+  alerts: { enabled: false, minProfit: 20, minRoiPercent: 20, reviewDigest: true },
+  keepaTokensPerScan: 5,
+  keepaReserve: 5,
+  discoveryMode: 'auto',
+  keepaDiscoveryShare: 90,
+  trackingDepth: 'price_only',
+  amazonRefreshViaKeepa: true,
+  agentBridgeAfterScan: false,
 };
 
 /**
@@ -87,7 +111,21 @@ export type ScanTrigger = 'scheduled' | 'manual';
 
 // ---------------------------------------------------------------- validation
 
-export type SettingsField = 'schedule' | 'searchesPerScan' | 'reserve' | 'brands' | 'pagesPerBrand' | 'fees' | 'alerts';
+export type SettingsField =
+  | 'schedule'
+  | 'searchesPerScan'
+  | 'reserve'
+  | 'brands'
+  | 'pagesPerBrand'
+  | 'fees'
+  | 'alerts'
+  | 'keepaTokensPerScan'
+  | 'keepaReserve'
+  | 'discoveryMode'
+  | 'keepaDiscoveryShare'
+  | 'trackingDepth'
+  | 'amazonRefreshViaKeepa'
+  | 'agentBridgeAfterScan';
 
 const isWhole = (n: number, min: number, max: number): boolean => Number.isInteger(n) && n >= min && n <= max;
 const isAtLeastZero = (n: number): boolean => Number.isFinite(n) && n >= 0;
@@ -129,6 +167,16 @@ export function validateSettings(s: ExtensionSettings): Partial<Record<SettingsF
   add('pagesPerBrand', isWhole(s.pagesPerBrand, 1, 5) ? null : 'Use a whole number from 1 to 5.');
   add('fees', feeProblem(s.fees));
   add('alerts', alertProblem(s.alerts));
+  add('keepaTokensPerScan', isWhole(s.keepaTokensPerScan, 0, 250) ? null : 'Use a whole number from 0 to 250.');
+  add('keepaReserve', isWhole(s.keepaReserve, 0, 250) ? null : 'Use a whole number from 0 to 250.');
+  const modes: DiscoveryMode[] = ['auto', 'discovery_heavy', 'tracking_heavy'];
+  add('discoveryMode', modes.includes(s.discoveryMode) ? null : 'Choose auto, discovery heavy, or tracking heavy.');
+  add(
+    'keepaDiscoveryShare',
+    isWhole(s.keepaDiscoveryShare, 10, 90) ? null : 'Use a whole number from 10 to 90.',
+  );
+  const depths: TrackingDepth[] = ['price_only', 'price_and_rank', 'full'];
+  add('trackingDepth', depths.includes(s.trackingDepth) ? null : 'Choose a tracking depth.');
   return problems;
 }
 
@@ -148,6 +196,8 @@ export function toScanSettings(s: ExtensionSettings): ScanSettings {
     queries: KNOWN_BRANDS.filter((b) => s.brands.includes(b)).map((b) => ({ q: BRAND_QUERIES[b] })),
     pagesPerQuery: s.pagesPerBrand,
     fees: { ...s.fees },
+    keepaTrackingDepth: s.trackingDepth,
+    amazonRefreshViaKeepa: s.amazonRefreshViaKeepa,
   };
 }
 
@@ -170,7 +220,7 @@ export function budgetPolicyFor(s: ExtensionSettings, trigger: ScanTrigger, used
 }
 
 /** An estimate's return in percent. ROI is rounded to 4 places, so this is exact to 2. */
-const roiPercent = (roi: number): number => Math.round(roi * 10_000) / 100;
+export const estimateRoiPercent = (roi: number): number => Math.round(roi * 10_000) / 100;
 
 /** Confirmed bundles that clear both alert numbers and were not notified before. */
 export function dealsToNotify(report: ScanReport, alerts: AlertSettings, alreadyNotified: string[]): BundleRow[] {
@@ -181,7 +231,7 @@ export function dealsToNotify(report: ScanReport, alerts: AlertSettings, already
       b.section === 'confirmed' &&
       b.estimate !== null &&
       b.estimate.profit >= alerts.minProfit &&
-      roiPercent(b.estimate.roi) >= alerts.minRoiPercent &&
+      estimateRoiPercent(b.estimate.roi) >= alerts.minRoiPercent &&
       !notified.has(b.key),
   );
 }

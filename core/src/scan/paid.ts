@@ -5,6 +5,11 @@
 // before the first search, and never repeat a search that failed.
 
 import { type Candidate, grade, kitKey, pick } from '../match';
+import { TOKEN_BLOCK_MESSAGE, type TokenBudget } from '../keepa/budget';
+import { KEEPA_LOOKUP_TOKEN_ESTIMATE } from '../keepa/estimates';
+import { KeepaBudgetExceededError } from '../keepa/client';
+import { productTokenEstimate } from '../keepa/estimates';
+import type { KeepaTrackingDepth } from '../keepa/types';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { parseAmazonProduct, parseBuyBox } from '../serpapi/parsers';
 import { wantedFor } from './classify';
@@ -51,11 +56,48 @@ export interface SavedAnswers {
  * at most the per-scan limit when that is at least 1 (Ruling 72): the parts past it are counted in
  * `leftWaiting`. Nothing to spend is never refused. The store's refusals are refusalFor's.
  */
-export function quotePaid(action: PaidAction, saved: { listingAnswers: (brand: string, model: string) => boolean }, budget: BudgetView): Quote {
-  if (action.kind === 'verify') return { searches: 1, refusal: overBudget(budget, 1) };
-  // Ruling 70: a RYOBI part asked for in both its written forms is one search (onePerProduct); then
-  // Ruling 72's cap, exactly as lookUp counts them, so the quote is what a press spends.
+export interface QuoteKeepaOpts {
+  verifyUsesKeepa?: boolean;
+  lookupUsesKeepa?: boolean;
+  keepaBudget?: Pick<TokenBudget, 'blockReason'>;
+  trackingDepth?: KeepaTrackingDepth;
+}
+
+export type KeepaLookup = (brand: string, model: string, label: string) => Promise<SearchResult>;
+
+function fittingKeepa(budget: Pick<TokenBudget, 'blockReason'>, parts: number, costEach: number): number {
+  let n = 0;
+  while (n < parts && budget.blockReason((n + 1) * costEach) === null) n++;
+  return n;
+}
+
+export function quotePaid(
+  action: PaidAction,
+  saved: { listingAnswers: (brand: string, model: string) => boolean },
+  budget: BudgetView,
+  keepa?: QuoteKeepaOpts,
+): Quote {
+  if (action.kind === 'verify') {
+    if (keepa?.verifyUsesKeepa) {
+      if (!keepa.keepaBudget) return { searches: 0, keepaTokens: 1, refusal: TOKEN_BLOCK_MESSAGE.no_tokens };
+      const est = productTokenEstimate(keepa.trackingDepth, 1);
+      const block = keepa.keepaBudget.blockReason(est);
+      return { searches: 0, keepaTokens: est, refusal: block ? TOKEN_BLOCK_MESSAGE[block] : null };
+    }
+    return { searches: 1, refusal: overBudget(budget, 1) };
+  }
   const needed = lookupsNeeded(action.parts, saved);
+  if (keepa?.lookupUsesKeepa && keepa.keepaBudget) {
+    const count = fittingKeepa(keepa.keepaBudget, needed, KEEPA_LOOKUP_TOKEN_ESTIMATE);
+    const block =
+      count < needed
+        ? TOKEN_BLOCK_MESSAGE[keepa.keepaBudget.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE) ?? 'run_cap']
+        : null;
+    const quote: Quote = { searches: 0, keepaTokens: count * KEEPA_LOOKUP_TOKEN_ESTIMATE, refusal: block };
+    if (count < needed) quote.leftWaiting = needed - count;
+    return quote;
+  }
+  // Ruling 70 / 72: SerpApi searches.
   const searches = fitting(budget, needed);
   const quote: Quote = { searches, refusal: overBudget(budget, searches) };
   if (searches < needed) quote.leftWaiting = needed - searches;
@@ -105,9 +147,15 @@ export async function refusalFor(store: ScanStore, action: PaidAction): Promise<
  * never retried. A Verify whose page cannot be used throws PaidProblem after its search. A stop
  * throws PaidProblem with shouldStop's sentence; the parts a Look up had not searched for yet wait.
  */
+/** Product detail shaped like SerpApi amazon_product, from SerpApi or Keepa. */
+export type ProductPage = (asin: string, label: string, maxAgeMs?: number) => Promise<SearchResult>;
+
 export async function runPaid(
   deps: {
     client: SearchClient; budget: BudgetView; store: ScanStore; now: () => number; settings?: ScanSettings; shouldStop?: () => string | null;
+      productPage?: ProductPage;
+    keepaBudget?: Pick<TokenBudget, 'blockReason'>;
+    keepaLookup?: KeepaLookup;
   },
   action: PaidAction,
 ): Promise<void> {
@@ -119,8 +167,8 @@ export async function runPaid(
     job: { counts: noCounts() },
   };
   const stop = deps.shouldStop ?? (() => null);
-  if (action.kind === 'verify') await verify(ctx, deps.budget, action, stop);
-  else await lookUp(ctx, deps.budget, known, action.parts, stop);
+  if (action.kind === 'verify') await verify(ctx, deps.budget, action, stop, deps.productPage, deps.keepaBudget);
+  else await lookUp(ctx, deps.budget, known, action.parts, stop, deps.productPage, deps.keepaBudget, deps.keepaLookup);
 }
 
 /**
@@ -136,15 +184,25 @@ export async function runPaid(
  */
 async function lookUp(
   ctx: PartContext, budget: BudgetView, known: KnownModels, asked: { brand: string; model: string }[], stop: () => string | null,
+  productPage?: ProductPage, keepaBudget?: Pick<TokenBudget, 'blockReason'>, keepaLookup?: KeepaLookup,
 ): Promise<void> {
   const need = await judge(ctx.store, known);
   const parts = partsOf(asked);
-  // Ruling 70: one search per product, the form asked first; the other written form takes its match
-  // after the searches. Then Ruling 72: best first in the scan's order, as many as fit. As quotePaid counts.
+  const useKeepaLookup = Boolean(keepaLookup && ctx.settings.amazonRefreshViaKeepa && keepaBudget);
   const wanted = await scanOrder(ctx.store, onePerProduct(parts.filter((p) => need(p) === 'search')));
-  const searches = wanted.slice(0, fitting(budget, wanted.length));
-  const refusal = overBudget(budget, searches.length);
-  if (refusal !== null) throw new PaidProblem(refusal);
+  let searches: typeof wanted;
+  if (useKeepaLookup) {
+    const count = fittingKeepa(keepaBudget!, wanted.length, KEEPA_LOOKUP_TOKEN_ESTIMATE);
+    const block = count === 0 && wanted.length > 0
+      ? TOKEN_BLOCK_MESSAGE[keepaBudget!.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE) ?? 'run_cap']
+      : null;
+    if (block !== null) throw new PaidProblem(block);
+    searches = wanted.slice(0, count);
+  } else {
+    searches = wanted.slice(0, fitting(budget, wanted.length));
+    const refusal = overBudget(budget, searches.length);
+    if (refusal !== null) throw new PaidProblem(refusal);
+  }
   for (const part of parts) if (need(part) === 'listing') await matchFromListings(ctx, known.listings, part);
   // Every part to search for waits from the press on, keeping when it began to wait, as a scan marks
   // the lookups it defers: the ones past the limit, and any a stop or a failure leaves.
@@ -156,7 +214,13 @@ async function lookUp(
     const step: LookupStep = { kind: 'lookup', brand: part.brand, model: part.model };
     let result: SearchResult;
     try {
-      result = await sendLookup(ctx, step);
+      if (useKeepaLookup) {
+        const block = keepaBudget!.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE);
+        if (block) throw new KeepaBudgetExceededError(block);
+        result = await keepaLookup!(part.brand, part.model, `${ctx.prefix}:lookup:${part.model}`);
+      } else {
+        result = await sendLookup(ctx, step);
+      }
     } catch (err) {
       await waitsFromNow(ctx, part);
       throw err;
@@ -165,17 +229,24 @@ async function lookUp(
     if (!asin) continue;
     // One more search, only beside the lookups this press still has to run. Otherwise the page is owed.
     const rest = searches.length - i - 1;
-    if (stop() === null && budget.blockReason(rest + 1) === null) {
+    const identifyOk = productPage && ctx.settings.amazonRefreshViaKeepa
+      ? keepaBudget !== undefined &&
+        keepaBudget.blockReason(productTokenEstimate(ctx.settings.keepaTrackingDepth, 1)) === null
+      : budget.blockReason(rest + 1) === null;
+    if (stop() === null && identifyOk) {
       try {
-        const page = await ctx.client.search(
-          { engine: 'amazon_product', asin, amazon_domain: ctx.settings.amazonDomain },
-          { label: `${ctx.prefix}:identify:${part.model}` },
-        );
+        const page =
+          productPage && ctx.settings.amazonRefreshViaKeepa
+            ? await productPage(asin, `${ctx.prefix}:identify:${part.model}`)
+            : await ctx.client.search(
+                { engine: 'amazon_product', asin, amazon_domain: ctx.settings.amazonDomain },
+                { label: `${ctx.prefix}:identify:${part.model}` },
+              );
         await applyIdentify(ctx, { kind: 'identify', brand: part.brand, model: part.model, asin }, page.data, page.at);
       } catch (err) {
-        if (err instanceof BudgetExceededError || err instanceof RateLimitedError) {
+        if (err instanceof BudgetExceededError || err instanceof RateLimitedError || err instanceof KeepaBudgetExceededError) {
           await notePageDue(ctx, step, asin);
-          throw err;
+          throw err instanceof KeepaBudgetExceededError ? new PaidProblem(err.message) : err;
         }
       }
     } else {
@@ -213,16 +284,25 @@ async function waitsFromNow(ctx: PartContext, part: Part): Promise<void> {
  */
 async function verify(
   ctx: PartContext, budget: BudgetView, action: Extract<PaidAction, { kind: 'verify' }>, stop: () => string | null,
+  productPage?: ProductPage, keepaBudget?: Pick<TokenBudget, 'blockReason'>,
 ): Promise<void> {
-  const refusal = overBudget(budget, 1) ?? stop();
+  const useKeepa = Boolean(productPage && ctx.settings.amazonRefreshViaKeepa);
+  if (useKeepa && !keepaBudget) throw new PaidProblem(TOKEN_BLOCK_MESSAGE.no_tokens);
+  const verifyEst = productTokenEstimate(ctx.settings.keepaTrackingDepth, 1);
+  const keepaBlock = useKeepa ? keepaBudget!.blockReason(verifyEst) : null;
+  const refusal = (useKeepa ? (keepaBlock ? TOKEN_BLOCK_MESSAGE[keepaBlock] : null) : overBudget(budget, 1)) ?? stop();
   if (refusal !== null) throw new PaidProblem(refusal);
   const part = partsOf([action])[0]!;
   const asin = action.asin.trim();
-  const { data, at } = await ctx.client.search(
-    { engine: 'amazon_product', asin, amazon_domain: ctx.settings.amazonDomain },
-    // No maxAgeMs: a listing's brand, part number and barcode do not go stale; its price keeps its own time.
-    { label: `${ctx.prefix}:verify:${part.model}` },
-  );
+  const result =
+    useKeepa && productPage
+      ? await productPage(asin, `${ctx.prefix}:verify:${part.model}`)
+      : await ctx.client.search(
+          { engine: 'amazon_product', asin, amazon_domain: ctx.settings.amazonDomain },
+          // No maxAgeMs: a listing's brand, part number and barcode do not go stale; its price keeps its own price time.
+          { label: `${ctx.prefix}:verify:${part.model}` },
+        );
+  const { data, at } = result;
   const page = parseAmazonProduct(data, asin);
   if (page === null) throw new PaidProblem(PAGE_UNREADABLE);
   if (page.asin !== asin) throw new PaidProblem(OTHER_LISTING);

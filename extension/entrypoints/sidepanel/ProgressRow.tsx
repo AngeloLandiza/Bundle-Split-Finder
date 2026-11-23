@@ -33,17 +33,24 @@ export function progressOf(job: ScanJob): Progress {
 
 const searchesUsed = (n: number): string => `${n} ${n === 1 ? 'search' : 'searches'} used`;
 
+const spendLine = (searches: number, keepaTokens?: number): string => {
+  const k = keepaTokens ?? 0;
+  if (k <= 0) return searchesUsed(searches);
+  return `${searchesUsed(searches)} · ${k} Keepa ${k === 1 ? 'token' : 'tokens'}`;
+};
+
 /** "Scanning · page 3 of 4 · 12 searches used". */
 export function progressText(job: ScanJob | null): string {
   if (!job) return 'Scanning';
   const p = progressOf(job);
+  const spent = spendLine(p.searches, job.keepaTokensUsed);
   switch (p.phase) {
     case 'pages':
-      return `Scanning · page ${p.current} of ${p.total} · ${searchesUsed(p.searches)}`;
+      return `Scanning · page ${p.current} of ${p.total} · ${spent}`;
     case 'reading':
-      return `Reading bundle pages · ${p.read} read · ${searchesUsed(p.searches)}`;
+      return `Reading bundle pages · ${p.read} read · ${spent}`;
     case 'parts':
-      return `Looking up parts · ${p.done} of ${p.total} · ${searchesUsed(p.searches)}`;
+      return `Looking up parts · ${p.done} of ${p.total} · ${spent}`;
   }
 }
 

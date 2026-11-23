@@ -109,3 +109,18 @@ every scan.
 
 On the free plan a daily scan can afford about 5 searches (150 usable ÷ 30). Scanning only
 on click is the default; the $75 plan (5,000) fits a daily scan of 40 with room to spare.
+
+## Keepa tokens (v2 prototype)
+
+Development Keepa spend uses `KEEPA_API_KEY` and `KEEPA_RESERVE` in `.env` (see `.env.example`).
+Every paid call goes through `core/src/keepa/client.ts`; in Node, through `scripts/open-keepa-dev.ts`
+(the same spend lock as SerpApi).
+
+| Command | Cost |
+| --- | --- |
+| `npm run keepa:budget` | Free when the file cache already has a product response (reads `tokensLeft` from meta) |
+| `npm run keepa:measure` | Free (fixtures only) |
+| `npm run keepa:record` | Pays only for fixtures not on disk; `--dry-run` is free |
+
+Reserve and account balance apply **after** the first Keepa response in a session (meta fields).
+Before that, only the per-run cap blocks spends.

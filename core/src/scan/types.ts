@@ -71,6 +71,10 @@ export interface ScanSettings {
    * (readPartPrices). Never a search. A value above PART_PRICE_READS_MAX counts as it.
    */
   partPriceReadsPerScan: number;
+  /** v2: optional stats depth on Keepa product pulls (plan §3c). */
+  keepaTrackingDepth?: 'price_only' | 'price_and_rank' | 'full';
+  /** v2: extension may route refresh/identify through Keepa when a key is set. */
+  amazonRefreshViaKeepa?: boolean;
 }
 
 const HOUR = 60 * 60 * 1000;
@@ -525,8 +529,8 @@ export type ScanStep =
   | { kind: 'refresh'; brand: string; model: string; asin: string }
   | { kind: 'identify'; brand: string; model: string; asin: string };
 
-/** A budget limit, SerpApi's own 429, a failed request, or the user pressing Stop. */
-export type StopReason = BlockReason | 'rate_limited' | 'error' | 'user';
+/** A budget limit, SerpApi's own 429, Keepa with no tokens, a failed request, or the user pressing Stop. */
+export type StopReason = BlockReason | 'no_tokens' | 'rate_limited' | 'error' | 'user';
 
 export interface ScanCounts {
   pagesFetched: number;
@@ -626,6 +630,12 @@ export interface ScanJob {
   pipeline?: PipelineStep[];
   /** Searches that counted against the quota (responses that came from the network). */
   searchesUsed: number;
+  /** Keepa tokens spent on refresh/identify when amazonRefreshViaKeepa is on. */
+  keepaTokensUsed?: number;
+  /** Planned discovery vs tracking token slices at parts planning (when Keepa scale is on). */
+  keepaPlan?: { discoveryTokens: number; trackingTokens: number; lookups: number; refreshes: number };
+  /** Part refreshes where Amazon price fell vs the previous Keepa trend cache. */
+  partPriceDrops?: { partModel: string; delta: number }[];
   counts: ScanCounts;
 }
 
@@ -967,6 +977,8 @@ export type PaidAction =
 export interface Quote {
   /** Searches the action would spend now. */
   searches: number;
+  /** Keepa tokens when verify/identify use Keepa instead of SerpApi. */
+  keepaTokens?: number;
   /** One plain sentence when it may not run now; null when it may. */
   refusal: string | null;
   /**

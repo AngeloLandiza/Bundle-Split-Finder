@@ -1,6 +1,16 @@
 # Install Split Finder
 
-Split Finder is a Chrome extension. It finds discounted DEWALT and RYOBI bundles on Home Depot, splits each bundle into its parts, matches every part to its Amazon listing and ranks the bundles by estimated profit. It uses your own SerpApi key and keeps everything in your browser.
+**Lane D (app-first):** The native **Split Finder** app (macOS `.app` / Windows installer) is the main UI. Install the app first; use it to install the **Split Finder Helper** Chrome extension for Home Depot reads and background scans. You can still load the extension alone without the app (steps below), but keys and settings should live in the app when the helper is synced.
+
+Split Finder finds discounted DEWALT and RYOBI bundles on Home Depot, splits each bundle into its parts, matches every part to its Amazon listing and ranks the bundles by estimated profit. It uses your own SerpApi key.
+
+## 0. Install the native app (Lane D)
+
+1. Build or download **Split Finder** for your platform (`npm run desktop:build` from the repo).
+2. Open the app. Use **Home** to install the helper folder, then **Settings** for your SerpApi key (and optional Keepa, eBay, Anthropic keys).
+3. Load the helper in Chrome (step 1 below). The app and helper sync on localhost.
+
+When the app is the main UI, you do not need Chrome Settings for keys — only the helper for Home Depot page reads and background scans.
 
 ## 1. Load it in Chrome
 
@@ -17,10 +27,10 @@ Every Home Depot results page and every Amazon lookup comes from SerpApi, a paid
 
 1. Create an account at [serpapi.com/users/sign_up](https://serpapi.com/users/sign_up).
 2. On the dashboard, copy the API key.
-3. In Split Finder, open Settings (the settings button in the side panel).
-4. Paste the key into **SerpApi key** and click **Check key**. It shows your plan and how many searches you have left.
+3. **With the app (recommended):** open **Settings** in Split Finder.app, paste **SerpApi key**, click **Check key**, then **Save settings**. The helper syncs the key within a minute.
+4. **Extension only:** in the helper side panel, open Settings, paste the key, and click **Check key**.
 
-The key is stored in this browser only and is sent only to serpapi.com.
+The key is stored on your Mac in app data (or in the browser when extension-only) and is sent only to serpapi.com.
 
 ## 3. Optional keys
 

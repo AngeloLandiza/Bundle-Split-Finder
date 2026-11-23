@@ -3,45 +3,19 @@ import { when } from '../../lib/format';
 import type { BundleRow } from '@core/scan/types';
 import type { AppState } from '../../lib/messages';
 import { sentenceFor } from '../../lib/sentences';
-import { lookupsWaiting, waitingKeys } from './dealsModel';
-import { tryAgain } from './hourlyBlock';
-
-const HOUR = 60 * 60_000;
-
+import { limitCopy as coreLimitCopy } from '@core/deals/limitCopy';
+import { waitingKeys } from './dealsModel';
 /** The title and sentence for each limit that can stop a scan; null when the last scan did not stop at one. */
 export function limitCopy(state: AppState, now: number, bundles: BundleRow[]): { title: string; text: string; limit: boolean } | null {
-  const job = state.lastJob;
-  if (!job || job.status !== 'stopped') return null;
-  const k = lookupsWaiting(job, bundles);
-  // Said only when something waits.
-  // It does not promise an order: at a limit of 1 the listing phase can take the only search.
-  const waiting = () => (k === 0 ? '' : ` ${k} ${k === 1 ? 'part still needs' : 'parts still need'} an Amazon lookup.`);
-  const n = state.settings.searchesPerScan;
-  switch (job.stopReason) {
-    case 'user':
-      // Not a limit: no link to the settings. A message kept from an earlier failure is said below it (Ruling 44).
-      return { title: 'You stopped the last scan', text: `Scan now picks up where it left off.${waiting()}`, limit: false };
-    case 'run_cap': {
-      const noun = n === 1 ? 'search' : 'searches';
-      // Said as it was: all of the allowance, or part of it (a scan can stop at the limit with searches to spare, or none used).
-      const used = job.searchesUsed === n ? `the ${n} ${noun}` : `${job.searchesUsed} of the ${n} ${noun}`;
-      return { title: 'Scan stopped at your search limit', text: `It used ${used} allowed per scan.${waiting()}`, limit: true };
-    }
-    case 'reserve':
-      return {
-        title: 'Scan stopped at your reserve',
-        text: `The rest of this month's searches are kept for scans you start yourself.${waiting()}`,
-        limit: true,
-      };
-    case 'hourly_limit': {
-      const until = (job.finishedAt ?? now) + HOUR;
-      const again = tryAgain(until, now);
-      const limit = state.account?.rateLimitPerHour;
-      return { title: 'Scan stopped at the hourly limit', text: limit ? `SerpApi allows ${limit} searches an hour. ${again}` : again, limit: true };
-    }
-    default:
-      return null;
-  }
+  return coreLimitCopy(
+    {
+      lastJob: state.lastJob,
+      searchesPerScan: state.settings.searchesPerScan,
+      rateLimitPerHour: state.account?.rateLimitPerHour ?? null,
+      now,
+    },
+    bundles,
+  );
 }
 
 /** The sentence a failed lookup leaves in the job's message (core/src/scan/runner.ts, setAside). */
