@@ -437,7 +437,10 @@ export class AgentWork {
     else await this.bogoPass(ext, readers, notes);
     const ebay = this.ebayStep(app, keys, notes);
     const scan = this.d.runScan ?? runScan;
+    // BOGO pairs are looked up after every other bundle, a few per group a scan (core's pairLookupOrder).
+    const bogoPairs = Object.fromEntries(Object.values(store.get('tracking').bogoPairs ?? {}).map((p) => [p.key, `${p.promotionId}:${p.starterItemId}`]));
     return scan({
+      bogoPairs,
       client, budget, store: this.watched(this.scanStore), settings: toScanSettings(ext), now: this.d.now, labelPrefix: 'agent',
       shouldStop: () => this.stopCtl.signal.aborted,
       ...(connected ? { readPages: readers.readPages, readPartPrices: readers.readPartPrices } : { noReaderReason: 'Chrome closed' }),

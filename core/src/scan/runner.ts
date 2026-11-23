@@ -86,6 +86,11 @@ export interface ScanDeps {
   trendWriter?: (trend: import('../keepa/trends').PartTrend) => void | Promise<void>;
   /** Optional cache for part-trend reads on Keepa refresh (extension and agent). */
   cache?: Cache;
+  /**
+   * BOGO pairs the agent found (core/src/tracking/bogoPairs.ts): a pair's bundle key to its group id. Their parts are
+   * looked up after every other bundle's, at most PAIR_LOOKUPS_PER_GROUP new pairs per group a scan (pairLookupOrder).
+   */
+  bogoPairs?: Readonly<Record<string, string>>;
 }
 
 type CatalogStep = Extract<ScanStep, { kind: 'catalog' }>;
@@ -131,6 +136,7 @@ interface Run extends PartContext {
   keepaScale?: ScanDeps['keepaScale'];
   trendWriter?: ScanDeps['trendWriter'];
   cache?: Cache;
+  bogoPairs: Readonly<Record<string, string>>;
   job: ScanJob;
   /** Set by rule 8 and 3 rules 1 and 2: no further search in this run. */
   halted: boolean;
@@ -204,6 +210,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
     client: deps.client, budget, store, settings, now, prefix: deps.labelPrefix ?? 'scan', shouldStop,
     readPages: deps.readPages ?? null, readPartPrices: deps.readPartPrices ?? null, noReaderReason: deps.noReaderReason, ebay: deps.ebay ?? null,
     keepaProduct: deps.keepaProduct, keepaLookup: deps.keepaLookup, keepaBudget: deps.keepaBudget, keepaScale: deps.keepaScale, trendWriter: deps.trendWriter, cache: deps.cache,
+    bogoPairs: deps.bogoPairs ?? {},
     job, catalog: new Map(), halted: false, lastFailed: false, setAside: 0, movable: [], failedBefore,
   });
 
@@ -231,7 +238,7 @@ async function startJob(deps: ScanDeps): Promise<Run> {
   const askedFor = new Set(inOrder.map(pageKey));
   const answered = new Set([...answeredPagesOf(newest)].filter((k) => askedFor.has(k) && !failedPages.has(k)));
   const pages = deferredFirst(inOrder, newest?.deferred ?? [], failedPages, answered);
-  const wants = await wantedParts(store, settings, startedAt, undefined, failedBefore);
+  const wants = await wantedParts(store, settings, startedAt, undefined, failedBefore, deps.bogoPairs);
   const plan = planScan(budget.spendable - catalogPages, { hdPagesWanted: pages.length, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
   const deferred = pages.slice(plan.hdPages);
   // Ruling 52: a page that failed last job runs only if planning reaches it, never by a top-up:
@@ -1452,6 +1459,8 @@ export interface BundlePart extends Part {
    * the part itself; empty when one does, and then it is planned as any part.
    */
   kits: string[];
+  /** The keys of the bundles that hold it, itself or as an item of one of their kits. */
+  bundles: string[];
 }
 
 /**
@@ -1468,20 +1477,25 @@ export async function bundleParts(store: ScanStore, only?: (b: BundleRecord) => 
   // Step 6: a kit's page may be on a bundle record or on its catalog entry (kitRecords).
   const recordsOf = kitIndex(kitRecords(stored, await store.listCatalog()));
   const bundles = only ? stored.filter(only) : stored;
-  const add = (into: Map<string, BundlePart>, part: Part, saving: number, kit: string | null) => {
+  const add = (into: Map<string, BundlePart>, part: Part, saving: number, kit: string | null, bundle: string) => {
     const seen = into.get(part.key);
-    if (!seen) into.set(part.key, { key: part.key, brand: part.brand, model: part.model, saving, kits: kit === null ? [] : [kit] });
+    if (!seen) into.set(part.key, { key: part.key, brand: part.brand, model: part.model, saving, kits: kit === null ? [] : [kit], bundles: [bundle] });
     else {
       seen.saving = Math.max(seen.saving, saving);
       if (kit !== null && !seen.kits.includes(kit)) seen.kits.push(kit);
+      if (!seen.bundles.includes(bundle)) seen.bundles.push(bundle);
     }
   };
   for (const b of bundles) {
     const saving = (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0);
-    for (const part of resolvedParts(b)) add(parts, part, saving, null);
-    for (const item of kitItemParts(b, recordsOf)) add(items, item, saving, item.kit);
+    for (const part of resolvedParts(b)) add(parts, part, saving, null, b.key);
+    for (const item of kitItemParts(b, recordsOf)) add(items, item, saving, item.kit, b.key);
   }
-  for (const [key, item] of items) if (!parts.has(key)) parts.set(key, item);
+  for (const [key, item] of items) {
+    const part = parts.get(key);
+    if (!part) parts.set(key, item);
+    else for (const b of item.bundles) if (!part.bundles.includes(b)) part.bundles.push(b);
+  }
   return parts;
 }
 
@@ -1505,7 +1519,7 @@ async function itemsWanted(store: ScanStore, kit: MatchRecord | undefined): Prom
  */
 async function wantedParts(
   store: ScanStore, settings: ScanSettings, now: number, fromListings?: (part: Part) => Promise<MatchRecord | undefined>,
-  failedBefore: string[] = [],
+  failedBefore: string[] = [], pairs: Readonly<Record<string, string>> = {},
 ): Promise<Wants> {
   const parts = await bundleParts(store);
   const lookups: string[] = [];
@@ -1557,6 +1571,18 @@ async function wantedParts(
   refreshes.sort(byRefresh);
   itemLookups.sort(byLookup);
   itemRefreshes.sort(byRefresh);
+  // BOGO pairs never crowd out the other bundles: what only pairs hold is paid for after everything else, and a
+  // group's new pairs are capped per scan (pairLookupOrder).
+  if (Object.keys(pairs).length > 0) {
+    const savings = new Map((await store.listBundles()).filter((b) => pairs[b.key] !== undefined).map((b) => [b.key, (b.regularPrice ?? b.price ?? 0) - (b.price ?? 0)]));
+    const ordered = pairLookupOrder(lookups, parts, pairs, savings);
+    lookups.splice(0, lookups.length, ...ordered);
+    const pairOnly = (k: string) => onlyPairs(parts.get(k)!, pairs);
+    const last = (keys: string[]) => keys.splice(0, keys.length, ...keys.filter((k) => !pairOnly(k)), ...keys.filter(pairOnly));
+    last(refreshes);
+    last(itemLookups);
+    last(itemRefreshes);
+  }
   // Ruling 70: one lookup per product. A RYOBI part written two ways (PCL515 and PCL515B, kitKey) is
   // looked up once, the first in this order; the other takes that match at the next planning
   // (matchFromListings). And one refresh per listing the two forms share. DEWALT parts are each their own.
@@ -1574,6 +1600,56 @@ async function wantedParts(
     items: [...itemLookups.filter(firstLookup), ...itemRefreshes.filter(firstRefresh)],
     steps,
   };
+}
+
+/** New BOGO pairs a scan looks up per promotion group, at most; later scans continue down the group's list. */
+export const PAIR_LOOKUPS_PER_GROUP = 3;
+
+/** True when every bundle holding the part is a BOGO pair. */
+const onlyPairs = (part: BundlePart, pairs: Readonly<Record<string, string>>): boolean =>
+  part.bundles.length > 0 && part.bundles.every((b) => pairs[b] !== undefined);
+
+/**
+ * BOGO pairs (core/src/tracking/bogoPairs.ts) after every other bundle. `lookups` is in the scan's order; `pairs` maps a
+ * pair's bundle key to its group (promotion and starter), `savings` a pair to Home Depot's own saving (was - price). The
+ * parts some other bundle holds keep their order and come first. Then, group by group (the group whose best saving is
+ * largest first), its pairs by saving, largest first: a pair that needs a part no earlier step looks up is a new pair,
+ * and only the first PAIR_LOOKUPS_PER_GROUP new pairs of a group are looked up this scan. A pair whose parts are matched
+ * or already planned (a free part shared with another bundle or group is looked up once) needs nothing and is not counted.
+ * The parts of the pairs past the cap are left out, not deferred: the next scan plans them when their turn comes.
+ */
+export function pairLookupOrder(
+  lookups: readonly string[], parts: ReadonlyMap<string, BundlePart>, pairs: Readonly<Record<string, string>>, savings: ReadonlyMap<string, number>,
+  cap = PAIR_LOOKUPS_PER_GROUP,
+): string[] {
+  const isPairOnly = (k: string) => onlyPairs(parts.get(k)!, pairs);
+  const out = lookups.filter((k) => !isPairOnly(k));
+  const planned = new Set(out);
+  const need = new Map<string, string[]>();
+  for (const k of lookups) {
+    if (!isPairOnly(k)) continue;
+    for (const b of parts.get(k)!.bundles) need.set(b, [...(need.get(b) ?? []), k]);
+  }
+  const groups = new Map<string, string[]>();
+  for (const [pair, group] of Object.entries(pairs)) if (savings.has(pair)) groups.set(group, [...(groups.get(group) ?? []), pair]);
+  const saving = (pair: string) => savings.get(pair) ?? 0;
+  const bySaving = (a: string, b: string) => saving(b) - saving(a) || (a < b ? -1 : a > b ? 1 : 0);
+  const ordered = [...groups.entries()].map(([group, list]) => [group, list.sort(bySaving)] as const);
+  ordered.sort((a, b) => saving(b[1][0]!) - saving(a[1][0]!) || (a[0] < b[0] ? -1 : 1));
+  for (const [, list] of ordered) {
+    let taken = 0;
+    for (const pair of list) {
+      const fresh = (need.get(pair) ?? []).filter((k) => !planned.has(k));
+      if (fresh.length === 0) continue;
+      if (taken >= cap) break;
+      taken += 1;
+      for (const k of fresh) {
+        planned.add(k);
+        out.push(k);
+      }
+    }
+  }
+  return out;
 }
 
 /**
@@ -1608,7 +1684,7 @@ function once(seen: Set<string>, id: string): boolean {
 async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   const { job, budget } = run;
   // 2c rule 5 runs even when the listing phase stopped: it spends nothing.
-  const wants = await wantedParts(run.store, run.settings, run.now(), (part) => savedMatch(run, listings, part), run.failedBefore);
+  const wants = await wantedParts(run.store, run.settings, run.now(), (part) => savedMatch(run, listings, part), run.failedBefore, run.bogoPairs);
   // A stop asked for during the last listing search, when the queue emptied as usual (QA M7), is a stop on request too.
   if (job.stopReason === null && run.shouldStop()) job.stopReason = 'user';
   // In the listing phase only rule 8 or a stop on request (3 rule 1) sets a stop reason: then nothing more is spent.
