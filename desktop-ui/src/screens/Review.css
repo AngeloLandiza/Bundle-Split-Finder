@@ -183,44 +183,91 @@
   font-weight: 600;
 }
 
-/* The AI block: one group box, the answer in the label colour, the quotes and their sources under it. */
-.ai {
+/* The first-use line above the first AI suggestion: what it does, that it can be wrong. */
+.ai-intro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: var(--fill);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label);
+}
+
+.ai-intro span {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The AI's answer is the preselected choice; what it rests on sits directly under that choice. */
+.choice-ai,
+.ai-state {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
+  gap: 4px;
+  padding: 8px 12px 10px 34px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ai-state {
+  margin-bottom: 8px;
+  padding: 10px 12px;
   border-radius: var(--radius-lg);
   background: var(--group-bg);
   box-shadow: 0 0 0 0.5px var(--separator);
-  font-size: 13px;
-  line-height: 18px;
 }
 
-.ai-verified {
-  box-shadow:
-    0 0 0 0.5px var(--separator),
-    inset 0 0 0 1px color-mix(in srgb, var(--system-green) 35%, transparent);
+.choice-ai {
+  border-top: 1px dashed var(--separator);
+  background: var(--fill);
 }
 
-.ai-head {
+.choice-ai-verified {
+  background: var(--verified-bg);
+}
+
+.choice-ai-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
+  font-size: 12px;
 }
 
-.ai-answer {
-  font-size: 15px;
-  line-height: 20px;
+.choice-ai-why,
+.choice-ai-reason {
+  color: var(--label);
+}
+
+.choice-ai-answer {
   font-weight: 600;
 }
 
-.ai-claimed {
-  font-weight: 400;
-  color: var(--label-2);
+.ai-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.ai-cost {
+.ai-none {
+  margin: 0;
+}
+
+.review-saved {
+  padding: 5px var(--gutter);
+  border-top: 1px solid var(--separator);
+  background: var(--verified-bg);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.question-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   font-size: 11px;
   line-height: 14px;
   color: var(--label-2);
@@ -264,7 +311,7 @@
   line-height: 16px;
 }
 
-.choice + .choice {
+.choice-item + .choice-item {
   border-top: 1px solid var(--separator);
 }
 

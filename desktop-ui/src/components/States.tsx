@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { ApiError } from '../api/types';
 import { Button } from './Button';
 import { Glyph } from './Glyph';
+import type { StepMark as Mark } from '../lib/scanSteps';
 import './States.css';
 
 /** NSProgressIndicator, spinning style: eight spokes turning in steps. Decorative to a screen reader. */
@@ -15,6 +16,35 @@ export function Spinner({ size = 16, label }: { size?: number; label?: string })
   );
 }
 
+/**
+ * The mark before a scan step (docs/ux-checklist.md: every step has a label and a mark): a check when done, the spinner
+ * while it runs, a hollow dot while it waits, a dash when skipped, the warning when it failed. Colour is never the only
+ * signal: each is a different shape, and the word is in the title.
+ */
+export function StepMark({ mark, word }: { mark: Mark; word: string }) {
+  return (
+    <span className={`step-mark step-mark-${mark}`} role="img" aria-label={word} title={word}>
+      {mark === 'done' ? (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M2.5 6.4l2.2 2.2 4.8-5" />
+        </svg>
+      ) : mark === 'running' ? (
+        <Spinner size={12} />
+      ) : mark === 'failed' ? (
+        <Glyph name="warning" size={12} />
+      ) : mark === 'skipped' ? (
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M3 6h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <circle cx="6" cy="6" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.3" />
+        </svg>
+      )}
+    </span>
+  );
+}
+
 /** NSProgressIndicator, bar style: a determinate 4px bar in the accent. */
 export function ProgressBar({ value, label, valueText }: { value: number; label: string; valueText?: string }) {
   const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
@@ -23,6 +53,19 @@ export function ProgressBar({ value, label, valueText }: { value: number; label:
       {/* A measured width has no class. */}
       <span className="progress-fill" style={{ inlineSize: `${pct}%` }} />
     </span>
+  );
+}
+
+/**
+ * One thin line at the top of a list that fills while a scan runs: where the scan is, once, for the whole list
+ * (Microsoft: one loading indicator at the top, none per item). Results appear below it as they arrive.
+ */
+export function ScanStrip({ text }: { text: string }) {
+  return (
+    <p className="scan-strip" role="status" aria-live="polite">
+      <Spinner size={12} />
+      <span>{text}</span>
+    </p>
   );
 }
 

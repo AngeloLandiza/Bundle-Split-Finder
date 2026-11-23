@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { ReviewAnswer, ReviewQuestion } from '../api/types';
+import type { AiSuggestion, Quote as Quote_, ReviewAnswer, ReviewQuestion } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
 import { SearchField, TextField } from '../components/Fields';
@@ -8,14 +8,16 @@ import { InspectorSplit, Kbd } from '../components/Layout';
 import { Page } from '../components/Page';
 import type { RowMenu } from '../components/Table';
 import { Quote, SourceLink } from '../components/Source';
-import { ConfirmInline, EmptyState, LoadError, LoadingState, Notice } from '../components/States';
+import { ConfirmInline, EmptyState, LoadError, LoadingState, Notice, ScanStrip } from '../components/States';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { money, plural } from '../lib/format';
+import { scanStrip } from '../lib/scanSteps';
 import { copyText, openPage } from '../lib/actions';
+import { AI_INTRO, aiIntroDismissed, dismissAiIntro } from '../lib/aiIntro';
 import { isMenuKey, pressOf, reviewKey } from '../lib/keys';
 import { questionMenu, type QuestionMenuId } from '../lib/menus';
-import { KIND_LABEL, groupQuestions, parseTyped, preselected, typedFromSuggestion } from './reviewModel';
+import { KIND_LABEL, groupQuestions, parseTyped, preselected, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
 import './Review.css';
 
 const NONE = '__none';
@@ -55,11 +57,17 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
     const i = current ? ordered.indexOf(current) : -1;
     select(ordered[Math.max(0, Math.min(ordered.length - 1, i + step))]);
   };
-  const afterAnswer = () => {
+  // Saved: the next question opens with its choice focused, the list follows, and what was saved stays said until the next save.
+  const [saved, setSaved] = useState<string | null>(null);
+  const [focusChoice, setFocusChoice] = useState(false);
+  const afterSave = (said: string) => {
     const i = current ? ordered.indexOf(current) : -1;
     const next = ordered[i + 1] ?? ordered[i - 1];
+    setSaved(said);
+    setFocusChoice(true);
     if (next) navigate({ screen: 'review', id: next.id });
   };
+  const hasNext = current ? ordered.indexOf(current) < ordered.length - 1 : false;
 
   // The right-click menu of a question row (design.md, Context menus).
   const [menuError, setMenuError] = useState<string | null>(null);
@@ -93,11 +101,13 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
   const askable = all.filter((q) => q.askCostUsd !== null && q.suggestion === null);
   const askCost = askable.reduce((s, q) => s + (q.askCostUsd ?? 0), 0);
   const asking = state?.agent.status === 'asking';
+  const scanLine = state ? scanStrip(state.agent) : null;
 
   const sub = res.data ? (all.length ? `${plural(all.length, 'open question', 'open questions')} · answers apply at once` : 'No open questions') : undefined;
 
   const list = (
     <div className="review">
+      {scanLine ? <ScanStrip text={scanLine} /> : null}
       {askAll.error || approve.error || menuError || notice ? (
         <Notice tone={askAll.error || approve.error || menuError ? 'attention' : 'quiet'}>{askAll.error ?? approve.error ?? menuError ?? notice}</Notice>
       ) : null}
@@ -150,9 +160,14 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
           </section>
         ) : null}
       </div>
+      {saved ? (
+        <p className="review-saved" role="status">
+          Saved · {saved}
+        </p>
+      ) : null}
       {all.length > 0 ? (
         <p className="status-bar review-keys">
-          <Kbd>J</Kbd> <Kbd>K</Kbd> move · <Kbd>1</Kbd>–<Kbd>9</Kbd> choose · <Kbd>↩</Kbd> save · <Kbd>A</Kbd> ask AI
+          <Kbd>J</Kbd> <Kbd>K</Kbd> move · <Kbd>1</Kbd>–<Kbd>9</Kbd> choose · <Kbd>↩</Kbd> {saveHint({ hasAnswer: true, hasNext }).replace('↩ ', '')} · <Kbd>A</Kbd> ask AI
         </p>
       ) : null}
     </div>
@@ -165,8 +180,9 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
       inspector
       search={all.length ? <SearchField label="Search questions" placeholder="Bundle or model" value={query} onChange={setQuery} /> : null}
       actions={
-        askable.length >= 2 && state?.keys.anthropic ? (
-          <Button variant="toolbar" busy={askAll.busy || asking} busyLabel="Asking AI…" onClick={() => void askAll.run()} cost={`about ${money(Math.ceil(askCost))}`}>
+        // While the AI runs the toolbar's own status and Stop are the one indicator; this button is not shown a second time.
+        askable.length >= 2 && state?.keys.anthropic && !asking ? (
+          <Button variant="toolbar" busy={askAll.busy} busyLabel="Starting…" onClick={() => void askAll.run()} cost={`about ${money(Math.ceil(askCost))}`}>
             Ask AI about all {askable.length}
           </Button>
         ) : null
@@ -183,8 +199,10 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
               key={current.id}
               q={current}
               hasAi={Boolean(state?.keys.anthropic || state?.keys.openai)}
+              hasNext={hasNext}
+              focusChoice={focusChoice}
               onMove={move}
-              onDone={afterAnswer}
+              onSaved={afterSave}
               onEscape={() => setConfirming(null)}
               onOpenDeal={current.bundle.id ? () => navigate({ screen: 'deals', id: current.bundle.id }) : null}
             />
@@ -197,8 +215,13 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
 
 function QuestionList({ questions, current, onSelect, menuOf }: { questions: ReviewQuestion[]; current: ReviewQuestion | null; onSelect: (q: ReviewQuestion) => void; menuOf: (q: ReviewQuestion) => RowMenu }) {
   const ctx = useMenu();
+  const list = useRef<HTMLUListElement>(null);
+  // The list follows the open question, so moving on with the keyboard never leaves it out of sight.
+  useEffect(() => {
+    list.current?.querySelector<HTMLElement>('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
+  }, [current?.id]);
   return (
-    <ul className="qlist">
+    <ul className="qlist" ref={list}>
       {questions.map((q) => (
         <li key={q.id}>
           <button
@@ -219,7 +242,7 @@ function QuestionList({ questions, current, onSelect, menuOf }: { questions: Rev
                 {KIND_LABEL[q.kind]} · <span className="code">{q.subject}</span>
               </span>
             </span>
-            {q.suggestion?.status === 'verified' ? <Tag tone="verified">AI verified</Tag> : q.suggestion?.status === 'unverified' ? <Tag>AI unsure</Tag> : null}
+            {q.suggestion?.status === 'verified' ? <Tag tone="verified">AI verified</Tag> : q.suggestion?.status === 'unverified' || q.suggestion?.status === 'unmatched' ? <Tag tone="attention">Not verified</Tag> : q.suggestion?.status === 'cannot_tell' ? <Tag>AI unsure</Tag> : null}
           </button>
         </li>
       ))}
@@ -227,7 +250,26 @@ function QuestionList({ questions, current, onSelect, menuOf }: { questions: Rev
   );
 }
 
-function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: ReviewQuestion; hasAi: boolean; onMove: (step: number) => void; onDone: () => void; onEscape: () => void; onOpenDeal: (() => void) | null }) {
+function Question({
+  q,
+  hasAi,
+  hasNext,
+  focusChoice,
+  onMove,
+  onSaved,
+  onEscape,
+  onOpenDeal,
+}: {
+  q: ReviewQuestion;
+  hasAi: boolean;
+  hasNext: boolean;
+  /** Focus goes to the selected choice: he just saved the one before and the keyboard follows. */
+  focusChoice: boolean;
+  onMove: (step: number) => void;
+  onSaved: (said: string) => void;
+  onEscape: () => void;
+  onOpenDeal: (() => void) | null;
+}) {
   const pre = preselected(q);
   const typedStart = typedFromSuggestion(q);
   const [choice, setChoice] = useState<string | null>(pre ?? (typedStart ? TYPED : null));
@@ -241,25 +283,35 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
   const [seen, setSeen] = useState(q.seen);
   const changed = q.seen !== seen;
   const s = q.suggestion;
-  const aiAnswer = s?.status === 'verified' && ((pre !== null && choice === pre) || (typedStart !== '' && choice === TYPED && typed === typedStart));
+  const [intro, setIntro] = useState(() => !aiIntroDismissed());
+  // The saved answer is the AI's when it is the choice it named (or the parts it typed): its outcome is tracked either way.
+  const fromAi = s !== null && ((pre !== null && choice === pre) || (typedStart !== '' && choice === TYPED && typed === typedStart));
 
-  const answerOf = (): ReviewAnswer | null => {
+  const answerOf = (): { answer: ReviewAnswer; said: string } | null => {
     if (!choice) return null;
-    if (q.kind === 'ebay') return { ebay: choice === 'yes' ? 'yes' : 'no' };
-    if (choice === NONE) return { none: true };
+    if (q.kind === 'ebay') return { answer: { ebay: choice === 'yes' ? 'yes' : 'no' }, said: choice === 'yes' ? 'Yes' : 'No' };
+    if (choice === NONE) return { answer: { none: true }, said: 'None of these' };
     if (choice === TYPED) {
       const parts = parseTyped(typed);
-      return parts.length ? { parts } : null;
+      return parts.length ? { answer: { parts }, said: parts.join(' + ') } : null;
     }
-    return { choiceId: choice };
+    return { answer: { choiceId: choice }, said: q.choices.find((c) => c.id === choice)?.label ?? 'the answer' };
   };
   const submit = () => {
     const a = answerOf();
     if (!a || save.busy || changed) return;
-    void save.run(q.id, a, { fromSuggestion: aiAnswer, seen }).then((ok) => ok && onDone());
+    void save.run(q.id, a.answer, { fromSuggestion: fromAi, seen }).then((ok) => ok && onSaved(`${q.bundle.model}: ${a.said}`));
   };
 
   const optionIds = [...q.choices.map((c) => c.id), ...(q.allowNone ? [NONE] : []), ...(q.allowTyped ? [TYPED] : [])];
+
+  // After a save the next question opens with its selected choice focused, so Enter again saves it.
+  useEffect(() => {
+    if (!focusChoice) return;
+    const root = form.current;
+    (root?.querySelector<HTMLInputElement>('input:checked') ?? root?.querySelector<HTMLInputElement>('input'))?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -291,6 +343,8 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
+
+  const aiRow = (id: string) => (pre === id && s ? <SuggestionDetail s={s} id={`ai-${q.id}`} /> : null);
 
   return (
     <article className="question view-enter" aria-labelledby={`q-${q.id}`}>
@@ -329,37 +383,19 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
           </Notice>
         ) : null}
 
-        <section className="question-section">
-          <h3 className="question-section-title">Why it is asked</h3>
-          <p>{q.reason}</p>
-          {q.evidence.map((ev, i) => (
-            <Quote key={i} quote={ev} />
-          ))}
-        </section>
-
-        {s ? (
-          <section className={`ai${s.status === 'verified' ? ' ai-verified' : ' ai-unsure'}`} aria-label="AI suggestion">
-            <div className="ai-head">
-              <h3 className="question-section-title">{s.status === 'verified' ? 'AI suggestion' : s.status === 'unverified' ? 'AI suggestion, unverified' : 'AI could not tell'}</h3>
-              {s.status === 'verified' ? <Tag tone="verified">Verified</Tag> : null}
-            </div>
-            {s.status === 'cannot_tell' ? (
-              <p>
-                AI could not tell from the page. <span className="muted">{s.reason}</span>
-              </p>
-            ) : (
-              <>
-                <p className={`ai-answer${s.status === 'verified' ? '' : ' ai-claimed'}${q.kind === 'split' ? ' code' : ''}`}>{s.answer}</p>
-                {s.status === 'unverified' && s.reason ? <p className="muted">{s.reason} Choose yourself.</p> : null}
-              </>
-            )}
-            {s.quotes.slice(0, 3).map((qt, i) => (
-              <Quote key={i} quote={qt} />
-            ))}
-            <p className="ai-cost">
-              Cost <span className="fig">{money(s.costUsd)}</span>
-            </p>
-          </section>
+        {s && intro ? (
+          <p className="ai-intro" role="note">
+            <span>{AI_INTRO}</span>
+            <Button
+              size="sm"
+              onClick={() => {
+                dismissAiIntro();
+                setIntro(false);
+              }}
+            >
+              Got it
+            </Button>
+          </p>
         ) : null}
 
         <form
@@ -373,40 +409,48 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
         >
           <fieldset className="choices">
             <legend className="question-section-title">Your answer</legend>
+            {s && (s.status === 'unmatched' || s.status === 'cannot_tell') ? <SuggestionState s={s} /> : null}
             <div className="choice-box">
               {q.choices.map((c, i) => (
-                <label key={c.id} className={`choice${choice === c.id ? ' choice-on' : ''}`}>
-                  <input type="radio" name={`a-${q.id}`} value={c.id} checked={choice === c.id} onChange={() => setChoice(c.id)} />
-                  <span className="choice-text">
-                    <span className={c.models.length && !c.asin ? 'code choice-label' : 'choice-label'}>{c.label}</span>
-                    {c.asin ? (
-                      <span className="choice-sub">
-                        <span className="code">{c.asin}</span> {c.source ? <SourceLink source={c.source} /> : null}
-                      </span>
-                    ) : null}
-                  </span>
-                  {pre === c.id ? <Tag tone="verified">AI</Tag> : null}
-                  <Kbd>{i + 1}</Kbd>
-                </label>
+                <div key={c.id} className="choice-item">
+                  <label className={`choice${choice === c.id ? ' choice-on' : ''}`}>
+                    <input type="radio" name={`a-${q.id}`} value={c.id} checked={choice === c.id} onChange={() => setChoice(c.id)} aria-describedby={pre === c.id ? `ai-${q.id}` : undefined} />
+                    <span className="choice-text">
+                      <span className={c.models.length && !c.asin ? 'code choice-label' : 'choice-label'}>{c.label}</span>
+                      {c.asin ? (
+                        <span className="choice-sub">
+                          <span className="code">{c.asin}</span> {c.source ? <SourceLink source={c.source} /> : null}
+                        </span>
+                      ) : null}
+                    </span>
+                    <Kbd>{i + 1}</Kbd>
+                  </label>
+                  {aiRow(c.id)}
+                </div>
               ))}
               {q.allowNone ? (
-                <label className={`choice${choice === NONE ? ' choice-on' : ''}`}>
-                  <input type="radio" name={`a-${q.id}`} value={NONE} checked={choice === NONE} onChange={() => setChoice(NONE)} />
-                  <span className="choice-text">
-                    <span className="choice-label">None of these</span>
-                  </span>
-                  <Kbd>{q.choices.length + 1}</Kbd>
-                </label>
+                <div className="choice-item">
+                  <label className={`choice${choice === NONE ? ' choice-on' : ''}`}>
+                    <input type="radio" name={`a-${q.id}`} value={NONE} checked={choice === NONE} onChange={() => setChoice(NONE)} />
+                    <span className="choice-text">
+                      <span className="choice-label">None of these</span>
+                    </span>
+                    <Kbd>{q.choices.length + 1}</Kbd>
+                  </label>
+                </div>
               ) : null}
               {q.allowTyped ? (
-                <label className={`choice${choice === TYPED ? ' choice-on' : ''}`}>
-                  <input type="radio" name={`a-${q.id}`} value={TYPED} checked={choice === TYPED} onChange={() => setChoice(TYPED)} />
-                  <span className="choice-text">
-                    <span className="choice-label">Enter the parts</span>
-                    {typedStart ? <span className="choice-sub">Filled in from the AI suggestion</span> : null}
-                  </span>
-                  <Kbd>{q.choices.length + (q.allowNone ? 2 : 1)}</Kbd>
-                </label>
+                <div className="choice-item">
+                  <label className={`choice${choice === TYPED ? ' choice-on' : ''}`}>
+                    <input type="radio" name={`a-${q.id}`} value={TYPED} checked={choice === TYPED} onChange={() => setChoice(TYPED)} />
+                    <span className="choice-text">
+                      <span className="choice-label">Enter the parts</span>
+                      {typedStart ? <span className="choice-sub">Filled in from the AI suggestion</span> : null}
+                    </span>
+                    <Kbd>{q.choices.length + (q.allowNone ? 2 : 1)}</Kbd>
+                  </label>
+                  {typedStart && s ? <SuggestionDetail s={s} id={`ai-${q.id}`} /> : null}
+                </div>
               ) : null}
             </div>
             {q.allowTyped && choice === TYPED ? (
@@ -414,6 +458,14 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
             ) : null}
           </fieldset>
         </form>
+
+        <section className="question-section">
+          <h3 className="question-section-title">Why it is asked</h3>
+          <p>{q.reason}</p>
+          {q.evidence.map((ev, i) => (
+            <Quote key={i} quote={ev} />
+          ))}
+        </section>
       </div>
 
       <footer className="question-actions">
@@ -422,7 +474,14 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
             {save.error ?? ask.error}
           </span>
         ) : (
-          <span className="question-spacer" />
+          <span className="question-meta">
+            {s && s.costUsd > 0 ? (
+              <span className="question-cost">
+                AI cost <span className="fig">{money(s.costUsd)}</span>
+              </span>
+            ) : null}
+            {!answerOf() ? <span>{saveHint({ hasAnswer: false, hasNext })}</span> : null}
+          </span>
         )}
         {hasAi && q.kind !== 'ebay' && !s ? (
           <Button busy={ask.busy} busyLabel="Asking…" onClick={() => void ask.run(q.id)} cost={q.askCostUsd !== null ? `about ${money(q.askCostUsd)}` : undefined}>
@@ -430,9 +489,71 @@ function Question({ q, hasAi, onMove, onDone, onEscape, onOpenDeal }: { q: Revie
           </Button>
         ) : null}
         <Button type="submit" form={`form-${q.id}`} variant="primary" busy={save.busy} busyLabel="Saving…" disabled={!answerOf() || changed}>
-          {aiAnswer ? 'Approve' : 'Save answer'}
+          {hasNext ? 'Save and next' : 'Save answer'}
         </Button>
       </footer>
     </article>
+  );
+}
+
+/** How many quotes show before "Show more": the first lines are the ones the AI leaned on. */
+const QUOTES_SHOWN = 3;
+
+/** The AI's evidence: each quote with the labelled link to where it was found. */
+function Quotes({ quotes }: { quotes: Quote_[] }) {
+  const [all, setAll] = useState(false);
+  if (quotes.length === 0) return <p className="muted ai-none">The AI quoted no source text.</p>;
+  const shown = all ? quotes : quotes.slice(0, QUOTES_SHOWN);
+  return (
+    <div className="ai-quotes">
+      {shown.map((qt, i) => (
+        <Quote key={i} quote={qt} />
+      ))}
+      {quotes.length > QUOTES_SHOWN && !all ? <LinkButton onClick={() => setAll(true)}>Show {quotes.length - QUOTES_SHOWN} more</LinkButton> : null}
+    </div>
+  );
+}
+
+/**
+ * Directly under the choice the AI picked: that it is the AI's, whether the code could verify it and why in plain
+ * words, the AI's own reason, and the quotes with their sources (HAX G11; PAIR explainability). Verified and not
+ * verified look different without relying on colour: the chip says it.
+ */
+function SuggestionDetail({ s, id }: { s: AiSuggestion; id: string }) {
+  const chip = suggestionChip(s);
+  return (
+    <div className={`choice-ai${s.status === 'verified' ? ' choice-ai-verified' : ''}`} id={id}>
+      <p className="choice-ai-head">
+        <strong>Suggested by AI</strong>
+        {chip ? <Tag tone={chip.tone}>{chip.label}</Tag> : null}
+      </p>
+      {chip ? <p className="choice-ai-why">{chip.why}</p> : null}
+      {s.reason ? (
+        <p className="choice-ai-reason">
+          <span className="muted">AI’s reason: </span>
+          {s.reason}
+        </p>
+      ) : null}
+      <Quotes quotes={s.quotes} />
+    </div>
+  );
+}
+
+/** An AI answer that is none of the choices, or none at all: its own state with its reason; nothing is preselected. */
+function SuggestionState({ s }: { s: AiSuggestion }) {
+  const chip = suggestionChip(s);
+  const none = s.answer === 'None of these fits';
+  return (
+    <div className="ai-state">
+      <p className="choice-ai-head">
+        <strong>{s.status === 'cannot_tell' ? 'The AI could not tell' : none ? 'The AI says none of these fits' : 'The AI’s answer is not one of these'}</strong>
+        {chip ? <Tag tone={chip.tone}>{chip.label}</Tag> : null}
+      </p>
+      {s.status === 'unmatched' && !none ? <p className="choice-ai-answer code">{s.answer}</p> : null}
+      {chip ? <p className="choice-ai-why">{chip.why}</p> : null}
+      {s.reason ? <p className="choice-ai-reason">{s.reason}</p> : null}
+      <Quotes quotes={s.quotes} />
+      <p className="muted">Nothing is chosen for you. Pick an answer below, or enter the parts.</p>
+    </div>
   );
 }

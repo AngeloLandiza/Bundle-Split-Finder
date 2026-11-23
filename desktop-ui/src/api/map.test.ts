@@ -109,6 +109,13 @@ describe('a suggestion', () => {
     expect(got).toMatchObject({ status: 'unmatched', choiceId: null, answer: 'PCL1600K2 + A986501' });
     expect(got?.quotes[0]?.source).toEqual({ label: 'Home Depot part page', url: 'https://www.homedepot.com/p/320243671' });
   });
+  it('takes the parts a research answer typed in for the offered reading that holds exactly those parts, and for no other', () => {
+    const sig = '[["DCF891B","DCD708B"],["DCF921B","DCD708B"]]';
+    const typedAs = (parts: { model: string; qty: number }[]) => mapSuggestion(question(stored({ status: 'unverified', reasons: ['x'], claimed: null, researchClaim: { decision: 'parts', reason: 'r', parts } }, sig)), choices);
+    expect(typedAs([{ model: 'dcd708b', qty: 1 }, { model: 'DCF921B', qty: 1 }])).toMatchObject({ status: 'unverified', choiceId: 'choice:1' });
+    expect(typedAs([{ model: 'DCF921B', qty: 1 }])).toMatchObject({ status: 'unmatched', choiceId: null });
+    expect(typedAs([{ model: 'DCF921B', qty: 2 }, { model: 'DCD708B', qty: 1 }])).toMatchObject({ status: 'unmatched', choiceId: null });
+  });
   it('carries the agent’s plain words for why it is not verified', () => {
     const sig = '[["DCF891B","DCD708B"],["DCF921B","DCD708B"]]';
     const q = { ...question(stored({ status: 'unverified', reasons: ['x'], claimed: { decision: 'choose', choiceIndex: 0, evidence: [] } }, sig)), suggestionPlain: 'The page never names the saw.' } as C.ReviewQuestion;

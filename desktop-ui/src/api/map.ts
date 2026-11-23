@@ -526,6 +526,10 @@ export function mapSuggestion(q: C.ReviewQuestion, choices: Choice[]): AiSuggest
       const pick = index !== null ? choices[index] : asin ? choices.find((c) => c.asin === asin) : undefined;
       if (pick) return { ...base, status: 'unverified', choiceId: pick.id, answer: pick.label, reason, quotes: claimQ, notVerified: why };
       const typed = research?.decision === 'parts' ? (research.parts ?? []) : [];
+      // The parts it typed in may be exactly an offered reading (the same models, as many times each): that is the choice, compared exactly.
+      const asModels = typed.flatMap((p) => Array.from({ length: Math.max(1, p.qty) }, () => p.model.toUpperCase())).sort();
+      const same = typed.length ? choices.find((c) => c.models.length === asModels.length && [...c.models].map((m) => m.toUpperCase()).sort().every((m, i) => m === asModels[i])) : undefined;
+      if (same) return { ...base, status: 'unverified', choiceId: same.id, answer: same.label, reason, quotes: claimQ, notVerified: why };
       const answer = typed.length ? typed.map((p) => (p.qty > 1 ? `${p.model} ×${p.qty}` : p.model)).join(' + ') : 'None of these fits';
       return { ...base, status: 'unmatched', choiceId: null, answer, reason, quotes: claimQ, notVerified: why };
     }

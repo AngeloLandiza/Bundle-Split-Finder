@@ -21,16 +21,17 @@ describe('review model', () => {
   it('preselects a real unverified suggestion from the owner’s second scan, and shows it as not verified with the agent’s words', () => {
     const real = mapReview(realData.review as never).questions;
     const named = real.filter((q) => preselected(q) !== null);
-    expect(named.length).toBe(4);
+    expect(named.length).toBe(12);
     for (const q of named) {
       expect(q.suggestion?.status).toBe('unverified');
       expect(q.suggestion?.quotes.length).toBeGreaterThan(0);
       expect(q.suggestion?.quotes.every((x) => x.source.label.length > 0)).toBe(true);
       expect(suggestionChip(q.suggestion!)).toMatchObject({ label: 'Not verified', tone: 'attention' });
     }
-    // The rest typed in parts that are none of the choices: nothing is preselected for them.
+    // Eight of them typed in the parts of an offered reading, exactly (same models, same counts): that reading is the choice.
+    // The other three typed in parts that are none of the choices: nothing is preselected for them.
     const unmatched = real.filter((q) => q.suggestion?.status === 'unmatched');
-    expect(unmatched.length).toBe(11);
+    expect(unmatched.length).toBe(3);
     expect(unmatched.every((q) => preselected(q) === null)).toBe(true);
   });
   it('words the chip: verified says the quoted text says so; not verified says why', () => {

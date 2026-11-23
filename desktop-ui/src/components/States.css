@@ -154,3 +154,46 @@
   flex-wrap: wrap;
   font-size: 12px;
 }
+
+/* The mark before a scan step: 12px, in the secondary label colour; the failed one in the attention colour. */
+.step-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--label-2);
+}
+
+.step-mark-running {
+  color: var(--accent);
+}
+
+.step-mark-failed {
+  color: var(--attention);
+}
+
+.step-mark-waiting {
+  color: var(--label-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-mark .spinner {
+    animation: none;
+  }
+}
+
+/* The line above a list while a scan runs. */
+.scan-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  padding: 3px var(--gutter);
+  border-bottom: 1px solid var(--separator);
+  background: var(--accent-soft);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label);
+}
