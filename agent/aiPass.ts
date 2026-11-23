@@ -49,6 +49,12 @@ export interface AiPassDeps {
   now: () => number;
   /** Only these questions (Ask AI on one); default every open one. */
   only?: string[];
+  /**
+   * Step 16, lever 2 (off unless the owner's setting turns it on): open split questions to ask again although a
+   * suggestion is on screen, because what that ask lacked exists now (agent/reverify.ts reaskDue). Each is asked once
+   * for its evidence key, after the questions with no suggestion, under the same monthly cap.
+   */
+  reask?: ReadonlyMap<string, { of: string; evidenceKey: string }>;
 }
 
 export interface AiPassResult {
@@ -71,7 +77,8 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
   const out: AiPassResult = { asked: 0, suggested: 0, verified: 0, costUsd: 0, waitingForChrome: 0, problem: null };
   if (deps.capUsd <= 0) return { ...out, problem: 'The AI is off: its monthly limit is $0.' };
   const open = (await deps.store.listReview()).filter((q) => q.answer === null && (!deps.only || deps.only.includes(q.id))).sort((a, b) => a.openedAt - b.openedAt);
-  const queue = askQueueOf(open, deps.suggestions());
+  const first = askQueueOf(open, deps.suggestions());
+  const queue = [...first, ...open.filter((q) => q.kind === 'split' && deps.reask?.has(q.id) && !first.includes(q))];
   let spent = deps.spentUsd;
   let failures = 0;
   let briefProblem: string | null = null;
@@ -106,6 +113,8 @@ export async function runAiPass(deps: AiPassDeps): Promise<AiPassResult> {
     } catch {
       continue;
     }
+    const again = first.includes(item) ? undefined : deps.reask?.get(item.id);
+    if (again) record = { ...record, reaskOf: again.of, evidenceKey: again.evidenceKey };
     if (deps.signal.aborted && record.suggestion.status === 'not_suggested') break;
     const s = record.suggestion;
     const cost = record.costUsd ?? 0;
@@ -160,8 +169,11 @@ export function askOneWith(deps: {
     const catalog = (await deps.store.listCatalog()).map((c): CatalogEntry => ({ brand: c.brand, model: c.model, title: c.title, kind: c.isKit ? 'kit' : 'part' }));
     const result = await researchQuestion(item, evidence, deps.tools(), deps.research, { signal, catalog });
     const { research: trace, ...suggestion } = result;
-    // What is kept of the trace is each source's name and link, as the extension keeps it: not the pages' text.
-    const slim = { ...suggestion, research: { ...trace, ledger: trace.ledger.map((e) => ({ id: e.id, kind: e.kind, label: e.label, url: e.url, lines: [], products: [], isBundle: e.isBundle })) } };
+    // What is kept of the trace is each source's name and link, as the extension keeps it: not the pages' text. Step 16:
+    // an answer not verified keeps its ledger whole, so it can be checked again when new evidence arrives
+    // (agent/reverify.ts) with no new model call; the pages' text is the owner's own data, kept in his store.
+    const whole = suggestion.status === 'unverified' || suggestion.status === 'cannot_tell';
+    const slim = whole ? { ...suggestion, research: trace } : { ...suggestion, research: { ...trace, ledger: trace.ledger.map((e) => ({ id: e.id, kind: e.kind, label: e.label, url: e.url, lines: [], products: [], isBundle: e.isBundle })) } };
     const rates = PRICE_TABLE[deps.research.model];
     const askedAt = deps.now();
     return {

@@ -254,6 +254,7 @@ function applySettingsPatch(cur: StoreData['settings'], patch: Record<string, un
       if (typeof a.monthlyCapUsd !== 'number' || !Number.isFinite(a.monthlyCapUsd) || a.monthlyCapUsd < 0) throw new HttpError('bad_request', 'ai.monthlyCapUsd must be a number of 0 or more.');
       next.ai.monthlyCapUsd = a.monthlyCapUsd;
     }
+    if ('reaskOnNewEvidence' in a) next.ai.reaskOnNewEvidence = flag(a.reaskOnNewEvidence, 'ai.reaskOnNewEvidence');
   }
   if ('appearance' in patch) {
     const a = obj(patch.appearance, 'appearance');

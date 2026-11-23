@@ -33,6 +33,7 @@ import { bogoTagOf, type BogoGroup } from '../core/src/tracking/bogoPairs';
 import { DEFAULT_MIN_MONTHLY_SOLD } from '../core/src/settings';
 import { estimatedQuestionCost } from '../core/src/assist/cost';
 import { liveSuggestion, type StoredSuggestion } from '../core/src/assist/stored';
+import { waitingSentence } from './reverify';
 import type { PipelineView } from '../core/src/scan/pipeline';
 import { staleBundleDays } from '../core/src/deals/freshness';
 import { limitCopy } from '../core/src/deals/limitCopy';
@@ -413,6 +414,8 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
     const shown = live ?? latestSuggestion(data.suggestions, q.id);
     // Step 15, rule 5: a suggestion the code did not verify says why in one plain sentence; the reasons stay for Activity.
     const plain = shown && shown.suggestion.status === 'unverified' ? plainVerification(shown.suggestion.reasons, q.kind) : null;
+    // Step 16: an unverified answer waiting for Home Depot's page of a model it names (agent/reverify.ts).
+    const waiting = live && live.suggestion.status === 'unverified' ? waitingSentence(live.waitingFor) : null;
     questions.push({
       id: q.id,
       kind: q.kind,
@@ -432,6 +435,7 @@ export function reviewResponse(data: Pick<StoreData, 'review' | 'suggestions' | 
       suggestionQuotes: quotesOf(live),
       ...(plain !== null ? { suggestionPlain: plain } : {}),
       brief: briefForQuestion(q, live, data.review.evidence?.[q.id] ?? [], sources),
+      ...(waiting !== null ? { waitingFor: waiting } : {}),
     });
   }
   for (const e of data.review.ebayQuestions) {

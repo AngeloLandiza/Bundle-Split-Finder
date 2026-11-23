@@ -54,6 +54,7 @@ import { runAiPass, askOneWith, type AiPassResult } from './aiPass';
 import { backfillBriefs, type BriefCtx, briefAfterKeep } from './brief';
 import { catalogSentence } from '../core/src/scan/catalogCheck';
 import { checksWaiting, verifyMatchesWithKeepa } from './verifyMatches';
+import { reaskDue, reverifyPass, wantedReads, withEvidenceKey } from './reverify';
 import { buildDigest, sendPending } from './alerts';
 import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
@@ -417,7 +418,7 @@ export class AgentWork {
     prices += await this.dripKitPages();
     if (prices > 0) {
       const settled = await settleWaitingSplits(this.scanStore, this.d.now());
-      prices += settled.resolved + settled.opened;
+      prices += settled.resolved + settled.opened + (await this.recheck());
     }
     const { work, steps } = await plannedWork(this.scanStore, settings, this.d.now(), pairs);
     this.dripWaiting = work.lookups.length;
@@ -515,6 +516,7 @@ export class AgentWork {
     try {
       const out = await readPartPricesFor({
         store: this.scanStore, settings, readPartPrices: readers.readPartPrices, now: this.d.now, maxMs: PART_PRICE_MS, waiting: true,
+        extra: await wantedReads(this.scanStore, this.d.store.get('suggestions')),
         shouldStop: () => signal.aborted || !this.dripAllowed(),
       });
       return out.saved;
@@ -861,8 +863,10 @@ export class AgentWork {
     const scan = this.d.runScan ?? runScan;
     // BOGO pairs are looked up after every other bundle, a few per group a scan (core's pairLookupOrder).
     const bogoPairs = Object.fromEntries(Object.values(store.get('tracking').bogoPairs ?? {}).map((p) => [p.key, `${p.promotionId}:${p.starterItemId}`]));
+    // Step 16: the models unverified AI answers wait for are read with the part prices (free).
+    const partPricesExtra = connected ? await wantedReads(this.scanStore, store.get('suggestions')) : [];
     return scan({
-      bogoPairs,
+      bogoPairs, partPricesExtra,
       // Nov 23: a bundle whose own page is not read waits for it (waiting_page); it is never a question before then.
       waitForPages: true,
       client, budget, store: this.watched(this.scanStore), settings: scanSettings, now: this.d.now, labelPrefix: 'agent',
@@ -1113,13 +1117,17 @@ export class AgentWork {
     const app = store.get('settings');
     const pipelines = pipelinesFrom(app.ai, { resolveKey: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn });
     const readers = remoteReaders({ jobs: this.d.jobs, timeouts: this.d.readerTimeouts, signal: () => this.stopCtl.signal });
-    const askOne = askOneWith({
+    // Step 16: what the scan stored since is checked against the unverified answers first (no AI call), and each
+    // research ask is stamped with the evidence it rests on, so lever 2 asks again only on new evidence.
+    await this.recheck();
+    const askOne = withEvidenceKey(askOneWith({
       store: this.scanStore,
       assist: pipelines.assist.ok ? pipelines.assist.value : null,
       research: pipelines.research.ok ? pipelines.research.value : null,
       tools: () => readers.researchTools(this.scanStore),
       now: this.d.now,
-    });
+    }), this.scanStore);
+    const reask = app.ai.reaskOnNewEvidence === true && !only ? await reaskDue(this.scanStore, store.get('suggestions')) : undefined;
     const model = (p: typeof pipelines.assist | typeof pipelines.research) => (p.ok ? { ok: true as const, model: p.value.model } : { ok: false as const, error: p.error });
     return runAiPass({
       store: this.scanStore,
@@ -1134,12 +1142,28 @@ export class AgentWork {
       signal: this.stopCtl.signal,
       now: this.d.now,
       ...(only ? { only } : {}),
+      ...(reask && reask.size > 0 ? { reask } : {}),
     });
   }
 
   /** Step 16: what the plain brief above a Review question is written with (agent/brief.ts). */
   private briefCtx(): BriefCtx {
     return { store: this.d.store, scanStore: this.scanStore, keyFor: (ref) => this.keyFor(ref), fetchFn: this.d.fetchFn, now: this.d.now, signal: this.stopCtl.signal };
+  }
+
+  /** Step 16: unverified AI answers checked again with what the scan stored since (agent/reverify.ts). No AI call. Returns how many verified. */
+  private async recheck(): Promise<number> {
+    const { store } = this.d;
+    try {
+      const r = await reverifyPass({
+        store: this.scanStore, suggestions: () => store.get('suggestions'), now: this.d.now,
+        replace: (rec) => store.update('suggestions', (all) => all.map((x) => (x.key === rec.key ? rec : x))),
+      });
+      return r.verified.length;
+    } catch {
+      // A check that could not run changes nothing; the next run checks again.
+      return 0;
+    }
   }
 
   /** Applies every verified suggestion Autopilot's rules allow (autopilot.ts). Returns how many. */
