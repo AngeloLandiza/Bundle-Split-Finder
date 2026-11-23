@@ -24,3 +24,14 @@ fulfillment; 26 bundles sit in "Losing money", many at -100% because a part with
 Read again with the rule that followed ("An estimate exists only when every part the owner must sell has a counted price",
 docs/decisions.md): 13 complete estimates (3 above zero) and 39 bundles missing a price, each with its break-even.
 `npx tsx scripts/audit-estimates.ts` prints them; `?mock=real` in the desktop UI shows them.
+
+## after-scan5/ (same day, the first scan that reads Home Depot's lists in Chrome, sets included)
+19 minutes. Lists read free in Chrome: 191 bundles new to the app (258 in all; 147 are Home Depot sets, `/p/sets/…`).
+17 searches and 29 Keepa tokens went on Amazon lookups (Keepa was at 7 tokens, so lookups fell back to searches, below
+the owner's reserve of 100: 97 left before, 80 after; the app still shows 97). AI $0.45. What it shows next:
+- Home Depot refused pages after 22 list pages and 25 bundle pages in one run ("Error Page"); the part-price step was
+  skipped and 139 sets wait for their item pages. 8 sets got through end to end (2 with estimates).
+- Three RYOBI $99 deals read "Looks worth buying" (+$43.19, +$38.79, +$26.47) but are blocked: the catalog check
+  holds a listing whose brand is RYOBI when its manufacturer field is "TTI" or "RYOBI Tools" (PBP004, PCG002, PCL031B).
+- 14 open questions (13 "what is inside", 1 listing), most from bundles this scan found for the first time.
+- The scan showed "Finishing up, less than a minute left" for about ten minutes (eBay, listing check, review cards).

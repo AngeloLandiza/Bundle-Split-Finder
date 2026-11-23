@@ -1,0 +1,3329 @@
+{
+  "at": "2026-11-23T23:25:17.835Z",
+  "questions": [
+    {
+      "id": "split:homedepot:320243671",
+      "kind": "split",
+      "subject": "homedepot:320243671",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-A986501",
+      "title": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and 65-Piece Drill and Impact Drive Kit",
+      "reason": "hyphen split, but a part is not in the catalog; page names no models; Home Depot's search found no A986501 sold by itself",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1600K2",
+          "A986501"
+        ]
+      ],
+      "openedAt": 1795431540590,
+      "answer": null,
+      "answeredAt": null,
+      "settledParts": [
+        {
+          "model": "PCL1600K2",
+          "what": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      ],
+      "unsettledParts": [
+        {
+          "model": "A986501",
+          "why": "not_sold"
+        }
+      ]
+    },
+    {
+      "id": "split:homedepot:334547201",
+      "kind": "split",
+      "subject": "homedepot:334547201",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-A10FB1G",
+      "title": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, Charger, and 11 in. Flexible Shaft Bit Holder",
+      "reason": "hyphen split, but a part is not in the catalog; page names no models; Home Depot's search found no A10FB1G sold by itself",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1600K2",
+          "A10FB1G"
+        ]
+      ],
+      "openedAt": 1795431540590,
+      "answer": null,
+      "answeredAt": null,
+      "settledParts": [
+        {
+          "model": "PCL1600K2",
+          "what": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      ],
+      "unsettledParts": [
+        {
+          "model": "A10FB1G",
+          "why": "not_sold"
+        }
+      ]
+    },
+    {
+      "id": "match:RYOBI:PBP2003",
+      "kind": "match",
+      "subject": "RYOBI:PBP2003",
+      "brand": "RYOBI",
+      "model": "PBP2003",
+      "title": null,
+      "reason": "title says a pack of 2, and a RYOBI model number does not say the part's pack size",
+      "candidates": [
+        {
+          "asin": "B0BG5SPWVL",
+          "title": "RYOBI ONEAND 18V HIGH Performance Lithium-ION 2.0 AH Compact Battery 2-Pack PBP2003",
+          "price": null,
+          "reviews": null,
+          "reasons": [
+            "title says a pack of 2, and a RYOBI model number does not say the part's pack size",
+            "brand and model number in the title; barcode not checked yet"
+          ],
+          "seenAt": 1795442265821
+        }
+      ],
+      "choices": [],
+      "openedAt": 1795442265864,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:335724135",
+      "kind": "split",
+      "subject": "homedepot:335724135",
+      "brand": "RYOBI",
+      "model": "PCL406424SB-A21701-A25RS51",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Compact Fixed Base Router & 5 in. Random Orbit Sander (Tools Only) w/ Accessories",
+      "reason": "hyphen split, but a part is not in the catalog; Home Depot sells PCL406424SB as a special buy, itself a bundle, so the parts it holds are asked; Home Depot's search found no A25RS51 sold by itself",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL406424SB",
+          "A21701",
+          "A25RS51"
+        ]
+      ],
+      "openedAt": 1795449946915,
+      "answer": null,
+      "answeredAt": null,
+      "settledParts": [
+        {
+          "model": "A21701",
+          "what": "7-Piece 5 in. Random Orbit Sand Paper Assortment Set - 80, 120, and 220 Grit",
+          "url": "https://www.homedepot.com/p/316546864"
+        }
+      ],
+      "unsettledParts": [
+        {
+          "model": "PCL406424SB",
+          "why": "special_buy",
+          "what": "ONE+ 18V Cordless 2-Tool Combo Kit with Compact Fixed Base Router and 5 in. Random Orbit Sander (Tools Only)",
+          "url": "https://www.homedepot.com/p/328690521"
+        },
+        {
+          "model": "A25RS51",
+          "why": "not_sold"
+        }
+      ]
+    },
+    {
+      "id": "split:homedepot:332343419",
+      "kind": "split",
+      "subject": "homedepot:332343419",
+      "brand": "DEWALT",
+      "model": "DCF860BWCB2460C",
+      "title": "20V MAX XR Lithium-Ion Cordless Impact Driver with 6.0 Ah and 4.0 Ah Starter Kit",
+      "reason": "no known DEWALT bundle pattern; page names DCB2460C, DCF860B, which do not fit the model number",
+      "candidates": [],
+      "choices": [],
+      "openedAt": 1795462282742,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:324811429",
+      "kind": "split",
+      "subject": "homedepot:324811429",
+      "brand": "DEWALT",
+      "model": "DCK225D2WCS380B",
+      "title": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) and Reciprocating Saw with (2) 2Ah Batteries, Charger and Bag",
+      "reason": "model number says DCK225D2, DCS380B; page names DCD708B, DCF809B, which do not fit the model number",
+      "candidates": [],
+      "choices": [
+        [
+          "DCK225D2",
+          "DCS380B"
+        ]
+      ],
+      "openedAt": 1795475483257,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:324811431",
+      "kind": "split",
+      "subject": "homedepot:324811431",
+      "brand": "DEWALT",
+      "model": "DCK225D2WCS391B",
+      "title": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) and 6.5 in. Circ Saw with (2) 2Ah Batteries, Charger and Bag",
+      "reason": "model number says DCK225D2, DCS391B; page names DCD708B, DCF809B, which do not fit the model number",
+      "candidates": [],
+      "choices": [
+        [
+          "DCK225D2",
+          "DCS391B"
+        ]
+      ],
+      "openedAt": 1795475483257,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:324811433",
+      "kind": "split",
+      "subject": "homedepot:324811433",
+      "brand": "DEWALT",
+      "model": "DCK225D2WCS356B",
+      "title": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) and Oscillating Tool with (2) 2Ah Batteries, Charger and Bag",
+      "reason": "model number says DCK225D2, DCS356B; page names DCD708B, DCF809B, which do not fit the model number",
+      "candidates": [],
+      "choices": [
+        [
+          "DCK225D2",
+          "DCS356B"
+        ]
+      ],
+      "openedAt": 1795475483257,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:324811434",
+      "kind": "split",
+      "subject": "homedepot:324811434",
+      "brand": "DEWALT",
+      "model": "DCK225D2WCS354B",
+      "title": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) and ATOMIC Oscillating Tool with (2) 2Ah Batteries & Charger",
+      "reason": "'CS354B' matches nothing in the catalog; page names DCD708B, DCF809B, which do not fit the model number",
+      "candidates": [],
+      "choices": [],
+      "openedAt": 1795475483257,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:325746670",
+      "kind": "split",
+      "subject": "homedepot:325746670",
+      "brand": "DEWALT",
+      "model": "DCKTS681D1P1W82",
+      "title": "20-Volt Maximum TOUGHSYSTEM Lithium-Ion 6-Tool Cordless Combo Kit and 20V Max XR Brushless Reciprocating Saw (Tool Only)",
+      "reason": "'82' matches nothing in the catalog; page names no models",
+      "candidates": [],
+      "choices": [],
+      "openedAt": 1795475483257,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:325746672",
+      "kind": "split",
+      "subject": "homedepot:325746672",
+      "brand": "DEWALT",
+      "model": "DCKTS681D1P1W21",
+      "title": "20-Volt Max TOUGHSYSTEM Lithium-Ion 6-Tool Cordless Combo Kit & Atomic 20V Max Cordless Brushless 1/2 in. Impact Wrench",
+      "reason": "'21' matches nothing in the catalog; page names DCD999, DCF887, DCL040, DCS386, DCS573, which do not fit the model number",
+      "candidates": [],
+      "choices": [],
+      "openedAt": 1795475483257,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:328690517",
+      "kind": "split",
+      "subject": "homedepot:328690517",
+      "brand": "RYOBI",
+      "model": "PCL406416SB",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with Random Orbit Sander and Corner Cat Finish Sander (Tools Only)",
+      "reason": "no known RYOBI bundle pattern; page names no models",
+      "candidates": [],
+      "choices": [],
+      "openedAt": 1795475483257,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:328690521",
+      "kind": "split",
+      "subject": "homedepot:328690521",
+      "brand": "RYOBI",
+      "model": "PCL406424SB",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with Compact Fixed Base Router and 5 in. Random Orbit Sander (Tools Only)",
+      "reason": "no known RYOBI bundle pattern; page names no models",
+      "candidates": [],
+      "choices": [],
+      "openedAt": 1795475483257,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:334594505",
+      "kind": "split",
+      "subject": "homedepot:334594505",
+      "brand": "RYOBI",
+      "model": "PSBCK102K2-A98401",
+      "title": "ONE+ HP 18V Brushless Cordless Compact 2-Tool Combo Kit w/(2) Batteries, Charger, Bag & Drill & Impact Drive Kit (40PC)",
+      "reason": "hyphen split, but a part is not in the catalog; page names PSBDD02, which none of the parts explains",
+      "candidates": [],
+      "choices": [
+        [
+          "PSBCK102K2",
+          "A98401"
+        ]
+      ],
+      "openedAt": 1795475483257,
+      "answer": null,
+      "answeredAt": null
+    }
+  ],
+  "ebayQuestions": [
+    {
+      "id": "DEWALT:DCW600B|v1|206687991762|0",
+      "key": "DEWALT:DCW600B",
+      "brand": "DEWALT",
+      "model": "DCW600B",
+      "itemId": "v1|206687991762|0",
+      "title": "DEWALT XR 20V Cordless Compact Router, Li-Ion, Yellow DCW600B",
+      "url": "https://www.ebay.com/itm/206687991762",
+      "price": 125,
+      "soldQuantity": 3,
+      "reasons": [
+        "Listing names the model DCW600B as New, one unit, with fixed base, wrench and manual; the included list is consistent with a bare tool but it names DCW600 rather than DCW600B, so the contents cannot be settled as the product's."
+      ],
+      "openedAt": 1795462438805
+    },
+    {
+      "id": "DEWALT:DCW600B|v1|257856974506|0",
+      "key": "DEWALT:DCW600B",
+      "brand": "DEWALT",
+      "model": "DCW600B",
+      "itemId": "v1|257856974506|0",
+      "title": "DCW600B 20V MAX XR Brushless Cordless Compact Router (Tool Only) New",
+      "url": "https://www.ebay.com/itm/257856974506",
+      "price": 120,
+      "soldQuantity": 2,
+      "reasons": [
+        "Title names the model number DCW600B as tool only, New, with no battery included; no added items or missing pieces are stated, and the product's contents are not named, so the listing cannot be fully confirmed."
+      ],
+      "openedAt": 1795462438805
+    },
+    {
+      "id": "DEWALT:DCF921B|v1|137862543081|0",
+      "key": "DEWALT:DCF921B",
+      "brand": "DEWALT",
+      "model": "DCF921B",
+      "itemId": "v1|137862543081|0",
+      "title": "DEWALT DCF921B 20V MAX Brushless 1/2\" Cordless Impact Wrench Tool Only",
+      "url": "https://www.ebay.com/itm/137862543081",
+      "price": 94,
+      "soldQuantity": 14,
+      "reasons": [
+        "Title and description name DCF921B and say tool only, but the MPN and Model fields give DCF911B, a different model number, so the listing contradicts itself."
+      ],
+      "openedAt": 1795462475465
+    },
+    {
+      "id": "DEWALT:DCF921B|v1|227617096880|0",
+      "key": "DEWALT:DCF921B",
+      "brand": "DEWALT",
+      "model": "DCF921B",
+      "itemId": "v1|227617096880|0",
+      "title": "DEWALT DCF921B 20V MAX 1/2 Brushless Cordless Impact Wrench Tool Only New",
+      "url": "https://www.ebay.com/itm/227617096880",
+      "price": 78.99,
+      "soldQuantity": 4,
+      "reasons": [
+        "Title names DCF921B and Tool Only, but the description cites model DCF921, torque in N·m, and 'Customized Yes', which are signs of a clone or a different listing."
+      ],
+      "openedAt": 1795462475465
+    },
+    {
+      "id": "DEWALT:DCF921B|v1|306552991202|0",
+      "key": "DEWALT:DCF921B",
+      "brand": "DEWALT",
+      "model": "DCF921B",
+      "itemId": "v1|306552991202|0",
+      "title": "DeWALT 20V 1/2\" Compact Impact Wrench Brushless Atomic Hog Ring 20 Volt DCF921B",
+      "url": "https://www.ebay.com/itm/306552991202",
+      "price": 137.99,
+      "soldQuantity": 78,
+      "reasons": [
+        "Listing names DCF921B and sells the bare tool only, New, one unit, which is the product with no battery or charger.",
+        "The quote \"New\" is not found in the listing."
+      ],
+      "openedAt": 1795462475465
+    },
+    {
+      "id": "DEWALT:DCF921B|v1|356061995376|0",
+      "key": "DEWALT:DCF921B",
+      "brand": "DEWALT",
+      "model": "DCF921B",
+      "itemId": "v1|356061995376|0",
+      "title": "New! GENUINE DeWALT (DCF921B) ATOMIC 20V 1/2\" Impact Wrench w/Hog Ring SEALED",
+      "url": "https://www.ebay.com/itm/356061995376",
+      "price": 129.72,
+      "soldQuantity": 256,
+      "reasons": [
+        "The listing names the model number and says New, but no quoted text states what is included, such as whether a battery or charger is sold with the tool."
+      ],
+      "openedAt": 1795462475465
+    },
+    {
+      "id": "DEWALT:DCF921B|v1|407352842496|0",
+      "key": "DEWALT:DCF921B",
+      "brand": "DEWALT",
+      "model": "DCF921B",
+      "itemId": "v1|407352842496|0",
+      "title": "DEWALT DCF921B 20V MAX Brushless 1/2\" Cordless Impact Wrench Tool Only",
+      "url": "https://www.ebay.com/itm/407352842496",
+      "price": 92.39,
+      "soldQuantity": 1,
+      "reasons": [
+        "Title and description name DCF921B as a tool-only impact wrench, but the item specifics list MPN and Model as DCF911B, and the torque specs conflict."
+      ],
+      "openedAt": 1795462475465
+    },
+    {
+      "id": "DEWALT:DCF921B|v1|920101779170|0",
+      "key": "DEWALT:DCF921B",
+      "brand": "DEWALT",
+      "model": "DCF921B",
+      "itemId": "v1|920101779170|0",
+      "title": "DEWALT DCF921B 20V MAX Brushless 1/2\" Cordless Impact Wrench Tool Only",
+      "url": "https://www.ebay.com/itm/920101779170",
+      "price": 79,
+      "soldQuantity": 6,
+      "reasons": [
+        "Title says Tool Only with model DCF921B, but item specifics list model DCF911B and one battery, and the origin is China, so the listing contradicts itself."
+      ],
+      "openedAt": 1795462475465
+    },
+    {
+      "id": "DEWALT:DCS334B|v1|327419658638|0",
+      "key": "DEWALT:DCS334B",
+      "brand": "DEWALT",
+      "model": "DCS334B",
+      "itemId": "v1|327419658638|0",
+      "title": "Dewalt XR DCS334B 20v MAX Cordless Brushless Jig Saw Bare Tool - Brand New",
+      "url": "https://www.ebay.com/itm/327419658638",
+      "price": 110,
+      "soldQuantity": 2,
+      "reasons": [
+        "Listing names the model and sells the bare tool New, but a US-brand DEWALT tool listed with Country of Origin China is a copy warning, so it is unsure."
+      ],
+      "openedAt": 1795462499907
+    },
+    {
+      "id": "DEWALT:DCS382B|v1|115320510364|0",
+      "key": "DEWALT:DCS382B",
+      "brand": "DEWALT",
+      "model": "DCS382B",
+      "itemId": "v1|115320510364|0",
+      "title": "New Dewalt DCS382B 20V 20 Volt Max XR Brushless Variable Speed Reciprocating Saw",
+      "url": "https://www.ebay.com/itm/115320510364",
+      "price": 112.39,
+      "soldQuantity": 435,
+      "reasons": [
+        "Listing sells the DCS382B bare reciprocating saw, New, one unit, with the battery and charger not included; but it lists the blade clamp and manual only loosely and the model is a bare tool with no name given, so contents are stated as tool-only without an explicit blade list.",
+        "The judge does not say the listing holds exactly what the product includes."
+      ],
+      "openedAt": 1795462533253
+    },
+    {
+      "id": "DEWALT:DCS382B|v1|198769532312|0",
+      "key": "DEWALT:DCS382B",
+      "brand": "DEWALT",
+      "model": "DCS382B",
+      "itemId": "v1|198769532312|0",
+      "title": "DeWalt DCS382B 20V MAX Brushless Cordless Reciprocating Saw Tool Only 5 Blades",
+      "url": "https://www.ebay.com/itm/198769532312",
+      "price": 119.99,
+      "soldQuantity": 1,
+      "reasons": [
+        "Listing states tool only with 5 blades, but says it came from a multi-tool kit and gives unclear specs, so the contents cannot be confirmed as the bare product."
+      ],
+      "openedAt": 1795462533253
+    },
+    {
+      "id": "DEWALT:DCS382B|v1|800904413768|0",
+      "key": "DEWALT:DCS382B",
+      "brand": "DEWALT",
+      "model": "DCS382B",
+      "itemId": "v1|800904413768|0",
+      "title": "DeWalt DCS382B 20V MAX Brushless Cordless Reciprocating Saw, Tool Only",
+      "url": "https://www.ebay.com/itm/800904413768",
+      "price": 119.55,
+      "soldQuantity": 3,
+      "reasons": [
+        "Listing says Tool Only and New with the model number, but a US-brand tool listed with Country of Origin China is a copy sign, so the answer is unsure."
+      ],
+      "openedAt": 1795462533253
+    },
+    {
+      "id": "DEWALT:DCF860B|v1|128205485420|0",
+      "key": "DEWALT:DCF860B",
+      "brand": "DEWALT",
+      "model": "DCF860B",
+      "itemId": "v1|128205485420|0",
+      "title": "DEWALT DCF860B 20V MAX XR 1/4in High Torque Impact Driver Bare Tool",
+      "url": "https://www.ebay.com/itm/128205485420",
+      "price": 87.97,
+      "soldQuantity": 1,
+      "reasons": [
+        "Title names the model and says Bare Tool with no battery, which fits the model alone; but the description uses N·m torque units and the 'Battery' wording, which is a possible clone sign."
+      ],
+      "openedAt": 1795462562247
+    },
+    {
+      "id": "DEWALT:DCF860B|v1|278075366197|0",
+      "key": "DEWALT:DCF860B",
+      "brand": "DEWALT",
+      "model": "DCF860B",
+      "itemId": "v1|278075366197|0",
+      "title": "DEWALT DCF860B 20V MAX XR 3-Speed Brushless High Torque Impact Driver Tool Only",
+      "url": "https://www.ebay.com/itm/278075366197",
+      "price": 129.94,
+      "soldQuantity": 91,
+      "reasons": [
+        "Listing names the model DCF860B as a tool-only bare impact driver, New, one unit, with no battery or charger, matching the bare tool product.",
+        "The quote \"New\" is not found in the listing."
+      ],
+      "openedAt": 1795462562247
+    },
+    {
+      "id": "DEWALT:DCF860B|v1|287736790683|0",
+      "key": "DEWALT:DCF860B",
+      "brand": "DEWALT",
+      "model": "DCF860B",
+      "itemId": "v1|287736790683|0",
+      "title": "DEWALT DCF860B 20V MAX XR 1/4in High Torque Impact Driver Bare Tool NEW",
+      "url": "https://www.ebay.com/itm/287736790683",
+      "price": 88.99,
+      "soldQuantity": 2,
+      "reasons": [
+        "Listing is a DEWALT DCF860B bare tool, New, one unit, but item specifics name the model as KRAFT DCF860 and brand as Unbranded, a conflicting signal that suggests a clone."
+      ],
+      "openedAt": 1795462562247
+    },
+    {
+      "id": "DEWALT:DCF860B|v1|336871202848|0",
+      "key": "DEWALT:DCF860B",
+      "brand": "DEWALT",
+      "model": "DCF860B",
+      "itemId": "v1|336871202848|0",
+      "title": "DEWALT DCF860B 20V MAX XR 1/4in High Torque Impact Driver - NEW! - FREE SHIP!",
+      "url": "https://www.ebay.com/itm/336871202848",
+      "price": 118,
+      "soldQuantity": 28,
+      "reasons": [
+        "Description says open box condition while eBay condition is New; the listing contradicts itself on condition, so it is unsure."
+      ],
+      "openedAt": 1795462562247
+    },
+    {
+      "id": "DEWALT:DCF860B|v1|366738839858|0",
+      "key": "DEWALT:DCF860B",
+      "brand": "DEWALT",
+      "model": "DCF860B",
+      "itemId": "v1|366738839858|0",
+      "title": "DEWALT DCF860B 20V MAX XR 1/4in High Torque Impact Driver Bare Tool",
+      "url": "https://www.ebay.com/itm/366738839858",
+      "price": 130,
+      "soldQuantity": 24,
+      "reasons": [
+        "Listing sells one new DCF860B bare tool with its included belt hook, and nothing else is added.",
+        "The quote \"Condition: New\" is not found in the listing."
+      ],
+      "openedAt": 1795462562247
+    },
+    {
+      "id": "DEWALT:DCF860B|v1|920101733569|0",
+      "key": "DEWALT:DCF860B",
+      "brand": "DEWALT",
+      "model": "DCF860B",
+      "itemId": "v1|920101733569|0",
+      "title": "DEWALT DCF860B 20V MAX XR 1/4in High Torque Impact Driver Bare Tool",
+      "url": "https://www.ebay.com/itm/920101733569",
+      "price": 88,
+      "soldQuantity": 14,
+      "reasons": [
+        "Listing names DCF860B as a bare tool, New, but the description gives torque in N·m (282N.m), a unit DEWALT does not use in the US, so it may be a clone."
+      ],
+      "openedAt": 1795462562247
+    },
+    {
+      "id": "DEWALT:DCH172B|v1|407243003336|0",
+      "key": "DEWALT:DCH172B",
+      "brand": "DEWALT",
+      "model": "DCH172B",
+      "itemId": "v1|407243003336|0",
+      "title": "DEWALT DCH172B 20V MAX SDS Plus Rotary Hammer Drill, 1.4 Joules, Brushless New",
+      "url": "https://www.ebay.com/itm/407243003336",
+      "price": 131.98,
+      "soldQuantity": 2,
+      "reasons": [
+        "The title names DCH172B and eBay condition is New, but the listing states only that no battery is included and does not say what the product includes; its MPN is DCH172BR, a different form."
+      ],
+      "openedAt": 1795462592917
+    },
+    {
+      "id": "DEWALT:DCH172B|v1|840117495950|0",
+      "key": "DEWALT:DCH172B",
+      "brand": "DEWALT",
+      "model": "DCH172B",
+      "itemId": "v1|840117495950|0",
+      "title": "DEWALT DCH172B 20V MAX ATOMIC 5/8\" SDS Plus Rotary Hammer Bare Tool (New in Box)",
+      "url": "https://www.ebay.com/itm/840117495950",
+      "price": 179.99,
+      "soldQuantity": 1,
+      "reasons": [
+        "Title and MPN name DCH172B as a bare tool, but the description refers to DCH172, so the listed model is unclear."
+      ],
+      "openedAt": 1795462592917
+    },
+    {
+      "id": "DEWALT:DCF630B|v1|177848770625|0",
+      "key": "DEWALT:DCF630B",
+      "brand": "DEWALT",
+      "model": "DCF630B",
+      "itemId": "v1|177848770625|0",
+      "title": "DeWalt DCF630B 20V Cordless Brushless Screw Gun (Tool Only)",
+      "url": "https://www.ebay.com/itm/177848770625",
+      "price": 139.99,
+      "soldQuantity": 245,
+      "reasons": [
+        "Listing names DCF630B as a tool-only screw gun, eBay condition New, one unit, with no added or missing pieces stated.",
+        "The quote \"New\" is not found in the listing."
+      ],
+      "openedAt": 1795471576496
+    },
+    {
+      "id": "DEWALT:DCS565B|v1|198782460909|0",
+      "key": "DEWALT:DCS565B",
+      "brand": "DEWALT",
+      "model": "DCS565B",
+      "itemId": "v1|198782460909|0",
+      "title": "Dewalt DCS565B 20V MAX Cordless Brushless 6-1/2\" Sidewinder Style Circular Saw",
+      "url": "https://www.ebay.com/itm/198782460909",
+      "price": 109.99,
+      "soldQuantity": 1,
+      "reasons": [
+        "The title names the exact model number, but no text states what is included, so the contents cannot be confirmed."
+      ],
+      "openedAt": 1795471603168
+    },
+    {
+      "id": "DEWALT:DCS565B|v1|278068716636|0",
+      "key": "DEWALT:DCS565B",
+      "brand": "DEWALT",
+      "model": "DCS565B",
+      "itemId": "v1|278068716636|0",
+      "title": "Dewalt DCS565B 20 Volt MAX 6-1/2\" Brushless Cordless Circular Saw 20V",
+      "url": "https://www.ebay.com/itm/278068716636",
+      "price": 110,
+      "soldQuantity": 2,
+      "reasons": [
+        "Listing names the exact model DCS565B as a bare circular saw with its blade, New; no battery or charger is included, consistent with the bare tool.",
+        "The judge does not say the listing holds exactly what the product includes."
+      ],
+      "openedAt": 1795471603168
+    },
+    {
+      "id": "DEWALT:DCW211B|v1|267736876343|0",
+      "key": "DEWALT:DCW211B",
+      "brand": "DEWALT",
+      "model": "DCW211B",
+      "itemId": "v1|267736876343|0",
+      "title": "DEWALT DCW211B 20V MAX* XR 5 Inch Cordless Random Orbital Sander",
+      "url": "https://www.ebay.com/itm/267736876343",
+      "price": 124.95,
+      "soldQuantity": 42,
+      "reasons": [
+        "Listing says bare tool with a sold-separately chip adapter listed as included, so the contents contradict each other."
+      ],
+      "openedAt": 1795471636377
+    },
+    {
+      "id": "DEWALT:DCW211B|v1|880107503604|0",
+      "key": "DEWALT:DCW211B",
+      "brand": "DEWALT",
+      "model": "DCW211B",
+      "itemId": "v1|880107503604|0",
+      "title": "DEWALT DCW211B 20V MAX XR 5\" Brushless Random Orbital Sander NEW Tool Only",
+      "url": "https://www.ebay.com/itm/880107503604",
+      "price": 132,
+      "soldQuantity": 7,
+      "reasons": [
+        "Listing names DCW211B and sells the bare tool New, but the China country of origin on a US-brand tool is a copy signal, so it is unsure."
+      ],
+      "openedAt": 1795471636377
+    },
+    {
+      "id": "DEWALT:DCK225D2|v1|197946605063|0",
+      "key": "DEWALT:DCK225D2",
+      "brand": "DEWALT",
+      "model": "DCK225D2",
+      "itemId": "v1|197946605063|0",
+      "title": "DEWALT ATOMIC Compact Series 20-Volt MAX Combo Kit DCK225D2**BRAND NEW SEALED**",
+      "url": "https://www.ebay.com/itm/197946605063",
+      "price": 169.99,
+      "soldQuantity": 17,
+      "reasons": [
+        "Listing names the exact kit model DCK225D2 as a New combo kit with two batteries; nothing says a piece is missing or added, though the charger and bag are not explicitly mentioned.",
+        "The judge does not say the listing holds exactly what the product includes."
+      ],
+      "openedAt": 1795471659324
+    },
+    {
+      "id": "DEWALT:DCK225D2|v1|388042199892|0",
+      "key": "DEWALT:DCK225D2",
+      "brand": "DEWALT",
+      "model": "DCK225D2",
+      "itemId": "v1|388042199892|0",
+      "title": "DEWALT DCK225D2 ATOMIC 20V MAX BrushlessCompact Impact & Drill/Driver Combo Kit✅",
+      "url": "https://www.ebay.com/itm/388042199892",
+      "price": 190,
+      "soldQuantity": 9,
+      "reasons": [
+        "Listing names model DCK225D2 as a 2-tool combo kit with 2 batteries, New; charger and bag are not mentioned but the model number covers the kit.",
+        "The judge does not say the listing holds exactly what the product includes."
+      ],
+      "openedAt": 1795471659324
+    },
+    {
+      "id": "DEWALT:DCS369B|v1|117426401800|0",
+      "key": "DEWALT:DCS369B",
+      "brand": "DEWALT",
+      "model": "DCS369B",
+      "itemId": "v1|117426401800|0",
+      "title": "DEWALT ATOMIC 20V MAX Reciprocating Saw, One-Handed, Cordless, (DCS369B)",
+      "url": "https://www.ebay.com/itm/117426401800",
+      "price": 128,
+      "soldQuantity": 3,
+      "reasons": [
+        "Listing names DCS369B and sells the bare tool, tool only, New, one unit with no battery.",
+        "The quote \"New\" is not found in the listing."
+      ],
+      "openedAt": 1795471687367
+    },
+    {
+      "id": "RYOBI:PCL206|v1|237179711800|0",
+      "key": "RYOBI:PCL206",
+      "brand": "RYOBI",
+      "model": "PCL206",
+      "itemId": "v1|237179711800|0",
+      "title": "RYOBI 18V 1/2 in. Drill/Driver (PCL206B) TOOL ONLY",
+      "url": "https://www.ebay.com/itm/237179711800",
+      "price": 38.5,
+      "soldQuantity": 38,
+      "reasons": [
+        "Title and Battery Included say tool only, but the Set Includes line lists a battery, so the contents contradict each other."
+      ],
+      "openedAt": 1795471721740
+    },
+    {
+      "id": "RYOBI:PCL265B|v1|237196358840|0",
+      "key": "RYOBI:PCL265B",
+      "brand": "RYOBI",
+      "model": "PCL265B",
+      "itemId": "v1|237196358840|0",
+      "title": "Ryobi ONE+ PCL265B 18V 1/2 Impact Wrench + 2AH Battery + Fast Charger (ALL NEW)",
+      "url": "https://www.ebay.com/itm/237196358840",
+      "price": 114.99,
+      "soldQuantity": 1,
+      "reasons": [
+        "No product name is given, so the model number alone cannot confirm the contents; the listing sells the tool with a battery and charger, and the product's included contents are not stated, so it cannot be settled."
+      ],
+      "openedAt": 1795472780140
+    },
+    {
+      "id": "RYOBI:PCL500|v1|156329863486|0",
+      "key": "RYOBI:PCL500",
+      "brand": "RYOBI",
+      "model": "PCL500",
+      "itemId": "v1|156329863486|0",
+      "title": "NEW Ryobi PCL500B 5-1/2\" 18V Cordless Circular Saw TOOL ONLY No Blades",
+      "url": "https://www.ebay.com/itm/156329863486",
+      "price": 39,
+      "soldQuantity": 94,
+      "reasons": [
+        "The listing names the other written form PCL500B and says tool only with no blades, but the text does not settle whether this product includes a blade."
+      ],
+      "openedAt": 1795472807089
+    },
+    {
+      "id": "RYOBI:PCL515|v1|318915722907|0",
+      "key": "RYOBI:PCL515",
+      "brand": "RYOBI",
+      "model": "PCL515",
+      "itemId": "v1|318915722907|0",
+      "title": "Ryobi ONE+ 18V Reciprocating Saw PCL515B, 6 in Blade, IP54, Tool Only",
+      "url": "https://www.ebay.com/itm/318915722907",
+      "price": 55,
+      "soldQuantity": 1,
+      "reasons": [
+        "The title says Tool Only, but the item specifics list a battery and charger in the set, so the contents contradict each other."
+      ],
+      "openedAt": 1795472938975
+    },
+    {
+      "id": "RYOBI:PCL424B|v1|900073438377|0",
+      "key": "RYOBI:PCL424B",
+      "brand": "RYOBI",
+      "model": "PCL424B",
+      "itemId": "v1|900073438377|0",
+      "title": "Ryobi ONE+ PCL424B Router",
+      "url": "https://www.ebay.com/itm/900073438377",
+      "price": 60,
+      "soldQuantity": 1,
+      "reasons": [
+        "No product name is given and the listing does not state what it includes, so contents cannot be confirmed."
+      ],
+      "openedAt": 1795472999235
+    },
+    {
+      "id": "DEWALT:DCF850B|v1|115265172243|0",
+      "key": "DEWALT:DCF850B",
+      "brand": "DEWALT",
+      "model": "DCF850B",
+      "itemId": "v1|115265172243|0",
+      "title": "New Dewalt DCF850B 1/4\" 20V Max Atomic 3 Speed Compact Brushless Impact Driver",
+      "url": "https://www.ebay.com/itm/115265172243",
+      "price": 98.09,
+      "soldQuantity": 524,
+      "reasons": [
+        "Bare DCF850B listed as New with the manual, but the listing gives 'Country of Origin: China' for a US-brand tool, a copy signal that leaves it unsure."
+      ],
+      "openedAt": 1795475627417
+    },
+    {
+      "id": "DEWALT:DCF850B|v1|298697403793|0",
+      "key": "DEWALT:DCF850B",
+      "brand": "DEWALT",
+      "model": "DCF850B",
+      "itemId": "v1|298697403793|0",
+      "title": "DEWALT DCF850B ATOMIC 20V MAX inch Cordless Impact Driver (Tool Only) ...",
+      "url": "https://www.ebay.com/itm/298697403793",
+      "price": 72.99,
+      "soldQuantity": 108,
+      "reasons": [
+        "Title names DCF850B as Tool Only, but the description says charger, bits, accessories and quantity vary by package, which contradicts the bare-tool contents."
+      ],
+      "openedAt": 1795475627417
+    },
+    {
+      "id": "DEWALT:DCF850B|v1|355918662202|0",
+      "key": "DEWALT:DCF850B",
+      "brand": "DEWALT",
+      "model": "DCF850B",
+      "itemId": "v1|355918662202|0",
+      "title": "GENUINE Brand New DEWALT DCF850B ATOMIC 20V 1/4\" 3-Speed Impact Driver Tool Only",
+      "url": "https://www.ebay.com/itm/355918662202",
+      "price": 89.99,
+      "soldQuantity": 326,
+      "reasons": [
+        "Listing names DCF850B as a tool only, New, one unit; no name given to confirm included pieces, and the US-unit specs (in-lbs) are consistent with DEWALT.",
+        "The judge does not say the listing holds exactly what the product includes."
+      ],
+      "openedAt": 1795475627417
+    },
+    {
+      "id": "DEWALT:DCF850B|v1|820344462456|0",
+      "key": "DEWALT:DCF850B",
+      "brand": "DEWALT",
+      "model": "DCF850B",
+      "itemId": "v1|820344462456|0",
+      "title": "DEWALT DCF850B ATOMIC 20V MAX inch Cordless Impact Driver (Tool Only)",
+      "url": "https://www.ebay.com/itm/820344462456",
+      "price": 74.95,
+      "soldQuantity": 2,
+      "reasons": [
+        "Title says Tool Only with the model number, but the MPN is DCF921 and the specifics list one battery, which conflicts with a bare tool."
+      ],
+      "openedAt": 1795475627417
+    },
+    {
+      "id": "RYOBI:P321|v1|820359187109|0",
+      "key": "RYOBI:P321",
+      "brand": "RYOBI",
+      "model": "P321",
+      "itemId": "v1|820359187109|0",
+      "title": "Ryobi ONE+ 18V AirStrike 18GA Cordless Brad Nailer P321 Tool Only 2 in",
+      "url": "https://www.ebay.com/itm/820359187109",
+      "price": 80,
+      "soldQuantity": 4,
+      "reasons": [
+        "Title says Tool Only but item specifics list 1 battery, so the contents contradict each other."
+      ],
+      "openedAt": 1795475654301
+    },
+    {
+      "id": "RYOBI:P326|v1|840114743070|0",
+      "key": "RYOBI:P326",
+      "brand": "RYOBI",
+      "model": "P326",
+      "itemId": "v1|840114743070|0",
+      "title": "RYOBI ONE+ 18V 16 Gauge AirStrike Finish Nailer Comfort Grip P326 Tool Only New",
+      "url": "https://www.ebay.com/itm/840114743070",
+      "price": 134.95,
+      "soldQuantity": 5,
+      "reasons": [
+        "The listing names model P326 as a tool-only nailer, New, one unit, with manual; no name is given to confirm the bare tool's full contents, so the match is not certain.",
+        "The judge does not say the listing holds exactly what the product includes."
+      ],
+      "openedAt": 1795475676965
+    },
+    {
+      "id": "DEWALT:DCK240C2|v1|397440177268|0",
+      "key": "DEWALT:DCK240C2",
+      "brand": "DEWALT",
+      "model": "DCK240C2",
+      "itemId": "v1|397440177268|0",
+      "title": "DEWALT ATOMIC 20-Volt MAX Cordless Combo Kit w/ 2 Batteries & Charger DCK240C2",
+      "url": "https://www.ebay.com/itm/397440177268",
+      "price": 173.99,
+      "soldQuantity": 5,
+      "reasons": [
+        "Listing names the DCK240C2 combo kit with 2 batteries, charger and bag, New; but the description cites DCD771 and DCF885 model numbers and lists Country of Origin China, which conflicts with the product and calls for caution."
+      ],
+      "openedAt": 1795475702644
+    },
+    {
+      "id": "DEWALT:DCK240C2|v1|820276848612|0",
+      "key": "DEWALT:DCK240C2",
+      "brand": "DEWALT",
+      "model": "DCK240C2",
+      "itemId": "v1|820276848612|0",
+      "title": "Dewalt 20V Cordless Drill Driver/Impact Driver Combo Kit - DCK240C2 New Sealed",
+      "url": "https://www.ebay.com/itm/820276848612",
+      "price": 154.99,
+      "soldQuantity": 3,
+      "reasons": [
+        "Title and MPN name the kit, but the description lists only batteries and two tools, not the charger or bag the product includes."
+      ],
+      "openedAt": 1795475702644
+    },
+    {
+      "id": "RYOBI:PCL525B|v1|127237075410|0",
+      "key": "RYOBI:PCL525B",
+      "brand": "RYOBI",
+      "model": "PCL525B",
+      "itemId": "v1|127237075410|0",
+      "title": "RYOBI PCL525B ONE+ Plus 18V Cordless Jig Saw + Free 2.0 Ah Battery",
+      "url": "https://www.ebay.com/itm/127237075410",
+      "price": 93.97,
+      "soldQuantity": 9,
+      "reasons": [
+        "No product name is given, and the listing's contents conflict: the description lists a jig saw with a free battery, while the item specifics add a charger and case."
+      ],
+      "openedAt": 1795475749901
+    },
+    {
+      "id": "RYOBI:PCL525B|v1|336387346314|0",
+      "key": "RYOBI:PCL525B",
+      "brand": "RYOBI",
+      "model": "PCL525B",
+      "itemId": "v1|336387346314|0",
+      "title": "RYOBI ONE+ 18V Cordless Jigsaw Saw Tool Only PCL525B Green",
+      "url": "https://www.ebay.com/itm/336387346314",
+      "price": 65.9,
+      "soldQuantity": 3,
+      "reasons": [
+        "Listing is the PCL525B bare jigsaw tool only, sold New, one unit, with its blades included as the product does.",
+        "The quote \"New\" is not found in the listing."
+      ],
+      "openedAt": 1795475749901
+    }
+  ],
+  "evidence": {
+    "split:homedepot:320243671": [
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and 65-Piece Drill and Impact Drive Kit",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "PCL1600K2-A986501",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Black oxide drill bits provide longer life and faster drilling.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "135 degree split points for drilling on contact and preventing walking.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "TORSION ZONE to absorb impact from high torque applications for 3X longer life.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Included 3.5 in. Impact Drive Bit for extended driving control in hard-to-reach applications.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and Drill and Impact Drive Kit (65-Piece) to create a complete solution. RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries & Charger are compatible with RYOBI ONE+ Tools. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and Drill and Impact Drive Kit (65-Piece).",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium-Ion Battery, (1) PBP002 18V Compact Lithium-Ion Battery, (1) 18V. Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a Compact Battery, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      }
+    ],
+    "split:homedepot:334547201": [
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, Charger, and 11 in. Flexible Shaft Bit Holder",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "PCL1600K2-A10FB1G",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "Designed for use with 1/4 in. hex shank bits.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "Extends bits into hard-to-reach areas, such as cabinets, drawers, and under cabinets.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "Magnetic bit holder keeps fasteners and bits secure while driving.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "Shaft flexes up to 90°.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and 11 in. Flexible Shaft Bit Holder to create a complete solution. RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries & Charger are compatible with RYOBI ONE+ Tools. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and 11 in. Flexible Shaft Bit Holder.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium-Ion Battery, (1) PBP002 18V Compact Lithium-Ion Battery, (1) 18V. Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a Compact Battery, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      }
+    ],
+    "match:RYOBI:PBP2003": [
+      {
+        "text": "RYOBI ONEAND 18V HIGH Performance Lithium-ION 2.0 AH Compact Battery 2-Pack PBP2003",
+        "source": {
+          "label": "Amazon listing",
+          "url": "https://www.amazon.com/dp/B0BG5SPWVL"
+        }
+      },
+      {
+        "text": "RYOBI",
+        "source": {
+          "label": "Amazon listing",
+          "url": "https://www.amazon.com/dp/B0BG5SPWVL"
+        }
+      }
+    ],
+    "split:homedepot:335724135": [
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Compact Fixed Base Router & 5 in. Random Orbit Sander (Tools Only) w/ Accessories",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "PCL406424SB-A21701-A25RS51",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Compact Router: 20,000-30,000 RPM for fast, powerful cutting",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Compact Router: Variable speed dial provides precision and accuracy for multiple applications",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Compact Router: Compact and ergonomic size provides comfort and control during extended use",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Compact Router: Micro-adjustment dial provides easy and precise depth control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Compact Router: Quick release lever for easy depth adjustments and base removal",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: 40% reduced vibration for maximum control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: 10,000 orbits per minute for a smooth, swirl-free finish",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: Hook & Loop sanding pad for easy sandpaper attachment",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: On-board dust collection ensures a clean work space",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: Multiple grip zones increases user comfort during extended use",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Download the all-inclusive RYOBI app for registration in seconds, a personalized digital tool box, exclusive access, customer service, and more",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "3-year manufacturer’s warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Includes: 18V ONE+ Cordless Compact Router, (1) collet wrench, (1) vacuum Dust Chute, 18V 5\" Random Orbit Sander, (3) Pieces of Sandpaper&nbsp;Assortment, Dust Collection Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Battery and charger sold separately",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Includes: (1) A21701 7-Piece 5 in. Random Orbit Sand Paper Assortment Set with (3) 80 grit,(2) 120 grit, and (2) 220 grit",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "Includes: A25RS51 1/4 in., 3/8 in., 1/2 in., 5/8 in. straight router bits with a bonus 5/16 in. bit",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "RYOBI introduces the ONE+ 18V Cordless 2-Tool Combo Kit w/ Random Orbit Sander & Compact Fixed Base Router (Tools Only) w/ Assorted Sandpaper. The 18V 5” Random Orbit Sander features a fast 10,000 orbits per minute (OPM) that will provide a swirl-free finish to each new project. This sander delivers optimized control and comfort while sanding with 40% reduced vibration vs the previous model. Quickly and easily change sandpaper with the easy hook and loop sanding pad base. The 18V ONE+ Cordless Compact Router operates between 20,000 - 30,000 RPM, allowing users the ability to trim with enhanced power and accuracy in all applications. Easily change depth of cut with micro and macro depth adjustment. This 18V ONE+ 2-Tool Combo is backed by the RYOBI 3-Year Manufacturer's Warranty and includes the PCL424 18VCordless Compact Router includes a collet wrench, vacuum dust chute, PCL406 18V 5\" Random Orbit Sander, (3) Pieces of Sandpaper Assortment, Dust Collection Bag, and Operator's Manuals Battery and charger sold separately.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Compact Fixed Base Router and 5 in. Random Orbit Sander (Tools Only)",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: 20,000-30,000 RPM for fast, powerful cutting",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: Variable speed dial provides precision and accuracy for multiple applications",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: Compact and ergonomic size provides comfort and control during extended use",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: Micro-adjustment dial provides easy and precise depth control",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: Quick release lever for easy depth adjustments and base removal",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: 40% reduced vibration for maximum control",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: 10,000 orbits per minute for a smooth, swirl-free finish",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: Hook & Loop sanding pad for easy sandpaper attachment",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: On-board dust collection ensures a clean work space",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: Multiple grip zones increases user comfort during extended use",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Includes: 18V Compact Router, 18V 5\" Random Orbit Sander, Collet&nbsp;Wrench, Vacuum Dust Chute, (3) Pieces of Sandpaper&nbsp;Assortment, Dust Collection Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Battery and charger sold separately",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "The RYOBI 2-Tool Combo is the perfect solution for woodworking projects. The 18V Compact Router operates between 20,000 - 30,000 RPM, allowing users the ability to trim with enhanced power and accuracy in all applications. Easily change depth of cut with micro and macro depth adjustment. The new ONE+ Cordless Compact Router is 20% more compact (than P601) and the new ergonomic design helps to provide comfort and control during extended use. The 18V 5” Random Orbit Sander features a fast 10,000 orbits per minute (OPM) that will provide a swirl-free finish to each new project. This sander delivers optimized control and comfort while sanding with 40% reduced vibration vs the previous model. Quickly and easily change sandpaper with the easy hook and loop sanding pad base. This 18V ONE+ 2-Tool Combo is backed by the RYOBI 3-Year Manufacturer's Warranty and includes PCL424 18V Compact Router, PCL406 18V 5\" Random Orbit Sander, Collet Wrench, Vacuum Dust Chute, (3) Pieces of Sandpaper Assortment, Dust Collection Bag and Operator's Manuals. Battery and charger sold separately.",
+        "source": {
+          "label": "Home Depot page for PCL406424SB",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      }
+    ],
+    "split:homedepot:332343419": [
+      {
+        "text": "20V MAX XR Lithium-Ion Cordless Impact Driver with 6.0 Ah and 4.0 Ah Starter Kit",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860BWCB2460C",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860B: our highest torque impact driver-take on tough jobs with up to 66% more torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860B: fast, efficient performance -work efficiently with up to 63% faster driving",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860B: pro-level control-get precise performance with a variable speed trigger and 3-speed mode select, speeds 1 and 2 are optimized to match the installation speeds of commonly used self-drilling and tapping screws, refer to the impact driver manual and screw manufacturer instructions for proper installation",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860B: pro-level powerpower through tough jobs with up to 2,500 in./lbs. max torque and a no-load speed up to 3,800 RPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860B: built-in LED-9 built-in LED and 20-minute work light setting provide additional illumination",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860B: 1/4 in. quick-connect hex chuck-conveniently work with compatible 1/4 in. quick-connect hex chuck",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860B: simplify asset management -this tool connect chip ready chip sold separately tool connects with the tool connect site manager app to help you track and manage assets",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860B: part of our best performing line of 20-Volt max power tools-innovative power tools designed to deliver certainty for the world's toughest pros",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCB2460C: one 20-Volt max 6.0 Ah battery and one 20-Volt max 4.0 Ah battery provide up to 10 Amp hours of capacity",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCB2460C: charges DEWALT 12-Volt to 20-Volt max lithium-ion batteries",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCB2460C: no memory and virtually no self-discharge for maximum productivity and less downtime",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCB2460C: batteries come with a 3-year free service warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      },
+      {
+        "text": "DCF860B: This 20-Volt Max XR 3-Speed High Torque Impact Driver is engineered for the demands of the pro with a Max torque of 2,500 in./lbs., making it our highest torque impact driver. Maximize productivity with up to 63% faster driving, a no-load speed of 0-3,800 RPM, 9 built-in LEDs and 3-speed mode select to power through tough jobs. Battery and charger sold separately. DCB2460C: This 20-Volt Max starter kit includes a 6.0 Ah battery, a 4.0 Ah battery, 4 Amp charger, and a kit bag. Both batteries are compact in size and lightweight, providing ergonomic benefits for increased tool maneuverability and control for overhead applications. The charger is compatible with all DEWALT 12-Volt and 20-Volt Max Lithium-Ion battery packs, this charger is easy to use, quiet and exceptionally stable with its 4-plastic ft. Includes DCF860B and DCB2460C.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-XR-Lithium-Ion-Cordless-Impact-Driver-with-6-0-Ah-and-4-0-Ah-Starter-Kit-DCF860BWCB2460C/332343419"
+        }
+      }
+    ],
+    "split:homedepot:324811429": [
+      {
+        "text": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) and Reciprocating Saw with (2) 2Ah Batteries, Charger and Bag",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCK225D2WCS380B",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "Includes 1 DEWALT DCD708B ATOMIC 20-Volt MAX compact 1/2 in. cordless drill/driver, 1DEWALT DCF809B ATOMIC 20-Volt MAX compact 1/4 in. cordless impact driver, two 20-Volt MAX lithium-ion 1.3 Ah battery packs, 20-Volt MAX charger and contractor bag",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "Both tools in this cordless drill and impact driver set have variable speed triggers for greater control and precision on delicate work surfaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DEWALT DCS381 20-Volt MAX cordless reciprocating saw with keyless blade clamp allows for quick blade changes without touching blade or reciprocating shaft",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DEWALT DCS393 20-Volt MAX cordless circular saw with 6-1/2 in. carbide blade can cut 2 ft. x 4 ft. at a 45° angle in a single pass",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCD708B: lightweight at only 2.4 lbs.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCD708B: LED foot light for superior visibility",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCD708B: 1/2 in. ratcheting chuck provides superior bit gripping strength",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCD708B: 340 UWO of power to help get the job done",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCF809B: only 5.1 in. L to fit in tight spaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCF809B: 1700 in. lbs. of torque delivering the power you need to get a majority of applications done",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCF809B: 3 bright LEDs for dimly lit workspaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCS380B 4-position blade clamp allows for flush cutting and increased positional versatility",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCS380B variable speed trigger with 0-3000 SPM for ultimate operator control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCS380B pivoting adjustable shoe extends blade life and allows for easier depth-of-cut control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCS380B batteries and chargers sold separately, this tool works with these 20-Volt batteries (DCB200, DCB201) and chargers (DCB101, DCB119, DCB103)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCS380B double oil-sealed shaft resists contamination and increases durability",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "DCS380B protected by a 3-year limited DEWALT warranty and a 1-year free service contract",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "This 20-Volt MAX Brushless Compact 2-Tool Combo Kit includes 1 cordless Drill/Driver, 1 cordless Impact Driver, two 20-Volt MAX Lithium Ion Batteries, 1 charger and a carrying bag. The DEWALT ATOMIC Compact Series of power tools pack more punch in a smaller size to make your DIY projects quicker and easier. At only 5.1 in. front to back, the cordless Impact Driver features a high-performance brushless motor that delivers 1700 in./lbs. of torque and 3 LED lights to provide optimum illumination in dark spaces as you work. The cordless Drill/Driver also features a brushless motor that delivers 340 unit watts outs (UWO) of power. It's 25% more compact yet has 13% more power than previous cordless power drill models. The drill/driver has an LED foot light to provide optimum illumination in dark spaces as you work. Both tools feature an ergonomic design for balance and easier tool control along with removable belt hooks. This cordless drill and impact driver combo is backed by a DEWALT 3-year limited warranty so you can buy with confidence. The DEWALT DCS380B 20-Volt Max Lithium-Ion Reciprocating Saw has a 4-position blade clamp that allows for flush cutting and increased positional versatility with tool-free blade changes.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Reciprocating-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS380B/324811429"
+        }
+      },
+      {
+        "text": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) with (2) 2.0Ah Batteries, Charger and Bag",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - UNLOCK POWER IN A COMPACT SIZE with 404 UWO† († Based on using DCB203 battery)",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - up to 1,650 RPMs no-load to tackle tough jobs in tight spaces",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - OUR SHORTEST 20V MAX* DRILL/DRIVER** at 5.88 in. (**tool head length only) to access hard to reach areas",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - GET UP TO 16% MORE POWER*** for a variety of drilling applications (***The DEWALT DCD794 with a DEWALT DCB203 battery provides up to 16% More Power vs. DEWALT DCD771 with a DEWALT DCB203)",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCF809 - 1700 in.-lbs. of torque delivering the power you need to get a majority of applications done",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCF809 - Only 5.1 in. L to fit in tight spaces",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "This ATOMIC Compact Series 2-tool kit includes one 1/2 in. drill driver, 1/4 in. impact driver, charger, contractor bag, and two 20V MAX* compact 2 Ah batteries. The DCD794 drill/driver is our shortest drill at 5.88 in. (tool head length only). The DCF809 impact driver features a high-performance brushless motor that delivers 1,700 in-lbs of max torque.",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      }
+    ],
+    "split:homedepot:324811431": [
+      {
+        "text": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) and 6.5 in. Circ Saw with (2) 2Ah Batteries, Charger and Bag",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCK225D2WCS391B",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "Includes 1 DEWALT DCD708B ATOMIC 20-Volt MAX compact 1/2 in. cordless drill/driver, 1DEWALT DCF809B ATOMIC 20-Volt MAX compact 1/4 in. cordless impact driver, two 20-Volt MAX lithium-ion 1.3 Ah battery packs, 20-Volt MAX charger and contractor bag",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "Both tools in this cordless drill and impact driver set have variable speed triggers for greater control and precision on delicate work surfaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DEWALT DCS381 20-Volt MAX cordless reciprocating saw with keyless blade clamp allows for quick blade changes without touching blade or reciprocating shaft",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DEWALT DCS393 20-Volt MAX cordless circular saw with 6-1/2 in. carbide blade can cut 2 ft. x 4 ft. at a 45° angle in a single pass",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCD708B: lightweight at only 2.4 lbs.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCD708B: LED foot light for superior visibility",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCD708B: 1/2 in. ratcheting chuck provides superior bit gripping strength",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCD708B: 340 UWO of power to help get the job done",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCF809B: only 5.1 in. L to fit in tight spaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCF809B: 1700 in. lbs. of torque delivering the power you need to get a majority of applications done",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCF809B: 3 bright LEDs for dimly lit workspaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCS391B Powerful 5150 RPM motor delivers power and speed to make the most demanding cuts with ease",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCS391B magnesium shoe stands up to the rigors of abusive working conditions to provide accurate cuts over the long haul",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCS391B 0° to 50° bevel capacity allows aggressive angled cuts",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCS391B depth of cut at 45° : 1-5/8 in.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCS391B depth of cut at 90°: 2-1/8 in.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCS391B includes 6-1/2 in. fast wood-cutting 18-tooth carbide-tipped blade",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "DCS391B protected by a 3-year limited DEWALT warranty and a 1-year free service contract",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "This 20-Volt MAX Brushless Compact 2-Tool Combo Kit includes 1 cordless Drill/Driver, 1 cordless Impact Driver, two 20-Volt MAX Lithium Ion Batteries, 1 charger and a carrying bag. The DEWALT ATOMIC Compact Series of power tools pack more punch in a smaller size to make your DIY projects quicker and easier. At only 5.1 in. front to back, the cordless Impact Driver features a high-performance brushless motor that delivers 1700 in./lbs. of torque and 3 LED lights to provide optimum illumination in dark spaces as you work. The cordless Drill/Driver also features a brushless motor that delivers 340 unit watts outs (UWO) of power. It's 25% more compact yet has 13% more power than previous cordless power drill models. The drill/driver has an LED foot light to provide optimum illumination in dark spaces as you work. Both tools feature an ergonomic design for balance and easier tool control along with removable belt hooks. This cordless drill and impact driver combo is backed by a DEWALT 3-year limited warranty so you can buy with confidence. The DEWALT DCS391B 20-Volt Max Lithium-Ion Cordless Circular Saw has a powerful 5150 RPM motor that delivers power and speed to make the most demanding cuts with ease.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-6-5-in-Circ-Saw-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS391B/324811431"
+        }
+      },
+      {
+        "text": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) with (2) 2.0Ah Batteries, Charger and Bag",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - UNLOCK POWER IN A COMPACT SIZE with 404 UWO† († Based on using DCB203 battery)",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - up to 1,650 RPMs no-load to tackle tough jobs in tight spaces",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - OUR SHORTEST 20V MAX* DRILL/DRIVER** at 5.88 in. (**tool head length only) to access hard to reach areas",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - GET UP TO 16% MORE POWER*** for a variety of drilling applications (***The DEWALT DCD794 with a DEWALT DCB203 battery provides up to 16% More Power vs. DEWALT DCD771 with a DEWALT DCB203)",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCF809 - 1700 in.-lbs. of torque delivering the power you need to get a majority of applications done",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCF809 - Only 5.1 in. L to fit in tight spaces",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "This ATOMIC Compact Series 2-tool kit includes one 1/2 in. drill driver, 1/4 in. impact driver, charger, contractor bag, and two 20V MAX* compact 2 Ah batteries. The DCD794 drill/driver is our shortest drill at 5.88 in. (tool head length only). The DCF809 impact driver features a high-performance brushless motor that delivers 1,700 in-lbs of max torque.",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      }
+    ],
+    "split:homedepot:324811433": [
+      {
+        "text": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) and Oscillating Tool with (2) 2Ah Batteries, Charger and Bag",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCK225D2WCS356B",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "Includes 1 DEWALT DCD708B ATOMIC 20-Volt MAX compact 1/2 in. cordless drill/driver, 1DEWALT DCF809B ATOMIC 20-Volt MAX compact 1/4 in. cordless impact driver, two 20-Volt MAX lithium-ion 1.3 Ah battery packs, 20-Volt MAX charger and contractor bag",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "Both tools in this cordless drill and impact driver set have variable speed triggers for greater control and precision on delicate work surfaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DEWALT DCS381 20-Volt MAX cordless reciprocating saw with keyless blade clamp allows for quick blade changes without touching blade or reciprocating shaft",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DEWALT DCS393 20-Volt MAX cordless circular saw with 6-1/2 in. carbide blade can cut 2 ft. x 4 ft. at a 45° angle in a single pass",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCD708B: lightweight at only 2.4 lbs.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCD708B: LED foot light for superior visibility",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCD708B: 1/2 in. ratcheting chuck provides superior bit gripping strength",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCD708B: 340 UWO of power to help get the job done",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCF809B: only 5.1 in. L to fit in tight spaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCF809B: 1700 in. lbs. of torque delivering the power you need to get a majority of applications done",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCF809B: 3 bright LEDs for dimly lit workspaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCS356B 3-speed selector allows users to choose their speed setting based on application",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCS356B brushless motor delivers up to 57% more run time over brushed",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCS356B dual-grip variable speed trigger gives users ultimate speed and application control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCS356B universal accessory adapter for use with most oscillating tool accessory brands",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCS356B quick-change accessory system allows blades and attachments to be changed quickly without wrenches",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "DCS356B bright LED light illuminates dark work surfaces for accurate cutting",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "This 20-Volt MAX Brushless Compact 2-Tool Combo Kit includes 1 cordless Drill/Driver, 1 cordless Impact Driver, two 20-Volt MAX Lithium Ion Batteries, 1 charger and a carrying bag. The DEWALT ATOMIC Compact Series of power tools pack more punch in a smaller size to make your DIY projects quicker and easier. At only 5.1 in. front to back, the cordless Impact Driver features a high-performance brushless motor that delivers 1700 in./lbs. of torque and 3 LED lights to provide optimum illumination in dark spaces as you work. The cordless Drill/Driver also features a brushless motor that delivers 340 unit watts outs (UWO) of power. It's 25% more compact yet has 13% more power than previous cordless power drill models. The drill/driver has an LED foot light to provide optimum illumination in dark spaces as you work. Both tools feature an ergonomic design for balance and easier tool control along with removable belt hooks. This cordless drill and impact driver combo is backed by a DEWALT 3-year limited warranty so you can buy with confidence. This 20-Volt MAX Brushless cordless 3-speed oscillating multi-tool DCS356B includes a universal accessory adapter and 2 wood cutting blades to help get your project started.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-Oscillating-Tool-with-2-2Ah-Batteries-Charger-and-Bag-DCK225D2WCS356B/324811433"
+        }
+      },
+      {
+        "text": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) with (2) 2.0Ah Batteries, Charger and Bag",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - UNLOCK POWER IN A COMPACT SIZE with 404 UWO† († Based on using DCB203 battery)",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - up to 1,650 RPMs no-load to tackle tough jobs in tight spaces",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - OUR SHORTEST 20V MAX* DRILL/DRIVER** at 5.88 in. (**tool head length only) to access hard to reach areas",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCD794 - GET UP TO 16% MORE POWER*** for a variety of drilling applications (***The DEWALT DCD794 with a DEWALT DCB203 battery provides up to 16% More Power vs. DEWALT DCD771 with a DEWALT DCB203)",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCF809 - 1700 in.-lbs. of torque delivering the power you need to get a majority of applications done",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "DCF809 - Only 5.1 in. L to fit in tight spaces",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      },
+      {
+        "text": "This ATOMIC Compact Series 2-tool kit includes one 1/2 in. drill driver, 1/4 in. impact driver, charger, contractor bag, and two 20V MAX* compact 2 Ah batteries. The DCD794 drill/driver is our shortest drill at 5.88 in. (tool head length only). The DCF809 impact driver features a high-performance brushless motor that delivers 1,700 in-lbs of max torque.",
+        "source": {
+          "label": "Home Depot page for DCK225D2",
+          "url": "https://www.homedepot.com/p/322138483"
+        }
+      }
+    ],
+    "split:homedepot:324811434": [
+      {
+        "text": "ATOMIC 20-Volt MAX Lithium-Ion Cordless Combo Kit (2-Tool) and ATOMIC Oscillating Tool with (2) 2Ah Batteries & Charger",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCK225D2WCS354B",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "Includes 1 DEWALT DCD708B ATOMIC 20-Volt MAX compact 1/2 in. cordless drill/driver, 1DEWALT DCF809B ATOMIC 20-Volt MAX compact 1/4 in. cordless impact driver, two 20-Volt MAX lithium-ion 1.3 Ah battery packs, 20-Volt MAX charger and contractor bag",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "Both tools in this cordless drill and impact driver set have variable speed triggers for greater control and precision on delicate work surfaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DEWALT DCS381 20-Volt MAX cordless reciprocating saw with keyless blade clamp allows for quick blade changes without touching blade or reciprocating shaft",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DEWALT DCS393 20-Volt MAX cordless circular saw with 6-1/2 in. carbide blade can cut 2 ft. x 4 ft. at a 45° angle in a single pass",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCD708B: lightweight at only 2.4 lbs.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCD708B: LED foot light for superior visibility",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCD708B: 1/2 in. ratcheting chuck provides superior bit gripping strength",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCD708B: 340 UWO of power to help get the job done",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCF809B: only 5.1 in. L to fit in tight spaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCF809B: 1700 in. lbs. of torque delivering the power you need to get a majority of applications done",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCF809B: 3 bright LEDs for dimly lit workspaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCS354B ATOMIC 20-Volt MAX Lithium-Ion Brushless Cordless Oscillating Tool (Tool-Only)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCS354B bright LED light illuminates dark work surfaces for accurate cutting",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCS354B LED work light with 20-second delay for increased visibility",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCS354B brushless motor delivers up to 57% more run time over brushed",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "DCS354B 0 OPM to 18,000 OPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      },
+      {
+        "text": "This 20-Volt MAX Brushless Compact 2-Tool Combo Kit includes 1 cordless Drill/Driver, 1 cordless Impact Driver, two 20-Volt MAX Lithium Ion Batteries, 1 charger and a carrying bag. The DEWALT ATOMIC Compact Series of power tools pack more punch in a smaller size to make your DIY projects quicker and easier. At only 5.1 in. front to back, the cordless Impact Driver features a high-performance brushless motor that delivers 1700 in./lbs. of torque and 3 LED lights to provide optimum illumination in dark spaces as you work. The cordless Drill/Driver also features a brushless motor that delivers 340 unit watts outs (UWO) of power. It's 25% more compact yet has 13% more power than previous cordless power drill models. The drill/driver has an LED foot light to provide optimum illumination in dark spaces as you work. Both tools feature an ergonomic design for balance and easier tool control along with removable belt hooks. This cordless drill and impact driver combo is backed by a DEWALT 3-year limited warranty so you can buy with confidence. This 20-Volt MAX cordless oscillating multi-tool DCS354B includes a universal accessory adaptor and 2 wood cutting blades to help get your project started.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20-Volt-MAX-Lithium-Ion-Cordless-Combo-Kit-2-Tool-and-ATOMIC-Oscillating-Tool-with-2-2Ah-Batteries-Charger-DCK225D2WCS354B/324811434"
+        }
+      }
+    ],
+    "split:homedepot:325746670": [
+      {
+        "text": "20-Volt Maximum TOUGHSYSTEM Lithium-Ion 6-Tool Cordless Combo Kit and 20V Max XR Brushless Reciprocating Saw (Tool Only)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "DCKTS681D1P1W82",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "Shortest 20-volt maximum hammer drill at 6.49 in. (tool head length only) to access hard to reach areas",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "Only 5.1 in. L to fit in tight spaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "Quickly adjust the bevel capacity from 0° - 50° with the tool-free bevel lever",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "Kickback brake engages when a pinch, stall, or bind-up event is sensed and the electronic brake engages with maximum force to quickly stop the wheel, reduce the movement of the grinder and shut the grinder off",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "Low-profile height of the power sander allows user to get close to work surface for precise sanding",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "Dual-grip variable speed trigger provides superior control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "DCS382b speed control and comfort: 2-finger variable trigger design offers ease of use",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "DCS382B fast cuts: rapidly saw through various materials with 1-1/8 in. stroke length",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "DCS382B seamless mobility: compact size designed for a high range of motion",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "DCS382B quick blade changes with twist-style keyless blade clamp",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "DCS382B brighten dark workspaces with on-board LED",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "DCS382B flexible operation: pivoting shoe helps to stabilize the saw against the workpiece throughout the cut",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "DCS382B pro-grade compatibility: works with all DEWALT FLEXVOLT and DEWALT 20-Volt maximum, batteries (sold separately)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "DCS382B optimized cutting power and efficiency: get more work done with the stout brushless motor",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/b/DEWALT/N-5yc1vZ4j2?cm_sp=vanity-_-dewalt-_-APR20\" target=\"_blank\">Shop All Dewalt Tools</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      },
+      {
+        "text": "Take on a variety of tasks with a cordless kit built to support flexibility across projects and materials. This 20 volt tool kit is designed for portable performance in the shop, around the home, or on the jobsite. The kit includes a hammer drill/driver, impact driver, circular saw (blade not included), grinder, random orbital sander, oscillating multi-tool, one 5.0 Ah battery, one 2.0 Ah compact battery, a charger, and a TOUGHSYSTEM 2.0 storage box.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Maximum-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-Max-XR-Brushless-Reciprocating-Saw-Tool-Only-DCKTS681D1P1W82/325746670"
+        }
+      }
+    ],
+    "split:homedepot:325746672": [
+      {
+        "text": "20-Volt Max TOUGHSYSTEM Lithium-Ion 6-Tool Cordless Combo Kit & Atomic 20V Max Cordless Brushless 1/2 in. Impact Wrench",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCKTS681D1P1W21",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCD999: great bit grip: heavy-duty 1/2 in. ratcheting nitro-carburized metal chuck with carbide inserts for superior bit gripping strength",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCF887: precision drive in speed 1 for precision applications and added control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCS386: fast cutting: 1-1/8 in. stroke length delivers a fast cutting speed",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCS573: faster cutting: powerful brushless motor delivers 5,500 RPM for faster cutting",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCL040: bright LED output - 110 Lumens",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCF921b adaptable fastening range: up to 300 ft./lbs. of fastening torque and 450 ft./lbs. of breakaway torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCF921b enhanced user control in a variety of applications with 4-speed settings",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCF921b prevents over tightening and fastener run-off with precision wrench (TM) control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCF921b brighten dark workspaces with onboard LED and brightness control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCF921B quickly change bits: hog ring anvil for rapid, secure socket changes",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCF921B optimized speed in wood with timber screw mode",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "DCF921B built for long life: GFN housing provides resistance from damage caused by some oils and solvents",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/b/DEWALT/N-5yc1vZ4j2?cm_sp=vanity-_-dewalt-_-APR20\" target=\"_blank\">Shop All Dewalt Tools</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      },
+      {
+        "text": "Take on a variety of tasks with a cordless kit built to support flexibility across projects and materials. This 20 volt tool kit is designed for portable performance in the shop, around the home, or on the jobsite. The kit includes a hammer drill/driver, impact driver, circular saw (blade not included), grinder, random orbital sander, oscillating multi-tool, one 5.0 Ah battery, one 2.0 Ah compact battery, a charger, and a TOUGHSYSTEM 2.0 storage box.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20-Volt-Max-TOUGHSYSTEM-Lithium-Ion-6-Tool-Cordless-Combo-Kit-Atomic-20V-Max-Cordless-Brushless-1-2-in-Impact-Wrench-DCKTS681D1P1W21/325746672"
+        }
+      }
+    ],
+    "split:homedepot:328690517": [
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Random Orbit Sander and Corner Cat Finish Sander (Tools Only)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "PCL406416SB",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "Corner Cat Sander: Compact Triangular Base",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "Corner Cat Sander: Compact size for precision and control in tight spaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "Corner Cat Sander: 50% reduced vibration for maximum control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "Corner Cat Sander: Easy sandpaper attachment with hook & loop base",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "Corner Cat Sander: On-board dust port accepts optional dust collection attachment (A21CCV1) for easy clean up with wet/dry vac (sold separately)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: 40% reduced vibration for maximum control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: 10,000 orbits per minute for a smooth, swirl-free finish",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: Hook & Loop sanding pad for easy sandpaper attachment",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: On-board dust collection ensures a clean work space",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: Multiple grip zones increases user comfort during extended use",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "Includes: 18V Corner Cat Finish Sander, 18V 5\" Random Orbit Sander, Collet&nbsp;Wrench, Vacuum Dust Chute, (6) Pieces of Sandpaper&nbsp;Assortment, Dust Collection Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "Battery and charger sold separately",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      },
+      {
+        "text": "The RYOBI 2-Tool Combo is the perfect solution for sanding projects. The 18V ONE+ Cordless Corner Cat Finish Sander is the perfect solution for precise, controlled sanding in tight spaces. The compact size, triangular base, and 50% reduced vibration vs the previous model provides more control for an even finer finish. This sander also has a hook and loop attachment system helping to ensure quick and easy sandpaper attachment. The 18V 5” Random Orbit Sander features a fast 10,000 orbits per minute (OPM) that will provide a swirl-free finish to each new project. This sander delivers optimized control and comfort while sanding with 40% reduced vibration vs the previous model. Quickly and easily change sandpaper with the easy hook and loop sanding pad base. This 18V ONE+ 2-Tool Combo is backed by the RYOBI 3-Year Manufacturer's Warranty and includes the PCL416 18V Corner Cat Finish Sander, PCL406 18V 5\" Random Orbit Sander, Collet Wrench, Vacuum Dust Chute, (6) Pieces of Sandpaper Assortment, Dust Collection Bag, and Operator's Manuals Battery and charger sold separately.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406416SB/328690517"
+        }
+      }
+    ],
+    "split:homedepot:328690521": [
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Compact Fixed Base Router and 5 in. Random Orbit Sander (Tools Only)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "PCL406424SB",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: 20,000-30,000 RPM for fast, powerful cutting",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: Variable speed dial provides precision and accuracy for multiple applications",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: Compact and ergonomic size provides comfort and control during extended use",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: Micro-adjustment dial provides easy and precise depth control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Compact Router: Quick release lever for easy depth adjustments and base removal",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: 40% reduced vibration for maximum control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: 10,000 orbits per minute for a smooth, swirl-free finish",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: Hook & Loop sanding pad for easy sandpaper attachment",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: On-board dust collection ensures a clean work space",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "5” Random Orbit Sander: Multiple grip zones increases user comfort during extended use",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Includes: 18V Compact Router, 18V 5\" Random Orbit Sander, Collet&nbsp;Wrench, Vacuum Dust Chute, (3) Pieces of Sandpaper&nbsp;Assortment, Dust Collection Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "Battery and charger sold separately",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      },
+      {
+        "text": "The RYOBI 2-Tool Combo is the perfect solution for woodworking projects. The 18V Compact Router operates between 20,000 - 30,000 RPM, allowing users the ability to trim with enhanced power and accuracy in all applications. Easily change depth of cut with micro and macro depth adjustment. The new ONE+ Cordless Compact Router is 20% more compact (than P601) and the new ergonomic design helps to provide comfort and control during extended use. The 18V 5” Random Orbit Sander features a fast 10,000 orbits per minute (OPM) that will provide a swirl-free finish to each new project. This sander delivers optimized control and comfort while sanding with 40% reduced vibration vs the previous model. Quickly and easily change sandpaper with the easy hook and loop sanding pad base. This 18V ONE+ 2-Tool Combo is backed by the RYOBI 3-Year Manufacturer's Warranty and includes PCL424 18V Compact Router, PCL406 18V 5\" Random Orbit Sander, Collet Wrench, Vacuum Dust Chute, (3) Pieces of Sandpaper Assortment, Dust Collection Bag and Operator's Manuals. Battery and charger sold separately.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Compact-Fixed-Base-Router-and-5-in-Random-Orbit-Sander-Tools-Only-PCL406424SB/328690521"
+        }
+      }
+    ],
+    "split:homedepot:334594505": [
+      {
+        "text": "ONE+ HP 18V Brushless Cordless Compact 2-Tool Combo Kit w/(2) Batteries, Charger, Bag & Drill & Impact Drive Kit (40PC)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "PSBCK102K2-A98401",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Impact - Compact size at 5.2\" in length and lightweight",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Impact -Brushless Motor provides longer runtime, longer motor life, and more power",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Impact - Delivers up to 1,900 in-lbs. of torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Impact - Variable speed trigger controls up to 3,000 RPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Impact - 1/4 in. hex collet for one-handed bit release",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Impact - On-board LED worklight to illuminate workspace",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Drill - Compact size at 6.1\" in length and lightweight",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Drill - Brushless Motor provides longer runtime, longer motor life, and more power",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Drill - Provides up to 1,900 in-lbs. of torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Drill - Variable speed trigger for control of up to 3,000 RPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Drill - 1/4 in. hex collet for one-handed bit release",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Drill - On-board LED worklight to illuminate workspace",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Includes: (1) PSBDD02 ONE+ HP 18V Compact Brushless 1/2 in. Drill/Driver, (1) PSBID02 ONE+ HP 18V Compact Brushless 1/4 in. Impact Driver",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Includes: (2) 1.5Ah Lithium Battery, Charger, Tool Bag, and Operator's manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "Includes: A98401 (12) black oxide drill bits, (2) woodboring spade bit, (4) bradpoint drill bits, (14) 1 in. impact drive bit, (4) 2 in. impact drive bit, (3) impact nut drivers, (1) impact magnetic bit holder, and a clear front carrying case",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ HP Brushless Cordless Compact 2-Tool Combo Kit w/(2) Batteries, Charger, Bag & Drill & Impact Drive Kit (40PC). At a length of just 5.2\" in length, this Impact Driver is the most compact and lightest weight RYOBI Impact Driver, making it ideal for working in tight spots and completing overhead applications without strain. The brushless motor delivers up to 1,900 in-lbs. of torque-and up to 3,900 IPM to quickly drive a variety of fasteners. The Drill/Driver, measuring at 6.1\" delivers 450 in-lbs. of torque for maximum power when drilling and driving through tough materials. Additional features include a two-speed gearbox (0-450 and 0-1,700 RPM) and a 24-position clutch for maximum control while drilling and driving. The 1/2 in. single sleeve ratcheting chuck is custom designed with a unique knurling pattern to provide a durable grip for quick bit changes. Best of all, it is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this ONE+ HP 18V Compact Brushless 2-Tool Combo kit includes (1) PSBDD02 ONE+ HP 18V Compact Brushless Cordless 1/2 in. Drill/Driver, (1) PSBID02 ONE+ HP 18V Compact Brushless 1/4 in. Impact Driver, (2) 1.5Ah Lithium Battery, Charger, Tool Bag, Drill & Impact Drive Kit (40-Piece), and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-HP-18V-Brushless-Cordless-Compact-2-Tool-Combo-Kit-w-2-Batteries-Charger-Bag-Drill-Impact-Drive-Kit-40PC-PSBCK102K2-A98401/334594505"
+        }
+      }
+    ]
+  },
+  "followUps": {
+    "split:homedepot:328690517": {
+      "seen": "[]",
+      "state": {
+        "state": "gave_up",
+        "tried": [
+          {
+            "what": "Read the bundle's Home Depot page",
+            "result": "read: 18 lines of highlights and Includes",
+            "url": "https://www.homedepot.com/p/328690517"
+          }
+        ],
+        "rounds": 0,
+        "entries": [
+          {
+            "id": "fu-hd-page:328690517",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/328690517",
+            "lines": [
+              {
+                "field": "title",
+                "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Random Orbit Sander and Corner Cat Finish Sander (Tools Only)"
+              },
+              {
+                "field": "model",
+                "text": "PCL406416SB"
+              },
+              {
+                "field": "bullet",
+                "text": "Perfect Kit For Sanding Projects"
+              },
+              {
+                "field": "bullet",
+                "text": "Includes: Corner Cat Sander, Random Orbit Sander, And Accessories"
+              },
+              {
+                "field": "bullet",
+                "text": "Over 300 ONE+ Products – All Work With Any RYOBI ONE+ 18V Battery"
+              },
+              {
+                "field": "bullet",
+                "text": "Corner Cat Sander: Compact Triangular Base"
+              },
+              {
+                "field": "bullet",
+                "text": "Corner Cat Sander: Compact size for precision and control in tight spaces"
+              },
+              {
+                "field": "bullet",
+                "text": "Corner Cat Sander: 50% reduced vibration for maximum control"
+              },
+              {
+                "field": "bullet",
+                "text": "Corner Cat Sander: Easy sandpaper attachment with hook &amp; loop base"
+              },
+              {
+                "field": "bullet",
+                "text": "Corner Cat Sander: On-board dust port accepts optional dust collection attachment (A21CCV1) for easy clean up with wet/dry vac (sold separately)"
+              },
+              {
+                "field": "bullet",
+                "text": "5” Random Orbit Sander: 40% reduced vibration for maximum control"
+              },
+              {
+                "field": "bullet",
+                "text": "5” Random Orbit Sander: 10,000 orbits per minute for a smooth, swirl-free finish"
+              },
+              {
+                "field": "bullet",
+                "text": "5” Random Orbit Sander: Hook &amp; Loop sanding pad for easy sandpaper attachment"
+              },
+              {
+                "field": "bullet",
+                "text": "5” Random Orbit Sander: On-board dust collection ensures a clean work space"
+              },
+              {
+                "field": "bullet",
+                "text": "5” Random Orbit Sander: Multiple grip zones increases user comfort during extended use"
+              },
+              {
+                "field": "bullet",
+                "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products"
+              },
+              {
+                "field": "bullet",
+                "text": "3-year manufacturer's warranty"
+              },
+              {
+                "field": "bullet",
+                "text": "Includes: 18V Corner Cat Finish Sander, 18V 5\" Random Orbit Sander, Collet&nbsp;Wrench, Vacuum Dust Chute, (6) Pieces of Sandpaper&nbsp;Assortment, Dust Collection Bag, and Operator's Manuals"
+              },
+              {
+                "field": "bullet",
+                "text": "Battery and charger sold separately"
+              },
+              {
+                "field": "bullet",
+                "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>"
+              },
+              {
+                "field": "spec",
+                "text": "Battery Power Type: Lithium Ion"
+              },
+              {
+                "field": "spec",
+                "text": "Battery Voltage (V): 18V"
+              },
+              {
+                "field": "spec",
+                "text": "Charger Included: Charger Not Included"
+              },
+              {
+                "field": "spec",
+                "text": "Color Family: Green"
+              },
+              {
+                "field": "spec",
+                "text": "Cordless Tool Type: Orbit Sander"
+              },
+              {
+                "field": "spec",
+                "text": "Cordless/Corded: Cordless"
+              },
+              {
+                "field": "spec",
+                "text": "Included: Tool Only"
+              },
+              {
+                "field": "spec",
+                "text": "Motor Type: Brushed"
+              },
+              {
+                "field": "spec",
+                "text": "Number of Tools (Bonus Tool Not Included): 2"
+              },
+              {
+                "field": "spec",
+                "text": "Number of Total Batteries Included: 0"
+              },
+              {
+                "field": "spec",
+                "text": "Power Tool Features: Cushioned Grip,Lock On Switch,No Tool Disc/Pad Change,Random Orbit"
+              },
+              {
+                "field": "spec",
+                "text": "Returnable: 90-Day"
+              },
+              {
+                "field": "spec",
+                "text": "Tools Included: Sander"
+              },
+              {
+                "field": "spec",
+                "text": "Tools Product Type: Power Tool"
+              },
+              {
+                "field": "spec",
+                "text": "Voltage (V): 18 V"
+              },
+              {
+                "field": "spec",
+                "text": "Manufacturer Warranty: 3-Year Manufacturer’s Warranty"
+              },
+              {
+                "field": "description",
+                "text": "The RYOBI 2-Tool Combo is the perfect solution for sanding projects. The 18V ONE+ Cordless Corner Cat Finish Sander is the perfect solution for precise, controlled sanding in tight spaces. The compact size, triangular base, and 50% reduced vibration vs the previous model provides more control for an even finer finish. This sander also has a hook and loop attachment system helping to ensure quick and easy sandpaper attachment. The 18V 5” Random Orbit Sander features a fast 10,000 orbits per minute (OPM) that will provide a swirl-free finish to each new project. This sander delivers optimized control and comfort while sanding with 40% reduced vibration vs the previous model. Quickly and easily change sandpaper with the easy hook and loop sanding pad base. This 18V ONE+ 2-Tool Combo is backed by the RYOBI 3-Year Manufacturer's Warranty and includes the PCL416 18V Corner Cat Finish Sander, PCL406 18V 5\" Random Orbit Sander, Collet Wrench, Vacuum Dust Chute, (6) Pieces of Sandpaper Assortment, Dust Collection Bag, and Operator's Manuals Battery and charger sold separately."
+              }
+            ],
+            "products": [],
+            "isBundle": true,
+            "pageModel": "PCL406416SB"
+          }
+        ],
+        "done": [
+          "bundle:328690517"
+        ],
+        "askedKeys": [],
+        "updatedAt": 1795476232664,
+        "reason": "The app read the pages; the AI has not been asked yet."
+      }
+    }
+  }
+}
