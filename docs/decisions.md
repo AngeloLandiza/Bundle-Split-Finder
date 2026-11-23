@@ -638,3 +638,36 @@ fulfillment fee (flat fee $0, the default).
   PCL1201K2-PCL515B -$0.14, DCK540D1WCS382B -$0.94. After: DCK540D1WCS382B -$0.94, DCK540D1WCS565B -$7.11, DCK540D1WCB1404
   -$7.70, PCL1201K2-PCL424B -$8.38, PCL1201K2-P755 -$11.75. The five PCL1201K2 BOGO pairs fall by $15.01 each, PCL424B-PCL406B
   by $7.60. Every part with no stored fee still counts $0, so the rest still overstate; the sales pulls fill those in.
+
+### Signals round 3: no silent mixing of fees, and fees for every part that counts (Nov 23 2026)
+An estimate that counted Amazon's FBA fee for one part and $0 for another ranked bundles wrongly (the Keepa-fee'd bundle
+looked worse than one whose fee was simply missing), and the PO would act on it.
+- **An estimate counts a fee for every part, or says which it does not** (`core/src/scan/report.ts feesOf`, `PartFees`
+  `fulfillmentFrom: 'keepa' | 'flat' | 'none'` with `fulfillmentWhy`). With `fees.fulfillmentSource: 'keepa'`: Keepa's FBA
+  fee for the part's own listing; a listing Keepa was asked about with no FBA fee (it happens), or a part priced by a
+  confirmed price, takes the owner's flat fee when it is above $0 and says so ("flat $5.00 for PCL235B: Keepa has no FBA fee
+  for it"); at $0, or for a listing Keepa was not asked about yet, no fee is counted ('none') and the estimate is "before
+  fulfillment for M of N parts". *Not asked yet counts $0, not the flat fee:* the label then says exactly what the figure is
+  (no fee in it), and the drip asks Keepa next; a flat fee would make it a third, unlabelled kind.
+- **What "before fulfillment" does:** never `buyNow`, never a buy line in a digest, never in "Worth buying now" (the verdict
+  names it; a profit already below the owner's number is named first, since a fee can only lower it); `DealRow.beforeFulfillment
+  {parts, of}`; the basis sentence opens with "before fulfillment for 1 of 2 parts: Amazon's FBA fee from Keepa for PCL1201K2
+  ($15.01); none yet for PCL424B: Keepa has not been asked about its listing". Deals order (`core/src/deals/sort.ts`): by profit
+  or ROI, such a row sorts after every full estimate of the same sign (above zero, or not); by discount, unchanged. The UI's own
+  re-sorts (Today, table heads) are not changed here.
+- **Fees for every part that counts** (`agent/signalsPass.ts feePullsWanted`): with 'keepa', every matched part of every bundle
+  with a complete estimate, or one part short of one, whose listing Keepa has not been asked about within the freshness window
+  (3 days): bundles by estimate, highest first, then the one-short ones by smallest break-even; 1 token each, through the drip,
+  after the lookups and the catalog check; the watched deals' sales pulls follow. A part pulled for any reason has a trend
+  (`pulledAt`) and is not pulled again within the window; a re-pull past it passes the window as the cache's max age. With no
+  lookup waiting, the drip's next look waits only for one token, not a lookup's 11. `AgentState.agent.drip.feesWaiting`.
+- **The verdict on every row with an estimate, watched or not** (`signalNote`): signals are now judged for every bundle; only a
+  watched bundle's buy signal goes in a digest or marks the row `buyNow`. Wording, binding condition first: "est. $6.63 is below
+  your $20", "before fulfillment for 1 of 2 parts — Keepa is asked next", "DCS382B sells about 12 a month, below your 50",
+  "Worth buying now: +$21.14 (234.9% ROI), sells about 500 a month, …". A part before fulfillment because Keepa was not asked has
+  no sales figure for the same reason: one pull answers both, so the verdict says it once.
+- **Replayed on after-scan3** (`npx tsx scripts/replay-fees.ts`, with the 3 FBA fees the owner's app had stored): 13 complete
+  estimates, 0 with a fee for every part, 13 before fulfillment for some part; the fee pulls would take 24 listings, 24 tokens.
+  Deals top 8 by profit: DCK540D1WCS382B -$0.94, DCK540D1WCS565B -$7.11, DCK540D1WCB1404 -$7.70 (2 of 2 before fulfillment),
+  PCL1201K2-PCL424B -$8.38, -P755 -$11.75, -PCL445B -$13.69 (1 of 2), DCK540D1WDCB606 -$14.83 (2 of 2), PCL1201K2-PCL515B -$15.15
+  (1 of 2); none worth buying.
