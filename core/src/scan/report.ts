@@ -89,27 +89,42 @@ async function refsOf(store: ScanStore, opts: ReportOptions = {}): Promise<RefsO
 }
 
 /**
- * Signals round 2: the fees one unit of a part is estimated with. With fulfillmentSource 'keepa', Amazon's FBA
- * pick-and-pack fee Keepa stored for the part's own listing, else the flat fee; with referralSource 'keepa', Keepa's
- * referral percentage for the listing, else the owner's rate. A part priced by a confirmed price (no listing of its own
- * counted) takes the flat settings. Never a figure from another listing (rule 4).
+ * The fees one unit of a part is estimated with. `listing`: the stored Keepa trend of the part's own listing (present:
+ * Keepa was asked), undefined when Keepa was not asked, or 'confirmed' for a part priced by a confirmed price (no listing).
+ *
+ * fulfillmentSource 'flat': the flat fee. 'keepa' (signals round 3, no silent mixing): Keepa's FBA fee for the listing; a
+ * listing Keepa was asked about with no FBA fee, or a confirmed price, takes the flat fee when it is above $0 and counts no
+ * fee ('none') at $0; a listing Keepa was not asked about yet counts no fee ('none'), so the estimate says it is before
+ * fulfillment for that part instead of mixing a $0 into it. Referral: Keepa's percentage only with referralSource 'keepa'.
+ * Never a figure from another listing (rule 4).
  */
-export function feesOf(fees: FeeSettings, listing: KeepaFees | undefined): PartFees {
-  const fba = fees.fulfillmentSource === 'keepa' && typeof listing?.fbaFee === 'number' && listing.fbaFee >= 0 ? listing.fbaFee : null;
-  const ref = fees.referralSource === 'keepa' && typeof listing?.referralPercent === 'number' && listing.referralPercent > 0 && listing.referralPercent < 100
-    ? Math.round(listing.referralPercent * 100) / 10_000
+export function feesOf(fees: FeeSettings, listing: KeepaFees | 'confirmed' | undefined): PartFees {
+  const trend = listing === 'confirmed' ? undefined : listing;
+  const ref = fees.referralSource === 'keepa' && typeof trend?.referralPercent === 'number' && trend.referralPercent > 0 && trend.referralPercent < 100
+    ? Math.round(trend.referralPercent * 100) / 10_000
     : null;
-  return {
-    fulfillment: fba ?? fees.fulfillmentFee, fulfillmentFrom: fba === null ? 'flat' : 'keepa',
-    referralRate: ref ?? fees.referralRate, referralFrom: ref === null ? 'flat' : 'keepa',
-  };
+  const referral = { referralRate: ref ?? fees.referralRate, referralFrom: ref === null ? ('flat' as const) : ('keepa' as const) };
+  if (fees.fulfillmentSource !== 'keepa') return { fulfillment: fees.fulfillmentFee, fulfillmentFrom: 'flat', ...referral };
+  if (typeof trend?.fbaFee === 'number' && trend.fbaFee >= 0) return { fulfillment: trend.fbaFee, fulfillmentFrom: 'keepa', ...referral };
+  const why = listing === 'confirmed' ? 'no_listing' : listing === undefined ? 'not_pulled' : 'no_keepa_fee';
+  if (why !== 'not_pulled' && fees.fulfillmentFee > 0) return { fulfillment: fees.fulfillmentFee, fulfillmentFrom: 'flat', fulfillmentWhy: why, ...referral };
+  return { fulfillment: 0, fulfillmentFrom: 'none', fulfillmentWhy: why, ...referral };
 }
 
-/** The listing's own fees for evaluateBundle: only those taken from Keepa (the flat ones are the settings already). */
+/** The listing's own fees for evaluateBundle: those that are not the settings' (Keepa's, or none counted). */
 const ownFees = (f: PartFees | undefined): ListingFees | undefined =>
   !f || (f.fulfillmentFrom === 'flat' && f.referralFrom === 'flat')
     ? undefined
-    : { ...(f.fulfillmentFrom === 'keepa' ? { fulfillmentFee: f.fulfillment } : {}), ...(f.referralFrom === 'keepa' ? { referralRate: f.referralRate } : {}) };
+    : { ...(f.fulfillmentFrom !== 'flat' ? { fulfillmentFee: f.fulfillment } : {}), ...(f.referralFrom === 'keepa' ? { referralRate: f.referralRate } : {}) };
+
+/**
+ * Signals round 3: the counted parts an estimate has no fulfillment fee for ('none'), of all its counted parts. Empty
+ * `before` means every counted part has a fee (Keepa's, or the owner's flat fee where Keepa has none).
+ */
+export function fulfillmentGap(parts: Pick<PartRow, 'model' | 'fees'>[]): { total: number; before: Pick<PartRow, 'model' | 'fees'>[] } {
+  const counted = parts.filter((p) => p.fees !== undefined);
+  return { total: counted.length, before: counted.filter((p) => p.fees!.fulfillmentFrom === 'none') };
+}
 
 /** Ties among equal prices go in this order. */
 const KIND_ORDER: Record<PriceKind, number> = { amazon_new: 0, amazon_buybox: 1, confirmed: 2, ebay_sold_new: 3, amazon_list: 4, homedepot: 5 };
@@ -199,7 +214,7 @@ async function partRows(store: ScanStore, settings: ScanSettings, refs: RefsOf, 
     const featured = prices.find((o) => o.kind === 'amazon_new' && !o.reference);
     const confirmedOpt = prices.find((o) => o.kind === 'confirmed' && !o.reference);
     // The fees of a counted price: Keepa's for the listing whose Amazon New price counts, the flat settings for a confirmed one.
-    const fees = featured && match?.asin ? feesOf(settings.fees, refs.trend(match.asin)) : confirmedOpt ? feesOf({ ...settings.fees, fulfillmentSource: 'flat', referralSource: 'flat' }, undefined) : undefined;
+    const fees = featured && match?.asin ? feesOf(settings.fees, refs.trend(match.asin)) : confirmedOpt ? feesOf(settings.fees, 'confirmed') : undefined;
     rows.push({
       model,
       qty: counts[model]!,
@@ -605,6 +620,37 @@ const basisUsd = (n: number): string => `$${n.toFixed(2)}`;
 const basisList = (xs: string[]): string => (xs.length <= 2 ? xs.join(' and ') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
 const perUnit = (fee: string, qty: number): string => (qty > 1 ? `${fee} ×${qty}` : fee);
 
+/** Why a counted part has no Keepa FBA fee, in words, with the fee it took (signals round 3). */
+function noKeepaFee(p: { model: string; fees: PartFees }, flat: number): string {
+  if (p.fees.fulfillmentFrom === 'flat') {
+    return `flat ${basisUsd(flat)} for ${p.model}: ${p.fees.fulfillmentWhy === 'no_listing' ? 'a confirmed price, no Amazon listing to read' : 'Keepa has no FBA fee for it'}`;
+  }
+  if (p.fees.fulfillmentWhy === 'not_pulled') return `none yet for ${p.model}: Keepa has not been asked about its listing`;
+  const what = p.fees.fulfillmentWhy === 'no_listing' ? 'a confirmed price, no Amazon listing to read' : 'Keepa has no FBA fee for it';
+  return `none for ${p.model}: ${what}, and your flat fee is ${basisUsd(flat)}`;
+}
+
+/**
+ * Signals round 3, no silent mixing: the fulfillment part of the basis with fulfillmentSource 'keepa'. Every counted part
+ * has a fee: "Amazon's FBA fee from Keepa for all 2 parts ($5.40, $7.12)", with any flat fallback named. Some part has none:
+ * "before fulfillment for 1 of 2 parts: Amazon's FBA fee from Keepa for PCL1201K2 ($15.01); none yet for PCL424B: …".
+ */
+function fulfillmentWords(fees: FeeSettings, counted: { model: string; qty: number; fees: PartFees }[]): string {
+  const n = counted.length;
+  const noun = n === 1 ? 'part' : 'parts';
+  const keepa = counted.filter((p) => p.fees.fulfillmentFrom === 'keepa');
+  const other = counted.filter((p) => p.fees.fulfillmentFrom !== 'keepa').map((p) => noKeepaFee(p, fees.fulfillmentFee));
+  const before = counted.filter((p) => p.fees.fulfillmentFrom === 'none').length;
+  const fees$ = (xs: typeof keepa) => xs.map((p) => perUnit(basisUsd(p.fees.fulfillment), p.qty)).join(', ');
+  if (before === 0) {
+    if (keepa.length === n) return `Amazon's FBA fee from Keepa for ${n === 1 ? 'the 1 part' : `all ${n} parts`} (${fees$(keepa)})`;
+    const head = keepa.length > 0 ? `Amazon's FBA fee from Keepa for ${keepa.length} of ${n} ${noun} (${fees$(keepa)}), ` : '';
+    return `${head}${other.join(', ')}`;
+  }
+  const head = keepa.length > 0 ? [`Amazon's FBA fee from Keepa for ${basisList(keepa.map((p) => `${p.model} (${perUnit(basisUsd(p.fees.fulfillment), p.qty)})`))}`] : [];
+  return `before fulfillment for ${before} of ${n} ${noun}: ${[...head, ...other].join('; ')}`;
+}
+
 /**
  * Signals round 2: the fees an estimate rests on, in one sentence that says exactly what was used. With the flat settings,
  * the settings in words ("15% referral (at least $0.30), $0.00 fulfillment, 0% tax, $0.00 inbound. An estimate from your
@@ -631,13 +677,6 @@ export function estimateBasis(fees: FeeSettings, parts: Pick<PartRow, 'model' | 
       ? `your ${basisPct(fees.referralRate)} referral ${minRef}: Keepa's referral rate is stored for none of the ${n} ${noun}`
       : `Keepa's referral rate for ${from.length} of ${n} ${noun} (${from.map((p) => basisPct(p.fees.referralRate)).join(', ')})${flat.length ? `, your ${basisPct(fees.referralRate)} for ${basisList(flat)}` : ''}, at least ${basisUsd(fees.minReferral)}`;
   }
-  let fulfillment = `${basisUsd(fees.fulfillmentFee)} fulfillment`;
-  if (keepaFba) {
-    const from = counted.filter((p) => p.fees.fulfillmentFrom === 'keepa');
-    const flat = counted.filter((p) => p.fees.fulfillmentFrom === 'flat').map((p) => p.model);
-    fulfillment = from.length === 0
-      ? `no FBA fee from Keepa stored for the ${n} ${noun} yet, so your flat ${basisUsd(fees.fulfillmentFee)} fulfillment`
-      : `Amazon's FBA fee from Keepa for ${from.length} of ${n} ${noun} (${from.map((p) => perUnit(basisUsd(p.fees.fulfillment), p.qty)).join(', ')})${flat.length ? `, your flat ${basisUsd(fees.fulfillmentFee)} for ${basisList(flat)}` : ''}`;
-  }
+  const fulfillment = keepaFba ? fulfillmentWords(fees, counted) : `${basisUsd(fees.fulfillmentFee)} fulfillment`;
   return `${referral}; ${fulfillment}; ${basisPct(fees.salesTaxRate)} tax; ${basisUsd(fees.inboundCost)} inbound. An estimate, not your real Amazon fees.`;
 }

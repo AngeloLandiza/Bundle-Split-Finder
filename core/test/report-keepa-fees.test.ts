@@ -45,10 +45,11 @@ describe("Keepa's FBA fee in the main estimate, on the owner's third real scan",
     expect(row.estimate!.profit).toBe(-8.38);
     expect(row.parts.map((p) => [p.model, p.fees])).toEqual([
       ['PCL1201K2', { fulfillment: 15.01, fulfillmentFrom: 'keepa', referralRate: 0.15, referralFrom: 'flat' }],
-      ['PCL424B', { fulfillment: 0, fulfillmentFrom: 'flat', referralRate: 0.15, referralFrom: 'flat' }],
+      // Signals round 3: Keepa was not asked about PCL424B's listing yet, so no fee is counted for it, and the estimate says so.
+      ['PCL424B', { fulfillment: 0, fulfillmentFrom: 'none', fulfillmentWhy: 'not_pulled', referralRate: 0.15, referralFrom: 'flat' }],
     ]);
     expect(estimateBasis(DEFAULT_SCAN_SETTINGS.fees, row.parts)).toBe(
-      "15% referral (at least $0.30); Amazon's FBA fee from Keepa for 1 of 2 parts ($15.01), your flat $0.00 for PCL424B; 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.",
+      "15% referral (at least $0.30); before fulfillment for 1 of 2 parts: Amazon's FBA fee from Keepa for PCL1201K2 ($15.01); none yet for PCL424B: Keepa has not been asked about its listing; 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.",
     );
     // The "FBA estimate (Keepa)" line beside it adds nothing: the estimate already used the one fee stored.
     expect(fbaEstimateOf(row.options[0], (a) => (fees.has(a) ? { asin: a, amazonPrice: null, salesRank: null, offerCount: null, pulledAt: 1, fbaFee: fees.get(a)! } : undefined), DEFAULT_SCAN_SETTINGS.fees)).toBeNull();
@@ -87,15 +88,32 @@ describe("Keepa's referral rate, only when the owner chooses it", () => {
     // $44.89 - $5.39 (12%) - $8.02 = $31.48; - $9 = $22.48.
     expect(row.estimate!.profit).toBe(22.48);
     expect(estimateBasis(keepaRef.fees, row.parts)).toBe(
-      "Keepa's referral rate for 1 of 1 part (12%), at least $0.30; Amazon's FBA fee from Keepa for 1 of 1 part ($8.02); 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.",
+      "Keepa's referral rate for 1 of 1 part (12%), at least $0.30; Amazon's FBA fee from Keepa for the 1 part ($8.02); 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.",
     );
   });
 
-  it('no trend stored: every part takes the flat settings, and the basis says none was stored', async () => {
+  it('no trend stored: the estimate is before fulfillment for the part, and says so', async () => {
     const row = (await buildReport(await pcl235b(), DEFAULT_SCAN_SETTINGS)).bundles[0]!;
     expect(row.estimate!.profit).toBe(29.16);
     expect(estimateBasis(DEFAULT_SCAN_SETTINGS.fees, row.parts)).toBe(
-      '15% referral (at least $0.30); no FBA fee from Keepa stored for the 1 part yet, so your flat $0.00 fulfillment; 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.',
+      '15% referral (at least $0.30); before fulfillment for 1 of 1 part: none yet for PCL235B: Keepa has not been asked about its listing; 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.',
+    );
+  });
+
+  it("Keepa asked, no FBA fee: the owner's flat fee, named; at $0 the estimate stays before fulfillment (signals round 3)", async () => {
+    const store = await pcl235b();
+    const noFee = { ...trend, fbaFee: null };
+    const flat5 = { ...DEFAULT_SCAN_SETTINGS, fees: { ...DEFAULT_FEES, fulfillmentFee: 5 } };
+    const five = (await buildReport(store, flat5, { trend: () => noFee })).bundles[0]!;
+    expect(five.estimate!.profit).toBe(24.16);
+    expect(five.parts[0]!.fees).toMatchObject({ fulfillment: 5, fulfillmentFrom: 'flat', fulfillmentWhy: 'no_keepa_fee' });
+    expect(estimateBasis(flat5.fees, five.parts)).toBe(
+      '15% referral (at least $0.30); flat $5.00 for PCL235B: Keepa has no FBA fee for it; 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.',
+    );
+    const zero = (await buildReport(store, DEFAULT_SCAN_SETTINGS, { trend: () => noFee })).bundles[0]!;
+    expect(zero.parts[0]!.fees).toMatchObject({ fulfillment: 0, fulfillmentFrom: 'none', fulfillmentWhy: 'no_keepa_fee' });
+    expect(estimateBasis(DEFAULT_SCAN_SETTINGS.fees, zero.parts)).toBe(
+      '15% referral (at least $0.30); before fulfillment for 1 of 1 part: none for PCL235B: Keepa has no FBA fee for it, and your flat fee is $0.00; 0% tax; $0.00 inbound. An estimate, not your real Amazon fees.',
     );
   });
 });

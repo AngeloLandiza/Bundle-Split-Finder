@@ -830,7 +830,17 @@ export interface PartRow {
 /** Signals round 2: one part's fees in the estimate (report.ts feesOf). Estimates, never the seller's real fees. */
 export interface PartFees {
   fulfillment: number;
-  fulfillmentFrom: 'keepa' | 'flat';
+  /**
+   * keepa  Amazon's FBA fee Keepa stored for the part's listing
+   * flat   the owner's flat fee (his choice 'flat', or with 'keepa' a fallback above $0: see `fulfillmentWhy`)
+   * none   signals round 3: no fulfillment fee counted ($0): the estimate is "before fulfillment" for this part
+   */
+  fulfillmentFrom: 'keepa' | 'flat' | 'none';
+  /**
+   * With fees.fulfillmentSource 'keepa' and no Keepa fee: why. not_pulled: Keepa was not asked about the listing yet (the
+   * drip asks); no_keepa_fee: Keepa was asked and has no FBA fee for it; no_listing: priced by a confirmed price, no listing.
+   */
+  fulfillmentWhy?: 'not_pulled' | 'no_keepa_fee' | 'no_listing';
   /** A fraction (0.15). */
   referralRate: number;
   referralFrom: 'keepa' | 'flat';
