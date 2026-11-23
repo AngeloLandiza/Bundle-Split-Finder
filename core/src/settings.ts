@@ -196,7 +196,7 @@ export function validateSettings(s: ExtensionSettings): Partial<Record<SettingsF
 
 // ---------------------------------------------------------------- the scan
 
-const BRAND_QUERIES: Record<(typeof KNOWN_BRANDS)[number], string> = {
+export const BRAND_QUERIES: Record<(typeof KNOWN_BRANDS)[number], string> = {
   DEWALT: 'dewalt 20v combo kit',
   RYOBI: 'ryobi 18v combo kit',
 };

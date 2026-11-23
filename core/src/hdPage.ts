@@ -266,3 +266,83 @@ export function parseSearchText(text: string, origin?: string): SearchProduct[] 
   const state = pageState(text);
   return state === null ? null : parseSearchState(state, origin);
 }
+
+// ---------------------------------------------------------------- BOGO promotions (Nov 23 recording)
+
+/**
+ * A "buy one, get one free" promotion on a product's pricing entry. Recorded Nov 23 (fixtures/homedepot-pages/
+ * bogo-2026-11-23.json): `pricing(...).conditionalPromotions[]` with `experienceTag` "BOGO", `subExperienceTag`
+ * "buyOneGetOne", a reward tier with `rewardPercent` 100, `dates.start`/`dates.end` as MM/DD/YYYY and
+ * `description.shortDesc`. The eligible free tools are not on the page (`omsSkus` null).
+ */
+export interface PagePromotion {
+  promotionId: string;
+  /** dates.start as YYYY-MM-DD; null when the page gives none in the recorded form. */
+  startsAt: string | null;
+  /** dates.end as YYYY-MM-DD; null likewise. */
+  endsAt: string | null;
+  /** description.shortDesc, trimmed; null when absent. */
+  description: string | null;
+}
+
+/** A product page with the BOGO promotions its pricing carries. */
+export interface PromoPage extends ProductPage {
+  promotions: PagePromotion[];
+}
+
+/** "01/31/2027" -> "2027-01-31"; anything else null. */
+export function isoDateOf(v: unknown): string | null {
+  if (typeof v !== 'string') return null;
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v.trim());
+  return m ? `${m[3]}-${m[1]}-${m[2]}` : null;
+}
+
+/**
+ * The free-item promotions of one conditionalPromotions list: a BOGO tag, the buyOneGetOne sub-tag and a 100% reward,
+ * all three, as recorded. Any other promotion (a percentage off, a "buy 2 save", a BOGO at less than 100%) is not one.
+ */
+export function bogoPromotionsOf(list: unknown): PagePromotion[] {
+  const out: PagePromotion[] = [];
+  for (const raw of Array.isArray(list) ? list : []) {
+    const p = asObj(raw);
+    if (p.experienceTag !== 'BOGO' || p.subExperienceTag !== 'buyOneGetOne') continue;
+    const tiers = asObj(p.reward).tiers;
+    if (!Array.isArray(tiers) || !tiers.some((t) => asObj(t).rewardPercent === 100)) continue;
+    const id = asStr(p.promotionId);
+    if (id === null || !/^\d{1,12}$/.test(id) || out.some((o) => o.promotionId === id)) continue;
+    const dates = asObj(p.dates);
+    out.push({ promotionId: id, startsAt: isoDateOf(dates.start), endsAt: isoDateOf(dates.end), description: nonEmpty(asObj(p.description).shortDesc) });
+  }
+  return out;
+}
+
+/** parsePromoState on the page text from `window.__APOLLO_STATE__=` on. */
+export function parsePromoPage(text: string, itemId: string): PromoPage | null {
+  const state = pageState(text);
+  return state === null ? null : parsePromoState(state, itemId);
+}
+
+/**
+ * What parseProductPage reads, plus the page's BOGO promotions, from a parsed Apollo state. Every pricing entry must name
+ * the same promotions; entries that disagree give none rather than a guess between them (as pricingOf does for the price).
+ * Null as parseProductPage.
+ */
+export function parsePromoState(state: unknown, itemId: string): PromoPage | null {
+  const raw = asObj(state)[`base-catalog-${itemId}`];
+  if (!raw || typeof raw !== 'object') return null;
+  const product = raw as Json;
+  const ids = asObj(product.identifiers);
+  const brand = nonEmpty(ids.brandName);
+  const model = nonEmpty(ids.modelNumber);
+  if (brand === null || model === null) return null;
+  const lists = Object.keys(product)
+    .filter((k) => k.startsWith('pricing('))
+    .map((k) => bogoPromotionsOf(asObj(product[k]).conditionalPromotions));
+  const first = lists[0] ?? [];
+  const idsOf = (l: PagePromotion[]) => l.map((p) => p.promotionId).sort().join(',');
+  const agree = lists.every((l) => idsOf(l) === idsOf(first));
+  return {
+    itemId, brand, model, title: nonEmpty(ids.productLabel) ?? '', ...pricingOf(product), ...contentOf(product),
+    promotions: agree ? first : [],
+  };
+}
