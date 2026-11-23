@@ -1,26 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { AiSuggestion, Quote as Quote_, ReviewAnswer, ReviewQuestion } from '../api/types';
+import type { ReviewAnswer, ReviewQuestion } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
 import { SearchField, TextField } from '../components/Fields';
 import { InspectorSplit, Kbd } from '../components/Layout';
 import { Page } from '../components/Page';
 import type { RowMenu } from '../components/Table';
-import { Quote, SourceLink } from '../components/Source';
+import { SourceLink } from '../components/Source';
 import { ConfirmInline, EmptyState, LoadError, LoadingState, Notice, ScanStrip } from '../components/States';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { money, plural } from '../lib/format';
 import { scanStrip } from '../lib/scanSteps';
 import { copyText, openPage } from '../lib/actions';
-import { AI_INTRO, aiIntroDismissed, dismissAiIntro } from '../lib/aiIntro';
+import { AI_FOOTNOTE, aiIntroDismissed, dismissAiIntro } from '../lib/aiIntro';
 import { isMenuKey, pressOf, reviewKey } from '../lib/keys';
 import { formatShortcut, isMac } from '../lib/platform';
 import { questionMenu, type QuestionMenuId } from '../lib/menus';
 import { SCREEN_KEYS } from '../lib/notices';
-import { plainReason } from '../lib/questionWords';
-import { KIND_LABEL, SAVED_ROW_MS, groupQuestions, parseTyped, preselected, rowChip, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
+import { briefFor, rowState } from '../lib/reviewBrief';
+import { DecisionCard, Details } from './ReviewCard';
+import { KIND_LABEL, SAVED_ROW_MS, groupQuestions, parseTyped, preselected, rowChip, saveHint, typedFromSuggestion } from './reviewModel';
 import './Review.css';
 
 const NONE = '__none';
@@ -214,7 +215,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
     >
       <InspectorSplit
         main={list}
-        min={440}
+        min={420}
         label="Question"
         empty="No question selected"
         inspector={
@@ -287,14 +288,14 @@ function QuestionList({ questions, current, onSelect, menuOf }: { questions: Rev
             }}
           >
             <span className="qitem-main">
-              <span className="qitem-title" title={q.bundle.title}>
-                {q.bundle.title}
+              <span className="qitem-title code" title={q.bundle.title}>
+                {q.bundle.model}
               </span>
               <span className="qitem-sub">
-                {KIND_LABEL[q.kind]} · <span className="code">{q.subject}</span>
+                {q.bundle.brand} · {KIND_LABEL[q.kind]}
               </span>
             </span>
-            <RowSuggestion q={q} />
+            <RowState q={q} />
           </button>
         </li>
       ))}
@@ -303,15 +304,14 @@ function QuestionList({ questions, current, onSelect, menuOf }: { questions: Rev
 }
 
 /**
- * What a list row says about the AI: a green Verified chip only for an answer the code checked (so "Approve all" has
- * something to point at), a quiet "AI suggested" for one it could not check, and nothing otherwise. A chip on every row
- * says nothing; the full Verified / Not verified state, and why, is in the answer pane.
+ * What a list row says: two to four words from the card's state ("Suggested: 2 parts", "AI could not tell", "Needs a
+ * listing"), never a title. A green Verified tag only for an answer the code checked, so "Approve all" has something to
+ * point at; the rest is quiet words. The card in the pane says why.
  */
-function RowSuggestion({ q }: { q: ReviewQuestion }) {
-  const chip = rowChip(q.suggestion);
-  if (chip === 'verified') return <Tag tone="verified">Verified</Tag>;
-  if (chip === 'suggested') return <span className="qitem-ai">AI suggested</span>;
-  return null;
+function RowState({ q }: { q: ReviewQuestion }) {
+  const text = rowState(q);
+  if (rowChip(q.suggestion) === 'verified') return <Tag tone="verified">{text}</Tag>;
+  return <span className="qitem-ai">{text}</span>;
 }
 
 function Question({
@@ -413,19 +413,19 @@ function Question({
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const why = plainReason(q.reason, { brand: q.bundle.brand, model: q.bundle.model });
-  const aiRow = (id: string) => (pre === id && s ? <SuggestionDetail s={s} id={`ai-${q.id}`} /> : null);
+  const brief = briefFor(q);
+  const cardId = `card-${q.id}`;
+  const suggestedMark = (id: string) => (pre === id && s ? <span className="choice-suggested">Suggested</span> : null);
 
   return (
     <article className="question view-enter" aria-labelledby={`q-${q.id}`}>
       <div className="question-body">
         <header className="question-head">
-          <p className="question-kind">{KIND_LABEL[q.kind]}</p>
           <h2 className="question-prompt" id={`q-${q.id}`}>
-            {q.prompt}
+            {brief.ask}
           </h2>
-          <p className="question-bundle">
-            {q.bundle.brand} · <span className="code">{q.bundle.model}</span> · {q.bundle.title}
+          <p className="question-bundle" title={`${q.bundle.brand} ${q.bundle.model} · ${q.bundle.title}`}>
+            <span className="code">{q.bundle.model}</span> · {q.bundle.title}
           </p>
           <p className="question-links">
             <SourceLink source={{ label: 'Home Depot page', url: q.bundle.link }} />
@@ -453,20 +453,24 @@ function Question({
           </Notice>
         ) : null}
 
-        {s && intro ? (
-          <p className="ai-intro" role="note">
-            <span>{AI_INTRO}</span>
-            <Button
-              size="sm"
-              onClick={() => {
-                dismissAiIntro();
-                setIntro(false);
-              }}
-            >
-              Got it
-            </Button>
-          </p>
-        ) : null}
+        <div className="card-wrap">
+          <DecisionCard brief={brief} id={cardId} fromAi={s !== null} />
+          {s && intro ? (
+            <p className="ai-footnote" role="note">
+              <span>{AI_FOOTNOTE}</span>
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => {
+                  dismissAiIntro();
+                  setIntro(false);
+                }}
+              >
+                Got it
+              </button>
+            </p>
+          ) : null}
+        </div>
 
         <form
           ref={form}
@@ -479,23 +483,24 @@ function Question({
         >
           <fieldset className="choices">
             <legend className="question-section-title">Your answer</legend>
-            {s && (s.status === 'unmatched' || s.status === 'cannot_tell') ? <SuggestionState s={s} /> : null}
             <div className="choice-box">
               {q.choices.map((c, i) => (
                 <div key={c.id} className="choice-item">
                   <label className={`choice${choice === c.id ? ' choice-on' : ''}`}>
-                    <input type="radio" name={`a-${q.id}`} value={c.id} checked={choice === c.id} onChange={() => setChoice(c.id)} aria-describedby={pre === c.id ? `ai-${q.id}` : undefined} />
+                    <input type="radio" name={`a-${q.id}`} value={c.id} checked={choice === c.id} onChange={() => setChoice(c.id)} aria-describedby={pre === c.id ? cardId : undefined} />
                     <span className="choice-text">
-                      <span className={c.models.length && !c.asin ? 'code choice-label' : 'choice-label'}>{c.label}</span>
+                      <span className={c.models.length && !c.asin ? 'code choice-label' : 'choice-label'} title={c.label}>
+                        {c.label}
+                      </span>
                       {c.asin ? (
                         <span className="choice-sub">
                           <span className="code">{c.asin}</span> {c.source ? <SourceLink source={c.source} /> : null}
                         </span>
                       ) : null}
                     </span>
+                    {suggestedMark(c.id)}
                     <Kbd>{i + 1}</Kbd>
                   </label>
-                  {aiRow(c.id)}
                 </div>
               ))}
               {q.allowNone ? (
@@ -512,14 +517,14 @@ function Question({
               {q.allowTyped ? (
                 <div className="choice-item">
                   <label className={`choice${choice === TYPED ? ' choice-on' : ''}`}>
-                    <input type="radio" name={`a-${q.id}`} value={TYPED} checked={choice === TYPED} onChange={() => setChoice(TYPED)} />
+                    <input type="radio" name={`a-${q.id}`} value={TYPED} checked={choice === TYPED} onChange={() => setChoice(TYPED)} aria-describedby={typedStart && s ? cardId : undefined} />
                     <span className="choice-text">
                       <span className="choice-label">Enter the parts</span>
                       {typedStart ? <span className="choice-sub">Filled in from the AI suggestion</span> : null}
                     </span>
+                    {typedStart && s ? <span className="choice-suggested">Suggested</span> : null}
                     <Kbd>{q.choices.length + (q.allowNone ? 2 : 1)}</Kbd>
                   </label>
-                  {typedStart && s ? <SuggestionDetail s={s} id={`ai-${q.id}`} /> : null}
                 </div>
               ) : null}
             </div>
@@ -529,19 +534,7 @@ function Question({
           </fieldset>
         </form>
 
-        <section className="question-section">
-          <h3 className="question-section-title">Why it is asked</h3>
-          <p>{why.text}</p>
-          {why.technical ? (
-            <details className="tech">
-              <summary>Technical detail</summary>
-              <p className="tech-note code">{why.technical}</p>
-            </details>
-          ) : null}
-          {q.evidence.map((ev, i) => (
-            <Quote key={i} quote={ev} />
-          ))}
-        </section>
+        <Details q={q} s={s} />
       </div>
 
       <footer className="question-actions">
@@ -550,14 +543,7 @@ function Question({
             {save.error ?? ask.error}
           </span>
         ) : (
-          <span className="question-meta">
-            {s && s.costUsd > 0 ? (
-              <span className="question-cost">
-                AI cost <span className="fig">{money(s.costUsd)}</span>
-              </span>
-            ) : null}
-            {!answerOf() ? <span>{saveHint({ hasAnswer: false, hasNext })}</span> : null}
-          </span>
+          <span className="question-meta">{!answerOf() ? <span>{saveHint({ hasAnswer: false, hasNext })}</span> : null}</span>
         )}
         {hasAi && q.kind !== 'ebay' && !s ? (
           <Button busy={ask.busy} busyLabel="Asking…" onClick={() => void ask.run(q.id)} cost={q.askCostUsd !== null ? `about ${money(q.askCostUsd)}` : undefined}>
@@ -569,67 +555,5 @@ function Question({
         </Button>
       </footer>
     </article>
-  );
-}
-
-/** How many quotes show before "Show more": the first lines are the ones the AI leaned on. */
-const QUOTES_SHOWN = 3;
-
-/** The AI's evidence: each quote with the labelled link to where it was found. */
-function Quotes({ quotes }: { quotes: Quote_[] }) {
-  const [all, setAll] = useState(false);
-  if (quotes.length === 0) return <p className="muted ai-none">The AI quoted no source text.</p>;
-  const shown = all ? quotes : quotes.slice(0, QUOTES_SHOWN);
-  return (
-    <div className="ai-quotes">
-      {shown.map((qt, i) => (
-        <Quote key={i} quote={qt} />
-      ))}
-      {quotes.length > QUOTES_SHOWN && !all ? <LinkButton onClick={() => setAll(true)}>Show {quotes.length - QUOTES_SHOWN} more</LinkButton> : null}
-    </div>
-  );
-}
-
-/**
- * Directly under the choice the AI picked: that it is the AI's, whether the code could verify it and why in plain
- * words, the AI's own reason, and the quotes with their sources (HAX G11; PAIR explainability). Verified and not
- * verified look different without relying on colour: the chip says it.
- */
-function SuggestionDetail({ s, id }: { s: AiSuggestion; id: string }) {
-  const chip = suggestionChip(s);
-  return (
-    <div className={`choice-ai${s.status === 'verified' ? ' choice-ai-verified' : ''}`} id={id}>
-      <p className="choice-ai-head">
-        <strong>Suggested by AI</strong>
-        {chip ? <Tag tone={chip.tone}>{chip.label}</Tag> : null}
-      </p>
-      {chip ? <p className="choice-ai-why">{chip.why}</p> : null}
-      {s.reason ? (
-        <p className="choice-ai-reason">
-          <span className="muted">AI’s reason: </span>
-          {s.reason}
-        </p>
-      ) : null}
-      <Quotes quotes={s.quotes} />
-    </div>
-  );
-}
-
-/** An AI answer that is none of the choices, or none at all: its own state with its reason; nothing is preselected. */
-function SuggestionState({ s }: { s: AiSuggestion }) {
-  const chip = suggestionChip(s);
-  const none = s.answer === 'None of these fits';
-  return (
-    <div className="ai-state">
-      <p className="choice-ai-head">
-        <strong>{s.status === 'cannot_tell' ? 'The AI could not tell' : none ? 'The AI says none of these fits' : 'The AI’s answer is not one of these'}</strong>
-        {chip ? <Tag tone={chip.tone}>{chip.label}</Tag> : null}
-      </p>
-      {s.status === 'unmatched' && !none ? <p className="choice-ai-answer code">{s.answer}</p> : null}
-      {chip ? <p className="choice-ai-why">{chip.why}</p> : null}
-      {s.reason ? <p className="choice-ai-reason">{s.reason}</p> : null}
-      <Quotes quotes={s.quotes} />
-      <p className="muted">Nothing is chosen for you. Pick an answer below, or enter the parts.</p>
-    </div>
   );
 }

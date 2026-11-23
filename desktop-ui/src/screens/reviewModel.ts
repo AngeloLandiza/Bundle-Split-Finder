@@ -1,4 +1,4 @@
-import type { AiSuggestion, DealSection, Grade, QuestionKind, ReviewQuestion } from '../api/types';
+import type { AiSuggestion, DealSection, Grade, QuestionKind, Quote, ReviewQuestion, Source } from '../api/types';
 
 /** How long the "Saved · Undo" row stays at the top of Review. */
 export const SAVED_ROW_MS = 8000;
@@ -68,6 +68,21 @@ export function rowChip(s: AiSuggestion | null): 'verified' | 'suggested' | null
 export function saveHint(o: { hasAnswer: boolean; hasNext: boolean }): string {
   if (!o.hasAnswer) return 'Choose an answer to save';
   return o.hasNext ? '↩ save and next' : '↩ save';
+}
+
+/**
+ * Quotes grouped by the source they were found in (label and address), in the order each source first appears, each
+ * line once. Details shows the source once as a link with its lines under it: no quote loses its source.
+ */
+export function groupBySource(quotes: Quote[]): { source: Source; texts: string[] }[] {
+  const groups = new Map<string, { source: Source; texts: string[] }>();
+  for (const q of quotes) {
+    const key = `${q.source.label}|${q.source.url ?? ''}`;
+    const g = groups.get(key) ?? { source: q.source, texts: [] };
+    if (!g.texts.includes(q.text)) g.texts.push(q.text);
+    groups.set(key, g);
+  }
+  return [...groups.values()];
 }
 
 /** The parts a verified research suggestion typed in, when it is not one of the choices. */

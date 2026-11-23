@@ -1,0 +1,186 @@
+/* The decision card and the Details disclosure of a Review question (docs/design.md, Desktop app, Review). One box, a
+   fixed order: state, the suggestion at its largest, Why in at most three lines, Check. It is a group box like the
+   choices, never a box inside a box. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--group-bg);
+  box-shadow: 0 0 0 0.5px var(--separator);
+}
+
+.card-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 18px;
+}
+
+.card-by {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+/* The suggestion: the largest text in the pane. */
+.card-main {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* No suggestion, or the AI could not tell: a sentence, not a headline. */
+.card-sentence {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.card-quiet {
+  color: var(--label-2);
+  font-weight: 400;
+}
+
+.card-part {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.card-label {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--label-2);
+}
+
+.card-why {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 0 14px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.card-why li::marker {
+  color: var(--label-3);
+}
+
+.card-why .source,
+.card-check .source {
+  font-size: 12px;
+}
+
+.card-check {
+  padding-top: 8px;
+  border-top: 1px solid var(--separator);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.card-check .card-label {
+  line-height: 14px;
+}
+
+/* Details: one disclosure at the foot, closed until he opens it. */
+.details summary {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+  color: var(--label-2);
+  font-size: 12px;
+  line-height: 16px;
+  cursor: default;
+}
+
+.details summary::before {
+  content: '';
+  inline-size: 5px;
+  block-size: 5px;
+  margin-inline-end: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 120ms ease-out;
+}
+
+.details[open] summary::before {
+  transform: rotate(45deg);
+}
+
+.details summary:hover {
+  color: var(--label);
+}
+
+.details summary:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .details summary::before {
+    transition: none;
+  }
+}
+
+.detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 6px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.detail-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-sec h3 {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  color: var(--label-2);
+}
+
+.detail-tech {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--label-2);
+  overflow-wrap: anywhere;
+}
+
+.detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0 0 0 14px;
+  color: var(--label-2);
+}
+
+.detail-quotes q {
+  quotes: '\201C' '\201D';
+  color: var(--label);
+}

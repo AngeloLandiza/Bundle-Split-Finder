@@ -19,7 +19,7 @@ import real from './mockReal.json';
 import { mockBogoView } from './mockTracking';
 import { ApiError, type AgentEvent, type AppSettings, type AppState, type BogoRequest, type DealDetail, type DealRow, type FreeItem, type FreeItemBody, type PairedExtension, type PendingPairRequest, type PipelineView, type ReviewQuestion } from './types';
 
-type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-scanning' | 'real-problems';
+type Scenario = 'normal' | 'nobuynow' | 'firstrun' | 'empty' | 'offline' | 'chrome-closed' | 'limit' | 'scanning' | 'paused' | 'error' | 'slow' | 'pairing' | 'unread' | 'helper-old' | 'real' | 'real-ai' | 'real-scanning' | 'real-problems';
 
 const ago = (min: number): string => new Date(Date.now() - min * 60_000).toISOString();
 const ahead = (min: number): string => new Date(Date.now() + min * 60_000).toISOString();
@@ -28,7 +28,7 @@ const clone = <T>(x: T): T => structuredClone(x);
 function scenario(): Scenario {
   if (typeof window === 'undefined') return 'normal';
   const s = new URLSearchParams(window.location.search).get('mock');
-  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-scanning', 'real-problems'];
+  const all: Scenario[] = ['nobuynow', 'firstrun', 'empty', 'offline', 'chrome-closed', 'limit', 'scanning', 'paused', 'error', 'slow', 'pairing', 'unread', 'helper-old', 'real', 'real-ai', 'real-scanning', 'real-problems'];
   return all.find((x) => x === s) ?? 'normal';
 }
 
@@ -71,6 +71,25 @@ const REAL_PIPELINE: PipelineView = {
   ],
 };
 
+/** The third scan's open questions, each with the AI answer the second scan recorded for the same question (`?mock=real-ai`). */
+function withRecordedSuggestions(r: C.ReviewResponse): C.ReviewResponse {
+  const earlier = (real as unknown as { review: C.ReviewResponse }).review.questions;
+  return {
+    ...r,
+    questions: r.questions.map((q) => {
+      if (q.model === 'PCL406424SB-A21701-A25RS51') {
+        // The owner's own screen: the AI read the page and could not tell (docs/design.md, Review).
+        const quote = { quote: 'Includes: 18V ONE+ Cordless Compact Router, (1) collet wrench, (1) vacuum Dust Chute, 18V 5" Random Orbit Sander, (3) Pieces of Sandpaper Assortment, Dust Collection Bag, and Operator\'s Manuals', sourceId: 'bundle', label: 'Home Depot page', url: q.sources[0]?.url ?? null, names: false };
+        const reason = 'PCL406424SB looks like a special-buy set of two tools rather than a catalog kit, and Home Depot search failed, so the exact tool-only model numbers inside it could not be confirmed.';
+        const suggestion = { key: `${q.id}|0`, questionId: q.id, seen: q.seen ?? '', askedAt: 0, suggestion: { status: 'cannot_tell', reason, quotes: [quote] }, costUsd: 0.06 };
+        return { ...q, suggestion: suggestion as unknown as typeof q.suggestion };
+      }
+      const old = earlier.find((e) => e.id === q.id);
+      return old?.suggestion ? { ...q, suggestion: old.suggestion, suggestionQuotes: old.suggestionQuotes, suggestionPlain: old.suggestionPlain } : q;
+    }),
+  };
+}
+
 /** A real bundle row as a deal's detail: no estimate yet, the parts as the scan split them, how the split is known. */
 function realDetail(row: DealRow, parts: string[], evidence: NonNullable<DealDetail['splitEvidence']>): DealDetail {
   return {
@@ -101,13 +120,15 @@ export function createMockClient(): ApiClient {
   let paired: PairedExtension[] = [{ extensionId: 'abcdefghijklmnopabcdefghijklmnop', pairedAt: new Date(Date.now() - 3 * 86_400_000).toISOString(), lastSeenAt: new Date(Date.now() - 60_000).toISOString() }];
 
   let ebayNotice: string | null = null;
-  if (mode === 'real' || mode === 'real-scanning' || mode === 'real-problems') {
+  if (mode === 'real' || mode === 'real-ai' || mode === 'real-scanning' || mode === 'real-problems') {
     type RealRow = Parameters<typeof mapRow>[0] & { _parts: string[]; _evidence: NonNullable<DealDetail['splitEvidence']> };
     const scan3 = (real as unknown as { scan3?: { deals: C.DealsResponse; details: Record<string, C.DealDetail>; review: C.ReviewResponse } }).scan3;
     if (scan3) {
       // Nov 23: the owner's data after his third scan, every deal and detail as the agent's own views give them.
       deals = scan3.deals.rows.map(mapRow);
-      questions = mapReview(scan3.review).questions;
+      // `real-ai`: the same ten questions with the AI answers the second scan recorded for them (a suggestion made for other
+      // choices is dropped by mapSuggestion, as in the app), and the "could not tell" the owner saw on PCL406424SB.
+      questions = mapReview(mode === 'real-ai' ? withRecordedSuggestions(scan3.review) : scan3.review).questions;
       for (const [id, d] of Object.entries(scan3.details)) details[id] = mapDetail(d, questions.find((q) => q.bundle.id === id)?.id ?? null);
     } else {
       const rows = real.rows as unknown as RealRow[];
