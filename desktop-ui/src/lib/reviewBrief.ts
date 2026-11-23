@@ -163,6 +163,22 @@ function firstUnmet(plain: string | null | undefined): string | null {
   return shortLine(never ? `Whether the page names ${never[1]}.` : `${upFirst(clause)}.`);
 }
 
+/**
+ * Whether a check is a step the app does itself or a call for the owner's judgement. The agent says (`who`); an older
+ * agent says nothing, and then the words decide: reading a page, an Includes list, a model or a listing is the app's
+ * (the owner, Nov 23: "if I'm told to do this, why can't an AI pipeline do it for me"). A check that is neither is
+ * left to the owner, who is then asked, never silently skipped.
+ */
+const APP_STEP = /\b(?:see|check|confirm|verify|find out)\s+(?:whether|if|that)\b|\bread\b|\blook(?:\s+up|\s+for|\s+at)\b|\bsearch\b|\bincludes?\s+list\b|\bon the (?:home depot|amazon)\s+(?:page|listing)\b|\bopen the (?:home depot |amazon )?(?:page|listing)\b/i;
+export function checkWho(check: NonNullable<ReviewBrief['check']>): 'app' | 'owner' {
+  return check.who ?? (APP_STEP.test(check.text) ? 'app' : 'owner');
+}
+
+/** The check the card shows: only one that needs the owner's judgement. A step the app carries out is never an instruction to him. */
+export function ownerCheck(brief: ReviewBrief): NonNullable<ReviewBrief['check']> | null {
+  return brief.check && checkWho(brief.check) === 'owner' ? brief.check : null;
+}
+
 /** Under the card's "Check" label, so a thing and not a command: the label already says check it. */
 const GENERIC_CHECK: Record<QuestionKind, string> = {
   split: 'What is included in the bundle.',
@@ -189,7 +205,7 @@ export function briefFromQuestion(q: ReviewQuestion): ReviewBrief {
       suggestion: null,
       state: 'none',
       reasons: whyLines.slice(0, 2).map((text) => ({ text, ...link })),
-      check: { text: GENERIC_CHECK[q.kind], ...(where.url ? { url: where.url } : {}), linkLabel: where.label },
+      check: { text: GENERIC_CHECK[q.kind], ...(where.url ? { url: where.url } : {}), linkLabel: where.label, who: 'app' },
       writtenBy: 'rules',
     };
   }
@@ -203,7 +219,8 @@ export function briefFromQuestion(q: ReviewQuestion): ReviewBrief {
       suggestion: null,
       state: 'cannot_tell',
       reasons: (s.reason ? [missingLine(s.reason)] : whyLines.slice(0, 1)).map((text) => ({ text, ...src })),
-      check: { text: 'Pick the parts below, or open the page.', ...(where.url ? { url: where.url } : {}), linkLabel: where.label },
+      // The one thing left is his: the app has the page, so it does not tell him to open it.
+      check: { text: q.kind === 'split' ? 'Pick the parts below.' : 'Pick the listing below.', who: 'owner' },
       writtenBy: 'rules',
     };
   }
@@ -221,7 +238,7 @@ export function briefFromQuestion(q: ReviewQuestion): ReviewBrief {
     suggestion,
     state: verified ? 'verified' : 'not_verified',
     reasons: reasons.slice(0, BRIEF_REASONS_MAX),
-    check: verified ? null : { text: unmet ?? GENERIC_CHECK[q.kind], ...(where.url ? { url: where.url } : {}), linkLabel: where.label },
+    check: verified ? null : { text: unmet ?? GENERIC_CHECK[q.kind], ...(where.url ? { url: where.url } : {}), linkLabel: where.label, who: 'app' },
     writtenBy: 'rules',
   };
 }

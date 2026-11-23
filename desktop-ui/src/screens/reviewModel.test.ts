@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { QUESTIONS } from '../api/mockData';
 import realData from '../api/mockReal.json';
 import { mapReview } from '../api/map';
-import { groupBySource, groupQuestions, parseTyped, preselected, rowChip, saveHint, suggestionChip, typedFromSuggestion } from './reviewModel';
+import { checkedLines, groupBySource, groupQuestions, parseTyped, preselected, rowChip, saveHint, stepSource, suggestionChip, typedFromSuggestion, workingNote, workingTitle } from './reviewModel';
 
 const byId = (id: string) => QUESTIONS.find((q) => q.id === id)!;
 
@@ -21,6 +21,27 @@ describe('review model', () => {
     const g = groupQuestions(QUESTIONS);
     expect(g.verified.map((q) => q.id)).toEqual(['q-dck200', 'q-pcl660', 'q-dckts']);
     expect(g.needsYou.every((q) => q.suggestion?.status !== 'verified')).toBe(true);
+  });
+  it('keeps the questions the app is still working on out of both lists, and counts them apart', () => {
+    const working = { ...byId('q-pcl500'), followUp: { state: 'running' as const, doing: 'Reading', tried: [], roundsLeft: 2 } };
+    const queued = { ...byId('q-dck200'), followUp: { state: 'queued' as const, tried: [], roundsLeft: 2 } };
+    const done = { ...byId('q-pcl660'), followUp: { state: 'done' as const, tried: [], roundsLeft: 1 } };
+    const g = groupQuestions([working, queued, done, byId('q-pcl2001')]);
+    expect(g.working.map((q) => q.id)).toEqual(['q-pcl500', 'q-dck200']);
+    // A question the app has finished is the owner's again, and a verified one is still approvable in place.
+    expect(g.verified.map((q) => q.id)).toEqual(['q-pcl660']);
+    expect(g.needsYou.map((q) => q.id)).toEqual(['q-pcl2001']);
+    expect(workingTitle(2)).toBe('The app is still working on 2');
+    expect(workingNote(2)).toBe('2 more being checked');
+  });
+  it('shows at most three of what the app checked and leaves the rest to Details', () => {
+    const tried = [1, 2, 3, 4, 5].map((n) => ({ what: `Step ${n}`, result: 'done' }));
+    expect(checkedLines(tried.slice(0, 2))).toEqual({ shown: tried.slice(0, 2), rest: [] });
+    expect(checkedLines(tried).shown).toHaveLength(3);
+    expect(checkedLines(tried).rest.map((s) => s.what)).toEqual(['Step 4', 'Step 5']);
+    expect(stepSource('https://www.homedepot.com/s/A21701')).toBe('Home Depot');
+    expect(stepSource('https://www.amazon.com/dp/B0B1F877F3')).toBe('Amazon');
+    expect(stepSource('https://example.org/x')).toBe('example.org');
   });
   it('preselects the choice a suggestion names, verified or not; nothing when the AI could not tell or named none', () => {
     expect(preselected(byId('q-dck200'))).toBe('c2');

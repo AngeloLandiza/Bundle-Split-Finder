@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import type { AiSuggestion, Quote as Quote_, ReviewBrief, ReviewQuestion } from '../api/types';
+import { useState, type ReactNode } from 'react';
+import type { AiSuggestion, FollowUp, FollowUpStep, Quote as Quote_, ReviewBrief, ReviewQuestion } from '../api/types';
 import { SourceLink } from '../components/Source';
+import { Spinner } from '../components/States';
 import { Tag } from '../components/Tag';
 import { money } from '../lib/format';
 import { plainReason } from '../lib/questionWords';
-import { groupBySource, suggestionChip } from './reviewModel';
+import { ownerCheck } from '../lib/reviewBrief';
+import { checkedLines, groupBySource, stepSource, suggestionChip } from './reviewModel';
 import './ReviewCard.css';
 
 /** What the chip on the card says, by the brief's state; no chip when there is nothing to label. */
@@ -29,9 +31,15 @@ function Where({ label, url }: { label: string; url?: string | null }) {
  * the one thing to Check. Everything else the question holds is in Details. A suggestion is the AI's, never the owner's
  * answer, and the chip says whether the code could confirm it (HAX G10, G11; PAIR explainability).
  */
-export function DecisionCard({ brief, id, fromAi }: { brief: ReviewBrief; id: string; fromAi: boolean }) {
+export function DecisionCard({ brief, id, fromAi, followUp, note }: { brief: ReviewBrief; id: string; fromAi: boolean; followUp?: FollowUp; note?: ReactNode }) {
   const chip = CHIP[brief.state];
   const first = brief.reasons[0];
+  // The app has been through this and could not settle it: the sentence says what is still missing, in the words the
+  // brief gives (why it is asked, when the AI said nothing), so he is asked only what the app could not find.
+  const gaveUp = followUp?.state === 'gave_up' && brief.state === 'none';
+  const sentence = brief.state === 'cannot_tell' || gaveUp;
+  const ours = ownerCheck(brief);
+  const checked = followUp && (followUp.state === 'done' || followUp.state === 'gave_up') ? followUp.tried : [];
   return (
     <section className={`card card-${brief.state}`} id={id} aria-label="Suggested answer">
       {chip ? (
@@ -41,7 +49,7 @@ export function DecisionCard({ brief, id, fromAi }: { brief: ReviewBrief; id: st
         </p>
       ) : null}
 
-      {brief.state === 'cannot_tell' ? (
+      {sentence ? (
         <p className="card-main card-sentence">{first?.text ?? 'The page does not settle this.'}</p>
       ) : brief.suggestion ? (
         <p className="card-main" title={brief.suggestion}>
@@ -51,7 +59,14 @@ export function DecisionCard({ brief, id, fromAi }: { brief: ReviewBrief; id: st
         <p className="card-main card-sentence card-quiet">No suggestion yet.</p>
       )}
 
-      {brief.reasons.length > 0 && brief.state !== 'cannot_tell' ? (
+      {checked.length > 0 ? (
+        <div className="card-part">
+          <p className="card-label">What the app checked</p>
+          <Checked tried={checked} />
+        </div>
+      ) : null}
+
+      {brief.reasons.length > 0 && !sentence ? (
         <div className="card-part">
           <p className="card-label">Why</p>
           <ul className="card-why">
@@ -69,18 +84,72 @@ export function DecisionCard({ brief, id, fromAi }: { brief: ReviewBrief; id: st
           </ul>
         </div>
       ) : null}
-      {brief.check ? (
+      {/* Only a call that needs a person: a page the app can read, it reads (checkWho). */}
+      {ours ? (
         <div className="card-part card-check">
           <p className="card-label">{brief.state === 'cannot_tell' ? 'Next' : 'Check'}</p>
           <p>
-            {brief.check.text}
-            {brief.check.linkLabel ? (
+            {ours.text}
+            {ours.linkLabel ? (
               <>
                 {' '}
-                <Where label={brief.check.linkLabel} url={brief.check.url} />
+                <Where label={ours.linkLabel} url={ours.url} />
               </>
             ) : null}
           </p>
+        </div>
+      ) : null}
+      {note ? <div className="card-part card-note">{note}</div> : null}
+    </section>
+  );
+}
+
+/**
+ * What the app did on its own, one line each: what it did, what came of it, and where, when it has an address. At most
+ * CHECKED_VISIBLE lines; the rest are in Details.
+ */
+function Checked({ tried }: { tried: FollowUpStep[] }) {
+  const { shown, rest } = checkedLines(tried);
+  return (
+    <>
+      <ul className="card-why card-checked">
+        {shown.map((t, i) => (
+          <li key={i}>
+            {t.what} — {t.result}
+            {t.url ? (
+              <>
+                {' '}
+                <Where label={stepSource(t.url)} url={t.url} />
+              </>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {rest.length ? <p className="card-more">{rest.length} more in Details</p> : null}
+    </>
+  );
+}
+
+/**
+ * The card while the app is still working on the question: neutral, never a suggestion. What it is doing now with the
+ * spinner, and what it has tried so far. He can answer early; the choices below say so.
+ */
+export function WorkingCard({ followUp, id }: { followUp: FollowUp; id: string }) {
+  const doing = followUp.doing ?? (followUp.state === 'queued' ? 'Waiting to start' : 'Checking');
+  return (
+    <section className="card card-working" id={id} aria-label="The app is working on this" aria-busy="true">
+      <p className="card-chip">
+        <Tag tone="neutral">Working on it</Tag>
+        <span className="card-by">The app</span>
+      </p>
+      <p className="card-doing" role="status">
+        <Spinner size={14} />
+        <span>{doing}</span>
+      </p>
+      {followUp.tried.length > 0 ? (
+        <div className="card-part">
+          <p className="card-label">What the app has checked so far</p>
+          <Checked tried={followUp.tried} />
         </div>
       ) : null}
     </section>
@@ -157,6 +226,24 @@ export function Details({ q, s }: { q: ReviewQuestion; s: AiSuggestion | null })
     >
       <summary>Details</summary>
       <div className="detail-body">
+        {q.followUp && q.followUp.tried.length > 0 ? (
+          <section className="detail-sec">
+            <h3>What the app checked</h3>
+            <ul className="detail-quotes">
+              {q.followUp.tried.map((t, i) => (
+                <li key={i}>
+                  {t.what} — {t.result}
+                  {t.url ? (
+                    <>
+                      {' '}
+                      <Where label={stepSource(t.url)} url={t.url} />
+                    </>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         {s ? (
           <section className="detail-sec">
             <h3>The AI’s reason</h3>

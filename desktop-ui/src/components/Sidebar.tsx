@@ -57,7 +57,9 @@ export function Sidebar({ route, onGo }: { route: Route; onGo: (r: Route) => voi
     });
   const go = (screen: Screen, view?: DealView) => onGo({ screen, id: null, ...(view && view !== 'all' ? { view } : {}) });
   const on = (screen: Screen, view?: DealView) => route.screen === screen && (screen !== 'deals' || (route.view ?? 'all') === (view ?? 'all'));
+  // The count is what needs him; the questions the app is still checking are said in its label, not added to it.
   const review = state?.counts.review ?? 0;
+  const working = state?.counts.reviewWorking ?? 0;
 
   return (
     <nav className="sidebar" aria-label="Sidebar">
@@ -86,7 +88,7 @@ export function Sidebar({ route, onGo }: { route: Route; onGo: (r: Route) => voi
             current={on('review')}
             onClick={() => go('review')}
             shortcut={modLabel('3', mac)}
-            end={review > 0 ? <Count n={review} attention label={`${review} open`} /> : null}
+            end={review > 0 ? <Count n={review} attention label={`${review} open${working ? `, ${working} more being checked` : ''}`} /> : null}
           />
           <Item glyph="activity" label="Activity" current={on('activity')} onClick={() => go('activity')} shortcut={modLabel('4', mac)} />
           {isWindows ? null : <Item glyph="gear" label="Settings" current={on('settings')} onClick={() => go('settings')} shortcut={modLabel('5', mac)} />}

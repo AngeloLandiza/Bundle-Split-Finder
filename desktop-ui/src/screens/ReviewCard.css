@@ -184,3 +184,92 @@
   quotes: '\201C' '\201D';
   color: var(--label);
 }
+
+/* The app is working on it: what it is doing now, with the small spinner, then what it has tried. Neutral, not a suggestion. */
+.card-doing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.card-doing .spinner {
+  flex: none;
+  color: var(--label-2);
+}
+
+/* "N more in Details" under the app's three lines. */
+.card-more {
+  margin: 0;
+  padding-left: 14px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--label-2);
+}
+
+/* What Ask AI answered, at the foot of the card: the one reason and the one action it implies. */
+.card-note {
+  /* The reason, then the one action it implies under it: never a dot left alone at the end of a line. */
+  gap: 2px;
+  padding-top: 8px;
+  border-top: 1px solid var(--separator);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.card-note .spinner {
+  flex: none;
+  color: var(--label-2);
+}
+
+.card-note-error {
+  color: var(--attention);
+}
+
+/* The choices while the app is still working: they stay usable, one disclosure away. */
+.own-answer > summary {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+  color: var(--label-2);
+  font-size: 12px;
+  line-height: 16px;
+  cursor: default;
+}
+
+.own-answer > summary::before {
+  content: '';
+  inline-size: 5px;
+  block-size: 5px;
+  margin-inline-end: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 120ms ease-out;
+}
+
+.own-answer[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+.own-answer > summary:hover {
+  color: var(--label);
+}
+
+.own-answer > summary:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.own-answer[open] > summary {
+  margin-bottom: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .own-answer > summary::before {
+    transition: none;
+  }
+}

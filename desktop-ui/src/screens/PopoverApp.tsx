@@ -10,7 +10,7 @@ import { isMac as mac, words } from '../lib/platform';
 import { bestDeal, isRunning, needsYou, popoverStatus, scanBlocked, scanCost } from '../lib/popover';
 import { popoverDo } from '../lib/popoverShell';
 import { hashOf } from '../lib/route';
-import { KIND_LABEL } from './reviewModel';
+import { KIND_LABEL, workingNote } from './reviewModel';
 import './PopoverApp.css';
 
 declare global {
@@ -184,6 +184,7 @@ export function PopoverApp() {
                 Needs you<span className="pop-count"> · <span className="fig">{count(total)}</span></span>
               </h2>
               {total === 0 ? <p className="pop-quiet">Nothing needs you.</p> : null}
+              {state.counts.reviewWorking ? <p className="pop-quiet">{workingNote(state.counts.reviewWorking)}</p> : null}
               {shown.length > 0 ? (
                 <ul className="pop-rows">
                   {shown.map((q) => (

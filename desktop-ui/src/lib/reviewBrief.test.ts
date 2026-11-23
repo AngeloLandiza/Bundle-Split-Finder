@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type * as C from '@core/api/contract';
 import { mapReview, readBrief } from '../api/map';
 import real from '../api/mockReal.json';
-import type { ReviewQuestion } from '../api/types';
-import { BRIEF_LINE_MAX, BRIEF_REASONS_MAX, briefFor, briefFromQuestion, describeParts, modelsOfAnswer, rowState, sentencesOf, shortLine } from './reviewBrief';
+import type { ReviewBrief, ReviewQuestion } from '../api/types';
+import { BRIEF_LINE_MAX, BRIEF_REASONS_MAX, briefFor, briefFromQuestion, describeParts, modelsOfAnswer, ownerCheck, rowState, sentencesOf, shortLine } from './reviewBrief';
 
 // The owner's real questions: the third scan's ten open questions (fixtures/e2e-2026-11-23/after-scan3/store/review.json,
 // as the agent's own view gives them) and the second scan's fifteen, which carry the AI's real suggestions.
@@ -101,8 +101,30 @@ describe('the card, by state', () => {
     expect(b.suggestion).toBeNull();
     expect(b.reasons).toHaveLength(1);
     expect(b.reasons[0]!.text).toBe('The exact tool-only model numbers inside it could not be confirmed.');
-    expect(b.check).toMatchObject({ text: 'Pick the parts below, or open the page.', linkLabel: 'Home Depot page' });
+    // Nothing is left to read: the one thing left is his pick.
+    expect(b.check).toMatchObject({ text: 'Pick the parts below.', who: 'owner' });
     expect(rowState(couldNotTell)).toBe('AI could not tell');
+  });
+
+  it('the card shows a check only when it needs the owner: reading a page or an Includes list is the app\'s', () => {
+    // The owner's own screen: "On the Home Depot page, see whether the Includes list names the accessories sold as A21701 and A25RS51".
+    const read = 'On the Home Depot page, see whether the Includes list names the accessories sold as A21701 and A25RS51';
+    const brief = (text: string, who?: 'app' | 'owner'): ReviewBrief => ({ ask: 'What is inside this bundle?', suggestion: null, state: 'none', reasons: [], check: { text, ...(who ? { who } : {}) }, writtenBy: 'ai' });
+    // The agent's word wins either way.
+    expect(ownerCheck(brief(read, 'app'))).toBeNull();
+    expect(ownerCheck(brief('Decide whether the two accessories are worth listing separately.', 'owner'))?.text).toMatch(/worth listing/);
+    // An older agent says nothing: the words decide.
+    expect(ownerCheck(brief(read))).toBeNull();
+    for (const t of ['Read the Home Depot page for the model numbers.', 'Look up A25RS51 on Amazon.']) expect(ownerCheck(brief(t)), t).toBeNull();
+    expect(ownerCheck(brief('Decide whether the two accessories are worth listing separately.'))?.text).toMatch(/worth listing/);
+  });
+
+  it('the rules brief never leaves a read-the-page step for the owner, on any real question', () => {
+    for (const q of all) {
+      const b = briefFromQuestion(q);
+      const shown = ownerCheck(b);
+      if (shown) expect(shown.text, q.id).toMatch(/^Pick the (parts|listing) below\.$/);
+    }
   });
 
   it('a verified suggestion has no check', () => {

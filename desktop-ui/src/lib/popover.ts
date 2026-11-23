@@ -1,7 +1,7 @@
 // What the menu bar popover says (docs/design.md, Desktop app > Menu bar popover). Pure: the words and the
 // choices live here so a test can read them; PopoverApp.tsx only draws them.
 
-import type { AppState, DealRow, ReviewQuestion } from '../api/types';
+import { isWorking, type AppState, type DealRow, type ReviewQuestion } from '../api/types';
 import { upToSearches } from './format';
 import { bestDeals } from './today';
 import { words } from './platform';
@@ -51,8 +51,10 @@ export function popoverStatus(state: AppState | null, online: boolean): PopoverS
 
 /** The questions as Today lists them: AI-verified first (one press approves them), then the rest, oldest first. */
 export function orderQuestions(questions: readonly ReviewQuestion[]): ReviewQuestion[] {
-  const verified = questions.filter((q) => q.suggestion?.status === 'verified');
-  const rest = questions.filter((q) => q.suggestion?.status !== 'verified').sort((a, b) => a.openedAt.localeCompare(b.openedAt));
+  // A question the app is still checking is not his yet (the agent's `counts.review` leaves it out too).
+  const open = questions.filter((q) => !isWorking(q.followUp));
+  const verified = open.filter((q) => q.suggestion?.status === 'verified');
+  const rest = open.filter((q) => q.suggestion?.status !== 'verified').sort((a, b) => a.openedAt.localeCompare(b.openedAt));
   return [...verified, ...rest];
 }
 

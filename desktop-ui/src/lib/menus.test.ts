@@ -59,6 +59,10 @@ describe('a question row\'s menu', () => {
     expect(ids(questionMenu(q({ askCostUsd: null }), { hasAi: true, asking: false }))).not.toContain('ask');
     expect(ids(questionMenu(q({ kind: 'ebay' }), { hasAi: true, asking: false }))).not.toContain('ask');
     expect(questionMenu(q(), { hasAi: true, asking: true })[0]!.disabled).toBeTruthy();
+    // Not while the app is on it; after "could not tell" it asks again.
+    expect(ids(questionMenu(q({ followUp: { state: 'running', tried: [], roundsLeft: 1 } }), { hasAi: true, asking: false }))).not.toContain('ask');
+    const cannot = { status: 'cannot_tell' as const, choiceId: null, answer: '', reason: 'r', quotes: [], costUsd: 0.02 };
+    expect(questionMenu(q({ suggestion: cannot }), { hasAi: true, asking: false })[0]).toMatchObject({ id: 'ask', label: 'Ask AI again · about $0.02' });
   });
   it('offers Approve suggestion only for a verified one, and then not Ask AI', () => {
     const items = questionMenu(q({ suggestion: verified }), { hasAi: true, asking: false });

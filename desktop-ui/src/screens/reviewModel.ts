@@ -1,4 +1,24 @@
-import type { AiSuggestion, DealSection, Grade, QuestionKind, Quote, ReviewQuestion, Source } from '../api/types';
+import { isWorking, type AiSuggestion, type DealSection, type FollowUpStep, type Grade, type QuestionKind, type Quote, type ReviewQuestion, type Source } from '../api/types';
+
+/** How many of what the app checked show on the card; the rest are in Details. */
+export const CHECKED_VISIBLE = 3;
+
+/** What the card shows of what the app did, and what is left for Details. */
+export function checkedLines(tried: FollowUpStep[]): { shown: FollowUpStep[]; rest: FollowUpStep[] } {
+  return { shown: tried.slice(0, CHECKED_VISIBLE), rest: tried.slice(CHECKED_VISIBLE) };
+}
+
+/** A source link's label from its address when the step names none: "Home Depot", "Amazon", else the host. */
+export function stepSource(url: string): string {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    if (host.endsWith('homedepot.com')) return 'Home Depot';
+    if (host.endsWith('amazon.com')) return 'Amazon';
+    return host;
+  } catch {
+    return 'Source';
+  }
+}
 
 /** How long the "Saved · Undo" row stays at the top of Review. */
 export const SAVED_ROW_MS = 8000;
@@ -28,12 +48,23 @@ export const GRADE_LABEL: Record<Grade, string> = {
   not_looked_up: 'Not looked up yet',
 };
 
-/** Review's two groups: AI-verified suggestions (one press approves them) and the rest, which need him. */
-export function groupQuestions(questions: ReviewQuestion[]): { verified: ReviewQuestion[]; needsYou: ReviewQuestion[] } {
-  const verified = questions.filter((q) => q.suggestion?.status === 'verified');
-  const needsYou = questions.filter((q) => q.suggestion?.status !== 'verified');
-  return { verified, needsYou };
+/**
+ * Review's groups: AI-verified suggestions (one press approves them), the rest, which need him, and the questions the app
+ * is still working on itself (queued or running), which are not his yet and are kept apart, collapsed.
+ */
+export function groupQuestions(questions: ReviewQuestion[]): { verified: ReviewQuestion[]; needsYou: ReviewQuestion[]; working: ReviewQuestion[] } {
+  const working = questions.filter((q) => isWorking(q.followUp));
+  const rest = questions.filter((q) => !isWorking(q.followUp));
+  const verified = rest.filter((q) => q.suggestion?.status === 'verified');
+  const needsYou = rest.filter((q) => q.suggestion?.status !== 'verified');
+  return { verified, needsYou, working };
 }
+
+/** What the section of working questions says: "The app is still working on 3". */
+export const workingTitle = (n: number): string => `The app is still working on ${n}`;
+
+/** "2 more being checked": the quiet note beside a count that leaves out what the app is still working on. */
+export const workingNote = (n: number): string => `${n} more being checked`;
 
 /**
  * The choice a suggestion preselects: any suggestion that names one of the offered choices, verified or not, so one key

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { AppState, DealRow, ReviewQuestion } from '../api/types';
+import { isWorking, type AppState, type DealRow, type ReviewQuestion } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { Profit, Roi, RoiRangeLine } from '../components/Figure';
 import { Glyph } from '../components/Glyph';
@@ -14,7 +14,7 @@ import { count, money, percentOff, plural, profit, usdSpend, when } from '../lib
 import { SCREEN_KEYS } from '../lib/notices';
 import { bestDeals, buyNowDeals } from '../lib/today';
 import type { DealView } from '../lib/views';
-import { KIND_LABEL } from './reviewModel';
+import { KIND_LABEL, workingNote } from './reviewModel';
 import './Today.css';
 
 const TOP = 5;
@@ -24,6 +24,8 @@ export function TodayScreen() {
   const { state, online } = useApp();
   const [deals, reloadDeals] = useResource(() => api.deals(), [], ['deals']);
   const [review, reloadReview] = useResource(() => api.review(), [], ['review']);
+  // The questions the app is still checking are not his yet: the count is what needs him, the rest is said beside it.
+  const openQuestions = review.data ? review.data.questions.filter((q) => !isWorking(q.followUp)) : null;
 
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const best = bestDeals(deals.data?.rows ?? []);
@@ -32,7 +34,7 @@ export function TodayScreen() {
   return (
     <Page title="Today" sub={date} grouped scanNotices keys={SCREEN_KEYS.today}>
       <div className="today">
-        <Figures state={state} deals={deals.data?.rows ?? null} best={best[0] ?? null} questions={review.data?.questions.length ?? null} />
+        <Figures state={state} deals={deals.data?.rows ?? null} best={best[0] ?? null} questions={openQuestions?.length ?? null} />
         <div className="today-grid">
           <div className="today-main">
             <NeedsYou res={review} onRetry={reloadReview} />
@@ -63,7 +65,7 @@ function Figures({ state, deals, best, questions }: { state: AppState | null; de
   const left = state?.budget.serpLeft ?? null;
   return (
     <dl className="figures">
-      <Figure label="Open questions" onClick={() => navigate({ screen: 'review', id: null })} value={questions === null ? '—' : count(questions)} note={questions ? 'Waiting in Review' : 'Nothing needs you'} />
+      <Figure label="Open questions" onClick={() => navigate({ screen: 'review', id: null })} value={questions === null ? '—' : count(questions)} note={`${questions ? 'Waiting in Review' : 'Nothing needs you'}${state?.counts.reviewWorking ? ` · ${workingNote(state.counts.reviewWorking)}` : ''}`} />
       <Figure
         label="Best estimated profit"
         onClick={best ? () => navigate({ screen: 'deals', id: best.id }) : undefined}
@@ -96,7 +98,7 @@ function Figure({ label, value, note, tone, onClick }: { label: string; value: s
 
 function NeedsYou({ res, onRetry }: { res: ReturnType<typeof useResource<{ questions: ReviewQuestion[] }>>[0]; onRetry: () => void }) {
   const { navigate } = useApp();
-  const questions = res.data?.questions ?? [];
+  const questions = (res.data?.questions ?? []).filter((q) => !isWorking(q.followUp));
   const verified = questions.filter((q) => q.suggestion?.status === 'verified');
   // AI-verified first: one press approves them; then the ones that need his judgement, oldest first.
   const ordered = [...verified, ...questions.filter((q) => q.suggestion?.status !== 'verified').sort((a, b) => a.openedAt.localeCompare(b.openedAt))];

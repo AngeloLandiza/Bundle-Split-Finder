@@ -124,6 +124,66 @@
   gap: 4px;
 }
 
+/* What Ask AI is doing on a row: the spinner and the words, where the row's state was. */
+.qitem-checking {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* "The app is still working on N": the same header as the groups above it, a button that opens the list. */
+.qgroup-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: default;
+}
+
+.qgroup-toggle:hover {
+  color: var(--label);
+}
+
+.qgroup-toggle:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.qgroup-chevron {
+  inline-size: 5px;
+  block-size: 5px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 120ms ease-out;
+}
+
+.qgroup-toggle[aria-expanded='true'] .qgroup-chevron {
+  transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qgroup-chevron {
+    transition: none;
+  }
+}
+
+/* The app's own rows are quieter than the ones that need him. */
+.qgroup-working .qitem-title {
+  color: var(--label-2);
+}
+
+.qgroup-working .qitem > .spinner {
+  flex: none;
+  color: var(--label-2);
+}
+
 /* The question in the inspector */
 .question {
   display: flex;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useAction, useApp, useResource } from '../api/hooks';
-import type { ReviewAnswer, ReviewQuestion } from '../api/types';
+import { isWorking, type ReviewAnswer, type ReviewQuestion } from '../api/types';
 import { Button, LinkButton } from '../components/Button';
 import { useMenu } from '../components/ContextMenu';
 import { SearchField, TextField } from '../components/Fields';
@@ -8,20 +8,22 @@ import { InspectorSplit, Kbd } from '../components/Layout';
 import { Page } from '../components/Page';
 import type { RowMenu } from '../components/Table';
 import { SourceLink } from '../components/Source';
-import { ConfirmInline, EmptyState, LoadError, LoadingState, Notice, ScanStrip } from '../components/States';
+import { ConfirmInline, EmptyState, LoadError, LoadingState, Notice, ScanStrip, Spinner } from '../components/States';
 import { Tag } from '../components/Tag';
 import { useUi } from '../components/ui';
 import { money, plural } from '../lib/format';
 import { scanStrip } from '../lib/scanSteps';
 import { copyText, openPage } from '../lib/actions';
 import { AI_FOOTNOTE, aiIntroDismissed, dismissAiIntro } from '../lib/aiIntro';
+import { CHECKING_AGAIN, QUEUED_MS, noteOf, refusedHere, settled, type AskNote } from '../lib/askAi';
 import { isMenuKey, pressOf, reviewKey } from '../lib/keys';
 import { formatShortcut, isMac } from '../lib/platform';
 import { questionMenu, type QuestionMenuId } from '../lib/menus';
 import { SCREEN_KEYS } from '../lib/notices';
 import { briefFor, rowState } from '../lib/reviewBrief';
-import { DecisionCard, Details } from './ReviewCard';
-import { KIND_LABEL, SAVED_ROW_MS, groupQuestions, parseTyped, preselected, rowChip, saveHint, typedFromSuggestion } from './reviewModel';
+import { DecisionCard, Details, WorkingCard } from './ReviewCard';
+import { AskNoteLine, Own } from './ReviewParts';
+import { KIND_LABEL, SAVED_ROW_MS, groupQuestions, parseTyped, preselected, rowChip, saveHint, typedFromSuggestion, workingNote, workingTitle } from './reviewModel';
 import './Review.css';
 
 const NONE = '__none';
@@ -49,8 +51,46 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
     return q ? all.filter((x) => `${x.bundle.title} ${x.bundle.model} ${x.subject} ${x.prompt}`.toLowerCase().includes(q)) : all;
   }, [all, query]);
   const groups = groupQuestions(shown);
-  const ordered = [...groups.verified, ...groups.needsYou];
-  const current = ordered.find((q) => q.id === openId) ?? ordered[0] ?? null;
+  // The questions the app is still on are not his: a collapsed section, outside J/K and the default selection. Opening
+  // one (the section's button, or a link to it) shows the section, so the question he is on never leaves the list.
+  const [workingOpen, setWorkingOpen] = useState(false);
+  const showWorking = workingOpen || groups.working.some((q) => q.id === openId);
+  const ordered = [...groups.verified, ...groups.needsYou, ...(showWorking ? groups.working : [])];
+  const current = ordered.find((q) => q.id === openId) ?? [...groups.verified, ...groups.needsYou][0] ?? null;
+
+  // What Ask AI said, by question: shown at once, on the card and the row (docs/ux-checklist.md, a press is acknowledged).
+  const hasAi = Boolean(state?.keys.anthropic || state?.keys.openai);
+  const [asks, setAsks] = useState<Record<string, AskNote>>({});
+  const askQuestion = useCallback(
+    async (q: ReviewQuestion, force = false) => {
+      const here = refusedHere(q, { hasAi });
+      if (here) {
+        setAsks((a) => ({ ...a, [q.id]: noteOf({ queued: false, reason: here }, { ...q, askCostUsd: null }, 0) }));
+        return;
+      }
+      setAsks((a) => ({ ...a, [q.id]: { phase: 'sending' } }));
+      try {
+        const r = await api.askAi(q.id, force ? { force: true } : undefined);
+        setAsks((a) => ({ ...a, [q.id]: noteOf(r, q, Date.now()) }));
+      } catch (e) {
+        setAsks((a) => ({ ...a, [q.id]: { phase: 'failed', text: e instanceof Error ? e.message : 'That did not work. Try again.' } }));
+      }
+    },
+    [hasAi],
+  );
+  // A note ends when its question has moved on (the agent took it up, answered, or the question is gone).
+  useEffect(() => {
+    setAsks((cur) => {
+      const next = settled(cur, all, Date.now());
+      return Object.keys(next).length === Object.keys(cur).length ? cur : next;
+    });
+  }, [all]);
+  const anyQueued = Object.values(asks).some((n) => n.phase === 'queued');
+  useEffect(() => {
+    if (!anyQueued) return;
+    const t = window.setTimeout(() => setAsks((cur) => settled(cur, all, Date.now())), QUEUED_MS + 500);
+    return () => window.clearTimeout(t);
+  }, [anyQueued, all]);
 
   const select = (q: ReviewQuestion | undefined) => {
     if (!q) return;
@@ -99,7 +139,6 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
 
   // The right-click menu of a question row (design.md, Context menus).
   const [menuError, setMenuError] = useState<string | null>(null);
-  const hasAi = Boolean(state?.keys.anthropic || state?.keys.openai);
   const menuOf = (q: ReviewQuestion): RowMenu => ({
     label: q.bundle.title,
     items: questionMenu(q, { hasAi, asking: state?.agent.status === 'asking' }),
@@ -108,7 +147,8 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
       const fail = (e: unknown) => setMenuError(e instanceof Error ? e.message : 'That did not work. Try again.');
       switch (id as QuestionMenuId) {
         case 'ask':
-          api.ask(q.id).catch(fail);
+          void askQuestion(q);
+          select(q);
           return;
         case 'approve':
           void approveIds([q.id]).catch(fail);
@@ -126,12 +166,19 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
     },
   });
 
-  const askable = all.filter((q) => q.askCostUsd !== null && q.suggestion === null);
+  const askable = all.filter((q) => q.askCostUsd !== null && q.suggestion === null && !isWorking(q.followUp));
   const askCost = askable.reduce((s, q) => s + (q.askCostUsd ?? 0), 0);
   const asking = state?.agent.status === 'asking';
   const scanLine = state ? scanStrip(state.agent) : null;
 
-  const sub = res.data ? (all.length ? `${plural(all.length, 'open question', 'open questions')} · answers apply at once` : 'No open questions') : undefined;
+  // The count is what needs him; what the app is still checking is said beside it, quietly.
+  const waiting = groups.working.length;
+  const openCount = all.length - all.filter((q) => isWorking(q.followUp)).length;
+  const sub = res.data
+    ? all.length
+      ? `${plural(openCount, 'open question', 'open questions')}${waiting ? ` · ${workingNote(waiting)}` : ''} · answers apply at once`
+      : 'No open questions'
+    : undefined;
 
   const list = (
     <div className="review">
@@ -151,6 +198,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
           />
         ) : null}
         {all.length > 0 && shown.length === 0 ? <EmptyState title="No question matches" cause={`No question has “${query}” in its bundle or model.`} action={<Button onClick={() => setQuery('')}>Clear the search</Button>} /> : null}
+        {shown.length > 0 && groups.verified.length + groups.needsYou.length === 0 ? <EmptyState compact title="Nothing needs you yet" cause="The app is still checking the rest. Open the list below to answer one yourself." /> : null}
         {groups.verified.length ? (
           <section className="qgroup" aria-labelledby="qgroup-verified">
             <div className="qgroup-head">
@@ -175,7 +223,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
                 </LinkButton>
               )}
             </div>
-            <QuestionList questions={groups.verified} current={current} onSelect={select} menuOf={menuOf} />
+            <QuestionList questions={groups.verified} current={current} onSelect={select} menuOf={menuOf} asks={asks} />
           </section>
         ) : null}
         {groups.needsYou.length ? (
@@ -185,7 +233,21 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
                 Needs you <span className="fig muted">{groups.needsYou.length}</span>
               </h2>
             </div>
-            <QuestionList questions={groups.needsYou} current={current} onSelect={select} menuOf={menuOf} />
+            <QuestionList questions={groups.needsYou} current={current} onSelect={select} menuOf={menuOf} asks={asks} />
+          </section>
+        ) : null}
+        {groups.working.length ? (
+          // Under "Needs you", collapsed: these are the app's until it finishes. Opening one shows its card.
+          <section className="qgroup qgroup-working" aria-label="Being checked by the app">
+            <div className="qgroup-head">
+              <h2 id="qgroup-working">
+                <button type="button" className="qgroup-toggle" aria-expanded={showWorking} aria-controls="qlist-working" onClick={() => setWorkingOpen(!showWorking)}>
+                  <span className="qgroup-chevron" aria-hidden="true" />
+                  {workingTitle(groups.working.length)}
+                </button>
+              </h2>
+            </div>
+            {showWorking ? <QuestionList id="qlist-working" questions={groups.working} current={current} onSelect={select} menuOf={menuOf} asks={asks} working /> : null}
           </section>
         ) : null}
       </div>
@@ -223,8 +285,10 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
             <Question
               key={current.id}
               q={current}
-              hasAi={Boolean(state?.keys.anthropic || state?.keys.openai)}
+              hasAi={hasAi}
               hasNext={hasNext}
+              askNote={asks[current.id] ?? null}
+              onAsk={(force) => void askQuestion(current, force)}
               focusChoice={focusChoice}
               onMove={move}
               onSaved={afterSave}
@@ -266,7 +330,24 @@ function SavedRow({ saved, busy, error, onUndo, onGone }: { saved: { said: strin
   );
 }
 
-function QuestionList({ questions, current, onSelect, menuOf }: { questions: ReviewQuestion[]; current: ReviewQuestion | null; onSelect: (q: ReviewQuestion) => void; menuOf: (q: ReviewQuestion) => RowMenu }) {
+function QuestionList({
+  questions,
+  current,
+  onSelect,
+  menuOf,
+  asks,
+  working = false,
+  id,
+}: {
+  questions: ReviewQuestion[];
+  current: ReviewQuestion | null;
+  onSelect: (q: ReviewQuestion) => void;
+  menuOf: (q: ReviewQuestion) => RowMenu;
+  asks: Record<string, AskNote>;
+  /** The app's own list: a row says what it is doing instead of what the question needs. */
+  working?: boolean;
+  id?: string;
+}) {
   const ctx = useMenu();
   const list = useRef<HTMLUListElement>(null);
   // The list follows the open question, so moving on with the keyboard never leaves it out of sight.
@@ -274,7 +355,7 @@ function QuestionList({ questions, current, onSelect, menuOf }: { questions: Rev
     list.current?.querySelector<HTMLElement>('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
   }, [current?.id]);
   return (
-    <ul className="qlist" ref={list}>
+    <ul className="qlist" ref={list} id={id}>
       {questions.map((q) => (
         <li key={q.id}>
           <button
@@ -291,11 +372,11 @@ function QuestionList({ questions, current, onSelect, menuOf }: { questions: Rev
               <span className="qitem-title code" title={q.bundle.title}>
                 {q.bundle.model}
               </span>
-              <span className="qitem-sub">
-                {q.bundle.brand} · {KIND_LABEL[q.kind]}
+              <span className="qitem-sub" title={working ? q.followUp?.doing : undefined}>
+                {working ? (q.followUp?.doing ?? 'Waiting to start') : `${q.bundle.brand} · ${KIND_LABEL[q.kind]}`}
               </span>
             </span>
-            <RowState q={q} />
+            {working ? <Spinner size={12} label="Working on it" /> : asks[q.id]?.phase === 'queued' || asks[q.id]?.phase === 'sending' ? <span className="qitem-ai qitem-checking"><Spinner size={12} /> {CHECKING_AGAIN}</span> : <RowState q={q} />}
           </button>
         </li>
       ))}
@@ -318,6 +399,8 @@ function Question({
   q,
   hasAi,
   hasNext,
+  askNote,
+  onAsk,
   focusChoice,
   onMove,
   onSaved,
@@ -325,8 +408,13 @@ function Question({
   onOpenDeal,
 }: {
   q: ReviewQuestion;
+  /** An AI key is saved: without one the button is not drawn (the A key still answers, saying why). */
   hasAi: boolean;
   hasNext: boolean;
+  /** What Ask AI said to the last press on this question, or null. */
+  askNote: AskNote | null;
+  /** Ask AI on this question; `force` asks again though nothing new was read. */
+  onAsk: (force: boolean) => void;
   /** Focus goes to the selected choice: he just saved the one before and the keyboard follows. */
   focusChoice: boolean;
   onMove: (step: number) => void;
@@ -344,8 +432,11 @@ function Question({
     answerId.current = (await api.answer(...args)).answerId;
   }, []);
   const save = useAction(saveAnswer);
-  const ask = useAction(api.ask);
   const form = useRef<HTMLFormElement>(null);
+  // While the app is still working the choices are one disclosure away; a number key opens it.
+  const working = isWorking(q.followUp);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const sending = askNote?.phase === 'sending';
   // The question as the owner first saw it. An event may bring a changed question (a scan moved the choices) while he
   // reads; his half-typed answer stays, but it is not sent against choices he has not seen: the agent would refuse it
   // too. He is told, and can look at the question as it is now.
@@ -395,16 +486,17 @@ function Question({
         if (id) {
           e.preventDefault();
           setChoice(id);
-          form.current?.querySelector<HTMLInputElement>(`input[value="${CSS.escape(id)}"]`)?.focus();
+          setOwnOpen(true);
+          // The input is in the disclosure; focus it once the disclosure has opened.
+          window.setTimeout(() => form.current?.querySelector<HTMLInputElement>(`input[value="${CSS.escape(id)}"]`)?.focus(), 0);
         }
       } else if (a.type === 'save') {
         e.preventDefault();
         submit();
       } else if (a.type === 'ask') {
-        if (hasAi && q.askCostUsd !== null && !ask.busy) {
-          e.preventDefault();
-          void ask.run(q.id);
-        }
+        // Never a silent key: the press is always answered, on the card (a refusal says why).
+        e.preventDefault();
+        if (!sending) onAsk(false);
       } else if (a.type === 'close') {
         onEscape();
       }
@@ -454,8 +546,12 @@ function Question({
         ) : null}
 
         <div className="card-wrap">
-          <DecisionCard brief={brief} id={cardId} fromAi={s !== null} />
-          {s && intro ? (
+          {working && q.followUp ? (
+            <WorkingCard followUp={q.followUp} id={cardId} />
+          ) : (
+            <DecisionCard brief={brief} id={cardId} fromAi={s !== null} {...(q.followUp ? { followUp: q.followUp } : {})} note={askNote ? <AskNoteLine note={askNote} q={q} onForce={() => onAsk(true)} /> : undefined} />
+          )}
+          {s && intro && !working ? (
             <p className="ai-footnote" role="note">
               <span>{AI_FOOTNOTE}</span>
               <button
@@ -472,6 +568,7 @@ function Question({
           ) : null}
         </div>
 
+        <Own working={working} open={ownOpen} onToggle={setOwnOpen}>
         <form
           ref={form}
           id={`form-${q.id}`}
@@ -533,21 +630,23 @@ function Question({
             ) : null}
           </fieldset>
         </form>
+        </Own>
 
         <Details q={q} s={s} />
       </div>
 
       <footer className="question-actions">
-        {save.error || ask.error ? (
+        {save.error ? (
           <span className="question-error" role="alert">
-            {save.error ?? ask.error}
+            {save.error}
           </span>
         ) : (
           <span className="question-meta">{!answerOf() ? <span>{saveHint({ hasAnswer: false, hasNext })}</span> : null}</span>
         )}
-        {hasAi && q.kind !== 'ebay' && !s ? (
-          <Button busy={ask.busy} busyLabel="Asking…" onClick={() => void ask.run(q.id)} cost={q.askCostUsd !== null ? `about ${money(q.askCostUsd)}` : undefined}>
-            Ask AI
+        {/* Not while the app is on it. After "could not tell" it is Ask AI again: the note says if there is nothing new to read. */}
+        {hasAi && q.kind !== 'ebay' && !working && (!s || s.status === 'cannot_tell') ? (
+          <Button busy={sending} busyLabel="Asking…" onClick={() => onAsk(false)} cost={q.askCostUsd !== null ? `about ${money(q.askCostUsd)}` : undefined}>
+            {s ? 'Ask AI again' : 'Ask AI'}
           </Button>
         ) : null}
         <Button type="submit" form={`form-${q.id}`} variant="primary" busy={save.busy} busyLabel="Saving…" disabled={!answerOf() || changed}>

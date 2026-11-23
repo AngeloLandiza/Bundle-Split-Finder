@@ -2,7 +2,7 @@
 // which items exist, which are greyed (with the sentence why), and where the separators fall. The screen runs them.
 // An item that cannot apply is left out, not greyed, unless he could make it apply by waiting (a scan running).
 
-import type { DealDetail, DealPart, DealRow, ReviewQuestion } from '../api/types';
+import { isWorking, type DealDetail, type DealPart, type DealRow, type ReviewQuestion } from '../api/types';
 import { bogoMenuLabel } from './bogo';
 import { money, plural } from './format';
 
@@ -60,8 +60,9 @@ export function detailMenu(d: Pick<DealDetail, 'bogo' | 'bogoGroup' | 'link'> & 
 
 export function questionMenu(q: ReviewQuestion, o: { hasAi: boolean; asking: boolean }): MenuItem[] {
   const items: MenuItem[] = [];
-  if (o.hasAi && q.kind !== 'ebay' && !q.suggestion && q.askCostUsd !== null) {
-    items.push({ id: 'ask', label: `Ask AI · about ${money(q.askCostUsd)}`, hint: 'A', ...(o.asking ? { disabled: 'The AI is already asking. Wait for it to finish.' } : {}) });
+  // Not while the app is on it; after "could not tell" it asks again (the card says when there is nothing new to read).
+  if (o.hasAi && q.kind !== 'ebay' && (!q.suggestion || q.suggestion.status === 'cannot_tell') && q.askCostUsd !== null && !isWorking(q.followUp)) {
+    items.push({ id: 'ask', label: `${q.suggestion ? 'Ask AI again' : 'Ask AI'} · about ${money(q.askCostUsd)}`, hint: 'A', ...(o.asking ? { disabled: 'The AI is already asking. Wait for it to finish.' } : {}) });
   }
   if (q.suggestion?.status === 'verified') items.push({ id: 'approve', label: 'Approve suggestion' });
   const tail: MenuItem[] = [];
