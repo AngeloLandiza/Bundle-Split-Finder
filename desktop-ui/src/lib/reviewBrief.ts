@@ -160,13 +160,14 @@ function firstUnmet(plain: string | null | undefined): string | null {
   const clause = body.split(';').map((c) => c.trim()).find((c) => c && !/^\d+ more in Activity$/i.test(c));
   if (!clause) return null;
   const never = /^the page never names (\S+)$/i.exec(clause);
-  return shortLine(never ? `Check that the page names ${never[1]}.` : `${upFirst(clause)}.`);
+  return shortLine(never ? `Whether the page names ${never[1]}.` : `${upFirst(clause)}.`);
 }
 
+/** Under the card's "Check" label, so a thing and not a command: the label already says check it. */
 const GENERIC_CHECK: Record<QuestionKind, string> = {
-  split: 'Check what is included on the Home Depot page.',
-  match: 'Check the model number on the Amazon listing.',
-  ebay: 'Check the eBay listing.',
+  split: 'What is included in the bundle.',
+  match: 'That the listing is this exact model.',
+  ebay: 'That it is the same item.',
 };
 
 /**

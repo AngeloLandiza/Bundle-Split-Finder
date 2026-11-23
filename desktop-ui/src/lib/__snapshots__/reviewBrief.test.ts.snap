@@ -6,7 +6,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check that the page names DCK240C2.",
+      "text": "Whether the page names DCK240C2.",
       "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196",
     },
     "reasons": [
@@ -246,7 +246,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check that the page names PCL1600K2.",
+      "text": "Whether the page names PCL1600K2.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756",
     },
     "reasons": [
@@ -275,7 +275,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check that the page names PCL1201K2.",
+      "text": "Whether the page names PCL1201K2.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026",
     },
     "reasons": [
@@ -299,7 +299,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check that the page names PCL1201K2.",
+      "text": "Whether the page names PCL1201K2.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060",
     },
     "reasons": [
@@ -371,7 +371,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "Which Amazon listing is this part?",
     "check": {
       "linkLabel": "Amazon listing",
-      "text": "Check the model number on the Amazon listing.",
+      "text": "That the listing is this exact model.",
       "url": "https://www.amazon.com/dp/B0FFLV6CML",
     },
     "reasons": [
@@ -390,7 +390,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "Which Amazon listing is this part?",
     "check": {
       "linkLabel": "Amazon listing",
-      "text": "Check the model number on the Amazon listing.",
+      "text": "That the listing is this exact model.",
       "url": "https://www.amazon.com/dp/B0DPDK33YB",
     },
     "reasons": [
@@ -414,7 +414,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "Which Amazon listing is this part?",
     "check": {
       "linkLabel": "Amazon listing",
-      "text": "Check the model number on the Amazon listing.",
+      "text": "That the listing is this exact model.",
       "url": "https://www.amazon.com/dp/B09V1PG5R1",
     },
     "reasons": [
@@ -433,7 +433,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check what is included on the Home Depot page.",
+      "text": "What is included in the bundle.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671",
     },
     "reasons": [
@@ -457,7 +457,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check what is included on the Home Depot page.",
+      "text": "What is included in the bundle.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549",
     },
     "reasons": [
@@ -481,7 +481,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check what is included on the Home Depot page.",
+      "text": "What is included in the bundle.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428",
     },
     "reasons": [
@@ -505,7 +505,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check what is included on the Home Depot page.",
+      "text": "What is included in the bundle.",
       "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185",
     },
     "reasons": [
@@ -529,7 +529,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check what is included on the Home Depot page.",
+      "text": "What is included in the bundle.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510",
     },
     "reasons": [
@@ -553,7 +553,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check what is included on the Home Depot page.",
+      "text": "What is included in the bundle.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-11-in-Flexible-Shaft-Bit-Holder-PCL1600K2-A10FB1G/334547201",
     },
     "reasons": [
@@ -577,7 +577,7 @@ exports[`the real questions > snapshot: the card of every real question 1`] = `
     "ask": "What is inside this bundle?",
     "check": {
       "linkLabel": "Home Depot page",
-      "text": "Check what is included on the Home Depot page.",
+      "text": "What is included in the bundle.",
       "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Compact-Fixed-Base-Router-5-in-Random-Orbit-Sander-Tools-Only-w-Accessories-PCL406424SB-A21701-A25RS51/335724135",
     },
     "reasons": [
