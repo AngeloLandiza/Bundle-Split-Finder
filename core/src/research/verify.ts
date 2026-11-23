@@ -172,6 +172,23 @@ export function kitHalfOf(brand: string, bundleModel: string): string | null {
   return null;
 }
 
+/**
+ * Step 16 (lever 3): the extra a kit + extra bundle's model number spells out as a whole model (a RYOBI "<kit>-<extra>"'s
+ * second piece, a DEWALT "<kit><whole model>"'s model); null otherwise, and for a DEWALT short code ("W921B").
+ */
+export function extraHalfOf(brand: string, bundleModel: string): string | null {
+  const b = up(brand);
+  if (b === 'RYOBI') {
+    const pieces = up(bundleModel).split('-');
+    return pieces.length === 2 && pieces.every((p) => p !== '') ? pieces[1]! : null;
+  }
+  if (b === 'DEWALT') {
+    const form = dewaltBundleForm(bundleModel);
+    return form && form.kind === 'joined' ? form.bonus : null;
+  }
+  return null;
+}
+
 /** Step 15: the tools a product holds by its one title (a kit's count, 1 for a tool, 0 for a battery or an accessory); null when the title does not say. */
 export const titleTools = (title: string): number | null => productOf([title], false).tools;
 
@@ -248,8 +265,14 @@ function pieces(name: string, model: string | null, qty: number): string[] {
  * or the same words and count) is the same item, on both lists, and is accounted for once.
  */
 export function includesItems(brand: string, entries: ResearchLedgerEntry[]): Item[] {
+  return includesListsOf(brand, entries).items;
+}
+
+/** includesItems, with each list's own text (normalised), by list number. */
+function includesListsOf(brand: string, entries: ResearchLedgerEntry[]): { items: Item[]; lists: string[] } {
   const seen = new Set<string>();
   const out: Item[] = [];
+  const texts: string[] = [];
   let list = 0;
   for (const e of entries) {
     for (const l of e.lines) {
@@ -277,11 +300,12 @@ export function includesItems(brand: string, entries: ResearchLedgerEntry[]): It
             out.push({ lists: [list], model: it.model, name, qty: it.qty, kinds, product: it.model !== null || kinds.length > 0 });
           }
         }
+        texts[list] = normaliseText(t);
         list++;
       }
     }
   }
-  return out;
+  return { items: out, lists: texts };
 }
 
 // --- Counts a name states ----------------------------------------------------------------------------
@@ -312,6 +336,21 @@ function pageBatteries(contents: Item[]): number | null {
   return perList.every((n) => n === perList[0]) ? perList[0]! : null;
 }
 
+/**
+ * Step 16 (lever 3): kitBatteryCount, and a count whose parentheses the stored title lost: "2  1.5 Ah Batteries" for
+ * "(2) 1.5 Ah Batteries" (324904496 and 324903619 as SerpApi gave them). Only when every Ah rating of the title is in
+ * such a phrase, the noun is plural and no "(n)" or singular "battery" is there to read instead.
+ */
+export function titleBatteryCount(title: string): number | null {
+  const n = kitBatteryCount(title);
+  const name = normaliseText(title);
+  if (/\(\d\)/.test(name) || /\bbattery\b/.test(name)) return n;
+  const bare = [...name.matchAll(/(?:^|[\s,])(\d)\s+\d+(?:\.\d+)?\s*ah\s+batteries\b/g)];
+  const ratings = (name.match(/\d+(\.\d+)?\s*ah\b/g) ?? []).length;
+  if (n === null || bare.length === 0 || bare.length !== ratings) return n;
+  return bare.reduce((sum, m) => sum + Number(m[1]), 0);
+}
+
 /** A product's battery count: a kit's own page (its battery items) first, else its names (kitBatteryCount); a lone battery is 1 (or its pack). */
 function partBatteries(p: { product: Product; contents: Item[] }): number | null {
   const fromPage = pageBatteries(p.contents);
@@ -338,6 +377,8 @@ interface PartCheck {
   quotedKinds: string[];
   /** The kit's own Includes items, when its page is in the ledger. */
   contents: Item[];
+  /** The catalog knows it as a kit (a manufacturer kit, one part). */
+  catalogKit: boolean;
 }
 
 /**
@@ -437,13 +478,14 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
           ? q.entry.lines.filter((l) => l.field === 'title' && !l.suspect).flatMap((l) => kindsOf(l.text)) : []),
       ]))],
       contents,
+      catalogKit,
     });
   }
 
   // Coverage against the bundle's own words.
   const bundleLines = bundleEntries.flatMap((e) => e.lines.filter((l) => !l.suspect && l.field !== 'description'));
   const titleTexts = [...(item.title ? [item.title] : []), ...bundleLines.filter((l) => l.field === 'title').map((l) => l.text)];
-  const items = includesItems(brand, bundleEntries);
+  const { items, lists: listTexts } = includesListsOf(brand, bundleEntries);
   const counts = new Set([
     ...titleTexts.flatMap(toolCounts),
     ...items.flatMap((i) => toolCounts(i.name)),
@@ -522,7 +564,18 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
       : `"${show(what)}" names no model, and nothing ties ${p.model} to this bundle: neither the bundle's page nor a listing of this same bundle that is quoted names it.`;
   };
 
-  if (items.length > 0) checkIncludes(items, parts, brand, tie, problems);
+  // Step 16 (lever 3): the extra half Home Depot's model number spells (RYOBI <kit>-<extra>, DEWALT <kit><whole model>).
+  const extraHalf = extraHalfOf(brand, item.model);
+  const spelledExtra = (p: PartCheck): boolean => {
+    if (extraHalf === null || p.product.kit || !sameModel(brand, p.model, extraHalf) || p.qty !== 1) return false;
+    const base = kitHalfOf(brand, item.model);
+    const kit = base === null ? undefined : parts.find((x) => sameModel(brand, x.model, base));
+    const title = titleTexts[0] ?? '';
+    const kinds = new Set(kindsFromTitle(title).map(fold));
+    return kit !== undefined && kit.catalogKit && kit.qty === 1 && parts.length === 2 && (p.product.tools === 0 || p.product.tools === 1)
+      && p.product.kinds.length > 0 && p.product.kinds.every((k) => kinds.has(k)) && kitHalfCount(title) !== null;
+  };
+  if (items.length > 0) checkIncludes(items, listTexts, parts, brand, tie, problems, spelledExtra);
   else checkWithoutIncludes(parts, brand, count, titleTexts, bundleLines.map((l) => l.text), tie, problems);
 
   if (problems.length > 0) return unverified([...new Set(problems)]);
@@ -543,8 +596,14 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
  * whole list ("Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories") points at each of its items
  * (fix round 2: the first real runs quote lists whole); a quote that spans two lists points at none.
  */
-function claimedBy(quote: FoundQuote, items: Item[]): { items: number[]; spans: boolean } {
-  const inside = items.map((it, i) => ({ i, it, name: normaliseText(it.name) })).filter((x) => x.name !== '' && holds(quote.norm, x.name));
+function claimedBy(quote: FoundQuote, items: Item[], listTexts: readonly string[] = []): { items: number[]; spans: boolean } {
+  // Step 16 (lever 3): a quote that lies wholly inside one list's own text is a quote of that list. Of the items whose
+  // names it holds, it points only at that list's: another list's "Charger" read inside this list's "(1) 18V Charger" is
+  // a word of this list's item, not a second list (the real 321809549 and 321811428, whose highlight lists name
+  // "Charger" and "Bag"). A quote no single list holds keeps the rule below.
+  const within = new Set(listTexts.flatMap((t, l) => (t !== undefined && t.includes(quote.norm) ? [l] : [])));
+  const inside = items.map((it, i) => ({ i, it, name: normaliseText(it.name) }))
+    .filter((x) => x.name !== '' && holds(quote.norm, x.name) && (within.size === 0 || x.it.lists.some((l) => within.has(l))));
   // Within one list: some list holds every item the quote names (an item named on two lists is on both).
   const lists = [...new Set(inside.flatMap((x) => x.it.lists))];
   if (inside.length > 0 && !lists.some((l) => inside.every((x) => x.it.lists.includes(l)))) return { items: [], spans: true };
@@ -610,7 +669,7 @@ function canAccount(p: PartCheck, it: Item, brand: string, tie: TieCheck): { ok:
 }
 
 /** Every item of the bundle's Includes lists is accounted for by the parts given, and every part accounts for one. */
-function checkIncludes(items: Item[], parts: PartCheck[], brand: string, tie: TieCheck, problems: string[]): void {
+function checkIncludes(items: Item[], listTexts: readonly string[], parts: PartCheck[], brand: string, tie: TieCheck, problems: string[], spelledExtra: (p: PartCheck) => boolean = () => false): void {
   const owners: Set<PartCheck>[] = items.map(() => new Set());
   const inKit = (p: PartCheck, it: Item): boolean =>
     p.product.kit && p.contents.some((c) => (it.model !== null && c.model !== null && sameModel(brand, c.model, it.model)) || normaliseText(c.name) === normaliseText(it.name));
@@ -625,7 +684,7 @@ function checkIncludes(items: Item[], parts: PartCheck[], brand: string, tie: Ti
   // problem; a quote of a whole list claims, of its items, those the part can be.
   for (const p of parts) {
     for (const q of p.quotes.filter((x) => x.entry.isBundle)) {
-      const claim = claimedBy(q, items);
+      const claim = claimedBy(q, items, listTexts);
       if (claim.spans) problems.push(`The quote "${show(q.quote)}" spans two Includes lists; quote each list on its own.`);
       for (const i of claim.items) {
         if (owners[i]!.has(p)) continue;
@@ -650,8 +709,13 @@ function checkIncludes(items: Item[], parts: PartCheck[], brand: string, tie: Ti
       if (by.some((p) => p.product.kit) || n !== it.qty) problems.push(`"${show(it.name)}" is given to more than one part (${by.map((p) => p.model).join(', ')}).`);
     }
   });
+  const leftovers = items.some((_, i) => owners[i]!.size === 0);
   for (const p of parts) {
     if (!accounted.has(p)) {
+      // Step 16 (lever 3): the extra half of a "<kit>-<extra>" model number whose Includes lists are all the kit's
+      // (PCL1600K2-PBP003: both lists are PCL1600K2's, and the title adds "ONE+18V 2.0 Ah Battery"). Home Depot's model
+      // number names the part, and the title names its kind; nothing on the lists is left for it, and nothing is left over.
+      if (!leftovers && spelledExtra(p)) continue;
       problems.push(`${p.model} accounts for nothing on the bundle's Includes list.`);
       continue;
     }
@@ -691,7 +755,7 @@ function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number |
       if (untied !== null) problems.push(untied);
     }
   }
-  const want = titles.length > 0 ? kitBatteryCount(titles[0]) : null;
+  const want = titles.length > 0 ? titleBatteryCount(titles[0]!) : null;
   if (want !== null) {
     const each = parts.map((p) => ({ p, n: partBatteries(p) }));
     const unknown = each.filter((x) => x.n === null);

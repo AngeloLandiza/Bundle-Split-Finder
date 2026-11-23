@@ -127,7 +127,9 @@ describe('npm run research:eval on run 3, both ways (fix round 3)', () => {
   // Run 3 (Opus 5.5, prompt .3, Nov 20), kept as runs-claude-opus-5-5-prompt3.json. Replayed with the tool results it
   // kept, then with today's recorded tools: the index without the validation part price lookups no longer holds most of
   // the parts the model found by their numbers (they were recorded only by those lookups), so the score falls.
-  it('kept results 10 correct (step 15 rule 3: 320243741); fresh tools without part prices 1; with them 10; never a wrong one', async () => {
+  // Step 16 (lever 3): 12 with the results it kept: 324904496 (the title's "2  1.5 Ah Batteries" counts 2) and 341644756
+  // (PCL1600K2-PBP003: the model number's PBP003, which no Includes item names, is the title's extra battery).
+  it('kept results 12 correct (step 15 rule 3: 320243741; step 16: 324904496, 341644756); fresh tools without part prices 1; with them 12; never a wrong one', async () => {
     const outDir = mkdtempSync(join(tmpdir(), 'research-eval-'));
     const { copyFileSync } = await import('node:fs');
     copyFileSync('fixtures/research/runs-claude-opus-5-5-prompt3.json', join(outDir, 'runs-claude-opus-5-5.json'));
@@ -137,9 +139,9 @@ describe('npm run research:eval on run 3, both ways (fix round 3)', () => {
       expect(lines).toContain('Verified but wrong: 0 (must be 0 to trust)');
       return lines.find((l) => l.startsWith('Verified and correct:'));
     };
-    expect(await score()).toBe('Verified and correct: 10');
+    expect(await score()).toBe('Verified and correct: 12');
     expect(await score('--fresh-tools')).toBe('Verified and correct: 1');
-    expect(await score('--fresh-tools', '--with-part-prices')).toBe('Verified and correct: 10');
+    expect(await score('--fresh-tools', '--with-part-prices')).toBe('Verified and correct: 12');
   });
 });
 
