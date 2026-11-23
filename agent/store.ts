@@ -241,13 +241,22 @@ export function defaultSettings(): StoreData['settings'] {
 }
 
 /**
- * Claude (Haiku 5.5, the cheapest) for every pipeline; $25 a month until the owner says otherwise. Trusted only where
- * the evals measured that exact model for that pipeline (autopilot.ts MEASURED_MODELS), so Autopilot waits for the
- * owner on assist and research until Opus 5.5 is chosen there or the owner marks Haiku trusted.
+ * The model each pipeline starts on: Haiku 5.5 for the judge (the cheapest, measured on the listings); Opus 5.5 for Ask AI
+ * and Research (owner ruling, Nov 23: measured with 0 wrong verified answers, so Autopilot runs unattended). $25 a month
+ * until the owner says otherwise. Trusted only where the evals measured that exact model for that pipeline
+ * (autopilot.ts MEASURED_MODELS). Stored settings keep whatever the owner has; this only fills new installs.
  */
+export const DEFAULT_AI_MODELS: Readonly<Record<'judge' | 'assist' | 'research', string>> = {
+  judge: DEFAULT_CLAUDE_JUDGE_MODEL,
+  assist: 'claude-opus-5-5',
+  research: 'claude-opus-5-5',
+};
+
 export function defaultAiSettings(): AppSettings['ai'] {
-  const claude = { provider: 'anthropic' as const, model: DEFAULT_CLAUDE_JUDGE_MODEL, apiKeyRef: 'anthropic' };
-  const of = (p: 'judge' | 'assist' | 'research') => ({ ...claude, trusted: measuredByDefault(p, claude) });
+  const of = (p: 'judge' | 'assist' | 'research') => {
+    const claude = { provider: 'anthropic' as const, model: DEFAULT_AI_MODELS[p], apiKeyRef: 'anthropic' };
+    return { ...claude, trusted: measuredByDefault(p, claude) };
+  };
   return { judge: of('judge'), assist: of('assist'), research: of('research'), monthlyCapUsd: 25 };
 }
 

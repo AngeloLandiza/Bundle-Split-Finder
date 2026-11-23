@@ -113,8 +113,10 @@ describe('which models Autopilot trusts', () => {
   it('trusts by default only the exact models the evals measured, from one list', () => {
     expect(MEASURED_MODELS.assist).toEqual(['claude-opus-5-5']);
     const ai = defaultAiSettings();
-    expect(ai.assist).toMatchObject({ model: 'claude-haiku-5-5', trusted: false });
-    expect(ai.research.trusted).toBe(false);
+    // New installs: Opus 5.5 on Ask AI and Research (measured, so trusted); Haiku 5.5 stays the judge (untouched).
+    expect(ai.assist).toMatchObject({ model: 'claude-opus-5-5', trusted: true });
+    expect(ai.research).toMatchObject({ model: 'claude-opus-5-5', trusted: true });
+    expect(ai.judge).toMatchObject({ model: 'claude-haiku-5-5', trusted: true });
     expect(opusAi().assist.trusted).toBe(true);
     expect(measuredByDefault('research', { provider: 'openai-compatible', model: 'claude-opus-5-5' })).toBe(false);
     expect(measuredByDefault('research', { provider: 'anthropic', model: 'claude-opus-5-5', baseUrl: 'https://proxy.example' })).toBe(false);
