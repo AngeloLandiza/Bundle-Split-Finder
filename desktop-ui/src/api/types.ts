@@ -384,6 +384,23 @@ export interface AiSuggestion {
   costUsd: number;
 }
 
+/**
+ * The decision card's text, written once (by the AI when it can, by rules otherwise: `writtenBy`) so the pane shows a
+ * fixed schema instead of a page of evidence. Optional: an older agent sends none and `briefFromQuestion` derives one.
+ */
+export interface ReviewBrief {
+  /** What is asked, one short line: "What is inside this bundle?" */
+  ask: string;
+  /** The suggested answer in plain words: "PCL1600K2 kit + PBP2003 battery"; null when there is none. */
+  suggestion: string | null;
+  state: 'verified' | 'not_verified' | 'cannot_tell' | 'none';
+  /** At most three short lines, each with the source it rests on when it has one. */
+  reasons: { text: string; quote?: string; sourceLabel?: string; url?: string }[];
+  /** The one thing to check, and where. */
+  check: { text: string; url?: string; linkLabel?: string } | null;
+  writtenBy: 'ai' | 'rules';
+}
+
 export interface ReviewQuestion {
   id: string;
   kind: QuestionKind;
@@ -403,6 +420,8 @@ export interface ReviewQuestion {
   openedAt: string;
   /** The agent's signature of the question as shown; sent back with the answer so a changed question is refused. */
   seen: string | null;
+  /** The decision card's text from the agent; absent from an older one (`briefFromQuestion` derives it). */
+  brief?: ReviewBrief;
 }
 
 export interface ReviewView {

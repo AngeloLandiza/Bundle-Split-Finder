@@ -28,6 +28,7 @@ import type {
   LookupBlock,
   PriceLine,
   Quote,
+  ReviewBrief,
   ReviewQuestion,
   ReviewView,
   RoiRange,
@@ -546,7 +547,37 @@ export function mapSuggestion(q: C.ReviewQuestion, choices: Choice[]): AiSuggest
   }
 }
 
+/**
+ * The agent's decision-card text, kept only when it has the schema's shape (a state it knows, at most three reasons,
+ * strings where strings belong): anything else is dropped and the pane derives its own. Nothing is repaired or guessed.
+ */
+export function readBrief(raw: unknown): ReviewBrief | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const b = raw as Record<string, unknown>;
+  const str = (v: unknown): v is string => typeof v === 'string';
+  const opt = (v: unknown): v is string | undefined => v === undefined || str(v);
+  if (!str(b.ask) || !b.ask.trim()) return undefined;
+  if (!(b.suggestion === null || str(b.suggestion))) return undefined;
+  if (b.state !== 'verified' && b.state !== 'not_verified' && b.state !== 'cannot_tell' && b.state !== 'none') return undefined;
+  if (b.writtenBy !== 'ai' && b.writtenBy !== 'rules') return undefined;
+  if (!Array.isArray(b.reasons) || b.reasons.length > 3) return undefined;
+  const reasons: ReviewBrief['reasons'] = [];
+  for (const r of b.reasons) {
+    const x = r as Record<string, unknown> | null;
+    if (!x || !str(x.text) || !opt(x.quote) || !opt(x.sourceLabel) || !opt(x.url)) return undefined;
+    reasons.push({ text: x.text, ...(x.quote ? { quote: x.quote } : {}), ...(x.sourceLabel ? { sourceLabel: x.sourceLabel } : {}), ...(x.url ? { url: x.url } : {}) });
+  }
+  let check: ReviewBrief['check'] = null;
+  if (b.check !== null && b.check !== undefined) {
+    const c = b.check as Record<string, unknown>;
+    if (typeof c !== 'object' || !str(c.text) || !opt(c.url) || !opt(c.linkLabel)) return undefined;
+    check = { text: c.text, ...(c.url ? { url: c.url } : {}), ...(c.linkLabel ? { linkLabel: c.linkLabel } : {}) };
+  }
+  return { ask: b.ask, suggestion: b.suggestion, state: b.state, reasons, check, writtenBy: b.writtenBy };
+}
+
 export function mapQuestion(q: C.ReviewQuestion): ReviewQuestion {
+  const brief = readBrief((q as C.ReviewQuestion & { brief?: unknown }).brief);
   const choices: Choice[] = q.kind === 'ebay' ? EBAY_CHOICES : (q.choices ?? []).map((c) => ({ id: c.id, label: c.label, models: c.models, asin: c.asin, source: c.source ? { label: c.source.label, url: c.source.url } : null }));
   return {
     id: q.id,
@@ -569,6 +600,7 @@ export function mapQuestion(q: C.ReviewQuestion): ReviewQuestion {
     askCostUsd: q.askCostUsd ?? null,
     openedAt: iso(q.item.question.openedAt),
     seen: q.seen ?? null,
+    ...(brief ? { brief } : {}),
   };
 }
 
