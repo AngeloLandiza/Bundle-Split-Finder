@@ -11,3 +11,4 @@ export * from './verify';
 export * from './eval';
 export * from './provider';
 export * from './reverify';
+export * from './followUp';

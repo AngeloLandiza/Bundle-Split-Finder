@@ -211,3 +211,25 @@ export interface ResearchUsage extends TokenUsage {
   webSearchRequests: number;
   webFetchRequests: number;
 }
+
+// --- Structured refusals (step 16, the follow-up loop) ----------------------------------------------
+
+/**
+ * A refusal of the verifier in a form code can act on, beside its sentence (verify.ts). Only refusals a free read could
+ * change get one: a model no source confirms, a part whose names do not say what it is, a kit whose own page is not read,
+ * a part nothing ties to the bundle, an Includes item left over, the bundle's page not read. The follow-up loop
+ * (followUp.ts) turns them into tasks; nothing is ever read out of the sentences.
+ */
+export type VerifyGap =
+  /** No catalog entry, Home Depot page or search result of the brand gives this model. */
+  | { code: 'model_unconfirmed'; model: string }
+  /** What the part is (its tools, whether it holds a battery or charger) cannot be read from its names. */
+  | { code: 'kind_unknown'; model: string }
+  /** A kit part whose own page is not among the sources, so which of the bundle's items it holds cannot be told. */
+  | { code: 'kit_contents'; model: string }
+  /** A word-only Includes item was given this part, and nothing ties the part to this bundle. */
+  | { code: 'untied'; model: string }
+  /** An item of the bundle's Includes lists that no part accounts for. */
+  | { code: 'leftover'; item: string }
+  /** The bundle's own page is not among the sources, so its Includes lists could not be read. */
+  | { code: 'bundle_unread' };

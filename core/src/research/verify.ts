@@ -31,7 +31,7 @@ import { modelForms, sameModel } from '../match';
 import type { ReviewItem } from '../scan/types';
 import { INCLUDES_SPEC, safeUrl } from './ledger';
 import { parseResearchAnswer } from './schema';
-import type { CatalogEntry, ResearchLedgerEntry, LedgerLine, ResearchAnswer, ResearchQuote } from './types';
+import type { CatalogEntry, ResearchLedgerEntry, LedgerLine, ResearchAnswer, ResearchQuote, VerifyGap } from './types';
 
 /** The model's reason is shown to the owner; longer than this it is cut. */
 export const MAX_RESEARCH_REASON_CHARS = 300;
@@ -390,7 +390,12 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
   if (!parsed.ok) return { status: 'unverified', reasons: [parsed.problem], claimed: null };
   const a = parsed.answer;
   const reason = cut(a.reason.trim());
-  const unverified = (reasons: string[]): CheckedSuggestion => ({ status: 'unverified', reasons, claimed: null, researchClaim: a });
+  // Step 16: beside each sentence a free read could change, its structured form (VerifyGap), for the follow-up loop.
+  const gaps: VerifyGap[] = [];
+  const unverified = (reasons: string[]): CheckedSuggestion => {
+    const g = gaps.filter((x, i) => gaps.findIndex((y) => JSON.stringify(y) === JSON.stringify(x)) === i);
+    return { status: 'unverified', reasons, claimed: null, researchClaim: a, ...(g.length > 0 ? { gaps: g } : {}) };
+  };
   if (item.kind !== 'split') return unverified(['Research answers split questions only.']);
 
   const found = (qs: ResearchQuote[], problems: string[]): FoundQuote[] => {
@@ -434,6 +439,7 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
     const fromBrandSite = quotes.some((q) => q.entry.kind === 'brand_site' && names(q.norm, brand, model));
     if (fromLedger.length === 0 && fromCatalog.length === 0 && !fromBrandSite) {
       problems.push(`${model} is not a model any source read gives: no catalog entry, Home Depot page or search result of ${brand} has it, and no brand-site passage quoted names it.`);
+      gaps.push({ code: 'model_unconfirmed', model });
     }
     // A quote names the part when it holds the model, or comes from the part's own Home Depot page (fix round 2).
     const ownPage = (q: FoundQuote) => !q.entry.isBundle && q.entry.pageModel !== undefined && sameModel(brand, q.entry.pageModel, model);
@@ -499,7 +505,10 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
   const count = counts.size === 1 ? [...counts][0]! : null;
   if (count !== null && parts.length > 0) {
     const unknown = parts.filter((p) => p.product.tools === null);
-    for (const p of unknown) problems.push(`What ${p.model} is cannot be read from its names, so its tools cannot be counted.`);
+    for (const p of unknown) {
+      problems.push(`What ${p.model} is cannot be read from its names, so its tools cannot be counted.`);
+      gaps.push({ code: 'kind_unknown', model: p.model });
+    }
     if (unknown.length === 0) {
       const total = parts.reduce((n, p) => n + p.product.tools! * p.qty, 0);
       // Step 15, rule 3: "<N>-Tool Combo Kit … and <extra>" on a kit + extra bundle counts the kit half: the kit part (the
@@ -516,6 +525,7 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
   const noBattery = toolsOnly || said.some((t) => NO_BATTERY.test(t));
   const noCharger = toolsOnly || said.some((t) => NO_CHARGER.test(t));
   for (const p of parts) {
+    if ((noBattery && p.product.battery === null) || (noCharger && p.product.charger === null)) gaps.push({ code: 'kind_unknown', model: p.model });
     if (noBattery && p.product.battery !== false) {
       problems.push(p.product.battery === true
         ? `The bundle comes without a battery; ${p.model} is or holds one.`
@@ -579,8 +589,9 @@ export function verifyResearch(answer: unknown, item: ReviewItem, ledger: Resear
     return kit !== undefined && kit.catalogKit && kit.qty === 1 && parts.length === 2 && (p.product.tools === 0 || p.product.tools === 1)
       && p.product.kinds.length > 0 && p.product.kinds.every((k) => kinds.has(k)) && kitHalfCount(title) !== null;
   };
-  if (items.length > 0) checkIncludes(items, listTexts, parts, brand, tie, problems, spelledExtra);
-  else checkWithoutIncludes(parts, brand, count, titleTexts, bundleLines.map((l) => l.text), tie, problems);
+  if (bundleEntries.every((e) => e.lines.length === 0)) gaps.push({ code: 'bundle_unread' });
+  if (items.length > 0) checkIncludes(items, listTexts, parts, brand, tie, problems, spelledExtra, gaps);
+  else checkWithoutIncludes(parts, brand, count, titleTexts, bundleLines.map((l) => l.text), tie, problems, gaps);
 
   if (problems.length > 0) return unverified([...new Set(problems)]);
   const quotes = parts.flatMap((p) => p.quotes);
@@ -632,8 +643,9 @@ const ACCESSORIES = /^\s*(other\s+)?accessor(y|ies)\s*$/i;
  * some, a named tool of a kind its page holds. Any other part accounts for an accessory as quoted, and for a
  * tool, battery or charger item only when its own quoted words and its names are that kind.
  */
-function canAccount(p: PartCheck, it: Item, brand: string, tie: TieCheck): { ok: true } | { ok: false; why: string; loud?: true } {
-  const no = (why: string) => ({ ok: false as const, why });
+function canAccount(p: PartCheck, it: Item, brand: string, tie: TieCheck): { ok: true } | { ok: false; why: string; loud?: true; gap?: VerifyGap } {
+  // A kit whose own page is not read: its page would say which items are its (step 16, the follow-up loop's read_kit_page).
+  const no = (why: string) => ({ ok: false as const, why, ...(p.product.kit && p.contents.length === 0 ? { gap: { code: 'kit_contents' as const, model: p.model } } : {}) });
   if (it.model !== null) {
     return p.product.kit && p.contents.some((c) => c.model !== null && sameModel(brand, c.model, it.model!)) ? { ok: true } : no(`"${show(it.name)}" is model ${it.model}, not ${p.model}.`);
   }
@@ -665,15 +677,14 @@ function canAccount(p: PartCheck, it: Item, brand: string, tie: TieCheck): { ok:
     // Several models of the kind could be this word-only item: the part must be tied to the bundle (fix round 3).
     const kind = it.kinds.find((k) => p.quotedKinds.includes(k))!;
     const untied = tie(p, kind, it.name);
-    return untied === null ? { ok: true } : { ok: false, why: untied, loud: true };
+    return untied === null ? { ok: true } : { ok: false, why: untied, loud: true, gap: { code: 'untied', model: p.model } };
   }
-  return no(p.quotedKinds.length === 0
-    ? `"${show(it.name)}" is a ${it.kinds.join(' and ')}, and no quote naming ${p.model} says what it is.`
-    : `"${show(it.name)}" is a ${it.kinds.join(' and ')}; ${p.model} is ${p.product.titles[0] ? `"${show(p.product.titles[0])}"` : `a ${p.quotedKinds.join(', ')}`}.`);
+  if (p.quotedKinds.length === 0) return { ok: false, why: `"${show(it.name)}" is a ${it.kinds.join(' and ')}, and no quote naming ${p.model} says what it is.`, gap: { code: 'kind_unknown', model: p.model } };
+  return no(`"${show(it.name)}" is a ${it.kinds.join(' and ')}; ${p.model} is ${p.product.titles[0] ? `"${show(p.product.titles[0])}"` : `a ${p.quotedKinds.join(', ')}`}.`);
 }
 
 /** Every item of the bundle's Includes lists is accounted for by the parts given, and every part accounts for one. */
-function checkIncludes(items: Item[], listTexts: readonly string[], parts: PartCheck[], brand: string, tie: TieCheck, problems: string[], spelledExtra: (p: PartCheck) => boolean = () => false): void {
+function checkIncludes(items: Item[], listTexts: readonly string[], parts: PartCheck[], brand: string, tie: TieCheck, problems: string[], spelledExtra: (p: PartCheck) => boolean = () => false, gaps: VerifyGap[] = []): void {
   const owners: Set<PartCheck>[] = items.map(() => new Set());
   const inKit = (p: PartCheck, it: Item): boolean =>
     p.product.kit && p.contents.some((c) => (it.model !== null && c.model !== null && sameModel(brand, c.model, it.model)) || normaliseText(c.name) === normaliseText(it.name));
@@ -694,7 +705,10 @@ function checkIncludes(items: Item[], listTexts: readonly string[], parts: PartC
         if (owners[i]!.has(p)) continue;
         const can = canAccount(p, items[i]!, brand, tie);
         if (can.ok) owners[i]!.add(p);
-        else if (claim.items.length === 1 || ('loud' in can && can.loud)) problems.push(can.why);
+        else if (claim.items.length === 1 || ('loud' in can && can.loud)) {
+          problems.push(can.why);
+          if (can.gap) gaps.push(can.gap);
+        }
       }
     }
   }
@@ -705,6 +719,7 @@ function checkIncludes(items: Item[], listTexts: readonly string[], parts: PartC
     for (const p of by) accounted.add(p);
     if (by.length === 0) {
       problems.push(`"${show(it.name)}" on the bundle's Includes list is left over: no part accounts for it.`);
+      gaps.push({ code: 'leftover', item: it.name });
       return;
     }
     // One kind of product, several parts: their quantities must make the item's count ("18V Jig Saw" is one jig saw).
@@ -738,7 +753,7 @@ function checkIncludes(items: Item[], listTexts: readonly string[], parts: PartC
  * "6-Tool", a set's "65-Piece", or its kind of tool), and a battery count the title states matched by the
  * parts' (fix round 2: read from the bundle's own title and page in the ledger, quoted or not).
  */
-function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number | null, titles: string[], lines: string[], tie: TieCheck, problems: string[]): void {
+function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number | null, titles: string[], lines: string[], tie: TieCheck, problems: string[], gaps: VerifyGap[] = []): void {
   if (count === null) {
     problems.push("The bundle's page has no Includes list and states no tool count, so nothing shows that no part is left over.");
   }
@@ -756,14 +771,22 @@ function checkWithoutIncludes(parts: PartCheck[], brand: string, count: number |
     } else if (!strong && byKind !== undefined) {
       // Shown by its kind alone ("Miter Saw"): any model of that kind would be, so it must be tied (fix round 3).
       const untied = tie(p, byKind, byKind);
-      if (untied !== null) problems.push(untied);
+      if (untied !== null) {
+        problems.push(untied);
+        gaps.push({ code: 'untied', model: p.model });
+      }
     }
   }
   const want = titles.length > 0 ? titleBatteryCount(titles[0]!) : null;
   if (want !== null) {
     const each = parts.map((p) => ({ p, n: partBatteries(p) }));
     const unknown = each.filter((x) => x.n === null);
-    if (unknown.length > 0) for (const x of unknown) problems.push(`The bundle's title counts ${want} batter${want === 1 ? 'y' : 'ies'}, and how many ${x.p.model} holds cannot be read.`);
+    if (unknown.length > 0) {
+      for (const x of unknown) {
+        problems.push(`The bundle's title counts ${want} batter${want === 1 ? 'y' : 'ies'}, and how many ${x.p.model} holds cannot be read.`);
+        gaps.push(x.p.product.kit && x.p.contents.length === 0 ? { code: 'kit_contents', model: x.p.model } : { code: 'kind_unknown', model: x.p.model });
+      }
+    }
     else {
       const total = each.reduce((s, x) => s + x.n! * x.p.qty, 0);
       if (total !== want) problems.push(`The bundle's title counts ${want} batter${want === 1 ? 'y' : 'ies'}; the parts hold ${total}.`);

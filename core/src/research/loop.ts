@@ -17,7 +17,7 @@ import type { NotJudged, TokenUsage } from '../judge/types';
 import {
   addCited, addFetched, bundleIdentity, catalogLedgerEntry, freshId, ledgerFromEvidence, onHomeDepot, pageEntry, renderEntry, safeUrl, searchEntry, webEntry,
 } from './ledger';
-import { DEFAULT_RESEARCH_LIMITS, renderResearchInput, researchPromptFor, researchTools } from './prompt';
+import { DEFAULT_RESEARCH_LIMITS, FOLLOW_UP_VERSION_SUFFIX, renderResearchInput, researchPromptFor, researchTools } from './prompt';
 import type { CatalogEntry, ResearchLedgerEntry, ResearchAnswer, ResearchLimits, ResearchModel, ResearchRequest, ResearchTools, ResearchUsage } from './types';
 import { parseResearchAnswer } from './schema';
 import { verifyResearch } from './verify';
@@ -30,6 +30,12 @@ export interface ResearchOptions {
   catalog?: CatalogEntry[];
   /** Clock, for the time limit (tests). */
   now?: () => number;
+  /**
+   * Step 16, the follow-up loop (followUp.ts): a second ask of a question the first could not settle. `entries` are the pages
+   * and searches the app read for it since (each with its link), given beside the stored evidence and quotable like any; `notes`
+   * are the code's own sentences saying what was read and what is still missing. The answer is checked as any other.
+   */
+  followUp?: { entries: ResearchLedgerEntry[]; notes: string[] };
 }
 
 /** What the research did, kept with the suggestion: the ledger every quote was checked against, and its cost. */
@@ -52,6 +58,8 @@ export interface ResearchTrace {
    * by tool name, once per failure. Absent when none failed. A wrong input the model gave is not a failure.
    */
   failedTools?: string[];
+  /** Step 16: each failed client call with the input it was given, so the follow-up loop can make the same call once more. */
+  failedCalls?: { tool: string; input: Record<string, unknown> }[];
 }
 
 /** One research result: a Suggestion (as Ask AI's, so the panel and the store take it as they are) and its trace. */
@@ -90,7 +98,8 @@ export async function researchQuestion(
   const trace: ResearchTrace = { ledger, toolCalls: 0, webSearches: 0, webFetches: 0, requests: 0, usage, answer: null, droppedResults: 0 };
   // A model without the brand-site server tools (an OpenAI-compatible one) is offered the Home Depot tools only, and told so.
   const web = model.webTools !== false;
-  const { prompt, version } = researchPromptFor(web);
+  const { prompt, version: base } = researchPromptFor(web);
+  const version = opts.followUp ? base + FOLLOW_UP_VERSION_SUFFIX : base;
   const who = model.label ?? 'Claude';
   const meta = { questionId: item.id, seen: reviewSignature(item), provider: model.provider, model: model.model, promptVersion: version };
   const withUsage = () => (usage.inputTokens + usage.outputTokens + usage.webSearchRequests > 0 ? { usage: { ...usage } } : {});
@@ -105,9 +114,10 @@ export async function researchQuestion(
   if (opts.signal?.aborted) return notSuggested('Stopped before the research began.', { reason: 'aborted', message: named('The call to Claude was cancelled.') });
 
   ledger.push(...ledgerFromEvidence(evidence));
+  for (const e of opts.followUp?.entries ?? []) if (!ledger.some((x) => x.id === e.id)) ledger.push({ ...e, lines: [...e.lines], products: [...e.products] });
   const bundle = bundleIdentity(item);
   const toolDefs = researchTools(limits, web);
-  const messages: ResearchRequest['messages'] = [{ role: 'user', content: renderResearchInput(item, ledger, evidence.missing, limits, web) }];
+  const messages: ResearchRequest['messages'] = [{ role: 'user', content: renderResearchInput(item, ledger, evidence.missing, limits, web, opts.followUp?.notes) }];
 
   // One signal for everything in flight: the owner's Stop or the question's time limit.
   const controller = new AbortController();
@@ -187,7 +197,10 @@ export async function researchQuestion(
           const halt2 = stopped();
           if (halt2) return halt2;
           const out = await runTool(use, tools, ledger, bundle, controller.signal);
-          if (out.failed) (trace.failedTools ??= []).push(String(use.name));
+          if (out.failed) {
+            (trace.failedTools ??= []).push(String(use.name));
+            (trace.failedCalls ??= []).push({ tool: String(use.name), input: isRecord(use.input) ? { ...use.input } : {} });
+          }
           results.push({ type: 'tool_result', tool_use_id: String(use.id), content: out.content, ...(out.isError ? { is_error: true } : {}) });
         }
         messages.push({ role: 'assistant', content: turn.content }, { role: 'user', content: results });

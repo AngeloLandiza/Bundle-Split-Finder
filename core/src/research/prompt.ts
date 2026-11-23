@@ -49,6 +49,12 @@ export const RESEARCH_PROMPT_HOMEDEPOT_ONLY = RESEARCH_PROMPT.replace(
 /** The suffix of the prompt version of a run without the brand-site tools: a suggestion depends on the words it was given. */
 export const HOMEDEPOT_ONLY_VERSION_SUFFIX = '+homedepot-only';
 
+/**
+ * Step 16: the suffix of the prompt version of a follow-up ask (followUp.ts): the same system prompt, and a user message that
+ * also says, in the code's words, which pages the app read since the first ask and what is still missing.
+ */
+export const FOLLOW_UP_VERSION_SUFFIX = '+followup.1';
+
 /** The system prompt and its version for a run with or without the brand-site tools (web search and web fetch). */
 export function researchPromptFor(web: boolean): { prompt: string; version: string } {
   return web
@@ -122,6 +128,7 @@ export function researchTools(limits: ResearchLimits = DEFAULT_RESEARCH_LIMITS, 
 /** The user message for one question: the question, its readings and notes, and the stored evidence. */
 export function renderResearchInput(
   item: ReviewItem, stored: ResearchLedgerEntry[], missing: string[], limits: ResearchLimits = DEFAULT_RESEARCH_LIMITS, web = true,
+  followUp?: readonly string[],
 ): string {
   const id = /^homedepot:(\d+)$/.exec(item.subject)?.[1];
   const out = [
@@ -142,7 +149,10 @@ export function renderResearchInput(
       ? `Limits: at most ${limits.maxToolCalls} tool calls in all, of them at most ${limits.maxWebSearches} web searches and ${limits.maxWebFetches} web fetches.`
       : `Limits: at most ${limits.maxToolCalls} tool calls in all. There is no web search.`,
   );
-  out.push('</notes>', '</question>', '', '<evidence>');
+  out.push('</notes>');
+  // Step 16: a follow-up ask. Every line is the code's own (followUp.ts followUpNotes): models, source ids and counts, never a page's words.
+  if (followUp && followUp.length > 0) out.push('<follow_up>', ...followUp.map(defuse), '</follow_up>');
+  out.push('</question>', '', '<evidence>');
   for (const e of stored) out.push(renderEntry(e));
   out.push('</evidence>');
   return out.join('\n');

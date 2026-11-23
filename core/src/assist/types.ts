@@ -6,7 +6,7 @@
 // fetching, no search); the model's answer is read by verify.ts, which decides what it is worth.
 
 import type { NotJudged, TokenUsage } from '../judge/types';
-import type { ResearchAnswer } from '../research/types';
+import type { ResearchAnswer, VerifyGap } from '../research/types';
 
 /** One line of a source, as the model is shown it and as a quote is searched in. */
 export interface EvidenceLine {
@@ -107,6 +107,8 @@ export type CheckedSuggestion =
     status: 'unverified'; reasons: string[]; claimed: AssistRaw | null;
     /** Step 12 research: the research answer as the model gave it (claimed is null for a parts answer). */
     researchClaim?: ResearchAnswer;
+    /** Step 16, the follow-up loop: the research verifier's refusals in a form code can act on (research/types.ts VerifyGap). */
+    gaps?: VerifyGap[];
   }
   /** The model said the evidence does not settle it. Only quotes that were found are kept. */
   | { status: 'cannot_tell'; reason: string; quotes: VerifiedQuote[] }
