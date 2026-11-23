@@ -1,0 +1,77 @@
+# Proves the Windows installer on a real Windows machine: builds it natively, installs it silently, starts it,
+# and checks the agent behind it (scripts/windows-smoke.ps1). It runs only when started by hand (Actions tab, "Run
+# workflow") or when a tag v* is pushed. It spends no SerpApi searches and uses no secrets.
+name: windows-smoke
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      # Tells desktop/bundle-agent.ts to build the Windows sidecar.
+      TAURI_ENV_TARGET_TRIPLE: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+
+      # The sidecar is a Node SEA whose blob must come from this exact Node (desktop/bundle-agent.ts refuses another).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.0'
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare the extension build
+        run: npx wxt prepare
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      # Native build of the agent sidecar for Windows (src-tauri/binaries/agent-dashboard-x86_64-pc-windows-msvc.exe).
+      - name: Build the sidecar
+        run: npm run desktop:bundle-agent
+
+      # The extension zip, the desktop UI and the sidecar are built by tauri.conf.json's beforeBuildCommand; the
+      # NSIS target comes from src-tauri/tauri.windows.conf.json. No cross-compile here: this is the Windows host.
+      - name: Build the NSIS installer
+        run: npx tauri build --target x86_64-pc-windows-msvc
+
+      - name: Find the installer
+        id: installer
+        shell: pwsh
+        run: |
+          $dir = 'src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis'
+          $exe = Get-ChildItem -Path $dir -Filter '*-setup.exe' | Select-Object -First 1
+          if (-not $exe) { throw "No *-setup.exe in $dir" }
+          "path=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Upload the installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: split-finder-windows-installer
+          path: ${{ steps.installer.outputs.path }}
+          if-no-files-found: error
+
+      - name: Smoke test the installed app
+        shell: pwsh
+        run: ./scripts/windows-smoke.ps1 -Installer '${{ steps.installer.outputs.path }}'
