@@ -39,3 +39,11 @@
 `POST /api/scan` · `POST /api/scan/stop` · `GET/PATCH /api/settings` (no keys out; `PUT /api/keys/:name`)
 `POST /api/pair/request` · `POST /api/pair/approve` · `GET /api/worker/next` (long-poll) · `POST /api/worker/result`
 `GET /api/events` (SSE: state, deals, review, activity, notify)
+
+## Where this stands (2026-11-23)
+On main (not pushed). typecheck clean; 1,719 core/agent + 1,119 extension unit tests; extension, desktop UI and `cargo check` build. No e2e, no live calls (owner's testing scope).
+- **Agent does the work:** schedule, scans within the SerpApi budget/reserve/per-scan cap, Keepa inside scans, eBay pass, AI pass on every open question (research over Chrome, assist from evidence), Autopilot (verified + trusted model only; default research/assist model Opus 5.5, measured; Undo), one digest per run as a native notification and optional Telegram, Activity log, monthly AI cap ($25 default).
+- **Security:** token on every request, Host/Origin checks, pairing by code, keys only in the agent (never returned), the shell trusts port 8790 only after an HMAC challenge, crash-safe store (fsync, corrupt file → paused safe state), legacy plaintext keys removed.
+- **Extension:** paired worker for Home Depot reads (page, kit, part price, search, research page) with lease renewal; standalone mode unchanged.
+- **Desktop app:** rail (Today, Deals, Review, Activity, Settings), Deals table + detail pane, Review master–detail with evidence and keyboard, pairing approval in-app, tray with question count, close to tray, launch at login, shortcuts, native notifications.
+**Not done:** Windows packaging; keychain for keys; SQLite; the DMG not built in this session; nothing exercised end to end in a real Chrome + app pairing; DeepSeek not evaluated (untrusted until measured); known flaky test (hdReader concurrency under full-suite load).
