@@ -3,53 +3,118 @@ import { describe, expect, it } from 'vitest';
 
 import { unzipCommand } from '../setup';
 import { renameOver } from '../store';
-import { icaclsOwnerOnlyArgs, makeOwnerOnly, parseUserSid } from '../winAcl';
+import {
+  aclSentence,
+  icaclsOwnerOnlyArgs,
+  makeOwnerOnly,
+  ownerOnlyProblem,
+  parseIcaclsEntries,
+  parseUserName,
+  parseUserSid,
+  reportAclProblem,
+  setAclReporter,
+} from '../winAcl';
 
 // `whoami /user /fo csv /nh` as Windows 11 prints it (the account and SID here are made up).
 const WHOAMI = '"desktop-7q2k\\alex","S-1-5-21-3623811015-3361044348-30300820-1013"\r\n';
 
+const FILE = 'C:\\Users\\alex\\AppData\\Roaming\\Split Finder\\store\\keys.json';
+const SID = 'S-1-5-21-3623811015-3361044348-30300820-1013';
+// `icacls <file>` as the first runner showed it: the folder's three inherited entries.
+const INHERITED = [
+  `${FILE} NT AUTHORITY\\SYSTEM:(I)(F)`,
+  '                                                                   BUILTIN\\Administrators:(I)(F)',
+  '                                                                   DESKTOP-7Q2K\\alex:(I)(F)',
+  '',
+  'Successfully processed 1 files; Failed processing 0 files',
+  '',
+].join('\r\n');
+// After the narrowing: one explicit entry (no (I)).
+const NARROWED = [`${FILE} DESKTOP-7Q2K\\alex:(F)`, '', 'Successfully processed 1 files; Failed processing 0 files', ''].join('\r\n');
+const SYS32 = 'C:\\Windows\\System32';
+
 describe('owner-only files on Windows (winAcl)', () => {
-  it('reads the SID from whoami and grants it alone, with inheritance removed', () => {
-    expect(parseUserSid(WHOAMI)).toBe('S-1-5-21-3623811015-3361044348-30300820-1013');
+  it('reads the SID and name from whoami and grants the SID alone, with inheritance removed', () => {
+    expect(parseUserSid(WHOAMI)).toBe(SID);
+    expect(parseUserName(WHOAMI)).toBe('desktop-7q2k\\alex');
     expect(parseUserSid('INFO: nothing\r\n')).toBeNull();
-    expect(icaclsOwnerOnlyArgs('C:\\Users\\alex\\AppData\\Roaming\\x\\keys.json.42.tmp', 'S-1-5-21-1-2-3-1013')).toEqual([
-      'C:\\Users\\alex\\AppData\\Roaming\\x\\keys.json.42.tmp',
-      '/inheritance:r',
-      '/grant:r',
-      '*S-1-5-21-1-2-3-1013:F',
-      '/q',
-    ]);
+    expect(icaclsOwnerOnlyArgs(FILE, SID)).toEqual([FILE, '/inheritance:r', '/grant:r', `*${SID}:F`, '/q']);
   });
 
-  it('asks whoami once, runs icacls from System32 for each file', () => {
+  it('parses icacls output: three inherited entries, and the one explicit entry', () => {
+    const three = parseIcaclsEntries(INHERITED, FILE);
+    expect(three.map((e) => [e.who, e.inherited])).toEqual([
+      ['NT AUTHORITY\\SYSTEM', true],
+      ['BUILTIN\\Administrators', true],
+      ['DESKTOP-7Q2K\\alex', true],
+    ]);
+    const one = parseIcaclsEntries(NARROWED, FILE);
+    expect(one).toEqual([{ who: 'DESKTOP-7Q2K\\alex', inherited: false, rights: '(F)' }]);
+    expect(ownerOnlyProblem(three, SID, 'desktop-7q2k\\alex')).toBe(
+      'it still lists NT AUTHORITY\\SYSTEM, BUILTIN\\Administrators, DESKTOP-7Q2K\\alex (inherited from its folder)',
+    );
+    expect(ownerOnlyProblem(one, SID, 'desktop-7q2k\\alex')).toBeNull();
+    expect(ownerOnlyProblem([{ who: SID, inherited: false, rights: '(F)' }], SID, null)).toBeNull();
+    expect(ownerOnlyProblem([{ who: 'BUILTIN\\Users', inherited: false, rights: '(R)' }], SID, 'x\\y')).toContain('BUILTIN\\Users');
+    const pair = [
+      { who: 'x\\y', inherited: false, rights: '(F)' },
+      { who: 'NT AUTHORITY\\SYSTEM', inherited: false, rights: '(F)' },
+    ];
+    expect(ownerOnlyProblem(pair, SID, 'x\\y')).not.toBeNull();
+    expect(ownerOnlyProblem([], SID, null)).toBe('icacls listed no entries');
+  });
+
+  it('asks whoami once; per file: icacls to narrow, icacls to read back, all from System32', () => {
     const calls: string[][] = [];
     const run = (file: string, args: string[]) => {
       calls.push([file, ...args]);
-      return file.endsWith('whoami.exe') ? WHOAMI : 'Successfully processed 1 files';
+      if (file.endsWith('whoami.exe')) return WHOAMI;
+      return args.length === 1 ? NARROWED : 'Successfully processed 1 files';
     };
-    const ownerOnly = makeOwnerOnly(run, () => {}, 'C:\\Windows\\System32');
-    expect(ownerOnly('a.tmp')).toBe(true);
-    expect(ownerOnly('b.tmp')).toBe(true);
+    const acl = makeOwnerOnly(run, SYS32);
+    expect(acl.ensure(FILE)).toBeNull();
+    expect(acl.ensure(FILE)).toBeNull();
     expect(calls.map((c) => c[0])).toEqual([
-      'C:\\Windows\\System32\\whoami.exe',
-      'C:\\Windows\\System32\\icacls.exe',
-      'C:\\Windows\\System32\\icacls.exe',
+      `${SYS32}\\whoami.exe`,
+      `${SYS32}\\icacls.exe`,
+      `${SYS32}\\icacls.exe`,
+      `${SYS32}\\icacls.exe`,
+      `${SYS32}\\icacls.exe`,
     ]);
-    expect(calls[2]![1]).toBe('b.tmp');
+    expect(calls[1]!.slice(1)).toEqual(icaclsOwnerOnlyArgs(FILE, SID));
+    expect(calls[2]!.slice(1)).toEqual([FILE]);
   });
 
-  it('says once when it cannot, and the write goes on', () => {
-    const warnings: string[] = [];
-    const ownerOnly = makeOwnerOnly(
-      () => {
-        throw new Error('spawn icacls.exe ENOENT\nmore');
-      },
-      (m) => warnings.push(m),
-      'C:\\Windows\\System32',
+  it('verify-then-report: a file that stays inherited is reported with the reason', () => {
+    const run = (file: string, args: string[]) => (file.endsWith('whoami.exe') ? WHOAMI : args.length === 1 ? INHERITED : '');
+    const why = makeOwnerOnly(run, SYS32).ensure(FILE);
+    expect(why).toContain('it still lists NT AUTHORITY\\SYSTEM');
+    const sentences: string[] = [];
+    setAclReporter((s) => sentences.push(s));
+    reportAclProblem('keys.json', why!);
+    setAclReporter(null);
+    expect(sentences).toHaveLength(1);
+    expect(sentences[0]).toMatch(/^Windows did not let Split Finder restrict keys\.json to your account: it still lists .*\. It is readable by this PC's administrators\.$/);
+  });
+
+  it('an icacls that throws is the reason, and ensure still reads back', () => {
+    const run = (file: string, args: string[]) => {
+      if (file.endsWith('whoami.exe')) return WHOAMI;
+      if (args.length === 1) throw new Error('icacls.exe exited 5');
+      throw new Error('Access is denied.\nmore');
+    };
+    expect(makeOwnerOnly(run, SYS32).ensure(FILE)).toBe('Access is denied.');
+    expect(aclSentence('keys.json', 'Access is denied.')).toBe(
+      "Windows did not let Split Finder restrict keys.json to your account: Access is denied. It is readable by this PC's administrators.",
     );
-    expect(ownerOnly('a.tmp')).toBe(false);
-    expect(ownerOnly('b.tmp')).toBe(false);
-    expect(warnings).toEqual(["Owner-only files keep their folder's permissions (per-user under %APPDATA%): spawn icacls.exe ENOENT"]);
+  });
+
+  it('a problem reported before the store opens is delivered when it registers', () => {
+    reportAclProblem('agent-token', 'early');
+    const got: string[] = [];
+    setAclReporter((s) => got.push(s));
+    setAclReporter(null);
+    expect(got).toEqual([aclSentence('agent-token', 'early')]);
   });
 });
 

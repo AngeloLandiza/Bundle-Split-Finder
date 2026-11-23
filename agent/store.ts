@@ -7,7 +7,7 @@
 import { DEFAULT_LISTING_SOURCE } from '../core/src/scan/listingSource';
 import { randomBytes } from 'node:crypto';
 import { closeSync, existsSync, fsyncSync, linkSync, mkdirSync, openSync, readFileSync, renameSync, statSync, unlinkSync, utimesSync, writeSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 import type {
   AppSettings,
@@ -35,7 +35,7 @@ import type { BogoView } from '../core/src/tracking/bogo';
 import type { BogoGroup } from '../core/src/tracking/bogoPairs';
 import type { FbaEstimate } from '../core/src/tracking/fba';
 import { emptyTracking, type TrackingState } from '../core/src/tracking/state';
-import { restrictToOwner } from './winAcl';
+import { ensureOwnerOnlyFinal, restrictToOwner, setAclReporter } from './winAcl';
 
 // ---------------------------------------------------------------- collection types
 
@@ -520,6 +520,8 @@ export function writeFileAtomic(path: string, text: string, mode = 0o644): void 
     closeSync(fd);
   }
   renameOver(tmp, path);
+  // Again on the final path, then read back; a failure goes to Activity, the write is never failed (winAcl.ts).
+  if (mode === 0o600 && process.platform === 'win32') ensureOwnerOnlyFinal(path, basename(path));
   fsyncDir(dirname(path));
 }
 
@@ -842,6 +844,7 @@ export class Store {
         applyMigrations(data);
         const store = new Store(dir, data, lockPath);
         if (lockToken) store.holdLock(lockToken);
+        if (lockPath) setAclReporter((sentence) => store.noteProblem(sentence));
         for (const name of COLLECTIONS) store.write(name);
         writeMeta(migratedFrom);
         if (lockPath) scrubLegacyKeys(dataDir);
@@ -865,6 +868,7 @@ export class Store {
     }
     const store = new Store(dir, data, lockPath);
     if (lockToken) store.holdLock(lockToken);
+    if (lockPath) setAclReporter((sentence) => store.noteProblem(sentence));
     if (unreadable.length) store.startSafe(unreadable);
     // A read-only open (lock: false) never writes.
     else if (lockPath) for (const name of applyMigrations(data)) store.write(name);
@@ -939,6 +943,15 @@ export class Store {
       }
     }, LOCK_BEAT_MS);
     this.beat.unref?.();
+  }
+
+  /** A problem the agent noticed on its own (no retry): one Activity error, once per sentence. */
+  noteProblem(sentence: string): void {
+    const errors = this.data.activity.errors ?? [];
+    if (errors.some((e) => e.sentence === sentence && !e.resolvedAt)) return;
+    const error: ActivityErrorRecord = { id: `err-acl-${Date.now()}`, at: new Date().toISOString(), sentence, retry: null, resolvedAt: null };
+    this.data.activity = { ...this.data.activity, errors: [...errors, error] };
+    this.write('activity');
   }
 
   private write(name: CollectionName): void {
