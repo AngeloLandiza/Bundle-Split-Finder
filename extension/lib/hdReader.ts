@@ -449,3 +449,66 @@ export function createPartPriceReader(
     return asked.map((p) => ({ ...(answers.get(partKeyOf(p)) ?? emptyRead(p)), brand: p.brand, model: p.model }));
   };
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// A part's price by its item id (step 13, the app's `partPrice` job). The job names the id and the model but not the brand,
+// so the product's own page says the brand, and the model is checked against it (sameModel): an id is never trusted for what it
+// is. Same doorway, pause and refusal rule as the other readers; a non-200 answer other than 404 says nothing (not_read).
+
+/** One part's Home Depot price, read from the product page of an item id the app named. */
+export type ReadItemPrice = (itemId: string, model: string) => Promise<PartPriceReading>;
+
+export function createItemPriceReader(
+  env: ReaderEnv,
+  opts: { pauseMs?: number; settleMs?: number; now?: () => number } = {},
+): ReadItemPrice {
+  const pauseMs = opts.pauseMs ?? 1000;
+  const settleMs = opts.settleMs ?? 2500;
+  const now = opts.now ?? Date.now;
+  let lastEnded: number | null = null;
+
+  return async (itemId, model) => {
+    const empty = (status: 'not_found' | 'not_read'): PartPriceReading => ({ brand: '', model, status, itemId: status === 'not_found' ? itemId : null, matchedModel: null, price: null, title: null, link: null });
+    if (lastEnded !== null) {
+      const left = pauseMs - (now() - lastEnded);
+      if (left > 0) await env.sleep(left);
+    }
+    const stale = await env.remembered();
+    if (stale !== null) {
+      await env.closeTab(stale).catch(() => undefined);
+      await env.remember(null);
+    }
+    const tabId = await env.openTab(`${env.origin}/p/${itemId}`);
+    try {
+      await env.remember(tabId);
+      try {
+        await env.waitForLoad(tabId, LOAD_TIMEOUT_MS);
+      } catch {
+        throw new Error('The Home Depot tab did not load.');
+      }
+      if (settleMs > 0) await env.sleep(settleMs);
+      const answered = await env.runInTab(tabId, fetchPagesInTab, [[itemId], 1]);
+      const r = (Array.isArray(answered) ? answered : []).find((x) => x.itemId === itemId);
+      if (r && r.status === 404) return empty('not_found');
+      if (!r || r.status !== 200 || r.text === null) return empty('not_read');
+      const page = parseProductPage(r.text, itemId);
+      if (page === null) return empty('not_read');
+      // The page names another model: the id is not this part.
+      if (!sameModel(page.brand, page.model, model)) return { ...empty('not_found'), brand: page.brand, matchedModel: page.model.trim() };
+      return {
+        brand: page.brand,
+        model,
+        status: page.price === null ? 'not_found' : 'found',
+        itemId,
+        matchedModel: page.model.trim(),
+        price: page.price,
+        title: page.title === '' ? null : page.title,
+        link: `${env.origin}/p/${itemId}`,
+      };
+    } finally {
+      await env.closeTab(tabId).catch(() => undefined);
+      await env.remember(null).catch(() => undefined);
+      lastEnded = now();
+    }
+  };
+}

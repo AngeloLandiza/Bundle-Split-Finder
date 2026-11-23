@@ -10,8 +10,13 @@ import { appendLedger } from '../lib/ledger';
 import { CONTENT_REQUESTS, type ChipSetting, type Request, type ShowThisPage, type StateChanged } from '../lib/messages';
 import * as prefs from '../lib/prefs';
 import { mayAsk } from '../lib/sender';
-import { createPageReader, createPartPriceReader, openDoorway, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
+import { createItemPriceReader, createPageReader, createPartPriceReader, openDoorway, waitForDoorway, type ReaderEnv } from '../lib/hdReader';
 import { createResearchTools } from '../lib/researchTools';
+import { createAgentApi } from '../lib/agentApi';
+import { appJobDeps, createJobLoop, runJob } from '../lib/agentJobs';
+import { createLinkStore, isAgentLinkRequest } from '../lib/agentLink';
+import { createPairing } from '../lib/agentPairing';
+import { createLock, lockedReaders } from '../lib/doorwayLock';
 import { createWorker, type DeferredPage, type PageEnv } from '../lib/worker';
 import type { ProductPage } from '../../core/src/hdPage';
 
@@ -128,6 +133,10 @@ function chromePages(): PageEnv {
 }
 
 const TICK = 'tick';
+/** Wakes the paired worker: resumes a pairing left waiting and starts the job loop when it is not running. */
+const AGENT_WAKE = 'splitFinderAgentWake';
+/** The alarm of the pre-step-13 app sync, cleared once so an update leaves none behind. */
+const LEGACY_APP_SYNC = 'splitFinderAppSync';
 /** Notifications need an icon; until the extension has one, a plain square in --ink. */
 const ICON = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGOQkpEDAACoAFUlVprSAAAAAElFTkSuQmCC';
 
@@ -178,9 +187,46 @@ export default defineBackground(() => {
     settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50,
     pauseMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 0,
   });
+  // Step 13: Home Depot is read in one doorway tab, and the scan this extension runs (unpaired) and the jobs the app queues (paired)
+  // take it one call at a time, through one lock.
+  const shared = lockedReaders(createLock(), {
+    readPages,
+    readPartPrices,
+    readItemPrice: createItemPriceReader(chromeReaderEnv(), { settleMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 50, pauseMs: __SPLIT_FINDER_BASE_URL__ === undefined ? undefined : 0 }),
+    researchTools,
+  });
+  const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+  const link = createLinkStore();
+  const agent = createAgentApi({ fetchFn: (input, init) => fetch(input, init), store: link });
+  const jobLoop = createJobLoop({
+    ...appJobDeps(agent),
+    run: (job) => runJob(job, shared),
+    now: Date.now,
+    sleep,
+    onJobDone: (at) => link.markJob(at),
+    // The call that learned of it (a 401, or no token) already left the link unpaired with its sentence.
+    onUnpaired: () => {},
+    every: (ms, fn) => {
+      const id = setInterval(fn, ms);
+      return () => clearInterval(id);
+    },
+  });
+  const pairing = createPairing({
+    fetchFn: (input, init) => fetch(input, init),
+    store: link,
+    extensionId: browser.runtime.id,
+    now: Date.now,
+    sleep,
+    onPaired: () => void jobLoop.start(),
+  });
+  const wakeAgent = async (): Promise<void> => {
+    const state = await link.readLink();
+    if (state.status === 'pairing') await pairing.resume();
+    else if (state.status === 'paired') void jobLoop.start();
+  };
   const worker = createWorker({
     store,
-    researchTools,
+    researchTools: shared.researchTools,
     // Step 11: Ask AI's suggestions, in a store of their own.
     suggestions: new IdbSuggestionStore(),
     cache: new IdbCache(),
@@ -198,8 +244,9 @@ export default defineBackground(() => {
       __SPLIT_FINDER_BASE_URL__ === undefined
         ? undefined
         : (input, init) => fetch(String(input).replace('https://api.anthropic.com', __SPLIT_FINDER_BASE_URL__), init),
-    readPages,
-    readPartPrices,
+    readPages: shared.readPages,
+    readPartPrices: shared.readPartPrices,
+    paired: async () => (await link.readLink()).status === 'paired',
     pages: chromePages(),
     notify,
     notifyText,
@@ -227,6 +274,11 @@ export default defineBackground(() => {
       sendResponse({ ok: false, error: 'This request is not allowed from here.' });
       return false;
     }
+    if (isAgentLinkRequest(request)) {
+      const done = request.type === 'agentConnect' ? pairing.start().then(() => undefined) : (jobLoop.stop(), pairing.disconnect());
+      done.then(() => sendResponse({ ok: true, data: null }), () => sendResponse({ ok: false, error: 'Something went wrong. Try again.' }));
+      return true;
+    }
     worker.onMessage(request as Request, { tabId: sender.tab?.id }).then(sendResponse);
     return true;
   });
@@ -242,6 +294,7 @@ export default defineBackground(() => {
 
   browser.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === TICK) void worker.onTick();
+    if (alarm.name === AGENT_WAKE) void wakeAgent();
   });
 
   void browser.alarms
@@ -251,8 +304,17 @@ export default defineBackground(() => {
     })
     .catch(() => {});
 
+  void browser.alarms
+    .get(AGENT_WAKE)
+    .then((alarm) => {
+      if (!alarm) return browser.alarms.create(AGENT_WAKE, { periodInMinutes: 1 });
+    })
+    .catch(() => {});
+  void browser.alarms.clear(LEGACY_APP_SYNC).catch(() => {});
+
   // The panel opens on a click of the toolbar button (set once; it is kept by Chrome).
   void browser.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true })?.catch?.(() => {});
 
   void worker.onStart();
+  void wakeAgent().catch(() => {});
 });

@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PART_PRICE_READS_MAX } from '@core/scan/types';
 import {
   createPageReader,
+  createItemPriceReader,
   createPartPriceReader,
   doorwayLoaded,
   fetchPagesInTab,
@@ -734,5 +735,54 @@ describe('fetchSearchesInTab', () => {
     expect(out[1]).toEqual({ model: 'B', status: 403, links: null });
     const threw = await rebuilt(['D', 'E'], 1);
     expect(threw.map((o) => o.status)).toEqual([0, -1]);
+  });
+});
+
+describe('createItemPriceReader (the partPrice job)', () => {
+  it('reads the product page of the item id in one doorway tab, takes the brand from the page, and checks the model against it', async () => {
+    const f = partFake({ pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99, 'ONE+ 18V Impact Wrench') } });
+    expect(await createItemPriceReader(f.env, { settleMs: 0 })('300000002', 'PCL265B')).toEqual({
+      brand: 'RYOBI', model: 'PCL265B', status: 'found', itemId: '300000002', matchedModel: 'PCL265B', price: 99, title: 'ONE+ 18V Impact Wrench', link: 'https://www.homedepot.com/p/300000002',
+    });
+    expect(f.log).toEqual(['open https://www.homedepot.com/p/300000002', 'wait 7 30000', 'page', 'close 7']);
+    expect(f.fetched).toEqual([['300000002']]);
+  });
+
+  it("RYOBI's tool-only twin counts as the model (sameModel), and the page's own model is what is reported", async () => {
+    const f = partFake({ pages: { '300000010': productText('300000010', 'RYOBI', 'PCL206B', 59) } });
+    expect(await createItemPriceReader(f.env, { settleMs: 0 })('300000010', 'PCL206')).toMatchObject({ status: 'found', model: 'PCL206', matchedModel: 'PCL206B', price: 59 });
+  });
+
+  it('a page for another model is not found, with no price; a page with no price is not found; the id is never taken on trust', async () => {
+    const other = partFake({ pages: { '300000003': productText('300000003', 'RYOBI', 'PSK0114-PCL265B', 79) } });
+    expect(await createItemPriceReader(other.env, { settleMs: 0 })('300000003', 'PCL265B')).toMatchObject({ status: 'not_found', price: null, itemId: '300000003', matchedModel: 'PSK0114-PCL265B', link: null });
+    const free = partFake({ pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', null) } });
+    expect(await createItemPriceReader(free.env, { settleMs: 0 })('300000002', 'PCL265B')).toMatchObject({ status: 'not_found', itemId: '300000002', price: null });
+  });
+
+  it('a 404 is not found; a refusal, or a page with no data, says nothing (not_read) and is not retried', async () => {
+    const gone = partFake({});
+    expect(await createItemPriceReader(gone.env, { settleMs: 0 })('300000002', 'PCL265B')).toMatchObject({ status: 'not_found', price: null });
+    const refused = partFake({ pageStatus: () => 403 });
+    expect(await createItemPriceReader(refused.env, { settleMs: 0 })('300000002', 'PCL265B')).toMatchObject({ status: 'not_read', itemId: null, price: null });
+    expect(refused.fetched).toHaveLength(1);
+    const nodata = partFake({ pages: { '300000002': 'window.__APOLLO_STATE__={}' } });
+    expect(await createItemPriceReader(nodata.env, { settleMs: 0 })('300000002', 'PCL265B')).toMatchObject({ status: 'not_read' });
+  });
+
+  it('closes a doorway a stopped worker left, pauses between two calls, and closes its own tab when the load fails', async () => {
+    const f = partFake({ stored: 5, pages: { '300000002': productText('300000002', 'RYOBI', 'PCL265B', 99) } });
+    let t = 0;
+    const env: ReaderEnv = { ...f.env, sleep: async (ms) => { f.log.push(`sleep ${ms}`); t += ms; } };
+    const read = createItemPriceReader(env, { now: () => t, settleMs: 0 });
+    await read('300000002', 'PCL265B');
+    expect(f.log.slice(0, 2)).toEqual(['close 5', 'open https://www.homedepot.com/p/300000002']);
+    f.log.length = 0;
+    await read('300000002', 'PCL265B');
+    expect(f.log.slice(0, 2)).toEqual(['sleep 1000', 'open https://www.homedepot.com/p/300000002']);
+    const g = partFake({});
+    g.env.waitForLoad = async () => { throw new Error('timeout'); };
+    await expect(createItemPriceReader(g.env, { settleMs: 0 })('300000002', 'X')).rejects.toThrow('The Home Depot tab did not load.');
+    expect(g.log.at(-1)).toBe('close 7');
   });
 });
