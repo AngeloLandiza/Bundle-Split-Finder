@@ -1,0 +1,3591 @@
+[
+  {
+    "key": "split:homedepot:306554196|1795425879407",
+    "questionId": "split:homedepot:306554196",
+    "seen": "[[\"DCK240C2\",\"DCS380B\"]]",
+    "askedAt": 1795425879407,
+    "suggestion": {
+      "questionId": "split:homedepot:306554196",
+      "seen": "[[\"DCK240C2\",\"DCS380B\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "No quote from the bundle page's Includes, specification lines or description names DCK240C2."
+      ],
+      "claimed": {
+        "evidence": [
+          {
+            "quote": "DCK240C2DCS380B",
+            "source": "bundle"
+          },
+          {
+            "quote": "DCS380B - 4-position blade clamp allows for flush cutting and increased positional versatility",
+            "source": "bundle"
+          },
+          {
+            "quote": "Includes DCD771 20-Volt Max 1/2 in. drill/driver, DCF885 1/4 in. impact driver, (2) 20-Volt Max lithium-ion 1.3Ah battery packs, 20-Volt Max charger and contractor bag",
+            "source": "bundle"
+          },
+          {
+            "quote": "DEWALT DCK240C2 (kit): 20V MAX Cordless Drill/Impact 2 Tool Combo Kit with (2) 20V 1.3Ah Batteries, Charger, and Bag",
+            "source": "catalog:dck240c2"
+          }
+        ],
+        "reason": "The bundle's page names the reciprocating saw DCS380B, and its contents match the catalog's DCK240C2 drill/impact kit (2 batteries, charger, bag).",
+        "decision": "choose",
+        "choiceIndex": 0,
+        "asin": null
+      },
+      "researchClaim": {
+        "quotes": [
+          {
+            "quote": "DCK240C2DCS380B",
+            "sourceId": "hd-page:306554196"
+          },
+          {
+            "quote": "DCS380B - 4-position blade clamp allows for flush cutting and increased positional versatility",
+            "sourceId": "hd-page:306554196"
+          },
+          {
+            "quote": "Includes DCD771 20-Volt Max 1/2 in. drill/driver, DCF885 1/4 in. impact driver, (2) 20-Volt Max lithium-ion 1.3Ah battery packs, 20-Volt Max charger and contractor bag",
+            "sourceId": "hd-page:306554196"
+          },
+          {
+            "quote": "DEWALT DCK240C2 (kit): 20V MAX Cordless Drill/Impact 2 Tool Combo Kit with (2) 20V 1.3Ah Batteries, Charger, and Bag",
+            "sourceId": "catalog:dck240c2"
+          }
+        ],
+        "parts": [],
+        "reason": "The bundle's page names the reciprocating saw DCS380B, and its contents match the catalog's DCK240C2 drill/impact kit (2 batteries, charger, bag).",
+        "decision": "choose",
+        "choiceIndex": 0
+      },
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 746,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 6872,
+        "cacheCreationInputTokens": 8593
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:306554196",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/306554196",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:dck240c2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 2,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 746,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 6872,
+          "cacheCreationInputTokens": 8593
+        },
+        "answer": {
+          "quotes": [
+            {
+              "quote": "DCK240C2DCS380B",
+              "sourceId": "hd-page:306554196"
+            },
+            {
+              "quote": "DCS380B - 4-position blade clamp allows for flush cutting and increased positional versatility",
+              "sourceId": "hd-page:306554196"
+            },
+            {
+              "quote": "Includes DCD771 20-Volt Max 1/2 in. drill/driver, DCF885 1/4 in. impact driver, (2) 20-Volt Max lithium-ion 1.3Ah battery packs, 20-Volt Max charger and contractor bag",
+              "sourceId": "hd-page:306554196"
+            },
+            {
+              "quote": "DEWALT DCK240C2 (kit): 20V MAX Cordless Drill/Impact 2 Tool Combo Kit with (2) 20V 1.3Ah Batteries, Charger, and Bag",
+              "sourceId": "catalog:dck240c2"
+            }
+          ],
+          "parts": [],
+          "reason": "The bundle's page names the reciprocating saw DCS380B, and its contents match the catalog's DCK240C2 drill/impact kit (2 batteries, charger, bag).",
+          "decision": "choose",
+          "choiceIndex": 0
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0592834
+  },
+  {
+    "key": "split:homedepot:320243671|1795425917698",
+    "questionId": "split:homedepot:320243671",
+    "seen": "[[\"PCL1600K2\",\"A986501\"]]",
+    "askedAt": 1795425917698,
+    "suggestion": {
+      "questionId": "split:homedepot:320243671",
+      "seen": "[[\"PCL1600K2\",\"A986501\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "The bundle's title names a drill that no part is or holds."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1600K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes ONE+ 18V 6-Tool Combo Kit",
+                "sourceId": "hd-page:320243671"
+              },
+              {
+                "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                "sourceId": "catalog:pcl1600k2"
+              }
+            ]
+          },
+          {
+            "model": "A986501",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes Drill and Impact Drive Kit (65-Piece)",
+                "sourceId": "hd-page:320243671"
+              },
+              {
+                "quote": "RYOBI A986501 (item 314892343): Drill and Impact Drive Kit (65-Piece)",
+                "sourceId": "hd-search:ryobi-65-piece-drill-and-impact-drive-ki"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle's page lists two items, the PCL1600K2 6-tool kit (in the catalog) and the A986501 65-piece drill and impact drive kit (its own Home Depot listing), and both appear in the bundle's model number.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 12,
+        "outputTokens": 933,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 40211,
+        "cacheCreationInputTokens": 3674
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:320243671",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/320243671",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:pcl1600k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-a986501",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20A986501",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "catalog:a986501",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-65-piece-drill-and-impact-drive-ki",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%2065-Piece%20Drill%20and%20Impact%20Drive%20Kit",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 5,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 5,
+        "usage": {
+          "inputTokens": 12,
+          "outputTokens": 933,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 40211,
+          "cacheCreationInputTokens": 3674
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1600K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes ONE+ 18V 6-Tool Combo Kit",
+                  "sourceId": "hd-page:320243671"
+                },
+                {
+                  "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                  "sourceId": "catalog:pcl1600k2"
+                }
+              ]
+            },
+            {
+              "model": "A986501",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes Drill and Impact Drive Kit (65-Piece)",
+                  "sourceId": "hd-page:320243671"
+                },
+                {
+                  "quote": "RYOBI A986501 (item 314892343): Drill and Impact Drive Kit (65-Piece)",
+                  "sourceId": "hd-search:ryobi-65-piece-drill-and-impact-drive-ki"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle's page lists two items, the PCL1600K2 6-tool kit (in the catalog) and the A986501 65-piece drill and impact drive kit (its own Home Depot listing), and both appear in the bundle's model number.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0451202
+  },
+  {
+    "key": "split:homedepot:320243714|1795425929642",
+    "questionId": "split:homedepot:320243714",
+    "seen": "[[\"PCL406B\",\"PCL416B\"]]",
+    "askedAt": 1795425929642,
+    "suggestion": {
+      "questionId": "split:homedepot:320243714",
+      "seen": "[[\"PCL406B\",\"PCL416B\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "verified",
+      "answer": {
+        "decision": "choose",
+        "kind": "split",
+        "choiceIndex": 0,
+        "parts": [
+          "PCL406B",
+          "PCL416B"
+        ]
+      },
+      "quotes": [
+        {
+          "quote": "Includes: (1) PCL406 18V ONE+ Cordless 5 in. Random Orbit Sander, (3) Pieces of Sandpaper Assortment, Dust Collection Bag, (1) PCL416 18V ONE+ Cordless Corner Cat Sander, (3) pieces of sandpaper, and operator's manual",
+          "sourceId": "hd-page:320243714",
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/320243714",
+          "names": true
+        },
+        {
+          "quote": "PCL406B-PCL416B",
+          "sourceId": "bundle",
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406B-PCL416B/320243714",
+          "names": false
+        },
+        {
+          "quote": "Number of Tools (Bonus Tool Not Included): 2",
+          "sourceId": "hd-page:320243714",
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/320243714",
+          "names": false
+        },
+        {
+          "quote": "Included: Tool Only",
+          "sourceId": "hd-page:320243714",
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/320243714",
+          "names": false
+        }
+      ],
+      "reason": "The bundle's page lists two tools only, the PCL406 random orbit sander and the PCL416 Corner Cat sander, and its model number PCL406B-PCL416B names both bare-tool models.",
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 645,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 13134,
+        "cacheCreationInputTokens": 2307
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-Random-Orbit-Sander-and-Corner-Cat-Finish-Sander-Tools-Only-PCL406B-PCL416B/320243714",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:320243714",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/320243714",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          }
+        ],
+        "toolCalls": 1,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 645,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 13134,
+          "cacheCreationInputTokens": 2307
+        },
+        "answer": {
+          "quotes": [
+            {
+              "quote": "PCL406B-PCL416B",
+              "sourceId": "hd-page:320243714"
+            },
+            {
+              "quote": "Includes: (1) PCL406 18V ONE+ Cordless 5 in. Random Orbit Sander, (3) Pieces of Sandpaper Assortment, Dust Collection Bag, (1) PCL416 18V ONE+ Cordless Corner Cat Sander, (3) pieces of sandpaper, and operator's manual",
+              "sourceId": "hd-page:320243714"
+            },
+            {
+              "quote": "Number of Tools (Bonus Tool Not Included): 2",
+              "sourceId": "hd-page:320243714"
+            },
+            {
+              "quote": "Included: Tool Only",
+              "sourceId": "hd-page:320243714"
+            }
+          ],
+          "parts": [],
+          "reason": "The bundle's page lists two tools only, the PCL406 random orbit sander and the PCL416 Corner Cat sander, and its model number PCL406B-PCL416B names both bare-tool models.",
+          "decision": "choose",
+          "choiceIndex": 0
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0270858,
+    "outcome": {
+      "answeredAt": 1795426285410,
+      "answer": "PCL406B,PCL416B",
+      "agreed": true
+    }
+  },
+  {
+    "key": "split:homedepot:320243741|1795425953626",
+    "questionId": "split:homedepot:320243741",
+    "seen": "[[\"PCL1600K2\",\"P553\"]]",
+    "askedAt": 1795425953626,
+    "suggestion": {
+      "questionId": "split:homedepot:320243741",
+      "seen": "[[\"PCL1600K2\",\"P553\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "The bundle states 6 tools; the parts hold 7."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1600K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes ONE+ 18V 6-Tool Combo Kit",
+                "sourceId": "hd-page:320243741"
+              },
+              {
+                "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                "sourceId": "catalog:pcl1600k2"
+              }
+            ]
+          },
+          {
+            "model": "P553",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes ONE+ 18V 7-1/4 in. Compound Miter Saw",
+                "sourceId": "hd-page:320243741"
+              },
+              {
+                "quote": "RYOBI P553 (item 307298546): ONE+ 18V Cordless 7-1/4 in. Compound Miter Saw (Tool Only)",
+                "sourceId": "hd-search:ryobi-p553"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle's page lists two items, the 6-Tool Combo Kit (PCL1600K2, a kit in the catalog) and the 7-1/4 in. Compound Miter Saw (P553 on Home Depot), which match its model number PCL1600K2-P553.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 766,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 22021,
+        "cacheCreationInputTokens": 3374
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:320243741",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/320243741",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:pcl1600k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-p553",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20P553",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 3,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 3,
+        "usage": {
+          "inputTokens": 8,
+          "outputTokens": 766,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 22021,
+          "cacheCreationInputTokens": 3374
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1600K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes ONE+ 18V 6-Tool Combo Kit",
+                  "sourceId": "hd-page:320243741"
+                },
+                {
+                  "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                  "sourceId": "catalog:pcl1600k2"
+                }
+              ]
+            },
+            {
+              "model": "P553",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes ONE+ 18V 7-1/4 in. Compound Miter Saw",
+                  "sourceId": "hd-page:320243741"
+                },
+                {
+                  "quote": "RYOBI P553 (item 307298546): ONE+ 18V Cordless 7-1/4 in. Compound Miter Saw (Tool Only)",
+                  "sourceId": "hd-search:ryobi-p553"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle's page lists two items, the 6-Tool Combo Kit (PCL1600K2, a kit in the catalog) and the 7-1/4 in. Compound Miter Saw (P553 on Home Depot), which match its model number PCL1600K2-P553.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0366262
+  },
+  {
+    "key": "split:homedepot:321367167|1795425966095",
+    "questionId": "split:homedepot:321367167",
+    "seen": "[[\"PBT01B\",\"P321\"]]",
+    "askedAt": 1795425966095,
+    "suggestion": {
+      "questionId": "split:homedepot:321367167",
+      "seen": "[[\"PBT01B\",\"P321\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "verified",
+      "answer": {
+        "decision": "choose",
+        "kind": "split",
+        "choiceIndex": 0,
+        "parts": [
+          "PBT01B",
+          "P321"
+        ]
+      },
+      "quotes": [
+        {
+          "quote": "Includes: (1) PBT01B 18V ONE+ Sliding Compound Miter Saw with 40-tooth Carbide-Tipped Blade, Blade Wrench, Dust Bag, Work Clamp, (2) Carrying Handles, and operator's manual",
+          "sourceId": "hd-page:321367167",
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/321367167",
+          "names": true
+        },
+        {
+          "quote": "Includes: (1) P321 18V ONE+ Cordless AirStrike 18-Gauge Brad Nailer, 2 non-marring pads, and operator's manual",
+          "sourceId": "hd-page:321367167",
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/321367167",
+          "names": true
+        }
+      ],
+      "reason": "The bundle's own page lists PBT01B (miter saw) and P321 (brad nailer) as its two tools, matching reading 0.",
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 461,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 13160,
+        "cacheCreationInputTokens": 2986
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-7-1-4-in-Sliding-Compound-Miter-Saw-and-AirStrike-Brad-Nailer-Tools-Only-PBT01B-P321/321367167",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:321367167",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/321367167",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          }
+        ],
+        "toolCalls": 1,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 461,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 13160,
+          "cacheCreationInputTokens": 2986
+        },
+        "answer": {
+          "quotes": [
+            {
+              "quote": "Includes: (1) PBT01B 18V ONE+ Sliding Compound Miter Saw with 40-tooth Carbide-Tipped Blade, Blade Wrench, Dust Bag, Work Clamp, (2) Carrying Handles, and operator's manual",
+              "sourceId": "hd-page:321367167"
+            },
+            {
+              "quote": "Includes: (1) P321 18V ONE+ Cordless AirStrike 18-Gauge Brad Nailer, 2 non-marring pads, and operator's manual",
+              "sourceId": "hd-page:321367167"
+            }
+          ],
+          "parts": [],
+          "reason": "The bundle's own page lists PBT01B (miter saw) and P321 (brad nailer) as its two tools, matching reading 0.",
+          "decision": "choose",
+          "choiceIndex": 0
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.026806,
+    "outcome": {
+      "answeredAt": 1795426285455,
+      "answer": "PBT01B,P321",
+      "agreed": true
+    }
+  },
+  {
+    "key": "split:homedepot:321809549|1795425994130",
+    "questionId": "split:homedepot:321809549",
+    "seen": "[[\"PCL1600K2\",\"PBP2003\"]]",
+    "askedAt": 1795425994130,
+    "suggestion": {
+      "questionId": "split:homedepot:321809549",
+      "seen": "[[\"PCL1600K2\",\"PBP2003\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "The quote \"Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flus…\" spans two Includes lists; quote each list on its own.",
+        "The quote \"Includes: (2) PBP003 18V ONE+ Lithium 2.0 Ah Batteries\" spans two Includes lists; quote each list on its own.",
+        "\"Bag\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Accessories\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL235 18V ONE+ Cordless 1/4 in. Impact Driver\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL515 Reciprocating Saw\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL430 Multi-Tool\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL660 18V ONE+ Cordless LED Light\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"18T Carbide Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Hex Wrench\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Reciprocating Saw Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Hex Key\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Flush Cut Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Plunge Cut Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"6 in. Wood Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Sanding Pad\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"5-Pieces Sandpaper\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PBP005 18V 4.0 Ah Lithium Battery\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PBP002 18V 1.5 Ah Lithium Battery\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"18V Charger\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Tool Bag\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PBP003 18V ONE+ Lithium 2.0 Ah Batteries\" on the bundle's Includes list is left over: no part accounts for it.",
+        "PBP2003 is given quantity 1; the Includes items it accounts for count 2."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1600K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                "sourceId": "catalog:pcl1600k2"
+              },
+              {
+                "quote": "PCL1600K2-PBP2003",
+                "sourceId": "hd-page:321809549"
+              },
+              {
+                "quote": "Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories",
+                "sourceId": "hd-page:321809549"
+              },
+              {
+                "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+                "sourceId": "hd-page:321809549"
+              },
+              {
+                "quote": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's manuals",
+                "sourceId": "hd-page:321809549"
+              }
+            ]
+          },
+          {
+            "model": "PBP2003",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "RYOBI PBP2003 (item 315112822): ONE+ 18V Lithium 2.0 Ah Battery (2-Pack)",
+                "sourceId": "hd-search:ryobi-pbp2003"
+              },
+              {
+                "quote": "PCL1600K2-PBP2003",
+                "sourceId": "hd-page:321809549"
+              },
+              {
+                "quote": "Includes: (2) 2.0 Ah Batteries",
+                "sourceId": "hd-page:321809549"
+              },
+              {
+                "quote": "Includes: (2) PBP003 18V ONE+ Lithium 2.0 Ah Batteries",
+                "sourceId": "hd-page:321809549"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle is the PCL1600K2 6-tool kit (tools, 1.5 Ah and 4.0 Ah batteries, charger, bag) plus the PBP2003 two-pack of 2.0 Ah batteries.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 1683,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 22410,
+        "cacheCreationInputTokens": 3997
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:321809549",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/321809549",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:pbp2003",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-pbp2003",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20PBP2003",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "catalog:pcl1600k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 4,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 3,
+        "usage": {
+          "inputTokens": 8,
+          "outputTokens": 1683,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 22410,
+          "cacheCreationInputTokens": 3997
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1600K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                  "sourceId": "catalog:pcl1600k2"
+                },
+                {
+                  "quote": "PCL1600K2-PBP2003",
+                  "sourceId": "hd-page:321809549"
+                },
+                {
+                  "quote": "Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories",
+                  "sourceId": "hd-page:321809549"
+                },
+                {
+                  "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+                  "sourceId": "hd-page:321809549"
+                },
+                {
+                  "quote": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's manuals",
+                  "sourceId": "hd-page:321809549"
+                }
+              ]
+            },
+            {
+              "model": "PBP2003",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "RYOBI PBP2003 (item 315112822): ONE+ 18V Lithium 2.0 Ah Battery (2-Pack)",
+                  "sourceId": "hd-search:ryobi-pbp2003"
+                },
+                {
+                  "quote": "PCL1600K2-PBP2003",
+                  "sourceId": "hd-page:321809549"
+                },
+                {
+                  "quote": "Includes: (2) 2.0 Ah Batteries",
+                  "sourceId": "hd-page:321809549"
+                },
+                {
+                  "quote": "Includes: (2) PBP003 18V ONE+ Lithium 2.0 Ah Batteries",
+                  "sourceId": "hd-page:321809549"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle is the PCL1600K2 6-tool kit (tools, 1.5 Ah and 4.0 Ah batteries, charger, bag) plus the PBP2003 two-pack of 2.0 Ah batteries.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.058159
+  },
+  {
+    "key": "split:homedepot:321811428|1795426048252",
+    "questionId": "split:homedepot:321811428",
+    "seen": "[[\"PCL1600K2\",\"PSK005\"]]",
+    "askedAt": 1795426048252,
+    "suggestion": {
+      "questionId": "split:homedepot:321811428",
+      "seen": "[[\"PCL1600K2\",\"PSK005\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "The quote \"Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flus…\" spans two Includes lists; quote each list on its own.",
+        "The quote \"(1) PCG002 18V charger\" spans two Includes lists; quote each list on its own.",
+        "\"Charger\" is given to more than one part (PCL1600K2, PCG002).",
+        "\"Bag\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Accessories\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL235 18V ONE+ Cordless 1/4 in. Impact Driver\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL515 Reciprocating Saw\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL430 Multi-Tool\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PCL660 18V ONE+ Cordless LED Light\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"18T Carbide Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Hex Wrench\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Reciprocating Saw Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Hex Key\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Flush Cut Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Plunge Cut Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"6 in. Wood Blade\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Sanding Pad\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"5-Pieces Sandpaper\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PBP005 18V 4.0 Ah Lithium Battery\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"PBP002 18V 1.5 Ah Lithium Battery\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"18V Charger\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"Tool Bag\" on the bundle's Includes list is left over: no part accounts for it."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1600K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                "sourceId": "catalog:pcl1600k2"
+              },
+              {
+                "quote": "Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories",
+                "sourceId": "hd-page:321811428"
+              },
+              {
+                "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+                "sourceId": "hd-page:321811428"
+              },
+              {
+                "quote": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+                "sourceId": "hd-page:321811428"
+              }
+            ]
+          },
+          {
+            "model": "PBP006",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "RYOBI PBP006 (item 315039439): ONE+ 18V 2.0 Ah Lithium-Ion Battery",
+                "sourceId": "hd-search:ryobi-pbp006"
+              },
+              {
+                "quote": "Includes: 18V ONE+ 2.0 Ah Compact Battery and Charger",
+                "sourceId": "hd-page:321811428"
+              },
+              {
+                "quote": "(1) PBP006 18V ONE+ Lithium 2.0 Ah battery",
+                "sourceId": "hd-page:321811428"
+              }
+            ]
+          },
+          {
+            "model": "PCG002",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "RYOBI PCG002 (item 317225006): ONE+ 18V Lithium-Ion Charger",
+                "sourceId": "hd-search:ryobi-pcg002"
+              },
+              {
+                "quote": "Includes: 18V ONE+ 2.0 Ah Compact Battery and Charger",
+                "sourceId": "hd-page:321811428"
+              },
+              {
+                "quote": "(1) PCG002 18V charger",
+                "sourceId": "hd-page:321811428"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle is the PCL1600K2 6-tool kit plus the PSK005 starter kit, but PSK005 is itself a PBP006 battery and a PCG002 charger, so those two are the separate parts.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 10,
+        "outputTokens": 2036,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 35008,
+        "cacheCreationInputTokens": 7107
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:321811428",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/321811428",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:pcl1600k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-psk005",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20PSK005",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-page:315112825",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/315112825",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-pbp006",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20PBP006",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-pcg002",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20PCG002",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 6,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 4,
+        "usage": {
+          "inputTokens": 10,
+          "outputTokens": 2036,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 35008,
+          "cacheCreationInputTokens": 7107
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1600K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                  "sourceId": "catalog:pcl1600k2"
+                },
+                {
+                  "quote": "Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories",
+                  "sourceId": "hd-page:321811428"
+                },
+                {
+                  "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+                  "sourceId": "hd-page:321811428"
+                },
+                {
+                  "quote": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+                  "sourceId": "hd-page:321811428"
+                }
+              ]
+            },
+            {
+              "model": "PBP006",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "RYOBI PBP006 (item 315039439): ONE+ 18V 2.0 Ah Lithium-Ion Battery",
+                  "sourceId": "hd-search:ryobi-pbp006"
+                },
+                {
+                  "quote": "Includes: 18V ONE+ 2.0 Ah Compact Battery and Charger",
+                  "sourceId": "hd-page:321811428"
+                },
+                {
+                  "quote": "(1) PBP006 18V ONE+ Lithium 2.0 Ah battery",
+                  "sourceId": "hd-page:321811428"
+                }
+              ]
+            },
+            {
+              "model": "PCG002",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "RYOBI PCG002 (item 317225006): ONE+ 18V Lithium-Ion Charger",
+                  "sourceId": "hd-search:ryobi-pcg002"
+                },
+                {
+                  "quote": "Includes: 18V ONE+ 2.0 Ah Compact Battery and Charger",
+                  "sourceId": "hd-page:321811428"
+                },
+                {
+                  "quote": "(1) PCG002 18V charger",
+                  "sourceId": "hd-page:321811428"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle is the PCL1600K2 6-tool kit plus the PSK005 starter kit, but PSK005 is itself a PBP006 battery and a PCG002 charger, so those two are the separate parts.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0832966
+  },
+  {
+    "key": "split:homedepot:324903619|1795426071999",
+    "questionId": "split:homedepot:324903619",
+    "seen": "[[\"PCL1201K2\",\"PCL515B\"]]",
+    "askedAt": 1795426071999,
+    "suggestion": {
+      "questionId": "split:homedepot:324903619",
+      "seen": "[[\"PCL1201K2\",\"PCL515B\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "The bundle's title counts 1 battery; the parts hold 2."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes ONE+ 18V 2-Tool Combo Kit",
+                "sourceId": "hd-page:324903619"
+              },
+              {
+                "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                "sourceId": "catalog:pcl1201k2"
+              },
+              {
+                "quote": "PCL1201K2-PCL515B",
+                "sourceId": "hd-page:324903619"
+              }
+            ]
+          },
+          {
+            "model": "PCL515B",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes ONE+ 18V Reciprocating Saw",
+                "sourceId": "hd-page:324903619"
+              },
+              {
+                "quote": "RYOBI PCL515B (item 317987585): ONE+ 18V Cordless Reciprocating Saw (Tool Only)",
+                "sourceId": "hd-search:ryobi-pcl515b"
+              },
+              {
+                "quote": "PCL1201K2-PCL515B",
+                "sourceId": "hd-page:324903619"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle's page lists a 2-tool combo kit (PCL1201K2) and a reciprocating saw (PCL515B), and its model number names both of them.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 952,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 22079,
+        "cacheCreationInputTokens": 3636
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-3-Tool-Combo-Kit-With-1-2-Drill-Driver-5-1-2-Circular-Saw-Reciprocating-Saw-1-5ah-Batteries-Charger-PCL1201K2-PCL515B/324903619",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:324903619",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/324903619",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:pcl1201k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-pcl515b",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20PCL515B",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 3,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 3,
+        "usage": {
+          "inputTokens": 8,
+          "outputTokens": 952,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 22079,
+          "cacheCreationInputTokens": 3636
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1201K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes ONE+ 18V 2-Tool Combo Kit",
+                  "sourceId": "hd-page:324903619"
+                },
+                {
+                  "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                  "sourceId": "catalog:pcl1201k2"
+                },
+                {
+                  "quote": "PCL1201K2-PCL515B",
+                  "sourceId": "hd-page:324903619"
+                }
+              ]
+            },
+            {
+              "model": "PCL515B",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes ONE+ 18V Reciprocating Saw",
+                  "sourceId": "hd-page:324903619"
+                },
+                {
+                  "quote": "RYOBI PCL515B (item 317987585): ONE+ 18V Cordless Reciprocating Saw (Tool Only)",
+                  "sourceId": "hd-search:ryobi-pcl515b"
+                },
+                {
+                  "quote": "PCL1201K2-PCL515B",
+                  "sourceId": "hd-page:324903619"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle's page lists a 2-tool combo kit (PCL1201K2) and a reciprocating saw (PCL515B), and its model number names both of them.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0416678
+  },
+  {
+    "key": "split:homedepot:324904496|1795426097401",
+    "questionId": "split:homedepot:324904496",
+    "seen": "[[\"PCL1201K2\",\"PCL430B\"]]",
+    "askedAt": 1795426097401,
+    "suggestion": {
+      "questionId": "split:homedepot:324904496",
+      "seen": "[[\"PCL1201K2\",\"PCL430B\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "The bundle's own page states different tool counts (2, 3).",
+        "The bundle's page has no Includes list and states no tool count, so nothing shows that no part is left over.",
+        "The bundle's title counts 1 battery; the parts hold 2."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes ONE+ 18V 2-Tool Combo Kit",
+                "sourceId": "hd-page:324904496"
+              },
+              {
+                "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                "sourceId": "catalog:pcl1201k2"
+              },
+              {
+                "quote": "PCL1201K2-PCL430B",
+                "sourceId": "hd-page:324904496"
+              }
+            ]
+          },
+          {
+            "model": "PCL430B",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes ONE+ 18V Oscillating Multi-Tool",
+                "sourceId": "hd-page:324904496"
+              },
+              {
+                "quote": "RYOBI PCL430B (item 317987594): ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)",
+                "sourceId": "hd-search:ryobi-pcl430b"
+              },
+              {
+                "quote": "PCL1201K2-PCL430B",
+                "sourceId": "hd-page:324904496"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle's page lists two items: the PCL1201K2 2-tool combo kit (which comes with batteries and a charger) and the PCL430B oscillating multi-tool.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 979,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 22037,
+        "cacheCreationInputTokens": 3582
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:324904496",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/324904496",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:pcl1201k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-pcl430b",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20PCL430B",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 3,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 3,
+        "usage": {
+          "inputTokens": 8,
+          "outputTokens": 979,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 22037,
+          "cacheCreationInputTokens": 3582
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1201K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes ONE+ 18V 2-Tool Combo Kit",
+                  "sourceId": "hd-page:324904496"
+                },
+                {
+                  "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                  "sourceId": "catalog:pcl1201k2"
+                },
+                {
+                  "quote": "PCL1201K2-PCL430B",
+                  "sourceId": "hd-page:324904496"
+                }
+              ]
+            },
+            {
+              "model": "PCL430B",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes ONE+ 18V Oscillating Multi-Tool",
+                  "sourceId": "hd-page:324904496"
+                },
+                {
+                  "quote": "RYOBI PCL430B (item 317987594): ONE+ 18V Cordless Oscillating Multi-Tool (Tool Only)",
+                  "sourceId": "hd-search:ryobi-pcl430b"
+                },
+                {
+                  "quote": "PCL1201K2-PCL430B",
+                  "sourceId": "hd-page:324904496"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle's page lists two items: the PCL1201K2 2-tool combo kit (which comes with batteries and a charger) and the PCL430B oscillating multi-tool.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0419294
+  },
+  {
+    "key": "split:homedepot:326894185|1795426111328",
+    "questionId": "split:homedepot:326894185",
+    "seen": "[]",
+    "askedAt": 1795426111328,
+    "suggestion": {
+      "questionId": "split:homedepot:326894185",
+      "seen": "[]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "DCS334B is not a model any source read gives: no catalog entry, Home Depot page or search result of DEWALT has it, and no brand-site passage quoted names it.",
+        "What DCS334B is cannot be read from its names, so its tools cannot be counted."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "DCKTS681D1P1",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "DEWALT DCKTS681D1P1 (kit): 20-Volt MAX ToughSystem Lithium-Ion 6-Tool Cordless Combo Kit",
+                "sourceId": "catalog:dckts681d1p1"
+              }
+            ]
+          },
+          {
+            "model": "DCS334B",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "DCS334B brushless motor delivers efficient performance for longer runtime (vs. DEWALT DCS331 Jigsaw)",
+                "sourceId": "hd-page:326894185"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle's page names the jigsaw as DCS334B, and the catalog lists the 6-tool ToughSystem kit as kit DCKTS681D1P1.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 614,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 21754,
+        "cacheCreationInputTokens": 2547
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:326894185",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/326894185",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:dckts681d1p1",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 2,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 3,
+        "usage": {
+          "inputTokens": 8,
+          "outputTokens": 614,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 21754,
+          "cacheCreationInputTokens": 2547
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "DCKTS681D1P1",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "DEWALT DCKTS681D1P1 (kit): 20-Volt MAX ToughSystem Lithium-Ion 6-Tool Cordless Combo Kit",
+                  "sourceId": "catalog:dckts681d1p1"
+                }
+              ]
+            },
+            {
+              "model": "DCS334B",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "DCS334B brushless motor delivers efficient performance for longer runtime (vs. DEWALT DCS331 Jigsaw)",
+                  "sourceId": "hd-page:326894185"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle's page names the jigsaw as DCS334B, and the catalog lists the 6-tool ToughSystem kit as kit DCKTS681D1P1.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0293978
+  },
+  {
+    "key": "split:homedepot:328690510|1795426142527",
+    "questionId": "split:homedepot:328690510",
+    "seen": "[]",
+    "askedAt": 1795426142527,
+    "suggestion": {
+      "questionId": "split:homedepot:328690510",
+      "seen": "[]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "PCL500B is not a model any source read gives: no catalog entry, Home Depot page or search result of RYOBI has it, and no brand-site passage quoted names it.",
+        "PCL525B is not a model any source read gives: no catalog entry, Home Depot page or search result of RYOBI has it, and no brand-site passage quoted names it.",
+        "What PCL500B is cannot be read from its names, so its tools cannot be counted.",
+        "What PCL525B is cannot be read from its names, so its tools cannot be counted.",
+        "The bundle comes without a battery, and whether PCL500B holds one cannot be read from its names.",
+        "The bundle comes without a charger, and whether PCL500B holds one cannot be read from its names.",
+        "The bundle comes without a battery, and whether PCL525B holds one cannot be read from its names.",
+        "The bundle comes without a charger, and whether PCL525B holds one cannot be read from its names.",
+        "The bundle's title names a circular saw that no part is or holds.",
+        "The bundle's title names a jig saw that no part is or holds.",
+        "\"18V 5-1/2\" Circular Saw\" is a circular saw, and no quote naming PCL500B says what it is.",
+        "\"18V Jig Saw\" is a jig saw, and no quote naming PCL525B says what it is.",
+        "\"18V ONE+ 5-1/2 in. Circular Saw\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"18V ONE+ Jig Saw\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"18V 5-1/2\" Circular Saw\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"18V Jig Saw\" on the bundle's Includes list is left over: no part accounts for it."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL500B",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "RYOBI PCL500B-PCL525B (item 324616618): ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)",
+                "sourceId": "hd-search:ryobi-2-tool-combo-kit-5-1-2-in-circular"
+              },
+              {
+                "quote": "18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw",
+                "sourceId": "hd-page:328690510"
+              },
+              {
+                "quote": "18V 5-1/2\" Circular Saw",
+                "sourceId": "hd-page:328690510"
+              },
+              {
+                "quote": "18T Carbide Tipped Blade",
+                "sourceId": "hd-page:328690510"
+              },
+              {
+                "quote": "(2) Hex Wrenches",
+                "sourceId": "hd-page:328690510"
+              },
+              {
+                "quote": "and Operator's Manuals",
+                "sourceId": "hd-page:328690510"
+              }
+            ]
+          },
+          {
+            "model": "PCL525B",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "RYOBI PCL500B-PCL525B (item 324616618): ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)",
+                "sourceId": "hd-search:ryobi-2-tool-combo-kit-5-1-2-in-circular"
+              },
+              {
+                "quote": "18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw",
+                "sourceId": "hd-page:328690510"
+              },
+              {
+                "quote": "18V Jig Saw",
+                "sourceId": "hd-page:328690510"
+              },
+              {
+                "quote": "Non-Marring Shoe",
+                "sourceId": "hd-page:328690510"
+              },
+              {
+                "quote": "T-Shank Wood Cutting Blade",
+                "sourceId": "hd-page:328690510"
+              },
+              {
+                "quote": "and Operator's Manuals",
+                "sourceId": "hd-page:328690510"
+              }
+            ]
+          }
+        ],
+        "reason": "Home Depot also sells this same 2-tool, tools-only set as PCL500B-PCL525B, so the bundle is the PCL500B circular saw plus the PCL525B jig saw.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 1141,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 22121,
+        "cacheCreationInputTokens": 3837
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:328690510",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/328690510",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-search:ryobi-pcl500b-pcl525b",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20PCL500B-PCL525B",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-2-tool-combo-kit-5-1-2-in-circular",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%202-Tool%20Combo%20Kit%205-1%2F2%20in.%20Circular%20Saw%20and%20Jig%20Saw%20Tools%20Only",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 3,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 3,
+        "usage": {
+          "inputTokens": 8,
+          "outputTokens": 1141,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 22121,
+          "cacheCreationInputTokens": 3837
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL500B",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "RYOBI PCL500B-PCL525B (item 324616618): ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)",
+                  "sourceId": "hd-search:ryobi-2-tool-combo-kit-5-1-2-in-circular"
+                },
+                {
+                  "quote": "18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw",
+                  "sourceId": "hd-page:328690510"
+                },
+                {
+                  "quote": "18V 5-1/2\" Circular Saw",
+                  "sourceId": "hd-page:328690510"
+                },
+                {
+                  "quote": "18T Carbide Tipped Blade",
+                  "sourceId": "hd-page:328690510"
+                },
+                {
+                  "quote": "(2) Hex Wrenches",
+                  "sourceId": "hd-page:328690510"
+                },
+                {
+                  "quote": "and Operator's Manuals",
+                  "sourceId": "hd-page:328690510"
+                }
+              ]
+            },
+            {
+              "model": "PCL525B",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "RYOBI PCL500B-PCL525B (item 324616618): ONE+ 18V Cordless 2-Tool Combo Kit with 5 1/2 in. Circular Saw and Jig Saw (Tools Only)",
+                  "sourceId": "hd-search:ryobi-2-tool-combo-kit-5-1-2-in-circular"
+                },
+                {
+                  "quote": "18V ONE+ 5-1/2 in. Circular Saw and 18V ONE+ Jig Saw",
+                  "sourceId": "hd-page:328690510"
+                },
+                {
+                  "quote": "18V Jig Saw",
+                  "sourceId": "hd-page:328690510"
+                },
+                {
+                  "quote": "Non-Marring Shoe",
+                  "sourceId": "hd-page:328690510"
+                },
+                {
+                  "quote": "T-Shank Wood Cutting Blade",
+                  "sourceId": "hd-page:328690510"
+                },
+                {
+                  "quote": "and Operator's Manuals",
+                  "sourceId": "hd-page:328690510"
+                }
+              ]
+            }
+          ],
+          "reason": "Home Depot also sells this same 2-tool, tools-only set as PCL500B-PCL525B, so the bundle is the PCL500B circular saw plus the PCL525B jig saw.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.04646120000000001
+  },
+  {
+    "key": "split:homedepot:329673936|1795426155724",
+    "questionId": "split:homedepot:329673936",
+    "seen": "[[\"PCL1400K2\",\"A967001\"]]",
+    "askedAt": 1795426155724,
+    "suggestion": {
+      "questionId": "split:homedepot:329673936",
+      "seen": "[[\"PCL1400K2\",\"A967001\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "No quote from the bundle page's Includes, specification lines or description names PCL1400K2."
+      ],
+      "claimed": {
+        "evidence": [
+          {
+            "quote": "Includes: A967001 (60) impact driving bits, (6) impact non-magnetic nut drivers, (3) impact socket adaptors and (1) impact rated magnetic bit holder",
+            "source": "bundle"
+          },
+          {
+            "quote": "RYOBI PCL1400K2 (kit): ONE+ 18V Cordless 4-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+            "source": "catalog:pcl1400k2"
+          },
+          {
+            "quote": "Includes: 4 Tools, 2 Batteries, Charger, Bag, and Accessories",
+            "source": "bundle"
+          }
+        ],
+        "reason": "The bundle's page lists the A967001 impact driving set, and the catalog knows PCL1400K2 as the 4-tool kit with 2 batteries and a charger.",
+        "decision": "choose",
+        "choiceIndex": 0,
+        "asin": null
+      },
+      "researchClaim": {
+        "quotes": [
+          {
+            "quote": "Includes: A967001 (60) impact driving bits, (6) impact non-magnetic nut drivers, (3) impact socket adaptors and (1) impact rated magnetic bit holder",
+            "sourceId": "hd-page:329673936"
+          },
+          {
+            "quote": "RYOBI PCL1400K2 (kit): ONE+ 18V Cordless 4-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+            "sourceId": "catalog:pcl1400k2"
+          },
+          {
+            "quote": "Includes: 4 Tools, 2 Batteries, Charger, Bag, and Accessories",
+            "sourceId": "hd-page:329673936"
+          }
+        ],
+        "parts": [],
+        "reason": "The bundle's page lists the A967001 impact driving set, and the catalog knows PCL1400K2 as the 4-tool kit with 2 batteries and a charger.",
+        "decision": "choose",
+        "choiceIndex": 0
+      },
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 619,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 13172,
+        "cacheCreationInputTokens": 2935
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-4-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-70-Piece-Impact-Driving-Set-PCL1400K2-A967001/329673936",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:329673936",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/329673936",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:pcl1400k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 2,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 619,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 13172,
+          "cacheCreationInputTokens": 2935
+        },
+        "answer": {
+          "quotes": [
+            {
+              "quote": "Includes: A967001 (60) impact driving bits, (6) impact non-magnetic nut drivers, (3) impact socket adaptors and (1) impact rated magnetic bit holder",
+              "sourceId": "hd-page:329673936"
+            },
+            {
+              "quote": "RYOBI PCL1400K2 (kit): ONE+ 18V Cordless 4-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+              "sourceId": "catalog:pcl1400k2"
+            },
+            {
+              "quote": "Includes: 4 Tools, 2 Batteries, Charger, Bag, and Accessories",
+              "sourceId": "hd-page:329673936"
+            }
+          ],
+          "parts": [],
+          "reason": "The bundle's page lists the A967001 impact driving set, and the catalog knows PCL1400K2 as the 4-tool kit with 2 batteries and a charger.",
+          "decision": "choose",
+          "choiceIndex": 0
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0297134
+  },
+  {
+    "key": "split:homedepot:334547280|1795426187869",
+    "questionId": "split:homedepot:334547280",
+    "seen": "[[\"PCL1600K2\",\"A72601\"]]",
+    "askedAt": 1795426187869,
+    "suggestion": {
+      "questionId": "split:homedepot:334547280",
+      "seen": "[[\"PCL1600K2\",\"A72601\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "No quote from the bundle page's Includes, specification lines or description names PCL1600K2."
+      ],
+      "claimed": {
+        "evidence": [
+          {
+            "quote": "Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories",
+            "source": "bundle"
+          },
+          {
+            "quote": "Includes: A72601 Wire Wheel Assortment Set (6-Piece) with (2) 2 in. Wire Wheels, (1) 3 in. Wire Wheel, (1) 2 in. Wire Cup Brush, (1) 3 in. Wire Cup Brush, and (1) 3/4 in. Wire End Brush",
+            "source": "bundle"
+          },
+          {
+            "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+            "source": "catalog:pcl1600k2"
+          },
+          {
+            "quote": "RYOBI A72601 (item 319638916): Wire Wheel Assortment Set (6-Piece)",
+            "source": "hd-search:ryobi-a72601"
+          }
+        ],
+        "reason": "The bundle is the PCL1600K2 6-tool kit (a catalog kit) plus the A72601 wire wheel set, which the bundle page names by model.",
+        "decision": "choose",
+        "choiceIndex": 0,
+        "asin": null
+      },
+      "researchClaim": {
+        "quotes": [
+          {
+            "quote": "Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories",
+            "sourceId": "hd-page:334547280"
+          },
+          {
+            "quote": "Includes: A72601 Wire Wheel Assortment Set (6-Piece) with (2) 2 in. Wire Wheels, (1) 3 in. Wire Wheel, (1) 2 in. Wire Cup Brush, (1) 3 in. Wire Cup Brush, and (1) 3/4 in. Wire End Brush",
+            "sourceId": "hd-page:334547280"
+          },
+          {
+            "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+            "sourceId": "catalog:pcl1600k2"
+          },
+          {
+            "quote": "RYOBI A72601 (item 319638916): Wire Wheel Assortment Set (6-Piece)",
+            "sourceId": "hd-search:ryobi-a72601"
+          }
+        ],
+        "parts": [],
+        "reason": "The bundle is the PCL1600K2 6-tool kit (a catalog kit) plus the A72601 wire wheel set, which the bundle page names by model.",
+        "decision": "choose",
+        "choiceIndex": 0
+      },
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 803,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 13190,
+        "cacheCreationInputTokens": 3745
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Wire-Wheel-Assortment-Set-6-Piece-PCL1600K2-A72601/334547280",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:334547280",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/334547280",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:pcl1600k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-a72601",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20A72601",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 3,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 803,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 13190,
+          "cacheCreationInputTokens": 3745
+        },
+        "answer": {
+          "quotes": [
+            {
+              "quote": "Includes: 6 Tools, 2 Batteries, Charger, Bag, and Accessories",
+              "sourceId": "hd-page:334547280"
+            },
+            {
+              "quote": "Includes: A72601 Wire Wheel Assortment Set (6-Piece) with (2) 2 in. Wire Wheels, (1) 3 in. Wire Wheel, (1) 2 in. Wire Cup Brush, (1) 3 in. Wire Cup Brush, and (1) 3/4 in. Wire End Brush",
+              "sourceId": "hd-page:334547280"
+            },
+            {
+              "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+              "sourceId": "catalog:pcl1600k2"
+            },
+            {
+              "quote": "RYOBI A72601 (item 319638916): Wire Wheel Assortment Set (6-Piece)",
+              "sourceId": "hd-search:ryobi-a72601"
+            }
+          ],
+          "parts": [],
+          "reason": "The bundle is the PCL1600K2 6-tool kit (a catalog kit) plus the A72601 wire wheel set, which the bundle page names by model.",
+          "decision": "choose",
+          "choiceIndex": 0
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.037447
+  },
+  {
+    "key": "split:homedepot:334547651|1795426215181",
+    "questionId": "split:homedepot:334547651",
+    "seen": "[[\"PCL1600K2\",\"A98401\"]]",
+    "askedAt": 1795426215181,
+    "suggestion": {
+      "questionId": "split:homedepot:334547651",
+      "seen": "[[\"PCL1600K2\",\"A98401\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "The bundle's title names a drill that no part is or holds."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1600K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes ONE+ 18V 6-Tool Combo Kit",
+                "sourceId": "hd-page:334547651"
+              },
+              {
+                "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                "sourceId": "catalog:pcl1600k2"
+              },
+              {
+                "quote": "PCL1600K2-A98401",
+                "sourceId": "hd-page:334547651"
+              }
+            ]
+          },
+          {
+            "model": "A98401",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes Drill and Impact Drive Kit (40-Piece)",
+                "sourceId": "hd-page:334547651"
+              },
+              {
+                "quote": "RYOBI A98401 (item 314892344): Drill and Impact Drive Kit (40-Piece)",
+                "sourceId": "hd-search:ryobi-a98401"
+              },
+              {
+                "quote": "PCL1600K2-A98401",
+                "sourceId": "hd-page:334547651"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle's page lists two items, a 6-tool combo kit and a 40-piece drill and impact drive kit; the catalog lists PCL1600K2 as that combo kit, and Home Depot sells A98401 as that 40-piece kit.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 1111,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 21975,
+        "cacheCreationInputTokens": 2955
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:334547651",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/334547651",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:a98401",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-a98401",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20A98401",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "catalog:pcl1600k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 4,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 3,
+        "usage": {
+          "inputTokens": 8,
+          "outputTokens": 1111,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 21975,
+          "cacheCreationInputTokens": 2955
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1600K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes ONE+ 18V 6-Tool Combo Kit",
+                  "sourceId": "hd-page:334547651"
+                },
+                {
+                  "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+                  "sourceId": "catalog:pcl1600k2"
+                },
+                {
+                  "quote": "PCL1600K2-A98401",
+                  "sourceId": "hd-page:334547651"
+                }
+              ]
+            },
+            {
+              "model": "A98401",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes Drill and Impact Drive Kit (40-Piece)",
+                  "sourceId": "hd-page:334547651"
+                },
+                {
+                  "quote": "RYOBI A98401 (item 314892344): Drill and Impact Drive Kit (40-Piece)",
+                  "sourceId": "hd-search:ryobi-a98401"
+                },
+                {
+                  "quote": "PCL1600K2-A98401",
+                  "sourceId": "hd-page:334547651"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle's page lists two items, a 6-tool combo kit and a 40-piece drill and impact drive kit; the catalog lists PCL1600K2 as that combo kit, and Home Depot sells A98401 as that 40-piece kit.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.041422
+  },
+  {
+    "key": "split:homedepot:337440461|1795426268336",
+    "questionId": "split:homedepot:337440461",
+    "seen": "[]",
+    "askedAt": 1795426268336,
+    "suggestion": {
+      "questionId": "split:homedepot:337440461",
+      "seen": "[]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "DCK200D1P1 is a combo of 2 tools that the catalog does not know as a kit; give its tools as the parts."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "DCK200D1P1",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes 1/2 in. hammer drill and 3-speed 1/4 in. impact driver",
+                "sourceId": "hd-page:337440461"
+              },
+              {
+                "quote": "5 Ah, 2 Ah batteries",
+                "sourceId": "hd-page:337440461"
+              },
+              {
+                "quote": "charger",
+                "sourceId": "hd-page:337440461"
+              },
+              {
+                "quote": "Includes DCK200D1P1 and DCB606.",
+                "sourceId": "hd-page:337440461"
+              },
+              {
+                "quote": "DEWALT DCK200D1P1 (item 334337675): ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit with 5.0 Ah and 2.0 Ah Batteries, Charger and Kit Bag",
+                "sourceId": "hd-search:dewalt-dck200d1p1"
+              }
+            ]
+          },
+          {
+            "model": "DCB606",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "FlexVolt battery",
+                "sourceId": "hd-page:337440461"
+              },
+              {
+                "quote": "Includes DCK200D1P1 and DCB606.",
+                "sourceId": "hd-page:337440461"
+              },
+              {
+                "quote": "DEWALT DCB606 (item 207135402): FLEXVOLT 20V/60V MAX Lithium-Ion 6.0Ah Battery Pack",
+                "sourceId": "hd-search:dewalt-dcb606"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle's page says it includes the DCK200D1P1 2-tool kit (hammer drill, impact driver, 5Ah and 2Ah batteries, charger) and a DCB606 FlexVolt battery.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 10,
+        "outputTokens": 1298,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 30476,
+        "cacheCreationInputTokens": 4618
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/DEWALT-ATOMIC-20V-Lithium-Ion-Cordless-2-Tool-Combo-Kit-with-FLEXVOLT-20V-60V-6-0Ah-20V-5-Ah-and-2-Ah-Batteries-and-Charger-DCK200D1P1WB606/337440461",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:337440461",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/337440461",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:dck200d1p1",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:dewalt-dck200d1p1",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/DEWALT%20DCK200D1P1",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:dewalt-dcb606",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/DEWALT%20DCB606",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 4,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 4,
+        "usage": {
+          "inputTokens": 10,
+          "outputTokens": 1298,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 30476,
+          "cacheCreationInputTokens": 4618
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "DCK200D1P1",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes 1/2 in. hammer drill and 3-speed 1/4 in. impact driver",
+                  "sourceId": "hd-page:337440461"
+                },
+                {
+                  "quote": "5 Ah, 2 Ah batteries",
+                  "sourceId": "hd-page:337440461"
+                },
+                {
+                  "quote": "charger",
+                  "sourceId": "hd-page:337440461"
+                },
+                {
+                  "quote": "Includes DCK200D1P1 and DCB606.",
+                  "sourceId": "hd-page:337440461"
+                },
+                {
+                  "quote": "DEWALT DCK200D1P1 (item 334337675): ATOMIC 20V MAX Lithium-Ion Cordless 2-Tool Combo Kit with 5.0 Ah and 2.0 Ah Batteries, Charger and Kit Bag",
+                  "sourceId": "hd-search:dewalt-dck200d1p1"
+                }
+              ]
+            },
+            {
+              "model": "DCB606",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "FlexVolt battery",
+                  "sourceId": "hd-page:337440461"
+                },
+                {
+                  "quote": "Includes DCK200D1P1 and DCB606.",
+                  "sourceId": "hd-page:337440461"
+                },
+                {
+                  "quote": "DEWALT DCB606 (item 207135402): FLEXVOLT 20V/60V MAX Lithium-Ion 6.0Ah Battery Pack",
+                  "sourceId": "hd-search:dewalt-dcb606"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle's page says it includes the DCK200D1P1 2-tool kit (hammer drill, impact driver, 5Ah and 2Ah batteries, charger) and a DCB606 FlexVolt battery.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0551852
+  },
+  {
+    "key": "split:homedepot:341644756|1795426285393",
+    "questionId": "split:homedepot:341644756",
+    "seen": "[[\"PCL1600K2\",\"PBP003\"]]",
+    "askedAt": 1795426285393,
+    "suggestion": {
+      "questionId": "split:homedepot:341644756",
+      "seen": "[[\"PCL1600K2\",\"PBP003\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "No quote from the bundle page's Includes, specification lines or description names PCL1600K2.",
+        "No quote from the bundle page's Includes, specification lines or description names PBP003."
+      ],
+      "claimed": {
+        "evidence": [
+          {
+            "quote": "PCL1600K2-PBP003",
+            "source": "bundle"
+          },
+          {
+            "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+            "source": "catalog:pcl1600k2"
+          },
+          {
+            "quote": "Number of Total Batteries Included: 3",
+            "source": "bundle"
+          },
+          {
+            "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+            "source": "bundle"
+          }
+        ],
+        "reason": "The page's Includes lines list the PCL1600K2 kit's contents: 6 tools, the PBP005 and PBP002 batteries and a charger. The page counts 3 batteries in total, so the third must be the added PBP003 2.0 Ah battery named in the bundle's model number.",
+        "decision": "choose",
+        "choiceIndex": 0,
+        "asin": null
+      },
+      "researchClaim": {
+        "quotes": [
+          {
+            "quote": "PCL1600K2-PBP003",
+            "sourceId": "hd-page:341644756"
+          },
+          {
+            "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+            "sourceId": "catalog:pcl1600k2"
+          },
+          {
+            "quote": "Number of Total Batteries Included: 3",
+            "sourceId": "hd-page:341644756"
+          },
+          {
+            "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+            "sourceId": "hd-page:341644756"
+          }
+        ],
+        "parts": [],
+        "reason": "The page's Includes lines list the PCL1600K2 kit's contents: 6 tools, the PBP005 and PBP002 batteries and a charger. The page counts 3 batteries in total, so the third must be the added PBP003 2.0 Ah battery named in the bundle's model number.",
+        "decision": "choose",
+        "choiceIndex": 0
+      },
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 971,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 13119,
+        "cacheCreationInputTokens": 2695
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "hd-page:341644756",
+            "kind": "homedepot_page",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/341644756",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "catalog:pcl1600k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 2,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 971,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 13119,
+          "cacheCreationInputTokens": 2695
+        },
+        "answer": {
+          "quotes": [
+            {
+              "quote": "PCL1600K2-PBP003",
+              "sourceId": "hd-page:341644756"
+            },
+            {
+              "quote": "RYOBI PCL1600K2 (kit): ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+              "sourceId": "catalog:pcl1600k2"
+            },
+            {
+              "quote": "Number of Total Batteries Included: 3",
+              "sourceId": "hd-page:341644756"
+            },
+            {
+              "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+              "sourceId": "hd-page:341644756"
+            }
+          ],
+          "parts": [],
+          "reason": "The page's Includes lines list the PCL1600K2 kit's contents: 6 tools, the PBP005 and PBP002 batteries and a charger. The page counts 3 batteries in total, so the third must be the added PBP003 2.0 Ah battery named in the bundle's model number.",
+          "decision": "choose",
+          "choiceIndex": 0
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.035542800000000006
+  },
+  {
+    "key": "split:homedepot:337504926|1795427669374",
+    "questionId": "split:homedepot:337504926",
+    "seen": "[[\"PCL1201K2\",\"P20015BTL\"]]",
+    "askedAt": 1795427669374,
+    "suggestion": {
+      "questionId": "split:homedepot:337504926",
+      "seen": "[[\"PCL1201K2\",\"P20015BTL\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "The bundle states 2 tools; the parts hold 3.",
+        "\"P20015 ONE+ 18V 13 in. Cordless Battery String Trimmer\" is model P20015, not P20015BTL.",
+        "\"P20015 ONE+ 18V 13 in. Cordless Battery String Trimmer\" on the bundle's Includes list is left over: no part accounts for it.",
+        "P20015BTL accounts for nothing on the bundle's Includes list."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V 1.5 Ah Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                "sourceId": "catalog:pcl1201k2"
+              },
+              {
+                "quote": "PCL1201K2-P20015BTL",
+                "sourceId": "bundle"
+              }
+            ]
+          },
+          {
+            "model": "P20015BTL",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Includes: P20015 ONE+ 18V 13 in. Cordless Battery String Trimmer",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "RYOBI P20015BTL (item 315685813): ONE+ 18V 13 in. Cordless Battery String Trimmer (Tool Only)",
+                "sourceId": "hd-search:ryobi-p20015-string-trimmer"
+              },
+              {
+                "quote": "PCL1201K2-P20015BTL",
+                "sourceId": "bundle"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle is the PCL1201K2 combo kit (drill, circular saw, 2 batteries, charger, bag) plus the P20015BTL 13 in. string trimmer (tool only); both models appear in the bundle's model number and match its Includes lines.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 1366,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 19123,
+        "cacheCreationInputTokens": 10660
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "kit:PCL1201K2",
+            "kind": "stored",
+            "label": "Home Depot page for PCL1201K2",
+            "url": "https://www.homedepot.com/p/317987584",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-p20015btl",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20P20015BTL",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "catalog:pcl1201k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-p20015-string-trimmer",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20P20015%20string%20trimmer",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 3,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 3,
+        "usage": {
+          "inputTokens": 8,
+          "outputTokens": 1366,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 19123,
+          "cacheCreationInputTokens": 10660
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1201K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V 1.5 Ah Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                  "sourceId": "catalog:pcl1201k2"
+                },
+                {
+                  "quote": "PCL1201K2-P20015BTL",
+                  "sourceId": "bundle"
+                }
+              ]
+            },
+            {
+              "model": "P20015BTL",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Includes: P20015 ONE+ 18V 13 in. Cordless Battery String Trimmer",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "RYOBI P20015BTL (item 315685813): ONE+ 18V 13 in. Cordless Battery String Trimmer (Tool Only)",
+                  "sourceId": "hd-search:ryobi-p20015-string-trimmer"
+                },
+                {
+                  "quote": "PCL1201K2-P20015BTL",
+                  "sourceId": "bundle"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle is the PCL1201K2 combo kit (drill, circular saw, 2 batteries, charger, bag) plus the P20015BTL 13 in. string trimmer (tool only); both models appear in the bundle's model number and match its Includes lines.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0844766
+  },
+  {
+    "key": "split:homedepot:344284026|1795427687140",
+    "questionId": "split:homedepot:344284026",
+    "seen": "[[\"PCL1201K2\",\"FVC51K\"]]",
+    "askedAt": 1795427687140,
+    "suggestion": {
+      "questionId": "split:homedepot:344284026",
+      "seen": "[[\"PCL1201K2\",\"FVC51K\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "No quote from the bundle page's Includes, specification lines or description names PCL1201K2.",
+        "No quote from the bundle page's Includes, specification lines or description names FVC51K."
+      ],
+      "claimed": {
+        "evidence": [
+          {
+            "quote": "PCL1201K2-FVC51K",
+            "source": "bundle"
+          },
+          {
+            "quote": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVC51 USB Lithium Power Cutter, USB Lithium 2Ah Battery, Blade, USB Cable, and Operator’s Manuals",
+            "source": "bundle"
+          },
+          {
+            "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+            "source": "catalog:pcl1201k2"
+          },
+          {
+            "quote": "RYOBI FVC51K (item 318584392): USB Lithium Power Cutter Kit with 2.0 Ah USB Lithium Battery and Charging Cable",
+            "source": "hd-search:ryobi-fvc51k"
+          }
+        ],
+        "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVC51K USB power cutter kit, and Home Depot lists both kits under those model numbers.",
+        "decision": "choose",
+        "choiceIndex": 0,
+        "asin": null
+      },
+      "researchClaim": {
+        "quotes": [
+          {
+            "quote": "PCL1201K2-FVC51K",
+            "sourceId": "bundle"
+          },
+          {
+            "quote": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVC51 USB Lithium Power Cutter, USB Lithium 2Ah Battery, Blade, USB Cable, and Operator’s Manuals",
+            "sourceId": "bundle"
+          },
+          {
+            "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+            "sourceId": "catalog:pcl1201k2"
+          },
+          {
+            "quote": "RYOBI FVC51K (item 318584392): USB Lithium Power Cutter Kit with 2.0 Ah USB Lithium Battery and Charging Cable",
+            "sourceId": "hd-search:ryobi-fvc51k"
+          }
+        ],
+        "parts": [],
+        "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVC51K USB power cutter kit, and Home Depot lists both kits under those model numbers.",
+        "decision": "choose",
+        "choiceIndex": 0
+      },
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 834,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 15530,
+        "cacheCreationInputTokens": 4192
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "kit:PCL1201K2",
+            "kind": "stored",
+            "label": "Home Depot page for PCL1201K2",
+            "url": "https://www.homedepot.com/p/317987584",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-fvc51k",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20FVC51K",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "catalog:pcl1201k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 2,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 834,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 15530,
+          "cacheCreationInputTokens": 4192
+        },
+        "answer": {
+          "quotes": [
+            {
+              "quote": "PCL1201K2-FVC51K",
+              "sourceId": "bundle"
+            },
+            {
+              "quote": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVC51 USB Lithium Power Cutter, USB Lithium 2Ah Battery, Blade, USB Cable, and Operator’s Manuals",
+              "sourceId": "bundle"
+            },
+            {
+              "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+              "sourceId": "catalog:pcl1201k2"
+            },
+            {
+              "quote": "RYOBI FVC51K (item 318584392): USB Lithium Power Cutter Kit with 2.0 Ah USB Lithium Battery and Charging Cable",
+              "sourceId": "hd-search:ryobi-fvc51k"
+            }
+          ],
+          "parts": [],
+          "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVC51K USB power cutter kit, and Home Depot lists both kits under those model numbers.",
+          "decision": "choose",
+          "choiceIndex": 0
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.04077
+  },
+  {
+    "key": "split:homedepot:344284060|1795427705604",
+    "questionId": "split:homedepot:344284060",
+    "seen": "[[\"PCL1201K2\",\"FVD50K\"]]",
+    "askedAt": 1795427705604,
+    "suggestion": {
+      "questionId": "split:homedepot:344284060",
+      "seen": "[[\"PCL1201K2\",\"FVD50K\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "No quote from the bundle page's Includes, specification lines or description names PCL1201K2.",
+        "No quote from the bundle page's Includes, specification lines or description names FVD50K."
+      ],
+      "claimed": {
+        "evidence": [
+          {
+            "quote": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVD50 USB Lithium Screwdriver, FVB02 2.0 Ah USB Lithium Battery, (2) Bits, USB Cable and Operator’s Manual",
+            "source": "bundle"
+          },
+          {
+            "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+            "source": "kit:PCL1201K2"
+          },
+          {
+            "quote": "RYOBI FVD50K (item 318964392): USB Lithium Screwdriver Kit with 2.0 Ah USB Lithium Battery and Charging Cable",
+            "source": "hd-search:ryobi-fvd50k"
+          }
+        ],
+        "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVD50K USB screwdriver kit, and each kit's contents match the bundle's Includes line.",
+        "decision": "choose",
+        "choiceIndex": 0,
+        "asin": null
+      },
+      "researchClaim": {
+        "quotes": [
+          {
+            "quote": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVD50 USB Lithium Screwdriver, FVB02 2.0 Ah USB Lithium Battery, (2) Bits, USB Cable and Operator’s Manual",
+            "sourceId": "bundle"
+          },
+          {
+            "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+            "sourceId": "kit:PCL1201K2"
+          },
+          {
+            "quote": "RYOBI FVD50K (item 318964392): USB Lithium Screwdriver Kit with 2.0 Ah USB Lithium Battery and Charging Cable",
+            "sourceId": "hd-search:ryobi-fvd50k"
+          }
+        ],
+        "parts": [],
+        "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVD50K USB screwdriver kit, and each kit's contents match the bundle's Includes line.",
+        "decision": "choose",
+        "choiceIndex": 0
+      },
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 924,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 15499,
+        "cacheCreationInputTokens": 3911
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "kit:PCL1201K2",
+            "kind": "stored",
+            "label": "Home Depot page for PCL1201K2",
+            "url": "https://www.homedepot.com/p/317987584",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-fvd50k",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20FVD50K",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 1,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 924,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 15499,
+          "cacheCreationInputTokens": 3911
+        },
+        "answer": {
+          "quotes": [
+            {
+              "quote": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVD50 USB Lithium Screwdriver, FVB02 2.0 Ah USB Lithium Battery, (2) Bits, USB Cable and Operator’s Manual",
+              "sourceId": "bundle"
+            },
+            {
+              "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+              "sourceId": "kit:PCL1201K2"
+            },
+            {
+              "quote": "RYOBI FVD50K (item 318964392): USB Lithium Screwdriver Kit with 2.0 Ah USB Lithium Battery and Charging Cable",
+              "sourceId": "hd-search:ryobi-fvd50k"
+            }
+          ],
+          "parts": [],
+          "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVD50K USB screwdriver kit, and each kit's contents match the bundle's Includes line.",
+          "decision": "choose",
+          "choiceIndex": 0
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.041158799999999995
+  },
+  {
+    "key": "split:homedepot:344284100|1795427723328",
+    "questionId": "split:homedepot:344284100",
+    "seen": "[[\"PCL1201K2\",\"FVF51K\"]]",
+    "askedAt": 1795427723328,
+    "suggestion": {
+      "questionId": "split:homedepot:344284100",
+      "seen": "[[\"PCL1201K2\",\"FVF51K\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "The bundle states 2 tools; the parts hold 3.",
+        "\"Batteries\" is 1 battery; PCL1201K2's own title and page say 2.",
+        "\"FVF51 USB Lithium Clamp Fan\" is model FVF51, not FVF51K.",
+        "\"Batteries\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"FVF51 USB Lithium Clamp Fan\" on the bundle's Includes list is left over: no part accounts for it."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "Drill/Driver",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Circular Saw",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Batteries",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Charger",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Bag",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "PCL1201K2-FVF51K",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                "sourceId": "catalog:pcl1201k2"
+              }
+            ]
+          },
+          {
+            "model": "FVF51K",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "FVF51 USB Lithium Clamp Fan",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "USB Lithium 2Ah Battery",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "USB Cable",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Operator’s Manual",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "PCL1201K2-FVF51K",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "RYOBI FVF51K (item 322605667): USB Lithium Clamp Fan Kit with 2.0 Ah USB Lithium Battery and Charging Cable",
+                "sourceId": "hd-search:ryobi-fvf51k"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVF51K USB clamp fan kit, and together they cover every item the bundle's page lists as included.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 1136,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 15519,
+        "cacheCreationInputTokens": 4117
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "kit:PCL1201K2",
+            "kind": "stored",
+            "label": "Home Depot page for PCL1201K2",
+            "url": "https://www.homedepot.com/p/317987584",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-fvf51k",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20FVF51K",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "catalog:pcl1201k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 2,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 1136,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 15519,
+          "cacheCreationInputTokens": 4117
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1201K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "Drill/Driver",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Circular Saw",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Batteries",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Charger",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Bag",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "PCL1201K2-FVF51K",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                  "sourceId": "catalog:pcl1201k2"
+                }
+              ]
+            },
+            {
+              "model": "FVF51K",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "FVF51 USB Lithium Clamp Fan",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "USB Lithium 2Ah Battery",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "USB Cable",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Operator’s Manual",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "PCL1201K2-FVF51K",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "RYOBI FVF51K (item 322605667): USB Lithium Clamp Fan Kit with 2.0 Ah USB Lithium Battery and Charging Cable",
+                  "sourceId": "hd-search:ryobi-fvf51k"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVF51K USB clamp fan kit, and together they cover every item the bundle's page lists as included.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.046432799999999996
+  },
+  {
+    "key": "split:homedepot:344284129|1795427745052",
+    "questionId": "split:homedepot:344284129",
+    "seen": "[[\"PCL1201K2\",\"FVL51K\"]]",
+    "askedAt": 1795427745052,
+    "suggestion": {
+      "questionId": "split:homedepot:344284129",
+      "seen": "[[\"PCL1201K2\",\"FVL51K\"]]",
+      "provider": "claude",
+      "model": "claude-opus-5-5",
+      "promptVersion": "review-research-2026-11-20.4",
+      "status": "unverified",
+      "reasons": [
+        "FVL51K is not a model any source read gives: no catalog entry, Home Depot page or search result of RYOBI has it, and no brand-site passage quoted names it.",
+        "What FVL51K is cannot be read from its names, so its tools cannot be counted.",
+        "The bundle's title names a light that no part is or holds.",
+        "\"Batteries\" is 1 battery; PCL1201K2's own title and page say 2.",
+        "\"FVL51 Compact LED Flashlight\" is model FVL51, not FVL51K.",
+        "\"USB Lithium 2Ah Battery\" is a battery, and no quote naming FVL51K says what it is.",
+        "\"Batteries\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"FVL51 Compact LED Flashlight\" on the bundle's Includes list is left over: no part accounts for it.",
+        "\"USB Lithium 2Ah Battery\" on the bundle's Includes list is left over: no part accounts for it."
+      ],
+      "claimed": null,
+      "researchClaim": {
+        "quotes": [],
+        "parts": [
+          {
+            "model": "PCL1201K2",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                "sourceId": "catalog:pcl1201k2"
+              },
+              {
+                "quote": "Drill/Driver",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Circular Saw",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Batteries",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Charger",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Bag",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+                "sourceId": "kit:PCL1201K2"
+              }
+            ]
+          },
+          {
+            "model": "FVL51K",
+            "qty": 1,
+            "quotes": [
+              {
+                "quote": "RYOBI FVL51K-FVL51K (item 326812174): 600 Lumens LED USB Lithium Compact Flashlight Kit 3-Mode with Battery and Charging Cable (2-Pack)",
+                "sourceId": "hd-search:ryobi-fvl51k"
+              },
+              {
+                "quote": "FVL51 Compact LED Flashlight",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "USB Lithium 2Ah Battery",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "USB Cable",
+                "sourceId": "bundle"
+              },
+              {
+                "quote": "Operator’s Manuals",
+                "sourceId": "bundle"
+              }
+            ]
+          }
+        ],
+        "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVL51K USB flashlight kit, and its Includes lines list exactly what those two kits hold.",
+        "decision": "parts",
+        "choiceIndex": null
+      },
+      "usage": {
+        "inputTokens": 6,
+        "outputTokens": 1403,
+        "webSearchRequests": 0,
+        "webFetchRequests": 0,
+        "cacheReadInputTokens": 15528,
+        "cacheCreationInputTokens": 4157
+      },
+      "research": {
+        "ledger": [
+          {
+            "id": "bundle",
+            "kind": "stored",
+            "label": "Home Depot page",
+            "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129",
+            "lines": [],
+            "products": [],
+            "isBundle": true
+          },
+          {
+            "id": "kit:PCL1201K2",
+            "kind": "stored",
+            "label": "Home Depot page for PCL1201K2",
+            "url": "https://www.homedepot.com/p/317987584",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "hd-search:ryobi-fvl51k",
+            "kind": "homedepot_search",
+            "label": "Home Depot search",
+            "url": "https://www.homedepot.com/s/RYOBI%20FVL51K",
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          },
+          {
+            "id": "catalog:pcl1201k2",
+            "kind": "catalog",
+            "label": "Catalog",
+            "url": null,
+            "lines": [],
+            "products": [],
+            "isBundle": false
+          }
+        ],
+        "toolCalls": 2,
+        "webSearches": 0,
+        "webFetches": 0,
+        "requests": 2,
+        "usage": {
+          "inputTokens": 6,
+          "outputTokens": 1403,
+          "webSearchRequests": 0,
+          "webFetchRequests": 0,
+          "cacheReadInputTokens": 15528,
+          "cacheCreationInputTokens": 4157
+        },
+        "answer": {
+          "quotes": [],
+          "parts": [
+            {
+              "model": "PCL1201K2",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "RYOBI PCL1201K2 (kit): ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+                  "sourceId": "catalog:pcl1201k2"
+                },
+                {
+                  "quote": "Drill/Driver",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Circular Saw",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Batteries",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Charger",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Bag",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+                  "sourceId": "kit:PCL1201K2"
+                }
+              ]
+            },
+            {
+              "model": "FVL51K",
+              "qty": 1,
+              "quotes": [
+                {
+                  "quote": "RYOBI FVL51K-FVL51K (item 326812174): 600 Lumens LED USB Lithium Compact Flashlight Kit 3-Mode with Battery and Charging Cable (2-Pack)",
+                  "sourceId": "hd-search:ryobi-fvl51k"
+                },
+                {
+                  "quote": "FVL51 Compact LED Flashlight",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "USB Lithium 2Ah Battery",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "USB Cable",
+                  "sourceId": "bundle"
+                },
+                {
+                  "quote": "Operator’s Manuals",
+                  "sourceId": "bundle"
+                }
+              ]
+            }
+          ],
+          "reason": "The bundle is the PCL1201K2 2-tool combo kit plus the FVL51K USB flashlight kit, and its Includes lines list exactly what those two kits hold.",
+          "decision": "parts",
+          "choiceIndex": null
+        },
+        "droppedResults": 0
+      }
+    },
+    "costUsd": 0.0519746
+  }
+]

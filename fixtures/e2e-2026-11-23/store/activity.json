@@ -1,0 +1,148 @@
+{
+  "runs": [
+    {
+      "id": "run-1795424439957",
+      "kind": "scan",
+      "startedAt": "2026-11-23T09:00:39.957Z",
+      "finishedAt": "2026-11-23T09:00:51.303Z",
+      "status": "finished",
+      "searchesUsed": 3,
+      "keepaTokensUsed": 0,
+      "aiCostUsd": 0,
+      "summary": "16 bundles, 0 with an estimate. 3 searches. Home Depot refused a page (HTTP 200); the rest are read next scan. BOGO: DEWALT and RYOBI not read in full (This browser does not know that kind of job.); the pairs found before are kept. There is no API key saved for this model.",
+      "trigger": "manual",
+      "stopReason": null,
+      "error": "Home Depot refused a page (HTTP 200); the rest are read next scan.",
+      "steps": [
+        {
+          "label": "Home Depot deals pages",
+          "state": "done",
+          "figure": "3 searches"
+        },
+        {
+          "label": "Bundle pages",
+          "state": "done",
+          "figure": "0 read"
+        },
+        {
+          "label": "Kit pages",
+          "state": "skipped",
+          "figure": "Home Depot refused"
+        },
+        {
+          "label": "Home Depot part prices",
+          "state": "skipped",
+          "figure": "Home Depot refused"
+        },
+        {
+          "label": "eBay listings",
+          "state": "skipped",
+          "figure": "no eBay keys"
+        },
+        {
+          "label": "Listing check (Claude)",
+          "state": "skipped",
+          "figure": "no eBay keys"
+        },
+        {
+          "label": "Amazon lookups",
+          "state": "skipped",
+          "figure": "none found"
+        },
+        {
+          "label": "Finish",
+          "state": "done",
+          "figure": ""
+        }
+      ],
+      "judgeCostUsd": 0,
+      "questionsAsked": 0,
+      "autopilotApplied": 0
+    },
+    {
+      "id": "run-1795425864820",
+      "kind": "ask",
+      "startedAt": "2026-11-23T09:24:24.820Z",
+      "finishedAt": "2026-11-23T09:31:25.538Z",
+      "status": "finished",
+      "searchesUsed": 0,
+      "keepaTokensUsed": 0,
+      "aiCostUsd": 0.6951,
+      "summary": "AI asked about 16, 2 verified. Autopilot applied 2.",
+      "trigger": "manual",
+      "questionsAsked": 16,
+      "autopilotApplied": 2
+    },
+    {
+      "id": "run-1795426927490",
+      "kind": "scan",
+      "startedAt": "2026-11-23T09:42:07.490Z",
+      "finishedAt": "2026-11-23T09:55:45.410Z",
+      "status": "limit",
+      "searchesUsed": 1,
+      "keepaTokensUsed": 0,
+      "aiCostUsd": 0.2648,
+      "summary": "Found 53 bundles; 0 estimated. 1 search. AI asked about 5.",
+      "trigger": "manual",
+      "stopReason": "run_cap",
+      "error": null,
+      "steps": [
+        {
+          "label": "Home Depot deals pages",
+          "state": "done",
+          "figure": "1 search"
+        },
+        {
+          "label": "Bundle pages",
+          "state": "done",
+          "figure": "13 read"
+        },
+        {
+          "label": "Kit pages",
+          "state": "done",
+          "figure": "3 read"
+        },
+        {
+          "label": "Home Depot part prices",
+          "state": "done",
+          "figure": "40 read"
+        },
+        {
+          "label": "eBay listings",
+          "state": "done",
+          "figure": "1 call"
+        },
+        {
+          "label": "Listing check (Claude)",
+          "state": "done",
+          "figure": "$0.00"
+        },
+        {
+          "label": "Amazon lookups",
+          "state": "skipped",
+          "figure": "search limit"
+        },
+        {
+          "label": "Finish",
+          "state": "done",
+          "figure": ""
+        }
+      ],
+      "judgeCostUsd": 0,
+      "questionsAsked": 5,
+      "autopilotApplied": 0
+    }
+  ],
+  "helper": null,
+  "lastScan": {
+    "at": "2026-11-23T09:55:45.410Z",
+    "status": "limit",
+    "stopMessage": null,
+    "searchesUsed": 1,
+    "keepaTokensUsed": 0,
+    "newDeals": 0,
+    "reviewOpen": 15,
+    "pagesUnread": 0
+  },
+  "bridge": null
+}

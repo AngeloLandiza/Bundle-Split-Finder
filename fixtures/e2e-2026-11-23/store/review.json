@@ -1,0 +1,3085 @@
+{
+  "at": "2026-11-23T09:55:45.337Z",
+  "questions": [
+    {
+      "id": "split:homedepot:306554196",
+      "kind": "split",
+      "subject": "homedepot:306554196",
+      "brand": "DEWALT",
+      "model": "DCK240C2DCS380B",
+      "title": "20V MAX Cordless Drill/Impact Combo Kit, 20V MAX Cordless Reciprocating Saw, (2) 20V 1.3Ah Batteries, and Charger",
+      "reason": "'DCS380B' matches nothing in the catalog; page names no models",
+      "candidates": [],
+      "choices": [
+        [
+          "DCK240C2",
+          "DCS380B"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:320243671",
+      "kind": "split",
+      "subject": "homedepot:320243671",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-A986501",
+      "title": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and 65-Piece Drill and Impact Drive Kit",
+      "reason": "hyphen split, but a part is not in the catalog; page names no models",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1600K2",
+          "A986501"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:320243741",
+      "kind": "split",
+      "subject": "homedepot:320243741",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-P553",
+      "title": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and Miter Saw",
+      "reason": "hyphen split, but a part is not in the catalog; page names no models",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1600K2",
+          "P553"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:321809549",
+      "kind": "split",
+      "subject": "homedepot:321809549",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-PBP2003",
+      "title": "ONE+ 18V Cordless 6-Tool Combo Kit w/ 1.5 Ah Battery, 4.0 Ah Battery, & Charger w/ (2) 2.0 Ah Batteries",
+      "reason": "hyphen split, but a part is not in the catalog",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1600K2",
+          "PBP2003"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:321811428",
+      "kind": "split",
+      "subject": "homedepot:321811428",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-PSK005",
+      "title": "ONE+ 18V Cordless 6-Tool Combo Kit w/ 1.5 Ah Battery, 4.0 Ah Battery, & Charger w/ 2.0 Ah Battery and Charger",
+      "reason": "hyphen split, but a part is not in the catalog",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1600K2",
+          "PSK005"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:324904496",
+      "kind": "split",
+      "subject": "homedepot:324904496",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-PCL430B",
+      "title": "ONE  18V Cordless 2 Tool Combo Kit w/ Drill/Driver, Circular Saw,  Multi Tool, 2  1.5 Ah Batteries, & Charger",
+      "reason": "hyphen split, but a part is not in the catalog; page names no models",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1201K2",
+          "PCL430B"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:326894185",
+      "kind": "split",
+      "subject": "homedepot:326894185",
+      "brand": "DEWALT",
+      "model": "DCKTS681D1P1W34",
+      "title": "20V MAX ToughSystem Lithium-Ion 6-Tool Cordless Combo Kit and 20V MAX XR Cordless Brushless Jigsaw",
+      "reason": "'34' matches nothing in the catalog; page names no models",
+      "candidates": [],
+      "choices": [],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:328690510",
+      "kind": "split",
+      "subject": "homedepot:328690510",
+      "brand": "RYOBI",
+      "model": "PCL500525SB",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with 5-1/2 in. Circular Saw and Jig Saw (Tools Only)",
+      "reason": "no known RYOBI bundle pattern; page names no models",
+      "candidates": [],
+      "choices": [],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:334547651",
+      "kind": "split",
+      "subject": "homedepot:334547651",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-A98401",
+      "title": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, Charger, and Drill & Impact Drive Kit (40-Piece)",
+      "reason": "hyphen split, but a part is not in the catalog; page names no models",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1600K2",
+          "A98401"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:337504926",
+      "kind": "split",
+      "subject": "homedepot:337504926",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-P20015BTL",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ 13” String Trimmer",
+      "reason": "hyphen split, but a part is not in the catalog",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1201K2",
+          "P20015BTL"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:341644756",
+      "kind": "split",
+      "subject": "homedepot:341644756",
+      "brand": "RYOBI",
+      "model": "PCL1600K2-PBP003",
+      "title": "ONE+18V Cordless 6-Tool Combo Kit with Batteries, Charger & ONE+18V 2.0 Ah Battery",
+      "reason": "hyphen split, but a part is not in the catalog",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1600K2",
+          "PBP003"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:344284026",
+      "kind": "split",
+      "subject": "homedepot:344284026",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-FVC51K",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Power Cutter Kit",
+      "reason": "hyphen split, but a part is not in the catalog",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1201K2",
+          "FVC51K"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:344284060",
+      "kind": "split",
+      "subject": "homedepot:344284060",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-FVD50K",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Screwdriver Kit",
+      "reason": "hyphen split, but a part is not in the catalog",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1201K2",
+          "FVD50K"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:344284100",
+      "kind": "split",
+      "subject": "homedepot:344284100",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-FVF51K",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Clamp Fan Kit",
+      "reason": "hyphen split, but a part is not in the catalog",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1201K2",
+          "FVF51K"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    },
+    {
+      "id": "split:homedepot:344284129",
+      "kind": "split",
+      "subject": "homedepot:344284129",
+      "brand": "RYOBI",
+      "model": "PCL1201K2-FVL51K",
+      "title": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium 3-Mode Flashlight Kit",
+      "reason": "hyphen split, but a part is not in the catalog",
+      "candidates": [],
+      "choices": [
+        [
+          "PCL1201K2",
+          "FVL51K"
+        ]
+      ],
+      "openedAt": 1795427101002,
+      "answer": null,
+      "answeredAt": null
+    }
+  ],
+  "ebayQuestions": [],
+  "evidence": {
+    "split:homedepot:306554196": [
+      {
+        "text": "20V MAX Cordless Drill/Impact Combo Kit, 20V MAX Cordless Reciprocating Saw, (2) 20V 1.3Ah Batteries, and Charger",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "DCK240C2DCS380B",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "DCD771 high-performance motor delivers 300 Units Watt Out (UWO) of power for completing a wide range of applications",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "High-speed transmission delivers two speeds (0-450 RPM and 0-1500 RPM) for a range of fastening and drilling applications",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "1/2 in. single-sleeve ratcheting chuck provides tight bit-gripping strength",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "DCF885 1-handed loading 1/4 in. hex chuck accepts 1 in. bit tips",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "Includes DCD771 20-Volt Max 1/2 in. drill/driver, DCF885 1/4 in. impact driver, (2) 20-Volt Max lithium-ion 1.3Ah battery packs, 20-Volt Max charger and contractor bag",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "3 LED light ring with 20-second delay to provide visibility without shadows",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "DCS380B - 4-position blade clamp allows for flush cutting and increased positional versatility",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "DCS380B - Variable-speed trigger with 0-3000 SPM for ultimate operator control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "DCS380B - Pivoting adjustable shoe extends blade life and allows for easier depth-of-cut control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "DCS380B - Double oil-sealed shaft resists contamination and increases durability",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/b/DEWALT/N-5yc1vZ4j2?cm_sp=vanity-_-dewalt-_-APR20\" target=\"_blank\">Shop All Dewalt Tools</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      },
+      {
+        "text": "Designed to handle most drilling and driving applications, this Lithium-Ion Cordless Drill/Driver Kit from DeWalt is the perfect addition to your tool box. Each drill/driver features a high-speed transmission and a 20-Volt Max system that is compatible with all 20-Volt Max batteries. The included three LED light ring helps provide visibility without shadows getting in your way.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-Cordless-Drill-Impact-Combo-Kit-20V-MAX-Cordless-Reciprocating-Saw-2-20V-1-3Ah-Batteries-and-Charger-DCK240C2DCS380B/306554196"
+        }
+      }
+    ],
+    "split:homedepot:320243671": [
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and 65-Piece Drill and Impact Drive Kit",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "PCL1600K2-A986501",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Black oxide drill bits provide longer life and faster drilling.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "135 degree split points for drilling on contact and preventing walking.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "TORSION ZONE to absorb impact from high torque applications for 3X longer life.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "Included 3.5 in. Impact Drive Bit for extended driving control in hard-to-reach applications.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and Drill and Impact Drive Kit (65-Piece) to create a complete solution. RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries & Charger are compatible with RYOBI ONE+ Tools. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and Drill and Impact Drive Kit (65-Piece).",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-65-Piece-Drill-and-Impact-Drive-Kit-PCL1600K2-A986501/320243671"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium-Ion Battery, (1) PBP002 18V Compact Lithium-Ion Battery, (1) 18V. Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a Compact Battery, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      }
+    ],
+    "split:homedepot:320243741": [
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah and 4.0 Ah Batteries, Charger, and Miter Saw",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "PCL1600K2-P553",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "1-1/4 in. dust port provides connection to standard dust collection systems to help keep work area clean.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "Up to 2x4 cutting capacity and 4-1/4 in. cross cut capacity.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "Miter stops located at the most common angles for quick cut settings: 0 degree, 15 degree, 22.5 degree, 31.6 degree, and 45 degree left and right.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "24-tooth carbide-tipped blade improves performance with fast, clean cuts.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and ONE+ 18V 7-1/4 in. Compound Miter Saw (Tool Only) to create a complete solution. RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries & Charger are compatible with RYOBI ONE+ Tools. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and ONE+ 18V 7-1/4 in. Compound Miter Saw (Tool Only).",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-and-4-0-Ah-Batteries-Charger-and-Miter-Saw-PCL1600K2-P553/320243741"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium-Ion Battery, (1) PBP002 18V Compact Lithium-Ion Battery, (1) 18V. Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a Compact Battery, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      }
+    ],
+    "split:homedepot:321809549": [
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit w/ 1.5 Ah Battery, 4.0 Ah Battery, & Charger w/ (2) 2.0 Ah Batteries",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "PCL1600K2-PBP2003",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "These RYOBI ONE+ 18V Lithium 2.0 Ah batteries provide up to 2X more runtime, 30% more power, and runs cooler compared to our standard Lithium batteries to provide long-lasting reliability and better performance in over 300 ONE+ tools",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "Includes: (2) PBP003 18V ONE+ Lithium 2.0 Ah Batteries",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ Cordless 6-Tool Combo Kit w/ 1.5 Ah Battery, 4.0 Ah Battery, & Charger w/ (2) 2.0 Ah Batteries. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and many other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head for adjustable light beam direction. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Combo Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a 1.5 Ah Battery, Charger, Bag, two 18V ONE+ Lithium 2.0 Ah Batteries, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-2-0-Ah-Batteries-PCL1600K2-PBP2003/321809549"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium-Ion Battery, (1) PBP002 18V Compact Lithium-Ion Battery, (1) 18V. Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a Compact Battery, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      }
+    ],
+    "split:homedepot:321811428": [
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit w/ 1.5 Ah Battery, 4.0 Ah Battery, & Charger w/ 2.0 Ah Battery and Charger",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "PCL1600K2-PSK005",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "The included 2.0 Ah Compact Battery and Charger are compatible with all RYOBI 18V ONE+ Tools",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "Includes: (1) PBP006 18V ONE+ Lithium 2.0 Ah battery, (1) PCG002 18V charger, and operator's manual",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ HP Cordless 6-Tool Combo Kit w/ 1.5 Ah Battery, 4.0 Ah Battery, & Charger w/ 2.0 Ah Battery and Charger. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and many other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head for adjustable light beam direction. The included battery and charger are compabitle with all RYOBI 18V ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Combo Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a 1.5 Ah Battery, Charger, Bag, a 2.0 Ah Compact Battery, a Charger, and an operator's manual.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-w-1-5-Ah-Battery-4-0-Ah-Battery-Charger-w-2-0-Ah-Battery-and-Charger-PCL1600K2-PSK005/321811428"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium-Ion Battery, (1) PBP002 18V Compact Lithium-Ion Battery, (1) 18V. Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a Compact Battery, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      }
+    ],
+    "split:homedepot:324904496": [
+      {
+        "text": "ONE  18V Cordless 2 Tool Combo Kit w/ Drill/Driver, Circular Saw,  Multi Tool, 2  1.5 Ah Batteries, & Charger",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "PCL1201K2-PCL430B",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "Fast cutting with 20,000 max OPM.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "Lowest Vibration In Its Class.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "Ergonomic design and lock-on button for less user fatigue.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "Variable speed dial for a variety of applications.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and ONE+ 18V Oscillating Multi-Tool (Tool Only) to create a complete solution. RYOBI introduces the 18V ONE+ 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) compact batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ compact batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V compact batteries, Charger, Bag, and Operator’s Manuals. In addition, expand your RYOBI 18V ONE+ System with the new and improved 18V ONE+ Multi-Tool. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and ONE+ 18V Oscillating Multi-Tool (Tool Only).",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Driver-Circular-Saw-Multi-Tool-2-1-5-Ah-Batteries-Charger-PCL1201K2-PCL430B/324904496"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - On-board LED worklight",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Ability to cut through 2-by material with 1-11/16 in. depth of cut",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Motor provides 4,700 RPM for fast, clean cutting",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - 0 - 50° bevel capacity for greater cut capacity",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Spindle lock and on-board wrench storage for convenient blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ Cordless 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Lithium-ion Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Lithium-ion Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Lithium-ion Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Lithium-Ion Batteries, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      }
+    ],
+    "split:homedepot:326894185": [
+      {
+        "text": "20V MAX ToughSystem Lithium-Ion 6-Tool Cordless Combo Kit and 20V MAX XR Cordless Brushless Jigsaw",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCKTS681D1P1W34",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "Our shortest 20-Volt maximum hammer drill at 6.49 in. (tool head length only) to access hard to reach areas",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "Only 5.1 in. L to fit in tight spaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "Quickly adjust the bevel capacity from 0° - 50° with the tool-free bevel lever",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "Kickback brake engages when a pinch, stall, or bind-up event is sensed and the electronic brake engages with maximum force to quickly stop the wheel, reduce the movement of the grinder and shut the grinder off",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "Low-profile height of the power sander allows user to get close to work surface for precise sanding",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "Dual-grip variable speed trigger provides superior control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B brushless motor delivers efficient performance for longer runtime (vs. DEWALT DCS331 Jigsaw)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B bright LED light helps to illuminate dimly lit work surfaces",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B on/off switch, electronic variable speed, flexible dust blower and blade-tensioning lever are all located on the front upper arm of the scroll saw for easy accessibility",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B arm design pivots from the back of the scroll saw to the front, shortening the arm movement for smoother, quieter operation",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B no-mar shoe cover to help protect work surface from scratches",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B compact size for easy grip and maximum control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B variable speed trigger and dial provide precise speed control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B integrated dust blower helps clear line of sight while cutting",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B all-metal, keyless shoe bevel with detents at 0, 15, 30, and a positive stop at 45 for easy adjustment",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "DCS334B accepts t-shank jig saw blades for optimal holding power and professional results",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/b/DEWALT/N-5yc1vZ4j2?cm_sp=vanity-_-dewalt-_-APR20\" target=\"_blank\">Shop All Dewalt Tools</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      },
+      {
+        "text": "Take on a variety of tasks with a cordless kit built to support flexibility across projects and materials. This 20 volt tool kit is designed for portable performance in the shop, around the home, or on the jobsite. The kit includes a hammer drill/driver, impact driver, circular saw (blade not included), grinder, random orbital sander, oscillating multi-tool, one 5.0 Ah battery, one 2.0 Ah compact battery, a charger, and a TOUGHSYSTEM 2.0 storage box.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/DEWALT-20V-MAX-ToughSystem-Lithium-Ion-6-Tool-Cordless-Combo-Kit-and-20V-MAX-XR-Cordless-Brushless-Jigsaw-DCKTS681D1P1W34/326894185"
+        }
+      }
+    ],
+    "split:homedepot:328690510": [
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with 5-1/2 in. Circular Saw and Jig Saw (Tools Only)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "PCL500525SB",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Circular Saw: Fast, clean cuts with cut speed of 4,700 RPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Circular Saw: Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Circular Saw: 0-50° Bevel capacity for greater cut variety",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Circular Saw: Ability to cut through 2-by material with 1-11/16\" depth of cut",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Circular Saw: Spindle lock and on-board wrench storage for convenient blade changes",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Jig Saw: Fast, precise cuts with cut speed of 0-3,000 SPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Jig Saw: 4 Orbital settings to match power to application",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Jig Saw: Variable speed trigger for precise speed control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Jig Saw: 30% Reduced vibration enhances cut control",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Jig Saw: Tool-free blade release provides quick and easy blade changes for all t-shank blades",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Jig Saw: Non-marring shoe protects work surface",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Jig Saw: LED worklight illuminates the workspace for clear cut line visibility",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Don't forget your RYOBI 5-1/2 in. 18 Carbide Teeth Thin Kerf Circular Saw Blade (A065101) and RYOBI 30 PC. Jig Saw Blade Set (A143001)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Includes: 18V 5-1/2\" Circular Saw, 18V Jig Saw, 18T Carbide Tipped Blade, (2) Hex Wrenches, Non-Marring Shoe, T-Shank Wood Cutting Blade, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "Battery and charger sold separately",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      },
+      {
+        "text": "The 18V ONE+ 2-Tool Combo Kit with the 18V 5-1/2\" Circular Saw and 18V Jig Saw allows you to tackle any cut and every project. The 5-1/2\" Circular Saw has the ability to make fast, clean cuts with a cut speed of 4,700 RPM. Achieve over 215 cuts per charge and get the job done without stopping. The circular saw has the ability to cut through 2-by material with 1-11/16\" depth of cut and 0-50° bevel capacity. It's equipped with a spindle lock and on-board wrench storage for convenient blade changes. The Jig Saw has the ability to make fast, precise cuts and it's equipped with a variable speed dialing reaching 0-3,000 SPM. Match power to application with 4 orbital settings. Experience a 30% reduction in vibration to enhance your cut control. The tool-free blade release provides quick and easy blade changes for all t-shank blades. Best of all, it is part of the RYOBI ONE+ system where any 18V ONE+ battery works with any 18V ONE+ product. This 18V ONE+ 2-Tool Combo Kit is backed by the RYOBI 3-year manufacturer’s warranty and includes an 18V 5-1/2\" Circular Saw, 18V Jig Saw, 18T Carbide Tipped Blade, (2) Hex Wrenches, Non-Marring Shoe, T-Shank Wood Cutting Blade and Operator's Manuals.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-5-1-2-in-Circular-Saw-and-Jig-Saw-Tools-Only-PCL500525SB/328690510"
+        }
+      }
+    ],
+    "split:homedepot:334547651": [
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with 1.5 Ah Battery, 4.0 Ah Battery, Charger, and Drill & Impact Drive Kit (40-Piece)",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "PCL1600K2-A98401",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "Black oxide drill bits provide longer life and faster drilling.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "135° split points for drilling on contact and preventing walking.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "TORSION ZONE to absorb impact from high torque applications for 3X longer life.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "Variety of 1 in. and 2 in. bits are great when paired with the magnetic extension bit.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and Drill and Impact Drive Kit (40-Piece) to create a complete solution. RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries & Charger are compatible with RYOBI ONE+ Tools. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 6-Tool Combo Kit with compact battery, 4.0 Ah Battery, & Charger and Drill and Impact Drive Kit (40-Piece).",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-1-5-Ah-Battery-4-0-Ah-Battery-Charger-and-Drill-Impact-Drive-Kit-40-Piece-PCL1600K2-A98401/334547651"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium-Ion Battery, (1) PBP002 18V Compact Lithium-Ion Battery, (1) 18V. Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a Compact Battery, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      }
+    ],
+    "split:homedepot:337504926": [
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and ONE+ 13” String Trimmer",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "PCL1201K2-P20015BTL",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Drill/Driver - On-board LED worklight",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Circular Saw - Ability to cut through 2-by material with 1-11/16 in. depth of cut",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Circular Saw - Motor provides 4,700 RPM for fast, clean cutting",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Circular Saw - 0 - 50° bevel capacity for greater cut capacity",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Circular Saw - Spindle lock and on-board wrench storage for convenient blade changes",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Download the all-inclusive RYOBI app for registration in seconds, a personalized digital tool box, exclusive access, customer service, and more",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "3-year manufacturer’s warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V 1.5 Ah Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "Includes: P20015 ONE+ 18V 13 in. Cordless Battery String Trimmer",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "RYOBI introduces the ONE+ 18V Cordless 2-Tool Combo Kit with (2) 1.5 Ah Batteries, Charger, and FREE ONE+ 13” String Trimmer. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ 1.5 Ah Lithium-ion Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Lithium-ion Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V 1.5 Ah Lithium-Ion Batteries, Charger, Bag, and ONE+ 18V 13 in. Cordless Battery String Trimmer.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-with-2-1-5-Ah-Batteries-Charger-and-ONE-13-String-Trimmer-PCL1201K2-P20015BTL/337504926"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - On-board LED worklight",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Ability to cut through 2-by material with 1-11/16 in. depth of cut",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Motor provides 4,700 RPM for fast, clean cutting",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - 0 - 50° bevel capacity for greater cut capacity",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Spindle lock and on-board wrench storage for convenient blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ Cordless 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Lithium-ion Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Lithium-ion Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Lithium-ion Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Lithium-Ion Batteries, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      }
+    ],
+    "split:homedepot:341644756": [
+      {
+        "text": "ONE+18V Cordless 6-Tool Combo Kit with Batteries, Charger & ONE+18V 2.0 Ah Battery",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "PCL1600K2-PBP003",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium Battery, (1) PBP002 18V 1.5 Ah Lithium Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a 1.5 Ah Battery, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-6-Tool-Combo-Kit-with-Batteries-Charger-ONE-18V-2-0-Ah-Battery-PCL1600K2-PBP003/341644756"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Impact Driver - Powerful motor provides up to 1,800 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Reciprocating Saw - Over 145 cuts per charge and easy release blade lever for quick blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Multi-Tool - Fast cutting with 20,000 max OPM",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "LED Light - 280 Lumens of light output",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL235 18V ONE+ Cordless 1/4 in. Impact Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, (1) PCL515 Reciprocating Saw, (1) PCL430 Multi-Tool, (1) PCL660 18V ONE+ Cordless LED Light",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "Includes: 18T Carbide Blade, Hex Wrench, Reciprocating Saw Blade, Hex Key, Flush Cut Blade, Plunge Cut Blade, 6 in. Wood Blade, Sanding Pad, 5-Pieces Sandpaper, (1) PBP005 18V 4.0 Ah Lithium-Ion Battery, (1) PBP002 18V Compact Lithium-Ion Battery, (1) 18V. Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ 6-Tool Combo Kit with 1/2 in. Drill/Driver, 1/4 in. Impact Driver, Reciprocating Saw, 5-1/2 in. Circular Saw, Multi-Tool, LED Light, Batteries, Charger, and Bag. The Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The Impact Driver is able to drive long deck screws or large lag screws with ease by delivering 3,400 IPM along with 1800 in./lbs. of torque controlled by a variable-speed trigger that churns out 2,700 RPM. The Reciprocating Saw delivers better productivity with up to 3,400 SPM and 60% faster cutting. The 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The Multi-Tool features an adjustable speed dial giving the ability to make cuts into drywall, metal, wood, plastic, composite and other materials, along with the ability to sand the finest details. The LED Light also has 280 Lumens of light output and has a 130° pivoting head. The included Batteries and Charger are compatible with RYOBI ONE+ Tools. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, this Kit includes a Drill/Driver, an Impact Driver, a Circular Saw, a Reciprocating Saw, a Multi-Tool, an LED Light, a 4.0 Ah Battery, a Compact Battery, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1600K2",
+          "url": "https://www.homedepot.com/p/317987591"
+        }
+      }
+    ],
+    "split:homedepot:344284026": [
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Power Cutter Kit",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "PCL1201K2-FVC51K",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "Self sharpening blade powers through a variety of materials including cardboard, plastic, carpet, rubber, and leather.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "Integrated guideline allows for unmatched precision.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "LED light on the tool turns green or red to indicate the life of your battery charge.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "The included USB 2Ah battery features a USB-C port that also charges mobile devices.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVC51 USB Lithium Power Cutter, USB Lithium 2Ah Battery, Blade, USB Cable, and Operator’s Manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and USB Power Cutter Kit with 2.0 Ah USB Battery and Charging Cable to create a complete solution. RYOBI introduces the 18V ONE+ 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Batteries, Charger, Bag, and Operator’s Manuals. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and USB Power Cutter Kit with 2.0 Ah USB Battery and Charging Cable.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Power-Cutter-Kit-PCL1201K2-FVC51K/344284026"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - On-board LED worklight",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Ability to cut through 2-by material with 1-11/16 in. depth of cut",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Motor provides 4,700 RPM for fast, clean cutting",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - 0 - 50° bevel capacity for greater cut capacity",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Spindle lock and on-board wrench storage for convenient blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ Cordless 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Lithium-ion Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Lithium-ion Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Lithium-ion Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Lithium-Ion Batteries, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      }
+    ],
+    "split:homedepot:344284060": [
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Screwdriver Kit",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "PCL1201K2-FVD50K",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "Pivot to in-line position for various applications.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "Dual LEDs for improved visibility.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "On-board bit storage holds (2) 1\" bits.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "LED light on the tool turns green or red to indicate the life of your battery charge.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVD50 USB Lithium Screwdriver, FVB02 2.0 Ah USB Lithium Battery, (2) Bits, USB Cable and Operator’s Manual",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and USB Screwdriver Kit with 2.0 Ah USB Battery and Charging Cable to create a complete solution. RYOBI introduces the 18V ONE+ 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Batteries, Charger, Bag, and Operator’s Manuals. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and USB Screwdriver Kit with 2.0 Ah USB Battery and Charging Cable.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Screwdriver-Kit-PCL1201K2-FVD50K/344284060"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - On-board LED worklight",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Ability to cut through 2-by material with 1-11/16 in. depth of cut",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Motor provides 4,700 RPM for fast, clean cutting",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - 0 - 50° bevel capacity for greater cut capacity",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Spindle lock and on-board wrench storage for convenient blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ Cordless 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Lithium-ion Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Lithium-ion Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Lithium-ion Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Lithium-Ion Batteries, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      }
+    ],
+    "split:homedepot:344284100": [
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium Clamp Fan Kit",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "PCL1201K2-FVF51K",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "Over 7 hours of runtime.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "2 Speed settings (high/low).",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "Moves up to 135 Cubic Feet Per Minute of air (CFM).",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "Multi-directional pivoting head and base to direct airflow.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVF51 USB Lithium Clamp Fan, USB Lithium 2Ah Battery, USB Cable, and Operator’s Manual",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and USB Clamp Fan Kit with 2.0 Ah USB Battery and Charging Cable to create a complete solution. RYOBI introduces the 18V ONE+ 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Batteries, Charger, Bag, and Operator’s Manuals. In addition, RYOBI introduces the USB Clamp Fan Kit. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and USB Clamp Fan Kit with 2.0 Ah USB Battery and Charging Cable.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-Clamp-Fan-Kit-PCL1201K2-FVF51K/344284100"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - On-board LED worklight",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Ability to cut through 2-by material with 1-11/16 in. depth of cut",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Motor provides 4,700 RPM for fast, clean cutting",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - 0 - 50° bevel capacity for greater cut capacity",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Spindle lock and on-board wrench storage for convenient blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ Cordless 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Lithium-ion Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Lithium-ion Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Lithium-ion Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Lithium-Ion Batteries, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      }
+    ],
+    "split:homedepot:344284129": [
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit w/ Drill, Circular Saw, (2) Batteries, Charger w/ USB Lithium 3-Mode Flashlight Kit",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "PCL1201K2-FVL51K",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "600 Lumens of light output.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "Customize your lighting needs with 3 modes (high/low/strobe).",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "Powered by the RYOBI USB Battery system for portability and minimal downtime.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "Designed for tough conditions with IP54 dust and water resistance.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "Includes: Drill/Driver, Circular Saw, Batteries, Charger, Bag : Includes: FVL51 Compact LED Flashlight, USB Lithium 2Ah Battery, USB Cable, and Operator’s Manuals",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "This combination brings together ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and USB Compact LED 3-Mode Flashlight Kit with 2.0 Ah Battery and Charging Cable to create a complete solution. RYOBI introduces the 18V ONE+ 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Batteries, Charger, Bag, and Operator’s Manuals. Backed by the RYOBI 3-Year Manufacturer's Warranty, this kit includes ONE+ 18V 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) compact batteries, & Charger and USB Compact LED 3-Mode Flashlight Kit with 2.0 Ah Battery and Charging Cable.",
+        "source": {
+          "label": "Home Depot page",
+          "url": "https://www.homedepot.com/p/RYOBI-ONE-18V-Cordless-2-Tool-Combo-Kit-w-Drill-Circular-Saw-2-Batteries-Charger-w-USB-Lithium-3-Mode-Flashlight-Kit-PCL1201K2-FVL51K/344284129"
+        }
+      },
+      {
+        "text": "ONE+ 18V Cordless 2-Tool Combo Kit with Drill/Driver, Circular Saw, (2) Compact Batteries, and Charger",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - Powerful motor provides up to 515 in./lbs. of torque",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 2-speed gearbox provides 0 - 450 / 0 - 1,750 RPM",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 24-position clutch",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - 1/2 in. keyless ratcheting chuck",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Drill/Driver - On-board LED worklight",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Over 215 cuts per charge",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Ability to cut through 2-by material with 1-11/16 in. depth of cut",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Motor provides 4,700 RPM for fast, clean cutting",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - 0 - 50° bevel capacity for greater cut capacity",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Circular Saw - Spindle lock and on-board wrench storage for convenient blade changes",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Part of the RYOBI 18V ONE+ System of Over 300 Cordless Products",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "3-year manufacturer's warranty",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "Includes: (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) PBP002 18V Compact Lithium-ion Battery, (1) 18V Charger, Tool Bag, and Operator's Manuals",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "<a href=\"https://www.homedepot.com/c/electronics_recycling_programs\" style=\"color:#F96302;\" target=\"_blank\">Click here for more information on Electronic Recycling Programs</a>",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      },
+      {
+        "text": "RYOBI introduces the 18V ONE+ Cordless 2-Tool Combo Kit with 1/2 in. Drill/Driver, 5-1/2 in. Circular Saw, (2) Compact Lithium-ion Batteries, 18V Charger, and Bag. The ONE+ Drill/Driver provides up to 515 in./lbs. of torque and features a 1/2 in. ratcheting metal chuck to match your drilling and driving needs. The ONE+ 5-1/2 in. Circular Saw has the ability to cut through 2-by material, with over 215 cuts per charge. The ONE+ Compact Lithium-ion Batteries feature an integrated high visibility fuel gauge to monitor remaining runtime. The 18V Charger is compatible with RYOBI ONE+ Lithium-ion Batteries. Best of all, this kit is part of the RYOBI ONE+ System of over 300 Cordless Products that all work on the same battery platform. Backed by the RYOBI 3-Year Manufacturer's Warranty, the 18V ONE+ 2-Tool Combo Kit includes (1) PCL206 18V ONE+ Cordless 1/2 in. Drill/Driver, (1) PCL500 18V ONE+ Cordless 5-1/2 in. Circular Saw, 18T Carbide Blade, Hex Wrench, (2) 18V. Compact Lithium-Ion Batteries, Charger, Bag, and Operator’s Manuals.",
+        "source": {
+          "label": "Home Depot page for PCL1201K2",
+          "url": "https://www.homedepot.com/p/317987584"
+        }
+      }
+    ]
+  }
+}
