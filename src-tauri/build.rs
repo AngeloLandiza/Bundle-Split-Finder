@@ -7,6 +7,10 @@ fn main() {
         "get_launch_at_login",
         "set_launch_at_login",
         "popover_do",
+        "open_preferences",
+        "set_preferences_height",
+        "app_info",
+        "reveal_data_folder",
       ]),
     ),
   )

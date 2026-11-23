@@ -556,7 +556,9 @@ pub fn handle_menu(app: &AppHandle, id: &str) {
         }
       });
     }
-    "settings" => navigate(app, "/settings"),
+    "settings" => {
+      let _ = crate::prefs::open(app, None);
+    }
     "find" => page_event(app, "split-finder:find"),
     "inspector" => page_event(app, "split-finder:inspector"),
     "setup" => page_event(app, "split-finder:setup"),

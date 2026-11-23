@@ -1,6 +1,7 @@
 mod agent;
 mod events;
 mod popover;
+mod prefs;
 mod shell;
 
 use std::sync::Mutex;
@@ -43,8 +44,8 @@ pub fn run() {
       // to the tray when the app quit must still show on the next launch.
       tauri_plugin_window_state::Builder::default()
         .with_state_flags(StateFlags::all() - StateFlags::VISIBLE)
-        // The menu bar popover is placed under the icon each time.
-        .with_denylist(&[popover::LABEL])
+        // The menu bar popover is placed under the icon each time; the Preferences window fits its pane.
+        .with_denylist(&[popover::LABEL, prefs::LABEL])
         .build(),
     )
     .manage(agent::AgentChild(Mutex::new(None)))
@@ -84,7 +85,11 @@ pub fn run() {
       agent_status,
       get_launch_at_login,
       set_launch_at_login,
-      popover::popover_do
+      popover::popover_do,
+      prefs::open_preferences,
+      prefs::set_preferences_height,
+      prefs::app_info,
+      prefs::reveal_data_folder
     ])
     .build(tauri::generate_context!())
     .expect("error while running tauri application")
