@@ -8,6 +8,7 @@ import { count, percentOff } from '../lib/format';
 import { modLabel } from '../lib/keys';
 import { isMac as mac, words } from '../lib/platform';
 import { bestDeal, isRunning, needsYou, popoverStatus, scanBlocked, scanCost } from '../lib/popover';
+import { scanSpend } from '../lib/scanSpend';
 import { popoverDo } from '../lib/popoverShell';
 import { dealVerdict } from '../lib/today';
 import { hashOf } from '../lib/route';
@@ -304,6 +305,7 @@ function Actions({ state, online, refreshState }: { state: AppState | null; onli
           </Button>
         )}
       </div>
+      {state && !running && !blocked ? <p className="pop-note">{scanSpend(state.budget).sentence}</p> : null}
       {error ? (
         <p className="pop-error" role="alert">
           {error}

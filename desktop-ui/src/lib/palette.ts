@@ -3,7 +3,8 @@
 
 import type { AppState, DealRow, ReviewQuestion } from '../api/types';
 import { KIND_LABEL } from '../screens/reviewModel';
-import { plural, upToSearches } from './format';
+import { plural } from './format';
+import { scanSpend } from './scanSpend';
 import { modLabel, SCREENS, type Screen } from './keys';
 import { wordsFor } from './platform';
 import { PREF_TABS, TAB_LABEL, type PrefTab } from './prefs';
@@ -89,7 +90,7 @@ export function actionItems(c: ActionContext): PaletteItem[] {
   const act = (id: CommandId, title: string, extra: Partial<PaletteItem> = {}) => out.push({ id: `cmd:${id}`, section: 'Actions', title, action: { type: 'command', command: id }, ...extra });
   if (running) act('stop', 'Stop', { keywords: 'cancel scan' });
   if (!busy && s.keys.serpapi) {
-    act('scan', 'Scan now', { hint: s.budget.serpPerScan > 0 ? upToSearches(s.budget.serpPerScan) : undefined, keywords: 'run find deals' });
+    act('scan', 'Scan now', { hint: scanSpend(s.budget).cost, keywords: 'run find deals' });
   }
   if (status === 'paused') act('resume', 'Resume agent', { keywords: 'unpause' });
   else act('pause', 'Pause agent', { keywords: 'hold' });

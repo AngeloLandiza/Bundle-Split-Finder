@@ -8,7 +8,8 @@ import { Sheet, SheetActions } from '../components/Sheet';
 import { Notice } from '../components/States';
 import { StatusLine } from '../components/StatusLine';
 import { CONNECT_BUTTON_LABEL } from '@core/api/labels';
-import { plural, upToSearches } from '../lib/format';
+import { plural } from '../lib/format';
+import { scanSpend } from '../lib/scanSpend';
 import { words } from '../lib/platform';
 import { setupProgress, type SetupStepId } from '../lib/setup';
 import { InstallHelper, KeyField } from '../components/SetupParts';
@@ -165,7 +166,7 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
 
         {step.id === 'scan' && state ? (
           <>
-            {done('scan') && !running ? <Done text="The first scan has run. Its deals are in Today and Deals." /> : <p>A scan never spends more searches than the limit in Settings. It takes a few minutes; keep Chrome open meanwhile.</p>}
+            {done('scan') && !running ? <Done text="The first scan has run. Its deals are in Today and Deals." /> : <p>{scanSpend(state.budget).sentence} It takes a few minutes; keep Chrome open meanwhile.</p>}
             {running ? (
               <div className="welcome-status">
                 <StatusLine agent={state.agent} />
@@ -178,7 +179,7 @@ export function WelcomeSheet({ onClose }: { onClose: () => void }) {
                   busy={scan.busy}
                   busyLabel="Starting…"
                   onClick={() => void scan.run().then(refreshState)}
-                  cost={state.budget.serpPerScan > 0 ? upToSearches(state.budget.serpPerScan) : undefined}
+                  cost={scanSpend(state.budget).cost}
                 >
                   {done('scan') ? 'Scan again' : 'Scan now'}
                 </Button>

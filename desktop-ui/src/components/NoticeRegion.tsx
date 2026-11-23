@@ -130,7 +130,7 @@ export function NoticeRegion({ inset = false, scan = false, keys = [], extra = [
         body:
           state.agent.lastScan?.result === 'limit' && state.agent.lastScan.message
             ? state.agent.lastScan.message
-            : `${plural(state.budget.serpLeft, 'search', 'searches')} left, all held in reserve. Scheduled scans wait; lookups you start come out of the reserve.`,
+            : `${plural(state.budget.serpLeft, 'search', 'searches')} left, all held in reserve. A scan uses none of them: Amazon lookups wait for Keepa, or for you to choose “Use searches for these”.`,
       });
     }
     const bad = rejectedKeyNotice(state, keys);

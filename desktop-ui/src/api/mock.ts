@@ -497,7 +497,8 @@ export function createMockClient(): ApiClient {
       if (state.agent.status === 'scanning') return { started: false, reason: 'A scan is running. Look up when it has finished.', viaKeepa: 0, viaSerpapi: 0 };
       const waiting = deals.filter((d) => d.lookup);
       const viaKeepa = Math.min(waiting.length, Math.floor((state.budget.keepaTokens ?? 0) / 10));
-      const viaSerpapi = Math.min(Math.max(0, waiting.length - viaKeepa), body?.maxSearches ?? 0);
+      const aboveReserve = Math.max(0, (state.budget.serpLeft ?? 0) - state.budget.serpReserve);
+      const viaSerpapi = Math.min(Math.max(0, waiting.length - viaKeepa), body?.maxSearches ?? 0, body?.useReserve ? state.budget.serpLeft ?? 0 : aboveReserve);
       if (viaKeepa + viaSerpapi === 0) return { started: false, reason: 'Nothing can be looked up now: Keepa has no tokens to spare and no searches are allowed.', viaKeepa: 0, viaSerpapi: 0 };
       const done = new Set(waiting.slice(0, viaKeepa + viaSerpapi).map((d) => d.id));
       setTimeout(() => {

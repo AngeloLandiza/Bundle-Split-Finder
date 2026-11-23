@@ -52,13 +52,21 @@ describe('Look up now', () => {
   });
   it('shows its cost as a ceiling, never more than the parts that wait', () => {
     const a = lookupNotice(state(dripping), [])?.action;
-    expect(a).toMatchObject({ label: 'Look up now', cost: 'up to 18 searches', maxSearches: 18, enabled: true, reason: null });
+    expect(a).toMatchObject({ label: 'Look up now', cost: 'up to 18 searches', maxSearches: 18, useReserve: false, enabled: true, reason: null });
     const few = lookupNotice(state((s) => { dripping(s); s.agent.lastScan!.waitingLookups = 3; s.agent.drip!.waiting = 3; }), [])?.action;
     expect(few).toMatchObject({ maxSearches: 3, cost: 'up to 3 searches' });
   });
-  it('is greyed with the reason when no search may be spent, a scan runs or the key is missing', () => {
-    const atReserve = lookupNotice(state((s) => { dripping(s); s.budget.serpLeft = 100; }), [])?.action;
-    expect(atReserve).toMatchObject({ enabled: false, cost: null, maxSearches: 0, reason: 'Your searches are at the reserve of 100.' });
+  it('at or below the reserve the one action is the explicit yes: "Use searches for these (up to N of your M left)"', () => {
+    const below = lookupNotice(state((s) => { dripping(s); s.budget.serpLeft = 97; }), []);
+    expect(below?.action).toMatchObject({ label: 'Use searches for these (up to 18 of your 97 left)', cost: null, maxSearches: 18, useReserve: true, enabled: true, reason: null });
+    expect(below?.text).toContain('Your searches are at your reserve of 100, so nothing was spent.');
+    // Never more than the parts that wait, the per-scan limit or what is left.
+    expect(lookupNotice(state((s) => { dripping(s); s.budget.serpLeft = 100; s.agent.lastScan!.waitingLookups = 7; s.agent.drip!.waiting = 7; }), [])?.action).toMatchObject({ maxSearches: 7, label: 'Use searches for these (up to 7 of your 100 left)' });
+    expect(lookupNotice(state((s) => { dripping(s); s.budget.serpLeft = 4; }), [])?.action).toMatchObject({ maxSearches: 4, label: 'Use searches for these (up to 4 of your 4 left)' });
+    expect(lookupNotice(state((s) => { dripping(s); s.budget.serpLeft = 0; }), [])?.action).toMatchObject({ enabled: false, reason: 'No searches are left.' });
+    expect(lookupNotice(state((s) => { dripping(s); s.budget.serpLeft = 97; s.budget.serpPerScan = 0; }), [])?.action).toMatchObject({ enabled: false, reason: 'The limit per scan in Settings is 0.' });
+  });
+  it('is greyed with the reason when a scan runs or the key is missing', () => {
     expect(lookupNotice(state((s) => { dripping(s); s.agent.status = 'scanning'; }), [])?.action.reason).toBe('A scan is running. Look up when it has finished.');
     expect(lookupNotice(state((s) => { dripping(s); s.keys.serpapi = false; }), [])?.action.reason).toContain('SerpApi key');
   });

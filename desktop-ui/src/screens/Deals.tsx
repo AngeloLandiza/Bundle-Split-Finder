@@ -18,7 +18,8 @@ import { dealReason, matchColumnShown, waitingState } from '../lib/dealReason';
 import { matchWords } from '../lib/matchWords';
 import { lookupNotice, lookupsStartedWords } from '../lib/lookups';
 import { scanStrip } from '../lib/scanSteps';
-import { count, percentOff, plural, upToSearches, when } from '../lib/format';
+import { count, percentOff, plural, when } from '../lib/format';
+import { scanSpend } from '../lib/scanSpend';
 import { dealMenu, type DealMenuId } from '../lib/menus';
 import { SCREEN_KEYS } from '../lib/notices';
 import { breakEvenOrder, incompleteLine } from '../lib/incomplete';
@@ -141,8 +142,8 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
     const t = setTimeout(() => setSaid(null), Math.max(4000, said.text.length * 90));
     return () => clearTimeout(t);
   }, [said]);
-  const runLook = useAction(async (maxSearches: number) => {
-    const r = await api.runLookups({ maxSearches });
+  const runLook = useAction(async (maxSearches: number, useReserve: boolean) => {
+    const r = await api.runLookups(useReserve ? { maxSearches, useReserve } : { maxSearches });
     if (!r.started) throw new ApiError('refused', lookupsStartedWords(r));
     setSaid({ tone: 'quiet', text: lookupsStartedWords(r) });
   });
@@ -169,7 +170,7 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
         </>
       ),
       action: (
-        <Button size="sm" busy={runLook.busy} busyLabel="Starting…" disabled={!lookups.action.enabled} cost={lookups.action.cost ?? undefined} title={lookups.action.reason ?? undefined} aria-describedby={lookups.action.reason ? 'lookups-reason' : undefined} onClick={() => void runLook.run(lookups.action.maxSearches)}>
+        <Button size="sm" busy={runLook.busy} busyLabel="Starting…" disabled={!lookups.action.enabled} cost={lookups.action.cost ?? undefined} title={lookups.action.reason ?? undefined} aria-describedby={lookups.action.reason ? 'lookups-reason' : undefined} onClick={() => void runLook.run(lookups.action.maxSearches, lookups.action.useReserve)}>
           {lookups.action.label}
         </Button>
       ),
@@ -388,9 +389,9 @@ export function DealsScreen({ openId, view }: { openId: string | null; view: Dea
         {res.data && all.length === 0 ? (
           <EmptyState
             title="No deals yet"
-            cause={state?.agent.lastScan ? 'The last scan found no discounted DEWALT or RYOBI bundles. The next scan looks again.' : 'The agent has not run a scan yet.'}
+            cause={`${state?.agent.lastScan ? 'The last scan found no discounted DEWALT or RYOBI bundles. The next scan looks again.' : 'The agent has not run a scan yet.'}${state ? ` ${scanSpend(state.budget).sentence}` : ''}`}
             action={
-              <Button variant="primary" onClick={() => void api.scan()} disabled={!state?.keys.serpapi || scanRunning} cost={state && state.budget.serpPerScan > 0 ? upToSearches(state.budget.serpPerScan) : undefined}>
+              <Button variant="primary" onClick={() => void api.scan()} disabled={!state?.keys.serpapi || scanRunning} cost={state ? scanSpend(state.budget).cost : undefined}>
                 Scan now
               </Button>
             }

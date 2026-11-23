@@ -99,10 +99,14 @@ describe('scan button', () => {
     expect(scanCost(STATE)).toBe('up to 5 searches');
     expect(scanBlocked(STATE, true)).toBeNull();
   });
-  it('says why it cannot: offline, paused, no key, at the reserve', () => {
+  it('at the reserve it can still be pressed (reading Home Depot is free) and says it uses no searches', () => {
+    const atReserve = state((x) => (x.budget.serpLeft = 20));
+    expect(scanBlocked(atReserve, true)).toBeNull();
+    expect(scanCost(atReserve)).toBe('no searches');
+  });
+  it('says why it cannot: offline, paused, no key', () => {
     expect(scanBlocked(STATE, false)).toMatch(/not running/);
     expect(scanBlocked(state((x) => (x.agent.status = 'paused')), true)).toMatch(/Resume/);
     expect(scanBlocked(state((x) => (x.keys.serpapi = false)), true)).toMatch(/key/);
-    expect(scanBlocked(state((x) => (x.budget.serpLeft = 20)), true)).toMatch(/reserve/);
   });
 });

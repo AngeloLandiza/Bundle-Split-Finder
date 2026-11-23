@@ -15,10 +15,12 @@ export interface LookupNotice {
   text: string;
   action: {
     label: string;
-    /** "up to 5 searches"; null when none would be spent. */
+    /** "up to 5 searches"; null when none would be spent, or when the label already says it. */
     cost: string | null;
     /** The ceiling sent with the request. */
     maxSearches: number;
+    /** The owner's explicit yes to spend from the reserve: sent only by "Use searches for these", at or below it. */
+    useReserve: boolean;
     enabled: boolean;
     /** Why it is greyed, said on screen. */
     reason: string | null;
@@ -81,15 +83,30 @@ export function lookupNotice(state: AppState | null, rows: readonly DealRow[] | 
   const available = searchesAvailable(budget);
   const running = agent.status === 'scanning' || agent.status === 'asking' || agent.status === 'stopping';
   const cap = available === null ? 0 : Math.min(available, n);
+  // Nov 23: at or below the reserve the one action is the owner's explicit yes to spend from it, within the per-scan limit.
+  const atReserve = budget.serpLeft !== null && budget.serpLeft <= budget.serpReserve;
+  const reserveCap = budget.serpLeft === null ? 0 : Math.min(Math.max(0, budget.serpPerScan), n, budget.serpLeft);
   let reason: string | null = null;
   if (running) reason = 'A scan is running. Look up when it has finished.';
   else if (!keys.serpapi) reason = 'Add your SerpApi key in Settings › Keys first.';
   else if (available === null) reason = 'Searches are not checked yet.';
-  else if (available <= 0) reason = `Your searches are at the reserve of ${count(budget.serpReserve)}.`;
+  else if (atReserve && reserveCap <= 0) reason = budget.serpLeft === 0 ? 'No searches are left.' : 'The limit per scan in Settings is 0.';
+  else if (available <= 0 && !atReserve) reason = 'The limit per scan in Settings is 0.';
+  const title = `${plural(n, 'part is', 'parts are')} waiting for an Amazon lookup.`;
+  if (atReserve) {
+    return {
+      title,
+      text: `${text} Your searches are at your reserve of ${count(budget.serpReserve)}, so nothing was spent. Searches from the reserve are spent only when you choose.`,
+      action: {
+        label: `Use searches for these (up to ${count(reserveCap)} of your ${count(budget.serpLeft ?? 0)} left)`,
+        cost: null, maxSearches: reserveCap, useReserve: true, enabled: reason === null, reason,
+      },
+    };
+  }
   return {
-    title: `${plural(n, 'part is', 'parts are')} waiting for an Amazon lookup.`,
+    title,
     text,
-    action: { label: 'Look up now', cost: cap > 0 ? `up to ${plural(cap, 'search', 'searches')}` : null, maxSearches: cap, enabled: reason === null, reason },
+    action: { label: 'Look up now', cost: cap > 0 ? `up to ${plural(cap, 'search', 'searches')}` : null, maxSearches: cap, useReserve: false, enabled: reason === null, reason },
   };
 }
 

@@ -2,7 +2,7 @@
 // choices live here so a test can read them; PopoverApp.tsx only draws them.
 
 import { isWorking, type AppState, type DealRow, type ReviewQuestion } from '../api/types';
-import { upToSearches } from './format';
+import { scanSpend } from './scanSpend';
 import { bestDeals } from './today';
 import { words } from './platform';
 
@@ -78,15 +78,12 @@ export function scanBlocked(state: AppState | null, online: boolean): string | n
   if (!online || !state) return 'The agent is not running.';
   if (state.agent.status === 'paused') return 'Resume the agent first.';
   if (!state.keys.serpapi) return `Add your SerpApi key in ${words.preferences} first.`;
-  const { serpLeft, serpReserve } = state.budget;
-  if (serpLeft !== null && serpLeft <= serpReserve) return 'Searches are at your reserve.';
   return null;
 }
 
-/** "5 searches" for the Scan now button, or undefined when the agent has not said what a scan costs. */
+/** "up to 5 searches", or "no searches" at the reserve, for the Scan now button; undefined before the agent has said. */
 export function scanCost(state: AppState | null): string | undefined {
-  const n = state?.budget.serpPerScan ?? 0;
-  return n > 0 ? upToSearches(n) : undefined;
+  return state ? scanSpend(state.budget).cost : undefined;
 }
 
 export const isRunning = (state: AppState | null): boolean => state?.agent.status === 'scanning' || state?.agent.status === 'asking' || state?.agent.status === 'stopping';

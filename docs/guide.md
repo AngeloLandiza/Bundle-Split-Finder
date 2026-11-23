@@ -111,7 +111,7 @@ Banners appear near the top. One shows at a time, with "N more" if there are oth
 - **"Chrome is closed."** Open Chrome. Waiting pages are read then.
 - **"Chrome is not connected."** Press **Connect Chrome** and repeat step 1 above.
 - **"The ... key is not accepted."** The service refused the saved key. Press the button on the banner and paste a new key in Settings, Keys.
-- **"Searches are at your reserve."** Scheduled scans wait until the month renews or you lower the reserve.
+- **"Searches are at your reserve."** No scan spends a search then: Amazon lookups wait for Keepa. To look some up now, press **Use searches for these** on Deals; that is the only way the reserve is spent.
 - **"The agent is not running."** Open Split Finder from the notification area.
 
 **Activity** shows what happened: errors that need you (some have a retry button), your saved answers, what Autopilot did, and every scan with its searches, Keepa tokens and AI cost. If something is wrong, look there first.

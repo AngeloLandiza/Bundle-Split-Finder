@@ -4,7 +4,7 @@ import { ApiError } from '../api/types';
 import { ACCENTS, type Accent, type Appearance, type Density } from '../lib/appearance';
 import { modLabel } from '../lib/keys';
 import { formatShortcut, isMac as mac } from '../lib/platform';
-import { upToSearches } from '../lib/format';
+import { scanSpend } from '../lib/scanSpend';
 import { estimateShown } from '../lib/scanSteps';
 import { Button } from './Button';
 import { Segmented } from './Fields';
@@ -86,7 +86,8 @@ export function ScanControl() {
       </Button>
     );
   }
-  const blocked = !online ? 'The agent is not running.' : !keys.serpapi ? 'Add your SerpApi key first.' : budget.serpLeft !== null && budget.serpLeft <= budget.serpReserve ? 'Searches are at your reserve.' : null;
+  const blocked = !online ? 'The agent is not running.' : !keys.serpapi ? 'Add your SerpApi key first.' : null;
+  const spend = scanSpend(budget);
   return (
     <>
       <Button
@@ -95,9 +96,9 @@ export function ScanControl() {
         busy={busy}
         busyLabel="Starting…"
         disabled={Boolean(blocked)}
-        title={error ?? blocked ?? `Scan now (${modLabel('R', mac)})`}
+        title={error ?? blocked ?? `${spend.sentence} Scan now (${modLabel('R', mac)})`}
         onClick={() => act(api.scan)}
-        cost={budget.serpPerScan > 0 ? upToSearches(budget.serpPerScan) : undefined}
+        cost={spend.cost}
       >
         Scan now
       </Button>
