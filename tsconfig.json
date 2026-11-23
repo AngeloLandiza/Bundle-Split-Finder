@@ -8,7 +8,8 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": { "@core/*": ["./core/src/*"] }
   },
-  "include": ["core", "scripts", "*.ts"]
+  "include": ["core", "scripts", "agent", "*.ts"]
 }
