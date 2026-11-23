@@ -142,13 +142,13 @@ export function wordScore(word: string, text: string): number | null {
     const whole = boundary && (end === text.length || !/[a-z0-9]/.test(text[end]!));
     return (whole ? 100 : boundary ? 80 : 50) - Math.min(at, 30) / 3;
   }
-  // Letters in order, no gap longer than 6, so a stray letter across a long title is not a match.
+  // Letters in order, a few letters skipped at most ("pc2200" for "pcl2200k3n"), so a stray letter across a long title is not a match.
   let from = 0;
   let last = -1;
   let gaps = 0;
   for (const ch of word) {
     const i = text.indexOf(ch, from);
-    if (i < 0 || (last >= 0 && i - last > 7)) return null;
+    if (i < 0 || (last >= 0 && i - last > 3)) return null;
     gaps += last >= 0 ? i - last - 1 : 0;
     last = i;
     from = i + 1;

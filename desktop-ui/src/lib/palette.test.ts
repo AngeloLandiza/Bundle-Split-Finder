@@ -21,7 +21,7 @@ describe('the words of a query', () => {
     const whole = wordScore('saw', 'circular saw kit')!;
     const start = wordScore('saw', 'sawzall kit')!;
     const middle = wordScore('saw', 'jigsaw kit')!;
-    const fuzzy = wordScore('pcl2k', 'pcl2200k3n')!;
+    const fuzzy = wordScore('pc2200', 'pcl2200k3n')!;
     expect(whole).toBeGreaterThan(start);
     expect(start).toBeGreaterThan(middle);
     expect(middle).toBeGreaterThan(fuzzy);
@@ -29,6 +29,7 @@ describe('the words of a query', () => {
   it('does not match letters scattered across a long text', () => {
     expect(wordScore('dxz', 'dewalt 20v max combo kit with batteries and charger')).toBeNull();
     expect(wordScore('qq', 'pcl1600k2')).toBeNull();
+    expect(wordScore('pcl12', 'pcl1600k2')).toBeNull();
   });
   it('needs every word to fit somewhere', () => {
     const item = { title: 'ONE+ 18V Cordless 6-Tool Combo Kit', detail: 'RYOBI · PCL1600K2', keywords: 'PCL1600K2 RYOBI 317987591' };
