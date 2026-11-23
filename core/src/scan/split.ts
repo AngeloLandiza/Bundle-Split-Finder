@@ -7,7 +7,39 @@ import { type Catalog, catalogEntry, type Decomposition, decompose, dewaltBundle
 import { kitIndex, kitRecords } from '../kitContents';
 import { splitWithPage } from '../pageSplit';
 import { type SettleData, settleSplit } from './settle';
-import type { BundleRecord, ListingRecord, ScanStore } from './types';
+import type { BundleRecord, ListingRecord, ScanStore, SetItem } from './types';
+
+const HOME_DEPOT = 'https://www.homedepot.com';
+
+/** A set's items whose own page has not given a model yet (fix round 3). */
+export const setItemsUnread = (bundle: Pick<BundleRecord, 'set'>): SetItem[] => (bundle.set?.items ?? []).filter((i) => !i.model);
+
+/**
+ * Fix round 3: a Home Depot set's split is the items Home Depot lists in it (its Bundle list entry's bundleItems), each
+ * named by the brand and model its own page gives, as many times as its quantity: settled by Home Depot's own data, with
+ * the set's page as the evidence. Not settled (rule 4): while any item's page is unread (the set waits for it, no
+ * question), or when an item's page names another brand than the set's (the parts would be looked up under the wrong
+ * brand). Never a model guessed from a title.
+ */
+export function setSplit(bundle: BundleRecord): Decomposition {
+  const items = bundle.set!.items;
+  const count = items.reduce((n, i) => n + i.quantity, 0);
+  const unread = setItemsUnread(bundle);
+  if (unread.length > 0) {
+    return { components: [], status: 'needs_review', notes: [`waits for the pages of ${unread.length} of this set's ${items.length} items`] };
+  }
+  const brand = bundle.brand.trim().toUpperCase();
+  const other = items.filter((i) => (i.brand ?? '').trim().toUpperCase() !== brand);
+  if (other.length > 0) {
+    return { components: [], status: 'needs_review', notes: [`a set item's own page names another brand: ${other.map((i) => `${i.brand || 'none'} ${i.model}`).join(', ')}`] };
+  }
+  const components = items.flatMap((i) => Array.from({ length: i.quantity }, () => i.model!.trim().toUpperCase()));
+  const text = `Home Depot lists this set's ${count} items.`;
+  return {
+    components, status: 'resolved', notes: [text],
+    evidence: [{ kind: 'hd_set', text, url: bundle.link ?? `${HOME_DEPOT}/p/${bundle.itemId}` }],
+  };
+}
 
 export interface KnownModels {
   /** The stored catalog alone: the models Home Depot's own rows showed. */
@@ -56,6 +88,8 @@ export async function knownModels(store: ScanStore): Promise<KnownModels> {
  * settle rules on what Home Depot itself says, when `known` carries their data.
  */
 export function readSplit(bundle: BundleRecord, known: Pick<KnownModels, 'stored' | 'catalog'> & Partial<Pick<KnownModels, 'settle'>>): Decomposition {
+  // Fix round 3: a Home Depot set has no model number to read; its split is Home Depot's own list of its items.
+  if (bundle.set) return setSplit(bundle);
   const split = splitWithPage(bundle, splitBundle(bundle, known.stored, known.catalog), bundle.page ?? null, known.catalog);
   return known.settle ? settleSplit(bundle, split, known.catalog, known.settle) : split;
 }

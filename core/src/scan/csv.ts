@@ -76,7 +76,8 @@ function ebayColumn(b: BundleRow, pick: (v: EbayValue) => number): string {
 }
 
 function runRow(b: BundleRow): (string | number | null)[] {
-  const head = [b.section, b.brand, b.model, b.title, b.itemId, b.price, b.regularPrice, b.percentOff];
+  // Fix round 3: a set has no model number; its cell says "Set <item id>".
+  const head = [b.section, b.brand, b.model === '' && b.setItems !== undefined ? `Set ${b.itemId}` : b.model, b.title, b.itemId, b.price, b.regularPrice, b.percentOff];
   // sold_as is the primary's label, which the row's figures are; '' when the bundle has one way to sell.
   const tail = [b.link, b.options[0]?.label ?? '', otherOptions(b)];
   if (b.section === 'split') return [...head, '', '', '', '', null, null, null, null, '', ...tail, null, null, null, null, '', '', '', '', ''];

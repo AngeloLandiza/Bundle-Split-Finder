@@ -144,6 +144,14 @@ function listedItems(v: unknown): ListedItem[] | null {
       if (promotions.some((p) => p === null)) return null;
       Object.assign(item, { price: r.price as number | null, wasPrice: (r.wasPrice ?? null) as number | null, promotions: promotions as PagePromotion[] });
     }
+    // Fix round 3: a set's own list of items (item ids and quantities) and its listed saving; a malformed one is no answer.
+    if ('set' in r) {
+      const s = r.set;
+      if (!isRecord(s) || !Array.isArray(s.items) || s.items.length === 0 || s.items.length > 20 || !numOrNull(s.dollarOff ?? null) || !numOrNull(s.percentageOff ?? null)) return null;
+      const items = s.items.map((x) => (isRecord(x) && isText(x.itemId) && ITEM_ID.test(x.itemId) && typeof x.quantity === 'number' && Number.isInteger(x.quantity) && x.quantity >= 1 && x.quantity <= 20 ? { itemId: x.itemId, quantity: x.quantity } : null));
+      if (items.some((x) => x === null)) return null;
+      item.set = { items: items as { itemId: string; quantity: number }[], dollarOff: (s.dollarOff ?? null) as number | null, percentageOff: (s.percentageOff ?? null) as number | null };
+    }
     out.push(item);
   }
   return out;

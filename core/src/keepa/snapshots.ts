@@ -26,7 +26,7 @@ export function optionSnapshotFromReport(bundleKey: string, report: ScanReport, 
   if (!row || row.options.length === 0) return null;
   return {
     bundleKey,
-    model: row.model,
+    model: row.model === '' && row.setItems !== undefined ? `Set ${row.itemId}` : row.model,
     at,
     options: row.options.map((o) => ({
       id: o.id,

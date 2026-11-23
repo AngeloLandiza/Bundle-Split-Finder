@@ -20,9 +20,9 @@
 // says so.
 
 import type { Cache } from '../serpapi/client';
-import { HOME_DEPOT, itemCacheKey, itemOf, type BogoItem, type ListedItem, type PromoPageOutcome } from '../tracking/bogoPairs';
+import { HOME_DEPOT, itemCacheKey, itemOf, type BogoItem, type ListedItem, type ListedSet, type PromoPageOutcome } from '../tracking/bogoPairs';
 import type { HdListing } from '../serpapi/parsers';
-import type { ListingSample } from '../hdPage';
+import type { ListingProduct, ListingSample } from '../hdPage';
 
 /** Home Depot's "Bundle" filter token (recorded in scripts/fixture-requests.ts; checked live Nov 23). */
 export const BUNDLE_FILTER_TOKEN = 'bwo64';
@@ -31,8 +31,15 @@ export const BRAND_FILTER_TOKENS: Readonly<Record<string, string>> = { RYOBI: 'm
 /** The N- value every listing address starts from (the live check, and the Featured BOGO listing's). */
 const N_BASE = '5yc1v';
 
-/** Listing pages read per brand and scan, at most (12 a page: 120 bundles; the live RYOBI listing had 24). */
+/** Listing pages read per list and scan, at most (12 a page: 120 bundles; the live RYOBI list without search words had 101). */
 export const BUNDLE_LISTING_PAGES_MAX = 10;
+/**
+ * Fix round 3: pages of the plain keyword search read per brand (12 a page), at most. The search lists the classic model-
+ * numbered combos first and then single tools; SerpApi's scans read its first 24 rows (one page of 24).
+ */
+export const SEARCH_PAGES_MAX = 2;
+/** Fix round 3: listing pages read per scan, all lists, at most (politeness: about 2 × (2 + 9 + 2) for two brands). */
+export const LISTING_PAGES_PER_SCAN = 30;
 /** Item pages read per scan for prices, at most (the page reader's own limit per scan, docs/decisions.md "Pace"). */
 export const LISTING_ITEM_PAGES_MAX = 60;
 /** Item pages asked for in one call to the reader (the BOGO pass's batch). */
@@ -70,7 +77,19 @@ function brandOfTokens(path: string): string | null {
   return brands[0]![0];
 }
 
-export const isBundleListingPath = (path: unknown): path is string => typeof path === 'string' && path.length <= 300 && brandOfTokens(path) !== null;
+/** A search page path: `/s/<words joined by +>` and only NCNI-5 and Nao parameters (fix round 3). */
+const SEARCH_PATH = /^\/s\/[A-Za-z0-9%._~+-]{1,120}$/;
+function searchPathOk(path: string): boolean {
+  const [pathname, search, ...rest] = path.split('?');
+  if (rest.length > 0 || pathname === undefined || !SEARCH_PATH.test(pathname)) return false;
+  if (search === undefined) return true;
+  const params = search.split('&');
+  return params.every((p) => p === 'NCNI-5' || /^Nao=\d{1,4}$/.test(p)) && params.filter((p) => p === 'NCNI-5').length <= 1 && params.filter((p) => p.startsWith('Nao=')).length <= 1;
+}
+
+/** The addresses the listing reader may read: a Bundle list path (brandOfTokens) or, fix round 3, a keyword search page. */
+export const isBundleListingPath = (path: unknown): path is string =>
+  typeof path === 'string' && path.length <= 300 && (brandOfTokens(path) !== null || searchPathOk(path));
 
 /** `path` with its Nao set to `offset` (none at 0), its other parameters kept: how a list is paged on its final address. */
 export function withNao(path: string, offset: number): string {
@@ -97,7 +116,37 @@ export function bundleListingPath(brand: string, query: string | null, offset: n
 
 /** The brand whose filter token a Bundle listing path carries; null for any other path. */
 export function brandOfListingPath(path: string): string | null {
-  return isBundleListingPath(path) ? brandOfTokens(path) : null;
+  if (!isBundleListingPath(path)) return null;
+  if (path.startsWith('/s/')) {
+    const first = decodeURIComponent(path.slice(3).split(/[?+]/)[0] ?? '').trim().toUpperCase();
+    return BRAND_FILTER_TOKENS[first] !== undefined ? first : null;
+  }
+  return brandOfTokens(path);
+}
+
+/**
+ * Fix round 3: the plain keyword search page for a query (`searchReport.searchUrl` in the recording:
+ * `/s/ryobi+18v+combo+kit?NCNI-5`), paged with Nao as the lists are. It lists the classic model-numbered combos the Bundle
+ * filter does not (SerpApi's rows were this search: it ignored the filter tokens).
+ */
+export function searchListingPath(query: string, offset: number): string {
+  const words = query.trim().toLowerCase().split(/\s+/).map((w) => encodeURIComponent(w)).join('+');
+  return withNao(`/s/${words}?NCNI-5`, offset);
+}
+
+/**
+ * Fix round 3: a listing page's product (hdPage.ts parseListingState) as the reader hands it on: every entry, model number
+ * or not ('' when none); its own pricing when it has one; and, for a Home Depot set (productType CONFIGURABLE_BUNDLE or
+ * bundleFlag, with its items resolved), the set's items and listed saving.
+ */
+export function listedOf(r: ListingProduct): ListedItem {
+  return {
+    itemId: r.itemId, brand: r.brand, model: r.model ?? '', title: r.title, url: r.url,
+    ...(r.price !== undefined ? { price: r.price, wasPrice: r.wasPrice ?? null, promotions: r.promotions ?? [] } : {}),
+    ...(r.bundleItems && (r.productType === 'CONFIGURABLE_BUNDLE' || r.bundleFlag)
+      ? { set: { items: r.bundleItems, dollarOff: r.dollarOff ?? null, percentageOff: r.percentageOff ?? null } }
+      : {}),
+  };
 }
 
 /** The first words of the problem a list that came back with its page state but no product is said with. */
@@ -135,6 +184,8 @@ export interface ListingSourceDeps {
 /** One list read: a brand's Bundle list with the query, or without it. */
 export interface ListingListResult {
   brand: string;
+  /** Fix round 3: 'bundle', a Bundle filter list (with the query or without it); 'search', the plain keyword search. */
+  source: 'bundle' | 'search';
   /** The search words; null for the brand's whole Bundle list. */
   query: string | null;
   /** Listing pages read. */
@@ -153,6 +204,8 @@ export interface ListingListResult {
   pagedOn?: string;
   /** When it came back empty: what its state held. */
   sample?: ListingSample;
+  /** Fix round 3: it stopped at a page limit before its end (`total` more than `listed`, or no page that added nothing). */
+  cut: boolean;
 }
 
 /** One listed product, in the shape a SerpApi listing row has (HdListing), with its page reading when it was read. */
@@ -161,6 +214,8 @@ export interface ListingRow extends HdListing {
   page: { bullets: string[]; description: string | null; readAt: number } | null;
   /** The listing entry or the item page carried a BOGO promotion (the BOGO pass still decides pairs). */
   bogo: boolean;
+  /** Fix round 3: a Home Depot set: no model number, and Home Depot's own list of its items. */
+  set?: ListedSet;
 }
 
 export interface ListingSourceResult {
@@ -207,10 +262,12 @@ function rowOf(listed: ListedItem, item: BogoItem | null): ListingRow {
     price, regularPrice: was, percentOff: percentOff(price, was), badge: null, link,
     page: item ? { bullets: [...item.bullets], description: item.description, readAt: item.readAt } : null,
     bogo: (listed.promotions?.length ?? 0) > 0 || (item?.promotions.length ?? 0) > 0,
+    ...(listed.set ? { set: listed.set } : {}),
   };
 }
 
-const listName = (brand: string, query: string | null): string => (query === null ? `${brand} list without search words` : `${brand} list for "${query}"`);
+const listName = (brand: string, query: string | null, source: 'bundle' | 'search' = 'bundle'): string =>
+  source === 'search' ? `${brand} search for "${query}"` : query === null ? `${brand} list without search words` : `${brand} list for "${query}"`;
 
 /**
  * Each brand's Bundle list, with the query and then without it (pages until one brings no new item id, at most
@@ -229,18 +286,24 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
     const brand = raw.trim().toUpperCase();
     if (BRAND_FILTER_TOKENS[brand] === undefined) continue;
     const query = deps.queries[brand];
-    for (const q of query === undefined ? [null] : [query, null]) {
-      const r: ListingListResult = { brand, query: q, pages: 0, listed: 0, added: 0, complete: false, empty: false, total: null };
+    // Fix round 3: the Bundle list with the query, the Bundle list without it, and the plain keyword search for the
+    // classic model-numbered combos the Bundle filter does not list.
+    const sources: { source: 'bundle' | 'search'; q: string | null }[] = query === undefined
+      ? [{ source: 'bundle', q: null }]
+      : [{ source: 'bundle', q: query }, { source: 'bundle', q: null }, { source: 'search', q: query }];
+    for (const { source, q } of sources) {
+      const r: ListingListResult = { brand, source, query: q, pages: 0, listed: 0, added: 0, complete: false, empty: false, total: null, cut: false };
       out.lists.push(r);
       if (out.refused || stop()) continue;
+      const pagesMax = source === 'search' ? SEARCH_PAGES_MAX : BUNDLE_LISTING_PAGES_MAX;
       // This list's own items, so a page that repeats another list's items still moves the offset on.
       const own = new Set<string>();
       // Fix round 2 (read live): Home Depot redirects a list to its own address and drops a Nao on the way, so later pages
       // are asked on the final address of the first, each offset by the entries the pages so far returned.
-      let base = bundleListingPath(brand, q, 0)!;
+      let base = source === 'search' ? searchListingPath(q!, 0) : bundleListingPath(brand, q, 0)!;
       let offset = 0;
       try {
-        while (r.pages < BUNDLE_LISTING_PAGES_MAX && !stop()) {
+        while (r.pages < pagesMax && out.listingPages < LISTING_PAGES_PER_SCAN && !stop()) {
           const page = await deps.readListing(withNao(base, offset));
           r.pages += 1;
           out.listingPages += 1;
@@ -254,14 +317,16 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
           if (fresh.length === 0 && r.pages === 1) {
             r.empty = true;
             if (page.sample) r.sample = page.sample;
-            problems.push(`${LIST_EMPTY}: the ${listName(brand, q)} had no product${page.note ? ` (${page.note})` : ''}.`);
+            problems.push(`${LIST_EMPTY}: the ${listName(brand, q, source)} had no product${page.note ? ` (${page.note})` : ''}.`);
             break;
           }
           for (const p of fresh) {
             own.add(p.itemId);
             r.listed += 1;
             if (!listed.has(p.itemId)) {
-              listed.set(p.itemId, p);
+              // A Bundle list is filtered by its brand: an entry with no brand name is that brand's (recorded: brandName
+              // is sometimes null on a set). A search is not filtered, so its entries keep what they say.
+              listed.set(p.itemId, source === 'bundle' && p.brand.trim() === '' ? { ...p, brand } : p);
               r.added += 1;
             }
           }
@@ -271,6 +336,9 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
             break;
           }
         }
+        // A list that stopped at a page limit before its end says so ("read 48 of 101"); the search is read only to its
+        // limit by design, and is cut only in that sense.
+        if (!r.complete && !r.empty && !stop()) r.cut = true;
       } catch (e) {
         out.refused = true;
         problems.push(sentenceOf(e, 'Chrome could not read the Home Depot bundle list.'));
@@ -328,17 +396,16 @@ export async function readBundleListings(deps: ListingSourceDeps): Promise<Listi
 }
 
 /** "RYOBI: 24 with the search words, 16 more without them; DEWALT: 3 with the search words, 40 more without them." */
-export function listCounts(lists: readonly (Pick<ListingListResult, 'brand' | 'query' | 'listed' | 'added' | 'empty' | 'pages'> & { total?: number | null })[]): string {
-  const brands = [...new Set(lists.map((l) => l.brand))];
-  return brands.map((b) => {
-    const parts = lists.filter((l) => l.brand === b && l.pages > 0).map((l) => {
-      // Fix round 2: what the list says it has, the pages read and the products found, per list.
-      const of = typeof l.total === 'number' ? ` of ${l.total}, ${l.pages} ${l.pages === 1 ? 'page' : 'pages'}` : '';
-      const n = l.empty ? 'empty' : String(l.query === null ? l.added : l.listed);
-      return l.query === null ? `${n === 'empty' ? 'empty' : `${n} more`} without them${l.empty ? '' : ` (${l.listed}${of})`}` : `${n}${of && !l.empty ? of : ''} with the search words`;
-    });
-    return parts.length > 0 ? `${b}: ${parts.join(', ')}` : '';
-  }).filter((x) => x !== '').join('; ');
+export function listCounts(lists: readonly (Pick<ListingListResult, 'brand' | 'query' | 'listed' | 'added' | 'empty' | 'pages'> & { total?: number | null; source?: 'bundle' | 'search'; cut?: boolean })[]): string {
+  // Fix round 3: per list, what it says it has, what was read, in how many pages, whether a page limit cut it, and what
+  // it added to the union ("RYOBI list without search words: read 48 of 101 (4 pages, page limit), 40 new").
+  return lists.filter((l) => l.pages > 0).map((l) => {
+    const name = listName(l.brand, l.query, l.source ?? 'bundle');
+    if (l.empty) return `${name}: empty`;
+    const pages = `${l.pages} ${l.pages === 1 ? 'page' : 'pages'}`;
+    const count = typeof l.total === 'number' ? `${l.cut ? 'read ' : ''}${l.listed} of ${l.total}` : `${l.listed}`;
+    return `${name}: ${count} (${pages}${l.cut ? ', page limit' : ''}), ${l.added} new`;
+  }).join('; ');
 }
 
 // ---------------------------------------------------------------- which source a scan uses

@@ -153,6 +153,32 @@ export interface BundleRecord {
    * own fields; the split reads it (scan/settle.ts rule 1). Absent on any other bundle.
    */
   bogo?: BundleBogo | null;
+  /**
+   * Free scan, fix round 3: Home Depot sells this as a set (its Bundle list's CONFIGURABLE_BUNDLE entries): no model number
+   * (`model` is ''), and Home Depot's own list of its items. The split is that list (split.ts setSplit), once each item's own
+   * page has been read for its brand and model. Absent on any other bundle.
+   */
+  set?: BundleSet;
+}
+
+/** A set's items as Home Depot lists them, each with what its own page said once read. */
+export interface BundleSet {
+  items: SetItem[];
+  /** The listing's promotion.dollarOff and percentageOff (a reference; the saving shown is original − value). */
+  dollarOff: number | null;
+  percentageOff: number | null;
+}
+
+export interface SetItem {
+  itemId: string;
+  quantity: number;
+  /** From the item's own page (the free page read), once read; absent before. */
+  brand?: string;
+  model?: string;
+  title?: string;
+  /** Its price sold alone, from that page; null when the page showed none. */
+  price?: number | null;
+  readAt?: number;
 }
 
 /** Step 15: the pair rule's facts a BOGO pair's split is read from. */
@@ -693,11 +719,15 @@ export interface ScanJob {
    * the list pages read, the bundles they listed, the item pages read for prices, and whether every list was read to its
    * end. `done` once the pass has run, so a continued job does not read the lists again. Absent: SerpApi's listing pages.
    */
+  /** Fix round 3: set items whose own Home Depot page this job read. Absent when none. */
+  setItemsRead?: number;
   chromeListing?: {
     done: boolean; pages: number; bundles: number; itemPagesRead: number; complete: boolean;
     /** Fix round: each list read (a brand with the query, and without it), so a run shows which lists more. */
     lists?: {
       brand: string; query: string | null; pages: number; listed: number; added: number; complete: boolean; empty: boolean;
+      /** Fix round 3: which kind of list, and whether a page limit cut it. */
+      source?: 'bundle' | 'search'; cut?: boolean;
       /** Fix round 2: the list's own totalProducts, the final address it was paged on, and what an empty state held. */
       total?: number | null; pagedOn?: string; sample?: import('../hdPage').ListingSample;
     }[];
@@ -1103,6 +1133,8 @@ export interface BundleRow {
   status: BundleStatus;
   section: ReportSection;
   parts: PartRow[];
+  /** Fix round 3: a Home Depot set (no model number): how many items Home Depot lists in it ("Set · 5 items"). Absent otherwise. */
+  setItems?: number;
   /**
    * An estimate from fee settings, never the seller's real fees. Null without a resolved split and a price, or (Nov 23)
    * while any model part has no counted price: waiting for its lookup, in Review, no listing, or an inactive listing.

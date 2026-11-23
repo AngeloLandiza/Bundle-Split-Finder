@@ -133,6 +133,23 @@ describe('the Bundle listing reader (free scan)', () => {
     expect(products[1]).toMatchObject({ model: 'PCL1201K2-PCL515B', price: 179, wasPrice: 268, promotions: [] });
   });
 
+  it('fix round 3: a set (no model number) is kept, with its items resolved from their BundleItems entries', async () => {
+    const state = {
+      'base-searchNav-344978523': {
+        itemId: '344978523', bundleFlag: true, bundleItems: [{ __ref: 'BundleItems:317987598' }, { __ref: 'BundleItems:314892344' }],
+        identifiers: { brandName: null, itemId: '344978523', productLabel: 'Set', modelNumber: null, canonicalUrl: '/p/sets/x/344978523', productType: 'CONFIGURABLE_BUNDLE' },
+        'pricing({"storeId":"121"})': { value: 128.19, original: 169.19, promotion: { dollarOff: 41, percentageOff: 24 }, conditionalPromotions: null },
+      },
+      'BundleItems:317987598': { __typename: 'BundleItems', id: '317987598', quantity: 1 },
+      'BundleItems:314892344': { __typename: 'BundleItems', id: '314892344', quantity: 1 },
+    };
+    const got = await createBundleListingReader(env(() => ({ status: 200, text: `window.__APOLLO_STATE__=${JSON.stringify(state)}` }) satisfies PathInTab).env, { settleMs: 0 })(path);
+    expect('products' in got && got.products).toEqual([{
+      itemId: '344978523', brand: '', model: '', title: 'Set', url: 'https://www.homedepot.com/p/sets/x/344978523', price: 128.19, wasPrice: 169.19, promotions: [],
+      set: { items: [{ itemId: '317987598', quantity: 1 }, { itemId: '314892344', quantity: 1 }], dollarOff: 41, percentageOff: 24 },
+    }]);
+  });
+
   it('fix round: a state with no product comes back empty with what it held, never silently', async () => {
     const text = 'window.__APOLLO_STATE__={"ROOT_QUERY":{"__typename":"Query"},"searchModel({})":{"products":[]}}';
     expect(await createBundleListingReader(env(() => ({ status: 200, text }) satisfies PathInTab).env, { settleMs: 0 })(path)).toEqual({

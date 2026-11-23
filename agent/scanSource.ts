@@ -84,7 +84,8 @@ export function discoveryFor(i: {
 /** Fix round 2: the lists a scan read in Chrome, for the run's Activity details (RunRecord.bundleLists); empty when none. */
 export function bundleListsOf(job: Pick<ScanJob, 'chromeListing'> | null | undefined): NonNullable<RunRecord['bundleLists']> {
   return (job?.chromeListing?.lists ?? []).map((l) => ({
-    brand: l.brand, query: l.query, total: l.total ?? null, pages: l.pages, found: l.listed, added: l.added, empty: l.empty,
+    brand: l.brand, ...(l.source ? { source: l.source } : {}), query: l.query, total: l.total ?? null, pages: l.pages, found: l.listed, added: l.added, empty: l.empty,
+    ...(l.cut ? { cut: true } : {}),
     ...(l.pagedOn ? { pagedOn: l.pagedOn } : {}), ...(l.sample ? { sample: l.sample } : {}),
   }));
 }

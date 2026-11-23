@@ -57,6 +57,10 @@ const monthStartMs = (now: number): number => {
 };
 
 /** The AI's dollars this calendar month: every suggestion asked, and the eBay judge's share of each run, each once. */
+
+/** Fix round 3: a Home Depot set has no model number; it is named "Set <item id>" wherever a model is shown. */
+export const setModel = (b: { model: string; itemId: string; setItems?: number }): string => (b.model === '' && b.setItems !== undefined ? `Set ${b.itemId}` : b.model);
+
 export function aiSpentThisMonth(data: { suggestions: StoredSuggestion[]; runs: RunRecord[] }, now: number): number {
   const since = monthStartMs(now);
   const asks = data.suggestions.filter((s) => s.askedAt >= since).reduce((n, s) => n + (s.costUsd ?? 0), 0);
@@ -128,7 +132,10 @@ function rowOf(b: BundleRow, needsAnswer: boolean, lookups?: Record<string, numb
   return {
     ...track,
     id: b.key,
-    bundle: { brand: b.brand, model: b.model, title: b.title, itemId: b.itemId || null, link: b.link },
+    bundle: {
+      brand: b.brand, model: setModel(b), title: b.title, itemId: b.itemId || null, link: b.link,
+      ...(b.setItems !== undefined ? { setItems: b.setItems } : {}),
+    },
     section: b.section,
     price: b.price,
     regularPrice: b.regularPrice,

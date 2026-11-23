@@ -482,7 +482,7 @@ export function bundleSignals(input: SignalInput): BundleSignals {
   const focus = best?.optionId ?? held?.optionId ?? row.options[0]?.id ?? null;
   const verdict = focus !== null ? `${verdicts.get(focus)!}.` : 'Not worth buying now: no way to sell has an estimate yet.';
   return {
-    bundleKey: row.key, brand: row.brand, model: row.model, at: now, options, signals: [...signals, ...buys], buyNow: best,
+    bundleKey: row.key, brand: row.brand, model: row.model === '' && row.setItems !== undefined ? `Set ${row.itemId}` : row.model, at: now, options, signals: [...signals, ...buys], buyNow: best,
     ...(held ? { buyPending: { optionId: held.optionId, listings: held.listings, asins: held.asins } } : {}),
     verdict,
   };

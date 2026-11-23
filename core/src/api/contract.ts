@@ -277,7 +277,11 @@ export interface SourceLink {
 export interface DealRow {
   /** The bundle key; GET /api/deals/:id takes it URL-encoded. */
   id: string;
-  bundle: { brand: string; model: string; title: string; itemId: string | null; link: string | null };
+  /**
+   * Fix round 3: a Home Depot set has no model number: `model` is "Set <itemId>" (shown and copied as that) and `setItems`
+   * how many items Home Depot lists in it ("Set · 5 items"). `setItems` is absent on any other bundle.
+   */
+  bundle: { brand: string; model: string; title: string; itemId: string | null; link: string | null; setItems?: number };
   section: ReportSection;
   price: number | null;
   regularPrice: number | null;
@@ -861,7 +865,11 @@ export interface RunRecord {
    * Free scan, fix round 2: each Home Depot bundle list the scan read in Chrome (its total, pages read, products found), and
    * for a list that came back empty, a slim sample of what its state held (scripts/record-listing-sample.ts makes a fixture).
    */
-  bundleLists?: { brand: string; query: string | null; total: number | null; pages: number; found: number; added: number; empty: boolean; pagedOn?: string; sample?: ListingSample }[];
+  bundleLists?: {
+    brand: string; query: string | null; total: number | null; pages: number; found: number; added: number; empty: boolean; pagedOn?: string; sample?: ListingSample;
+    /** Fix round 3: a Bundle filter list or the plain keyword search, and whether a page limit cut it. */
+    source?: 'bundle' | 'search'; cut?: boolean;
+  }[];
 }
 
 export interface AutopilotEntry {

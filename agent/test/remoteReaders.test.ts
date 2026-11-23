@@ -175,6 +175,14 @@ describe('the BOGO readers (worker jobs)', () => {
     const off = readers.readBundleListing(path);
     await worker(() => ({ products: [product], finalPath: '/account/settings', total: -1, sample: { kinds: {}, entries: [{ kind: 'x', key: 'y', text: 'z'.repeat(1501) }] } }));
     expect(await off).toEqual({ products: [product] });
+    // Fix round 3: a set (no model number) and its items come through; a malformed item list makes the answer no answer.
+    const set = { ...product, itemId: '344978523', model: '', set: { items: [{ itemId: '317987598', quantity: 1 }, { itemId: '314892344', quantity: 2 }], dollarOff: 41, percentageOff: 24 } };
+    const withSet = readers.readBundleListing(path);
+    await worker(() => ({ products: [set] }));
+    expect(await withSet).toEqual({ products: [set] });
+    const badSet = readers.readBundleListing(path);
+    await worker(() => ({ products: [{ ...set, set: { ...set.set, items: [{ itemId: '../x', quantity: 1 }] } }] }));
+    await expect(badSet).rejects.toThrow('could not be read');
     const bad = readers.readBundleListing(path);
     await worker(() => ({ products: [{ ...product, price: 'free' }] }));
     await expect(bad).rejects.toThrow('could not be read');

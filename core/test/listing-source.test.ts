@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { parseListingText, parseSearchState, SAMPLE_CHARS } from '../src/hdPage';
 import {
-  brandOfListingPath, BUNDLE_LISTING_PAGES_MAX, bundleListingPath, chooseListingSource, isBundleListingPath, LIST_EMPTY, listCounts, LISTING_ITEM_MAX_AGE_MS, readBundleListings, withNao, type ListingSourceDeps, type SourceInput,
+  brandOfListingPath, BUNDLE_LISTING_PAGES_MAX, LISTING_PAGES_PER_SCAN, bundleListingPath, chooseListingSource, isBundleListingPath, LIST_EMPTY, listCounts, LISTING_ITEM_MAX_AGE_MS, readBundleListings, searchListingPath, withNao, type ListingSourceDeps, type SourceInput,
 } from '../src/scan/listingSource';
 import { MemoryCache } from '../src/serpapi/client';
 import { BRAND_QUERIES } from '../src/settings';
@@ -41,8 +41,9 @@ function fakes(pages: Record<string, ListedItem[][]>, opts: { refuse?: string; r
     readListing: async (path) => {
       asked.push(path);
       if (path === opts.refuse) throw new Error('Home Depot refused the bundle list (HTTP 403).');
-      const brand = path.includes('Zm5d') ? 'RYOBI' : 'DEWALT';
-      const list = path.includes('/Ntt-') ? brand : `${brand}:all`;
+      const brand = path.includes('Zm5d') || path.startsWith('/s/ryobi') ? 'RYOBI' : 'DEWALT';
+      // Fix round 3: the plain keyword search (`RYOBI:search`), by default the query list's items again (it adds none).
+      const list = path.startsWith('/s/') ? `${brand}:search` : path.includes('/Ntt-') ? brand : `${brand}:all`;
       const offset = Number(/Nao=(\d+)/.exec(path)?.[1] ?? 0);
       const items = (pages[list] ?? pages[brand] ?? []).flat();
       return { products: items.slice(offset, offset + 12), ...(items.length === 0 ? { note: 'its state had 40 entries, none a product' } : {}) };
@@ -88,21 +89,27 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
     expect(f.asked).toEqual([
       ...[0, 12, 24].map((o) => bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, o)),
       ...[0, 12, 24].map((o) => bundleListingPath('RYOBI', null, o)),
+      // Fix round 3: then the plain keyword search, to its page limit.
+      ...[0, 12].map((o) => searchListingPath(BRAND_QUERIES.RYOBI, o)),
     ]);
+    expect(f.asked.at(-1)).toBe('/s/ryobi+18v+combo+kit?NCNI-5&Nao=12');
     expect(r.lists).toEqual([
-      { brand: 'RYOBI', query: BRAND_QUERIES.RYOBI, pages: 3, listed: 24, added: 24, complete: true, empty: false, total: null },
-      { brand: 'RYOBI', query: null, pages: 3, listed: 24, added: 0, complete: true, empty: false, total: null },
+      { brand: 'RYOBI', source: 'bundle', query: BRAND_QUERIES.RYOBI, pages: 3, listed: 24, added: 24, complete: true, empty: false, total: null, cut: false },
+      { brand: 'RYOBI', source: 'bundle', query: null, pages: 3, listed: 24, added: 0, complete: true, empty: false, total: null, cut: false },
+      { brand: 'RYOBI', source: 'search', query: BRAND_QUERIES.RYOBI, pages: 2, listed: 24, added: 0, complete: false, empty: false, total: null, cut: true },
     ]);
     expect(r.rows.map((x) => x.itemId)).toEqual([...P1, ...P2].map((p) => p.itemId));
-    expect(r).toMatchObject({ listingPages: 6, itemPagesRead: 24, itemPagesLeft: 0, problem: null, refused: false });
+    expect(r).toMatchObject({ listingPages: 8, itemPagesRead: 24, itemPagesLeft: 0, problem: null, refused: false });
   });
 
   it('the union: the list without search words adds what the query\'s list did not show, and the counts say which listed more', async () => {
     const f = fakes({ DEWALT: [DEWALT.slice(0, 3)], 'DEWALT:all': [DEWALT, P1] });
     const r = await readBundleListings(f.deps({ brands: ['DEWALT'] }));
-    expect(r.lists.map((l) => [l.query, l.listed, l.added])).toEqual([[BRAND_QUERIES.DEWALT, 3, 3], [null, 24, 21]]);
+    expect(r.lists.map((l) => [l.source, l.query, l.listed, l.added])).toEqual([['bundle', BRAND_QUERIES.DEWALT, 3, 3], ['bundle', null, 24, 21], ['search', BRAND_QUERIES.DEWALT, 3, 0]]);
     expect(r.rows).toHaveLength(24);
-    expect(listCounts(r.lists)).toBe('DEWALT: 3 with the search words, 21 more without them (24)');
+    expect(listCounts(r.lists)).toBe(
+      'DEWALT list for "dewalt 20v combo kit": 3 (2 pages), 3 new; DEWALT list without search words: 24 (3 pages), 21 new; DEWALT search for "dewalt 20v combo kit": 3 (2 pages), 0 new',
+    );
   });
 
   it('stops at its cap when a listing never ends', async () => {
@@ -119,7 +126,7 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
     const r = await readBundleListings(f.deps());
     expect(r.rows).toHaveLength(12 + 11 + 8);
     expect(new Set(r.rows.map((x) => x.itemId)).size).toBe(r.rows.length);
-    expect(r.lists.filter((l) => l.query !== null).map((b) => [b.brand, b.listed, b.added])).toEqual([['DEWALT', 12, 12], ['RYOBI', 20, 19]]);
+    expect(r.lists.filter((l) => l.source === 'bundle' && l.query !== null).map((b) => [b.brand, b.listed, b.added])).toEqual([['DEWALT', 12, 12], ['RYOBI', 20, 19]]);
     // Each page moves the offset by the entries it returned (fix round 2): RYOBI's third page starts at 24.
     expect(f.asked.filter((p) => p.includes('Zm5d/'))).toEqual([0, 12, 24].map((o) => bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, o)));
   });
@@ -128,7 +135,10 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
     const f = fakes({ DEWALT: [], 'DEWALT:all': [DEWALT], RYOBI: [], 'RYOBI:all': [] });
     const r = await readBundleListings(f.deps());
     expect(r.refused).toBe(false);
-    expect(r.lists.map((l) => [l.brand, l.query === null, l.empty])).toEqual([['DEWALT', false, true], ['DEWALT', true, false], ['RYOBI', false, true], ['RYOBI', true, true]]);
+    expect(r.lists.map((l) => [l.brand, l.source, l.query === null, l.empty])).toEqual([
+      ['DEWALT', 'bundle', false, true], ['DEWALT', 'bundle', true, false], ['DEWALT', 'search', false, true],
+      ['RYOBI', 'bundle', false, true], ['RYOBI', 'bundle', true, true], ['RYOBI', 'search', false, true],
+    ]);
     expect(r.rows).toHaveLength(12);
     expect(r.problem).toContain(`${LIST_EMPTY}: the DEWALT list for "dewalt 20v combo kit" had no product (its state had 40 entries, none a product).`);
     expect(r.problem).toContain(`${LIST_EMPTY}: the RYOBI list without search words had no product`);
@@ -144,7 +154,7 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
     expect(f.itemsAsked).toEqual([]);
     expect(r.rows.map((x) => x.itemId)).toEqual(DEWALT.map((p) => p.itemId));
     expect(r.rows.every((x) => x.price === null && x.page === null)).toBe(true);
-    expect(r.lists.map((b) => [b.brand, b.pages, b.complete])).toEqual([['DEWALT', 1, false], ['DEWALT', 0, false], ['RYOBI', 0, false], ['RYOBI', 0, false]]);
+    expect(r.lists.map((b) => [b.brand, b.pages, b.complete])).toEqual([['DEWALT', 1, false], ['DEWALT', 0, false], ['DEWALT', 0, false], ['RYOBI', 0, false], ['RYOBI', 0, false], ['RYOBI', 0, false]]);
   });
 
   it('a refused item page keeps the prices read before it and reads no later batch', async () => {
@@ -259,8 +269,8 @@ describe('fix round 2: the redirect, the final address and totalProducts', () =>
     const r = await readBundleListings({ brands: ['RYOBI'], queries: {}, readListing: s.readListing, readPages: async () => [], now: () => T0 });
     expect(s.asked).toEqual(['/b/N-5yc1vZbwo64Zm5d', `${CANONICAL}?Nao=12`, `${CANONICAL}?Nao=24`]);
     // 30 of 30 read: no fourth page is asked for.
-    expect(r.lists).toEqual([{ brand: 'RYOBI', query: null, pages: 3, listed: 30, added: 30, complete: true, empty: false, total: 30, pagedOn: CANONICAL }]);
-    expect(listCounts(r.lists)).toBe('RYOBI: 30 more without them (30 of 30, 3 pages)');
+    expect(r.lists).toEqual([{ brand: 'RYOBI', source: 'bundle', query: null, pages: 3, listed: 30, added: 30, complete: true, empty: false, total: 30, pagedOn: CANONICAL, cut: false }]);
+    expect(listCounts(r.lists)).toBe('RYOBI list without search words: 30 of 30 (3 pages), 30 new');
   });
 
   it('a final address that is not a Bundle list is not followed', async () => {
@@ -307,5 +317,31 @@ describe('fix round 2: parseListingText reads totalProducts, and samples a state
     const bundle = got.sample!.entries[1]!.text;
     expect(bundle.length).toBe(SAMPLE_CHARS);
     expect(bundle).not.toMatch(/authToken|secret|sessionId|cookie|csrf/);
+  });
+});
+
+describe('fix round 3: the keyword search, the page limits, and "read 48 of 101"', () => {
+  it('the keyword search page is the recorded searchUrl, paged with Nao, and passes the path check; nothing else under /s/ does', () => {
+    expect(searchListingPath('ryobi 18v combo kit', 0)).toBe('/s/ryobi+18v+combo+kit?NCNI-5');
+    expect(searchListingPath('ryobi 18v combo kit', 24)).toBe('/s/ryobi+18v+combo+kit?NCNI-5&Nao=24');
+    expect(isBundleListingPath('/s/ryobi+18v+combo+kit?NCNI-5&Nao=24')).toBe(true);
+    expect(brandOfListingPath('/s/ryobi+18v+combo+kit?NCNI-5')).toBe('RYOBI');
+    for (const bad of ['/s/ryobi?searchRedirect=x', '/s/../account', '/s/a/b', '/s/ryobi?Nao=1&Nao=2', '/s/' + 'x'.repeat(121)]) expect(isBundleListingPath(bad)).toBe(false);
+  });
+
+  it('a list a page limit stops before its end says so', async () => {
+    let n = 0;
+    const endless: ListingSourceDeps['readListing'] = async () => ({ products: P1.map((p) => ({ ...p, itemId: String(400000000 + n++) })), total: 400 });
+    const r = await readBundleListings({ brands: ['RYOBI'], queries: {}, readListing: endless, readPages: async () => [], now: () => T0 });
+    expect(r.lists[0]).toMatchObject({ pages: BUNDLE_LISTING_PAGES_MAX, listed: 120, total: 400, cut: true, complete: false });
+    expect(listCounts(r.lists)).toBe('RYOBI list without search words: read 120 of 400 (10 pages, page limit), 120 new');
+  });
+
+  it('every list together reads at most LISTING_PAGES_PER_SCAN pages', async () => {
+    let n = 0;
+    const endless: ListingSourceDeps['readListing'] = async () => ({ products: P1.map((p) => ({ ...p, itemId: String(400000000 + n++) })) });
+    const r = await readBundleListings({ brands: ['DEWALT', 'RYOBI'], queries: BRAND_QUERIES, readListing: endless, readPages: async () => [], now: () => T0, itemPagesMax: 0 });
+    expect(r.listingPages).toBe(LISTING_PAGES_PER_SCAN);
+    expect(r.lists.filter((l) => l.cut).length).toBeGreaterThan(0);
   });
 });

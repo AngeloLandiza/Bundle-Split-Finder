@@ -4,7 +4,7 @@
 
 import { type ListingSample, parseBundlePage, parseListingText, parseProductPage, parsePromoPage, parseSearchText } from '@core/hdPage';
 import { HOME_DEPOT, isBogoListingPath, type ListedItem, type PromoPageOutcome } from '@core/tracking/bogoPairs';
-import { brandOfListingPath, isBundleListingPath } from '@core/scan/listingSource';
+import { brandOfListingPath, isBundleListingPath, listedOf } from '@core/scan/listingSource';
 import type { ToolError } from '@core/research/types';
 import { modelForms, sameModel } from '@core/match';
 import {
@@ -865,10 +865,8 @@ function createListingReaderOf(
       if (what.allStates) {
         const all = parseListingText(read.text, HOME_DEPOT);
         if (all === null) return { error: `${what.named} could not be read.` };
-        const products = all.products.map((r) => ({
-          itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url,
-          ...(r.price !== undefined ? { price: r.price, wasPrice: r.wasPrice ?? null, promotions: r.promotions ?? [] } : {}),
-        }));
+        // Fix round 3: every entry, model number or not; a set carries Home Depot's own list of its items.
+        const products: ListedItem[] = all.products.map(listedOf);
         const final = read.finalPath !== undefined && what.accepts(read.finalPath) ? { finalPath: read.finalPath } : {};
         const total = all.total !== null ? { total: all.total } : {};
         // A state with no product is said with what it held (and a sample of it), so the scan can say the list came back

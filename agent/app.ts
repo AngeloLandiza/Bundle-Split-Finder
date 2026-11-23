@@ -699,7 +699,7 @@ export function createAgent(opts: AgentOptions): Agent {
   r.get('/api/deals/:id/export.csv', 'any', (ctx) => {
     const bundle = store.get('deals').bundles.find((b) => b.key === ctx.params.id);
     if (!bundle) throw new HttpError('not_found', 'No such deal.');
-    return sendCsv(ctx.res, `split-finder-${bundle.model}.csv`, bundlesCsv([bundle]));
+    return sendCsv(ctx.res, `split-finder-${bundle.model || `set-${bundle.itemId}`}.csv`, bundlesCsv([bundle]));
   });
   // Look up and Verify: the quote first (free), then the owner's click spends within the per-scan limit.
   r.get('/api/deals/:id/lookup', 'ui', (ctx) => refusals(async (): Promise<PaidResponse> => ({ searches: (await work.paidPlan(ctx.params.id!, 'lookUp')).searches })));

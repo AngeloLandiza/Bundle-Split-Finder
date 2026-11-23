@@ -59,6 +59,19 @@ export interface ListedItem {
   price?: number | null;
   wasPrice?: number | null;
   promotions?: PagePromotion[];
+  /**
+   * Free scan, fix round 3: a Home Depot set (hdPage.ts ListingProduct: productType CONFIGURABLE_BUNDLE or bundleFlag, with
+   * its bundleItems). Its `model` is '' (the entry has none); its items are Home Depot's own list of what it holds.
+   */
+  set?: ListedSet;
+}
+
+/** A set's own data from its listing entry. */
+export interface ListedSet {
+  items: { itemId: string; quantity: number }[];
+  /** The listing's promotion.dollarOff and percentageOff, when it gives them. */
+  dollarOff: number | null;
+  percentageOff: number | null;
 }
 
 /** One item page as the BOGO pass read it: the product page and its BOGO promotions. */

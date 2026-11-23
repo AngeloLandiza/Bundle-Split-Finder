@@ -50,7 +50,7 @@ function chrome(lists: Record<string, ListedItem[]>, price: (id: string) => { pr
       readListing: async (path: string): Promise<ListingPage> => {
         asked.push(path);
         if (path === opts.refuseAt) throw new Error('Home Depot refused the bundle list (HTTP 403).');
-        const brand = path.includes('Zm5d') ? 'RYOBI' : 'DEWALT';
+        const brand = path.includes('Zm5d') || path.startsWith('/s/ryobi') ? 'RYOBI' : 'DEWALT';
         const offset = Number(/Nao=(\d+)/.exec(path)?.[1] ?? 0);
         // The list without search words lists the same items here (it adds none).
         return { products: (lists[brand] ?? []).slice(offset, offset + 12) };
@@ -103,8 +103,9 @@ describe('a scan with the Chrome bundle lists', () => {
     // No listing search (the Amazon lookups the new bundles want are step 15's routing, as before).
     expect(calls.filter((x) => x.startsWith('home_depot'))).toEqual([]);
     // 24 a list: page 1 and 2 read, page 3 (offset 24) adds nothing; each brand with the search words and without them.
-    expect(c.asked).toHaveLength(12);
-    expect(job.chromeListing).toMatchObject({ done: true, pages: 12, complete: true, itemPagesRead: 48 });
+    // Fix round 3: and the plain keyword search, 2 pages a brand.
+    expect(c.asked).toHaveLength(16);
+    expect(job.chromeListing).toMatchObject({ done: true, pages: 16, complete: true, itemPagesRead: 48 });
     const view = pipelineView(job, {}, T0);
     const bundles = (await store.listBundles()).length;
     expect(view.steps[0]).toMatchObject({ label: 'Home Depot bundle lists', state: 'done', figure: `read in Chrome · ${bundles} bundles · 0 searches` });

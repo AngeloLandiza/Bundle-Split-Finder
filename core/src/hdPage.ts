@@ -328,14 +328,12 @@ export function sampleOf(state: Json): ListingSample {
  * `(`), so an empty answer is said with what came back. Null when the text has no state that parses.
  */
 export function parseListingText(text: string, origin?: string): {
-  products: SearchProduct[]; stateKeys: number; kinds: string[];
+  products: ListingProduct[]; stateKeys: number; kinds: string[];
   /** The first `"totalProducts":<n>` in the states (read live: the list's own count); null when there is none. */
   total: number | null;
   /** Only when the states held entries and no product. */
   sample?: ListingSample;
 } | null {
-  const products: SearchProduct[] = [];
-  const seen = new Set<string>();
   const kinds = new Set<string>();
   const merged: Json = {};
   let stateKeys = 0;
@@ -349,16 +347,95 @@ export function parseListingText(text: string, origin?: string): {
       stateKeys += 1;
       if (kinds.size < 6) kinds.add(k.split(/[-(]/)[0] ?? k);
     }
-    for (const p of parseSearchState(state, origin)) {
-      if (seen.has(p.itemId)) continue;
-      seen.add(p.itemId);
-      products.push(p);
-    }
   }
   if (!parsed) return null;
+  // Parsed once over every block, so a set's BundleItems references resolve wherever they are.
+  const products = parseListingState(merged, origin);
   const t = /"totalProducts":(\d{1,6})\b/.exec(text);
   const total = t ? Number(t[1]) : null;
   return { products, stateKeys, kinds: [...kinds], total, ...(products.length === 0 && stateKeys > 0 ? { sample: sampleOf(merged) } : {}) };
+}
+
+/** One item of a Home Depot set (`bundleItems`): its own item id and how many of it the set holds. */
+export interface SetItemRef { itemId: string; quantity: number }
+
+/**
+ * A product of a listing page, model number or not (free scan, fix round 3). Home Depot's Bundle filter lists "sets"
+ * (recorded: fixtures/homedepot-pages/bundle-list-ryobi-2026-11-23.json): `identifiers.productType` "CONFIGURABLE_BUNDLE",
+ * `modelNumber` null (brandName sometimes null), canonicalUrl `/p/sets/<slug>/<itemId>`, `bundleFlag` true and
+ * `bundleItems`: references to `BundleItems:<id>` entries `{id, quantity}`, Home Depot's own list of the set's items.
+ */
+export interface ListingProduct {
+  itemId: string;
+  /** identifiers.brandName, trimmed; '' when null. */
+  brand: string;
+  /** identifiers.modelNumber, trimmed; null when the entry has none (a set). */
+  model: string | null;
+  title: string;
+  url: string;
+  productType: string | null;
+  bundleFlag: boolean;
+  /** The set's items, resolved, in the entry's order; null when the entry lists none or one cannot be resolved. */
+  bundleItems: SetItemRef[] | null;
+  /** The entry's pricing (pricingOf), when it has a pricing entry. */
+  price?: number | null;
+  wasPrice?: number | null;
+  /** The pricing entry's `promotion.dollarOff` and `percentageOff` (recorded: 41 and 24 on 344978523); null when absent. */
+  dollarOff?: number | null;
+  percentageOff?: number | null;
+  promotions?: PagePromotion[];
+}
+
+const ITEM_ID = /^\d{6,12}$/;
+
+/** A set's items from `bundleItems`: each a `{__ref: "BundleItems:<id>"}` resolved in the state, or the entry inline. */
+function setItemsOf(raw: unknown, state: Json): SetItemRef[] | null {
+  if (!Array.isArray(raw) || raw.length === 0) return null;
+  const out: SetItemRef[] = [];
+  for (const r of raw) {
+    const ref = asObj(r).__ref;
+    const e = typeof ref === 'string' ? asObj(state[ref]) : asObj(r);
+    const id = asStr(e.id);
+    const q = e.quantity;
+    if (id === null || !ITEM_ID.test(id) || typeof q !== 'number' || !Number.isInteger(q) || q < 1 || q > 20) return null;
+    out.push({ itemId: id, quantity: q });
+  }
+  return out;
+}
+
+const numOrNull = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+
+/** Every `base-searchNav-<itemId>` entry of a listing state, in state order, with or without a model number. */
+export function parseListingState(state: unknown, origin = 'https://www.homedepot.com'): ListingProduct[] {
+  const st = asObj(state);
+  const out: ListingProduct[] = [];
+  for (const [key, value] of Object.entries(st)) {
+    const m = /^base-searchNav-(\d+)$/.exec(key);
+    if (!m || !value || typeof value !== 'object') continue;
+    const itemId = m[1] as string;
+    const entry = asObj(value);
+    const ids = asObj(entry.identifiers);
+    const path = nonEmpty(ids.canonicalUrl);
+    const pricingKeys = Object.keys(entry).filter((k) => k.startsWith('pricing('));
+    const pricing = pricingKeys.length > 0 ? pricingOf(entry) : null;
+    const promo = pricingKeys.length > 0 ? asObj(asObj(entry[pricingKeys[0]!]).promotion) : {};
+    const promotions = pricingKeys.flatMap((k) => bogoPromotionsOf(asObj(entry[k]).conditionalPromotions));
+    out.push({
+      itemId,
+      brand: nonEmpty(ids.brandName) ?? '',
+      model: nonEmpty(ids.modelNumber),
+      title: nonEmpty(ids.productLabel) ?? '',
+      url: `${origin}${path !== null && path.startsWith('/p/') ? path : `/p/${itemId}`}`,
+      productType: nonEmpty(ids.productType),
+      bundleFlag: entry.bundleFlag === true,
+      bundleItems: setItemsOf(entry.bundleItems, st),
+      ...(pricing ? {
+        price: pricing.price, wasPrice: pricing.wasPrice, dollarOff: numOrNull(promo.dollarOff), percentageOff: numOrNull(promo.percentageOff),
+        promotions: promotions.filter((p, i) => promotions.findIndex((q) => q.promotionId === p.promotionId) === i),
+      } : {}),
+    });
+  }
+  return out;
 }
 
 /** parseSearchState on a search page's text from `window.__APOLLO_STATE__=` on; null when the data is missing or does not parse. */

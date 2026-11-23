@@ -532,11 +532,14 @@ async function bundleRow(
     key: b.key, itemId: b.itemId, brand: b.brand, model: b.model, title: b.title, link: b.link,
     price: b.price, regularPrice: b.regularPrice, percentOff: b.percentOff, seenAt: b.seenAt,
     answer: ownerAnswer(question, b.split ?? null),
+    // Fix round 3: a Home Depot set ("Set · 5 items"): it has no model number.
+    ...(b.set ? { setItems: b.set.items.reduce((n, i) => n + i.quantity, 0) } : {}),
   };
   const split = b.split;
   if (!split || split.status !== 'resolved') {
     // Nov 23: not split, its own page not read, and no question open nor answered for it: it waits for its page.
-    const pageRead = b.page !== undefined && b.page !== null;
+    // Fix round 3: a set is read once its items' pages are.
+    const pageRead = b.set ? b.set.items.every((i) => Boolean(i.model)) : b.page !== undefined && b.page !== null;
     const waitingPage = !pageRead && base.answer === null && !(question && question.answer === null);
     // Step 15: read, its split waits for Home Depot's part pages (scan/settle.ts rule 2), and no question open nor answered.
     const waitingParts = !waitingPage && pageRead && (split?.waitingFor ?? []).length > 0 && base.answer === null && !(question && question.answer === null);

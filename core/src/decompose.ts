@@ -69,7 +69,7 @@ export interface UnsettledPart {
 /** One piece of evidence for a settled split (step 15). `url` is the page it was read on, when there is one. */
 export interface SplitEvidence {
   /** owner_fact (Nov 23): what the owner settled about one of the parts, in another bundle or here (core/src/facts). */
-  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact';
+  kind: 'hd_part_page' | 'bogo_pair' | 'page_quote' | 'owner_fact' | 'hd_set';
   text: string;
   /** owner_fact only: the model the owner's fact is about, so forgetting the fact finds the splits it settled. */
   model?: string;

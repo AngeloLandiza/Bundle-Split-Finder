@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS, toScanSettings } from '../../core/src/settings';
 import { bundleListsOf, discoveryFor, discoveryNote, scanSourceOf, scheduledScanWaits } from '../scanSource';
 import { latestSample } from '../../scripts/record-listing-sample';
+import { setModel } from '../views';
 
 const settings = toScanSettings(DEFAULT_SETTINGS);
 const readers = { readBundleListing: async () => ({ products: [] }), readPromoPages: async () => [] };
@@ -94,6 +95,13 @@ describe('bundleListsOf (fix round 2: the run\'s Activity details)', () => {
   });
 });
 
+describe('a Home Depot set in the deals (fix round 3)', () => {
+  it('has no model number: it is named "Set <item id>"; any other bundle keeps its model', () => {
+    expect(setModel({ model: '', itemId: '344978523', setItems: 5 })).toBe('Set 344978523');
+    expect(setModel({ model: 'PCL1201K2-PCL515B', itemId: '324903619' })).toBe('PCL1201K2-PCL515B');
+  });
+});
+
 describe('discoveryNote', () => {
   it('says how many bundles the Chrome lists held, and nothing when none were read', () => {
     expect(discoveryNote({ chromeListing: { done: true, pages: 6, bundles: 24, itemPagesRead: 24, complete: true } })).toBe('Bundle lists read in Chrome: 24 bundles.');
@@ -105,9 +113,9 @@ describe('discoveryNote', () => {
       { brand: 'DEWALT', query: null, pages: 4, listed: 40, added: 37, complete: true, empty: false },
     ];
     expect(discoveryNote({ chromeListing: { done: true, pages: 5, bundles: 40, itemPagesRead: 0, complete: true, lists } }))
-      .toBe('Bundle lists read in Chrome: 40 bundles (DEWALT: 3 with the search words, 37 more without them (40)).');
+      .toBe('Bundle lists read in Chrome: 40 bundles (DEWALT list for "dewalt 20v combo kit": 3 (1 page), 3 new; DEWALT list without search words: 40 (4 pages), 37 new).');
     const empty = lists.map((l) => ({ ...l, pages: 1, listed: 0, added: 0, empty: true }));
     expect(discoveryNote({ chromeListing: { done: true, pages: 2, bundles: 0, itemPagesRead: 0, complete: true, lists: empty, empty: true } }))
-      .toBe("Home Depot's bundle lists came back empty (DEWALT: empty with the search words, empty without them); the bundles found before are kept.");
+      .toBe('Home Depot\'s bundle lists came back empty (DEWALT list for "dewalt 20v combo kit": empty; DEWALT list without search words: empty); the bundles found before are kept.');
   });
 });
