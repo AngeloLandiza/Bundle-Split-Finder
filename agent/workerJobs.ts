@@ -155,6 +155,14 @@ export class WorkerJobs {
     return expired.length;
   }
 
+  /** A helper still working on a leased job: its lease runs a full lease from now. False when the job is not leased. */
+  extendLease(id: string): boolean {
+    const job = this.get(id);
+    if (!job || job.status !== 'leased') return false;
+    this.save({ ...job, leaseExpiresAt: new Date(this.now() + this.leaseMs).toISOString() });
+    return true;
+  }
+
   start(everyMs = 5_000): void {
     if (this.sweeper) return;
     this.sweeper = setInterval(() => this.sweep(), everyMs);

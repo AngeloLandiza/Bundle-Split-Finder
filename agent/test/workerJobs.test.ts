@@ -22,6 +22,22 @@ function setup(now = () => 0) {
 }
 
 describe('worker jobs', () => {
+  it('a heartbeat naming the leased job extends its lease, so a long batch is not handed out twice', async () => {
+    let t = 0;
+    const q = setup(() => t);
+    const a = q.enqueue('researchPage', { itemId: '1' });
+    await q.next(0);
+    t = 800;
+    expect(q.extendLease(a.id)).toBe(true);
+    t = 1500; // past the first lease (1000), inside the extended one (1800)
+    expect(q.sweep()).toBe(0);
+    expect(q.get(a.id)?.status).toBe('leased');
+    t = 1900;
+    expect(q.sweep()).toBe(1);
+    expect(q.extendLease(a.id)).toBe(false); // queued again: nothing to extend
+    expect(q.extendLease('nope')).toBe(false);
+  });
+
   it('leases the oldest queued job and finishes it with the result', async () => {
     const q = setup();
     const a = q.enqueue('page', { itemIds: ['1'] });

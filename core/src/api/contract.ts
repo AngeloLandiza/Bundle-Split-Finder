@@ -546,6 +546,11 @@ export interface WorkerNextResponse {
 /** POST /api/worker/result. */
 export type WorkerResultBody = { id: string; ok: true; result: unknown } | { id: string; ok: false; error: string };
 
+/** POST /api/worker/heartbeat: `jobId` names the job the helper is running, so the agent extends its lease (additive; omitted when idle). */
+export interface WorkerHeartbeatBody {
+  jobId?: string;
+}
+
 export interface WorkerResultResponse {
   status: WorkerJobStatus;
 }

@@ -518,7 +518,11 @@ export function createAgent(opts: AgentOptions): Agent {
     if (!status) throw new HttpError('not_found', 'No unfinished job with this id.');
     return { status };
   });
-  r.post('/api/worker/heartbeat', 'extension', () => ({ ok: true }));
+  r.post('/api/worker/heartbeat', 'extension', async (ctx) => {
+    const jobId = (await ctx.body()).jobId;
+    if (typeof jobId === 'string' && jobId !== '' && jobId.length <= 64) jobs.extendLease(jobId);
+    return { ok: true };
+  });
   r.post('/api/worker/jobs', 'ui', async (ctx) => {
     const b = obj(await ctx.body());
     const kind = b.kind as WorkerJobKind;

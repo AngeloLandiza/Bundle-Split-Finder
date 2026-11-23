@@ -131,6 +131,9 @@ describe('agent HTTP', () => {
     const job = (await (await ui('/api/worker/jobs', { method: 'POST', body: JSON.stringify({ kind: 'kitPage', input: { itemId: '314', model: 'DCK240C2' } }) })).json()) as { id: string };
     const next = (await (await ext(token, '/api/worker/next?wait=1')).json()) as { job: { id: string; kind: string; attempt: number } };
     expect(next.job).toMatchObject({ id: job.id, kind: 'kitPage', attempt: 1 });
+    const beat = await ext(token, '/api/worker/heartbeat', { method: 'POST', body: JSON.stringify({ jobId: job.id }) });
+    expect(await beat.json()).toEqual({ ok: true });
+    expect((await ext(token, '/api/worker/heartbeat', { method: 'POST' })).status).toBe(200);
     const done = await ext(token, '/api/worker/result', { method: 'POST', body: JSON.stringify({ id: job.id, ok: true, result: { items: [] } }) });
     expect(await done.json()).toEqual({ status: 'done' });
 
