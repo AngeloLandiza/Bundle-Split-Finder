@@ -6,6 +6,28 @@ const dewalt = { brand: 'DEWALT', model: 'DCK240C2DCS380B' };
 const ryobi = { brand: 'RYOBI', model: 'PCL1600K2-P553' };
 
 describe('plain words for why a question is asked', () => {
+  it('Nov 23: words every note of the third real scan\'s open questions, with the real examples', () => {
+    const dcf = { brand: 'DEWALT', model: 'DCK540D1WCF860B' };
+    expect(plainNote('1 listing(s) show the model number, but the brand is not confirmed', dcf)).toBe('One Amazon listing shows the model number, but it does not say it is DEWALT.');
+    expect(plainReason('2 listing(s) show the model number, but the brand is not confirmed; title says Replacement or OEM, which often marks a spare part', { brand: 'DEWALT', model: 'DCK540D1WCH172B' }).text).toBe(
+      '2 Amazon listings show the model number, but none says it is DEWALT. A listing’s title says Replacement or OEM, which often means a spare part, not the tool.',
+    );
+    expect(plainNote('title says kit, and a RYOBI model number does not say whether the part is itself a kit', ryobi)).toBe('A listing’s title says kit, and the model number alone does not say whether this part is a kit.');
+    expect(plainNote('page names PBP003, which none of the parts explains', { brand: 'RYOBI', model: 'PCL1600K2-PBP2003' })).toBe('Home Depot’s page also names PBP003, which is not one of the parts the model number gives.');
+    expect(plainNote("Home Depot's search found no A986501 sold by itself", { brand: 'RYOBI', model: 'PCL1600K2-A986501' })).toBe('Home Depot does not sell A986501 on its own, so its page cannot confirm what is inside.');
+    expect(plainNote('3 more listing(s) not shown', dcf)).toBe('3 more Amazon listings are not shown.');
+    expect(plainNote('model number in the title, brand not confirmed', dcf)).toBe('The listing’s title has the model number, but it does not say it is DEWALT.');
+  });
+
+  it('Nov 23: every note in the real scans\' review files is worded; none reaches the owner as the agent wrote it', () => {
+    for (const file of ['after-scan3/store/review.json', 'store/review.json']) {
+      const review = JSON.parse(readFileSync(new URL(`../../../fixtures/e2e-2026-11-23/${file}`, import.meta.url), 'utf8')) as { questions: { reason: string; brand: string; model: string }[] };
+      for (const q of review.questions) {
+        for (const note of q.reason.split(';').map((n) => n.trim()).filter(Boolean)) expect(plainNote(note, q), note).not.toBeNull();
+      }
+    }
+  });
+
   it('says a model number tail Amazon’s list does not know', () => {
     expect(plainNote("'DCS380B' matches nothing in the catalog", dewalt)).toBe('The model number ends in DCS380B, which is not on Amazon’s list of DEWALT tools yet.');
   });

@@ -63,6 +63,49 @@ const RULES: Rule[] = [
     match: /^no known (?:[A-Za-z]+ )?bundle pattern$/i,
     say: () => 'This model number does not follow a pattern Split Finder knows.',
   },
+  // Nov 23, the third real scan (fixtures/e2e-2026-11-23/after-scan3/store/review.json): the notes of match questions and
+  // of the split checks against Home Depot's own pages (core/src/scan/runner.ts, match.ts, settle.ts), word for word.
+  {
+    // 1 listing(s) show the model number, but the brand is not confirmed (DCF860B)
+    match: /^(\d+) listing\(s\) show the model number, but the brand is not confirmed$/i,
+    say: (m, ctx) => {
+      const n = Number(m[1]);
+      const brand = ctx.brand.trim() || 'the brand';
+      return n === 1
+        ? `One Amazon listing shows the model number, but it does not say it is ${brand}.`
+        : `${n} Amazon listings show the model number, but none says it is ${brand}.`;
+    },
+  },
+  {
+    // 4 more listing(s) not shown
+    match: /^(\d+) more listing\(s\) not shown$/i,
+    say: (m) => (Number(m[1]) === 1 ? 'One more Amazon listing is not shown.' : `${m[1]} more Amazon listings are not shown.`),
+  },
+  {
+    // model number in the title, brand not confirmed (match.ts BRAND_NOT_CONFIRMED)
+    match: /^model number in the title, brand not confirmed$/i,
+    say: (_m, ctx) => `The listing’s title has the model number, but it does not say it is ${ctx.brand.trim() || 'the brand'}.`,
+  },
+  {
+    // title says Replacement or OEM, which often marks a spare part (DCH172B)
+    match: /^title says Replacement or OEM, which often marks a spare part$/i,
+    say: () => 'A listing’s title says Replacement or OEM, which often means a spare part, not the tool.',
+  },
+  {
+    // title says kit, and a RYOBI model number does not say whether the part is itself a kit (A98401)
+    match: /^title says kit, and a (?:[A-Za-z]+ )?model number does not say whether the part is itself a kit$/i,
+    say: () => 'A listing’s title says kit, and the model number alone does not say whether this part is a kit.',
+  },
+  {
+    // page names PBP003, which none of the parts explains (PCL1600K2-PBP2003)
+    match: /^page names (\S+), which none of the parts explains$/i,
+    say: (m) => `Home Depot’s page also names ${m[1]}, which is not one of the parts the model number gives.`,
+  },
+  {
+    // Home Depot's search found no A986501 sold by itself (PCL1600K2-A986501)
+    match: /^Home Depot['’]s search found no (\S+) sold by itself$/i,
+    say: (m) => `Home Depot does not sell ${m[1]} on its own, so its page cannot confirm what is inside.`,
+  },
 ];
 
 /** One note in plain words, or null when this file does not know it. */
