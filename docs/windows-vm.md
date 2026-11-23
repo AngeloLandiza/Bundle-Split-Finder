@@ -1,3 +1,5 @@
+> Superseded by step 13: see [the step 13 plan](superpowers/plans/2026-11-22-step-13-agent-workplace.md) and [desktop-app.md](desktop-app.md). Kept for history.
+
 # Windows VM (UTM) — extension + local agent
 
 Split Finder is a **Chrome extension**. The optional **local agent** is a small Node server (`npm run agent:dashboard`, port **8790**). There is no single Windows installer that replaces Chrome; these steps make setup one-time and day-to-day use a double-click.

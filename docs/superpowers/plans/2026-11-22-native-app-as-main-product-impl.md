@@ -1,3 +1,5 @@
+> Superseded by step 13: see [the step 13 plan](2026-11-22-step-13-agent-workplace.md). Kept for history.
+
 # Lane D implementation — app-first UI + thin browser helper
 
 **Decision (Alex, Nov 22):** Lane **D** from `2026-11-22-native-app-as-main-product.md`. The native app is the product; Chrome carries a **thin helper** (chip, HD read, bridge) until P4.

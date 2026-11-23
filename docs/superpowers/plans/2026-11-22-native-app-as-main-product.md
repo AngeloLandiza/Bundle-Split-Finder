@@ -1,3 +1,5 @@
+> Superseded by step 13: see [the step 13 plan](2026-11-22-step-13-agent-workplace.md). Kept for history.
+
 # Native app as the main product — architecture plan (with critique)
 
 **Goal:** Native **Mac/Windows app as the primary product**, with a **thin Chrome helper** for Home Depot. **Decision: Lane D** (Alex, Nov 22). Implementation: `2026-11-22-native-app-as-main-product-impl.md`.
