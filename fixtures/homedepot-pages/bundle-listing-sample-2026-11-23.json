@@ -1,0 +1,35 @@
+{
+ "recordedAt": "2026-11-23T22:44:53Z",
+ "source": "the installed app's bundleListing job (helper build with the page-world fetch), RYOBI bundle list for 'ryobi 18v combo kit'",
+ "path": "/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5",
+ "result": {
+  "products": [],
+  "total": 24,
+  "note": "its state had 36 entries, none a product; kinds: 1917265066, ROOT_QUERY, BundleI",
+  "sample": {
+   "kinds": {
+    "#": 1,
+    "ROOT_QUERY": 1,
+    "BundleItems": 22,
+    "base-searchNav-#": 12
+   },
+   "entries": [
+    {
+     "kind": "BundleItems",
+     "key": "BundleItems:318964428",
+     "text": "{\"__typename\":\"BundleItems\",\"id\":\"318964428\",\"quantity\":1}"
+    },
+    {
+     "kind": "base-searchNav-#",
+     "key": "base-searchNav-339857091",
+     "text": "{\"__typename\":\"BaseProduct\",\"itemId\":\"339857091\",\"dataSources\":\"searchNav\",\"identifiers\":{\"__typename\":\"Identifiers\",\"brandName\":\"RYOBI\",\"itemId\":\"339857091\",\"productLabel\":\"ONE+ 18V Cordless 3/8 in. Drill/Driver Kit with 1.5 Ah Battery and 4V Cordless 1/4 in. Screwdriver Combo\",\"modelNumber\":null,\"canonicalUrl\":\"/p/sets/RYOBI-ONE-18V-Cordless-3-8-in-Drill-Driver-Kit-with-1-5-Ah-Battery-and-4V-Cordless-1-4-in-Screwdriver-Combo/339857091\",\"parentId\":\"339857091\",\"productType\":\"CONFIGURABLE_BUNDLE\",\"storeSkuNumber\":null,\"specialOrderSku\":null,\"isSuperSku\":false,\"sampleId\":null,\"omsThdSku\":null},\"media\":{\"__typename\":\"Media\",\"images\":[{\"__typename\":\"Image\",\"url\":\"https://images.thdstatic.com/productImages/1efa1410-45b1-42af-8fd5-80fa9ae69c8b/svn/ryobi-power-drills-64_<SIZE>.jpg\",\"type\":\"IMAGE\",\"subType\":\"PRIMARY\",\"sizes\":[\"65\",\"100\",\"145\",\"300\",\"400\",\"600\",\"1000\"]}]},\"pricing({\\\"isBrandPricingPolicyCompliant\\\":false,\\\"storeId\\\":\\\"121\\\"})\":{\"__typename\":\"Pricing\",\"value\":74.94,\"original\":74.94,\"mapDetail\":null,\"promotion\":{\"__typename\":\"Promotion\",\"dates\":null,\"description\":null,\"experienceTag\":null,\"subExperienceTag\":null,\"type\":null,\"dollarOff\":0,\"percentageOff\":0,\"promotionTag\":null,\"savingsCenter\":null,\"savingsCenterPromos\":null,\"specialBuySavings\":null,\"specialBuyDollarOff\":null,\"specialBuyPercentageOff\":null},\"preferredPriceFlag\":false,\"conditionalPromotions\":[{\"__typename\":\"ConditionalPromotion\",\"promotionId\":null,\"skuItemGroup\":null,\"promotionTags\":null,\"eligibilityCriteri"
+    },
+    {
+     "kind": "#",
+     "key": "1917265066",
+     "text": "{\"__typename\":\"SearchModel\",\"taxonomy\":{\"__typename\":\"Taxonomy\",\"breadCrumbs\":[{\"__typename\":\"BreadCrumb\",\"browseUrl\":null,\"creativeIconUrl\":null,\"deselectUrl\":\"/b/Bundle/N-5yc1vZbwo64/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5\",\"dimensionName\":\"Brand\",\"label\":\"RYOBI\",\"refinementKey\":\"m5d\",\"url\":null,\"dimensionId\":null},{\"__typename\":\"BreadCrumb\",\"browseUrl\":null,\"creativeIconUrl\":null,\"deselectUrl\":\"/b/RYOBI/N-5yc1vZm5d/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5\",\"dimensionName\":\"Bundle/Single\",\"label\":\"Bundle\",\"refinementKey\":\"bwo64\",\"url\":null,\"dimensionId\":null}],\"brandLinkUrl\":null},\"searchReport\":{\"__typename\":\"SearchReport\",\"keyword\":\"ryobi 18v combo kit\",\"totalProducts\":24,\"didYouMean\":null,\"correctedKeyword\":null,\"searchUrl\":\"/s/ryobi+18v+combo+kit?NCNI-5\",\"translatedFrom\":null,\"startIndex\":0,\"pageSize\":12,\"sortBy\":\"bestmatch\",\"sortOrder\":\"none\"},\"metadata\":{\"__typename\":\"SearchMetadata\",\"canonicalUrl\":\"/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5\",\"searchRedirect\":null,\"analytics\":{\"__typename\":\"Analytics\"},\"contentType\":\"plppage\",\"h1Tag\":null,\"hasPLPBanner\":false,\"clearAllRefinementsURL\":\"/b/N-5yc1v/Ntk-elasticplus/Ntt-ryobi%2B18v%2Bcombo%2Bkit?NCNI-5\",\"isStoreDisplay\":\"false\",\"productCount\":{\"__typename\":\"ProductCount\",\"inStore\":\"14\"},\"stores\":{\"__typename\":\"StoreDetailsWithNearByStores\",\"storeId\":\"121\",\"storeName\":\"Cumberland\",\"address\":{\"__typename\":\"Address\",\"postalCode\":\"30339\"},\"nearByStores\":[{\"__"
+    }
+   ]
+  }
+ }
+}
