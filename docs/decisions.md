@@ -877,3 +877,17 @@ confirmation, but they are not another brand's parts.
   recorded row (0 right, 0 wrong, 302 unknown) and on both live listings, which the answer key says are right (2 wrong).
   So no listing is downgraded to "needs a listing" on its brand field: it stays counted and `unconfirmable`, and the owner
   confirms or replaces it.
+
+## Brand aliases for rungs 0 and 1 (Nov 23)
+
+A listing's brand field counts as the part's brand when it is a recorded alias of it (`core/src/keepa/brandAliases.ts`,
+each alias with its listings); every other condition of the rung is unchanged. Derived from the brand fields the rows the
+answer key marks right carry: RYOBI ← **TTI** (B09HDZ5MPV, PBP004, right; B096WHWDNB, PCG002, uncertain) and **ONEAND**
+(B0B1QRQYK2, PCG002, right). Left out: FIRE ROSE (B0BL8BC8MF) is a seller's brand already read through its manufacturer
+field; "ONE+" as a brand field is in no recorded or live row; DEWALT has none. Measured (`npm run measure:autoconfirm`):
+recorded rows 87 right, 0 wrong, 215 unknown before and after (no recorded right row carries an alias); the two live
+listings 2 wrong before (the catalog check reads them as another brand's) and 2 right after. **Adopted.** The evidence
+reads "Amazon lists it under TTI, the maker of RYOBI; its title names PBP004" and "Amazon lists it under ONEAND, Amazon's
+spelling of RYOBI ONE+; its title names PCG002". `LADDER_VERSION` is 2, so a stored unknown is read again once (from the
+cached pull) and the deals are judged again. B096WHWDNB (TTI, part number PCG002, bulk packaged) would now confirm for
+PCG002; the key holds it uncertain, so it counts neither way.

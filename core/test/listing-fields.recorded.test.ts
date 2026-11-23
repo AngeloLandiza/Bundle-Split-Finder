@@ -84,7 +84,7 @@ describe('rung 1, the listing fields', () => {
     expect(await catalogChecksWanted(store, parts)).toEqual([expect.objectContaining({ asin: 'B07JPFHQKG', recheck: true })]);
     await applyCatalogCheck({ store, catalog: new Map(), now: () => 5 }, { ...row('B07JPFHQKG', 'DCS334B').listing, source: 'keepa_catalog' });
     const m = await store.getMatch('DEWALT:DCS334B');
-    expect(m?.catalogChecks).toEqual([expect.objectContaining({ asin: 'B07JPFHQKG', status: 'confirmed', ladder: 1 })]);
+    expect(m?.catalogChecks).toEqual([expect.objectContaining({ asin: 'B07JPFHQKG', status: 'confirmed', ladder: 2 })]);
     expect(await catalogChecksWanted(store, parts)).toEqual([]);
   });
 });

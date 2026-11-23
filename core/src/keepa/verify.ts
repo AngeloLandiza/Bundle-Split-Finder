@@ -20,6 +20,7 @@ import {
   PART_NAME, RENEWED, sameModel, type Wanted,
 } from '../match';
 import { cleanBrand } from '../serpapi/parsers';
+import { brandAliasOf, type BrandAlias } from './brandAliases';
 import type { KeepaProduct } from './types';
 
 /** Where the fields came from: a Keepa product pull, or a SerpApi amazon_product page. */
@@ -150,8 +151,17 @@ export function titleOrCountProblem(want: PartIdentity, l: ListingIdentity): str
   return null;
 }
 
+/** A confirmation through an alias says so first: "Amazon lists it under TTI, the maker of RYOBI; part number PCG002". */
+export function withAlias<T extends IdentityCheck>(alias: BrandAlias, r: T): T {
+  if (r.status !== 'confirmed') return r;
+  return { ...r, reason: `${alias.says}; ${r.reason.replace(/^Amazon's (?:catalog|product page) lists brand [^,]+, (?:and )?/, '')}` };
+}
+
 /** The structured-identity check (the rule at the top of this file). */
-export function checkIdentity(want: PartIdentity, l: ListingIdentity): IdentityCheck {
+export function checkIdentity(want: PartIdentity, l: ListingIdentity, opts: { aliases?: boolean } = {}): IdentityCheck {
+  // A brand field that is a recorded alias of the part's brand (brandAliases.ts) counts as it; nothing else changes.
+  const alias = opts.aliases === false ? null : brandAliasOf(want.brand, l.brand);
+  if (alias) return withAlias(alias, checkIdentity(want, { ...l, brand: want.brand }, { aliases: false }));
   const brand = want.brand.trim().toUpperCase();
   const model = want.model.trim().toUpperCase();
   const from = where(l.source);

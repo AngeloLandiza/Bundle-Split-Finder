@@ -143,7 +143,36 @@ export function measureNarrowBrandRule(root = ROOT): { recorded: { right: number
   return { recorded, live, wrongRows };
 }
 
+type Tally = { right: number; wrong: number; unknown: number };
+
+/**
+ * Rungs 0 and 1 (checkListingFields) without and with the brand aliases (core/src/keepa/brandAliases.ts), on every
+ * recorded row with a known answer and on the two live listings: adopted only when `after` has 0 wrong.
+ */
+export function measureBrandAliases(root = ROOT): { before: Tally; after: Tally; liveBefore: Tally; liveAfter: Tally; changed: string[] } {
+  const known = measureIdentity(root).rows.filter((r) => r.key !== 'uncertain');
+  const tally = (): Tally => ({ right: 0, wrong: 0, unknown: 0 });
+  const out = { before: tally(), after: tally(), liveBefore: tally(), liveAfter: tally(), changed: [] as string[] };
+  const add = (t: Tally, v: Verdict) => { if (v === 'right' || v === 'wrong' || v === 'unknown') t[v] += 1; };
+  const rows = [
+    ...known.map((r) => ({ live: false, want: r.want, listing: r.listing, key: r.key, label: `${r.asin} for ${r.model}` })),
+    ...LIVE_HELD.map((h) => ({ live: true, want: wantedFor('RYOBI', h.model, new Map()), listing: h.listing, key: h.key, label: `${h.listing.asin} for ${h.model} (live)` })),
+  ];
+  for (const r of rows) {
+    const off = checkListingFields(r.want, r.listing, { aliases: false });
+    const on = checkListingFields(r.want, r.listing);
+    add(r.live ? out.liveBefore : out.before, verdictOf(r.key as 'is' | 'not', off));
+    add(r.live ? out.liveAfter : out.after, verdictOf(r.key as 'is' | 'not', on));
+    if (off.status !== on.status) out.changed.push(`${r.label}: ${off.status} -> ${on.status} (${on.reason})`);
+  }
+  return out;
+}
+
 if (process.argv[1] && /measure-autoconfirm\.ts$/.test(process.argv[1])) {
+  const a = measureBrandAliases();
+  const t = (x: Tally) => `${x.right} right, ${x.wrong} wrong, ${x.unknown} unknown`;
+  console.log(`Brand aliases, rungs 0 and 1, recorded rows: before ${t(a.before)}; after ${t(a.after)}. Live listings: before ${t(a.liveBefore)}; after ${t(a.liveAfter)}.`);
+  for (const c of a.changed) console.log(`  ${c}`);
   const n = measureNarrowBrandRule();
   console.log(`Narrow brand contradiction, recorded rows: ${n.recorded.right} right (${n.recorded.newRight} not already contradicted), ${n.recorded.wrong} wrong, ${n.recorded.unknown} unknown; the two live listings: ${n.live.wrong} wrong, ${n.live.unknown} unknown`);
   for (const w of n.wrongRows) console.log(`  wrong: ${w}`);

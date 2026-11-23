@@ -21,7 +21,8 @@
 import { toUpc12 } from '../identifiers';
 import { FOR_BRAND, AFTERMARKET, KIT_CONTENTS, MODEL_PATTERNS, NOT_INCLUDED_PHRASE, sameModel, type Wanted } from '../match';
 import { cleanBrand } from '../serpapi/parsers';
-import { checkIdentity, titleOrCountProblem, type IdentityCheck, type ListingIdentity } from './verify';
+import { brandAliasOf } from './brandAliases';
+import { checkIdentity, titleOrCountProblem, withAlias, type IdentityCheck, type ListingIdentity } from './verify';
 
 export type FieldRule = 'id_field' | 'features' | 'title' | 'gtin';
 
@@ -111,9 +112,12 @@ function evidence(want: Wanted, l: ListingIdentity, rules: readonly FieldRule[],
  * its unknown, the sub-rules `rules` (ADOPTED_RULES by default) under the gate above. Never contradicts.
  */
 export function checkListingFields(
-  want: Wanted, l: ListingIdentity, opts: { rules?: readonly FieldRule[]; hdUpc?: string | null } = {},
+  want: Wanted, l: ListingIdentity, opts: { rules?: readonly FieldRule[]; hdUpc?: string | null; aliases?: boolean } = {},
 ): FieldCheck {
-  const first = checkIdentity(want, l);
+  // A brand field that is a recorded alias of the part's brand (brandAliases.ts) counts as it; nothing else changes.
+  const alias = opts.aliases === false ? null : brandAliasOf(want.brand, l.brand);
+  if (alias) return withAlias(alias, checkListingFields(want, { ...l, brand: want.brand }, { ...opts, aliases: false }));
+  const first = checkIdentity(want, l, { aliases: false });
   if (first.status !== 'unknown') return { ...first, rule: null };
   const rules = opts.rules ?? ADOPTED_RULES;
   const found = evidence(want, l, rules, opts.hdUpc ?? want.upc ?? null);

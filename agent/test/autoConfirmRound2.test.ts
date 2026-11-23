@@ -92,8 +92,8 @@ describe('round 2: re-pick before giving up', () => {
     let searchedAt: Record<string, number> = {};
     const deps = {
       store, now: () => T, keepaBudget: budget, shouldStop: () => false,
-      // The answer key's other PCG002 rows: B096WHWDNB (brand TTI, bulk packaged), and the live listing itself.
-      keepaSearch: async (term: string) => { searches.push(term); return [keepaProduct('B0B1QRQYK2', 'ONEAND', live('PCG002').title!, null), keepaProduct('B096WHWDNB', 'TTI', 'TTI Ryobi PCG002 18V Charger (Bulk Packaged)', 'PCG002')]; },
+      // The live listing itself and the answer key's renewed PCG002 row (B0CXFDDZNB, brand Amazon Renewed, the key: not the part).
+      keepaSearch: async (term: string) => { searches.push(term); return [keepaProduct('B0B1QRQYK2', 'ONEAND', live('PCG002').title!, null), keepaProduct('B0CXFDDZNB', 'Amazon Renewed', '18-Volt Ryobi QuickCharger PCG002 (Renewed), GREEN', 'PCG002')]; },
       get searchedAt() { return searchedAt; },
       saveSearched: (key: string, at: number) => { searchedAt = { ...searchedAt, [key]: at }; },
     };
