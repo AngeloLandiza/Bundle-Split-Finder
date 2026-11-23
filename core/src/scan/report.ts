@@ -405,6 +405,17 @@ async function bundleRow(
   };
 }
 
+/**
+ * Part rows for models no bundle's split holds, as the report builds a bundle's parts (a BOGO's free items,
+ * core/src/tracking/bogo.ts): the stored match, listing and every labelled price. Reads only.
+ */
+export async function partRowsFor(store: ScanStore, settings: ScanSettings, parts: { brand: string; model: string; qty: number }[]): Promise<PartRow[]> {
+  const refs = await refsOf(store);
+  const out: PartRow[] = [];
+  for (const p of parts) out.push(...(await partRows(store, settings, refs, p.brand, { [p.model]: p.qty })));
+  return out;
+}
+
 /** One bundle's row, exactly as buildReport builds it. A product page the owner has open shows it (pageView.ts). Reads only. */
 export async function reportRow(store: ScanStore, settings: ScanSettings, b: BundleRecord): Promise<BundleRow> {
   const stored = await store.listBundles();
