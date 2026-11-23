@@ -47,19 +47,21 @@ fn create(app: &AppHandle) -> Result<WebviewWindow, String> {
   }
   let token = agent::proven_token(app).ok_or("the agent has not proven itself")?;
   let url = tauri::Url::parse(&format!("{}#/popover", agent::UI_URL)).map_err(|e| e.to_string())?;
-  let builder = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(url))
+  let (w, h) = window_size();
+  let builder = shell::webview_options(WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(url)))
     .title("Split Finder")
-    .inner_size(WIDTH, HEIGHT)
+    .inner_size(w, h)
     .resizable(false)
     .decorations(false)
-    .shadow(true)
+    // Windows: the page draws the flyout's shadow in the transparent margin; a native one would frame the margin.
+    .shadow(!cfg!(windows))
     .always_on_top(true)
     .visible_on_all_workspaces(true)
     .skip_taskbar(true)
     .accept_first_mouse(true)
     .visible(false)
     .focused(false)
-    .initialization_script(shell::init_script(Some(&token)))
+    .initialization_script(shell::init_script(Some(&token), false))
     // A page that finishes loading after the window was shown has missed the "opened" event.
     .on_page_load(|w, payload| {
       if payload.event() == tauri::webview::PageLoadEvent::Finished && w.is_visible().unwrap_or(false) {
@@ -101,10 +103,28 @@ fn effects<'a>(
         .build(),
     )
   }
-  #[cfg(not(target_os = "macos"))]
+  // Windows: a transparent borderless window MARGIN larger than the flyout on each side, so the shadow the
+  // page draws (desktop-ui windows.css) is not cut off; the page is moved in by MARGIN to sit inside it.
+  #[cfg(windows)]
+  {
+    builder.transparent(true).initialization_script(format!(
+      "document.addEventListener('DOMContentLoaded', function () {{ var s = document.createElement('style'); \
+       s.textContent = \":root[data-surface='popover'] body {{ padding: {MARGIN}px; margin: 0; }}\"; \
+       document.head.appendChild(s); }});"
+    ))
+  }
+  #[cfg(not(any(target_os = "macos", windows)))]
   {
     builder
   }
+}
+
+/// Room around the flyout for its shadow, on Windows; none on a Mac (the material carries its own).
+const MARGIN: f64 = if cfg!(windows) { 12.0 } else { 0.0 };
+
+/// The window: the flyout and its margin, in points.
+fn window_size() -> (f64, f64) {
+  (WIDTH + 2.0 * MARGIN, HEIGHT + 2.0 * MARGIN)
 }
 
 /// Tells the page it is on screen or not; it follows the agent's events only while it is.
@@ -197,9 +217,10 @@ fn place(window: &WebviewWindow, tray: &Rect) {
   let (x, y) = anchor_in(
     (pos.x, pos.y, size.width, size.height),
     (wa.position.x as f64, wa.position.y as f64, wa.size.width as f64, wa.size.height as f64),
-    (WIDTH * s, HEIGHT * s),
-    GAP * s,
-    EDGE * s,
+    (window_size().0 * s, window_size().1 * s),
+    // The visible flyout sits MARGIN inside the window: 12px off the taskbar and the screen's edges.
+    0.0,
+    0.0,
   );
   let _ = window.set_position(PhysicalPosition::new(x.round() as i32, y.round() as i32));
 }

@@ -57,7 +57,7 @@ pub fn open(app: &AppHandle, tab: Option<&str>) -> Result<(), String> {
     return Err("The agent is not running.".to_string());
   };
   let url = tauri::Url::parse(&address(tab)).map_err(|e| e.to_string())?;
-  let builder = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(url))
+  let builder = shell::webview_options(WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(url)))
     .title("Settings")
     .inner_size(WIDTH, START_HEIGHT)
     // The height is the pane's; the width never changes.
@@ -67,7 +67,7 @@ pub fn open(app: &AppHandle, tab: Option<&str>) -> Result<(), String> {
     .fullscreen(false)
     .center()
     .visible(false)
-    .initialization_script(shell::init_script(Some(&token)))
+    .initialization_script(shell::init_script(Some(&token), shell::mica()))
     // Shown once the page has painted, so a dark Mac never flashes a white window.
     .on_page_load(|w, payload| {
       if payload.event() == PageLoadEvent::Finished {
@@ -92,9 +92,10 @@ fn chrome<'a>(
       .hidden_title(true)
       .traffic_light_position(LogicalPosition::new(20.0, 14.0))
   }
+  // Windows: the standard title bar ("Settings"), with Mica on Windows 11 as the main window has.
   #[cfg(not(target_os = "macos"))]
   {
-    builder
+    shell::mica_window(builder)
   }
 }
 

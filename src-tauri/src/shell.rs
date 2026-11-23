@@ -64,20 +64,102 @@ struct TrayItems {
 /// inside the desktop shell. The page reads `window.__SPLIT_FINDER_TOKEN__`, and
 /// `__SPLIT_FINDER_SHELL__.chrome`: "unified" when the window has the macOS unified title bar and the
 /// sidebar material behind a transparent webview (native_chrome below), so the page leaves its
-/// sidebar clear and paints only the content area.
-pub(crate) fn init_script(token: Option<&str>) -> String {
+/// sidebar clear and paints only the content area. `backdrop: 'mica'` when this window has Windows 11's
+/// Mica behind a transparent webview (`mica`), so the page clears its ground (desktop-ui windows.css);
+/// absent on Windows 10 and everywhere else.
+pub(crate) fn init_script(token: Option<&str>, mica: bool) -> String {
   let token_js = token
     .map(|t| serde_json::to_string(t).unwrap_or_else(|_| "null".into()))
     .unwrap_or_else(|| "null".into());
   let chrome = if cfg!(target_os = "macos") { "unified" } else { "standard" };
+  let backdrop = if mica { ", backdrop: 'mica'" } else { "" };
   format!(
     "(function(){{ if (location.origin !== '{origin}') return; \
      var t = {token_js}; if (t) window.__SPLIT_FINDER_TOKEN__ = t; \
-     window.__SPLIT_FINDER_SHELL__ = {{ platform: '{platform}', chrome: '{chrome}' }}; }})();",
+     window.__SPLIT_FINDER_SHELL__ = {{ platform: '{platform}', chrome: '{chrome}'{backdrop} }}; }})();",
     origin = agent::AGENT_ORIGIN,
     platform = std::env::consts::OS,
   )
 }
+
+/// Windows 11 is build 22000 and later; Mica needs it (Windows 10 has no Mica).
+#[cfg(windows)]
+fn windows_build() -> u32 {
+  #[repr(C)]
+  struct OsVersionInfoW {
+    size: u32,
+    major: u32,
+    minor: u32,
+    build: u32,
+    platform: u32,
+    csd: [u16; 128],
+  }
+  #[link(name = "ntdll")]
+  extern "system" {
+    // The real version: GetVersionEx answers what the app manifest claims.
+    fn RtlGetVersion(info: *mut OsVersionInfoW) -> i32;
+  }
+  let mut info = OsVersionInfoW {
+    size: std::mem::size_of::<OsVersionInfoW>() as u32,
+    major: 0,
+    minor: 0,
+    build: 0,
+    platform: 0,
+    csd: [0; 128],
+  };
+  // SAFETY: a correctly sized OSVERSIONINFOW, written by the call and read only after it succeeds.
+  if unsafe { RtlGetVersion(&mut info) } == 0 {
+    info.build
+  } else {
+    0
+  }
+}
+
+/// Whether the main and Settings windows get Mica (and tell the page so): Windows 11 only.
+pub(crate) fn mica() -> bool {
+  #[cfg(windows)]
+  {
+    static MICA: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *MICA.get_or_init(|| windows_build() >= 22000)
+  }
+  #[cfg(not(windows))]
+  {
+    false
+  }
+}
+
+/// Windows 11 chrome for a window that shows the page: Mica behind a transparent webview when the system has
+/// it, else the window as it is. Elsewhere nothing.
+#[cfg_attr(target_os = "macos", allow(dead_code))]
+pub(crate) fn mica_window<'a>(
+  builder: WebviewWindowBuilder<'a, Wry, AppHandle>,
+) -> WebviewWindowBuilder<'a, Wry, AppHandle> {
+  #[cfg(windows)]
+  if mica() {
+    use tauri::window::{Effect, EffectsBuilder};
+    return builder.transparent(true).effects(EffectsBuilder::new().effect(Effect::Mica).build());
+  }
+  builder
+}
+
+/// Every webview the app opens on Windows shares one WebView2 environment, so they all take the same
+/// options: Fluent overlay scrollbars (WebView2 125+; older runtimes keep the classic ones). Tauri's
+/// scroll_bar_style, not a browser flag: additional_browser_args would replace wry's default flags.
+pub(crate) fn webview_options<'a>(
+  builder: WebviewWindowBuilder<'a, Wry, AppHandle>,
+) -> WebviewWindowBuilder<'a, Wry, AppHandle> {
+  #[cfg(windows)]
+  {
+    builder.scroll_bar_style(tauri::webview::ScrollBarStyle::FluentOverlay)
+  }
+  #[cfg(not(windows))]
+  {
+    builder
+  }
+}
+
+/// "Quit Split Finder" on a Mac, "Exit" in Windows (desktop-ui lib/platform.ts says the same).
+const QUIT_LABEL: &str = if cfg!(windows) { "Exit" } else { "Quit Split Finder" };
 
 /// Where the close button's top-left sits, in points from the window's top-left. The page's toolbar
 /// and the sidebar's title band are 52px (desktop-ui base.css `--toolbar-h`). Tao sets the title bar
@@ -110,16 +192,11 @@ fn native_chrome<'a>(
           .build(),
       )
   }
-  // Windows: the standard frame and title bar, with the Mica backdrop on Windows 11 (the title bar takes
-  // it; Windows 10 has no Mica and Tauri leaves the window as it is). The webview stays opaque.
-  #[cfg(windows)]
+  // Windows: the standard frame and title bar, with Mica behind a transparent webview on Windows 11 (the
+  // page clears its ground when told `backdrop: 'mica'`); on Windows 10 an opaque window as it is.
+  #[cfg(not(target_os = "macos"))]
   {
-    use tauri::window::{Effect, EffectsBuilder};
-    builder.effects(EffectsBuilder::new().effect(Effect::Mica).build())
-  }
-  #[cfg(not(any(target_os = "macos", windows)))]
-  {
-    builder
+    mica_window(builder)
   }
 }
 
@@ -141,8 +218,8 @@ pub fn create_window(app: &AppHandle) -> Result<WebviewWindow, String> {
   let window = match agent::proven_token(app) {
     Some(token) => {
       app.state::<ShellState>().error_page.store(false, Ordering::Relaxed);
-      native_chrome(WebviewWindowBuilder::from_config(app, &cfg).map_err(|e| e.to_string())?)
-        .initialization_script(init_script(Some(&token)))
+      native_chrome(webview_options(WebviewWindowBuilder::from_config(app, &cfg).map_err(|e| e.to_string())?))
+        .initialization_script(init_script(Some(&token), mica()))
         .build()
         .map_err(|e| e.to_string())?
     }
@@ -158,8 +235,7 @@ pub fn create_window(app: &AppHandle) -> Result<WebviewWindow, String> {
       let mut blank_cfg = cfg.clone();
       let blank = tauri::Url::parse("about:blank").map_err(|e| e.to_string())?;
       blank_cfg.url = WebviewUrl::External(blank);
-      WebviewWindowBuilder::from_config(app, &blank_cfg)
-        .map_err(|e| e.to_string())?
+      webview_options(WebviewWindowBuilder::from_config(app, &blank_cfg).map_err(|e| e.to_string())?)
         .title(format!("Split Finder: {message}"))
         .on_page_load(move |w, payload| {
           if payload.event() == PageLoadEvent::Finished {
@@ -389,7 +465,7 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
   let t_questions = MenuItem::with_id(app, "questions", questions_label(0), true, None::<&str>)?;
   let t_pause = MenuItem::with_id(app, "pause", pause_label(false), true, None::<&str>)?;
   let t_settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
-  let t_quit = MenuItem::with_id(app, "quit", "Quit Split Finder", true, None::<&str>)?;
+  let t_quit = MenuItem::with_id(app, "quit", QUIT_LABEL, true, None::<&str>)?;
   let tray_menu = Menu::with_items(
     app,
     &[
@@ -450,7 +526,7 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
     launch_at_login(app),
     None::<&str>,
   )?;
-  let a_quit = MenuItem::with_id(app, "quit", "Quit Split Finder", true, Some("CmdOrCtrl+Q"))?;
+  let a_quit = MenuItem::with_id(app, "quit", QUIT_LABEL, true, Some("CmdOrCtrl+Q"))?;
   let app_sub = SubmenuBuilder::new(app, "Split Finder")
     .item(&a_settings)
     .item(&a_login)
