@@ -107,7 +107,7 @@ function NeedsYou({ res, onRetry }: { res: ReturnType<typeof useResource<{ quest
     >
       {res.status === 'loading' ? <LoadingState compact /> : null}
       {res.status === 'error' && !res.data ? <LoadError error={res.error} onRetry={onRetry} /> : null}
-      {res.data && questions.length === 0 ? <EmptyState compact title="Nothing needs you" cause="Every open question was answered or applied by Autopilot. New ones come with the next scan." /> : null}
+      {res.data && questions.length === 0 ? <EmptyState compact title="Nothing needs you" cause="No open questions. The agent asks only when a split or match is not certain; new ones come with each scan." /> : null}
       {questions.length > 0 ? (
         <ul className="rows">
           {ordered.slice(0, TOP).map((q) => (
