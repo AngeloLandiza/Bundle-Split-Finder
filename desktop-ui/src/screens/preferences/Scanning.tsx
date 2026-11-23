@@ -1,5 +1,5 @@
 import { useApp } from '../../api/hooks';
-import type { Schedule } from '../../api/types';
+import type { FeeSource, Schedule } from '../../api/types';
 import { Checkbox, Select, TextField } from '../../components/Fields';
 import { Meter } from '../../components/States';
 import { count } from '../../lib/format';
@@ -24,6 +24,8 @@ export function ScanningPane() {
   const { state } = useApp();
   const cfg = settings.settings;
   const fees = cfg.fees;
+  // A store written before the choice existed reads as the flat amount (the agent migrates it once).
+  const fromKeepa = fees.fulfillmentSource === 'keepa';
   const budget = state?.budget;
   const f = forecast(cfg.schedule, cfg.searchesPerScan, budget?.serpMonthly ?? 250, cfg.reserve);
   const setCfg = (part: Partial<typeof cfg>, delay = 0) => update({ settings: part }, { delay });
@@ -118,7 +120,21 @@ export function ScanningPane() {
       <Row label="Minimum referral">
         <NumberField label="Minimum referral" value={fees.minReferral} rule={RULES.minReferral} prefix="$" step="0.01" onCommit={(v) => setFee('minReferral', v)} />
       </Row>
-      <Row label="Fulfillment, per unit" help={fees.fulfillmentFee === 0 ? FBA_AT_ZERO : undefined}>
+      <Row
+        label="Fulfillment fee"
+        help={fromKeepa ? 'Amazon’s FBA fee for each part’s own listing, as Keepa reads it. A part Keepa has no fee for yet takes the flat amount below.' : undefined}
+      >
+        <Select
+          label={<span className="sr-only">Fulfillment fee</span>}
+          value={fromKeepa ? 'keepa' : 'flat'}
+          width="md"
+          onChange={(e) => update({ settings: { fees: { ...fees, fulfillmentSource: e.target.value as FeeSource } } })}
+        >
+          <option value="keepa">Amazon’s FBA fee from Keepa (recommended)</option>
+          <option value="flat">A flat amount per unit</option>
+        </Select>
+      </Row>
+      <Row label={fromKeepa ? 'Flat amount, when Keepa has none' : 'Fulfillment, per unit'} help={!fromKeepa && fees.fulfillmentFee === 0 ? FBA_AT_ZERO : undefined}>
         <NumberField label="Fulfillment per unit" value={fees.fulfillmentFee} rule={RULES.fulfillmentFee} prefix="$" step="0.01" onCommit={(v) => setFee('fulfillmentFee', v)} />
       </Row>
       <Row label="Sales tax you pay">

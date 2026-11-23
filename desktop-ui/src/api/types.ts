@@ -38,6 +38,7 @@ export type {
 } from '@core/api/contract';
 export type { ConfirmState } from '@core/scan/confirmed';
 export type { Schedule } from '@core/schedule';
+export type { FeeSource } from '@core/money';
 
 /** One scan step as the agent now says it: a mark, a label, its figure, and its own count when it has one. */
 export interface PipelineStepView {
@@ -173,6 +174,8 @@ export interface DealRow {
   watched: boolean;
   /** The last scan said a way to sell is worth buying now (only a watched bundle is judged). */
   buyNow: boolean;
+  /** The agent's one-line verdict on a watched bundle ("Not worth buying now: est. profit $6.63 is below your $20."); null when not judged. */
+  signalNote?: string | null;
   /** A BOGO promotion he entered: 'choose' until he picks the free tool. */
   bogo: 'choose' | 'chosen' | null;
   /** BOGO found by the agent: this bundle is a starter + free tool pair Home Depot lists at the starter's price. */

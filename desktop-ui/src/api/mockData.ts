@@ -47,7 +47,7 @@ export const SETTINGS: AppSettings = {
     reserve: 20,
     keepaTokensPerScan: 60,
     keepaReserve: 100,
-    fees: { referralRate: 0.15, fulfillmentFee: 5.5, minReferral: 0.3, salesTaxRate: 0, inboundCost: 0 },
+    fees: { referralRate: 0.15, fulfillmentFee: 5.5, minReferral: 0.3, salesTaxRate: 0, inboundCost: 0, fulfillmentSource: 'keepa', referralSource: 'flat' },
     brands: ['DEWALT', 'RYOBI'],
     pagesPerBrand: 2,
     discoveryMode: 'auto',
