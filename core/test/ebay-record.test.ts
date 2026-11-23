@@ -1,13 +1,14 @@
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
 import { EbayClient } from '../src/ebay/client';
 import { runEbayRecord } from '../../scripts/ebay-record-cli';
 
-const FIX = new URL('../../fixtures/', import.meta.url).pathname;
+const FIX = fileURLToPath(new URL('../../fixtures/', import.meta.url));
 const body = (f: string): unknown => (JSON.parse(readFileSync(join(FIX, 'ebay', f), 'utf8')) as { response: unknown }).response;
 const SEARCH = body('browse-search-PCL206B-2026-11-19.json');
 const ITEM = body('browse-item-237179711800-2026-11-19.json');

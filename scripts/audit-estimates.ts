@@ -6,6 +6,7 @@
 // verdict: nothing here changes a match (rule 4). Then the incomplete ones, with what is unpriced and the break-even.
 
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { buildReport } from '../core/src/scan/report';
 import { DEFAULT_SCAN_SETTINGS, type BundleRow, type PartRow } from '../core/src/scan/types';
@@ -69,7 +70,7 @@ export function auditLines(rows: BundleRow[]): string[] {
   return lines;
 }
 
-const isMain = import.meta.url === `file://${process.argv[1]}`;
+const isMain = process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (isMain) {
   const dir = process.argv[2] ?? join(ROOT, 'fixtures', 'e2e-2026-11-23', 'after-scan3');
   const store = await loadScanFolder(dir);

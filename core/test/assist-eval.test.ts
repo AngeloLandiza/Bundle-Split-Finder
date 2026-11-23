@@ -4,6 +4,7 @@
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -14,7 +15,7 @@ import { PRICE_TABLE } from '../src/judge/eval';
 import { runAssistEval, type SuggestionsFile, suggestionsPath } from '../../scripts/assist-eval-cli';
 import { asked, assistWorld } from './assist-world';
 
-const FIX = new URL('../../fixtures/', import.meta.url).pathname;
+const FIX = fileURLToPath(new URL('../../fixtures/', import.meta.url));
 const KEY = 'sk-ant-test-0000-not-a-real-key';
 const MODEL = 'claude-haiku-5-5';
 

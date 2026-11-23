@@ -1,6 +1,7 @@
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -8,7 +9,7 @@ import type { EbayListing } from '../src/ebay/types';
 import { costOf, type EvalResult, type JudgeCall, type Label, type ListingJudge, PRICE_TABLE, PROMPT_VERSION, scoreJudgements } from '../src/judge';
 import { hiddenByCap, judgementsPath, type JudgementsFile, runJudgeEval, sampleLabels } from '../../scripts/judge-eval-cli';
 
-const FIX = new URL('../../fixtures/', import.meta.url).pathname;
+const FIX = fileURLToPath(new URL('../../fixtures/', import.meta.url));
 
 function tmpFixtures(): string {
   const dir = mkdtempSync(join(tmpdir(), 'judge-eval-'));
