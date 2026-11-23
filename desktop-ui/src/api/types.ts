@@ -459,6 +459,10 @@ export interface ReviewQuestion {
 export interface AskAiResult {
   queued: boolean;
   reason?: string;
+  /** When nothing was queued: asking anyway (`force`) would start. Absent from an older agent (the words decide then). */
+  canForce?: boolean;
+  /** What asking anyway costs, in dollars, when the agent says. */
+  costUsd?: number;
 }
 
 export interface ReviewView {

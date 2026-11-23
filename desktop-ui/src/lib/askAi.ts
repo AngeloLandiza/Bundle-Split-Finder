@@ -11,7 +11,7 @@ export type AskNote =
   /** The agent took it. `sig` is the question as it was: the row stops saying "Checking again…" when the question changes. */
   | { phase: 'queued'; sig: string; at: number }
   /** Nothing was started, and why; `force` when asking anyway is what the reason implies. */
-  | { phase: 'declined'; reason: string; force: boolean; sig: string }
+  | { phase: 'declined'; reason: string; force: boolean; sig: string; costUsd?: number }
   /** The call itself failed. */
   | { phase: 'failed'; text: string };
 
@@ -36,12 +36,16 @@ const NOTHING_NEW = /nothing new|no new|unchanged|nothing (?:has )?changed|since
 export function noteOf(r: AskAiResult, q: ReviewQuestion, now: number): AskNote {
   if (r.queued) return { phase: 'queued', sig: askSig(q), at: now };
   const reason = r.reason?.trim() || 'The AI did not start.';
-  return { phase: 'declined', reason, force: q.askCostUsd !== null && NOTHING_NEW.test(reason), sig: askSig(q) };
+  // The agent says whether asking anyway would start (`canForce`); an older agent says nothing, and then the words decide.
+  const force = r.canForce ?? (q.askCostUsd !== null && NOTHING_NEW.test(reason));
+  return { phase: 'declined', reason, force, sig: askSig(q), ...(r.costUsd !== undefined ? { costUsd: r.costUsd } : {}) };
 }
 
 /** The action beside a declined press: "Ask anyway · about $0.07". Null when the reason implies none. */
 export function forceLabel(note: AskNote, q: ReviewQuestion): string | null {
-  return note.phase === 'declined' && note.force ? `Ask anyway${q.askCostUsd !== null ? ` · about ${money(q.askCostUsd)}` : ''}` : null;
+  if (note.phase !== 'declined' || !note.force) return null;
+  const cost = note.costUsd ?? q.askCostUsd;
+  return `Ask anyway${cost !== null ? ` · about ${money(cost)}` : ''}`;
 }
 
 /**

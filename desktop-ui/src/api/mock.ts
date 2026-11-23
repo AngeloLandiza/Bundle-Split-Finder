@@ -342,9 +342,9 @@ export function createMockClient(): ApiClient {
       await online(700);
       const q = questions.find((x) => x.id === id);
       if (!q) throw new ApiError('refused', 'That question is not open any more.');
-      if (isWorking(q.followUp)) return { queued: false, reason: 'The app is already working on this one.' };
-      if (q.askCostUsd === null) return { queued: false, reason: 'There is nothing more the AI could read for this question.' };
-      if (q.suggestion && !o?.force) return { queued: false, reason: 'Nothing new to read since the last answer.' };
+      if (isWorking(q.followUp)) return { queued: false, reason: 'The app is already working on this one.', canForce: false };
+      if (q.askCostUsd === null) return { queued: false, reason: 'There is nothing more the AI could read for this question.', canForce: false };
+      if (q.suggestion && !o?.force) return { queued: false, reason: 'Nothing new to read since the last answer.', canForce: true, costUsd: q.askCostUsd };
       // The app takes it: queued, then running with what it is doing, then done with what it tried (invented here).
       const tried = q.followUp?.tried ?? [];
       const set = (followUp: FollowUp, suggestion = q.suggestion) => {

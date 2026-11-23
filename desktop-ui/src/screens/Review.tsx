@@ -65,7 +65,7 @@ export function ReviewScreen({ openId }: { openId: string | null }) {
     async (q: ReviewQuestion, force = false) => {
       const here = refusedHere(q, { hasAi });
       if (here) {
-        setAsks((a) => ({ ...a, [q.id]: noteOf({ queued: false, reason: here }, { ...q, askCostUsd: null }, 0) }));
+        setAsks((a) => ({ ...a, [q.id]: noteOf({ queued: false, reason: here, canForce: false }, q, 0) }));
         return;
       }
       setAsks((a) => ({ ...a, [q.id]: { phase: 'sending' } }));

@@ -34,6 +34,13 @@ describe('what Ask AI says', () => {
     expect(noteOf({ queued: false, reason: 'Nothing new to read.' }, { ...q, askCostUsd: null }, 0)).toMatchObject({ force: false });
   });
 
+  it('canForce from the agent decides: true offers Ask anyway at the agent\'s cost, false offers nothing, whatever the words say', () => {
+    const yes = noteOf({ queued: false, reason: 'The page has not changed.', canForce: true, costUsd: 0.09 }, q, 0);
+    expect(forceLabel(yes, q)).toBe('Ask anyway · about $0.09');
+    expect(forceLabel(noteOf({ queued: false, reason: 'The page has not changed.', canForce: true }, q, 0), q)).toBe('Ask anyway · about $0.07');
+    expect(forceLabel(noteOf({ queued: false, reason: 'Nothing new to read since the last answer.', canForce: false }, q, 0), q)).toBeNull();
+  });
+
   it('answers a press at once, without the agent, when it cannot start', () => {
     expect(refusedHere(q, { hasAi: true })).toBeNull();
     expect(refusedHere(q, { hasAi: false })).toMatch(/needs an Anthropic or OpenAI key/);
