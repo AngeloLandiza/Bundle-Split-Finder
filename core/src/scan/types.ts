@@ -12,6 +12,7 @@ import type { Grade } from '../match';
 import { DEFAULT_FEES, type BundleResult, type FeeSettings } from '../money';
 import type { BlockReason } from '../serpapi/budget';
 import type { Params, SearchOptions, SearchResult } from '../serpapi/client';
+import type { LookupBlock } from '../keepa/route';
 import type { PipelineStep } from './pipeline';
 
 // ---------------------------------------------------------------- ports
@@ -544,12 +545,19 @@ export interface ReviewItem {
 export type ScanStep =
   | { kind: 'catalog'; brand: string; page: number }
   | { kind: 'listing'; q: string; page: number; filterTokens: string | null; bundlesOnly: boolean }
-  | { kind: 'lookup'; brand: string; model: string }
+  /**
+   * Step 15: `via` is what the plan pays the lookup with (keepa/route.ts). Absent on a plan without Keepa (SerpApi) and on
+   * a job saved before step 15 (Keepa when a Keepa lookup is set, as before).
+   */
+  | { kind: 'lookup'; brand: string; model: string; via?: 'keepa' | 'serpapi' }
   | { kind: 'refresh'; brand: string; model: string; asin: string }
   | { kind: 'identify'; brand: string; model: string; asin: string };
 
-/** A budget limit, SerpApi's own 429, Keepa with no tokens, a failed request, or the user pressing Stop. */
-export type StopReason = BlockReason | 'no_tokens' | 'rate_limited' | 'error' | 'user';
+/**
+ * A budget limit, SerpApi's own 429, Keepa with no tokens, a failed request, or the user pressing Stop. Step 15:
+ * `keepa_tokens`: the scan ended with Amazon lookups waiting for Keepa tokens to refill (every other budget used too).
+ */
+export type StopReason = BlockReason | 'keepa_tokens' | 'no_tokens' | 'rate_limited' | 'error' | 'user';
 
 export interface ScanCounts {
   pagesFetched: number;
@@ -653,6 +661,13 @@ export interface ScanJob {
   keepaTokensUsed?: number;
   /** Planned discovery vs tracking token slices at parts planning (when Keepa scale is on). */
   keepaPlan?: { discoveryTokens: number; trackingTokens: number; lookups: number; refreshes: number };
+  /**
+   * Step 15: Amazon lookups this job answered, by what paid for them (a cached answer counts where it was sent), the
+   * lookups it left waiting (in `deferred`), and why they wait. Absent on a job saved before step 15.
+   */
+  lookupsVia?: { keepa: number; serpapi: number };
+  lookupsWaiting?: number;
+  lookupsBlockedBy?: LookupBlock | null;
   /** Part refreshes where Amazon price fell vs the previous Keepa trend cache. */
   partPriceDrops?: { partModel: string; delta: number }[];
   counts: ScanCounts;

@@ -15,13 +15,14 @@ import type { ScanJob } from './types';
 // ---------------------------------------------------------------- the record on the job
 
 /**
- * The stages, in the order a scan runs them (runScan). The Amazon lookups come after eBay because the lookups are
- * planned once the free steps are done (planParts); the step list the owner reads is in this order. Changing the
- * order of this array is the whole change if the lookups ever run earlier.
+ * The stages, in the order a scan runs them (runScan). Step 15, decision 3: the Amazon lookups, which produce the
+ * estimates, run as soon as the splits and kit pages are known, before Home Depot's part prices and eBay (both free,
+ * slow, and not needed for an estimate). The step list the owner reads is in this order.
  */
-export const STEP_IDS = ['hdPages', 'bundlePages', 'kitPages', 'partPrices', 'ebay', 'judge', 'amazon', 'finish'] as const;
+export const STEP_IDS = ['hdPages', 'bundlePages', 'kitPages', 'amazon', 'partPrices', 'ebay', 'judge', 'finish'] as const;
 export type StepId = (typeof STEP_IDS)[number];
-export type StepState = 'next' | 'now' | 'done' | 'skipped';
+/** Step 15: `failed`: the step ran and its reader or service failed; the reason is `skippedReason`. */
+export type StepState = 'next' | 'now' | 'done' | 'skipped' | 'failed';
 
 export interface PipelineStep {
   id: StepId;
@@ -32,8 +33,10 @@ export interface PipelineStep {
   unitsTotal: number | null;
   startedAt?: number;
   endedAt?: number;
-  /** Four words or fewer, why the step did not run. Only on a skipped step. */
+  /** Four words or fewer, why the step did not run (skipped) or what went wrong (failed). */
   skippedReason?: string;
+  /** Step 15: the done figure, when the runner says more than the count (the Amazon step: "4 Keepa, 14 searches, 2 wait"). */
+  note?: string;
   /** The listing check: dollars spent so far, from the tokens the eBay pass counts and the model's price. */
   costSoFar?: number;
   /** The listing check: dollars the cap would cost at most, before it starts. An estimate. */
@@ -172,7 +175,7 @@ export function noteCost(job: ScanJob): void {
 
 export function endStep(job: ScanJob, id: StepId, now: number): void {
   const s = stepOf(job, id);
-  if (!s || s.state === 'skipped') return;
+  if (!s || s.state === 'skipped' || s.state === 'failed') return;
   s.state = 'done';
   s.startedAt ??= now;
   s.endedAt = now;
@@ -180,10 +183,21 @@ export function endStep(job: ScanJob, id: StepId, now: number): void {
   s.unitsTotal = s.unitsDone;
 }
 
+/** Step 15: the step ran and failed (its reader threw), for a reason of four words or fewer. What it did stays counted. */
+export function failStep(job: ScanJob, id: StepId, reason: string, now: number): void {
+  const s = stepOf(job, id);
+  if (!s || s.state === 'skipped') return;
+  s.state = 'failed';
+  s.skippedReason = trimReason(reason);
+  s.startedAt ??= now;
+  s.endedAt = now;
+  s.unitsTotal = s.unitsDone;
+}
+
 /** The step will not run in this scan, for a reason of four words or fewer. A step that has run is not changed. */
 export function skipStep(job: ScanJob, id: StepId, reason: string): void {
   const s = stepOf(job, id);
-  if (!s || s.state === 'done') return;
+  if (!s || s.state === 'done' || s.state === 'failed') return;
   s.state = 'skipped';
   s.skippedReason = trimReason(reason);
   s.unitsTotal = null;
@@ -299,9 +313,12 @@ export interface Estimate {
   seconds: number;
 }
 
+/** Step 15: units of a kind this scan must have timed before its own rate is used (fewer are noise). */
+export const MIN_TIMED_UNITS = 3;
+
 /**
- * What a unit of this step's kind costs in time right now: this scan's own measurement of that kind when it has one
- * (it is the freshest), else the median of earlier scans, else the seed.
+ * What a unit of this step's kind costs in time right now: this scan's own measurement of that kind once it has timed
+ * MIN_TIMED_UNITS (it is the freshest), else the median of earlier scans, else the seed.
  */
 function stepSeconds(steps: PipelineStep[], step: PipelineStep, rates: UnitRates): number | null {
   const kind = unitKindOf(step);
@@ -314,7 +331,7 @@ function stepSeconds(steps: PipelineStep[], step: PipelineStep, rates: UnitRates
       units += s.unitsMeasured;
     }
   }
-  if (units > 0 && ms > 0) return ms / 1000 / units;
+  if (units >= MIN_TIMED_UNITS && ms > 0) return ms / 1000 / units;
   return secondsPerUnit(rates, kind)?.seconds ?? null;
 }
 
@@ -332,7 +349,7 @@ export function estimate(job: ScanJob, rates: UnitRates, _now?: number): Estimat
   let seconds = 0;
   let unknownTotal = false;
   for (const step of steps) {
-    if (step.state === 'done' || step.state === 'skipped') continue;
+    if (step.state === 'done' || step.state === 'skipped' || step.state === 'failed') continue;
     if (step.unitsTotal === null) {
       unknownTotal = true;
       continue;
@@ -388,7 +405,8 @@ export interface PipelineView {
   fraction: number;
   /** The bar's aria-valuetext. */
   ariaValueText: string;
-  steps: { label: string; state: StepState; figure: string }[];
+  /** Step 15: `done` and `total` are the step's units, while it runs or once it ran (absent while not known). */
+  steps: { label: string; state: StepState; figure: string; done?: number; total?: number }[];
   /** The words the row's bar and list are named by, for a screen reader. Absent: the scan's own ("Scan progress", "Scan steps"). */
   labels?: { bar: string; steps: string };
 }
@@ -406,10 +424,12 @@ function countOf(s: PipelineStep): string {
 
 /** The figure at the right of a step's line. */
 function figureOf(s: PipelineStep): string {
-  if (s.state === 'skipped') return s.skippedReason ?? '';
+  if (s.state === 'skipped' || s.state === 'failed') return s.skippedReason ?? '';
   switch (s.id) {
-    case 'hdPages':
     case 'amazon':
+      if (s.state === 'done' && s.note) return s.note;
+      return s.state === 'now' ? countOf(s) : s.state === 'done' ? plural(s.unitsDone, 'lookup', 'lookups') : '';
+    case 'hdPages':
       return s.state === 'now' ? countOf(s) : s.state === 'done' ? plural(s.unitsMeasured ?? 0, 'search', 'searches') : '';
     case 'bundlePages':
     case 'kitPages':
@@ -433,11 +453,11 @@ function figureOf(s: PipelineStep): string {
  */
 function fractionOf(steps: PipelineStep[], rates: UnitRates): number {
   const live = steps.filter((s) => s.state !== 'skipped');
-  const byCount = steps.length === 0 ? 0 : steps.filter((s) => s.state === 'done' || s.state === 'skipped').length / steps.length;
+  const byCount = steps.length === 0 ? 0 : steps.filter((s) => s.state === 'done' || s.state === 'skipped' || s.state === 'failed').length / steps.length;
   let total = 0;
   let got = 0;
   for (const s of live) {
-    if (s.state === 'done') {
+    if (s.state === 'done' || s.state === 'failed') {
       const each = stepSeconds(steps, s, rates);
       if (each === null) return byCount;
       total += s.unitsDone * each;
@@ -454,27 +474,35 @@ function fractionOf(steps: PipelineStep[], rates: UnitRates): number {
   return Math.max(0, Math.min(1, got / total));
 }
 
-/** Everything the progress row says, from the job, the rates and the clock. Pure. */
-export function pipelineView(job: ScanJob, rates: UnitRates, now: number): PipelineView {
+/**
+ * Everything the progress row says, from the job, the rates and the clock. Pure. `unknown`: the estimate's text while
+ * it is not known: the extension's row says "estimating"; the desktop app passes '' and shows the counts only (step 15).
+ */
+export function pipelineView(job: ScanJob, rates: UnitRates, now: number, opts: { unknown?: string } = {}): PipelineView {
   const steps = pipelineOf(job);
   const at = steps.findIndex((s) => s.state === 'now');
   const index = at >= 0 ? at : Math.max(0, steps.findIndex((s) => s.state === 'next') >= 0 ? steps.findIndex((s) => s.state === 'next') : steps.length - 1);
   const cur = steps[index]!;
   const est = estimate(job, rates, now);
   const m = minutes(est.seconds);
-  const estimateText = est.kind === 'estimating' ? 'estimating' : est.kind === 'underMinute' ? 'under a minute' : est.kind === 'about' ? `about ${m} min` : `at least ${m} min`;
-  const left = est.kind === 'estimating' ? 'estimating time left'
+  const unknown = opts.unknown ?? 'estimating';
+  const estimateText = est.kind === 'estimating' ? unknown : est.kind === 'underMinute' ? 'under a minute' : est.kind === 'about' ? `about ${m} min` : `at least ${m} min`;
+  const left = est.kind === 'estimating' ? (unknown === '' ? 'time left not known yet' : 'estimating time left')
     : est.kind === 'underMinute' ? 'less than a minute left'
     : `${est.kind === 'about' ? 'about' : 'at least'} ${plural(m, 'minute', 'minutes')} left`;
   const label = CURRENT_LABELS[cur.id];
   return {
     current: { label, count: cur.state === 'now' ? countOf(cur) : '' },
     estimateText,
-    stepsDone: steps.filter((s) => s.state === 'done' || s.state === 'skipped').length,
+    stepsDone: steps.filter((s) => s.state === 'done' || s.state === 'skipped' || s.state === 'failed').length,
     stepsTotal: steps.length,
     fraction: fractionOf(steps, rates),
     ariaValueText: `Step ${index + 1} of ${steps.length}, ${lowerFirst(label)}, ${left}`,
-    steps: steps.map((s) => ({ label: STEP_NAMES[s.id], state: s.state, figure: figureOf(s) })),
+    steps: steps.map((s) => ({
+      label: STEP_NAMES[s.id], state: s.state, figure: figureOf(s),
+      ...(s.state === 'now' || s.state === 'done' || s.state === 'failed' ? { done: s.unitsDone } : {}),
+      ...((s.state === 'now' || s.state === 'done' || s.state === 'failed') && s.unitsTotal !== null ? { total: s.unitsTotal } : {}),
+    })),
   };
 }
 

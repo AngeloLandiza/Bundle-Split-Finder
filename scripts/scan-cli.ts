@@ -43,6 +43,7 @@ const STOP_WORDS: Record<Exclude<StopReason, 'error'>, string> = {
   reserve: 'the search reserve would be touched',
   run_cap: 'this run reached its search limit',
   hourly_limit: "the plan's hourly limit is reached",
+  keepa_tokens: 'Amazon lookups wait for Keepa tokens to refill',
   no_tokens: 'Keepa returned no tokens left',
   rate_limited: 'SerpApi refused the request (HTTP 429)',
   user: 'stopped by you',

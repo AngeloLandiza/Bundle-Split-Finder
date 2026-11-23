@@ -57,7 +57,7 @@ describe('the scan: the eBay step', () => {
       readPartPrices: async (parts) => { order.push('hd'); return parts.map((p) => ({ brand: p.brand, model: p.model, status: 'not_found', itemId: null, matchedModel: null, price: null, title: null, link: null }) as PartPriceReading); },
       ebay: { kind: 'run', ebay, judge: noJudge, listingsJudgedPerScan: 60 },
     });
-    expect(order).toEqual(['hd', 'ebay RYOBI PBLRC01B', 'ebay RYOBI PBLRC25B']);
+    expect(order).toEqual(['hd', 'hd', 'ebay RYOBI PBLRC01B', 'ebay RYOBI PBLRC25B']);
     expect(job.counts.ebaySearches).toBe(2);
     expect((await store.listEbayValues()).map((r) => [r.key, r.value, r.complete])).toEqual([['RYOBI:PBLRC01B', null, true], ['RYOBI:PBLRC25B', null, true]]);
     expect(job.status).toBe('done');

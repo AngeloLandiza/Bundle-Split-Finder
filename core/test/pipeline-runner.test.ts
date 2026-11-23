@@ -79,7 +79,7 @@ describe('the scan records its stages on the job', () => {
     expect(job.status).toBe('done');
     expect(job.pipeline!.map((s) => s.id)).toEqual([...STEP_IDS]);
     expect(states(job)).toEqual([
-      'hdPages:done', 'bundlePages:skipped', 'kitPages:skipped', 'partPrices:skipped', 'ebay:skipped', 'judge:skipped', 'amazon:done', 'finish:done',
+      'hdPages:done', 'bundlePages:skipped', 'kitPages:skipped', 'amazon:done', 'partPrices:skipped', 'ebay:skipped', 'judge:skipped', 'finish:done',
     ]);
     expect(byId(job, 'bundlePages').skippedReason).toBe('no page reader');
     expect(byId(job, 'partPrices').skippedReason).toBe('no price reader');
@@ -132,7 +132,7 @@ describe('the scan records its stages on the job', () => {
   it('Home Depot refusing a page skips the kit pages and the part prices, and says so', async () => {
     const refuse: ReadPages = async (ids) => ids.map((itemId): PageOutcome => ({ itemId, kind: 'refused' }));
     const { job } = await world({ readPages: refuse, readPartPrices: async (parts) => notFound(parts) });
-    expect(states(job).slice(0, 4)).toEqual(['hdPages:done', 'bundlePages:done', 'kitPages:skipped', 'partPrices:skipped']);
+    expect(states(job).filter((s) => !s.startsWith('amazon') && !s.startsWith('ebay') && !s.startsWith('judge') && !s.startsWith('finish'))).toEqual(['hdPages:done', 'bundlePages:done', 'kitPages:skipped', 'partPrices:skipped']);
     expect(byId(job, 'kitPages').skippedReason).toBe('Home Depot refused');
     expect(byId(job, 'bundlePages').unitsDone).toBe(0);
   });
@@ -194,27 +194,26 @@ describe('the record mid-scan, as the panel reads it', () => {
     return seen[0]!;
   }
 
-  it('while the second part is searched: Home Depot done, the eBay step and the listing check going, the lookups not planned yet', async () => {
+  it('while the second part is searched: Home Depot done, the lookups and part prices done (step 15), the eBay step and the listing check going', async () => {
     const job = await snapshots(2, 'claude-opus-5-5');
     expect(job.status).toBe('running');
     expect(states(job)).toEqual([
-      'hdPages:done', 'bundlePages:done', 'kitPages:skipped', 'partPrices:done', 'ebay:now', 'judge:now', 'amazon:next', 'finish:next',
+      'hdPages:done', 'bundlePages:done', 'kitPages:skipped', 'amazon:done', 'partPrices:done', 'ebay:now', 'judge:now', 'finish:next',
     ]);
     // A model call measured at 30 s on an earlier scan: the three listings the second part is expected to keep make 90 s.
     const rates: UnitRates = { 'judgeCall:claude-opus-5-5': [30] };
     const view = pipelineView(job, rates, T0);
     expect(view.current.label).toBe('Checking eBay listings');
     expect(view.steps.map((s) => [s.label, s.state])).toEqual([
-      ['Home Depot deals pages', 'done'], ['Bundle pages', 'done'], ['Kit pages', 'skipped'], ['Home Depot part prices', 'done'],
-      ['eBay listings', 'now'], ['Listing check (Claude)', 'now'], ['Amazon lookups', 'next'], ['Finish', 'next'],
+      ['Home Depot deals pages', 'done'], ['Bundle pages', 'done'], ['Kit pages', 'skipped'], ['Amazon lookups', 'done'],
+      ['Home Depot part prices', 'done'], ['eBay listings', 'now'], ['Listing check (Claude)', 'now'], ['Finish', 'next'],
     ]);
-    // The lookups are not planned until the free steps end, so what is left is a lower bound.
-    expect(estimate(job, rates, T0).kind).toBe('atLeast');
-    expect(view.estimateText).toBe('at least 2 min');
-    // With nothing but the seeds the same job is a lower bound under a minute, which is not worth a number.
-    expect(pipelineView(job, {}, T0).estimateText).toBe('estimating');
-    expect(view.ariaValueText).toBe('Step 5 of 8, checking eBay listings, at least 2 minutes left');
-    expect(view.stepsDone).toBe(4);
+    // Step 15: the lookups ran before these steps, so every size is known and the estimate is a number.
+    const est = estimate(job, rates, T0);
+    expect(est.kind).toBe('about');
+    expect(view.estimateText).toBe(`about ${Math.max(1, Math.round(est.seconds / 60))} min`);
+    expect(view.ariaValueText).toMatch(/^Step 6 of 8, checking eBay listings, about \d+ minutes? left$/);
+    expect(view.stepsDone).toBe(5);
     expect(view.stepsTotal).toBe(8);
     expect(view.fraction).toBeGreaterThan(0);
     expect(view.fraction).toBeLessThan(1);

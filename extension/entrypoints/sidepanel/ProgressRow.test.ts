@@ -217,7 +217,7 @@ describe('progress row (step 11): Details', () => {
     steps().forEach((li, i) => {
       expect([...li.children].map((c) => c.textContent)).toEqual([view.steps[i]!.label, view.steps[i]!.state, view.steps[i]!.figure]);
     });
-    expect(steps().map((li) => li.dataset.state)).toEqual(['done', 'done', 'done', 'done', 'skipped', 'skipped', 'now', 'next']);
+    expect(steps().map((li) => li.dataset.state)).toEqual(['done', 'done', 'done', 'now', 'done', 'skipped', 'skipped', 'next']);
   });
 
   it('a figure is in the figure face; a skipped step says why, in words', () => {
@@ -226,8 +226,8 @@ describe('progress row (step 11): Details', () => {
     const all = steps();
     expect(all[0]!.lastElementChild).toHaveTextContent('2 searches');
     expect(all[0]!.lastElementChild).toHaveClass('figure');
-    expect(all[4]!.lastElementChild).toHaveTextContent('no eBay keys');
-    expect(all[4]!.lastElementChild).not.toHaveClass('figure');
+    expect(all[5]!.lastElementChild).toHaveTextContent('no eBay keys');
+    expect(all[5]!.lastElementChild).not.toHaveClass('figure');
   });
 
   it('carries no icons and no marks: the words carry the state', () => {

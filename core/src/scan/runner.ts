@@ -13,11 +13,11 @@
 import { type Catalog, catalogEntry, type Decomposition } from '../decompose';
 import { kitIndex, kitItemParts, kitKey, kitPageStored, kitRecords } from '../kitContents';
 import { BRAND_NOT_CONFIRMED, type Candidate, type Grade, type Graded, isReviewCap, maySparePart, pick, type Picked, sameModel, toolPageToRead } from '../match';
-import { keepaQueuePressure, reportStructuralDiscoveryPressure } from '../keepa/discovery';
 import { KEEPA_LOOKUP_TOKEN_ESTIMATE, productTokenEstimate } from '../keepa/estimates';
 import { amazonPriceDelta, partTrendFromProduct, readPartTrend } from '../keepa/trends';
 import type { Cache } from '../serpapi/client';
-import { type KeepaScaleSettings, planKeepaItemKeys, planKeepaRun, type KeepaItemStepKind } from '../keepa/plan';
+import type { KeepaScaleSettings } from '../keepa/plan';
+import { keepaTokensForScan, type LookupBlock, lookupBlockOf, routeAmazonWork } from '../keepa/route';
 import { planScan } from '../scanPlan';
 import { estimatedJudgeCost } from '../settings';
 import type { TokenBudget } from '../keepa/budget';
@@ -25,11 +25,10 @@ import { KeepaBudgetExceededError } from '../keepa/client';
 import { BudgetExceededError, RateLimitedError, type SearchResult } from '../serpapi/client';
 import { amazonHasNextPage, parseAmazonProduct, parseAmazonSearch, parseHomeDepotSearch } from '../serpapi/parsers';
 import { choicesOf, NONE, notKnown, ownerSplit, RESOLVED_BY_SCAN, sameChoices, splitChoices } from './answers';
-import { buildReport } from './report';
 import { looksLikeBundle, wantedFor } from './classify';
 import { candidatesFor, listingFrom } from './listings';
 import { type KnownModels, knownModels, readSplit } from './split';
-import { closeRest, endStep, ensurePipeline, finishUnit, measure, moveUnits, newPipeline, type StepId, setJudge, skipStep, startStep } from './pipeline';
+import { closeRest, endStep, ensurePipeline, failStep, finishUnit, measure, moveUnits, newPipeline, type StepId, setJudge, skipStep, startStep } from './pipeline';
 import { rejectedOf, twinKeys, writeTwins } from './twins';
 import { type EbayPart, type EbayStep, noteEbay, runEbayPass } from './ebayPass';
 import { HOME_DEPOT_ITEM_ID, pickUnread } from './kitPage';
@@ -184,22 +183,30 @@ export async function runScan(deps: ScanDeps): Promise<ScanJob> {
     // looks up a kit's items only from its page. Not after Home Depot refused a page, or the reader failed.
     // The bundle pages asked for and not read still count: the two passes never ask for more than the cap.
     const kitPass = bundlePass.goOn ? await readKitPages(run, bundlePass.notRead) : bundlePass;
-    // Step 9: then Home Depot's prices for the parts sold alone, free, unless Home Depot refused a page.
-    if (kitPass.goOn) await readPartPricesPass(run);
-    else {
+    if (!kitPass.goOn) {
       // Step 11: the row says why these did not run.
       for (const id of ['kitPages', 'partPrices'] as const) skipStep(run.job, id, kitPass.why ?? 'page read failed');
     }
-    // Step 10: then eBay's reference values for the parts, free, whether or not Home Depot refused a page.
-    await ebayPass(run);
+    // Step 15, decision 3: the Amazon lookups, which make the estimates, before the slow free steps.
     await planParts(run, known.listings);
   } else if (run.job.phase === 'parts') {
     // A continued job: its lookups are judged with the models the split knew.
     run.catalog = (await knownModels(run.store)).catalog;
   }
   if (run.job.phase === 'parts') await runQueue(run);
+  // Step 9: then Home Depot's prices for the parts sold alone, free, unless Home Depot refused a page (skipped above),
+  // for at most PART_PRICE_MS; what is left is read by the next scan, or by the agent between scans.
+  if (stepWaits(run.job, 'partPrices')) await readPartPricesPass(run);
+  // Step 10: then eBay's reference values for the parts, free, whether or not Home Depot refused a page.
+  if (run.ebay?.kind === 'skip' || stepWaits(run.job, 'ebay')) await ebayPass(run);
   return finish(run);
 }
+
+/** Step 15: the step has not run in this job yet (a continued job may have run it before the order changed). */
+const stepWaits = (job: ScanJob, id: StepId): boolean => {
+  const s = job.pipeline?.find((p) => p.id === id);
+  return s === undefined || s.state === 'next' || s.state === 'now';
+};
 
 // ---------------------------------------------------------------- rule 1: start
 
@@ -427,8 +434,19 @@ async function runQueue(run: Run): Promise<void> {
     } catch (err) {
       if (err instanceof KeepaBudgetExceededError) {
         const sentence = err.message;
-        if (step.kind === 'lookup' || step.kind === 'refresh') {
-          await setAside(run, step, sentence);
+        // Step 15: Keepa refused before anything was sent, so nothing was spent and nothing failed. A lookup goes to
+        // SerpApi when a search can still pay for it (a route, not a retry); else it waits for Keepa's tokens, as a
+        // refresh does. Neither is a failure (Ruling 57 is for requests that were sent and failed).
+        if (step.kind === 'lookup') {
+          if (step.via !== 'serpapi' && serpCanTake(run)) {
+            job.queue[0] = { ...step, via: 'serpapi' };
+            continue;
+          }
+          await waitForKeepa(run, step);
+          continue;
+        }
+        if (step.kind === 'refresh') {
+          await waitForKeepa(run, step);
           continue;
         }
         if (step.kind === 'identify') {
@@ -490,6 +508,12 @@ async function runQueue(run: Run): Promise<void> {
         // Trend cache failures must not stop the scan (worker digests and alerts still run).
       }
     }
+    if (step.kind === 'lookup') {
+      const via = result.billAs === 'keepa' ? 'keepa' : 'serpapi';
+      job.lookupsVia = { keepa: job.lookupsVia?.keepa ?? 0, serpapi: job.lookupsVia?.serpapi ?? 0 };
+      job.lookupsVia[via] += 1;
+      if (via === 'keepa' && follow === null) await schedulePricePull(run, step);
+    }
     if (step.kind === 'lookup' && follow) await schedulePageRead(run, step, follow);
     // Ruling 57: a part answered is no longer failing.
     if (step.kind === 'lookup' || step.kind === 'refresh') {
@@ -517,15 +541,61 @@ async function runQueue(run: Run): Promise<void> {
 const NONE_FOUND = 'none found';
 
 /** Step 11: why a step that did not run did not, in four words or fewer, from the job's stop reason. */
-function whyNot(reason: StopReason | null): string {
+export function whyNot(reason: StopReason | null): string {
   switch (reason) {
     case null: return 'nothing to do';
     case 'user': return 'stopped';
     case 'rate_limited': return 'rate limited';
     case 'no_tokens': return 'no Keepa tokens';
+    case 'keepa_tokens': return 'waits for Keepa tokens';
     case 'error': return 'search failed';
-    default: return 'search limit';
+    case 'run_cap': return 'search limit';
+    case 'reserve': return 'search reserve';
+    case 'hourly_limit': return 'hourly search limit';
   }
+}
+
+/**
+ * Step 15: whether SerpApi can pay for one more lookup now, beside the queued steps that will also be searches: listing
+ * and brand pages, lookups routed to SerpApi, and (without Keepa) refreshes and product pages.
+ */
+function serpCanTake(run: Run): boolean {
+  const keepaPulls = Boolean(run.keepaProduct && run.settings.amazonRefreshViaKeepa);
+  const keepaSearch = Boolean(run.keepaLookup && run.settings.amazonRefreshViaKeepa);
+  const searches = run.job.queue.slice(1).filter((s) => {
+    if (s.kind === 'lookup') return s.via === 'serpapi' || (s.via === undefined && !keepaSearch);
+    if (s.kind === 'refresh' || s.kind === 'identify') return !keepaPulls;
+    return true;
+  }).length;
+  return run.budget.blockReason(searches + 1) === null;
+}
+
+/** Step 15: the step at the head of the queue waits for Keepa's tokens: deferred (the next scan or the drip runs it), not failed. */
+async function waitForKeepa(run: Run, step: Lookup | Refresh): Promise<void> {
+  const { job } = run;
+  job.queue.shift();
+  const { via: _via, ...plain } = step as Lookup;
+  job.deferred.push(step.kind === 'lookup' ? (plain as Lookup) : step);
+  if (step.kind === 'lookup') {
+    await markWaiting(run, step);
+    job.lookupsBlockedBy = 'keepa_tokens';
+  }
+  moveUnits(job, 'amazon', { remaining: job.queue.filter(isAmazonStep).length });
+  await run.store.putScan(job);
+}
+
+/**
+ * Step 15: a Keepa search's products carry no price (fixtures/keepa/search-RYOBI-PCL235B.json: no stats, no csv), so
+ * the listing a Keepa lookup matched is pulled once more with stats (1 token, KEEPA_PRICE_PULL_TOKENS) right after it,
+ * as a refresh: that is what gives the part a price, and its bundle an estimate, in this scan. Part of the lookup's
+ * estimate (KEEPA_LOOKUP_TOKEN_ESTIMATE), so the plan already holds the token.
+ */
+async function schedulePricePull(run: Run, step: Lookup): Promise<void> {
+  const match = await run.store.getMatch(partKey(step.brand, step.model));
+  if (match?.status !== 'matched' || match.asin === null) return;
+  const price = await run.store.getPrice(match.asin);
+  if (price && price.price !== null) return;
+  run.job.queue.splice(1, 0, { kind: 'refresh', brand: step.brand, model: step.model, asin: match.asin });
 }
 
 /**
@@ -641,7 +711,8 @@ function send(run: Run, step: ScanStep): Promise<SearchResult> {
         { label: `${prefix}:listing:${step.q}:p${step.page}`, maxAgeMs: Math.max(settings.listingMaxAgeMs, run.now() - job.startedAt) },
       );
     case 'lookup':
-      if (run.keepaLookup && run.settings.amazonRefreshViaKeepa) {
+      // Step 15: the plan's route; a step saved before step 15 has none and goes to Keepa when it can, as before.
+      if (run.keepaLookup && run.settings.amazonRefreshViaKeepa && step.via !== 'serpapi') {
         const block = run.keepaBudget?.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE);
         if (block) throw new KeepaBudgetExceededError(block);
         return run.keepaLookup(step.brand, step.model, `${prefix}:lookup:${step.model}`);
@@ -1190,38 +1261,100 @@ export async function savePartPrices(store: ScanStore, asked: Pick<Part, 'brand'
 }
 
 /**
- * Step 9: one call to readPartPrices for at most partPriceReadsPerScan parts (partPricesWanted), and never
- * more than PART_PRICE_READS_MAX, what the reader reads in one call; each reading saved (savePartPrices) and
- * counted (counts.partPricesRead). Never a search, and never stops the scan: a reader that throws is noted
- * in stopMessage, as a page reader that throws is, and the scan goes on to its lookups. Not run after
- * Home Depot refused a page in this run (the caller), nor once a stop was asked for.
+ * Step 15, decision 3: how long one scan reads Home Depot's part prices at most. A setting-free constant: the reads are
+ * free but slow (the real Nov 23 scan spent 9 of its 13.5 minutes reading 40 of them, about 13 s each, before the
+ * lookups that make the estimates), so a scan stops reading after 4 minutes and the next scan, or the agent between
+ * scans, carries on from the parts not read (partPricesWanted asks again for every part not checked).
+ */
+export const PART_PRICE_MS = 4 * 60_000;
+
+/** Step 15: parts asked of the reader per call, so the step counts each part as it is read and the time limit holds. */
+export const PART_PRICE_BATCH = 1;
+
+export interface PartPriceRun {
+  store: ScanStore;
+  settings: ScanSettings;
+  readPartPrices: ReadPartPrices;
+  now: () => number;
+  shouldStop: () => boolean;
+  /** Most parts read in all. Default the settings' partPriceReadsPerScan, never above PART_PRICE_READS_MAX. */
+  cap?: number;
+  /** Most time spent, in ms. Default PART_PRICE_MS. */
+  maxMs?: number;
+  /** Step 15 (P2): also the parts a waiting split needs Home Depot's reading of (partPricesWanted's `waiting`). */
+  waiting?: boolean;
+  /** Called with the parts asked for, before the first read; then after each batch with the readings saved so far. */
+  onStart?: (asked: number) => void | Promise<void>;
+  onBatch?: (saved: number, processed: number, ms: number) => void | Promise<void>;
+}
+
+/**
+ * Step 9 and step 15: Home Depot's own price for each part partPricesWanted names, PART_PRICE_BATCH at a time, until
+ * the parts, the cap or the time limit run out, a stop is asked for, or the reader says it could not read (a part comes
+ * back not_read: Home Depot refused, or Chrome went away; nothing more is asked). Each reading is saved
+ * (savePartPrices). Never a search. Throws what the reader throws, after saving what came before.
+ */
+export async function readPartPricesFor(r: PartPriceRun): Promise<{ asked: number; saved: number; stopped: 'time' | 'refused' | 'stop' | null }> {
+  const cap = Math.min(PART_PRICE_READS_MAX, Math.max(0, Math.floor(r.cap ?? r.settings.partPriceReadsPerScan)));
+  const asked = (await partPricesWanted(r.store, r.settings, r.now(), r.waiting ?? false)).slice(0, cap);
+  if (asked.length === 0) return { asked: 0, saved: 0, stopped: null };
+  await r.onStart?.(asked.length);
+  const began = r.now();
+  const maxMs = r.maxMs ?? PART_PRICE_MS;
+  let saved = 0;
+  for (let i = 0; i < asked.length; i += PART_PRICE_BATCH) {
+    if (r.shouldStop()) return { asked: asked.length, saved, stopped: 'stop' };
+    if (r.now() - began >= maxMs) return { asked: asked.length, saved, stopped: 'time' };
+    const batch = asked.slice(i, i + PART_PRICE_BATCH);
+    const at = r.now();
+    const readings = await r.readPartPrices(batch.map(({ brand, model }) => ({ brand, model })));
+    saved += await savePartPrices(r.store, batch, readings, r.now());
+    await r.onBatch?.(saved, i + batch.length, r.now() - at);
+    const refused = Array.isArray(readings) && readings.some((x) => typeof x === 'object' && x !== null && (x as { status?: unknown }).status === 'not_read');
+    if (refused) return { asked: asked.length, saved, stopped: 'refused' };
+  }
+  return { asked: asked.length, saved, stopped: null };
+}
+
+/**
+ * Step 9: the part-price step of a scan (readPartPricesFor), counted (counts.partPricesRead) and shown part by part.
+ * Never a search, and never stops the scan: a reader that throws fails the step, its sentence in stopMessage, and the
+ * scan goes on. Not run after Home Depot refused a page in this run (the caller), nor once a stop was asked for.
  */
 async function readPartPricesPass(run: Run): Promise<void> {
   const { store, job } = run;
   if (!run.readPartPrices || run.shouldStop()) return;
-  const cap = Math.min(PART_PRICE_READS_MAX, Math.max(0, Math.floor(run.settings.partPriceReadsPerScan)));
-  const asked = (await partPricesWanted(store, run.settings, run.now(), run.waitForPages)).slice(0, cap);
-  if (asked.length === 0) {
-    await nothingToRead(run, 'partPrices');
-    return;
-  }
-  // Step 11: saved before the reader is called, so the row shows "0 of N" while the batch is in flight.
-  startStep(job, 'partPrices', { remaining: asked.length, now: run.now() });
-  await store.putScan(job);
-  const readStart = run.now();
-  let readings: unknown;
+  const before = job.pipeline?.find((p) => p.id === 'partPrices')?.unitsDone ?? 0;
+  let started = false;
+  let counted = 0;
   try {
-    readings = await run.readPartPrices(asked.map(({ brand, model }) => ({ brand, model })));
+    const out = await readPartPricesFor({
+      store, settings: run.settings, readPartPrices: run.readPartPrices, now: run.now, shouldStop: run.shouldStop, waiting: run.waitForPages,
+      onStart: async (asked) => {
+        started = true;
+        // Step 11: saved before the reader is called, so the row shows "0 of N" while the first part is read.
+        startStep(job, 'partPrices', { remaining: asked, now: run.now() });
+        await store.putScan(job);
+      },
+      onBatch: async (saved, processed, ms) => {
+        job.counts.partPricesRead = (job.counts.partPricesRead ?? 0) + saved - counted;
+        counted = saved;
+        moveUnits(job, 'partPrices', { done: before + processed });
+        measure(job, 'partPrices', ms, PART_PRICE_BATCH);
+        await store.putScan(job);
+      },
+    });
+    if (!started) {
+      await nothingToRead(run, 'partPrices');
+      return;
+    }
+    if (out.stopped === 'time') noteProblem(job, `Home Depot part prices: ${out.saved} of ${out.asked} read in this scan's ${PART_PRICE_MS / 60_000} minutes; the rest are read next time.`);
   } catch (err) {
     noteProblem(job, `Reading Home Depot prices failed: ${(err instanceof Error && err.message) || String(err)}`);
-    endStep(job, 'partPrices', run.now());
+    if (started) failStep(job, 'partPrices', 'price reader failed', run.now());
     await store.putScan(job);
     return;
   }
-  const savedPrices = await savePartPrices(store, asked, readings, run.now());
-  job.counts.partPricesRead = (job.counts.partPricesRead ?? 0) + savedPrices;
-  moveUnits(job, 'partPrices', { done: (job.pipeline?.find((p) => p.id === 'partPrices')?.unitsDone ?? 0) + savedPrices });
-  measure(job, 'partPrices', run.now() - readStart, asked.length);
   endStep(job, 'partPrices', run.now());
   await store.putScan(job);
   await splitWaiting(run);
@@ -1790,6 +1923,35 @@ function once(seen: Set<string>, id: string): boolean {
   return true;
 }
 
+/** Step 15: Keepa pays for Amazon work in this run (a key, the setting on, and its token figures handed in). */
+const keepaInPlay = (run: Pick<Run, 'keepaProduct' | 'keepaScale' | 'settings'>): boolean =>
+  Boolean(run.keepaProduct && run.settings.amazonRefreshViaKeepa && run.keepaScale);
+
+/**
+ * Step 15: a want list split the way keepa/route.ts pays for it, each in value order: the lookups (parts, then kit
+ * items), the product pages owed (identify), and the refreshes (parts, then kit items).
+ */
+export function workOf(wants: Pick<Wants, 'lookups' | 'items' | 'refreshes' | 'steps'>): { lookups: string[]; identifies: string[]; refreshes: string[] } {
+  const kind = (k: string) => wants.steps.get(k)!.kind;
+  const all = [...wants.lookups, ...wants.items];
+  return {
+    lookups: all.filter((k) => kind(k) === 'lookup'),
+    identifies: all.filter((k) => kind(k) === 'identify'),
+    refreshes: [...wants.refreshes, ...wants.items.filter((k) => kind(k) === 'refresh')],
+  };
+}
+
+/**
+ * Step 15: the Amazon work a scan would plan now, from saved data alone (no search, nothing written, no saved listing
+ * tried): each kind in value order, and the step of each key. What the agent's drip and "Look up all" route.
+ */
+export async function plannedWork(
+  store: ScanStore, settings: ScanSettings, now: number, pairs: Readonly<Record<string, string>> = {},
+): Promise<{ work: { lookups: string[]; identifies: string[]; refreshes: string[] }; steps: Map<string, ScanStep> }> {
+  const wants = await wantedParts(store, settings, now, undefined, failingBefore(await store.listScans()), pairs);
+  return { work: workOf(wants), steps: wants.steps };
+}
+
 /** `listings`: the saved listings, read once for this planning pass. */
 async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   const { job, budget } = run;
@@ -1799,99 +1961,89 @@ async function planParts(run: Run, listings: ListingRecord[]): Promise<void> {
   if (job.stopReason === null && run.shouldStop()) job.stopReason = 'user';
   // In the listing phase only rule 8 or a stop on request (3 rule 1) sets a stop reason: then nothing more is spent.
   const allowance = job.stopReason === null ? budget.spendable : 0;
-  const useKeepaRefresh = Boolean(run.keepaProduct && run.settings.amazonRefreshViaKeepa && run.keepaScale);
-  let refreshKeys = wants.refreshes;
-  let lookupKeys = wants.lookups;
-  let deferredKeepaRefreshes: string[] = [];
-  let deferredKeepaLookups: string[] = [];
-  let plannedItemKeys: string[] = [];
-  let deferredItemKeys: string[] = [];
-  const serpRefreshes = useKeepaRefresh ? [] : wants.refreshes;
-  if (useKeepaRefresh && run.keepaScale) {
-    const [scaleReport, scaleReview] = await Promise.all([buildReport(run.store, run.settings), run.store.listReview()]);
-    const openReview = scaleReview.filter((q) => q.answer === null).length;
-    const structural = reportStructuralDiscoveryPressure(scaleReport, openReview);
-    const { openDiscoveryWork, totalWork } = keepaQueuePressure({
-      partLookups: wants.lookups.length,
-      partRefreshes: wants.refreshes.length,
-      itemKeys: wants.items,
-      stepKind: (k) => wants.steps.get(k)?.kind,
-      structural,
-    });
-    const keepaPlan = planKeepaRun(run.keepaScale, {
-      pendingLookups: wants.lookups,
-      staleRefreshes: wants.refreshes,
-      openDiscoveryWork,
-      totalWork,
-    });
-    refreshKeys = keepaPlan.refreshes;
-    deferredKeepaRefreshes = keepaPlan.deferredRefreshes;
-    lookupKeys = keepaPlan.lookups;
-    deferredKeepaLookups = keepaPlan.deferredLookups;
-    job.keepaPlan = {
-      discoveryTokens: keepaPlan.discoveryTokens,
-      trackingTokens: keepaPlan.trackingTokens,
-      lookups: keepaPlan.lookups.length,
-      refreshes: keepaPlan.refreshes.length,
-    };
-    const depth = run.keepaScale.trackingDepth;
-    const discoveryLeft =
-      keepaPlan.discoveryTokens - keepaPlan.lookups.length * KEEPA_LOOKUP_TOKEN_ESTIMATE;
-    const trackingLeft =
-      keepaPlan.trackingTokens - keepaPlan.refreshes.length * productTokenEstimate(depth, 1);
-    const itemPlan = planKeepaItemKeys(
-      wants.items,
-      (k) => wants.steps.get(k)?.kind as KeepaItemStepKind | undefined,
-      discoveryLeft,
-      trackingLeft,
-      depth,
-    );
-    plannedItemKeys = itemPlan.planned;
-    deferredItemKeys = itemPlan.deferred;
-  }
-  const plan = planScan(allowance, {
-    hdPagesWanted: 0,
-    pendingLookups: useKeepaRefresh ? [] : wants.lookups,
-    staleRefreshes: serpRefreshes,
-  });
-  // Step 6: kit items from SerpApi headroom, or the Keepa discovery/tracking slices when Keepa owns Amazon.
-  const room = Math.max(0, Math.floor(allowance) - plan.searches);
-  const items = useKeepaRefresh ? plannedItemKeys : wants.items.slice(0, room);
-  const serpDeferredItems = useKeepaRefresh ? [] : wants.items.slice(items.length);
   const toSteps = (keys: string[]) => keys.map((k) => wants.steps.get(k)!);
-  const later = [
-    ...toSteps(plan.deferredLookups),
-    ...toSteps(deferredKeepaLookups),
-    ...toSteps(plan.deferredRefreshes),
-    ...toSteps(deferredKeepaRefreshes),
-    ...toSteps(useKeepaRefresh ? deferredItemKeys : serpDeferredItems),
-  ];
+  let queue: ScanStep[];
+  let later: ScanStep[];
+  let serpDeferred: boolean;
+  if (keepaInPlay(run)) {
+    // Step 15, decision 1: Keepa's tokens above the reserve first, then SerpApi's searches, then the rest waits.
+    const scale = run.keepaScale!;
+    const work = workOf(wants);
+    const tokens = job.stopReason === null
+      ? keepaTokensForScan({ tokensLeft: run.keepaBudget?.knownBalance ?? scale.tokensLeft, reserve: scale.reserve, tokensPerScan: scale.tokensPerRun })
+      : 0;
+    const plan = routeAmazonWork(work, { tokens, trackingDepth: scale.trackingDepth, lookups: Boolean(run.keepaLookup) }, { spendable: allowance, blockReason: (n) => budget.blockReason(n) });
+    const via = new Map<string, 'keepa' | 'serpapi'>([...plan.keepaLookups.map((k) => [k, 'keepa'] as const), ...plan.serpLookups.map((k) => [k, 'serpapi'] as const)]);
+    const routed = (k: string): ScanStep => {
+      const step = wants.steps.get(k)!;
+      const v = via.get(k);
+      return step.kind === 'lookup' && v ? { ...step, via: v } : step;
+    };
+    queue = [...work.lookups.filter((k) => via.has(k)).map(routed), ...toSteps(plan.keepaIdentifies), ...toSteps(plan.keepaRefreshes)];
+    later = toSteps([...plan.deferredLookups, ...plan.deferredIdentifies, ...plan.deferredRefreshes]);
+    const pull = productTokenEstimate(scale.trackingDepth, 1);
+    job.keepaPlan = {
+      discoveryTokens: plan.keepaLookups.length * KEEPA_LOOKUP_TOKEN_ESTIMATE + plan.keepaIdentifies.length * pull,
+      trackingTokens: plan.keepaRefreshes.length * pull,
+      lookups: plan.keepaLookups.length,
+      refreshes: plan.keepaRefreshes.length,
+    };
+    job.lookupsBlockedBy = plan.blockedBy;
+    serpDeferred = false;
+  } else {
+    const plan = planScan(allowance, { hdPagesWanted: 0, pendingLookups: wants.lookups, staleRefreshes: wants.refreshes });
+    // Step 6: kit items from SerpApi headroom.
+    const room = Math.max(0, Math.floor(allowance) - plan.searches);
+    const items = wants.items.slice(0, room);
+    const deferredItems = wants.items.slice(items.length);
+    queue = [...toSteps(plan.lookups), ...toSteps(plan.refreshes), ...toSteps(items)];
+    later = [...toSteps(plan.deferredLookups), ...toSteps(plan.deferredRefreshes), ...toSteps(deferredItems)];
+    serpDeferred = later.length > 0;
+    job.lookupsBlockedBy = later.some((s) => s.kind === 'lookup') ? lookupBlockOf(budget.blockReason(Math.floor(allowance) + 1) ?? 'run_cap') : null;
+  }
   // Ruling 57: a failing part no longer wanted (matched since, decided, or in no bundle) is dropped.
   keepFailing(job, (k) => wants.steps.has(k));
   for (const step of later) if (step.kind === 'lookup') await markWaiting(run, step);
-  job.queue = [
-    ...toSteps(useKeepaRefresh ? lookupKeys : plan.lookups),
-    ...toSteps(useKeepaRefresh ? refreshKeys : plan.refreshes),
-    ...toSteps(items),
-  ];
+  job.queue = queue;
   job.deferred.push(...later);
   // Ruling 48: from now on only the parts phase's own deferred steps may move into the queue.
   run.movable = [...later];
   // Names the limit that made work wait. It does not stop the queue just planned.
   if (job.deferred.length > 0 && job.stopReason === null) {
-    const serpDeferred =
-      plan.deferredLookups.length + plan.deferredRefreshes.length > 0
-      || serpDeferredItems.length > 0
-      || job.deferred.some((s) => s.kind === 'listing' || s.kind === 'catalog');
-    if (serpDeferred) job.stopReason = budget.blockReason(budget.spendable + 1);
-    else if (useKeepaRefresh && run.keepaBudget) {
-      const kr = run.keepaBudget.blockReason(KEEPA_LOOKUP_TOKEN_ESTIMATE);
-      job.stopReason = kr === 'run_cap' || kr === 'reserve' ? kr : 'no_tokens';
-    }
+    if (serpDeferred || job.deferred.some((s) => s.kind === 'listing' || s.kind === 'catalog')) job.stopReason = budget.blockReason(budget.spendable + 1);
+    else if (job.lookupsBlockedBy) job.stopReason = stopOfBlock(job.lookupsBlockedBy);
+    else job.stopReason = 'keepa_tokens';
   }
   job.phase = 'parts';
   await run.store.putScan(job);
 }
+
+/** Step 15: the lookup block a stop reason names, for lookups left waiting by a halt. */
+function blockOfStop(r: StopReason | null): LookupBlock | null {
+  switch (r) {
+    case 'run_cap': return 'search_cap';
+    case 'reserve': return 'reserve';
+    case 'hourly_limit': return 'hourly_limit';
+    case 'keepa_tokens': case 'no_tokens': return 'keepa_tokens';
+    default: return null;
+  }
+}
+
+/** Step 15: the Amazon step's figure says what paid and what waits ("4 Keepa, 14 searches, 2 wait"). */
+function noteAmazon(job: ScanJob): void {
+  const s = job.pipeline?.find((p) => p.id === 'amazon');
+  if (!s || s.state === 'skipped') return;
+  const via = job.lookupsVia ?? { keepa: 0, serpapi: 0 };
+  const parts = [
+    ...(via.keepa > 0 ? [`${via.keepa} Keepa`] : []),
+    ...(via.serpapi > 0 ? [`${via.serpapi} ${via.serpapi === 1 ? 'search' : 'searches'}`] : []),
+    ...((job.lookupsWaiting ?? 0) > 0 ? [`${job.lookupsWaiting} wait`] : []),
+  ];
+  if (parts.length > 0) s.note = parts.join(', ');
+}
+
+/** Step 15: the stop reason a lookup block gives the job. */
+const stopOfBlock = (b: LookupBlock): StopReason => (b === 'search_cap' ? 'run_cap' : b);
 
 /**
  * Ruling 70: the match a RYOBI part takes from its twin, its other written form (PCL515 for PCL515B, or
@@ -2046,7 +2198,17 @@ async function finish(run: Run): Promise<ScanJob> {
   // Planning named the limit that made work wait (planParts); when every deferred step has
   // since moved into the queue (Ruling 48), nothing waits and no limit stopped the job. A
   // budget refusal at a search always defers that step (halt), so it never ends here.
-  if (job.deferred.length === 0 && (job.stopReason === 'run_cap' || job.stopReason === 'reserve' || job.stopReason === 'hourly_limit')) job.stopReason = null;
+  if (job.deferred.length === 0 && (job.stopReason === 'run_cap' || job.stopReason === 'reserve' || job.stopReason === 'hourly_limit' || job.stopReason === 'keepa_tokens')) job.stopReason = null;
+  // Step 15: the lookups left waiting, and the one cause the owner reads for them.
+  const waiting = job.deferred.filter((s) => s.kind === 'lookup').length;
+  if (job.phase === 'parts' || job.lookupsVia !== undefined || waiting > 0) {
+    job.lookupsWaiting = waiting;
+    job.lookupsVia ??= { keepa: 0, serpapi: 0 };
+    if (waiting === 0) job.lookupsBlockedBy = null;
+    else job.lookupsBlockedBy ??= blockOfStop(job.stopReason);
+    if (waiting > 0 && job.lookupsBlockedBy === 'keepa_tokens' && job.stopReason === null) job.stopReason = 'keepa_tokens';
+    noteAmazon(job);
+  }
   // Step 11: whatever did not run says why; the last step is the save itself.
   closeRest(job, whyNot(job.stopReason), run.now());
   startStep(job, 'finish', { remaining: 1, now: run.now() });

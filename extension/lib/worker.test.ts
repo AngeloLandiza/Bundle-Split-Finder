@@ -538,9 +538,10 @@ describe('worker: reading Home Depot prices of parts', () => {
     };
     const w = world({ key: KEY, settings: { ...RYOBI, schedule: SIX_HOURS }, lastScheduledRunAt: T0 - 7 * HOUR, readPartPrices });
     await w.worker.onTick();
-    expect(asked).toHaveLength(1);
-    expect(asked[0]!.length).toBeGreaterThan(0);
-    expect(asked[0]!.every((p) => p.brand === 'RYOBI' && p.model !== '')).toBe(true);
+    // Step 15: one part a call, so the step counts each part and the scan's time limit holds between them.
+    expect(asked.length).toBeGreaterThan(0);
+    expect(asked.every((call) => call.length === 1)).toBe(true);
+    expect(asked.flat().every((p) => p.brand === 'RYOBI' && p.model !== '')).toBe(true);
     // A reading is free: the searches counted are the scan's own lookups.
     expect(w.ledger.length).toBe((await lastJob(w)).searchesUsed);
   });

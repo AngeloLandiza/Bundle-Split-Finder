@@ -241,7 +241,7 @@ describe("a part's labelled prices", () => {
 
 // ---------------------------------------------------------------- readPartPrices
 
-describe("readPartPrices: Home Depot's price for a part sold alone, free, after the pages and before the lookups", () => {
+describe("readPartPrices: Home Depot's price for a part sold alone, free, after the lookups (step 15), one part a call", () => {
   // The fake readings have the real reader's shape (extension/lib/hdReader.ts): one per part asked, in order, with a
   // status; the prices are made up.
   const HD = {
@@ -252,7 +252,8 @@ describe("readPartPrices: Home Depot's price for a part sold alone, free, after 
   it("asks for every part of a resolved split, saves each in the part price store, never the catalog, and shows it for reference only", async () => {
     const asked: string[][] = [];
     const w = await scanned({ readPartPrices: fakeReader(HD, asked) });
-    expect(asked).toEqual([['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']]);
+    // Step 15: one part a call, so the step counts each part as it is read and the time limit holds between parts.
+    expect(asked).toEqual([['RYOBI:PBLRC01B'], ['RYOBI:PBLRC25B']]);
     expect(await w.store.getPartPrice('RYOBI:PBLRC25B')).toEqual({
       key: 'RYOBI:PBLRC25B', brand: 'RYOBI', model: 'PBLRC25B', itemId: '320222321', matchedModel: 'PBLRC25B', price: 99,
       title: HD['RYOBI:PBLRC25B'].title, link: 'https://www.homedepot.com/p/320222321', seenAt: T0, checkedAt: T0,
@@ -278,10 +279,10 @@ describe("readPartPrices: Home Depot's price for a part sold alone, free, after 
     const w = await scanned({ readPartPrices: fakeReader(HD, asked) });
     w.clock = T0 + RATCHET.freshnessMs;
     await scan(w, { readPartPrices: fakeReader(HD, asked) });
-    expect(asked).toHaveLength(1);
+    expect(asked).toHaveLength(2);
     w.clock = T0 + RATCHET.freshnessMs + 1;
     await scan(w, { readPartPrices: fakeReader(HD, asked) });
-    expect(asked).toEqual([['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B'], ['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']]);
+    expect(asked.flat()).toEqual(['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B', 'RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']);
   });
 
   it("not_read (the reader's nulls after a refusal, or past its cap) is never saved: a stored price stays, and the part is asked again", async () => {
@@ -294,11 +295,12 @@ describe("readPartPrices: Home Depot's price for a part sold alone, free, after 
     expect(await w.store.listPartPrices()).toEqual(before);
     expect((await w.store.listScans())[0]!.counts.partPricesRead).toBe(0);
     expect((await founderRow(w)).parts[0]!.prices.find((o) => o.kind === 'homedepot')).toMatchObject({ price: 99, seenAt: T0 });
+    // The refusal came back on the first part, so nothing more was asked in that scan.
+    expect(asked).toHaveLength(3);
     // Nothing was checked, so the next scan asks for both again.
     w.clock += MINUTE;
     await scan(w, { readPartPrices: fakeReader(HD, asked) });
-    expect(asked).toHaveLength(3);
-    expect(asked[2]).toEqual(['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']);
+    expect(asked.slice(3).flat()).toEqual(['RYOBI:PBLRC01B', 'RYOBI:PBLRC25B']);
   });
 
   it('not_found keeps a price read before, with its own time, and moves only the check', async () => {
@@ -312,7 +314,7 @@ describe("readPartPrices: Home Depot's price for a part sold alone, free, after 
     // Checked, so not asked again within freshnessMs.
     w.clock = later + MINUTE;
     await scan(w, { readPartPrices: fakeReader(HD, asked) });
-    expect(asked).toHaveLength(1);
+    expect(asked).toHaveLength(2);
   });
 
   it('partPriceReadsPerScan caps one call; the part left out is asked for next scan', async () => {
@@ -324,7 +326,7 @@ describe("readPartPrices: Home Depot's price for a part sold alone, free, after 
     expect(asked).toEqual([['RYOBI:PBLRC01B'], ['RYOBI:PBLRC25B']]);
   });
 
-  it("one cap: never more than PART_PRICE_READS_MAX parts in one call, the most the extension's reader reads", async () => {
+  it("one cap: never more than PART_PRICE_READS_MAX parts in one scan, the most the extension's reader reads", async () => {
     expect(DEFAULT_SCAN_SETTINGS.partPriceReadsPerScan).toBe(PART_PRICE_READS_MAX);
     const w: World = { store: new MemoryScanStore(), cache: new MemoryCache(), replay: replayRecorded(), clock: T0 };
     // Hand-made: one resolved bundle of 45 distinct tools, more than one call may ask for.
@@ -340,8 +342,9 @@ describe("readPartPrices: Home Depot's price for a part sold alone, free, after 
     });
     const asked: string[][] = [];
     // No search may be made: only the free passes run.
-    await scan(w, { readPartPrices: fakeReader({}, asked), settings: { ...RATCHET, partPriceReadsPerScan: 100 }, policy: { reserve: 0, maxPerRun: 0 } });
-    expect(asked.map((a) => a.length)).toEqual([PART_PRICE_READS_MAX]);
+    const none = Object.fromEntries(models.map((m) => [partKey('RYOBI', m), NOT_FOUND]));
+    await scan(w, { readPartPrices: fakeReader(none, asked), settings: { ...RATCHET, partPriceReadsPerScan: 100 }, policy: { reserve: 0, maxPerRun: 0 } });
+    expect(asked.flat()).toHaveLength(PART_PRICE_READS_MAX);
   });
 
   it('a reader that throws is noted, and the scan goes on to its lookups', async () => {
