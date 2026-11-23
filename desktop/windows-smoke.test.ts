@@ -100,6 +100,18 @@ describe('windows smoke: the script and the workflow name the same things as the
     expect(script).toContain(conf.identifier);
   });
 
+  it('the script checks exactly the three secret files, by SID, and nothing wide on the store folder', () => {
+    const store = readFileSync(new URL('../agent/store.ts', import.meta.url), 'utf8');
+    // the agent narrows the files it writes 0o600: the store's keys and pairing, and the token (auth.ts)
+    expect(/OWNER_ONLY[^=]*= new Set\(\['keys', 'pairing'\]\)/.test(store)).toBe(true);
+    const auth = readFileSync(new URL('../agent/auth.ts', import.meta.url), 'utf8');
+    expect(auth).toContain("writeFileAtomic(path, `${token}\\n`, 0o600)");
+    for (const f of ["'agent-token'", "'store\\keys.json'", "'store\\pairing.json'"]) expect(script).toContain(f);
+    expect(script).toContain('Security.Principal.WindowsIdentity]::GetCurrent().User.Value');
+    for (const sid of ['S-1-1-0', 'S-1-5-32-545', 'S-1-5-11']) expect(script).toContain(sid);
+    expect(script).toContain("'\\(I\\)'");
+  });
+
   it('the workflow builds natively, runs the script, and the Node version is the sidecar\'s', () => {
     const bundle = readFileSync(new URL('./bundle-agent.ts', import.meta.url), 'utf8');
     const version = /NODE_VERSION = 'v([0-9.]+)'/.exec(bundle)?.[1];

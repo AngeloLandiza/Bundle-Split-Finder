@@ -137,7 +137,32 @@ function Get-AclNames {
   return , $names
 }
 
-function Test-IsMe { param([string]$Who) return ($Who -ieq (& whoami.exe).Trim()) }
+# The SID of an entry name from icacls (an account name, or already a SID string when it does not resolve).
+function Get-EntrySid {
+  param([string]$Who)
+  if ($Who -match '^S-1-\d+(-\d+)+$') { return $Who }
+  try { return ([Security.Principal.NTAccount]$Who).Translate([Security.Principal.SecurityIdentifier]).Value } catch { return $null }
+}
+
+# By SID, never by name: "runnervmbpeip\runneradmin" and "RUNNERVMBPEIP\runneradmin" are the same account.
+function Test-IsMe {
+  param([string]$Who)
+  $me = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+  return ((Get-EntrySid $Who) -eq $me)
+}
+
+# The entries of a path as printed, "name:(rights)" per entry, for the failure message.
+function Get-AclEntryText {
+  param([string]$Path)
+  $out = & icacls.exe $Path 2>&1
+  $lines = @()
+  foreach ($line in $out) {
+    $l = "$line".Trim()
+    if ($l.StartsWith($Path, [StringComparison]::OrdinalIgnoreCase)) { $l = $l.Substring($Path.Length).Trim() }
+    if ($l -match '^.+?:\(') { $lines += $l }
+  }
+  return ($lines -join ', ')
+}
 
 # The processes of the app's agent sidecar (binaries/agent-dashboard in tauri.conf.json).
 function Get-AgentProcesses { return @(Get-Process -Name 'agent-dashboard*' -ErrorAction SilentlyContinue) }
@@ -251,30 +276,34 @@ if ($listening -and $token) {
 # ---------------------------------------------------------------- 5. owner-only files
 
 if ($listening) {
-  Invoke-Check 'token file is owner-only' {
-    # The agent narrows this file with icacls (agent/winAcl.ts): one entry, the current user.
-    $names = Get-AclNames (Join-Path $DataDir 'agent-token')
-    $others = @($names | Where-Object { -not (Test-IsMe $_) })
-    if ($names.Count -eq 1 -and $others.Count -eq 0) { return @($true, "only $($names[0]) may use it") }
-    return @($false, "entries: $($names -join ', ') (expected only $((& whoami.exe).Trim()))")
+  # The three files that hold secrets are narrowed by the agent (agent/winAcl.ts): exactly one entry, the current
+  # user (compared by SID), not inherited. The other store files hold no keys and keep the folder's inherited
+  # per-user permissions (user, SYSTEM, Administrators), the normal state of %APPDATA%; they are not checked here.
+  foreach ($rel in @('agent-token', 'store\keys.json', 'store\pairing.json')) {
+    Invoke-Check "secret file is owner-only: $rel" {
+      $path = Join-Path $DataDir $rel
+      if (-not (Test-Path -LiteralPath $path)) { return @($false, "$path does not exist") }
+      $names = Get-AclNames $path
+      $others = @($names | Where-Object { -not (Test-IsMe $_) })
+      $text = Get-AclEntryText $path
+      if ($names.Count -eq 1 -and $others.Count -eq 0 -and $text -notmatch '\(I\)') { return @($true, "one entry: $text") }
+      return @($false, "entries: $text (expected one explicit entry for $((& whoami.exe).Trim()))")
+    }
   }
 
-  Invoke-Check 'store files are owner-only' {
-    # Every file the agent has written under store\ must be the current user alone. The folder keeps the ACL it
-    # inherits from %APPDATA% (the user, SYSTEM, Administrators), so for the folder the rule is: nobody wider.
-    $storeDir = Join-Path $DataDir 'store'
-    if (-not (Test-Path -LiteralPath $storeDir)) { return @($false, "no store folder in $DataDir") }
+  Invoke-Check 'store folder grants nothing wide' {
+    # Users, Authenticated Users, Everyone and INTERACTIVE, by SID, must not appear on the store folder (nor on
+    # the data folder above it): what it inherits is the user, SYSTEM and Administrators.
+    $wideSids = @('S-1-1-0', 'S-1-5-32-545', 'S-1-5-11', 'S-1-5-4')
     $bad = @()
-    $files = @(Get-ChildItem -LiteralPath $storeDir -File -Recurse -ErrorAction SilentlyContinue)
-    foreach ($f in $files) {
-      $names = Get-AclNames $f.FullName
-      if (@($names | Where-Object { -not (Test-IsMe $_) }).Count -gt 0) { $bad += "$($f.Name): $($names -join ', ')" }
+    foreach ($dir in @((Join-Path $DataDir 'store'), $DataDir)) {
+      if (-not (Test-Path -LiteralPath $dir)) { return @($false, "no folder $dir") }
+      foreach ($who in (Get-AclNames $dir)) {
+        if ($wideSids -contains (Get-EntrySid $who)) { $bad += "$dir : $who" }
+      }
     }
-    $dirNames = Get-AclNames $storeDir
-    $wide = @($dirNames | Where-Object { $_ -match '(?i)^(Everyone|BUILTIN\\Users|NT AUTHORITY\\Authenticated Users|NT AUTHORITY\\INTERACTIVE)$' })
-    if ($wide.Count) { $bad += "store folder: $($wide -join ', ')" }
-    if ($bad.Count) { return @($false, ($bad -join ' | ')) }
-    return @($true, "$($files.Count) store file(s) owner-only; the store folder has no group-wide entry")
+    if ($bad.Count) { return @($false, ($bad -join ' | ') + " ; entries: $(Get-AclEntryText (Join-Path $DataDir 'store'))") }
+    return @($true, "no Users / Authenticated Users / Everyone entry; entries: $(Get-AclEntryText (Join-Path $DataDir 'store'))")
   }
 }
 
