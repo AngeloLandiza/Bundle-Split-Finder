@@ -26,13 +26,25 @@ export function parseMeta(body: Record<string, unknown>): KeepaMeta {
  * 0 AMAZON (Amazon itself selling), 1 NEW (the lowest marketplace New offer), 3 SALES (the sales rank, not a price);
  * -1 means no offer in the interval. Prices are cents.
  */
-const statsCurrent = (stats: unknown, index: number): number | null => {
+const statsCurrent = (stats: unknown, index: number, field = 'current'): number | null => {
   if (!stats || typeof stats !== 'object') return null;
-  const cur = (stats as Record<string, unknown>).current;
+  const cur = (stats as Record<string, unknown>)[field];
   if (!Array.isArray(cur)) return null;
   const v = cur[index];
   return typeof v === 'number' && v > 0 ? v : null;
 };
+
+/**
+ * Suggested prices (Nov 23): the average New price over `field`'s window (stats.avg90 or stats.avg30, the same price-type
+ * indexes as current): Keepa's NEW (index 1, the lowest New offer), else Amazon's own offer (index 0) when only Amazon sold
+ * it. NEW first, unlike the current price, because it is the lower and the owner sells as a third party: the recording has
+ * DCF921B (B09M3TL9BB) at $235.14 from Amazon and $146.37 lowest New over 90 days. Recorded in
+ * fixtures/keepa/product-…-stats.json (stats=180 carries avg, avg30, avg90, avg180 and avg365). Null when the window has
+ * neither, or stats is absent: never a figure from another window.
+ */
+function averageCents(stats: unknown, field: 'avg30' | 'avg90'): number | null {
+  return statsCurrent(stats, 1, field) ?? statsCurrent(stats, 0, field);
+}
 
 /**
  * The current New price in cents: Amazon's own offer when Amazon sells it, else the lowest marketplace New offer, so a
@@ -71,8 +83,11 @@ function parseOneProduct(raw: Record<string, unknown>): KeepaProduct {
   const asin = typeof raw.asin === 'string' ? raw.asin : '';
   const price = amazonCentsFromStats(raw.stats);
   const rank = statsCurrent(raw.stats, 3);
+  const hasStats = !!raw.stats && typeof raw.stats === 'object';
   return {
     ...tracking(raw),
+    // Present (a number or null) only when the pull carried stats, so a trend stored without them reads as "not asked".
+    ...(hasStats ? { newAvg30: averageCents(raw.stats, 'avg30'), newAvg90: averageCents(raw.stats, 'avg90') } : {}),
     ...(price ? { amazonPriceSource: price.source } : {}),
     ...(rank !== null ? { statsSalesRank: rank } : {}),
     asin,

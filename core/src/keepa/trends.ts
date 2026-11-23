@@ -20,6 +20,12 @@ export interface PartTrend {
   buyBoxEligibleOffers?: number | null;
   /** Keepa's referralFeePercentage for the listing (recorded: 12, 13.83); null or absent when Keepa gave none. */
   referralPercent?: number | null;
+  /**
+   * Suggested prices (Nov 23): Keepa's average New price over 90 and 30 days, in dollars (KeepaProduct.newAvg90/newAvg30).
+   * Null when Keepa had none; absent on a trend stored before the field, or from a pull without stats: not asked yet.
+   */
+  newAvg90?: number | null;
+  newAvg30?: number | null;
 }
 
 export function partTrendFromProduct(p: KeepaProduct, pulledAt: number): PartTrend {
@@ -41,6 +47,8 @@ export function partTrendFromProduct(p: KeepaProduct, pulledAt: number): PartTre
     fbaFee: p.fbaPickAndPackFee == null ? null : Math.round(p.fbaPickAndPackFee) / 100,
     buyBoxEligibleOffers: p.buyBoxEligibleOfferCounts ? p.buyBoxEligibleOfferCounts.reduce((a, b) => a + b, 0) : null,
     referralPercent: p.referralFeePercentage ?? null,
+    ...(p.newAvg90 !== undefined ? { newAvg90: centsToDollars(p.newAvg90) } : {}),
+    ...(p.newAvg30 !== undefined ? { newAvg30: centsToDollars(p.newAvg30) } : {}),
   };
 }
 

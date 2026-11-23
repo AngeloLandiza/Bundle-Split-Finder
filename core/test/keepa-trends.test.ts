@@ -70,6 +70,24 @@ describe('the Keepa fields tracking reads, from the recorded product response', 
     ]);
   });
 
+  it('the stats recording carries 30- and 90-day averages: the lowest New offer first, kept on the trend in dollars', () => {
+    const parsed = parseProductResponse(withStats).products;
+    // stats.avg90[1] / avg30[1] as recorded: 4815/4970, 12378/11912, 14637/15643 (Amazon's own avg90[0] for B09M3TL9BB is 23514).
+    expect(parsed.map((p) => [p.asin, p.newAvg90, p.newAvg30])).toEqual([
+      ['B0BGYFTPGK', 4815, 4970],
+      ['B01H9BL8EO', 12378, 11912],
+      ['B09M3TL9BB', 14637, 15643],
+    ]);
+    expect(partTrendFromProduct(parsed[2]!, 1)).toMatchObject({ newAvg90: 146.37, newAvg30: 156.43 });
+    // A pull without stats says nothing about averages: the fields are absent ("not asked"), never null or 0.
+    const bare = parseProductResponse({ products: [{ asin: 'B0X' }] }).products[0]!;
+    expect('newAvg90' in bare).toBe(false);
+    expect('newAvg90' in partTrendFromProduct(bare, 1)).toBe(false);
+    // Stats with -1 in the window: null (Keepa had none).
+    const none = parseProductResponse({ products: [{ asin: 'B0Y', stats: { current: [-1, -1], avg90: [-1, -1], avg30: [-1, -1] } }] }).products[0]!;
+    expect([none.newAvg90, none.newAvg30]).toEqual([null, null]);
+  });
+
   it('a price_only refresh asks for stats (free), so the recorded DCF921B yields its lowest New price and rank', async () => {
     const urls: string[] = [];
     const fetchFn = (async (url: string) => {

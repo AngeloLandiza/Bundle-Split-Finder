@@ -38,6 +38,12 @@ export interface KeepaProduct {
   amazonPrice?: number | null;
   /** Where amazonPrice came from: stats.current[0] (Amazon selling) or stats.current[1] (the lowest New offer). */
   amazonPriceSource?: 'amazon' | 'new_lowest';
+  /**
+   * Suggested prices: the average New price in cents over 30 and 90 days (stats.avg30 / stats.avg90: Amazon's own offer,
+   * else the lowest New offer). Null when the pull's stats have none; absent when the pull carried no stats.
+   */
+  newAvg30?: number | null;
+  newAvg90?: number | null;
   /** stats.current[3]: the current sales rank (Keepa's SALES index), when stats has one. */
   statsSalesRank?: number;
   /**
