@@ -22,7 +22,7 @@ export function AiPane() {
   const spent = state?.budget.aiSpentUsd ?? null;
   return (
     <Pane>
-      <Row label="Autopilot" align="start" help="Applies an AI answer without you only when the code checked it against the pages and the model below is marked trusted. Each one is listed in Activity with Undo. Anything unverified waits in Review.">
+      <Row label="Autopilot" align="start" help="Applies an AI answer without you only when the code checked it against the pages and the model below is marked trusted. Each one is listed in Activity, and Undo is there. Anything unverified waits in Review. Trust belongs to one model: it goes back to the measured list when the provider, model or address changes, so a new model is off until you turn it on.">
         <Switch label={settings.autopilot ? 'On' : 'Off'} checked={settings.autopilot} onChange={(autopilot) => update({ autopilot })} />
       </Row>
       <Row label="Monthly AI cap" align="start" help={cap === 0 ? '0 turns the AI off.' : 'At the cap the AI waits until next month and questions stay in Review. 0 turns the AI off.'}>
@@ -77,7 +77,7 @@ function PipelineRows({ id, label, help }: { id: Pipeline; label: string; help: 
           />
         </Row>
       ) : null}
-      <Row label="Trusted for Autopilot" align="start" help="Trust belongs to one model. Change the provider, model or address and it goes back to the measured list, so a model you have not measured is off until you turn it on.">
+      <Row label="Trusted for Autopilot" align="start" help="Resets when the provider, model or address changes.">
         <Switch label={cur.trusted ? 'Trusted' : 'Not trusted'} checked={cur.trusted} onChange={(trusted) => change({ trusted })} />
       </Row>
     </>

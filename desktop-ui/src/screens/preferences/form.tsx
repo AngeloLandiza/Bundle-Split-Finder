@@ -35,7 +35,7 @@ export function Pane({ children }: { children: ReactNode }) {
 export function Row({ label, help, children, align = 'center' }: { label?: ReactNode; help?: ReactNode; children?: ReactNode; align?: 'center' | 'start' }) {
   const id = useId();
   return (
-    <div className={`frow${align === 'start' ? ' frow-start' : ''}`} role={label ? 'group' : undefined} aria-labelledby={label ? id : undefined}>
+    <div className={`frow${align === 'start' || help ? ' frow-start' : ''}`} role={label ? 'group' : undefined} aria-labelledby={label ? id : undefined}>
       <div className="frow-label" id={id}>
         {label}
       </div>
@@ -73,6 +73,7 @@ export function NumberField({
   onClear,
   prefix,
   suffix,
+  placeholder,
   width = 'sm',
   step,
 }: {
@@ -84,6 +85,7 @@ export function NumberField({
   onClear?: () => void;
   prefix?: string;
   suffix?: ReactNode;
+  placeholder?: string;
   width?: 'xs' | 'sm' | 'md';
   step?: string;
 }) {
@@ -108,6 +110,7 @@ export function NumberField({
       max={rule.max}
       prefix={prefix}
       suffix={suffix}
+      placeholder={placeholder}
       value={text}
       status={error ? { tone: 'error', text: error } : null}
       onFocus={() => {

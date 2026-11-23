@@ -271,7 +271,7 @@
   height: 48px;
   border-radius: 7px;
   overflow: hidden;
-  box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.25);
+  box-shadow: 0 0 0 0.5px light-dark(rgb(0 0 0 / 0.25), rgb(255 255 255 / 0.3));
 }
 
 .look-on .look-thumb {

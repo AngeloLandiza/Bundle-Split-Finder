@@ -432,7 +432,9 @@ model numbers and ASINs (and keys typed into a field); a number field is tabular
   AI block in a group box (green edge when the code verified it), the choices as one box of radio rows
   with their number keys, and Approve or Save answer at the foot.
 - **Activity**: Needs attention, Autopilot with Undo, Runs as a plain table in a group box.
-- **Settings**: System Settings sections until D2 moves them into a Preferences window.
+- **Settings**: not a screen. The sidebar's Settings item, Cmd+5, Cmd+, (app menu and tray) and any
+  `#/settings/<section>` link open the Preferences window (below) and leave the screen that was open as
+  it was.
 
 ### Controls
 
@@ -469,7 +471,8 @@ Help > Finish setup open it again at the first step still open. **Setup never bl
 
 ### Keyboard
 
-    Cmd+1-5            Today, Deals, Review, Activity, Settings
+    Cmd+1-4            Today, Deals, Review, Activity
+    Cmd+, or Cmd+5     Settings: the Preferences window
     Cmd+F              the screen's search field (also the shell's Edit > Find)
     Cmd+Option+I       show or hide the inspector (also View > Show or hide inspector)
     Cmd+R              Scan now (Agent menu)
@@ -494,6 +497,45 @@ links that carry one. Title, then one line:
 - "Chrome is closed" / "4 Home Depot pages wait. They are read when Chrome opens."
 
 Profit in a message is an estimate and says "est.". No exclamation marks, no emoji.
+
+### Preferences window
+
+A second Tauri window (`src-tauri/src/prefs.rs`), one instance (opening it again focuses it and switches
+the tab), 720pt wide and as tall as its pane: the page reports the pane's height (`set_preferences_height`)
+and the window follows, top edge fixed; the width cannot change. Close hides it, as the main window does.
+It loads the same UI bundle at `#/preferences/<tab>` (`screens/preferences/`) with the same token, in a
+unified title bar with no sidebar material. Traffic lights sit in a 28pt band that holds the pane's name
+and, at the right, a quiet **Saved** (a check and the word, for two seconds after each save); the toolbar
+of tabs is under it, each an icon over its label (22px glyph, 11px label), the chosen one on a grey
+rounded rectangle with its glyph in the accent. Left and Right move between tabs.
+
+The panes are the macOS preference layout, not group boxes: a 190px column of right-aligned labels, then
+the control, with 11px help under it, hairlines between groups. Every change saves as it is made (typing
+waits 600ms, so it is one save). A field checks its value first (`lib/prefs.ts`, the agent's own limits)
+and says why under itself instead of saving; a refusal by the agent shows as one line at the top of the
+pane and the pane re-reads what the agent holds.
+
+- **General**: Appearance (System, Light, Dark, each a small window preview; System is both halves),
+  Accent colour (swatches and its name), Density; Open at login; Show menu bar icon and Show Dock icon
+  (the last one that is on is disabled and says why: with both off there is no way back in); Sounds.
+- **Scanning**: schedule (Off, Every N hours, Daily at a time), searches per scan, reserve, the month's
+  forecast, brands, the five fees with a line that they are estimates, Keepa tokens per scan and reserve.
+- **Keys**: one row each for SerpApi, Keepa, Anthropic, OpenAI-compatible, eBay and Telegram: Saved or
+  Not set, Replace, Remove (with a confirmation line), a "Get a key" link. Fields are always empty; a key
+  is never read back.
+- **AI**: Autopilot (off by default, with what it may apply and that Undo exists), the monthly cap with this
+  month's spend, then per pipeline (Listing check, Ask AI, Research) provider, model, base URL for an
+  OpenAI-compatible provider, and Trusted for Autopilot (the agent resets it when the model changes; the
+  window shows the agent's answer).
+- **Notifications**: a switch per kind, the figures for "worth buying now" (ROI, profit, sold a month,
+  profit floor and its digest switch), digest, quiet hours, Telegram status, a test notification to this Mac.
+- **Chrome**: status, Install the Chrome helper, requests waiting with their code and Allow or Deny,
+  paired Chromes with Revoke.
+- **Data**: Export deals as CSV, the data folder and Show in Finder.
+- **Advanced**: the agent's state and address, the app's version, the data folder, where logs are.
+
+Not in the window because the agent has no endpoint for it: a Telegram test message, Reset scan data,
+Export audit file, Restart agent, and the agent's own version and Node version.
 
 ### What D2, D3 and D4 build on
 

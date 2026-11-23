@@ -76,6 +76,7 @@ export function NotificationsPane() {
             rule={RULES.floorProfit}
             prefix="$"
             step="0.5"
+            placeholder={String(a.minProfit)}
             onCommit={(floorProfit) => update({ alerts: { floorProfit } }, { delay: 600 })}
             onClear={() => update({ alerts: { floorProfit: null as unknown as number } }, { delay: 600 })}
           />
@@ -86,7 +87,7 @@ export function NotificationsPane() {
         <Switch label="Also tell me when questions wait in Review" checked={a.reviewDigest} onChange={(reviewDigest) => update({ alerts: { reviewDigest } })} />
       </Row>
       <Rule />
-      <Row label="Digest" align="start" help="After each scan sends one summary when it ends. Once a morning holds deal, question and Autopilot lines until then. Off sends no digest, to Telegram too.">
+      <Row label="Digest" align="start" help="After each scan: one summary when a scan ends. Once a morning: deal, question and Autopilot lines wait until then. Off: no digest, Telegram included.">
         <div className="stack">
           <Select label={<span className="sr-only">Digest</span>} value={n.digest} width="md" onChange={(e) => update({ notifications: { digest: e.target.value as Digest } })}>
             <option value="each-run">After each scan</option>
