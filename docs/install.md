@@ -1,9 +1,9 @@
 # Install Split Finder
 
 Split Finder finds discounted DEWALT and RYOBI bundles on Home Depot, splits each into its
-parts, matches the parts to Amazon listings and ranks bundles by estimated profit. The Mac
-app does the work. The Chrome extension reads Home Depot pages for it. Today this runs on
-macOS only.
+parts, matches the parts to Amazon listings and ranks bundles by estimated profit. The desktop
+app does the work. The Chrome extension reads Home Depot pages for it. It runs on macOS and
+on Windows 10 or 11 (64-bit).
 
 ## 1. Install the app
 
@@ -14,6 +14,24 @@ macOS only.
 
 The app lives in the menu bar. Closing the window does not stop it. Quit from the menu bar
 icon.
+
+### On Windows 10 or 11 (64-bit)
+
+1. Run `Split Finder_<version>_x64-setup.exe`. (To build it on a Mac: `npm run
+   desktop:build:windows`; it is in `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/`.
+   See `docs/desktop-app.md`, Windows.)
+2. The installer is not signed yet, so Windows SmartScreen says "Windows protected your PC".
+   Click **More info**, then **Run anyway**. It installs for you only; no administrator prompt.
+3. The app needs Microsoft Edge WebView2. Windows 11 has it. On a Windows 10 PC without it, the
+   installer downloads and installs it first (an internet connection is needed for that step).
+4. Split Finder starts from the Start menu. It lives in the notification area by the clock (if
+   the icon is not there, open the ^ arrow, or pin it in Settings, Personalization, Taskbar,
+   Other system tray icons). Left click opens the small flyout, right click the menu, Exit
+   stops it. Closing the window does not stop it.
+
+Its data folder is `%APPDATA%\com.bundlesplitfinder.desktop`. The Chrome helper unpacks to
+`Documents\split-finder`. Everything else below is the same, with Settings in place of
+Preferences and File Explorer in place of Finder.
 
 ## 2. Install the extension
 
