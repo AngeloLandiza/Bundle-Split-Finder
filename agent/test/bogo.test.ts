@@ -144,5 +144,6 @@ describe('BOGO found by the agent', () => {
     expect(Object.keys(agent.store.get('tracking').bogoPairs)).toHaveLength(13);
     live = false;
     await polling;
-  });
+    // Every job and cached page is a store write; with the other agent suites running beside it this takes several seconds.
+  }, 30_000);
 });
