@@ -14,7 +14,7 @@
 //
 // Nothing here guesses a part: every model comes from Home Depot's model number or its own pages. Pure: no store.
 
-import { dewaltBundleForm, type Catalog, type Decomposition, OFFERABLE_PART, PACK_WITH_NOTE, type SplitEvidence } from '../decompose';
+import { dewaltBundleForm, type Catalog, type Decomposition, OFFERABLE_PART, PACK_WITH_NOTE, type SettledPart, type SplitEvidence, type UnsettledPart } from '../decompose';
 import { kitPageStored, splitItems, type KitRecord } from '../kitContents';
 import { sameModel } from '../match';
 import { pageReadingOf, RYOBI_TOKEN } from '../pageSplit';
@@ -111,26 +111,33 @@ function spelledOut(bundle: Pick<BundleRecord, 'brand' | 'model'>, split: Decomp
     const form = dewaltBundleForm(bundle.model);
     if (form?.kind !== 'joined' || !sameParts(reading, [form.base, form.bonus])) return null;
   } else return null;
-  // A special buy is itself a bundle of other products, never a part (decisions: a bundle is not a part).
-  if (reading.some((m) => /SB$/.test(m))) return null;
+  // Step 16 (round 2): a special buy among the parts is read like any part (it used to make the rule not apply, so its bundle
+  // went straight to a question with nothing read). It is never confirmed as a part (checkPart: a special buy is a bundle,
+  // decisions); once read, the question is about it, and the parts Home Depot did confirm are named.
   return reading;
 }
 
 type PartCheck =
   | { kind: 'confirmed'; title: string | null; evidence: SplitEvidence }
   | { kind: 'missing' }
-  | { kind: 'refused'; why: string };
+  | { kind: 'refused'; why: string; part: UnsettledPart };
 
 /** What Home Depot's own catalog says of one proposed part. */
 function checkPart(brand: string, model: string, catalog: Catalog, data: SettleData): PartCheck {
   const m = up(model);
+  const special = /SB$/.test(m);
   const kits = data.kitsOf(brand, m);
   const kit = catalog.get(m)?.isKit === true || kits.some((k) => (k as { isKit?: boolean }).isKit === true);
   const records = [partKey(brand, m), ...twinKeys(brand, m)].map((k) => data.partPrices.get(k)).filter((r): r is PartPriceRecord => r !== undefined);
   const exact = records.find((r) => r.price !== null && r.matchedModel !== null && norm(r.matchedModel) === norm(m));
   if (exact) {
     const tools = exact.title === null ? null : titleTools(exact.title);
-    if (!kit && tools !== null && tools >= 2) return { kind: 'refused', why: `Home Depot sells ${m} as a ${tools}-tool combo the catalog does not know as a kit` };
+    // Step 16 (round 2, measured): Home Depot's own page for exactly a special buy, even one naming no other model, is not proof it
+    // is one part: PCL500525SB's page names none, and the key splits it into PCL500B + PCL525B (docs/decisions.md).
+    if (special) return { kind: 'refused', why: `Home Depot sells ${m} as a special buy, itself a bundle, so the parts it holds are asked`, part: { model: m, why: 'special_buy', ...(exact.title ? { what: exact.title } : {}), ...(exact.link ? { url: exact.link } : {}) } };
+    if (!kit && tools !== null && tools >= 2) {
+      return { kind: 'refused', why: `Home Depot sells ${m} as a ${tools}-tool combo the catalog does not know as a kit`, part: { model: m, why: 'combo', ...(exact.title ? { what: exact.title } : {}), ...(exact.link ? { url: exact.link } : {}) } };
+    }
     return {
       kind: 'confirmed', title: exact.title,
       evidence: { kind: 'hd_part_page', text: `Home Depot sells ${m} by itself${exact.title ? `: ${exact.title}` : ''}${exact.price !== null ? ` (${money(exact.price)})` : ''}.`, ...(exact.link ? { url: exact.link } : {}) },
@@ -144,8 +151,8 @@ function checkPart(brand: string, model: string, catalog: Catalog, data: SettleD
     };
   }
   const other = records.find((r) => r.price !== null && r.matchedModel !== null);
-  if (other) return { kind: 'refused', why: `Home Depot sells ${up(other.matchedModel!)}, not ${m}` };
-  if (records.length > 0) return { kind: 'refused', why: `Home Depot's search found no ${m} sold by itself` };
+  if (other) return { kind: 'refused', why: `Home Depot sells ${up(other.matchedModel!)}, not ${m}`, part: { model: m, why: 'other_model', other: up(other.matchedModel!) } };
+  if (records.length > 0) return { kind: 'refused', why: `Home Depot's search found no ${m} sold by itself`, part: { model: m, why: 'not_sold' } };
   return { kind: 'missing' };
 }
 
@@ -212,8 +219,15 @@ export function homeDepotSplit(
   const brand = up(bundle.brand);
   const checks = reading.map((p) => [p, checkPart(brand, p, catalog, data)] as const);
   const refused = checks.flatMap(([, c]) => (c.kind === 'refused' ? [c.why] : []));
-  if (refused.length > 0) return { ...split, notes: [...split.notes, ...refused] };
   const missing = checks.filter(([, c]) => c.kind === 'missing').map(([p]) => p);
+  // Step 16 (round 2): no question while a part still has a free read to come: the refusals are asked once every part is read.
+  if (refused.length > 0 && missing.length > 0) return { ...split, waitingFor: missing };
+  if (refused.length > 0) {
+    // The question is about the parts Home Depot did not confirm; the ones it did are named with their pages.
+    const settledParts: SettledPart[] = checks.flatMap(([p, c]) => (c.kind === 'confirmed' ? [{ model: p, what: c.title ?? c.evidence.text, ...(c.evidence.url ? { url: c.evidence.url } : {}) }] : []));
+    const unsettledParts = checks.flatMap(([, c]) => (c.kind === 'refused' ? [c.part] : []));
+    return { ...split, notes: [...split.notes, ...refused], ...(settledParts.length > 0 ? { settledParts } : {}), unsettledParts };
+  }
   // The page is read before the parts are waited for: a page that names another model asks at once, unless a kit among
   // the parts has its own page still to read, which may list that model (its contents explain it): then it waits too.
   const named = unexplainedModel(bundle, reading, data);

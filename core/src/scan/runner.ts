@@ -1807,17 +1807,21 @@ export async function splitOne(
   // offers the readings the split carries (step 5). An item the user answered is never changed.
   const reason = split.notes.join('; ');
   const choices = splitChoices(split);
+  // Step 16 (round 2): which parts Home Depot's own pages confirmed and which not, so the question is about those only.
+  const narrow = { ...(split.settledParts ? { settledParts: split.settledParts } : {}), ...(split.unsettledParts ? { unsettledParts: split.unsettledParts } : {}) };
   if (!item || item.answer === RESOLVED_BY_SCAN) {
     // A new question, or one a scan closed and must ask again.
     await store.putReview({
       id, kind: 'split', subject: bundle.key, brand: bundle.brand, model: bundle.model, title: bundle.title,
-      reason, candidates: [], choices, openedAt: now, answer: null, answeredAt: null,
+      reason, candidates: [], choices, openedAt: now, answer: null, answeredAt: null, ...narrow,
     });
     return { split, opened: true };
   }
-  if (item.answer === null && (item.reason !== reason || !sameChoices(choicesOf(item), choices))) {
+  const sameNarrow = JSON.stringify([item.settledParts ?? null, item.unsettledParts ?? null]) === JSON.stringify([narrow.settledParts ?? null, narrow.unsettledParts ?? null]);
+  if (item.answer === null && (item.reason !== reason || !sameChoices(choicesOf(item), choices) || !sameNarrow)) {
     // Still open: a new reading, the same question, so openedAt stays.
-    await store.putReview({ ...item, reason, choices });
+    const { settledParts: _s, unsettledParts: _u, ...rest } = item;
+    await store.putReview({ ...rest, reason, choices, ...narrow });
   }
   return { split, opened: false };
 }

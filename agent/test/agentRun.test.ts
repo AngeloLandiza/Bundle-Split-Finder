@@ -107,9 +107,14 @@ describe('a scan from the app', () => {
     expect(parts).toMatchObject({ matchState: 'waiting_parts', matchKind: 'waiting_parts', needsAnswer: false });
     expect((await json<ReviewResponse>('/api/review')).questions.some((x) => x.id === 'split:homedepot:320243741')).toBe(false);
 
-    // Home Depot's search, read as the helper would have, found no P553 sold by itself: the next scan asks.
+    // Home Depot's search, read as the helper would have, found no P553 sold by itself, and PCL1600K2 sold under its own
+    // model: every part is read now (step 16 round 2: no question while a part has a free read to come), so the next scan asks.
     await agent.work.scanStore.putPartPrice({
       key: 'RYOBI:P553', brand: 'RYOBI', model: 'P553', itemId: null, matchedModel: null, price: null, title: null, link: null, seenAt: null, checkedAt: clock,
+    });
+    await agent.work.scanStore.putPartPrice({
+      key: 'RYOBI:PCL1600K2', brand: 'RYOBI', model: 'PCL1600K2', itemId: '317987591', matchedModel: 'PCL1600K2', price: 199, link: 'https://www.homedepot.com/p/317987591',
+      title: 'ONE+ 18V Cordless 6-Tool Combo Kit with Compact Battery, 4.0 Ah Battery, and Charger', seenAt: clock, checkedAt: clock,
     });
     expect((await ui('/api/scan', { method: 'POST' })).status).toBe(200);
     await agent.work.idle();

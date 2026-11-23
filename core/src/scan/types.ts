@@ -5,7 +5,7 @@
 // (tests, the command line) with an in-memory store and in the extension's service
 // worker with IndexedDB behind the same ScanStore.
 
-import type { Decomposition, SplitEvidence } from '../decompose';
+import type { Decomposition, SettledPart, SplitEvidence, UnsettledPart } from '../decompose';
 import type { EbayValue, EbayVerdict } from '../ebay/types';
 import type { PageContent } from '../hdPage';
 import type { Grade } from '../match';
@@ -562,6 +562,12 @@ export interface ReviewItem {
    */
   answerParts?: string[] | null;
   answeredAt: number | null;
+  /**
+   * Step 16 (round 2), split questions: when Home Depot read every part of the reading and confirmed only some, the ones it
+   * confirmed (with its page) and the ones it did not (with why). The question is about the unsettled ones. Absent otherwise.
+   */
+  settledParts?: SettledPart[];
+  unsettledParts?: UnsettledPart[];
 }
 
 // ---------------------------------------------------------------- the job

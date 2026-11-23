@@ -37,6 +37,33 @@ export interface Decomposition {
    * before it can be settled; it is not a question yet. Absent otherwise. Never set on a resolved split.
    */
   waitingFor?: string[];
+  /**
+   * Step 16 (round 2): on a split that stays a question after rule 2 read every part, which parts Home Depot's own pages
+   * confirmed (`what`: the page's title) and which not, with why: the question is then about those only. Absent otherwise.
+   */
+  settledParts?: SettledPart[];
+  unsettledParts?: UnsettledPart[];
+}
+
+/** A part Home Depot's own page confirms, for exactly that brand and model. */
+export interface SettledPart {
+  model: string;
+  /** What the page says it is: its title. */
+  what: string;
+  url?: string;
+}
+
+/**
+ * A part no Home Depot page confirms as one part, with why: `not_sold` its search found no product of that model;
+ * `other_model` the product found is another model (`other`); `special_buy` Home Depot sells it as a special buy, itself a
+ * bundle; `combo` a combo of tools the catalog does not know as a kit. `what` and `url`: Home Depot's page of it, when found.
+ */
+export interface UnsettledPart {
+  model: string;
+  why: 'not_sold' | 'other_model' | 'special_buy' | 'combo';
+  other?: string;
+  what?: string;
+  url?: string;
 }
 
 /** One piece of evidence for a settled split (step 15). `url` is the page it was read on, when there is one. */
