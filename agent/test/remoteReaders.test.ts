@@ -167,6 +167,14 @@ describe('the BOGO readers (worker jobs)', () => {
     const empty = readers.readBundleListing(path);
     await worker(() => ({ products: [], note: 'its state had 2 entries, none a product' }));
     expect(await empty).toEqual({ products: [], note: 'its state had 2 entries, none a product' });
+    // Fix round 2: the final address (a Bundle list path only), the list's total and an empty state's sample come through.
+    const sample = { kinds: { '#': 30, ROOT_QUERY: 1 }, entries: [{ kind: '#', key: '1917265066', text: '{"a":1}' }] };
+    const redirected = readers.readBundleListing('/b/N-5yc1vZbwo64Zm5d');
+    await worker(() => ({ products: [], note: 'n', finalPath: '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64', total: 101, sample }));
+    expect(await redirected).toEqual({ products: [], note: 'n', finalPath: '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64', total: 101, sample });
+    const off = readers.readBundleListing(path);
+    await worker(() => ({ products: [product], finalPath: '/account/settings', total: -1, sample: { kinds: {}, entries: [{ kind: 'x', key: 'y', text: 'z'.repeat(1501) }] } }));
+    expect(await off).toEqual({ products: [product] });
     const bad = readers.readBundleListing(path);
     await worker(() => ({ products: [{ ...product, price: 'free' }] }));
     await expect(bad).rejects.toThrow('could not be read');

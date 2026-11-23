@@ -2,7 +2,7 @@
 // refuses the same requests from the service worker. Every Chrome call goes through ReaderEnv,
 // so this file touches no chrome.* and is tested with fakes (see hdReader.test.ts).
 
-import { parseBundlePage, parseListingText, parseProductPage, parsePromoPage, parseSearchText } from '@core/hdPage';
+import { type ListingSample, parseBundlePage, parseListingText, parseProductPage, parsePromoPage, parseSearchText } from '@core/hdPage';
 import { HOME_DEPOT, isBogoListingPath, type ListedItem, type PromoPageOutcome } from '@core/tracking/bogoPairs';
 import { brandOfListingPath, isBundleListingPath } from '@core/scan/listingSource';
 import type { ToolError } from '@core/research/types';
@@ -21,6 +21,11 @@ export interface ReaderEnv {
   waitForLoad(tabId: number, timeoutMs: number): Promise<void>;
   /** chrome.scripting.executeScript in the ISOLATED world; resolves with the function's result. */
   runInTab<A extends unknown[], R>(tabId: number, func: (...args: A) => Promise<R>, args: A): Promise<R>;
+  /**
+   * Fix round 2 (Nov 23): the same in the page's own (MAIN) world, so a fetch is the page's own, made as the owner's hand
+   * fetch in that tab was. Absent (older builds, fakes): runInTab.
+   */
+  runInPage?<A extends unknown[], R>(tabId: number, func: (...args: A) => Promise<R>, args: A): Promise<R>;
   /** chrome.storage.session, so a doorway left by a stopped worker can be closed. */
   remember(tabId: number | null): Promise<void>;
   remembered(): Promise<number | null>;
@@ -739,6 +744,8 @@ export interface PathInTab {
   text: string | null;
   /** A 200 answer without the page state: its <title> (or its first words), at most 80 characters. */
   note?: string;
+  /** Fix round 2: the same-origin path and query the answer came from, when Home Depot redirected the fetch. */
+  finalPath?: string;
 }
 
 /**
@@ -751,6 +758,14 @@ export async function fetchPathInTab(path: string): Promise<PathInTab> {
   try {
     const res = await fetch(path, { credentials: 'include' });
     const body = await res.text();
+    // Home Depot redirects a list to its own address (and drops a Nao on the way): the address it answered from.
+    let finalPath: string | undefined;
+    try {
+      const u = new URL(res.url);
+      if (u.origin === location.origin && u.pathname + u.search !== path) finalPath = u.pathname + u.search;
+    } catch {
+      // No final address.
+    }
     const mark = body.indexOf('window.__APOLLO_STATE__=');
     if (res.status === 200 && mark < 0) {
       const titled = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(body);
@@ -768,7 +783,7 @@ export async function fetchPathInTab(path: string): Promise<PathInTab> {
       }
       text = parts.join('\n');
     }
-    return { status: res.status, text };
+    return { status: res.status, text, ...(finalPath !== undefined ? { finalPath } : {}) };
   } catch {
     return { status: 0, text: null };
   }
@@ -793,14 +808,26 @@ export function createBogoListingReader(
 export function createBundleListingReader(
   env: ReaderEnv,
   opts: ListingReaderOptions = {},
-): (path: string) => Promise<{ products: ListedItem[] } | ToolError> {
+): (path: string) => Promise<ListingAnswer | ToolError> {
   return createListingReaderOf(env, opts, {
     accepts: isBundleListingPath, wrongPath: 'That is not a Home Depot Bundle listing address.', name: 'the bundle list', named: 'The bundle list',
     // Fix round: the doorway is the brand's search page, as in the owner's working fetch (made from a page that was not
     // the list itself), and every state block of the answer is read, each entry with its own pricing.
     doorway: (path) => `/s/${encodeURIComponent((brandOfListingPath(path) ?? 'tools').toLowerCase())}`,
     allStates: true,
+    // Fix round 2: the helper's ISOLATED-world fetch got another document (6 entries a page, or a state of other kinds)
+    // than the owner's fetch in the page (12 entries): the list is fetched in the page's own world.
+    inPage: true,
   });
+}
+
+/** A listing page as the reader gives it: its products, the redirect's final path and the list's total when known, and what an empty state held. */
+export interface ListingAnswer {
+  products: ListedItem[];
+  note?: string;
+  finalPath?: string;
+  total?: number;
+  sample?: ListingSample;
 }
 
 export interface ListingReaderOptions { pauseMs?: number; settleMs?: number; doorwayStateMs?: number; now?: () => number }
@@ -814,8 +841,10 @@ function createListingReaderOf(
     doorway?: (path: string) => string;
     /** Read every state block (parseListingText) and say what a state with no product held. */
     allStates?: boolean;
+    /** Fetch in the page's own world (ReaderEnv.runInPage), as the owner's hand fetch was made. */
+    inPage?: boolean;
   },
-): (path: string) => Promise<{ products: ListedItem[]; note?: string } | ToolError> {
+): (path: string) => Promise<ListingAnswer | ToolError> {
   const pauseMs = opts.pauseMs ?? 1000;
   const settleMs = opts.settleMs ?? 2500;
   const doorwayStateMs = opts.doorwayStateMs ?? DOORWAY_STATE_MS;
@@ -828,7 +857,7 @@ function createListingReaderOf(
       if (left > 0) await env.sleep(left);
     }
     try {
-      const got = await withDoorway(env, `${env.origin}${what.doorway ? what.doorway(path) : path}`, { settleMs, doorwayStateMs }, (tabId) => env.runInTab(tabId, fetchPathInTab, [path]));
+      const got = await withDoorway(env, `${env.origin}${what.doorway ? what.doorway(path) : path}`, { settleMs, doorwayStateMs }, (tabId) => (what.inPage && env.runInPage ? env.runInPage(tabId, fetchPathInTab, [path]) : env.runInTab(tabId, fetchPathInTab, [path])));
       if (!got.shown) return { error: `Home Depot refused ${what.name} (its own page never showed its data${titled(got.title)}).` };
       const read = got.value;
       if (!read || read.status !== 200) return { error: `Home Depot refused ${what.name} (${read && read.status !== 0 ? `HTTP ${read.status}` : 'no answer'}).` };
@@ -840,8 +869,13 @@ function createListingReaderOf(
           itemId: r.itemId, brand: r.brand, model: r.model, title: r.title, url: r.url,
           ...(r.price !== undefined ? { price: r.price, wasPrice: r.wasPrice ?? null, promotions: r.promotions ?? [] } : {}),
         }));
-        // A state with no product is said with what it held, so the scan can say the list came back empty and why.
-        return products.length > 0 ? { products } : { products, note: `its state had ${all.stateKeys} entries, none a product; kinds: ${all.kinds.join(', ')}`.slice(0, 80) };
+        const final = read.finalPath !== undefined && what.accepts(read.finalPath) ? { finalPath: read.finalPath } : {};
+        const total = all.total !== null ? { total: all.total } : {};
+        // A state with no product is said with what it held (and a sample of it), so the scan can say the list came back
+        // empty and why, and the shape can be recorded.
+        return products.length > 0
+          ? { products, ...final, ...total }
+          : { products, ...final, ...total, note: `its state had ${all.stateKeys} entries, none a product; kinds: ${all.kinds.join(', ')}`.slice(0, 80), ...(all.sample ? { sample: all.sample } : {}) };
       }
       const rows = parseSearchText(read.text, HOME_DEPOT);
       if (rows === null) return { error: `${what.named} could not be read.` };

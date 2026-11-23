@@ -56,6 +56,11 @@ function chromeReaderEnv(): ReaderEnv {
       const results = await browser.scripting.executeScript({ target: { tabId }, world: 'ISOLATED', func, args });
       return results[0]?.result as Awaited<ReturnType<typeof func>>;
     },
+    // Fix round 2 (Nov 23): the page's own world, where the owner's hand fetch of a bundle list got the full list.
+    async runInPage(tabId, func, args) {
+      const results = await browser.scripting.executeScript({ target: { tabId }, world: 'MAIN', func, args });
+      return results[0]?.result as Awaited<ReturnType<typeof func>>;
+    },
     async remember(tabId) {
       if (tabId === null) await browser.storage.session.remove(DOORWAY_KEY);
       else await browser.storage.session.set({ [DOORWAY_KEY]: tabId });

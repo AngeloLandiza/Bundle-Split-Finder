@@ -8,7 +8,7 @@
 // lookup (11 tokens) away; the 3 pages cost 3 of the month's searches. Without Keepa they stay, within the fifth of the
 // scan's allowance they always had, which is 0 when the budget is short (it skips cleanly).
 
-import type { AppSettings } from '../core/src/api/contract';
+import type { AppSettings, RunRecord } from '../core/src/api/contract';
 import { chooseListingSource, DEFAULT_LISTING_SOURCE, listCounts, type ListingSourceSetting, type SourceChoice } from '../core/src/scan/listingSource';
 import type { ScanDeps } from '../core/src/scan/runner';
 import type { ScanJob, ScanSettings } from '../core/src/scan/types';
@@ -79,6 +79,14 @@ export function discoveryFor(i: {
   }
   // 'none', or a 'wait' that reached a scan (Chrome went away after the scheduler looked): no list is read or searched.
   return { source: choice.source, settings: { ...i.settings, queries: [], catalogPagesPerScan }, note: `No new bundles were looked for: ${choice.why === 'Chrome closed' ? 'Chrome is closed' : 'no searches are left'}.` };
+}
+
+/** Fix round 2: the lists a scan read in Chrome, for the run's Activity details (RunRecord.bundleLists); empty when none. */
+export function bundleListsOf(job: Pick<ScanJob, 'chromeListing'> | null | undefined): NonNullable<RunRecord['bundleLists']> {
+  return (job?.chromeListing?.lists ?? []).map((l) => ({
+    brand: l.brand, query: l.query, total: l.total ?? null, pages: l.pages, found: l.listed, added: l.added, empty: l.empty,
+    ...(l.pagedOn ? { pagedOn: l.pagedOn } : {}), ...(l.sample ? { sample: l.sample } : {}),
+  }));
 }
 
 /** The run's sentence about the lists read in Chrome ("Bundle lists read in Chrome: 24 bundles."); null when none were. */

@@ -696,7 +696,11 @@ export interface ScanJob {
   chromeListing?: {
     done: boolean; pages: number; bundles: number; itemPagesRead: number; complete: boolean;
     /** Fix round: each list read (a brand with the query, and without it), so a run shows which lists more. */
-    lists?: { brand: string; query: string | null; pages: number; listed: number; added: number; complete: boolean; empty: boolean }[];
+    lists?: {
+      brand: string; query: string | null; pages: number; listed: number; added: number; complete: boolean; empty: boolean;
+      /** Fix round 2: the list's own totalProducts, the final address it was paged on, and what an empty state held. */
+      total?: number | null; pagedOn?: string; sample?: import('../hdPage').ListingSample;
+    }[];
     /** Items whose price came with the listing entry. */
     pricedByList?: number;
     /** Every list came back empty (LIST_EMPTY); the bundles found before are kept. */

@@ -9,7 +9,8 @@ import type { WorkerJob, WorkerJobInputs, WorkerJobKind } from '../core/src/api/
 import { sameModel } from '../core/src/match';
 import type { CatalogEntry, CatalogLookup, HomeDepotPage, HomeDepotSearch, ResearchTools, ToolError } from '../core/src/research/types';
 import type { PageOutcome, PartPriceReading, ReadPages, ReadPartPrices, ScanStore } from '../core/src/scan/types';
-import type { PagePromotion, PromoPage } from '../core/src/hdPage';
+import { type ListingSample, type PagePromotion, type PromoPage, SAMPLE_CHARS, SAMPLE_KINDS } from '../core/src/hdPage';
+import { isBundleListingPath } from '../core/src/scan/listingSource';
 import type { ListedItem, PromoPageOutcome } from '../core/src/tracking/bogoPairs';
 import type { ListingPage } from '../core/src/scan/listingSource';
 import type { WorkerJobs } from './workerJobs';
@@ -118,6 +119,16 @@ function promoOutcome(v: unknown): PromoPageOutcome | null {
     bullets: p.bullets as string[], description: p.description as string | null, promotions: promotions as PagePromotion[],
   };
   return { itemId: v.itemId, kind: 'read', page };
+}
+
+/** A listing sample (hdPage.ts ListingSample) as the helper sent it: counts and at most 3 entries of bounded text; else none. */
+function sampleOf(v: unknown): ListingSample | undefined {
+  if (!isRecord(v) || !isRecord(v.kinds) || !Array.isArray(v.entries)) return undefined;
+  const kinds = Object.entries(v.kinds).slice(0, 200);
+  if (!kinds.every(([k, n]) => k.length <= 60 && typeof n === 'number' && Number.isInteger(n) && n >= 0)) return undefined;
+  const entries = v.entries.slice(0, SAMPLE_KINDS);
+  if (!entries.every((e) => isRecord(e) && isText(e.kind) && e.kind.length <= 60 && isText(e.key) && e.key.length <= 200 && isText(e.text) && e.text.length <= SAMPLE_CHARS)) return undefined;
+  return { kinds: Object.fromEntries(kinds) as Record<string, number>, entries: entries.map((e) => ({ kind: e.kind as string, key: e.key as string, text: e.text as string })) };
 }
 
 function listedItems(v: unknown): ListedItem[] | null {
@@ -261,8 +272,14 @@ export function remoteReaders(deps: { jobs: WorkerJobs; timeouts?: Partial<Reade
     if (err) throw new Error(err.error);
     const items = listedItems(result);
     if (items === null) throw new Error('The bundle list Chrome read could not be read.');
-    const note = isRecord(result) ? noteOf(result).note : undefined;
-    return { products: items, ...(note ? { note } : {}) };
+    const r = result as Record<string, unknown>;
+    const note = noteOf(r).note;
+    // Fix round 2: the redirect's final address only when it is a Bundle list path too (paged on next); the list's total;
+    // an empty state's sample, kept only in its checked shape.
+    const finalPath = isText(r.finalPath) && isBundleListingPath(r.finalPath) ? r.finalPath : undefined;
+    const total = typeof r.total === 'number' && Number.isInteger(r.total) && r.total >= 0 && r.total < 1_000_000 ? r.total : undefined;
+    const sample = sampleOf(r.sample);
+    return { products: items, ...(note ? { note } : {}), ...(finalPath ? { finalPath } : {}), ...(total !== undefined ? { total } : {}), ...(sample ? { sample } : {}) };
   };
 
   const readPromoPages = async (itemIds: string[]): Promise<PromoPageOutcome[]> => {

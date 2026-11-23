@@ -8,6 +8,7 @@
 // A failed request answers with an HTTP status and an ApiErrorBody. No response ever holds a key.
 
 import type { ListingSourceSetting } from '../scan/listingSource';
+import type { ListingSample } from '../hdPage';
 import type { PipelineAiSettings } from '../ai/factory';
 import type { StoredSuggestion } from '../assist/stored';
 import type { ReviewBrief } from '../brief/types';
@@ -856,6 +857,11 @@ export interface RunRecord {
   /** W4: Review questions the AI was asked about, and answers Autopilot applied, after the scan. */
   questionsAsked?: number;
   autopilotApplied?: number;
+  /**
+   * Free scan, fix round 2: each Home Depot bundle list the scan read in Chrome (its total, pages read, products found), and
+   * for a list that came back empty, a slim sample of what its state held (scripts/record-listing-sample.ts makes a fixture).
+   */
+  bundleLists?: { brand: string; query: string | null; total: number | null; pages: number; found: number; added: number; empty: boolean; pagedOn?: string; sample?: ListingSample }[];
 }
 
 export interface AutopilotEntry {
@@ -1171,7 +1177,7 @@ export interface WorkerJobResults {
   /** The listing page's products in page order (its base-searchNav entries); a refusal is a ToolError. */
   bogoListing: { products: ListedItem[] } | ToolError;
   /** As bogoListing: the Bundle listing page's products in page order; a refusal is a ToolError. */
-  bundleListing: { products: ListedItem[]; note?: string } | ToolError;
+  bundleListing: { products: ListedItem[]; note?: string; finalPath?: string; total?: number; sample?: ListingSample } | ToolError;
   /** One outcome per item id asked, as `page`'s. */
   promoPage: PromoPageOutcome[];
   /** Posted just before the helper reloads. */

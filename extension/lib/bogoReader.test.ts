@@ -88,6 +88,25 @@ describe('the BOGO listing reader', () => {
 
 describe('the Bundle listing reader (free scan)', () => {
   const path = bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, 12)!;
+  it('fix round 2: fetches in the page\'s own world, gives the redirect\'s final address and the list\'s totalProducts', async () => {
+    const f = env(() => ({ status: 200, text: '' }) satisfies PathInTab);
+    const worlds: string[] = [];
+    const state = { 'searchModel({})': { searchReport: { totalProducts: 101 } }, ...Object.fromEntries(ryobi.map((i) => [`base-searchNav-${i.itemId}`, { identifiers: { brandName: i.brand, modelNumber: i.model, productLabel: i.title, canonicalUrl: `/p/x/${i.itemId}` } }])) };
+    const inTab = f.env.runInTab;
+    f.env.runInTab = (async (t: number, fn: unknown, args: unknown[]) => (fn === fetchPathInTab ? (worlds.push('isolated'), { status: 200, text: '' }) : inTab(t, fn as never, args as never))) as ReaderEnv['runInTab'];
+    f.env.runInPage = (async (_t: number, fn: unknown) => {
+      worlds.push(fn === fetchPathInTab ? 'page' : 'other');
+      return { status: 200, text: `window.__APOLLO_STATE__=${JSON.stringify(state)}`, finalPath: '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64' } satisfies PathInTab;
+    }) as ReaderEnv['runInTab'];
+    const got = await createBundleListingReader(f.env, { settleMs: 0 })('/b/N-5yc1vZbwo64Zm5d');
+    expect(worlds).toEqual(['page']);
+    expect(got).toMatchObject({ finalPath: '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64', total: 101 });
+    expect('products' in got && got.products).toHaveLength(ryobi.length);
+    // A final address that is not a Bundle list is not passed on.
+    f.env.runInPage = (async () => ({ status: 200, text: `window.__APOLLO_STATE__=${JSON.stringify(state)}`, finalPath: '/account' })) as ReaderEnv['runInTab'];
+    expect('finalPath' in (await createBundleListingReader(f.env, { settleMs: 0 })(path))).toBe(false);
+  });
+
   it('reads a Bundle listing page from a doorway on the brand\'s search page, and only a Bundle listing address', async () => {
     const f = env(() => ({ status: 200, text: listingText(ryobi) }) satisfies PathInTab);
     const got = await createBundleListingReader(f.env, { settleMs: 0 })(path);
@@ -118,6 +137,7 @@ describe('the Bundle listing reader (free scan)', () => {
     const text = 'window.__APOLLO_STATE__={"ROOT_QUERY":{"__typename":"Query"},"searchModel({})":{"products":[]}}';
     expect(await createBundleListingReader(env(() => ({ status: 200, text }) satisfies PathInTab).env, { settleMs: 0 })(path)).toEqual({
       products: [], note: 'its state had 2 entries, none a product; kinds: ROOT_QUERY, searchModel',
+      sample: { kinds: { ROOT_QUERY: 1, searchModel: 1 }, entries: [{ kind: 'ROOT_QUERY', key: 'ROOT_QUERY', text: '{"__typename":"Query"}' }, { kind: 'searchModel', key: 'searchModel({})', text: '{"products":[]}' }] },
     });
   });
 
@@ -130,6 +150,17 @@ describe('the Bundle listing reader (free scan)', () => {
 
 describe('fetchPathInTab (run from its own source)', () => {
   afterEach(() => vi.unstubAllGlobals());
+
+  it('fix round 2: says the same-origin address a redirect answered from, and nothing when there was none', async () => {
+    vi.stubGlobal('location', { origin: 'https://www.homedepot.com' });
+    vi.stubGlobal('fetch', async (url: string) => ({
+      status: 200, url: url === '/b/N-5yc1vZbwo64Zm5d' ? 'https://www.homedepot.com/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64' : `https://www.homedepot.com${url}`,
+      text: async () => '<script>window.__APOLLO_STATE__={"k":1}</script>',
+    }));
+    const rebuilt = new Function(`return (${fetchPathInTab.toString()})`)() as typeof fetchPathInTab;
+    expect(await rebuilt('/b/N-5yc1vZbwo64Zm5d')).toEqual({ status: 200, text: 'window.__APOLLO_STATE__={"k":1}', finalPath: '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64' });
+    expect(await rebuilt('/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64?Nao=12')).toEqual({ status: 200, text: 'window.__APOLLO_STATE__={"k":1}' });
+  });
 
   it('gives the state text of a 200, the title of a 200 without it, and the status of anything else', async () => {
     vi.stubGlobal('fetch', async (url: string) => {

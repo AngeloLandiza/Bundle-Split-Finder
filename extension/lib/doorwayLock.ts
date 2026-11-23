@@ -2,6 +2,7 @@
 // it finds remembered when it starts: two readers at once would close each other's tab. A scan this extension runs and a job
 // the app queued both read through it, so each call to a reader goes through one lock, whoever asks.
 
+import type { ListingAnswer } from './hdReader';
 import type { ReadPages, ReadPartPrices } from '@core/scan/types';
 import type { ToolError } from '@core/research/types';
 import type { ListedItem, PromoPageOutcome } from '@core/tracking/bogoPairs';
@@ -28,7 +29,7 @@ export interface Readers {
   /** BOGO: one page of a Featured BOGO listing (hdReader.ts createBogoListingReader). Absent: this browser does not read them. */
   readBogoListing?: (path: string) => Promise<{ products: ListedItem[] } | ToolError>;
   /** Free scan: one page of a brand's Bundle listing (hdReader.ts createBundleListingReader). */
-  readBundleListing?: (path: string) => Promise<{ products: ListedItem[]; note?: string } | ToolError>;
+  readBundleListing?: (path: string) => Promise<ListingAnswer | ToolError>;
   /** BOGO: product pages with their promotions (createPromoPageReader). */
   readPromoPages?: (itemIds: string[]) => Promise<PromoPageOutcome[]>;
   researchTools: { forQuestion(budget?: QuestionBudget): QuestionTools };

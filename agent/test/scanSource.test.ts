@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { DEFAULT_SETTINGS, toScanSettings } from '../../core/src/settings';
-import { discoveryFor, discoveryNote, scanSourceOf, scheduledScanWaits } from '../scanSource';
+import { bundleListsOf, discoveryFor, discoveryNote, scanSourceOf, scheduledScanWaits } from '../scanSource';
+import { latestSample } from '../../scripts/record-listing-sample';
 
 const settings = toScanSettings(DEFAULT_SETTINGS);
 const readers = { readBundleListing: async () => ({ products: [] }), readPromoPages: async () => [] };
@@ -69,6 +70,30 @@ describe('scheduledScanWaits', () => {
   });
 });
 
+describe('bundleListsOf (fix round 2: the run\'s Activity details)', () => {
+  it('each list\'s total, pages and products found, with an empty list\'s sample; nothing without lists', () => {
+    const sample = { kinds: { '#': 30 }, entries: [{ kind: '#', key: '1', text: '{}' }] };
+    const lists = [
+      { brand: 'RYOBI', query: 'ryobi 18v combo kit', pages: 1, listed: 0, added: 0, complete: false, empty: true, total: 24, sample },
+      { brand: 'RYOBI', query: null, pages: 9, listed: 101, added: 101, complete: true, empty: false, total: 101, pagedOn: '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64' },
+    ];
+    expect(bundleListsOf({ chromeListing: { done: true, pages: 10, bundles: 101, itemPagesRead: 0, complete: false, lists } })).toEqual([
+      { brand: 'RYOBI', query: 'ryobi 18v combo kit', total: 24, pages: 1, found: 0, added: 0, empty: true, sample },
+      { brand: 'RYOBI', query: null, total: 101, pages: 9, found: 101, added: 101, empty: false, pagedOn: '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64' },
+    ]);
+    expect(bundleListsOf(null)).toEqual([]);
+  });
+
+  it('scripts/record-listing-sample.ts takes the newest scan whose lists carry a sample', () => {
+    const run = (id: string, at: string, withSample: boolean) => ({
+      id, kind: 'scan' as const, startedAt: at, finishedAt: at, status: 'finished', searchesUsed: 0, keepaTokensUsed: 0, aiCostUsd: 0, summary: '',
+      bundleLists: [{ brand: 'RYOBI', query: null, total: 1, pages: 1, found: 0, added: 0, empty: true, ...(withSample ? { sample: { kinds: {}, entries: [] } } : {}) }],
+    });
+    expect(latestSample([run('a', '2026-11-23T10:00:00Z', true), run('b', '2026-11-23T12:00:00Z', true), run('c', '2026-11-23T13:00:00Z', false)])?.run.id).toBe('b');
+    expect(latestSample([run('c', '2026-11-23T13:00:00Z', false)])).toBeNull();
+  });
+});
+
 describe('discoveryNote', () => {
   it('says how many bundles the Chrome lists held, and nothing when none were read', () => {
     expect(discoveryNote({ chromeListing: { done: true, pages: 6, bundles: 24, itemPagesRead: 24, complete: true } })).toBe('Bundle lists read in Chrome: 24 bundles.');
@@ -80,7 +105,7 @@ describe('discoveryNote', () => {
       { brand: 'DEWALT', query: null, pages: 4, listed: 40, added: 37, complete: true, empty: false },
     ];
     expect(discoveryNote({ chromeListing: { done: true, pages: 5, bundles: 40, itemPagesRead: 0, complete: true, lists } }))
-      .toBe('Bundle lists read in Chrome: 40 bundles (DEWALT: 3 with the search words, 37 more without them).');
+      .toBe('Bundle lists read in Chrome: 40 bundles (DEWALT: 3 with the search words, 37 more without them (40)).');
     const empty = lists.map((l) => ({ ...l, pages: 1, listed: 0, added: 0, empty: true }));
     expect(discoveryNote({ chromeListing: { done: true, pages: 2, bundles: 0, itemPagesRead: 0, complete: true, lists: empty, empty: true } }))
       .toBe("Home Depot's bundle lists came back empty (DEWALT: empty with the search words, empty without them); the bundles found before are kept.");

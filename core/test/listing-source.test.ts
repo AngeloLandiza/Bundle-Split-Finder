@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-import { parseSearchState } from '../src/hdPage';
+import { parseListingText, parseSearchState, SAMPLE_CHARS } from '../src/hdPage';
 import {
-  brandOfListingPath, BUNDLE_LISTING_PAGES_MAX, bundleListingPath, chooseListingSource, isBundleListingPath, LIST_EMPTY, listCounts, LISTING_ITEM_MAX_AGE_MS, readBundleListings, type ListingSourceDeps, type SourceInput,
+  brandOfListingPath, BUNDLE_LISTING_PAGES_MAX, bundleListingPath, chooseListingSource, isBundleListingPath, LIST_EMPTY, listCounts, LISTING_ITEM_MAX_AGE_MS, readBundleListings, withNao, type ListingSourceDeps, type SourceInput,
 } from '../src/scan/listingSource';
 import { MemoryCache } from '../src/serpapi/client';
 import { BRAND_QUERIES } from '../src/settings';
@@ -73,7 +73,9 @@ describe('the Bundle listing address', () => {
     for (const bad of [
       '/b/Featured-BOGO/N-5yc1vZ1z24hvk/Ntk-elasticplus/Ntt-ryobi%2B18v?NCNI-5', '/b/N-5yc1vZbwo64Zm5dZ123/Ntk-elasticplus/Ntt-x?NCNI-5',
       '/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-ryobi?NCNI-5&redirect=x', '//evil.example/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-x?NCNI-5',
-      '/b/N-5yc1vZbwo64Zm5d?redirect=x', '/b/N-5yc1vZbwo64Zm5d/', '/b/N-5yc1vZbwo64Zm5d?NCNI-5&Nao=12',
+      '/b/N-5yc1vZbwo64Zm5d?redirect=x', '/b/N-5yc1vZbwo64Zm5d/', '/b/N-5yc1vZbwo64Zm5d?Nao=12&Nao=24',
+      '/b/RYOBI/Bundle/N-5yc1vZm5dZ1z24hvk', '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64Z4j2', '/b/RYOBI/Bundle/N-5yc1vZm5d', '/b/a/b/c/d/N-5yc1vZm5dZbwo64',
+      '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64?searchRedirect=ryobi', '/b/RY%2FOBI/Bundle/N-5yc1vZm5dZbwo64',
       '/p/317987584', 'https://www.homedepot.com/b/N-5yc1vZbwo64Zm5d/Ntk-elasticplus/Ntt-x?NCNI-5', 42,
     ]) expect(isBundleListingPath(bad)).toBe(false);
   });
@@ -88,8 +90,8 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
       ...[0, 12, 24].map((o) => bundleListingPath('RYOBI', null, o)),
     ]);
     expect(r.lists).toEqual([
-      { brand: 'RYOBI', query: BRAND_QUERIES.RYOBI, pages: 3, listed: 24, added: 24, complete: true, empty: false },
-      { brand: 'RYOBI', query: null, pages: 3, listed: 24, added: 0, complete: true, empty: false },
+      { brand: 'RYOBI', query: BRAND_QUERIES.RYOBI, pages: 3, listed: 24, added: 24, complete: true, empty: false, total: null },
+      { brand: 'RYOBI', query: null, pages: 3, listed: 24, added: 0, complete: true, empty: false, total: null },
     ]);
     expect(r.rows.map((x) => x.itemId)).toEqual([...P1, ...P2].map((p) => p.itemId));
     expect(r).toMatchObject({ listingPages: 6, itemPagesRead: 24, itemPagesLeft: 0, problem: null, refused: false });
@@ -100,7 +102,7 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
     const r = await readBundleListings(f.deps({ brands: ['DEWALT'] }));
     expect(r.lists.map((l) => [l.query, l.listed, l.added])).toEqual([[BRAND_QUERIES.DEWALT, 3, 3], [null, 24, 21]]);
     expect(r.rows).toHaveLength(24);
-    expect(listCounts(r.lists)).toBe('DEWALT: 3 with the search words, 21 more without them');
+    expect(listCounts(r.lists)).toBe('DEWALT: 3 with the search words, 21 more without them (24)');
   });
 
   it('stops at its cap when a listing never ends', async () => {
@@ -118,8 +120,8 @@ describe('readBundleListings with fake readers on the recorded listing shape', (
     expect(r.rows).toHaveLength(12 + 11 + 8);
     expect(new Set(r.rows.map((x) => x.itemId)).size).toBe(r.rows.length);
     expect(r.lists.filter((l) => l.query !== null).map((b) => [b.brand, b.listed, b.added])).toEqual([['DEWALT', 12, 12], ['RYOBI', 20, 19]]);
-    // Each listing still pages by its own items: RYOBI's third page starts at 20 (12 + 8 new).
-    expect(f.asked.filter((p) => p.includes('Zm5d/'))).toEqual([0, 12, 20].map((o) => bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, o)));
+    // Each page moves the offset by the entries it returned (fix round 2): RYOBI's third page starts at 24.
+    expect(f.asked.filter((p) => p.includes('Zm5d/'))).toEqual([0, 12, 24].map((o) => bundleListingPath('RYOBI', BRAND_QUERIES.RYOBI, o)));
   });
 
   it('a list whose first page has its state but no product is a problem said in words, not "no bundles"; the other lists are read', async () => {
@@ -219,5 +221,91 @@ describe('chooseListingSource', () => {
   it('serpapi: SerpApi even with Chrome open, while a search can pay', () => {
     expect(chooseListingSource({ ...base, setting: 'serpapi' })).toEqual({ source: 'serpapi' });
     expect(chooseListingSource({ ...base, setting: 'serpapi', serpCanPay: false })).toEqual({ source: 'none', why: 'no searches left' });
+  });
+});
+
+// Fix round 2, read live in the owner's Chrome: `/b/N-5yc1vZbwo64Zm5d` answers from `/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64`
+// with "totalProducts":101, and a Nao on the first address is dropped by that redirect (the same first page comes back).
+describe('fix round 2: the redirect, the final address and totalProducts', () => {
+  const CANONICAL = '/b/RYOBI/Bundle/N-5yc1vZm5dZbwo64';
+  const items = (n: number, from = 0): ListedItem[] =>
+    Array.from({ length: n }, (_, i) => ({ itemId: String(500000000 + from + i), brand: 'RYOBI', model: `PBLSV719K-A${from + i}`, title: 'kit', url: `${HOME_DEPOT}/p/x/${500000000 + from + i}` }));
+  const ALL = items(30);
+  /** Home Depot as read live: the brand list redirects (dropping Nao); its canonical address pages; 12 a page; total 30. */
+  function site() {
+    const asked: string[] = [];
+    const readListing: ListingSourceDeps['readListing'] = async (path) => {
+      asked.push(path);
+      if (path.includes('/Ntt-')) return { products: [], total: 0 };
+      if (path.startsWith('/b/N-')) return { products: ALL.slice(0, 12), finalPath: CANONICAL, total: 30 };
+      const offset = Number(/Nao=(\d+)/.exec(path)?.[1] ?? 0);
+      return { products: ALL.slice(offset, offset + 12), total: 30 };
+    };
+    return { asked, readListing };
+  }
+
+  it('the canonical address is a Bundle list path in both checks; Nao is set on it, other parameters kept', () => {
+    expect(isBundleListingPath(CANONICAL)).toBe(true);
+    expect(isBundleListingPath(`${CANONICAL}?Nao=12`)).toBe(true);
+    expect(isBundleListingPath('/b/DEWALT/Bundle/N-5yc1vZbwo64Z4j2/Ntk-elasticplus/Ntt-dewalt%2B20v?NCNI-5&Nao=24')).toBe(true);
+    expect(brandOfListingPath(CANONICAL)).toBe('RYOBI');
+    expect(withNao(CANONICAL, 12)).toBe(`${CANONICAL}?Nao=12`);
+    expect(withNao(`${CANONICAL}?NCNI-5&Nao=12`, 24)).toBe(`${CANONICAL}?NCNI-5&Nao=24`);
+    expect(withNao(`${CANONICAL}?Nao=12`, 0)).toBe(CANONICAL);
+  });
+
+  it('pages on the final address, by the entries each page returned, until the list\'s totalProducts', async () => {
+    const s = site();
+    const r = await readBundleListings({ brands: ['RYOBI'], queries: {}, readListing: s.readListing, readPages: async () => [], now: () => T0 });
+    expect(s.asked).toEqual(['/b/N-5yc1vZbwo64Zm5d', `${CANONICAL}?Nao=12`, `${CANONICAL}?Nao=24`]);
+    // 30 of 30 read: no fourth page is asked for.
+    expect(r.lists).toEqual([{ brand: 'RYOBI', query: null, pages: 3, listed: 30, added: 30, complete: true, empty: false, total: 30, pagedOn: CANONICAL }]);
+    expect(listCounts(r.lists)).toBe('RYOBI: 30 more without them (30 of 30, 3 pages)');
+  });
+
+  it('a final address that is not a Bundle list is not followed', async () => {
+    const asked: string[] = [];
+    const readListing: ListingSourceDeps['readListing'] = async (path) => {
+      asked.push(path);
+      const offset = Number(/Nao=(\d+)/.exec(path)?.[1] ?? 0);
+      return { products: ALL.slice(offset, offset + 12), finalPath: '/account/settings' };
+    };
+    await readBundleListings({ brands: ['RYOBI'], queries: {}, readListing, readPages: async () => [], now: () => T0 });
+    expect(asked).toEqual(['/b/N-5yc1vZbwo64Zm5d', '/b/N-5yc1vZbwo64Zm5d?Nao=12', '/b/N-5yc1vZbwo64Zm5d?Nao=24', '/b/N-5yc1vZbwo64Zm5d?Nao=30']);
+  });
+
+  it('an empty list keeps the sample of what its state held', async () => {
+    const sample = { kinds: { '#': 30, ROOT_QUERY: 1, BundleItem: 5 }, entries: [{ kind: '#', key: '1917265066', text: '{"a":1}' }] };
+    const r = await readBundleListings({
+      brands: ['RYOBI'], queries: { RYOBI: BRAND_QUERIES.RYOBI }, now: () => T0, readPages: async () => [],
+      readListing: async (path) => (path.includes('/Ntt-') ? { products: [], note: 'its state had 36 entries, none a product', sample } : { products: [] }),
+    });
+    expect(r.lists[0]).toMatchObject({ empty: true, sample });
+    expect(r.lists[1]!.sample).toBeUndefined();
+  });
+});
+
+describe('fix round 2: parseListingText reads totalProducts, and samples a state with no product', () => {
+  it('the list\'s own total, wherever the state holds it', () => {
+    const state = { 'searchModel({"nao":0})': { searchReport: { totalProducts: 24 } }, ...Object.fromEntries(P1.map((p) => [`base-searchNav-${p.itemId}`, { identifiers: { brandName: p.brand, modelNumber: p.model, productLabel: p.title } }])) };
+    const got = parseListingText(`window.__APOLLO_STATE__=${JSON.stringify(state)}`, HOME_DEPOT)!;
+    expect(got.total).toBe(24);
+    expect(got.products).toHaveLength(12);
+    expect(got.sample).toBeUndefined();
+  });
+
+  it('a state of other kinds: the kinds counted, the first entry of the 3 largest, cut, credential-named fields dropped', () => {
+    const big = 'x'.repeat(3000);
+    const state: Record<string, unknown> = { ROOT_QUERY: { __typename: 'Query' }, 'BundleItem:1917265066': { name: big, authToken: 'secret', nested: { sessionId: 's', ok: 1 } } };
+    for (let i = 0; i < 30; i++) state[String(1917265000 + i)] = { itemId: String(i), cookie: 'c' };
+    state['csrfToken'] = 'abc';
+    const got = parseListingText(`window.__APOLLO_STATE__=${JSON.stringify(state)}`, HOME_DEPOT)!;
+    expect(got.products).toEqual([]);
+    expect(got.sample!.kinds).toEqual({ '#': 30, ROOT_QUERY: 1, BundleItem: 1 });
+    expect(got.sample!.entries.map((e) => [e.kind, e.key])).toEqual([['#', '1917265000'], ['BundleItem', 'BundleItem:1917265066'], ['ROOT_QUERY', 'ROOT_QUERY']]);
+    expect(got.sample!.entries[0]!.text).toBe('{"itemId":"0"}');
+    const bundle = got.sample!.entries[1]!.text;
+    expect(bundle.length).toBe(SAMPLE_CHARS);
+    expect(bundle).not.toMatch(/authToken|secret|sessionId|cookie|csrf/);
   });
 });

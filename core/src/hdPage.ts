@@ -277,21 +277,74 @@ export function parseSearchState(state: unknown, origin = 'https://www.homedepot
 }
 
 /**
+ * What a listing state held when it held no product we know how to read (fix round 2, Nov 23: the helper's answer for the
+ * RYOBI query list held 36 entries of kinds such as "BundleI…", ROOT_QUERY and bare numeric ids). Not parsed for products:
+ * kept so the real shape can be recorded as a fixture and read from that, never guessed. `kinds`: each key's kind (a run of
+ * 5 or more digits written `#`, cut at its first `(` or `:`) with its count; `entries`: for up to SAMPLE_KINDS kinds, most
+ * entries first, the first entry as JSON cut to SAMPLE_CHARS, with any property whose name looks like a credential dropped.
+ */
+export interface ListingSample {
+  kinds: Record<string, number>;
+  entries: { kind: string; key: string; text: string }[];
+}
+
+export const SAMPLE_KINDS = 3;
+export const SAMPLE_CHARS = 1500;
+const SECRET_NAME = /token|cookie|session|auth|secret|password|csrf/i;
+
+const kindOf = (key: string): string => key.replace(/\d{5,}/g, '#').split(/[(:]/)[0]!.slice(0, 60);
+
+/** Strings, numbers, booleans and nulls as they are; objects and arrays walked; a credential-looking property dropped. */
+function scrubbed(v: unknown, depth = 0): unknown {
+  if (v === null || typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return v;
+  if (depth > 8) return null;
+  if (Array.isArray(v)) return v.slice(0, 20).map((x) => scrubbed(x, depth + 1));
+  if (typeof v === 'object') return Object.fromEntries(Object.entries(v as Json).filter(([k]) => !SECRET_NAME.test(k)).map(([k, x]) => [k, scrubbed(x, depth + 1)]));
+  return null;
+}
+
+/** The sample of a state (ListingSample). */
+export function sampleOf(state: Json): ListingSample {
+  const kinds: Record<string, number> = {};
+  const first = new Map<string, string>();
+  for (const key of Object.keys(state)) {
+    if (SECRET_NAME.test(key)) continue;
+    const k = kindOf(key);
+    kinds[k] = (kinds[k] ?? 0) + 1;
+    if (!first.has(k)) first.set(k, key);
+  }
+  const top = Object.entries(kinds).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).slice(0, SAMPLE_KINDS);
+  const entries = top.map(([kind]) => {
+    const key = first.get(kind)!;
+    return { kind, key: key.slice(0, 200), text: JSON.stringify(scrubbed(state[key])).slice(0, SAMPLE_CHARS) };
+  });
+  return { kinds, entries };
+}
+
+/**
  * A listing page's products from every `window.__APOLLO_STATE__=` block in its text (a page may carry more than one; the
  * first is not always the listing's), merged in page order, each item once. `stateKeys` and `kinds` say what the states
  * held when no product was found: the entries counted, and up to six distinct key kinds (the key up to its first `-` or
  * `(`), so an empty answer is said with what came back. Null when the text has no state that parses.
  */
-export function parseListingText(text: string, origin?: string): { products: SearchProduct[]; stateKeys: number; kinds: string[] } | null {
+export function parseListingText(text: string, origin?: string): {
+  products: SearchProduct[]; stateKeys: number; kinds: string[];
+  /** The first `"totalProducts":<n>` in the states (read live: the list's own count); null when there is none. */
+  total: number | null;
+  /** Only when the states held entries and no product. */
+  sample?: ListingSample;
+} | null {
   const products: SearchProduct[] = [];
   const seen = new Set<string>();
   const kinds = new Set<string>();
+  const merged: Json = {};
   let stateKeys = 0;
   let parsed = false;
   for (let at = text.indexOf(STATE_MARK); at >= 0; at = text.indexOf(STATE_MARK, at + STATE_MARK.length)) {
     const state = pageState(text.slice(at));
     if (state === null) continue;
     parsed = true;
+    Object.assign(merged, state);
     for (const k of Object.keys(state)) {
       stateKeys += 1;
       if (kinds.size < 6) kinds.add(k.split(/[-(]/)[0] ?? k);
@@ -302,7 +355,10 @@ export function parseListingText(text: string, origin?: string): { products: Sea
       products.push(p);
     }
   }
-  return parsed ? { products, stateKeys, kinds: [...kinds] } : null;
+  if (!parsed) return null;
+  const t = /"totalProducts":(\d{1,6})\b/.exec(text);
+  const total = t ? Number(t[1]) : null;
+  return { products, stateKeys, kinds: [...kinds], total, ...(products.length === 0 && stateKeys > 0 ? { sample: sampleOf(merged) } : {}) };
 }
 
 /** parseSearchState on a search page's text from `window.__APOLLO_STATE__=` on; null when the data is missing or does not parse. */

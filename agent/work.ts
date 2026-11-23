@@ -68,7 +68,7 @@ import { NotifyPolicy } from './notifyPolicy';
 import { applyAutopilot, autopilotDecision, undoAutopilot } from './autopilot';
 import { answerText, footprintOf, type Footprint, KEEP_OWNER_ANSWERS, restorable, undoOwnerAnswer } from './ownerAnswers';
 import { remoteReaders, type ReaderTimeouts, type RemoteReaders } from './remoteReaders';
-import { discoveryFor, discoveryNote, scheduledScanWaits } from './scanSource';
+import { bundleListsOf, discoveryFor, discoveryNote, scheduledScanWaits } from './scanSource';
 import { DirCache, FileScanStore } from './scanStore';
 import type { ActivityErrorRecord, Store, StoredAutopilotEntry, StoredKeys, StoredOwnerAnswer } from './store';
 import { aiSpentThisMonth, asksAboutEbay } from './views';
@@ -877,6 +877,9 @@ export class AgentWork {
       run.status = job.stopReason === 'user' ? 'stopped' : job.stopReason === null ? 'finished' : job.stopReason === 'error' ? 'failed' : 'limit';
       if (job.stopMessage) run.error = scrub(job.stopMessage, keys);
       run.steps = pipelineView(job, store.get('runtime').rates, this.d.now(), { unknown: '' }).steps;
+      // Free scan: each bundle list read in Chrome, with an empty one's sample of its state, in the run's details.
+      const lists = bundleListsOf(job);
+      if (lists.length > 0) run.bundleLists = lists;
       const judge = pipelineOf(job).find((p) => p.id === 'judge');
       run.judgeCostUsd = judge?.costSoFar ?? 0;
       this.notedEbayKeys(job);
