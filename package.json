@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest run && vitest run --config vitest.ext.config.ts",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p extension && tsc --noEmit -p e2e",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p extension && tsc --noEmit -p e2e && tsc --noEmit -p desktop-ui",
     "ext:dev": "wxt",
     "ext:build": "wxt build",
     "postinstall": "wxt prepare",
