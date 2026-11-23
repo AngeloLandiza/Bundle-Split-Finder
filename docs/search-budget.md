@@ -92,8 +92,12 @@ every scan.
 
 - **Scheduled scans** use the user's settings: `reserve` and `searches per scan`. They can
   never touch the reserve.
-- **Actions the user clicks** (Scan now, Verify, Look up) may spend from the reserve, down
+- **Actions the user clicks** (Verify, Look up on one bundle) may spend from the reserve, down
   to zero. Every such control shows its cost before the click ("Verify · 1 search").
+- **The desktop app's Scan now, Read again and Look up now keep the reserve** (Nov 23): at or
+  below it they spend no search, and the one way to spend it is the owner's explicit "Use searches
+  for these (up to N of your M left)", still under the per-scan limit. Every control that starts a
+  scan says what it may spend first. See docs/decisions.md, "Honest spend".
 - `planScan()` (core/src/scanPlan.ts) splits a scan's allowance: listing pages first, then
   new part lookups, then stale price refreshes. Work that does not fit is deferred to the
   next scan and shown as waiting, never dropped. A planned step the cache answers frees its
