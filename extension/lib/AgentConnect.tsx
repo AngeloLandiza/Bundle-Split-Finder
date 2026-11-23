@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { spokenCode, type AgentLink } from './agentLink';
 import type { AgentLinkActions } from './useAgentLink';
 import { when } from './format';
+import { CONNECT_BUTTON_LABEL } from '../../core/src/api/labels';
 import './AgentConnect.css';
 
 export interface AgentConnectProps {
@@ -103,7 +104,7 @@ export function AgentConnect({ link, actions, compact = false, now = Date.now }:
           : 'Connect this browser to the Split Finder app, which then runs scans, holds your keys and sends questions here to answer. The app must be open. Until you connect, this extension works on its own.'}
       </p>
       <button type="button" className="agent-btn agent-btn--primary" disabled={busy} onClick={run(actions.connect)}>
-        Connect to the Split Finder app
+        {CONNECT_BUTTON_LABEL}
       </button>
       {error ? (
         <p className="agent-connect-text" role="alert">

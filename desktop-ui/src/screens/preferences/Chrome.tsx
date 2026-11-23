@@ -5,6 +5,7 @@ import { InstallHelper } from '../../components/SetupParts';
 import { spacedCode } from '../../components/PairingNotice';
 import { ConfirmInline, LoadError } from '../../components/States';
 import { plural, when } from '../../lib/format';
+import { CONNECT_BUTTON_LABEL } from '@core/api/labels';
 import { Pane, Row, Rule } from './form';
 
 export function ChromePane() {
@@ -28,7 +29,7 @@ export function ChromePane() {
           <p className="muted">{online ? 'Checking…' : 'The agent is not running.'}</p>
         )}
       </Row>
-      <Row label="Helper" align="start" help="In Chrome, open the Split Finder side panel and press Connect to the app. Chrome then asks here: check that the code matches and allow it.">
+      <Row label="Helper" align="start" help={`In Chrome, open the Split Finder side panel and press ${CONNECT_BUTTON_LABEL}. Chrome then asks here: check that the code matches and allow it.`}>
         <InstallHelper />
       </Row>
       <Rule />
