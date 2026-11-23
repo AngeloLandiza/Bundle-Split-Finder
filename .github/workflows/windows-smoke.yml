@@ -68,12 +68,30 @@ jobs:
 
       # Native build of the agent sidecar for Windows (src-tauri/binaries/agent-dashboard-x86_64-pc-windows-msvc.exe).
       - name: Build the sidecar
-        run: npm run desktop:bundle-agent
+        run: |
+          npm run desktop:bundle-agent *>&1 | Tee-Object -FilePath (Join-Path $env:RUNNER_TEMP 'build-sidecar.log')
+          exit $LASTEXITCODE
 
       # The extension zip, the desktop UI and the sidecar are built by tauri.conf.json's beforeBuildCommand; the
       # NSIS target comes from src-tauri/tauri.windows.conf.json. No cross-compile here: this is the Windows host.
       - name: Build the NSIS installer
-        run: npx tauri build --target x86_64-pc-windows-msvc
+        run: |
+          npx tauri build --target x86_64-pc-windows-msvc *>&1 | Tee-Object -FilePath (Join-Path $env:RUNNER_TEMP 'build-installer.log')
+          exit $LASTEXITCODE
+
+      # A failed build: the last lines of its output go to the job summary, so the cause is on the run's first page.
+      - name: Failed build output in the job summary
+        if: failure()
+        run: |
+          foreach ($name in 'build-sidecar', 'build-installer') {
+            $log = Join-Path $env:RUNNER_TEMP "$name.log"
+            if (Test-Path -LiteralPath $log) {
+              "## $name (last 60 lines)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+              '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+              Get-Content -LiteralPath $log -Tail 60 | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+              '```' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+            }
+          }
 
       - name: Find the installer
         id: installer
