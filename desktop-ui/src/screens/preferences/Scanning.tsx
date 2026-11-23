@@ -1,6 +1,7 @@
 import { useApp } from '../../api/hooks';
 import type { FeeSource, Schedule } from '../../api/types';
 import { Checkbox, Select, TextField } from '../../components/Fields';
+import { RecommendedScheduleLink } from '../../components/RecommendedScheduleLink';
 import { Meter } from '../../components/States';
 import { count } from '../../lib/format';
 import { forecast } from '../../lib/forecast';
@@ -75,6 +76,7 @@ export function ScanningPane() {
               }}
             />
           ) : null}
+          <RecommendedScheduleLink />
         </div>
       </Row>
       <Row label="Searches per scan" help="A scan stops at this many SerpApi searches.">
