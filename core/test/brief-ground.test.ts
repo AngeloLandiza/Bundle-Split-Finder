@@ -4,13 +4,15 @@ import { groundBrief, inventedIn, modelTokens, numbersOf, type RawBrief, whyNot 
 import { foundQuotes, poolOfLines } from '../src/brief/input';
 import { renderBriefInput } from '../src/brief/prompt';
 import { rulesBrief } from '../src/brief/rules';
-import { COMBO, question, REVIEW, realInput, suggestionFor } from './brief-world';
+import { ownerSentence } from '../src/brief/ownerWords';
+import { COMBO, question, REVIEW, REVIEW2, realInput, realInput2, suggestionFor } from './brief-world';
 
 // The checks on a model's brief, on the owner's real questions (fixtures/e2e-2026-11-23): a quote the code found, the
 // verifier's plain sentences, and the AI's real unverified answer. Nothing here reaches a model.
 
 const SIX = 'split:homedepot:321809549'; // RYOBI PCL1600K2-PBP2003: the page lists (2) PBP003 batteries
 const input = realInput(SIX);
+const MITER = realInput2('split:homedepot:320243741'); // RYOBI PCL1600K2-P553, titled "... Batteries, Charger, and Miter Saw"
 const batteries = input.quotes.findIndex((q) => q.text === 'Includes: (2) PBP003 18V ONE+ Lithium 2.0 Ah Batteries') + 1;
 
 const good: RawBrief = {
@@ -154,7 +156,7 @@ describe('the prompt', () => {
     const text = renderBriefInput(realInput(COMBO));
     expect(text).toContain('Ask: What is inside this bundle?');
     expect(text).toContain('<proposed state="not_verified">PCL500B + PCL525B</proposed>');
-    expect(text).toContain('- Nothing the AI read shows PCL500B is a real model.');
+    expect(text).toContain('- None of the pages the app read lists PCL500B as a model number.');
     expect(text).toContain('<quote n="1" source="Home Depot page" url="https://www.homedepot.com/p/');
     // The AI’s own reason for its answer is not shown: it is a claim, not something the code checked.
     const claim = suggestionFor(COMBO).suggestion;
@@ -171,5 +173,64 @@ describe('the prompt', () => {
     const out = renderBriefInput(forged);
     expect(out.match(/<\/quotes>/g)).toHaveLength(1);
     expect(out.match(/<proposed/g)).toHaveLength(1);
+  });
+});
+
+describe('what a part is: the title’s own words (the Haiku run’s P553 case)', () => {
+  const ground = (raw: Partial<RawBrief>) => groundBrief({ suggestion: null, reasons: [{ text: 'The page names the 6-tool kit.', quoteIndex: 1 }], check: null, ...raw }, MITER);
+
+  it('refuses a check that calls P553 a battery or charger when the title ends "and Miter Saw"', () => {
+    const { brief, verdicts } = ground({ check: { text: 'Confirm P553 is the battery or charger.', quoteIndex: 1 } });
+    expect(verdicts.find((v) => v.part === 'check')).toMatchObject({ kept: false, why: expect.stringContaining('last words') });
+    expect(brief.check).toEqual(rulesBrief(MITER).check);
+  });
+
+  it('refuses a suggestion that calls it a battery, or a tool the title does not name, and keeps one that uses the title’s words', () => {
+    expect(ground({ suggestion: 'PCL1600K2 6-tool kit + P553 battery' }).brief.suggestion).toBe('PCL1600K2 + P553');
+    expect(ground({ suggestion: 'PCL1600K2 6-tool kit + P553 string trimmer' }).brief.suggestion).toBe('PCL1600K2 + P553');
+    expect(ground({ suggestion: 'PCL1600K2 6-tool kit + P553 jigsaw' }).brief.suggestion).toBe('PCL1600K2 6-tool kit + P553 jigsaw'.length > 70 ? '' : 'PCL1600K2 6-tool kit + P553 jigsaw');
+    expect(ground({ suggestion: 'PCL1600K2 6-tool kit + P553 miter saw' }).brief.suggestion).toBe('PCL1600K2 6-tool kit + P553 miter saw');
+    expect(ground({ suggestion: 'PCL1600K2 + P553' }).brief.suggestion).toBe('PCL1600K2 + P553');
+  });
+
+  it('the suggestion is one "<model> <what it is>" per part, at most 70 characters', () => {
+    const long = 'PCL1600K2 6-tool kit with batteries + P553 miter saw as the second part';
+    expect(long.length).toBeGreaterThan(70);
+    expect(ground({ suggestion: long }).verdicts.find((v) => v.part === 'suggestion')).toMatchObject({ kept: false, why: expect.stringContaining('at most 70') });
+    expect(ground({ suggestion: 'the 6-tool kit, plus a miter saw' }).brief.suggestion).toBe('PCL1600K2 + P553');
+    expect(ground({ suggestion: 'PCL1600K2 6-tool kit + miter saw + P553' }).verdicts.find((v) => v.part === 'suggestion')?.kept).toBe(false);
+  });
+
+  it('a check cites a quote or is the rules’ check', () => {
+    const rules = rulesBrief(MITER).check;
+    expect(ground({ check: { text: 'Read the Includes list on the Home Depot page.', quoteIndex: null } }).brief.check).toEqual(rules);
+    expect(ground({ check: { text: 'Read the Includes list on the Home Depot page.', quoteIndex: 7 } }).brief.check).toEqual(rules);
+    const kept = ground({ check: { text: 'Read the Includes list for the 6-tool kit on the page.', quoteIndex: 1 } });
+    expect(kept.brief.check).toMatchObject({ text: 'Read the Includes list for the 6-tool kit on the page.', linkLabel: 'Home Depot page' });
+  });
+
+  it('a part that is not the last is only held to the words some source has', () => {
+    const six = groundBrief({ ...good, suggestion: 'PCL1600K2 6-tool kit + PBP2003 charger' }, input);
+    // PBP2003 is the last part and the title’s last words say Batteries: a charger contradicts it.
+    expect(six.brief.suggestion).toBe('PCL1600K2 + PBP2003');
+  });
+});
+
+describe('the rules brief in the owner’s words', () => {
+  it('words the checker’s steps as what the page shows', () => {
+    expect(ownerSentence('a quote the AI gave runs across two lists on the page')).toBe("The page's list mixes two items in one line, so the code could not match it.");
+    expect(ownerSentence('"Bag" on the page belongs to none of these parts')).toBe('The page also lists "Bag", which none of these parts accounts for.');
+    expect(ownerSentence('nothing the AI read shows PCL500B is a real model')).toBe('None of the pages the app read lists PCL500B as a model number.');
+    // One it does not know is kept as it is, with a full stop.
+    expect(ownerSentence('the page never names DCK240C2')).toBe('The page never names DCK240C2.');
+  });
+
+  it('no rules sentence of the owner’s 15 real questions says "Why it is asked" or the checker’s own steps', () => {
+    for (const q of REVIEW2.questions) {
+      const text = rulesBrief(realInput2(q.id)).reasons.map((r) => r.text).join('\n');
+      expect(text, q.id).not.toMatch(/Why it is asked|the AI gave|belongs to none|The AI read/);
+      // And where the question's note is known, it is the app's own plain sentence.
+      if (q.id === 'split:homedepot:320243741') expect(text).toContain('The model number reads as two items (PCL1600K2 + P553)');
+    }
   });
 });

@@ -38,3 +38,14 @@ export function realInput(id: string, suggestion: StoredSuggestion | null = sugg
 
 /** PCL500B-PCL525B: the AI's parts answer for the RYOBI 2-tool combo (328690510), which the code did not verify. */
 export const COMBO = 'split:homedepot:328690510';
+
+/** The second real scan's questions (store/review.json): 15, each with the AI's suggestion; the P553 miter saw one is among them. */
+export const REVIEW2 = read<ReviewFile>('store/review.json');
+
+/** The brief input of a question of the second scan with the suggestion the AI gave it. */
+export function realInput2(id: string): BriefInput {
+  const q = REVIEW2.questions.find((x) => x.id === id)!;
+  const url = REVIEW2.evidence[id]?.[0]?.source.url ?? null;
+  const sources: BriefSourceLink[] = url ? [{ label: 'Home Depot', url, source: 'homedepot' }] : [];
+  return briefInputOf(q, suggestionFor(id).suggestion, poolOfLines(REVIEW2.evidence[id] ?? []), sources);
+}

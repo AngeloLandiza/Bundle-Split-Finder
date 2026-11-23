@@ -8,6 +8,7 @@
 // A brief with no surviving reason is the rules brief. The brief never touches the answer, its status or Autopilot:
 // `state` and the proposed answer are copied from the input, which the code built.
 
+import { familiesOf, whyKindRefused } from './kinds';
 import { cutText, MAX_CHECK_CHARS, MAX_REASON_CHARS, MAX_REASONS, rulesBrief, rulesCheck } from './rules';
 import type { BriefCheck, BriefInput, BriefQuote, BriefReason, BriefVerdict, ReviewBrief } from './types';
 
@@ -18,7 +19,8 @@ export interface RawBrief {
   check: { text: string; quoteIndex: number | null } | null;
 }
 
-export const MAX_SUGGESTION_CHARS = 120;
+/** The suggestion is "<MODEL> <what it is> + <MODEL> <what it is>": short enough for one line of the card. */
+export const MAX_SUGGESTION_CHARS = 70;
 
 /** A model number as the repo reads one: one to five letters, a digit, then letters, digits and hyphens. Run on upper-case text. */
 export const MODEL_LIKE = /[A-Z]{1,5}\d[A-Z0-9-]*/g;
@@ -86,6 +88,8 @@ const linkOf = (q: BriefQuote): { url?: string; sourceLabel: string } => ({ sour
 export function groundBrief(raw: RawBrief, input: BriefInput): { brief: ReviewBrief; verdicts: BriefVerdict[]; usable: boolean } {
   const verdicts: BriefVerdict[] = [];
   const base = questionCorpus(input);
+  const last = input.kind === 'split' ? (input.proposedModels[input.proposedModels.length - 1] ?? null) : null;
+  const kindProblem = (text: string, corpus: readonly string[]): string | null => whyKindRefused(text, input.proposedModels, last, input.title, familiesOf(corpus.join('\n')));
   const quoteAt = (i: number | null): BriefQuote | undefined => (i !== null && Number.isInteger(i) ? input.quotes[i - 1] : undefined);
 
   const reasons: BriefReason[] = [];
@@ -94,7 +98,7 @@ export function groundBrief(raw: RawBrief, input: BriefInput): { brief: ReviewBr
     const note = (kept: boolean, why?: string): void => void verdicts.push({ part: 'reason', text: r.text, kept, ...(why ? { why } : {}) });
     const q = quoteAt(r.quoteIndex);
     if (!q) { note(false, `It cites quote ${String(r.quoteIndex)}, and there is no such quote.`); continue; }
-    const problem = whyNot(r.text, MAX_REASON_CHARS, [q.text, ...base]);
+    const problem = whyNot(r.text, MAX_REASON_CHARS, [q.text, ...base]) ?? kindProblem(r.text, [q.text, ...base]);
     if (problem) { note(false, problem); continue; }
     const key = r.text.trim().toLowerCase();
     if (said.has(key)) { note(false, 'Another reason says the same.'); continue; }
@@ -115,8 +119,13 @@ export function groundBrief(raw: RawBrief, input: BriefInput): { brief: ReviewBr
     const text = raw.suggestion.trim();
     const have = new Set(modelTokens(text));
     const missing = input.proposedModels.filter((m) => !modelTokens(m).every((t) => have.has(t)));
-    const problem = whyNot(text, MAX_SUGGESTION_CHARS, [...input.quotes.map((q) => q.text), ...base]);
-    const why = missing.length > 0 ? `It leaves out ${missing.join(', ')}, which the answer names.` : problem;
+    const corpus = [...input.quotes.map((q) => q.text), ...base];
+    // One segment per part, each opening with the part's model number: "<MODEL> <what it is> + <MODEL> <what it is>".
+    const segments = text.split(/\s\+\s/);
+    const bare = segments.find((seg) => !input.proposedModels.some((m) => seg.toUpperCase().includes(m.toUpperCase())));
+    const why = missing.length > 0 ? `It leaves out ${missing.join(', ')}, which the answer names.`
+      : input.kind === 'split' && (bare !== undefined || segments.length > input.proposedModels.length) ? 'It is not one "<model> <what it is>" per part.'
+        : whyNot(text, MAX_SUGGESTION_CHARS, corpus) ?? kindProblem(text, corpus);
     verdicts.push({ part: 'suggestion', text, kept: why === null, ...(why ? { why } : {}) });
     if (why === null) suggestion = text;
   }
@@ -125,10 +134,11 @@ export function groundBrief(raw: RawBrief, input: BriefInput): { brief: ReviewBr
   let check: BriefCheck | null = rulesCheck(input);
   if (raw.check) {
     const q = quoteAt(raw.check.quoteIndex);
-    const problem = whyNot(raw.check.text, MAX_CHECK_CHARS, [...(q ? [q.text] : []), ...base]);
+    // A check without a quote to point at is not carried: the rules' check says where to look.
+    const problem = q ? whyNot(raw.check.text, MAX_CHECK_CHARS, [q.text, ...base]) ?? kindProblem(raw.check.text, [q.text, ...base]) : 'It cites no quote.';
     verdicts.push({ part: 'check', text: raw.check.text, kept: problem === null, ...(problem ? { why: problem } : {}) });
-    if (problem === null) {
-      const link = q?.url ? { url: q.url, linkLabel: q.label } : input.checkLink ? { url: input.checkLink.url, linkLabel: input.checkLink.label } : null;
+    if (problem === null && q) {
+      const link = q.url ? { url: q.url, linkLabel: q.label } : input.checkLink ? { url: input.checkLink.url, linkLabel: input.checkLink.label } : null;
       check = { text: cutText(raw.check.text, MAX_CHECK_CHARS), ...(link ?? {}) };
     }
   }
