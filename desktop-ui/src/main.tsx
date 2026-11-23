@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { PopoverApp } from './screens/PopoverApp';
 import { applyLook, readLook, shellChrome } from './lib/appearance';
 import './base.css';
 
@@ -9,8 +10,12 @@ import './base.css';
 applyLook(readLook());
 document.documentElement.dataset.chrome = shellChrome();
 
+// The menu bar popover is its own window on this same page (src-tauri/src/popover.rs): `#/popover` draws it alone.
+const popover = window.location.hash.startsWith('#/popover');
+if (popover) document.documentElement.dataset.surface = 'popover';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    {popover ? <PopoverApp /> : <App />}
   </StrictMode>,
 );

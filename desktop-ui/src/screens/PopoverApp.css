@@ -1,0 +1,247 @@
+/* The menu bar popover (design.md, Desktop app > Menu bar popover): 340 x 420, compact, native. In the app the window
+   carries the Popover material and its rounded corners and the page paints nothing behind the text; in a browser
+   a stand-in ground and edge take their place. */
+:root[data-surface='popover'] body {
+  min-width: 0;
+  min-height: 0;
+  background: transparent;
+}
+
+.pop {
+  display: flex;
+  flex-direction: column;
+  width: 340px;
+  height: 420px;
+  padding: 12px 0 6px;
+  overflow: hidden;
+}
+
+/* Outside the shell there is no material: a popover-coloured ground with the hairline edge and radius of the real one. */
+:root[data-surface='popover']:not([data-chrome='unified']) .pop {
+  background: var(--popover-bg);
+  border-radius: 10px;
+  box-shadow: 0 0 0 0.5px var(--separator);
+}
+
+.pop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+}
+
+.pop-name {
+  margin: 0;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.pop-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  color: var(--label-2);
+}
+
+.pop-state-attention {
+  color: var(--attention);
+}
+
+.pop-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 14px 0;
+}
+
+.pop-detail {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-status .progress {
+  height: 3px;
+}
+
+.pop-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 0 2px;
+}
+
+.pop-section {
+  padding: 4px 0 2px;
+}
+
+.pop-section-head {
+  margin: 0;
+  padding: 0 14px 3px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  color: var(--label-2);
+}
+
+.pop-count {
+  font-weight: 400;
+}
+
+.pop-quiet,
+.pop-note {
+  margin: 0;
+  padding: 2px 14px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+.pop-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* A row you can press: it fills quietly under the pointer, the way a source list row does. */
+.pop-row,
+.pop-more {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: calc(100% - 12px);
+  margin: 0 6px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: start;
+  cursor: default;
+}
+
+.pop-row:hover,
+.pop-more:hover {
+  background: var(--hover);
+}
+
+.pop-row:focus-visible,
+.pop-more:focus-visible,
+.pop-menu-item:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -1px;
+}
+
+.pop-row-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.pop-row-title,
+.pop-row-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-row-sub {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+.pop-more {
+  display: block;
+  width: calc(100% - 12px);
+  padding: 3px 8px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--accent);
+}
+
+.pop-deal-figs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: none;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+.pop-deal-figs .figure-profit {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.pop-actions {
+  padding: 8px 14px 8px;
+  border-top: 0.5px solid var(--separator);
+}
+
+.pop-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.pop-buttons .pop-btn {
+  flex: 1;
+}
+
+.pop-error {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--label-2);
+}
+
+/* The menu part: AppKit's menu rows, the label at the start, the key at the end; the one under the pointer takes the accent. */
+.pop-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0 6px;
+  border-top: 0.5px solid var(--separator);
+  padding-top: 5px;
+}
+
+.pop-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 22px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  text-align: start;
+  cursor: default;
+}
+
+.pop-menu-item:hover {
+  background: var(--selection);
+  color: var(--on-accent);
+}
+
+.pop-key {
+  font-size: 13px;
+  color: var(--label-2);
+}
+
+.pop-menu-item:hover .pop-key {
+  color: inherit;
+  opacity: 0.8;
+}
