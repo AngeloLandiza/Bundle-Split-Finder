@@ -32,6 +32,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# Windows PowerShell 5.1 does not load System.Net.Http by itself (PowerShell 7 does).
+Add-Type -AssemblyName System.Net.Http
 $base = "http://127.0.0.1:$Port"
 # The six key names from core/src/api/contract.ts (KEY_NAMES).
 $keyNames = @('serpapi', 'keepa', 'anthropic', 'openai', 'ebay', 'telegram')
@@ -148,10 +150,12 @@ Invoke-Check 'install' {
   if (Test-Listening) { return @($false, "port $Port is already in use before the install") }
   # /S is silent; /D= sets the folder and must be the last argument, unquoted. The installer is per user, so no
   # administrator prompt appears.
-  $p = Start-Process -FilePath $Installer -ArgumentList @('/S', "/D=$InstallDir") -Wait -PassThru
+  # One string, not an array: Windows PowerShell 5.1 would join an array with spaces and never quote it anyway.
+  $p = Start-Process -FilePath $Installer -ArgumentList "/S /D=$InstallDir" -Wait -PassThru
   if ($p.ExitCode -ne 0) { return @($false, "installer exited with code $($p.ExitCode)") }
+  # The folder also holds the agent sidecar (agent-dashboard.exe, Tauri's externalBin), which sorts before the app.
   $exe = Get-ChildItem -LiteralPath $InstallDir -Filter '*.exe' -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -notmatch '^uninstall' } | Select-Object -First 1
+    Where-Object { $_.Name -notmatch '^(uninstall|agent-dashboard)' } | Select-Object -First 1
   if (-not $exe) { return @($false, "no program was installed in $InstallDir") }
   $script:installed = $true
   $script:appExe = $exe.FullName

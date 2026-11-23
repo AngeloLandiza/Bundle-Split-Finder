@@ -1,6 +1,8 @@
 # Proves the Windows installer on a real Windows machine: builds it natively, installs it silently, starts it,
 # and checks the agent behind it (scripts/windows-smoke.ps1). It runs only when started by hand (Actions tab, "Run
 # workflow") or when a tag v* is pushed. It spends no SerpApi searches and uses no secrets.
+# Two independent jobs: `tests` (typecheck, unit tests) and `smoke` (build, install, run). A failing test never
+# hides whether the app installs and runs.
 name: windows-smoke
 
 on:
@@ -12,6 +14,29 @@ permissions:
   contents: read
 
 jobs:
+  tests:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare the extension build
+        run: npx wxt prepare
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
   smoke:
     runs-on: windows-latest
     timeout-minutes: 60
@@ -41,12 +66,6 @@ jobs:
       - name: Prepare the extension build
         run: npx wxt prepare
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Unit tests
-        run: npm test
-
       # Native build of the agent sidecar for Windows (src-tauri/binaries/agent-dashboard-x86_64-pc-windows-msvc.exe).
       - name: Build the sidecar
         run: npm run desktop:bundle-agent
@@ -72,6 +91,33 @@ jobs:
           path: ${{ steps.installer.outputs.path }}
           if-no-files-found: error
 
+      # The script's whole output goes to a file as well as the log; its exit code is the step's result.
       - name: Smoke test the installed app
         shell: pwsh
-        run: ./scripts/windows-smoke.ps1 -Installer '${{ steps.installer.outputs.path }}'
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP 'windows-smoke.log'
+          & ./scripts/windows-smoke.ps1 -Installer '${{ steps.installer.outputs.path }}' *>&1 | Tee-Object -FilePath $log
+          exit $LASTEXITCODE
+
+      - name: Smoke output in the job summary
+        if: always()
+        shell: pwsh
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP 'windows-smoke.log'
+          $sum = $env:GITHUB_STEP_SUMMARY
+          if (Test-Path -LiteralPath $log) {
+            '## Windows smoke test' | Out-File -FilePath $sum -Append -Encoding utf8
+            '```' | Out-File -FilePath $sum -Append -Encoding utf8
+            Get-Content -LiteralPath $log | Out-File -FilePath $sum -Append -Encoding utf8
+            '```' | Out-File -FilePath $sum -Append -Encoding utf8
+          } else {
+            'The smoke test did not run (an earlier step failed).' | Out-File -FilePath $sum -Append -Encoding utf8
+          }
+
+      - name: Upload the smoke output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-smoke-output
+          path: ${{ runner.temp }}/windows-smoke.log
+          if-no-files-found: ignore
