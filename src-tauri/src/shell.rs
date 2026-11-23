@@ -10,7 +10,7 @@ use tauri::menu::{
 };
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri::webview::PageLoadEvent;
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, Wry};
 use tauri_plugin_autostart::ManagerExt as _;
 use tauri_plugin_notification::NotificationExt;
 
@@ -55,18 +55,59 @@ struct TrayItems {
 }
 
 /// Runs before every page load in the webview: the pairing token and a marker that the page is
-/// inside the desktop shell. The page reads `window.__SPLIT_FINDER_TOKEN__`.
+/// inside the desktop shell. The page reads `window.__SPLIT_FINDER_TOKEN__`, and
+/// `__SPLIT_FINDER_SHELL__.chrome`: "unified" when the window has the macOS unified title bar and the
+/// sidebar material behind a transparent webview (native_chrome below), so the page leaves its
+/// sidebar clear and paints only the content area.
 fn init_script(token: Option<&str>) -> String {
   let token_js = token
     .map(|t| serde_json::to_string(t).unwrap_or_else(|_| "null".into()))
     .unwrap_or_else(|| "null".into());
+  let chrome = if cfg!(target_os = "macos") { "unified" } else { "standard" };
   format!(
     "(function(){{ if (location.origin !== '{origin}') return; \
      var t = {token_js}; if (t) window.__SPLIT_FINDER_TOKEN__ = t; \
-     window.__SPLIT_FINDER_SHELL__ = {{ platform: '{platform}' }}; }})();",
+     window.__SPLIT_FINDER_SHELL__ = {{ platform: '{platform}', chrome: '{chrome}' }}; }})();",
     origin = agent::AGENT_ORIGIN,
     platform = std::env::consts::OS,
   )
+}
+
+/// Where the close button's top-left sits, in points from the window's top-left. The page's toolbar
+/// and the sidebar's title band are 52px (desktop-ui base.css `--toolbar-h`). Tao sets the title bar
+/// container to 14 + y tall and AppKit keeps the 14pt buttons 7pt above its bottom, so y = 26 centres
+/// them in that band; 20pt in from the edge, as in Finder and Mail.
+#[cfg(target_os = "macos")]
+const TRAFFIC_LIGHTS: (f64, f64) = (20.0, 26.0);
+
+/// The macOS window chrome (docs/design.md, Desktop app > Window): a unified title bar with the
+/// title hidden and the traffic lights inset into the sidebar, full-size content, and the sidebar
+/// material (NSVisualEffectView, following the window's active state) behind a transparent webview.
+/// The page paints its content column solid and leaves the sidebar clear, so only the sidebar is
+/// translucent. Elsewhere the window keeps its standard frame.
+fn native_chrome<'a>(
+  builder: WebviewWindowBuilder<'a, Wry, AppHandle>,
+) -> WebviewWindowBuilder<'a, Wry, AppHandle> {
+  #[cfg(target_os = "macos")]
+  {
+    use tauri::window::{Effect, EffectState, EffectsBuilder};
+    use tauri::{LogicalPosition, TitleBarStyle};
+    builder
+      .title_bar_style(TitleBarStyle::Overlay)
+      .hidden_title(true)
+      .traffic_light_position(LogicalPosition::new(TRAFFIC_LIGHTS.0, TRAFFIC_LIGHTS.1))
+      .transparent(true)
+      .effects(
+        EffectsBuilder::new()
+          .effect(Effect::Sidebar)
+          .state(EffectState::FollowsWindowActiveState)
+          .build(),
+      )
+  }
+  #[cfg(not(target_os = "macos"))]
+  {
+    builder
+  }
 }
 
 /// Creates the main window (declared with `create: false` so it can carry the init script).
@@ -87,8 +128,7 @@ pub fn create_window(app: &AppHandle) -> Result<WebviewWindow, String> {
   let window = match agent::proven_token(app) {
     Some(token) => {
       app.state::<ShellState>().error_page.store(false, Ordering::Relaxed);
-      WebviewWindowBuilder::from_config(app, &cfg)
-        .map_err(|e| e.to_string())?
+      native_chrome(WebviewWindowBuilder::from_config(app, &cfg).map_err(|e| e.to_string())?)
         .initialization_script(init_script(Some(&token)))
         .build()
         .map_err(|e| e.to_string())?
@@ -377,14 +417,34 @@ pub fn build_menus(app: &AppHandle) -> tauri::Result<()> {
     ],
   )?;
 
+  // View: the inspector beside Deals and Review (the page listens for split-finder:inspector).
+  let view_sub = SubmenuBuilder::new(app, "View")
+    .item(&MenuItem::with_id(
+      app,
+      "inspector",
+      "Show or hide inspector",
+      true,
+      Some("Alt+CmdOrCtrl+I"),
+    )?)
+    .separator()
+    .fullscreen()
+    .build()?;
+
   let window_sub = SubmenuBuilder::new(app, "Window")
     .minimize()
+    .maximize()
+    .separator()
     .close_window()
+    .build()?;
+
+  // Help: the welcome sheet again, for setup skipped earlier (split-finder:setup).
+  let help_sub = SubmenuBuilder::new(app, "Help")
+    .item(&MenuItem::with_id(app, "setup", "Finish setup...", true, None::<&str>)?)
     .build()?;
 
   let menu = Menu::with_items(
     app,
-    &[&app_sub, &edit_sub, &agent_sub, &helper_sub, &window_sub],
+    &[&app_sub, &edit_sub, &view_sub, &agent_sub, &helper_sub, &window_sub, &help_sub],
   )?;
   app.set_menu(menu)?;
 
@@ -434,6 +494,8 @@ pub fn handle_menu(app: &AppHandle, id: &str) {
     }
     "settings" => navigate(app, "/settings"),
     "find" => page_event(app, "split-finder:find"),
+    "inspector" => page_event(app, "split-finder:inspector"),
+    "setup" => page_event(app, "split-finder:setup"),
     "launch_login" => {
       let on = !launch_at_login(app);
       if let Err(e) = set_launch_at_login(app, on) {

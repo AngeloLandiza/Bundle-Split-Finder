@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "agent-ui",
-  "description": "The dashboard served by the local agent may read agent status and toggle launch at login. Nothing else.",
+  "description": "The dashboard served by the local agent may read agent status, toggle launch at login, and move or zoom its window from the title bar drag regions. Nothing else.",
   "windows": ["main"],
   "remote": {
     "urls": ["http://127.0.0.1:8790/*"]
@@ -9,6 +9,8 @@
   "permissions": [
     "allow-agent-status",
     "allow-get-launch-at-login",
-    "allow-set-launch-at-login"
+    "allow-set-launch-at-login",
+    "core:window:allow-start-dragging",
+    "core:window:allow-internal-toggle-maximize"
   ]
 }
