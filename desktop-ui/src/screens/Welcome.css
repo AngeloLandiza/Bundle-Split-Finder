@@ -1,14 +1,8 @@
 .app-mark {
   flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 13px;
-  background: light-dark(#1d1d1f, #f5f5f7);
-  color: light-dark(#ffffff, #1d1d1f);
-  box-shadow:
-    0 0 0 0.5px rgb(0 0 0 / 0.15),
-    0 2px 6px rgb(0 0 0 / 0.18);
+  display: block;
+  /* The icon carries its own 100px margin and shape; the shadow is the Dock's. */
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.2));
 }
 
 .welcome-head {

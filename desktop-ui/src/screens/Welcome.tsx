@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api, useAction, useApp } from '../api/hooks';
+import appIcon from '../../../desktop/icon/app-icon.svg';
 import { Button } from '../components/Button';
 import { Glyph } from '../components/Glyph';
 import { PairingNotices } from '../components/PairingNotice';
@@ -18,16 +19,9 @@ const STEPS: { id: SetupStepId; title: string; short: string }[] = [
   { id: 'scan', title: 'Run the first scan', short: 'First scan' },
 ];
 
-/** The app's mark in an app-icon tile, for the sheet's header. */
-export function AppMark({ size = 56 }: { size?: number }) {
-  return (
-    <span className="app-mark" style={{ inlineSize: size, blockSize: size }} aria-hidden="true">
-      <svg width={size * 0.56} height={size * 0.56} viewBox="0 0 20 20">
-        <rect x="2.75" y="2.75" width="14.5" height="14.5" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M10 2.75h4.75a2.5 2.5 0 0 1 2.5 2.5v9.5a2.5 2.5 0 0 1-2.5 2.5H10z" fill="currentColor" />
-      </svg>
-    </span>
-  );
+/** The app's own icon (desktop/icon/app-icon.svg, the one the Dock and the installer use), for the sheet's header. */
+export function AppMark({ size = 64 }: { size?: number }) {
+  return <img className="app-mark" src={appIcon} width={size} height={size} alt="" />;
 }
 
 /**

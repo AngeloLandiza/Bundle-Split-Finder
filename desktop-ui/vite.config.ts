@@ -18,6 +18,8 @@ export default defineConfig({
   },
   base: '/ui/',
   server: {
+    // The welcome sheet imports the app icon from desktop/icon, outside this folder.
+    fs: { allow: [resolve(import.meta.dirname, '..')] },
     // Development in a plain browser: http://localhost:5173/ui/?token=<the app token> (the token is the agent's
     // <data dir>/agent-token; the page keeps it for the tab and removes it from the address). The agent allows only
     // its own Host and Origin, so the proxy presents both as the agent's.
